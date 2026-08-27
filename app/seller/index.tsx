@@ -121,7 +121,7 @@ function SellerDashboardContent() {
               <View style={{ flex: 1, minWidth: 0 }}>
                 <StackrPageTitle title="Seller Dashboard" accentText="Dashboard" />
                 <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, fontWeight: '700', marginTop: 4 }}>
-                  Operational tools for stock intake, stock removal, listings and fulfilment.
+                  Operational tools for stock intake, stock removal and listings.
                 </Text>
               </View>
               <TouchableOpacity
@@ -173,7 +173,7 @@ function SellerDashboardContent() {
               tone={workspaceSummary.backendRequired > 0 ? 'info' : 'success'}
               icon="business-outline"
               title={`${workspaceSummary.available} live tools, ${workspaceSummary.partial} partial, ${workspaceSummary.backendRequired} waiting on backend`}
-              body="Stackr only marks seller features as available when the service boundary exists. Fulfilment, payouts and disputes remain explicit backend dependencies."
+              body="Purchased and sold labels are inventory bookkeeping only. These tools cannot create an order, take payment, buy shipping or trigger a payout."
             />
           </View>
         }

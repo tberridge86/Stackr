@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -15,11 +15,18 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { createTradeOffer } from '../../lib/tradeOffers';
 import { getCachedCardSync } from '../../lib/pokemonTcgCache';
-import { PRICE_API_URL, TRADE_CASH_TERMS_ENABLED } from '../../lib/config';
 import { fetchUserCardAvailability } from '../../lib/cardOwnership';
 import { fetchOwnedCardRows } from '../../lib/ownership';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
+import {
+  sanitizeMarketplaceCondition,
+  sanitizeMarketplaceGrade,
+  sanitizeMarketplaceGradeCompany,
+  getMarketplaceProductTypeLabel,
+  sanitizeMarketplaceListingPresentationFields,
+  sanitizeMarketplaceText,
+} from '../../lib/marketplacePresentation';
 
 // ===============================
 // CONSTANTS
@@ -27,13 +34,11 @@ import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackr
 
 const MAX_OFFER_CARDS = 6;
 const TRADE_SELECTOR_PAGE_SIZE = 1000;
-const TRADE_SELECTOR_CARD_BATCH_SIZE = 200;
 
 // ===============================
 // TYPES
 // ===============================
 
-type CashPayer = 'sender' | 'receiver';
 type OfferCardFilter = 'all' | 'duplicates' | 'priced';
 type OwnedTradeSourceKind = 'canonical' | 'binder';
 
@@ -166,14 +171,6 @@ const formatOwnershipLabel = (
     .join(' - ');
 };
 
-function chunkArray<T>(items: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-  for (let index = 0; index < items.length; index += size) {
-    chunks.push(items.slice(index, index + size));
-  }
-  return chunks;
-}
-
 async function fetchPagedRows<T>(buildQuery: () => any): Promise<T[]> {
   const rows: T[] = [];
   for (let from = 0; ; from += TRADE_SELECTOR_PAGE_SIZE) {
@@ -185,41 +182,10 @@ async function fetchPagedRows<T>(buildQuery: () => any): Promise<T[]> {
   }
 }
 
-async function fetchCardRowsByIds<T>(
-  ids: string[],
-  buildQuery: (batch: string[]) => any
-): Promise<T[]> {
-  const batches = chunkArray([...new Set(ids.filter(Boolean))], TRADE_SELECTOR_CARD_BATCH_SIZE);
-  const results = await Promise.all(
-    batches.map(async (batch) => {
-      const { data, error } = await buildQuery(batch);
-      if (error) throw error;
-      return (data ?? []) as T[];
-    })
-  );
-  return results.flat();
-}
-
 async function fetchEstimatedPrice(cardIdValue: string) {
   const snapshots = await fetchStackrPriceSnapshots([cardIdValue]);
   const snapshot = snapshots.get(cardIdValue);
   return { value: snapshot?.market_central ?? null, source: snapshot ? 'stackr-api' : null };
-}
-
-async function sendPushNotification(
-  endpoint: string,
-  payload: Record<string, any>
-): Promise<void> {
-  if (!PRICE_API_URL) return;
-  try {
-    await fetch(`${PRICE_API_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-  } catch (err) {
-    console.log(`Push notification failed (${endpoint}):`, err);
-  }
 }
 
 // ===============================
@@ -252,21 +218,47 @@ export default function NewOfferScreen() {
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
   const [offerCardSearch, setOfferCardSearch] = useState('');
   const [offerCardFilter, setOfferCardFilter] = useState<OfferCardFilter>('all');
+  const authUserIdRef = useRef<string | null>(null);
+  const authGenerationRef = useRef(0);
 
-  const [cashAmount, setCashAmount] = useState('');
-  const [cashPayer, setCashPayer] = useState<CashPayer>('sender');
-  const [message, setMessage] = useState('');
+  const isCurrentIdentity = useCallback((userId: string, generation: number) => (
+    authUserIdRef.current === userId && authGenerationRef.current === generation
+  ), []);
 
-  const cashAmountNumber = useMemo(() => {
-    const cleaned = cashAmount.replace(/[£,]/g, '').trim();
-    const parsed = Number(cleaned);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-  }, [cashAmount]);
+  const resetPrivateOfferState = useCallback(() => {
+    setTargetCard(null);
+    setMyTradeCards([]);
+    setSelectedCardIds([]);
+    setOfferCardSearch('');
+    setOfferCardFilter('all');
+    setCurrentUserId(null);
+    setListingOwnerId(null);
+    setTargetUserName(null);
+    setSending(false);
+  }, []);
 
-  const cashInvolved = TRADE_CASH_TERMS_ENABLED && cashAmountNumber > 0;
+  const bindIdentity = useCallback((userId: string | null) => {
+    if (authUserIdRef.current === userId) return authGenerationRef.current;
+    authUserIdRef.current = userId;
+    authGenerationRef.current += 1;
+    resetPrivateOfferState();
+    setCurrentUserId(userId);
+    setLoading(Boolean(userId));
+    return authGenerationRef.current;
+  }, [resetPrivateOfferState]);
+
   const selectedTradeCards = useMemo(
     () => myTradeCards.filter((card) => selectedCardIds.includes(card.id)),
     [myTradeCards, selectedCardIds]
+  );
+  const canSubmitOffer = Boolean(
+    currentUserId
+    && listingOwnerId
+    && listingOwnerId !== currentUserId
+    && listingId
+    && targetCard?.card_id
+    && selectedTradeCards.length > 0
+    && selectedTradeCards.length === selectedCardIds.length
   );
   const filteredTradeCards = useMemo(() => {
     const query = offerCardSearch.trim().toLowerCase();
@@ -296,10 +288,8 @@ export default function NewOfferScreen() {
     (total, card) => total + (card.estimated_value ?? 0),
     0
   );
-  const offeredSideValue =
-    offeredCardsValue + (cashPayer === 'sender' ? cashAmountNumber : 0);
-  const receiverSideValue =
-    requestedSideValue + (cashPayer === 'receiver' ? cashAmountNumber : 0);
+  const offeredSideValue = offeredCardsValue;
+  const receiverSideValue = requestedSideValue;
   const valueDifference = offeredSideValue - receiverSideValue;
   const absoluteDifference = Math.abs(valueDifference);
   const comparisonBase = Math.max(offeredSideValue, receiverSideValue, 1);
@@ -326,57 +316,73 @@ export default function NewOfferScreen() {
       ? 'Both sides are close enough to feel fair.'
       : fairnessState === 'your-heavy'
         ? `You are offering about ${money(absoluteDifference)} more.`
-        : `They are sending about ${money(absoluteDifference)} more.`;
+        : `Their side is worth about ${money(absoluteDifference)} more.`;
   const fairnessColor = fairnessState === 'balanced' ? theme.colors.primary : '#F59E0B';
 
   useEffect(() => {
-    let active = true;
-    loadScreen(() => active);
-    return () => {
-      active = false;
+    let mounted = true;
+    let authEventEpoch = 0;
+
+    const activate = (userId: string | null) => {
+      if (!mounted) return;
+      const generation = bindIdentity(userId);
+      if (!userId) {
+        setLoading(false);
+        router.replace('/offers');
+        return;
+      }
+      void loadScreen(userId, generation);
     };
-    // Reload only when the route identity changes; loadScreen is defined below and closes over these values.
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      authEventEpoch += 1;
+      activate(session?.user?.id ?? null);
+    });
+
+    const initialEpoch = authEventEpoch;
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (!mounted || initialEpoch !== authEventEpoch) return;
+      if (error) {
+        console.log('Offer account lookup failed', error);
+        activate(null);
+        return;
+      }
+      activate(data.user?.id ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      authGenerationRef.current += 1;
+      subscription.unsubscribe();
+    };
+    // Reload when either route identity or authenticated account changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listingId, targetUserId, cardId, setId]);
+  }, [listingId, targetUserId, cardId, setId, bindIdentity]);
 
   // ===============================
   // LOAD
   // ===============================
 
-  async function loadScreen(isActive = () => true) {
+  async function loadScreen(userId: string, generation: number) {
+    if (!isCurrentIdentity(userId, generation)) return;
     try {
+      resetPrivateOfferState();
+      setCurrentUserId(userId);
       setLoading(true);
-      setTargetCard(null);
-      setMyTradeCards([]);
-      setSelectedCardIds([]);
-      setOfferCardSearch('');
-      setOfferCardFilter('all');
-      setCashAmount('');
-      setCashPayer('sender');
-      setMessage('');
-      setListingOwnerId(null);
-
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-      if (userError) throw userError;
-
-      if (!user) {
-        Alert.alert('Sign in required', 'You need to be signed in to make Market offers.');
-        router.replace('/offer');
-        return;
-      }
-
-      setCurrentUserId(user.id);
 
       if (!listingId) {
         Alert.alert('Missing offer details', 'This offer is missing listing information.');
-        router.replace('/offer');
+        router.replace('/offers');
         return;
       }
 
       const listing = await fetchListingForOffer(listingId);
+      if (!isCurrentIdentity(userId, generation)) return;
       if (!listing?.card_id || !listing.user_id) {
         throw new Error('This Market listing could not be found.');
+      }
+      if (listing.user_id === userId) {
+        throw new Error('You cannot make an offer on your own listing.');
       }
 
       if (targetUserId && listing.user_id !== targetUserId) {
@@ -398,20 +404,24 @@ export default function NewOfferScreen() {
       const [target, receiverProfile, ownCards] = await Promise.all([
         buildTargetCard(listing.card_id, listing.set_id ?? null, listing),
         supabase.from('profile_public_directory').select('collector_name').eq('id', listing.user_id).maybeSingle(),
-        fetchMyTradeCards(user.id),
+        fetchMyTradeCards(userId),
       ]);
 
-      if (!isActive()) return;
+      if (!isCurrentIdentity(userId, generation)) return;
       setTargetCard(target);
       setListingOwnerId(listing.user_id);
-      setTargetUserName(receiverProfile.data?.collector_name ?? null);
+      setTargetUserName(sanitizeMarketplaceText(
+        receiverProfile.data?.collector_name,
+        'Collector',
+      ));
       setMyTradeCards(ownCards);
     } catch (error: any) {
-      if (!isActive()) return;
+      if (!isCurrentIdentity(userId, generation)) return;
       console.error('Failed to load offer screen:', error);
       Alert.alert('Could not load offer', error?.message ?? 'Something went wrong.');
+      router.replace('/offers');
     } finally {
-      if (isActive()) setLoading(false);
+      if (isCurrentIdentity(userId, generation)) setLoading(false);
     }
   }
 
@@ -425,10 +435,13 @@ export default function NewOfferScreen() {
       `)
       .eq('id', listingIdValue)
       .eq('flag_type', 'trade')
+      .eq('listing_status', 'active')
       .maybeSingle();
 
     if (error) throw error;
-    return (data as OfferListingRow | null) ?? null;
+    return data
+      ? sanitizeMarketplaceListingPresentationFields(data as OfferListingRow)
+      : null;
   }
 
   // ===============================
@@ -449,9 +462,12 @@ export default function NewOfferScreen() {
         id: cardIdValue,
         card_id: cardIdValue,
         set_id: setIdValue ?? null,
-        name: listing?.product_name ?? cardIdValue,
+        name: sanitizeMarketplaceText(
+          listing?.product_name ?? cardIdValue,
+          'Collector listing',
+        ) ?? 'Collector listing',
         image_url: Array.isArray(listing?.listing_images) ? listing?.listing_images?.[0] ?? null : null,
-        set_name: listing?.product_type?.replace(/_/g, ' ') ?? 'Product',
+        set_name: getMarketplaceProductTypeLabel(listing?.product_type),
         number: null,
         estimated_value: listing?.market_estimate ?? listing?.asking_price ?? null,
         price_source: listing?.market_estimate != null ? 'listing' : null,
@@ -473,15 +489,21 @@ export default function NewOfferScreen() {
         id: cardIdValue,
         card_id: cardIdValue,
         set_id: (cardRow as any)?.set_id ?? setIdValue ?? cached?.set?.id ?? null,
-        name: (cardRow as any)?.name ?? cached?.name ?? cardIdValue,
+        name: sanitizeMarketplaceText(
+          (cardRow as any)?.name ?? cached?.name ?? cardIdValue,
+          'Collector card',
+        ) ?? 'Collector card',
         image_url:
           (cardRow as any)?.image_small ??
           (cardRow as any)?.image_large ??
           cached?.images?.small ??
           cached?.images?.large ??
           null,
-        set_name: rawData?.set?.name ?? null,
-        number: (cardRow as any)?.number ?? cached?.number ?? null,
+        set_name: sanitizeMarketplaceText(rawData?.set?.name, null),
+        number: sanitizeMarketplaceText(
+          (cardRow as any)?.number ?? cached?.number ?? null,
+          null,
+        ),
         estimated_value: listing?.market_estimate ?? price.value,
         price_source: listing?.market_estimate != null ? 'listing' : price.source,
       };
@@ -491,7 +513,7 @@ export default function NewOfferScreen() {
       id: cardIdValue,
       card_id: cardIdValue,
       set_id: setIdValue ?? null,
-      name: cardIdValue,
+      name: sanitizeMarketplaceText(cardIdValue, 'Collector card') ?? 'Collector card',
       image_url: null,
       set_name: null,
       number: null,
@@ -686,7 +708,10 @@ export default function NewOfferScreen() {
         id: tradeOwnershipKey(owned),
         card_id: owned.card_id,
         set_id: owned.set_id ?? row?.set_id ?? cached?.set?.id ?? null,
-        name: row?.name ?? cached?.name ?? owned.name ?? owned.card_id,
+        name: sanitizeMarketplaceText(
+          row?.name ?? cached?.name ?? owned.name ?? owned.card_id,
+          'Collector card',
+        ) ?? 'Collector card',
         image_url:
           row?.image_small ??
           row?.image_large ??
@@ -694,12 +719,18 @@ export default function NewOfferScreen() {
           cached?.images?.large ??
           owned.image_url ??
           null,
-        set_name: rawData?.set?.name ?? owned.set_name ?? cached?.set?.name ?? null,
-        number: row?.number ?? owned.number ?? cached?.number ?? null,
-        variant: owned.variant ?? null,
-        condition: owned.condition ?? null,
-        grade_company: owned.grade_company ?? null,
-        grade: owned.grade ?? null,
+        set_name: sanitizeMarketplaceText(
+          rawData?.set?.name ?? owned.set_name ?? cached?.set?.name ?? null,
+          null,
+        ),
+        number: sanitizeMarketplaceText(
+          row?.number ?? owned.number ?? cached?.number ?? null,
+          null,
+        ),
+        variant: sanitizeMarketplaceText(owned.variant, null),
+        condition: sanitizeMarketplaceCondition(owned.condition),
+        grade_company: sanitizeMarketplaceGradeCompany(owned.grade_company),
+        grade: sanitizeMarketplaceGrade(owned.grade, owned.grade_company),
         estimated_value: price.value ?? owned.fallback_price ?? null,
         price_source: price.source ?? (owned.fallback_price != null ? 'owned' : null),
         owned_quantity: availableQuantity,
@@ -734,15 +765,27 @@ export default function NewOfferScreen() {
   // ===============================
 
   async function sendOffer() {
+    const userId = authUserIdRef.current;
+    const generation = authGenerationRef.current;
     try {
-      const receiverUserId = listingOwnerId ?? targetUserId ?? null;
-      if (!currentUserId || !receiverUserId || !listingId || !targetCard?.card_id) {
+      const receiverUserId = listingOwnerId;
+      if (
+        !userId
+        || currentUserId !== userId
+        || !isCurrentIdentity(userId, generation)
+        || !receiverUserId
+        || !listingId
+        || !targetCard?.card_id
+      ) {
         Alert.alert('Missing details', 'This offer is missing required Market information.');
         return;
       }
 
-      if (selectedCardIds.length === 0 && !cashInvolved) {
-        Alert.alert('Empty offer', 'Add at least one card or a cash amount.');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id !== userId || !isCurrentIdentity(userId, generation)) return;
+
+      if (selectedCardIds.length === 0) {
+        Alert.alert('Empty offer', 'Add at least one card.');
         return;
       }
 
@@ -757,10 +800,11 @@ export default function NewOfferScreen() {
       for (const cards of selectedByAvailability.values()) {
         const card = cards[0];
         const availability = await fetchUserCardAvailability({
-          userId: currentUserId,
+          userId,
           cardId: card.card_id,
           setId: card.set_id,
         });
+        if (!isCurrentIdentity(userId, generation)) return;
         const knownOwnedQuantity = Math.max(
           Number(card.owned_quantity ?? 0) || 0,
           Number(availability.ownedQuantity ?? 0) || 0
@@ -772,7 +816,7 @@ export default function NewOfferScreen() {
         if (availableQuantity < cards.length) {
           Alert.alert(
             'Card no longer available',
-            `${card.name} is already committed to another listing, reservation or pending transaction.`
+            `${card.name} is already committed elsewhere.`
           );
           const unavailableIds = new Set(cards.map((item) => item.id));
           setSelectedCardIds((current) => current.filter((id) => !unavailableIds.has(id)));
@@ -780,16 +824,31 @@ export default function NewOfferScreen() {
         }
       }
 
+      if (!isCurrentIdentity(userId, generation)) return;
       setSending(true);
+
+      const activeListing = await fetchListingForOffer(listingId);
+      if (!isCurrentIdentity(userId, generation)) return;
+      if (
+        !activeListing?.card_id
+        || activeListing.user_id !== listingOwnerId
+        || activeListing.card_id !== targetCard.card_id
+        || (activeListing.set_id ?? null) !== (targetCard.set_id ?? null)
+      ) {
+        throw new Error('This Market listing is no longer available.');
+      }
+      if (activeListing.user_id === userId) {
+        throw new Error('You cannot make an offer on your own listing.');
+      }
 
       const newOffer = await createTradeOffer({
         listingId,
-        senderUserId: currentUserId,
-        receiverUserId,
+        senderUserId: userId,
+        receiverUserId: activeListing.user_id,
         requestedCards: [
           {
-            cardId: targetCard.card_id,
-            setId: targetCard.set_id ?? null,
+            cardId: activeListing.card_id,
+            setId: activeListing.set_id ?? null,
             quantity: 1,
           },
         ],
@@ -798,37 +857,18 @@ export default function NewOfferScreen() {
           setId: card.set_id,
           quantity: 1,
         })),
-        cash: TRADE_CASH_TERMS_ENABLED && cashInvolved
-          ? {
-              amount: cashAmountNumber,
-              currency: 'GBP',
-              payer: cashPayer,
-              paymentStatus: 'required',
-            }
-          : null,
-        message: message.trim() || null,
+        message: null,
       } as any);
 
-      // Notify the receiver they have a new Market offer.
-      const { data: senderProfile } = await supabase
-        .from('profiles')
-        .select('collector_name')
-        .eq('id', currentUserId)
-        .maybeSingle();
-
-      sendPushNotification('/api/notify/trade-offer', {
-        recipientUserId: receiverUserId,
-        senderUsername: senderProfile?.collector_name ?? 'Someone',
-        cardName: targetCard?.name ?? undefined,
-      });
-
+      if (!isCurrentIdentity(userId, generation)) return;
       const destination = newOffer?.id ? `/offer/${newOffer.id}?new=1` : '/offers';
       router.push(destination as any);
     } catch (error: any) {
+      if (!userId || !isCurrentIdentity(userId, generation)) return;
       console.error('Failed to send Market offer:', error);
       Alert.alert('Could not send offer', error?.message ?? 'Something went wrong.');
     } finally {
-      setSending(false);
+      if (userId && isCurrentIdentity(userId, generation)) setSending(false);
     }
   }
 
@@ -855,27 +895,8 @@ export default function NewOfferScreen() {
       <Image source={stackrBrand.wordmark} style={styles.brandLogo} resizeMode="contain" />
       <Text style={styles.title}>Build an Offer</Text>
       <Text style={styles.subtitle}>
-        Add cards or a message
-        {targetUserName ? ` to ${targetUserName}` : ''}.
+        Choose cards for a card-only offer{targetUserName ? ` to ${targetUserName}` : ''}.
       </Text>
-
-      {!TRADE_CASH_TERMS_ENABLED && (
-        <View style={{
-          backgroundColor: '#FEF3C7',
-          borderColor: '#F59E0B',
-          borderWidth: 1,
-          borderRadius: 12,
-          padding: 12,
-          marginBottom: 14,
-        }}>
-          <Text style={{ color: '#92400E', fontSize: 12, fontWeight: '900' }}>
-            CARD-ONLY TRADE BETA
-          </Text>
-          <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, marginTop: 3 }}>
-            Cash top-ups and payment terms are hidden for this release. Offers can contain cards and a message only.
-          </Text>
-        </View>
-      )}
 
       <View style={styles.tradeSides}>
         <View style={styles.tradeSideCard}>
@@ -935,9 +956,6 @@ export default function NewOfferScreen() {
           <View style={styles.sideValueBox}>
             <Text style={styles.valueLabel}>Est. Value</Text>
             <Text style={styles.sideValueAmount}>{money(offeredSideValue)}</Text>
-            {cashPayer === 'sender' && cashInvolved && (
-              <Text style={styles.cashMini}>includes {money(cashAmountNumber)} cash</Text>
-            )}
           </View>
         </View>
 
@@ -974,9 +992,6 @@ export default function NewOfferScreen() {
           <View style={styles.sideValueBox}>
             <Text style={styles.valueLabel}>Est. Value</Text>
             <Text style={styles.sideValueAmount}>{money(receiverSideValue)}</Text>
-            {cashPayer === 'receiver' && cashInvolved && (
-              <Text style={styles.cashMini}>includes {money(cashAmountNumber)} cash</Text>
-            )}
           </View>
         </View>
       </View>
@@ -1054,7 +1069,7 @@ export default function NewOfferScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.cardName}>{targetCard.name}</Text>
               <Text style={styles.cardMeta}>
-                {targetCard.set_name ?? targetCard.set_id ?? 'Unknown set'}
+                {targetCard.set_name ?? sanitizeMarketplaceText(targetCard.set_id, null) ?? 'Unknown set'}
                 {targetCard.number ? ` · ${targetCard.number}` : ''}
               </Text>
               <Text style={styles.priceMeta}>
@@ -1134,7 +1149,7 @@ export default function NewOfferScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.cardName}>{card.name}</Text>
                     <Text style={styles.cardMeta}>
-                      {card.set_name ?? card.set_id ?? 'Unknown set'}
+                      {card.set_name ?? sanitizeMarketplaceText(card.set_id, null) ?? 'Unknown set'}
                       {card.number ? ` · ${card.number}` : ''}
                       {card.owned_quantity ? ` · x${card.owned_quantity} owned` : ''}
                     </Text>
@@ -1158,63 +1173,8 @@ export default function NewOfferScreen() {
         )}
       </Section>
 
-      {/* Cash terms stay absent until source approval and payment contracts are reviewed. */}
-      {TRADE_CASH_TERMS_ENABLED ? (
-      <Section title="Cash top-up (optional)">
-        <TextInput
-          value={cashAmount}
-          onChangeText={setCashAmount}
-          placeholder="Amount e.g. 15.00"
-          placeholderTextColor={theme.colors.textSoft}
-          keyboardType="decimal-pad"
-          style={styles.input}
-        />
-
-        <View style={styles.toggleRow}>
-          <TouchableOpacity
-            onPress={() => setCashPayer('sender')}
-            style={[styles.toggleButton, cashPayer === 'sender' && styles.toggleButtonActive]}
-          >
-            <Text style={[styles.toggleText, cashPayer === 'sender' && styles.toggleTextActive]}>
-              I pay cash
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setCashPayer('receiver')}
-            style={[styles.toggleButton, cashPayer === 'receiver' && styles.toggleButtonActive]}
-          >
-            <Text style={[styles.toggleText, cashPayer === 'receiver' && styles.toggleTextActive]}>
-              They pay cash
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {cashInvolved && (
-          <View style={styles.cashSummary}>
-            <Text style={styles.cashSummaryText}>
-              {cashPayer === 'sender' ? 'You' : 'They'} pay{' '}
-              £{cashAmountNumber.toFixed(2)} via Stripe
-            </Text>
-          </View>
-        )}
-      </Section>
-      ) : null}
-
-      {/* Message */}
-      <Section title="Message (optional)">
-        <TextInput
-          value={message}
-          onChangeText={setMessage}
-          placeholder="Add a short message to introduce your offer..."
-          placeholderTextColor={theme.colors.textSoft}
-          multiline
-          style={[styles.input, styles.messageInput]}
-        />
-      </Section>
-
       {/* Offer summary */}
-      {(selectedCardIds.length > 0 || cashInvolved) && (
+      {selectedCardIds.length > 0 && (
         <View style={styles.summaryBox}>
           <Text style={styles.summaryTitle}>Offer summary</Text>
           <Text style={styles.summaryText}>
@@ -1223,11 +1183,6 @@ export default function NewOfferScreen() {
           {selectedCardIds.length > 0 && (
             <Text style={styles.summaryText}>
               You offer: {selectedCardIds.length} card{selectedCardIds.length !== 1 ? 's' : ''}
-            </Text>
-          )}
-          {cashInvolved && (
-            <Text style={styles.summaryText}>
-              + £{cashAmountNumber.toFixed(2)} cash ({cashPayer === 'sender' ? 'you pay' : 'they pay'})
             </Text>
           )}
         </View>
@@ -1239,8 +1194,8 @@ export default function NewOfferScreen() {
     <View style={{ paddingHorizontal: 16, paddingBottom: 110, paddingTop: 8 }}>
       <TouchableOpacity
         onPress={sendOffer}
-        disabled={sending}
-        style={[styles.sendButton, sending && styles.disabled]}
+        disabled={sending || !canSubmitOffer}
+        style={[styles.sendButton, (sending || !canSubmitOffer) && styles.disabled]}
       >
         {sending ? (
           <ActivityIndicator color="#FFFFFF" />
@@ -1607,10 +1562,6 @@ function makeStyles(theme: any) {
     borderWidth: 1,
     borderColor: theme.colors.border,
     marginBottom: 12,
-  },
-  messageInput: {
-    minHeight: 90,
-    textAlignVertical: 'top',
   },
   toggleRow: {
     flexDirection: 'row',

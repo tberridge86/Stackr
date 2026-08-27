@@ -21,6 +21,7 @@ import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/Rarit
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTrade } from '../../components/trade-context';
+import { useAppMode } from '../../components/app-mode-context';
 import { deleteMarketplaceListing } from '../../lib/marketplace';
 import { stackrIcons } from '../../lib/stackrIcons';
 import {
@@ -109,6 +110,7 @@ type LatestSnapshotPrice = {
 
 export default function CardDetailScreen() {
   const { theme } = useTheme();
+  const { premiumSellerAccess } = useAppMode();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -728,21 +730,21 @@ export default function CardDetailScreen() {
           </View>
           <View style={styles.marketCountsRow}>
             <Text style={styles.marketCountText}>
-              {purchaseListings.length} buy listing{purchaseListings.length === 1 ? '' : 's'}
+              {purchaseListings.length} offer listing{purchaseListings.length === 1 ? '' : 's'}
             </Text>
             <Text style={styles.marketCountText}>
               {tradeListings.length} trade listing{tradeListings.length === 1 ? '' : 's'}
             </Text>
           </View>
           <Text style={styles.marketHint}>
-            Estimated value is a guide price. Active listings are user-set prices and can differ by condition, grade, protection and delivery.
+            Estimated value is a guide. Active listings can differ by condition, grade and item evidence.
           </Text>
           <View style={styles.marketActionsRow}>
             <TouchableOpacity
               style={styles.marketSecondaryAction}
               onPress={() => router.push({ pathname: '/(tabs)/market', params: { mode: 'buy', cardId: card.id, q: card.name ?? card.id } } as any)}
             >
-              <Text style={styles.marketSecondaryActionText}>Buy listings</Text>
+              <Text style={styles.marketSecondaryActionText}>Offer listings</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.marketSecondaryAction}
@@ -769,8 +771,8 @@ export default function CardDetailScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-      {/* The Market Button(s) */}
-      {existingActiveListing ? (
+      {/* Trusted beta listing controls */}
+      {premiumSellerAccess.allowed ? existingActiveListing ? (
         <View style={styles.marketplaceButtonsRow}>
           <TouchableOpacity
             style={[styles.deleteButton, listingBusy && styles.buttonDisabled]}
@@ -792,10 +794,10 @@ export default function CardDetailScreen() {
           disabled={listingBusy}
         >
           <Text style={styles.marketplaceButtonText}>
-            {listingBusy ? 'Listing...' : 'List in The Market'}
+            {listingBusy ? 'Publishing...' : 'Publish Beta Listing'}
           </Text>
         </TouchableOpacity>
-      )}
+      ) : null}
 
       {/* Card Details */}
       {!!presentedDetails.types?.length && (

@@ -5,24 +5,38 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
+const expectedBackendCommit = '0123456789abcdef0123456789abcdef01234567';
+const expectedBackendEnvironment = 'staging';
+const expectedBackendSupabaseProjectRef = 'lmwfhvexfcoyeuoyrlco';
 
 const disabledRoutes = [
-  ['POST', '/api/stripe/create-connect-account', 'payments_disabled'],
-  ['GET', '/api/stripe/account-status?userId=commerce-disabled-smoke', 'payments_disabled'],
-  ['POST', '/api/stripe/create-account-link', 'payments_disabled'],
-  ['POST', '/api/stripe/create-payment-intent', 'payments_disabled'],
-  ['POST', '/api/stripe/create-trade-cash-payment-intent', 'payments_disabled'],
-  ['GET', '/api/stripe/onboarding-complete', 'payments_disabled'],
-  ['GET', '/api/stripe/onboarding-refresh', 'payments_disabled'],
-  ['GET', '/api/shippo/status', 'shipping_disabled'],
-  ['POST', '/api/shippo/rates', 'shipping_disabled'],
-  ['POST', '/api/shippo/labels', 'shipping_disabled'],
-  ['GET', '/api/shippo/track/smoke/smoke-commerce-disabled', 'shipping_disabled'],
+  ['POST', '/api/stripe/create-connect-account', 503, 'payments_disabled'],
+  ['GET', '/api/stripe/account-status?userId=commerce-disabled-smoke', 503, 'payments_disabled'],
+  ['POST', '/api/stripe/create-account-link', 503, 'payments_disabled'],
+  ['POST', '/api/stripe/create-payment-intent', 503, 'payments_disabled'],
+  ['POST', '/api/stripe/create-trade-cash-payment-intent', 503, 'payments_disabled'],
+  ['GET', '/api/stripe/onboarding-complete', 503, 'payments_disabled'],
+  ['GET', '/api/stripe/onboarding-refresh', 503, 'payments_disabled'],
+  ['GET', '/api/shippo/status', 503, 'shipping_disabled'],
+  ['POST', '/api/shippo/rates', 503, 'shipping_disabled'],
+  ['POST', '/api/shippo/labels', 503, 'shipping_disabled'],
+  ['GET', '/api/shippo/track/smoke/smoke-commerce-disabled', 503, 'shipping_disabled'],
+  ['POST', '/api/trade/sent', 410, 'legacy_trade_mutation_retired'],
+  ['POST', '/api/trade/received', 410, 'legacy_trade_mutation_retired'],
+  ['POST', '/api/notify', 410, 'unauthenticated_side_effect_retired'],
+  ['POST', '/api/notify/trade-offer', 410, 'unauthenticated_side_effect_retired'],
+  ['POST', '/api/notify/trade-status', 410, 'unauthenticated_side_effect_retired'],
+  ['POST', '/api/notify/wishlist-match', 410, 'unauthenticated_side_effect_retired'],
+  ['POST', '/api/notify/price-alert', 410, 'unauthenticated_side_effect_retired'],
+  ['POST', '/api/discord/new-trade-listing', 410, 'unauthenticated_side_effect_retired'],
+  ['POST', '/api/discord/new-review', 410, 'unauthenticated_side_effect_retired'],
 ];
 
 const expectedMessages = {
   payments_disabled: 'Payments are disabled for this release.',
   shipping_disabled: 'Shipping is disabled for this release.',
+  legacy_trade_mutation_retired: 'This legacy trade mutation route has been retired.',
+  unauthenticated_side_effect_retired: 'This unauthenticated side-effect route has been retired.',
 };
 
 function runSmoke(args) {
@@ -60,9 +74,9 @@ function parseSmokeOutput(result) {
   return JSON.parse(result.stdout);
 }
 
-test('commerce-disabled deployment smoke proves every Stripe and Shippo route is locked', async (t) => {
+test('Gate 0 deployment smoke proves every commerce and unsafe side-effect route is locked', async (t) => {
   const expectedByRequest = new Map(
-    disabledRoutes.map(([method, path, code]) => [`${method} ${path}`, code]),
+    disabledRoutes.map(([method, path, status, code]) => [`${method} ${path}`, { status, code }]),
   );
   const requests = [];
   let fault = { kind: 'none', target: null };
@@ -81,16 +95,33 @@ test('commerce-disabled deployment smoke proves every Stripe and Shippo route is
     });
 
     if (key === 'GET /health') {
+      const activeFault = fault.target === key ? fault.kind : 'none';
+      const runtime = activeFault === 'missing-runtime'
+        ? undefined
+        : {
+            gitCommit: activeFault === 'wrong-commit' ? 'fedcba987654' : expectedBackendCommit.slice(0, 12),
+            railwayEnvironment: activeFault === 'wrong-environment' ? 'production' : expectedBackendEnvironment,
+            supabaseProjectRef: activeFault === 'wrong-project' ? 'wrongprojectref000000' : expectedBackendSupabaseProjectRef,
+          };
       res.writeHead(200, {
         'content-type': 'application/json',
         'x-request-id': requestId,
       });
-      res.end(JSON.stringify({ ok: true }));
+      res.end(JSON.stringify({ ok: true, runtime }));
       return;
     }
 
-    const expectedCode = expectedByRequest.get(key);
-    if (!expectedCode) {
+    if (key === 'GET /v1/health') {
+      res.writeHead(401, {
+        'content-type': 'application/json',
+        'x-request-id': requestId,
+      });
+      res.end(JSON.stringify({ error: 'gateway_origin_key_required', requestId }));
+      return;
+    }
+
+    const expected = expectedByRequest.get(key);
+    if (!expected) {
       res.writeHead(404, {
         'content-type': 'application/json',
         'x-request-id': requestId,
@@ -100,15 +131,15 @@ test('commerce-disabled deployment smoke proves every Stripe and Shippo route is
     }
 
     const activeFault = fault.target === key ? fault.kind : 'none';
-    const responseCode = activeFault === 'wrong-code' ? 'unexpected_disabled_code' : expectedCode;
+    const responseCode = activeFault === 'wrong-code' ? 'unexpected_disabled_code' : expected.code;
     const responseRequestId = activeFault === 'body-request-id-mismatch'
       ? `mismatch-${requestId}`
       : requestId;
     const headers = { 'content-type': 'application/json' };
     if (activeFault !== 'missing-request-id-header') headers['x-request-id'] = requestId;
-    res.writeHead(activeFault === 'wrong-status' ? 200 : 503, headers);
+    res.writeHead(activeFault === 'wrong-status' ? 200 : expected.status, headers);
     res.end(JSON.stringify({
-      error: expectedMessages[expectedCode],
+      error: expectedMessages[expected.code],
       code: responseCode,
       requestId: responseRequestId,
     }));
@@ -117,6 +148,50 @@ test('commerce-disabled deployment smoke proves every Stripe and Shippo route is
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address();
   const backendUrl = `http://127.0.0.1:${port}`;
+  const gatewayRequests = [];
+  const gatewayServer = createServer((req, res) => {
+    const method = req.method ?? 'GET';
+    const requestPath = req.url ?? '/';
+    const key = `${method} ${requestPath}`;
+    const requestId = String(req.headers['x-request-id'] ?? '');
+    const origin = String(req.headers.origin ?? '');
+    gatewayRequests.push(key);
+
+    if (key === 'OPTIONS /v1/health') {
+      res.writeHead(204, {
+        'access-control-allow-origin': origin,
+        'x-request-id': requestId,
+      });
+      res.end();
+      return;
+    }
+    if (key === 'GET /v1/health' && origin === 'https://not-stackr.invalid') {
+      res.writeHead(403, {
+        'content-type': 'application/json',
+        'x-request-id': requestId,
+      });
+      res.end(JSON.stringify({ error: 'origin_denied', requestId }));
+      return;
+    }
+    if (key === 'GET /v1/health' || key === 'GET /v1/ready') {
+      res.writeHead(200, {
+        'content-type': 'application/json',
+        'x-request-id': requestId,
+      });
+      res.end(JSON.stringify({ ok: true, requestId }));
+      return;
+    }
+
+    // The Gate 0 safety smoke must never depend on catalogue content.
+    res.writeHead(503, {
+      'content-type': 'application/json',
+      'x-request-id': requestId,
+    });
+    res.end(JSON.stringify({ error: 'empty_catalogue_fixture', requestId }));
+  });
+  await new Promise((resolve) => gatewayServer.listen(0, '127.0.0.1', resolve));
+  const { port: gatewayPort } = gatewayServer.address();
+  const gatewayUrl = `http://127.0.0.1:${gatewayPort}`;
 
   async function scenario(kind = 'none', target = null, extraArgs = []) {
     requests.length = 0;
@@ -124,6 +199,9 @@ test('commerce-disabled deployment smoke proves every Stripe and Shippo route is
     return runSmoke([
       `--backend=${backendUrl}`,
       '--require-commerce-disabled',
+      `--expected-backend-commit=${expectedBackendCommit}`,
+      `--expected-backend-environment=${expectedBackendEnvironment}`,
+      `--expected-backend-supabase-project-ref=${expectedBackendSupabaseProjectRef}`,
       ...extraArgs,
     ]);
   }
@@ -143,15 +221,53 @@ test('commerce-disabled deployment smoke proves every Stripe and Shippo route is
         assert.equal(request.contentType, 'application/json');
         assert.equal(request.body, '{}');
       }
-      const commerceChecks = output.checks.filter(({ name }) => name.includes('stripe_') || name.includes('shippo_'));
+      const commerceChecks = output.checks.filter(({ name }) => (
+        name.includes('stripe_')
+        || name.includes('shippo_')
+        || name.includes('legacy_trade_')
+        || name.includes('notify_')
+        || name.includes('discord_')
+      ));
       assert.equal(commerceChecks.length, disabledRoutes.length);
       for (const check of commerceChecks) {
-        assert.equal(check.status, 503, check.name);
+        const expectedRoute = disabledRoutes.find(([, path]) => path === check.path);
+        assert.equal(check.status, expectedRoute?.[2], check.name);
         assert.equal(check.ok, true, check.name);
         assert.equal(check.requestIdPropagated, true, check.name);
         assert.equal(check.bodyCheck?.ok, true, check.name);
         assert.equal(check.bodyCheck?.headerRequestId, check.bodyCheck?.bodyRequestId, check.name);
       }
+    });
+
+    await t.test('passes the public Gate 0 gateway safety proof with an empty catalogue', async () => {
+      requests.length = 0;
+      gatewayRequests.length = 0;
+      fault = { kind: 'none', target: null };
+      const result = await runSmoke([
+        `--backend=${backendUrl}`,
+        `--gateway=${gatewayUrl}`,
+        '--gateway-safety',
+        '--require-commerce-disabled',
+        `--expected-backend-commit=${expectedBackendCommit}`,
+        `--expected-backend-environment=${expectedBackendEnvironment}`,
+        `--expected-backend-supabase-project-ref=${expectedBackendSupabaseProjectRef}`,
+      ]);
+      assert.equal(result.status, 0, result.stderr || result.stdout);
+      const output = parseSmokeOutput(result);
+      assert.equal(output.ok, true);
+      assert.deepEqual(gatewayRequests, [
+        'GET /v1/health',
+        'GET /v1/ready',
+        'OPTIONS /v1/health',
+        'GET /v1/health',
+      ]);
+      assert.ok(!gatewayRequests.some((request) => /catalog|sets|cards|assets|search|languages/.test(request)));
+      assert.equal(
+        output.checks.find(({ name }) => name === 'direct_origin_v1_health_without_gateway_key')?.status,
+        401,
+      );
+      assert.equal(output.checks.find(({ name }) => name === 'cors_allowed_preflight')?.status, 204);
+      assert.equal(output.checks.find(({ name }) => name === 'cors_denied_origin')?.status, 403);
     });
 
     await t.test('fails on an incorrect disabled code', async () => {
@@ -164,6 +280,22 @@ test('commerce-disabled deployment smoke proves every Stripe and Shippo route is
       assert.equal(failed?.bodyCheck?.expectedCode, 'payments_disabled');
       assert.equal(failed?.bodyCheck?.receivedCode, 'unexpected_disabled_code');
     });
+
+    for (const [faultKind, field] of [
+      ['wrong-commit', 'receivedCommit'],
+      ['wrong-environment', 'receivedEnvironment'],
+      ['wrong-project', 'receivedSupabaseProjectRef'],
+      ['missing-runtime', 'receivedCommit'],
+    ]) {
+      await t.test(`fails closed on backend attestation fault: ${faultKind}`, async () => {
+        const result = await scenario(faultKind, 'GET /health');
+        assert.equal(result.status, 1, result.stdout);
+        const output = parseSmokeOutput(result);
+        const failed = output.checks.find(({ name }) => name === 'backend_health');
+        assert.equal(failed?.ok, false);
+        assert.ok(Object.prototype.hasOwnProperty.call(failed?.bodyCheck ?? {}, field));
+      });
+    }
 
     await t.test('fails on any status other than 503', async () => {
       const result = await scenario('wrong-status', 'GET /api/shippo/status');
@@ -207,6 +339,9 @@ test('commerce-disabled deployment smoke proves every Stripe and Shippo route is
       assert.match(result.stderr, /requires a backend URL/);
     });
   } finally {
+    await new Promise((resolve, reject) => {
+      gatewayServer.close((error) => (error ? reject(error) : resolve()));
+    });
     await new Promise((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
     });

@@ -23,14 +23,14 @@ export const SELLER_WORKSPACE_ITEMS: SellerWorkspaceItem[] = [
   {
     key: 'scan_in',
     label: 'Scan In',
-    description: 'Add purchased, traded or store intake stock into reviewable inventory batches.',
+    description: 'Record purchased, traded or store intake stock in reviewable inventory batches.',
     status: 'available',
     route: ROUTES.scanSellerIn,
   },
   {
     key: 'scan_out',
     label: 'Scan Out',
-    description: 'Remove sold, shipped, traded or damaged stock with movement history.',
+    description: 'Record sold, traded, transferred or damaged stock leaving inventory.',
     status: 'available',
     route: ROUTES.scanSellerOut,
   },
@@ -41,21 +41,6 @@ export const SELLER_WORKSPACE_ITEMS: SellerWorkspaceItem[] = [
     status: 'partial',
     route: ROUTES.sellerListings,
     backendDependency: 'Listing lifecycle currently supports active, archived and sold states; fulfilment states need order services.',
-  },
-  {
-    key: 'orders',
-    label: 'Orders',
-    description: 'Track awaiting dispatch, delivery, returns and disputes.',
-    status: 'backend_required',
-    route: ROUTES.sellerOrders,
-    backendDependency: 'Requires order, shipment, payment, returns and dispute tables/services.',
-  },
-  {
-    key: 'payouts',
-    label: 'Payouts',
-    description: 'Review seller payouts, fees, cost basis and margin.',
-    status: 'backend_required',
-    backendDependency: 'Requires payment provider payout and seller accounting integration.',
   },
   {
     key: 'bulk_tools',

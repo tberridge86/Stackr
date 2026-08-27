@@ -24,6 +24,7 @@ import { StackrImage } from '../components/StackrImage';
 import { StackrPageTitle } from '../components/StackrScreen';
 import { StackrEmptyState, StackrErrorState, StackrSkeleton } from '../components/StackrStates';
 import { Text } from '../components/Text';
+import { useAppMode } from '../components/app-mode-context';
 import { useTheme } from '../components/theme-context';
 import {
   fetchBinderCards,
@@ -509,11 +510,13 @@ function SortSheet({
 
 function DuplicateActionsSheet({
   item,
+  canCreateListing,
   onClose,
   onViewCard,
   onCreateListing,
 }: {
   item: DuplicateListItem | null;
+  canCreateListing: boolean;
   onClose: () => void;
   onViewCard: (item: DuplicateListItem) => void;
   onCreateListing: (item: DuplicateListItem) => void;
@@ -548,12 +551,14 @@ function DuplicateActionsSheet({
               </View>
 
               <View style={styles.actionGroup}>
-                <StackrButton
-                  label="Create listing"
-                  variant="primary"
-                  icon="storefront-outline"
-                  onPress={() => onCreateListing(item)}
-                />
+                {canCreateListing ? (
+                  <StackrButton
+                    label="Create beta listing"
+                    variant="primary"
+                    icon="storefront-outline"
+                    onPress={() => onCreateListing(item)}
+                  />
+                ) : null}
                 <StackrButton
                   label="View card"
                   variant="secondary"
@@ -562,7 +567,9 @@ function DuplicateActionsSheet({
                 />
               </View>
               <Text style={[styles.sheetFootnote, { color: theme.colors.textSoft }]}>
-                More actions will appear here when listing, trade or inventory status is available for this card.
+                {canCreateListing
+                  ? 'Beta listings are browse-only; Stackr cannot take payment, create an order or buy shipping.'
+                  : 'View the card to manage its collection details.'}
               </Text>
             </>
           ) : null}
@@ -574,6 +581,7 @@ function DuplicateActionsSheet({
 
 export default function DuplicatesScreen() {
   const { theme } = useTheme();
+  const { premiumSellerAccess } = useAppMode();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const [items, setItems] = useState<DuplicateListItem[]>([]);
@@ -858,6 +866,7 @@ export default function DuplicatesScreen() {
       />
       <DuplicateActionsSheet
         item={selectedItem}
+        canCreateListing={premiumSellerAccess.allowed}
         onClose={() => setSelectedItem(null)}
         onViewCard={viewCard}
         onCreateListing={createListing}

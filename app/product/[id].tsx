@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrBackButton } from '../../components/StackrBackButton';
 import { StackrImage } from '../../components/StackrImage';
 import { Text } from '../../components/Text';
 import { useTheme } from '../../components/theme-context';
+import { useAppMode } from '../../components/app-mode-context';
 import {
   getMarketProductById,
   productLookupLabel,
@@ -22,20 +23,39 @@ import { supabase } from '../../lib/supabase';
 
 type ListingSummary = {
   total: number;
-  purchase: number;
+  offers: number;
   trade: number;
   lowest: number | null;
 };
 
-const SAVED_PRODUCTS_KEY = '@stackr:search:saved-products';
+const LEGACY_SAVED_PRODUCTS_KEY = '@stackr:search:saved-products';
+const SAVED_PRODUCTS_KEY_PREFIX = '@stackr:search:saved-products:v2:user';
+
+type VerifiedSavedProductIdentity = {
+  userId: string;
+  generation: number;
+};
 
 const money = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
     ? `\u00A3${value.toFixed(2)}`
     : 'Unavailable';
 
-async function readSavedProducts() {
-  const raw = await AsyncStorage.getItem(SAVED_PRODUCTS_KEY);
+function getSavedProductsKey(userId: string) {
+  const normalizedUserId = userId.trim();
+  if (!normalizedUserId) throw new Error('A verified user is required for saved products.');
+  return `${SAVED_PRODUCTS_KEY_PREFIX}:${encodeURIComponent(normalizedUserId)}`;
+}
+
+async function clearLegacySavedProducts() {
+  await AsyncStorage.removeItem(LEGACY_SAVED_PRODUCTS_KEY);
+}
+
+async function readSavedProducts(userId: string) {
+  const [, raw] = await Promise.all([
+    clearLegacySavedProducts(),
+    AsyncStorage.getItem(getSavedProductsKey(userId)),
+  ]);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -43,6 +63,14 @@ async function readSavedProducts() {
   } catch {
     return [];
   }
+}
+
+async function writeSavedProducts(userId: string, productIds: string[]) {
+  await clearLegacySavedProducts();
+  await AsyncStorage.setItem(
+    getSavedProductsKey(userId),
+    JSON.stringify(productIds.slice(0, 80)),
+  );
 }
 
 async function fetchProductListingSummary(product: MarketProduct): Promise<ListingSummary> {
@@ -62,7 +90,7 @@ async function fetchProductListingSummary(product: MarketProduct): Promise<Listi
 
   return {
     total: rows.length,
-    purchase: rows.filter((row: any) => !row.trade_only).length,
+    offers: rows.filter((row: any) => !row.trade_only).length,
     trade: rows.filter((row: any) => row.trade_only).length,
     lowest: prices.length ? Math.min(...prices) : null,
   };
@@ -70,17 +98,160 @@ async function fetchProductListingSummary(product: MarketProduct): Promise<Listi
 
 export default function ProductDetailScreen() {
   const { theme } = useTheme();
+  const { premiumSellerAccess } = useAppMode();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string }>();
   const productId = typeof params.id === 'string' ? params.id : '';
   const [product, setProduct] = useState<MarketProduct | null>(null);
-  const [summary, setSummary] = useState<ListingSummary>({ total: 0, purchase: 0, trade: 0, lowest: null });
+  const [summary, setSummary] = useState<ListingSummary>({ total: 0, offers: 0, trade: 0, lowest: null });
   const [relatedSetId, setRelatedSetId] = useState<string | null>(null);
   const [relatedSet, setRelatedSet] = useState<PokemonSet | null>(null);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [savedProductIdentity, setSavedProductIdentity] = useState<VerifiedSavedProductIdentity | null>(null);
+  const savedProductMountedRef = useRef(true);
+  const observedSavedProductUserIdRef = useRef<string | null | undefined>(undefined);
+  const savedProductIdentityRef = useRef<VerifiedSavedProductIdentity | null>(null);
+  const savedProductGenerationRef = useRef(0);
+
+  const isCurrentSavedProductIdentity = useCallback((identity: VerifiedSavedProductIdentity) => (
+    savedProductMountedRef.current
+    && savedProductIdentityRef.current?.userId === identity.userId
+    && savedProductIdentityRef.current.generation === identity.generation
+    && savedProductGenerationRef.current === identity.generation
+  ), []);
+
+  const beginSavedProductAuthBoundary = useCallback((userId: string | null) => {
+    if (observedSavedProductUserIdRef.current === userId) {
+      return savedProductGenerationRef.current;
+    }
+
+    observedSavedProductUserIdRef.current = userId;
+    savedProductGenerationRef.current += 1;
+    savedProductIdentityRef.current = null;
+    setSavedProductIdentity(null);
+    setSaved(false);
+    void clearLegacySavedProducts().catch(() => {});
+    return savedProductGenerationRef.current;
+  }, []);
+
+  const invalidateSavedProductIdentity = useCallback(() => {
+    observedSavedProductUserIdRef.current = null;
+    savedProductGenerationRef.current += 1;
+    savedProductIdentityRef.current = null;
+    setSavedProductIdentity(null);
+    setSaved(false);
+    void clearLegacySavedProducts().catch(() => {});
+  }, []);
+
+  const activateVerifiedSavedProductIdentity = useCallback((
+    userId: string,
+    generation: number,
+  ) => {
+    if (
+      !savedProductMountedRef.current
+      || savedProductGenerationRef.current !== generation
+      || observedSavedProductUserIdRef.current !== userId
+    ) return;
+
+    const identity = { userId, generation };
+    savedProductIdentityRef.current = identity;
+    setSavedProductIdentity(identity);
+  }, []);
+
+  const verifySavedProductIdentity = useCallback(async (
+    expectedUserId: string,
+    generation: number,
+  ) => {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (
+      !user
+      || user.id !== expectedUserId
+      || savedProductGenerationRef.current !== generation
+      || observedSavedProductUserIdRef.current !== expectedUserId
+    ) return null;
+    return { userId: user.id, generation } satisfies VerifiedSavedProductIdentity;
+  }, []);
+
+  useEffect(() => {
+    savedProductMountedRef.current = true;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const candidateUserId = session?.user?.id ?? null;
+      const generation = beginSavedProductAuthBoundary(candidateUserId);
+      if (!candidateUserId) return;
+      setTimeout(() => {
+        void verifySavedProductIdentity(candidateUserId, generation)
+          .then((identity) => {
+            if (identity) {
+              activateVerifiedSavedProductIdentity(identity.userId, identity.generation);
+            } else if (
+              savedProductGenerationRef.current === generation
+              && observedSavedProductUserIdRef.current === candidateUserId
+            ) {
+              invalidateSavedProductIdentity();
+            }
+          })
+          .catch(() => {
+            if (
+              savedProductGenerationRef.current === generation
+              && observedSavedProductUserIdRef.current === candidateUserId
+            ) invalidateSavedProductIdentity();
+          });
+      }, 0);
+    });
+
+    const initialGeneration = savedProductGenerationRef.current;
+    void supabase.auth.getUser().then(({ data, error: authError }) => {
+      if (!savedProductMountedRef.current) return;
+      if (savedProductGenerationRef.current !== initialGeneration) return;
+      if (authError) {
+        invalidateSavedProductIdentity();
+        return;
+      }
+      const userId = data.user?.id ?? null;
+      const generation = beginSavedProductAuthBoundary(userId);
+      if (userId) activateVerifiedSavedProductIdentity(userId, generation);
+    });
+
+    return () => {
+      savedProductMountedRef.current = false;
+      savedProductGenerationRef.current += 1;
+      savedProductIdentityRef.current = null;
+      subscription.unsubscribe();
+    };
+  }, [
+    activateVerifiedSavedProductIdentity,
+    beginSavedProductAuthBoundary,
+    invalidateSavedProductIdentity,
+    verifySavedProductIdentity,
+  ]);
+
+  useEffect(() => {
+    let active = true;
+    if (!savedProductIdentity || !productId) {
+      setSaved(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    void readSavedProducts(savedProductIdentity.userId)
+      .then((savedProducts) => {
+        if (active && isCurrentSavedProductIdentity(savedProductIdentity)) {
+          setSaved(savedProducts.includes(productId));
+        }
+      })
+      .catch(() => {
+        if (active && isCurrentSavedProductIdentity(savedProductIdentity)) setSaved(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isCurrentSavedProductIdentity, productId, savedProductIdentity]);
 
   useEffect(() => {
     let active = true;
@@ -95,10 +266,7 @@ export default function ProductDetailScreen() {
       try {
         setLoading(true);
         setError(null);
-        const [loadedProduct, savedProducts] = await Promise.all([
-          getMarketProductById(productId),
-          readSavedProducts(),
-        ]);
+        const loadedProduct = await getMarketProductById(productId);
 
         if (!active) return;
 
@@ -107,15 +275,13 @@ export default function ProductDetailScreen() {
           setRelatedSet(null);
           setRelatedSetId(null);
           setError('This sealed product could not be found.');
-          setSaved(savedProducts.includes(productId));
           return;
         }
 
         setProduct(loadedProduct);
-        setSaved(savedProducts.includes(loadedProduct.id));
 
         const [listingSummary, sets] = await Promise.all([
-          fetchProductListingSummary(loadedProduct).catch(() => ({ total: 0, purchase: 0, trade: 0, lowest: null })),
+          fetchProductListingSummary(loadedProduct).catch(() => ({ total: 0, offers: 0, trade: 0, lowest: null })),
           loadedProduct.set_name ? fetchAllSets().catch(() => []) : Promise.resolve([]),
         ]);
 
@@ -142,12 +308,33 @@ export default function ProductDetailScreen() {
 
   const toggleSaved = async () => {
     if (!product) return;
-    const current = await readSavedProducts();
-    const next = current.includes(product.id)
-      ? current.filter((id) => id !== product.id)
-      : [product.id, ...current].slice(0, 80);
-    await AsyncStorage.setItem(SAVED_PRODUCTS_KEY, JSON.stringify(next));
-    setSaved(next.includes(product.id));
+    const identity = savedProductIdentityRef.current;
+    if (!identity || !isCurrentSavedProductIdentity(identity)) {
+      Alert.alert('Sign in needed', 'Sign in to save products to your account on this device.');
+      return;
+    }
+
+    try {
+      const verifiedIdentity = await verifySavedProductIdentity(identity.userId, identity.generation);
+      if (!verifiedIdentity || !isCurrentSavedProductIdentity(verifiedIdentity)) {
+        if (isCurrentSavedProductIdentity(identity)) invalidateSavedProductIdentity();
+        return;
+      }
+      const current = await readSavedProducts(verifiedIdentity.userId);
+      if (!isCurrentSavedProductIdentity(verifiedIdentity)) return;
+      const next = current.includes(product.id)
+        ? current.filter((id) => id !== product.id)
+        : [product.id, ...current].slice(0, 80);
+      await writeSavedProducts(verifiedIdentity.userId, next);
+      if (isCurrentSavedProductIdentity(verifiedIdentity)) {
+        setSaved(next.includes(product.id));
+      }
+    } catch {
+      if (isCurrentSavedProductIdentity(identity)) {
+        invalidateSavedProductIdentity();
+        Alert.alert('Could not update saved products', 'Please verify your sign-in and try again.');
+      }
+    }
   };
 
   if (loading) {
@@ -259,7 +446,7 @@ export default function ProductDetailScreen() {
           <View style={styles.infoCard}>
             <Text style={styles.bodyText}>
               {summary.total > 0
-                ? `${summary.total} active listing${summary.total === 1 ? '' : 's'} found: ${summary.purchase} buy, ${summary.trade} trade.`
+                ? `${summary.total} active listing${summary.total === 1 ? '' : 's'} found: ${summary.offers} open to offers, ${summary.trade} trade.`
                 : 'No active Market listings found for this sealed product.'}
             </Text>
             <View style={styles.actionRow}>
@@ -269,12 +456,14 @@ export default function ProductDetailScreen() {
               >
                 <Text style={styles.primaryButtonText}>View Market listings</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.secondaryButton}
-                onPress={() => router.push({ pathname: '/listing/new', params: { type: product.product_type, productName: product.name } } as any)}
-              >
-                <Text style={styles.secondaryButtonText}>List for sale</Text>
-              </TouchableOpacity>
+              {premiumSellerAccess.allowed ? (
+                <TouchableOpacity
+                  style={styles.secondaryButton}
+                  onPress={() => router.push({ pathname: '/listing/new', params: { type: product.product_type, productName: product.name } } as any)}
+                >
+                  <Text style={styles.secondaryButtonText}>Publish Beta Listing</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           </View>
         </View>

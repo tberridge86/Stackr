@@ -7,7 +7,7 @@ const requiredSecretNames = [
   'BACKEND_ORIGIN_KEY',
   'BACKEND_ADMIN_KEY',
 ];
-if (process.env.STACKR_DEPLOYMENT_SCOPE !== 'catalogue_api') {
+if (process.env.STACKR_DEPLOYMENT_SCOPE === 'full_platform') {
   requiredSecretNames.push('RECOGNITION_SERVICE_SECRET');
 }
 

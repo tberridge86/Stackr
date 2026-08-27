@@ -59,7 +59,7 @@ on:
       apply_migrations:
         description: Apply migrations after the dry run
         required: true
-        default: true
+        default: false
         type: boolean
       publish_mobile_update:
         description: Publish a production EAS update
@@ -109,6 +109,19 @@ jobs:
       STACKR_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL }}
       STACKR_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
       STACKR_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      STACKR_MOBILE_APP_VARIANT: production
+      STACKR_MOBILE_ENVIRONMENT: production
+      STACKR_MOBILE_PRICE_API_URL: ${{ vars.STACKR_BACKEND_URL }}
+      STACKR_MOBILE_API_URL: ${{ vars.STACKR_GATEWAY_URL }}
+      STACKR_MOBILE_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+      STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'
+      EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: 'false'
+      EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED: 'false'
+      EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED: 'false'
+      EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS: 'false'
+      EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK: 'false'
+      EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK: 'false'
       BACKEND_ORIGIN_KEY: ${{ secrets.BACKEND_ORIGIN_KEY }}
       BACKEND_ADMIN_KEY: ${{ secrets.BACKEND_ADMIN_KEY }}
       RECOGNITION_SERVICE_SECRET: ${{ secrets.RECOGNITION_SERVICE_SECRET }}
@@ -229,6 +242,34 @@ jobs:
               done
             fi
           fi
+
+      - name: Validate production mobile public configuration
+        if: inputs.release_scope != 'catalogue_assets' && inputs.publish_mobile_update
+        run: >-
+          npm run mobile:verify-runtime --
+          --expected-environment=production --expected-app-variant=production
+          --require-explicit --require-safe-release-flags
+
+      - name: Validate effective EAS production environment
+        if: inputs.release_scope != 'catalogue_assets' && inputs.publish_mobile_update
+        run: |
+          env \
+            -u STACKR_MOBILE_APP_VARIANT \
+            -u STACKR_MOBILE_ENVIRONMENT \
+            -u STACKR_MOBILE_PRICE_API_URL \
+            -u STACKR_MOBILE_API_URL \
+            -u STACKR_MOBILE_SUPABASE_URL \
+            -u STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY \
+            -u EXPO_PUBLIC_BETA_TRADE_DEMO_MODE \
+            -u EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED \
+            -u EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED \
+            -u EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED \
+            -u EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS \
+            -u EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK \
+            -u EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK \
+            npx --yes eas-cli@21.4.0 env:exec production \
+              'npm run mobile:verify-runtime -- --expected-environment=production --expected-app-variant=production --require-explicit --require-safe-release-flags' \
+              --non-interactive
 
       - name: Prepare gateway runtime configuration
         if: inputs.release_scope != 'catalogue_assets'
@@ -517,20 +558,54 @@ jobs:
         if: inputs.release_scope != 'catalogue_assets' && inputs.publish_mobile_update
         env:
           CANARY_PERCENT: ${{ inputs.canary_percent }}
-          EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'
         run: |
-          npx --yes eas-cli@21.4.0 update \
-            --channel production \
-            --environment production \
-            --platform all \
-            --rollout-percentage "$CANARY_PERCENT" \
-            --message "Stackr production $GITHUB_SHA" \
-            --json \
-            --non-interactive > "$RUNNER_TEMP/eas-update.json"
+          if [ "$CANARY_PERCENT" -lt 1 ] || [ "$CANARY_PERCENT" -gt 50 ]; then
+            echo "Production mobile canary must be between 1 and 50 percent."
+            exit 1
+          fi
+          env \
+            -u STACKR_MOBILE_APP_VARIANT \
+            -u STACKR_MOBILE_ENVIRONMENT \
+            -u STACKR_MOBILE_PRICE_API_URL \
+            -u STACKR_MOBILE_API_URL \
+            -u STACKR_MOBILE_SUPABASE_URL \
+            -u STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY \
+            -u EXPO_PUBLIC_BETA_TRADE_DEMO_MODE \
+            -u EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED \
+            -u EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED \
+            -u EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED \
+            -u EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS \
+            -u EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK \
+            -u EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK \
+            npx --yes eas-cli@21.4.0 env:exec production \
+              'npm run mobile:verify-runtime -- --expected-environment=production --expected-app-variant=production --require-explicit --require-safe-release-flags && npx --yes eas-cli@21.4.0 update --channel production --platform all --rollout-percentage "$CANARY_PERCENT" --message "Stackr production $GITHUB_SHA" --json --non-interactive > "$RUNNER_TEMP/eas-update.json"' \
+              --non-interactive
           node scripts/deploy/capture-eas-update-group.mjs \
             --file="$RUNNER_TEMP/eas-update.json" \
-            --github-env="$GITHUB_ENV"
-          echo "STACKR_MOBILE_UPDATE_PUBLISHED=true" >> "$GITHUB_ENV"
+            --github-env="$GITHUB_ENV" \
+            --mode=publish-evidence \
+            > "$RUNNER_TEMP/eas-update-publish-evidence.json"
+          node scripts/deploy/capture-eas-update-group.mjs \
+            --file="$RUNNER_TEMP/eas-update.json" \
+            --github-env="$GITHUB_ENV" \
+            --expected-runtime="$(node -p "require('./app.json').expo.version")" \
+            --expected-git-sha="$GITHUB_SHA" \
+            --expected-message="Stackr production $GITHUB_SHA" \
+            --expected-platforms=android,ios \
+            > "$RUNNER_TEMP/eas-update-attestation.json"
+
+      - name: Upload production mobile deployment attestation
+        if: ${{ !cancelled() && inputs.release_scope != 'catalogue_assets' && inputs.publish_mobile_update && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-mobile-attestation-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/eas-update.json
+            ${{ runner.temp }}/eas-update-publish-evidence.json
+            ${{ runner.temp }}/eas-update-attestation.json
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 9
 
       - name: Observe and smoke-test canary
         if: inputs.release_scope != 'catalogue_assets'
@@ -623,9 +698,13 @@ jobs:
 
       - name: Remove ephemeral logical backups
         if: always()
+        continue-on-error: true
         run: |
           rm -rf "$RUNNER_TEMP/stackr-backup"
           rm -rf "$RUNNER_TEMP/stackr-backup-diagnostics"
           rm -rf "$RUNNER_TEMP/stackr-catalogue-promotion"
           rm -rf "$RUNNER_TEMP/stackr-catalogue-promotion-audit"
           rm -f "$RUNNER_TEMP/stackr-worker-secrets.json"
+          rm -f "$RUNNER_TEMP/eas-update.json"
+          rm -f "$RUNNER_TEMP/eas-update-publish-evidence.json"
+          rm -f "$RUNNER_TEMP/eas-update-attestation.json"

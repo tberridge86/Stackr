@@ -4,6 +4,8 @@ import { expandSearchQuery, normaliseSearchText } from './searchNormalisation';
 import { supabase } from './supabase';
 import { getPokemonCardLanguageLabel, normalizePokemonCardLanguage } from './pokemonTcg';
 import { fetchStackrSets } from './stackrDomainAdapter';
+import { sanitizeGate0CommerceCopy } from './gate0CommerceCopy';
+import { sanitizeMarketplaceListingPresentationFields } from './marketplacePresentation';
 
 export { expandSearchQuery, normaliseSearchText } from './searchNormalisation';
 
@@ -153,7 +155,7 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
     groups.users = (usersResult.value.data ?? []).map((profile: any) => ({
       id: profile.id,
       category: 'users',
-      title: profile.collector_name ?? 'Collector',
+      title: sanitizeGate0CommerceCopy(profile.collector_name ?? null, 'Collector') ?? 'Collector',
       subtitle: 'Stackr profile',
       imageUrl: profile.avatar_url ?? null,
       route: `/community/profile/${profile.id}`,
@@ -163,17 +165,25 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
 
   if (listingsResult.status === 'fulfilled' && !listingsResult.value.error) {
     const listings = listingsResult.value.data ?? [];
-    groups.marketplace = listings.map((listing: any) => ({
-      id: listing.id,
-      category: listing.pricing_mode === 'graded' ? 'graded' : listing.product_type && listing.product_type !== 'raw_card' ? 'sealed' : 'marketplace',
-      title: listing.product_name ?? listing.card_id,
+    groups.marketplace = listings.map((listing: any) => {
+      const safeListing = sanitizeMarketplaceListingPresentationFields(listing);
+      return {
+      id: safeListing.id,
+      category: safeListing.pricing_mode === 'graded' ? 'graded' : safeListing.product_type && safeListing.product_type !== 'raw_card' ? 'sealed' : 'marketplace',
+      title: sanitizeGate0CommerceCopy(
+        safeListing.product_name ?? safeListing.card_id ?? null,
+        'Market listing',
+      ) ?? 'Market listing',
       subtitle: joinSubtitle([
-        listing.pricing_mode === 'graded' ? [listing.grade_company, listing.grade].filter(Boolean).join(' ') : null,
-        listing.asking_price != null ? `GBP ${Number(listing.asking_price).toFixed(2)}` : null,
+        safeListing.pricing_mode === 'graded'
+          ? [safeListing.grade_company, safeListing.grade].filter(Boolean).join(' ')
+          : null,
+        safeListing.asking_price != null ? `GBP ${Number(safeListing.asking_price).toFixed(2)}` : null,
       ]),
       route: '/(tabs)/market',
-      raw: listing,
-    }));
+      raw: safeListing,
+    };
+    });
   }
 
   return { query, normalisedQuery, groups };

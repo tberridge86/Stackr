@@ -26,17 +26,12 @@ const BETA_FEATURES: FeatureItem[] = [
   {
     icon: 'search-outline',
     title: 'Pokedex collecting',
-    body: 'A new Pokedex collection view is in progress so you can track cards by Pokemon.',
+    body: 'Browse the Pokedex collection view to track cards by Pokemon.',
   },
   {
     icon: 'camera-outline',
     title: 'Scanner updates',
-    body: 'The scan flow now has clearer feedback, better debug logging, and improved variant handling.',
-  },
-  {
-    icon: 'pricetag-outline',
-    title: 'Market value work',
-    body: 'Raw and graded eBay pricing searches are being refined for more accurate results.',
+    body: 'The scan flow now has clearer feedback and improved variant handling.',
   },
 ];
 

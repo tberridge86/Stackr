@@ -165,6 +165,14 @@ export function isListingScanIntent(intent: ScanIntent) {
   return intent === 'raw_listing' || intent === 'graded_slab';
 }
 
+export function isListingScanRequest(input: Parameters<typeof resolveScanIntent>[0]) {
+  const mode = firstParam(input.mode)?.trim().toLowerCase();
+  const flow = firstParam(input.flow)?.trim().toLowerCase();
+  return isListingScanIntent(resolveScanIntent(input))
+    || mode === 'listing'
+    || flow === 'listing';
+}
+
 export function isBinderScanIntent(intent: ScanIntent) {
   return intent === 'binder_page';
 }

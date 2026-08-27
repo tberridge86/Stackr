@@ -13,10 +13,12 @@ import assetRoutes, { adminAssetsRouter } from './routes/assets.js';
 import cardsightRoutes from './routes/cardsight.js';
 import catalogueIngestionRoutes from './routes/catalogueIngestion.js';
 import giblRoutes from './routes/gibl.js';
+import legacyTradeMutationRoutes from './routes/legacyTradeMutations.js';
 import localAiScanRoutes from './routes/localAiScan.js';
 import rareCandyScanRoutes from './routes/rareCandyScan.js';
 import recognitionFeedbackRoutes from './routes/recognitionFeedback.js';
 import recognitionShadowModeRoutes from './routes/recognitionShadowMode.js';
+import retiredSideEffectRoutes from './routes/retiredSideEffects.js';
 import observabilityRoutes from './routes/observability.js';
 import scanLabRoutes from './routes/scanLab.js';
 import scannerPackRoutes from './routes/scannerPacks.js';
@@ -100,9 +102,11 @@ app.use('/api/recognition-feedback', recognitionFeedbackRoutes);
 app.use('/api/recognition-shadow-mode', recognitionShadowModeRoutes);
 app.use('/api/scan-lab', scanLabRoutes);
 app.use('/api/scanner-packs', scannerPackRoutes);
+app.use('/api', retiredSideEffectRoutes);
 app.use('/api/discord', discordRoutes);
 app.use('/api/shippo', shippoRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/trade', legacyTradeMutationRoutes);
 
 function getSupabaseProjectRef() {
   try {
@@ -152,8 +156,12 @@ function getPublicRuntimeSummary() {
   };
 }
 
-function healthRuntimeDiagnosticsEnabled() {
-  return String(process.env.STACKR_HEALTH_RUNTIME_DIAGNOSTICS ?? '').trim().toLowerCase() === 'true';
+function getHealthRuntimeAttestation() {
+  return {
+    gitCommit: getRailwayCommit(),
+    railwayEnvironment: process.env.RAILWAY_ENVIRONMENT_NAME ?? null,
+    supabaseProjectRef: getSupabaseProjectRef(),
+  };
 }
 
 console.info(JSON.stringify({
@@ -170,13 +178,12 @@ console.info(JSON.stringify({
 }));
 
 app.get(['/health', '/api/health'], (_req, res) => {
-  const body = {
+  res.json({
     ok: true,
     service: 'stackr-api',
     time: new Date().toISOString(),
-  };
-  if (healthRuntimeDiagnosticsEnabled()) body.runtime = getPublicRuntimeSummary();
-  res.json(body);
+    runtime: getHealthRuntimeAttestation(),
+  });
 });
 
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
@@ -4836,237 +4843,6 @@ app.get('/debug-ximilar', gatewayOriginAuth, async (req, res) => {
 });
 
 // ===============================
-// TRADE: MARK AS SENT
-// ===============================
-
-app.post('/api/trade/sent', async (req, res) => {
-  const { trade_id, user_id } = req.body;
-
-  const { data: trade } = await supabase
-    .from('trades')
-    .select('*')
-    .eq('id', trade_id)
-    .single();
-
-  if (!trade) return res.status(400).json({ error: 'Trade not found' });
-
-  const updateField = trade.seller_id === user_id ? 'seller_sent' : 'buyer_sent';
-
-  const { error } = await supabase
-    .from('trades')
-    .update({ [updateField]: true })
-    .eq('id', trade_id);
-
-  if (error) return res.status(400).json({ error });
-
-  res.json({ success: true });
-});
-
-// ===============================
-// TRADE: MARK AS RECEIVED
-// ===============================
-
-app.post('/api/trade/received', async (req, res) => {
-  const { trade_id, user_id } = req.body;
-
-  const { data: trade } = await supabase
-    .from('trades')
-    .select('*')
-    .eq('id', trade_id)
-    .single();
-
-  if (!trade) return res.status(400).json({ error: 'Trade not found' });
-
-  const updateField = trade.seller_id === user_id ? 'seller_received' : 'buyer_received';
-
-  const updated = await supabase
-    .from('trades')
-    .update({ [updateField]: true })
-    .eq('id', trade_id)
-    .select()
-    .single();
-
-  const t = updated.data;
-
-  if (t?.buyer_received && t?.seller_received) {
-    await supabase
-      .from('trades')
-      .update({ status: 'completed' })
-      .eq('id', trade_id);
-  }
-
-  res.json(updated.data);
-});
-
-// ===============================
-// PUSH NOTIFICATIONS
-// ===============================
-
-async function sendPushNotification(token, title, body, data = {}) {
-  const message = {
-    to: token,
-    sound: 'default',
-    title,
-    body,
-    data,
-  };
-
-  const res = await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      'Accept-Encoding': 'gzip, deflate',
-    },
-    body: JSON.stringify(message),
-  });
-
-  const json = await res.json();
-  return json;
-}
-
-async function getUserPushToken(userId) {
-  const { data } = await supabase
-    .from('profiles')
-    .select('expo_push_token')
-    .eq('id', userId)
-    .maybeSingle();
-  return data?.expo_push_token ?? null;
-}
-
-// Send notification to a single user
-app.post('/api/notify', async (req, res) => {
-  try {
-    const { userId, title, body, data } = req.body;
-
-    if (!userId || !title || !body) {
-      return res.status(400).json({ error: 'Missing userId, title, or body' });
-    }
-
-    const token = await getUserPushToken(userId);
-
-    if (!token) {
-      return res.json({ ok: false, reason: 'No push token for user' });
-    }
-
-    const result = await sendPushNotification(token, title, body, data ?? {});
-    return res.json({ ok: true, result });
-  } catch (error) {
-    return res.status(500).json({ error: 'Notification failed', detail: getErrorMessage(error) });
-  }
-});
-
-// New trade offer notification
-app.post('/api/notify/trade-offer', async (req, res) => {
-  try {
-    const { recipientUserId, senderUsername, cardName } = req.body;
-
-    if (!recipientUserId) {
-      return res.status(400).json({ error: 'Missing recipientUserId' });
-    }
-
-    const token = await getUserPushToken(recipientUserId);
-    if (!token) return res.json({ ok: false, reason: 'No push token' });
-
-    const result = await sendPushNotification(
-      token,
-      '📬 New Trade Offer',
-      `${senderUsername ?? 'Someone'} wants to trade${cardName ? ` for your ${cardName}` : ''}`,
-      { type: 'trade_offer', screen: 'offers' }
-    );
-
-    return res.json({ ok: true, result });
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to send trade offer notification', detail: getErrorMessage(error) });
-  }
-});
-
-// Trade status update notification (accepted, declined, sent, received)
-app.post('/api/notify/trade-status', async (req, res) => {
-  try {
-    const { recipientUserId, status, cardName } = req.body;
-
-    if (!recipientUserId || !status) {
-      return res.status(400).json({ error: 'Missing recipientUserId or status' });
-    }
-
-    const token = await getUserPushToken(recipientUserId);
-    if (!token) return res.json({ ok: false, reason: 'No push token' });
-
-    const messages = {
-      accepted: { title: '✅ Trade Accepted', body: `Your trade offer${cardName ? ` for ${cardName}` : ''} was accepted!` },
-      declined: { title: '❌ Trade Declined', body: `Your trade offer${cardName ? ` for ${cardName}` : ''} was declined.` },
-      sent: { title: '📦 Card Sent', body: `The other trader has marked${cardName ? ` ${cardName}` : ' their card'} as sent.` },
-      received: { title: '📬 Card Received', body: `The other trader has confirmed they received${cardName ? ` ${cardName}` : ' their card'}.` },
-      completed: { title: '🎉 Trade Complete', body: `Your trade${cardName ? ` for ${cardName}` : ''} is complete!` },
-    };
-
-    const msg = messages[status];
-    if (!msg) return res.status(400).json({ error: `Unknown status: ${status}` });
-
-    const result = await sendPushNotification(token, msg.title, msg.body, { type: 'trade_status', status, screen: 'offers' });
-
-    return res.json({ ok: true, result });
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to send trade status notification', detail: getErrorMessage(error) });
-  }
-});
-
-// Wishlist alert — someone listed a card the user has on their watchlist
-app.post('/api/notify/wishlist-match', async (req, res) => {
-  try {
-    const { recipientUserId, listerUsername, cardName } = req.body;
-
-    if (!recipientUserId || !cardName) {
-      return res.status(400).json({ error: 'Missing recipientUserId or cardName' });
-    }
-
-    const token = await getUserPushToken(recipientUserId);
-    if (!token) return res.json({ ok: false, reason: 'No push token' });
-
-    const result = await sendPushNotification(
-      token,
-      '⭐ Wishlist Card Available',
-      `${listerUsername ?? 'Someone'} just listed ${cardName} for trade — it's on your wishlist!`,
-      { type: 'wishlist_match', screen: 'trade' }
-    );
-
-    return res.json({ ok: true, result });
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to send wishlist notification', detail: getErrorMessage(error) });
-  }
-});
-
-// Price alert — card hit target price
-app.post('/api/notify/price-alert', async (req, res) => {
-  try {
-    const { recipientUserId, cardName, currentPrice, targetPrice, direction } = req.body;
-
-    if (!recipientUserId || !cardName) {
-      return res.status(400).json({ error: 'Missing recipientUserId or cardName' });
-    }
-
-    const token = await getUserPushToken(recipientUserId);
-    if (!token) return res.json({ ok: false, reason: 'No push token' });
-
-    const directionText = direction === 'below' ? 'dropped below' : 'risen above';
-
-    const result = await sendPushNotification(
-      token,
-      '💰 Price Alert',
-      `${cardName} has ${directionText} your target of £${targetPrice?.toFixed(2)}. Current price: £${currentPrice?.toFixed(2)}`,
-      { type: 'price_alert', screen: 'market' }
-    );
-
-    return res.json({ ok: true, result });
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to send price alert', detail: getErrorMessage(error) });
-  }
-});
-
-// ... all the notification endpoints ...
-
-// ===============================
 // SYNC SET
 // ===============================
 
@@ -5199,12 +4975,6 @@ const processedBase64 = resizedBuffer.toString('base64');
     return res.status(500).json({ error: 'Scan identify failed', detail: err.message });
   }
 });
-
-// ===============================
-// DISCORD ROUTES
-// ===============================
-
-app.use('/api/discord', discordRoutes);
 
 // ===============================
 // START

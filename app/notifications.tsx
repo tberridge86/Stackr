@@ -1,5 +1,5 @@
 import { useTheme } from '../components/theme-context';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -16,6 +16,10 @@ import { supabase } from '../lib/supabase';
 import { StackrScreenHeader } from '../components/StackrScreenHeader';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { stackrTabContentPadding } from '../lib/stackrSizing';
+import {
+  isGate0LegacyCommerceNotificationType,
+  sanitizeGate0Notification,
+} from '../lib/gate0CommerceCopy';
 
 // ===============================
 // TYPES
@@ -94,6 +98,8 @@ function getActivityTab(type: string): ActivityTab {
 
 // Route to the right screen based on notification type
 function getNotificationRoute(item: Notification): string {
+  if (isGate0LegacyCommerceNotificationType(item.type)) return '/trade';
+
   switch (item.type) {
     case 'wishlist_match':
       return '/trade';
@@ -121,6 +127,25 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [markingAll, setMarkingAll] = useState(false);
   const [activeTab, setActiveTab] = useState<ActivityTab>('all');
+  const authUserIdRef = useRef('');
+  const authGenerationRef = useRef(0);
+  const authEventEpochRef = useRef(0);
+
+  const isCurrentIdentity = useCallback((userId: string, generation: number) => (
+    authUserIdRef.current === userId && authGenerationRef.current === generation
+  ), []);
+
+  const bindIdentity = useCallback((userId: string) => {
+    if (authUserIdRef.current === userId) return authGenerationRef.current;
+    authUserIdRef.current = userId;
+    authGenerationRef.current += 1;
+    setNotifications([]);
+    setMarkingAll(false);
+    setRefreshing(false);
+    setActiveTab('all');
+    setLoading(Boolean(userId));
+    return authGenerationRef.current;
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const featuredNotification = notifications.find((n) => !n.read) ?? notifications[0] ?? null;
@@ -134,7 +159,12 @@ export default function NotificationsScreen() {
   // LOAD
   // ===============================
 
-  const loadNotifications = useCallback(async (isRefresh = false) => {
+  const loadNotifications = useCallback(async (
+    userId: string,
+    generation: number,
+    isRefresh = false,
+  ) => {
+    if (!userId || !isCurrentIdentity(userId, generation)) return;
     try {
       if (isRefresh) {
         setRefreshing(true);
@@ -142,35 +172,78 @@ export default function NotificationsScreen() {
         setLoading(true);
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        setNotifications([]);
-        return;
-      }
-
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      setNotifications((data ?? []) as Notification[]);
+      if (!isCurrentIdentity(userId, generation)) return;
+      const safeNotifications = ((data ?? []) as Notification[])
+        .map((notification) => sanitizeGate0Notification(notification))
+        .filter((notification): notification is Notification => notification !== null);
+      setNotifications(safeNotifications);
     } catch (error) {
+      if (!isCurrentIdentity(userId, generation)) return;
       console.log('Failed to load notifications', error);
       setNotifications([]);
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (isCurrentIdentity(userId, generation)) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
-  }, []);
+  }, [isCurrentIdentity]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const activate = (userId: string) => {
+      if (!mounted) return;
+      const generation = bindIdentity(userId);
+      if (userId) void loadNotifications(userId, generation);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      authEventEpochRef.current += 1;
+      activate(session?.user?.id ?? '');
+    });
+
+    const initialEpoch = authEventEpochRef.current;
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (!mounted || initialEpoch !== authEventEpochRef.current) return;
+      if (error) {
+        console.log('Notification account lookup failed', error);
+        activate('');
+        return;
+      }
+      activate(data.user?.id ?? '');
+    });
+
+    return () => {
+      mounted = false;
+      authGenerationRef.current += 1;
+      subscription.unsubscribe();
+    };
+  }, [bindIdentity, loadNotifications]);
 
   useFocusEffect(
     useCallback(() => {
-      loadNotifications();
-    }, [loadNotifications])
+      let active = true;
+      const eventEpoch = authEventEpochRef.current;
+      void supabase.auth.getUser().then(({ data, error }) => {
+        if (!active || eventEpoch !== authEventEpochRef.current) return;
+        if (error) return;
+        const userId = data.user?.id ?? '';
+        const generation = bindIdentity(userId);
+        if (userId) void loadNotifications(userId, generation);
+      });
+      return () => {
+        active = false;
+      };
+    }, [bindIdentity, loadNotifications])
   );
 
   // ===============================
@@ -178,18 +251,31 @@ export default function NotificationsScreen() {
   // ===============================
 
   const markAsRead = async (item: Notification) => {
+    const userId = authUserIdRef.current;
+    const generation = authGenerationRef.current;
+    if (!userId || item.user_id !== userId || !isCurrentIdentity(userId, generation)) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id !== userId || !isCurrentIdentity(userId, generation)) return;
+
     if (!item.read) {
       // Optimistic update
       setNotifications((prev) =>
         prev.map((n) => (n.id === item.id ? { ...n, read: true } : n))
       );
 
-      await supabase
+      const { error } = await supabase
         .from('notifications')
         .update({ read: true })
-        .eq('id', item.id);
+        .eq('id', item.id)
+        .eq('user_id', userId);
+      if (!isCurrentIdentity(userId, generation)) return;
+      if (error) {
+        await loadNotifications(userId, generation);
+        return;
+      }
     }
 
+    if (!isCurrentIdentity(userId, generation)) return;
     // Route to relevant screen
     const route = getNotificationRoute(item);
     router.push(route as any);
@@ -197,28 +283,37 @@ export default function NotificationsScreen() {
 
   const markAllAsRead = async () => {
     if (unreadCount === 0) return;
+    const userId = authUserIdRef.current;
+    const generation = authGenerationRef.current;
+    if (!userId || !isCurrentIdentity(userId, generation)) return;
 
     try {
       setMarkingAll(true);
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (user?.id !== userId || !isCurrentIdentity(userId, generation)) return;
 
-      await supabase
+      const { error } = await supabase
         .from('notifications')
         .update({ read: true })
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('read', false);
+      if (error) throw error;
+      if (!isCurrentIdentity(userId, generation)) return;
 
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch {
+      if (!isCurrentIdentity(userId, generation)) return;
       Alert.alert('Error', 'Could not mark all as read.');
     } finally {
-      setMarkingAll(false);
+      if (isCurrentIdentity(userId, generation)) setMarkingAll(false);
     }
   };
 
   const clearAll = () => {
+    const userId = authUserIdRef.current;
+    const generation = authGenerationRef.current;
+    if (!userId || !isCurrentIdentity(userId, generation)) return;
     Alert.alert(
       'Clear all notifications',
       'Are you sure you want to delete all notifications?',
@@ -230,15 +325,18 @@ export default function NotificationsScreen() {
           onPress: async () => {
             try {
               const { data: { user } } = await supabase.auth.getUser();
-              if (!user) return;
+              if (user?.id !== userId || !isCurrentIdentity(userId, generation)) return;
 
-              await supabase
+              const { error } = await supabase
                 .from('notifications')
                 .delete()
-                .eq('user_id', user.id);
+                .eq('user_id', userId);
+              if (error) throw error;
+              if (!isCurrentIdentity(userId, generation)) return;
 
               setNotifications([]);
             } catch {
+              if (!isCurrentIdentity(userId, generation)) return;
               Alert.alert('Error', 'Could not clear notifications.');
             }
           },
@@ -562,7 +660,11 @@ export default function NotificationsScreen() {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={() => loadNotifications(true)}
+              onRefresh={() => {
+                const userId = authUserIdRef.current;
+                const generation = authGenerationRef.current;
+                if (userId) void loadNotifications(userId, generation, true);
+              }}
               tintColor={theme.colors.primary}
             />
           }

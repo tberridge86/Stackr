@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { assertActivityPostIdentity } from './activityIdentity';
 
 export type ActivityPost = {
   id: string;
@@ -23,6 +24,10 @@ export type ActivityPost = {
 };
 
 export type ReactionType = 'like' | 'want' | 'watching';
+
+type CreateActivityPostOptions = {
+  expectedUserId?: string;
+};
 
 export async function fetchActivityFeed(): Promise<{
   posts: ActivityPost[];
@@ -118,15 +123,16 @@ export async function createActivityPost(input: {
   setId?: string | null;
   valueChange?: number | null;
   isPositive?: boolean | null;
-}) {
+}, options: CreateActivityPostOptions = {}) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  assertActivityPostIdentity(options.expectedUserId, user?.id ?? null);
   if (!user) return;
 
   const { error } = await supabase.from('activity_feed').insert({
-    user_id: user.id,
+    user_id: options.expectedUserId ?? user.id,
     type: input.type ?? 'generic',
     title: input.title,
     subtitle: input.subtitle ?? null,

@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../components/Text';
@@ -10,16 +10,76 @@ import { useTheme } from '../components/theme-context';
 import { useTrade } from '../components/trade-context';
 import { fetchSavedMarketListingIds, toggleSavedMarketListing } from '../lib/marketSavedItems';
 import { stackrIcons } from '../lib/stackrIcons';
+import { supabase } from '../lib/supabase';
 
 export default function FavoritesMarketItemsScreen() {
   const { theme } = useTheme();
   const { marketplaceListings, tradeLoading, refreshTrade } = useTrade();
   const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [currentUserId, setCurrentUserId] = useState('');
+  const authUserIdRef = useRef('');
+  const authGenerationRef = useRef(0);
 
-  const load = useCallback(async () => {
-    const ids = await fetchSavedMarketListingIds();
-    setSavedIds(ids);
+  const bindIdentity = useCallback((userId: string) => {
+    if (authUserIdRef.current === userId) return authGenerationRef.current;
+    authUserIdRef.current = userId;
+    authGenerationRef.current += 1;
+    setCurrentUserId(userId);
+    setSavedIds([]);
+    return authGenerationRef.current;
   }, []);
+
+  const load = useCallback(async (expectedUserId?: string, expectedGeneration?: number) => {
+    const startingUserId = authUserIdRef.current;
+    const startingGeneration = authGenerationRef.current;
+    let attemptedUserId: string | null = null;
+    let attemptedGeneration: number | null = null;
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      const userId = user?.id ?? '';
+      const generation = bindIdentity(userId);
+      attemptedUserId = userId;
+      attemptedGeneration = generation;
+      if (
+        expectedUserId !== undefined
+        && (expectedUserId !== userId || expectedGeneration !== generation)
+      ) return;
+      const saved = userId ? await fetchSavedMarketListingIds(userId) : [];
+      if (authUserIdRef.current !== userId || authGenerationRef.current !== generation) return;
+      setSavedIds(saved);
+    } catch {
+      if (
+        attemptedUserId === null
+        && authUserIdRef.current === startingUserId
+        && authGenerationRef.current === startingGeneration
+      ) {
+        bindIdentity('');
+        return;
+      }
+      if (
+        attemptedUserId !== null
+        && authUserIdRef.current === attemptedUserId
+        && authGenerationRef.current === attemptedGeneration
+      ) {
+        setSavedIds([]);
+      }
+    }
+  }, [bindIdentity]);
+
+  useEffect(() => {
+    let mounted = true;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      const userId = session?.user?.id ?? '';
+      const generation = bindIdentity(userId);
+      void load(userId, generation);
+    });
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [bindIdentity, load]);
 
   useFocusEffect(
     useCallback(() => {
@@ -42,7 +102,7 @@ export default function FavoritesMarketItemsScreen() {
           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 30, fontWeight: '900' }}>Favorited Listings</Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, fontWeight: '700', marginTop: 2 }}>
-              Market listings you have favorited on this device.
+              Market listings saved for your Stackr account on this device.
             </Text>
           </View>
         </View>
@@ -62,18 +122,29 @@ export default function FavoritesMarketItemsScreen() {
                 grade: item.grade,
                 price: item.asking_price,
                 marketEstimate: item.market_estimate ?? item.prices?.preferred_value ?? null,
-                terms: item.trade_only ? 'Trade listing' : item.asking_price == null ? 'Open to offers' : 'Purchase listing',
+                terms: item.trade_only ? 'Trade listing' : 'Open to offers',
                 sellerName: item.profiles?.collector_name ?? 'Collector',
                 sellerAvatarUrl: item.profiles?.avatar_url ?? null,
                 protectionTier: (!item.product_type || item.product_type === 'raw_card' || item.pricing_mode === 'raw')
                   ? item.admin_review_required ? 'Gold' : item.listing_images?.length ? 'Silver' : 'Bronze'
                   : undefined,
-                variantType: item.trade_only ? 'trade' : item.asking_price == null ? 'openToOffers' : 'buy',
+                variantType: item.trade_only ? 'trade' : 'openToOffers',
                 saved: true,
               }}
               onPress={() => router.push({ pathname: '/(tabs)/market', params: { listingId: item.id } })}
               onSave={async () => {
-                setSavedIds(await toggleSavedMarketListing(item.id));
+                if (!currentUserId) return;
+                if (authUserIdRef.current !== currentUserId) return;
+                const generation = authGenerationRef.current;
+                try {
+                  const saved = await toggleSavedMarketListing(currentUserId, item.id);
+                  if (
+                    authUserIdRef.current === currentUserId
+                    && authGenerationRef.current === generation
+                  ) setSavedIds(saved);
+                } catch {
+                  await load();
+                }
               }}
               onSellerPress={() => router.push({ pathname: '/user/[id]', params: { id: item.user_id } })}
             />

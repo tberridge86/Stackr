@@ -235,12 +235,18 @@ export function getListingCategories() {
     .filter((category) => category.supported);
 }
 
+function hasOwnListingCategory(value: string): value is ListingCategoryKey {
+  return Object.prototype.hasOwnProperty.call(LISTING_CATEGORY_REGISTRY, value);
+}
+
 export function getListingCategoryConfig(key: string | null | undefined) {
-  return LISTING_CATEGORY_REGISTRY[(key as ListingCategoryKey) ?? 'raw_card'] ?? LISTING_CATEGORY_REGISTRY.raw_card;
+  return key && hasOwnListingCategory(key)
+    ? LISTING_CATEGORY_REGISTRY[key]
+    : LISTING_CATEGORY_REGISTRY.raw_card;
 }
 
 export function isListingCategoryKey(value: unknown): value is ListingCategoryKey {
-  return typeof value === 'string' && value in LISTING_CATEGORY_REGISTRY;
+  return typeof value === 'string' && hasOwnListingCategory(value);
 }
 
 export function isCardCatalogueCategory(key: ListingCategoryKey) {

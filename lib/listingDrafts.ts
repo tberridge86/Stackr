@@ -1,6 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { sanitizeGate0CommerceCopy } from './gate0CommerceCopy';
+import { supabase } from './supabase';
 
-export const CREATE_LISTING_DRAFT_KEY = 'stackr:create-listing-draft:v2';
+const LEGACY_CREATE_LISTING_DRAFT_KEY = 'stackr:create-listing-draft:v2';
+const CREATE_LISTING_DRAFT_KEY_PREFIX = 'stackr:create-listing-draft:v3';
+
+export function getCreateListingDraftKey(userId: string) {
+  const normalizedUserId = String(userId ?? '').trim();
+  if (!normalizedUserId) throw new Error('A verified user is required for listing drafts.');
+  return `${CREATE_LISTING_DRAFT_KEY_PREFIX}:${encodeURIComponent(normalizedUserId)}`;
+}
+
+export async function clearLegacyCreateListingDraft() {
+  await AsyncStorage.removeItem(LEGACY_CREATE_LISTING_DRAFT_KEY);
+}
 
 export type CreateListingDraftSummary = {
   title: string;
@@ -54,11 +67,15 @@ function formatCurrencyDraft(value: unknown) {
 export function summariseCreateListingDraft(draft: any): CreateListingDraftSummary | null {
   if (!draft || typeof draft !== 'object') return null;
 
-  const title =
+  const rawTitle =
     draft.selectedCard?.name
     ?? draft.selectedProduct?.name
     ?? draft.manualIdentity?.cardName
     ?? 'Untitled listing';
+  const title = sanitizeGate0CommerceCopy(
+    rawTitle,
+    'Untitled listing',
+  ) ?? 'Untitled listing';
 
   const productType =
     draft.listingSubjectType
@@ -66,10 +83,14 @@ export function summariseCreateListingDraft(draft: any): CreateListingDraftSumma
     ?? draft.manualIdentity?.state
     ?? 'raw_card';
 
+  const rawSetName =
+    draft.selectedCard?.set_name
+    ?? draft.selectedProduct?.set_name
+    ?? draft.manualIdentity?.setName;
   const subtitleParts = [
-    PRODUCT_TYPE_LABELS[productType] ?? String(productType).replace(/_/g, ' '),
-    draft.selectedCard?.set_name ?? draft.selectedProduct?.set_name ?? draft.manualIdentity?.setName,
-  ].filter(Boolean);
+    PRODUCT_TYPE_LABELS[productType] ?? 'Other',
+    sanitizeGate0CommerceCopy(rawSetName, null),
+  ].filter((value): value is string => Boolean(value));
 
   const valueLabel =
     draft.listingMode === 'trade'
@@ -85,8 +106,12 @@ export function summariseCreateListingDraft(draft: any): CreateListingDraftSumma
   };
 }
 
-export async function readCreateListingDraftSummary() {
-  const raw = await AsyncStorage.getItem(CREATE_LISTING_DRAFT_KEY);
+export async function readCreateListingDraftSummary(userId: string) {
+  await clearLegacyCreateListingDraft();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (user?.id !== userId) throw new Error('Listing draft account mismatch.');
+  const raw = await AsyncStorage.getItem(getCreateListingDraftKey(userId));
   if (!raw) return null;
 
   try {
@@ -97,6 +122,12 @@ export async function readCreateListingDraftSummary() {
   }
 }
 
-export async function clearCreateListingDraft() {
-  await AsyncStorage.removeItem(CREATE_LISTING_DRAFT_KEY);
+export async function clearCreateListingDraft(userId: string) {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (user?.id !== userId) throw new Error('Listing draft account mismatch.');
+  await Promise.all([
+    clearLegacyCreateListingDraft(),
+    AsyncStorage.removeItem(getCreateListingDraftKey(userId)),
+  ]);
 }

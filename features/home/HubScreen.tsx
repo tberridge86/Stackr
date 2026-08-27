@@ -58,6 +58,8 @@ import {
   DEFAULT_MINTY_PERSONALISATION_SETTINGS,
   applyMintyInsightFeedback,
   buildMintyHomeInsight,
+  isGate0CommerceActivity,
+  sanitizeMintyInsightForGate0,
   type MintyFeedbackProfile,
   type MintyInsight,
   type MintyInsightFeedback,
@@ -69,6 +71,17 @@ import {
 } from '../../lib/mintyInsightService';
 import { getCustomBinderNameArtKeyForBinder } from '../../lib/customBinderNameArt';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
+import { sanitizeMarketplaceCondition } from '../../lib/marketplacePresentation';
+import {
+  sanitizeGate0CommerceCopy,
+  sanitizeGate0Notification,
+} from '../../lib/gate0CommerceCopy';
+import {
+  LEGACY_HOME_COLLECTION_CACHE_KEY,
+  getHomeCollectionCacheKey,
+  parseHomeCollectionCache,
+  serializeHomeCollectionCache,
+} from '../../lib/homeCollectionCache';
 
 // ===============================
 // TYPES
@@ -134,9 +147,15 @@ const cardShadow = {
 
 const HUB_TIP_STORAGE_KEY = 'stackr:feature-tip-dismissed:hub-overview-v1';
 const HOME_MASTER_SET_STORAGE_PREFIX = 'stackr:binder-master-set:';
-const HOME_COLLECTION_CACHE_KEY = 'stackr:home-collection-cache:v1';
-const MINTY_PERSONALISATION_STORAGE_KEY = 'stackr:minty-personalisation:v1';
-const MINTY_FEEDBACK_STORAGE_KEY = 'stackr:minty-feedback:v1';
+const LEGACY_MINTY_PERSONALISATION_STORAGE_KEY = 'stackr:minty-personalisation:v1';
+const LEGACY_MINTY_FEEDBACK_STORAGE_KEY = 'stackr:minty-feedback:v1';
+const MINTY_PERSONALISATION_STORAGE_KEY_PREFIX = 'stackr:minty-personalisation:v2';
+const MINTY_FEEDBACK_STORAGE_KEY_PREFIX = 'stackr:minty-feedback:v2';
+
+const getMintyPersonalisationStorageKey = (userId: string) =>
+  `${MINTY_PERSONALISATION_STORAGE_KEY_PREFIX}:${encodeURIComponent(userId)}`;
+const getMintyFeedbackStorageKey = (userId: string) =>
+  `${MINTY_FEEDBACK_STORAGE_KEY_PREFIX}:${encodeURIComponent(userId)}`;
 const HUB_TIP_ITEMS = [
   {
     icon: 'analytics-outline' as const,
@@ -674,9 +693,17 @@ export default function HubScreen() {
 
   const valuePostKeyRef = useRef<string | null>(null);
   const hasLoadedCollectionValueRef = useRef(false);
-  const cachedHomeSnapshotAppliedRef = useRef(false);
+  const cachedHomeSnapshotUserIdRef = useRef<string | null>(null);
+  const homeSessionUserIdRef = useRef<string | null>(null);
+  const homeCollectionRequestRef = useRef(0);
+  const homeGeneralRequestRef = useRef(0);
+  const homeChaseRequestRef = useRef(0);
+  const homeChaseListingsRequestRef = useRef(0);
+  const homeActivityRequestRef = useRef(0);
   const previousChartRangeRef = useRef<ChartRange>(chartRange);
   const mintyMarketSignatureRef = useRef<string | null>(null);
+  const mintyPreferenceGenerationRef = useRef(0);
+  const mintyInsightRequestRef = useRef(0);
 
   // ===============================
   // SUBMIT BUG REPORT
@@ -734,12 +761,27 @@ export default function HubScreen() {
     }
   };
 
-  const loadMintyPreferences = useCallback(async () => {
+  const loadMintyPreferences = useCallback(async (expectedUserId?: string | null) => {
+    const generation = mintyPreferenceGenerationRef.current;
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      const trustedUserId = user?.id ?? null;
+      if (!trustedUserId || (expectedUserId !== undefined && expectedUserId !== trustedUserId)) return;
+
       const [settingsRaw, feedbackRaw] = await Promise.all([
-        AsyncStorage.getItem(MINTY_PERSONALISATION_STORAGE_KEY),
-        AsyncStorage.getItem(MINTY_FEEDBACK_STORAGE_KEY),
+        AsyncStorage.getItem(getMintyPersonalisationStorageKey(trustedUserId)),
+        AsyncStorage.getItem(getMintyFeedbackStorageKey(trustedUserId)),
+        AsyncStorage.removeItem(LEGACY_MINTY_PERSONALISATION_STORAGE_KEY),
+        AsyncStorage.removeItem(LEGACY_MINTY_FEEDBACK_STORAGE_KEY),
       ]);
+      const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser();
+      if (confirmationError) throw confirmationError;
+      if (
+        generation !== mintyPreferenceGenerationRef.current
+        || confirmedUser?.id !== trustedUserId
+        || homeSessionUserIdRef.current !== trustedUserId
+      ) return;
       if (settingsRaw) {
         const parsed = JSON.parse(settingsRaw);
         setMintyPersonalisation({
@@ -762,37 +804,81 @@ export default function HubScreen() {
     }
   }, []);
 
-  const updateMintyPersonalisation = useCallback((updates: Partial<MintyPersonalisationSettings>) => {
-    setMintyPersonalisation((current) => {
-      const next = { ...current, ...updates };
-      AsyncStorage.setItem(MINTY_PERSONALISATION_STORAGE_KEY, JSON.stringify(next)).catch((error) => {
-        console.log('Minty preference save failed', error);
-      });
-      return next;
-    });
+  const persistMintyPreference = useCallback(async (
+    ownerUserId: string | null,
+    kind: 'personalisation' | 'feedback',
+    value: unknown,
+  ) => {
+    if (!ownerUserId) return;
+    const generation = mintyPreferenceGenerationRef.current;
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (
+        user?.id !== ownerUserId
+        || homeSessionUserIdRef.current !== ownerUserId
+        || generation !== mintyPreferenceGenerationRef.current
+      ) return;
+      const storageKey = kind === 'personalisation'
+        ? getMintyPersonalisationStorageKey(ownerUserId)
+        : getMintyFeedbackStorageKey(ownerUserId);
+      await AsyncStorage.setItem(storageKey, JSON.stringify(value));
+    } catch (error) {
+      console.log(`Minty ${kind} save failed`, error);
+    }
   }, []);
 
+  const updateMintyPersonalisation = useCallback((updates: Partial<MintyPersonalisationSettings>) => {
+    const ownerUserId = homeSessionUserIdRef.current;
+    setMintyPersonalisation((current) => {
+      const next = { ...current, ...updates };
+      void persistMintyPreference(ownerUserId, 'personalisation', next);
+      return next;
+    });
+  }, [persistMintyPreference]);
+
   const handleMintyInsightFeedback = useCallback((feedbackType: MintyInsightFeedback, insight: MintyInsight) => {
+    const ownerUserId = homeSessionUserIdRef.current;
     setMintyFeedback((current) => {
       const next = applyMintyInsightFeedback(current, insight, feedbackType);
-      AsyncStorage.setItem(MINTY_FEEDBACK_STORAGE_KEY, JSON.stringify(next)).catch((error) => {
-        console.log('Minty feedback save failed', error);
-      });
+      void persistMintyPreference(ownerUserId, 'feedback', next);
       return next;
     });
     recordMintyInsightFeedback(insight, feedbackType).catch((error) => {
       console.log('Minty feedback sync failed', error);
     });
-  }, []);
+  }, [persistMintyPreference]);
 
   const loadApiMintyInsight = useCallback(async (forceRefresh = false) => {
+    const requestId = ++mintyInsightRequestRef.current;
     setMintyInsightRefreshing(true);
-    const result = await loadMintyInsight({ forceRefresh });
-    if (result.insight) {
-      setApiMintyInsight(result.insight);
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      const trustedUserId = user?.id ?? null;
+      if (!trustedUserId) {
+        setApiMintyInsight(null);
+        setMintyInsightError(null);
+        return;
+      }
+      const result = await loadMintyInsight({ forceRefresh });
+      const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser();
+      if (confirmationError) throw confirmationError;
+      if (
+        mintyInsightRequestRef.current !== requestId
+        || homeSessionUserIdRef.current !== trustedUserId
+        || confirmedUser?.id !== trustedUserId
+      ) return;
+      setApiMintyInsight(result.insight ?? null);
+      setMintyInsightError(result.error ?? null);
+    } catch (error) {
+      if (mintyInsightRequestRef.current === requestId) {
+        setApiMintyInsight(null);
+        setMintyInsightError('Minty insight is temporarily unavailable.');
+      }
+    } finally {
+      if (mintyInsightRequestRef.current === requestId) setMintyInsightRefreshing(false);
     }
-    setMintyInsightError(result.error ?? null);
-    setMintyInsightRefreshing(false);
   }, []);
 
   const refreshMintyForMarketSignature = useCallback((signature: string) => {
@@ -802,33 +888,41 @@ export default function HubScreen() {
   }, [loadApiMintyInsight]);
 
   const resetMintyPreferences = useCallback(() => {
+    const ownerUserId = homeSessionUserIdRef.current;
     setMintyPersonalisation(DEFAULT_MINTY_PERSONALISATION_SETTINGS);
     setMintyFeedback(DEFAULT_MINTY_FEEDBACK_PROFILE);
-    Promise.all([
-      AsyncStorage.setItem(MINTY_PERSONALISATION_STORAGE_KEY, JSON.stringify(DEFAULT_MINTY_PERSONALISATION_SETTINGS)),
-      AsyncStorage.setItem(MINTY_FEEDBACK_STORAGE_KEY, JSON.stringify(DEFAULT_MINTY_FEEDBACK_PROFILE)),
-    ]).catch((error) => {
-      console.log('Minty reset failed', error);
-    });
-  }, []);
+    void persistMintyPreference(ownerUserId, 'personalisation', DEFAULT_MINTY_PERSONALISATION_SETTINGS);
+    void persistMintyPreference(ownerUserId, 'feedback', DEFAULT_MINTY_FEEDBACK_PROFILE);
+  }, [persistMintyPreference]);
 
   // ===============================
   // LOAD ALL DATA
   // ===============================
 
   const loadAll = useCallback(async (isRefresh = false) => {
+    const requestId = ++homeGeneralRequestRef.current;
     try {
       if (isRefresh) setRefreshing(true);
 
       const { data: { user } } = await supabase.auth.getUser();
+      const trustedUserId = user?.id ?? null;
+      homeSessionUserIdRef.current = trustedUserId;
+      const isCurrentRequest = () => (
+        homeGeneralRequestRef.current === requestId
+        && homeSessionUserIdRef.current === trustedUserId
+      );
 
       const [notificationsResult] = await Promise.all([
         user
-          ? supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false)
-          : Promise.resolve({ count: 0 }),
+          ? supabase.from('notifications').select('id, type, title, message').eq('user_id', user.id).eq('read', false)
+          : Promise.resolve({ data: [] }),
       ]);
 
-      setUnreadCount((notificationsResult as any).count ?? 0);
+      const visibleUnreadNotifications = ((notificationsResult as any).data ?? [])
+        .map((notification: any) => sanitizeGate0Notification(notification))
+        .filter(Boolean);
+      if (!isCurrentRequest()) return;
+      setUnreadCount(visibleUnreadNotifications.length);
 
       if (user) {
         const [flagResult, wantedResult] = await Promise.allSettled([
@@ -836,7 +930,7 @@ export default function HubScreen() {
             .from('user_card_flags')
             .select('id, user_id, card_id, set_id, condition, asking_price, listing_status, updated_at')
             .eq('flag_type', 'trade')
-            .or('listing_status.eq.active,listing_status.is.null')
+            .eq('listing_status', 'active')
             .neq('user_id', user.id)
             .order('updated_at', { ascending: false })
             .limit(8),
@@ -864,8 +958,10 @@ export default function HubScreen() {
               set_name: card.set_name ?? card.set_id ?? null,
             };
           });
+          if (!isCurrentRequest()) return;
           setRecentListings(flagData.map((flag) => ({ ...flag, preview: previewMap[flag.card_id] ?? null })));
         } else {
+          if (!isCurrentRequest()) return;
           setRecentListings([]);
         }
 
@@ -876,6 +972,7 @@ export default function HubScreen() {
           const wantedAnySetKeys = new Set(wantedCards.filter((row) => !row.set_id).map((row) => row.card_id));
 
           if (!wantedCardIds.length) {
+            if (!isCurrentRequest()) return;
             setMarketplaceMatches([]);
             return;
           }
@@ -884,7 +981,7 @@ export default function HubScreen() {
             .from('user_card_flags')
             .select('id, user_id, card_id, set_id, condition, asking_price, listing_status, updated_at')
             .eq('flag_type', 'trade')
-            .or('listing_status.eq.active,listing_status.is.null')
+            .eq('listing_status', 'active')
             .neq('user_id', user.id)
             .in('card_id', wantedCardIds)
             .order('updated_at', { ascending: false })
@@ -907,21 +1004,27 @@ export default function HubScreen() {
                 set_name: card.set_name ?? card.set_id ?? null,
               };
             });
+            if (!isCurrentRequest()) return;
             setMarketplaceMatches(strictMatches.slice(0, 4).map((listing) => ({
               ...listing,
               preview: previewMap[listing.card_id] ?? null,
             })));
           } else {
+            if (!isCurrentRequest()) return;
             setMarketplaceMatches([]);
           }
         } else {
+          if (!isCurrentRequest()) return;
           setMarketplaceMatches([]);
         }
+      } else if (isCurrentRequest()) {
+        setRecentListings([]);
+        setMarketplaceMatches([]);
       }
     } catch (error) {
       console.log('Hub load failed', error);
     } finally {
-      setRefreshing(false);
+      if (homeGeneralRequestRef.current === requestId) setRefreshing(false);
     }
   }, []);
 
@@ -930,15 +1033,69 @@ export default function HubScreen() {
   // ===============================
 
   const applyCachedHomeCollection = useCallback(async () => {
-    if (cachedHomeSnapshotAppliedRef.current) return false;
-    cachedHomeSnapshotAppliedRef.current = true;
-
     try {
-      const raw = await AsyncStorage.getItem(HOME_COLLECTION_CACHE_KEY);
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      await AsyncStorage.removeItem(LEGACY_HOME_COLLECTION_CACHE_KEY);
+
+      const trustedUserId = user?.id ?? null;
+      if (!trustedUserId) {
+        if (cachedHomeSnapshotUserIdRef.current) {
+          cachedHomeSnapshotUserIdRef.current = null;
+          hasLoadedCollectionValueRef.current = false;
+          setCollectionTotal(0);
+          setCollectionChangeAmount(0);
+          setCollectionChangePercent(0);
+          setOwnedCardCount(0);
+          setActiveBinder(null);
+          setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
+          setMissingCards([]);
+          setChartData([]);
+          setMintyDataRefreshedAt(null);
+        }
+        return false;
+      }
+
+      if (cachedHomeSnapshotUserIdRef.current === trustedUserId) return false;
+      if (cachedHomeSnapshotUserIdRef.current !== null) {
+        hasLoadedCollectionValueRef.current = false;
+        setCollectionTotal(0);
+        setCollectionChangeAmount(0);
+        setCollectionChangePercent(0);
+        setOwnedCardCount(0);
+        setActiveBinder(null);
+        setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
+        setMissingCards([]);
+        setChartData([]);
+        setMintyDataRefreshedAt(null);
+        setChaseCards([]);
+        setRecentActivity([]);
+        setRecentListings([]);
+        setMarketplaceMatches([]);
+        setChaseListingsByKey({});
+      }
+
+      const storageKey = getHomeCollectionCacheKey(trustedUserId);
+      const raw = await AsyncStorage.getItem(storageKey);
       if (!raw) return false;
 
-      const snapshot = JSON.parse(raw) as Partial<HomeCollectionCacheSnapshot>;
-      if (!snapshot || typeof snapshot.collectionTotal !== 'number') return false;
+      const snapshot = parseHomeCollectionCache<Partial<HomeCollectionCacheSnapshot>>(
+        raw,
+        trustedUserId,
+      );
+      if (!snapshot || typeof snapshot.collectionTotal !== 'number') {
+        await AsyncStorage.removeItem(storageKey);
+        return false;
+      }
+
+      const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser();
+      if (confirmationError) throw confirmationError;
+      if (confirmedUser?.id !== trustedUserId) {
+        hasLoadedCollectionValueRef.current = false;
+        return false;
+      }
+      cachedHomeSnapshotUserIdRef.current = trustedUserId;
 
       setCollectionTotal(snapshot.collectionTotal);
       setCollectionChangeAmount(Number(snapshot.collectionChangeAmount ?? 0));
@@ -963,24 +1120,59 @@ export default function HubScreen() {
     }
   }, [chartRange]);
 
-  const saveHomeCollectionCache = useCallback((snapshot: Omit<HomeCollectionCacheSnapshot, 'cachedAt'>) => {
-    AsyncStorage.setItem(
-      HOME_COLLECTION_CACHE_KEY,
-      JSON.stringify({
-        ...snapshot,
-        cachedAt: Date.now(),
-      })
-    ).catch((error) => {
+  const saveHomeCollectionCache = useCallback(async (
+    trustedUserId: string,
+    snapshot: Omit<HomeCollectionCacheSnapshot, 'cachedAt'>,
+  ) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (user?.id !== trustedUserId) return;
+
+      await Promise.all([
+        AsyncStorage.removeItem(LEGACY_HOME_COLLECTION_CACHE_KEY),
+        AsyncStorage.setItem(
+          getHomeCollectionCacheKey(trustedUserId),
+          serializeHomeCollectionCache(trustedUserId, {
+            ...snapshot,
+            cachedAt: Date.now(),
+          }),
+        ),
+      ]);
+    } catch (error) {
       console.log('Home collection cache save failed', error);
-    });
+    }
   }, []);
 
   const loadCollectionValue = useCallback(async () => {
-    const hadLoadedCollectionValue = hasLoadedCollectionValueRef.current;
-    setCollectionValueLoading(!hadLoadedCollectionValue);
+    const requestId = ++homeCollectionRequestRef.current;
     setCollectionValueError(null);
     setHomeDataError(null);
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) {
+        await applyCachedHomeCollection();
+        setCollectionValueLoading(false);
+        return;
+      }
+
+      const trustedUserId = user.id;
+      homeSessionUserIdRef.current = trustedUserId;
+      const isCurrentRequest = () => (
+        homeCollectionRequestRef.current === requestId
+        && homeSessionUserIdRef.current === trustedUserId
+      );
+      const confirmCurrentRequest = async () => {
+        if (!isCurrentRequest()) return false;
+        const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser();
+        if (confirmationError) throw confirmationError;
+        return isCurrentRequest() && confirmedUser?.id === trustedUserId;
+      };
+      const hadLoadedCollectionValue =
+        cachedHomeSnapshotUserIdRef.current === trustedUserId
+        && hasLoadedCollectionValueRef.current;
+      setCollectionValueLoading(!hadLoadedCollectionValue);
       if (!hadLoadedCollectionValue) {
         await applyCachedHomeCollection();
       }
@@ -1029,6 +1221,7 @@ export default function HubScreen() {
       let nextDuplicateSummary = buildDuplicateSummary(binderGroups);
       const nextMissingCards = buildMissingCards(binderGroups, nextActiveBinder);
 
+      if (!await confirmCurrentRequest()) return;
       setActiveBinder(nextActiveBinder);
       setDuplicateSummary(nextDuplicateSummary);
       setMissingCards(nextMissingCards);
@@ -1047,16 +1240,11 @@ export default function HubScreen() {
       const ownedVariantsByCard = new Map<string, Set<string>>();
 
       if (variantSetIds.length) {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) {
-          console.log('Hub variant user lookup failed:', userError.message);
-        }
-
-        if (user) {
+        if (isCurrentRequest()) {
           const { data: variantRows, error: variantError } = await supabase
             .from('user_card_variants')
             .select('card_id, set_id, variant')
-            .eq('user_id', user.id)
+            .eq('user_id', trustedUserId)
             .in('set_id', variantSetIds);
 
           if (variantError) {
@@ -1129,6 +1317,7 @@ export default function HubScreen() {
       });
       const sharedOwnedCount = sharedSummary?.totalCardsOwned ?? ownedUnits.length;
 
+      if (!await confirmCurrentRequest()) return;
       setOwnedCardCount(sharedOwnedCount);
       if (nextDuplicateSummary.count === 0 && (sharedSummary?.duplicateCopies ?? 0) > 0) {
         nextDuplicateSummary = {
@@ -1145,13 +1334,14 @@ export default function HubScreen() {
         const fallbackTotal = sharedSummary?.collectionValue ?? 0;
         const fallbackChartData = buildFallbackTrend(fallbackTotal, chartRange, 0);
         const refreshedAt = new Date().toISOString();
+        if (!await confirmCurrentRequest()) return;
         setCollectionTotal(fallbackTotal);
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
         setChartData(fallbackChartData);
         setMintyDataRefreshedAt(refreshedAt);
         setCollectionValueError(null);
-        saveHomeCollectionCache({
+        void saveHomeCollectionCache(trustedUserId, {
           mintyDataRefreshedAt: refreshedAt,
           chartRange,
           chartData: fallbackChartData,
@@ -1310,13 +1500,14 @@ export default function HubScreen() {
       const displayTotalLatest = sharedSummary?.collectionValue ?? totalLatest;
       const refreshedAt = new Date().toISOString();
 
+      if (!await confirmCurrentRequest()) return;
       setCollectionTotal(displayTotalLatest);
       setCollectionChangeAmount(change);
       setCollectionChangePercent(percent);
       setChartData(displayChartValues);
       setMintyDataRefreshedAt(refreshedAt);
       setCollectionValueError(null);
-      saveHomeCollectionCache({
+      void saveHomeCollectionCache(trustedUserId, {
         mintyDataRefreshedAt: refreshedAt,
         chartRange,
         chartData: displayChartValues,
@@ -1369,6 +1560,7 @@ export default function HubScreen() {
       }
     } catch (error) {
       console.log('Failed to calculate collection value', error);
+      if (homeCollectionRequestRef.current !== requestId) return;
       if (!hasLoadedCollectionValueRef.current) {
         setCollectionTotal(0);
         setCollectionChangeAmount(0);
@@ -1381,8 +1573,10 @@ export default function HubScreen() {
       setCollectionValueError('We could not refresh market prices. Pull to refresh or try again.');
       setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
     } finally {
-      hasLoadedCollectionValueRef.current = true;
-      setCollectionValueLoading(false);
+      if (homeCollectionRequestRef.current === requestId) {
+        hasLoadedCollectionValueRef.current = true;
+        setCollectionValueLoading(false);
+      }
     }
   }, [applyCachedHomeCollection, chartRange, refreshMintyForMarketSignature, saveHomeCollectionCache]);
 
@@ -1393,14 +1587,20 @@ export default function HubScreen() {
   }, [loadCollectionValue]);
 
   const loadChaseCards = useCallback(async () => {
+    const requestId = ++homeChaseRequestRef.current;
     setChaseLoading(true);
     setChaseError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setChaseCards([]);
+        if (homeChaseRequestRef.current === requestId) setChaseCards([]);
         return;
       }
+      const trustedUserId = user.id;
+      const isCurrentRequest = () => (
+        homeChaseRequestRef.current === requestId
+        && homeSessionUserIdRef.current === trustedUserId
+      );
 
       const [wishlistResult, watchlistResult, showcaseResult] = await Promise.all([
         supabase
@@ -1440,6 +1640,7 @@ export default function HubScreen() {
       }
 
       if (!mergedRows.length) {
+        if (!isCurrentRequest()) return;
         setChaseCards([]);
         return;
       }
@@ -1450,6 +1651,7 @@ export default function HubScreen() {
         fetchStackrPriceSnapshots(cardIds),
       ]);
 
+      if (!isCurrentRequest()) return;
       setChaseCards(mergedRows.map((row) => {
         const officialCard = officialCardMap.get(row.card_id) ?? null;
         const estimated = row.market_estimate ?? row.asking_price ?? priceMap.get(row.card_id)?.market_central ?? null;
@@ -1478,10 +1680,11 @@ export default function HubScreen() {
       }));
     } catch (error) {
       console.log('Failed to load home chase cards', error);
+      if (homeChaseRequestRef.current !== requestId) return;
       setChaseCards([]);
       setChaseError('Could not refresh chase cards.');
     } finally {
-      setChaseLoading(false);
+      if (homeChaseRequestRef.current === requestId) setChaseLoading(false);
     }
   }, []);
 
@@ -1497,6 +1700,7 @@ export default function HubScreen() {
   }, [chaseCards, selectedChaseKey]);
 
   const loadChaseMarketplaceListings = useCallback(async (card: HomeCardPreview, force = false) => {
+    const requestId = ++homeChaseListingsRequestRef.current;
     const key = getChaseCardKey(card);
     if (!force && chaseListingsByKey[key]) return;
 
@@ -1504,11 +1708,16 @@ export default function HubScreen() {
     setChaseListingsError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      const trustedUserId = user?.id ?? null;
+      const isCurrentRequest = () => (
+        homeChaseListingsRequestRef.current === requestId
+        && homeSessionUserIdRef.current === trustedUserId
+      );
       const { data, error } = await supabase
         .from('user_card_flags')
         .select('id, user_id, card_id, set_id, condition, asking_price, trade_only, listing_status, updated_at')
         .eq('flag_type', 'trade')
-        .or('listing_status.eq.active,listing_status.is.null')
+        .eq('listing_status', 'active')
         .eq('card_id', card.cardId)
         .neq('user_id', user?.id ?? '00000000-0000-0000-0000-000000000000')
         .order('updated_at', { ascending: false })
@@ -1529,7 +1738,10 @@ export default function HubScreen() {
         console.log('Chase marketplace profile lookup failed', profileError.message);
       }
 
-      const profileMap = new Map((profiles ?? []).map((profile: any) => [profile.id, profile.collector_name ?? null]));
+      const profileMap = new Map((profiles ?? []).map((profile: any) => [
+        profile.id,
+        sanitizeGate0CommerceCopy(profile.collector_name ?? null, 'Collector'),
+      ]));
       const exactMatches = rows.filter((row: any) => !card.setId || row.set_id === card.setId);
       const fallbackMatches = rows.filter((row: any) => card.setId && row.set_id !== card.setId);
       const rankedRows = [...exactMatches, ...fallbackMatches].slice(0, 6);
@@ -1539,21 +1751,24 @@ export default function HubScreen() {
         setId: row.set_id ?? null,
         sellerDisplayName: profileMap.get(row.user_id) ?? null,
         askingPrice: row.asking_price == null ? null : Number(row.asking_price),
-        condition: row.condition ?? null,
+        condition: sanitizeMarketplaceCondition(row.condition),
         tradeOnly: Boolean(row.trade_only),
         status: row.listing_status ?? 'active',
         updatedAt: row.updated_at ?? null,
       }));
 
+      if (!isCurrentRequest()) return;
       setChaseListingsByKey((current) => ({
         ...current,
         [key]: suggestions,
       }));
     } catch (error) {
       console.log('Failed to load chase marketplace listings', error);
-      setChaseListingsError('The Market listings could not be checked.');
+      if (homeChaseListingsRequestRef.current === requestId) {
+        setChaseListingsError('The Market listings could not be checked.');
+      }
     } finally {
-      setChaseListingsLoading(false);
+      if (homeChaseListingsRequestRef.current === requestId) setChaseListingsLoading(false);
     }
   }, [chaseListingsByKey]);
 
@@ -1576,14 +1791,20 @@ export default function HubScreen() {
     : [];
 
   const loadRecentActivity = useCallback(async () => {
+    const requestId = ++homeActivityRequestRef.current;
     setActivityLoading(true);
     setActivityError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setRecentActivity([]);
+        if (homeActivityRequestRef.current === requestId) setRecentActivity([]);
         return;
       }
+      const trustedUserId = user.id;
+      const isCurrentRequest = () => (
+        homeActivityRequestRef.current === requestId
+        && homeSessionUserIdRef.current === trustedUserId
+      );
 
       const feedResult = await supabase
         .from('activity_feed')
@@ -1594,10 +1815,15 @@ export default function HubScreen() {
 
       if (feedResult.error) throw feedResult.error;
 
-      const feedItems: HomeActivityItem[] = (feedResult.data ?? []).map((post: any) => ({
+      const visibleFeed = (feedResult.data ?? [])
+        .filter((post: any) => !isGate0CommerceActivity(post));
+      const feedItems: HomeActivityItem[] = visibleFeed.map((post: any) => ({
         id: `post:${post.id}`,
-        title: post.title ?? 'Collection update',
-        subtitle: post.subtitle ?? null,
+        title: sanitizeGate0CommerceCopy(
+          post.title,
+          'Collection update',
+        ) ?? 'Collection update',
+        subtitle: sanitizeGate0CommerceCopy(post.subtitle, null),
         createdAt: post.created_at,
         valueChange: post.value_change == null ? null : Number(post.value_change),
         isPositive: post.is_positive ?? null,
@@ -1612,13 +1838,16 @@ export default function HubScreen() {
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 10);
 
-      setRecentActivity(await enrichActivityItemsWithCardImages(combined));
+      const enriched = await enrichActivityItemsWithCardImages(combined);
+      if (!isCurrentRequest()) return;
+      setRecentActivity(enriched);
     } catch (error) {
       console.log('Failed to load recent home activity', error);
+      if (homeActivityRequestRef.current !== requestId) return;
       setRecentActivity([]);
       setActivityError('Could not refresh recent activity.');
     } finally {
-      setActivityLoading(false);
+      if (homeActivityRequestRef.current === requestId) setActivityLoading(false);
     }
   }, []);
 
@@ -1649,6 +1878,83 @@ export default function HubScreen() {
   // EFFECTS
   // ===============================
 
+  useEffect(() => {
+    let mounted = true;
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const bindHomeSession = (nextUserId: string | null) => {
+      if (!mounted) return;
+      if (homeSessionUserIdRef.current === nextUserId) {
+        if (nextUserId) void loadMintyPreferences(nextUserId);
+        return;
+      }
+      homeSessionUserIdRef.current = nextUserId;
+      homeCollectionRequestRef.current += 1;
+      homeGeneralRequestRef.current += 1;
+      homeChaseRequestRef.current += 1;
+      homeChaseListingsRequestRef.current += 1;
+      homeActivityRequestRef.current += 1;
+      mintyPreferenceGenerationRef.current += 1;
+      mintyInsightRequestRef.current += 1;
+      cachedHomeSnapshotUserIdRef.current = null;
+      hasLoadedCollectionValueRef.current = false;
+      mintyMarketSignatureRef.current = null;
+
+      setCollectionTotal(0);
+      setCollectionChangeAmount(0);
+      setCollectionChangePercent(0);
+      setOwnedCardCount(0);
+      setActiveBinder(null);
+      setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
+      setMissingCards([]);
+      setChartData([]);
+      setMintyDataRefreshedAt(null);
+      setUnreadCount(0);
+      setRecentListings([]);
+      setMarketplaceMatches([]);
+      setChaseCards([]);
+      setSelectedChaseKey(null);
+      setChaseListingsByKey({});
+      setRecentActivity([]);
+      setMintyPersonalisation(DEFAULT_MINTY_PERSONALISATION_SETTINGS);
+      setMintyFeedback(DEFAULT_MINTY_FEEDBACK_PROFILE);
+      setApiMintyInsight(null);
+      setMintyInsightError(null);
+      setMintyInsightRefreshing(false);
+
+      if (reloadTimer) clearTimeout(reloadTimer);
+      if (!nextUserId) return;
+      reloadTimer = setTimeout(() => {
+        if (!mounted || homeSessionUserIdRef.current !== nextUserId) return;
+        void applyCachedHomeCollection();
+        void loadCollectionValueRef.current();
+        void loadAll();
+        void loadChaseCards();
+        void loadRecentActivity();
+        void loadMintyPreferences(nextUserId);
+        void loadApiMintyInsight(false);
+      }, 0);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      bindHomeSession(session?.user?.id ?? null);
+    });
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (error) {
+        console.log('Home session lookup failed:', error.message);
+        bindHomeSession(null);
+        return;
+      }
+      bindHomeSession(data.user?.id ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      if (reloadTimer) clearTimeout(reloadTimer);
+      subscription.unsubscribe();
+    };
+  }, [applyCachedHomeCollection, loadAll, loadApiMintyInsight, loadChaseCards, loadMintyPreferences, loadRecentActivity]);
+
   useFocusEffect(useCallback(() => {
     let cancelled = false;
     let secondaryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1677,9 +1983,6 @@ export default function HubScreen() {
     if (!appModeHydrated) return;
     checkHubTip();
   }, [appModeHydrated, checkHubTip, hasChosenMode, premiumSellerAccess.allowed]);
-  useEffect(() => {
-    loadMintyPreferences();
-  }, [loadMintyPreferences]);
   useEffect(() => {
     loadApiMintyInsight(false);
   }, [loadApiMintyInsight]);
@@ -1720,7 +2023,7 @@ export default function HubScreen() {
     ownedCardCount,
     recentActivity,
   ]);
-  const mintyInsight = apiMintyInsight ?? localMintyInsight;
+  const mintyInsight = sanitizeMintyInsightForGate0(apiMintyInsight ?? localMintyInsight);
 
   const openMintyAction = useCallback((insight: MintyInsight) => {
     switch (insight.recommended_route) {
@@ -2090,8 +2393,6 @@ export default function HubScreen() {
             <View style={{ borderRadius: 18, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingHorizontal: 14, marginTop: 8 }}>
               {renderMintySettingRow('personalisedInsights', 'Personalised advice', 'Use your collection goals to pick the most useful Minty tips.')}
               <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('usePurchaseHistory', 'Use purchase history', 'Learn your usual budget and the card types you prefer.')}
-              <View style={{ height: 1, backgroundColor: theme.colors.border }} />
               {renderMintySettingRow('useChaseList', 'Use chase list', 'Connect advice to cards you are hunting.')}
               <View style={{ height: 1, backgroundColor: theme.colors.border }} />
               {renderMintySettingRow('useViewingHistory', 'Use viewing history', 'Notice cards and searches you keep coming back to.')}
@@ -2114,6 +2415,7 @@ export default function HubScreen() {
         </View>
       </Modal>
 
+      {premiumSellerAccess.allowed ? (
       <Modal visible={roleModalOpen} transparent animationType="fade">
         <View style={{ flex: 1, backgroundColor: 'rgba(8,10,20,0.48)', justifyContent: 'center', padding: 20 }}>
           <View style={{ backgroundColor: theme.colors.card, borderRadius: 24, padding: 18, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
@@ -2174,12 +2476,12 @@ export default function HubScreen() {
 
               <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', textAlign: 'center' }}>Premium Seller Mode</Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 14, fontWeight: '700', textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
-                Keep using Stackr to collect, scan, trade and create ordinary listings. Premium Seller Mode adds a separate professional workspace for repeated stock and sales operations.
+                Trusted seller beta access adds professional inventory tools and browse-only listing publication. Stackr cannot create orders, take payment, buy shipping or trigger payouts in this release.
               </Text>
             </View>
 
             {[
-              { icon: 'scan-outline' as const, text: 'Scan sold cards to remove them from your collection' },
+              { icon: 'scan-outline' as const, text: 'Scan stock out to keep inventory accurate' },
               { icon: 'bar-chart-outline' as const, text: 'Keep inventory accurate on the go' },
               { icon: 'storefront-outline' as const, text: 'Built for conventions, events and higher-volume sellers' },
             ].map((item) => (
@@ -2194,7 +2496,7 @@ export default function HubScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: `${theme.colors.primary}12`, borderRadius: 14, padding: 12, marginTop: 2, marginBottom: 12 }}>
               <Ionicons name="sparkles-outline" size={18} color={theme.colors.primary} />
               <Text style={{ flex: 1, color: theme.colors.text, fontSize: 12, fontWeight: '800' }}>
-                Collecting and ordinary Market listings remain available outside Premium Seller Mode.
+                Market browsing and trades remain available outside the trusted seller beta. Listing publication is beta-only.
               </Text>
             </View>
 
@@ -2220,6 +2522,7 @@ export default function HubScreen() {
           </View>
         </View>
       </Modal>
+      ) : null}
       {/* HAMBURGER MENU */}
       <Modal visible={menuOpen} transparent animationType="fade">
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setMenuOpen(false)}>

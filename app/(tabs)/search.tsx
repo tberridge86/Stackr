@@ -69,6 +69,8 @@ import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { getIncrementalListWindow } from '../../lib/performance';
 import { supabase } from '../../lib/supabase';
+import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
+import { sanitizeMarketplaceListingPresentationFields } from '../../lib/marketplacePresentation';
 
 type SearchCategory = 'all' | 'cards' | 'sets' | 'sealed' | 'graded' | 'collectors' | ListingCategoryKey;
 type SearchSortKey = 'relevance' | 'priceAsc' | 'priceDesc' | 'rarity' | 'set' | 'gradeDesc' | 'newest';
@@ -130,8 +132,14 @@ type SearchErrorState = Partial<Record<keyof SearchResults, string>>;
 type PendingResult = { status: 'pending' };
 type TimedSettled<T> = PromiseSettledResult<T> | PendingResult;
 
-const RECENT_SEARCHES_KEY = '@stackr:search:recent-queries';
+const LEGACY_RECENT_SEARCHES_KEY = '@stackr:search:recent-queries';
+const RECENT_SEARCHES_KEY_PREFIX = '@stackr:search:recent-queries:v2:user';
 const MAX_RECENT_SEARCHES = 8;
+
+type VerifiedRecentSearchIdentity = {
+  userId: string;
+  generation: number;
+};
 
 type SearchCategoryConfig = {
   key: SearchCategory;
@@ -571,8 +579,21 @@ function rankSet(set: PokemonSet, terms: string[]) {
   return score;
 }
 
-async function loadRecentSearches() {
-  const raw = await AsyncStorage.getItem(RECENT_SEARCHES_KEY);
+function getRecentSearchesKey(userId: string) {
+  const normalizedUserId = userId.trim();
+  if (!normalizedUserId) throw new Error('A verified user is required for recent searches.');
+  return `${RECENT_SEARCHES_KEY_PREFIX}:${encodeURIComponent(normalizedUserId)}`;
+}
+
+async function clearLegacyRecentSearches() {
+  await AsyncStorage.removeItem(LEGACY_RECENT_SEARCHES_KEY);
+}
+
+async function loadRecentSearches(userId: string) {
+  const [, raw] = await Promise.all([
+    clearLegacyRecentSearches(),
+    AsyncStorage.getItem(getRecentSearchesKey(userId)),
+  ]);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -582,8 +603,12 @@ async function loadRecentSearches() {
   }
 }
 
-async function saveRecentSearches(searches: string[]) {
-  await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(searches.slice(0, MAX_RECENT_SEARCHES)));
+async function saveRecentSearches(userId: string, searches: string[]) {
+  await clearLegacyRecentSearches();
+  await AsyncStorage.setItem(
+    getRecentSearchesKey(userId),
+    JSON.stringify(searches.slice(0, MAX_RECENT_SEARCHES)),
+  );
 }
 
 export default function GlobalSearchScreen() {
@@ -627,18 +652,152 @@ export default function GlobalSearchScreen() {
   const searchListRef = useRef<FlatList<number>>(null);
   const requestRef = useRef(0);
   const lastParamSignatureRef = useRef('');
+  const recentSearchMountedRef = useRef(true);
+  const observedRecentSearchUserIdRef = useRef<string | null | undefined>(undefined);
+  const recentSearchIdentityRef = useRef<VerifiedRecentSearchIdentity | null>(null);
+  const recentSearchGenerationRef = useRef(0);
+
+  const isCurrentRecentSearchIdentity = useCallback((identity: VerifiedRecentSearchIdentity) => (
+    recentSearchMountedRef.current
+    && recentSearchIdentityRef.current?.userId === identity.userId
+    && recentSearchIdentityRef.current.generation === identity.generation
+    && recentSearchGenerationRef.current === identity.generation
+  ), []);
+
+  const beginRecentSearchAuthBoundary = useCallback((userId: string | null) => {
+    if (observedRecentSearchUserIdRef.current === userId) {
+      return recentSearchGenerationRef.current;
+    }
+
+    observedRecentSearchUserIdRef.current = userId;
+    recentSearchGenerationRef.current += 1;
+    recentSearchIdentityRef.current = null;
+    setRecentSearches([]);
+    void clearLegacyRecentSearches().catch(() => {});
+    return recentSearchGenerationRef.current;
+  }, []);
+
+  const invalidateRecentSearchIdentity = useCallback(() => {
+    observedRecentSearchUserIdRef.current = null;
+    recentSearchGenerationRef.current += 1;
+    recentSearchIdentityRef.current = null;
+    setRecentSearches([]);
+    void clearLegacyRecentSearches().catch(() => {});
+  }, []);
+
+  const activateVerifiedRecentSearchIdentity = useCallback(async (
+    userId: string,
+    generation: number,
+  ) => {
+    if (
+      !recentSearchMountedRef.current
+      || recentSearchGenerationRef.current !== generation
+      || observedRecentSearchUserIdRef.current !== userId
+    ) return;
+
+    const identity = { userId, generation };
+    recentSearchIdentityRef.current = identity;
+    try {
+      const items = await loadRecentSearches(userId);
+      if (isCurrentRecentSearchIdentity(identity)) setRecentSearches(items);
+    } catch {
+      if (isCurrentRecentSearchIdentity(identity)) setRecentSearches([]);
+    }
+  }, [isCurrentRecentSearchIdentity]);
+
+  const verifyRecentSearchIdentity = useCallback(async (
+    expectedUserId: string,
+    generation: number,
+  ) => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    if (
+      !user
+      || user.id !== expectedUserId
+      || recentSearchGenerationRef.current !== generation
+      || observedRecentSearchUserIdRef.current !== expectedUserId
+    ) return null;
+    return { userId: user.id, generation } satisfies VerifiedRecentSearchIdentity;
+  }, []);
+
+  const getVerifiedRecentSearchWriteIdentity = useCallback(async () => {
+    const identity = recentSearchIdentityRef.current;
+    if (!identity || !isCurrentRecentSearchIdentity(identity)) return null;
+    const verified = await verifyRecentSearchIdentity(identity.userId, identity.generation);
+    if (verified && isCurrentRecentSearchIdentity(verified)) return verified;
+    if (isCurrentRecentSearchIdentity(identity)) invalidateRecentSearchIdentity();
+    return null;
+  }, [invalidateRecentSearchIdentity, isCurrentRecentSearchIdentity, verifyRecentSearchIdentity]);
+
+  useEffect(() => {
+    recentSearchMountedRef.current = true;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const candidateUserId = session?.user?.id ?? null;
+      const generation = beginRecentSearchAuthBoundary(candidateUserId);
+      if (!candidateUserId) return;
+      setTimeout(() => {
+        void verifyRecentSearchIdentity(candidateUserId, generation)
+          .then((identity) => {
+            if (identity) {
+              void activateVerifiedRecentSearchIdentity(identity.userId, identity.generation);
+            } else if (
+              recentSearchGenerationRef.current === generation
+              && observedRecentSearchUserIdRef.current === candidateUserId
+            ) {
+              invalidateRecentSearchIdentity();
+            }
+          })
+          .catch(() => {
+            if (
+              recentSearchGenerationRef.current === generation
+              && observedRecentSearchUserIdRef.current === candidateUserId
+            ) invalidateRecentSearchIdentity();
+          });
+      }, 0);
+    });
+
+    const initialGeneration = recentSearchGenerationRef.current;
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (!recentSearchMountedRef.current) return;
+      if (recentSearchGenerationRef.current !== initialGeneration) return;
+      if (error) {
+        invalidateRecentSearchIdentity();
+        return;
+      }
+      const userId = data.user?.id ?? null;
+      const generation = beginRecentSearchAuthBoundary(userId);
+      if (userId) void activateVerifiedRecentSearchIdentity(userId, generation);
+    });
+
+    return () => {
+      recentSearchMountedRef.current = false;
+      recentSearchGenerationRef.current += 1;
+      recentSearchIdentityRef.current = null;
+      subscription.unsubscribe();
+    };
+  }, [
+    activateVerifiedRecentSearchIdentity,
+    beginRecentSearchAuthBoundary,
+    invalidateRecentSearchIdentity,
+    verifyRecentSearchIdentity,
+  ]);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      loadRecentSearches().then((items) => {
-        if (active) setRecentSearches(items);
-      });
+      const identity = recentSearchIdentityRef.current;
+      if (identity) {
+        loadRecentSearches(identity.userId).then((items) => {
+          if (active && isCurrentRecentSearchIdentity(identity)) setRecentSearches(items);
+        });
+      } else {
+        setRecentSearches([]);
+      }
       return () => {
         active = false;
         requestRef.current += 1;
       };
-    }, [])
+    }, [isCurrentRecentSearchIdentity])
   );
 
   useEffect(() => {
@@ -664,21 +823,32 @@ export default function GlobalSearchScreen() {
   const rememberSearch = useCallback(async (value?: string) => {
     const trimmed = (value ?? query).trim();
     if (trimmed.length < 2) return;
-    const next = [trimmed, ...recentSearches.filter((item) => item.toLowerCase() !== trimmed.toLowerCase())].slice(0, MAX_RECENT_SEARCHES);
-    setRecentSearches(next);
-    await saveRecentSearches(next);
-  }, [query, recentSearches]);
+    const identity = await getVerifiedRecentSearchWriteIdentity();
+    if (!identity) return;
+    const current = await loadRecentSearches(identity.userId);
+    if (!isCurrentRecentSearchIdentity(identity)) return;
+    const next = [trimmed, ...current.filter((item) => item.toLowerCase() !== trimmed.toLowerCase())]
+      .slice(0, MAX_RECENT_SEARCHES);
+    await saveRecentSearches(identity.userId, next);
+    if (isCurrentRecentSearchIdentity(identity)) setRecentSearches(next);
+  }, [getVerifiedRecentSearchWriteIdentity, isCurrentRecentSearchIdentity, query]);
 
   const removeRecentSearch = useCallback(async (value: string) => {
-    const next = recentSearches.filter((item) => item !== value);
-    setRecentSearches(next);
-    await saveRecentSearches(next);
-  }, [recentSearches]);
+    const identity = await getVerifiedRecentSearchWriteIdentity();
+    if (!identity) return;
+    const current = await loadRecentSearches(identity.userId);
+    if (!isCurrentRecentSearchIdentity(identity)) return;
+    const next = current.filter((item) => item !== value);
+    await saveRecentSearches(identity.userId, next);
+    if (isCurrentRecentSearchIdentity(identity)) setRecentSearches(next);
+  }, [getVerifiedRecentSearchWriteIdentity, isCurrentRecentSearchIdentity]);
 
   const clearRecentSearches = useCallback(async () => {
-    setRecentSearches([]);
-    await saveRecentSearches([]);
-  }, []);
+    const identity = await getVerifiedRecentSearchWriteIdentity();
+    if (!identity) return;
+    await saveRecentSearches(identity.userId, []);
+    if (isCurrentRecentSearchIdentity(identity)) setRecentSearches([]);
+  }, [getVerifiedRecentSearchWriteIdentity, isCurrentRecentSearchIdentity]);
 
   const runSearch = useCallback(async (searchText: string, force = false) => {
     const trimmed = searchText.trim();
@@ -784,7 +954,7 @@ export default function GlobalSearchScreen() {
     if (isFulfilled(profilesFirst) && !profilesFirst.value.error) {
       firstResults.collectors = (profilesFirst.value.data ?? []).map((profile: any) => ({
         id: profile.id,
-        name: profile.collector_name ?? 'Collector',
+        name: sanitizeGate0CommerceCopy(profile.collector_name ?? null, 'Collector') ?? 'Collector',
         avatarUrl: profile.avatar_url ?? null,
       }));
     } else if (isRejected(profilesFirst)) {
@@ -869,7 +1039,7 @@ export default function GlobalSearchScreen() {
     if (profilesResult.status === 'fulfilled' && !profilesResult.value.error) {
       next.collectors = (profilesResult.value.data ?? []).map((profile: any) => ({
         id: profile.id,
-        name: profile.collector_name ?? 'Collector',
+        name: sanitizeGate0CommerceCopy(profile.collector_name ?? null, 'Collector') ?? 'Collector',
         avatarUrl: profile.avatar_url ?? null,
       }));
     } else {
@@ -1748,24 +1918,30 @@ async function fetchProductListingStats(products: MarketProduct[]) {
 }
 
 function mapListingResult(listing: any): ListingResult {
-  const isTrade = Boolean(listing.trade_only);
+  const safeListing = sanitizeMarketplaceListingPresentationFields(listing);
+  const isTrade = Boolean(safeListing.trade_only);
   return {
-    id: listing.id,
-    title: listing.product_name ?? listing.card_id ?? 'Market listing',
+    id: safeListing.id,
+    title: sanitizeGate0CommerceCopy(
+      safeListing.product_name ?? safeListing.card_id ?? null,
+      'Market listing',
+    ) ?? 'Market listing',
     subtitle: [
-      listing.pricing_mode === 'graded' ? [listing.grade_company, listing.grade].filter(Boolean).join(' ') : null,
-      listing.condition,
+      safeListing.pricing_mode === 'graded'
+        ? [safeListing.grade_company, safeListing.grade].filter(Boolean).join(' ')
+        : null,
+      safeListing.condition,
     ].filter(Boolean).join(' · ') || null,
-    imageUri: listing.official_image_url ?? listing.listing_images?.[0] ?? null,
-    price: listing.asking_price == null ? null : Number(listing.asking_price),
-    modeLabel: isTrade ? 'Trade' : 'Buy',
-    cardId: listing.card_id ?? null,
-    setId: listing.set_id ?? null,
-    productType: listing.product_type ?? null,
-    gradeCompany: listing.grade_company ?? null,
-    grade: listing.grade ?? null,
-    condition: listing.condition ?? null,
-    createdAt: listing.created_at ?? null,
+    imageUri: safeListing.official_image_url ?? safeListing.listing_images?.[0] ?? null,
+    price: safeListing.asking_price == null ? null : Number(safeListing.asking_price),
+    modeLabel: isTrade ? 'Trade' : 'Offers',
+    cardId: safeListing.card_id ?? null,
+    setId: safeListing.set_id ?? null,
+    productType: safeListing.product_type ?? null,
+    gradeCompany: safeListing.grade_company ?? null,
+    grade: safeListing.grade ?? null,
+    condition: safeListing.condition ?? null,
+    createdAt: safeListing.created_at ?? null,
   };
 }
 

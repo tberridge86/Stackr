@@ -8,11 +8,11 @@ on:
         required: true
         type: string
       release_scope:
-        description: Rehearse the catalogue API now, or the full platform after recognition approval
+        description: Run Gate 0 hardening, rehearse the catalogue API, or deploy the full platform after recognition approval
         required: true
-        default: catalogue_api
+        default: gate0_hardening
         type: choice
-        options: [catalogue_api, full_platform]
+        options: [gate0_hardening, catalogue_api, full_platform]
       apply_migrations:
         description: Apply migrations after the dry run
         required: true
@@ -65,6 +65,19 @@ jobs:
       STACKR_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL }}
       STACKR_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
       STACKR_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      STACKR_MOBILE_APP_VARIANT: staging
+      STACKR_MOBILE_ENVIRONMENT: staging
+      STACKR_MOBILE_PRICE_API_URL: ${{ vars.STACKR_BACKEND_URL }}
+      STACKR_MOBILE_API_URL: ${{ vars.STACKR_GATEWAY_URL }}
+      STACKR_MOBILE_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+      STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'
+      EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: 'false'
+      EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED: 'false'
+      EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED: 'false'
+      EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS: 'false'
+      EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK: 'false'
+      EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK: 'false'
       BACKEND_ORIGIN_KEY: ${{ secrets.BACKEND_ORIGIN_KEY }}
       BACKEND_ADMIN_KEY: ${{ secrets.BACKEND_ADMIN_KEY }}
       RECOGNITION_SERVICE_SECRET: ${{ secrets.RECOGNITION_SERVICE_SECRET }}
@@ -98,8 +111,16 @@ jobs:
 
       - name: Validate staging release mode
         run: |
-          if [ "${{ inputs.apply_migrations }}" = "true" ] && [ "${{ inputs.release_candidate }}" != "true" ]; then
-            echo "Staging migrations require release_candidate=true and reviewed evidence."
+          if [ "${{ inputs.release_scope }}" = "gate0_hardening" ] && [ "${{ inputs.apply_migrations }}" != "true" ]; then
+            echo "Gate 0 hardening requires apply_migrations=true."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "gate0_hardening" ] && [ "${{ inputs.publish_mobile_update }}" = "true" ]; then
+            echo "Gate 0 hardening never publishes a mobile update."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" != "gate0_hardening" ] && [ "${{ inputs.release_candidate }}" != "true" ]; then
+            echo "Non-Gate-0 staging deployments require release_candidate=true and reviewed evidence."
             exit 1
           fi
           if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ "${{ inputs.publish_mobile_update }}" = "true" ]; then
@@ -107,8 +128,72 @@ jobs:
             exit 1
           fi
 
+      - name: Validate staging mobile public configuration
+        if: inputs.release_scope == 'gate0_hardening' || inputs.release_scope == 'full_platform'
+        run: >-
+          npm run mobile:verify-runtime --
+          --expected-environment=staging
+          --expected-app-variant=staging
+          --require-explicit
+          --require-safe-release-flags
+
+      - name: Validate effective EAS preview environment
+        if: inputs.publish_mobile_update && inputs.release_scope == 'full_platform'
+        run: |
+          env \
+            -u STACKR_MOBILE_APP_VARIANT \
+            -u STACKR_MOBILE_ENVIRONMENT \
+            -u STACKR_MOBILE_PRICE_API_URL \
+            -u STACKR_MOBILE_API_URL \
+            -u STACKR_MOBILE_SUPABASE_URL \
+            -u STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY \
+            -u EXPO_PUBLIC_BETA_TRADE_DEMO_MODE \
+            -u EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED \
+            -u EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED \
+            -u EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED \
+            -u EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS \
+            -u EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK \
+            -u EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK \
+            npx --yes eas-cli@21.4.0 env:exec preview \
+              'npm run mobile:verify-runtime -- --expected-environment=staging --expected-app-variant=staging --require-explicit --require-safe-release-flags' \
+              --non-interactive
+
+      - name: Require compatible staging mobile builds
+        if: inputs.publish_mobile_update && inputs.release_scope == 'full_platform'
+        run: |
+          runtime_version="$(
+            node scripts/deploy/verify-mobile-runtime-config.mjs \
+              --expected-environment=staging \
+              --expected-app-variant=staging \
+              --require-explicit \
+              --require-safe-release-flags \
+              | jq -er '.runtimeVersion | select(type == "string")'
+          )"
+          npx --yes eas-cli@21.4.0 build:list \
+            --status finished \
+            --distribution internal \
+            --channel staging \
+            --runtime-version "$runtime_version" \
+            --app-identifier com.tommo86.Stackr.staging \
+            --build-profile staging \
+            --git-commit-hash "$GITHUB_SHA" \
+            --limit 10 \
+            --json \
+            --non-interactive \
+            > "$RUNNER_TEMP/eas-compatible-builds.raw.json"
+          node scripts/deploy/verify-eas-compatible-builds.mjs \
+            --file="$RUNNER_TEMP/eas-compatible-builds.raw.json" \
+            --expected-runtime="$runtime_version" \
+            --expected-channel=staging \
+            --expected-profile=staging \
+            --expected-git-sha="$GITHUB_SHA" \
+            --required-platforms=android,ios \
+            --github-env="$GITHUB_ENV" \
+            > "$RUNNER_TEMP/eas-compatible-builds-attestation.json"
+          rm -f "$RUNNER_TEMP/eas-compatible-builds.raw.json"
+
       - name: Require scoped production-candidate evidence
-        if: inputs.release_candidate
+        if: inputs.release_candidate && inputs.release_scope != 'gate0_hardening'
         run: |
           node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
           if [ "${{ inputs.release_scope }}" = "catalogue_api" ]; then
@@ -129,7 +214,39 @@ jobs:
         run: |
           set -euo pipefail
           test "$SUPABASE_PROJECT_REF" = "lmwfhvexfcoyeuoyrlco"
+          test "$STACKR_SUPABASE_URL" = "https://lmwfhvexfcoyeuoyrlco.supabase.co"
           node scripts/deploy/prepare-postgres-urls.mjs --source-only
+
+      - name: Verify the exact staging migration ledger
+        id: gate0_ledger_preflight
+        if: inputs.release_scope == 'gate0_hardening'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/deploy/verify-staging-migration-ledger.mjs \
+            --phase=pre-apply \
+            --require-resolvable-provenance \
+            | tee "$RUNNER_TEMP/stackr-gate0-ledger-preflight.json"
+          apply_required="$(node --input-type=module - "$RUNNER_TEMP/stackr-gate0-ledger-preflight.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const result = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          if (result.ok !== true || typeof result.applyRequired !== 'boolean') {
+            throw new Error('invalid_gate0_ledger_preflight_result');
+          }
+          process.stdout.write(String(result.applyRequired));
+          NODE
+          )"
+          echo "apply_required=$apply_required" >> "$GITHUB_OUTPUT"
+          echo "STACKR_GATE0_APPLY_REQUIRED=$apply_required" >> "$GITHUB_ENV"
+          node scripts/deploy/verify-gate0-financial-route-containment.mjs \
+            --phase=pre-apply
+
+      - name: Materialize the isolated staging migration ledger
+        if: inputs.release_candidate || inputs.apply_migrations
+        run: |
+          rm -rf "$RUNNER_TEMP/stackr-staging-ledger"
+          node scripts/deploy/materialize-staging-migration-ledger.mjs \
+            --output="$RUNNER_TEMP/stackr-staging-ledger"
 
       - name: List the latest physical backup
         id: physical_backup_list
@@ -179,12 +296,142 @@ jobs:
             --require-physical
 
       - name: Dry-run backward-compatible migrations
-        if: inputs.release_candidate
-        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all --dry-run
+        if: inputs.release_candidate || inputs.release_scope == 'gate0_hardening'
+        run: |
+          cd "$RUNNER_TEMP/stackr-staging-ledger"
+          npx --yes supabase@2.110.0 db push \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --include-all \
+            --dry-run 2>&1 | tee "$RUNNER_TEMP/stackr-staging-migration-plan.txt"
+          if [ "${{ inputs.release_scope }}" = "gate0_hardening" ]; then
+            node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const plan = readFileSync(
+            process.env.RUNNER_TEMP + '/stackr-staging-migration-plan.txt',
+            'utf8',
+          ).replace(/\u001b\[[0-9;]*m/g, '');
+          const migrations = [...plan.matchAll(/\b(\d{14}_[A-Za-z0-9_]+\.sql)\b/g)]
+            .map((match) => match[1]);
+          const unique = [...new Set(migrations)];
+          const expected = process.env.STACKR_GATE0_APPLY_REQUIRED === 'true'
+            ? ['20260827124944_gate0_financial_route_containment.sql']
+            : [];
+          if (JSON.stringify(unique) !== JSON.stringify(expected)) {
+            throw new Error(`unexpected_staging_pending_migrations:${unique.join(',')}`);
+          }
+          NODE
+          fi
+
+      - name: Rehearse Gate 0 migration in a rollback-only transaction
+        if: inputs.release_scope == 'gate0_hardening' && steps.gate0_ledger_preflight.outputs.apply_required == 'true'
+        run: node scripts/deploy/rehearse-gate0-financial-route-containment.mjs
 
       - name: Apply backward-compatible migrations
-        if: inputs.apply_migrations
-        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all
+        if: inputs.apply_migrations && (inputs.release_scope != 'gate0_hardening' || steps.gate0_ledger_preflight.outputs.apply_required == 'true')
+        run: |
+          cd "$RUNNER_TEMP/stackr-staging-ledger"
+          npx --yes supabase@2.110.0 db push \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --include-all \
+            --yes
+
+      - name: Prove Gate 0 database containment immediately after migration
+        if: inputs.release_scope == 'gate0_hardening'
+        run: |
+          node scripts/deploy/verify-staging-migration-ledger.mjs \
+            --phase=post-apply \
+            --require-resolvable-provenance
+          node scripts/deploy/verify-gate0-financial-route-containment.mjs \
+            --phase=post-apply
+
+      - name: Attest staging Railway deployment target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$RAILWAY_API_TOKEN"
+          test -n "$RAILWAY_PROJECT_ID"
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$RAILWAY_BACKEND_SERVICE_ID"
+          npx --yes @railway/cli@5.30.1 list --json \
+            > "$RUNNER_TEMP/stackr-railway-projects.json"
+          npx --yes @railway/cli@5.30.1 service list \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --json \
+            > "$RUNNER_TEMP/stackr-railway-staging-services.json"
+          node --input-type=module \
+            "$RUNNER_TEMP/stackr-railway-projects.json" \
+            "$RUNNER_TEMP/stackr-railway-staging-services.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+
+          const [projectPath, servicePath] = process.argv.slice(2);
+          const projects = JSON.parse(readFileSync(projectPath, 'utf8'));
+          const serviceSummaries = JSON.parse(readFileSync(servicePath, 'utf8'));
+          const expected = {
+            projectId: process.env.RAILWAY_PROJECT_ID,
+            environmentId: process.env.RAILWAY_ENVIRONMENT_ID,
+            environmentName: 'staging',
+            serviceId: process.env.RAILWAY_BACKEND_SERVICE_ID,
+            serviceName: 'stackr-backend-staging',
+            serviceUrl: process.env.STACKR_BACKEND_URL,
+          };
+
+          if (!Array.isArray(projects)) throw new Error('railway_project_list_schema_drift');
+          const projectMatches = projects.filter((project) => project?.id === expected.projectId);
+          if (projectMatches.length !== 1 || typeof projectMatches[0]?.name !== 'string') {
+            throw new Error('staging_railway_project_identity_mismatch');
+          }
+          const project = projectMatches[0];
+          const environmentEdges = project?.environments?.edges;
+          if (!Array.isArray(environmentEdges)) throw new Error('railway_environment_list_schema_drift');
+          const environmentMatches = environmentEdges.filter(
+            (edge) => edge?.node?.id === expected.environmentId,
+          );
+          if (environmentMatches.length !== 1
+            || environmentMatches[0]?.node?.name !== expected.environmentName) {
+            throw new Error('staging_railway_environment_identity_mismatch');
+          }
+
+          const serviceEdges = project?.services?.edges;
+          if (!Array.isArray(serviceEdges)) throw new Error('railway_project_service_schema_drift');
+          const projectServiceMatches = serviceEdges.filter(
+            (edge) => edge?.node?.id === expected.serviceId,
+          );
+          if (projectServiceMatches.length !== 1
+            || projectServiceMatches[0]?.node?.name !== expected.serviceName) {
+            throw new Error('staging_railway_backend_identity_mismatch');
+          }
+          const serviceInstanceEdges = projectServiceMatches[0]?.node?.serviceInstances?.edges;
+          if (!Array.isArray(serviceInstanceEdges)
+            || !serviceInstanceEdges.some(
+              (edge) => edge?.node?.environmentId === expected.environmentId,
+            )) {
+            throw new Error('staging_railway_backend_environment_mismatch');
+          }
+
+          if (!Array.isArray(serviceSummaries)) throw new Error('railway_service_list_schema_drift');
+          const summaryMatches = serviceSummaries.filter(
+            (service) => service?.id === expected.serviceId,
+          );
+          if (summaryMatches.length !== 1
+            || summaryMatches[0]?.name !== expected.serviceName
+            || summaryMatches[0]?.url !== expected.serviceUrl
+            || typeof summaryMatches[0]?.status !== 'string') {
+            throw new Error('staging_railway_backend_target_mismatch');
+          }
+
+          console.log(JSON.stringify({
+            ok: true,
+            project: { id: project.id, name: project.name },
+            environment: environmentMatches[0].node,
+            backend: {
+              id: summaryMatches[0].id,
+              name: summaryMatches[0].name,
+              url: summaryMatches[0].url,
+              currentStatus: summaryMatches[0].status,
+            },
+          }, null, 2));
+          NODE
 
       - name: Deploy catalogue API behind the staging gateway
         run: >-
@@ -192,6 +439,61 @@ jobs:
           --project "$RAILWAY_PROJECT_ID"
           --environment "$RAILWAY_ENVIRONMENT_ID"
           --service "$RAILWAY_BACKEND_SERVICE_ID"
+
+      - name: Attest deployed staging backend runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const expected = {
+            gitCommit: process.env.GITHUB_SHA.slice(0, 12),
+            railwayEnvironment: 'staging',
+            supabaseProjectRef: 'lmwfhvexfcoyeuoyrlco',
+          };
+          const healthUrl = new URL('/health', process.env.STACKR_BACKEND_URL);
+          healthUrl.searchParams.set('source_sha', process.env.GITHUB_SHA);
+          const deadline = Date.now() + 5 * 60_000;
+          let observed = null;
+
+          while (Date.now() < deadline) {
+            try {
+              const response = await fetch(healthUrl, {
+                cache: 'no-store',
+                headers: { 'cache-control': 'no-cache' },
+                signal: AbortSignal.timeout(10_000),
+              });
+              const body = await response.json();
+              observed = {
+                status: response.status,
+                ok: body?.ok,
+                service: body?.service,
+                gitCommit: body?.runtime?.gitCommit,
+                railwayEnvironment: body?.runtime?.railwayEnvironment,
+                supabaseProjectRef: body?.runtime?.supabaseProjectRef,
+              };
+              if (response.ok
+                && observed.ok === true
+                && observed.service === 'stackr-api'
+                && observed.gitCommit === expected.gitCommit
+                && observed.railwayEnvironment === expected.railwayEnvironment
+                && observed.supabaseProjectRef === expected.supabaseProjectRef) {
+                console.log(JSON.stringify({ ok: true, ...observed }, null, 2));
+                process.exit(0);
+              }
+            } catch (error) {
+              observed = { error: error.name };
+            }
+            await new Promise((resolve) => setTimeout(resolve, 10_000));
+          }
+
+          console.error(JSON.stringify({
+            ok: false,
+            error: 'staging_backend_runtime_attestation_failed',
+            expected,
+            observed,
+          }, null, 2));
+          process.exit(1);
+          NODE
 
       - name: Deploy recognition container behind the staging gateway
         if: inputs.release_scope == 'full_platform'
@@ -212,9 +514,15 @@ jobs:
       - name: Verify private service readiness
         run: |
           if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
-            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL" --require-commerce-disabled
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL" --require-commerce-disabled \
+              --expected-backend-commit="$GITHUB_SHA" \
+              --expected-backend-environment=staging \
+              --expected-backend-supabase-project-ref=lmwfhvexfcoyeuoyrlco
           else
-            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --require-commerce-disabled
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --require-commerce-disabled \
+              --expected-backend-commit="$GITHUB_SHA" \
+              --expected-backend-environment=staging \
+              --expected-backend-supabase-project-ref=lmwfhvexfcoyeuoyrlco
           fi
 
       - name: Upload and activate the staging gateway version
@@ -239,28 +547,110 @@ jobs:
             --env staging --version-tag "$RELEASE_TAG@100" --yes
 
       - name: Smoke-test the public staging contract
-        run: >-
-          npm run deploy:smoke --
-          --gateway="$STACKR_GATEWAY_URL"
-          --full-gateway
-          --require-published-catalogue
-          --required-catalogue-languages=en,ja,zh-tw,zh-cn,ko
+        run: |
+          if [ "${{ inputs.release_scope }}" = "gate0_hardening" ]; then
+            npm run deploy:smoke -- \
+              --gateway="$STACKR_GATEWAY_URL" \
+              --backend="$STACKR_BACKEND_URL" \
+              --gateway-safety \
+              --require-commerce-disabled \
+              --expected-backend-commit="$GITHUB_SHA" \
+              --expected-backend-environment=staging \
+              --expected-backend-supabase-project-ref=lmwfhvexfcoyeuoyrlco
+          else
+            npm run deploy:smoke -- \
+              --gateway="$STACKR_GATEWAY_URL" \
+              --backend="$STACKR_BACKEND_URL" \
+              --full-gateway \
+              --require-commerce-disabled \
+              --expected-backend-commit="$GITHUB_SHA" \
+              --expected-backend-environment=staging \
+              --expected-backend-supabase-project-ref=lmwfhvexfcoyeuoyrlco \
+              --require-published-catalogue \
+              --required-catalogue-languages=en,ja,zh-tw,zh-cn,ko
+          fi
+
+      - name: Prove Gate 0 database containment
+        if: inputs.release_scope == 'gate0_hardening'
+        run: |
+          node scripts/deploy/verify-staging-migration-ledger.mjs \
+            --phase=post-apply \
+            --require-resolvable-provenance
+          node scripts/deploy/verify-gate0-financial-route-containment.mjs \
+            --phase=post-apply
 
       - name: Publish staging mobile configuration
         if: inputs.publish_mobile_update && inputs.release_scope == 'full_platform'
-        env:
-          EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'
+        run: |
+          env \
+            -u STACKR_MOBILE_APP_VARIANT \
+            -u STACKR_MOBILE_ENVIRONMENT \
+            -u STACKR_MOBILE_PRICE_API_URL \
+            -u STACKR_MOBILE_API_URL \
+            -u STACKR_MOBILE_SUPABASE_URL \
+            -u STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY \
+            -u EXPO_PUBLIC_BETA_TRADE_DEMO_MODE \
+            -u EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED \
+            -u EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED \
+            -u EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED \
+            -u EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS \
+            -u EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK \
+            -u EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK \
+            npx --yes eas-cli@21.4.0 env:exec preview \
+              'npm run mobile:verify-runtime -- --expected-environment=staging --expected-app-variant=staging --require-explicit --require-safe-release-flags && npx --yes eas-cli@21.4.0 update --channel staging --platform all --message "Stackr staging $GITHUB_SHA" --json --non-interactive > "$RUNNER_TEMP/eas-update.json"' \
+              --non-interactive
+          node scripts/deploy/capture-eas-update-group.mjs \
+            --file="$RUNNER_TEMP/eas-update.json" \
+            --github-env="$GITHUB_ENV" \
+            --mode=publish-evidence \
+            > "$RUNNER_TEMP/eas-update-publish-evidence.json"
+          node scripts/deploy/capture-eas-update-group.mjs \
+            --file="$RUNNER_TEMP/eas-update.json" \
+            --github-env="$GITHUB_ENV" \
+            --expected-runtime="$(node -p "require('./app.json').expo.version + '-staging'")" \
+            --expected-git-sha="$GITHUB_SHA" \
+            --expected-message="Stackr staging $GITHUB_SHA" \
+            --expected-platforms=android,ios \
+            > "$RUNNER_TEMP/eas-update-attestation.json"
+
+      - name: Upload staging mobile deployment attestation
+        if: ${{ !cancelled() && inputs.publish_mobile_update && inputs.release_scope == 'full_platform' && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-staging-mobile-attestation-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/eas-compatible-builds-attestation.json
+            ${{ runner.temp }}/eas-update.json
+            ${{ runner.temp }}/eas-update-publish-evidence.json
+            ${{ runner.temp }}/eas-update-attestation.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Roll back staging mobile update after a workflow failure
+        if: failure() && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true'
+        continue-on-error: true
         run: >-
-          npx --yes eas-cli@21.4.0 update
-          --channel staging
-          --environment preview
+          npx --yes eas-cli@21.4.0 update:rollback
+          "$STACKR_EAS_UPDATE_GROUP_ID"
           --platform all
-          --message "Stackr staging $GITHUB_SHA"
-          --non-interactive
+          --message "Automatic rollback for GitHub run $GITHUB_RUN_ID"
+          --json --non-interactive
 
       - name: Remove ephemeral logical backups
         if: always()
+        continue-on-error: true
         run: |
           rm -rf "$RUNNER_TEMP/stackr-backup"
           rm -rf "$RUNNER_TEMP/stackr-backup-diagnostics"
+          rm -rf "$RUNNER_TEMP/stackr-staging-ledger"
+          rm -f "$RUNNER_TEMP/stackr-gate0-ledger-preflight.json"
+          rm -f "$RUNNER_TEMP/stackr-staging-migration-plan.txt"
+          rm -f "$RUNNER_TEMP/stackr-railway-projects.json"
+          rm -f "$RUNNER_TEMP/stackr-railway-staging-services.json"
           rm -f "$RUNNER_TEMP/stackr-worker-secrets.json"
+          rm -f "$RUNNER_TEMP/eas-compatible-builds.raw.json"
+          rm -f "$RUNNER_TEMP/eas-compatible-builds-attestation.json"
+          rm -f "$RUNNER_TEMP/eas-update.json"
+          rm -f "$RUNNER_TEMP/eas-update-publish-evidence.json"
+          rm -f "$RUNNER_TEMP/eas-update-attestation.json"

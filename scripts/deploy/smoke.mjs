@@ -80,6 +80,38 @@ const COMMERCE_DISABLED_ROUTES = [
     code: 'shipping_disabled',
     message: 'Shipping is disabled for this release.',
   },
+  {
+    name: 'legacy_trade_sent_retired',
+    method: 'POST',
+    path: '/api/trade/sent',
+    status: 410,
+    code: 'legacy_trade_mutation_retired',
+    message: 'This legacy trade mutation route has been retired.',
+  },
+  {
+    name: 'legacy_trade_received_retired',
+    method: 'POST',
+    path: '/api/trade/received',
+    status: 410,
+    code: 'legacy_trade_mutation_retired',
+    message: 'This legacy trade mutation route has been retired.',
+  },
+  ...[
+    ['notify_generic_retired', '/api/notify'],
+    ['notify_trade_offer_retired', '/api/notify/trade-offer'],
+    ['notify_trade_status_retired', '/api/notify/trade-status'],
+    ['notify_wishlist_match_retired', '/api/notify/wishlist-match'],
+    ['notify_price_alert_retired', '/api/notify/price-alert'],
+    ['discord_trade_listing_retired', '/api/discord/new-trade-listing'],
+    ['discord_review_retired', '/api/discord/new-review'],
+  ].map(([name, path]) => ({
+    name,
+    method: 'POST',
+    path,
+    status: 410,
+    code: 'unauthenticated_side_effect_retired',
+    message: 'This unauthenticated side-effect route has been retired.',
+  })),
 ];
 
 function argument(name, fallback = null) {
@@ -145,22 +177,49 @@ async function check(baseUrl, path, options = {}) {
   }
 }
 
-function commerceDisabledResponseCheck(expectedCode, expectedMessage) {
+function commerceDisabledResponseCheck(expectedStatus, expectedCode, expectedMessage) {
   return (body, response) => {
     const headerRequestId = response.headers.get('x-request-id');
     const bodyRequestId = typeof body?.requestId === 'string' ? body.requestId : null;
     return {
-      ok: response.status === 503
+      ok: response.status === expectedStatus
         && body?.code === expectedCode
         && body?.error === expectedMessage
         && Boolean(headerRequestId)
         && bodyRequestId === headerRequestId,
-      expectedStatus: 503,
+      expectedStatus,
       receivedStatus: response.status,
       expectedCode,
       receivedCode: body?.code ?? null,
       headerRequestId,
       bodyRequestId,
+    };
+  };
+}
+
+function backendAttestationCheck(expectedCommit, expectedEnvironment, expectedSupabaseProjectRef) {
+  return (body, response) => {
+    const receivedCommit = String(body?.runtime?.gitCommit ?? '').trim().toLowerCase();
+    const normalizedExpectedCommit = String(expectedCommit ?? '').trim().toLowerCase();
+    const receivedEnvironment = String(body?.runtime?.railwayEnvironment ?? '').trim();
+    const receivedSupabaseProjectRef = String(body?.runtime?.supabaseProjectRef ?? '').trim();
+    const commitIsNontrivialHex = /^[0-9a-f]{12,64}$/.test(receivedCommit);
+    const expectedIsFullHex = /^[0-9a-f]{40,64}$/.test(normalizedExpectedCommit);
+    const commitMatches = commitIsNontrivialHex
+      && expectedIsFullHex
+      && normalizedExpectedCommit.startsWith(receivedCommit);
+    return {
+      ok: response.status === 200
+        && body?.ok === true
+        && commitMatches
+        && receivedEnvironment === expectedEnvironment
+        && receivedSupabaseProjectRef === expectedSupabaseProjectRef,
+      expectedCommit: normalizedExpectedCommit,
+      receivedCommit: receivedCommit || null,
+      expectedEnvironment,
+      receivedEnvironment: receivedEnvironment || null,
+      expectedSupabaseProjectRef,
+      receivedSupabaseProjectRef: receivedSupabaseProjectRef || null,
     };
   };
 }
@@ -191,8 +250,12 @@ const recognitionUrl = argument('recognition', process.env.STACKR_RECOGNITION_UR
 const allowRecognitionNotReady = process.argv.includes('--allow-recognition-not-ready');
 const allowMissingRequestId = process.argv.includes('--allow-missing-request-id');
 const fullGateway = process.argv.includes('--full-gateway');
+const gatewaySafety = process.argv.includes('--gateway-safety');
 const requirePublishedCatalogue = process.argv.includes('--require-published-catalogue');
 const requireCommerceDisabled = process.argv.includes('--require-commerce-disabled');
+const expectedBackendCommit = argument('expected-backend-commit');
+const expectedBackendEnvironment = argument('expected-backend-environment');
+const expectedBackendSupabaseProjectRef = argument('expected-backend-supabase-project-ref');
 const requiredCatalogueLanguages = argument(
   'required-catalogue-languages',
   DEFAULT_REQUIRED_CATALOGUE_LANGUAGES.join(','),
@@ -202,26 +265,58 @@ const deniedOrigin = argument('denied-origin', 'https://not-stackr.invalid');
 const searchQuery = encodeURIComponent(argument('search-query', 'SV2a 157'));
 const checks = [];
 
+if (fullGateway && gatewaySafety) {
+  console.error('--full-gateway and --gateway-safety are mutually exclusive.');
+  process.exit(1);
+}
+
+if (gatewaySafety && !gatewayUrl) {
+  console.error('--gateway-safety requires a gateway URL via --gateway or STACKR_GATEWAY_URL.');
+  process.exit(1);
+}
+
 if (requireCommerceDisabled && !backendUrl) {
   console.error('--require-commerce-disabled requires a backend URL via --backend or STACKR_BACKEND_URL.');
   process.exit(1);
 }
 
-if (backendUrl) checks.push(await check(backendUrl, '/health'));
+if (expectedBackendCommit && !backendUrl) {
+  console.error('--expected-backend-commit requires a backend URL via --backend or STACKR_BACKEND_URL.');
+  process.exit(1);
+}
+
+if (expectedBackendCommit && (!expectedBackendEnvironment || !expectedBackendSupabaseProjectRef)) {
+  console.error('--expected-backend-commit also requires --expected-backend-environment and --expected-backend-supabase-project-ref.');
+  process.exit(1);
+}
+
+if (backendUrl) {
+  checks.push(await check(backendUrl, '/health', {
+    name: 'backend_health',
+    inspectJson: expectedBackendCommit
+      ? backendAttestationCheck(
+          expectedBackendCommit,
+          expectedBackendEnvironment,
+          expectedBackendSupabaseProjectRef,
+        )
+      : undefined,
+  }));
+}
 if (backendUrl && requireCommerceDisabled) {
   for (const route of COMMERCE_DISABLED_ROUTES) {
     const isPost = route.method === 'POST';
+    const expectedStatus = route.status ?? 503;
     checks.push(await check(backendUrl, route.path, {
       name: route.name,
       method: route.method,
       headers: isPost ? { 'content-type': 'application/json' } : undefined,
       body: isPost ? '{}' : undefined,
-      accept: [503],
-      inspectJson: commerceDisabledResponseCheck(route.code, route.message),
+      accept: [expectedStatus],
+      inspectJson: commerceDisabledResponseCheck(expectedStatus, route.code, route.message),
     }));
   }
 }
-if (backendUrl && fullGateway) {
+if (backendUrl && (fullGateway || gatewaySafety)) {
   checks.push(await check(backendUrl, '/v1/health', {
     name: 'direct_origin_v1_health_without_gateway_key',
     accept: [401, 503],
@@ -234,9 +329,11 @@ if (recognitionUrl) {
 if (gatewayUrl) {
   checks.push(await check(gatewayUrl, '/v1/health'));
   checks.push(await check(gatewayUrl, '/v1/ready'));
-  checks.push(await check(gatewayUrl, '/v1/catalog/manifest', {
-    inspectJson: requirePublishedCatalogue ? manifestPublishedCheck : undefined,
-  }));
+  if (!gatewaySafety) {
+    checks.push(await check(gatewayUrl, '/v1/catalog/manifest', {
+      inspectJson: requirePublishedCatalogue ? manifestPublishedCheck : undefined,
+    }));
+  }
   if (fullGateway) {
     checks.push(await check(gatewayUrl, '/v1/languages'));
     let firstSetId = null;
@@ -327,6 +424,8 @@ if (gatewayUrl) {
         },
       }));
     }
+  }
+  if (fullGateway || gatewaySafety) {
     checks.push(await check(gatewayUrl, '/v1/health', {
       name: 'cors_allowed_preflight',
       method: 'OPTIONS',

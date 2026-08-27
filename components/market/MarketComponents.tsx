@@ -15,7 +15,6 @@ import { StackrBottomSheet } from '../StackrModalSystem';
 import { StackrProfileAvatar } from '../StackrProfileAvatar';
 import { useTheme } from '../theme-context';
 import { marketIcons, type MarketIconName } from '../../lib/marketIcons';
-import { LIVE_COMMERCE_RELEASE_APPROVED, TRADE_CASH_TERMS_ENABLED } from '../../lib/config';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
 
@@ -86,23 +85,17 @@ function getVariantCopy(variant: MarketListingVariant) {
     case 'trade':
       return { label: 'Trade', icon: marketIcons.trade };
     case 'tradePlusCash':
-      return {
-        label: TRADE_CASH_TERMS_ENABLED ? 'Trade + cash' : 'Trade',
-        icon: marketIcons.trade,
-      };
+      return { label: 'Trade', icon: marketIcons.trade };
     case 'openToOffers':
       return { label: 'Open to offers', icon: marketIcons.offer };
     case 'sold':
-      return { label: 'Sold', icon: marketIcons.success };
+      return { label: 'Unavailable', icon: marketIcons.error };
     case 'reserved':
       return { label: 'Reserved', icon: marketIcons.warning };
     case 'unavailable':
       return { label: 'Unavailable', icon: marketIcons.error };
     default:
-      return {
-        label: LIVE_COMMERCE_RELEASE_APPROVED ? 'Buy' : 'Offers only',
-        icon: LIVE_COMMERCE_RELEASE_APPROVED ? marketIcons.buy : marketIcons.offer,
-      };
+      return { label: 'Offers only', icon: marketIcons.offer };
   }
 }
 
@@ -115,9 +108,9 @@ export function MarketHeader({
   onSaved,
   onOffers,
   onMyListings,
-  onOrders,
   onProfile,
   showShortcuts = true,
+  showMyListings = true,
 }: {
   incomingOfferCount?: number;
   savedCount?: number;
@@ -127,9 +120,9 @@ export function MarketHeader({
   onSaved: () => void;
   onOffers: () => void;
   onMyListings: () => void;
-  onOrders: () => void;
   onProfile?: () => void;
   showShortcuts?: boolean;
+  showMyListings?: boolean;
 }) {
   const { theme } = useTheme();
   return (
@@ -145,7 +138,7 @@ export function MarketHeader({
             The Ma<Text style={{ color: theme.colors.primary, fontSize: 31, lineHeight: 36, fontWeight: '900' }}>rket</Text>
           </Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, lineHeight: 16, fontWeight: '800', marginTop: -1 }}>
-            Buy, trade and discover cards from collectors.
+            Browse listings and make card-only offers with collectors.
           </Text>
         </View>
         <TouchableOpacity
@@ -182,6 +175,7 @@ export function MarketHeader({
           onSaved={onSaved}
           onOffers={onOffers}
           onMyListings={onMyListings}
+          showMyListings={showMyListings}
         />
       ) : null}
     </View>
@@ -195,6 +189,7 @@ export function MarketShortcutRow({
   onSaved,
   onOffers,
   onMyListings,
+  showMyListings = true,
 }: {
   savedCount?: number;
   incomingOfferCount?: number;
@@ -202,6 +197,7 @@ export function MarketShortcutRow({
   onSaved: () => void;
   onOffers: () => void;
   onMyListings: () => void;
+  showMyListings?: boolean;
 }) {
   return (
     <View style={{ flexDirection: 'row', gap: 8, width: '100%' }}>
@@ -213,7 +209,9 @@ export function MarketShortcutRow({
         onPress={onSaved}
       />
       <MarketQuickLink icon={marketIcons.offer} label="Offers" count={incomingOfferCount} onPress={onOffers} />
-      <MarketQuickLink icon={marketIcons.sell} label="My Listings" count={myListingCount} onPress={onMyListings} />
+      {showMyListings ? (
+        <MarketQuickLink icon={marketIcons.sell} label="My Listings" count={myListingCount} onPress={onMyListings} />
+      ) : null}
     </View>
   );
 }
@@ -359,7 +357,7 @@ export function MarketModeSelector({
               accessibilityIgnoresInvertColors
             />
             <Text style={{ color: active ? theme.colors.text : theme.colors.textSoft, fontSize: 13, fontWeight: '900' }}>
-              {mode === 'buy' ? 'Buy' : 'Trade'}
+              {mode === 'buy' ? 'Browse' : 'Trade'}
             </Text>
           </TouchableOpacity>
         );
@@ -548,7 +546,7 @@ function getListingTransaction(item: MarketListingCardData, variant: ReturnType<
   const estimate = money(item.marketEstimate);
 
   if (item.variantType === 'sold') {
-    return { badge: 'Sold', primary: 'Sold', secondary: estimate ? `Est. market ${estimate}` : null, state: 'Unavailable' };
+    return { badge: 'Unavailable', primary: 'Unavailable', secondary: estimate ? `Est. market ${estimate}` : null, state: 'Unavailable' };
   }
 
   if (item.variantType === 'reserved' || item.variantType === 'unavailable') {
@@ -570,19 +568,11 @@ function getListingTransaction(item: MarketListingCardData, variant: ReturnType<
   }
 
   if (item.variantType === 'tradePlusCash') {
-    if (!TRADE_CASH_TERMS_ENABLED) {
-      return {
-        badge: 'Trade only',
-        primary: 'Open to trade',
-        secondary: estimate ? `Estimated trade value ${estimate}` : null,
-        state: 'Offer trade',
-      };
-    }
     return {
-      badge: 'Trade + cash',
-      primary: item.terms ?? 'Trade + cash',
+      badge: 'Trade only',
+      primary: 'Open to trade',
       secondary: estimate ? `Estimated trade value ${estimate}` : null,
-      state: 'Propose trade',
+      state: 'Offer trade',
     };
   }
 
@@ -591,31 +581,21 @@ function getListingTransaction(item: MarketListingCardData, variant: ReturnType<
       badge: price ? 'Offers accepted' : 'Offers only',
       primary: price ?? 'Offers invited',
       secondary: estimate ? `Est. market ${estimate}` : null,
-      state: price ? 'Make offer' : 'Make purchase offer',
-    };
-  }
-
-  if (!LIVE_COMMERCE_RELEASE_APPROVED) {
-    return {
-      badge: 'Offers only',
-      primary: 'Offers invited',
-      secondary: estimate ? `Est. market ${estimate}` : null,
       state: 'Make offer',
     };
   }
 
   return {
-    badge: price ? 'Buy now' : 'Offers only',
-    primary: price ?? 'Offers invited',
+    badge: 'Offers only',
+    primary: 'Offers invited',
     secondary: estimate ? `Est. market ${estimate}` : null,
-    state: price ? 'Buy now' : 'Make purchase offer',
+    state: 'Make offer',
   };
 }
 
 function getCompactTransactionPrimary(primary: string) {
   if (primary === 'Offers invited') return 'Offers only';
   if (primary === 'Open to trade') return 'Trade';
-  if (primary === 'Make purchase offer') return 'Offer';
   return primary;
 }
 
@@ -885,26 +865,15 @@ function FavoriteButton({
 export function SellerIdentityRow({
   avatarUrl,
   name,
-  verified,
-  transactionCount,
   onPress,
   trailing,
 }: {
   avatarUrl?: string | null;
   name: string;
-  verified?: boolean;
-  transactionCount?: number | null;
   onPress?: () => void;
   trailing?: React.ReactNode;
 }) {
   const { theme } = useTheme();
-  const completedCount = transactionCount ?? 0;
-  const historyLabel = completedCount > 0
-    ? `${completedCount} completed sale${completedCount === 1 ? '' : 's'}`
-    : verified
-      ? 'No completed sales yet'
-      : 'New seller';
-  const trustLine = verified ? `Identity verified · ${historyLabel}` : historyLabel;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
       <TouchableOpacity
@@ -926,10 +895,9 @@ export function SellerIdentityRow({
             <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900' }} numberOfLines={1}>
               {name}
             </Text>
-            {verified ? <Ionicons name={marketIcons.verified} size={13} color={theme.colors.primary} /> : null}
           </View>
           <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700' }} numberOfLines={2}>
-            {trustLine}
+            Collector listing owner
           </Text>
         </View>
       </TouchableOpacity>
@@ -982,10 +950,10 @@ export function ProtectionDetail({ tier }: { tier: MarketProtectionTier }) {
   const { theme } = useTheme();
   const body =
     tier === 'Gold'
-      ? 'Enhanced review can require additional evidence where supported. Do not ship until both sides have confirmed the agreed terms.'
+      ? 'Enhanced review may require additional item evidence where supported.'
       : tier === 'Silver'
-        ? 'Structured listing evidence is expected, including clear condition imagery before a transaction proceeds.'
-        : 'Standard collector protection. Check photos, condition notes and the other collector before making an offer.';
+        ? 'Structured listing evidence includes clear condition imagery.'
+        : 'Review photos, condition notes and the collector profile before making an offer.';
   const checked =
     tier === 'Bronze'
       ? 'Listing identity, status and standard photos where supplied.'
@@ -1021,13 +989,11 @@ export function MarketValueSummary({
   estimatedValue,
   recentRange,
   lastUpdated,
-  deliveryIncluded,
   price,
 }: {
   estimatedValue?: number | null;
   recentRange?: string | null;
   lastUpdated?: string | null;
-  deliveryIncluded?: boolean | null;
   price?: number | null;
 }) {
   const { theme } = useTheme();
@@ -1074,7 +1040,7 @@ export function MarketValueSummary({
       <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 6 }}>
         {recentRange ? `Recent sales range ${recentRange}. ` : ''}
         {lastUpdated ? `Pricing data last updated ${lastUpdated}. ` : 'Pricing freshness depends on available sources. '}
-        {deliveryIncluded ? 'Delivery included where stated.' : 'Delivery costs may apply.'}
+        Estimates do not create a Stackr transaction.
       </Text>
     </View>
   );

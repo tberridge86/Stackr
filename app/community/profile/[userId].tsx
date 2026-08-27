@@ -26,6 +26,7 @@ import {
 import { stackrTabContentPadding } from '../../../lib/stackrSizing';
 import { stackrIcons } from '../../../lib/stackrIcons';
 import { fetchStackrCardRows } from '../../../lib/stackrDomainAdapter';
+import { sanitizeGate0CommerceCopy } from '../../../lib/gate0CommerceCopy';
 
 // ===============================
 // TYPES
@@ -193,10 +194,21 @@ export default function PublicCollectorProfileScreen() {
       ]);
 
       // Profile
-      setProfile(profileResult.data as Profile | null);
+      const rawProfile = profileResult.data as Profile | null;
+      const nextProfile = rawProfile
+        ? {
+          ...rawProfile,
+          collector_name: sanitizeGate0CommerceCopy(rawProfile.collector_name, 'Collector'),
+          pokemon_type: sanitizeGate0CommerceCopy(rawProfile.pokemon_type, null),
+        }
+        : null;
+      setProfile(nextProfile);
 
       // Binders
-      const nextBinders = (binderResult.data ?? []) as Binder[];
+      const nextBinders = ((binderResult.data ?? []) as Binder[]).map((binder) => ({
+        ...binder,
+        name: sanitizeGate0CommerceCopy(binder.name, 'Public binder') ?? 'Public binder',
+      }));
       setBinders(nextBinders);
 
       // Owned card count across public binders
@@ -214,7 +226,10 @@ export default function PublicCollectorProfileScreen() {
       setShowcaseCount(showcaseResult.count ?? 0);
 
       // Posts
-      const nextPosts = (postResult.data ?? []) as SocialPost[];
+      const nextPosts = ((postResult.data ?? []) as SocialPost[]).map((post) => ({
+        ...post,
+        body: sanitizeGate0CommerceCopy(post.body, null),
+      }));
       setPosts(nextPosts);
 
       // Trader rating
@@ -237,7 +252,7 @@ export default function PublicCollectorProfileScreen() {
       }
 
       // Load card previews (posts + featured + chase)
-      const profileData = profileResult.data as Profile | null;
+      const profileData = nextProfile;
       const postCardIds = nextPosts
         .map((p) => p.card_id)
         .filter(Boolean) as string[];
@@ -586,8 +601,12 @@ export default function PublicCollectorProfileScreen() {
                   {/* Trade button */}
                   <TouchableOpacity
                     onPress={() => router.push({
-                      pathname: '/offer/new',
-                      params: { targetUserId: binderId },
+                      pathname: '/(tabs)/market',
+                      params: {
+                        mode: 'trade',
+                        userId: binderId,
+                        userName: profile.collector_name ?? 'Collector',
+                      },
                     })}
                     style={{
                       flex: 1,
