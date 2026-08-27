@@ -9,23 +9,10 @@ const paymentsEnabledEnv = ['STACKR', 'LIVE', 'PAYMENTS', 'ENABLED'].join('_');
 process.env.SUPABASE_URL = 'https://stripe-route-test.supabase.co';
 process.env[supabaseSecretEnv] = ['stripe', 'route', 'test', 'secret'].join('-');
 
-function installSupabaseUserResponse(user) {
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (input, init) => {
-    const url = typeof input === 'string' || input instanceof URL
-      ? String(input)
-      : String(input?.url ?? '');
-    if (url.startsWith(`${process.env.SUPABASE_URL}/auth/v1/user`)) {
-      return new Response(JSON.stringify(user), {
-        status: 200,
-        headers: { 'content-type': 'application/json' },
-      });
-    }
-    return originalFetch(input, init);
-  };
-  return () => {
-    globalThis.fetch = originalFetch;
-  };
+function routeMiddleware(router, path) {
+  const layer = router.stack.find((candidate) => candidate.route?.path === path);
+  assert.ok(layer, `missing route ${path}`);
+  return layer.route.stack.map((candidate) => candidate.handle);
 }
 
 async function startApp(router) {
@@ -85,10 +72,10 @@ test('Stripe operational routes are disabled by default', async () => {
   }
 });
 
-test('enabling Stripe operations does not bypass bearer authentication', async () => {
+test('a Railway environment variable alone cannot unlock Stripe operations', async () => {
   process.env[paymentsEnabledEnv] = 'true';
   process.env[stripeSecretEnv] = ['sk', 'test', 'stripe', 'route', 'configured'].join('_');
-  const { default: router } = await import('../routes/stripe.js?payments-auth-required');
+  const { default: router } = await import('../routes/stripe.js?payments-code-locked');
   const app = await startApp(router);
 
   try {
@@ -97,10 +84,10 @@ test('enabling Stripe operations does not bypass bearer authentication', async (
       headers: { 'content-type': 'application/json' },
       body: '{}',
     });
-    assert.equal(response.status, 401);
+    assert.equal(response.status, 503);
     assert.deepEqual(await response.json(), {
-      error: 'Sign in is required for this request.',
-      code: 'authentication_required',
+      error: 'Payments are disabled for this release.',
+      code: 'payments_disabled',
       requestId: null,
     });
   } finally {
@@ -109,37 +96,32 @@ test('enabling Stripe operations does not bypass bearer authentication', async (
   }
 });
 
-test('Stripe money movement rejects an authenticated caller supplying another buyer id', async () => {
+test('Stripe operational routes retain authentication and identity checks behind the code lock', async () => {
   process.env[paymentsEnabledEnv] = 'true';
-  process.env[stripeSecretEnv] = ['sk', 'test', 'stripe', 'route', 'identity'].join('_');
-  const restoreFetch = installSupabaseUserResponse({
-    id: 'signed-in-buyer',
-    email: 'buyer@example.com',
-  });
-  const { default: router } = await import('../routes/stripe.js?payments-identity-match');
-  const app = await startApp(router);
+  process.env[stripeSecretEnv] = ['sk', 'test', 'stripe', 'route', 'guard-order'].join('_');
+  const { default: router } = await import('../routes/stripe.js?payments-guard-order');
 
   try {
-    const response = await fetch(`${app.baseUrl}/api/stripe/create-payment-intent`, {
-      method: 'POST',
-      headers: {
-        authorization: 'Bearer verified-access-token',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        listingId: 'listing-1',
-        buyerId: 'different-buyer',
-      }),
-    });
-    assert.equal(response.status, 403);
-    assert.deepEqual(await response.json(), {
-      error: 'buyerId does not match the signed-in account.',
-      code: 'identity_mismatch',
-      requestId: null,
-    });
+    for (const path of [
+      '/create-connect-account',
+      '/account-status',
+      '/create-account-link',
+      '/create-payment-intent',
+      '/create-trade-cash-payment-intent',
+    ]) {
+      const middleware = routeMiddleware(router, path);
+      assert.deepEqual(
+        middleware.slice(0, 3).map((handler) => handler.name),
+        ['requireReleaseFeature', 'requireAuthenticatedUser', 'requireStripeConfigured'],
+        path,
+      );
+      assert.match(
+        middleware.at(-1).toString(),
+        /requireMatchingAuthenticatedUser/,
+        `${path} must bind caller identity to the authenticated user`,
+      );
+    }
   } finally {
     delete process.env[paymentsEnabledEnv];
-    restoreFetch();
-    await app.close();
   }
 });

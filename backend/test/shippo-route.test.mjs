@@ -55,9 +55,9 @@ test('Shippo operational routes are disabled by default', async () => {
   }
 });
 
-test('enabling Shippo operations does not bypass bearer authentication', async () => {
+test('a Railway environment variable alone cannot unlock Shippo operations', async () => {
   process.env[shippingEnabledEnv] = 'true';
-  const { default: router } = await import('../routes/shippo.js?shipping-auth-required');
+  const { default: router } = await import('../routes/shippo.js?shipping-code-locked');
   const app = await startApp(router);
 
   try {
@@ -66,14 +66,24 @@ test('enabling Shippo operations does not bypass bearer authentication', async (
       headers: { 'content-type': 'application/json' },
       body: '{}',
     });
-    assert.equal(response.status, 401);
+    assert.equal(response.status, 503);
     assert.deepEqual(await response.json(), {
-      error: 'Sign in is required for this request.',
-      code: 'authentication_required',
+      error: 'Shipping is disabled for this release.',
+      code: 'shipping_disabled',
       requestId: null,
     });
   } finally {
     delete process.env[shippingEnabledEnv];
     await app.close();
   }
+});
+
+test('Shippo retains bearer authentication behind the code lock', async () => {
+  const { default: router } = await import('../routes/shippo.js?shipping-guard-order');
+  const middlewareNames = router.stack
+    .filter((layer) => !layer.route)
+    .slice(0, 2)
+    .map((layer) => layer.handle.name);
+
+  assert.deepEqual(middlewareNames, ['requireReleaseFeature', 'requireAuthenticatedUser']);
 });

@@ -2,6 +2,7 @@ import express from 'express';
 import fetch from 'node-fetch';
 import { createClient } from '@supabase/supabase-js';
 import { createRequireAuthenticatedUser } from '../lib/requestAuth.js';
+import { commerceReleaseApprovals } from '../lib/releaseApprovals.js';
 import { createRequireReleaseFeature } from '../lib/releaseFeatureGate.js';
 
 const router = express.Router();
@@ -24,9 +25,10 @@ const authSupabase = createClient(
   },
 );
 const requireAuthenticatedUser = createRequireAuthenticatedUser({ supabase: authSupabase });
-// Keep unset until label purchases are bound to an authorised Stackr order and rate-limited.
+// Keep the source approval false until labels are order-bound, authorised and rate-limited.
 const requireLiveShippingEnabled = createRequireReleaseFeature({
   flagName: 'STACKR_LIVE_SHIPPING_ENABLED',
+  releaseApproved: commerceReleaseApprovals.liveShipping,
   code: 'shipping_disabled',
   message: 'Shipping is disabled for this release.',
 });

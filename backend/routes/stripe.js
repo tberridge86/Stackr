@@ -7,6 +7,7 @@ import {
   createRequireAuthenticatedUser,
   requireMatchingAuthenticatedUser,
 } from '../lib/requestAuth.js';
+import { commerceReleaseApprovals } from '../lib/releaseApprovals.js';
 import { createRequireReleaseFeature } from '../lib/releaseFeatureGate.js';
 
 const router = express.Router();
@@ -38,9 +39,10 @@ const supabase = createClient(
   },
 );
 const requireAuthenticatedUser = createRequireAuthenticatedUser({ supabase });
-// Keep unset until payment reservation, settlement and retry handling are atomic and idempotent.
+// Keep the source approval false until reservation, settlement and retries are atomic and idempotent.
 const requireLivePaymentsEnabled = createRequireReleaseFeature({
   flagName: 'STACKR_LIVE_PAYMENTS_ENABLED',
+  releaseApproved: commerceReleaseApprovals.livePayments,
   code: 'payments_disabled',
   message: 'Payments are disabled for this release.',
 });
