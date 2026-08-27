@@ -4,9 +4,29 @@ import express from 'express';
 
 const supabaseSecretEnv = ['SUPABASE', 'SECRET', 'KEY'].join('_');
 const stripeSecretEnv = ['STRIPE', 'SECRET', 'KEY'].join('_');
+const paymentsEnabledEnv = ['STACKR', 'LIVE', 'PAYMENTS', 'ENABLED'].join('_');
 
 process.env.SUPABASE_URL = 'https://stripe-route-test.supabase.co';
 process.env[supabaseSecretEnv] = ['stripe', 'route', 'test', 'secret'].join('-');
+
+function installSupabaseUserResponse(user) {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init) => {
+    const url = typeof input === 'string' || input instanceof URL
+      ? String(input)
+      : String(input?.url ?? '');
+    if (url.startsWith(`${process.env.SUPABASE_URL}/auth/v1/user`)) {
+      return new Response(JSON.stringify(user), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+    return originalFetch(input, init);
+  };
+  return () => {
+    globalThis.fetch = originalFetch;
+  };
+}
 
 async function startApp(router) {
   const app = express();
@@ -26,9 +46,10 @@ async function startApp(router) {
   };
 }
 
-test('Stripe routes boot without a secret and fail dependent endpoints closed', async () => {
+test('Stripe operational routes are disabled by default', async () => {
   delete process.env[stripeSecretEnv];
-  const { default: router } = await import('../routes/stripe.js?stripe-missing');
+  delete process.env[paymentsEnabledEnv];
+  const { default: router } = await import('../routes/stripe.js?payments-disabled');
   const app = await startApp(router);
 
   try {
@@ -48,7 +69,9 @@ test('Stripe routes boot without a secret and fail dependent endpoints closed', 
       });
       assert.equal(response.status, 503, `${method} ${path}`);
       assert.deepEqual(await response.json(), {
-        error: 'Payments are temporarily unavailable.',
+        error: 'Payments are disabled for this release.',
+        code: 'payments_disabled',
+        requestId: null,
       });
     }
 
@@ -62,9 +85,10 @@ test('Stripe routes boot without a secret and fail dependent endpoints closed', 
   }
 });
 
-test('a configured Stripe route continues to its normal request validation', async () => {
+test('enabling Stripe operations does not bypass bearer authentication', async () => {
+  process.env[paymentsEnabledEnv] = 'true';
   process.env[stripeSecretEnv] = ['sk', 'test', 'stripe', 'route', 'configured'].join('_');
-  const { default: router } = await import('../routes/stripe.js?stripe-configured');
+  const { default: router } = await import('../routes/stripe.js?payments-auth-required');
   const app = await startApp(router);
 
   try {
@@ -73,11 +97,49 @@ test('a configured Stripe route continues to its normal request validation', asy
       headers: { 'content-type': 'application/json' },
       body: '{}',
     });
-    assert.equal(response.status, 400);
+    assert.equal(response.status, 401);
     assert.deepEqual(await response.json(), {
-      error: 'userId and email are required',
+      error: 'Sign in is required for this request.',
+      code: 'authentication_required',
+      requestId: null,
     });
   } finally {
+    delete process.env[paymentsEnabledEnv];
+    await app.close();
+  }
+});
+
+test('Stripe money movement rejects an authenticated caller supplying another buyer id', async () => {
+  process.env[paymentsEnabledEnv] = 'true';
+  process.env[stripeSecretEnv] = ['sk', 'test', 'stripe', 'route', 'identity'].join('_');
+  const restoreFetch = installSupabaseUserResponse({
+    id: 'signed-in-buyer',
+    email: 'buyer@example.com',
+  });
+  const { default: router } = await import('../routes/stripe.js?payments-identity-match');
+  const app = await startApp(router);
+
+  try {
+    const response = await fetch(`${app.baseUrl}/api/stripe/create-payment-intent`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer verified-access-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        listingId: 'listing-1',
+        buyerId: 'different-buyer',
+      }),
+    });
+    assert.equal(response.status, 403);
+    assert.deepEqual(await response.json(), {
+      error: 'buyerId does not match the signed-in account.',
+      code: 'identity_mismatch',
+      requestId: null,
+    });
+  } finally {
+    delete process.env[paymentsEnabledEnv];
+    restoreFetch();
     await app.close();
   }
 });

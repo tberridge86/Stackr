@@ -1,11 +1,37 @@
 import express from 'express';
 import fetch from 'node-fetch';
+import { createClient } from '@supabase/supabase-js';
+import { createRequireAuthenticatedUser } from '../lib/requestAuth.js';
+import { createRequireReleaseFeature } from '../lib/releaseFeatureGate.js';
 
 const router = express.Router();
 
 const SHIPPO_API_BASE_URL = process.env.SHIPPO_API_BASE_URL || 'https://api.goshippo.com';
 const SHIPPO_API_TOKEN = process.env.SHIPPO_API_TOKEN || process.env.SHIPPO_API_KEY || '';
 const SHIPPO_ALLOW_LABEL_PURCHASES = process.env.SHIPPO_ALLOW_LABEL_PURCHASES === 'true';
+const authSupabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_PUBLISHABLE_KEY
+    || process.env.SUPABASE_ANON_KEY
+    || process.env.SUPABASE_SECRET_KEY
+    || process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false,
+    },
+  },
+);
+const requireAuthenticatedUser = createRequireAuthenticatedUser({ supabase: authSupabase });
+// Keep unset until label purchases are bound to an authorised Stackr order and rate-limited.
+const requireLiveShippingEnabled = createRequireReleaseFeature({
+  flagName: 'STACKR_LIVE_SHIPPING_ENABLED',
+  code: 'shipping_disabled',
+  message: 'Shipping is disabled for this release.',
+});
+
+router.use(requireLiveShippingEnabled, requireAuthenticatedUser);
 
 const DEFAULT_CARD_PARCEL = {
   length: '9',

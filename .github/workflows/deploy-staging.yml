@@ -85,6 +85,9 @@ jobs:
       - name: Verify repository structure
         run: npm run deploy:preflight
 
+      - name: Verify backend route security gates
+        run: npm test --prefix backend
+
       - name: Validate staging release mode
         run: |
           if [ "${{ inputs.apply_migrations }}" = "true" ] && [ "${{ inputs.release_candidate }}" != "true" ]; then

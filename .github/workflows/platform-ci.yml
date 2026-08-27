@@ -28,6 +28,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run typecheck:backend
+      - run: npm test --prefix backend
       - run: npm run test:seller-stock-out-routing
       - run: npm run test:premium-seller-access
       - run: npm run test:asset-pipeline
