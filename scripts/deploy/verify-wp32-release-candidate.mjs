@@ -31,7 +31,9 @@ const EXPECTED_PACKAGE_SCRIPTS = Object.freeze({
 const STAGING_APK_WORKFLOW_PATH = '.github/workflows/build-staging-apk.yml';
 const EXPECTED_STAGING_APK_BUILD_COMMAND =
   'CI=1 npx expo prebuild --platform android --no-install && ' +
-  '(cd android && ./gradlew --no-daemon :app:assembleRelease)';
+  '(cd android && ./gradlew --no-daemon ' +
+  '-Dorg.gradle.jvmargs="-Xmx3072m -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8" ' +
+  ':app:assembleRelease)';
 
 const manifestArgument = process.argv.find((argument) => argument.startsWith('--manifest='));
 const manifestPath = manifestArgument
@@ -207,7 +209,8 @@ const stagingApkSecretReferences = sorted([
 check(stagingApkSecretReferences.length === 0, 'staging_apk_secret_reference_forbidden');
 check(/CI=1 npx expo prebuild --platform android --no-install/u.test(stagingApkWorkflow),
   'staging_apk_prebuild_command_missing');
-check(/\.\/gradlew --no-daemon :app:assembleRelease/u.test(stagingApkWorkflow),
+check(/\.\/gradlew --no-daemon[\s\S]*-Xmx3072m[\s\S]*-XX:MaxMetaspaceSize=1536m[\s\S]*:app:assembleRelease/u
+  .test(stagingApkWorkflow),
   'staging_apk_gradle_command_missing');
 check(/'expo-channel-name': 'staging'/u.test(stagingApkWorkflow),
   'staging_apk_update_channel_isolation_missing');

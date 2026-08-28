@@ -139,7 +139,9 @@ jobs:
           test -x android/gradlew
           (
             cd android
-            ./gradlew --no-daemon :app:assembleRelease
+            ./gradlew --no-daemon \
+              -Dorg.gradle.jvmargs="-Xmx3072m -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8" \
+              :app:assembleRelease
           )
 
       - name: Validate and checksum APK
