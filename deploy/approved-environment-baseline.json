@@ -1,0 +1,238 @@
+{
+  "schemaVersion": "stackr-approved-environment-baseline-v1.0.0",
+  "baselineId": "prompt2-2026-08-28",
+  "status": "approved",
+  "completionPercent": 100,
+  "capturedOn": "2026-08-28",
+  "approvalBasis": "owner-requested-production-staging-github-baseline",
+  "authority": {
+    "releaseEnvironment": "production",
+    "stagingRole": "quarantined-test-superset",
+    "versionedRecord": "github",
+    "differenceRule": "every-difference-must-be-explicit"
+  },
+  "scopeRules": {
+    "catalogueChangesAllowedDuringBaseline": false,
+    "newFeaturesAllowedDuringBaseline": false,
+    "catalogueChangesMade": false,
+    "newFeaturesAdded": false
+  },
+  "fingerprintAlgorithms": {
+    "migrationLedger": "md5(string_agg(version || '|' || name, chr(10) order by version, name))",
+    "catalogueTable": "md5(string_agg(md5(to_jsonb(row)::text), '' order by id::text))",
+    "publishedVersions": "md5(string_agg(language_code || '|' || id || '|' || version_key, chr(10) order by language_code))"
+  },
+  "github": {
+    "repository": "tberridge86/Stackr",
+    "defaultBranch": "main",
+    "mainCommitBeforeBaseline": "c35573a82c374f617aadbebdc962b9b6d26ab9bf",
+    "requiredPrompt2AncestorCommit": "a869e3a2c0d467b3510ffbc1367544e728dbe0be",
+    "approvalPullRequest": 62,
+    "approvalRule": "merge-exact-head-after-green-checks",
+    "sourceSha256": {
+      "backend/lib/trustedAuthorization.js": "640344c598ec42fc6288628a92e2a8e1dc6bb3950edea990fd063413f96cbf1c",
+      "backend/routes/recognitionFeedback.js": "19d27b36aa415112aa6f621c1a69359017b36b2a0387e08cfd4f8290363ea085",
+      "backend/routes/recognitionShadowMode.js": "7f86fb180cf6b5c6a69ef0be8cc1ff7a694b1dc2a5b731c079733a82e2246fa1",
+      "backend/routes/scanLab.js": "8a74389ed795983673bc85ab39365bcd6837d3b4b30757b0f60383021ca5d2ce",
+      "backend/test/trusted-authorization.test.mjs": "dee371eac574abbf2ddf1023243aded6c1c771eeea28831f69a88dabadc15ee2",
+      "scripts/test-prompt2-security-p0.mjs": "9d37307270cc1b62dd4844d5448ab4eea4d4b1bf61774e4112976136780e9c05",
+      "supabase/manual/prompt2_emergency_profile_authority_containment.sql": "10687898b8c92d5576c8fc894cbaf375c1320f8c5651371cdadeac245ccdb738",
+      "supabase/manual/prompt2_trade_notification_write_containment.sql": "bb2cb31cdfa334c8df36cf2bd99ef18251fca95ddfae4ada5d57c65c2bc8f63e",
+      "supabase/manual/prompt2_trusted_admin_claim_cutover.sql": "e6db8d477b28fa7d823941905b660a0e5bcaad3ebc5c0d546ffa3c022696f71f"
+    }
+  },
+  "production": {
+    "completionPercent": 100,
+    "projectRef": "oakdbbzdqwurpjnoqhmu",
+    "role": "release-authority",
+    "migrationLedger": {
+      "rowCount": 110,
+      "uniqueNameCount": 110,
+      "duplicateRowCount": 0,
+      "orderedVersionNameMd5": "b6d0f54ac2523c186e30c08ab0a54d95",
+      "latestVersion": "20260828151836",
+      "latestName": "prompt2_trade_notification_write_containment"
+    },
+    "catalogue": {
+      "sets": {
+        "rowCount": 788,
+        "rowMd5": "90b75c198ce736dd782cc6cd35efa34e"
+      },
+      "printings": {
+        "rowCount": 59246,
+        "rowMd5": "90cbda9b7995c081fdde8c70788a22b3"
+      },
+      "variants": {
+        "rowCount": 78195,
+        "rowMd5": "bab0b3a518a9cfe863719564971a4b53"
+      },
+      "assets": {
+        "rowCount": 60281,
+        "rowMd5": "71f2ec60bef8778da40af235fd768934"
+      }
+    },
+    "prompt2Controls": {
+      "profileAuthorityGuard": true,
+      "tradeRowGuardCount": 8,
+      "tradeTruncateGuardCount": 8,
+      "tradeListingWriteGuard": true,
+      "notificationWriteGuard": true
+    }
+  },
+  "staging": {
+    "completionPercent": 100,
+    "projectRef": "lmwfhvexfcoyeuoyrlco",
+    "role": "quarantined-test-superset",
+    "migrationLedger": {
+      "rowCount": 147,
+      "uniqueNameCount": 143,
+      "duplicateRowCount": 4,
+      "orderedVersionNameMd5": "b8db5188625d780930a68b4365840fca",
+      "latestVersion": "20260828093921",
+      "latestName": "prompt2_trade_notification_write_containment",
+      "duplicateNames": [
+        {
+          "name": "add_bounded_recognition_fingerprint_asset_lookup",
+          "versions": [
+            "20260822160439",
+            "20260822223752"
+          ]
+        },
+        {
+          "name": "add_paged_recognition_fingerprint_context",
+          "versions": [
+            "20260822161133",
+            "20260822223756"
+          ]
+        },
+        {
+          "name": "restore_bounded_definer_fingerprint_reads",
+          "versions": [
+            "20260822161808",
+            "20260822223802"
+          ]
+        },
+        {
+          "name": "use_invoker_security_for_recognition_fingerprint_reads",
+          "versions": [
+            "20260822161726",
+            "20260822223800"
+          ]
+        }
+      ]
+    },
+    "catalogue": {
+      "sets": {
+        "rowCount": 789,
+        "rowMd5": "21d6b8191517299168998aea0b5b4313"
+      },
+      "printings": {
+        "rowCount": 59264,
+        "rowMd5": "a65242de95218e53009b79aa7573608b"
+      },
+      "variants": {
+        "rowCount": 78213,
+        "rowMd5": "1aed92a3364b6a75e50c9cbeb9b85489"
+      },
+      "assets": {
+        "rowCount": 60296,
+        "rowMd5": "b8246e728a305cdf51e7ccc2461cbd00"
+      }
+    },
+    "prompt2Controls": {
+      "profileAuthorityGuard": true,
+      "tradeRowGuardCount": 8,
+      "tradeTruncateGuardCount": 8,
+      "tradeListingWriteGuard": true,
+      "notificationWriteGuard": true
+    }
+  },
+  "cataloguePublication": {
+    "productionAndStagingMatch": true,
+    "orderedPublishedVersionsMd5": "052ed819af954407ec3700d3a0ea392e",
+    "versions": [
+      {
+        "languageCode": "en",
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "versionKey": "en:tcgdex-796afd47e430-full-primary-2026-08-19"
+      },
+      {
+        "languageCode": "ja",
+        "id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+        "versionKey": "ja:tcgdex-796afd47e430-full-primary-2026-08-19"
+      },
+      {
+        "languageCode": "ko",
+        "id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "versionKey": "ko:api-launch-2026-08-09-v1"
+      },
+      {
+        "languageCode": "zh-cn",
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "versionKey": "zh-cn:api-launch-2026-08-09-v1"
+      },
+      {
+        "languageCode": "zh-tw",
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "versionKey": "zh-tw:tcgdex-796afd47e430-full-primary-2026-08-19"
+      }
+    ]
+  },
+  "migrationComparison": {
+    "sharedUniqueNames": 107,
+    "productionOnly": [
+      "premium_seller_access_boundary",
+      "prompt2_emergency_profile_authority_containment",
+      "prompt2_trusted_admin_claim_cutover"
+    ],
+    "stagingOnlyQuarantined": {
+      "catalogue": [
+        "add_catalogue_publication_identifier_covering_index",
+        "add_catalogue_report_language_pagination_indexes",
+        "backfill_catalogue_set_release_dates",
+        "backfill_chinese_catalogue_set_release_dates",
+        "backfill_exact_english_pokemontcg_metadata",
+        "backfill_exact_english_tcgcsv_rarities",
+        "backfill_exact_english_tcgdex_rarities",
+        "expand_pokemon_rarity_taxonomy",
+        "expose_english_card_presentation",
+        "resolve_official_csm25_release_date",
+        "reuse_identical_catalogue_storage_objects"
+      ],
+      "family": [
+        "cover_family_child_parent_foreign_key",
+        "family_accounts_and_purchase_requests"
+      ],
+      "recognition": [
+        "add_bounded_recognition_fingerprint_asset_lookup",
+        "add_paged_ebay_recognition_evidence_api",
+        "add_paged_recognition_embedding_manifest_api",
+        "add_paged_recognition_fingerprint_context",
+        "add_scoped_recognition_candidate_search",
+        "batch_clone_published_recognition_index",
+        "extend_recognition_candidate_search_timeout",
+        "extend_recognition_embedding_batch_timeout",
+        "filter_scaleup_index_membership",
+        "fix_recognition_batch_uuid_cursor",
+        "improve_online_recognition_scaleup_lookup",
+        "increase_recognition_copy_batch_bound",
+        "online_recognition_scaleup_v1",
+        "optimize_online_recognition_scaleup_lookup",
+        "optimize_recognition_candidate_search_hnsw_v2",
+        "optimize_recognition_candidate_search_hnsw_v3",
+        "require_published_variants_in_recognition_indexes",
+        "require_recognition_evidence_before_activation",
+        "restore_bounded_definer_fingerprint_reads",
+        "resume_recognition_copy_from_target_cursor",
+        "tune_recognition_candidate_search_ef_v4",
+        "use_exact_filtered_recognition_benchmark_v6",
+        "use_invoker_security_for_recognition_fingerprint_reads"
+      ]
+    },
+    "stagingOnlyPromotionApproved": false,
+    "unexplainedDifferenceCount": 0
+  },
+  "supersedesForCrossEnvironmentTruth": [
+    "supabase/staging-migrations/manifest.json"
+  ]
+}

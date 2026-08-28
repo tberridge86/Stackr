@@ -1,6 +1,7 @@
 /* eslint-env node */
 import { createHash } from 'node:crypto';
 import express from 'express';
+import { hasTrustedStackrAdminClaim } from '../lib/trustedAuthorization.js';
 import { createClient } from '@supabase/supabase-js';
 import { validatePrivateScanUpload } from '../lib/assetPipeline.js';
 
@@ -66,13 +67,7 @@ async function requireScanLabAdmin(req, res) {
     return null;
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('id, role')
-    .eq('id', user.id)
-    .single();
-
-  if (profileError || profile?.role !== 'admin') {
+  if (!hasTrustedStackrAdminClaim(user)) {
     fail(res, 403, 'Scan Lab uploads are limited to admin testers.');
     return null;
   }
