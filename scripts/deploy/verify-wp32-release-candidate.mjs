@@ -30,7 +30,8 @@ const EXPECTED_PACKAGE_SCRIPTS = Object.freeze({
 });
 const STAGING_APK_WORKFLOW_PATH = '.github/workflows/build-staging-apk.yml';
 const EXPECTED_STAGING_APK_BUILD_COMMAND =
-  'npx --yes eas-cli@21.4.0 build --platform android --profile staging --non-interactive --json';
+  'CI=1 npx expo prebuild --platform android --no-install && ' +
+  '(cd android && ./gradlew --no-daemon :app:assembleRelease)';
 
 const manifestArgument = process.argv.find((argument) => argument.startsWith('--manifest='));
 const manifestPath = manifestArgument
@@ -175,6 +176,10 @@ check(/^[0-9a-f]{64}$/u.test(buildEvidence.contentManifestSha256 ?? ''),
 check(buildEvidence.secretScan?.passed === true, 'source_build_secret_scan_not_passed');
 check(candidate.mobileBinary?.workflowPath === STAGING_APK_WORKFLOW_PATH,
   'mobile_binary_workflow_path_drift');
+check(candidate.mobileBinary?.buildProvider === 'github_actions_local_android',
+  'mobile_binary_build_provider_drift');
+check(candidate.mobileBinary?.signing === 'expo_generated_debug_keystore_internal_staging_only',
+  'mobile_binary_signing_classification_drift');
 check(candidate.mobileBinary?.buildCommand === EXPECTED_STAGING_APK_BUILD_COMMAND,
   'mobile_binary_build_command_drift');
 check(candidate.mobileBinary?.status === 'not_built', 'mobile_binary_status_must_remain_blocked');
@@ -199,13 +204,19 @@ check(/environment:\s*staging/u.test(stagingApkWorkflow),
 const stagingApkSecretReferences = sorted([
   ...stagingApkWorkflow.matchAll(/secrets\.([A-Z0-9_]+)/gu),
 ].map((match) => match[1]));
-check(isDeepStrictEqual(stagingApkSecretReferences, ['EXPO_TOKEN']),
-  'staging_apk_secret_scope_drift');
-check(/eas-cli@21\.4\.0 build\s+[\s\S]*--platform android[\s\S]*--profile staging[\s\S]*--non-interactive[\s\S]*--json/u
-  .test(stagingApkWorkflow), 'staging_apk_build_command_missing');
-check(!/--no-wait/u.test(stagingApkWorkflow), 'staging_apk_build_must_wait');
-check(/verify-eas-compatible-builds\.mjs[\s\S]*--required-platforms=android/u
-  .test(stagingApkWorkflow), 'staging_apk_eas_attestation_missing');
+check(stagingApkSecretReferences.length === 0, 'staging_apk_secret_reference_forbidden');
+check(/CI=1 npx expo prebuild --platform android --no-install/u.test(stagingApkWorkflow),
+  'staging_apk_prebuild_command_missing');
+check(/\.\/gradlew --no-daemon :app:assembleRelease/u.test(stagingApkWorkflow),
+  'staging_apk_gradle_command_missing');
+check(/'expo-channel-name': 'staging'/u.test(stagingApkWorkflow),
+  'staging_apk_update_channel_isolation_missing');
+check(/aapt" dump badging/u.test(stagingApkWorkflow),
+  'staging_apk_package_attestation_missing');
+check(/apksigner" verify --verbose --print-certs/u.test(stagingApkWorkflow),
+  'staging_apk_signature_attestation_missing');
+check(/zipalign" -c -P 16 4/u.test(stagingApkWorkflow),
+  'staging_apk_alignment_attestation_missing');
 check(/unzip -tq/u.test(stagingApkWorkflow), 'staging_apk_archive_validation_missing');
 check(/sha256sum/u.test(stagingApkWorkflow), 'staging_apk_checksum_missing');
 check(/actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/u
@@ -213,7 +224,7 @@ check(/actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/u
 for (const [name, pattern] of [
   ['catalogue', /\bcatalogue\b/iu],
   ['database_push', /\bdb\s+push\b/iu],
-  ['eas_update', /eas-cli@[^\s]+\s+update\b/iu],
+  ['eas_service', /eas-cli@|EXPO_TOKEN|build:view|verify-eas-compatible-builds/iu],
   ['migration', /\bmigrations?\b/iu],
   ['railway', /\brailway\b/iu],
   ['supabase', /\bsupabase\b/iu],

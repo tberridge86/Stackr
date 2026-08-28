@@ -63,7 +63,9 @@
     "mobileBinary": {
       "status": "not_built",
       "workflowPath": ".github/workflows/build-staging-apk.yml",
-      "buildCommand": "npx --yes eas-cli@21.4.0 build --platform android --profile staging --non-interactive --json",
+      "buildProvider": "github_actions_local_android",
+      "signing": "expo_generated_debug_keystore_internal_staging_only",
+      "buildCommand": "CI=1 npx expo prebuild --platform android --no-install && (cd android && ./gradlew --no-daemon :app:assembleRelease)",
       "buildId": null,
       "artifactUrl": null,
       "sha256": null
