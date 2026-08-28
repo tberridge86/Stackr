@@ -7,6 +7,10 @@
     "edgeGateway": "cloudflare-workers",
     "mobile": "expo-eas"
   },
+  "environmentBaseline": {
+    "path": "deploy/approved-environment-baseline.json",
+    "approvedTag": "stackr-approved-baseline-2026-08-28"
+  },
   "components": {
     "catalogueApi": {
       "path": "backend",

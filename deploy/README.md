@@ -1,6 +1,10 @@
 # Stackr Deployment
 
-Stage 13 defines reproducible workflows; it does not authorise a live release. No command in this directory should be run against production until the release gates below are green and the `production` GitHub environment has a required reviewer.
+`deploy/approved-environment-baseline.json` is the single approved record for production, staging and GitHub. Production is the release authority. Staging is a quarantined test superset. A difference is allowed only when the baseline names it.
+
+The approved baseline is **100% complete**. It made no catalogue changes and added no product features. The older `supabase/staging-migrations/manifest.json` remains a Gate 0 historical ledger; it is not the current cross-environment source of truth.
+
+Run `npm run deploy:verify-baseline` before any release work. Any unexplained source, migration or catalogue drift closes the baseline again.
 
 ## Provider Map
 
@@ -19,18 +23,18 @@ No second hosting provider is introduced.
 
 ## Current Release Gates
 
-`deploy/release-manifest.json` is deliberately fail-closed:
+`deploy/release-manifest.json` remains fail-closed for unrelated release work:
 
-- `migrationHistoryAligned=false`: the linked production project reports no remote migration history, while this repository has many migrations and no baseline for the older live `public` schema.
+- `migrationHistoryAligned=true`: production has 110 migration rows. Staging has 147 rows, and all production-only and staging-only names are classified in the approved baseline.
 - `activeModelSelected=false`: no benchmark-approved model, checksum, ONNX export or production licence decision exists.
 - `activeIndexValidated=false`: no complete inactive index is available for activation.
-- `storageBackupVerified=false`: a fresh production backup has not been verified by these workflows.
+- `storageBackupVerified=true`: the checked-in backup gate is open.
 
 These checked-in booleans are authoritative. Protected GitHub variables are a second human approval, not an override: release preflight fails when either the evidence gate is false or its matching approval variable is not `true`.
 
-The live Supabase project is healthy, but its migration history is empty and its existing security advisor reports public `SECURITY DEFINER` views/functions, broad storage listing policies, and RLS tables without policies. Those are pre-existing production findings and require a separate reviewed security migration after the baseline is established.
+The isolated Supabase staging project is `lmwfhvexfcoyeuoyrlco`; production is `oakdbbzdqwurpjnoqhmu`. Prompt 2 containment is present in both. The live catalogue fingerprints and the five shared published catalogue versions are pinned without mutating either environment.
 
-The isolated Supabase staging project is `lmwfhvexfcoyeuoyrlco`; production is `oakdbbzdqwurpjnoqhmu`. The staging security rehearsal was completed and its temporary records were removed. No Stage 13 migration has been applied to production.
+## Historical Deployment Evidence
 
 The latest non-secret readiness snapshot is `deploy/evidence/staging-readiness-2026-07-30.json`. It records 79 local migration files, 20 isolated staging/rehearsal history entries, zero production migration entries, 11 completed staging physical backups, 8 completed production physical backups, and an empty staging Storage inventory. GitHub Actions run `30551243946` restored the current staging logical backup into branch project `krjttpmthxkfsbqksxci` and verified 34 tables, all 20 migration-history records, selected extensions and table data fingerprints. The private Storage fixture also restored with a matching checksum, denied anonymous access and verified cleanup. The production backup gate remains closed because this evidence is staging-only.
 
@@ -57,6 +61,7 @@ npm run typecheck
 npm run typecheck:backend
 npm run check:api-contract
 npm run test:database-migrations
+npm run deploy:verify-baseline
 npm run test:deployment
 node scripts/deploy/verify-staging-migration-reconciliation.mjs
 node scripts/deploy/verify-staging-readiness-evidence.mjs
@@ -146,7 +151,7 @@ The temporary isolated restore target is `kynqqwyctohrjqloyedh` (`Stackr staging
 
 Railway memory, CPU, replica, and usage limits are account-side settings rather than fields in the checked-in service configuration. Configure and record them for both `backend` and `recognition-service` before a production canary; use measured model memory to select recognition concurrency. A provider screenshot or exported non-secret settings record is required evidence.
 
-Current verdict: deployment tooling is reproducible, but staging and production release are **NO-GO** while the four manifest gates remain false. The workflows are intended to refuse deployment in that state.
+Current verdict: the production/staging/GitHub baseline is **GO at 100%**. A full product release remains **NO-GO** while the model and index gates are false.
 
 ## Model And Index Blocker
 
