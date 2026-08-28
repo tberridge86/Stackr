@@ -62,7 +62,8 @@
     },
     "mobileBinary": {
       "status": "not_built",
-      "buildCommand": "npx eas-cli@18.8.1 build --platform android --profile staging --non-interactive",
+      "workflowPath": ".github/workflows/build-staging-apk.yml",
+      "buildCommand": "npx --yes eas-cli@21.4.0 build --platform android --profile staging --non-interactive --json",
       "buildId": null,
       "artifactUrl": null,
       "sha256": null
@@ -77,6 +78,7 @@
     "newFeaturesAdded": false,
     "productDeltaFiles": [],
     "controlOnlyPaths": [
+      ".github/workflows/build-staging-apk.yml",
       ".github/workflows/platform-ci.yml",
       "deploy/evidence/wp32-source-build-2026-08-28.json",
       "deploy/production-runbook.md",
@@ -185,7 +187,8 @@
       "ownerRole": "mobile release engineering",
       "evidencePaths": [
         "deploy/wp32-release-candidate.json",
-        "eas.json"
+        "eas.json",
+        ".github/workflows/build-staging-apk.yml"
       ]
     },
     {
@@ -224,7 +227,8 @@
       "criterion": "The release candidate is reproducible.",
       "evidencePaths": [
         "deploy/evidence/wp32-source-build-2026-08-28.json",
-        "deploy/wp32-release-candidate.json"
+        "deploy/wp32-release-candidate.json",
+        ".github/workflows/build-staging-apk.yml"
       ]
     },
     {
