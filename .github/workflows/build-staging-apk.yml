@@ -179,7 +179,10 @@ jobs:
           assert.match(packageLine, /versionName='1\.0\.3'/u);
 
           const signature = readFileSync(`${process.env.RUNNER_TEMP}/staging-apk-signature.txt`, 'utf8');
-          assert.match(signature, /Signer #1 certificate SHA-256 digest:\s*[0-9a-f]{64}/iu);
+          assert.match(
+            signature,
+            /(?:Signer #\d+|V\d+(?:\.\d+)? Signer): certificate SHA-256 digest:\s*[0-9a-f]{64}/iu,
+          );
           NODE
 
           (
@@ -210,7 +213,7 @@ jobs:
             'utf8',
           );
           const certificateSha256 = signature.match(
-            /Signer #1 certificate SHA-256 digest:\s*([0-9a-f]{64})/iu,
+            /(?:Signer #\d+|V\d+(?:\.\d+)? Signer): certificate SHA-256 digest:\s*([0-9a-f]{64})/iu,
           )?.[1]?.toLowerCase();
           if (!certificateSha256) throw new Error('staging_apk_certificate_sha256_invalid');
 
