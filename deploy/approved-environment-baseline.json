@@ -27,7 +27,8 @@
     "defaultBranch": "main",
     "mainCommitBeforeBaseline": "c35573a82c374f617aadbebdc962b9b6d26ab9bf",
     "requiredPrompt2AncestorCommit": "a869e3a2c0d467b3510ffbc1367544e728dbe0be",
-    "approvedTag": "stackr-approved-baseline-2026-08-28",
+    "approvalPullRequest": 62,
+    "approvalRule": "merge-exact-head-after-green-checks",
     "sourceSha256": {
       "backend/lib/trustedAuthorization.js": "640344c598ec42fc6288628a92e2a8e1dc6bb3950edea990fd063413f96cbf1c",
       "backend/routes/recognitionFeedback.js": "19d27b36aa415112aa6f621c1a69359017b36b2a0387e08cfd4f8290363ea085",

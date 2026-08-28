@@ -16,7 +16,7 @@ const EXPECTED = Object.freeze({
   productionRef: 'oakdbbzdqwurpjnoqhmu',
   stagingRef: 'lmwfhvexfcoyeuoyrlco',
   prompt2Commit: 'a869e3a2c0d467b3510ffbc1367544e728dbe0be',
-  tag: 'stackr-approved-baseline-2026-08-28',
+  approvalPullRequest: 62,
   productionLedgerMd5: 'b6d0f54ac2523c186e30c08ab0a54d95',
   stagingLedgerMd5: 'b8db5188625d780930a68b4365840fca',
   publishedVersionsMd5: '052ed819af954407ec3700d3a0ea392e',
@@ -52,7 +52,8 @@ assert.equal(
 assert.equal(baseline.github.repository, EXPECTED.repository);
 assert.equal(baseline.github.defaultBranch, 'main');
 assert.equal(baseline.github.requiredPrompt2AncestorCommit, EXPECTED.prompt2Commit);
-assert.equal(baseline.github.approvedTag, EXPECTED.tag);
+assert.equal(baseline.github.approvalPullRequest, EXPECTED.approvalPullRequest);
+assert.equal(baseline.github.approvalRule, 'merge-exact-head-after-green-checks');
 
 assert.equal(baseline.production.completionPercent, 100);
 assert.equal(baseline.staging.completionPercent, 100);
@@ -62,7 +63,8 @@ assert.equal(baseline.production.role, 'release-authority');
 assert.equal(baseline.staging.role, 'quarantined-test-superset');
 
 assert.equal(releaseManifest.environmentBaseline.path, 'deploy/approved-environment-baseline.json');
-assert.equal(releaseManifest.environmentBaseline.approvedTag, EXPECTED.tag);
+assert.equal(releaseManifest.environmentBaseline.approvalPullRequest,
+  EXPECTED.approvalPullRequest);
 assert.equal(releaseManifest.components.database.projectRef, EXPECTED.productionRef);
 assert.equal(releaseManifest.components.database.stagingProjectRef, EXPECTED.stagingRef);
 
