@@ -1,0 +1,247 @@
+name: Build Stackr Staging APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/build-staging-apk.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-staging-apk
+  cancel-in-progress: false
+
+jobs:
+  build-staging-apk:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: staging
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Attest exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify frozen release controls
+        run: |
+          npm run deploy:verify-baseline
+          npm run deploy:verify-release-candidate
+          npm run test:mobile-runtime-config
+
+      - name: Verify isolated staging APK configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const { appendFileSync } = require('node:fs');
+          const app = require('./app.json').expo;
+          const configureApp = require('./app.config.js');
+          const eas = require('./eas.json');
+
+          const profile = eas.build?.staging;
+          assert.equal(profile?.distribution, 'internal');
+          assert.equal(profile?.channel, 'staging');
+          assert.equal(profile?.android?.buildType, 'apk');
+          assert.equal(profile?.env?.STACKR_MOBILE_APP_VARIANT, 'staging');
+          assert.equal(profile?.env?.STACKR_MOBILE_ENVIRONMENT, 'staging');
+          assert.equal(profile?.env?.EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED, 'false');
+
+          Object.assign(process.env, profile.env);
+          const resolved = configureApp({ config: app });
+
+          assert.equal(resolved.name, 'Stackr Staging');
+          assert.equal(resolved.android?.package, 'com.tommo86.Stackr.staging');
+          assert.equal(resolved.runtimeVersion, '1.0.3-staging');
+          appendFileSync(process.env.GITHUB_ENV, 'STACKR_EXPECTED_RUNTIME_VERSION=1.0.3-staging\n');
+          NODE
+
+          if [ -z "${EXPO_TOKEN:-}" ]; then
+            echo "The staging environment has no EXPO_TOKEN configured." >&2
+            exit 1
+          fi
+
+      - name: Authenticate EAS
+        run: npx --yes eas-cli@21.4.0 whoami --non-interactive
+
+      - name: Build pinned staging APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes eas-cli@21.4.0 build \
+            --platform android \
+            --profile staging \
+            --non-interactive \
+            --json \
+            > "$RUNNER_TEMP/eas-staging-build.raw.json"
+
+          node <<'NODE'
+          const { appendFileSync, readFileSync } = require('node:fs');
+          const raw = JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/eas-staging-build.raw.json`, 'utf8'));
+          const builds = Array.isArray(raw) ? raw : Array.isArray(raw?.builds) ? raw.builds : [raw];
+          const build = builds.find((item) => String(item?.platform ?? '').toUpperCase() === 'ANDROID')
+            ?? builds[0];
+          if (!/^[0-9a-f-]{36}$/i.test(String(build?.id ?? ''))) {
+            throw new Error('eas_staging_build_id_missing');
+          }
+          appendFileSync(process.env.GITHUB_ENV, `STACKR_EAS_BUILD_ID=${build.id}\n`);
+          NODE
+
+      - name: Attest completed EAS build
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes eas-cli@21.4.0 build:view "$STACKR_EAS_BUILD_ID" --json \
+            > "$RUNNER_TEMP/eas-staging-build-view.raw.json"
+
+          node <<'NODE'
+          const { readFileSync, writeFileSync } = require('node:fs');
+          const inputPath = `${process.env.RUNNER_TEMP}/eas-staging-build-view.raw.json`;
+          const outputPath = `${process.env.RUNNER_TEMP}/eas-staging-build-view.json`;
+          const raw = JSON.parse(readFileSync(inputPath, 'utf8'));
+          const builds = Array.isArray(raw) ? raw : Array.isArray(raw?.builds) ? raw.builds : [raw];
+          writeFileSync(outputPath, `${JSON.stringify(builds, null, 2)}\n`, { mode: 0o600 });
+          NODE
+
+          node scripts/deploy/verify-eas-compatible-builds.mjs \
+            --file="$RUNNER_TEMP/eas-staging-build-view.json" \
+            --expected-runtime="$STACKR_EXPECTED_RUNTIME_VERSION" \
+            --expected-channel=staging \
+            --expected-profile=staging \
+            --expected-git-sha="$GITHUB_SHA" \
+            --required-platforms=android \
+            > "$RUNNER_TEMP/eas-staging-build-attestation.json"
+
+      - name: Download, validate and checksum APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact_dir="$RUNNER_TEMP/stackr-staging-apk"
+          apk_filename="stackr-staging-${GITHUB_SHA}.apk"
+          apk_path="$artifact_dir/$apk_filename"
+          mkdir -p "$artifact_dir"
+
+          build_url="$(node -e '
+            const fs = require("node:fs");
+            const builds = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            const build = builds.find((item) => String(item?.id) === process.env.STACKR_EAS_BUILD_ID);
+            const parsed = new URL(build?.artifacts?.buildUrl);
+            if (parsed.protocol !== "https:" || parsed.username || parsed.password) process.exit(1);
+            process.stdout.write(parsed.toString());
+          ' "$RUNNER_TEMP/eas-staging-build-view.json")"
+
+          curl --fail --location --proto '=https' --tlsv1.2 --retry 3 \
+            --output "$apk_path" "$build_url"
+          test -s "$apk_path"
+          unzip -tq "$apk_path"
+          (
+            cd "$artifact_dir"
+            sha256sum "$apk_filename" > stackr-staging.apk.sha256
+          )
+
+          {
+            echo "STACKR_APK_PATH=$apk_path"
+            echo "STACKR_APK_FILENAME=$apk_filename"
+          } >> "$GITHUB_ENV"
+
+      - name: Write non-secret build evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const { readFileSync, statSync, writeFileSync } = require('node:fs');
+          const path = require('node:path');
+          const builds = JSON.parse(readFileSync(
+            `${process.env.RUNNER_TEMP}/eas-staging-build-view.json`,
+            'utf8',
+          ));
+          const build = builds.find((item) => String(item?.id) === process.env.STACKR_EAS_BUILD_ID);
+          if (!build) throw new Error('eas_staging_build_evidence_missing');
+
+          const artifactDir = path.dirname(process.env.STACKR_APK_PATH);
+          const checksum = readFileSync(
+            path.join(artifactDir, 'stackr-staging.apk.sha256'),
+            'utf8',
+          ).trim().split(/\s+/u)[0];
+          if (!/^[0-9a-f]{64}$/u.test(checksum)) throw new Error('staging_apk_sha256_invalid');
+
+          const evidence = {
+            schemaVersion: 'stackr-staging-apk-evidence-v1.0.0',
+            candidateId: 'stackr-1.0.3-rc.0',
+            repository: process.env.GITHUB_REPOSITORY,
+            source: {
+              buildCommit: process.env.GITHUB_SHA,
+              frozenCandidateCommit: 'd80b0f82843710c7eb942f1e97533ea0af77447c',
+            },
+            workflow: {
+              runId: process.env.GITHUB_RUN_ID,
+              runAttempt: Number(process.env.GITHUB_RUN_ATTEMPT),
+              url: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+            },
+            eas: {
+              buildId: build.id,
+              status: build.status,
+              platform: build.platform,
+              buildProfile: build.buildProfile,
+              channel: build.channel,
+              runtimeVersion: build.runtimeVersion,
+              gitCommitHash: build.gitCommitHash,
+              completedAt: build.completedAt,
+              expirationDate: build.expirationDate,
+              artifactUrl: build.artifacts.buildUrl,
+            },
+            apk: {
+              filename: process.env.STACKR_APK_FILENAME,
+              bytes: statSync(process.env.STACKR_APK_PATH).size,
+              sha256: checksum,
+              androidPackage: 'com.tommo86.Stackr.staging',
+            },
+          };
+          writeFileSync(
+            path.join(artifactDir, 'staging-apk-evidence.json'),
+            `${JSON.stringify(evidence, null, 2)}\n`,
+            { mode: 0o600 },
+          );
+          NODE
+
+      - name: Upload staging APK and evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-staging-apk-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-staging-apk
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+      - name: Remove raw EAS responses
+        if: always()
+        shell: bash
+        run: |
+          rm -f \
+            "$RUNNER_TEMP/eas-staging-build.raw.json" \
+            "$RUNNER_TEMP/eas-staging-build-view.raw.json" \
+            "$RUNNER_TEMP/eas-staging-build-view.json" \
+            "$RUNNER_TEMP/eas-staging-build-attestation.json"

@@ -9,6 +9,7 @@ const DEFAULT_MANIFEST = path.join(repositoryRoot, 'deploy/wp32-release-candidat
 const EXPECTED_SOURCE_COMMIT = 'd80b0f82843710c7eb942f1e97533ea0af77447c';
 const EXPECTED_SOURCE_TREE = '2591147dd7b1fe90bd635ebdc4784bf614e168f4';
 const EXPECTED_CONTROL_PATHS = Object.freeze([
+  '.github/workflows/build-staging-apk.yml',
   '.github/workflows/platform-ci.yml',
   'deploy/evidence/wp32-source-build-2026-08-28.json',
   'deploy/production-runbook.md',
@@ -27,6 +28,9 @@ const EXPECTED_PACKAGE_SCRIPTS = Object.freeze({
   'deploy:verify-release-candidate': 'node scripts/deploy/verify-wp32-release-candidate.mjs',
   'test:wp32-release-candidate': 'node scripts/test-wp32-release-candidate.mjs',
 });
+const STAGING_APK_WORKFLOW_PATH = '.github/workflows/build-staging-apk.yml';
+const EXPECTED_STAGING_APK_BUILD_COMMAND =
+  'npx --yes eas-cli@21.4.0 build --platform android --profile staging --non-interactive --json';
 
 const manifestArgument = process.argv.find((argument) => argument.startsWith('--manifest='));
 const manifestPath = manifestArgument
@@ -96,6 +100,9 @@ const buildEvidence = readJson(
   path.join(repositoryRoot, 'deploy/evidence/wp32-source-build-2026-08-28.json'),
   'source_build_evidence_invalid',
 );
+const stagingApkWorkflow = existsSync(path.join(repositoryRoot, STAGING_APK_WORKFLOW_PATH))
+  ? readFileSync(path.join(repositoryRoot, STAGING_APK_WORKFLOW_PATH), 'utf8')
+  : '';
 
 check(manifest.schemaVersion === 'stackr-wp32-release-candidate-v1.0.0',
   'candidate_schema_version_drift');
@@ -166,10 +173,53 @@ check(Number.isInteger(buildEvidence.totalBytes) && buildEvidence.totalBytes > 0
 check(/^[0-9a-f]{64}$/u.test(buildEvidence.contentManifestSha256 ?? ''),
   'source_build_digest_missing');
 check(buildEvidence.secretScan?.passed === true, 'source_build_secret_scan_not_passed');
+check(candidate.mobileBinary?.workflowPath === STAGING_APK_WORKFLOW_PATH,
+  'mobile_binary_workflow_path_drift');
+check(candidate.mobileBinary?.buildCommand === EXPECTED_STAGING_APK_BUILD_COMMAND,
+  'mobile_binary_build_command_drift');
 check(candidate.mobileBinary?.status === 'not_built', 'mobile_binary_status_must_remain_blocked');
 check(candidate.mobileBinary?.buildId === null, 'mobile_binary_build_id_must_be_null');
 check(candidate.mobileBinary?.artifactUrl === null, 'mobile_binary_url_must_be_null');
 check(candidate.mobileBinary?.sha256 === null, 'mobile_binary_sha_must_be_null');
+
+check(stagingApkWorkflow.length > 0, 'staging_apk_workflow_missing');
+check(/name:\s*Build Stackr Staging APK/u.test(stagingApkWorkflow),
+  'staging_apk_workflow_name_drift');
+check(/workflow_dispatch:\s*\n/u.test(stagingApkWorkflow),
+  'staging_apk_manual_trigger_missing');
+check(/push:\s*\n\s+branches:\s*\[main\]\s*\n\s+paths:\s*\n\s+- \.github\/workflows\/build-staging-apk\.yml/u
+  .test(stagingApkWorkflow), 'staging_apk_bootstrap_trigger_drift');
+check(!/pull_request:/u.test(stagingApkWorkflow), 'staging_apk_pull_request_trigger_forbidden');
+check(/permissions:\s*\n\s+contents:\s*read/u.test(stagingApkWorkflow),
+  'staging_apk_permissions_drift');
+check(/if:\s*github\.ref == 'refs\/heads\/main'/u.test(stagingApkWorkflow),
+  'staging_apk_main_ref_guard_missing');
+check(/environment:\s*staging/u.test(stagingApkWorkflow),
+  'staging_apk_environment_guard_missing');
+const stagingApkSecretReferences = sorted([
+  ...stagingApkWorkflow.matchAll(/secrets\.([A-Z0-9_]+)/gu),
+].map((match) => match[1]));
+check(isDeepStrictEqual(stagingApkSecretReferences, ['EXPO_TOKEN']),
+  'staging_apk_secret_scope_drift');
+check(/eas-cli@21\.4\.0 build\s+[\s\S]*--platform android[\s\S]*--profile staging[\s\S]*--non-interactive[\s\S]*--json/u
+  .test(stagingApkWorkflow), 'staging_apk_build_command_missing');
+check(!/--no-wait/u.test(stagingApkWorkflow), 'staging_apk_build_must_wait');
+check(/verify-eas-compatible-builds\.mjs[\s\S]*--required-platforms=android/u
+  .test(stagingApkWorkflow), 'staging_apk_eas_attestation_missing');
+check(/unzip -tq/u.test(stagingApkWorkflow), 'staging_apk_archive_validation_missing');
+check(/sha256sum/u.test(stagingApkWorkflow), 'staging_apk_checksum_missing');
+check(/actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/u
+  .test(stagingApkWorkflow), 'staging_apk_artifact_upload_drift');
+for (const [name, pattern] of [
+  ['catalogue', /\bcatalogue\b/iu],
+  ['database_push', /\bdb\s+push\b/iu],
+  ['eas_update', /eas-cli@[^\s]+\s+update\b/iu],
+  ['migration', /\bmigrations?\b/iu],
+  ['railway', /\brailway\b/iu],
+  ['supabase', /\bsupabase\b/iu],
+  ['wrangler', /\bwrangler\b/iu],
+  ['other_platform', /--platform\s+(?:all|ios)\b/iu],
+]) check(!pattern.test(stagingApkWorkflow), `staging_apk_forbidden_operation:${name}`);
 
 const scopeFreeze = manifest.scopeFreeze ?? {};
 check(scopeFreeze.status === 'active', 'scope_freeze_not_active');
