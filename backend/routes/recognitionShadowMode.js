@@ -1,5 +1,6 @@
 /* eslint-env node */
 import express from 'express';
+import { hasTrustedStackrAdminClaim } from '../lib/trustedAuthorization.js';
 import { createClient } from '@supabase/supabase-js';
 
 const router = express.Router();
@@ -80,18 +81,12 @@ async function requireInternalTester(req, res) {
   const auth = await requireUser(req, res);
   if (!auth) return null;
 
-  const { data: profile, error: profileError } = await auth.supabase
-    .from('profiles')
-    .select('id, role')
-    .eq('id', auth.user.id)
-    .single();
-
-  if (profileError || profile?.role !== 'admin') {
+  if (!hasTrustedStackrAdminClaim(auth.user)) {
     fail(res, 403, 'Shadow-mode pilot access is limited to internal Stackr testers.');
     return null;
   }
 
-  return { ...auth, profile };
+  return auth;
 }
 
 function clean(value) {
