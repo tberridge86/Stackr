@@ -1,4 +1,6 @@
-# Gate 0 evidence — 27 August 2026
+# Gate 0 evidence — 27 August 2026 (historical snapshot)
+
+> **Superseded:** This file records the pre-merge state on 27 August. Gate 0 later reached **100%** through PRs #59 and #60. Use `deploy/approved-environment-baseline.json` and `docs/world-class/READINESS_DASHBOARD.md` for current release status. The NO-GO decision below is historical, not the current Gate 0 decision.
 
 **Decision:** **NO-GO — the final hardening candidate has not completed GitHub CI, merge, or staging proof.**
 

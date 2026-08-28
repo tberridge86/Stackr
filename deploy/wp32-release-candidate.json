@@ -1,0 +1,362 @@
+{
+  "schemaVersion": "stackr-wp32-release-candidate-v1.0.0",
+  "recordedAt": "2026-08-28T16:42:09Z",
+  "workPackage": {
+    "id": "WP32",
+    "title": "Release candidate, integrated pilot and go/no-go",
+    "decision": "NO_GO",
+    "completionPercent": 25,
+    "interactions": {
+      "096": {
+        "title": "Build final traceability, CI and release candidate",
+        "completionPercent": 75,
+        "weightNumerator": 1,
+        "weightDenominator": 3
+      },
+      "097": {
+        "title": "Run closed integrated pilot",
+        "completionPercent": 0,
+        "weightNumerator": 5,
+        "weightDenominator": 12
+      },
+      "098": {
+        "title": "Triage defects and make go/no-go decision",
+        "completionPercent": 0,
+        "weightNumerator": 1,
+        "weightDenominator": 4
+      }
+    }
+  },
+  "candidate": {
+    "id": "stackr-1.0.3-rc.0",
+    "source": {
+      "repository": "tberridge86/Stackr",
+      "branch": "main",
+      "commit": "d80b0f82843710c7eb942f1e97533ea0af77447c",
+      "tree": "2591147dd7b1fe90bd635ebdc4784bf614e168f4",
+      "mainCi": {
+        "status": "pass",
+        "workflow": "Stackr Platform CI",
+        "jobsPassed": 7,
+        "jobsTotal": 7,
+        "url": "https://github.com/tberridge86/Stackr/commit/d80b0f82843710c7eb942f1e97533ea0af77447c/checks"
+      }
+    },
+    "version": {
+      "package": "1.0.3",
+      "expo": "1.0.3",
+      "androidVersionCode": 8,
+      "runtimePolicy": "appVersion"
+    },
+    "target": {
+      "environment": "staging",
+      "easProfile": "staging",
+      "channel": "staging",
+      "distribution": "internal",
+      "platform": "android"
+    },
+    "sourceBuild": {
+      "status": "pass",
+      "command": "npm run build:web",
+      "evidencePath": "deploy/evidence/wp32-source-build-2026-08-28.json"
+    },
+    "mobileBinary": {
+      "status": "not_built",
+      "buildCommand": "npx eas-cli@18.8.1 build --platform android --profile staging --non-interactive",
+      "buildId": null,
+      "artifactUrl": null,
+      "sha256": null
+    }
+  },
+  "scopeFreeze": {
+    "status": "active",
+    "rule": "No catalogue changes and no new features until WP32 reaches 100%.",
+    "catalogueChangesAllowed": false,
+    "newFeaturesAllowed": false,
+    "catalogueChangesMade": false,
+    "newFeaturesAdded": false,
+    "productDeltaFiles": [],
+    "controlOnlyPaths": [
+      ".github/workflows/platform-ci.yml",
+      "deploy/evidence/wp32-source-build-2026-08-28.json",
+      "deploy/production-runbook.md",
+      "deploy/staging-runbook.md",
+      "deploy/wp32-release-candidate.json",
+      "docs/world-class/READINESS_DASHBOARD.md",
+      "docs/world-class/RELEASE_SCOPE.md",
+      "docs/world-class/TRACEABILITY_MATRIX.md",
+      "docs/product-readiness/GATE_0_EVIDENCE_2026-08-27.md",
+      "docs/product-readiness/LAUNCH_SURFACE_REGISTER.md",
+      "package.json",
+      "scripts/deploy/verify-wp32-release-candidate.mjs",
+      "scripts/test-wp32-release-candidate.mjs"
+    ],
+    "ownerApproval": {
+      "ownerApproved": true,
+      "commitAllowed": true,
+      "approvalRecordedAt": "2026-08-28T16:58:12Z"
+    }
+  },
+  "releaseGates": [
+    {
+      "id": "approved_environment_baseline",
+      "status": "pass",
+      "critical": true,
+      "ownerRole": "release engineering",
+      "evidencePaths": [
+        "deploy/approved-environment-baseline.json",
+        "scripts/deploy/verify-approved-environment-baseline.mjs"
+      ]
+    },
+    {
+      "id": "source_scope_freeze",
+      "status": "pass",
+      "critical": true,
+      "ownerRole": "release engineering",
+      "evidencePaths": [
+        "docs/world-class/RELEASE_SCOPE.md",
+        "scripts/deploy/verify-wp32-release-candidate.mjs"
+      ]
+    },
+    {
+      "id": "candidate_main_ci",
+      "status": "pass",
+      "critical": true,
+      "ownerRole": "release engineering",
+      "evidencePaths": [
+        ".github/workflows/platform-ci.yml",
+        "deploy/wp32-release-candidate.json"
+      ]
+    },
+    {
+      "id": "migration_history_aligned",
+      "status": "pass",
+      "critical": true,
+      "ownerRole": "database engineering",
+      "evidencePaths": [
+        "deploy/release-manifest.json",
+        "deploy/approved-environment-baseline.json"
+      ]
+    },
+    {
+      "id": "storage_backup_verified",
+      "status": "pass",
+      "critical": true,
+      "ownerRole": "release engineering",
+      "evidencePaths": [
+        "deploy/release-manifest.json",
+        "deploy/evidence/staging-readiness-2026-08-11.json"
+      ]
+    },
+    {
+      "id": "commerce_release_lock",
+      "status": "pass",
+      "critical": true,
+      "ownerRole": "security engineering",
+      "evidencePaths": [
+        "eas.json",
+        "scripts/test-commerce-release-lock.ts"
+      ]
+    },
+    {
+      "id": "active_model_selected",
+      "status": "blocked",
+      "critical": true,
+      "ownerRole": "recognition engineering",
+      "evidencePaths": [
+        "deploy/release-manifest.json",
+        "docs/local-recognition/24-production-readiness.md"
+      ]
+    },
+    {
+      "id": "active_index_validated",
+      "status": "blocked",
+      "critical": true,
+      "ownerRole": "recognition engineering",
+      "evidencePaths": [
+        "deploy/release-manifest.json",
+        "deploy/evidence/staging-readiness-2026-08-11.json"
+      ]
+    },
+    {
+      "id": "mobile_candidate_binary",
+      "status": "blocked",
+      "critical": true,
+      "ownerRole": "mobile release engineering",
+      "evidencePaths": [
+        "deploy/wp32-release-candidate.json",
+        "eas.json"
+      ]
+    },
+    {
+      "id": "integrated_real_user_pilot",
+      "status": "blocked",
+      "critical": true,
+      "ownerRole": "pilot coordinator",
+      "evidencePaths": [
+        "docs/world-class/READINESS_DASHBOARD.md",
+        "deploy/wp32-release-candidate.json"
+      ]
+    }
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "096-1",
+      "status": "pass",
+      "criterion": "Every critical criterion maps to evidence.",
+      "evidencePaths": [
+        "docs/world-class/TRACEABILITY_MATRIX.md",
+        "deploy/wp32-release-candidate.json"
+      ]
+    },
+    {
+      "id": "096-2",
+      "status": "pass",
+      "criterion": "CI blocks critical regressions.",
+      "evidencePaths": [
+        ".github/workflows/platform-ci.yml",
+        "scripts/test-wp32-release-candidate.mjs"
+      ]
+    },
+    {
+      "id": "096-3",
+      "status": "blocked",
+      "criterion": "The release candidate is reproducible.",
+      "evidencePaths": [
+        "deploy/evidence/wp32-source-build-2026-08-28.json",
+        "deploy/wp32-release-candidate.json"
+      ]
+    },
+    {
+      "id": "096-4",
+      "status": "pass",
+      "criterion": "Scope is frozen.",
+      "evidencePaths": [
+        "docs/world-class/RELEASE_SCOPE.md",
+        "scripts/deploy/verify-wp32-release-candidate.mjs"
+      ]
+    },
+    {
+      "id": "097-1",
+      "status": "blocked",
+      "criterion": "All critical workflows have real-user evidence.",
+      "evidencePaths": [
+        "docs/world-class/READINESS_DASHBOARD.md",
+        "deploy/wp32-release-candidate.json"
+      ]
+    },
+    {
+      "id": "097-2",
+      "status": "blocked",
+      "criterion": "The pilot shows no stock or payment mismatch.",
+      "evidencePaths": [
+        "docs/world-class/READINESS_DASHBOARD.md",
+        "deploy/wp32-release-candidate.json"
+      ]
+    },
+    {
+      "id": "097-3",
+      "status": "blocked",
+      "criterion": "Critical defects are reproducible.",
+      "evidencePaths": [
+        "docs/world-class/READINESS_DASHBOARD.md",
+        "deploy/wp32-release-candidate.json"
+      ]
+    },
+    {
+      "id": "097-4",
+      "status": "blocked",
+      "criterion": "Trust concerns are recorded.",
+      "evidencePaths": [
+        "docs/world-class/READINESS_DASHBOARD.md",
+        "deploy/wp32-release-candidate.json"
+      ]
+    },
+    {
+      "id": "098-1",
+      "status": "blocked",
+      "criterion": "No severity 1 or severity 2 defect remains for GO.",
+      "evidencePaths": [
+        "docs/world-class/READINESS_DASHBOARD.md",
+        "deploy/wp32-release-candidate.json"
+      ]
+    },
+    {
+      "id": "098-2",
+      "status": "pass",
+      "criterion": "No security, payment or inventory blocker is silently waived.",
+      "evidencePaths": [
+        "deploy/wp32-release-candidate.json",
+        "docs/world-class/TRACEABILITY_MATRIX.md"
+      ]
+    },
+    {
+      "id": "098-3",
+      "status": "not_applicable",
+      "criterion": "Conditional GO items have an owner, date and monitor.",
+      "evidencePaths": [
+        "deploy/wp32-release-candidate.json",
+        "docs/world-class/READINESS_DASHBOARD.md"
+      ]
+    },
+    {
+      "id": "098-4",
+      "status": "blocked",
+      "criterion": "The final go/no-go decision is evidence-based.",
+      "evidencePaths": [
+        "docs/world-class/READINESS_DASHBOARD.md",
+        "deploy/wp32-release-candidate.json"
+      ]
+    }
+  ],
+  "decision": {
+    "status": "NO_GO",
+    "reason": "The source is frozen and checked, but no mobile binary, approved model/index or real-user pilot evidence exists.",
+    "blockers": [
+      {
+        "id": "active_model_selected",
+        "severity": "release_blocking",
+        "ownerRole": "recognition engineering",
+        "dueGate": "before_GO",
+        "exitCriteria": "Select and approve the model from protected-test evidence."
+      },
+      {
+        "id": "active_index_validated",
+        "severity": "release_blocking",
+        "ownerRole": "recognition engineering",
+        "dueGate": "before_GO",
+        "exitCriteria": "Build, validate and record an activation-ready index."
+      },
+      {
+        "id": "mobile_candidate_binary",
+        "severity": "release_blocking",
+        "ownerRole": "mobile release engineering",
+        "dueGate": "before_pilot",
+        "exitCriteria": "Produce and checksum the pinned staging APK."
+      },
+      {
+        "id": "integrated_real_user_pilot",
+        "severity": "release_blocking",
+        "ownerRole": "pilot coordinator",
+        "dueGate": "before_GO",
+        "exitCriteria": "Run the approved closed pilot and record workflow, defect and trust evidence."
+      }
+    ],
+    "silentWaivers": [],
+    "conditionalGoItems": [],
+    "finalApproval": null
+  },
+  "metrics": {
+    "criticalCriterionCount": 12,
+    "criticalCriteriaWithEvidenceCount": 12,
+    "criticalCriteriaPassCount": 4,
+    "criticalCriteriaBlockedCount": 7,
+    "criticalCriteriaNotApplicableCount": 1,
+    "releaseGateCount": 10,
+    "releaseGatePassCount": 6,
+    "releaseGateBlockedCount": 4,
+    "releaseBlockingIssueCount": 4,
+    "silentWaiverCount": 0,
+    "unexplainedEnvironmentDifferenceCount": 0
+  }
+}

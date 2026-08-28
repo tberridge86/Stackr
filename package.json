@@ -117,6 +117,8 @@
     "ci:secret-scan": "node scripts/deploy/secret-scan.mjs",
     "deploy:preflight": "node scripts/deploy/preflight.mjs",
     "deploy:verify-baseline": "node scripts/deploy/verify-approved-environment-baseline.mjs",
+    "deploy:verify-release-candidate": "node scripts/deploy/verify-wp32-release-candidate.mjs",
+    "test:wp32-release-candidate": "node scripts/test-wp32-release-candidate.mjs",
     "mobile:verify-runtime": "node scripts/deploy/verify-mobile-runtime-config.mjs",
     "deploy:verify-model": "node scripts/deploy/verify-model-release.mjs",
     "deploy:smoke": "node scripts/deploy/smoke.mjs"

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "stackr-wp32-source-build-evidence-v1.0.0",
+  "candidateId": "stackr-1.0.3-rc.0",
+  "recordedAt": "2026-08-28T16:42:09Z",
+  "sourceCommit": "d80b0f82843710c7eb942f1e97533ea0af77447c",
+  "sourceTree": "2591147dd7b1fe90bd635ebdc4784bf614e168f4",
+  "command": "npm run build:web",
+  "exitCode": 0,
+  "classification": "web_export_smoke_only",
+  "outputDirectory": "dist",
+  "fileCount": 566,
+  "totalBytes": 240452023,
+  "contentManifestSha256": "d94a8a675f55247279713397a60074a5131f9f5220d8ac7f722be093dc15b289",
+  "secretScan": {
+    "command": "node scripts/deploy/secret-scan.mjs --directory=dist",
+    "passed": true,
+    "bundleFilesScanned": 99
+  },
+  "limitations": [
+    "This is a source-build smoke test, not an Android or iOS release binary.",
+    "The transient dist directory is not retained as a release artifact."
+  ]
+}
