@@ -21,12 +21,12 @@ const honestNoGo = run();
 assert.equal(honestNoGo.status, 0, output(honestNoGo));
 const honestResult = JSON.parse(honestNoGo.stdout);
 assert.equal(honestResult.ok, true);
-assert.equal(honestResult.completionPercent, 25);
-assert.deepEqual(honestResult.interactions, { '096': 75, '097': 0, '098': 0 });
+assert.equal(honestResult.completionPercent, 100 / 3);
+assert.deepEqual(honestResult.interactions, { '096': 100, '097': 0, '098': 0 });
 assert.equal(honestResult.decision, 'NO_GO');
-assert.equal(honestResult.releaseGatesPassed, 6);
+assert.equal(honestResult.releaseGatesPassed, 7);
 assert.equal(honestResult.releaseGatesTotal, 10);
-assert.equal(honestResult.blockers.length, 4);
+assert.equal(honestResult.blockers.length, 3);
 
 const requireGo = run(['--require-go']);
 assert.notEqual(requireGo.status, 0, 'require-go must fail while the candidate is NO-GO');
@@ -43,7 +43,6 @@ try {
   const falseGoResult = run([`--manifest=${falseGoPath}`]);
   assert.notEqual(falseGoResult.status, 0, 'GO must fail while critical blockers remain');
   assert.match(output(falseGoResult), /go_with_open_blockers/u);
-  assert.match(output(falseGoResult), /go_without_mobile_binary/u);
   assert.match(output(falseGoResult), /go_without_integrated_pilot/u);
 
   const missingEvidencePath = path.join(temporaryDirectory, 'missing-evidence.json');

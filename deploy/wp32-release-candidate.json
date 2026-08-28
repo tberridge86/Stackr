@@ -1,15 +1,15 @@
 {
   "schemaVersion": "stackr-wp32-release-candidate-v1.0.0",
-  "recordedAt": "2026-08-28T16:42:09Z",
+  "recordedAt": "2026-08-28T22:39:32Z",
   "workPackage": {
     "id": "WP32",
     "title": "Release candidate, integrated pilot and go/no-go",
     "decision": "NO_GO",
-    "completionPercent": 25,
+    "completionPercent": 33.333333333333336,
     "interactions": {
       "096": {
         "title": "Build final traceability, CI and release candidate",
-        "completionPercent": 75,
+        "completionPercent": 100,
         "weightNumerator": 1,
         "weightDenominator": 3
       },
@@ -61,14 +61,22 @@
       "evidencePath": "deploy/evidence/wp32-source-build-2026-08-28.json"
     },
     "mobileBinary": {
-      "status": "not_built",
+      "status": "built",
       "workflowPath": ".github/workflows/build-staging-apk.yml",
       "buildProvider": "github_actions_local_android",
       "signing": "expo_generated_debug_keystore_internal_staging_only",
       "buildCommand": "CI=1 npx expo prebuild --platform android --no-install && (cd android && ./gradlew --no-daemon -Dorg.gradle.jvmargs=\"-Xmx3072m -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8\" :app:assembleRelease)",
-      "buildId": null,
-      "artifactUrl": null,
-      "sha256": null
+      "buildId": "github-actions:33215027943",
+      "buildCommit": "cb5ff9ac5c5d8dce8d24b8fcc9f572265a93feaf",
+      "artifactId": 9703797072,
+      "artifactName": "stackr-staging-apk-33215027943",
+      "artifactUrl": "https://github.com/tberridge86/Stackr/actions/runs/33215027943",
+      "artifactExpiresAt": "2026-09-27T22:32:32Z",
+      "filename": "stackr-staging-cb5ff9ac5c5d8dce8d24b8fcc9f572265a93feaf.apk",
+      "bytes": 522058139,
+      "sha256": "2cb00ed899cb79fffb5b7450320e164922eafaf19819a085235979d8f083d2e7",
+      "androidPackage": "com.tommo86.Stackr.staging",
+      "evidencePath": "deploy/evidence/wp32-staging-apk-2026-08-28.json"
     }
   },
   "scopeFreeze": {
@@ -82,6 +90,7 @@
     "controlOnlyPaths": [
       ".github/workflows/build-staging-apk.yml",
       ".github/workflows/platform-ci.yml",
+      "deploy/evidence/wp32-staging-apk-2026-08-28.json",
       "deploy/evidence/wp32-source-build-2026-08-28.json",
       "deploy/production-runbook.md",
       "deploy/staging-runbook.md",
@@ -184,11 +193,12 @@
     },
     {
       "id": "mobile_candidate_binary",
-      "status": "blocked",
+      "status": "pass",
       "critical": true,
       "ownerRole": "mobile release engineering",
       "evidencePaths": [
         "deploy/wp32-release-candidate.json",
+        "deploy/evidence/wp32-staging-apk-2026-08-28.json",
         "eas.json",
         ".github/workflows/build-staging-apk.yml"
       ]
@@ -225,10 +235,11 @@
     },
     {
       "id": "096-3",
-      "status": "blocked",
+      "status": "pass",
       "criterion": "The release candidate is reproducible.",
       "evidencePaths": [
         "deploy/evidence/wp32-source-build-2026-08-28.json",
+        "deploy/evidence/wp32-staging-apk-2026-08-28.json",
         "deploy/wp32-release-candidate.json",
         ".github/workflows/build-staging-apk.yml"
       ]
@@ -317,7 +328,7 @@
   ],
   "decision": {
     "status": "NO_GO",
-    "reason": "The source is frozen and checked, but no mobile binary, approved model/index or real-user pilot evidence exists.",
+    "reason": "The source and staging APK are frozen and checked, but no approved model/index or real-user pilot evidence exists.",
     "blockers": [
       {
         "id": "active_model_selected",
@@ -334,13 +345,6 @@
         "exitCriteria": "Build, validate and record an activation-ready index."
       },
       {
-        "id": "mobile_candidate_binary",
-        "severity": "release_blocking",
-        "ownerRole": "mobile release engineering",
-        "dueGate": "before_pilot",
-        "exitCriteria": "Produce and checksum the pinned staging APK."
-      },
-      {
         "id": "integrated_real_user_pilot",
         "severity": "release_blocking",
         "ownerRole": "pilot coordinator",
@@ -355,13 +359,13 @@
   "metrics": {
     "criticalCriterionCount": 12,
     "criticalCriteriaWithEvidenceCount": 12,
-    "criticalCriteriaPassCount": 4,
-    "criticalCriteriaBlockedCount": 7,
+    "criticalCriteriaPassCount": 5,
+    "criticalCriteriaBlockedCount": 6,
     "criticalCriteriaNotApplicableCount": 1,
     "releaseGateCount": 10,
-    "releaseGatePassCount": 6,
-    "releaseGateBlockedCount": 4,
-    "releaseBlockingIssueCount": 4,
+    "releaseGatePassCount": 7,
+    "releaseGateBlockedCount": 3,
+    "releaseBlockingIssueCount": 3,
     "silentWaiverCount": 0,
     "unexplainedEnvironmentDifferenceCount": 0
   }
