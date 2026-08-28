@@ -17,7 +17,7 @@ All of these must be true:
 - The current gateway tag, recognition deployment ID, catalogue version, index version and EAS update group are recorded for rollback.
 - Catalogue API recovery is a forward redeploy of the exact commerce-locked merge SHA; rollback to a pre-lock backend deployment is disabled.
 
-Current status is **NO-GO**: all four release gates in `deploy/release-manifest.json` are false. Do not dispatch this workflow until staging has passed on the exact commit and each gate has evidence.
+Current status is **NO-GO**: migration alignment and storage backup are verified, but the active-model and active-index gates in `deploy/release-manifest.json` are false. Do not dispatch this workflow until staging has passed on the exact commit and every remaining gate has evidence.
 
 ## Release Command
 

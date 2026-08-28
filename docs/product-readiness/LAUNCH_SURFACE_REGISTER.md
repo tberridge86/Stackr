@@ -3,7 +3,7 @@
 **Decision date:** 27 August 2026
 **Scope:** the upcoming beta; this is the single source of truth for what users may see.
 **Release rule:** an `Expose` decision still requires green CI, staging smoke coverage, authorised data access, and no P0/P1 defect. A failed condition changes the decision to `Hide`; it does not create a partially working teaser.
-**Current Gate 0 status:** **NO-GO.** The hardening code anchor is independently clean at `d9443e2`; exact final PR head identity, GitHub CI, merge and staging proof are pending.
+**Current Gate 0 status:** **GO — 100%.** PRs #59 and #60 completed the hardening and staging-verifier closeout. Commerce remains intentionally locked; Gate 0 completion proves the lock, not full-product release readiness.
 
 ## Decision key
 
