@@ -11,6 +11,7 @@ const EXPECTED_SOURCE_TREE = '2591147dd7b1fe90bd635ebdc4784bf614e168f4';
 const EXPECTED_CONTROL_PATHS = Object.freeze([
   '.github/workflows/build-staging-apk.yml',
   '.github/workflows/platform-ci.yml',
+  'deploy/evidence/wp32-staging-apk-2026-08-28.json',
   'deploy/evidence/wp32-source-build-2026-08-28.json',
   'deploy/production-runbook.md',
   'deploy/staging-runbook.md',
@@ -103,6 +104,10 @@ const buildEvidence = readJson(
   path.join(repositoryRoot, 'deploy/evidence/wp32-source-build-2026-08-28.json'),
   'source_build_evidence_invalid',
 );
+const stagingApkEvidence = readJson(
+  path.join(repositoryRoot, 'deploy/evidence/wp32-staging-apk-2026-08-28.json'),
+  'staging_apk_evidence_invalid',
+);
 const stagingApkWorkflow = existsSync(path.join(repositoryRoot, STAGING_APK_WORKFLOW_PATH))
   ? readFileSync(path.join(repositoryRoot, STAGING_APK_WORKFLOW_PATH), 'utf8')
   : '';
@@ -113,13 +118,13 @@ check(manifest.workPackage?.id === 'WP32', 'work_package_id_drift');
 check(manifest.workPackage?.decision === manifest.decision?.status, 'decision_status_mismatch');
 
 const interactions = manifest.workPackage?.interactions ?? {};
-check(interactions['096']?.completionPercent === 75, 'interaction_096_completion_drift');
+check(interactions['096']?.completionPercent === 100, 'interaction_096_completion_drift');
 check(interactions['097']?.completionPercent === 0, 'interaction_097_completion_drift');
 check(interactions['098']?.completionPercent === 0, 'interaction_098_completion_drift');
 const weightedCompletion = Object.values(interactions).reduce((total, interaction) => (
   total + (interaction.completionPercent * interaction.weightNumerator / interaction.weightDenominator)
 ), 0);
-check(Number.isFinite(weightedCompletion) && Math.abs(weightedCompletion - 25) < 0.000001,
+check(Number.isFinite(weightedCompletion) && Math.abs(weightedCompletion - (100 / 3)) < 0.000001,
   'wp32_weighted_completion_drift');
 check(manifest.workPackage?.completionPercent === weightedCompletion, 'wp32_completion_mismatch');
 
@@ -184,10 +189,81 @@ check(candidate.mobileBinary?.signing === 'expo_generated_debug_keystore_interna
   'mobile_binary_signing_classification_drift');
 check(candidate.mobileBinary?.buildCommand === EXPECTED_STAGING_APK_BUILD_COMMAND,
   'mobile_binary_build_command_drift');
-check(candidate.mobileBinary?.status === 'not_built', 'mobile_binary_status_must_remain_blocked');
-check(candidate.mobileBinary?.buildId === null, 'mobile_binary_build_id_must_be_null');
-check(candidate.mobileBinary?.artifactUrl === null, 'mobile_binary_url_must_be_null');
-check(candidate.mobileBinary?.sha256 === null, 'mobile_binary_sha_must_be_null');
+check(stagingApkEvidence.schemaVersion === 'stackr-wp32-staging-apk-evidence-v1.0.0',
+  'staging_apk_evidence_schema_drift');
+check(stagingApkEvidence.status === 'pass', 'staging_apk_evidence_not_passed');
+check(stagingApkEvidence.candidateId === candidate.id, 'staging_apk_candidate_mismatch');
+check(stagingApkEvidence.source?.frozenCandidateCommit === EXPECTED_SOURCE_COMMIT,
+  'staging_apk_frozen_commit_mismatch');
+check(stagingApkEvidence.source?.buildCommit === 'cb5ff9ac5c5d8dce8d24b8fcc9f572265a93feaf',
+  'staging_apk_build_commit_mismatch');
+check(stagingApkEvidence.workflow?.runId === '33215027943', 'staging_apk_run_id_drift');
+check(stagingApkEvidence.workflow?.conclusion === 'success', 'staging_apk_workflow_not_successful');
+check(stagingApkEvidence.workflow?.url ===
+  'https://github.com/tberridge86/Stackr/actions/runs/33215027943',
+  'staging_apk_workflow_url_drift');
+check(stagingApkEvidence.artifact?.id === 9703797072, 'staging_apk_artifact_id_drift');
+check(stagingApkEvidence.artifact?.name === 'stackr-staging-apk-33215027943',
+  'staging_apk_artifact_name_drift');
+check(stagingApkEvidence.artifact?.archiveBytes === 522059884,
+  'staging_apk_artifact_byte_count_drift');
+check(stagingApkEvidence.artifact?.archiveSha256 ===
+  'a7dcd158f34c48d857dce00b7ea5ff59a7f67d67cbe8e82b17b1f7107d23fa50',
+  'staging_apk_artifact_digest_drift');
+check(stagingApkEvidence.apk?.filename ===
+  'stackr-staging-cb5ff9ac5c5d8dce8d24b8fcc9f572265a93feaf.apk',
+  'staging_apk_filename_drift');
+check(stagingApkEvidence.apk?.bytes === 522058139, 'staging_apk_byte_count_drift');
+check(stagingApkEvidence.apk?.sha256 ===
+  '2cb00ed899cb79fffb5b7450320e164922eafaf19819a085235979d8f083d2e7',
+  'staging_apk_digest_drift');
+check(stagingApkEvidence.apk?.androidPackage === 'com.tommo86.Stackr.staging',
+  'staging_apk_package_drift');
+check(stagingApkEvidence.apk?.versionCode === 8 && stagingApkEvidence.apk?.versionName === '1.0.3',
+  'staging_apk_version_drift');
+check(stagingApkEvidence.signing?.classification ===
+  'expo_generated_debug_keystore_internal_staging_only',
+  'staging_apk_evidence_signing_drift');
+check(stagingApkEvidence.signing?.certificateSha256 ===
+  'fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c',
+  'staging_apk_certificate_digest_drift');
+check(stagingApkEvidence.signing?.playStoreReleaseEligible === false,
+  'staging_apk_play_store_classification_drift');
+for (const [name, passed] of Object.entries(stagingApkEvidence.validation ?? {})) {
+  check(passed === true, `staging_apk_validation_failed:${name}`);
+}
+check(Object.keys(stagingApkEvidence.validation ?? {}).length === 7,
+  'staging_apk_validation_set_drift');
+check(stagingApkEvidence.scope?.catalogueChangesMade === false,
+  'staging_apk_catalogue_change_detected');
+check(stagingApkEvidence.scope?.newFeaturesAdded === false,
+  'staging_apk_feature_change_detected');
+check(stagingApkEvidence.scope?.productionChanged === false,
+  'staging_apk_production_change_detected');
+check(candidate.mobileBinary?.status === 'built', 'mobile_binary_not_built');
+check(candidate.mobileBinary?.buildId === `github-actions:${stagingApkEvidence.workflow?.runId}`,
+  'mobile_binary_build_id_drift');
+check(candidate.mobileBinary?.buildCommit === stagingApkEvidence.source?.buildCommit,
+  'mobile_binary_build_commit_drift');
+check(candidate.mobileBinary?.artifactId === stagingApkEvidence.artifact?.id,
+  'mobile_binary_artifact_id_drift');
+check(candidate.mobileBinary?.artifactName === stagingApkEvidence.artifact?.name,
+  'mobile_binary_artifact_name_drift');
+check(candidate.mobileBinary?.artifactUrl === stagingApkEvidence.workflow?.url,
+  'mobile_binary_url_drift');
+check(candidate.mobileBinary?.artifactExpiresAt === stagingApkEvidence.artifact?.expiresAt,
+  'mobile_binary_expiry_drift');
+check(candidate.mobileBinary?.filename === stagingApkEvidence.apk?.filename,
+  'mobile_binary_filename_drift');
+check(candidate.mobileBinary?.bytes === stagingApkEvidence.apk?.bytes,
+  'mobile_binary_byte_count_drift');
+check(candidate.mobileBinary?.sha256 === stagingApkEvidence.apk?.sha256,
+  'mobile_binary_sha_drift');
+check(candidate.mobileBinary?.androidPackage === stagingApkEvidence.apk?.androidPackage,
+  'mobile_binary_package_drift');
+check(candidate.mobileBinary?.evidencePath ===
+  'deploy/evidence/wp32-staging-apk-2026-08-28.json',
+  'mobile_binary_evidence_path_drift');
 
 check(stagingApkWorkflow.length > 0, 'staging_apk_workflow_missing');
 check(/name:\s*Build Stackr Staging APK/u.test(stagingApkWorkflow),

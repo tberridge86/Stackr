@@ -2,11 +2,11 @@
 
 ## Status
 
-WP32 is **25% complete** and **NO-GO**.
+WP32 is **33% complete** and **NO-GO**.
 
 | Task | Completion |
 | --- | ---: |
-| 096 — traceability, CI and release candidate | 75% |
+| 096 — traceability, CI and release candidate | 100% |
 | 097 — closed integrated pilot | 0% |
 | 098 — defect triage and final decision | 0% |
 
@@ -17,7 +17,9 @@ WP32 is **25% complete** and **NO-GO**.
 - Source tree: `2591147dd7b1fe90bd635ebdc4784bf614e168f4`
 - Version: `1.0.3`
 - Target: internal Android staging build
-- Mobile binary: not built
+- Mobile binary: built and checksum-verified
+- APK workflow: `33215027943`
+- APK SHA-256: `2cb00ed899cb79fffb5b7450320e164922eafaf19819a085235979d8f083d2e7`
 
 The product tree is the approved Prompt 2 merge. WP32 adds release-control evidence only; it does not alter the candidate product tree.
 
@@ -28,7 +30,7 @@ The product tree is the approved Prompt 2 merge. WP32 adds release-control evide
 - Add a fail-closed CI guard.
 - Verify the existing source can export.
 - Record blockers honestly.
-- Prepare the closed pilot only after a staging APK exists.
+- Prepare the closed pilot using the verified staging APK.
 
 ## Out of Scope Until WP32 Is 100%
 
@@ -51,5 +53,4 @@ GO is impossible while any critical gate is blocked. Today the blocked gates are
 
 1. Approved active model.
 2. Validated active index.
-3. Checksum-pinned staging APK.
-4. Real-user integrated pilot.
+3. Real-user integrated pilot.

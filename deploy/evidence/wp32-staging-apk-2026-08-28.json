@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "stackr-wp32-staging-apk-evidence-v1.0.0",
+  "candidateId": "stackr-1.0.3-rc.0",
+  "recordedAt": "2026-08-28T22:39:32Z",
+  "status": "pass",
+  "source": {
+    "frozenCandidateCommit": "d80b0f82843710c7eb942f1e97533ea0af77447c",
+    "buildCommit": "cb5ff9ac5c5d8dce8d24b8fcc9f572265a93feaf"
+  },
+  "workflow": {
+    "provider": "github_actions_local_android",
+    "runId": "33215027943",
+    "runAttempt": 1,
+    "conclusion": "success",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/33215027943",
+    "completedAt": "2026-08-28T22:32:32.703Z"
+  },
+  "artifact": {
+    "id": 9703797072,
+    "name": "stackr-staging-apk-33215027943",
+    "archiveBytes": 522059884,
+    "archiveSha256": "a7dcd158f34c48d857dce00b7ea5ff59a7f67d67cbe8e82b17b1f7107d23fa50",
+    "expiresAt": "2026-09-27T22:32:32Z"
+  },
+  "apk": {
+    "filename": "stackr-staging-cb5ff9ac5c5d8dce8d24b8fcc9f572265a93feaf.apk",
+    "bytes": 522058139,
+    "sha256": "2cb00ed899cb79fffb5b7450320e164922eafaf19819a085235979d8f083d2e7",
+    "androidPackage": "com.tommo86.Stackr.staging",
+    "versionCode": 8,
+    "versionName": "1.0.3",
+    "channel": "staging",
+    "runtimeVersion": "1.0.3-staging"
+  },
+  "signing": {
+    "classification": "expo_generated_debug_keystore_internal_staging_only",
+    "certificateSha256": "fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c",
+    "playStoreReleaseEligible": false
+  },
+  "validation": {
+    "gradleBuildPassed": true,
+    "archiveIntegrityPassed": true,
+    "packageAndVersionPassed": true,
+    "signaturePassed": true,
+    "zipAlignmentPassed": true,
+    "uploadedArtifactDigestPassed": true,
+    "downloadedApkDigestPassed": true
+  },
+  "scope": {
+    "environment": "staging",
+    "catalogueChangesMade": false,
+    "newFeaturesAdded": false,
+    "productionChanged": false
+  }
+}
