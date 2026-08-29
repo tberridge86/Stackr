@@ -88,7 +88,7 @@ jobs:
           test "$STACKR_SUPABASE_URL" = "$expected_url"
           node <<'NODE'
           const target = new URL(
-            '/rest/v1/catalogue_languages?select=language_code&limit=1',
+            '/rest/v1/catalogue_languages?select=code&limit=1',
             process.env.STACKR_SUPABASE_URL,
           );
           const credentials = [
