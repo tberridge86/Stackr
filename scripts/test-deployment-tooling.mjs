@@ -749,6 +749,10 @@ assert.match(
   /STACKR_SUPABASE_URL: \$\{\{ vars\.STACKR_SUPABASE_URL \}\}[\s\S]*STACKR_SUPABASE_PUBLISHABLE_KEY: \$\{\{ secrets\.STACKR_SUPABASE_PUBLISHABLE_KEY \}\}[\s\S]*SUPABASE_PRODUCTION_SECRET_KEY: \$\{\{ secrets\.SUPABASE_PRODUCTION_SECRET_KEY \}\}/,
 );
 assert.match(productionBackendHardeningWorkflow, /test "\$STACKR_SUPABASE_URL" = "\$expected_url"/);
+assert.match(
+  productionBackendHardeningWorkflow,
+  /\/rest\/v1\/catalogue_languages\?select=code&limit=1/,
+);
 for (const runtimeVariable of [
   'STACKR_GATEWAY_ORIGIN_KEY BACKEND_ORIGIN_KEY',
   'SUPABASE_URL STACKR_SUPABASE_URL',
