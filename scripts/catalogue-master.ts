@@ -3,7 +3,12 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { join } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { createSourceAdapter } from './catalogue-ingestion/adapters';
-import { CatalogueIngestionRunner, ensureSource } from './catalogue-ingestion/pipeline';
+import {
+  CatalogueIngestionRunner,
+  ensureSource,
+  parseRetainedRawRecord,
+  payloadChecksum,
+} from './catalogue-ingestion/pipeline';
 import {
   SUPPORTED_CATALOGUE_LANGUAGE_CODES,
   cleanText,
@@ -120,7 +125,10 @@ type SetScopeIdentifierRow = {
 };
 
 type SupabaseClientLike = {
-  schema: (schema: string) => { from: (tableName: string) => any };
+  schema: (schema: string) => {
+    from: (tableName: string) => any;
+    rpc?: (name: string, args: Record<string, unknown>) => any;
+  };
 };
 
 type SetRow = {
@@ -904,10 +912,6 @@ async function fetchAll(db: SupabaseClientLike, schema: string, tableName: strin
   return fetchAllFiltered(db, schema, tableName, columns);
 }
 
-function payloadChecksum(payload: unknown) {
-  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
-}
-
 function setArtExternalId(file: SetArtFile) {
   return `stackr_set_art:${file.language}:${file.setCode}:${file.localKind}`;
 }
@@ -956,35 +960,29 @@ async function upsertSetArtRawRecord(
     validation_status: 'valid',
     validation_errors: [],
   };
-
-  const { data: existing, error: lookupError } = await db.schema('ingest')
-    .from('raw_source_records')
-    .select('id')
-    .eq('source_id', input.sourceId)
-    .eq('record_type', 'asset')
-    .eq('external_id', externalId)
-    .eq('language_code', input.file.language)
-    .maybeSingle();
-  if (lookupError) throw lookupError;
-
-  if (existing?.id) {
-    const { data, error } = await db.schema('ingest')
-      .from('raw_source_records')
-      .update(base)
-      .eq('id', existing.id)
-      .select('id')
-      .maybeSingle();
-    if (error) throw error;
-    return data.id as string;
-  }
-
-  const { data, error } = await db.schema('ingest')
-    .from('raw_source_records')
-    .insert(base)
-    .select('id')
-    .maybeSingle();
+  const ingest = db.schema('ingest');
+  if (!ingest.rpc) throw new Error('retain_raw_source_record_rpc_unavailable');
+  const { data, error } = await ingest.rpc('retain_raw_source_record', {
+    p_source_id: base.source_id,
+    p_import_run_id: base.import_run_id,
+    p_record_type: base.record_type,
+    p_external_id: base.external_id,
+    p_provider_record_id: base.provider_record_id,
+    p_language_code: base.language_code,
+    p_source_url: base.source_url,
+    p_source_endpoint: base.source_endpoint,
+    p_retrieved_at: new Date().toISOString(),
+    p_source_updated_at: null,
+    p_licence_status: base.licence_status,
+    p_attribution_text: base.attribution_text,
+    p_payload_hash: base.payload_hash,
+    p_raw_payload: base.raw_payload,
+    p_http_metadata: base.http_metadata,
+    p_validation_status: base.validation_status,
+    p_validation_errors: base.validation_errors,
+  });
   if (error) throw error;
-  return data.id as string;
+  return parseRetainedRawRecord(data).id;
 }
 
 async function recordSetArtConflict(

@@ -757,6 +757,11 @@ async function assertSetArtRules() {
   assert.match(masterScript, /release_date/, 'set-art reports must include release date');
   assert.match(masterScript, /expected_path/, 'missing-set-art report must list exact expected logo/symbol path');
   assert.match(masterScript, /stackr_set_art/, 'set-art import must use a distinct ingest source');
+  assert.match(
+    masterScript,
+    /rpc\('retain_raw_source_record'/,
+    'set-art raw records must share the atomic exact-revision retention path',
+  );
   assert.match(masterScript, /set_art_file_has_no_exact_language_set_code_match/, 'unmatched set art must become a conflict');
 }
 

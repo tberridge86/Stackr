@@ -162,14 +162,15 @@ if (migrationReconciliation.status === 0) {
   assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
   assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 } else {
-  // The root production ledger is four reviewed migrations ahead of the last
+  // The root production ledger is six reviewed migrations ahead of the last
   // legacy reconciliation evidence: Premium Seller, the byte-identical
   // emergency containment capture, Gate 0, and the unapplied staging-first
-  // catalogue natural-identity reconciliation. Normal production workflows
-  // remain fail-closed; staging applies migrations only through their scoped,
-  // checksum-pinned paths.
+  // catalogue natural-identity reconciliation, followed by staging's atomic
+  // exact raw-revision retention and immutable run-observation provenance.
+  // Normal production workflows remain fail-closed; staging applies
+  // migrations only through scoped paths.
   const reconciliation = JSON.parse(migrationReconciliation.stdout);
-  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 4);
+  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 6);
   assert.deepEqual(reconciliation.errors, [
     'local_migration_count_drift',
     'staging_migration_count_drift',
@@ -181,7 +182,7 @@ if (migrationReconciliation.status === 0) {
   const localMigrations = readdirSync('supabase/migrations')
     .filter((name) => /^\d{14}_.+\.sql$/.test(name))
     .sort();
-  assert.equal(localMigrations.at(-1), '20260829170147_reconcile_active_catalogue_natural_identities.sql');
+  assert.equal(localMigrations.at(-1), '20260829221000_track_raw_source_record_observations.sql');
   assert.ok(localMigrations.includes('20260827093110_emergency_client_write_containment.sql'));
   assert.ok(localMigrations.includes('20260827124944_gate0_financial_route_containment.sql'));
   assert.notEqual(migrationAlignmentGate.status, 0, 'global deployment must remain blocked while staging evidence trails');
