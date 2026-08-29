@@ -19,6 +19,7 @@ import {
   isSafeSupportedPrimaryAliasTarget,
   isVariantRepairNotApplicable,
   payloadChecksum,
+  parseRetainedRawRecord,
   reconciliationPhase,
   releasedExactlyOnePrimaryAlias,
   runWithConcurrencyByKey,
@@ -37,6 +38,14 @@ import {
 
 const migration = readFileSync('supabase/migrations/20260727213835_stackr_data_ingestion_reconciliation.sql', 'utf8');
 const rawHistoryMigration = readFileSync('supabase/migrations/20260730153923_preserve_raw_source_record_history.sql', 'utf8');
+const exactRawRevisionMigration = readFileSync(
+  'supabase/migrations/20260829214000_retain_exact_raw_source_revisions_once.sql',
+  'utf8',
+);
+const rawObservationMigration = readFileSync(
+  'supabase/migrations/20260829221000_track_raw_source_record_observations.sql',
+  'utf8',
+);
 const strictForeignMigration = readFileSync('supabase/migrations/20260801090000_strict_foreign_catalogue_import_safety.sql', 'utf8');
 const recognitionRoleMigration = readFileSync('supabase/migrations/20260805200000_recognition_service_database_role.sql', 'utf8');
 const ingestionPipeline = readFileSync('scripts/catalogue-ingestion/pipeline.ts', 'utf8');
@@ -797,16 +806,82 @@ function assertStrictForeignMigration() {
   assert.match(legacySync, /Legacy TCGdex direct catalogue sync is disabled/, 'legacy direct importer must be blocked');
 }
 
-function assertRawRecordHistoryIsRetainedPerRun() {
+function assertChangedRawRecordHistoryWithoutExactDuplicates() {
   assert.match(rawHistoryMigration, /drop index if exists ingest\.raw_source_records_identity_uidx/);
   assert.match(
     rawHistoryMigration,
     /create unique index if not exists raw_source_records_import_run_identity_uidx[\s\S]+source_id,[\s\S]+import_run_id,[\s\S]+record_type,[\s\S]+external_id/,
   );
   assert.match(rawHistoryMigration, /where import_run_id is not null/);
-  assert.match(
+  assert.match(ingestionPipeline, /rpc\('retain_raw_source_record'/);
+  assert.doesNotMatch(
     ingestionPipeline,
-    /table\(db, 'ingest', 'raw_source_records'\)[\s\S]+\.eq\('import_run_id', importRunId\)/,
+    /reusableQuery|revisionCandidates/,
+    'raw revision reuse must not use a race-prone client lookup followed by an insert',
+  );
+  assert.match(exactRawRevisionMigration, /security invoker\s+set search_path = ''/i);
+  assert.match(exactRawRevisionMigration, /pg_advisory_xact_lock\(pg_catalog\.hashtextextended/i);
+  assert.match(exactRawRevisionMigration, /raw_record\.raw_payload = p_raw_payload/);
+  assert.doesNotMatch(
+    exactRawRevisionMigration,
+    /raw_record\.payload_hash = p_payload_hash[\s\S]+raw_record\.raw_payload = p_raw_payload/,
+    'exact JSON equality must survive checksum-algorithm changes',
+  );
+  assert.match(exactRawRevisionMigration, /and raw_record\.deprecated_at is null/);
+  assert.match(exactRawRevisionMigration, /'changed', 'reused'/);
+  assert.match(exactRawRevisionMigration, /from public, anon, authenticated/);
+  assert.match(exactRawRevisionMigration, /to service_role/);
+
+  assert.match(
+    rawObservationMigration,
+    /create table if not exists ingest\.raw_source_record_observations[\s\S]+primary key \(import_run_id, raw_record_id\)/,
+    'exact revision reuse must retain a compact run-to-revision observation',
+  );
+  assert.match(rawObservationMigration, /import_run_id uuid not null[\s\S]+on delete cascade/);
+  assert.match(rawObservationMigration, /raw_record_id uuid not null[\s\S]+on delete restrict/);
+  assert.match(rawObservationMigration, /retrieved_at timestamptz not null/);
+  assert.match(rawObservationMigration, /raw_source_record_observations_revision_idx/);
+  assert.match(rawObservationMigration, /before update on ingest\.raw_source_record_observations/);
+  assert.match(rawObservationMigration, /alter table ingest\.raw_source_record_observations enable row level security/);
+  assert.match(
+    rawObservationMigration,
+    /create policy "ingest service role manages raw record observations"[\s\S]+for all to service_role[\s\S]+with check \(true\)/,
+  );
+  assert.match(rawObservationMigration, /revoke all on table ingest\.raw_source_record_observations[\s\S]+from public, anon, authenticated/);
+  assert.match(rawObservationMigration, /grant select, insert, update, delete on table ingest\.raw_source_record_observations[\s\S]+to service_role/);
+
+  assert.match(rawObservationMigration, /security invoker\s+set search_path = ''/i);
+  assert.match(rawObservationMigration, /pg_advisory_xact_lock\(pg_catalog\.hashtextextended/i);
+  assert.match(rawObservationMigration, /or p_retrieved_at is null/);
+  assert.match(
+    rawObservationMigration,
+    /current_row\.deprecated_at is not null[\s\S]+errcode = '55000'[\s\S]+retain_raw_source_record_same_run_identity_deprecated/,
+    'a tombstoned same-run identity must fail with a stable prerequisite-state error',
+  );
+  assert.match(
+    rawObservationMigration,
+    /raw_record\.provider_record_id = p_provider_record_id[\s\S]+raw_record\.raw_payload = p_raw_payload[\s\S]+raw_record\.deprecated_at is null/,
+    'cross-run reuse must require the same provider identity and exact active JSON revision',
+  );
+  assert.match(
+    rawObservationMigration,
+    /if retained_row\.id is not null then[\s\S]+retention_action := 'reused';[\s\S]+elsif current_row\.id is not null then/,
+    'global exact reuse must take precedence over mutating a changed same-run revision',
+  );
+  assert.match(
+    rawObservationMigration,
+    /update ingest\.raw_source_records raw_record[\s\S]+where raw_record\.id = current_row\.id[\s\S]+raw_record\.import_run_id = p_import_run_id[\s\S]+raw_record\.deprecated_at is null/,
+    'a changed retry may only update its own active run-scoped raw revision',
+  );
+  assert.match(
+    rawObservationMigration,
+    /insert into ingest\.raw_source_record_observations[\s\S]+p_import_run_id,[\s\S]+retained_row\.id,[\s\S]+on conflict \(import_run_id, raw_record_id\) do update set/,
+    'every successful call must atomically upsert observation metadata against the retained revision',
+  );
+  assert.doesNotMatch(
+    rawObservationMigration,
+    /delete\s+from\s+ingest\.raw_source_records/i,
+    'retention must never delete raw provenance',
   );
 }
 
@@ -819,6 +894,13 @@ function assertChecksumsAndBackoff() {
   assert.equal(calculateExponentialBackoff(0, 60).seconds, 60);
   assert.equal(calculateExponentialBackoff(3, 60).seconds, 480);
   assert.equal(calculateExponentialBackoff(20, 60, 600).seconds, 600);
+  const id = '123e4567-e89b-42d3-a456-426614174000';
+  for (const changed of ['inserted', 'updated', 'reused'] as const) {
+    assert.deepEqual(parseRetainedRawRecord({ id, changed }), { id, changed });
+  }
+  for (const invalid of [null, [], {}, { id, changed: 'unknown' }, { id: 'not-a-uuid', changed: 'reused' }]) {
+    assert.throws(() => parseRetainedRawRecord(invalid), /invalid_retain_raw_source_record_response/);
+  }
 }
 
 async function assertManualCsvAdapter() {
@@ -937,7 +1019,7 @@ async function main() {
   await assertTcgdexMissingCardDetailFailsClosed();
   await assertImageAssetsAreBlockedByDefault();
   assertStrictForeignMigration();
-  assertRawRecordHistoryIsRetainedPerRun();
+  assertChangedRawRecordHistoryWithoutExactDuplicates();
   assertChecksumsAndBackoff();
   await assertSamePrintingRecordsAreSerialised();
   await assertManualCsvAdapter();
