@@ -30,6 +30,18 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$STACKR_BACKEND_URL"
+          node <<'NODE'
+          const response = await fetch(new URL('/health', process.env.STACKR_BACKEND_URL), {
+            signal: AbortSignal.timeout(15_000),
+          });
+          const body = await response.json();
+          if (response.status !== 200
+            || body?.ok !== true
+            || body?.runtime?.railwayEnvironment !== 'production'
+            || body?.runtime?.supabaseProjectRef !== 'oakdbbzdqwurpjnoqhmu') {
+            throw new Error('Production backend runtime binding does not match the approved baseline.');
+          }
+          NODE
           node scripts/deploy/smoke.mjs \
             --gateway=https://api.stackrtcg.com \
             --backend="$STACKR_BACKEND_URL" \

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "stackr-production-backend-hardening-approval-v1.0.0",
+  "schemaVersion": "stackr-production-backend-hardening-approval-v1.1.0",
   "status": "approved",
   "approvedAt": "2026-08-29T09:32:54Z",
   "approvedBy": "owner",
@@ -12,5 +12,9 @@
   "gatewayChangesAllowed": false,
   "mobileChangesAllowed": false,
   "recognitionChangesAllowed": false,
+  "runtimeBindingRepairApproved": true,
+  "runtimeBindingRepairApprovedAt": "2026-08-29T16:01:15Z",
+  "runtimeBindingExpectedSupabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "runtimeBindingMutationScope": "railway_runtime_variables_only",
   "rollbackPolicy": "never_restore_pre_lock_backend"
 }
