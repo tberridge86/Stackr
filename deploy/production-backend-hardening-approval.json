@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "stackr-production-backend-hardening-approval-v1.0.0",
+  "status": "approved",
+  "approvedAt": "2026-08-29T09:32:54Z",
+  "approvedBy": "owner",
+  "scope": "production_backend_hardening_only",
+  "frozenSourceCommit": "d80b0f82843710c7eb942f1e97533ea0af77447c",
+  "monitorRepairMergeCommit": "8d25082036f9e5ca38cfd120e2711dcdff59b929",
+  "catalogueChangesAllowed": false,
+  "newFeaturesAllowed": false,
+  "databaseChangesAllowed": false,
+  "gatewayChangesAllowed": false,
+  "mobileChangesAllowed": false,
+  "recognitionChangesAllowed": false,
+  "rollbackPolicy": "never_restore_pre_lock_backend"
+}
