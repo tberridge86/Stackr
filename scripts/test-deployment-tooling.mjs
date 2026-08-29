@@ -737,6 +737,12 @@ assert.equal(
   'oakdbbzdqwurpjnoqhmu',
 );
 assert.equal(productionBackendHardeningApproval.runtimeBindingMutationScope, 'railway_runtime_variables_only');
+assert.equal(productionBackendHardeningApproval.searchTimeoutRepairApproved, true);
+assert.match(productionBackendHardeningApproval.searchTimeoutRepairApprovedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+assert.equal(
+  productionBackendHardeningApproval.searchTimeoutRepairMutationScope,
+  'backend_query_order_and_exact_match_only',
+);
 assert.equal(productionBackendHardeningApproval.rollbackPolicy, 'never_restore_pre_lock_backend');
 assert.match(productionBackendHardeningWorkflow, /environment: production/);
 assert.match(productionBackendHardeningWorkflow, /paths:[\s\S]+production-backend-hardening-approval\.json/);
