@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node -e "const a=require('./deploy/production-backend-hardening-approval.json'); if (a.status !== 'approved' || a.scope !== 'production_backend_hardening_only' || a.catalogueChangesAllowed !== false || a.newFeaturesAllowed !== false || a.databaseChangesAllowed !== false || a.gatewayChangesAllowed !== false || a.mobileChangesAllowed !== false || a.recognitionChangesAllowed !== false || a.runtimeBindingRepairApproved !== true || a.runtimeBindingExpectedSupabaseProjectRef !== 'oakdbbzdqwurpjnoqhmu' || a.runtimeBindingMutationScope !== 'railway_runtime_variables_only' || a.rollbackPolicy !== 'never_restore_pre_lock_backend') process.exit(1)"
+          node -e "const a=require('./deploy/production-backend-hardening-approval.json'); if (a.status !== 'approved' || a.scope !== 'production_backend_hardening_only' || a.catalogueChangesAllowed !== false || a.newFeaturesAllowed !== false || a.databaseChangesAllowed !== false || a.gatewayChangesAllowed !== false || a.mobileChangesAllowed !== false || a.recognitionChangesAllowed !== false || a.runtimeBindingRepairApproved !== true || a.runtimeBindingExpectedSupabaseProjectRef !== 'oakdbbzdqwurpjnoqhmu' || a.runtimeBindingMutationScope !== 'railway_runtime_variables_only' || a.searchTimeoutRepairApproved !== true || a.searchTimeoutRepairMutationScope !== 'backend_query_order_and_exact_match_only' || a.rollbackPolicy !== 'never_restore_pre_lock_backend') process.exit(1)"
           git merge-base --is-ancestor 8d25082036f9e5ca38cfd120e2711dcdff59b929 "$GITHUB_SHA"
           node scripts/deploy/verify-wp32-release-candidate.mjs
 
