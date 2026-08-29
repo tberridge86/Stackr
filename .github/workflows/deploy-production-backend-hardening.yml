@@ -31,6 +31,11 @@ jobs:
       RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
       RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
       STACKR_BACKEND_URL: ${{ vars.STACKR_BACKEND_URL || 'https://pocketvault-production.up.railway.app' }}
+      STACKR_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL || 'https://api.stackrtcg.com' }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      STACKR_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+      STACKR_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
       BACKEND_ORIGIN_KEY: ${{ secrets.BACKEND_ORIGIN_KEY }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -45,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node -e "const a=require('./deploy/production-backend-hardening-approval.json'); if (a.status !== 'approved' || a.scope !== 'production_backend_hardening_only' || a.catalogueChangesAllowed !== false || a.newFeaturesAllowed !== false || a.databaseChangesAllowed !== false || a.gatewayChangesAllowed !== false || a.mobileChangesAllowed !== false || a.recognitionChangesAllowed !== false || a.rollbackPolicy !== 'never_restore_pre_lock_backend') process.exit(1)"
+          node -e "const a=require('./deploy/production-backend-hardening-approval.json'); if (a.status !== 'approved' || a.scope !== 'production_backend_hardening_only' || a.catalogueChangesAllowed !== false || a.newFeaturesAllowed !== false || a.databaseChangesAllowed !== false || a.gatewayChangesAllowed !== false || a.mobileChangesAllowed !== false || a.recognitionChangesAllowed !== false || a.runtimeBindingRepairApproved !== true || a.runtimeBindingExpectedSupabaseProjectRef !== 'oakdbbzdqwurpjnoqhmu' || a.runtimeBindingMutationScope !== 'railway_runtime_variables_only' || a.rollbackPolicy !== 'never_restore_pre_lock_backend') process.exit(1)"
           git merge-base --is-ancestor 8d25082036f9e5ca38cfd120e2711dcdff59b929 "$GITHUB_SHA"
           node scripts/deploy/verify-wp32-release-candidate.mjs
 
@@ -65,12 +70,47 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for variable in RAILWAY_API_TOKEN RAILWAY_PROJECT_ID RAILWAY_ENVIRONMENT_ID RAILWAY_BACKEND_SERVICE_ID BACKEND_ORIGIN_KEY STACKR_BACKEND_URL; do
+          for variable in RAILWAY_API_TOKEN RAILWAY_PROJECT_ID RAILWAY_ENVIRONMENT_ID RAILWAY_BACKEND_SERVICE_ID BACKEND_ORIGIN_KEY STACKR_BACKEND_URL STACKR_GATEWAY_URL SUPABASE_PROJECT_REF STACKR_SUPABASE_URL STACKR_SUPABASE_PUBLISHABLE_KEY SUPABASE_PRODUCTION_SECRET_KEY; do
             if [ -z "${!variable:-}" ]; then
               echo "Missing required production control: $variable" >&2
               exit 1
             fi
           done
+
+      - name: Validate production runtime binding source
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_ref="$(node -p "require('./deploy/release-manifest.json').components.database.projectRef")"
+          expected_url="https://${expected_ref}.supabase.co"
+          test "$expected_ref" = 'oakdbbzdqwurpjnoqhmu'
+          test "$SUPABASE_PROJECT_REF" = "$expected_ref"
+          test "$STACKR_SUPABASE_URL" = "$expected_url"
+          node <<'NODE'
+          const target = new URL(
+            '/rest/v1/catalogue_languages?select=language_code&limit=1',
+            process.env.STACKR_SUPABASE_URL,
+          );
+          const credentials = [
+            ['publishable', process.env.STACKR_SUPABASE_PUBLISHABLE_KEY],
+            ['secret', process.env.SUPABASE_PRODUCTION_SECRET_KEY],
+          ];
+          for (const [label, key] of credentials) {
+            const response = await fetch(target, {
+              signal: AbortSignal.timeout(15_000),
+              headers: {
+                Accept: 'application/json',
+                'Accept-Profile': 'api',
+                apikey: key,
+                Authorization: `Bearer ${key}`,
+              },
+            });
+            const body = await response.json().catch(() => null);
+            if (!response.ok || !Array.isArray(body) || body.length === 0) {
+              throw new Error(`Production Supabase ${label} credential was rejected with HTTP ${response.status}.`);
+            }
+          }
+          NODE
 
       - name: Record current backend deployment
         shell: bash
@@ -86,15 +126,24 @@ jobs:
             node -e 'let value=""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const rows=JSON.parse(value); const row=rows[0]; if (!row?.id || !row?.status) process.exit(1); process.stdout.write(JSON.stringify({ id: row.id, status: row.status }, null, 2)); });' \
             > "$RUNNER_TEMP/stackr-production-backend-hardening/before.json"
 
-      - name: Synchronize gateway origin authentication
+      - name: Synchronize approved production runtime binding
         shell: bash
         run: |
           set -euo pipefail
-          node -e "process.stdout.write(String(process.env.BACKEND_ORIGIN_KEY ?? '').trim())" | \
-            npx --yes @railway/cli@5.30.1 variable set STACKR_GATEWAY_ORIGIN_KEY --stdin --skip-deploys \
+          set_runtime_variable() {
+            railway_name="$1"
+            source_name="$2"
+            SOURCE_NAME="$source_name" node -e "process.stdout.write(String(process.env[process.env.SOURCE_NAME] ?? '').trim())" | \
+              npx --yes @railway/cli@5.30.1 variable set "$railway_name" --stdin --skip-deploys \
               --project "$RAILWAY_PROJECT_ID" \
               --environment "$RAILWAY_ENVIRONMENT_ID" \
               --service "$RAILWAY_BACKEND_SERVICE_ID"
+          }
+          set_runtime_variable STACKR_GATEWAY_ORIGIN_KEY BACKEND_ORIGIN_KEY
+          set_runtime_variable SUPABASE_URL STACKR_SUPABASE_URL
+          set_runtime_variable SUPABASE_PUBLISHABLE_KEY STACKR_SUPABASE_PUBLISHABLE_KEY
+          set_runtime_variable SUPABASE_SECRET_KEY SUPABASE_PRODUCTION_SECRET_KEY
+          set_runtime_variable SOURCE_COMMIT GITHUB_SHA
 
       - name: Deploy hardened backend only
         shell: bash
@@ -154,14 +203,30 @@ jobs:
             done
           fi
 
-      - name: Prove production commerce and legacy routes are locked
+      - name: Prove production binding, catalogue reads, and commerce lock
         shell: bash
         run: |
           set -euo pipefail
+          node <<'NODE'
+          const response = await fetch(new URL('/health', process.env.STACKR_BACKEND_URL), {
+            signal: AbortSignal.timeout(15_000),
+          });
+          const body = await response.json();
+          if (response.status !== 200
+            || body?.ok !== true
+            || body?.runtime?.railwayEnvironment !== 'production'
+            || body?.runtime?.supabaseProjectRef !== process.env.SUPABASE_PROJECT_REF) {
+            throw new Error('Production backend runtime binding does not match the approved baseline.');
+          }
+          NODE
           npm run deploy:smoke -- \
-            --gateway= \
+            --gateway="$STACKR_GATEWAY_URL" \
             --backend="$STACKR_BACKEND_URL" \
-            --require-commerce-disabled | \
+            --full-gateway \
+            --require-commerce-disabled \
+            --require-published-catalogue \
+            --required-catalogue-languages=en,ja,zh-tw,zh-cn,ko \
+            --allowed-origin=https://stackr.app | \
             tee "$RUNNER_TEMP/stackr-production-backend-hardening/smoke.json"
 
       - name: Record hardened backend deployment
@@ -188,4 +253,3 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
           compression-level: 9
-
