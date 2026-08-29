@@ -14,6 +14,12 @@ import {
   type SourceIdentity,
   validateProviderRecord,
 } from './sourceAdapter';
+import {
+  canonicalTcgdexCardId,
+  canonicalTcgdexSetId,
+  sortTcgdexCardRows,
+  sortTcgdexSetRows,
+} from './tcgdexOrdering';
 
 const DEFAULT_BASE_URL = 'https://api.tcgdex.net/v2';
 const DEFAULT_DETAIL_CONCURRENCY = 8;
@@ -51,9 +57,15 @@ async function snapshotIndex(root: string, language: string, kind: 'sets' | 'car
   const key = `${root}:${language}:${kind}`;
   let pending = snapshotIndexCache.get(key);
   if (!pending) {
-    pending = snapshotList(root, language, kind).then((items) => new Map(items
-      .map((item) => [cleanText(item.id)?.toLowerCase(), item] as const)
-      .filter((entry): entry is readonly [string, Record<string, unknown>] => Boolean(entry[0]))));
+    pending = snapshotList(root, language, kind).then((items) => {
+      const orderedItems = kind === 'cards'
+        ? sortTcgdexCardRows(items)
+        : sortTcgdexSetRows(items);
+      return new Map(orderedItems.map((item) => [
+        kind === 'cards' ? canonicalTcgdexCardId(item)! : canonicalTcgdexSetId(item)!,
+        item,
+      ]));
+    });
     snapshotIndexCache.set(key, pending);
   }
   return pending;
@@ -243,7 +255,10 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       const match = path.match(/^\/(sets|cards)(?:\/([^/?#]+))?$/);
       if (!match) throw new Error(`Unsupported TCGdex snapshot path: ${path}`);
       const kind = match[1] as 'sets' | 'cards';
-      const id = match[2] ? decodeURIComponent(match[2]).toLowerCase() : null;
+      const decodedId = match[2] ? decodeURIComponent(match[2]) : null;
+      const id = decodedId
+        ? kind === 'cards' ? canonicalTcgdexCardId(decodedId) : canonicalTcgdexSetId(decodedId)
+        : null;
       const value = id
         ? (await snapshotIndex(this.snapshotRoot, this.language, kind)).get(id) ?? null
         : await snapshotList(this.snapshotRoot, this.language, kind);
@@ -334,9 +349,10 @@ export class TcgdexSourceAdapter implements SourceAdapter {
     const sets = scope.setId
       ? (result.value && typeof result.value === 'object' && !Array.isArray(result.value) ? [result.value] : [])
       : (Array.isArray(result.value) ? result.value : []);
+    const orderedSets = sortTcgdexSetRows(sets);
     const offset = scopeOffset(scope);
-    const limit = scope.limit ?? sets.length;
-    return sets.slice(offset, offset + limit).map((set: Record<string, unknown>) => ({
+    const limit = scope.limit ?? orderedSets.length;
+    return orderedSets.slice(offset, offset + limit).map((set: Record<string, unknown>) => ({
       provider: 'tcgdex',
       providerRecordId: cleanText(set.id) ?? cleanText(set.slug) ?? cleanText(set.name) ?? 'unknown-set',
       recordType: 'set' as const,
@@ -379,41 +395,48 @@ export class TcgdexSourceAdapter implements SourceAdapter {
     const cardRefs = scope.setId
       ? (Array.isArray(setPayload?.cards) ? setPayload.cards : [])
       : (Array.isArray(result.value) ? result.value : []);
+    const orderedCardRefs = sortTcgdexCardRows(cardRefs);
     const offset = scopeOffset(scope);
-    const limit = scope.limit ?? cardRefs.length;
-    const selectedRefs = cardRefs.slice(offset, offset + limit);
-    const batches = await mapWithConcurrency<unknown, ProviderRecord | null>(
+    const limit = scope.limit ?? orderedCardRefs.length;
+    const selectedRefs = orderedCardRefs.slice(offset, offset + limit);
+    return mapWithConcurrency<unknown, ProviderRecord>(
       selectedRefs,
       DEFAULT_DETAIL_CONCURRENCY,
       async (ref) => {
-      const refId = cleanText(typeof ref === 'object' && ref ? (ref as Record<string, unknown>).id : ref);
-      if (!refId) return null;
-      const cardResult = await this.fetchJson(`/cards/${encodeURIComponent(refId)}`, scope);
-      const card = cardResult.value as Record<string, unknown> | null;
-      if (!card) return null;
-      const cardVariants = variantCandidates(card);
-      const imageVariant = imageVariantCandidate(card);
-      return {
-        provider: 'tcgdex',
-        providerRecordId: cleanText(card.id) ?? refId,
-        recordType: 'card',
-        languageCode: stackrLanguage(this.language),
-        sourceUrl: cardResult.url,
-        sourceEndpoint: cardResult.url,
-        providerUpdatedAt: cleanText(card.updatedAt ?? card.updated_at),
-        licenceStatus: this.licenceStatus,
-        attributionText: 'TCGdex',
-        httpMetadata: cardResult.metadata,
-        payload: {
-          ...card,
-          set: setPayload ?? card.set,
-          variant: imageVariant ?? cardVariants[0],
-          image_variant: imageVariant,
-        },
+        const refId = cleanText(typeof ref === 'object' && ref ? (ref as Record<string, unknown>).id : ref);
+        const expectedId = canonicalTcgdexCardId(ref);
+        if (!refId || !expectedId) {
+          throw new Error('TCGdex selected card reference has no stable provider ID.');
+        }
+        const cardResult = await this.fetchJson(`/cards/${encodeURIComponent(refId)}`, scope);
+        const card = cardResult.value as Record<string, unknown> | null;
+        if (!card) throw new Error(`TCGdex card detail ${refId} is missing from the selected snapshot.`);
+        const actualId = canonicalTcgdexCardId(card);
+        if (actualId !== expectedId) {
+          throw new Error(`TCGdex card detail identity mismatch: expected ${expectedId}, received ${actualId ?? 'missing'}.`);
+        }
+        const cardVariants = variantCandidates(card);
+        const imageVariant = imageVariantCandidate(card);
+        return {
+          provider: 'tcgdex',
+          providerRecordId: cleanText(card.id) ?? refId,
+          recordType: 'card',
+          languageCode: stackrLanguage(this.language),
+          sourceUrl: cardResult.url,
+          sourceEndpoint: cardResult.url,
+          providerUpdatedAt: cleanText(card.updatedAt ?? card.updated_at),
+          licenceStatus: this.licenceStatus,
+          attributionText: 'TCGdex',
+          httpMetadata: cardResult.metadata,
+          payload: {
+            ...card,
+            set: setPayload ?? card.set,
+            variant: imageVariant ?? cardVariants[0],
+            image_variant: imageVariant,
+          },
         } satisfies ProviderRecord;
       },
     );
-    return batches.filter((record): record is ProviderRecord => record !== null);
   }
 
   async fetchVariants(scope?: FetchScope) {
