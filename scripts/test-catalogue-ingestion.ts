@@ -11,7 +11,11 @@ import {
   isMissingVariantRepairPrecondition,
   isResolvedDeprecatedVariantAlias,
   isSafeUnsupportedPrimaryVariantCorrection,
+  isSafeSupportedPrimaryAliasTarget,
+  isVariantRepairNotApplicable,
   payloadChecksum,
+  reconciliationPhase,
+  releasedExactlyOnePrimaryAlias,
   runWithConcurrencyByKey,
 } from './catalogue-ingestion/pipeline';
 import {
@@ -150,6 +154,86 @@ function assertPinnedPrimaryVariantCorrectionSafety() {
   assert.equal(isMissingVariantRepairPrecondition({ code: 'P0002' }), true);
   assert.equal(isMissingVariantRepairPrecondition({ code: '23505' }), false);
   assert.equal(isMissingVariantRepairPrecondition(new Error('query returned no rows')), false);
+  assert.equal(isVariantRepairNotApplicable({ code: 'P0002' }), true);
+  assert.equal(isVariantRepairNotApplicable({
+    code: 'P0001',
+    message: 'Pinned finish evidence does not support this repair.',
+  }), true);
+  for (const message of [
+    'Variant identity safety check failed.',
+    'The stale base provider identity is no longer current.',
+    'The supported provider variant identity is not current.',
+    'The stale variant has an unexpected current provider link.',
+    'Ambiguous active assets prevent an automatic variant repair.',
+    'A mirrored stale asset has no supported destination.',
+  ]) assert.equal(isVariantRepairNotApplicable({ code: 'P0001', message }), true);
+  assert.equal(isVariantRepairNotApplicable({
+    code: 'P0001',
+    message: 'Pinned finish evidence does not support this repair',
+  }), false);
+  assert.equal(isVariantRepairNotApplicable({ code: 'P0001', message: 'A base provider card ID is required.' }), false);
+  assert.equal(isVariantRepairNotApplicable({
+    code: 'P0001',
+    message: 'The pinned snapshot must declare at least one supported finish.',
+  }), false);
+  assert.equal(isVariantRepairNotApplicable(new Error('Pinned finish evidence does not support this repair.')), false);
+  assert.equal(isVariantRepairNotApplicable({ code: '23505', message: 'duplicate key' }), false);
+
+  const safeAliasTarget = {
+    currentPrintingId: 'printing-1',
+    currentArtworkKey: 'tcgdex:2021swsh-17',
+    identityVariant: {
+      id: 'variant-normal',
+      printingId: 'printing-1',
+      variantCode: 'normal',
+      artworkKey: 'tcgdex:2021swsh-17',
+    },
+    expectedVariantCode: 'normal',
+  };
+  assert.equal(isSafeSupportedPrimaryAliasTarget(safeAliasTarget), true);
+  assert.equal(isSafeSupportedPrimaryAliasTarget({
+    ...safeAliasTarget,
+    identityVariant: { ...safeAliasTarget.identityVariant, printingId: 'printing-2' },
+  }), false);
+  assert.equal(isSafeSupportedPrimaryAliasTarget({
+    ...safeAliasTarget,
+    identityVariant: { ...safeAliasTarget.identityVariant, artworkKey: 'different-artwork' },
+  }), false);
+  assert.equal(isSafeSupportedPrimaryAliasTarget({
+    ...safeAliasTarget,
+    identityVariant: { ...safeAliasTarget.identityVariant, variantCode: 'reverse_holo' },
+  }), false);
+  assert.equal(releasedExactlyOnePrimaryAlias([{ id: 'released-base-alias' }]), true);
+  assert.equal(releasedExactlyOnePrimaryAlias([]), false);
+  assert.equal(releasedExactlyOnePrimaryAlias(null), false);
+  assert.equal(releasedExactlyOnePrimaryAlias([{ id: 'one' }, { id: 'two' }]), false);
+  assert.equal(reconciliationPhase({ provider: 'tcgdex', recordType: 'variant' }, { ok: true }), 2);
+  assert.equal(reconciliationPhase({ provider: 'tcgdex', recordType: 'card' }, { ok: true }), 3);
+  assert.equal(reconciliationPhase({ provider: 'tcgdex', recordType: 'asset' }, { ok: true }), 4);
+  assert.equal(reconciliationPhase({ provider: 'manual', recordType: 'card' }, { ok: true }), 2);
+  assert.equal(reconciliationPhase({ provider: 'manual', recordType: 'variant' }, { ok: true }), 3);
+  assert.equal(reconciliationPhase({ provider: 'tcgdex', recordType: 'variant' }, { ok: false }), 0);
+
+  const mismatchStart = ingestionPipeline.indexOf(
+    'if (externalVariantId && identityVariantId && externalVariantId !== identityVariantId)',
+  );
+  const unresolvedMismatchStart = ingestionPipeline.indexOf(
+    'if (externalVariantId && identityVariantId && externalVariantId !== identityVariantId)',
+    mismatchStart + 1,
+  );
+  assert.ok(mismatchStart >= 0 && unresolvedMismatchStart > mismatchStart);
+  const mismatchResolution = ingestionPipeline.slice(mismatchStart, unresolvedMismatchStart);
+  const releaseIndex = mismatchResolution.indexOf('releaseSupportedPrimaryVariantAlias');
+  const repairIndex = mismatchResolution.indexOf('tryRepairProviderVariantIdentity');
+  assert.ok(releaseIndex >= 0 && repairIndex > releaseIndex,
+    'a supported base alias must be released before attempting destructive variant repair');
+  assert.match(mismatchResolution, /if \(released\)[\s\S]+externalVariantId = undefined/);
+  assert.match(mismatchResolution, /releaseSupportedPrimaryVariantAlias[\s\S]+identityVariantId/);
+  assert.match(
+    ingestionPipeline,
+    /existingConflict = table\(db, 'ingest', 'data_conflicts'\)[\s\S]+priorConflict[\s\S]+data_conflicts'\)\.insert/,
+    'retrying the same record must not duplicate a staged conflict',
+  );
 
   assert.equal(isResolvedDeprecatedVariantAlias({
     deprecatedAt: '2026-08-19T00:00:00.000Z',
