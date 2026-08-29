@@ -123,6 +123,51 @@ export function isMissingVariantRepairPrecondition(error: unknown) {
   );
 }
 
+const VARIANT_REPAIR_NOT_APPLICABLE_MESSAGES = new Set([
+  'Variant identity safety check failed.',
+  'Pinned finish evidence does not support this repair.',
+  'The stale base provider identity is no longer current.',
+  'The supported provider variant identity is not current.',
+  'The stale variant has an unexpected current provider link.',
+  'Ambiguous active assets prevent an automatic variant repair.',
+  'A mirrored stale asset has no supported destination.',
+]);
+
+export function isVariantRepairNotApplicable(error: unknown) {
+  if (isMissingVariantRepairPrecondition(error)) return true;
+  return Boolean(
+    error
+    && typeof error === 'object'
+    && (error as { code?: unknown }).code === 'P0001'
+    && typeof (error as { message?: unknown }).message === 'string'
+    && VARIANT_REPAIR_NOT_APPLICABLE_MESSAGES.has((error as { message: string }).message)
+  );
+}
+
+export function isSafeSupportedPrimaryAliasTarget(input: {
+  currentPrintingId: string;
+  currentArtworkKey?: string | null;
+  identityVariant?: {
+    id?: string | null;
+    printingId?: string | null;
+    variantCode?: string | null;
+    artworkKey?: string | null;
+  } | null;
+  expectedVariantCode: string;
+}) {
+  const identityVariant = input.identityVariant;
+  return Boolean(
+    identityVariant?.id
+    && identityVariant.printingId === input.currentPrintingId
+    && identityVariant.variantCode === input.expectedVariantCode
+    && (identityVariant.artworkKey ?? null) === (input.currentArtworkKey ?? null)
+  );
+}
+
+export function releasedExactlyOnePrimaryAlias(rows: unknown) {
+  return Array.isArray(rows) && rows.length === 1;
+}
+
 export function isResolvedDeprecatedVariantAlias(input: {
   deprecatedAt?: string | null;
   correctedByVariantId?: string | null;
@@ -215,7 +260,7 @@ async function tryRepairProviderVariantIdentity(
     p_reason: 'tcgdex_pinned_snapshot_finish_correction',
   });
   if (error) {
-    if (isMissingVariantRepairPrecondition(error)) return false;
+    if (isVariantRepairNotApplicable(error)) return false;
     throw error;
   }
   return data?.status === 'repaired';
@@ -227,6 +272,7 @@ async function releaseSupportedPrimaryVariantAlias(
     sourceId: string;
     normalised: NormalisedRecord;
     externalVariantId: string;
+    identityVariantId?: string;
   },
 ) {
   if (input.normalised.provider !== 'tcgdex' || input.normalised.recordType !== 'card') return false;
@@ -236,13 +282,33 @@ async function releaseSupportedPrimaryVariantAlias(
   if (!supportedVariantCodes.includes(expectedVariantCode)) return false;
 
   const { data: currentVariant, error: variantError } = await table(db, 'catalog', 'card_variants')
-    .select('id, printing_id, variant_code, canonical_key')
+    .select('id, printing_id, variant_code, canonical_key, artwork_key')
     .eq('id', input.externalVariantId)
     .is('deprecated_at', null)
     .maybeSingle();
   if (variantError) throw variantError;
   if (!currentVariant?.id || currentVariant.variant_code === expectedVariantCode) return false;
   if (!supportedVariantCodes.includes(currentVariant.variant_code)) return false;
+
+  if (input.identityVariantId) {
+    const { data: identityVariant, error: identityVariantError } = await table(db, 'catalog', 'card_variants')
+      .select('id, printing_id, variant_code, artwork_key')
+      .eq('id', input.identityVariantId)
+      .is('deprecated_at', null)
+      .maybeSingle();
+    if (identityVariantError) throw identityVariantError;
+    if (!isSafeSupportedPrimaryAliasTarget({
+      currentPrintingId: currentVariant.printing_id,
+      currentArtworkKey: currentVariant.artwork_key,
+      identityVariant: identityVariant ? {
+        id: identityVariant.id,
+        printingId: identityVariant.printing_id,
+        variantCode: identityVariant.variant_code,
+        artworkKey: identityVariant.artwork_key,
+      } : null,
+      expectedVariantCode,
+    })) return false;
+  }
 
   const printingVariants = await table(db, 'catalog', 'card_variants')
     .select('id')
@@ -266,7 +332,7 @@ async function releaseSupportedPrimaryVariantAlias(
   if (retainedAlias.error) throw retainedAlias.error;
   if (!retainedAlias.data?.id) return false;
 
-  const { error: releaseError } = await table(db, 'ingest', 'external_identifiers')
+  const { data: releasedAliases, error: releaseError } = await table(db, 'ingest', 'external_identifiers')
     .update({
       is_current: false,
       deprecated_at: nowIso(),
@@ -278,9 +344,10 @@ async function releaseSupportedPrimaryVariantAlias(
     .eq('language_code', input.normalised.languageCode)
     .eq('variant_id', input.externalVariantId)
     .eq('is_current', true)
-    .is('deprecated_at', null);
+    .is('deprecated_at', null)
+    .select('id');
   if (releaseError) throw releaseError;
-  return true;
+  return releasedExactlyOnePrimaryAlias(releasedAliases);
 }
 
 function importErrorMessage(error: unknown) {
@@ -436,9 +503,14 @@ function reconciliationConcurrencyKey(
   return `${prepared.record.recordType}:${prepared.record.providerRecordId}:${index}`;
 }
 
-function reconciliationPhase(record: ProviderRecord, validation: ValidationResult) {
+export function reconciliationPhase(
+  record: Pick<ProviderRecord, 'provider' | 'recordType'>,
+  validation: Pick<ValidationResult, 'ok'>,
+) {
   if (!validation.ok) return 0;
   if (record.recordType === 'set') return 1;
+  if (record.provider === 'tcgdex' && record.recordType === 'variant') return 2;
+  if (record.provider === 'tcgdex' && (record.recordType === 'card' || record.recordType === 'printing')) return 3;
   if (record.recordType === 'card' || record.recordType === 'printing') return 2;
   if (record.recordType === 'variant') return 3;
   if (record.recordType === 'asset') return 4;
@@ -780,6 +852,19 @@ async function quarantine(
     notes?: string | null;
   },
 ) {
+  let existingConflict = table(db, 'ingest', 'data_conflicts')
+    .select('id')
+    .eq('source_id', input.sourceId)
+    .eq('import_run_id', input.importRunId)
+    .eq('raw_record_id', input.rawRecordId)
+    .eq('conflict_type', input.conflictType);
+  existingConflict = input.canonicalKey
+    ? existingConflict.eq('canonical_key', input.canonicalKey)
+    : existingConflict.is('canonical_key', null);
+  const { data: priorConflict, error: lookupError } = await existingConflict.limit(1);
+  if (lookupError) throw lookupError;
+  if ((priorConflict ?? []).length > 0) return;
+
   const { error } = await table(db, 'ingest', 'data_conflicts').insert({
     source_id: input.sourceId,
     import_run_id: input.importRunId,
@@ -1574,13 +1659,37 @@ async function upsertCardVariant(
 
   const identityVariantId = identityRow?.id;
   if (externalVariantId && identityVariantId && externalVariantId !== identityVariantId) {
-    const repaired = await tryRepairProviderVariantIdentity(db, {
+    const released = await releaseSupportedPrimaryVariantAlias(db, {
       sourceId,
       normalised,
       externalVariantId,
       identityVariantId,
     });
-    if (repaired) externalVariantId = identityVariantId;
+    if (released) {
+      await auditDecision(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        requestId,
+        decisionType: 'updated',
+        entitySchema: 'catalog',
+        entityTable: 'card_variants',
+        entityId: externalVariantId,
+        canonicalKey,
+        confidence: normalised.sourceConfidence,
+        reason: 'provider_primary_variant_changed',
+        proposed: { supportedVariantCodes: declaredVariantCodes(normalised.raw) },
+      });
+      externalVariantId = undefined;
+    } else {
+      const repaired = await tryRepairProviderVariantIdentity(db, {
+        sourceId,
+        normalised,
+        externalVariantId,
+        identityVariantId,
+      });
+      if (repaired) externalVariantId = identityVariantId;
+    }
   }
   if (externalVariantId && !identityVariantId) {
     const released = await releaseSupportedPrimaryVariantAlias(db, {
