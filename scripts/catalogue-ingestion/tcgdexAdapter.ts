@@ -87,6 +87,14 @@ const TCGDEX_VARIANT_CODES: Record<string, string> = {
   promo: 'promo',
 };
 
+const TCGDEX_VARIANT_PRIORITY: Record<string, number> = {
+  normal: 0,
+  holo: 1,
+  reverse_holo: 2,
+  first_edition: 3,
+  promo: 4,
+};
+
 function tcgdexVariantCode(value: unknown) {
   const raw = cleanText(value);
   if (!raw) return null;
@@ -128,7 +136,11 @@ function variantCandidates(card: Record<string, unknown>) {
   const declaredVariant = tcgdexVariantCode(card.variant);
   if (declaredVariant) variants.add(declaredVariant);
   if (variants.size === 0) variants.add('normal');
-  return [...variants];
+  return [...variants].sort((left, right) => {
+    const leftPriority = TCGDEX_VARIANT_PRIORITY[left] ?? Number.MAX_SAFE_INTEGER;
+    const rightPriority = TCGDEX_VARIANT_PRIORITY[right] ?? Number.MAX_SAFE_INTEGER;
+    return leftPriority - rightPriority || left.localeCompare(right);
+  });
 }
 
 function imageVariantCandidate(card: Record<string, unknown>) {
