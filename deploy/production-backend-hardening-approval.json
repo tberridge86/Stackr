@@ -16,5 +16,11 @@
   "runtimeBindingRepairApprovedAt": "2026-08-29T16:01:15Z",
   "runtimeBindingExpectedSupabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
   "runtimeBindingMutationScope": "railway_runtime_variables_only",
-  "rollbackPolicy": "never_restore_pre_lock_backend"
+  "rollbackPolicy": "never_restore_pre_lock_backend",
+  "runtimeBindingSourcePreflightVerifiedAt": "2026-08-29T16:11:58Z",
+  "runtimeBindingSourceExposedSchemas": [
+    "public",
+    "api",
+    "graphql_public"
+  ]
 }
