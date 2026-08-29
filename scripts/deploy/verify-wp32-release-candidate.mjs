@@ -10,10 +10,12 @@ const EXPECTED_SOURCE_COMMIT = 'd80b0f82843710c7eb942f1e97533ea0af77447c';
 const EXPECTED_SOURCE_TREE = '2591147dd7b1fe90bd635ebdc4784bf614e168f4';
 const EXPECTED_CONTROL_PATHS = Object.freeze([
   '.github/workflows/build-staging-apk.yml',
+  '.github/workflows/deploy-production-backend-hardening.yml',
   '.github/workflows/platform-ci.yml',
   '.github/workflows/production-api-monitor.yml',
   'deploy/evidence/wp32-staging-apk-2026-08-28.json',
   'deploy/evidence/wp32-source-build-2026-08-28.json',
+  'deploy/production-backend-hardening-approval.json',
   'deploy/production-runbook.md',
   'deploy/staging-runbook.md',
   'deploy/wp32-release-candidate.json',
