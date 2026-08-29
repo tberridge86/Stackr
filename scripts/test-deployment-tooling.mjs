@@ -162,13 +162,14 @@ if (migrationReconciliation.status === 0) {
   assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
   assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 } else {
-  // The root production ledger is three reviewed migrations ahead of the last
+  // The root production ledger is four reviewed migrations ahead of the last
   // legacy reconciliation evidence: Premium Seller, the byte-identical
-  // emergency containment capture, and Gate 0. Normal production workflows
-  // remain fail-closed; staging applies Gate 0 only from its independent,
-  // checksum-pinned 146-row ledger.
+  // emergency containment capture, Gate 0, and the unapplied staging-first
+  // catalogue natural-identity reconciliation. Normal production workflows
+  // remain fail-closed; staging applies migrations only through their scoped,
+  // checksum-pinned paths.
   const reconciliation = JSON.parse(migrationReconciliation.stdout);
-  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 3);
+  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 4);
   assert.deepEqual(reconciliation.errors, [
     'local_migration_count_drift',
     'staging_migration_count_drift',
@@ -180,8 +181,9 @@ if (migrationReconciliation.status === 0) {
   const localMigrations = readdirSync('supabase/migrations')
     .filter((name) => /^\d{14}_.+\.sql$/.test(name))
     .sort();
-  assert.equal(localMigrations.at(-1), '20260827124944_gate0_financial_route_containment.sql');
+  assert.equal(localMigrations.at(-1), '20260829163441_reconcile_active_catalogue_natural_identities.sql');
   assert.ok(localMigrations.includes('20260827093110_emergency_client_write_containment.sql'));
+  assert.ok(localMigrations.includes('20260827124944_gate0_financial_route_containment.sql'));
   assert.notEqual(migrationAlignmentGate.status, 0, 'global deployment must remain blocked while staging evidence trails');
 }
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
