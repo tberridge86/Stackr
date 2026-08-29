@@ -8,7 +8,7 @@ on:
       version:
         description: Deterministic import version; use a new value for a new provider snapshot
         required: true
-        default: tcgdex-771a8381c57c-four-primary-v1
+        default: tcgdex-771a8381c57c-four-primary-v2
         type: string
       batch_size:
         description: Provider cards per resumable metadata and image-reference batch
@@ -54,7 +54,7 @@ concurrency:
 
 env:
   TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
-  DEFAULT_CATALOGUE_VERSION: tcgdex-771a8381c57c-four-primary-v1
+  DEFAULT_CATALOGUE_VERSION: tcgdex-771a8381c57c-four-primary-v2
   DO_NOT_TRACK: '1'
 
 jobs:
@@ -70,7 +70,7 @@ jobs:
     timeout-minutes: 30
     environment: staging
     env:
-      CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v1' }}
+      CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v2' }}
       CATALOGUE_BATCH_SIZE: ${{ inputs.batch_size || '1000' }}
       CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
       CATALOGUE_MAX_RECORDS: ${{ inputs.max_records || '' }}
@@ -132,7 +132,7 @@ jobs:
       SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
       STACKR_CATALOGUE_IMPORT_TARGET: staging
-      CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v1' }}
+      CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v2' }}
       CATALOGUE_BATCH_SIZE: ${{ inputs.batch_size || '1000' }}
       CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
       CATALOGUE_MAX_RECORDS: ${{ inputs.max_records || '' }}
@@ -172,7 +172,7 @@ jobs:
           bun install --frozen-lockfile --cwd "$GITHUB_WORKSPACE/.tcgdex-source"
           bun install --frozen-lockfile --cwd "$GITHUB_WORKSPACE/.tcgdex-source/server"
           cd "$GITHUB_WORKSPACE/.tcgdex-source/server"
-          TCGCSV_USER_AGENT='StackR-four-language-catalogue/1.0' \
+          TCGCSV_USER_AGENT='StackR-four-language-catalogue/2.0' \
           TCGDEX_COMPILE_LANGS='${{ matrix.language }}' \
           TCGDEX_SHALLOW_SNAPSHOT=1 \
           bun run compile
@@ -365,7 +365,7 @@ jobs:
       INGEST_RESULT: ${{ needs.ingest.result }}
       MIRROR_RESULT: ${{ needs.mirror.result }}
       MEASURE_RESULT: ${{ needs.measure.result }}
-      CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v1' }}
+      CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v2' }}
     steps:
       - name: Download language evidence
         shell: bash
