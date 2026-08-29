@@ -611,6 +611,11 @@ async function assertImageAssetsAreBlockedByDefault() {
   );
   assert.match(
     ingestionPipeline,
+    /priorDecision[\s\S]+ingest_merge_decisions/,
+    'retrying one deterministic import run must not append duplicate audit decisions',
+  );
+  assert.match(
+    ingestionPipeline,
     /hasCompleteCardImageIdentity/,
     'image assets must require language, set_code, collector_number, variant and finish',
   );
