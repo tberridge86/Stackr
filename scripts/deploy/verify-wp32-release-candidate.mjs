@@ -13,6 +13,7 @@ const EXPECTED_CONTROL_PATHS = Object.freeze([
   '.github/workflows/deploy-production-backend-hardening.yml',
   '.github/workflows/platform-ci.yml',
   '.github/workflows/production-api-monitor.yml',
+  'backend/lib/stackrApiV1.js',
   'deploy/evidence/wp32-staging-apk-2026-08-28.json',
   'deploy/evidence/wp32-source-build-2026-08-28.json',
   'deploy/production-backend-hardening-approval.json',
@@ -27,6 +28,7 @@ const EXPECTED_CONTROL_PATHS = Object.freeze([
   'package.json',
   'scripts/deploy/verify-wp32-release-candidate.mjs',
   'scripts/test-deployment-tooling.mjs',
+  'scripts/test-stackr-api-v1.mjs',
   'scripts/test-wp32-release-candidate.mjs',
 ]);
 const EXPECTED_PACKAGE_SCRIPTS = Object.freeze({
