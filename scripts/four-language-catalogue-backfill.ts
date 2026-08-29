@@ -1,10 +1,17 @@
 import 'dotenv/config';
+import { createHash } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { CatalogueIngestionRunner } from './catalogue-ingestion/pipeline';
 import { TcgdexSourceAdapter } from './catalogue-ingestion/tcgdexAdapter';
+import {
+  canonicalTcgdexCardId,
+  canonicalTcgdexSetId,
+  sortTcgdexCardRows,
+  sortTcgdexSetRows,
+} from './catalogue-ingestion/tcgdexOrdering';
 import {
   cleanText,
   normaliseLanguageCode,
@@ -13,6 +20,8 @@ import {
 
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const PRODUCTION_SUPABASE_REF = 'oakdbbzdqwurpjnoqhmu';
+export const FOUR_LANGUAGE_IMPORTER_CONTRACT = 'tcgdex-stable-card-id-v2';
+export const FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA = 'stackr-four-language-batch-v2.0.0';
 
 export const FOUR_LANGUAGE_CATALOGUE_CODES = PRIMARY_CATALOGUE_LANGUAGE_CODES;
 export type FourLanguageCatalogueCode = typeof FOUR_LANGUAGE_CATALOGUE_CODES[number];
@@ -28,6 +37,7 @@ type BatchPlan = {
   offset: number;
   limit: number;
   expectedImageReferences: number;
+  manifestDigest: string;
 };
 
 export type BackfillOptions = {
@@ -57,6 +67,8 @@ type BatchReport = {
 };
 
 type LaneReport = CatalogueLane & {
+  snapshotDigest: string;
+  importerContract: string;
   providerCards: number;
   providerImageReferences: number;
   plannedCards: number;
@@ -133,20 +145,74 @@ export function buildFourLanguageLanes(languages: FourLanguageCatalogueCode[]): 
   return languages.map((language) => ({ source: 'tcgdex', language }));
 }
 
+function stableJson(value: unknown): string {
+  if (value === null) return 'null';
+  if (typeof value === 'string' || typeof value === 'boolean') return JSON.stringify(value);
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new Error('Batch manifests cannot contain non-finite numbers.');
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (typeof value !== 'object') {
+    throw new Error(`Batch manifests cannot contain ${typeof value} values.`);
+  }
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${stableJson(record[key])}`).join(',')}}`;
+}
+
+function sha256(value: string) {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+export function batchManifestDigest(
+  language: FourLanguageCatalogueCode,
+  cards: ProviderCard[],
+  sets: ProviderCard[] = [],
+) {
+  return sha256(stableJson({
+    schema: FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA,
+    importerContract: FOUR_LANGUAGE_IMPORTER_CONTRACT,
+    language,
+    cards: sortTcgdexCardRows(cards),
+    sets: sortTcgdexSetRows(sets),
+  }));
+}
+
+export function catalogueSnapshotDigest(
+  language: FourLanguageCatalogueCode,
+  cards: ProviderCard[],
+  sets: ProviderCard[] = [],
+) {
+  const cardIds = sortTcgdexCardRows(cards).map((card) => canonicalTcgdexCardId(card));
+  const setIds = sortTcgdexSetRows(sets).map((set) => canonicalTcgdexSetId(set));
+  return sha256(stableJson({
+    importerContract: FOUR_LANGUAGE_IMPORTER_CONTRACT,
+    language,
+    cardIds,
+    setIds,
+  }));
+}
+
 export function buildBatchPlans(
   cards: ProviderCard[],
   batchSize: number,
   maximum: number | null = null,
+  sets: ProviderCard[] = [],
+  language: FourLanguageCatalogueCode = 'en',
 ): BatchPlan[] {
   if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error('batchSize must be a positive integer.');
-  const plannedCards = maximum == null ? cards : cards.slice(0, maximum);
+  const orderedCards = sortTcgdexCardRows(cards);
+  const orderedSets = sortTcgdexSetRows(sets);
+  const plannedCards = maximum == null ? orderedCards : orderedCards.slice(0, maximum);
   const plans: BatchPlan[] = [];
   for (let offset = 0; offset < plannedCards.length; offset += batchSize) {
     const rows = plannedCards.slice(offset, offset + batchSize);
+    const setRows = orderedSets.slice(offset, offset + rows.length);
     plans.push({
       offset,
       limit: rows.length,
       expectedImageReferences: rows.filter((card) => Boolean(cleanText(card.image))).length,
+      manifestDigest: batchManifestDigest(language, rows, setRows),
     });
   }
   return plans;
@@ -155,24 +221,31 @@ export function buildBatchPlans(
 export function deterministicBatchSuffix(
   lane: CatalogueLane,
   version: string,
+  snapshotDigest: string,
   offset: number,
   batchSize: number,
+  manifestDigest: string,
 ) {
   return [
-    'four-language-metadata-images',
+    'four-language-metadata-images-v2',
     version,
+    FOUR_LANGUAGE_IMPORTER_CONTRACT,
+    `snapshot-${snapshotDigest}`,
     lane.source,
     lane.language,
     String(offset).padStart(7, '0'),
     batchSize,
+    `batch-${manifestDigest}`,
   ].join(':').toLowerCase();
 }
 
 export function canonicalImportRunKey(
   lane: CatalogueLane,
   version: string,
+  snapshotDigest: string,
   offset: number,
   batchSize: number,
+  manifestDigest: string,
 ) {
   return [
     lane.source,
@@ -181,8 +254,38 @@ export function canonicalImportRunKey(
     'all',
     'all',
     'with-assets',
-    deterministicBatchSuffix(lane, version, offset, batchSize),
+    deterministicBatchSuffix(lane, version, snapshotDigest, offset, batchSize, manifestDigest),
   ].join(':').toLowerCase();
+}
+
+export function batchRunMetadata(
+  lane: CatalogueLane,
+  version: string,
+  snapshotDigest: string,
+  plan: BatchPlan,
+  batchSize: number,
+) {
+  return {
+    importerContract: FOUR_LANGUAGE_IMPORTER_CONTRACT,
+    workstreamVersion: version,
+    source: lane.source,
+    language: lane.language,
+    snapshotDigest,
+    batchManifestDigest: plan.manifestDigest,
+    batchOffset: plan.offset,
+    batchSize,
+    batchCardCount: plan.limit,
+  };
+}
+
+export function completedBatchManifestMatches(
+  metadata: unknown,
+  expected: ReturnType<typeof batchRunMetadata>,
+) {
+  if (!metadata || typeof metadata !== 'object') return false;
+  const workstream = (metadata as { workstream?: unknown }).workstream;
+  if (!workstream || typeof workstream !== 'object') return false;
+  return stableJson(workstream) === stableJson(expected);
 }
 
 export function updateLanePercentages(lane: LaneReport) {
@@ -280,7 +383,7 @@ Usage:
     --languages=en,ja,zh-cn,ko \\
     --tcgdexSnapshotRoot=.tcgdex-source/server/generated \\
     --tcgdexSnapshotVersion=771a8381c57c \\
-    --version=tcgdex-771a8381c57c-four-primary-v1 \\
+    --version=tcgdex-771a8381c57c-four-primary-v2 \\
     --target=staging
 
 Options:
@@ -355,7 +458,7 @@ function providerCards(payload: unknown, language: FourLanguageCatalogueCode) {
   if (!rows) throw new Error(`TCGdex ${language} card list did not return an array.`);
   const cards = rows.filter((row): row is ProviderCard => Boolean(row && typeof row === 'object'));
   if (cards.length === 0) throw new Error(`TCGdex ${language} card universe is empty.`);
-  return cards;
+  return sortTcgdexCardRows(cards);
 }
 
 export async function discoverProviderCards(
@@ -372,11 +475,33 @@ export async function discoverProviderCards(
   );
 }
 
+async function discoverSnapshotDigest(
+  lane: CatalogueLane,
+  options: Pick<BackfillOptions, 'tcgdexSnapshotRoot'>,
+  cards: ProviderCard[],
+) {
+  if (!options.tcgdexSnapshotRoot) {
+    return { sets: [] as ProviderCard[], snapshotDigest: catalogueSnapshotDigest(lane.language, cards) };
+  }
+  const setFile = path.join(options.tcgdexSnapshotRoot, lane.language, 'sets.json');
+  const setPayload = JSON.parse(await readFile(setFile, 'utf8')) as unknown;
+  const rows = Array.isArray(setPayload)
+    ? setPayload
+    : setPayload && typeof setPayload === 'object' && Array.isArray((setPayload as { data?: unknown }).data)
+      ? (setPayload as { data: unknown[] }).data
+      : null;
+  if (!rows) throw new Error(`TCGdex ${lane.language} set list did not return an array.`);
+  const sets = rows.filter((row): row is ProviderCard => Boolean(row && typeof row === 'object'));
+  if (sets.length === 0) throw new Error(`TCGdex ${lane.language} set universe is empty.`);
+  return { sets, snapshotDigest: catalogueSnapshotDigest(lane.language, cards, sets) };
+}
+
 async function completedBatch(
   db: SupabaseClient,
   lane: CatalogueLane,
   version: string,
-  offset: number,
+  snapshotDigest: string,
+  plan: BatchPlan,
   batchSize: number,
 ) {
   const { data: source, error: sourceError } = await db
@@ -390,13 +515,23 @@ async function completedBatch(
   const { data, error } = await db
     .schema('ingest')
     .from('import_runs')
-    .select('id, records_retrieved, records_inserted, records_updated, records_conflicted')
+    .select('id, records_retrieved, records_inserted, records_updated, records_conflicted, metadata')
     .eq('source_id', source.id)
-    .eq('run_key', canonicalImportRunKey(lane, version, offset, batchSize))
+    .eq('run_key', canonicalImportRunKey(
+      lane,
+      version,
+      snapshotDigest,
+      plan.offset,
+      batchSize,
+      plan.manifestDigest,
+    ))
     .eq('status', 'completed')
     .maybeSingle();
   if (error) throw error;
   if (!data?.id) return null;
+  const expectedMetadata = batchRunMetadata(lane, version, snapshotDigest, plan, batchSize);
+  if (!completedBatchManifestMatches(data.metadata, expectedMetadata)) return null;
+  if (Number(data.records_retrieved ?? 0) < plan.limit) return null;
   assertAcceptedBatchResult({
     ok: true,
     stats: {
@@ -415,6 +550,7 @@ async function runBatch(
   lane: CatalogueLane,
   options: BackfillOptions,
   plan: BatchPlan,
+  snapshotDigest: string,
 ) {
   const runner = new CatalogueIngestionRunner(db, adapter);
   let lastError: unknown;
@@ -426,11 +562,25 @@ async function runBatch(
         language: lane.language,
         cursor: { offset: plan.offset },
         limit: plan.limit,
-        runKey: deterministicBatchSuffix(lane, options.version, plan.offset, options.batchSize),
-        requestId: `four-language-metadata-images:${options.version}:${lane.language}:${plan.offset}`,
+        runKey: deterministicBatchSuffix(
+          lane,
+          options.version,
+          snapshotDigest,
+          plan.offset,
+          options.batchSize,
+          plan.manifestDigest,
+        ),
+        requestId: [
+          'four-language-metadata-images-v2',
+          options.version,
+          lane.language,
+          plan.offset,
+          plan.manifestDigest.slice(0, 12),
+        ].join(':'),
         allowImageAssets: true,
         approvedOnlyAssets: true,
         writeConcurrency: options.writeConcurrency,
+        runMetadata: batchRunMetadata(lane, options.version, snapshotDigest, plan, options.batchSize),
       });
       assertAcceptedBatchResult(result);
       return { result, attempts: attempt };
@@ -451,11 +601,18 @@ async function writeReport(outputPath: string, report: unknown) {
   await rename(temporaryPath, outputPath);
 }
 
-function emptyLaneReport(lane: CatalogueLane, cards: ProviderCard[], plans: BatchPlan[]): LaneReport {
+function emptyLaneReport(
+  lane: CatalogueLane,
+  cards: ProviderCard[],
+  plans: BatchPlan[],
+  snapshotDigest: string,
+): LaneReport {
   const plannedCards = plans.reduce((sum, plan) => sum + plan.limit, 0);
   const plannedImageReferences = plans.reduce((sum, plan) => sum + plan.expectedImageReferences, 0);
   return updateLanePercentages({
     ...lane,
+    snapshotDigest,
+    importerContract: FOUR_LANGUAGE_IMPORTER_CONTRACT,
     providerCards: cards.length,
     providerImageReferences: cards.filter((card) => Boolean(cleanText(card.image))).length,
     plannedCards,
@@ -484,6 +641,9 @@ export async function runFourLanguageCatalogueBackfill() {
   }
 
   const options = parseOptions();
+  if (!options.dryPlan && !options.tcgdexSnapshotRoot) {
+    throw new Error('Four-language catalogue writes require one compiled local TCGdex snapshot.');
+  }
   const lanes = buildFourLanguageLanes(options.languages);
   const startedAt = new Date();
   const report: {
@@ -493,6 +653,7 @@ export async function runFourLanguageCatalogueBackfill() {
     finishedAt?: string;
     durationMs?: number;
     version: string;
+    importerContract: string;
     stagingProjectRef: string;
     source: string;
     languages: FourLanguageCatalogueCode[];
@@ -507,10 +668,11 @@ export async function runFourLanguageCatalogueBackfill() {
     summary?: Record<string, unknown>;
     ok?: boolean;
   } = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     job: 'stackr-four-language-catalogue-metadata-images',
     startedAt: startedAt.toISOString(),
     version: options.version,
+    importerContract: FOUR_LANGUAGE_IMPORTER_CONTRACT,
     stagingProjectRef: STAGING_SUPABASE_REF,
     source: 'tcgdex',
     languages: options.languages,
@@ -533,15 +695,26 @@ export async function runFourLanguageCatalogueBackfill() {
     lanes: [],
   };
 
-  const plans: { lane: CatalogueLane; cards: ProviderCard[]; batches: BatchPlan[] }[] = [];
+  const plans: {
+    lane: CatalogueLane;
+    cards: ProviderCard[];
+    batches: BatchPlan[];
+    snapshotDigest: string;
+  }[] = [];
   for (const lane of lanes) {
     const cards = await discoverProviderCards(lane, options);
-    plans.push({ lane, cards, batches: buildBatchPlans(cards, options.batchSize, options.maxRecords) });
+    const snapshot = await discoverSnapshotDigest(lane, options, cards);
+    plans.push({
+      lane,
+      cards,
+      batches: buildBatchPlans(cards, options.batchSize, options.maxRecords, snapshot.sets, lane.language),
+      snapshotDigest: snapshot.snapshotDigest,
+    });
   }
 
   if (options.dryPlan) {
-    report.lanes = plans.map(({ lane, cards, batches }) => {
-      const laneReport = emptyLaneReport(lane, cards, batches);
+    report.lanes = plans.map(({ lane, cards, batches, snapshotDigest }) => {
+      const laneReport = emptyLaneReport(lane, cards, batches, snapshotDigest);
       laneReport.status = 'planned';
       return laneReport;
     });
@@ -562,14 +735,21 @@ export async function runFourLanguageCatalogueBackfill() {
   const db = stagingClient();
   let failures = 0;
   for (const plan of plans) {
-    const laneReport = emptyLaneReport(plan.lane, plan.cards, plan.batches);
+    const laneReport = emptyLaneReport(plan.lane, plan.cards, plan.batches, plan.snapshotDigest);
     report.lanes.push(laneReport);
     const adapter = createFourLanguageAdapter(plan.lane, options);
 
     for (const batch of plan.batches) {
       const batchStartedAt = Date.now();
       try {
-        const completed = await completedBatch(db, plan.lane, options.version, batch.offset, options.batchSize);
+        const completed = await completedBatch(
+          db,
+          plan.lane,
+          options.version,
+          plan.snapshotDigest,
+          batch,
+          options.batchSize,
+        );
         if (completed) {
           laneReport.batchesSkipped += 1;
           laneReport.cardRowsProcessed += batch.limit;
@@ -579,7 +759,7 @@ export async function runFourLanguageCatalogueBackfill() {
           updateLanePercentages(laneReport);
           continue;
         }
-        const execution = await runBatch(db, adapter, plan.lane, options, batch);
+        const execution = await runBatch(db, adapter, plan.lane, options, batch, plan.snapshotDigest);
         laneReport.batchesCompleted += 1;
         laneReport.cardRowsProcessed += batch.limit;
         laneReport.imageReferenceRowsProcessed += batch.expectedImageReferences;

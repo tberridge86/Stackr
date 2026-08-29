@@ -6,6 +6,11 @@ import { ManualCsvSourceAdapter, ManualJsonSourceAdapter, parseManualCsv } from 
 import { PikaQianSourceAdapter } from './catalogue-ingestion/providerFileAdapters';
 import { TcgdexSourceAdapter, tcgdexAdapterInternals } from './catalogue-ingestion/tcgdexAdapter';
 import {
+  canonicalTcgdexCardId,
+  sortTcgdexCardRows,
+  sortTcgdexSetRows,
+} from './catalogue-ingestion/tcgdexOrdering';
+import {
   CatalogueIngestionRunner,
   calculateExponentialBackoff,
   isMissingVariantRepairPrecondition,
@@ -250,6 +255,27 @@ function assertPinnedPrimaryVariantCorrectionSafety() {
     deprecatedPrintingId: 'printing-1',
     correctionTargetPrintingId: 'printing-2',
   }), false);
+}
+
+function assertDeterministicTcgdexCardOrdering() {
+  assert.equal(canonicalTcgdexCardId({ id: '  SET-Alpha  ' }), 'set-alpha');
+  const rows = [
+    { id: 'set-z-016' },
+    { id: 'SET-A-16' },
+    { id: 'set-b-016' },
+    { id: 'set-a-15' },
+  ];
+  assert.deepEqual(sortTcgdexCardRows(rows).map((row) => row.id), [
+    'set-a-15',
+    'SET-A-16',
+    'set-b-016',
+    'set-z-016',
+  ]);
+  assert.equal(rows[0].id, 'set-z-016', 'provider input arrays must not be mutated');
+  assert.throws(() => sortTcgdexCardRows([{ id: 'CARD-1' }, { id: ' card-1 ' }]), /duplicate provider ID card-1/);
+  assert.throws(() => sortTcgdexCardRows([{ name: 'missing-id' }]), /stable provider ID/);
+  assert.deepEqual(sortTcgdexSetRows([{ id: 'set-z' }, { id: 'SET-A' }]), [{ id: 'SET-A' }, { id: 'set-z' }]);
+  assert.throws(() => sortTcgdexSetRows([{ id: 'SET-1' }, { id: ' set-1 ' }]), /duplicate provider ID set-1/);
 }
 
 function assertRecognitionRoleIsLeastPrivilege() {
@@ -622,9 +648,9 @@ async function assertTcgdexOffsetSelectsTheRequestedBatch() {
     const url = String(input);
     if (url.endsWith('/cards')) {
       return new Response(JSON.stringify([
+        { id: 'SET-003' },
         { id: 'SET-001' },
         { id: 'SET-002' },
-        { id: 'SET-003' },
       ]), { status: 200 });
     }
     requestedDetails.push(url);
@@ -644,6 +670,40 @@ async function assertTcgdexOffsetSelectsTheRequestedBatch() {
     assert.equal(records[0].providerRecordId, 'SET-002');
     assert.equal(requestedDetails.length, 1);
     assert.ok(requestedDetails[0].endsWith('/en/cards/SET-002'));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
+async function assertTcgdexSetOffsetUsesStableProviderIds() {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify([
+    { id: 'SET-Z', name: 'Last' },
+    { id: 'SET-A', name: 'First' },
+    { id: 'SET-B', name: 'Second' },
+  ]), { status: 200 });
+  try {
+    const adapter = new TcgdexSourceAdapter({ language: 'en' });
+    const records = await adapter.fetchSets({ limit: 1, cursor: { offset: 1 } });
+    assert.equal(records.length, 1);
+    assert.equal(records[0].providerRecordId, 'SET-B');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
+async function assertTcgdexMissingCardDetailFailsClosed() {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input) => {
+    const url = String(input);
+    if (url.endsWith('/cards')) {
+      return new Response(JSON.stringify([{ id: 'SET-001' }]), { status: 200 });
+    }
+    return new Response('not found', { status: 404 });
+  };
+  try {
+    const adapter = new TcgdexSourceAdapter({ language: 'en' });
+    await assert.rejects(adapter.fetchCards({ limit: 1 }), /TCGdex request failed \(404\)/);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -866,12 +926,15 @@ async function main() {
   assertCanonicalStagingSourceGuard();
   assertBoundedCatalogueWrites();
   assertPinnedPrimaryVariantCorrectionSafety();
+  assertDeterministicTcgdexCardOrdering();
   assertRecognitionRoleIsLeastPrivilege();
   assertMigrationAddsIngestionState();
   assertIdentityHelpers();
   await assertStrictForeignLanguageSafety();
   await assertTcgdexLanguageRunFetchesSetsCardsAndVariants();
   await assertTcgdexOffsetSelectsTheRequestedBatch();
+  await assertTcgdexSetOffsetUsesStableProviderIds();
+  await assertTcgdexMissingCardDetailFailsClosed();
   await assertImageAssetsAreBlockedByDefault();
   assertStrictForeignMigration();
   assertRawRecordHistoryIsRetainedPerRun();
