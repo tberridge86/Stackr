@@ -488,16 +488,20 @@ async function searchSetCodeCollector(supabase, parsed, limit, language) {
   if (!collector) return [];
   const setIds = await fetchSetIdsByCode(supabase, parsed.setCode, language);
   if (!setIds.length) return [];
-  let query = table(supabase, 'api', 'catalogue_cards')
-    .select('*')
-    .in('set_id', setIds)
-    // A collector number may be recorded as either "157" or "157/165".
-    // Narrow the published view before mapping so a set-code lookup does not
-    // materialize an arbitrary first page of the entire set.
-    .ilike('collector_number', `${escapeLikePattern(collector)}%`)
-    .limit(Math.max(limit * 8, 80));
-  query = applyLanguageFilter(query, language);
-  const rows = await queryRows(query);
+  const buildQuery = () => {
+    let query = table(supabase, 'api', 'catalogue_cards')
+      .select('*')
+      .in('set_id', setIds)
+      .limit(Math.max(limit * 8, 80));
+    query = applyLanguageFilter(query, language);
+    return query;
+  };
+  const exactRows = await queryRows(buildQuery().eq('collector_number', collector));
+  // A collector number may also be recorded as "157/165". Only run the
+  // broader published-view lookup when the cheaper exact lookup misses.
+  const rows = exactRows.length
+    ? exactRows
+    : await queryRows(buildQuery().ilike('collector_number', `${escapeLikePattern(collector)}%`));
   return dedupeByVariant(rows)
     .filter((row) => collectorMatches(row.collector_number, collector))
     .slice(0, limit)
@@ -982,8 +986,8 @@ export function createCatalogueV1Service(options) {
 
       const strategies = [
         () => searchCanonicalId(searchSupabase, parsed, limit),
-        () => searchExternalId(searchSupabase, parsed, limit, language),
         () => searchSetCodeCollector(searchSupabase, parsed, limit, language),
+        () => searchExternalId(searchSupabase, parsed, limit, language),
         () => searchCollectorNumber(searchSupabase, parsed, limit, language, selectedSetId),
         () => searchNameWithSetCode(searchSupabase, parsed, limit, language),
         () => searchNames(searchSupabase, parsed, limit, language, EXACT_NAME_TYPES, () => 'exact_name'),
