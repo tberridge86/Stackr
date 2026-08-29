@@ -244,7 +244,8 @@ async function assertSearchServerClientIsolation() {
   assert.equal(result.results[0].reason, 'exact_set_code_collector_number');
   const cardSearch = operations.find((operation) => operation.table === 'catalogue_cards');
   assert.deepEqual(cardSearch?.filters.find(([name, column]) => name === 'in' && column === 'set_id'), ['in', 'set_id', [setId]]);
-  assert.deepEqual(cardSearch?.filters.find(([name, column]) => name === 'ilike' && column === 'collector_number'), ['ilike', 'collector_number', '157%']);
+  assert.deepEqual(cardSearch?.filters.find(([name, column]) => name === 'eq' && column === 'collector_number'), ['eq', 'collector_number', '157']);
+  assert.equal(operations.some((operation) => operation.table === 'catalogue_external_identifiers'), false);
 }
 
 async function assertAssetManifestCursorQuery() {
