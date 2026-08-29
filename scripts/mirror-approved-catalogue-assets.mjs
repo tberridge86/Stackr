@@ -6,10 +6,40 @@ import { SupabaseObjectStorageAdapter } from '../backend/lib/objectStorage.js';
 
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const ALLOWED_PROVIDERS = new Set(['tcgdex', 'pikaqian']);
+const ALLOWED_LANGUAGES = new Set(['en', 'ja', 'zh-cn', 'ko']);
 const RETRYABLE_SOURCE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 const MAX_SOURCE_ATTEMPTS = 3;
 const MAX_DATABASE_ATTEMPTS = 3;
 const MAX_DEFERRED_PER_BATCH = 5;
+const CANDIDATE_ASSET_COLUMNS = [
+  'id',
+  'asset_id',
+  'asset_type',
+  'set_id',
+  'printing_id',
+  'variant_id',
+  'url',
+  'original_source_url',
+  'original_source_identifier',
+  'source_attribution',
+].join(',');
+const LANGUAGE_SCOPES = [
+  {
+    relation: 'card_variants!assets_variant_id_fkey',
+    requiredColumn: 'variant_id',
+    emptyColumns: [],
+  },
+  {
+    relation: 'card_printings!assets_printing_id_fkey',
+    requiredColumn: 'printing_id',
+    emptyColumns: ['variant_id'],
+  },
+  {
+    relation: 'sets!assets_set_id_fkey',
+    requiredColumn: 'set_id',
+    emptyColumns: ['variant_id', 'printing_id'],
+  },
+];
 
 class SourceImageUnavailableError extends Error {
   constructor(status) {
@@ -67,6 +97,45 @@ function errorMessage(error) {
   } catch {
     return String(error);
   }
+}
+
+function requiredLanguage(value) {
+  const language = String(value ?? '').trim();
+  if (!ALLOWED_LANGUAGES.has(language)) {
+    throw new Error('Use --language=en, --language=ja, --language=zh-cn, or --language=ko.');
+  }
+  return language;
+}
+
+function percentage(count, total) {
+  if (total === 0) return null;
+  return Number(((count / total) * 100).toFixed(2));
+}
+
+function progressSummary(results, summary) {
+  const total = results.length;
+  const counts = {
+    processed: (summary.mirrored ?? 0) + (summary.reused_existing ?? 0) + (summary.source_unavailable ?? 0),
+    reused: summary.reused_existing ?? 0,
+    mirrored: summary.mirrored ?? 0,
+    deferred: summary.deferred ?? 0,
+    unavailable: summary.source_unavailable ?? 0,
+  };
+  const metric = (count) => ({ count, percentage: percentage(count, total) });
+  return {
+    scope: 'batch',
+    denominator: { name: 'inspected_assets', count: total },
+    processed: {
+      ...metric(counts.processed),
+      statuses: ['mirrored', 'reused_existing', 'source_unavailable'],
+    },
+    reused: { ...metric(counts.reused), statuses: ['reused_existing'] },
+    mirrored: { ...metric(counts.mirrored), statuses: ['mirrored'] },
+    deferred: { ...metric(counts.deferred), statuses: ['deferred'] },
+    unavailable: { ...metric(counts.unavailable), statuses: ['source_unavailable'] },
+    wouldMirror: { ...metric(summary.would_mirror ?? 0), statuses: ['would_mirror'] },
+    failed: { ...metric(summary.failed ?? 0), statuses: ['failed'] },
+  };
 }
 
 function sourceRetryDelayMs(response, attempt) {
@@ -176,6 +245,43 @@ async function providerSourceId(supabase, provider) {
   if (error) throw error;
   if (!data?.id) throw new Error(`Staging source ${provider} is missing.`);
   return data.id;
+}
+
+function scopedCandidateQuery(supabase, input, scope) {
+  let query = supabase.schema('catalog').from('assets')
+    .select(`${CANDIDATE_ASSET_COLUMNS},language_scope:${scope.relation}!inner(language_code)`)
+    .eq('source_id', input.sourceId)
+    .eq('rights_status', 'approved')
+    .eq('permission_status', 'approved')
+    .eq('storage_provider', 'external_reference')
+    .eq('publicly_servable', true)
+    .eq('language_scope.language_code', input.language)
+    .not(scope.requiredColumn, 'is', null)
+    .is('deprecated_at', null)
+    .is('deleted_at', null);
+  for (const column of scope.emptyColumns) query = query.is(column, null);
+  if (input.afterId) query = query.gt('id', input.afterId);
+  if (input.throughId) query = query.lte('id', input.throughId);
+  if (input.assetIds.length) query = query.in('id', input.assetIds);
+  return query.order('id', { ascending: true }).limit(input.limit);
+}
+
+async function languageScopedCandidates(supabase, input) {
+  const responses = await Promise.all(LANGUAGE_SCOPES.map((scope) => scopedCandidateQuery(supabase, input, scope)));
+  const assetsById = new Map();
+  for (const response of responses) {
+    if (response.error) throw response.error;
+    for (const candidate of response.data ?? []) {
+      const { language_scope: languageScope, ...asset } = candidate;
+      if (languageScope?.language_code !== input.language) {
+        throw new Error(`Candidate asset ${asset.id} did not resolve to requested language ${input.language}.`);
+      }
+      assetsById.set(asset.id, asset);
+    }
+  }
+  return [...assetsById.values()]
+    .sort((left, right) => (left.id < right.id ? -1 : left.id > right.id ? 1 : 0))
+    .slice(0, input.limit);
 }
 
 async function reuseExistingStorageObject(supabase, asset, mirrored) {
@@ -420,12 +526,16 @@ async function mirrorOneWithDatabaseRetry(supabase, storage, asset, options) {
 
 async function main() {
   if (hasFlag('help')) {
-    console.log('node scripts/mirror-approved-catalogue-assets.mjs --provider=tcgdex --limit=100 --concurrency=2 --target=staging [--afterId=<uuid>] [--throughId=<uuid>] [--assetIds=<uuid,...>]');
+    console.log('node scripts/mirror-approved-catalogue-assets.mjs --provider=tcgdex --language=en --limit=100 --concurrency=2 --target=staging [--afterId=<uuid>] [--throughId=<uuid>] [--assetIds=<uuid,...>]');
     return;
   }
   requireStaging();
   const provider = arg('provider');
   if (!ALLOWED_PROVIDERS.has(provider)) throw new Error('Use --provider=tcgdex or --provider=pikaqian.');
+  const language = requiredLanguage(arg('language'));
+  if (provider === 'pikaqian' && language !== 'zh-cn') {
+    throw new Error('PikaQian catalogue assets are restricted to --language=zh-cn.');
+  }
   const limit = boundedInteger(arg('limit', '100'), 100, 1, 2000);
   const concurrency = boundedInteger(arg('concurrency', '2'), 2, 1, 6);
   const timeoutMs = boundedInteger(arg('timeoutMs', '30000'), 30000, 1000, 120000);
@@ -443,23 +553,16 @@ async function main() {
   const supabase = adminSupabase();
   const storage = new SupabaseObjectStorageAdapter(supabase);
   const sourceId = await providerSourceId(supabase, provider);
-  let assetQuery = supabase.schema('catalog').from('assets')
-    .select('id,asset_id,asset_type,variant_id,url,original_source_url,original_source_identifier,source_attribution')
-    .eq('source_id', sourceId)
-    .eq('rights_status', 'approved')
-    .eq('permission_status', 'approved')
-    .eq('storage_provider', 'external_reference')
-    .eq('publicly_servable', true)
-    .is('deprecated_at', null);
-  if (afterId) assetQuery = assetQuery.gt('id', afterId);
-  if (throughId) assetQuery = assetQuery.lte('id', throughId);
-  if (assetIds.length) assetQuery = assetQuery.in('id', assetIds);
-  const { data, error } = await assetQuery
-    .order('id', { ascending: true })
-    .limit(limit);
-  if (error) throw error;
+  const candidates = await languageScopedCandidates(supabase, {
+    sourceId,
+    language,
+    afterId,
+    throughId,
+    assetIds,
+    limit,
+  });
 
-  const results = await mapWithConcurrency(data ?? [], concurrency, async (asset) => {
+  const results = await mapWithConcurrency(candidates, concurrency, async (asset) => {
     try {
       return await mirrorOneWithDatabaseRetry(supabase, storage, asset, {
         provider,
@@ -483,15 +586,27 @@ async function main() {
     return counts;
   }, {});
   const deferredLimit = Math.min(MAX_DEFERRED_PER_BATCH, Math.max(results.length - 1, 0));
-  const ok = !summary.failed && (summary.deferred ?? 0) <= deferredLimit;
+  const degraded = Boolean(summary.failed) || (summary.deferred ?? 0) > deferredLimit;
+  const ok = !summary.failed;
+  const progress = progressSummary(results, summary);
+  const cursor = {
+    scope: 'language_candidate_scan',
+    nextAfterId: assetIds.length === 0 && candidates.length > 0 ? candidates[candidates.length - 1].id : null,
+    exhausted: assetIds.length > 0 || candidates.length < limit,
+  };
   console.log(JSON.stringify({
+    schemaVersion: 1,
     ok,
+    degraded,
     provider,
+    language,
     dryRun,
     range: { afterId: afterId || null, throughId: throughId || null, assetIds: assetIds.length || null },
     inspected: results.length,
     deferredLimit,
+    cursor,
     summary,
+    progress,
     results,
   }, null, 2));
   if (!ok) process.exitCode = 1;

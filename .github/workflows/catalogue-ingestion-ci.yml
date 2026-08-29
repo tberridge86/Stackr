@@ -150,6 +150,14 @@ jobs:
           if [[ "${{ inputs.operation }}" == "snapshot" && "${{ inputs.provider }}" == "tcgdex" ]]; then
             [[ -n "$CATALOGUE_SET_ID" ]] || { echo 'Pinned TCGdex snapshots require one or more exact set IDs.'; exit 1; }
           fi
+          if [[ "${{ inputs.operation }}" == "mirror" ]]; then
+            [[ "$CATALOGUE_LANGUAGE" =~ ^(en|ja|zh-cn|ko)$ ]] \
+              || { echo 'Mirror operations require en, ja, zh-cn, or ko.'; exit 1; }
+            if [[ "${{ inputs.provider }}" == "pikaqian" && "$CATALOGUE_LANGUAGE" != "zh-cn" ]]; then
+              echo 'PikaQian mirror operations require zh-cn.'
+              exit 1
+            fi
+          fi
           if [[ "${{ inputs.operation }}" == "publish" ]]; then
             [[ "$CATALOGUE_PUBLISH_VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{7,159}$ ]] \
               || { echo 'Publish operations require a safe 8-160 character version label.'; exit 1; }
@@ -278,13 +286,33 @@ jobs:
         if: inputs.operation == 'mirror'
         shell: bash
         run: |
+          after_id=''
           for (( batch=0; batch<CATALOGUE_BATCH_COUNT; batch++ )); do
             echo "Mirroring bounded batch $((batch + 1)) of $CATALOGUE_BATCH_COUNT for $CATALOGUE_PROVIDER"
-            node scripts/mirror-approved-catalogue-assets.mjs \
+            cursor_args=()
+            if [[ -n "$after_id" ]]; then
+              cursor_args+=(--afterId="$after_id")
+            fi
+            mirror_json="$(node scripts/mirror-approved-catalogue-assets.mjs \
               --provider="$CATALOGUE_PROVIDER" \
+              --language="$CATALOGUE_LANGUAGE" \
               --limit="$CATALOGUE_BATCH_LIMIT" \
               --concurrency="$CATALOGUE_MIRROR_CONCURRENCY" \
-              --target=staging
+              --target=staging \
+              "${cursor_args[@]}")"
+            printf '%s\n' "$mirror_json"
+            mapfile -t cursor_values < <(node -e '
+              const fs = require("node:fs");
+              const payload = JSON.parse(fs.readFileSync(0, "utf8"));
+              console.log(payload.cursor?.nextAfterId ?? "");
+              console.log(payload.cursor?.exhausted === true ? "true" : "false");
+            ' <<<"$mirror_json")
+            after_id="${cursor_values[0]}"
+            if [[ "${cursor_values[1]}" == "true" ]]; then
+              echo "Language candidate scan exhausted for $CATALOGUE_PROVIDER/$CATALOGUE_LANGUAGE"
+              break
+            fi
+            [[ -n "$after_id" ]] || { echo 'Mirror cursor did not advance.'; exit 1; }
           done
       - name: Publish validated language shard
         if: inputs.operation == 'publish'

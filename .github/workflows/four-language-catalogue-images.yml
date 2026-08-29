@@ -1,0 +1,563 @@
+name: Four-language catalogue metadata and images
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Deterministic import version; use a new value for a new provider snapshot
+        required: true
+        default: tcgdex-771a8381c57c-four-primary-v1
+        type: string
+      batch_size:
+        description: Provider cards per resumable metadata and image-reference batch
+        required: true
+        default: '1000'
+        type: string
+      write_concurrency:
+        description: Concurrent staging writes within one serial language lane
+        required: true
+        default: '8'
+        type: string
+      max_records:
+        description: Optional bounded acceptance run; empty means the full provider universe
+        required: false
+        default: ''
+        type: string
+      mirror_batch_size:
+        description: Approved image files per bounded mirror batch
+        required: true
+        default: '500'
+        type: string
+      mirror_batches:
+        description: Maximum mirror batches per language; another run resumes the remainder
+        required: true
+        default: '60'
+        type: string
+      mirror_concurrency:
+        description: Concurrent image transfers within one serial language lane
+        required: true
+        default: '4'
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: stackr-staging-four-language-catalogue-images
+  cancel-in-progress: false
+
+env:
+  TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
+  DEFAULT_CATALOGUE_VERSION: tcgdex-771a8381c57c-four-primary-v1
+  DO_NOT_TRACK: '1'
+
+jobs:
+  validate:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.number == 74 &&
+      github.event.issue.pull_request == null &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/run-four-language-catalogue-images')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    env:
+      CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v1' }}
+      CATALOGUE_BATCH_SIZE: ${{ inputs.batch_size || '1000' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+      CATALOGUE_MAX_RECORDS: ${{ inputs.max_records || '' }}
+      CATALOGUE_MIRROR_BATCH_SIZE: ${{ inputs.mirror_batch_size || '500' }}
+      CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
+      CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency || '4' }}
+    steps:
+      - name: Announce the staging-only run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          body="Four-language staging workstream started: **0% released**, exact lanes **en / ja / zh-cn / ko**, approved image permission **100%**, progress: ${run_url}"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/74/comments" --method POST --field body="$body"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate inputs and implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$CATALOGUE_VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{7,159}$ ]] || exit 1
+          [[ "$CATALOGUE_BATCH_SIZE" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_WRITE_CONCURRENCY" =~ ^[0-9]+$ ]] || exit 1
+          [[ -z "$CATALOGUE_MAX_RECORDS" || "$CATALOGUE_MAX_RECORDS" =~ ^[1-9][0-9]*$ ]] || exit 1
+          [[ "$CATALOGUE_MIRROR_BATCH_SIZE" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_MIRROR_BATCHES" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_MIRROR_CONCURRENCY" =~ ^[0-9]+$ ]] || exit 1
+          (( CATALOGUE_BATCH_SIZE >= 50 && CATALOGUE_BATCH_SIZE <= 2000 )) || exit 1
+          (( CATALOGUE_WRITE_CONCURRENCY >= 1 && CATALOGUE_WRITE_CONCURRENCY <= 16 )) || exit 1
+          (( CATALOGUE_MIRROR_BATCH_SIZE >= 1 && CATALOGUE_MIRROR_BATCH_SIZE <= 2000 )) || exit 1
+          (( CATALOGUE_MIRROR_BATCHES >= 1 && CATALOGUE_MIRROR_BATCHES <= 100 )) || exit 1
+          (( CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 6 )) || exit 1
+          npm ci
+          npm run test:four-language-catalogue-backfill
+
+  ingest:
+    needs: validate
+    name: ingest-${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: staging
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        language: [en, ja, zh-cn, ko]
+    env:
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v1' }}
+      CATALOGUE_BATCH_SIZE: ${{ inputs.batch_size || '1000' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+      CATALOGUE_MAX_RECORDS: ${{ inputs.max_records || '' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Check out the pinned TCGdex source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: tcgdex/cards-database
+          ref: ${{ env.TCGDEX_SNAPSHOT_COMMIT }}
+          path: .tcgdex-source
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up the pinned TCGdex compiler
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: 1.2.22
+
+      - name: Install StackR dependencies
+        run: npm ci
+
+      - name: Compile the exact ${{ matrix.language }} provider snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C "$GITHUB_WORKSPACE/.tcgdex-source" apply --unidiff-zero --whitespace=error \
+            "$GITHUB_WORKSPACE/catalogue/tcgdex-pinned-compiler.patch"
+          bun install --frozen-lockfile --cwd "$GITHUB_WORKSPACE/.tcgdex-source"
+          bun install --frozen-lockfile --cwd "$GITHUB_WORKSPACE/.tcgdex-source/server"
+          cd "$GITHUB_WORKSPACE/.tcgdex-source/server"
+          TCGCSV_USER_AGENT='StackR-four-language-catalogue/1.0' \
+          TCGDEX_COMPILE_LANGS='${{ matrix.language }}' \
+          TCGDEX_SHALLOW_SNAPSHOT=1 \
+          bun run compile
+          test -s "$GITHUB_WORKSPACE/.tcgdex-source/server/generated/${{ matrix.language }}/cards.json"
+          test -s "$GITHUB_WORKSPACE/.tcgdex-source/server/generated/${{ matrix.language }}/sets.json"
+
+      - name: Import all metadata and approved image references
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          optional_args=()
+          if [[ -n "$CATALOGUE_MAX_RECORDS" ]]; then
+            optional_args+=("--maxRecords=$CATALOGUE_MAX_RECORDS")
+          fi
+          npm run catalogue:four-language-backfill -- \
+            "--languages=${{ matrix.language }}" \
+            "--tcgdexSnapshotRoot=$GITHUB_WORKSPACE/.tcgdex-source/server/generated" \
+            "--tcgdexSnapshotVersion=$TCGDEX_SNAPSHOT_COMMIT" \
+            "--version=$CATALOGUE_VERSION" \
+            "--batchSize=$CATALOGUE_BATCH_SIZE" \
+            "--writeConcurrency=$CATALOGUE_WRITE_CONCURRENCY" \
+            --maxAttempts=3 \
+            --batchPauseMs=100 \
+            "--output=reports/catalogue/four-language-${{ matrix.language }}.json" \
+            --target=staging \
+            "${optional_args[@]}"
+
+      - name: Upload ${{ matrix.language }} ingestion progress
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: four-language-ingest-${{ github.run_id }}-${{ matrix.language }}
+          path: reports/catalogue/four-language-${{ matrix.language }}.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+  mirror:
+    needs: ingest
+    name: mirror-${{ matrix.provider }}-${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: staging
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - { provider: tcgdex, language: en }
+          - { provider: tcgdex, language: ja }
+          - { provider: tcgdex, language: zh-cn }
+          - { provider: tcgdex, language: ko }
+          - { provider: pikaqian, language: zh-cn }
+    env:
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      CATALOGUE_MIRROR_BATCH_SIZE: ${{ inputs.mirror_batch_size || '500' }}
+      CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
+      CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency || '4' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install image pipeline dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+
+      - name: Drain bounded approved ${{ matrix.provider }} ${{ matrix.language }} image batches
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          parts="$RUNNER_TEMP/mirror-${{ matrix.provider }}-${{ matrix.language }}.jsons"
+          : > "$parts"
+          after_id=''
+          scan_exhausted='false'
+          for (( batch=1; batch<=CATALOGUE_MIRROR_BATCHES; batch++ )); do
+            result="$RUNNER_TEMP/mirror-${{ matrix.provider }}-${{ matrix.language }}-${batch}.json"
+            cursor_args=()
+            if [[ -n "$after_id" ]]; then cursor_args+=("--afterId=$after_id"); fi
+            node scripts/mirror-approved-catalogue-assets.mjs \
+              "--provider=${{ matrix.provider }}" \
+              "--language=${{ matrix.language }}" \
+              "--limit=$CATALOGUE_MIRROR_BATCH_SIZE" \
+              "--concurrency=$CATALOGUE_MIRROR_CONCURRENCY" \
+              --target=staging \
+              "${cursor_args[@]}" > "$result"
+            jq . "$result"
+            jq -c . "$result" >> "$parts"
+            after_id="$(jq -r '.cursor.nextAfterId // empty' "$result")"
+            scan_exhausted="$(jq -r '.cursor.exhausted' "$result")"
+            if [[ "$scan_exhausted" == 'true' ]]; then break; fi
+          done
+          jq -s --arg provider '${{ matrix.provider }}' --arg language '${{ matrix.language }}' '
+            def sum_status($name): map(.summary[$name] // 0) | add // 0;
+            def terminal_processed: sum_status("mirrored") + sum_status("reused_existing") + sum_status("source_unavailable");
+            def deferred: sum_status("deferred");
+            def failed: sum_status("failed");
+            {
+              schemaVersion: 1,
+              job: "stackr-four-language-asset-mirror",
+              provider: $provider,
+              language: $language,
+              rightsApprovalPercent: 100,
+              releasePercent: 0,
+              scanExhausted: (.[-1].cursor.exhausted == true),
+              queueDrained: ((.[-1].cursor.exhausted == true) and deferred == 0 and failed == 0),
+              batchesAttempted: length,
+              assetAttemptsInspected: (map(.inspected // 0) | add // 0),
+              uniqueAssetsInspected: ([.[].results[]?.id] | unique | length),
+              terminalAssetsProcessed: terminal_processed,
+              attemptSummary: {
+                mirrored: sum_status("mirrored"),
+                reusedExisting: sum_status("reused_existing"),
+                sourceUnavailable: sum_status("source_unavailable"),
+                deferred: deferred,
+                failed: failed
+              }
+            }
+          ' "$parts" > "reports/catalogue/four-language-mirror-${{ matrix.provider }}-${{ matrix.language }}.json"
+          jq . "reports/catalogue/four-language-mirror-${{ matrix.provider }}-${{ matrix.language }}.json"
+
+      - name: Upload ${{ matrix.provider }} ${{ matrix.language }} mirror progress
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: four-language-mirror-${{ github.run_id }}-${{ matrix.provider }}-${{ matrix.language }}
+          path: reports/catalogue/four-language-mirror-${{ matrix.provider }}-${{ matrix.language }}.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+  measure:
+    needs: mirror
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    env:
+      SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+      SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Measure actual distinct and mirrored coverage read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/test-four-language-catalogue-progress.mjs
+          mkdir -p reports/catalogue
+          node scripts/four-language-catalogue-progress.mjs \
+            --target=staging > reports/catalogue/four-language-database-progress.json
+          jq . reports/catalogue/four-language-database-progress.json
+
+      - name: Upload actual database progress
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: four-language-measure-${{ github.run_id }}-database
+          path: reports/catalogue/four-language-database-progress.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+  aggregate:
+    needs: [validate, ingest, mirror, measure]
+    if: always() && needs.validate.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      INGEST_RESULT: ${{ needs.ingest.result }}
+      MIRROR_RESULT: ${{ needs.mirror.result }}
+      MEASURE_RESULT: ${{ needs.measure.result }}
+      CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v1' }}
+    steps:
+      - name: Download language evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue/evidence
+          gh run download "$GITHUB_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "four-language-*-${GITHUB_RUN_ID}-*" \
+            --dir reports/catalogue/evidence || true
+          find reports/catalogue/evidence -type f -maxdepth 4 -print || true
+
+      - name: Build the simple four-language percentage report
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const required = ['en', 'ja', 'zh-cn', 'ko'];
+          const root = 'reports/catalogue/evidence';
+          function walk(directory) {
+            if (!fs.existsSync(directory)) return [];
+            return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+              const target = path.join(directory, entry.name);
+              return entry.isDirectory() ? walk(target) : [target];
+            });
+          }
+          const parsed = [];
+          const failures = [];
+          for (const file of walk(root).filter((value) => value.endsWith('.json'))) {
+            try {
+              parsed.push({ file, report: JSON.parse(fs.readFileSync(file, 'utf8')) });
+            } catch (error) {
+              failures.push(`invalid_json:${file}:${error.message}`);
+            }
+          }
+          const databaseReports = parsed.filter(({ report }) => (
+            report.schemaVersion === 'stackr-four-language-catalogue-progress-v1.0.0'
+            && report.target === 'staging'
+          ));
+          if (databaseReports.length !== 1) failures.push(`database_report_count:${databaseReports.length}`);
+          const database = databaseReports[0]?.report;
+          if (database && (
+            database.readOnly !== true
+            || database.productionModified !== false
+            || database.releaseEligible !== false
+            || JSON.stringify(database.languages) !== JSON.stringify(required)
+          )) failures.push('database_report_safety_contract');
+          const lanes = [];
+          for (const language of required) {
+            const ingestReports = parsed.filter(({ report }) => (
+              report.job === 'stackr-four-language-catalogue-metadata-images'
+              && report.version === process.env.CATALOGUE_VERSION
+              && Array.isArray(report.lanes)
+              && report.lanes.some((lane) => lane.language === language)
+            ));
+            const expectedProviders = language === 'zh-cn' ? ['tcgdex', 'pikaqian'] : ['tcgdex'];
+            const mirrorReports = expectedProviders.flatMap((provider) => {
+              const matches = parsed.filter(({ report }) => (
+                report.job === 'stackr-four-language-asset-mirror'
+                && report.provider === provider
+                && report.language === language
+              ));
+              if (matches.length !== 1) failures.push(`mirror_report_count:${provider}:${language}:${matches.length}`);
+              return matches;
+            });
+            if (ingestReports.length !== 1) failures.push(`ingest_report_count:${language}:${ingestReports.length}`);
+            const ingest = ingestReports[0]?.report;
+            const lane = ingest?.lanes?.find((value) => value.language === language);
+            const mirrors = mirrorReports.map(({ report }) => report);
+            const actual = database?.perLanguage?.find((value) => value.languageCode === language);
+            if (!lane || mirrors.length !== expectedProviders.length || !actual) continue;
+            if (ingest.ok !== true || lane.batchesFailed !== 0) failures.push(`ingest_incomplete:${language}`);
+            for (const mirror of mirrors) {
+              if (
+                Number(mirror.uniqueAssetsInspected ?? 0) > 0
+                && Number(mirror.terminalAssetsProcessed ?? 0) === 0
+                && Number(mirror.attemptSummary?.deferred ?? 0) > 0
+              ) failures.push(`mirror_all_deferred:${mirror.provider}:${language}`);
+            }
+            const sumMirror = (field) => mirrors.reduce((sum, mirror) => sum + Number(field(mirror) ?? 0), 0);
+            lanes.push({
+              language,
+              batchProcessingPercent: Number(lane.batchProcessingPercent ?? 0),
+              providerCardRowsProcessedPercent: Number(lane.providerCardRowsProcessedPercent ?? 0),
+              providerImageReferenceRowsProcessedPercent: Number(lane.providerImageReferenceRowsProcessedPercent ?? 0),
+              conflictsQuarantined: Number(lane.conflicts ?? 0),
+              activePrintingIdentities: Number(actual.activePrintingIdentities ?? 0),
+              activeVariantIdentities: Number(actual.activeVariantIdentities ?? 0),
+              approvedProviderImageReferencePercent: Number(actual.approvedProviderImageReferencePercent ?? 0),
+              physicallyMirroredPercent: Number(actual.physicallyMirroredPercent ?? 0),
+              stackrMirroredDerivativeReadyPercent: Number(actual.stackrMirroredDerivativeReadyPercent ?? 0),
+              imageQueueScanExhausted: mirrors.every((mirror) => mirror.scanExhausted === true),
+              imageQueueDrained: mirrors.every((mirror) => mirror.queueDrained === true),
+              imageAssetAttempts: sumMirror((mirror) => mirror.assetAttemptsInspected),
+              uniqueImageAssetsInspected: sumMirror((mirror) => mirror.uniqueAssetsInspected),
+              terminalImageAssetsProcessed: sumMirror((mirror) => mirror.terminalAssetsProcessed),
+              imageFilesMirrored: sumMirror((mirror) => mirror.attemptSummary?.mirrored),
+              duplicateFilesReused: sumMirror((mirror) => mirror.attemptSummary?.reusedExisting),
+              sourceUnavailable: sumMirror((mirror) => mirror.attemptSummary?.sourceUnavailable),
+              deferredImageAttempts: sumMirror((mirror) => mirror.attemptSummary?.deferred),
+              failedImageAttempts: sumMirror((mirror) => mirror.attemptSummary?.failed),
+            });
+          }
+          const average = (field) => lanes.length
+            ? Math.round((lanes.reduce((sum, lane) => sum + Number(lane[field] ?? 0), 0) / lanes.length) * 100) / 100
+            : 0;
+          const drained = lanes.filter((lane) => lane.imageQueueDrained).length;
+          const combined = {
+            schemaVersion: 1,
+            job: 'stackr-four-language-catalogue-progress',
+            version: process.env.CATALOGUE_VERSION,
+            languages: required,
+            traditionalChinesePlatformSupport: 'unchanged_outside_workstream',
+            stagingOnly: true,
+            released: false,
+            rightsApprovalPercent: 100,
+            releasePercent: 0,
+            ingestResult: process.env.INGEST_RESULT,
+            mirrorResult: process.env.MIRROR_RESULT,
+            measureResult: process.env.MEASURE_RESULT,
+            lanes,
+            actualDatabaseProgress: database ?? null,
+            summary: {
+              batchProcessingPercent: average('batchProcessingPercent'),
+              providerCardRowsProcessedPercent: average('providerCardRowsProcessedPercent'),
+              providerImageReferenceRowsProcessedPercent: average('providerImageReferenceRowsProcessedPercent'),
+              approvedProviderImageReferencePercent: Number(database?.overall?.approvedProviderImageReferencePercent ?? 0),
+              physicallyMirroredPercent: Number(database?.overall?.physicallyMirroredPercent ?? 0),
+              stackrMirroredDerivativeReadyPercent: Number(database?.overall?.stackrMirroredDerivativeReadyPercent ?? 0),
+              languagesReportedPercent: Math.round((lanes.length / required.length) * 10000) / 100,
+              imageQueuesDrainedPercent: Math.round((drained / required.length) * 10000) / 100,
+              conflictsQuarantined: lanes.reduce((sum, lane) => sum + lane.conflictsQuarantined, 0),
+              duplicateFilesReused: lanes.reduce((sum, lane) => sum + lane.duplicateFilesReused, 0),
+              deferredImageAttempts: lanes.reduce((sum, lane) => sum + lane.deferredImageAttempts, 0),
+              sourceUnavailable: lanes.reduce((sum, lane) => sum + lane.sourceUnavailable, 0),
+              exactRawDuplicateRows: Number(database?.duplication?.exactRawRevisions?.extraRows ?? 0),
+              exactStorageDuplicateObjects: Number(database?.duplication?.exactStorageObjects?.extraObjects ?? 0),
+              releasePercent: 0,
+            },
+            failures,
+          };
+          combined.ok = failures.length === 0
+            && process.env.INGEST_RESULT === 'success'
+            && process.env.MIRROR_RESULT === 'success'
+            && process.env.MEASURE_RESULT === 'success'
+            && lanes.length === required.length;
+          fs.writeFileSync(
+            'reports/catalogue/four-language-catalogue-progress.json',
+            JSON.stringify(combined, null, 2) + '\n',
+          );
+          console.log(JSON.stringify(combined.summary, null, 2));
+          NODE
+
+      - name: Upload combined progress evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: four-language-catalogue-progress-${{ github.run_id }}
+          path: reports/catalogue/four-language-catalogue-progress.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Post easy progress percentages to issue 74
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=reports/catalogue/four-language-catalogue-progress.json
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [[ -s "$report" ]]; then
+            batch="$(jq -r '.summary.batchProcessingPercent' "$report")"
+            refs="$(jq -r '.summary.approvedProviderImageReferencePercent' "$report")"
+            stored="$(jq -r '.summary.physicallyMirroredPercent' "$report")"
+            ready="$(jq -r '.summary.stackrMirroredDerivativeReadyPercent' "$report")"
+            drained="$(jq -r '.summary.imageQueuesDrainedPercent' "$report")"
+            conflicts="$(jq -r '.summary.conflictsQuarantined' "$report")"
+            deferred="$(jq -r '.summary.deferredImageAttempts' "$report")"
+            unavailable="$(jq -r '.summary.sourceUnavailable' "$report")"
+            raw_duplicates="$(jq -r '.summary.exactRawDuplicateRows' "$report")"
+            storage_duplicates="$(jq -r '.summary.exactStorageDuplicateObjects' "$report")"
+            body="Four-language staging progress: batch processing **${batch}%**; actual image refs **${refs}%**; stored images **${stored}%**; ready derivatives **${ready}%**; language queues drained **${drained}%**. Quarantined conflicts: **${conflicts}**; deferred image attempts: **${deferred}**; unavailable sources: **${unavailable}**; exact duplicate raw rows: **${raw_duplicates}**; duplicate stored objects: **${storage_duplicates}**. Released: **0%**. Evidence: ${run_url}"
+          else
+            body="Four-language staging run could not build its percentage report. Released: **0%**. Diagnostics: ${run_url}"
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/issues/74/comments" --method POST --field body="$body"
+
+      - name: Enforce valid progress evidence
+        shell: bash
+        run: |
+          node -e '
+            const report = JSON.parse(require("node:fs").readFileSync("reports/catalogue/four-language-catalogue-progress.json", "utf8"));
+            if (report.ok !== true) {
+              console.error(JSON.stringify({ ok: false, failures: report.failures }, null, 2));
+              process.exit(1);
+            }
+          '

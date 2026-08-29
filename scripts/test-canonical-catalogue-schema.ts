@@ -8,10 +8,16 @@ const STRICT_FOREIGN_IMPORT_PATH =
   'supabase/migrations/20260801090000_strict_foreign_catalogue_import_safety.sql';
 const PUBLICATION_SNAPSHOT_PATH =
   'supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql';
+const NATURAL_IDENTITY_RECONCILIATION_PATH =
+  'supabase/migrations/20260829163441_reconcile_active_catalogue_natural_identities.sql';
 const sql = readFileSync(MIGRATION_PATH, 'utf8');
 const reconciliationSql = readFileSync(RECONCILIATION_PATH, 'utf8');
 const strictForeignImportSql = readFileSync(STRICT_FOREIGN_IMPORT_PATH, 'utf8');
 const publicationSnapshotSql = readFileSync(PUBLICATION_SNAPSHOT_PATH, 'utf8');
+const naturalIdentityReconciliationSql = readFileSync(
+  NATURAL_IDENTITY_RECONCILIATION_PATH,
+  'utf8',
+);
 
 function expectSql(pattern: RegExp, message: string) {
   assert.match(sql, pattern, message);
@@ -346,6 +352,54 @@ function assertLanguagePublicationSnapshots() {
   }
 }
 
+function assertActiveNaturalIdentityReconciliation() {
+  assert.match(
+    naturalIdentityReconciliationSql,
+    /constraint_row\.confrelid = 'catalog\.card_names'::regclass/,
+    'card-name reconciliation must fail closed if a new foreign key references card_names',
+  );
+  assert.match(
+    naturalIdentityReconciliationSql,
+    /having count\(\*\) > 1\s+and count\(distinct card_name\.name\) > 1/,
+    'card-name reconciliation must refuse conflicting display names',
+  );
+  assert.match(
+    naturalIdentityReconciliationSql,
+    /source_confidence desc,\s+card_name\.source_updated_at desc nulls last/,
+    'the retained card name must be selected deterministically from the strongest source row',
+  );
+
+  const auditPosition = naturalIdentityReconciliationSql.indexOf(
+    'insert into audit.catalogue_events',
+  );
+  const deletePosition = naturalIdentityReconciliationSql.indexOf(
+    'delete from catalog.card_names',
+  );
+  assert.ok(auditPosition >= 0, 'every removed card name must be recorded in the catalogue audit log');
+  assert.ok(deletePosition > auditPosition, 'card-name audit evidence must be written before deletion');
+  assert.match(
+    naturalIdentityReconciliationSql,
+    /where audit_row\.entity_id = card_name\.id/,
+    'only rows with matching audit evidence may be deleted',
+  );
+
+  assert.match(
+    naturalIdentityReconciliationSql,
+    /create unique index card_printings_active_natural_identity_uidx[\s\S]+?on catalog\.card_printings \([\s\S]+?game_code,[\s\S]+?language_code,[\s\S]+?set_id,[\s\S]+?collector_number[\s\S]+?\)\s+where deprecated_at is null;/,
+    'active printings must have a partial natural-identity unique index',
+  );
+  assert.match(
+    naturalIdentityReconciliationSql,
+    /create unique index card_names_active_natural_identity_uidx[\s\S]+?on catalog\.card_names \([\s\S]+?card_concept_id,[\s\S]+?printing_id,[\s\S]+?variant_id,[\s\S]+?language_code,[\s\S]+?name_type,[\s\S]+?normalized_name[\s\S]+?\) nulls not distinct\s+where deprecated_at is null;/,
+    'active names must enforce null-safe natural-identity uniqueness without blocking history',
+  );
+  assert.doesNotMatch(
+    naturalIdentityReconciliationSql,
+    /(?:delete|update)\s+(?:from\s+)?ingest\.raw_source_records/i,
+    'provider revision history must remain immutable in this reconciliation',
+  );
+}
+
 assertMigrationStructure();
 assertSupportedLanguagesSeeded();
 assertVariantTaxonomySeeded();
@@ -357,5 +411,6 @@ assertPublicSafeProjection();
 assertCatalogueSeedReconciliation();
 assertSuspiciousLegacyRowsAreQuarantined();
 assertLanguagePublicationSnapshots();
+assertActiveNaturalIdentityReconciliation();
 
 console.log('Canonical catalogue schema migration tests passed.');

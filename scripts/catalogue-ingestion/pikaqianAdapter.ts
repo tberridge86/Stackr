@@ -20,9 +20,18 @@ const PIKAQIAN_LANGUAGE = 'zh-cn';
 type PikaQianAdapterOptions = {
   apiKey?: string | null;
   baseUrl?: string | null;
+  language?: string | null;
   licenceStatus?: LicenceStatus;
   assetLicenceStatus?: LicenceStatus;
 };
+
+function assertPikaQianLanguage(language: unknown, context = 'language') {
+  const normalised = normaliseLanguageCode(language ?? PIKAQIAN_LANGUAGE);
+  if (normalised !== PIKAQIAN_LANGUAGE) {
+    throw new Error(`PikaQian only supports zh-cn catalogue ${context}; received ${normalised}.`);
+  }
+  return normalised;
+}
 
 function valueAt(row: Record<string, unknown>, ...keys: string[]) {
   for (const key of keys) {
@@ -116,6 +125,7 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
   readonly cardRecordCache = new Map<string, Promise<ProviderRecord[]>>();
 
   constructor(options: PikaQianAdapterOptions = {}) {
+    assertPikaQianLanguage(options.language);
     this.apiKey = cleanText(options.apiKey ?? process.env.PIKAQIAN_API_KEY) ?? '';
     if (!this.apiKey) {
       throw new Error('PikaQian API ingestion requires PIKAQIAN_API_KEY. Do not pass live keys on the command line.');
@@ -226,13 +236,17 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
   async fetchPaged(path: string, initialQuery: Record<string, string>, scope: FetchScope = {}) {
     const records: Record<string, unknown>[] = [];
     let cursor = cleanText(scope.cursor?.nextCursor);
+    const recordLimit = scope.limit ?? Number.POSITIVE_INFINITY;
     const pageSize = Math.min(Math.max(1, Number(scope.limit ?? 100)), 100);
-    while (records.length < (scope.limit ?? Number.POSITIVE_INFINITY)) {
+    while (records.length < recordLimit) {
       const query = new URLSearchParams({ ...initialQuery, page_size: String(pageSize) });
       if (cursor) query.set('cursor', cursor);
       const result = await this.fetchJson(path, query);
       const { data, pagination } = unwrapList(result.value);
-      records.push(...data.slice(0, Math.max(0, (scope.limit ?? data.length) - records.length)) as Record<string, unknown>[]);
+      const remaining = Number.isFinite(recordLimit)
+        ? Math.max(0, recordLimit - records.length)
+        : data.length;
+      records.push(...data.slice(0, remaining) as Record<string, unknown>[]);
       cursor = nextCursorFrom(pagination);
       if (!cursor || data.length === 0) break;
     }
@@ -240,6 +254,7 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
   }
 
   async fetchSets(scope: FetchScope = {}) {
+    assertPikaQianLanguage(scope.language, 'fetch scope');
     const rows = await this.fetchPaged('/sets', {}, scope);
     return rows.map((set) => ({
       provider: 'pikaqian',
@@ -257,6 +272,7 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
   }
 
   async fetchCards(scope: FetchScope = {}) {
+    assertPikaQianLanguage(scope.language, 'fetch scope');
     const cacheKey = JSON.stringify({
       setId: scope.setId ?? null,
       limit: scope.limit ?? null,
@@ -323,7 +339,8 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
     };
   }
 
-  async fetchVariants(_scope?: FetchScope) {
+  async fetchVariants(scope: FetchScope = {}) {
+    assertPikaQianLanguage(scope.language, 'fetch scope');
     return [];
   }
 

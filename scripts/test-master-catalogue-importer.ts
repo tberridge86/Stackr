@@ -412,6 +412,60 @@ async function assertPikaQianApiAdapter() {
   }
 }
 
+async function assertPikaQianUnboundedPaginationAndLanguageScope() {
+  const originalFetch = globalThis.fetch;
+  const cursors: Array<string | null> = [];
+  (globalThis as typeof globalThis & { fetch: typeof fetch }).fetch = async (input) => {
+    const url = typeof input === 'string'
+      ? input
+      : input instanceof URL
+      ? input.toString()
+      : input.url;
+    const parsed = new URL(url);
+    const cursor = parsed.searchParams.get('cursor');
+    cursors.push(cursor);
+    assert.equal(parsed.pathname.endsWith('/sets'), true);
+    assert.equal(parsed.searchParams.get('page_size'), '100');
+
+    const start = cursor === 'page-2' ? 100 : 0;
+    const count = cursor === 'page-2' ? 37 : 100;
+    const data = Array.from({ length: count }, (_, index) => ({
+      id: `set-${start + index + 1}`,
+      name: `Set ${start + index + 1}`,
+    }));
+    return new Response(JSON.stringify({
+      data,
+      pagination: { next_cursor: cursor === 'page-2' ? null : 'page-2', page_size: 100 },
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+
+  try {
+    const adapter = new PikaQianApiSourceAdapter({
+      apiKey: 'pk_live_test',
+      baseUrl: 'https://api.pikaqian.invalid/v1',
+      language: 'zh-cn',
+    });
+    const sets = await adapter.fetchSets({ language: 'zh-cn' });
+    assert.equal(sets.length, 137, 'an unbounded PikaQian fetch must retain every page');
+    assert.deepEqual(cursors, [null, 'page-2']);
+
+    await assert.rejects(
+      adapter.fetchSets({ language: 'en' }),
+      /only supports zh-cn catalogue fetch scope/,
+    );
+    await assert.rejects(
+      adapter.fetchCards({ language: 'ko', setId: 'set-1' }),
+      /only supports zh-cn catalogue fetch scope/,
+    );
+    assert.throws(
+      () => new PikaQianApiSourceAdapter({ apiKey: 'pk_live_test', language: 'ja' }),
+      /only supports zh-cn catalogue language/,
+    );
+  } finally {
+    (globalThis as typeof globalThis & { fetch: typeof fetch }).fetch = originalFetch;
+  }
+}
+
 async function assertPikaQianSnapshotSetCovers() {
   const root = mkdtempSync(join(tmpdir(), 'stackr-pika-covers-'));
   const filePath = join(root, 'snapshot.json');
@@ -1290,6 +1344,7 @@ async function main() {
   assertDryRunApplyRules();
   assertProviderRules();
   await assertPikaQianApiAdapter();
+  await assertPikaQianUnboundedPaginationAndLanguageScope();
   await assertPikaQianSnapshotSetCovers();
   await assertTcgdexPinnedSnapshot();
   assertIdentityAndReportRules();

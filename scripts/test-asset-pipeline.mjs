@@ -304,8 +304,8 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     catalogueMirror,
-    /status: 'deferred'[\s\S]+deferredLimit = Math\.min\(MAX_DEFERRED_PER_BATCH,[\s\S]+const ok = !summary\.failed && \(summary\.deferred \?\? 0\) <= deferredLimit/,
-    'isolated transient records must defer while hard or widespread failures still fail the batch',
+    /status: 'deferred'[\s\S]+deferredLimit = Math\.min\(MAX_DEFERRED_PER_BATCH,[\s\S]+const degraded = Boolean\(summary\.failed\) \|\| \(summary\.deferred \?\? 0\) > deferredLimit;[\s\S]+const ok = !summary\.failed/,
+    'transient records must defer without blocking later batches while hard database-state failures still fail',
   );
   assert.match(
     catalogueMirror,
@@ -313,9 +313,81 @@ function assertMirrorRequestsAreBounded() {
     'an unavailable provider image must preserve a verified same-artwork fallback',
   );
   assert.match(
+    catalogueMirror,
+    /ALLOWED_LANGUAGES = new Set\(\['en', 'ja', 'zh-cn', 'ko'\]\)/,
+    'the mirror must accept exactly the four rollout languages',
+  );
+  assert.match(
+    catalogueMirror,
+    /const language = requiredLanguage\(arg\('language'\)\)/,
+    'the mirror must require an explicit language',
+  );
+  assert.match(
+    catalogueMirror,
+    /provider === 'pikaqian' && language !== 'zh-cn'[\s\S]+PikaQian catalogue assets are restricted/,
+    'PikaQian mirror runs must not report empty success for unsupported languages',
+  );
+  for (const relation of [
+    'card_variants!assets_variant_id_fkey',
+    'card_printings!assets_printing_id_fkey',
+    'sets!assets_set_id_fkey',
+  ]) {
+    assert.ok(catalogueMirror.includes(relation), `the mirror must resolve language through ${relation}`);
+  }
+  assert.match(
+    catalogueMirror,
+    /\.eq\('language_scope\.language_code', input\.language\)/,
+    'candidate asset queries must filter the related catalogue identity by language',
+  );
+  assert.match(
+    catalogueMirror,
+    /languageScope\?\.language_code !== input\.language[\s\S]+did not resolve to requested language/,
+    'the mirror must fail closed if a returned catalogue relation has another language',
+  );
+  assert.match(
+    catalogueMirror,
+    /schemaVersion: 1,[\s\S]+degraded,[\s\S]+provider,[\s\S]+language,[\s\S]+cursor,[\s\S]+progress,/,
+    'mirror JSON must expose stable schema, status, provider, language, cursor and progress fields',
+  );
+  assert.match(
+    catalogueMirror,
+    /scope: 'language_candidate_scan'[\s\S]+nextAfterId: assetIds\.length === 0 && candidates\.length > 0[\s\S]+exhausted: assetIds\.length > 0 \|\| candidates\.length < limit/,
+    'the mirror must advance past inspected assets and expose when the language batch is exhausted',
+  );
+  assert.match(
+    catalogueMirror,
+    /function progressSummary[\s\S]+percentage: percentage\(count, total\)[\s\S]+processed:[\s\S]+reused:[\s\S]+mirrored:[\s\S]+deferred:[\s\S]+unavailable:/,
+    'mirror progress must expose processed, reused, mirrored, deferred and unavailable percentages',
+  );
+  assert.match(
+    catalogueMirror,
+    /if \(total === 0\) return null;[\s\S]+scope: 'batch'[\s\S]+wouldMirror:[\s\S]+failed:/,
+    'batch-only percentages must be explicit and undefined zero-denominator or unclassified outcomes must stay visible',
+  );
+  assert.match(
     catalogueWorkflow,
     /for \(\( batch=0; batch<CATALOGUE_BATCH_COUNT; batch\+\+ \)\)[\s\S]+mirror-approved-catalogue-assets\.mjs/,
     'the mirror workflow must support multiple bounded batches without raising request concurrency',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /mirror-approved-catalogue-assets\.mjs[\s\S]+--provider="\$CATALOGUE_PROVIDER"[\s\S]+--language="\$CATALOGUE_LANGUAGE"/,
+    'the existing mirror workflow must pass its selected language explicitly',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /after_id=''[\s\S]+cursor_args=\(\)[\s\S]+--afterId="\$after_id"[\s\S]+payload\.cursor\?\.nextAfterId[\s\S]+Mirror cursor did not advance/,
+    'the existing mirror workflow must consume each result cursor so deferred rows cannot starve later assets',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /if \[\[ "\$\{\{ inputs\.operation \}\}" == "mirror" \]\]; then[\s\S]+CATALOGUE_LANGUAGE[\s\S]+\^\(en\|ja\|zh-cn\|ko\)\$/,
+    'the existing workflow must reject languages outside the exact four-language mirror scope early',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /inputs\.provider \}\}" == "pikaqian" && "\$CATALOGUE_LANGUAGE" != "zh-cn"/,
+    'the existing workflow must reject unsupported PikaQian language combinations early',
   );
   assert.match(
     catalogueWorkflow,
