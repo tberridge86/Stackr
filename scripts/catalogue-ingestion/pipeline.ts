@@ -115,6 +115,32 @@ function declaredVariantCodes(raw: Record<string, unknown>) {
   return [...supported];
 }
 
+export function isMissingVariantRepairPrecondition(error: unknown) {
+  return Boolean(
+    error
+    && typeof error === 'object'
+    && (error as { code?: unknown }).code === 'P0002'
+  );
+}
+
+export function isResolvedDeprecatedVariantAlias(input: {
+  deprecatedAt?: string | null;
+  correctedByVariantId?: string | null;
+  correctionTargetId?: string | null;
+  deprecatedPrintingId?: string | null;
+  correctionTargetPrintingId?: string | null;
+  externalVariantId?: string | null;
+}) {
+  return Boolean(
+    input.deprecatedAt
+    && input.correctedByVariantId
+    && input.correctionTargetId === input.correctedByVariantId
+    && input.deprecatedPrintingId
+    && input.correctionTargetPrintingId === input.deprecatedPrintingId
+    && (!input.externalVariantId || input.externalVariantId === input.correctionTargetId)
+  );
+}
+
 export function isSafeUnsupportedPrimaryVariantCorrection(input: {
   provider: string;
   sourceId: string;
@@ -188,7 +214,10 @@ async function tryRepairProviderVariantIdentity(
     p_supported_variant_codes: supportedVariantCodes,
     p_reason: 'tcgdex_pinned_snapshot_finish_correction',
   });
-  if (error) throw error;
+  if (error) {
+    if (isMissingVariantRepairPrecondition(error)) return false;
+    throw error;
+  }
   return data?.status === 'repaired';
 }
 
@@ -696,6 +725,29 @@ async function auditDecision(
     existing?: Record<string, unknown>;
   },
 ) {
+  let existingDecision = table(db, 'audit', 'ingest_merge_decisions')
+    .select('id')
+    .eq('source_id', input.sourceId)
+    .eq('import_run_id', input.importRunId)
+    .eq('raw_record_id', input.rawRecordId)
+    .eq('decision_type', input.decisionType)
+    .eq('reason', input.reason);
+  existingDecision = input.entitySchema
+    ? existingDecision.eq('entity_schema', input.entitySchema)
+    : existingDecision.is('entity_schema', null);
+  existingDecision = input.entityTable
+    ? existingDecision.eq('entity_table', input.entityTable)
+    : existingDecision.is('entity_table', null);
+  existingDecision = input.entityId
+    ? existingDecision.eq('entity_id', input.entityId)
+    : existingDecision.is('entity_id', null);
+  existingDecision = input.canonicalKey
+    ? existingDecision.eq('canonical_key', input.canonicalKey)
+    : existingDecision.is('canonical_key', null);
+  const { data: priorDecision, error: lookupError } = await existingDecision.limit(1);
+  if (lookupError) throw lookupError;
+  if ((priorDecision ?? []).length > 0) return;
+
   const { error } = await table(db, 'audit', 'ingest_merge_decisions').insert({
     source_id: input.sourceId,
     import_run_id: input.importRunId,
@@ -1421,7 +1473,7 @@ async function upsertCardVariant(
   }
 
   const identityMatch = await table(db, 'catalog', 'card_variants')
-    .select('id, printing_id, canonical_key')
+    .select('id, printing_id, canonical_key, deprecated_at, corrected_by_variant_id')
     .eq('canonical_key', canonicalKey)
     .limit(2);
   if (identityMatch.error) throw identityMatch.error;
@@ -1440,7 +1492,87 @@ async function upsertCardVariant(
   }
 
   let externalVariantId = externalRows[0]?.variant_id;
-  const identityVariantId = identityRows[0]?.id;
+  if (externalVariantId) {
+    const { data: externalVariant, error: externalVariantError } = await table(db, 'catalog', 'card_variants')
+      .select('id, deprecated_at, corrected_by_variant_id')
+      .eq('id', externalVariantId)
+      .maybeSingle();
+    if (externalVariantError) throw externalVariantError;
+    if (!externalVariant?.id || externalVariant.deprecated_at) {
+      await quarantine(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        conflictType: 'identity_collision',
+        canonicalKey,
+        proposed: normalised.raw,
+        existing: {
+          externalVariantId,
+          deprecatedAt: externalVariant?.deprecated_at ?? null,
+          correctedByVariantId: externalVariant?.corrected_by_variant_id ?? null,
+        },
+        notes: 'Current provider identity points to a missing or deprecated canonical variant.',
+      });
+      return { status: 'conflicted' as const };
+    }
+  }
+
+  const identityRow = identityRows[0];
+  if (identityRow?.deprecated_at) {
+    const correctedByVariantId = identityRow.corrected_by_variant_id as string | null;
+    const correctionTarget = correctedByVariantId
+      ? await table(db, 'catalog', 'card_variants')
+        .select('id, printing_id')
+        .eq('id', correctedByVariantId)
+        .is('deprecated_at', null)
+        .maybeSingle()
+      : { data: null, error: null };
+    if (correctionTarget.error) throw correctionTarget.error;
+
+    if (isResolvedDeprecatedVariantAlias({
+      deprecatedAt: identityRow.deprecated_at,
+      correctedByVariantId,
+      correctionTargetId: correctionTarget.data?.id ?? null,
+      deprecatedPrintingId: identityRow.printing_id,
+      correctionTargetPrintingId: correctionTarget.data?.printing_id ?? null,
+      externalVariantId,
+    })) {
+      await auditDecision(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        requestId,
+        decisionType: 'skipped',
+        entitySchema: 'catalog',
+        entityTable: 'card_variants',
+        entityId: identityRow.id,
+        canonicalKey,
+        confidence: normalised.sourceConfidence,
+        reason: 'deprecated_provider_variant_alias_already_corrected',
+        proposed: normalised.raw,
+        existing: { correctedByVariantId },
+      });
+      return { status: 'skipped' as const };
+    }
+
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'identity_collision',
+      canonicalKey,
+      proposed: normalised.raw,
+      existing: {
+        deprecatedVariantId: identityRow.id,
+        correctedByVariantId,
+        correctionTargetId: correctionTarget.data?.id ?? null,
+      },
+      notes: 'Provider variant resolves only to a deprecated canonical identity without a verified active correction target.',
+    });
+    return { status: 'conflicted' as const };
+  }
+
+  const identityVariantId = identityRow?.id;
   if (externalVariantId && identityVariantId && externalVariantId !== identityVariantId) {
     const repaired = await tryRepairProviderVariantIdentity(db, {
       sourceId,

@@ -87,6 +87,14 @@ const TCGDEX_VARIANT_CODES: Record<string, string> = {
   promo: 'promo',
 };
 
+const TCGDEX_VARIANT_PRIORITY: Record<string, number> = {
+  normal: 0,
+  holo: 1,
+  reverse_holo: 2,
+  first_edition: 3,
+  promo: 4,
+};
+
 function tcgdexVariantCode(value: unknown) {
   const raw = cleanText(value);
   if (!raw) return null;
@@ -128,7 +136,11 @@ function variantCandidates(card: Record<string, unknown>) {
   const declaredVariant = tcgdexVariantCode(card.variant);
   if (declaredVariant) variants.add(declaredVariant);
   if (variants.size === 0) variants.add('normal');
-  return [...variants];
+  return [...variants].sort((left, right) => {
+    const leftPriority = TCGDEX_VARIANT_PRIORITY[left] ?? Number.MAX_SAFE_INTEGER;
+    const rightPriority = TCGDEX_VARIANT_PRIORITY[right] ?? Number.MAX_SAFE_INTEGER;
+    return leftPriority - rightPriority || left.localeCompare(right);
+  });
 }
 
 function imageVariantCandidate(card: Record<string, unknown>) {
@@ -379,6 +391,8 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       const cardResult = await this.fetchJson(`/cards/${encodeURIComponent(refId)}`, scope);
       const card = cardResult.value as Record<string, unknown> | null;
       if (!card) return null;
+      const cardVariants = variantCandidates(card);
+      const imageVariant = imageVariantCandidate(card);
       return {
         provider: 'tcgdex',
         providerRecordId: cleanText(card.id) ?? refId,
@@ -393,8 +407,8 @@ export class TcgdexSourceAdapter implements SourceAdapter {
         payload: {
           ...card,
           set: setPayload ?? card.set,
-          variant: variantCandidates(card)[0],
-          image_variant: imageVariantCandidate(card),
+          variant: imageVariant ?? cardVariants[0],
+          image_variant: imageVariant,
         },
         } satisfies ProviderRecord;
       },
@@ -474,7 +488,9 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       ? payload.cardCount as Record<string, unknown>
       : {};
     const collector = collectorNumberParts(payload.localId ?? payload.number);
-    const recordVariant = payload.variant ?? 'normal';
+    const recordVariant = record.recordType === 'card'
+      ? payload.image_variant ?? payload.variant ?? 'normal'
+      : payload.variant ?? payload.image_variant ?? 'normal';
     const imageUrl = tcgdexAssetUrl(payload.image_url ?? payload.image, 'card_image');
     const languageCode = stackrLanguage(record.languageCode ?? this.language);
     const nativeName = cleanText(payload.name ?? payload.localName);

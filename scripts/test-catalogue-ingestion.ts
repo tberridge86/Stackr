@@ -8,6 +8,8 @@ import { TcgdexSourceAdapter, tcgdexAdapterInternals } from './catalogue-ingesti
 import {
   CatalogueIngestionRunner,
   calculateExponentialBackoff,
+  isMissingVariantRepairPrecondition,
+  isResolvedDeprecatedVariantAlias,
   isSafeUnsupportedPrimaryVariantCorrection,
   payloadChecksum,
   runWithConcurrencyByKey,
@@ -143,6 +145,26 @@ function assertPinnedPrimaryVariantCorrectionSafety() {
   assert.equal(isSafeUnsupportedPrimaryVariantCorrection({
     ...base,
     expectedArtworkKey: 'different-artwork',
+  }), false);
+
+  assert.equal(isMissingVariantRepairPrecondition({ code: 'P0002' }), true);
+  assert.equal(isMissingVariantRepairPrecondition({ code: '23505' }), false);
+  assert.equal(isMissingVariantRepairPrecondition(new Error('query returned no rows')), false);
+
+  assert.equal(isResolvedDeprecatedVariantAlias({
+    deprecatedAt: '2026-08-19T00:00:00.000Z',
+    correctedByVariantId: 'variant-normal',
+    correctionTargetId: 'variant-normal',
+    deprecatedPrintingId: 'printing-1',
+    correctionTargetPrintingId: 'printing-1',
+    externalVariantId: 'variant-normal',
+  }), true);
+  assert.equal(isResolvedDeprecatedVariantAlias({
+    deprecatedAt: '2026-08-19T00:00:00.000Z',
+    correctedByVariantId: 'variant-normal',
+    correctionTargetId: 'variant-normal',
+    deprecatedPrintingId: 'printing-1',
+    correctionTargetPrintingId: 'printing-2',
   }), false);
 }
 
@@ -369,9 +391,48 @@ async function assertStrictForeignLanguageSafety() {
   assert.deepEqual(tcgdexAdapterInternals.variantCandidates({
     variants: { normal: true, holo: false, reverse: true, firstEdition: true, wPromo: true },
   }), ['normal', 'reverse_holo', 'first_edition', 'promo']);
+  assert.deepEqual(tcgdexAdapterInternals.variantCandidates({
+    variants: { holo: true, normal: true, wPromo: false, reverse: true, firstEdition: false },
+  }), ['normal', 'holo', 'reverse_holo'], 'provider key order must never change the base card identity');
   assert.deepEqual(tcgdexAdapterInternals.variantCandidates({ variants: [] }), ['normal']);
   assert.equal(tcgdexAdapterInternals.imageVariantCandidate({ variants: { normal: true, reverse: true } }), 'normal');
   assert.equal(tcgdexAdapterInternals.imageVariantCandidate({ variants: { normal: false, holo: true } }), 'holo');
+  const variantPolicyAdapter = new TcgdexSourceAdapter({ language: 'en', licenceStatus: 'approved' });
+  const baseVariantRecord = variantPolicyAdapter.normaliseRecord({
+    provider: 'tcgdex',
+    providerRecordId: 'ex8-17',
+    recordType: 'card',
+    languageCode: 'en',
+    licenceStatus: 'approved',
+    payload: {
+      id: 'ex8-17',
+      name: 'Test Card',
+      localId: '17',
+      set: { id: 'ex8', name: 'Test Set' },
+      variant: 'holo',
+      image_variant: 'normal',
+      variants: { holo: true, normal: true },
+    },
+  });
+  assert.equal(baseVariantRecord.variantCode, 'normal', 'the base TCGdex card ID must follow the displayed normal image');
+  const explicitHoloRecord = variantPolicyAdapter.normaliseRecord({
+    provider: 'tcgdex',
+    providerRecordId: 'ex8-17:holo',
+    recordType: 'variant',
+    languageCode: 'en',
+    licenceStatus: 'approved',
+    payload: {
+      id: 'ex8-17',
+      name: 'Test Card',
+      localId: '17',
+      set: { id: 'ex8', name: 'Test Set' },
+      variant: 'holo',
+      image_variant: 'normal',
+      variants: { holo: true, normal: true },
+    },
+  });
+  assert.equal(explicitHoloRecord.variantCode, 'holo', 'an explicit holo alias must remain holo');
+
   assert.equal(
     tcgdexAdapterInternals.imageVariantCandidate({ variants: { firstEdition: true, holo: true, normal: false } }),
     null,
@@ -543,6 +604,16 @@ async function assertImageAssetsAreBlockedByDefault() {
   );
   assert.match(ingestionPipeline, /isSafeUnsupportedPrimaryVariantCorrection/);
   assert.match(ingestionPipeline, /provider_variant_identity_corrected/);
+  assert.match(
+    ingestionPipeline,
+    /deprecated_provider_variant_alias_already_corrected/,
+    'deprecated corrected aliases must be retained as audit evidence without being revived or relinked',
+  );
+  assert.match(
+    ingestionPipeline,
+    /priorDecision[\s\S]+ingest_merge_decisions/,
+    'retrying one deterministic import run must not append duplicate audit decisions',
+  );
   assert.match(
     ingestionPipeline,
     /hasCompleteCardImageIdentity/,

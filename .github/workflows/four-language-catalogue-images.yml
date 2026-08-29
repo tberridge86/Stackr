@@ -112,6 +112,7 @@ jobs:
           (( CATALOGUE_MIRROR_BATCHES >= 1 && CATALOGUE_MIRROR_BATCHES <= 100 )) || exit 1
           (( CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 6 )) || exit 1
           npm ci
+          npm run test:catalogue-ingestion
           npm run test:four-language-catalogue-backfill
 
   ingest:
@@ -210,6 +211,7 @@ jobs:
 
   mirror:
     needs: ingest
+    if: ${{ always() && (needs.ingest.result == 'success' || needs.ingest.result == 'failure') }}
     name: mirror-${{ matrix.provider }}-${{ matrix.language }}
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -313,6 +315,7 @@ jobs:
 
   measure:
     needs: mirror
+    if: ${{ always() && (needs.mirror.result == 'success' || needs.mirror.result == 'failure') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: staging
