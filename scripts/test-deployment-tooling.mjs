@@ -452,6 +452,13 @@ assert.match(recognitionRollback.stdout, /"deploymentRollback": true/);
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
 const platformCiWorkflow = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
+const productionBackendHardeningWorkflow = readFileSync(
+  '.github/workflows/deploy-production-backend-hardening.yml',
+  'utf8',
+);
+const productionBackendHardeningApproval = JSON.parse(
+  readFileSync('deploy/production-backend-hardening-approval.json', 'utf8'),
+);
 const productionMonitorWorkflow = readFileSync('.github/workflows/production-api-monitor.yml', 'utf8');
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
@@ -713,6 +720,27 @@ assert.match(productionMonitorWorkflow, /--require-commerce-disabled/);
 assert.match(productionMonitorWorkflow, /issues: write/);
 assert.match(productionMonitorWorkflow, /if: failure\(\)[\s\S]+gh issue (?:comment|create)/);
 assert.match(productionMonitorWorkflow, /if: success\(\)[\s\S]+gh issue close/);
+assert.equal(productionBackendHardeningApproval.status, 'approved');
+assert.equal(productionBackendHardeningApproval.scope, 'production_backend_hardening_only');
+assert.equal(productionBackendHardeningApproval.catalogueChangesAllowed, false);
+assert.equal(productionBackendHardeningApproval.newFeaturesAllowed, false);
+assert.equal(productionBackendHardeningApproval.databaseChangesAllowed, false);
+assert.equal(productionBackendHardeningApproval.gatewayChangesAllowed, false);
+assert.equal(productionBackendHardeningApproval.mobileChangesAllowed, false);
+assert.equal(productionBackendHardeningApproval.recognitionChangesAllowed, false);
+assert.equal(productionBackendHardeningApproval.rollbackPolicy, 'never_restore_pre_lock_backend');
+assert.match(productionBackendHardeningWorkflow, /environment: production/);
+assert.match(productionBackendHardeningWorkflow, /paths:[\s\S]+production-backend-hardening-approval\.json/);
+assert.match(productionBackendHardeningWorkflow, /verify-wp32-release-candidate\.mjs/);
+assert.match(productionBackendHardeningWorkflow, /test:commerce-release-lock/);
+assert.match(productionBackendHardeningWorkflow, /test:deployment/);
+assert.match(productionBackendHardeningWorkflow, /@railway\/cli@5\.30\.1 up "\$GITHUB_WORKSPACE\/backend" --ci/);
+assert.match(productionBackendHardeningWorkflow, /--gateway=[\s\\]+--backend="\$STACKR_BACKEND_URL"[\s\\]+--require-commerce-disabled/);
+assert.doesNotMatch(
+  productionBackendHardeningWorkflow,
+  /SUPABASE|CLOUDFLARE|EXPO_TOKEN|RAILWAY_RECOGNITION|release-database|db push|wrangler|eas-cli|catalogue (?:activate|rollback)|recognition-service/,
+  'production backend hardening must not mutate catalogue, database, gateway, mobile or recognition state',
+);
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_SCOPE: \$\{\{ inputs\.release_scope \}\}/);
 assert.match(
