@@ -391,6 +391,8 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       const cardResult = await this.fetchJson(`/cards/${encodeURIComponent(refId)}`, scope);
       const card = cardResult.value as Record<string, unknown> | null;
       if (!card) return null;
+      const cardVariants = variantCandidates(card);
+      const imageVariant = imageVariantCandidate(card);
       return {
         provider: 'tcgdex',
         providerRecordId: cleanText(card.id) ?? refId,
@@ -405,8 +407,8 @@ export class TcgdexSourceAdapter implements SourceAdapter {
         payload: {
           ...card,
           set: setPayload ?? card.set,
-          variant: variantCandidates(card)[0],
-          image_variant: imageVariantCandidate(card),
+          variant: imageVariant ?? cardVariants[0],
+          image_variant: imageVariant,
         },
         } satisfies ProviderRecord;
       },
@@ -486,7 +488,9 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       ? payload.cardCount as Record<string, unknown>
       : {};
     const collector = collectorNumberParts(payload.localId ?? payload.number);
-    const recordVariant = payload.variant ?? 'normal';
+    const recordVariant = record.recordType === 'card'
+      ? payload.image_variant ?? payload.variant ?? 'normal'
+      : payload.variant ?? payload.image_variant ?? 'normal';
     const imageUrl = tcgdexAssetUrl(payload.image_url ?? payload.image, 'card_image');
     const languageCode = stackrLanguage(record.languageCode ?? this.language);
     const nativeName = cleanText(payload.name ?? payload.localName);
