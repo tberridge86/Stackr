@@ -72,6 +72,23 @@ export function payloadChecksum(payload: unknown): string {
   return createHash('sha256').update(stableJson(payload)).digest('hex');
 }
 
+export function parseRetainedRawRecord(value: unknown) {
+  const record = value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+  const id = cleanText(record?.id);
+  const changed = cleanText(record?.changed);
+  if (
+    !id
+    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+    || !changed
+    || !['inserted', 'updated', 'reused'].includes(changed)
+  ) {
+    throw new Error('invalid_retain_raw_source_record_response');
+  }
+  return { id, changed: changed as 'inserted' | 'updated' | 'reused' };
+}
+
 export function calculateExponentialBackoff(
   attempts: number,
   baseSeconds = 60,
@@ -732,53 +749,29 @@ async function retainRawRecord(
 ) {
   const payloadHash = payloadChecksum(record.payload);
   const languageCode = record.languageCode ?? null;
-  const base = {
-    source_id: sourceId,
-    import_run_id: importRunId,
-    record_type: record.recordType,
-    external_id: record.providerRecordId,
-    provider_record_id: record.providerRecordId,
-    language_code: languageCode,
-    source_url: record.sourceUrl ?? null,
-    source_endpoint: record.sourceEndpoint ?? record.sourceUrl ?? null,
-    retrieved_at: nowIso(),
-    source_updated_at: record.providerUpdatedAt ?? null,
-    licence_status: record.licenceStatus,
-    attribution_text: record.attributionText ?? null,
-    payload_hash: payloadHash,
-    raw_payload: record.payload,
-    http_metadata: record.httpMetadata ?? {},
-    validation_status: validationStatus(validation),
-    validation_errors: issuePayload(validation.issues),
-  };
-
-  const query = table(db, 'ingest', 'raw_source_records')
-    .select('id')
-    .eq('source_id', sourceId)
-    .eq('import_run_id', importRunId)
-    .eq('record_type', record.recordType)
-    .eq('external_id', record.providerRecordId);
-  const { data: existing, error: lookupError } = languageCode
-    ? await query.eq('language_code', languageCode).maybeSingle()
-    : await query.is('language_code', null).maybeSingle();
-  if (lookupError) throw lookupError;
-
-  if (existing?.id) {
-    const { data, error } = await table(db, 'ingest', 'raw_source_records')
-      .update(base)
-      .eq('id', existing.id)
-      .select('id')
-      .maybeSingle();
-    if (error) throw error;
-    return { id: data.id, changed: 'updated' as const };
-  }
-
-  const { data, error } = await table(db, 'ingest', 'raw_source_records')
-    .insert(base)
-    .select('id')
-    .maybeSingle();
+  const ingest = db.schema('ingest');
+  if (!ingest.rpc) throw new Error('retain_raw_source_record_rpc_unavailable');
+  const { data, error } = await ingest.rpc('retain_raw_source_record', {
+    p_source_id: sourceId,
+    p_import_run_id: importRunId,
+    p_record_type: record.recordType,
+    p_external_id: record.providerRecordId,
+    p_provider_record_id: record.providerRecordId,
+    p_language_code: languageCode,
+    p_source_url: record.sourceUrl ?? null,
+    p_source_endpoint: record.sourceEndpoint ?? record.sourceUrl ?? null,
+    p_retrieved_at: nowIso(),
+    p_source_updated_at: record.providerUpdatedAt ?? null,
+    p_licence_status: record.licenceStatus,
+    p_attribution_text: record.attributionText ?? null,
+    p_payload_hash: payloadHash,
+    p_raw_payload: record.payload,
+    p_http_metadata: record.httpMetadata ?? {},
+    p_validation_status: validationStatus(validation),
+    p_validation_errors: issuePayload(validation.issues),
+  });
   if (error) throw error;
-  return { id: data.id, changed: 'inserted' as const };
+  return parseRetainedRawRecord(data);
 }
 
 async function auditDecision(
