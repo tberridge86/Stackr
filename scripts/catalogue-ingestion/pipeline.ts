@@ -39,6 +39,7 @@ type ImportOptions = FetchScope & {
   assetsOnly?: boolean;
   approvedOnlyAssets?: boolean;
   writeConcurrency?: number;
+  runMetadata?: Record<string, unknown>;
 };
 
 type ImportStats = {
@@ -661,6 +662,7 @@ async function startImportRun(
       setsOnly: Boolean(options.setsOnly),
       assetsOnly: Boolean(options.assetsOnly),
       approvedOnlyAssets: Boolean(options.approvedOnlyAssets),
+      workstream: options.runMetadata ?? {},
     },
   };
 
