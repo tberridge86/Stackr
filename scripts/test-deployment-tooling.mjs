@@ -702,7 +702,12 @@ assert.match(productionMonitorWorkflow, /STACKR_PRODUCTION_MONITOR_ENABLED == 't
 assert.match(productionMonitorWorkflow, /--full-gateway/);
 assert.match(productionMonitorWorkflow, /--require-published-catalogue/);
 assert.match(productionMonitorWorkflow, /--required-catalogue-languages=en,ja,zh-tw,zh-cn,ko/);
-assert.match(productionMonitorWorkflow, /STACKR_BACKEND_URL: \$\{\{ vars\.STACKR_BACKEND_URL \}\}/);
+assert.match(
+  productionMonitorWorkflow,
+  /STACKR_BACKEND_URL: \$\{\{ vars\.STACKR_BACKEND_URL \|\| 'https:\/\/pocketvault-production\.up\.railway\.app' \}\}/,
+);
+assert.match(productionMonitorWorkflow, /timeout-minutes:\s*10/);
+assert.doesNotMatch(productionMonitorWorkflow, /for attempt in 1 2 3/);
 assert.match(productionMonitorWorkflow, /--backend="\$STACKR_BACKEND_URL"/);
 assert.match(productionMonitorWorkflow, /--require-commerce-disabled/);
 assert.match(productionMonitorWorkflow, /issues: write/);

@@ -11,6 +11,7 @@ const EXPECTED_SOURCE_TREE = '2591147dd7b1fe90bd635ebdc4784bf614e168f4';
 const EXPECTED_CONTROL_PATHS = Object.freeze([
   '.github/workflows/build-staging-apk.yml',
   '.github/workflows/platform-ci.yml',
+  '.github/workflows/production-api-monitor.yml',
   'deploy/evidence/wp32-staging-apk-2026-08-28.json',
   'deploy/evidence/wp32-source-build-2026-08-28.json',
   'deploy/production-runbook.md',
@@ -23,6 +24,7 @@ const EXPECTED_CONTROL_PATHS = Object.freeze([
   'docs/product-readiness/LAUNCH_SURFACE_REGISTER.md',
   'package.json',
   'scripts/deploy/verify-wp32-release-candidate.mjs',
+  'scripts/test-deployment-tooling.mjs',
   'scripts/test-wp32-release-candidate.mjs',
 ]);
 const EXPECTED_PACKAGE_SCRIPTS = Object.freeze({
