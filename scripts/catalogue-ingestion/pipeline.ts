@@ -725,6 +725,29 @@ async function auditDecision(
     existing?: Record<string, unknown>;
   },
 ) {
+  let existingDecision = table(db, 'audit', 'ingest_merge_decisions')
+    .select('id')
+    .eq('source_id', input.sourceId)
+    .eq('import_run_id', input.importRunId)
+    .eq('raw_record_id', input.rawRecordId)
+    .eq('decision_type', input.decisionType)
+    .eq('reason', input.reason);
+  existingDecision = input.entitySchema
+    ? existingDecision.eq('entity_schema', input.entitySchema)
+    : existingDecision.is('entity_schema', null);
+  existingDecision = input.entityTable
+    ? existingDecision.eq('entity_table', input.entityTable)
+    : existingDecision.is('entity_table', null);
+  existingDecision = input.entityId
+    ? existingDecision.eq('entity_id', input.entityId)
+    : existingDecision.is('entity_id', null);
+  existingDecision = input.canonicalKey
+    ? existingDecision.eq('canonical_key', input.canonicalKey)
+    : existingDecision.is('canonical_key', null);
+  const { data: priorDecision, error: lookupError } = await existingDecision.limit(1);
+  if (lookupError) throw lookupError;
+  if ((priorDecision ?? []).length > 0) return;
+
   const { error } = await table(db, 'audit', 'ingest_merge_decisions').insert({
     source_id: input.sourceId,
     import_run_id: input.importRunId,
