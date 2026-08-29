@@ -476,12 +476,14 @@ export class TcgdexSourceAdapter implements SourceAdapter {
     const collector = collectorNumberParts(payload.localId ?? payload.number);
     const recordVariant = payload.variant ?? 'normal';
     const imageUrl = tcgdexAssetUrl(payload.image_url ?? payload.image, 'card_image');
+    const languageCode = stackrLanguage(record.languageCode ?? this.language);
+    const nativeName = cleanText(payload.name ?? payload.localName);
     return {
       provider: record.provider,
       providerRecordId: record.providerRecordId,
       recordType: record.recordType,
       gameCode: 'pokemon',
-      languageCode: stackrLanguage(record.languageCode ?? this.language),
+      languageCode,
       setCode: cleanText(sourceSet.id ?? sourceSet.code),
       providerSetId: cleanText(sourceSet.id ?? payload.setId),
       collectorNumber: collector.collectorNumber || null,
@@ -489,8 +491,8 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       collectorNumberSort: collector.collectorNumberSort,
       collectorNumberSuffix: collector.collectorNumberSuffix,
       collectorNumberSortKey: collector.collectorNumberSortKey,
-      nativeName: cleanText(payload.name ?? payload.localName),
-      englishDisplayName: cleanText(payload.englishName ?? payload.name),
+      nativeName,
+      englishDisplayName: cleanText(payload.englishName) ?? (languageCode === 'en' ? nativeName : null),
       printedTotal: optionalPositiveInteger(payload.printedTotal ?? cardCount.official),
       total: optionalPositiveInteger(payload.total ?? cardCount.total),
       rarityCode: cleanText(payload.rarity)?.toLowerCase().replace(/[^a-z0-9]+/g, '_') ?? null,
@@ -498,7 +500,7 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       finishCode: normaliseVariantCode(recordVariant),
       artworkKey: imageUrl ? `tcgdex:${imageUrl}` : null,
       imageUrl,
-      imageLanguageCode: stackrLanguage(record.languageCode ?? this.language),
+      imageLanguageCode: languageCode,
       assetType: cleanText(payload.asset_type) as NormalisedRecord['assetType'] ?? 'card_image',
       sourceConfidence: 0.85,
       sourceUpdatedAt: record.providerUpdatedAt,

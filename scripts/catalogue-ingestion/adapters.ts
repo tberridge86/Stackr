@@ -3,7 +3,7 @@ import { PikaQianApiSourceAdapter } from './pikaqianAdapter';
 import { PokemonCardJpOfficialSourceAdapter } from './pokemonCardJpAdapter';
 import { PikaQianSourceAdapter, XimilarResidualScanSourceAdapter } from './providerFileAdapters';
 import { TcgdexSourceAdapter } from './tcgdexAdapter';
-import type { SourceAdapter } from './sourceAdapter';
+import { normaliseLanguageCode, type SourceAdapter } from './sourceAdapter';
 import type { LicenceStatus } from './sourceAdapter';
 
 type AdapterOptions = {
@@ -52,9 +52,14 @@ export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
     });
   }
   if (source === 'pikaqian') {
+    const language = normaliseLanguageCode(options.language ?? 'zh-cn');
+    if (language !== 'zh-cn') {
+      throw new Error(`PikaQian only supports zh-cn catalogue language; received ${language}.`);
+    }
     if (!options.file) {
       return new PikaQianApiSourceAdapter({
         baseUrl: options.baseUrl,
+        language,
         licenceStatus: options.licenceStatus ?? 'under_review',
         assetLicenceStatus: options.assetLicenceStatus ?? 'under_review',
       });

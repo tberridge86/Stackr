@@ -17,7 +17,9 @@ import {
   normaliseFinishCode,
   normaliseLanguageCode,
   normaliseVariantCode,
+  PRIMARY_CATALOGUE_LANGUAGE_CODES,
   proposedCanonicalKey,
+  SUPPORTED_CATALOGUE_LANGUAGE_CODES,
   type ProviderRecord,
   type SourceAdapter,
 } from './catalogue-ingestion/sourceAdapter';
@@ -308,6 +310,8 @@ function noDbAccess() {
 }
 
 async function assertStrictForeignLanguageSafety() {
+  assert.deepEqual(PRIMARY_CATALOGUE_LANGUAGE_CODES, ['en', 'ja', 'zh-cn', 'ko']);
+  assert.deepEqual(SUPPORTED_CATALOGUE_LANGUAGE_CODES, ['en', 'ja', 'zh-tw', 'zh-cn', 'ko']);
   assert.equal(normaliseLanguageCode('zh-cn'), 'zh-cn');
   assert.equal(normaliseLanguageCode('zh_CN'), 'zh-cn');
   assert.equal(normaliseLanguageCode('ko'), 'ko');
@@ -327,6 +331,26 @@ async function assertStrictForeignLanguageSafety() {
   assert.equal(korean.languageCode, 'ko', 'ko must stay ko');
   assert.notEqual(simplified.languageCode, 'ja', 'zh-cn must not be insertable as ja');
   assert.notEqual(korean.languageCode, 'ja', 'ko must not be insertable as ja');
+
+  const foreignRecord = providerRecord('zh-cn', 'zh-cn-name-1');
+  foreignRecord.payload.name = '测试卡';
+  const foreignWithoutEnglishName = simplifiedAdapter.normaliseRecord(foreignRecord);
+  assert.equal(foreignWithoutEnglishName.nativeName, '测试卡');
+  assert.equal(
+    foreignWithoutEnglishName.englishDisplayName,
+    null,
+    'a foreign localized name must not be copied into englishDisplayName',
+  );
+  const foreignWithEnglishName = simplifiedAdapter.normaliseRecord({
+    ...foreignRecord,
+    payload: { ...foreignRecord.payload, englishName: 'Test Card' },
+  });
+  assert.equal(foreignWithEnglishName.englishDisplayName, 'Test Card');
+
+  const englishAdapter = new TcgdexSourceAdapter({ language: 'en', licenceStatus: 'approved' });
+  const english = englishAdapter.normaliseRecord(providerRecord('en', 'en-name-1'));
+  assert.equal(english.englishDisplayName, 'Test Card', 'English records may use their localized name as display name');
+
   const setRecord = simplifiedAdapter.normaliseRecord({
     provider: 'tcgdex',
     providerRecordId: 'SV4a',

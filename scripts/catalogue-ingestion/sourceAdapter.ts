@@ -139,6 +139,8 @@ export function cleanText(value: unknown): string | null {
 
 export const SUPPORTED_CATALOGUE_LANGUAGE_CODES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'] as const;
 
+export const PRIMARY_CATALOGUE_LANGUAGE_CODES = ['en', 'ja', 'zh-cn', 'ko'] as const;
+
 export type SupportedCatalogueLanguageCode = typeof SUPPORTED_CATALOGUE_LANGUAGE_CODES[number];
 
 export class UnsupportedCatalogueLanguageError extends Error {
