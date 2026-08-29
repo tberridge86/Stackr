@@ -9,7 +9,7 @@ const STRICT_FOREIGN_IMPORT_PATH =
 const PUBLICATION_SNAPSHOT_PATH =
   'supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql';
 const NATURAL_IDENTITY_RECONCILIATION_PATH =
-  'supabase/migrations/20260829163441_reconcile_active_catalogue_natural_identities.sql';
+  'supabase/migrations/20260829170147_reconcile_active_catalogue_natural_identities.sql';
 const sql = readFileSync(MIGRATION_PATH, 'utf8');
 const reconciliationSql = readFileSync(RECONCILIATION_PATH, 'utf8');
 const strictForeignImportSql = readFileSync(STRICT_FOREIGN_IMPORT_PATH, 'utf8');
