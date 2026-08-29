@@ -48,7 +48,9 @@ permissions:
 
 concurrency:
   group: stackr-staging-four-language-catalogue-images
-  cancel-in-progress: false
+  # The importer is resumable and idempotent: the newest reviewed run safely
+  # replaces an obsolete run while retaining completed batch keys.
+  cancel-in-progress: true
 
 env:
   TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
