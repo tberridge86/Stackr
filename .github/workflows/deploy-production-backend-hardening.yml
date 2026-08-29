@@ -1,0 +1,191 @@
+name: Deploy Stackr Production Backend Hardening
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - deploy/production-backend-hardening-approval.json
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type DEPLOY HARDENED BACKEND
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-production-backend-hardening
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.confirmation == 'DEPLOY HARDENED BACKEND')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: production
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      STACKR_BACKEND_URL: ${{ vars.STACKR_BACKEND_URL || 'https://pocketvault-production.up.railway.app' }}
+      BACKEND_ORIGIN_KEY: ${{ secrets.BACKEND_ORIGIN_KEY }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify owner approval and frozen source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "const a=require('./deploy/production-backend-hardening-approval.json'); if (a.status !== 'approved' || a.scope !== 'production_backend_hardening_only' || a.catalogueChangesAllowed !== false || a.newFeaturesAllowed !== false || a.databaseChangesAllowed !== false || a.gatewayChangesAllowed !== false || a.mobileChangesAllowed !== false || a.recognitionChangesAllowed !== false || a.rollbackPolicy !== 'never_restore_pre_lock_backend') process.exit(1)"
+          git merge-base --is-ancestor 8d25082036f9e5ca38cfd120e2711dcdff59b929 "$GITHUB_SHA"
+          node scripts/deploy/verify-wp32-release-candidate.mjs
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+
+      - name: Re-run backend hardening checks
+        run: |
+          npm run typecheck:backend
+          npm test --prefix backend
+          npm run test:commerce-release-lock
+          npm run test:deployment
+
+      - name: Validate production deployment controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          for variable in RAILWAY_API_TOKEN RAILWAY_PROJECT_ID RAILWAY_ENVIRONMENT_ID RAILWAY_BACKEND_SERVICE_ID BACKEND_ORIGIN_KEY STACKR_BACKEND_URL; do
+            if [ -z "${!variable:-}" ]; then
+              echo "Missing required production control: $variable" >&2
+              exit 1
+            fi
+          done
+
+      - name: Record current backend deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/stackr-production-backend-hardening"
+          npx --yes @railway/cli@5.30.1 deployment list \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --limit 1 \
+            --json | \
+            node -e 'let value=""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const rows=JSON.parse(value); const row=rows[0]; if (!row?.id || !row?.status) process.exit(1); process.stdout.write(JSON.stringify({ id: row.id, status: row.status }, null, 2)); });' \
+            > "$RUNNER_TEMP/stackr-production-backend-hardening/before.json"
+
+      - name: Synchronize gateway origin authentication
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "process.stdout.write(String(process.env.BACKEND_ORIGIN_KEY ?? '').trim())" | \
+            npx --yes @railway/cli@5.30.1 variable set STACKR_GATEWAY_ORIGIN_KEY --stdin --skip-deploys \
+              --project "$RAILWAY_PROJECT_ID" \
+              --environment "$RAILWAY_ENVIRONMENT_ID" \
+              --service "$RAILWAY_BACKEND_SERVICE_ID"
+
+      - name: Deploy hardened backend only
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @railway/cli@5.30.1 up "$GITHUB_WORKSPACE/backend" --ci \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID"
+
+          railway_latest_status="$(
+            npx --yes @railway/cli@5.30.1 deployment list \
+              --project "$RAILWAY_PROJECT_ID" \
+              --environment "$RAILWAY_ENVIRONMENT_ID" \
+              --service "$RAILWAY_BACKEND_SERVICE_ID" \
+              --limit 1 \
+              --json | \
+              node -e 'let value=""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const rows=JSON.parse(value); if (!Array.isArray(rows) || typeof rows[0]?.status !== "string") process.exit(1); process.stdout.write(rows[0].status); });'
+          )"
+
+          if [ "$railway_latest_status" = "SKIPPED" ]; then
+            railway_redeploy_id="$(
+              npx --yes @railway/cli@5.30.1 deployment redeploy --yes --json \
+                --project "$RAILWAY_PROJECT_ID" \
+                --environment "$RAILWAY_ENVIRONMENT_ID" \
+                --service "$RAILWAY_BACKEND_SERVICE_ID" | \
+                node -e 'let value=""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const result=JSON.parse(value); if (!result?.id) process.exit(1); process.stdout.write(result.id); });'
+            )"
+
+            railway_redeploy_deadline=$((SECONDS + 900))
+            while true; do
+              railway_redeploy_status="$(
+                npx --yes @railway/cli@5.30.1 deployment list \
+                  --project "$RAILWAY_PROJECT_ID" \
+                  --environment "$RAILWAY_ENVIRONMENT_ID" \
+                  --service "$RAILWAY_BACKEND_SERVICE_ID" \
+                  --limit 20 \
+                  --json | \
+                  RAILWAY_DEPLOYMENT_ID="$railway_redeploy_id" node -e 'let value=""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const rows=JSON.parse(value); const row=Array.isArray(rows) ? rows.find(item => item?.id === process.env.RAILWAY_DEPLOYMENT_ID) : null; process.stdout.write(typeof row?.status === "string" ? row.status : "NOT_FOUND"); });'
+              )"
+
+              case "$railway_redeploy_status" in
+                SUCCESS)
+                  break
+                  ;;
+                FAILED|CRASHED|REMOVED|REMOVING|SKIPPED|SLEEPING|NEEDS_APPROVAL|CANCELED|CANCELLED)
+                  echo "Railway redeployment ended with status $railway_redeploy_status." >&2
+                  exit 1
+                  ;;
+              esac
+
+              if [ "$SECONDS" -ge "$railway_redeploy_deadline" ]; then
+                echo "Railway redeployment did not become healthy within 15 minutes." >&2
+                exit 1
+              fi
+              sleep 10
+            done
+          fi
+
+      - name: Prove production commerce and legacy routes are locked
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run deploy:smoke -- \
+            --gateway= \
+            --backend="$STACKR_BACKEND_URL" \
+            --require-commerce-disabled | \
+            tee "$RUNNER_TEMP/stackr-production-backend-hardening/smoke.json"
+
+      - name: Record hardened backend deployment
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/stackr-production-backend-hardening"
+          npx --yes @railway/cli@5.30.1 deployment list \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --limit 1 \
+            --json | \
+            node -e 'let value=""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const rows=JSON.parse(value); const row=rows[0]; if (!row?.id || !row?.status) process.exit(1); process.stdout.write(JSON.stringify({ id: row.id, status: row.status }, null, 2)); });' \
+            > "$RUNNER_TEMP/stackr-production-backend-hardening/after.json"
+
+      - name: Upload non-secret deployment evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-backend-hardening-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-production-backend-hardening
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 9
+
