@@ -587,7 +587,7 @@ function getListingTransaction(item: MarketListingCardData, variant: ReturnType<
 
   return {
     badge: 'Offers only',
-    primary: 'Offers invited',
+    primary: price ?? 'Offers invited',
     secondary: estimate ? `Est. market ${estimate}` : null,
     state: 'Make offer',
   };

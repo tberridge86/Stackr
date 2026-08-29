@@ -49,6 +49,7 @@ jobs:
       - run: npm run test:asset-pipeline
       - run: npm run test:recognition-orchestrator
       - run: npx tsx scripts/test-haptics.ts
+      - run: node scripts/test-market-listing-card-pricing.mjs
       - run: npm run test:scanner-calibration
       - run: npm run test:scanner-pipeline
       - run: npm run test:scanner-analytics
