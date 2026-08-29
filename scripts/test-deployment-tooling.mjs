@@ -717,6 +717,8 @@ assert.match(productionMonitorWorkflow, /timeout-minutes:\s*10/);
 assert.doesNotMatch(productionMonitorWorkflow, /for attempt in 1 2 3/);
 assert.match(productionMonitorWorkflow, /--backend="\$STACKR_BACKEND_URL"/);
 assert.match(productionMonitorWorkflow, /--require-commerce-disabled/);
+assert.match(productionMonitorWorkflow, /body\?\.runtime\?\.railwayEnvironment !== 'production'/);
+assert.match(productionMonitorWorkflow, /body\?\.runtime\?\.supabaseProjectRef !== 'oakdbbzdqwurpjnoqhmu'/);
 assert.match(productionMonitorWorkflow, /issues: write/);
 assert.match(productionMonitorWorkflow, /if: failure\(\)[\s\S]+gh issue (?:comment|create)/);
 assert.match(productionMonitorWorkflow, /if: success\(\)[\s\S]+gh issue close/);
@@ -728,6 +730,13 @@ assert.equal(productionBackendHardeningApproval.databaseChangesAllowed, false);
 assert.equal(productionBackendHardeningApproval.gatewayChangesAllowed, false);
 assert.equal(productionBackendHardeningApproval.mobileChangesAllowed, false);
 assert.equal(productionBackendHardeningApproval.recognitionChangesAllowed, false);
+assert.equal(productionBackendHardeningApproval.runtimeBindingRepairApproved, true);
+assert.match(productionBackendHardeningApproval.runtimeBindingRepairApprovedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+assert.equal(
+  productionBackendHardeningApproval.runtimeBindingExpectedSupabaseProjectRef,
+  'oakdbbzdqwurpjnoqhmu',
+);
+assert.equal(productionBackendHardeningApproval.runtimeBindingMutationScope, 'railway_runtime_variables_only');
 assert.equal(productionBackendHardeningApproval.rollbackPolicy, 'never_restore_pre_lock_backend');
 assert.match(productionBackendHardeningWorkflow, /environment: production/);
 assert.match(productionBackendHardeningWorkflow, /paths:[\s\S]+production-backend-hardening-approval\.json/);
@@ -735,10 +744,30 @@ assert.match(productionBackendHardeningWorkflow, /verify-wp32-release-candidate\
 assert.match(productionBackendHardeningWorkflow, /test:commerce-release-lock/);
 assert.match(productionBackendHardeningWorkflow, /test:deployment/);
 assert.match(productionBackendHardeningWorkflow, /@railway\/cli@5\.30\.1 up "\$GITHUB_WORKSPACE\/backend" --ci/);
-assert.match(productionBackendHardeningWorkflow, /--gateway=[\s\\]+--backend="\$STACKR_BACKEND_URL"[\s\\]+--require-commerce-disabled/);
+assert.match(
+  productionBackendHardeningWorkflow,
+  /STACKR_SUPABASE_URL: \$\{\{ vars\.STACKR_SUPABASE_URL \}\}[\s\S]*STACKR_SUPABASE_PUBLISHABLE_KEY: \$\{\{ secrets\.STACKR_SUPABASE_PUBLISHABLE_KEY \}\}[\s\S]*SUPABASE_PRODUCTION_SECRET_KEY: \$\{\{ secrets\.SUPABASE_PRODUCTION_SECRET_KEY \}\}/,
+);
+assert.match(productionBackendHardeningWorkflow, /test "\$STACKR_SUPABASE_URL" = "\$expected_url"/);
+for (const runtimeVariable of [
+  'STACKR_GATEWAY_ORIGIN_KEY BACKEND_ORIGIN_KEY',
+  'SUPABASE_URL STACKR_SUPABASE_URL',
+  'SUPABASE_PUBLISHABLE_KEY STACKR_SUPABASE_PUBLISHABLE_KEY',
+  'SUPABASE_SECRET_KEY SUPABASE_PRODUCTION_SECRET_KEY',
+  'SOURCE_COMMIT GITHUB_SHA',
+]) {
+  assert.match(productionBackendHardeningWorkflow, new RegExp(`set_runtime_variable ${runtimeVariable}`));
+}
+assert.match(
+  productionBackendHardeningWorkflow,
+  /--gateway="\$STACKR_GATEWAY_URL"[\s\\]+--backend="\$STACKR_BACKEND_URL"[\s\S]*--full-gateway[\s\S]*--require-commerce-disabled/,
+);
+assert.match(productionBackendHardeningWorkflow, /body\?\.runtime\?\.railwayEnvironment !== 'production'/);
+assert.match(productionBackendHardeningWorkflow, /body\?\.runtime\?\.supabaseProjectRef !== process\.env\.SUPABASE_PROJECT_REF/);
+assert.match(productionBackendHardeningWorkflow, /--require-published-catalogue/);
 assert.doesNotMatch(
   productionBackendHardeningWorkflow,
-  /SUPABASE|CLOUDFLARE|EXPO_TOKEN|RAILWAY_RECOGNITION|release-database|db push|wrangler|eas-cli|catalogue (?:activate|rollback)|recognition-service/,
+  /SUPABASE_(?:ACCESS_TOKEN|DB_URL)|CLOUDFLARE|EXPO_TOKEN|RAILWAY_RECOGNITION|release-database|db push|wrangler|eas-cli|catalogue (?:activate|rollback)|recognition-service/,
   'production backend hardening must not mutate catalogue, database, gateway, mobile or recognition state',
 );
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
