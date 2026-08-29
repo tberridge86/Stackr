@@ -22,5 +22,8 @@
     "public",
     "api",
     "graphql_public"
-  ]
+  ],
+  "searchTimeoutRepairApproved": true,
+  "searchTimeoutRepairApprovedAt": "2026-08-29T16:46:25Z",
+  "searchTimeoutRepairMutationScope": "backend_query_order_and_exact_match_only"
 }
