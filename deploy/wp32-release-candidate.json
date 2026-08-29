@@ -90,6 +90,7 @@
     "controlOnlyPaths": [
       ".github/workflows/build-staging-apk.yml",
       ".github/workflows/platform-ci.yml",
+      ".github/workflows/production-api-monitor.yml",
       "deploy/evidence/wp32-staging-apk-2026-08-28.json",
       "deploy/evidence/wp32-source-build-2026-08-28.json",
       "deploy/production-runbook.md",
@@ -102,6 +103,7 @@
       "docs/product-readiness/LAUNCH_SURFACE_REGISTER.md",
       "package.json",
       "scripts/deploy/verify-wp32-release-candidate.mjs",
+      "scripts/test-deployment-tooling.mjs",
       "scripts/test-wp32-release-candidate.mjs"
     ],
     "ownerApproval": {
