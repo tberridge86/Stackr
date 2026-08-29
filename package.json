@@ -67,6 +67,8 @@
     "test:live-card-guidance": "tsx scripts/test-live-card-guidance.ts",
     "test:card-rectification": "tsx scripts/test-card-rectification-geometry.ts",
     "test:ocr-evidence": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-ocr-evidence.ts",
+    "benchmark:reference-ocr": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/benchmark-reference-ocr.ts",
+    "test:reference-ocr": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-reference-ocr-benchmark.ts",
     "dataset:pilot": "tsx scripts/build-pilot-recognition-dataset.ts",
     "test:pilot-dataset": "tsx scripts/test-pilot-recognition-dataset.ts",
     "train:embedding-v0": "tsx scripts/train-stackr-embedding-v0.ts",
