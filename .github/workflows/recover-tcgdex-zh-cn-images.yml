@@ -270,8 +270,7 @@ jobs:
                   and identifier.set_id is not null
               ), tcgdex_asset_links as (
                 select
-                  identifier.asset_id,
-                  identifier.external_id as provider_identity
+                  identifier.asset_id
                 from ingest.external_identifiers identifier
                 join tcgdex_source source on source.id = identifier.source_id
                 where identifier.source_entity_type = 'asset'
@@ -280,8 +279,7 @@ jobs:
                   and identifier.deprecated_at is null
                   and identifier.asset_id is not null
               ), target_links as (
-                select
-                  link.provider_identity,
+                select distinct
                   variant.id as variant_id,
                   variant.same_artwork_as_variant_id
                 from tcgdex_asset_links link
@@ -297,7 +295,7 @@ jobs:
                   and asset.deleted_at is null
               ), effective_coverage as (
                 select
-                  target_link.provider_identity,
+                  target_link.variant_id,
                   bool_or(
                     effective_asset.storage_provider in ('supabase_storage', 's3_compatible', 'local_dev')
                     and effective_asset.storage_bucket is not null
@@ -320,7 +318,7 @@ jobs:
                  and effective_asset.publicly_servable = true
                  and effective_asset.deprecated_at is null
                  and effective_asset.deleted_at is null
-                group by target_link.provider_identity
+                group by target_link.variant_id
               )
               select
                 (select count(*) from target_sets)::integer as target_sets,

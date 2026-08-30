@@ -189,6 +189,8 @@ assert.match(
 assert.match(targetedChineseImageWorkflow, /from ingest\.external_identifiers identifier/);
 assert.match(targetedChineseImageWorkflow, /identifier\.source_entity_type = 'asset'/);
 assert.match(targetedChineseImageWorkflow, /join catalog\.assets asset on asset\.id = link\.asset_id/);
+assert.match(targetedChineseImageWorkflow, /select distinct\s+variant\.id as variant_id/);
+assert.match(targetedChineseImageWorkflow, /group by target_link\.variant_id/);
 assert.match(targetedChineseImageWorkflow, /variant\.same_artwork_as_variant_id/);
 assert.match(
   targetedChineseImageWorkflow,
