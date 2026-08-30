@@ -33,3 +33,40 @@ diff --git a/data-asia/SV/CBB1C.ts b/data-asia/SV/CBB1C.ts
 @@ -5 +5 @@ const set: Set = {
 -	id: 'CSV1C',
 +	id: 'CBB1C',
+diff --git a/server/compiler/utils/cardUtil.ts b/server/compiler/utils/cardUtil.ts
+index a67127b87..dba4563ec 100644
+--- a/server/compiler/utils/cardUtil.ts
++++ b/server/compiler/utils/cardUtil.ts
+@@ -10,0 +11,12 @@ import { formatVariant, variantToIdentifier } from "./variantUtil.ts";
++function resolveAssetManifestKey(container: unknown, requestedKey: string, context: string): string | undefined {
++	if (!container || typeof container !== 'object' || Array.isArray(container)) return undefined
++	const keys = Object.keys(container)
++	if (keys.includes(requestedKey)) return requestedKey
++	const foldedRequestedKey = requestedKey.toLowerCase()
++	const matches = keys.filter((key) => key.toLowerCase() === foldedRequestedKey)
++	if (matches.length > 1) {
++		throw new Error(`Ambiguous TCGdex asset manifest ${context} key for ${requestedKey}: ${matches.join(', ')}`)
++	}
++	return matches[0]
++}
++
+@@ -11,0 +24 @@ export async function getCardPictures(cardId: string, card: Card, lang: Supporte
++	let file: Record<string, unknown>
+@@ -13,5 +26 @@ export async function getCardPictures(cardId: string, card: Card, lang: Supporte
+-		const file = await fetchRemoteFile('https://assets.tcgdex.net/datas.json')
+-		const fileExists = Boolean(file[lang]?.[card.set.serie.id]?.[card.set.id]?.[cardId])
+-		if (fileExists) {
+-			return `https://assets.tcgdex.net/${lang}/${card.set.serie.id}/${card.set.id}/${cardId}`
+-		}
++		file = await fetchRemoteFile('https://assets.tcgdex.net/datas.json')
+@@ -20,0 +30,10 @@ export async function getCardPictures(cardId: string, card: Card, lang: Supporte
++	const languageAssets = file[lang]
++	const seriesKey = resolveAssetManifestKey(languageAssets, card.set.serie.id, `${lang} series`)
++	if (!seriesKey) return undefined
++	const seriesAssets = (languageAssets as Record<string, unknown>)[seriesKey]
++	const setKey = resolveAssetManifestKey(seriesAssets, card.set.id, `${lang}/${seriesKey} set`)
++	if (!setKey) return undefined
++	const setAssets = (seriesAssets as Record<string, unknown>)[setKey]
++	if (setAssets && typeof setAssets === 'object' && cardId in setAssets) {
++		return `https://assets.tcgdex.net/${lang}/${seriesKey}/${setKey}/${cardId}`
++	}

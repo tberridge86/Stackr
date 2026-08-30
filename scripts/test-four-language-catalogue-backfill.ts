@@ -175,6 +175,45 @@ assert.ok(
   pinnedCompilerPatch.includes("-\tid: 'CSV1C',\n+\tid: 'CBB1C',"),
   'the pinned TCGdex snapshot must correct the upstream CBB1C provider ID typo',
 );
+const cardUtilPatch = pinnedCompilerPatch.slice(
+  pinnedCompilerPatch.indexOf('diff --git a/server/compiler/utils/cardUtil.ts'),
+);
+const addedCardUtilSource = cardUtilPatch
+  .split('\n')
+  .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
+  .map((line) => line.slice(1))
+  .join('\n');
+const manifestResolverSource = addedCardUtilSource.match(
+  /function resolveAssetManifestKey[\s\S]*?\n}/,
+)?.[0];
+assert.ok(manifestResolverSource, 'the pinned compiler patch must add an asset-manifest key resolver');
+const executableManifestResolverSource = manifestResolverSource.replace(
+  'function resolveAssetManifestKey(container: unknown, requestedKey: string, context: string): string | undefined',
+  'function resolveAssetManifestKey(container, requestedKey, context)',
+);
+const resolveAssetManifestKey = Function(
+  `'use strict'; ${executableManifestResolverSource}; return resolveAssetManifestKey;`,
+)() as (container: unknown, requestedKey: string, context: string) => string | undefined;
+assert.equal(
+  resolveAssetManifestKey({ SV: {} }, 'SV', 'series'),
+  'SV',
+  'an exact asset-manifest key must win without rewriting its path casing',
+);
+assert.equal(
+  resolveAssetManifestKey({ sv: {} }, 'SV', 'series'),
+  'sv',
+  'one case-folded asset-manifest key must resolve to the provider path casing',
+);
+assert.throws(
+  () => resolveAssetManifestKey({ SV: {}, sv: {} }, 'Sv', 'series'),
+  /Ambiguous TCGdex asset manifest series key/,
+  'case-folded manifest ambiguity must fail closed instead of guessing an image path',
+);
+assert.equal(resolveAssetManifestKey({ other: {} }, 'SV', 'series'), undefined);
+assert.ok(
+  cardUtilPatch.includes('https://assets.tcgdex.net/${lang}/${seriesKey}/${setKey}/${cardId}'),
+  'TCGdex image URLs must preserve the exact series and set keys found in the provider manifest',
+);
 
 const options: BackfillOptions = {
   languages: ['ja'],
