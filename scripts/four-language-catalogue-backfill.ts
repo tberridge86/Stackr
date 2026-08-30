@@ -22,6 +22,7 @@ const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const PRODUCTION_SUPABASE_REF = 'oakdbbzdqwurpjnoqhmu';
 export const FOUR_LANGUAGE_IMPORTER_CONTRACT = 'tcgdex-stable-card-id-v2';
 export const FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA = 'stackr-four-language-batch-v4.0.0';
+export const FOUR_LANGUAGE_BATCH_PROGRESS_EVENT = 'stackr-four-language-catalogue-batch-progress-v1';
 
 export const FOUR_LANGUAGE_CATALOGUE_CODES = PRIMARY_CATALOGUE_LANGUAGE_CODES;
 export type FourLanguageCatalogueCode = typeof FOUR_LANGUAGE_CATALOGUE_CODES[number];
@@ -64,6 +65,18 @@ type BatchReport = {
   durationMs: number;
   result?: unknown;
   error?: string;
+};
+
+export type BatchProgressLogInput = {
+  language: FourLanguageCatalogueCode;
+  offset: number;
+  batchesPlanned: number;
+  completed: number;
+  skipped: number;
+  failed: number;
+  status: BatchReport['status'];
+  durationMs: number;
+  attempts: number;
 };
 
 type LaneReport = CatalogueLane & {
@@ -126,6 +139,31 @@ function errorMessage(error: unknown) {
 function percentage(numerator: number, denominator: number) {
   if (denominator === 0) return 100;
   return Math.round((numerator / denominator) * 10_000) / 100;
+}
+
+export function formatBatchProgressLog(input: BatchProgressLogInput) {
+  return JSON.stringify({
+    event: FOUR_LANGUAGE_BATCH_PROGRESS_EVENT,
+    language: input.language,
+    offset: input.offset,
+    batchesPlanned: input.batchesPlanned,
+    completed: input.completed,
+    skipped: input.skipped,
+    failed: input.failed,
+    batchesSuccessful: input.completed + input.skipped,
+    successfulBatchPercent: percentage(
+      input.completed + input.skipped,
+      input.batchesPlanned,
+    ),
+    batchesTerminal: input.completed + input.skipped + input.failed,
+    terminalBatchPercent: percentage(
+      input.completed + input.skipped + input.failed,
+      input.batchesPlanned,
+    ),
+    durationMs: input.durationMs,
+    attempts: input.attempts,
+    status: input.status,
+  });
 }
 
 export function normaliseFourLanguageCodes(values: string[]): FourLanguageCatalogueCode[] {
@@ -575,10 +613,12 @@ async function runBatch(
   options: BackfillOptions,
   plan: BatchPlan,
   snapshotDigest: string,
+  onAttempt?: (attempt: number) => void,
 ) {
   const runner = new CatalogueIngestionRunner(db, adapter);
   let lastError: unknown;
   for (let attempt = 1; attempt <= options.maxAttempts; attempt += 1) {
+    onAttempt?.(attempt);
     try {
       const result = await runner.run({
         command: 'run_language',
@@ -616,6 +656,20 @@ async function runBatch(
     }
   }
   throw lastError ?? new Error(`Catalogue batch ${lane.language}/${plan.offset} failed.`);
+}
+
+function logBatchProgress(lane: LaneReport, batch: BatchReport) {
+  console.log(formatBatchProgressLog({
+    language: lane.language,
+    offset: batch.offset,
+    batchesPlanned: lane.batchesPlanned,
+    completed: lane.batchesCompleted,
+    skipped: lane.batchesSkipped,
+    failed: lane.batchesFailed,
+    status: batch.status,
+    durationMs: batch.durationMs,
+    attempts: batch.attempts ?? 0,
+  }));
 }
 
 async function writeReport(outputPath: string, report: unknown) {
@@ -765,6 +819,8 @@ export async function runFourLanguageCatalogueBackfill() {
 
     for (const batch of plan.batches) {
       const batchStartedAt = Date.now();
+      let batchAttempts = 0;
+      let batchReport: BatchReport;
       try {
         const completed = await completedBatch(
           db,
@@ -779,36 +835,51 @@ export async function runFourLanguageCatalogueBackfill() {
           laneReport.cardRowsProcessed += batch.limit;
           laneReport.imageReferenceRowsProcessed += batch.expectedImageReferences;
           laneReport.conflicts += completed.conflicts;
-          laneReport.batches.push({ ...batch, status: 'already_completed', durationMs: 0 });
-          updateLanePercentages(laneReport);
-          continue;
+          batchReport = {
+            ...batch,
+            status: 'already_completed',
+            attempts: 0,
+            durationMs: 0,
+          };
+        } else {
+          const execution = await runBatch(
+            db,
+            adapter,
+            plan.lane,
+            options,
+            batch,
+            plan.snapshotDigest,
+            (attempt) => { batchAttempts = attempt; },
+          );
+          laneReport.batchesCompleted += 1;
+          laneReport.cardRowsProcessed += batch.limit;
+          laneReport.imageReferenceRowsProcessed += batch.expectedImageReferences;
+          laneReport.conflicts += Number(execution.result.stats?.recordsConflicted ?? 0);
+          batchReport = {
+            ...batch,
+            status: 'completed',
+            attempts: execution.attempts,
+            durationMs: Date.now() - batchStartedAt,
+            result: execution.result,
+          };
         }
-        const execution = await runBatch(db, adapter, plan.lane, options, batch, plan.snapshotDigest);
-        laneReport.batchesCompleted += 1;
-        laneReport.cardRowsProcessed += batch.limit;
-        laneReport.imageReferenceRowsProcessed += batch.expectedImageReferences;
-        laneReport.conflicts += Number(execution.result.stats?.recordsConflicted ?? 0);
-        laneReport.batches.push({
-          ...batch,
-          status: 'completed',
-          attempts: execution.attempts,
-          durationMs: Date.now() - batchStartedAt,
-          result: execution.result,
-        });
-        updateLanePercentages(laneReport);
-        await writeReport(options.outputPath, report);
-        if (options.batchPauseMs) await sleep(options.batchPauseMs);
       } catch (error) {
         failures += 1;
         laneReport.batchesFailed += 1;
-        laneReport.batches.push({
+        batchReport = {
           ...batch,
           status: 'failed',
+          attempts: batchAttempts,
           durationMs: Date.now() - batchStartedAt,
           error: errorMessage(error),
-        });
-        updateLanePercentages(laneReport);
-        await writeReport(options.outputPath, report);
+        };
+      }
+      laneReport.batches.push(batchReport);
+      updateLanePercentages(laneReport);
+      logBatchProgress(laneReport, batchReport);
+      await writeReport(options.outputPath, report);
+      if (batchReport.status === 'completed' && options.batchPauseMs) {
+        await sleep(options.batchPauseMs);
       }
     }
 
