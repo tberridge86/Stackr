@@ -166,6 +166,38 @@ const workflow = readFileSync('.github/workflows/four-language-catalogue-images.
 assert.match(workflow, /tcgdex-771a8381c57c-four-primary-v2/);
 assert.doesNotMatch(workflow, /four-primary-v1/);
 
+const targetedChineseImageWorkflow = readFileSync(
+  '.github/workflows/recover-tcgdex-zh-cn-images.yml',
+  'utf8',
+);
+assert.match(targetedChineseImageWorkflow, /github\.event\.issue\.number == 74/);
+assert.match(targetedChineseImageWorkflow, /github\.actor == 'tberridge86'/);
+assert.match(targetedChineseImageWorkflow, /github\.event\.comment\.body == '\/run-tcgdex-zh-cn-images'/);
+assert.match(targetedChineseImageWorkflow, /environment: staging/);
+assert.match(targetedChineseImageWorkflow, /SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco/);
+assert.match(targetedChineseImageWorkflow, /SUPABASE_URL: https:\/\/lmwfhvexfcoyeuoyrlco\.supabase\.co/);
+assert.match(targetedChineseImageWorkflow, /STACKR_CATALOGUE_IMPORT_TARGET: staging/);
+assert.match(targetedChineseImageWorkflow, /TCGDEX_SET_IDS: SV7a,SV7,SV8,SV9,SV8a,SV9a,SV10/);
+assert.match(targetedChineseImageWorkflow, /EXPECTED_TARGET_CARDS: ["']829["']/);
+assert.match(targetedChineseImageWorkflow, /EXPECTED_IMAGE_REFERENCES: ["']746["']/);
+assert.match(targetedChineseImageWorkflow, /group: stackr-staging-tcgdex-zh-cn-images\n\s+cancel-in-progress: false/);
+assert.match(targetedChineseImageWorkflow, /--target=staging/);
+assert.match(
+  targetedChineseImageWorkflow,
+  /name: Prepare the verified staging database URL[\s\S]+prepare-postgres-urls\.mjs --source-only[\s\S]+name: Measure staging coverage read-only/,
+);
+assert.match(targetedChineseImageWorkflow, /from ingest\.external_identifiers identifier/);
+assert.match(targetedChineseImageWorkflow, /identifier\.source_entity_type = 'asset'/);
+assert.match(targetedChineseImageWorkflow, /join catalog\.assets asset on asset\.id = link\.asset_id/);
+assert.match(targetedChineseImageWorkflow, /variant\.same_artwork_as_variant_id/);
+assert.match(
+  targetedChineseImageWorkflow,
+  /effective_asset\.variant_id in \(target_link\.variant_id, target_link\.same_artwork_as_variant_id\)/,
+);
+assert.match(targetedChineseImageWorkflow, /releasePercent: 0/);
+assert.doesNotMatch(targetedChineseImageWorkflow, /environment: production/);
+assert.doesNotMatch(targetedChineseImageWorkflow, /--target=production/);
+
 const pinnedCompilerPatch = readFileSync('catalogue/tcgdex-pinned-compiler.patch', 'utf8');
 assert.match(
   pinnedCompilerPatch,
