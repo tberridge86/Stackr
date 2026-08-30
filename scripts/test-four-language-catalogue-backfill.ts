@@ -142,7 +142,36 @@ assert.notEqual(
   batchManifestDigest('ja', [{ id: 'SET-A-1', image: 'changed' }]),
   'provider content changes must invalidate their exact batch',
 );
-assert.equal(FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA, 'stackr-four-language-batch-v3.0.0');
+const englishSetFilesystemOrderA = {
+  id: 'base1',
+  cards: [
+    { id: 'base1-74b', localId: '74b', name: 'Suffix B' },
+    { id: 'BASE1-74a', localId: '74a', name: 'Uppercase tie' },
+    { id: 'base1-74', localId: '74', name: 'Unsuffixed' },
+    { id: 'base1-74a', localId: '74a', name: 'Lowercase tie' },
+  ],
+};
+const englishSetFilesystemOrderB = {
+  cards: [
+    { name: 'Lowercase tie', localId: '74a', id: 'base1-74a' },
+    { name: 'Unsuffixed', localId: '74', id: 'base1-74' },
+    { name: 'Uppercase tie', localId: '74a', id: 'BASE1-74a' },
+    { name: 'Suffix B', localId: '74b', id: 'base1-74b' },
+  ],
+  id: 'base1',
+};
+const englishSetBeforeHash = JSON.stringify(englishSetFilesystemOrderA);
+assert.equal(
+  batchManifestDigest('en', [{ id: 'base1-74' }], [englishSetFilesystemOrderA]),
+  batchManifestDigest('en', [{ id: 'base1-74' }], [englishSetFilesystemOrderB]),
+  'English set-card suffix ties and filesystem order must not perturb the batch manifest',
+);
+assert.equal(
+  JSON.stringify(englishSetFilesystemOrderA),
+  englishSetBeforeHash,
+  'nested set-card canonicalization must not mutate provider rows',
+);
+assert.equal(FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA, 'stackr-four-language-batch-v4.0.0');
 const compilerTimestampCard = {
   id: 'SET-A-1',
   image: 'a',
@@ -354,6 +383,16 @@ assert.match(
   compilerUtilPatch,
   /const date = lastEditsCache\[path\] \?\? shallowSnapshotCommitDate/,
   'missing shallow-clone paths must use the pinned commit time before the wall clock',
+);
+assert.match(
+  pinnedCompilerPatch,
+  /return ra - rb \|\| a\.localeCompare\(b\)/,
+  'numeric card suffix ties must use the full provider card ID as a deterministic tie-break',
+);
+assert.match(
+  pinnedCompilerPatch,
+  /return a\.localeCompare\(b\)/,
+  'non-numeric provider card IDs must use a total deterministic comparator',
 );
 assert.match(
   pinnedCompilerPatch,
