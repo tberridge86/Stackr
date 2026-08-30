@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   FOUR_LANGUAGE_CODES,
   LANGUAGE_PROGRESS_SQL,
@@ -17,6 +18,11 @@ assert.deepEqual(FOUR_LANGUAGE_CODES, ['en', 'ja', 'zh-cn', 'ko']);
 assert.equal(percent(3, 4), 75);
 assert.equal(percent(0, 0), 0);
 assert.equal(equalWeightPercent([100, 50, 25, 0]), 43.75);
+
+const workflow = readFileSync('.github/workflows/four-language-catalogue-images.yml', 'utf8');
+assert.ok(workflow.includes('SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}'));
+assert.match(workflow, /prepare-postgres-urls\.mjs --source-only/);
+assert.doesNotMatch(workflow, /SUPABASE_STAGING_DB_URL/);
 
 const reportSql = [
   LANGUAGE_PROGRESS_SQL,
