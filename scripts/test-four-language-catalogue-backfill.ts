@@ -194,6 +194,10 @@ assert.match(
   targetedChineseImageWorkflow,
   /effective_asset\.variant_id in \(target_link\.variant_id, target_link\.same_artwork_as_variant_id\)/,
 );
+assert.match(targetedChineseImageWorkflow, /targeted\.targetSets !== 7/);
+assert.match(targetedChineseImageWorkflow, /targeted\.providerImageReferences !== 746/);
+assert.match(targetedChineseImageWorkflow, /mirror\.reusedExisting/);
+assert.match(targetedChineseImageWorkflow, /mirror\.sourceUnavailable/);
 assert.match(targetedChineseImageWorkflow, /releasePercent: 0/);
 assert.doesNotMatch(targetedChineseImageWorkflow, /environment: production/);
 assert.doesNotMatch(targetedChineseImageWorkflow, /--target=production/);
