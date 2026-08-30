@@ -18,7 +18,7 @@ on:
       write_concurrency:
         description: Concurrent staging writes within one serial language lane
         required: true
-        default: '8'
+        default: '16'
         type: string
       max_records:
         description: Optional bounded acceptance run; empty means the full provider universe
@@ -85,7 +85,7 @@ jobs:
     env:
       CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v2' }}
       CATALOGUE_BATCH_SIZE: ${{ inputs.batch_size || '1000' }}
-      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '16' }}
       CATALOGUE_MAX_RECORDS: ${{ inputs.max_records || '' }}
       CATALOGUE_MIRROR_BATCH_SIZE: ${{ inputs.mirror_batch_size || '500' }}
       CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
@@ -147,7 +147,7 @@ jobs:
       STACKR_CATALOGUE_IMPORT_TARGET: staging
       CATALOGUE_VERSION: ${{ inputs.version || 'tcgdex-771a8381c57c-four-primary-v2' }}
       CATALOGUE_BATCH_SIZE: ${{ inputs.batch_size || '1000' }}
-      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '16' }}
       CATALOGUE_MAX_RECORDS: ${{ inputs.max_records || '' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262

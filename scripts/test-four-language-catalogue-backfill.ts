@@ -203,6 +203,22 @@ assert.equal(completedBatchManifestMatches({}, runMetadata), false);
 const workflow = readFileSync('.github/workflows/four-language-catalogue-images.yml', 'utf8');
 assert.match(workflow, /tcgdex-771a8381c57c-four-primary-v2/);
 assert.doesNotMatch(workflow, /four-primary-v1/);
+const workflowWriteConcurrencyDefaults = workflow.match(
+  /CATALOGUE_WRITE_CONCURRENCY: \$\{\{ inputs\.write_concurrency \|\| '16' \}\}/g,
+) ?? [];
+assert.equal(
+  workflowWriteConcurrencyDefaults.length,
+  2,
+  'validation and ingestion must both default to the validated staging write ceiling of 16',
+);
+assert.match(workflow, /write_concurrency:\s+[\s\S]*?default: '16'/);
+assert.match(workflow, /\(\( CATALOGUE_WRITE_CONCURRENCY >= 1 && CATALOGUE_WRITE_CONCURRENCY <= 16 \)\)/);
+const workflowIngestJob = workflow.slice(
+  workflow.indexOf('\n  ingest:'),
+  workflow.indexOf('\n  mirror:'),
+);
+assert.match(workflowIngestJob, /CATALOGUE_BATCH_SIZE: \$\{\{ inputs\.batch_size \|\| '1000' \}\}/);
+assert.match(workflowIngestJob, /max-parallel: 1/);
 const workflowConcurrency = workflow.slice(
   workflow.indexOf('\nconcurrency:'),
   workflow.indexOf('\nenv:'),
