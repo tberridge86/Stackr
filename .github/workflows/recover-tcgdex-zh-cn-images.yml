@@ -1,0 +1,462 @@
+name: Recover TCGdex zh-cn image coverage
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+# Never cancel an in-flight database write. This dedicated queue can run beside
+# the four-language lane because every imported catalogue identity is zh-cn and
+# scoped to the seven explicit provider sets below.
+concurrency:
+  group: stackr-staging-tcgdex-zh-cn-images
+  cancel-in-progress: false
+
+env:
+  TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
+  TCGDEX_SET_IDS: SV7a,SV7,SV8,SV9,SV8a,SV9a,SV10
+  EXPECTED_TARGET_CARDS: "829"
+  EXPECTED_IMAGE_REFERENCES: "746"
+  SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+  DO_NOT_TRACK: "1"
+
+jobs:
+  recover:
+    if: >-
+      github.event.issue.number == 74 &&
+      github.event.issue.pull_request == null &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/run-tcgdex-zh-cn-images'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: staging
+    env:
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      CATALOGUE_WRITE_CONCURRENCY: "4"
+      CATALOGUE_MIRROR_BATCH_SIZE: "500"
+      CATALOGUE_MIRROR_BATCHES: "3"
+      CATALOGUE_MIRROR_CONCURRENCY: "4"
+    steps:
+      - name: Announce bounded staging recovery
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          body="TCGdex Chinese image recovery started: **7/7 bounded sets**, expected attachable card images **746/829 (90.0%)**, staging only, released **0%**. Progress: ${run_url}"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/74/comments" --method POST --field body="$body"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Check out the pinned TCGdex source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: tcgdex/cards-database
+          ref: ${{ env.TCGDEX_SNAPSHOT_COMMIT }}
+          path: .tcgdex-source
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up the pinned TCGdex compiler
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: 1.2.22
+
+      - name: Enforce staging and command scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SUPABASE_PROJECT_REF" == 'lmwfhvexfcoyeuoyrlco' ]]
+          [[ "$SUPABASE_URL" == "https://${SUPABASE_PROJECT_REF}.supabase.co" ]]
+          [[ "$STACKR_CATALOGUE_IMPORT_TARGET" == 'staging' ]]
+          [[ "$TCGDEX_SET_IDS" == 'SV7a,SV7,SV8,SV9,SV8a,SV9a,SV10' ]]
+          [[ "$CATALOGUE_WRITE_CONCURRENCY" =~ ^[1-4]$ ]]
+
+      - name: Install and test the StackR implementation
+        run: |
+          npm ci
+          npm ci --prefix backend
+          npm run test:catalogue-ingestion
+          npm run test:four-language-catalogue-backfill
+          node scripts/test-four-language-catalogue-progress.mjs
+
+      - name: Compile the corrected Chinese provider snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C "$GITHUB_WORKSPACE/.tcgdex-source" apply --unidiff-zero --whitespace=error \
+            "$GITHUB_WORKSPACE/catalogue/tcgdex-pinned-compiler.patch"
+          bun install --frozen-lockfile --cwd "$GITHUB_WORKSPACE/.tcgdex-source"
+          bun install --frozen-lockfile --cwd "$GITHUB_WORKSPACE/.tcgdex-source/server"
+          cd "$GITHUB_WORKSPACE/.tcgdex-source/server"
+          TCGCSV_USER_AGENT='StackR-targeted-zh-cn-images/1.0' \
+          TCGDEX_COMPILE_LANGS='zh-cn' \
+          TCGDEX_SHALLOW_SNAPSHOT=1 \
+          bun run compile
+          test -s "$GITHUB_WORKSPACE/.tcgdex-source/server/generated/zh-cn/cards.json"
+          test -s "$GITHUB_WORKSPACE/.tcgdex-source/server/generated/zh-cn/sets.json"
+
+      - name: Verify the bounded provider evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          node <<'NODE'
+          const fs = require('node:fs');
+          const targetSetIds = new Set(process.env.TCGDEX_SET_IDS.split(','));
+          const root = '.tcgdex-source/server/generated/zh-cn';
+          const cards = JSON.parse(fs.readFileSync(`${root}/cards.json`, 'utf8'));
+          const sets = JSON.parse(fs.readFileSync(`${root}/sets.json`, 'utf8'));
+          const setIdForCard = (card) => {
+            const declared = card?.set?.id ?? card?.setId ?? card?.set_id;
+            if (declared) return String(declared);
+            const id = String(card?.id ?? '');
+            return [...targetSetIds].find((setId) => id.startsWith(`${setId}-`)) ?? null;
+          };
+          const selectedCards = cards.filter((card) => targetSetIds.has(setIdForCard(card)));
+          const selectedSets = sets.filter((set) => targetSetIds.has(String(set?.id ?? '')));
+          const imageCards = selectedCards.filter((card) => typeof card.image === 'string' && card.image.length > 0);
+          const invalidImageUrls = imageCards.filter((card) => !card.image.startsWith('https://assets.tcgdex.net/zh-cn/'));
+          const evidence = {
+            schemaVersion: 1,
+            provider: 'tcgdex',
+            language: 'zh-cn',
+            snapshotCommit: process.env.TCGDEX_SNAPSHOT_COMMIT,
+            requestedSetIds: [...targetSetIds],
+            requestedSetsFound: selectedSets.length,
+            targetCards: selectedCards.length,
+            providerImageReferences: imageCards.length,
+            providerImageReferencePercent: Number(((imageCards.length / selectedCards.length) * 100).toFixed(2)),
+            invalidImageUrls: invalidImageUrls.length,
+            stagingOnly: true,
+            releasePercent: 0,
+          };
+          fs.writeFileSync('reports/catalogue/tcgdex-zh-cn-source-evidence.json', `${JSON.stringify(evidence, null, 2)}\n`);
+          console.log(JSON.stringify(evidence, null, 2));
+          if (selectedSets.length !== 7
+            || selectedCards.length !== Number(process.env.EXPECTED_TARGET_CARDS)
+            || imageCards.length !== Number(process.env.EXPECTED_IMAGE_REFERENCES)
+            || invalidImageUrls.length !== 0) process.exit(1);
+          NODE
+
+      - name: Import exact metadata and approved image references
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/catalogue-master.ts apply \
+            --provider=tcgdex \
+            --language=zh-cn \
+            "--setIds=$TCGDEX_SET_IDS" \
+            "--tcgdexSnapshotRoot=$GITHUB_WORKSPACE/.tcgdex-source/server/generated" \
+            "--tcgdexSnapshotVersion=$TCGDEX_SNAPSHOT_COMMIT" \
+            --licenceStatus=approved \
+            --assetLicenceStatus=approved \
+            "--writeConcurrency=$CATALOGUE_WRITE_CONCURRENCY" \
+            --target=staging \
+            --apply \
+            --include-images \
+            --approved-only > reports/catalogue/tcgdex-zh-cn-import.json
+          jq . reports/catalogue/tcgdex-zh-cn-import.json
+          jq -e '
+            .ok == true
+            and .writes == true
+            and (.results | length) == 7
+            and ([.results[].result.stats.recordsConflicted // 0] | add) == 0
+          ' reports/catalogue/tcgdex-zh-cn-import.json >/dev/null
+
+      - name: Mirror every queued TCGdex Chinese image
+        shell: bash
+        run: |
+          set -euo pipefail
+          parts="$RUNNER_TEMP/tcgdex-zh-cn-mirror.jsons"
+          : > "$parts"
+          after_id=''
+          for (( batch=1; batch<=CATALOGUE_MIRROR_BATCHES; batch++ )); do
+            result="$RUNNER_TEMP/tcgdex-zh-cn-mirror-${batch}.json"
+            cursor_args=()
+            if [[ -n "$after_id" ]]; then cursor_args+=("--afterId=$after_id"); fi
+            node scripts/mirror-approved-catalogue-assets.mjs \
+              --provider=tcgdex \
+              --language=zh-cn \
+              "--limit=$CATALOGUE_MIRROR_BATCH_SIZE" \
+              "--concurrency=$CATALOGUE_MIRROR_CONCURRENCY" \
+              --target=staging \
+              "${cursor_args[@]}" > "$result"
+            jq . "$result"
+            jq -c . "$result" >> "$parts"
+            exhausted="$(jq -r '.cursor.exhausted' "$result")"
+            if [[ "$exhausted" == 'true' ]]; then break; fi
+            next_after_id="$(jq -r '.cursor.nextAfterId // empty' "$result")"
+            [[ -n "$next_after_id" && "$next_after_id" != "$after_id" ]] || exit 1
+            after_id="$next_after_id"
+          done
+          jq -s '
+            def sum_summary($name): map(.summary[$name] // 0) | add // 0;
+            {
+              schemaVersion: 1,
+              provider: "tcgdex",
+              language: "zh-cn",
+              batchesAttempted: length,
+              scanExhausted: (.[-1].cursor.exhausted == true),
+              uniqueAssetsInspected: ([.[].results[]?.id] | unique | length),
+              mirrored: sum_summary("mirrored"),
+              reusedExisting: sum_summary("reused_existing"),
+              sourceUnavailable: sum_summary("source_unavailable"),
+              deferred: sum_summary("deferred"),
+              failed: sum_summary("failed"),
+              stagingOnly: true,
+              releasePercent: 0
+            }
+          ' "$parts" > reports/catalogue/tcgdex-zh-cn-mirror.json
+          jq . reports/catalogue/tcgdex-zh-cn-mirror.json
+
+      - name: Prepare the verified staging database URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/deploy/prepare-postgres-urls.mjs --source-only
+
+      - name: Measure staging coverage read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/four-language-catalogue-progress.mjs \
+            --target=staging > reports/catalogue/four-language-database-progress.json
+          jq . reports/catalogue/four-language-database-progress.json
+
+      - name: Measure exact targeted provider coverage read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { writeFileSync } from 'node:fs';
+          import { createVerifiedSupabasePostgresClient } from './scripts/deploy/verified-supabase-postgres.mjs';
+          const db = createVerifiedSupabasePostgresClient(
+            process.env.STACKR_SOURCE_DB_URL,
+            'stackr-targeted-zh-cn-image-evidence',
+          );
+          await db.connect();
+          try {
+            await db.query('begin transaction isolation level repeatable read read only');
+            const result = await db.query(`
+              with requested_set_refs(external_id) as (
+                values ('SV7a'), ('SV7'), ('SV8'), ('SV9'), ('SV8a'), ('SV9a'), ('SV10')
+              ), tcgdex_source as (
+                select id from ingest.sources where code = 'tcgdex'
+              ), target_sets as (
+                select distinct identifier.set_id
+                from ingest.external_identifiers identifier
+                join tcgdex_source source on source.id = identifier.source_id
+                join requested_set_refs requested on requested.external_id = identifier.external_id
+                where identifier.source_entity_type = 'set'
+                  and identifier.language_code = 'zh-cn'
+                  and identifier.is_current = true
+                  and identifier.deprecated_at is null
+                  and identifier.set_id is not null
+              ), tcgdex_asset_links as (
+                select
+                  identifier.asset_id,
+                  identifier.external_id as provider_identity
+                from ingest.external_identifiers identifier
+                join tcgdex_source source on source.id = identifier.source_id
+                where identifier.source_entity_type = 'asset'
+                  and identifier.language_code = 'zh-cn'
+                  and identifier.is_current = true
+                  and identifier.deprecated_at is null
+                  and identifier.asset_id is not null
+              ), target_links as (
+                select
+                  link.provider_identity,
+                  variant.id as variant_id,
+                  variant.same_artwork_as_variant_id
+                from tcgdex_asset_links link
+                join catalog.assets asset on asset.id = link.asset_id
+                join catalog.card_variants variant on variant.id = asset.variant_id
+                join target_sets target_set on target_set.set_id = variant.set_id
+                where variant.language_code = 'zh-cn'
+                  and variant.deprecated_at is null
+                  and asset.asset_type = 'card_image'
+                  and asset.rights_status = 'approved'
+                  and asset.permission_status = 'approved'
+                  and asset.deprecated_at is null
+                  and asset.deleted_at is null
+              ), effective_coverage as (
+                select
+                  target_link.provider_identity,
+                  bool_or(
+                    effective_asset.storage_provider in ('supabase_storage', 's3_compatible', 'local_dev')
+                    and effective_asset.storage_bucket is not null
+                    and effective_asset.storage_key is not null
+                    and effective_asset.content_sha256 is not null
+                  ) as is_stored,
+                  bool_or(
+                    effective_asset.storage_provider in ('supabase_storage', 's3_compatible', 'local_dev')
+                    and effective_asset.storage_bucket is not null
+                    and effective_asset.storage_key is not null
+                    and effective_asset.content_sha256 is not null
+                    and effective_asset.derivative_list @> '[{"role":"card-grid"},{"role":"search-result"},{"role":"detail-page"}]'::jsonb
+                  ) as is_derivative_ready
+                from target_links target_link
+                left join catalog.assets effective_asset
+                  on effective_asset.variant_id in (target_link.variant_id, target_link.same_artwork_as_variant_id)
+                 and effective_asset.asset_type = 'card_image'
+                 and effective_asset.rights_status = 'approved'
+                 and effective_asset.permission_status = 'approved'
+                 and effective_asset.publicly_servable = true
+                 and effective_asset.deprecated_at is null
+                 and effective_asset.deleted_at is null
+                group by target_link.provider_identity
+              )
+              select
+                (select count(*) from target_sets)::integer as target_sets,
+                count(*)::integer as provider_image_references,
+                count(*) filter (where is_stored)::integer as stored_images,
+                count(*) filter (where is_derivative_ready)::integer as derivative_ready
+              from effective_coverage
+            `);
+            await db.query('commit');
+            const row = result.rows[0];
+            const expectedCards = Number(process.env.EXPECTED_TARGET_CARDS);
+            const expectedRefs = Number(process.env.EXPECTED_IMAGE_REFERENCES);
+            const report = {
+              schemaVersion: 1,
+              provider: 'tcgdex',
+              language: 'zh-cn',
+              targetSets: Number(row.target_sets),
+              targetCards: expectedCards,
+              expectedProviderImageReferences: expectedRefs,
+              providerImageReferences: Number(row.provider_image_references),
+              providerImageReferencePercentOfTargetCards: Number(((Number(row.provider_image_references) / expectedCards) * 100).toFixed(2)),
+              storedImages: Number(row.stored_images),
+              storedPercentOfExpectedReferences: Number(((Number(row.stored_images) / expectedRefs) * 100).toFixed(2)),
+              derivativeReady: Number(row.derivative_ready),
+              derivativeReadyPercentOfExpectedReferences: Number(((Number(row.derivative_ready) / expectedRefs) * 100).toFixed(2)),
+              readOnly: true,
+              stagingOnly: true,
+              releasePercent: 0,
+            };
+            writeFileSync('reports/catalogue/tcgdex-zh-cn-database-evidence.json', `${JSON.stringify(report, null, 2)}\n`);
+            console.log(JSON.stringify(report, null, 2));
+          } catch (error) {
+            await db.query('rollback').catch(() => undefined);
+            throw error;
+          } finally {
+            await db.end();
+          }
+          NODE
+
+      - name: Build the final recovery report
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          node <<'NODE'
+          const fs = require('node:fs');
+          const read = (file) => {
+            if (!fs.existsSync(file)) return null;
+            try {
+              return JSON.parse(fs.readFileSync(file, 'utf8'));
+            } catch {
+              return null;
+            }
+          };
+          const source = read('reports/catalogue/tcgdex-zh-cn-source-evidence.json');
+          const imported = read('reports/catalogue/tcgdex-zh-cn-import.json');
+          const mirror = read('reports/catalogue/tcgdex-zh-cn-mirror.json');
+          const targeted = read('reports/catalogue/tcgdex-zh-cn-database-evidence.json');
+          const database = read('reports/catalogue/four-language-database-progress.json');
+          const conflicts = imported?.results?.reduce(
+            (sum, stage) => sum + Number(stage?.result?.stats?.recordsConflicted ?? 0),
+            0,
+          ) ?? null;
+          const failures = [];
+          if (source?.requestedSetsFound !== 7) failures.push('provider_set_scope_incomplete');
+          if (source?.providerImageReferences !== 746) failures.push('provider_snapshot_reference_count_changed');
+          if (imported?.ok !== true || imported?.results?.length !== 7) failures.push('targeted_import_incomplete');
+          if (conflicts !== 0) failures.push(`import_conflicts:${conflicts}`);
+          if (mirror?.scanExhausted !== true) failures.push('mirror_scan_not_exhausted');
+          if (Number(mirror?.failed ?? 0) > 0) failures.push(`mirror_failed:${mirror.failed}`);
+          if (Number(mirror?.deferred ?? 0) > 0) failures.push(`mirror_deferred:${mirror.deferred}`);
+          if (!targeted) failures.push('targeted_database_measurement_missing');
+          if (targeted && targeted.providerImageReferences < 746) failures.push(`provider_references_below_expected:${targeted.providerImageReferences}`);
+          if (targeted && targeted.storedImages < 746) failures.push(`stored_images_below_expected:${targeted.storedImages}`);
+          if (targeted && targeted.derivativeReady < 746) failures.push(`derivatives_below_expected:${targeted.derivativeReady}`);
+          const report = {
+            schemaVersion: 1,
+            job: 'stackr-tcgdex-zh-cn-image-recovery',
+            ok: failures.length === 0,
+            stagingOnly: true,
+            productionModified: false,
+            releasePercent: 0,
+            source,
+            import: imported ? { stagesCompleted: imported.results?.length ?? 0, stagesPlanned: 7, conflicts } : null,
+            mirror,
+            targetedDatabase: targeted,
+            fourLanguageDatabase: database,
+            limitations: {
+              manifestLeaves: 870,
+              attachablePinnedCards: 746,
+              compiledTargetCards: 829,
+              manifestLeavesWithoutPinnedZhCnMetadata: 124,
+              compiledCardsWithoutProviderImage: 83,
+              providerLabelling: 'TCGdex zh-cn assets match its zh-tw asset hashes; not independently verified Simplified-Chinese scans.',
+            },
+            failures,
+          };
+          fs.writeFileSync('reports/catalogue/tcgdex-zh-cn-recovery.json', `${JSON.stringify(report, null, 2)}\n`);
+          console.log(JSON.stringify(report, null, 2));
+          NODE
+
+      - name: Upload recovery evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tcgdex-zh-cn-image-recovery-${{ github.run_id }}
+          path: reports/catalogue/*.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Post easy progress percentages to issue 74
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=reports/catalogue/tcgdex-zh-cn-recovery.json
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [[ -s "$report" ]]; then
+            ok="$(jq -r '.ok' "$report")"
+            refs="$(jq -r '.targetedDatabase.providerImageReferencePercentOfTargetCards // 0' "$report")"
+            stored="$(jq -r '.targetedDatabase.storedPercentOfExpectedReferences // 0' "$report")"
+            ready="$(jq -r '.targetedDatabase.derivativeReadyPercentOfExpectedReferences // 0' "$report")"
+            stages="$(jq -r '.import.stagesCompleted // 0' "$report")"
+            conflicts="$(jq -r '.import.conflicts // 0' "$report")"
+            failed="$(jq -r '.mirror.failed // 0' "$report")"
+            body="TCGdex Chinese image recovery: import **${stages}/7**; provider refs **${refs}% of targeted cards**; expected refs stored **${stored}%**; derivatives ready **${ready}%**; conflicts **${conflicts}**; failed images **${failed}**; staging only; released **0%**; accepted: **${ok}**. Evidence: ${run_url}"
+          else
+            body="TCGdex Chinese image recovery could not build its evidence report. Released: **0%**. Diagnostics: ${run_url}"
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/issues/74/comments" --method POST --field body="$body"
+
+      - name: Enforce completed recovery evidence
+        shell: bash
+        run: |
+          jq -e '.ok == true' reports/catalogue/tcgdex-zh-cn-recovery.json >/dev/null
