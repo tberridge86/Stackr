@@ -323,7 +323,7 @@ jobs:
     environment: staging
     env:
       SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
-      SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -339,6 +339,7 @@ jobs:
         run: |
           set -euo pipefail
           npm ci
+          node scripts/deploy/prepare-postgres-urls.mjs --source-only
           node scripts/test-four-language-catalogue-progress.mjs
           mkdir -p reports/catalogue
           node scripts/four-language-catalogue-progress.mjs \
