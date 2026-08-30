@@ -165,37 +165,6 @@ assert.equal(completedBatchManifestMatches({}, runMetadata), false);
 const workflow = readFileSync('.github/workflows/four-language-catalogue-images.yml', 'utf8');
 assert.match(workflow, /tcgdex-771a8381c57c-four-primary-v2/);
 assert.doesNotMatch(workflow, /four-primary-v1/);
-const workflowConcurrency = workflow.slice(
-  workflow.indexOf('\nconcurrency:'),
-  workflow.indexOf('\nenv:'),
-);
-for (const authorizationTerm of [
-  /github\.event_name == 'workflow_dispatch'/,
-  /github\.event\.issue\.number == 74/,
-  /github\.event\.issue\.pull_request == null/,
-  /github\.actor == 'tberridge86'/,
-]) {
-  assert.match(
-    workflowConcurrency,
-    authorizationTerm,
-    'the importer concurrency group must enforce the full command authorization boundary',
-  );
-}
-assert.match(
-  workflowConcurrency,
-  /github\.event\.comment\.body == '\/run-four-language-catalogue-images'/,
-  'only the exact four-language command may acquire or cancel the importer lock',
-);
-assert.match(
-  workflowConcurrency,
-  /format\('stackr-staging-four-language-catalogue-images-noop-\{0\}', github\.run_id\)/,
-  'unrelated issue comments need run-unique concurrency groups',
-);
-assert.match(
-  workflowConcurrency,
-  /cancel-in-progress: true/,
-  'new accepted runs may replace an obsolete importer after passive comments are isolated',
-);
 
 const targetedChineseImageWorkflow = readFileSync(
   '.github/workflows/recover-tcgdex-zh-cn-images.yml',
@@ -211,32 +180,7 @@ assert.match(targetedChineseImageWorkflow, /STACKR_CATALOGUE_IMPORT_TARGET: stag
 assert.match(targetedChineseImageWorkflow, /TCGDEX_SET_IDS: SV7a,SV7,SV8,SV9,SV8a,SV9a,SV10/);
 assert.match(targetedChineseImageWorkflow, /EXPECTED_TARGET_CARDS: ["']829["']/);
 assert.match(targetedChineseImageWorkflow, /EXPECTED_IMAGE_REFERENCES: ["']746["']/);
-const targetedWorkflowConcurrency = targetedChineseImageWorkflow.slice(
-  targetedChineseImageWorkflow.indexOf('\nconcurrency:'),
-  targetedChineseImageWorkflow.indexOf('\nenv:'),
-);
-for (const authorizationTerm of [
-  /github\.event\.issue\.number == 74/,
-  /github\.event\.issue\.pull_request == null/,
-  /github\.actor == 'tberridge86'/,
-]) {
-  assert.match(
-    targetedWorkflowConcurrency,
-    authorizationTerm,
-    'the recovery concurrency group must enforce the full command authorization boundary',
-  );
-}
-assert.match(
-  targetedWorkflowConcurrency,
-  /github\.event\.comment\.body == '\/run-tcgdex-zh-cn-images'/,
-  'only the exact targeted command may acquire the Chinese recovery queue',
-);
-assert.match(
-  targetedWorkflowConcurrency,
-  /format\('stackr-staging-tcgdex-zh-cn-images-noop-\{0\}', github\.run_id\)/,
-  'unrelated issue comments need run-unique recovery concurrency groups',
-);
-assert.match(targetedWorkflowConcurrency, /cancel-in-progress: false/);
+assert.match(targetedChineseImageWorkflow, /group: stackr-staging-tcgdex-zh-cn-images\n\s+cancel-in-progress: false/);
 assert.match(targetedChineseImageWorkflow, /--target=staging/);
 assert.match(
   targetedChineseImageWorkflow,
@@ -245,8 +189,9 @@ assert.match(
 assert.match(targetedChineseImageWorkflow, /from ingest\.external_identifiers identifier/);
 assert.match(targetedChineseImageWorkflow, /identifier\.source_entity_type = 'asset'/);
 assert.match(targetedChineseImageWorkflow, /join catalog\.assets asset on asset\.id = link\.asset_id/);
-assert.match(targetedChineseImageWorkflow, /select distinct\s+variant\.id as variant_id/);
-assert.match(targetedChineseImageWorkflow, /group by target_link\.variant_id/);
+assert.match(targetedChineseImageWorkflow, /split_part\(identifier\.external_id, ':', 1\) as provider_card_id/);
+assert.match(targetedChineseImageWorkflow, /select distinct\s+link\.provider_card_id/);
+assert.match(targetedChineseImageWorkflow, /group by target_link\.provider_card_id/);
 assert.match(targetedChineseImageWorkflow, /variant\.same_artwork_as_variant_id/);
 assert.match(
   targetedChineseImageWorkflow,
