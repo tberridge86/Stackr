@@ -166,6 +166,17 @@ const workflow = readFileSync('.github/workflows/four-language-catalogue-images.
 assert.match(workflow, /tcgdex-771a8381c57c-four-primary-v2/);
 assert.doesNotMatch(workflow, /four-primary-v1/);
 
+const pinnedCompilerPatch = readFileSync('catalogue/tcgdex-pinned-compiler.patch', 'utf8');
+assert.match(
+  pinnedCompilerPatch,
+  /diff --git a\/data-asia\/SV\/CBB1C\.ts b\/data-asia\/SV\/CBB1C\.ts/,
+);
+assert.match(
+  pinnedCompilerPatch,
+  /-\\tid: 'CSV1C',\n\+\\tid: 'CBB1C',/,
+  'the pinned TCGdex snapshot must correct the upstream CBB1C provider ID typo',
+);
+
 const options: BackfillOptions = {
   languages: ['ja'],
   tcgdexBaseUrl: 'https://api.tcgdex.net/v2',
