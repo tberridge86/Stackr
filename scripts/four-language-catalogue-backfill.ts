@@ -21,7 +21,7 @@ import {
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const PRODUCTION_SUPABASE_REF = 'oakdbbzdqwurpjnoqhmu';
 export const FOUR_LANGUAGE_IMPORTER_CONTRACT = 'tcgdex-stable-card-id-v2';
-export const FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA = 'stackr-four-language-batch-v3.0.0';
+export const FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA = 'stackr-four-language-batch-v4.0.0';
 
 export const FOUR_LANGUAGE_CATALOGUE_CODES = PRIMARY_CATALOGUE_LANGUAGE_CODES;
 export type FourLanguageCatalogueCode = typeof FOUR_LANGUAGE_CATALOGUE_CODES[number];
@@ -170,6 +170,23 @@ function canonicalBatchManifestCard(card: ProviderCard): ProviderCard {
   return semanticCard;
 }
 
+function canonicalBatchManifestSet(set: ProviderCard): ProviderCard {
+  if (!Array.isArray(set.cards)) return set;
+  // Numeric local-ID ties (for example, 74a/74b) must not preserve filesystem order.
+  const cards = [...set.cards].sort((left, right) => {
+    const leftId = canonicalTcgdexCardId(left);
+    const rightId = canonicalTcgdexCardId(right);
+    if (!leftId || !rightId) {
+      throw new Error('TCGdex nested set cards must have a stable provider ID before manifest hashing.');
+    }
+    if (leftId !== rightId) return leftId < rightId ? -1 : 1;
+    const leftJson = stableJson(left);
+    const rightJson = stableJson(right);
+    return leftJson < rightJson ? -1 : leftJson > rightJson ? 1 : 0;
+  });
+  return { ...set, cards };
+}
+
 export function batchManifestDigest(
   language: FourLanguageCatalogueCode,
   cards: ProviderCard[],
@@ -180,7 +197,7 @@ export function batchManifestDigest(
     importerContract: FOUR_LANGUAGE_IMPORTER_CONTRACT,
     language,
     cards: sortTcgdexCardRows(cards).map(canonicalBatchManifestCard),
-    sets: sortTcgdexSetRows(sets),
+    sets: sortTcgdexSetRows(sets).map(canonicalBatchManifestSet),
   }));
 }
 
