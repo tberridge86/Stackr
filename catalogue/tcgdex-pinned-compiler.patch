@@ -17,9 +17,12 @@ diff --git a/server/compiler/utils/util.ts b/server/compiler/utils/util.ts
 index a3279e95..480ee55b 100644
 --- a/server/compiler/utils/util.ts
 +++ b/server/compiler/utils/util.ts
-@@ -139,0 +140,9 @@ export async function loadLastEdits() {
+@@ -132,0 +133 @@ const lastEditsCache: Record<string, string> = {}
++let shallowSnapshotCommitDate: string | undefined
+@@ -139,0 +141,10 @@ export async function loadLastEdits() {
 +	if (process.env.TCGDEX_SHALLOW_SNAPSHOT === '1') {
 +		const commitDate = await runCommand('git log -1 --pretty="format:%cd" --date=iso-strict HEAD', false)
++		shallowSnapshotCommitDate = commitDate
 +		for (let file of files) {
 +			file = file.replace(/"/g, '').replace("\\303\\251", "\u00e9")
 +			if (file) lastEditsCache[file] = commitDate
@@ -27,6 +30,9 @@ index a3279e95..480ee55b 100644
 +		console.log('Using pinned shallow-clone commit time for', objectSize(lastEditsCache), 'files')
 +		return
 +	}
+@@ -176 +187 @@ export function getLastEdit(path: string): string {
+-	const date = lastEditsCache[path]
++	const date = lastEditsCache[path] ?? shallowSnapshotCommitDate
 diff --git a/data-asia/SV/CBB1C.ts b/data-asia/SV/CBB1C.ts
 --- a/data-asia/SV/CBB1C.ts
 +++ b/data-asia/SV/CBB1C.ts

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   FOUR_LANGUAGE_CATALOGUE_CODES,
+  FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA,
   FOUR_LANGUAGE_IMPORTER_CONTRACT,
   batchManifestDigest,
   batchRunMetadata,
@@ -141,6 +142,42 @@ assert.notEqual(
   batchManifestDigest('ja', [{ id: 'SET-A-1', image: 'changed' }]),
   'provider content changes must invalidate their exact batch',
 );
+assert.equal(FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA, 'stackr-four-language-batch-v3.0.0');
+const compilerTimestampCard = {
+  id: 'SET-A-1',
+  image: 'a',
+  updated: '2026-08-30T18:46:36.354Z',
+  thirdParty: { tcgplayer: { updated: '2026-08-01T00:00:00.000Z' } },
+};
+const compilerTimestampCardBeforeHash = JSON.stringify(compilerTimestampCard);
+const compilerTimestampDigestA = batchManifestDigest('ja', [compilerTimestampCard]);
+const compilerTimestampDigestB = batchManifestDigest('ja', [{
+  ...compilerTimestampCard,
+  updated: '2026-08-30T21:06:51.507Z',
+}]);
+assert.equal(
+  compilerTimestampDigestA,
+  compilerTimestampDigestB,
+  'compiler-owned top-level updated timestamps must not invalidate a semantic batch',
+);
+assert.equal(
+  canonicalImportRunKey(lane, 'snapshot-v2', snapshotDigest, 0, 1, compilerTimestampDigestA),
+  canonicalImportRunKey(lane, 'snapshot-v2', snapshotDigest, 0, 1, compilerTimestampDigestB),
+  'compiler-owned timestamps must not perturb resumable run keys',
+);
+assert.notEqual(
+  compilerTimestampDigestA,
+  batchManifestDigest('ja', [{
+    ...compilerTimestampCard,
+    thirdParty: { tcgplayer: { updated: '2026-08-02T00:00:00.000Z' } },
+  }]),
+  'nested provider timestamps remain meaningful manifest content',
+);
+assert.equal(
+  JSON.stringify(compilerTimestampCard),
+  compilerTimestampCardBeforeHash,
+  'manifest canonicalization must not mutate provider rows',
+);
 assert.notEqual(
   batchManifestDigest('ja', [{ id: 'SET-A-1' }], [{ id: 'set-a', name: 'Original' }]),
   batchManifestDigest('ja', [{ id: 'SET-A-1' }], [{ id: 'set-a', name: 'Changed' }]),
@@ -158,6 +195,7 @@ assert.notEqual(
 
 const plan = buildBatchPlans([{ id: 'set-a-1' }, { id: 'set-a-2' }], 1000)[0];
 const runMetadata = batchRunMetadata(lane, 'snapshot-v2', snapshotDigest, plan, 1000);
+assert.equal(runMetadata.batchManifestSchema, FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA);
 assert.equal(completedBatchManifestMatches({ workstream: runMetadata }, runMetadata), true);
 assert.equal(completedBatchManifestMatches({ workstream: { ...runMetadata, batchCardCount: 99 } }, runMetadata), false);
 assert.equal(completedBatchManifestMatches({}, runMetadata), false);
@@ -262,6 +300,17 @@ assert.doesNotMatch(targetedChineseImageWorkflow, /environment: production/);
 assert.doesNotMatch(targetedChineseImageWorkflow, /--target=production/);
 
 const pinnedCompilerPatch = readFileSync('catalogue/tcgdex-pinned-compiler.patch', 'utf8');
+const compilerUtilPatch = pinnedCompilerPatch.slice(
+  pinnedCompilerPatch.indexOf('diff --git a/server/compiler/utils/util.ts'),
+  pinnedCompilerPatch.indexOf('diff --git a/data-asia/SV/CBB1C.ts'),
+);
+assert.match(compilerUtilPatch, /let shallowSnapshotCommitDate: string \| undefined/);
+assert.match(compilerUtilPatch, /shallowSnapshotCommitDate = commitDate/);
+assert.match(
+  compilerUtilPatch,
+  /const date = lastEditsCache\[path\] \?\? shallowSnapshotCommitDate/,
+  'missing shallow-clone paths must use the pinned commit time before the wall clock',
+);
 assert.match(
   pinnedCompilerPatch,
   /diff --git a\/data-asia\/SV\/CBB1C\.ts b\/data-asia\/SV\/CBB1C\.ts/,

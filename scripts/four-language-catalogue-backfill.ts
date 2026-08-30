@@ -21,7 +21,7 @@ import {
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const PRODUCTION_SUPABASE_REF = 'oakdbbzdqwurpjnoqhmu';
 export const FOUR_LANGUAGE_IMPORTER_CONTRACT = 'tcgdex-stable-card-id-v2';
-export const FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA = 'stackr-four-language-batch-v2.0.0';
+export const FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA = 'stackr-four-language-batch-v3.0.0';
 
 export const FOUR_LANGUAGE_CATALOGUE_CODES = PRIMARY_CATALOGUE_LANGUAGE_CODES;
 export type FourLanguageCatalogueCode = typeof FOUR_LANGUAGE_CATALOGUE_CODES[number];
@@ -164,6 +164,12 @@ function sha256(value: string) {
   return createHash('sha256').update(value).digest('hex');
 }
 
+function canonicalBatchManifestCard(card: ProviderCard): ProviderCard {
+  const semanticCard = { ...card };
+  delete semanticCard.updated;
+  return semanticCard;
+}
+
 export function batchManifestDigest(
   language: FourLanguageCatalogueCode,
   cards: ProviderCard[],
@@ -173,7 +179,7 @@ export function batchManifestDigest(
     schema: FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA,
     importerContract: FOUR_LANGUAGE_IMPORTER_CONTRACT,
     language,
-    cards: sortTcgdexCardRows(cards),
+    cards: sortTcgdexCardRows(cards).map(canonicalBatchManifestCard),
     sets: sortTcgdexSetRows(sets),
   }));
 }
@@ -267,6 +273,7 @@ export function batchRunMetadata(
 ) {
   return {
     importerContract: FOUR_LANGUAGE_IMPORTER_CONTRACT,
+    batchManifestSchema: FOUR_LANGUAGE_BATCH_MANIFEST_SCHEMA,
     workstreamVersion: version,
     source: lane.source,
     language: lane.language,
