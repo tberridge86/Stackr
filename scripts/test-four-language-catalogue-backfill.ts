@@ -249,6 +249,11 @@ assert.match(targetedChineseImageWorkflow, /STACKR_CATALOGUE_IMPORT_TARGET: stag
 assert.match(targetedChineseImageWorkflow, /TCGDEX_SET_IDS: SV7a,SV7,SV8,SV9,SV8a,SV9a,SV10/);
 assert.match(targetedChineseImageWorkflow, /EXPECTED_TARGET_CARDS: ["']829["']/);
 assert.match(targetedChineseImageWorkflow, /EXPECTED_IMAGE_REFERENCES: ["']746["']/);
+assert.match(targetedChineseImageWorkflow, /CATALOGUE_MIRROR_BATCH_SIZE: ["']500["']/);
+assert.match(targetedChineseImageWorkflow, /CATALOGUE_MIRROR_BATCHES: ["']3["']/);
+assert.match(targetedChineseImageWorkflow, /CATALOGUE_MIRROR_RETRY_ROUNDS: ["']3["']/);
+assert.match(targetedChineseImageWorkflow, /CATALOGUE_MIRROR_RETRY_BATCH_SIZE: ["']100["']/);
+assert.match(targetedChineseImageWorkflow, /CATALOGUE_MIRROR_MAX_RETRY_ASSETS: ["']1500["']/);
 const targetedWorkflowConcurrency = targetedChineseImageWorkflow.slice(
   targetedChineseImageWorkflow.indexOf('\nconcurrency:'),
   targetedChineseImageWorkflow.indexOf('\nenv:'),
@@ -295,6 +300,29 @@ assert.match(targetedChineseImageWorkflow, /targeted\.targetSets !== 7/);
 assert.match(targetedChineseImageWorkflow, /targeted\.providerImageReferences !== 746/);
 assert.match(targetedChineseImageWorkflow, /mirror\.reusedExisting/);
 assert.match(targetedChineseImageWorkflow, /mirror\.sourceUnavailable/);
+const targetedMirrorStep = targetedChineseImageWorkflow.slice(
+  targetedChineseImageWorkflow.indexOf('- name: Mirror every queued TCGdex Chinese image'),
+  targetedChineseImageWorkflow.indexOf('- name: Prepare the verified staging database URL'),
+);
+assert.match(
+  targetedMirrorStep,
+  /for \(\( batch=1; batch<=CATALOGUE_MIRROR_BATCHES; batch\+\+ \)\)/,
+  'the targeted workflow must preserve its bounded cursor scan',
+);
+assert.match(targetedMirrorStep, /catalogue-mirror-attempts\.mjs pending/);
+assert.match(
+  targetedMirrorStep,
+  /for \(\( retry_round=1; retry_round<=CATALOGUE_MIRROR_RETRY_ROUNDS; retry_round\+\+ \)\)/,
+);
+assert.match(targetedMirrorStep, /"--assetIds=\$asset_ids"/);
+assert.match(targetedMirrorStep, /append_attempt retry "\$retry_round"/);
+assert.match(targetedMirrorStep, /catalogue-mirror-attempts\.mjs aggregate/);
+assert.doesNotMatch(targetedMirrorStep, /catalogue-master\.ts apply/);
+assert.equal(
+  targetedChineseImageWorkflow.match(/scripts\/catalogue-master\.ts apply/g)?.length,
+  1,
+  'transient image retries must not repeat the metadata import',
+);
 assert.match(targetedChineseImageWorkflow, /releasePercent: 0/);
 assert.doesNotMatch(targetedChineseImageWorkflow, /environment: production/);
 assert.doesNotMatch(targetedChineseImageWorkflow, /--target=production/);

@@ -103,7 +103,7 @@
     "test:catalogue-schema": "tsx scripts/test-canonical-catalogue-schema.ts",
     "test:catalogue-ingestion": "tsx scripts/test-catalogue-ingestion.ts",
     "test:master-catalogue-importer": "tsx scripts/test-master-catalogue-importer.ts",
-    "test:four-language-catalogue-backfill": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-four-language-catalogue-backfill.ts",
+    "test:four-language-catalogue-backfill": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-four-language-catalogue-backfill.ts && node scripts/test-catalogue-mirror-attempts.mjs",
     "test:curated-catalogue": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-curated-corocoro-catalogue.ts",
     "export:scan-lab-manifest": "tsx scripts/export-scan-lab-training-manifest.ts",
     "test:scan-lab-core": "tsx scripts/test-scan-lab-core.ts",
