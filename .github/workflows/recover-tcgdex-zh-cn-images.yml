@@ -394,7 +394,8 @@ jobs:
           if (Number(mirror?.failed ?? 0) > 0) failures.push(`mirror_failed:${mirror.failed}`);
           if (Number(mirror?.deferred ?? 0) > 0) failures.push(`mirror_deferred:${mirror.deferred}`);
           if (!targeted) failures.push('targeted_database_measurement_missing');
-          if (targeted && targeted.providerImageReferences < 746) failures.push(`provider_references_below_expected:${targeted.providerImageReferences}`);
+          if (targeted && targeted.targetSets !== 7) failures.push(`database_target_set_count:${targeted.targetSets}`);
+          if (targeted && targeted.providerImageReferences !== 746) failures.push(`provider_reference_count:${targeted.providerImageReferences}`);
           if (targeted && targeted.storedImages < 746) failures.push(`stored_images_below_expected:${targeted.storedImages}`);
           if (targeted && targeted.derivativeReady < 746) failures.push(`derivatives_below_expected:${targeted.derivativeReady}`);
           const report = {
@@ -416,6 +417,7 @@ jobs:
               manifestLeavesWithoutPinnedZhCnMetadata: 124,
               compiledCardsWithoutProviderImage: 83,
               providerLabelling: 'TCGdex zh-cn assets match its zh-tw asset hashes; not independently verified Simplified-Chinese scans.',
+              fourLanguageStoredMetricExcludesSameArtworkFallback: true,
             },
             failures,
           };
@@ -450,7 +452,9 @@ jobs:
             stages="$(jq -r '.import.stagesCompleted // 0' "$report")"
             conflicts="$(jq -r '.import.conflicts // 0' "$report")"
             failed="$(jq -r '.mirror.failed // 0' "$report")"
-            body="TCGdex Chinese image recovery: import **${stages}/7**; provider refs **${refs}% of targeted cards**; expected refs stored **${stored}%**; derivatives ready **${ready}%**; conflicts **${conflicts}**; failed images **${failed}**; staging only; released **0%**; accepted: **${ok}**. Evidence: ${run_url}"
+            reused="$(jq -r '.mirror.reusedExisting // 0' "$report")"
+            unavailable="$(jq -r '.mirror.sourceUnavailable // 0' "$report")"
+            body="TCGdex Chinese image recovery: import **${stages}/7**; provider refs **${refs}% of targeted cards**; expected refs stored **${stored}%**; derivatives ready **${ready}%**; reused stored files **${reused}**; source unavailable **${unavailable}**; conflicts **${conflicts}**; failed images **${failed}**; staging only; released **0%**; accepted: **${ok}**. Evidence: ${run_url}"
           else
             body="TCGdex Chinese image recovery could not build its evidence report. Released: **0%**. Diagnostics: ${run_url}"
           fi
