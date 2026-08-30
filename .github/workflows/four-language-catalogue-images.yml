@@ -47,7 +47,20 @@ permissions:
   issues: write
 
 concurrency:
-  group: stackr-staging-four-language-catalogue-images
+  # GitHub evaluates workflow-level concurrency before job-level `if` guards.
+  # Give only the exact authorized command the shared importer lock; otherwise
+  # an unrelated issue comment could cancel an active staging write.
+  group: >-
+    ${{
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.number == 74 &&
+      github.event.issue.pull_request == null &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/run-four-language-catalogue-images')) &&
+      'stackr-staging-four-language-catalogue-images' ||
+      format('stackr-staging-four-language-catalogue-images-noop-{0}', github.run_id)
+    }}
   # The importer is resumable and idempotent: the newest reviewed run safely
   # replaces an obsolete run while retaining completed batch keys.
   cancel-in-progress: true
