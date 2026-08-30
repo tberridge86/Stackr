@@ -1249,9 +1249,22 @@ function assertPublishRules() {
     masterScript.indexOf('async function snapshotPublishedLanguage'),
     masterScript.indexOf('async function activateCatalogueVersion'),
   );
-  assert.match(snapshotPublisher, /includedSetIds[\s\S]*\.in\('set_id', \[\.\.\.setIds\]\)/);
-  assert.match(snapshotPublisher, /\.in\('printing_id', \[\.\.\.printingIds\]\)/);
-  assert.match(snapshotPublisher, /\.in\('variant_id', \[\.\.\.variantIds\]\)/);
+  assert.match(
+    snapshotPublisher,
+    /activeLanguageIdentifiers[\s\S]*\.eq\('is_current', true\)[\s\S]*\.is\('deprecated_at', null\)[\s\S]*\.or\(`language_code\.eq\.\$\{input\.language\},language_code\.is\.null`\)/,
+    'snapshot identifier reads must be scoped to active rows for the requested language or neutral rows',
+  );
+  assert.match(
+    snapshotPublisher,
+    /includedSetIds[\s\S]*activeLanguageIdentifiers\(query\)\.in\('set_id', \[\.\.\.setIds\]\)/,
+  );
+  assert.match(snapshotPublisher, /activeLanguageIdentifiers\(query\)\.in\('printing_id', \[\.\.\.printingIds\]\)/);
+  assert.match(snapshotPublisher, /activeLanguageIdentifiers\(query\)\.in\('variant_id', \[\.\.\.variantIds\]\)/);
+  assert.match(
+    snapshotPublisher,
+    /identifierColumns,\s*activeLanguageIdentifiers,/,
+    'full-language snapshots must not fetch every active identifier before filtering in JavaScript',
+  );
   assert.match(masterScript, /runPublicationStage\('snapshot_catalogue_membership'/);
   assert.match(masterScript, /controlled_staging_snapshot_not_full_language/);
   assert.match(masterScript, /schema\('catalog'\)[\s\S]*rpc\('activate_catalogue_version'/, 'activation must call the catalog-scoped RPC');

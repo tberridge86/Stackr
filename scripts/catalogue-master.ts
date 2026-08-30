@@ -3061,19 +3061,20 @@ async function snapshotPublishedLanguage(
   }
 
   const identifierColumns = 'id,source_id,source_entity_type,external_id,external_uri,language_code,set_id,printing_id,variant_id,confidence,is_current,deprecated_at';
+  const activeLanguageIdentifiers = (query: any) => query
+    .eq('is_current', true)
+    .is('deprecated_at', null)
+    .or(`language_code.eq.${input.language},language_code.is.null`);
   let candidateExternalIdentifiers: ExternalIdentifierRow[];
   if (includedSetIds) {
     const identifierQueries: Promise<ExternalIdentifierRow[]>[] = [];
-    const activeIdentifiers = (query: any) => query
-      .eq('is_current', true)
-      .is('deprecated_at', null);
     if (setIds.size) {
       identifierQueries.push(fetchAllFiltered(
         db,
         'ingest',
         'external_identifiers',
         identifierColumns,
-        (query) => activeIdentifiers(query).in('set_id', [...setIds]),
+        (query) => activeLanguageIdentifiers(query).in('set_id', [...setIds]),
       ) as Promise<ExternalIdentifierRow[]>);
     }
     if (printingIds.size) {
@@ -3082,7 +3083,7 @@ async function snapshotPublishedLanguage(
         'ingest',
         'external_identifiers',
         identifierColumns,
-        (query) => activeIdentifiers(query).in('printing_id', [...printingIds]),
+        (query) => activeLanguageIdentifiers(query).in('printing_id', [...printingIds]),
       ) as Promise<ExternalIdentifierRow[]>);
     }
     if (variantIds.size) {
@@ -3091,7 +3092,7 @@ async function snapshotPublishedLanguage(
         'ingest',
         'external_identifiers',
         identifierColumns,
-        (query) => activeIdentifiers(query).in('variant_id', [...variantIds]),
+        (query) => activeLanguageIdentifiers(query).in('variant_id', [...variantIds]),
       ) as Promise<ExternalIdentifierRow[]>);
     }
     candidateExternalIdentifiers = [...new Map((await Promise.all(identifierQueries)).flat()
@@ -3102,7 +3103,7 @@ async function snapshotPublishedLanguage(
       'ingest',
       'external_identifiers',
       identifierColumns,
-      (query) => query.eq('is_current', true).is('deprecated_at', null),
+      activeLanguageIdentifiers,
     ) as ExternalIdentifierRow[];
   }
   const externalIdentifiers = candidateExternalIdentifiers.filter((identifier) => (
