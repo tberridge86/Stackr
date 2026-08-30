@@ -13,7 +13,17 @@ permissions:
 # the four-language lane because every imported catalogue identity is zh-cn and
 # scoped to the seven explicit provider sets below.
 concurrency:
-  group: stackr-staging-tcgdex-zh-cn-images
+  # Workflow-level concurrency is evaluated before the job command guard.
+  # Isolate unrelated issue comments so they cannot occupy this write queue.
+  group: >-
+    ${{
+      (github.event.issue.number == 74 &&
+      github.event.issue.pull_request == null &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/run-tcgdex-zh-cn-images') &&
+      'stackr-staging-tcgdex-zh-cn-images' ||
+      format('stackr-staging-tcgdex-zh-cn-images-noop-{0}', github.run_id)
+    }}
   cancel-in-progress: false
 
 env:
