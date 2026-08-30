@@ -171,9 +171,8 @@ assert.match(
   pinnedCompilerPatch,
   /diff --git a\/data-asia\/SV\/CBB1C\.ts b\/data-asia\/SV\/CBB1C\.ts/,
 );
-assert.match(
-  pinnedCompilerPatch,
-  /-\\tid: 'CSV1C',\n\+\\tid: 'CBB1C',/,
+assert.ok(
+  pinnedCompilerPatch.includes("-\tid: 'CSV1C',\n+\tid: 'CBB1C',"),
   'the pinned TCGdex snapshot must correct the upstream CBB1C provider ID typo',
 );
 
