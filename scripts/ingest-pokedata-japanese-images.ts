@@ -8,10 +8,14 @@ import {
 } from './catalogue-ingestion/pokedataJapaneseImageAdapter';
 import { CatalogueIngestionRunner } from './catalogue-ingestion/pipeline';
 import { cleanText, type SourceAdapter } from './catalogue-ingestion/sourceAdapter';
+import {
+  resolvePokeDataJapaneseSetCode,
+  type PokeDataJapaneseSetCodePolicy,
+} from '../lib/pokedataJapaneseSetIdentity';
 
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const PRODUCTION_SUPABASE_REF = 'oakdbbzdqwurpjnoqhmu';
-export const POKEDATA_JAPANESE_IMAGE_INGESTION_CONTRACT = 'pokedata-japanese-images-v1';
+export const POKEDATA_JAPANESE_IMAGE_INGESTION_CONTRACT = 'pokedata-japanese-images-v2';
 
 type DatabaseLike = {
   schema(schema: string): {
@@ -29,6 +33,8 @@ export type ActiveJapaneseCatalogueSet = Readonly<{
 type CrosswalkProviderSet = Readonly<{
   providerSetId: string;
   setCode: string | null;
+  effectiveSetCode: string | null;
+  identityPolicy: PokeDataJapaneseSetCodePolicy;
   setName: string;
 }>;
 
@@ -38,7 +44,9 @@ export type ExactPokeDataSetMatch = Readonly<{
   catalogueSetName: string | null;
   providerSetId: string;
   providerSetCode: string;
+  providerReportedSetCode: string | null;
   providerSetName: string;
+  identityPolicy: Exclude<PokeDataJapaneseSetCodePolicy, 'code_missing'>;
 }>;
 
 type UnmatchedCatalogueSet = ActiveJapaneseCatalogueSet & Readonly<{
@@ -60,6 +68,7 @@ export type ExactPokeDataSetCrosswalk = Readonly<{
     catalogue: readonly ActiveJapaneseCatalogueSet[];
     pokedata: readonly CrosswalkProviderSet[];
   }>[];
+  overridesApplied: readonly ExactPokeDataSetMatch[];
 }>;
 
 type RunnerStats = {
@@ -126,7 +135,7 @@ function compareCatalogueSets(left: ActiveJapaneseCatalogueSet, right: ActiveJap
 }
 
 function compareProviderSets(left: CrosswalkProviderSet, right: CrosswalkProviderSet) {
-  return (left.setCode ?? '').localeCompare(right.setCode ?? '', 'en', { sensitivity: 'base' })
+  return (left.effectiveSetCode ?? '').localeCompare(right.effectiveSetCode ?? '', 'en', { sensitivity: 'base' })
     || left.providerSetId.localeCompare(right.providerSetId, 'en', { numeric: true })
     || left.setName.localeCompare(right.setName);
 }
@@ -189,11 +198,18 @@ export function buildExactPokeDataSetCrosswalk(
   }>[],
 ): ExactPokeDataSetCrosswalk {
   const catalogue = [...catalogueInput].sort(compareCatalogueSets);
-  const pokedata: CrosswalkProviderSet[] = providerInput.map((set) => Object.freeze({
-    providerSetId: cleanText(set.providerSetId) ?? '',
-    setCode: cleanText(set.setCode),
-    setName: cleanText(set.setName) ?? '',
-  })).sort(compareProviderSets);
+  const pokedata: CrosswalkProviderSet[] = providerInput.map((set) => {
+    const providerSetId = cleanText(set.providerSetId) ?? '';
+    const setCode = cleanText(set.setCode);
+    const resolution = resolvePokeDataJapaneseSetCode(providerSetId, setCode);
+    return Object.freeze({
+      providerSetId,
+      setCode,
+      effectiveSetCode: resolution.effectiveCode,
+      identityPolicy: resolution.identityPolicy,
+      setName: cleanText(set.setName) ?? '',
+    });
+  }).sort(compareProviderSets);
   for (const set of pokedata) {
     if (!/^[1-9][0-9]*$/u.test(set.providerSetId) || !set.setName) {
       throw new Error('PokeData exact set index contains an invalid immutable set descriptor.');
@@ -201,7 +217,7 @@ export function buildExactPokeDataSetCrosswalk(
   }
 
   const catalogueByCode = groupByCode(catalogue, (set) => codeKey(set.setCode));
-  const pokedataByCode = groupByCode(pokedata, (set) => codeKey(set.setCode));
+  const pokedataByCode = groupByCode(pokedata, (set) => codeKey(set.effectiveSetCode));
   const allKeys = [...new Set([...catalogueByCode.keys(), ...pokedataByCode.keys()])]
     .sort((left, right) => left.localeCompare(right, 'en'));
   const matched: ExactPokeDataSetMatch[] = [];
@@ -209,7 +225,7 @@ export function buildExactPokeDataSetCrosswalk(
     .filter((set) => !codeKey(set.setCode))
     .map((set) => Object.freeze({ ...set, reason: 'code_missing' as const }));
   const unmatchedPokeData: UnmatchedProviderSet[] = pokedata
-    .filter((set) => !codeKey(set.setCode))
+    .filter((set) => !codeKey(set.effectiveSetCode))
     .map((set) => Object.freeze({ ...set, reason: 'code_missing' as const }));
   const ambiguous: Array<ExactPokeDataSetCrosswalk['ambiguous'][number]> = [];
 
@@ -232,8 +248,10 @@ export function buildExactPokeDataSetCrosswalk(
         catalogueSetCode: catalogueSet.setCode!,
         catalogueSetName: catalogueSet.nativeName ?? catalogueSet.englishDisplayName,
         providerSetId: providerSet.providerSetId,
-        providerSetCode: providerSet.setCode!,
+        providerSetCode: providerSet.effectiveSetCode!,
+        providerReportedSetCode: providerSet.setCode,
         providerSetName: providerSet.setName,
+        identityPolicy: providerSet.identityPolicy as Exclude<PokeDataJapaneseSetCodePolicy, 'code_missing'>,
       }));
       continue;
     }
@@ -251,13 +269,17 @@ export function buildExactPokeDataSetCrosswalk(
     }
   }
 
+  const frozenMatches = Object.freeze(matched);
   return Object.freeze({
-    matched: Object.freeze(matched),
+    matched: frozenMatches,
     unmatched: Object.freeze({
       catalogue: Object.freeze(unmatchedCatalogue.sort(compareCatalogueSets)),
       pokedata: Object.freeze(unmatchedPokeData.sort(compareProviderSets)),
     }),
     ambiguous: Object.freeze(ambiguous),
+    overridesApplied: Object.freeze(
+      frozenMatches.filter((match) => match.identityPolicy === 'frozen_provider_id_override'),
+    ),
   });
 }
 
@@ -269,6 +291,8 @@ export function exactCrosswalkDigest(matches: readonly ExactPokeDataSetMatch[]) 
       catalogueSetCode: match.catalogueSetCode,
       providerSetId: match.providerSetId,
       providerSetCode: match.providerSetCode,
+      providerReportedSetCode: match.providerReportedSetCode,
+      identityPolicy: match.identityPolicy,
     }));
   return createHash('sha256').update(JSON.stringify(frozenIdentities)).digest('hex');
 }
@@ -298,8 +322,9 @@ function runMetadata(match: ExactPokeDataSetMatch, crosswalkDigest: string) {
     catalogueSetName: match.catalogueSetName,
     providerSetId: match.providerSetId,
     providerSetCode: match.providerSetCode,
+    providerReportedSetCode: match.providerReportedSetCode,
     providerSetName: match.providerSetName,
-    identityPolicy: 'unique_exact_case_insensitive_set_code',
+    identityPolicy: match.identityPolicy,
     metadataCreated: false,
     productionModified: false,
   };
@@ -325,7 +350,9 @@ export function completedRunMatches(
     && workstream.catalogueSetName === expected.catalogueSetName
     && workstream.providerSetId === expected.providerSetId
     && workstream.providerSetCode === expected.providerSetCode
+    && workstream.providerReportedSetCode === expected.providerReportedSetCode
     && workstream.providerSetName === expected.providerSetName
+    && workstream.identityPolicy === expected.identityPolicy
     && workstream.metadataCreated === false
     && workstream.productionModified === false
   );
@@ -504,6 +531,8 @@ export async function ingestPokeDataJapaneseImages(
         catalogueSetCode: match.catalogueSetCode,
         providerSetId: match.providerSetId,
         providerSetCode: match.providerSetCode,
+        providerReportedSetCode: match.providerReportedSetCode,
+        identityPolicy: match.identityPolicy,
         runKey: setRunKey(runKeyPrefix, match.providerSetId),
         stats,
       });
@@ -553,6 +582,8 @@ export async function ingestPokeDataJapaneseImages(
         catalogueSetCode: match.catalogueSetCode,
         providerSetId: match.providerSetId,
         providerSetCode: match.providerSetCode,
+        providerReportedSetCode: match.providerReportedSetCode,
+        identityPolicy: match.identityPolicy,
         runKey: setRunKey(runKeyPrefix, match.providerSetId),
         error: errorMessage(lastError),
       });
@@ -568,6 +599,8 @@ export async function ingestPokeDataJapaneseImages(
       catalogueSetCode: match.catalogueSetCode,
       providerSetId: match.providerSetId,
       providerSetCode: match.providerSetCode,
+      providerReportedSetCode: match.providerReportedSetCode,
+      identityPolicy: match.identityPolicy,
       runKey: setRunKey(runKeyPrefix, match.providerSetId),
       importRunId: accepted.importRunId ?? null,
       stats,
@@ -602,10 +635,12 @@ export async function ingestPokeDataJapaneseImages(
       matched: crosswalk.matched.length,
       unmatched: unmatchedSetCount,
       ambiguous: ambiguousSetCount,
+      overridesApplied: crosswalk.overridesApplied.length,
     },
     matched: crosswalk.matched,
     unmatched: crosswalk.unmatched,
     ambiguous: crosswalk.ambiguous,
+    overridesApplied: crosswalk.overridesApplied,
     runs,
     totals: {
       requested: totals.recordsRequested,

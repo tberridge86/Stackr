@@ -12,6 +12,7 @@ import {
   type ValidationIssue,
   validateProviderRecord,
 } from './sourceAdapter';
+import { resolvePokeDataJapaneseSetCode } from '../../lib/pokedataJapaneseSetIdentity';
 
 const DEFAULT_BASE_URL = 'https://www.pokedata.io';
 const POKEDATA_JAPANESE_LANGUAGE = 'ja';
@@ -56,7 +57,7 @@ type PokeDataFinish = {
 
 export type PokeDataJapaneseSetDescriptor = Readonly<{
   providerSetId: string;
-  setCode: string;
+  setCode: string | null;
   setName: string;
 }>;
 
@@ -406,7 +407,8 @@ export class PokeDataJapaneseImageSourceAdapter implements SourceAdapter {
       const providerSetId = numericProviderId(set.id);
       const setCode = cleanText(set.code);
       const setName = cleanText(set.name);
-      if (!providerSetId || !setCode || !setName) return [];
+      if (!providerSetId || !setName) return [];
+      resolvePokeDataJapaneseSetCode(providerSetId, setCode);
       return [Object.freeze({ providerSetId, setCode, setName })];
     }));
   }
@@ -456,7 +458,9 @@ export class PokeDataJapaneseImageSourceAdapter implements SourceAdapter {
     const setCodeGroups = new Map<string, string[]>();
     for (const set of allSets) {
       const providerSetId = numericProviderId(set.id);
-      const setCode = cleanText(set.code);
+      const setCode = providerSetId
+        ? resolvePokeDataJapaneseSetCode(providerSetId, set.code).effectiveCode
+        : null;
       if (!providerSetId || !setCode) continue;
       const key = normalisedGroupPart(setCode);
       const ids = setCodeGroups.get(key);
@@ -464,16 +468,26 @@ export class PokeDataJapaneseImageSourceAdapter implements SourceAdapter {
       else setCodeGroups.set(key, [providerSetId]);
     }
     const matchingSets = requestedSet
-      ? allSets.filter((set) => [numericProviderId(set.id), cleanText(set.code), cleanText(set.name)].includes(requestedSet))
+      ? allSets.filter((set) => {
+        const providerSetId = numericProviderId(set.id);
+        const effectiveSetCode = providerSetId
+          ? resolvePokeDataJapaneseSetCode(providerSetId, set.code).effectiveCode
+          : null;
+        return [providerSetId, cleanText(set.code), effectiveSetCode, cleanText(set.name)].includes(requestedSet);
+      })
       : allSets;
     const selectedSets = matchingSets.slice(offset, offset + limit);
     const records: ProviderRecord[] = [];
 
     for (const [index, set] of selectedSets.entries()) {
       const providerSetId = numericProviderId(set.id);
-      const setCode = cleanText(set.code);
+      const reportedSetCode = cleanText(set.code);
+      const setCodeResolution = providerSetId
+        ? resolvePokeDataJapaneseSetCode(providerSetId, reportedSetCode)
+        : null;
+      const setCode = setCodeResolution?.effectiveCode ?? null;
       const setName = cleanText(set.name);
-      if (!providerSetId || !setCode || !setName) continue;
+      if (!providerSetId || !setCodeResolution || !setCode || !setName) continue;
       const duplicateSetCodeIds = setCodeGroups.get(normalisedGroupPart(setCode)) ?? [];
       if (index > 0 && this.requestDelayMs > 0) await this.sleepImpl(this.requestDelayMs);
       const query = new URLSearchParams({
@@ -529,6 +543,8 @@ export class PokeDataJapaneseImageSourceAdapter implements SourceAdapter {
               ...result.metadata,
               providerSetId,
               providerSetCode: setCode,
+              providerReportedSetCode: reportedSetCode,
+              setCodeResolution: setCodeResolution.identityPolicy,
               providerSetName: setName,
             },
             payload: {
@@ -550,6 +566,8 @@ export class PokeDataJapaneseImageSourceAdapter implements SourceAdapter {
               finish_evidence: candidate.finish.evidence,
               source_set_numeric_id: providerSetId,
               source_set_code: setCode,
+              source_set_reported_code: reportedSetCode,
+              set_code_resolution: setCodeResolution.identityPolicy,
               source_collector_number: candidate.collectorNumber,
               ambiguous_set_code: duplicateSetCodeIds.length > 1,
               ambiguous_set_code_provider_ids: duplicateSetCodeIds.length > 1 ? duplicateSetCodeIds : [],
@@ -600,6 +618,19 @@ export class PokeDataJapaneseImageSourceAdapter implements SourceAdapter {
   validateRecord(record: ProviderRecord) {
     const issues: ValidationIssue[] = [...validateProviderRecord(record).issues];
     const normalised = this.normaliseRecord(record);
+    let resolvedSetIdentity: ReturnType<typeof resolvePokeDataJapaneseSetCode> | null = null;
+    try {
+      resolvedSetIdentity = resolvePokeDataJapaneseSetCode(
+        normalised.providerSetId,
+        record.payload.source_set_reported_code,
+      );
+    } catch (error) {
+      issues.push({
+        code: 'frozen_set_identity_drift',
+        severity: 'error',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
     if (record.provider !== 'pokedata_japanese') {
       issues.push({ code: 'provider_mismatch', severity: 'error', message: 'PokeData Japanese records must retain the dedicated provider code.' });
     }
@@ -614,6 +645,18 @@ export class PokeDataJapaneseImageSourceAdapter implements SourceAdapter {
     }
     if (!normalised.setCode || !normalised.providerSetId || !normalised.collectorNumber) {
       issues.push({ code: 'exact_identity_missing', severity: 'error', message: 'Exact PokeData set code, numeric set ID, and collector number are required.' });
+    }
+    if (resolvedSetIdentity && (
+      normalised.setCode !== resolvedSetIdentity.effectiveCode
+      || cleanText(record.payload.source_set_code) !== resolvedSetIdentity.effectiveCode
+      || cleanText(record.payload.source_set_numeric_id) !== resolvedSetIdentity.providerSetId
+      || record.payload.set_code_resolution !== resolvedSetIdentity.identityPolicy
+    )) {
+      issues.push({
+        code: 'set_identity_provenance_mismatch',
+        severity: 'error',
+        message: 'PokeData set code, immutable ID, or resolution policy does not match the frozen set identity evidence.',
+      });
     }
     if (!normalised.variantCode || !normalised.finishCode) {
       issues.push({ code: 'finish_identity_missing', severity: 'error', message: 'A conservatively parsed variant and finish are required.' });

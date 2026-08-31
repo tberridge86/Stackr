@@ -31,6 +31,7 @@ const catalogueSets = [
   catalogueSet('catalogue-alpha', 'alpha', 'Alpha'),
   catalogueSet('catalogue-l2-a', 'L2', 'L2 A'),
   catalogueSet('catalogue-l2-b', 'l2', 'L2 B'),
+  catalogueSet('catalogue-m5', 'M5', 'M5'),
   catalogueSet('catalogue-no-code', null, 'No code'),
   catalogueSet('catalogue-only', 'ONLYCAT', 'Catalogue only'),
 ];
@@ -40,6 +41,7 @@ const providerSets = [
   { providerSetId: '10', setCode: 'ALPHA', setName: 'Alpha Japanese' },
   { providerSetId: '261', setCode: 'L2', setName: 'L2 A Japanese' },
   { providerSetId: '262', setCode: 'l2', setName: 'L2 B Japanese' },
+  { providerSetId: '3858', setCode: null, setName: 'M5 Japanese' },
   { providerSetId: '99', setCode: null, setName: 'Provider no code' },
   { providerSetId: '30', setCode: 'ONLYPD', setName: 'Provider only' },
 ];
@@ -56,6 +58,12 @@ assert.deepEqual(crosswalk.matched.map((match) => ({
     catalogueSetCode: 'alpha',
     providerSetId: '10',
     providerSetCode: 'ALPHA',
+  },
+  {
+    catalogueSetId: 'catalogue-m5',
+    catalogueSetCode: 'M5',
+    providerSetId: '3858',
+    providerSetCode: 'M5',
   },
   {
     catalogueSetId: 'catalogue-violet',
@@ -79,11 +87,42 @@ assert.deepEqual(crosswalk.ambiguous[0].catalogue.map((set) => set.id), [
   'catalogue-l2-b',
 ]);
 assert.deepEqual(crosswalk.ambiguous[0].pokedata.map((set) => set.providerSetId), ['261', '262']);
+assert.deepEqual(crosswalk.overridesApplied.map((match) => ({
+  providerSetId: match.providerSetId,
+  providerSetCode: match.providerSetCode,
+  providerReportedSetCode: match.providerReportedSetCode,
+  identityPolicy: match.identityPolicy,
+})), [{
+  providerSetId: '3858',
+  providerSetCode: 'M5',
+  providerReportedSetCode: null,
+  identityPolicy: 'frozen_provider_id_override',
+}]);
 assert.throws(
   () => buildExactPokeDataSetCrosswalk(catalogueSets, [
     { providerSetId: 'not-numeric', setCode: 'SV1V', setName: 'Invalid' },
   ]),
   /invalid immutable set descriptor/,
+);
+assert.throws(
+  () => buildExactPokeDataSetCrosswalk(catalogueSets, [
+    { providerSetId: '3858', setCode: 'WRONG', setName: 'M5 Japanese' },
+  ]),
+  /frozen set identity drifted/,
+);
+const ambiguousM5 = buildExactPokeDataSetCrosswalk(
+  [catalogueSet('catalogue-m5-only', 'M5', 'M5')],
+  [
+    { providerSetId: '3858', setCode: null, setName: 'M5 Japanese' },
+    { providerSetId: '4000', setCode: 'M5', setName: 'Unexpected duplicate M5' },
+  ],
+);
+assert.equal(ambiguousM5.matched.length, 0);
+assert.equal(ambiguousM5.overridesApplied.length, 0);
+assert.deepEqual(
+  ambiguousM5.ambiguous[0].pokedata.map((set) => set.providerSetId),
+  ['3858', '4000'],
+  'an override must still quarantine an effective-code collision',
 );
 
 const digest = exactCrosswalkDigest(crosswalk.matched);
@@ -102,8 +141,9 @@ const resumableMetadata = {
   catalogueSetName: resumableMatch.catalogueSetName,
   providerSetId: resumableMatch.providerSetId,
   providerSetCode: resumableMatch.providerSetCode,
+  providerReportedSetCode: resumableMatch.providerReportedSetCode,
   providerSetName: resumableMatch.providerSetName,
-  identityPolicy: 'unique_exact_case_insensitive_set_code',
+  identityPolicy: resumableMatch.identityPolicy,
   metadataCreated: false,
   productionModified: false,
 };
@@ -113,6 +153,14 @@ const completedFixture = {
   metadata: { workstream: resumableMetadata },
 };
 assert.equal(completedRunMatches(completedFixture, resumableMetadata), true);
+assert.equal(
+  completedRunMatches({
+    ...completedFixture,
+    metadata: { workstream: { ...resumableMetadata, identityPolicy: 'frozen_provider_id_override' } },
+  }, resumableMetadata),
+  false,
+  'resumption must be bound to the exact set-identity policy',
+);
 assert.equal(
   completedRunMatches({ ...completedFixture, records_conflicted: 1 }, resumableMetadata),
   false,
@@ -228,6 +276,8 @@ async function testDriver() {
         { id: 10, code: 'ALPHA', name: 'Alpha Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
         { id: 261, code: 'L2', name: 'L2 A Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
         { id: 262, code: 'l2', name: 'L2 B Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
+        { id: 3858, code: null, name: 'M5 Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
+        { id: 99, code: null, name: 'Provider no code', language: 'JAPANESE', tcg: 'Pokemon' },
         { id: 30, code: 'ONLYPD', name: 'Provider only', language: 'JAPANESE', tcg: 'Pokemon' },
         { id: 500, code: 'EN', name: 'English', language: 'ENGLISH', tcg: 'Pokemon' },
       ]);
@@ -252,7 +302,7 @@ async function testDriver() {
   };
   const selectedCrosswalk = buildExactPokeDataSetCrosswalk(
     catalogueSets,
-    providerSets.filter((set) => set.setCode !== null),
+    providerSets,
   );
   const selectedDigest = exactCrosswalkDigest(selectedCrosswalk.matched);
   const alphaMatch = selectedCrosswalk.matched.find((match) => match.providerSetId === '10')!;
@@ -284,8 +334,9 @@ async function testDriver() {
                 catalogueSetName: alphaMatch.catalogueSetName,
                 providerSetId: alphaMatch.providerSetId,
                 providerSetCode: alphaMatch.providerSetCode,
+                providerReportedSetCode: alphaMatch.providerReportedSetCode,
                 providerSetName: alphaMatch.providerSetName,
-                identityPolicy: 'unique_exact_case_insensitive_set_code',
+                identityPolicy: alphaMatch.identityPolicy,
                 metadataCreated: false,
                 productionModified: false,
               },
@@ -299,7 +350,22 @@ async function testDriver() {
         return {
           async run(runOptions) {
             calls.push(runOptions);
-            assert.equal(runOptions.setId, '20', 'only the non-resumed unique exact set may run');
+            if (runOptions.setId === '3858') {
+              return {
+                ok: true,
+                importRunId: 'run-m5',
+                stats: {
+                  recordsRequested: 1,
+                  recordsRetrieved: 1,
+                  recordsInserted: 0,
+                  recordsUpdated: 1,
+                  recordsSkipped: 0,
+                  recordsConflicted: 0,
+                  decisions: 1,
+                },
+              };
+            }
+            assert.equal(runOptions.setId, '20', 'only frozen crosswalk sets may run');
             provider20Attempts += 1;
             if (provider20Attempts === 1) throw new Error('transient fixture failure');
             return {
@@ -324,9 +390,9 @@ async function testDriver() {
 
   assert.equal(setIndexRequests, 1, 'one adapter must reuse one cached set-index request');
   assert.equal(runnerCreations, 1, 'all exact provider sets must reuse one runner');
-  assert.equal(calls.length, 2, 'a transient set failure must use the bounded retry count');
-  assert.deepEqual(sleeps, [10], 'only the bounded exponential retry should sleep in this fixture');
-  assert.equal(calls[0].runKey, calls[1].runKey, 'set retries must reuse the resumable run key');
+  assert.equal(calls.length, 3, 'the override set plus a bounded transient retry must run');
+  assert.deepEqual(sleeps, [25, 10], 'inter-set throttling and bounded retry backoff must both apply');
+  assert.equal(calls[1].runKey, calls[2].runKey, 'set retries must reuse the resumable run key');
   for (const call of calls) {
     assert.equal(call.command, 'run_set');
     assert.equal(call.importType, 'repair');
@@ -340,6 +406,10 @@ async function testDriver() {
     assert.equal((call.runMetadata as Record<string, unknown>).metadataCreated, false);
     assert.equal((call.runMetadata as Record<string, unknown>).productionModified, false);
   }
+  const m5CallMetadata = calls[0].runMetadata as Record<string, unknown>;
+  assert.equal(m5CallMetadata.providerSetCode, 'M5');
+  assert.equal(m5CallMetadata.providerReportedSetCode, null);
+  assert.equal(m5CallMetadata.identityPolicy, 'frozen_provider_id_override');
 
   assert.equal(boundAdapters.length, 1);
   const boundAdapter = boundAdapters[0];
@@ -359,28 +429,33 @@ async function testDriver() {
     offset: 0,
     limit: 50,
     runKeyPrefix: 'fixture-run',
-    selectedSets: 2,
+    selectedSets: 3,
     resumedSets: 1,
-    attemptedSets: 1,
+    attemptedSets: 2,
     failedSets: 0,
   });
   assert.deepEqual(report.setTotals, {
-    activeCatalogueSets: 6,
-    pokedataJapanesePokemonSets: 5,
-    matched: 2,
-    unmatched: 3,
+    activeCatalogueSets: 7,
+    pokedataJapanesePokemonSets: 7,
+    matched: 3,
+    unmatched: 4,
     ambiguous: 4,
+    overridesApplied: 1,
   });
   assert.deepEqual(report.totals, {
-    requested: 5,
-    retrieved: 5,
+    requested: 6,
+    retrieved: 6,
     inserted: 1,
-    updated: 2,
+    updated: 3,
     skipped: 1,
     conflicted: 1,
-    decisions: 7,
+    decisions: 8,
   });
-  assert.deepEqual(report.runs.map((run) => run.status), ['already_completed', 'completed']);
+  assert.deepEqual(report.runs.map((run) => run.status), ['already_completed', 'completed', 'completed']);
+  assert.deepEqual(report.overridesApplied, [selectedCrosswalk.overridesApplied[0]]);
+  const m5Run = report.runs.find((run) => run.providerSetId === '3858')!;
+  assert.equal(m5Run.providerReportedSetCode, null);
+  assert.equal(m5Run.identityPolicy, 'frozen_provider_id_override');
 }
 
 async function main() {

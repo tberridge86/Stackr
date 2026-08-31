@@ -6,6 +6,10 @@ import {
 } from './catalogue-ingestion/pokedataJapaneseImageAdapter';
 import { CatalogueIngestionRunner } from './catalogue-ingestion/pipeline';
 import { validateProviderSourceUrl } from './mirror-approved-catalogue-assets.mjs';
+import {
+  POKEDATA_JAPANESE_FROZEN_SET_CODE_OVERRIDES,
+  resolvePokeDataJapaneseSetCode,
+} from '../lib/pokedataJapaneseSetIdentity';
 
 function jsonResponse(value: unknown, status = 200, headers: Record<string, string> = {}) {
   return new Response(JSON.stringify(value), {
@@ -21,6 +25,8 @@ const sets = [
   { id: 261, code: 'L2', name: 'L2 A Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
   { id: 262, code: 'L2', name: 'L2 B Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
   { id: 263, code: 'L2', name: 'L2 C Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
+  { id: 98, code: null, name: 'Code-less Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
+  { id: 3858, code: null, name: 'M5 Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
   { id: 30, code: 'JPX', name: 'Other Game Japanese', language: 'JAPANESE', tcg: 'Other' },
 ];
 
@@ -148,6 +154,17 @@ const ambiguousL2Card = {
   img_url: 'https://pokemoncardimages.pokedata.io/images/261001.webp',
 };
 
+const m5Card = {
+  id: 3858001,
+  set_id: 3858,
+  set_name: 'M5 Japanese',
+  name: 'M5 Fixture',
+  num: '001',
+  language: 'JAPANESE',
+  tcg: 'Pokemon',
+  img_url: 'https://pokemoncardimages.pokedata.io/images/3858001.webp',
+};
+
 async function main() {
   const requests: string[] = [];
   const sleeps: number[] = [];
@@ -165,6 +182,9 @@ async function main() {
       if (url.pathname === '/api/cards' && url.searchParams.get('set_name') === 'L2 A Japanese') {
         return jsonResponse([ambiguousL2Card]);
       }
+      if (url.pathname === '/api/cards' && url.searchParams.get('set_name') === 'M5 Japanese') {
+        return jsonResponse([m5Card]);
+      }
       throw new Error(`Unexpected PokeData fixture request: ${url.href}`);
     },
   });
@@ -180,15 +200,17 @@ async function main() {
 
   const health = await adapter.healthCheck();
   assert.equal(health.status, 'ok');
-  assert.equal(health.httpMetadata?.japaneseSetCount, 5);
+  assert.equal(health.httpMetadata?.japaneseSetCount, 7);
 
   const exactSetIndex = await adapter.fetchExactSetIndex();
   assert.deepEqual(exactSetIndex, [
     { providerSetId: '10', setCode: 'SV1S', setName: 'Scarlet ex Japanese' },
     { providerSetId: '20', setCode: 'SV1V', setName: 'Violet ex Japanese' },
+    { providerSetId: '98', setCode: null, setName: 'Code-less Japanese' },
     { providerSetId: '261', setCode: 'L2', setName: 'L2 A Japanese' },
     { providerSetId: '262', setCode: 'L2', setName: 'L2 B Japanese' },
     { providerSetId: '263', setCode: 'L2', setName: 'L2 C Japanese' },
+    { providerSetId: '3858', setCode: null, setName: 'M5 Japanese' },
   ]);
   assert.equal(Object.isFrozen(exactSetIndex), true);
   assert.equal(exactSetIndex.every((set) => Object.isFrozen(set)), true);
@@ -246,6 +268,21 @@ async function main() {
     'duplicate Japanese PokeData set codes must be quarantined rather than attached',
   );
   assert.deepEqual(ambiguousSetAssets[0].payload.ambiguous_set_code_provider_ids, ['261', '262', '263']);
+
+  const m5Assets = await adapter.fetchAssets({ language: 'ja', setId: '3858', limit: 1 });
+  assert.equal(m5Assets.length, 1);
+  assert.equal(adapter.validateRecord(m5Assets[0]).ok, true);
+  const normalisedM5 = adapter.normaliseRecord(m5Assets[0]);
+  assert.equal(normalisedM5.providerSetId, '3858');
+  assert.equal(normalisedM5.setCode, 'M5');
+  assert.equal(m5Assets[0].payload.source_set_reported_code, null);
+  assert.equal(m5Assets[0].payload.source_set_code, 'M5');
+  assert.equal(m5Assets[0].payload.set_code_resolution, 'frozen_provider_id_override');
+  assert.deepEqual(
+    await adapter.fetchAssets({ language: 'ja', setId: '98', limit: 1 }),
+    [],
+    'ordinary code-less provider sets must remain excluded',
+  );
 
   const noWriteDb = {
     schema(schema: string) {
@@ -318,6 +355,27 @@ async function main() {
       evidence: 'reverse_holofoil_suffix',
     },
   );
+  assert.deepEqual(POKEDATA_JAPANESE_FROZEN_SET_CODE_OVERRIDES, { '3858': 'M5' });
+  assert.deepEqual(resolvePokeDataJapaneseSetCode('3858', null), {
+    providerSetId: '3858',
+    reportedCode: null,
+    effectiveCode: 'M5',
+    identityPolicy: 'frozen_provider_id_override',
+  });
+  assert.equal(resolvePokeDataJapaneseSetCode('98', null).identityPolicy, 'code_missing');
+  assert.throws(
+    () => resolvePokeDataJapaneseSetCode('3858', 'WRONG'),
+    /frozen set identity drifted/,
+  );
+
+  const driftAdapter = new PokeDataJapaneseImageSourceAdapter({
+    baseUrl: 'https://fixture.pokedata.test',
+    requestDelayMs: 0,
+    fetchImpl: async () => jsonResponse([
+      { id: 3858, code: 'WRONG', name: 'M5 Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
+    ]),
+  });
+  await assert.rejects(driftAdapter.fetchExactSetIndex(), /frozen set identity drifted/);
 
   const registryAdapter = createSourceAdapter({ source: 'pokedata-japanese', language: 'ja' });
   assert.equal(registryAdapter.identifySource().code, 'pokedata_japanese');

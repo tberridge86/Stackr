@@ -176,8 +176,8 @@ jobs:
     environment: staging
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+      max-parallel: 2
     env:
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
       CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
