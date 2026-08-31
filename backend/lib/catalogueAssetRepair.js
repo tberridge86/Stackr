@@ -175,7 +175,7 @@ export async function resolveCatalogueAssetRepairSource(supabase, sourceCode) {
 function scopedEmptyDerivativeQuery(supabase, input, selectOptions = undefined, columns = undefined) {
   let query = supabase.schema('catalog').from('assets')
     .select(
-      columns ?? `${ASSET_COLUMNS},language_scope:card_variants!assets_variant_id_fkey!inner(language_code,deprecated_at)`,
+      columns ?? ASSET_COLUMNS,
       selectOptions,
     )
     .eq('source_id', input.sourceId)
@@ -187,8 +187,6 @@ function scopedEmptyDerivativeQuery(supabase, input, selectOptions = undefined, 
     .eq('asset_visibility', 'public_catalogue')
     .eq('publicly_servable', true)
     .eq('retention_status', 'active')
-    .eq('language_scope.language_code', input.language)
-    .is('language_scope.deprecated_at', null)
     .not('variant_id', 'is', null)
     .not('storage_key', 'is', null)
     .eq('derivative_list', '[]')
@@ -206,8 +204,7 @@ export async function listStoredCatalogueAssetRepairBatch(supabase, input = {}) 
 
   const { data, error } = await query;
   if (error) throw error;
-  const rows = (data ?? []).map(({ language_scope: _languageScope, ...asset }) => asset);
-  return summariseCatalogueAssetRepairBatch(rows, input.limit);
+  return summariseCatalogueAssetRepairBatch(data ?? [], input.limit);
 }
 
 export async function countStoredCatalogueAssetRepairCandidates(supabase, input = {}) {
@@ -224,7 +221,7 @@ export async function countStoredCatalogueAssetRepairCandidates(supabase, input 
       supabase,
       { ...input, afterId },
       undefined,
-      'id,language_scope:card_variants!assets_variant_id_fkey!inner(language_code,deprecated_at)',
+      'id',
     )
       .order('id', { ascending: true })
       .limit(pageSize);

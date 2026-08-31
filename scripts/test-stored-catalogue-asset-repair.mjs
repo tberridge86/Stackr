@@ -260,7 +260,6 @@ async function assertScopedReadAndCountQueries() {
     return new Response(JSON.stringify([{
       ...readyAsset({ derivative_list: [] }),
       source_id: sourceId,
-      language_scope: { language_code: 'ja', deprecated_at: null },
     }]), { status: 200, headers: { 'content-type': 'application/json', 'content-range': '0-0/*' } });
   };
   const supabase = createClient(STAGING_SUPABASE_URL, 'test-service-role-key', {
@@ -286,7 +285,7 @@ async function assertScopedReadAndCountQueries() {
   assert.equal(assetRequests.length, 2);
   for (const request of assetRequests) {
     assert.equal(request.url.searchParams.get('source_id'), `eq.${sourceId}`);
-    assert.equal(request.url.searchParams.get('language_scope.language_code'), 'eq.ja');
+    assert.equal(request.url.searchParams.get('select').includes('language_scope'), false);
     assert.equal(request.url.searchParams.get('derivative_list'), 'eq.[]');
     assert.equal(request.url.searchParams.get('storage_provider'), 'eq.supabase_storage');
     assert.equal(request.url.searchParams.get('storage_bucket'), 'eq.stackr-catalogue-public');
