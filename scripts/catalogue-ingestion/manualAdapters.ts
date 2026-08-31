@@ -112,6 +112,7 @@ function normaliseManualRecord(record: ProviderRecord): NormalisedRecord {
     collectorNumberSortKey: collector.collectorNumberSortKey,
     nativeName: cleanText(valueAt(row, 'native_name', 'nativeName', 'name', 'card_name', 'cardName', 'set_name', 'setName')),
     englishDisplayName: cleanText(valueAt(row, 'english_display_name', 'englishDisplayName', 'english_name', 'englishName')),
+    releaseDate: cleanText(valueAt(row, 'release_date', 'releaseDate')),
     printedTotal: Number.isFinite(printedTotal) && printedTotal >= 0 ? printedTotal : null,
     total: Number.isFinite(total) && total >= 0 ? total : null,
     rarityCode: cleanText(valueAt(row, 'rarity_code', 'rarityCode', 'rarity'))?.toLowerCase().replace(/[^a-z0-9]+/g, '_') ?? null,

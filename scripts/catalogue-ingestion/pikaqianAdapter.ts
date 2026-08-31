@@ -400,6 +400,7 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
       collectorNumberSortKey: collector.collectorNumberSortKey,
       nativeName: cleanText(valueAt(payload, 'local_name', 'localName', 'name', 'card_name', 'cardName')),
       englishDisplayName: cleanText(valueAt(payload, 'english_name', 'englishName', 'name_en', 'nameEn', 'name')),
+      releaseDate: cleanText(valueAt(payload, 'release_date', 'releaseDate')),
       printedTotal: actualCardCount,
       total: actualCardCount,
       rarityCode: cleanText(valueAt(payload, 'rarity_code', 'rarityCode', 'rarity'))?.toLowerCase().replace(/[^a-z0-9]+/g, '_') ?? null,

@@ -532,6 +532,7 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       collectorNumberSortKey: collector.collectorNumberSortKey,
       nativeName,
       englishDisplayName: cleanText(payload.englishName) ?? (languageCode === 'en' ? nativeName : null),
+      releaseDate: cleanText(sourceSet.releaseDate ?? sourceSet.release_date),
       printedTotal: optionalPositiveInteger(payload.printedTotal ?? cardCount.official),
       total: optionalPositiveInteger(payload.total ?? cardCount.total),
       rarityCode: cleanText(payload.rarity)?.toLowerCase().replace(/[^a-z0-9]+/g, '_') ?? null,

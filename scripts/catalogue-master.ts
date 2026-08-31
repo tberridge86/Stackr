@@ -149,6 +149,17 @@ type PrintingRow = {
   set_id: string;
   language_code: string;
   collector_number: string;
+  native_name?: string | null;
+  english_display_name?: string | null;
+  deprecated_at?: string | null;
+};
+
+type CardNameRow = {
+  id?: string;
+  printing_id: string | null;
+  variant_id: string | null;
+  language_code: string;
+  name_type: string;
   deprecated_at?: string | null;
 };
 
@@ -282,6 +293,10 @@ type ImageLeftoverClassification = {
 };
 
 type SetCompletionGates = {
+  missingEnglishDisplayName: number;
+  missingReleaseDate: number;
+  missingCardNativeNames: number;
+  missingNativeNameIndexRows: number;
   missingCardRecords: number;
   missingRequiredVariants: number;
   missingExactNativeImages: number;
@@ -917,6 +932,49 @@ async function fetchAllFiltered(
 
 async function fetchAll(db: SupabaseClientLike, schema: string, tableName: string, columns: string) {
   return fetchAllFiltered(db, schema, tableName, columns);
+}
+
+function chunksOf<T>(values: T[], size: number) {
+  const chunks: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
+}
+
+async function fetchActiveNativeCardNamesForEntities(
+  db: SupabaseClientLike,
+  language: SupportedCatalogueLanguageCode,
+  printingIds: string[],
+  variantIds: string[],
+) {
+  const columns = 'printing_id,variant_id,language_code,name_type,deprecated_at';
+  const queries = [
+    ...chunksOf(variantIds, 100).map((ids) => fetchAllFiltered(
+      db,
+      'catalog',
+      'card_names',
+      columns,
+      (query) => query
+        .eq('language_code', language)
+        .eq('name_type', 'native')
+        .is('deprecated_at', null)
+        .in('variant_id', ids),
+    ) as Promise<CardNameRow[]>),
+    ...chunksOf(printingIds, 100).map((ids) => fetchAllFiltered(
+      db,
+      'catalog',
+      'card_names',
+      columns,
+      (query) => query
+        .eq('language_code', language)
+        .eq('name_type', 'native')
+        .is('deprecated_at', null)
+        .is('variant_id', null)
+        .in('printing_id', ids),
+    ) as Promise<CardNameRow[]>),
+  ];
+  return (await Promise.all(queries)).flat();
 }
 
 function setArtExternalId(file: SetArtFile) {
@@ -1866,8 +1924,44 @@ function percentComplete(complete: number, expected: number) {
   return Number(((Math.min(Math.max(complete, 0), expected) / expected) * 100).toFixed(2));
 }
 
+function countMissingNativeNameIndexRows(
+  variants: Array<Pick<VariantRow, 'id' | 'printing_id' | 'language_code'>>,
+  cardNames: CardNameRow[],
+) {
+  const variantsById = new Map(variants.map((variant) => [variant.id, variant]));
+  const printingLanguages = new Map(variants.map((variant) => [variant.printing_id, variant.language_code]));
+  const nativeNameVariantIds = new Set(cardNames
+    .filter((name) => (
+      name.name_type === 'native'
+      && name.deprecated_at == null
+      && name.variant_id
+      && variantsById.get(name.variant_id)?.language_code === name.language_code
+    ))
+    .map((name) => name.variant_id as string));
+  const nativeNamePrintingIds = new Set(cardNames
+    .filter((name) => (
+      name.name_type === 'native'
+      && name.deprecated_at == null
+      && name.printing_id
+      && !name.variant_id
+      && printingLanguages.get(name.printing_id) === name.language_code
+    ))
+    .map((name) => name.printing_id as string));
+  return variants.filter((variant) => (
+    !nativeNameVariantIds.has(variant.id)
+    && !nativeNamePrintingIds.has(variant.printing_id)
+  )).length;
+}
+
 function deriveSetCompletionStatus(gates: SetCompletionGates): SetCompletionStatus {
-  if (gates.missingCardRecords > 0 || gates.missingRequiredVariants > 0) return 'Metadata incomplete';
+  if (
+    gates.missingEnglishDisplayName > 0
+    || gates.missingReleaseDate > 0
+    || gates.missingCardNativeNames > 0
+    || gates.missingNativeNameIndexRows > 0
+    || gates.missingCardRecords > 0
+    || gates.missingRequiredVariants > 0
+  ) return 'Metadata incomplete';
   if (gates.missingExactNativeImages > 0) return 'Images incomplete';
   if (gates.missingLogo > 0 || gates.missingSymbol > 0) return 'Set art incomplete';
   if (gates.unresolvedIdentityConflicts > 0 || gates.unvalidatedImages > 0) return 'Under review';
@@ -1920,10 +2014,17 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
   const configureActiveProviderLanguageQuery = (query: any) => (
     configureProviderLanguageQuery(query).is('deprecated_at', null)
   );
-  const [sets, printings, variants, assets, rawRecords, conflicts, externalIdentifiers] = await Promise.all([
+  const [sets, printings, variants, cardNames, assets, rawRecords, conflicts, externalIdentifiers] = await Promise.all([
     fetchAllFiltered(db, 'catalog', 'sets', 'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at', configureLanguageQuery) as Promise<SetRow[]>,
-    fetchAllFiltered(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number,deprecated_at', configureLanguageQuery) as Promise<PrintingRow[]>,
+    fetchAllFiltered(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number,native_name,english_display_name,deprecated_at', configureLanguageQuery) as Promise<PrintingRow[]>,
     fetchAllFiltered(db, 'catalog', 'card_variants', 'id,printing_id,set_id,language_code,collector_number,variant_code,finish_code,canonical_key,artwork_key,deprecated_at', configureLanguageQuery) as Promise<VariantRow[]>,
+    fetchAllFiltered(
+      db,
+      'catalog',
+      'card_names',
+      'printing_id,variant_id,language_code,name_type,deprecated_at',
+      (query) => configureLanguageQuery(query).eq('name_type', 'native').is('deprecated_at', null),
+    ) as Promise<CardNameRow[]>,
     fetchAll(db, 'catalog', 'assets', 'id,source_id,set_id,printing_id,variant_id,asset_type,url,rights_status,permission_status,publicly_servable,original_source_url,original_source_identifier,source_attribution,storage_provider,storage_bucket,storage_path,storage_key,content_sha256,perceptual_hash,derivative_list,unavailable_reason,deleted_at,deprecated_at') as Promise<AssetRow[]>,
     fetchAllFiltered(
       db,
@@ -1951,6 +2052,7 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
   const activeSets = sets.filter((set) => set.deprecated_at == null);
   const activePrintings = printings.filter((printing) => printing.deprecated_at == null);
   const activeVariants = variants.filter((variant) => variant.deprecated_at == null);
+  const activeCardNames = cardNames.filter((name) => name.deprecated_at == null);
   const activeRawRecords = rawRecords.filter((row) => row.deprecated_at == null);
   const selectedLanguages = new Set(args.languages);
   const sourceCodeById = new Map(sources.map((source) => [source.id, source.code]));
@@ -2105,6 +2207,12 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       ? Math.max(expectedCollectorNumbers.size, setPrintings.length)
       : Math.max(Number(set.total ?? 0), expectedCollectorNumbers.size, setPrintings.length);
     const storedCardRecords = setPrintings.length;
+    const missingEnglishDisplayName = cleanText(set.english_display_name) ? 0 : 1;
+    const missingReleaseDate = cleanText(set.release_date) ? 0 : 1;
+    const missingCardNativeNames = setPrintings
+      .filter((printing) => !cleanText(printing.native_name))
+      .length;
+    const missingNativeNameIndexRows = countMissingNativeNameIndexRows(setVariants, activeCardNames);
     const missingCardRecords = Math.max(expectedCardCount - storedCardRecords, 0);
     const expectedRequiredVariantCount = Math.max(expectedVariantKeys.size, setVariants.length);
     const storedRequiredVariants = setVariants.length;
@@ -2145,6 +2253,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       ? 100
       : percentComplete(2 - missingLogo - missingSymbol, 2);
     const gates: SetCompletionGates = {
+      missingEnglishDisplayName,
+      missingReleaseDate,
+      missingCardNativeNames,
+      missingNativeNameIndexRows,
       missingCardRecords,
       missingRequiredVariants,
       missingExactNativeImages,
@@ -2161,6 +2273,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       set_name: set.native_name,
       english_display_name: set.english_display_name ?? '',
       release_date: set.release_date ?? '',
+      missing_english_display_name: missingEnglishDisplayName,
+      missing_release_date: missingReleaseDate,
+      missing_card_native_names: missingCardNativeNames,
+      missing_native_name_index_rows: missingNativeNameIndexRows,
       expected_cards: expectedCardCount,
       stored_card_records: storedCardRecords,
       missing_card_records: missingCardRecords,
@@ -2332,6 +2448,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     'set_name',
     'english_display_name',
     'release_date',
+    'missing_english_display_name',
+    'missing_release_date',
+    'missing_card_native_names',
+    'missing_native_name_index_rows',
     'expected_cards',
     'stored_card_records',
     'missing_card_records',
@@ -2371,6 +2491,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     'set_name',
     'english_display_name',
     'release_date',
+    'missing_english_display_name',
+    'missing_release_date',
+    'missing_card_native_names',
+    'missing_native_name_index_rows',
     'expected_cards',
     'stored_card_records',
     'missing_card_records',
@@ -2567,6 +2691,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     productionModified: false,
     languages: args.languages,
     completionGates: [
+      'missing_english_display_name',
+      'missing_release_date',
+      'missing_card_native_names',
+      'missing_native_name_index_rows',
       'missing_card_records',
       'missing_required_variants',
       'missing_exact_native_images',
@@ -2586,6 +2714,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     totals: {
       sets: coverageRows.length,
       setStatuses: setStatusCounts,
+      missingEnglishDisplayNames: coverageRows.reduce((sum, row) => sum + row.missing_english_display_name, 0),
+      missingReleaseDates: coverageRows.reduce((sum, row) => sum + row.missing_release_date, 0),
+      missingCardNativeNames: coverageRows.reduce((sum, row) => sum + row.missing_card_native_names, 0),
+      missingNativeNameIndexRows: coverageRows.reduce((sum, row) => sum + row.missing_native_name_index_rows, 0),
       expectedCards: coverageRows.reduce((sum, row) => sum + row.expected_cards, 0),
       storedCardRecords: coverageRows.reduce((sum, row) => sum + row.stored_card_records, 0),
       missingCardRecords: coverageRows.reduce((sum, row) => sum + row.missing_card_records, 0),
@@ -2632,6 +2764,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
           counts[row.set_status] = (counts[row.set_status] ?? 0) + 1;
           return counts;
         }, {} as Record<SetCompletionStatus, number>),
+        missingEnglishDisplayNames: rows.reduce((sum, row) => sum + row.missing_english_display_name, 0),
+        missingReleaseDates: rows.reduce((sum, row) => sum + row.missing_release_date, 0),
+        missingCardNativeNames: rows.reduce((sum, row) => sum + row.missing_card_native_names, 0),
+        missingNativeNameIndexRows: rows.reduce((sum, row) => sum + row.missing_native_name_index_rows, 0),
         expectedCards: rows.reduce((sum, row) => sum + row.expected_cards, 0),
         storedCardRecords: rows.reduce((sum, row) => sum + row.stored_card_records, 0),
         missingCardRecords: rows.reduce((sum, row) => sum + row.missing_card_records, 0),
@@ -2698,6 +2834,10 @@ function publishReadinessFromSummary(summary: any, language: SupportedCatalogueL
   const statusCounts = languageSummary.setStatuses ?? {};
   if ((statusCounts.Complete ?? 0) !== languageSummary.sets) blockers.push('language_has_incomplete_sets');
   for (const [field, blocker] of [
+    ['missingEnglishDisplayNames', 'missing_english_display_names'],
+    ['missingReleaseDates', 'missing_release_dates'],
+    ['missingCardNativeNames', 'missing_card_native_names'],
+    ['missingNativeNameIndexRows', 'missing_native_name_index_rows'],
     ['missingCardRecords', 'missing_card_records'],
     ['missingRequiredVariants', 'missing_required_variants'],
     ['missingExactNativeImages', 'missing_exact_native_images'],
@@ -2760,6 +2900,10 @@ function controlledStagingReadinessFromSummary(
 
   const setCoverage = matches[0];
   const blockers: string[] = [];
+  if (Number(setCoverage.missing_english_display_name ?? 0) > 0) blockers.push('missing_english_display_name');
+  if (Number(setCoverage.missing_release_date ?? 0) > 0) blockers.push('missing_release_date');
+  if (Number(setCoverage.missing_card_native_names ?? 0) > 0) blockers.push('missing_card_native_names');
+  if (Number(setCoverage.missing_native_name_index_rows ?? 0) > 0) blockers.push('missing_native_name_index_rows');
   if (Number(setCoverage.stored_card_records ?? 0) <= 0) blockers.push('controlled_staging_set_has_no_cards');
   if (Number(setCoverage.stored_required_variants ?? 0) <= 0) blockers.push('controlled_staging_set_has_no_variants');
   if (Number(setCoverage.exact_native_images ?? 0) <= 0) blockers.push('controlled_staging_set_has_no_approved_images');
@@ -2811,7 +2955,7 @@ async function buildControlledStagingReport(
       db,
       'catalog',
       'card_printings',
-      'id,set_id,language_code,collector_number,deprecated_at',
+      'id,set_id,language_code,collector_number,native_name,english_display_name,deprecated_at',
       (query) => query.eq('set_id', set.id).is('deprecated_at', null),
     ) as Promise<PrintingRow[]>,
     fetchAllFiltered(
@@ -2832,6 +2976,7 @@ async function buildControlledStagingReport(
 
   const printingIds = printings.map((printing) => printing.id);
   const variantIds = variants.map((variant) => variant.id);
+  const cardNames = await fetchActiveNativeCardNamesForEntities(db, language, printingIds, variantIds);
   const assetQueries = [
     fetchAllFiltered(
       db,
@@ -2913,10 +3058,20 @@ async function buildControlledStagingReport(
   const releaseBlockingMissingSymbol = isPikaqianSet && setArtFallbackAvailable ? 0 : missingSymbol;
   const expectedCardCount = Math.max(Number(set.total ?? 0), printings.length);
   const expectedRequiredVariantCount = variants.length;
+  const missingEnglishDisplayName = cleanText(set.english_display_name) ? 0 : 1;
+  const missingReleaseDate = cleanText(set.release_date) ? 0 : 1;
+  const missingCardNativeNames = printings
+    .filter((printing) => !cleanText(printing.native_name))
+    .length;
+  const missingNativeNameIndexRows = countMissingNativeNameIndexRows(variants, cardNames);
   const unresolvedIdentityConflicts = scopedConflicts
     .filter((conflict) => IDENTITY_CONFLICT_TYPES.has(conflict.conflict_type))
     .length;
   const gates: SetCompletionGates = {
+    missingEnglishDisplayName,
+    missingReleaseDate,
+    missingCardNativeNames,
+    missingNativeNameIndexRows,
     missingCardRecords: Math.max(expectedCardCount - printings.length, 0),
     missingRequiredVariants: 0,
     missingExactNativeImages: Math.max(expectedRequiredVariantCount - exactNativeImages, 0),
@@ -2933,6 +3088,10 @@ async function buildControlledStagingReport(
     set_name: set.native_name,
     english_display_name: set.english_display_name ?? '',
     release_date: set.release_date ?? '',
+    missing_english_display_name: missingEnglishDisplayName,
+    missing_release_date: missingReleaseDate,
+    missing_card_native_names: missingCardNativeNames,
+    missing_native_name_index_rows: missingNativeNameIndexRows,
     expected_cards: expectedCardCount,
     stored_card_records: printings.length,
     missing_card_records: gates.missingCardRecords,
@@ -2989,6 +3148,10 @@ async function buildControlledStagingReport(
       language,
       sets: 1,
       setStatuses: { [coverageRow.set_status]: 1 },
+      missingEnglishDisplayNames: coverageRow.missing_english_display_name,
+      missingReleaseDates: coverageRow.missing_release_date,
+      missingCardNativeNames: coverageRow.missing_card_native_names,
+      missingNativeNameIndexRows: coverageRow.missing_native_name_index_rows,
       storedCardRecords: printings.length,
       missingCardRecords: coverageRow.missing_card_records,
       missingRequiredVariants: coverageRow.missing_required_variants,
@@ -3787,6 +3950,7 @@ export const masterCatalogueInternals = {
   discoverSetArtFiles,
   classifyImageLeftovers,
   coveragePercent,
+  countMissingNativeNameIndexRows,
   deriveSetCompletionStatus,
   expectedFromRaw,
   assetRightsAreApproved,

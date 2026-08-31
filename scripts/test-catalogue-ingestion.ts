@@ -21,6 +21,9 @@ import {
   isSafeUnsupportedPrimaryVariantCorrection,
   isSafeSupportedPrimaryAliasTarget,
   isVariantRepairNotApplicable,
+  sparsePrintingMetadataPatch,
+  sparseSetMetadataPatch,
+  sparseVariantMetadataPatch,
   payloadChecksum,
   parseRetainedRawRecord,
   reconciliationPhase,
@@ -718,12 +721,109 @@ async function assertStrictForeignLanguageSafety() {
     recordType: 'set',
     languageCode: 'zh-cn',
     licenceStatus: 'approved',
-    payload: { id: 'SV4a', name: 'Set Name', cardCount: { official: 165, total: 190 } },
+      payload: {
+        id: 'SV4a',
+        name: 'Set Name',
+        releaseDate: '2023-12-01',
+        cardCount: { official: 165, total: 190 },
+      },
   });
   assert.equal(setRecord.setCode, 'SV4a', 'TCGdex set-list IDs must become canonical set codes');
   assert.equal(setRecord.providerSetId, 'SV4a', 'TCGdex set-list IDs must remain exact provider set IDs');
+  assert.equal(setRecord.releaseDate, '2023-12-01', 'TCGdex set release dates must reach canonical set upserts');
   assert.equal(setRecord.printedTotal, 165);
   assert.equal(setRecord.total, 190);
+  assert.deepEqual(
+    sparseSetMetadataPatch({}),
+    {},
+    'undefined optional set metadata must leave existing columns untouched',
+  );
+  assert.deepEqual(
+    sparseSetMetadataPatch({
+      englishDisplayName: '   ',
+      releaseDate: '',
+      printedTotal: null,
+      total: null,
+      sourceUpdatedAt: ' ',
+    }),
+    {},
+    'partial set records must not send null or blank metadata that erases an existing value',
+  );
+  assert.deepEqual(
+    sparseSetMetadataPatch({
+      englishDisplayName: 'Shiny Treasure ex',
+      releaseDate: '2023-12-01',
+      printedTotal: 190,
+      total: null,
+      sourceUpdatedAt: '2023-12-01T00:00:00.000Z',
+    }),
+    {
+      english_display_name: 'Shiny Treasure ex',
+      release_date: '2023-12-01',
+      printed_total: 190,
+      source_updated_at: '2023-12-01T00:00:00.000Z',
+    },
+    'printed totals must update without overwriting a proven larger total when total is absent',
+  );
+  assert.deepEqual(
+    sparseSetMetadataPatch({
+      printedTotal: 165,
+      total: 190,
+    }),
+    {
+      printed_total: 165,
+      total: 190,
+    },
+    'an explicit provider total must still update alongside the printed total',
+  );
+  assert.deepEqual(
+    sparsePrintingMetadataPatch({
+      nativeName: ' ',
+      englishDisplayName: null,
+      sourceUpdatedAt: '',
+    }, null),
+    {},
+    'partial card metadata must not erase proven printing names, rarity, or source timestamp',
+  );
+  assert.deepEqual(
+    sparsePrintingMetadataPatch({
+      nativeName: 'リザードンex',
+      englishDisplayName: 'Charizard ex',
+      sourceUpdatedAt: '2023-12-01T00:00:00.000Z',
+    }, 'rarity-sar'),
+    {
+      native_name: 'リザードンex',
+      english_display_name: 'Charizard ex',
+      rarity_id: 'rarity-sar',
+      source_updated_at: '2023-12-01T00:00:00.000Z',
+    },
+    'present incoming printing metadata must still be applied',
+  );
+  assert.deepEqual(
+    sparseVariantMetadataPatch({
+      finishCode: null,
+      artworkKey: ' ',
+      sourceConfidence: 0.85,
+      sourceUpdatedAt: null,
+    }),
+    { source_confidence: 0.85 },
+    'partial card metadata must not erase proven finish, artwork, or source timestamp',
+  );
+  assert.deepEqual(
+    sparseVariantMetadataPatch({
+      finishCode: 'reverse_holo',
+      artworkKey: 'tcgdex:https://assets.example/card.webp',
+      sourceConfidence: 0.9,
+      sourceUpdatedAt: '2023-12-01T00:00:00.000Z',
+    }),
+    {
+      finish_code: 'reverse_holo',
+      artwork_key: 'tcgdex:https://assets.example/card.webp',
+      source_confidence: 0.9,
+      source_updated_at: '2023-12-01T00:00:00.000Z',
+    },
+    'present incoming variant metadata must still be applied',
+  );
   assert.deepEqual(tcgdexAdapterInternals.variantCandidates({
     variants: { normal: false, holo: true, reverse: false, firstEdition: false, wPromo: false },
   }), ['holo'], 'holo-only cards must not be silently converted to normal');
@@ -1133,9 +1233,9 @@ async function assertManualCsvAdapter() {
   const file = join(dir, 'catalogue.csv');
   try {
     writeFileSync(file, [
-      'record_type,provider_record_id,language,set_code,set_name,name,collector_number,variant,licence_status,image_url',
-      'set,set-1,en,SV1,Scarlet Violet,,,,approved,',
-      'card,card-1,en,SV1,Scarlet Violet,Pikachu,001/184,master_ball,approved,https://example.invalid/pikachu.png',
+      'record_type,provider_record_id,language,set_code,set_name,name,collector_number,variant,release_date,licence_status,image_url',
+      'set,set-1,en,SV1,Scarlet Violet,,,,2023-03-31,approved,',
+      'card,card-1,en,SV1,Scarlet Violet,Pikachu,001/184,master_ball,,approved,https://example.invalid/pikachu.png',
     ].join('\n'));
 
     const adapter = new ManualCsvSourceAdapter({ filePath: file });
@@ -1145,6 +1245,12 @@ async function assertManualCsvAdapter() {
 
     const health = await adapter.healthCheck();
     assert.equal(health.status, 'ok');
+
+    const sets = await adapter.fetchSets({ language: 'en' });
+    const collectedSets = [];
+    for await (const set of sets) collectedSets.push(set);
+    assert.equal(collectedSets.length, 1);
+    assert.equal(adapter.normaliseRecord(collectedSets[0]).releaseDate, '2023-03-31');
 
     const cards = await adapter.fetchCards({ language: 'en' });
     const collected = [];

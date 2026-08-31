@@ -379,6 +379,7 @@ async function assertPikaQianApiAdapter() {
     const normalisedSet = adapter.normaliseRecord(sets[0]);
     assert.equal(normalisedSet.languageCode, 'zh-cn');
     assert.equal(normalisedSet.total, 106);
+    assert.equal(normalisedSet.releaseDate, '2024-03-22');
 
     const cards = await adapter.fetchCards({ setId: 'csv6c', limit: 1 });
     assert.equal(cards[0].languageCode, 'zh-cn');
@@ -644,6 +645,10 @@ function assertIdentityAndReportRules() {
 
 function assertSetCompletionStatusRules() {
   const completeGates = {
+    missingEnglishDisplayName: 0,
+    missingReleaseDate: 0,
+    missingCardNativeNames: 0,
+    missingNativeNameIndexRows: 0,
     missingCardRecords: 0,
     missingRequiredVariants: 0,
     missingExactNativeImages: 0,
@@ -653,6 +658,18 @@ function assertSetCompletionStatusRules() {
     unvalidatedImages: 0,
   };
   assert.equal(masterCatalogueInternals.deriveSetCompletionStatus(completeGates), 'Complete');
+  for (const missingField of [
+    'missingEnglishDisplayName',
+    'missingReleaseDate',
+    'missingCardNativeNames',
+    'missingNativeNameIndexRows',
+  ] as const) {
+    assert.equal(
+      masterCatalogueInternals.deriveSetCompletionStatus({ ...completeGates, [missingField]: 1 }),
+      'Metadata incomplete',
+      `${missingField} must prevent a complete catalogue status`,
+    );
+  }
   assert.equal(
     masterCatalogueInternals.deriveSetCompletionStatus({ ...completeGates, missingCardRecords: 1 }),
     'Metadata incomplete',
@@ -682,8 +699,33 @@ function assertSetCompletionStatusRules() {
     'Under review',
   );
   assert.equal(masterCatalogueInternals.percentComplete(73, 100), 73);
+  assert.equal(
+    masterCatalogueInternals.countMissingNativeNameIndexRows(
+      [
+        { id: 'variant-1', printing_id: 'printing-1', language_code: 'ja' },
+        { id: 'variant-1b', printing_id: 'printing-1', language_code: 'ja' },
+        { id: 'variant-2', printing_id: 'printing-2', language_code: 'ja' },
+        { id: 'variant-3', printing_id: 'printing-3', language_code: 'ja' },
+        { id: 'variant-4', printing_id: 'printing-4', language_code: 'ja' },
+        { id: 'variant-5', printing_id: 'printing-5', language_code: 'ja' },
+      ],
+      [
+        { printing_id: 'printing-1', variant_id: 'variant-1', language_code: 'ja', name_type: 'native' },
+        { printing_id: 'printing-2', variant_id: null, language_code: 'ja', name_type: 'native' },
+        { printing_id: 'printing-3', variant_id: 'variant-3', language_code: 'ja', name_type: 'english_display' },
+        { printing_id: 'printing-4', variant_id: 'variant-4', language_code: 'en', name_type: 'native' },
+        { printing_id: 'printing-5', variant_id: 'variant-5', language_code: 'ja', name_type: 'native', deprecated_at: '2026-08-31T00:00:00.000Z' },
+      ],
+    ),
+    4,
+    'variant-linked names cover only that variant; active same-language printing-level native rows may cover a printing',
+  );
   for (const requiredColumn of [
     'set_status',
+    'missing_english_display_name',
+    'missing_release_date',
+    'missing_card_native_names',
+    'missing_native_name_index_rows',
     'missing_required_variants',
     'missing_exact_native_images',
     'missing_logo',
@@ -1255,6 +1297,10 @@ function assertPublishRules() {
       language: 'ja',
       sets: 2,
       setStatuses: { Complete: 2 },
+      missingEnglishDisplayNames: 0,
+      missingReleaseDates: 0,
+      missingCardNativeNames: 0,
+      missingNativeNameIndexRows: 0,
       missingCardRecords: 0,
       missingRequiredVariants: 0,
       missingExactNativeImages: 0,
@@ -1298,12 +1344,36 @@ function assertPublishRules() {
   }, 'ja');
   assert.equal(unsafeCoverageLimitedReadiness.ok, false);
   assert.ok(unsafeCoverageLimitedReadiness.blockers.includes('unresolved_identity_conflicts'));
+  const metadataUnsafeCoverageLimitedReadiness = masterCatalogueInternals.coverageLimitedReadinessFromSummary({
+    byLanguage: [{
+      ...incompleteSummary.byLanguage[0],
+      missingEnglishDisplayNames: 1,
+      missingReleaseDates: 1,
+      missingCardNativeNames: 2,
+      missingNativeNameIndexRows: 2,
+    }],
+  }, 'ja');
+  assert.equal(metadataUnsafeCoverageLimitedReadiness.ok, false);
+  assert.deepEqual(
+    metadataUnsafeCoverageLimitedReadiness.blockers.sort(),
+    [
+      'missing_card_native_names',
+      'missing_english_display_names',
+      'missing_native_name_index_rows',
+      'missing_release_dates',
+    ],
+    'coverage-limited publication may tolerate provider coverage gaps but never missing display/search metadata',
+  );
 
   const controlledReadiness = masterCatalogueInternals.controlledStagingReadinessFromSummary({
     coverageRows: [{
       language: 'zh-cn',
       set_id: '8e3da79a-1d8d-40ae-9f09-0150728cfbd6',
       set_code: '151c',
+      missing_english_display_name: 0,
+      missing_release_date: 0,
+      missing_card_native_names: 0,
+      missing_native_name_index_rows: 0,
       stored_card_records: 54,
       stored_required_variants: 54,
       exact_native_images: 6,
@@ -1315,6 +1385,14 @@ function assertPublishRules() {
   }, 'zh-cn', '151c');
   assert.equal(controlledReadiness.ok, true, 'a reviewed partial set can be exposed only by controlled staging publication');
   assert.equal(controlledReadiness.setCoverage.set_code, '151c');
+  const controlledWithoutNames = masterCatalogueInternals.controlledStagingReadinessFromSummary({
+    coverageRows: [{
+      ...controlledReadiness.setCoverage,
+      missing_native_name_index_rows: 1,
+    }],
+  }, 'zh-cn', '151c');
+  assert.equal(controlledWithoutNames.ok, false);
+  assert.ok(controlledWithoutNames.blockers.includes('missing_native_name_index_rows'));
   assert.equal(
     masterCatalogueInternals.controlledStagingReadinessFromSummary({ coverageRows: [] }, 'zh-cn', '151c').ok,
     false,
