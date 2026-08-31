@@ -452,8 +452,18 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /fromJSON\(needs\.prepare\.outputs\.matrix\)[\s\S]+max-parallel: 2/,
-    'official Japanese ingestion must use deterministic resumable bounded-parallel shards',
+    /needs: \[prepare, pokedata-ingest\][\s\S]+fromJSON\(needs\.prepare\.outputs\.matrix\)[\s\S]+max-parallel: 1/,
+    'official Japanese ingestion must wait for PokeData and use one deterministic staging writer',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /write_concurrency:[\s\S]+default: '2'[\s\S]+cancel-in-progress: true/,
+    'Japanese staging recovery must replace a broken attempt and use conservative write concurrency',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /for attempt in 1 2 3 4[\s\S]+attempt \* 15/,
+    'official Japanese ingestion must retry transient provider and database timeouts with bounded backoff',
   );
   assert.match(
     japaneseCompletionWorkflow,

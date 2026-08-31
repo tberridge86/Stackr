@@ -14,6 +14,7 @@ import {
   CatalogueIngestionRunner,
   canRelinkExternalIdentifierAsset,
   calculateExponentialBackoff,
+  classifyMappedOfficialImageTarget,
   chooseExistingVariantForCardImage,
   isMissingVariantRepairPrecondition,
   isResolvedDeprecatedVariantAlias,
@@ -373,8 +374,65 @@ function assertJapaneseAssetOnlyVariantSelection() {
   );
   assert.match(
     ingestionPipeline,
-    /mappedVariant\.artwork_key !== `pokemon_card_jp_official:\$\{providerCardExternalId\}`[\s\S]+lacks matching official artwork evidence/,
-    'a mapped official card ID must not bypass artwork-key evidence',
+    /\.update\(\{ artwork_key: classification\.expectedArtworkKey \}\)[\s\S]+\.is\('artwork_key', null\)[\s\S]+exact_artwork_key_compare_and_set/,
+    'a mapped official card ID may backfill only a guarded null artwork key',
+  );
+  const mappedBase = {
+    id: 'variant-ja',
+    languageCode: 'ja',
+    setId: 'set-ja',
+    collectorNumber: '001',
+    variantCode: 'normal',
+    finishCode: 'normal',
+    artworkKey: null,
+  };
+  const officialTarget = {
+    cardId: '50451',
+    resolvedSetId: 'set-ja',
+    providerCollectorNumber: '001',
+    requestedVariantCode: 'normal',
+    requestedFinishCode: 'normal',
+    mappedVariant: mappedBase,
+  };
+  assert.equal(classifyMappedOfficialImageTarget(officialTarget).status, 'repair');
+  assert.equal(classifyMappedOfficialImageTarget({
+    ...officialTarget,
+    mappedVariant: { ...mappedBase, variantCode: 'unclassified', finishCode: null },
+  }).status, 'repair');
+  assert.equal(classifyMappedOfficialImageTarget({
+    ...officialTarget,
+    resolvedSetId: 'wrong-set',
+  }).status, 'conflict');
+  assert.equal(classifyMappedOfficialImageTarget({
+    ...officialTarget,
+    providerCollectorNumber: '1',
+  }).status, 'conflict', 'collector identities remain opaque; 001 must not equal 1');
+  assert.equal(classifyMappedOfficialImageTarget({
+    ...officialTarget,
+    mappedVariant: { ...mappedBase, languageCode: 'en' },
+  }).status, 'conflict');
+  assert.equal(classifyMappedOfficialImageTarget({
+    ...officialTarget,
+    mappedVariant: { ...mappedBase, variantCode: 'holo', finishCode: 'holo' },
+  }).status, 'conflict');
+  assert.equal(classifyMappedOfficialImageTarget({
+    ...officialTarget,
+    mappedVariant: { ...mappedBase, artworkKey: 'tcgdex:other' },
+  }).status, 'conflict');
+  assert.equal(classifyMappedOfficialImageTarget({
+    ...officialTarget,
+    resolvedSetId: null,
+    providerCollectorNumber: null,
+    mappedVariant: { ...mappedBase, artworkKey: 'pokemon_card_jp_official:50451' },
+  }).status, 'exact', 'a concurrent exact compare-and-set remains idempotent');
+  const officialRepairUpdate = ingestionPipeline.match(
+    /\.update\(\{ artwork_key: classification\.expectedArtworkKey \}\)[\s\S]{0,1200}?\.select\('id,artwork_key'\)/,
+  )?.[0] ?? '';
+  assert.ok(officialRepairUpdate);
+  assert.doesNotMatch(
+    officialRepairUpdate,
+    /\{[^}]*\b(?:variant_code|finish_code|canonical_key|printing_id)\s*:/,
+    'official artwork repair must not mutate canonical, variant, finish, or printing identity',
   );
   const exact = chooseExistingVariantForCardImage([
     { id: 'normal', canonical_key: 'expected', is_default: false },
