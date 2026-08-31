@@ -530,6 +530,16 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
+    /attempt_stderr="\$\{attempt_report%\.json\}\.stderr\.log"[\s\S]+2> "\$attempt_stderr"[\s\S]+\| tee "\$attempt_report"[\s\S]+cat "\$attempt_stderr" >&2/,
+    'fatal PokeData diagnostics must be retained when the process fails before emitting its stdout report',
+  );
+  assert.doesNotMatch(
+    japaneseCompletionWorkflow,
+    /> >\(tee "\$attempt_report"\)/,
+    'stdout report capture must remain a synchronous pipe so validation cannot race tee',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
     /catalogue:ingest-pokedata-japanese-images[\s\S]+providers=\(pokedata_japanese pokemon_card_jp_official\)[\s\S]+mirror cursor did not advance/,
     'the exact-crosswalk PokeData worker and both Japanese image sources must drain through bounded cursors',
   );
