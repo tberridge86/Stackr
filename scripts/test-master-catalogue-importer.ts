@@ -740,6 +740,49 @@ function assertSetCompletionStatusRules() {
   }
 }
 
+function assertCoveragePercentIncludesMetadataGates() {
+  const completeCoverage = {
+    expected_cards: 2,
+    stored_card_records: 2,
+    stored_required_variants: 2,
+    exact_native_images: 2,
+    missing_english_display_name: 0,
+    missing_release_date: 0,
+    missing_card_native_names: 0,
+    missing_native_name_index_rows: 0,
+    image_completion_percentage: 100,
+    set_art_completion_percentage: 100,
+    unresolved_identity_conflicts: 0,
+    unvalidated_images: 0,
+  };
+  assert.equal(masterCatalogueInternals.coveragePercent(completeCoverage), 100);
+
+  for (const missingField of [
+    'missing_english_display_name',
+    'missing_release_date',
+    'missing_card_native_names',
+    'missing_native_name_index_rows',
+  ] as const) {
+    assert.equal(
+      masterCatalogueInternals.coveragePercent({ ...completeCoverage, [missingField]: 1 }),
+      93.13,
+      `${missingField} must reduce displayed coverage when publication is metadata-blocked`,
+    );
+  }
+
+  assert.equal(
+    masterCatalogueInternals.coveragePercent({
+      ...completeCoverage,
+      missing_english_display_name: 1,
+      missing_release_date: 1,
+      missing_card_native_names: 1,
+      missing_native_name_index_rows: 1,
+    }),
+    72.5,
+    'multiple metadata gaps must accumulate in displayed coverage',
+  );
+}
+
 function assertCardImageInventorySummary() {
   const inventory = masterCatalogueInternals.buildCardImageInventory({
     sources: [{ id: 'source-tcgdex', code: 'tcgdex' }],
@@ -1542,6 +1585,7 @@ async function main() {
   await assertTcgdexPinnedSnapshot();
   assertIdentityAndReportRules();
   assertSetCompletionStatusRules();
+  assertCoveragePercentIncludesMetadataGates();
   assertCardImageInventorySummary();
   await assertSetArtRules();
   assertImageLeftoverClassification();
