@@ -1,4 +1,5 @@
 import { createHmac, createHash } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -62,6 +63,22 @@ export class SupabaseObjectStorageAdapter {
     };
   }
 
+  async getObject(bucket, key, options = {}) {
+    const { data, error } = await this.supabase.storage.from(bucket).download(key);
+    if (error) throw error;
+    if (!data) throw new Error(`Supabase Storage returned no data for ${bucket}/${key}.`);
+
+    const maxBytes = Number(options.maxBytes ?? 25 * 1024 * 1024);
+    if (Number.isFinite(data.size) && data.size > maxBytes) {
+      throw new Error(`Stored object exceeds ${maxBytes} bytes.`);
+    }
+    const buffer = Buffer.from(await data.arrayBuffer());
+    if (buffer.byteLength > maxBytes) {
+      throw new Error(`Stored object exceeds ${maxBytes} bytes.`);
+    }
+    return buffer;
+  }
+
   async createSignedUpload(input) {
     const { data, error } = await this.supabase.storage
       .from(input.bucket)
@@ -120,8 +137,13 @@ export class LocalObjectStorageAdapter {
     };
   }
 
-  async getObject(bucket, key) {
-    return readFile(path.join(this.rootDir, bucket, key));
+  async getObject(bucket, key, options = {}) {
+    const buffer = await readFile(path.join(this.rootDir, bucket, key));
+    const maxBytes = Number(options.maxBytes ?? 25 * 1024 * 1024);
+    if (buffer.byteLength > maxBytes) {
+      throw new Error(`Stored object exceeds ${maxBytes} bytes.`);
+    }
+    return buffer;
   }
 
   async removeObject(bucket, key) {

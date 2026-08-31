@@ -48,6 +48,7 @@ def read_manifest(path: Path) -> dict[str, Any]:
     if manifest.get("schemaVersion") not in {
         "stackr-reviewed-capture-evaluation-manifest-v1.0.0",
         "stackr-reviewed-capture-evaluation-manifest-v1.1.0",
+        "stackr-reviewed-capture-evaluation-manifest-v1.2.0",
     }:
         raise ValueError("Unsupported reviewed-capture manifest.")
     if manifest.get("privacyScope") not in {
@@ -100,14 +101,42 @@ def embed_batches(model: torch.nn.Module, tensors: torch.Tensor, batch_size: int
     return np.concatenate(outputs, axis=0)
 
 
-def evaluate_retrieval(entries: list[dict[str, Any]], embeddings: np.ndarray) -> dict[str, Any]:
+def evaluate_retrieval(
+    entries: list[dict[str, Any]],
+    embeddings: np.ndarray,
+    protected_test: bool,
+) -> dict[str, Any]:
     by_identity: dict[str, list[int]] = defaultdict(list)
     for index, entry in enumerate(entries):
         by_identity[entry["identityKey"]].append(index)
-    reference_indices = [indices[0] for _, indices in sorted(by_identity.items())]
-    query_indices = [index for indices in by_identity.values() for index in indices[1:]]
+    if protected_test:
+        reference_indices = []
+        query_indices = []
+        for identity, indices in sorted(by_identity.items()):
+            model_selection = [
+                index for index in indices if entries[index].get("evaluationRole") == "model_selection"
+            ]
+            protected_queries = [
+                index for index in indices if entries[index].get("evaluationRole") == "protected_test"
+            ]
+            if not model_selection or not protected_queries:
+                raise ValueError(f"Protected split roles are incomplete for {identity}.")
+            reference_indices.append(model_selection[0])
+            query_indices.extend(protected_queries)
+    else:
+        reference_indices = [indices[0] for _, indices in sorted(by_identity.items())]
+        query_indices = [index for indices in by_identity.values() for index in indices[1:]]
     if not query_indices:
         raise ValueError("Each pilot identity needs at least two unique images.")
+    reference_sessions = {
+        entries[index]["physicalCardSessionId"] for index in reference_indices
+    }
+    query_sessions = {
+        entries[index]["physicalCardSessionId"] for index in query_indices
+    }
+    physical_session_leakage = bool(reference_sessions & query_sessions)
+    if protected_test and physical_session_leakage:
+        raise ValueError("Protected queries share a physical-card session with model-selection references.")
     references = embeddings[reference_indices]
     reference_labels = [entries[index]["identityKey"] for index in reference_indices]
     ranks: list[int] = []
@@ -124,6 +153,10 @@ def evaluate_retrieval(entries: list[dict[str, Any]], embeddings: np.ndarray) ->
         "referenceImages": len(reference_indices),
         "queryImages": count,
         "queryImagesExcludedFromReferences": not bool(set(reference_indices) & set(query_indices)),
+        "evaluationMode": "protected_physical_session" if protected_test else "development_same_session",
+        "modelSelectionPhysicalCardSessions": sorted(reference_sessions),
+        "queryPhysicalCardSessions": sorted(query_sessions),
+        "physicalCardSessionLeakageExists": physical_session_leakage,
         "top1": sum(rank <= 1 for rank in ranks) / count,
         "top3": sum(rank <= 3 for rank in ranks) / count,
         "top5": sum(rank <= 5 for rank in ranks) / count,
@@ -245,6 +278,7 @@ def quantize_onnx(
     output_dir: Path,
     fp32_top1: float,
     latency_samples: int,
+    protected_test: bool,
 ) -> dict[str, Any]:
     from onnxruntime.quantization import QuantType, quantize_dynamic
 
@@ -259,7 +293,7 @@ def quantize_onnx(
             weight_type=QuantType.QInt8,
         )
         embeddings, session = onnx_embeddings(output_path, tensors)
-        retrieval = evaluate_retrieval(entries, embeddings)
+        retrieval = evaluate_retrieval(entries, embeddings, protected_test)
         top1_delta = retrieval["top1"] - fp32_top1
         accepted = top1_delta >= -0.03
         return {
@@ -302,11 +336,12 @@ def main() -> None:
     manifest = read_manifest(args.manifest)
     privacy_scope = manifest["privacyScope"]
     production_publication_approved = bool(manifest["productionPublicationApproved"])
+    protected = bool(manifest["summary"]["protectedTestEligible"])
     entries, tensors = load_images(manifest, args.root)
     backbone = torch.hub.load(MODEL_REPOSITORY, MODEL_ID, pretrained=True, trust_repo=True)
     model = Dinov2Embedding(backbone.eval()).eval()
     embeddings = embed_batches(model, tensors, args.batch_size)
-    retrieval = evaluate_retrieval(entries, embeddings)
+    retrieval = evaluate_retrieval(entries, embeddings, protected)
     checkpoint = checkpoint_path()
     onnx_result = {"status": "not_requested"}
     if args.export_onnx:
@@ -324,9 +359,9 @@ def main() -> None:
             args.artifact_dir,
             retrieval["top1"],
             args.latency_samples,
+            protected,
         )
 
-    protected = bool(manifest["summary"]["protectedTestEligible"])
     report = {
         "schemaVersion": "stackr-dinov2-capture-pilot-v1.0.0",
         "generatedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -354,8 +389,8 @@ def main() -> None:
         },
         "evaluationIsolation": {
             "queryImagesAreExcludedFromIndexedReferences": retrieval["queryImagesExcludedFromReferences"],
-            "modelSelectionAndProtectedTestSeparated": protected,
-            "physicalCardSessionLeakageExists": not protected,
+            "modelSelectionAndProtectedTestSeparated": protected and not retrieval["physicalCardSessionLeakageExists"],
+            "physicalCardSessionLeakageExists": retrieval["physicalCardSessionLeakageExists"],
         },
         "measurements": {
             "realCameraTop1": retrieval["top1"],
@@ -392,7 +427,11 @@ def main() -> None:
                 if production_publication_approved
                 else "This is a private development retrieval pilot, not production acceptance evidence."
             ),
-            "Reference and query images are different files, but they show the same physical card session for each identity.",
+            (
+                "Protected queries use explicitly declared physical-card sessions that are disjoint from model-selection references."
+                if protected
+                else "Reference and query images are different files, but protected physical-session roles are not established."
+            ),
             "Top-5 is weak evidence with only six identity classes.",
         ],
     }

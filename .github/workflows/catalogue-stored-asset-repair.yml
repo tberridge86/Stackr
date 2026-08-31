@@ -1,0 +1,176 @@
+name: StackR Stored Catalogue Asset Repair
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Read-only inspection or bounded staging repair
+        required: true
+        default: count
+        type: choice
+        options:
+          - count
+          - dry-run
+          - execute
+      max_assets:
+        description: Maximum audited Japanese assets to inspect
+        required: true
+        default: '2500'
+        type: choice
+        options:
+          - '100'
+          - '500'
+          - '2500'
+      concurrency:
+        description: Maximum repairs in flight
+        required: true
+        default: '2'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '4'
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: read
+
+concurrency:
+  group: stackr-staging-stored-catalogue-asset-repair
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.number == 74 &&
+      github.event.issue.pull_request == null &&
+      github.actor == 'tberridge86' &&
+      (github.event.comment.body == '/inspect-stackr-stored-catalogue-assets' ||
+      github.event.comment.body == '/repair-stackr-stored-catalogue-assets'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: staging
+    env:
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      MODE: ${{ github.event_name == 'issue_comment' && github.event.comment.body == '/repair-stackr-stored-catalogue-assets' && 'execute' || github.event_name == 'issue_comment' && 'count' || inputs.mode }}
+      MAX_ASSETS: ${{ inputs.max_assets || '2500' }}
+      REPAIR_CONCURRENCY: ${{ inputs.concurrency || '2' }}
+      EVIDENCE_DIR: reports/catalogue/stored-asset-repair
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Prove canonical staging scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SUPABASE_URL" == 'https://lmwfhvexfcoyeuoyrlco.supabase.co' ]]
+          [[ "$STACKR_CATALOGUE_IMPORT_TARGET" == 'staging' ]]
+          [[ -n "$SUPABASE_SECRET_KEY" ]]
+          case "$MODE" in count|dry-run|execute) ;; *) exit 1 ;; esac
+          case "$MAX_ASSETS" in 100|500|2500) ;; *) exit 1 ;; esac
+          case "$REPAIR_CONCURRENCY" in 1|2|4) ;; *) exit 1 ;; esac
+
+      - name: Install and test repair tooling
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run test:asset-repair
+          mkdir -p "$EVIDENCE_DIR"
+
+      - name: Count exact remaining cohort
+        if: env.MODE == 'count'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/repair-stored-catalogue-assets.mjs \
+            --target=staging \
+            --source=pokemon_card_jp_official \
+            --language=ja \
+            --count \
+            | tee "$EVIDENCE_DIR/result.json"
+
+      - name: Inspect bounded repair without writes
+        if: env.MODE == 'dry-run'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/repair-stored-catalogue-assets.mjs \
+            --target=staging \
+            --source=pokemon_card_jp_official \
+            --language=ja \
+            --limit=500 \
+            --maxAssets="$MAX_ASSETS" \
+            --concurrency="$REPAIR_CONCURRENCY" \
+            | tee "$EVIDENCE_DIR/result.json"
+
+      - name: Execute bounded staging repair
+        if: env.MODE == 'execute'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/repair-stored-catalogue-assets.mjs \
+            --target=staging \
+            --source=pokemon_card_jp_official \
+            --language=ja \
+            --execute \
+            --limit=500 \
+            --maxAssets="$MAX_ASSETS" \
+            --concurrency="$REPAIR_CONCURRENCY" \
+            | tee "$EVIDENCE_DIR/result.json"
+
+      - name: Record remaining cohort
+        if: env.MODE == 'execute'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/repair-stored-catalogue-assets.mjs \
+            --target=staging \
+            --source=pokemon_card_jp_official \
+            --language=ja \
+            --count \
+            | tee "$EVIDENCE_DIR/remaining.json"
+
+      - name: Publish concise result
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Stored catalogue asset repair'
+            echo
+            echo "- Target: canonical staging only"
+            echo "- Mode: $MODE"
+            echo "- Audited scope: pokemon_card_jp_official / ja / empty derivative list"
+            if [[ -s "$EVIDENCE_DIR/result.json" ]]; then
+              echo "- Candidates: $(jq -r '.candidates // 0' "$EVIDENCE_DIR/result.json")"
+              echo "- Summary: $(jq -c '.summary // {}' "$EVIDENCE_DIR/result.json")"
+            fi
+            if [[ -s "$EVIDENCE_DIR/remaining.json" ]]; then
+              echo "- Remaining: $(jq -r '.candidates // "unknown"' "$EVIDENCE_DIR/remaining.json")"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload repair evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-stored-catalogue-asset-repair-${{ github.run_id }}
+          path: reports/catalogue/stored-asset-repair
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9

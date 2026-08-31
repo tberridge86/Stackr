@@ -1,0 +1,239 @@
+name: Staging Card Image Alias Repair
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Read-only preview or explicit staging apply
+        required: true
+        default: dry-run
+        type: choice
+        options:
+          - dry-run
+          - apply
+      limit:
+        description: Maximum aliases in this bounded run
+        required: true
+        default: '100'
+        type: choice
+        options:
+          - '100'
+          - '250'
+          - '500'
+      after_id:
+        description: Optional duplicate asset UUID cursor
+        required: false
+        default: ''
+        type: string
+      max_batches:
+        description: Maximum batches for an explicit apply
+        required: true
+        default: '1'
+        type: choice
+        options:
+          - '1'
+          - '5'
+          - '10'
+          - '20'
+      confirmation:
+        description: For apply only, enter APPLY-STAGING-ALIASES
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: stackr-staging-card-image-alias-repair
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.number == 74 &&
+      github.event.issue.pull_request == null &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/apply-stackr-staging-card-image-aliases')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: staging
+    env:
+      SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+      SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+      REPAIR_MODE: ${{ github.event_name == 'issue_comment' && 'apply' || inputs.mode }}
+      REPAIR_LIMIT: ${{ github.event_name == 'issue_comment' && '500' || inputs.limit }}
+      REPAIR_AFTER_ID: ${{ github.event_name == 'issue_comment' && '' || inputs.after_id }}
+      REPAIR_MAX_BATCHES: ${{ github.event_name == 'issue_comment' && '20' || inputs.max_batches }}
+      REPAIR_CONFIRMATION: ${{ github.event_name == 'issue_comment' && 'APPLY-STAGING-ALIASES' || inputs.confirmation }}
+      EVIDENCE_DIR: reports/catalogue/card-image-alias-repair
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Prove bounded staging-only intent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_PROJECT_REF" = 'lmwfhvexfcoyeuoyrlco'
+          test -n "$SUPABASE_STAGING_DB_URL"
+          [[ "$SUPABASE_STAGING_DB_URL" == *'lmwfhvexfcoyeuoyrlco'* ]]
+          [[ "$SUPABASE_STAGING_DB_URL" != *'oakdbbzdqwurpjnoqhmu'* ]]
+          case "$REPAIR_MODE" in
+            dry-run) ;;
+            apply) test "$REPAIR_CONFIRMATION" = 'APPLY-STAGING-ALIASES' ;;
+            *) exit 1 ;;
+          esac
+          case "$REPAIR_LIMIT" in
+            100|250|500) ;;
+            *) exit 1 ;;
+          esac
+          case "$REPAIR_MAX_BATCHES" in
+            1|5|10|20) ;;
+            *) exit 1 ;;
+          esac
+
+      - name: Install and test the isolated repair tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/test-repair-card-image-duplicate-content-aliases.mjs
+
+      - name: Capture before evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          args=(
+            node scripts/repair-card-image-duplicate-content-aliases.mjs
+            --target=staging
+            "--limit=$REPAIR_LIMIT"
+          )
+          if [[ -n "$REPAIR_AFTER_ID" ]]; then
+            args+=("--after-id=$REPAIR_AFTER_ID")
+          fi
+          "${args[@]}" > "$EVIDENCE_DIR/before.json"
+
+      - name: Apply the exact optimistic staging batch
+        if: env.REPAIR_MODE == 'apply'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for batch in $(seq 1 "$REPAIR_MAX_BATCHES"); do
+            args=(
+              node scripts/repair-card-image-duplicate-content-aliases.mjs
+              --target=staging
+              --apply
+              "--limit=$REPAIR_LIMIT"
+            )
+            if [[ -n "$REPAIR_AFTER_ID" ]]; then
+              args+=("--after-id=$REPAIR_AFTER_ID")
+            fi
+            output="$EVIDENCE_DIR/execution-batch-$(printf '%02d' "$batch").json"
+            "${args[@]}" > "$output"
+            updated="$(jq -r '.applied.updated' "$output")"
+            remaining="$(jq -r '.pendingAfterExpected' "$output")"
+            if [[ "$updated" = '0' || "$remaining" = '0' ]]; then
+              break
+            fi
+          done
+          node - "$EVIDENCE_DIR" <<'NODE'
+          const { readdirSync, readFileSync, writeFileSync } = require('node:fs');
+          const directory = process.argv[2];
+          const files = readdirSync(directory)
+            .filter((name) => /^execution-batch-\d+\.json$/.test(name))
+            .sort();
+          const batches = files.map((name) => JSON.parse(readFileSync(`${directory}/${name}`, 'utf8')));
+          const summary = {
+            schemaVersion: 1,
+            dryRun: false,
+            batchCount: batches.length,
+            updated: batches.reduce((total, batch) => total + batch.applied.updated, 0),
+            pendingAfterExpected: batches.at(-1)?.pendingAfterExpected ?? null,
+            evidenceDigest: batches.at(-1)?.evidence.evidenceDigest ?? null,
+          };
+          writeFileSync(`${directory}/execution.json`, `${JSON.stringify(summary, null, 2)}\n`);
+          NODE
+          if [[ "$REPAIR_MAX_BATCHES" = '20' && -z "$REPAIR_AFTER_ID" ]]; then
+            test "$(jq -r '.pendingAfterExpected' "$EVIDENCE_DIR/execution.json")" = '0'
+          fi
+
+      - name: Record the read-only execution
+        if: env.REPAIR_MODE == 'dry-run'
+        shell: bash
+        run: cp "$EVIDENCE_DIR/before.json" "$EVIDENCE_DIR/execution.json"
+
+      - name: Capture after evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          args=(
+            node scripts/repair-card-image-duplicate-content-aliases.mjs
+            --target=staging
+            "--limit=$REPAIR_LIMIT"
+          )
+          if [[ -n "$REPAIR_AFTER_ID" ]]; then
+            args+=("--after-id=$REPAIR_AFTER_ID")
+          fi
+          "${args[@]}" > "$EVIDENCE_DIR/after.json"
+
+      - name: Summarise and secret-scan evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -s "$EVIDENCE_DIR/before.json" ]]; then
+            {
+              echo '### Staging card-image alias repair'
+              echo
+              echo "- Requested mode: \`$REPAIR_MODE\`"
+              echo "- Bounded row cap: \`$REPAIR_LIMIT\`"
+              echo "- Maximum batches: \`$REPAIR_MAX_BATCHES\`"
+              echo "- Before pending: \`$(jq -r '.evidence.pendingTotal' "$EVIDENCE_DIR/before.json")\`"
+              if [[ -s "$EVIDENCE_DIR/execution.json" ]]; then
+                echo "- Updated: \`$(jq -r '.updated // .applied.updated' "$EVIDENCE_DIR/execution.json")\`"
+              fi
+              if [[ -s "$EVIDENCE_DIR/after.json" ]]; then
+                echo "- After pending: \`$(jq -r '.evidence.pendingTotal' "$EVIDENCE_DIR/after.json")\`"
+              fi
+              echo '- Production target permitted: `no`'
+              echo '- Storage bytes rewritten: `0`'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          node scripts/deploy/secret-scan.mjs --directory="$EVIDENCE_DIR"
+
+      - name: Upload before, execution, and after evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-staging-card-image-alias-repair-${{ github.run_id }}
+          path: reports/catalogue/card-image-alias-repair
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report the issue-command result
+        if: always() && github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          body="Staging card-image alias repair finished with status **${JOB_STATUS}**. It was capped at 20 × 500 rows; production targeting is rejected. Evidence: ${run_url}"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/74/comments" --method POST --field body="$body"

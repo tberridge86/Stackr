@@ -76,7 +76,10 @@ async function readApprovedInputs(manifestPath, assetRoot) {
   const manifestSha256 = sha256(manifestBytes);
   const manifest = JSON.parse(manifestBytes.toString('utf8'));
   if (manifestSha256 !== EXPECTED_MANIFEST_SHA256) throw new Error('The consent manifest checksum is not approved.');
-  if (manifest.schemaVersion !== 'stackr-reviewed-capture-evaluation-manifest-v1.1.0') {
+  if (![
+    'stackr-reviewed-capture-evaluation-manifest-v1.1.0',
+    'stackr-reviewed-capture-evaluation-manifest-v1.2.0',
+  ].includes(manifest.schemaVersion)) {
     throw new Error('Unsupported capture consent manifest.');
   }
   if (!manifest.productionPublicationApproved

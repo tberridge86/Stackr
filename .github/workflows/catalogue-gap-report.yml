@@ -1,0 +1,125 @@
+name: StackR Catalogue Gap Report
+
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: stackr-staging-catalogue-gap-report
+  cancel-in-progress: true
+
+jobs:
+  report:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.number == 74 &&
+      github.event.issue.pull_request == null &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/report-stackr-catalogue-gaps')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: staging
+    env:
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      REPORT_DIR: reports/catalogue/actionable-gap-report
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Prove canonical staging-only read access
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_url='https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          [[ "$SUPABASE_URL" == "$expected_url" ]]
+          [[ "$STACKR_CATALOGUE_IMPORT_TARGET" == 'staging' ]]
+          [[ -n "$SUPABASE_SECRET_KEY" ]]
+
+      - name: Install and verify report tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run test:master-catalogue-importer
+          npm run test:catalogue-gap-report
+
+      - name: Build the full read-only gap report
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$REPORT_DIR"
+          node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx \
+            scripts/catalogue-master.ts report \
+            --target=staging \
+            --dry-run \
+            --languages=en,ja,zh-cn,ko \
+            --reportDir="$REPORT_DIR" \
+            > "$REPORT_DIR/command-result.json"
+
+          for file in \
+            master-coverage.csv \
+            pikaqian-coverage.csv \
+            missing-card-records.csv \
+            missing-card-images.csv \
+            missing-set-art.csv \
+            image-leftovers.csv \
+            exact-approved-image-candidates.csv \
+            same-artwork-references.csv \
+            scan-acquisition-queue.csv \
+            conflicts.csv \
+            rights-blocked.csv \
+            summary.json; do
+            [[ -s "$REPORT_DIR/$file" ]]
+          done
+
+          node scripts/catalogue-gap-summary.mjs \
+            --report-dir="$REPORT_DIR" \
+            --output="$REPORT_DIR/action-summary.md"
+          cat "$REPORT_DIR/action-summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload full actionable queues and evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-catalogue-gap-report-${{ github.run_id }}
+          path: reports/catalogue/actionable-gap-report
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Post the concise result to issue 74
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          summary="$REPORT_DIR/summary.json"
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [[ -s "$summary" ]]; then
+            exact="$(jq -r '.totals.exactApprovedImageCandidates' "$summary")"
+            same_art="$(jq -r '.totals.sameArtworkReferences' "$summary")"
+            scans="$(jq -r '.totals.scanAcquisitionQueue' "$summary")"
+            set_art="$(jq -r '.totals.missingSetArt' "$summary")"
+            conflicts="$(jq -r '.totals.conflicts' "$summary")"
+            stored="$(jq -r '.cardImageInventory.totals.withStorageObject' "$summary")"
+            ready="$(jq -r '.cardImageInventory.totals.requiredDerivativesReady' "$summary")"
+            body="Read-only staging catalogue gaps: exact approved candidates **${exact}**; same-artwork review **${same_art}**; scans required **${scans}**; missing set art **${set_art}**; open conflicts **${conflicts}**; controlled stored images **${stored}**; derivative-ready assets **${ready}**. Production modified: **no**. Full queues: ${run_url}"
+          else
+            body="Read-only staging catalogue gap report did not complete. Production modified: **no**. Diagnostics: ${run_url}"
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/issues/74/comments" --method POST --field body="$body"

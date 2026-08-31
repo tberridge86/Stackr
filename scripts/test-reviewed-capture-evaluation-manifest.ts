@@ -57,17 +57,60 @@ try {
   assert.equal(manifest.summary.uniqueImages, 1);
   assert.equal(manifest.summary.exactDuplicateImagesRemoved, 1);
   assert.equal(manifest.summary.identityClasses, 1);
+  assert.equal(manifest.summary.hasTwoSessionsPerIdentity, false);
+  assert.equal(manifest.summary.explicitSessionRolesDeclared, false);
   assert.equal(manifest.summary.protectedTestEligible, false);
   assert.equal(manifest.evaluationPolicy.productionAcceptanceAllowed, false);
   assert.equal(manifest.images[0].language, 'zh-Hans');
   assert.equal(manifest.images[0].relativePath, 'Magneton_1/duplicate.png');
   assert.ok(!JSON.stringify(manifest).includes(root));
 
+  const protectedSession = path.join(root, 'Magneton_2');
+  mkdirSync(protectedSession);
+  const protectedPixels = Buffer.from('independent-protected-capture');
+  const protectedHash = createHash('sha256').update(protectedPixels).digest('hex');
+  writeFileSync(path.join(protectedSession, 'protected.png'), protectedPixels);
+  const protectedRow = {
+    ...row,
+    physical_card_session_id: 'Magneton_2',
+    source_folder: 'Magneton_2',
+    file_name: 'protected.png',
+    relative_path: 'Magneton_2/protected.png',
+    bytes: String(protectedPixels.length),
+    sha256: protectedHash,
+  };
+  writeFileSync(
+    path.join(root, 'capture-review-manifest.csv'),
+    `${columns.map(csvCell).join(',')}\n${[row, duplicate, protectedRow].map((item) => columns.map((column) => csvCell(item[column as keyof typeof item])).join(',')).join('\n')}\n`,
+  );
+  writeFileSync(path.join(root, 'capture-consent-evidence.json'), JSON.stringify({
+    schemaVersion: 'stackr-stage6-capture-consent-v1.2.0',
+    scope: 'private_model_evaluation_and_training',
+    ownerStatement: 'Fixture protected-split consent.',
+    reviewedPhysicalCardSessions: ['Magneton_1', 'Magneton_2'],
+    modelSelectionPhysicalCardSessions: ['Magneton_1'],
+    protectedTestPhysicalCardSessions: ['Magneton_2'],
+    productionPublicationApproved: false,
+  }));
+  const protectedManifest = buildReviewedCaptureEvaluationManifest({ root });
+  assert.equal(protectedManifest.summary.hasTwoSessionsPerIdentity, true);
+  assert.equal(protectedManifest.summary.explicitSessionRolesDeclared, true);
+  assert.equal(protectedManifest.summary.modelSelectionPhysicalCardSessions, 1);
+  assert.equal(protectedManifest.summary.protectedTestPhysicalCardSessions, 1);
+  assert.equal(protectedManifest.summary.protectedTestEligible, true);
+  assert.deepEqual(
+    protectedManifest.images.map((image) => image.evaluationRole).sort(),
+    ['model_selection', 'protected_test'],
+  );
+  assert.equal(protectedManifest.evaluationPolicy.productionAcceptanceAllowed, false);
+
   writeFileSync(path.join(root, 'capture-consent-evidence.json'), JSON.stringify({
     schemaVersion: 'stackr-stage6-capture-consent-v1.1.0',
     scope: 'public_catalogue_model_evaluation_training_and_production',
     ownerStatement: 'Fixture public-production consent.',
-    reviewedPhysicalCardSessions: ['Magneton_1'],
+    reviewedPhysicalCardSessions: ['Magneton_1', 'Magneton_2'],
+    modelSelectionPhysicalCardSessions: ['Magneton_1'],
+    protectedTestPhysicalCardSessions: ['Magneton_2'],
     productionPublicationApproved: true,
   }));
   const publicManifest = buildReviewedCaptureEvaluationManifest({ root });
@@ -79,7 +122,7 @@ try {
   writeFileSync(path.join(root, 'capture-consent-evidence.json'), JSON.stringify({
     scope: 'public_catalogue_model_evaluation_training_and_production',
     ownerStatement: 'Fixture incomplete public consent.',
-    reviewedPhysicalCardSessions: ['Magneton_1'],
+    reviewedPhysicalCardSessions: ['Magneton_1', 'Magneton_2'],
     productionPublicationApproved: false,
   }));
   assert.throws(
