@@ -11,7 +11,7 @@ on:
       write_concurrency:
         description: Concurrent staging writes inside one ingestion shard
         required: true
-        default: '2'
+        default: '1'
         type: string
       pokedata_set_batch_size:
         description: PokeData Japanese sets per bounded image-only shard
@@ -83,7 +83,7 @@ jobs:
     env:
       CATALOGUE_BATCH_SIZE: ${{ inputs.ingest_batch_size || '500' }}
       CATALOGUE_MAX_RECORDS: ${{ inputs.max_records || '' }}
-      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '2' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '1' }}
       POKEDATA_SET_BATCH_SIZE: ${{ inputs.pokedata_set_batch_size || '50' }}
       CATALOGUE_MIRROR_BATCH_SIZE: ${{ inputs.mirror_batch_size || '500' }}
       CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
@@ -180,7 +180,7 @@ jobs:
       max-parallel: 1
     env:
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
-      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '2' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '1' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -252,7 +252,7 @@ jobs:
     environment: staging
     env:
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
-      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '2' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '1' }}
       POKEDATA_SET_BATCH_SIZE: ${{ inputs.pokedata_set_batch_size || '50' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -275,21 +275,34 @@ jobs:
           offset=0
           for (( shard=1; shard<=20; shard++ )); do
             report="reports/catalogue/japanese/pokedata/ingest-${offset}.json"
-            npm run --silent catalogue:ingest-pokedata-japanese-images -- \
-              --offset="$offset" \
-              --limit="$POKEDATA_SET_BATCH_SIZE" \
-              --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
-              --maxAttempts=4 \
-              --retryBaseMs=2000 \
-              --setPauseMs=1000 \
-              --requestId="pokedata-jp:${GITHUB_RUN_ID}:${offset}" \
-              --target=staging | tee "$report"
-            jq -e '
-              .ok == true
-              and .metadataCreated == false
-              and .productionModified == false
-              and .batch.failedSets == 0
-            ' "$report" >/dev/null
+            completed=false
+            for attempt in 1 2 3; do
+              attempt_report="reports/catalogue/japanese/pokedata/ingest-${offset}-attempt-${attempt}.json"
+              if npm run --silent catalogue:ingest-pokedata-japanese-images -- \
+                --offset="$offset" \
+                --limit="$POKEDATA_SET_BATCH_SIZE" \
+                --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
+                --maxAttempts=4 \
+                --retryBaseMs=2000 \
+                --setPauseMs=2000 \
+                --requestId="pokedata-jp:${GITHUB_RUN_ID}:${offset}:attempt-${attempt}" \
+                --target=staging | tee "$attempt_report" \
+                && jq -e '
+                  .ok == true
+                  and .metadataCreated == false
+                  and .productionModified == false
+                  and .batch.failedSets == 0
+                ' "$attempt_report" >/dev/null; then
+                cp "$attempt_report" "$report"
+                completed=true
+                break
+              fi
+              cp "$attempt_report" "$report"
+              if (( attempt < 3 )); then
+                sleep $((attempt * 30))
+              fi
+            done
+            [[ "$completed" == 'true' ]]
             jq -c . "$report" >> "$parts"
             selected="$(jq -r '.batch.selectedSets' "$report")"
             [[ "$selected" =~ ^[0-9]+$ ]]
