@@ -452,8 +452,33 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /needs: \[prepare, pokedata-ingest\][\s\S]+fromJSON\(needs\.prepare\.outputs\.matrix\)[\s\S]+max-parallel: 1/,
-    'official Japanese ingestion must wait for PokeData and use one deterministic staging writer',
+    /official-ingest:[\s\S]+needs: prepare[\s\S]+fromJSON\(needs\.prepare\.outputs\.matrix\)[\s\S]+max-parallel: 1/,
+    'official Japanese ingestion must bootstrap metadata first with one deterministic staging writer',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /official-jp-preserve:[\s\S]+--allowImageAssets[\s\S]+--approvedOnlyAssets[\s\S]+--preserveExistingMetadata[\s\S]+pokedata-ingest:[\s\S]+needs: \[prepare, official-ingest\]/,
+    'official Japanese metadata and exact images must be preserved or created before PokeData attaches finish-specific scans',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /--argjson expected_cards '\$\{\{ matrix\.limit \}\}'[\s\S]+recordsConflicted \/\/ -1[\s\S]+recordsByTypeRetrieved\.card \/\/ -1[\s\S]+officialSnapshot/,
+    'each official Japanese shard must account for its exact targeted card count with zero conflicts',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /actions: read[\s\S]+gh run download "\$GITHUB_RUN_ID"[\s\S]+sort_by\(\.offset\)[\s\S]+intervalsContiguous[\s\S]+targetCount == \.officialSnapshotHitCount[\s\S]+intervals\[0\]\.offset == 0[\s\S]+intervalsContiguous == true[\s\S]+finalEnd == \.targetCount[\s\S]+accountedCards == \.targetCount[\s\S]+conflictedRecords == 0[\s\S]+official-ingest-summary\.json/,
+    'final Japanese recovery must aggregate immutable shard artifacts for the full official snapshot before completion',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /Publish the completed Japanese staging shard[\s\S]+accountedCards == \$target_count[\s\S]+official-ingest-summary\.json[\s\S]+catalogue-master\.ts publish/,
+    'staging publication must remain blocked until every targeted official card is accounted for',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /Japanese official snapshot recovery: accounted \*\*\$\{official_accounted\}\/\$\{official_target\} targeted cards\*\*[\s\S]+official snapshot containing \*\*\$\{official_hit_count\} cards\*\*/,
+    'the final report must distinguish official targeted-card accounting from active-variant image coverage',
   );
   assert.match(
     japaneseCompletionWorkflow,
@@ -500,8 +525,8 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /for \(\( shard=1; shard<=20; shard\+\+ \)\); do[\s\S]+for attempt in 1 2 3[\s\S]+failedSets == 0[\s\S]+attempt \* 30/,
-    'PokeData shards must retry failed sets after resuming already-completed set runs',
+    /for \(\( shard=1; shard<=20; shard\+\+ \)\); do[\s\S]+for attempt in 1 2 3[\s\S]+failedSets == 0[\s\S]+totals\.conflicted == 0[\s\S]+attempt \* 30/,
+    'PokeData shards must retry failed sets or quarantined records after resuming already-completed set runs',
   );
   assert.match(
     japaneseCompletionWorkflow,

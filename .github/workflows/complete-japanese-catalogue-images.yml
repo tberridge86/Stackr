@@ -61,6 +61,7 @@ on:
       - 'scripts/verify-japanese-staging-gateway.mjs'
 
 permissions:
+  actions: read
   contents: read
   issues: write
 
@@ -201,9 +202,9 @@ jobs:
           }, null, 2));
           NODE
 
-  ingest:
-    needs: [prepare, pokedata-ingest]
-    name: ingest-ja-${{ matrix.offset }}
+  official-ingest:
+    needs: prepare
+    name: official-ja-${{ matrix.offset }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: staging
@@ -232,7 +233,7 @@ jobs:
           set -euo pipefail
           mkdir -p reports/catalogue/japanese
           report="reports/catalogue/japanese/ingest-${{ matrix.offset }}.json"
-          run_key="official-jp:${GITHUB_SHA}:offset-${{ matrix.offset }}:limit-${{ matrix.limit }}"
+          run_key="official-jp-preserve:${GITHUB_SHA}:offset-${{ matrix.offset }}:limit-${{ matrix.limit }}"
           completed=false
           for attempt in 1 2 3 4; do
             attempt_report="reports/catalogue/japanese/ingest-${{ matrix.offset }}-attempt-${attempt}.json"
@@ -245,11 +246,28 @@ jobs:
               --licenceStatus=approved \
               --assetLicenceStatus=approved \
               --allowImageAssets \
-              --assetsOnly \
               --approvedOnlyAssets \
+              --preserveExistingMetadata \
               --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
               --target=staging | tee "$attempt_report" \
-              && jq -e '.ok == true' "$attempt_report" >/dev/null; then
+              && jq -e --argjson expected_cards '${{ matrix.limit }}' '
+                .ok == true
+                and (.stats.recordsConflicted // -1) == 0
+                and (.stats.recordsByTypeRetrieved.card // -1) == $expected_cards
+              ' "$attempt_report" >/dev/null; then
+              annotated_report="${attempt_report%.json}-annotated.json"
+              jq \
+                --argjson offset '${{ matrix.offset }}' \
+                --argjson limit '${{ matrix.limit }}' \
+                --argjson hit_count '${{ needs.prepare.outputs.hit_count }}' \
+                --argjson target_count '${{ needs.prepare.outputs.target_count }}' \
+                '.officialSnapshot = {
+                  offset: $offset,
+                  limit: $limit,
+                  hitCount: $hit_count,
+                  targetCount: $target_count
+                }' "$attempt_report" > "$annotated_report"
+              mv "$annotated_report" "$attempt_report"
               cp "$attempt_report" "$report"
               completed=true
               break
@@ -271,7 +289,7 @@ jobs:
           compression-level: 9
 
   pokedata-ingest:
-    needs: prepare
+    needs: [prepare, official-ingest]
     outputs:
       matched_sets: ${{ steps.pokedata.outputs.matched_sets }}
       unmatched_sets: ${{ steps.pokedata.outputs.unmatched_sets }}
@@ -325,6 +343,7 @@ jobs:
                   and .metadataCreated == false
                   and .productionModified == false
                   and .batch.failedSets == 0
+                  and .totals.conflicted == 0
                 ' "$attempt_report" >/dev/null; then
                 cp "$attempt_report" "$report"
                 completed=true
@@ -379,6 +398,7 @@ jobs:
                 all($reports[]; .ok == true)
                 and ((.crosswalkDigests | length) == 1)
                 and .failedSets == 0
+                and .totals.conflicted == 0
                 and .productionModified == false
               )
           ' "$parts" > "$summary"
@@ -388,6 +408,7 @@ jobs:
             and .crosswalkDigest != null
             and (.crosswalkDigests | length) == 1
             and .selectedSets == .matchedSets
+            and .totals.conflicted == 0
           ' "$summary" >/dev/null
           {
             echo "matched_sets=$(jq -r '.matchedSets' "$summary")"
@@ -409,7 +430,7 @@ jobs:
           compression-level: 9
 
   mirror:
-    needs: [ingest, pokedata-ingest]
+    needs: [official-ingest, pokedata-ingest]
     runs-on: ubuntu-latest
     timeout-minutes: 360
     environment: staging
@@ -519,14 +540,16 @@ jobs:
           compression-level: 9
 
   complete-and-publish:
-    needs: [prepare, ingest, pokedata-ingest, mirror]
-    if: always() && needs.prepare.result == 'success' && needs.ingest.result == 'success' && needs.pokedata-ingest.result == 'success' && needs.mirror.result == 'success'
+    needs: [prepare, official-ingest, pokedata-ingest, mirror]
+    if: always() && needs.prepare.result == 'success' && needs.official-ingest.result == 'success' && needs.pokedata-ingest.result == 'success' && needs.mirror.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 180
     environment: staging
     env:
       GH_TOKEN: ${{ github.token }}
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      OFFICIAL_HIT_COUNT: ${{ needs.prepare.outputs.hit_count }}
+      OFFICIAL_TARGET_COUNT: ${{ needs.prepare.outputs.target_count }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -539,6 +562,81 @@ jobs:
         run: |
           npm ci
           npm ci --prefix backend
+
+      - name: Verify every targeted official Japanese card was recovered
+        id: official-evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$OFFICIAL_HIT_COUNT" =~ ^[1-9][0-9]*$ ]]
+          [[ "$OFFICIAL_TARGET_COUNT" =~ ^[1-9][0-9]*$ ]]
+          (( OFFICIAL_TARGET_COUNT <= OFFICIAL_HIT_COUNT ))
+          evidence_dir=reports/catalogue/japanese/official-ingest-evidence
+          mkdir -p "$evidence_dir"
+          gh run download "$GITHUB_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "japanese-ingest-${GITHUB_RUN_ID}-*" \
+            --dir "$evidence_dir"
+          mapfile -t shard_reports < <(find "$evidence_dir" -type f -name 'ingest-*.json' -print | sort)
+          (( ${#shard_reports[@]} > 0 ))
+          jq -s \
+            --argjson hit_count "$OFFICIAL_HIT_COUNT" \
+            --argjson target_count "$OFFICIAL_TARGET_COUNT" '
+            . as $reports
+            | ($reports
+                | map({
+                    offset: .officialSnapshot.offset,
+                    limit: .officialSnapshot.limit
+                  })
+                | sort_by(.offset)
+              ) as $intervals
+            | (reduce $intervals[] as $interval (
+                { contiguous: true, nextOffset: 0 };
+                .contiguous = (
+                  .contiguous
+                  and $interval.offset == .nextOffset
+                  and $interval.limit > 0
+                )
+                | .nextOffset = ($interval.offset + $interval.limit)
+              )) as $coverage
+            | {
+                schemaVersion: 1,
+                language: "ja",
+                stagingOnly: true,
+                productionModified: false,
+                officialSnapshotHitCount: $hit_count,
+                targetCount: $target_count,
+                shardCount: ($reports | length),
+                intervals: $intervals,
+                intervalsContiguous: $coverage.contiguous,
+                finalEnd: $coverage.nextOffset,
+                targetedCards: ($reports | map(.officialSnapshot.limit) | add // 0),
+                accountedCards: ($reports | map(.stats.recordsByTypeRetrieved.card // 0) | add // 0),
+                conflictedRecords: ($reports | map(.stats.recordsConflicted // 0) | add // 0)
+              }
+            | .ok = (
+                .officialSnapshotHitCount > 0
+                and .targetCount > 0
+                and .targetCount == .officialSnapshotHitCount
+                and .shardCount > 0
+                and .intervals[0].offset == 0
+                and .intervalsContiguous == true
+                and .finalEnd == .targetCount
+                and .targetedCards == .targetCount
+                and .accountedCards == .targetCount
+                and .conflictedRecords == 0
+                and all($reports[];
+                  .ok == true
+                  and .officialSnapshot.hitCount == $hit_count
+                  and .officialSnapshot.targetCount == $target_count
+                  and .stats.recordsConflicted == 0
+                  and .stats.recordsByTypeRetrieved.card == .officialSnapshot.limit
+                )
+              )
+          ' "${shard_reports[@]}" > reports/catalogue/japanese/official-ingest-summary.json
+          jq . reports/catalogue/japanese/official-ingest-summary.json
+          jq -e '.ok == true' reports/catalogue/japanese/official-ingest-summary.json >/dev/null
+
       - name: Complete explicit Japanese image aliases and missing derivatives
         id: completion
         continue-on-error: true
@@ -560,6 +658,18 @@ jobs:
           PUBLISH_VERSION_INPUT: ${{ inputs.publish_version || '' }}
         run: |
           set -euo pipefail
+          jq -e \
+            --argjson hit_count "$OFFICIAL_HIT_COUNT" \
+            --argjson target_count "$OFFICIAL_TARGET_COUNT" '
+            .ok == true
+            and .productionModified == false
+            and .officialSnapshotHitCount == $hit_count
+            and .targetCount == $target_count
+            and .targetCount == .officialSnapshotHitCount
+            and .targetedCards == $target_count
+            and .accountedCards == $target_count
+            and .conflictedRecords == 0
+          ' reports/catalogue/japanese/official-ingest-summary.json >/dev/null
           jq -e '.ok == true and .productionModified == false and .effectiveAppReadyPercent == 100 and .failed == 0 and .conflicts == 0' \
             reports/catalogue/japanese/completion.json >/dev/null
           requested="$PUBLISH_VERSION_INPUT"
@@ -660,7 +770,12 @@ jobs:
             deployed_requests="$(jq -r '.gateway.requests // 0' "$gateway_report" 2>/dev/null || printf '0')"
             deployed_cache_bypass="$(jq -r '.gateway.cacheBypassPercent // 0' "$gateway_report" 2>/dev/null || printf '0')"
             deployed_storage_sample="$(jq -r '.gatewayStorageSample.coveragePercent // 0' "$gateway_report" 2>/dev/null || printf '0')"
-            body="Japanese staging images: direct app-ready **${direct}%** (${direct_count}/${variants}); effective app-ready with explicit same-printing finish fallbacks **${effective}%** (${effective_count}/${variants}); in-process API-visible **${api_coverage}%**; Storage objects reachable **${storage_coverage}%**; deployed staging API-visible **${deployed_api_coverage}%** across **${deployed_requests}** cache-bypassed requests; deployed Storage sample **${deployed_storage_sample}%**; gateway cache bypass **${deployed_cache_bypass}%**; finish fallbacks created **${aliases}**; derivative repairs **${derivatives}**; completion conflicts **${conflicts}**. PokeData exact set crosswalk: matched **${POKEDATA_MATCHED_SETS}**, processed **${POKEDATA_SELECTED_SETS}**, resumed **${POKEDATA_RESUMED_SETS}**, unmatched **${POKEDATA_UNMATCHED_SETS}**, ambiguous **${POKEDATA_AMBIGUOUS_SETS}**, quarantined records **${POKEDATA_CONFLICTED_RECORDS}**, failed sets **${POKEDATA_FAILED_SETS}**. Completion: **${COMPLETION_OUTCOME}**; staging publication: **${PUBLICATION_OUTCOME}**; API/Storage verification: **${API_STORAGE_OUTCOME}**; deployed staging API verification: **${DEPLOYED_API_OUTCOME}**; production released: **0%**. Evidence: ${run_url}"
+            official_report=reports/catalogue/japanese/official-ingest-summary.json
+            official_accounted="$(jq -r '.accountedCards // 0' "$official_report" 2>/dev/null || printf '0')"
+            official_target="$(jq -r '.targetCount // 0' "$official_report" 2>/dev/null || printf '0')"
+            official_hit_count="$(jq -r '.officialSnapshotHitCount // 0' "$official_report" 2>/dev/null || printf '0')"
+            official_conflicts="$(jq -r '.conflictedRecords // 0' "$official_report" 2>/dev/null || printf '0')"
+            body="Japanese official snapshot recovery: accounted **${official_accounted}/${official_target} targeted cards** from an official snapshot containing **${official_hit_count} cards**, with **${official_conflicts} ingestion conflicts**. Active-variant image readiness: direct app-ready **${direct}%** (${direct_count}/${variants}); effective app-ready with explicit same-printing finish fallbacks **${effective}%** (${effective_count}/${variants}); in-process API-visible **${api_coverage}%**; Storage objects reachable **${storage_coverage}%**; deployed staging API-visible **${deployed_api_coverage}%** across **${deployed_requests}** cache-bypassed requests; deployed Storage sample **${deployed_storage_sample}%**; gateway cache bypass **${deployed_cache_bypass}%**; finish fallbacks created **${aliases}**; derivative repairs **${derivatives}**; completion conflicts **${conflicts}**. PokeData exact set crosswalk: matched **${POKEDATA_MATCHED_SETS}**, processed **${POKEDATA_SELECTED_SETS}**, resumed **${POKEDATA_RESUMED_SETS}**, unmatched **${POKEDATA_UNMATCHED_SETS}**, ambiguous **${POKEDATA_AMBIGUOUS_SETS}**, quarantined records **${POKEDATA_CONFLICTED_RECORDS}**, failed sets **${POKEDATA_FAILED_SETS}**. Completion: **${COMPLETION_OUTCOME}**; staging publication: **${PUBLICATION_OUTCOME}**; API/Storage verification: **${API_STORAGE_OUTCOME}**; deployed staging API verification: **${DEPLOYED_API_OUTCOME}**; production released: **0%**. Evidence: ${run_url}"
           else
             body="Japanese staging image completion did not produce a coverage report. Production released: **0%**. Diagnostics: ${run_url}"
           fi
@@ -676,7 +791,7 @@ jobs:
           retention-days: 30
           compression-level: 9
 
-      - name: Enforce 100% effective staging coverage
+      - name: Enforce official target accounting and 100% effective staging coverage
         if: always()
         shell: bash
         env:
@@ -690,6 +805,18 @@ jobs:
           [[ "$PUBLICATION_OUTCOME" == 'success' ]]
           [[ "$API_STORAGE_OUTCOME" == 'success' ]]
           [[ "$DEPLOYED_API_OUTCOME" == 'success' ]]
+          jq -e \
+            --argjson hit_count "$OFFICIAL_HIT_COUNT" \
+            --argjson target_count "$OFFICIAL_TARGET_COUNT" '
+            .ok == true
+            and .productionModified == false
+            and .officialSnapshotHitCount == $hit_count
+            and .targetCount == $target_count
+            and .targetCount == .officialSnapshotHitCount
+            and .targetedCards == $target_count
+            and .accountedCards == $target_count
+            and .conflictedRecords == 0
+          ' reports/catalogue/japanese/official-ingest-summary.json >/dev/null
           jq -e '
             .ok == true
             and .productionModified == false
