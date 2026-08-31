@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: stackr-staging-catalogue-gap-report
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   report:
@@ -54,6 +54,7 @@ jobs:
         run: |
           set -euo pipefail
           npm ci
+          npm ci --prefix backend
           npm run test:master-catalogue-importer
           npm run test:catalogue-gap-report
 
