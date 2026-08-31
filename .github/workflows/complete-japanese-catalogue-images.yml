@@ -66,15 +66,17 @@ permissions:
 
 concurrency:
   group: ${{
-    (github.event_name != 'issue_comment' ||
+    (github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       (github.event.issue.number == 74 &&
        github.event.issue.pull_request == null &&
+       github.actor_id == github.repository_owner_id &&
        github.actor == 'tberridge86' &&
        github.event.comment.body == '/run-japanese-catalogue-images')) &&
     'stackr-staging-database-maintenance' ||
     format('stackr-japanese-catalogue-images-noop-{0}', github.run_id)
     }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
@@ -85,9 +87,11 @@ env:
 jobs:
   prepare:
     if: >-
-      github.event_name != 'issue_comment' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       (github.event.issue.number == 74 &&
        github.event.issue.pull_request == null &&
+       github.actor_id == github.repository_owner_id &&
        github.actor == 'tberridge86' &&
        github.event.comment.body == '/run-japanese-catalogue-images')
     runs-on: ubuntu-latest
