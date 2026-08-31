@@ -14,11 +14,19 @@ import {
   type ValidationResult,
 } from './sourceAdapter';
 
-type SupabaseClientLike = {
+export type SupabaseClientLike = {
   schema: (schema: string) => {
     from: (table: string) => any;
     rpc?: (name: string, args: Record<string, unknown>) => any;
   };
+};
+
+export type PreservedOfficialJapaneseBootstrapResult = {
+  status: 'inserted' | 'preserved' | 'conflict';
+  reason: string;
+  printingId: string | null;
+  variantId: string | null;
+  canonicalKey: string | null;
 };
 
 type ImportCommand =
@@ -89,6 +97,107 @@ export function parseRetainedRawRecord(value: unknown) {
     throw new Error('invalid_retain_raw_source_record_response');
   }
   return { id, changed: changed as 'inserted' | 'updated' | 'reused' };
+}
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const officialJapaneseCanonicalKeyPattern = new RegExp(
+  `^pokemon:ja:${uuidPattern.source.slice(1, -1)}:.+:normal$`,
+  'i',
+);
+
+function nullableUuid(value: unknown): value is string | null {
+  return value === null || (typeof value === 'string' && uuidPattern.test(value));
+}
+
+function nullableOfficialJapaneseCanonicalKey(value: unknown): value is string | null {
+  return value === null
+    || (typeof value === 'string' && officialJapaneseCanonicalKeyPattern.test(value));
+}
+
+export function parsePreservedOfficialJapaneseBootstrapResult(
+  value: unknown,
+): PreservedOfficialJapaneseBootstrapResult {
+  const result = Array.isArray(value)
+    ? value.length === 1 ? value[0] : null
+    : value;
+  if (!result || typeof result !== 'object' || Array.isArray(result)) {
+    throw new Error('invalid_bootstrap_preserved_official_japanese_card_response');
+  }
+
+  const row = result as Record<string, unknown>;
+  if (
+    typeof row.status !== 'string'
+    || !['inserted', 'preserved', 'conflict'].includes(row.status)
+    || typeof row.reason !== 'string'
+    || row.reason.trim().length === 0
+    || !nullableUuid(row.printingId)
+    || !nullableUuid(row.variantId)
+    || !nullableOfficialJapaneseCanonicalKey(row.canonicalKey)
+  ) {
+    throw new Error('invalid_bootstrap_preserved_official_japanese_card_response');
+  }
+
+  const parsed = {
+    status: row.status as PreservedOfficialJapaneseBootstrapResult['status'],
+    reason: row.reason,
+    printingId: row.printingId,
+    variantId: row.variantId,
+    canonicalKey: row.canonicalKey,
+  } as PreservedOfficialJapaneseBootstrapResult;
+  if (
+    parsed.status !== 'conflict'
+    && (!parsed.printingId || !parsed.variantId || !parsed.canonicalKey)
+  ) {
+    throw new Error('invalid_bootstrap_preserved_official_japanese_card_response');
+  }
+  if (
+    (parsed.status === 'inserted'
+      && parsed.reason !== 'official_japanese_metadata_bootstrapped')
+    || (parsed.status === 'preserved'
+      && parsed.reason !== 'existing_canonical_metadata_preserved')
+  ) {
+    throw new Error('invalid_bootstrap_preserved_official_japanese_card_response');
+  }
+  return parsed;
+}
+
+export function mapPreservedOfficialJapaneseBootstrapResult(
+  result: PreservedOfficialJapaneseBootstrapResult,
+) {
+  if (result.status === 'inserted') {
+    return { status: 'inserted' as const, variantId: result.variantId!, rpcResult: result };
+  }
+  if (result.status === 'preserved') {
+    return { status: 'skipped' as const, variantId: result.variantId!, rpcResult: result };
+  }
+  return {
+    status: 'conflicted' as const,
+    reason: result.reason,
+    rpcResult: result,
+  };
+}
+
+export async function bootstrapPreservedOfficialJapaneseCard(
+  db: SupabaseClientLike,
+  importRunId: string,
+  rawRecordId: string,
+) {
+  const ingest = db.schema('ingest');
+  if (typeof ingest.rpc !== 'function') {
+    throw new Error('bootstrap_preserved_official_japanese_card_rpc_unavailable');
+  }
+  const response = await ingest.rpc('bootstrap_preserved_official_japanese_card', {
+    p_import_run_id: importRunId,
+    p_raw_record_id: rawRecordId,
+  });
+  if (!response || typeof response !== 'object') {
+    throw new Error('invalid_bootstrap_preserved_official_japanese_card_response');
+  }
+  const { data, error } = response as { data?: unknown; error?: unknown };
+  if (error) throw error;
+  return mapPreservedOfficialJapaneseBootstrapResult(
+    parsePreservedOfficialJapaneseBootstrapResult(data),
+  );
 }
 
 export function classifyMappedOfficialImageTarget(input: {
@@ -258,49 +367,6 @@ export function isResolvedDeprecatedVariantAlias(input: {
     && input.correctionTargetPrintingId === input.deprecatedPrintingId
     && (!input.externalVariantId || input.externalVariantId === input.correctionTargetId)
   );
-}
-
-export function classifyPreservedMetadataTarget(input: {
-  preserveExistingMetadata?: boolean;
-  externalVariantId?: string | null;
-  canonicalVariantId?: string | null;
-}) {
-  if (!input.preserveExistingMetadata) return { status: 'normal_upsert' as const };
-  const externalVariantId = cleanText(input.externalVariantId);
-  const canonicalVariantId = cleanText(input.canonicalVariantId);
-  if (externalVariantId && externalVariantId !== canonicalVariantId) {
-    return {
-      status: 'conflict' as const,
-      reason: canonicalVariantId
-        ? 'external_and_canonical_identity_disagree'
-        : 'external_identity_requires_mutation',
-    };
-  }
-  if (canonicalVariantId) {
-    return {
-      status: 'preserve' as const,
-      variantId: canonicalVariantId,
-    };
-  }
-  return { status: 'create_missing' as const };
-}
-
-export function classifyPreservedVariantCreation(input: {
-  preserveExistingMetadata?: boolean;
-  printingExists: boolean;
-  activeSiblingVariantIds: readonly string[];
-}) {
-  if (
-    input.preserveExistingMetadata
-    && input.printingExists
-    && input.activeSiblingVariantIds.length > 0
-  ) {
-    return {
-      status: 'conflict' as const,
-      reason: 'active_sibling_variant_requires_review',
-    };
-  }
-  return { status: 'create_missing' as const };
 }
 
 export function isSafeUnsupportedPrimaryVariantCorrection(input: {
@@ -1233,6 +1299,18 @@ async function upsertSet(
     });
     return { status: 'conflicted' as const };
   }
+  if (preserveExistingMetadata && match.status !== 'matched') {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'schema_conflict',
+      proposed: normalised.raw,
+      existing: { reason: match.reason },
+      notes: 'Preserve-existing-metadata mode requires an existing canonical set; set creation was refused.',
+    });
+    return { status: 'conflicted' as const };
+  }
 
   const requiredRow = {
     game_code: normalised.gameCode,
@@ -1822,6 +1900,24 @@ async function upsertCardVariant(
     return { status: 'conflicted' as const };
   }
 
+  if (options.preserveExistingMetadata) {
+    const bootstrap = await bootstrapPreservedOfficialJapaneseCard(db, importRunId, rawRecordId);
+    if (bootstrap.status === 'conflicted') {
+      await quarantine(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        conflictType: 'identity_collision',
+        canonicalKey: bootstrap.rpcResult.canonicalKey ?? undefined,
+        proposed: normalised.raw,
+        existing: { atomicBootstrapResult: bootstrap.rpcResult },
+        notes: `Atomic preserved official Japanese card bootstrap conflict: ${bootstrap.reason}.`,
+      });
+      return { status: 'conflicted' as const };
+    }
+    return bootstrap;
+  }
+
   const setMatch = await findSetId(db, sourceId, normalised);
   if (setMatch.status !== 'matched') {
     await quarantine(db, {
@@ -1969,24 +2065,6 @@ async function upsertCardVariant(
   }
 
   const identityVariantId = identityRow?.id;
-  const preservedTarget = classifyPreservedMetadataTarget({
-    preserveExistingMetadata: options.preserveExistingMetadata,
-    externalVariantId,
-    canonicalVariantId: identityVariantId,
-  });
-  if (preservedTarget.status === 'conflict') {
-    await quarantine(db, {
-      sourceId,
-      importRunId,
-      rawRecordId,
-      conflictType: 'identity_collision',
-      canonicalKey,
-      proposed: normalised.raw,
-      existing: { externalVariantId, identityVariantId },
-      notes: `Preserve-existing-metadata mode refused identity mutation: ${preservedTarget.reason}.`,
-    });
-    return { status: 'conflicted' as const };
-  }
   if (externalVariantId && identityVariantId && externalVariantId !== identityVariantId) {
     const released = await releaseSupportedPrimaryVariantAlias(db, {
       sourceId,
@@ -2059,90 +2137,6 @@ async function upsertCardVariant(
   }
 
   const existingVariant = identityRows[0] ?? (externalVariantId ? { id: externalVariantId, printing_id: null } : null);
-  if (preservedTarget.status === 'preserve' && existingVariant?.id) {
-    const { data: variant, error: variantError } = await table(db, 'catalog', 'card_variants')
-      .select('id,printing_id,canonical_key,language_code,set_id,collector_number,variant_code,finish_code,artwork_key')
-      .eq('id', existingVariant.id)
-      .is('deprecated_at', null)
-      .maybeSingle();
-    if (variantError) throw variantError;
-    const preservedClassification = variant?.id && cleanText(normalised.raw.cardID)
-      ? classifyMappedOfficialImageTarget({
-          cardId: cleanText(normalised.raw.cardID)!,
-          resolvedSetId: setMatch.setId,
-          providerCollectorNumber: normalised.collectorNumber,
-          requestedVariantCode: normalised.variantCode,
-          requestedFinishCode: normalised.finishCode,
-          mappedVariant: {
-            id: variant.id,
-            languageCode: variant.language_code,
-            setId: variant.set_id,
-            collectorNumber: variant.collector_number,
-            variantCode: variant.variant_code,
-            finishCode: variant.finish_code,
-            artworkKey: variant.artwork_key,
-          },
-        })
-      : null;
-    if (!variant?.id
-      || variant.canonical_key !== canonicalKey
-      || !preservedClassification
-      || preservedClassification.status === 'conflict') {
-      await quarantine(db, {
-        sourceId,
-        importRunId,
-        rawRecordId,
-        conflictType: 'identity_collision',
-        canonicalKey,
-        proposed: normalised.raw,
-        existing: {
-          variant: variant ?? null,
-          classification: preservedClassification,
-        },
-        notes: 'Preserve-existing-metadata mode requires one active exact canonical variant with compatible finish and artwork evidence.',
-      });
-      return { status: 'conflicted' as const };
-    }
-    const link = await linkExternalId(db, {
-      sourceId,
-      rawRecordId,
-      sourceEntityType: 'card',
-      externalId: normalised.providerRecordId,
-      languageCode: normalised.languageCode,
-      variantId: variant.id,
-      confidence: normalised.sourceConfidence,
-      sourceUpdatedAt: normalised.sourceUpdatedAt,
-    });
-    if (link.status === 'conflict') {
-      await quarantine(db, {
-        sourceId,
-        importRunId,
-        rawRecordId,
-        conflictType: 'duplicate_external_id',
-        canonicalKey,
-        proposed: normalised.raw,
-        existing: link.existing,
-        notes: 'Preserve-existing-metadata mode refused to relink an official card identity.',
-      });
-      return { status: 'conflicted' as const };
-    }
-    await auditDecision(db, {
-      sourceId,
-      importRunId,
-      rawRecordId,
-      requestId,
-      decisionType: 'skipped',
-      entitySchema: 'catalog',
-      entityTable: 'card_variants',
-      entityId: variant.id,
-      canonicalKey,
-      confidence: normalised.sourceConfidence,
-      reason: 'existing_card_metadata_preserved_asset_deferred',
-      proposed: normalised.raw,
-    });
-    return { status: 'skipped' as const, variantId: variant.id as string };
-  }
-
   if (existingVariant?.id) {
     await ensureNamedStampTaxonomy(db, normalised);
     const { data: variant, error: variantError } = await table(db, 'catalog', 'card_variants')
@@ -2312,47 +2306,9 @@ async function upsertCardVariant(
   }
 
   let printingId = printingRows[0]?.id as string | undefined;
-  let activeSiblingVariants: Array<{
-    id: string;
-    canonical_key: string | null;
-    variant_code: string | null;
-    finish_code: string | null;
-    is_default: boolean | null;
-    artwork_key: string | null;
-  }> = [];
-  if (options.preserveExistingMetadata && printingId) {
-    const siblings = await table(db, 'catalog', 'card_variants')
-      .select('id,canonical_key,variant_code,finish_code,is_default,artwork_key')
-      .eq('printing_id', printingId)
-      .is('deprecated_at', null);
-    if (siblings.error) throw siblings.error;
-    activeSiblingVariants = siblings.data ?? [];
-  }
-  const preservedCreation = classifyPreservedVariantCreation({
-    preserveExistingMetadata: options.preserveExistingMetadata,
-    printingExists: Boolean(printingId),
-    activeSiblingVariantIds: activeSiblingVariants.map((variant) => variant.id),
-  });
-  if (preservedCreation.status === 'conflict') {
-    await quarantine(db, {
-      sourceId,
-      importRunId,
-      rawRecordId,
-      conflictType: 'identity_collision',
-      canonicalKey,
-      proposed: normalised.raw,
-      existing: { printingId, activeSiblingVariants },
-      notes: `Preserve-existing-metadata mode refused variant creation: ${preservedCreation.reason}.`,
-    });
-    return { status: 'conflicted' as const };
-  }
-
   await ensureNamedStampTaxonomy(db, normalised);
-  const shouldWritePrintingMetadata = !printingId || !options.preserveExistingMetadata;
-  const conceptId = shouldWritePrintingMetadata ? await ensureConcept(db, normalised) : null;
-  const rarityId = shouldWritePrintingMetadata
-    ? await getRarityId(db, normalised.gameCode, normalised.rarityCode)
-    : null;
+  const conceptId = await ensureConcept(db, normalised);
+  const rarityId = await getRarityId(db, normalised.gameCode, normalised.rarityCode);
   const printingPatch = {
     card_concept_id: conceptId,
     ...sparsePrintingMetadataPatch(normalised, rarityId),
@@ -2365,12 +2321,10 @@ async function upsertCardVariant(
     source_updated_at: cleanText(normalised.sourceUpdatedAt),
   };
   if (printingId) {
-    if (!options.preserveExistingMetadata) {
-      const { error } = await table(db, 'catalog', 'card_printings')
-        .update(printingPatch)
-        .eq('id', printingId);
-      if (error) throw error;
-    }
+    const { error } = await table(db, 'catalog', 'card_printings')
+      .update(printingPatch)
+      .eq('id', printingId);
+    if (error) throw error;
   } else {
     const { data: printing, error: printingError } = await table(db, 'catalog', 'card_printings').insert({
       game_code: normalised.gameCode,
@@ -2426,7 +2380,7 @@ async function upsertCardVariant(
     confidence: normalised.sourceConfidence,
     sourceUpdatedAt: normalised.sourceUpdatedAt,
   });
-  if (!options.preserveExistingMetadata && options.allowImageAssets && hasCompleteCardImageIdentity(normalised)) {
+  if (options.allowImageAssets && hasCompleteCardImageIdentity(normalised)) {
     await upsertAssetForVariant(db, sourceId, importRunId, rawRecordId, normalised, variant.id);
   }
   const link = await linkExternalId(db, {

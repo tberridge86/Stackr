@@ -237,6 +237,7 @@ jobs:
           completed=false
           for attempt in 1 2 3 4; do
             attempt_report="reports/catalogue/japanese/ingest-${{ matrix.offset }}-attempt-${attempt}.json"
+            attempt_stderr="${attempt_report%.json}.stderr.log"
             if npx tsx scripts/catalogue-ingest.ts run-language \
               --source=pokemon-card-jp-official \
               --language=ja \
@@ -249,7 +250,9 @@ jobs:
               --approvedOnlyAssets \
               --preserveExistingMetadata \
               --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
-              --target=staging | tee "$attempt_report" \
+              --target=staging \
+              2> "$attempt_stderr" \
+              | tee "$attempt_report" \
               && jq -e --argjson expected_cards '${{ matrix.limit }}' '
                 .ok == true
                 and (.stats.recordsConflicted // -1) == 0
@@ -272,6 +275,11 @@ jobs:
               completed=true
               break
             fi
+            cat "$attempt_stderr" >&2
+            if [[ ! -s "$attempt_report" ]] \
+              && jq -e . "$attempt_stderr" >/dev/null 2>&1; then
+              cp "$attempt_stderr" "$attempt_report"
+            fi
             cp "$attempt_report" "$report"
             if (( attempt < 4 )); then
               sleep $((attempt * 15))
@@ -283,7 +291,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: japanese-ingest-${{ github.run_id }}-${{ matrix.offset }}
-          path: reports/catalogue/japanese/ingest-${{ matrix.offset }}.json
+          path: |
+            reports/catalogue/japanese/ingest-${{ matrix.offset }}.json
+            reports/catalogue/japanese/ingest-${{ matrix.offset }}-attempt-*.stderr.log
           if-no-files-found: warn
           retention-days: 30
           compression-level: 9

@@ -12,11 +12,10 @@ import {
 } from './catalogue-ingestion/tcgdexOrdering';
 import {
   CatalogueIngestionRunner,
+  bootstrapPreservedOfficialJapaneseCard,
   canRelinkExternalIdentifierAsset,
   calculateExponentialBackoff,
   classifyMappedOfficialImageTarget,
-  classifyPreservedMetadataTarget,
-  classifyPreservedVariantCreation,
   chooseExistingVariantForCardImage,
   isMissingVariantRepairPrecondition,
   isActiveRetainedAsset,
@@ -29,6 +28,7 @@ import {
   sparseSetMetadataPatch,
   sparseVariantMetadataPatch,
   payloadChecksum,
+  parsePreservedOfficialJapaneseBootstrapResult,
   parseRetainedRawRecord,
   reconciliationPhase,
   releasedExactlyOnePrimaryAlias,
@@ -574,72 +574,6 @@ function assertJapaneseAssetOnlyVariantSelection() {
 }
 
 async function assertPreserveExistingMetadataMode() {
-  assert.deepEqual(
-    classifyPreservedMetadataTarget({ preserveExistingMetadata: false }),
-    { status: 'normal_upsert' },
-  );
-  assert.deepEqual(
-    classifyPreservedMetadataTarget({
-      preserveExistingMetadata: true,
-      externalVariantId: 'variant-ja',
-      canonicalVariantId: 'variant-ja',
-    }),
-    { status: 'preserve', variantId: 'variant-ja' },
-  );
-  assert.deepEqual(
-    classifyPreservedMetadataTarget({
-      preserveExistingMetadata: true,
-      canonicalVariantId: 'variant-ja',
-    }),
-    { status: 'preserve', variantId: 'variant-ja' },
-  );
-  assert.deepEqual(
-    classifyPreservedMetadataTarget({ preserveExistingMetadata: true }),
-    { status: 'create_missing' },
-  );
-  assert.deepEqual(
-    classifyPreservedMetadataTarget({
-      preserveExistingMetadata: true,
-      externalVariantId: 'stale-variant',
-      canonicalVariantId: 'exact-variant',
-    }),
-    { status: 'conflict', reason: 'external_and_canonical_identity_disagree' },
-  );
-  assert.deepEqual(
-    classifyPreservedMetadataTarget({
-      preserveExistingMetadata: true,
-      externalVariantId: 'stale-variant',
-    }),
-    { status: 'conflict', reason: 'external_identity_requires_mutation' },
-  );
-  assert.deepEqual(
-    classifyPreservedVariantCreation({
-      preserveExistingMetadata: true,
-      printingExists: true,
-      activeSiblingVariantIds: ['existing-unclassified-default'],
-    }),
-    { status: 'conflict', reason: 'active_sibling_variant_requires_review' },
-    'preserve mode must not create a second normal/default variant beside any active sibling',
-  );
-  assert.deepEqual(
-    classifyPreservedVariantCreation({
-      preserveExistingMetadata: true,
-      printingExists: true,
-      activeSiblingVariantIds: [],
-    }),
-    { status: 'create_missing' },
-    'an existing printing with no active variant may receive its missing canonical variant',
-  );
-  assert.deepEqual(
-    classifyPreservedVariantCreation({
-      preserveExistingMetadata: false,
-      printingExists: true,
-      activeSiblingVariantIds: ['existing-unclassified-default'],
-    }),
-    { status: 'create_missing' },
-    'the extra sibling guard is scoped to the preserve-only recovery mode',
-  );
-
   await assert.rejects(
     () => new CatalogueIngestionRunner(noDbAccess(), fakeAdapter([])).run({
       language: 'ja',
@@ -675,43 +609,186 @@ async function assertPreserveExistingMetadataMode() {
   );
   assert.match(
     ingestionPipeline,
-    /if \(!options\.preserveExistingMetadata\) \{[\s\S]{0,300}catalog', 'card_printings'\)[\s\S]{0,200}\.update\(printingPatch\)/,
-    'an existing printing must not be patched when only its missing variant is created',
-  );
-  const preservationGuard = ingestionPipeline.indexOf('const preservedTarget = classifyPreservedMetadataTarget');
-  const firstAliasRelease = ingestionPipeline.indexOf('releaseSupportedPrimaryVariantAlias(db', preservationGuard);
-  assert.ok(
-    preservationGuard >= 0 && firstAliasRelease > preservationGuard,
-    'preserve mode must reject identity disagreements before any alias release or repair path',
-  );
-  assert.match(
-    ingestionPipeline,
     /compatible_null_artwork_preserved_without_mutation/,
     'the official asset phase may accept compatible null artwork without changing artwork metadata',
-  );
-  assert.match(
-    ingestionPipeline,
-    /\.select\('id,canonical_key,variant_code,finish_code,is_default,artwork_key'\)[\s\S]{0,1600}classifyPreservedVariantCreation[\s\S]{0,500}preservedCreation\.status === 'conflict'/,
-    'preserve mode must inspect active sibling variants before creating a missing default variant',
-  );
-  const preservedExistingCardStart = ingestionPipeline.indexOf("if (preservedTarget.status === 'preserve'");
-  const preservedExistingCardEnd = ingestionPipeline.indexOf('if (existingVariant?.id)', preservedExistingCardStart);
-  const preservedExistingCardPath = ingestionPipeline.slice(preservedExistingCardStart, preservedExistingCardEnd);
-  assert.ok(preservedExistingCardStart >= 0 && preservedExistingCardEnd > preservedExistingCardStart);
-  assert.doesNotMatch(
-    preservedExistingCardPath,
-    /upsertAssetForVariant/,
-    'the preserve-mode card phase must defer image attachment to the dedicated asset phase',
-  );
-  assert.match(
-    ingestionPipeline,
-    /if \(!options\.preserveExistingMetadata && options\.allowImageAssets/,
-    'new preserve-mode variants must also defer their image attachment to the asset phase',
   );
   assert.match(
     catalogueIngest,
     /existing set, printing, variant, finish,[\s\S]+image lifecycle and processing-status fields/,
     'CLI help must distinguish preserved canonical metadata from mutable image lifecycle fields',
+  );
+}
+
+async function assertAtomicPreservedOfficialJapaneseBootstrap() {
+  const printingId = '123e4567-e89b-42d3-a456-426614174001';
+  const variantId = '123e4567-e89b-42d3-a456-426614174002';
+  const canonicalKey = 'pokemon:ja:123e4567-e89b-42d3-a456-426614174003:001:normal';
+  const calls: { schema: string; name: string; args: Record<string, unknown> }[] = [];
+  let response: { data: unknown; error: unknown } = {
+    data: {
+      status: 'inserted',
+      reason: 'official_japanese_metadata_bootstrapped',
+      printingId,
+      variantId,
+      canonicalKey,
+    },
+    error: null,
+  };
+  const db = {
+    schema(schema: string) {
+      return {
+        from() {
+          throw new Error('Atomic bootstrap must not use a direct table fallback.');
+        },
+        async rpc(name: string, args: Record<string, unknown>) {
+          calls.push({ schema, name, args });
+          return response;
+        },
+      };
+    },
+  };
+
+  const inserted = await bootstrapPreservedOfficialJapaneseCard(db, 'run-id', 'raw-id');
+  assert.equal(inserted.status, 'inserted');
+  assert.equal(inserted.variantId, variantId);
+  assert.deepEqual(calls, [{
+    schema: 'ingest',
+    name: 'bootstrap_preserved_official_japanese_card',
+    args: {
+      p_import_run_id: 'run-id',
+      p_raw_record_id: 'raw-id',
+    },
+  }], 'the atomic RPC must receive only retained run/raw provenance IDs');
+
+  response = {
+    data: [{
+      status: 'preserved',
+      reason: 'existing_canonical_metadata_preserved',
+      printingId,
+      variantId,
+      canonicalKey,
+    }],
+    error: null,
+  };
+  const preserved = await bootstrapPreservedOfficialJapaneseCard(db, 'run-id', 'raw-id');
+  assert.equal(preserved.status, 'skipped');
+  assert.equal(preserved.variantId, variantId);
+  assert.equal(preserved.rpcResult.reason, 'existing_canonical_metadata_preserved');
+
+  response = {
+    data: {
+      status: 'conflict',
+      reason: 'active_sibling_variant_requires_review',
+      printingId,
+      variantId: null,
+      canonicalKey,
+    },
+    error: null,
+  };
+  const conflict = await bootstrapPreservedOfficialJapaneseCard(db, 'run-id', 'raw-id');
+  assert.deepEqual(conflict, {
+    status: 'conflicted',
+    reason: 'active_sibling_variant_requires_review',
+    rpcResult: {
+      status: 'conflict',
+      reason: 'active_sibling_variant_requires_review',
+      printingId,
+      variantId: null,
+      canonicalKey,
+    },
+  }, 'conflicts must retain the database result and stable reason for caller-side quarantine');
+
+  const sqlError = { code: '57014', message: 'statement timeout', details: null, hint: null };
+  response = { data: null, error: sqlError };
+  await assert.rejects(
+    () => bootstrapPreservedOfficialJapaneseCard(db, 'run-id', 'raw-id'),
+    (error) => error === sqlError,
+    'database errors must propagate without a client-side write fallback',
+  );
+
+  await assert.rejects(
+    () => bootstrapPreservedOfficialJapaneseCard({
+      schema: () => ({ from: () => null }),
+    }, 'run-id', 'raw-id'),
+    /bootstrap_preserved_official_japanese_card_rpc_unavailable/,
+  );
+
+  const valid = {
+    status: 'inserted',
+    reason: 'official_japanese_metadata_bootstrapped',
+    printingId,
+    variantId,
+    canonicalKey,
+  };
+  response = { data: { ...valid, variantId: null }, error: null };
+  await assert.rejects(
+    () => bootstrapPreservedOfficialJapaneseCard(db, 'run-id', 'raw-id'),
+    /invalid_bootstrap_preserved_official_japanese_card_response/,
+    'the caller must not fall back when the RPC returns a malformed success result',
+  );
+  for (const malformed of [
+    null,
+    [],
+    [valid, valid],
+    { ...valid, status: 'unknown' },
+    { ...valid, reason: ' ' },
+    { ...valid, reason: 'unexpected_success_reason' },
+    { ...valid, printingId: 'not-a-uuid' },
+    { ...valid, variantId: 'not-a-uuid' },
+    { ...valid, canonicalKey: 'not-a-canonical-key' },
+    { ...valid, variantId: null },
+    { ...valid, canonicalKey: undefined },
+  ]) {
+    assert.throws(
+      () => parsePreservedOfficialJapaneseBootstrapResult(malformed),
+      /invalid_bootstrap_preserved_official_japanese_card_response/,
+      'malformed RPC results must fail closed',
+    );
+  }
+
+  const cardStart = ingestionPipeline.indexOf('async function upsertCardVariant');
+  const requiredFieldGuard = ingestionPipeline.indexOf('if (!normalised.collectorNumber || !normalised.nativeName)', cardStart);
+  const rpcGuard = ingestionPipeline.indexOf('if (options.preserveExistingMetadata)', requiredFieldGuard);
+  const directSetLookup = ingestionPipeline.indexOf('const setMatch = await findSetId', rpcGuard);
+  assert.ok(
+    cardStart >= 0
+      && requiredFieldGuard > cardStart
+      && rpcGuard > requiredFieldGuard
+      && directSetLookup > rpcGuard,
+    'preserve mode must route to the RPC immediately after required-field checks',
+  );
+  const rpcOnlyCardPath = ingestionPipeline.slice(rpcGuard, directSetLookup);
+  assert.match(rpcOnlyCardPath, /await bootstrapPreservedOfficialJapaneseCard\(db, importRunId, rawRecordId\)/);
+  assert.match(rpcOnlyCardPath, /return bootstrap;/, 'successful RPC results must return without falling through');
+  assert.doesNotMatch(
+    rpcOnlyCardPath,
+    /ensureConcept|linkExternalId|card_printings|card_variants|findSetId/,
+    'the preserved-card caller path must not perform direct canonical bootstrap writes',
+  );
+  const cardEnd = ingestionPipeline.indexOf('async function upsertCardImage', directSetLookup);
+  const completeCardPath = ingestionPipeline.slice(cardStart, cardEnd);
+  assert.equal(
+    completeCardPath.match(/options\.preserveExistingMetadata/g)?.length,
+    1,
+    'the atomic dispatch must be the only preserve-specific branch in card reconciliation',
+  );
+  assert.doesNotMatch(
+    completeCardPath,
+    /classifyPreservedMetadataTarget|classifyPreservedVariantCreation|preservedTarget|preservedCreation/,
+    'the legacy direct preserved-card bootstrap implementation must not remain as a dormant fallback',
+  );
+
+  const setStart = ingestionPipeline.indexOf('async function upsertSet');
+  const missingSetGuard = ingestionPipeline.indexOf("if (preserveExistingMetadata && match.status !== 'matched')", setStart);
+  const setInsert = ingestionPipeline.indexOf("table(db, 'catalog', 'sets').insert", setStart);
+  assert.ok(
+    missingSetGuard > setStart && setInsert > missingSetGuard,
+    'the preserve-mode missing-set guard must run before any canonical set insert',
+  );
+  assert.match(
+    ingestionPipeline.slice(missingSetGuard, setInsert),
+    /set creation was refused[\s\S]+return \{ status: 'conflicted' as const \}/,
+    'preserve mode must fail closed when its canonical set is missing',
   );
 }
 
@@ -1588,6 +1665,7 @@ async function main() {
   assertAssetReuseRequiresActiveRetention();
   assertJapaneseAssetOnlyVariantSelection();
   await assertPreserveExistingMetadataMode();
+  await assertAtomicPreservedOfficialJapaneseBootstrap();
   await assertDryRunReportsDedupedRecordTypes();
   assertDeterministicTcgdexCardOrdering();
   assertRecognitionRoleIsLeastPrivilege();
