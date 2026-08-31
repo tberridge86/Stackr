@@ -89,6 +89,60 @@ export function parseRetainedRawRecord(value: unknown) {
   return { id, changed: changed as 'inserted' | 'updated' | 'reused' };
 }
 
+export function classifyMappedOfficialImageTarget(input: {
+  cardId: string;
+  resolvedSetId?: string | null;
+  providerCollectorNumber?: string | null;
+  requestedVariantCode?: string | null;
+  requestedFinishCode?: string | null;
+  mappedVariant?: {
+    id?: string | null;
+    languageCode?: string | null;
+    setId?: string | null;
+    collectorNumber?: string | null;
+    variantCode?: string | null;
+    finishCode?: string | null;
+    artworkKey?: string | null;
+  } | null;
+}) {
+  const cardId = cleanText(input.cardId);
+  const expectedArtworkKey = cardId ? `pokemon_card_jp_official:${cardId}` : null;
+  const mapped = input.mappedVariant;
+  if (!expectedArtworkKey || !mapped?.id || mapped.languageCode !== 'ja') {
+    return { status: 'conflict' as const, expectedArtworkKey, reason: 'inactive_or_non_japanese_target' };
+  }
+  if (mapped.artworkKey === expectedArtworkKey) {
+    return { status: 'exact' as const, expectedArtworkKey, reason: 'existing_exact_artwork_key' };
+  }
+  if (mapped.artworkKey != null) {
+    return { status: 'conflict' as const, expectedArtworkKey, reason: 'different_existing_artwork_key' };
+  }
+  if (!input.resolvedSetId || mapped.setId !== input.resolvedSetId) {
+    return { status: 'conflict' as const, expectedArtworkKey, reason: 'set_identity_mismatch' };
+  }
+  if (
+    typeof input.providerCollectorNumber !== 'string'
+    || input.providerCollectorNumber.length === 0
+    || mapped.collectorNumber !== input.providerCollectorNumber
+  ) {
+    return { status: 'conflict' as const, expectedArtworkKey, reason: 'collector_identity_mismatch' };
+  }
+  if (input.requestedVariantCode !== 'normal' || input.requestedFinishCode !== 'normal') {
+    return { status: 'conflict' as const, expectedArtworkKey, reason: 'provider_classification_not_normal' };
+  }
+  const classificationIsCompatible = (
+    mapped.variantCode === 'normal'
+    && (mapped.finishCode == null || mapped.finishCode === 'normal')
+  ) || (
+    mapped.variantCode === 'unclassified'
+    && (mapped.finishCode == null || mapped.finishCode === 'unclassified')
+  );
+  if (!classificationIsCompatible) {
+    return { status: 'conflict' as const, expectedArtworkKey, reason: 'target_classification_mismatch' };
+  }
+  return { status: 'repair' as const, expectedArtworkKey, reason: 'exact_mapped_null_artwork_key' };
+}
+
 export function calculateExponentialBackoff(
   attempts: number,
   baseSeconds = 60,
@@ -2155,20 +2209,104 @@ async function upsertCardImage(
     const mappedVariantId = identifierRows?.[0]?.variant_id as string | undefined;
     if (mappedVariantId) {
       const { data: mappedVariant, error: mappedVariantError } = await table(db, 'catalog', 'card_variants')
-        .select('id,language_code,variant_code,finish_code,artwork_key')
+        .select('id,language_code,set_id,collector_number,variant_code,finish_code,artwork_key')
         .eq('id', mappedVariantId)
         .eq('language_code', 'ja')
         .is('deprecated_at', null)
         .maybeSingle();
       if (mappedVariantError) throw mappedVariantError;
-      if (!mappedVariant?.id || mappedVariant.artwork_key !== `pokemon_card_jp_official:${providerCardExternalId}`) {
+      let classification = classifyMappedOfficialImageTarget({
+        cardId: providerCardExternalId,
+        requestedVariantCode: normalised.variantCode,
+        requestedFinishCode: normalised.finishCode,
+        mappedVariant: mappedVariant ? {
+          id: mappedVariant.id,
+          languageCode: mappedVariant.language_code,
+          setId: mappedVariant.set_id,
+          collectorNumber: mappedVariant.collector_number,
+          variantCode: mappedVariant.variant_code,
+          finishCode: mappedVariant.finish_code,
+          artworkKey: mappedVariant.artwork_key,
+        } : null,
+      });
+      let artworkBackfilled = false;
+      let resolvedSet: Awaited<ReturnType<typeof findSetId>> | null = null;
+      if (classification.status === 'conflict' && mappedVariant?.id && mappedVariant.artwork_key == null) {
+        resolvedSet = await findSetId(db, sourceId, normalised);
+        classification = classifyMappedOfficialImageTarget({
+          cardId: providerCardExternalId,
+          resolvedSetId: resolvedSet.status === 'matched' ? resolvedSet.setId : null,
+          providerCollectorNumber: normalised.collectorNumber,
+          requestedVariantCode: normalised.variantCode,
+          requestedFinishCode: normalised.finishCode,
+          mappedVariant: {
+            id: mappedVariant.id,
+            languageCode: mappedVariant.language_code,
+            setId: mappedVariant.set_id,
+            collectorNumber: mappedVariant.collector_number,
+            variantCode: mappedVariant.variant_code,
+            finishCode: mappedVariant.finish_code,
+            artworkKey: mappedVariant.artwork_key,
+          },
+        });
+      }
+      if (classification.status === 'repair' && mappedVariant?.id && classification.expectedArtworkKey) {
+        let update = table(db, 'catalog', 'card_variants')
+          .update({ artwork_key: classification.expectedArtworkKey })
+          .eq('id', mappedVariant.id)
+          .eq('language_code', 'ja')
+          .eq('set_id', mappedVariant.set_id)
+          .eq('collector_number', mappedVariant.collector_number)
+          .eq('variant_code', mappedVariant.variant_code)
+          .is('artwork_key', null)
+          .is('deprecated_at', null);
+        update = mappedVariant.finish_code == null
+          ? update.is('finish_code', null)
+          : update.eq('finish_code', mappedVariant.finish_code);
+        const { data: repairedRows, error: repairError } = await update.select('id,artwork_key');
+        if (repairError) throw repairError;
+        if ((repairedRows ?? []).length === 1) {
+          artworkBackfilled = true;
+          classification = {
+            status: 'exact',
+            expectedArtworkKey: classification.expectedArtworkKey,
+            reason: 'exact_artwork_key_compare_and_set',
+          };
+        } else {
+          const { data: concurrentVariant, error: concurrentVariantError } = await table(db, 'catalog', 'card_variants')
+            .select('id,artwork_key')
+            .eq('id', mappedVariant.id)
+            .eq('language_code', 'ja')
+            .is('deprecated_at', null)
+            .maybeSingle();
+          if (concurrentVariantError) throw concurrentVariantError;
+          classification = concurrentVariant?.artwork_key === classification.expectedArtworkKey
+            ? {
+                status: 'exact',
+                expectedArtworkKey: classification.expectedArtworkKey,
+                reason: 'concurrent_exact_artwork_key_compare_and_set',
+              }
+            : {
+                status: 'conflict',
+                expectedArtworkKey: classification.expectedArtworkKey,
+                reason: 'artwork_key_compare_and_set_lost',
+              };
+        }
+      }
+      if (classification.status !== 'exact') {
         await quarantine(db, {
           sourceId,
           importRunId,
           rawRecordId,
           conflictType: 'identity_collision',
           proposed: normalised.raw,
-          existing: { providerCardExternalId, mappedVariantId, mappedVariant: mappedVariant ?? null },
+          existing: {
+            providerCardExternalId,
+            mappedVariantId,
+            mappedVariant: mappedVariant ?? null,
+            resolvedSet,
+            classificationReason: classification.reason,
+          },
           notes: 'Official Japanese card ID target is inactive, non-Japanese, or lacks matching official artwork evidence.',
         });
         return { status: 'conflicted' as const };
@@ -2192,7 +2330,9 @@ async function upsertCardImage(
         entityTable: 'assets',
         entityId: assetId,
         confidence: normalised.sourceConfidence,
-        reason: 'official_card_image_attached_by_existing_provider_identity',
+        reason: artworkBackfilled
+          ? 'official_card_image_attached_after_exact_mapped_artwork_backfill'
+          : 'official_card_image_attached_by_existing_provider_identity',
         proposed: normalised.raw,
       });
       return { status: 'updated' as const, assetId };
