@@ -627,7 +627,7 @@ async function assertAtomicPreservedOfficialJapaneseBootstrap() {
   let response: { data: unknown; error: unknown } = {
     data: {
       status: 'inserted',
-      reason: 'missing_official_card_bootstrapped',
+      reason: 'official_japanese_metadata_bootstrapped',
       printingId,
       variantId,
       canonicalKey,
@@ -663,7 +663,7 @@ async function assertAtomicPreservedOfficialJapaneseBootstrap() {
   response = {
     data: [{
       status: 'preserved',
-      reason: 'existing_official_card_preserved',
+      reason: 'existing_canonical_metadata_preserved',
       printingId,
       variantId,
       canonicalKey,
@@ -673,7 +673,7 @@ async function assertAtomicPreservedOfficialJapaneseBootstrap() {
   const preserved = await bootstrapPreservedOfficialJapaneseCard(db, 'run-id', 'raw-id');
   assert.equal(preserved.status, 'skipped');
   assert.equal(preserved.variantId, variantId);
-  assert.equal(preserved.rpcResult.reason, 'existing_official_card_preserved');
+  assert.equal(preserved.rpcResult.reason, 'existing_canonical_metadata_preserved');
 
   response = {
     data: {
@@ -715,7 +715,7 @@ async function assertAtomicPreservedOfficialJapaneseBootstrap() {
 
   const valid = {
     status: 'inserted',
-    reason: 'missing_official_card_bootstrapped',
+    reason: 'official_japanese_metadata_bootstrapped',
     printingId,
     variantId,
     canonicalKey,
@@ -732,6 +732,10 @@ async function assertAtomicPreservedOfficialJapaneseBootstrap() {
     [valid, valid],
     { ...valid, status: 'unknown' },
     { ...valid, reason: ' ' },
+    { ...valid, reason: 'unexpected_success_reason' },
+    { ...valid, printingId: 'not-a-uuid' },
+    { ...valid, variantId: 'not-a-uuid' },
+    { ...valid, canonicalKey: 'not-a-canonical-key' },
     { ...valid, variantId: null },
     { ...valid, canonicalKey: undefined },
   ]) {

@@ -99,8 +99,19 @@ export function parseRetainedRawRecord(value: unknown) {
   return { id, changed: changed as 'inserted' | 'updated' | 'reused' };
 }
 
-function nullableNonBlankString(value: unknown): value is string | null {
-  return value === null || (typeof value === 'string' && value.trim().length > 0);
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const officialJapaneseCanonicalKeyPattern = new RegExp(
+  `^pokemon:ja:${uuidPattern.source.slice(1, -1)}:.+:normal$`,
+  'i',
+);
+
+function nullableUuid(value: unknown): value is string | null {
+  return value === null || (typeof value === 'string' && uuidPattern.test(value));
+}
+
+function nullableOfficialJapaneseCanonicalKey(value: unknown): value is string | null {
+  return value === null
+    || (typeof value === 'string' && officialJapaneseCanonicalKeyPattern.test(value));
 }
 
 export function parsePreservedOfficialJapaneseBootstrapResult(
@@ -119,9 +130,9 @@ export function parsePreservedOfficialJapaneseBootstrapResult(
     || !['inserted', 'preserved', 'conflict'].includes(row.status)
     || typeof row.reason !== 'string'
     || row.reason.trim().length === 0
-    || !nullableNonBlankString(row.printingId)
-    || !nullableNonBlankString(row.variantId)
-    || !nullableNonBlankString(row.canonicalKey)
+    || !nullableUuid(row.printingId)
+    || !nullableUuid(row.variantId)
+    || !nullableOfficialJapaneseCanonicalKey(row.canonicalKey)
   ) {
     throw new Error('invalid_bootstrap_preserved_official_japanese_card_response');
   }
@@ -136,6 +147,14 @@ export function parsePreservedOfficialJapaneseBootstrapResult(
   if (
     parsed.status !== 'conflict'
     && (!parsed.printingId || !parsed.variantId || !parsed.canonicalKey)
+  ) {
+    throw new Error('invalid_bootstrap_preserved_official_japanese_card_response');
+  }
+  if (
+    (parsed.status === 'inserted'
+      && parsed.reason !== 'official_japanese_metadata_bootstrapped')
+    || (parsed.status === 'preserved'
+      && parsed.reason !== 'existing_canonical_metadata_preserved')
   ) {
     throw new Error('invalid_bootstrap_preserved_official_japanese_card_response');
   }

@@ -10,26 +10,83 @@ if (!process.argv.includes('--allow-destructive-local-database')) {
   throw new Error('explicit_disposable_database_opt_in_required');
 }
 
-const parsedDatabaseUrl = new URL(databaseUrl);
 const allowedTestHosts = new Set(['127.0.0.1', 'localhost', '::1']);
-if (!allowedTestHosts.has(parsedDatabaseUrl.hostname)) {
-  throw new Error('official_japanese_bootstrap_test_requires_local_disposable_database');
+const localDatabaseError = 'official_japanese_bootstrap_test_requires_local_disposable_database';
+
+function createDisposableLocalDatabaseClient(connectionString) {
+  const parsed = new URL(connectionString);
+  if (
+    !['postgres:', 'postgresql:'].includes(parsed.protocol)
+    || !allowedTestHosts.has(parsed.hostname)
+    // node-postgres accepts connection overrides such as ?host=... after URL
+    // parsing. This destructive fixture has no legitimate query parameters.
+    || parsed.search.length > 0
+  ) {
+    throw new Error(localDatabaseError);
+  }
+
+  const candidate = new pg.Client({ connectionString });
+  if (!allowedTestHosts.has(candidate.connectionParameters.host)) {
+    throw new Error(localDatabaseError);
+  }
+  return candidate;
 }
+
+async function assertConnectedToDisposableLocalDatabase(client) {
+  const peerAddress = client.connection?.stream?.remoteAddress;
+  const peerPort = client.connection?.stream?.remotePort;
+  const identity = await client.query(`
+    select
+      pg_catalog.inet_server_addr()::text as server_address,
+      pg_catalog.inet_server_port() as server_port,
+      pg_catalog.current_database() as database_name
+  `);
+  if (
+    !allowedTestHosts.has(peerAddress)
+    || peerPort !== client.connectionParameters.port
+    || identity.rowCount !== 1
+    || identity.rows[0].server_port === null
+    || identity.rows[0].database_name !== client.connectionParameters.database
+  ) {
+    throw new Error(localDatabaseError);
+  }
+}
+
+assert.throws(
+  () => createDisposableLocalDatabaseClient(
+    'postgresql://postgres:postgres@127.0.0.1/postgres?host=remote.example.com',
+  ),
+  new RegExp(localDatabaseError),
+  'query parameters must not override the checked loopback host',
+);
+assert.throws(
+  () => createDisposableLocalDatabaseClient(
+    'postgresql://postgres:postgres@127.0.0.1/postgres?hostaddr=203.0.113.10',
+  ),
+  new RegExp(localDatabaseError),
+  'host-address overrides must be rejected before connecting',
+);
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const migrationDirectory = join(repositoryRoot, 'supabase', 'migrations');
-const migrationSuffix = 'fix_atomic_official_japanese_metadata_bootstrap_concept_conflict.sql';
-const migrationMatches = readdirSync(migrationDirectory)
-  .filter((fileName) => fileName.endsWith(migrationSuffix));
-
-assert.equal(
-  migrationMatches.length,
-  1,
-  `expected exactly one migration ending in ${migrationSuffix}`,
-);
-
-const migrationPath = join(migrationDirectory, migrationMatches[0]);
-const migration = readFileSync(migrationPath, 'utf8');
+const migrationSuffixes = [
+  'atomic_official_japanese_card_bootstrap.sql',
+  'supersede_atomic_official_japanese_metadata_bootstrap.sql',
+  'fix_atomic_official_japanese_metadata_bootstrap_concept_conflict.sql',
+];
+const migrationFiles = readdirSync(migrationDirectory);
+const migrationMatches = migrationSuffixes.map((migrationSuffix) => {
+  const matches = migrationFiles.filter((fileName) => fileName.endsWith(migrationSuffix));
+  assert.equal(
+    matches.length,
+    1,
+    `expected exactly one migration ending in ${migrationSuffix}`,
+  );
+  return matches[0];
+});
+const migrations = migrationMatches.map((migrationFile) => (
+  readFileSync(join(migrationDirectory, migrationFile), 'utf8')
+));
 
 // This is deliberately a direct-Postgres test of the function and its ACLs.
 // Local Supabase keeps private schemas out of PostgREST; hosted staging exposes
@@ -495,7 +552,7 @@ async function resetFixture(client) {
     );
   `);
 
-  await client.query(migration);
+  for (const migration of migrations) await client.query(migration);
 }
 
 function officialPayload({ providerCardId, collectorNumber, nativeName }) {
@@ -739,10 +796,11 @@ async function seedExistingPrinting(client, {
   );
 }
 
-const client = new pg.Client({ connectionString: databaseUrl });
+const client = createDisposableLocalDatabaseClient(databaseUrl);
 await client.connect();
 
 try {
+  await assertConnectedToDisposableLocalDatabase(client);
   await resetFixture(client);
 
   const functionGuard = await client.query(`
@@ -1072,12 +1130,17 @@ try {
     nativeName: 'カビゴン',
   });
   const concurrentClients = [
-    new pg.Client({ connectionString: databaseUrl }),
-    new pg.Client({ connectionString: databaseUrl }),
+    createDisposableLocalDatabaseClient(databaseUrl),
+    createDisposableLocalDatabaseClient(databaseUrl),
   ];
-  await Promise.all(concurrentClients.map((concurrentClient) => concurrentClient.connect()));
   let concurrentResults;
   try {
+    await Promise.all(concurrentClients.map((concurrentClient) => concurrentClient.connect()));
+    await Promise.all(
+      concurrentClients.map((concurrentClient) => (
+        assertConnectedToDisposableLocalDatabase(concurrentClient)
+      )),
+    );
     concurrentResults = await Promise.all(concurrentClients.map((concurrentClient) => (
       callBootstrap(
         concurrentClient,
@@ -1208,7 +1271,7 @@ try {
     asset_count: 0,
   });
 
-  console.log(`Official Japanese metadata bootstrap migration test passed: ${migrationMatches[0]}`);
+  console.log(`Official Japanese metadata bootstrap migration chain passed: ${migrationMatches.join(', ')}`);
 } finally {
   await client.query('reset role').catch(() => {});
   await client.end();

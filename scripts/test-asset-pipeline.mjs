@@ -530,8 +530,13 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /attempt_stderr="\$\{attempt_report%\.json\}\.stderr\.log"[\s\S]+2> "\$attempt_stderr"[\s\S]+\| tee "\$attempt_report"[\s\S]+cat "\$attempt_stderr" >&2/,
+    /pokedata-ingest:[\s\S]+attempt_stderr="\$\{attempt_report%\.json\}\.stderr\.log"[\s\S]+2> "\$attempt_stderr"[\s\S]+\| tee "\$attempt_report"[\s\S]+cat "\$attempt_stderr" >&2/,
     'fatal PokeData diagnostics must be retained when the process fails before emitting its stdout report',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /official-ingest:[\s\S]+attempt_stderr="\$\{attempt_report%\.json\}\.stderr\.log"[\s\S]+2> "\$attempt_stderr"[\s\S]+\| tee "\$attempt_report"[\s\S]+cat "\$attempt_stderr" >&2[\s\S]+! -s "\$attempt_report"[\s\S]+jq -e \. "\$attempt_stderr"[\s\S]+attempt-\*\.stderr\.log/,
+    'fatal official-ingest RPC diagnostics must be retained and uploaded when stdout has no report',
   );
   assert.doesNotMatch(
     japaneseCompletionWorkflow,
