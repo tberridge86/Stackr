@@ -11,7 +11,7 @@ on:
       write_concurrency:
         description: Concurrent staging writes inside one ingestion shard
         required: true
-        default: '8'
+        default: '2'
         type: string
       pokedata_set_batch_size:
         description: PokeData Japanese sets per bounded image-only shard
@@ -64,7 +64,7 @@ permissions:
 
 concurrency:
   group: stackr-staging-database-maintenance
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
@@ -83,7 +83,7 @@ jobs:
     env:
       CATALOGUE_BATCH_SIZE: ${{ inputs.ingest_batch_size || '500' }}
       CATALOGUE_MAX_RECORDS: ${{ inputs.max_records || '' }}
-      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '2' }}
       POKEDATA_SET_BATCH_SIZE: ${{ inputs.pokedata_set_batch_size || '50' }}
       CATALOGUE_MIRROR_BATCH_SIZE: ${{ inputs.mirror_batch_size || '500' }}
       CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
@@ -169,7 +169,7 @@ jobs:
           NODE
 
   ingest:
-    needs: prepare
+    needs: [prepare, pokedata-ingest]
     name: ingest-ja-${{ matrix.offset }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -177,10 +177,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
-      max-parallel: 2
+      max-parallel: 1
     env:
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
-      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '2' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -193,27 +193,40 @@ jobs:
         run: |
           npm ci
           npm ci --prefix backend
-      - name: Import exact official Japanese metadata and image references
+      - name: Import exact official Japanese image references with bounded retry
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p reports/catalogue/japanese
           report="reports/catalogue/japanese/ingest-${{ matrix.offset }}.json"
           run_key="official-jp:${GITHUB_SHA}:offset-${{ matrix.offset }}:limit-${{ matrix.limit }}"
-          npx tsx scripts/catalogue-ingest.ts run-language \
-            --source=pokemon-card-jp-official \
-            --language=ja \
-            --offset="${{ matrix.offset }}" \
-            --limit="${{ matrix.limit }}" \
-            --runKey="$run_key" \
-            --licenceStatus=approved \
-            --assetLicenceStatus=approved \
-            --allowImageAssets \
-            --assetsOnly \
-            --approvedOnlyAssets \
-            --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
-            --target=staging | tee "$report"
-          jq -e '.ok == true' "$report" >/dev/null
+          completed=false
+          for attempt in 1 2 3 4; do
+            attempt_report="reports/catalogue/japanese/ingest-${{ matrix.offset }}-attempt-${attempt}.json"
+            if npx tsx scripts/catalogue-ingest.ts run-language \
+              --source=pokemon-card-jp-official \
+              --language=ja \
+              --offset="${{ matrix.offset }}" \
+              --limit="${{ matrix.limit }}" \
+              --runKey="$run_key" \
+              --licenceStatus=approved \
+              --assetLicenceStatus=approved \
+              --allowImageAssets \
+              --assetsOnly \
+              --approvedOnlyAssets \
+              --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
+              --target=staging | tee "$attempt_report" \
+              && jq -e '.ok == true' "$attempt_report" >/dev/null; then
+              cp "$attempt_report" "$report"
+              completed=true
+              break
+            fi
+            cp "$attempt_report" "$report"
+            if (( attempt < 4 )); then
+              sleep $((attempt * 15))
+            fi
+          done
+          [[ "$completed" == 'true' ]]
       - name: Upload Japanese ingestion evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -239,7 +252,7 @@ jobs:
     environment: staging
     env:
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
-      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '2' }}
       POKEDATA_SET_BATCH_SIZE: ${{ inputs.pokedata_set_batch_size || '50' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -266,6 +279,9 @@ jobs:
               --offset="$offset" \
               --limit="$POKEDATA_SET_BATCH_SIZE" \
               --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
+              --maxAttempts=4 \
+              --retryBaseMs=2000 \
+              --setPauseMs=1000 \
               --requestId="pokedata-jp:${GITHUB_RUN_ID}:${offset}" \
               --target=staging | tee "$report"
             jq -e '
