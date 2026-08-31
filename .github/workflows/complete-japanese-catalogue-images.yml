@@ -96,6 +96,7 @@ jobs:
        github.event.comment.body == '/run-japanese-catalogue-images')
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    environment: staging
     outputs:
       matrix: ${{ steps.shards.outputs.matrix }}
       hit_count: ${{ steps.shards.outputs.hit_count }}
@@ -108,14 +109,24 @@ jobs:
       CATALOGUE_MIRROR_BATCH_SIZE: ${{ inputs.mirror_batch_size || '500' }}
       CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
       CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency || '4' }}
+      POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256: ${{ secrets.POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256 }}
+      POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256: ${{ secrets.POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256 }}
     steps:
-      - name: Verify staging-only bounded inputs
+      - name: Verify staging-only bounds and reviewed rights evidence
         shell: bash
         run: |
           set -euo pipefail
           [[ "$SUPABASE_PROJECT_REF" == 'lmwfhvexfcoyeuoyrlco' ]]
           [[ "$SUPABASE_URL" == 'https://lmwfhvexfcoyeuoyrlco.supabase.co' ]]
           [[ "$STACKR_CATALOGUE_IMPORT_TARGET" == 'staging' ]]
+          [[ "$POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256" =~ ^[0-9a-fA-F]{64}$ ]] || {
+            echo 'PokeData Japanese written-rights evidence has not been reviewed and registered.'
+            exit 1
+          }
+          [[ "$POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256" =~ ^[0-9a-fA-F]{64}$ ]] || {
+            echo 'Pokemon Card Japan written-rights evidence has not been reviewed and registered.'
+            exit 1
+          }
           [[ "$CATALOGUE_BATCH_SIZE" =~ ^[0-9]+$ ]]
           [[ "$CATALOGUE_WRITE_CONCURRENCY" =~ ^[0-9]+$ ]]
           [[ "$POKEDATA_SET_BATCH_SIZE" =~ ^[0-9]+$ ]]

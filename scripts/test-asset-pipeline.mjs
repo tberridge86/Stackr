@@ -462,6 +462,11 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
+    /environment: staging[\s\S]+POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256[\s\S]+POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256[\s\S]+\^\[0-9a-fA-F\]\{64\}\$/,
+    'Japanese image recovery must fail closed until reviewed written-rights evidence is registered for both providers',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
     /Report Japanese staging recovery start[\s\S]+GITHUB_RUN_ID[\s\S]+one database writer[\s\S]+Production released: \*\*0%\*\*[\s\S]+issues\/74\/comments/,
     'Japanese recovery must publish a staging-only run heartbeat before provider work starts',
   );
