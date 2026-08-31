@@ -462,6 +462,11 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
+    /Report Japanese staging recovery start[\s\S]+GITHUB_RUN_ID[\s\S]+one database writer[\s\S]+Production released: \*\*0%\*\*[\s\S]+issues\/74\/comments/,
+    'Japanese recovery must publish a staging-only run heartbeat before provider work starts',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
     /for attempt in 1 2 3 4[\s\S]+attempt \* 15/,
     'official Japanese ingestion must retry transient provider and database timeouts with bounded backoff',
   );
