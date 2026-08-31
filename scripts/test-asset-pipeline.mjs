@@ -25,6 +25,7 @@ const scanLabRoute = readFileSync('backend/routes/scanLab.js', 'utf8');
 const server = readFileSync('backend/server.js', 'utf8');
 const catalogueMirror = readFileSync('scripts/mirror-approved-catalogue-assets.mjs', 'utf8');
 const catalogueWorkflow = readFileSync('.github/workflows/catalogue-ingestion-ci.yml', 'utf8');
+const japaneseCompletionWorkflow = readFileSync('.github/workflows/complete-japanese-catalogue-images.yml', 'utf8');
 
 const tinyPng = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEUlEQVQImWO4o2HzH4QZYAwAT/QI/b1BT1MAAAAASUVORK5CYII=',
@@ -327,6 +328,41 @@ function assertMirrorRequestsAreBounded() {
     /provider === 'pikaqian' && language !== 'zh-cn'[\s\S]+PikaQian catalogue assets are restricted/,
     'PikaQian mirror runs must not report empty success for unsupported languages',
   );
+  assert.match(
+    catalogueMirror,
+    /ALLOWED_PROVIDERS = new Set\(\['tcgdex', 'pikaqian', 'pokemon_card_jp_official', 'pokedata_japanese'\]\)/,
+    'the mirror must explicitly allow the reviewed Japanese image providers',
+  );
+  assert.match(
+    catalogueMirror,
+    /provider === 'pokemon_card_jp_official' && language !== 'ja'[\s\S]+Official Japanese catalogue assets are restricted/,
+    'official Japanese mirror runs must fail closed outside ja',
+  );
+  assert.match(
+    catalogueMirror,
+    /sourceRequestHeaders\(provider\)[\s\S]+pokemon_card_jp_official[\s\S]+Referer: 'https:\/\/www\.pokemon-card\.com\/card-search\/'/,
+    'official Japanese image transfers must send the bounded official referer',
+  );
+  assert.match(
+    catalogueMirror,
+    /provider === 'pokedata_japanese' && language !== 'ja'[\s\S]+PokeData Japanese catalogue assets are restricted/,
+    'PokeData Japanese mirror runs must fail closed outside ja',
+  );
+  assert.match(
+    catalogueMirror,
+    /provider === 'pokedata_japanese'[\s\S]+url\.hostname !== 'pokemoncardimages\.pokedata\.io'[\s\S]+placeholder\.webp/,
+    'PokeData Japanese mirroring must use the exact reviewed image host and reject the placeholder',
+  );
+  assert.match(
+    catalogueMirror,
+    /canonical row[\s\S]+canonicalError[\s\S]+derivative_list: mirrored\.derivative_list[\s\S]+\.eq\('id', existing\.id\)[\s\S]+duplicateError/,
+    'physical dedupe must promote generated derivatives to the canonical asset before retiring a duplicate row',
+  );
+  assert.match(
+    catalogueMirror,
+    /shareAcrossDistinctIdentity[\s\S]+separate provenance rows while sharing one immutable physical object[\s\S]+sharedPhysicalObject: true/,
+    'exactly identical images on distinct printings must share bytes without losing either app image mapping',
+  );
   for (const relation of [
     'card_variants!assets_variant_id_fkey',
     'card_printings!assets_printing_id_fkey',
@@ -391,8 +427,43 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     catalogueWorkflow,
+    /options: \[tcgdex, pikaqian, pokemon_card_jp_official, pokedata_japanese\]/,
+    'the controlled ingestion workflow must expose both reviewed Japanese image providers',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /inputs\.provider \}\}" == "pokemon_card_jp_official" && "\$CATALOGUE_LANGUAGE" != "ja"/,
+    'the controlled ingestion workflow must reject non-Japanese official-provider runs',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /inputs\.provider \}\}" == "pokedata_japanese"[\s\S]+CATALOGUE_LANGUAGE" == 'ja'[\s\S]+CATALOGUE_BATCH_LIMIT <= 50/,
+    'the controlled ingestion workflow must constrain PokeData to Japanese batches of at most fifty sets',
+  );
+  assert.match(
+    catalogueWorkflow,
     /CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 6/,
     'the mirror workflow must cap provider image concurrency at six',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /push:[\s\S]+branches: \[main\][\s\S]+SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco/,
+    'Japanese completion must run from main against canonical staging only',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /fromJSON\(needs\.prepare\.outputs\.matrix\)[\s\S]+max-parallel: 2/,
+    'official Japanese ingestion must use deterministic resumable bounded-parallel shards',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /catalogue:ingest-pokedata-japanese-images[\s\S]+providers=\(pokedata_japanese pokemon_card_jp_official\)[\s\S]+mirror cursor did not advance/,
+    'the exact-crosswalk PokeData worker and both Japanese image sources must drain through bounded cursors',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /complete-japanese-catalogue-images\.mjs[\s\S]+catalogue-master\.ts publish[\s\S]+--coverage-limited[\s\S]+production released: \*\*0%\*\*/i,
+    'Japanese completion must repair, publish staging, and keep production at zero',
   );
 }
 

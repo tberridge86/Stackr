@@ -199,6 +199,234 @@ function dedupeByVariant(rows) {
   return deduped;
 }
 
+const PUBLIC_PATH_STORAGE_PROVIDERS = new Set(['supabase_storage', 's3_compatible', 'local_dev']);
+const REQUIRED_CARD_IMAGE_DERIVATIVE_ROLES = new Set(['card-grid', 'search-result', 'detail-page']);
+
+function safeHttpUrl(value) {
+  const url = clean(value);
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function safeStorageKey(value) {
+  const key = clean(value);
+  if (!key) return null;
+  const parts = key.split('/');
+  if (parts.some((part) => !part || part === '.' || part === '..')) return null;
+  return key;
+}
+
+function encodeStorageKey(value) {
+  const key = safeStorageKey(value);
+  if (!key) return null;
+  return key.split('/').map((part) => encodeURIComponent(part)).join('/');
+}
+
+function publicStorageUrl(storageProvider, storageBucket, storageKey, options = {}) {
+  const provider = clean(storageProvider);
+  const key = encodeStorageKey(storageKey);
+  if (!provider || !PUBLIC_PATH_STORAGE_PROVIDERS.has(provider) || !key) return null;
+  const assetBaseUrl = safeHttpUrl(options.assetBaseUrl)?.replace(/\/$/, '');
+  if (assetBaseUrl) return `${assetBaseUrl}/${key}`;
+  if (provider !== 'supabase_storage') return null;
+  const supabaseUrl = safeHttpUrl(options.supabaseUrl)?.replace(/\/$/, '');
+  const bucket = clean(storageBucket);
+  if (!supabaseUrl || !bucket || bucket === '.' || bucket === '..' || /[\\/]/.test(bucket)) return null;
+  return `${supabaseUrl}/storage/v1/object/public/${encodeURIComponent(bucket)}/${key}`;
+}
+
+function derivativeDelivery(derivative, asset, options = {}) {
+  const storageProvider = clean(derivative?.storageProvider)
+    ?? clean(derivative?.storage_provider)
+    ?? clean(asset?.storage_provider);
+  const storageBucket = clean(derivative?.storageBucket)
+    ?? clean(derivative?.storage_bucket)
+    ?? clean(asset?.storage_bucket);
+  const storageKey = safeStorageKey(derivative?.storageKey)
+    ?? safeStorageKey(derivative?.storage_key)
+    ?? safeStorageKey(derivative?.deliveryPath)
+    ?? safeStorageKey(derivative?.delivery_path)
+    ?? safeStorageKey(derivative?.path);
+  return {
+    ...derivative,
+    deliveryPath: storageKey,
+    deliveryUrl: safeHttpUrl(derivative?.deliveryUrl)
+      ?? safeHttpUrl(derivative?.delivery_url)
+      ?? safeHttpUrl(derivative?.url)
+      ?? publicStorageUrl(storageProvider, storageBucket, storageKey, options),
+  };
+}
+
+export function toCatalogueAsset(row, options = {}) {
+  const derivatives = Array.isArray(row?.derivative_list)
+    ? row.derivative_list.map((derivative) => derivativeDelivery(derivative, row, options))
+    : [];
+  const storageKey = safeStorageKey(row?.storage_key);
+  return {
+    assetId: row.asset_id,
+    assetType: row.asset_type,
+    game: row.game_code ?? null,
+    setId: row.set_id ?? null,
+    cardId: row.printing_id ?? null,
+    variantId: row.variant_id ?? null,
+    deliveryPath: PUBLIC_PATH_STORAGE_PROVIDERS.has(clean(row.storage_provider)) ? storageKey : null,
+    deliveryUrl: publicStorageUrl(row.storage_provider, row.storage_bucket, storageKey, options)
+      ?? safeHttpUrl(row.external_url),
+    sourceAttribution: row.source_attribution ?? null,
+    permissionStatus: row.permission_status,
+    contentSha256: row.content_sha256 ?? null,
+    perceptualHash: row.perceptual_hash ?? null,
+    mimeType: row.mime_type ?? null,
+    width: row.width ?? null,
+    height: row.height ?? null,
+    byteSize: row.byte_size ?? null,
+    derivatives,
+    cacheControl: row.cache_control ?? null,
+    externallyReferenced: row.externally_referenced ?? false,
+    unavailableReason: row.unavailable_reason ?? null,
+    lastVerifiedAt: row.last_verified_at ?? null,
+    updatedAt: row.updated_at ?? null,
+  };
+}
+
+function preferredAssetScore(row, options = {}) {
+  const derivatives = Array.isArray(row?.derivative_list) ? row.derivative_list : [];
+  return (cardImageRowIsAppReady(row, options) ? 1_000 : 0)
+    + (safeStorageKey(row?.storage_key) ? 100 : 0)
+    + derivatives.filter((item) => (
+      safeStorageKey(item?.storageKey) ?? safeStorageKey(item?.storage_key)
+    )).length * 10
+    + (clean(row?.content_sha256) ? 5 : 0)
+    + (clean(row?.external_url) ? 1 : 0);
+}
+
+function cardImageRowIsAppReady(row, options = {}) {
+  if (!row
+    || !PUBLIC_PATH_STORAGE_PROVIDERS.has(clean(row.storage_provider))
+    || !safeStorageKey(row.storage_key)
+    || !publicStorageUrl(row.storage_provider, row.storage_bucket, row.storage_key, options)) return false;
+  const derivatives = Array.isArray(row.derivative_list) ? row.derivative_list : [];
+  return [...REQUIRED_CARD_IMAGE_DERIVATIVE_ROLES].every((role) => {
+    const matches = derivatives.filter((item) => clean(item?.role) === role);
+    if (matches.length !== 1) return false;
+    const delivery = derivativeDelivery(matches[0], row, options);
+    return Boolean(delivery.deliveryPath && delivery.deliveryUrl);
+  });
+}
+
+function preferredAssetRows(rows, keyName, versionScoped = true, options = {}) {
+  const selected = new Map();
+  for (const row of rows) {
+    const key = clean(row?.[keyName]);
+    if (!key) continue;
+    const lookupKey = versionScoped ? `${clean(row?.catalogue_version_id) ?? '*'}:${key}` : key;
+    const current = selected.get(lookupKey);
+    const rowScore = preferredAssetScore(row, options);
+    const currentScore = preferredAssetScore(current, options);
+    if (!current
+      || rowScore > currentScore
+      || (rowScore === currentScore && String(row.asset_id ?? '') < String(current.asset_id ?? ''))) {
+      selected.set(lookupKey, row);
+    }
+  }
+  return selected;
+}
+
+function chunked(values, size = 100) {
+  const chunks = [];
+  for (let index = 0; index < values.length; index += size) chunks.push(values.slice(index, index + size));
+  return chunks;
+}
+
+async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
+  const variantIds = [...new Set(cards.flatMap((card) => card.variants.flatMap((variant) => [
+    variant.variantId,
+    variant.imageVariantId,
+    variant.sameArtworkAsVariantId,
+  ])).filter(Boolean))];
+  const printingIds = [...new Set(cards.map((card) => card.cardId).filter(Boolean))];
+
+  async function fetchBy(column, ids) {
+    const pageSize = 1000;
+    const batches = await Promise.all(chunked(ids).map(async (batch) => {
+      const rows = [];
+      for (let from = 0; ; from += pageSize) {
+        const page = await queryRows(
+          table(assetSupabase, 'api', 'asset_manifest')
+            .select('*')
+            .eq('asset_type', 'card_image')
+            .in(column, batch)
+            .order('catalogue_version_id', { ascending: true })
+            .order('asset_row_id', { ascending: true })
+            .range(from, from + pageSize - 1),
+        );
+        rows.push(...page);
+        if (page.length < pageSize) break;
+      }
+      return rows;
+    }));
+    return batches.flat();
+  }
+
+  const [variantRows, printingRows] = await Promise.all([
+    fetchBy('variant_id', variantIds),
+    fetchBy('printing_id', printingIds),
+  ]);
+  const uniqueRows = new Map();
+  for (const row of [...variantRows, ...printingRows]) {
+    const rowId = clean(row?.asset_row_id) ?? clean(row?.asset_id);
+    const key = rowId ? `${clean(row?.catalogue_version_id) ?? '*'}:${rowId}` : null;
+    if (key && !uniqueRows.has(key)) uniqueRows.set(key, row);
+  }
+  const rows = [...uniqueRows.values()];
+  const byVersionVariant = preferredAssetRows(rows, 'variant_id', true, options);
+  const byVariant = preferredAssetRows(rows, 'variant_id', false, options);
+  // Printing fallback is only valid for assets intentionally scoped to a
+  // printing. A sibling variant's image must never stand in for another finish.
+  const printingScopedRows = rows.filter((row) => !clean(row?.variant_id));
+  const byVersionPrinting = preferredAssetRows(printingScopedRows, 'printing_id', true, options);
+  const byPrinting = preferredAssetRows(printingScopedRows, 'printing_id', false, options);
+
+  return cards.map((card) => ({
+    ...card,
+    variants: card.variants.map((variant) => {
+      const versionPrefix = clean(card.catalogueVersionId) ?? '*';
+      const nativeVariantId = clean(variant.variantId);
+      const artworkVariantId = clean(variant.imageVariantId ?? variant.sameArtworkAsVariantId);
+      const nativeRow = byVersionVariant.get(`${versionPrefix}:${nativeVariantId}`)
+        ?? byVariant.get(nativeVariantId)
+        ?? null;
+      // An explicit same-artwork alias may point into another language shard,
+      // and therefore another published catalogue version.
+      const artworkRow = byVersionVariant.get(`${versionPrefix}:${artworkVariantId}`)
+        ?? byVariant.get(artworkVariantId)
+        ?? null;
+      const printingRow = byVersionPrinting.get(`${versionPrefix}:${card.cardId}`)
+        ?? byPrinting.get(card.cardId)
+        ?? null;
+      const explicitAlias = artworkVariantId && artworkVariantId !== nativeVariantId;
+      const row = cardImageRowIsAppReady(nativeRow, options)
+        ? nativeRow
+        : cardImageRowIsAppReady(artworkRow, options)
+          ? artworkRow
+          : cardImageRowIsAppReady(printingRow, options)
+            ? printingRow
+            : explicitAlias
+              ? artworkRow ?? nativeRow ?? printingRow
+              : nativeRow ?? printingRow ?? artworkRow;
+      return {
+        ...variant,
+        image: row ? toCatalogueAsset(row, options) : null,
+      };
+    }),
+  }));
+}
+
 export function toLanguage(row) {
   return {
     code: row.code,
@@ -263,6 +491,7 @@ export function toVariant(row) {
     nativeImageStatus: row.native_image_status ?? 'missing',
     sameArtworkAsVariantId: row.same_artwork_as_variant_id ?? null,
     imageVariantId: row.same_artwork_as_variant_id ?? row.variant_id,
+    image: null,
     updatedAt: row.updated_at ?? null,
   };
 }
@@ -296,6 +525,7 @@ export function toCardSummary(rows) {
   const englishDisplay = cardEnglishDisplay(row);
   return {
     cardId: row.printing_id,
+    catalogueVersionId: row.catalogue_version_id ?? null,
     game: row.game_code,
     languageCode: row.language_code,
     language: {
@@ -712,6 +942,10 @@ export function createCatalogueV1Service(options) {
   const searchSupabase = options.searchSupabase ?? supabase;
   const assetSupabase = options.assetSupabase ?? supabase;
   const assetBaseUrl = String(options.assetBaseUrl ?? process.env.STACKR_ASSET_BASE_URL ?? '').replace(/\/$/, '');
+  const assetUrlOptions = {
+    assetBaseUrl,
+    supabaseUrl: options.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
+  };
   const modelIndexVersion = clean(options.modelIndexVersion)
     ?? clean(process.env.STACKR_MODEL_INDEX_VERSION)
     ?? clean(process.env.SCANNER_PACK_ID)
@@ -881,7 +1115,8 @@ export function createCatalogueV1Service(options) {
       query = applyLanguageFilter(query, input.language);
       query = applyIdCursor(query, 'variant_id', input.cursor);
       const { rows, pagination } = pageFromRows(await queryRows(query), limit, 'variant_id');
-      return { cards: groupCardRows(sortCardsForDisplay(rows)), pagination };
+      const cards = groupCardRows(sortCardsForDisplay(rows));
+      return { cards: await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions), pagination };
     },
 
     async card(cardId) {
@@ -897,7 +1132,12 @@ export function createCatalogueV1Service(options) {
           .limit(50));
       }
       if (!rows.length) throw new ApiError(404, 'card_not_found', 'Card was not found.');
-      return { card: toCardSummary(sortCardsForDisplay(rows)) };
+      const [card] = await fetchCardImageAssets(
+        assetSupabase,
+        [toCardSummary(sortCardsForDisplay(rows))].filter(Boolean),
+        assetUrlOptions,
+      );
+      return { card };
     },
 
     async cardVariants(cardId) {
@@ -935,30 +1175,7 @@ export function createCatalogueV1Service(options) {
       const page = rows.slice(0, limit);
       const last = page[page.length - 1];
       return {
-        assets: page.map((row) => ({
-          assetId: row.asset_id,
-          assetType: row.asset_type,
-          game: row.game_code ?? null,
-          setId: row.set_id ?? null,
-          cardId: row.printing_id ?? null,
-          variantId: row.variant_id ?? null,
-          deliveryPath: row.storage_key ?? null,
-          deliveryUrl: assetBaseUrl && row.storage_key ? `${assetBaseUrl}/${row.storage_key}` : row.external_url ?? null,
-          sourceAttribution: row.source_attribution ?? null,
-          permissionStatus: row.permission_status,
-          contentSha256: row.content_sha256 ?? null,
-          perceptualHash: row.perceptual_hash ?? null,
-          mimeType: row.mime_type ?? null,
-          width: row.width ?? null,
-          height: row.height ?? null,
-          byteSize: row.byte_size ?? null,
-          derivatives: row.derivative_list ?? [],
-          cacheControl: row.cache_control ?? null,
-          externallyReferenced: row.externally_referenced ?? false,
-          unavailableReason: row.unavailable_reason ?? null,
-          lastVerifiedAt: row.last_verified_at ?? null,
-          updatedAt: row.updated_at ?? null,
-        })),
+        assets: page.map((row) => toCatalogueAsset(row, assetUrlOptions)),
         pagination: {
           limit,
           nextCursor: rows.length > limit && last
@@ -998,10 +1215,17 @@ export function createCatalogueV1Service(options) {
       for (const strategy of strategies) {
         const results = await strategy();
         if (results.length) {
+          const cards = results.filter((result) => result.type === 'card' && result.card).map((result) => result.card);
+          const hydratedCards = await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions);
+          let cardIndex = 0;
           return {
             query: q,
             normalizedQuery: parsed.normalized,
-            results,
+            results: results.map((result) => {
+              if (result.type !== 'card' || !result.card) return result;
+              const card = hydratedCards[cardIndex++];
+              return { ...result, card };
+            }),
             pagination: { limit, nextCursor: null },
           };
         }

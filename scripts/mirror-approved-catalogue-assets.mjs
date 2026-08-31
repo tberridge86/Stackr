@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
+import { pathToFileURL } from 'node:url';
 import { buildApprovedCatalogueAsset } from '../backend/lib/assetPipeline.js';
 import { SupabaseObjectStorageAdapter } from '../backend/lib/objectStorage.js';
 
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
-const ALLOWED_PROVIDERS = new Set(['tcgdex', 'pikaqian']);
+const ALLOWED_PROVIDERS = new Set(['tcgdex', 'pikaqian', 'pokemon_card_jp_official', 'pokedata_japanese']);
 const ALLOWED_LANGUAGES = new Set(['en', 'ja', 'zh-cn', 'ko']);
 const RETRYABLE_SOURCE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 const MAX_SOURCE_ATTEMPTS = 3;
 const MAX_DATABASE_ATTEMPTS = 3;
 const MAX_DEFERRED_PER_BATCH = 5;
+const MAX_SOURCE_REDIRECTS = 3;
 const CANDIDATE_ASSET_COLUMNS = [
   'id',
   'asset_id',
@@ -163,8 +165,17 @@ function isRetryableDatabaseError(error) {
 
 function requireStaging() {
   const target = String(arg('target') || process.env.STACKR_CATALOGUE_IMPORT_TARGET || '').trim().toLowerCase();
-  const url = process.env.SUPABASE_URL ?? '';
-  if (target !== 'staging' || !url.includes(STAGING_SUPABASE_REF)) {
+  const url = String(process.env.SUPABASE_URL ?? '');
+  let origin = '';
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname === '/' && !parsed.search && !parsed.hash && !parsed.username && !parsed.password) {
+      origin = parsed.origin;
+    }
+  } catch {
+    // The canonical-origin check below handles malformed URLs.
+  }
+  if (target !== 'staging' || origin !== `https://${STAGING_SUPABASE_REF}.supabase.co`) {
     throw new Error(`Catalogue mirroring is restricted to staging project ${STAGING_SUPABASE_REF}.`);
   }
 }
@@ -200,16 +211,89 @@ async function mapWithConcurrency(values, concurrency, mapper) {
   return results;
 }
 
-async function downloadApprovedImage(url, timeoutMs, maxBytes) {
+function sourceRequestHeaders(provider) {
+  const headers = { Accept: 'image/avif,image/webp,image/png,image/jpeg' };
+  if (provider === 'pokemon_card_jp_official') {
+    return {
+      ...headers,
+      Referer: 'https://www.pokemon-card.com/card-search/',
+      'User-Agent': 'StackR-Catalogue-Image-Mirror/1.0 (+https://stackrtcg.com)',
+    };
+  }
+  if (provider === 'pokedata_japanese') {
+    return {
+      ...headers,
+      Referer: 'https://www.pokedata.io/',
+      'User-Agent': 'StackR-Catalogue-Image-Mirror/1.0 (+https://stackrtcg.com)',
+    };
+  }
+  return headers;
+}
+
+function hostMatches(hostname, root) {
+  return hostname === root || hostname.endsWith(`.${root}`);
+}
+
+export function validateProviderSourceUrl(provider, value) {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`Invalid ${provider} source image URL.`);
+  }
+  if (url.protocol !== 'https:' || url.username || url.password) {
+    throw new Error(`${provider} source images must use credential-free HTTPS URLs.`);
+  }
+  if (provider === 'pokemon_card_jp_official') {
+    if (url.hostname !== 'www.pokemon-card.com'
+      || !url.pathname.startsWith('/assets/images/card_images/large/')) {
+      throw new Error('Official Japanese images must remain on the reviewed large-card image path.');
+    }
+  } else if (provider === 'tcgdex') {
+    if (!hostMatches(url.hostname, 'tcgdex.net')) {
+      throw new Error('TCGdex images must remain on a tcgdex.net host.');
+    }
+  } else if (provider === 'pikaqian') {
+    if (!hostMatches(url.hostname, 'pikaqian.com')) {
+      throw new Error('PikaQian images must remain on a pikaqian.com host.');
+    }
+  } else if (provider === 'pokedata_japanese') {
+    if (url.hostname !== 'pokemoncardimages.pokedata.io'
+      || !url.pathname.startsWith('/images/')
+      || url.pathname.toLowerCase() === '/images/placeholder.webp') {
+      throw new Error('PokeData Japanese images must remain on the reviewed card-image host and cannot use the placeholder.');
+    }
+  } else {
+    throw new Error(`Unsupported source-image provider: ${provider}.`);
+  }
+  return url;
+}
+
+async function fetchApprovedSource(url, options) {
+  let current = validateProviderSourceUrl(options.provider, url);
+  for (let redirectCount = 0; redirectCount <= MAX_SOURCE_REDIRECTS; redirectCount += 1) {
+    const response = await fetch(current, {
+      headers: sourceRequestHeaders(options.provider),
+      redirect: 'manual',
+      signal: AbortSignal.timeout(options.timeoutMs),
+    });
+    if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+    const location = response.headers.get('location');
+    await response.body?.cancel().catch(() => undefined);
+    if (!location) throw new Error('Source image redirect omitted its destination.');
+    if (redirectCount === MAX_SOURCE_REDIRECTS) throw new Error('Source image exceeded the redirect limit.');
+    current = validateProviderSourceUrl(options.provider, new URL(location, current).href);
+  }
+  throw new Error('Source image redirect validation failed.');
+}
+
+async function downloadApprovedImage(url, timeoutMs, maxBytes, provider) {
+  validateProviderSourceUrl(provider, url);
   let lastError = null;
   for (let attempt = 1; attempt <= MAX_SOURCE_ATTEMPTS; attempt += 1) {
     let response = null;
     try {
-      response = await fetch(url, {
-        headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg' },
-        redirect: 'follow',
-        signal: AbortSignal.timeout(timeoutMs),
-      });
+      response = await fetchApprovedSource(url, { provider, timeoutMs });
       if (response.status === 404 || response.status === 410) {
         throw new SourceImageUnavailableError(response.status);
       }
@@ -286,7 +370,7 @@ async function languageScopedCandidates(supabase, input) {
 
 async function reuseExistingStorageObject(supabase, asset, mirrored) {
   const { data: existing, error: existingError } = await supabase.schema('catalog').from('assets')
-    .select('id,asset_id,variant_id,url')
+    .select('id,asset_id,variant_id,printing_id,url,storage_path')
     .eq('storage_provider', mirrored.storage_provider)
     .eq('storage_bucket', mirrored.storage_bucket)
     .eq('storage_key', mirrored.storage_key)
@@ -301,6 +385,90 @@ async function reuseExistingStorageObject(supabase, asset, mirrored) {
   if (existingError) throw existingError;
   if (!existing?.id || (asset.asset_type === 'card_image' && !existing.variant_id)) {
     throw new Error(`Stored object ${mirrored.storage_key} exists without a reusable catalogue asset.`);
+  }
+
+  // Content-addressed storage means the canonical row and this duplicate point
+  // at the same immutable original. Keep one physical object, but promote the
+  // newly generated validation and derivative metadata onto the canonical row
+  // before retiring the duplicate reference.
+  const { error: canonicalError } = await supabase.schema('catalog').from('assets').update({
+    sha256: mirrored.sha256,
+    content_sha256: mirrored.content_sha256,
+    perceptual_hash: mirrored.perceptual_hash,
+    mime_type: mirrored.mime_type,
+    width: mirrored.width,
+    height: mirrored.height,
+    byte_size: mirrored.byte_size,
+    derivative_list: mirrored.derivative_list,
+    cache_control: mirrored.cache_control,
+    archival_storage_key: mirrored.archival_storage_key,
+    last_verified_at: mirrored.last_verified_at,
+    retention_status: 'active',
+  }).eq('id', existing.id);
+  if (canonicalError) throw canonicalError;
+
+  let sameVariant = false;
+  let safeSamePrintingAlias = false;
+  if (asset.variant_id && existing.variant_id) {
+    sameVariant = existing.variant_id === asset.variant_id;
+    if (!sameVariant) {
+      const { data: variantScopes, error: scopeError } = await supabase.schema('catalog').from('card_variants')
+        .select('id,printing_id,language_code')
+        .in('id', [asset.variant_id, existing.variant_id]);
+      if (scopeError) throw scopeError;
+      const targetScope = (variantScopes ?? []).find((row) => row.id === asset.variant_id);
+      const existingScope = (variantScopes ?? []).find((row) => row.id === existing.variant_id);
+      safeSamePrintingAlias = Boolean(
+        targetScope?.printing_id
+        && targetScope.printing_id === existingScope?.printing_id
+        && targetScope.language_code === existingScope?.language_code,
+      );
+    }
+  }
+
+  const shareAcrossDistinctIdentity = asset.asset_type === 'card_image'
+    && asset.variant_id
+    && existing.variant_id
+    && !sameVariant
+    && !safeSamePrintingAlias;
+  if (shareAcrossDistinctIdentity) {
+    // Exact source/content equality is valid evidence for both identities. Keep
+    // separate provenance rows while sharing one immutable physical object.
+    const { error: sharedError } = await supabase.schema('catalog').from('assets').update({
+      url: existing.url,
+      storage_provider: mirrored.storage_provider,
+      storage_bucket: mirrored.storage_bucket,
+      storage_key: mirrored.storage_key,
+      storage_path: mirrored.storage_path ?? existing.storage_path ?? mirrored.storage_key,
+      externally_referenced: false,
+      publicly_servable: true,
+      unavailable_reason: null,
+      sha256: mirrored.sha256,
+      content_sha256: mirrored.content_sha256,
+      perceptual_hash: mirrored.perceptual_hash,
+      mime_type: mirrored.mime_type,
+      width: mirrored.width,
+      height: mirrored.height,
+      byte_size: mirrored.byte_size,
+      derivative_list: mirrored.derivative_list,
+      cache_control: mirrored.cache_control,
+      archival_storage_key: mirrored.archival_storage_key,
+      last_verified_at: mirrored.last_verified_at,
+      retention_status: 'active',
+    }).eq('id', asset.id);
+    if (sharedError) throw sharedError;
+    const { error: variantError } = await supabase.schema('catalog').from('card_variants').update({
+      native_image_status: 'available',
+      same_artwork_as_variant_id: null,
+    }).eq('id', asset.variant_id);
+    if (variantError) throw variantError;
+    return {
+      id: asset.id,
+      status: 'reused_existing',
+      canonicalAssetId: existing.id,
+      sharedPhysicalObject: true,
+      bytes: mirrored.byte_size,
+    };
   }
 
   const { error: duplicateError } = await supabase.schema('catalog').from('assets').update({
@@ -325,10 +493,13 @@ async function reuseExistingStorageObject(supabase, asset, mirrored) {
   if (duplicateError) throw duplicateError;
 
   if (asset.variant_id) {
-    const sameVariant = existing.variant_id === asset.variant_id;
     const { error: variantError } = await supabase.schema('catalog').from('card_variants').update({
-      native_image_status: sameVariant ? 'available' : 'same_artwork_reference',
-      same_artwork_as_variant_id: sameVariant ? null : existing.variant_id,
+      native_image_status: sameVariant
+        ? 'available'
+        : safeSamePrintingAlias
+          ? 'same_artwork_reference'
+          : 'scan_acquisition_required',
+      same_artwork_as_variant_id: safeSamePrintingAlias ? existing.variant_id : null,
     }).eq('id', asset.variant_id);
     if (variantError) throw variantError;
   }
@@ -347,9 +518,15 @@ async function reuseExactSourceMatch(supabase, asset, sourceUrl) {
   const { data: existing, error } = await supabase.schema('catalog').from('assets')
     .select([
       'id',
+      'asset_id',
+      'variant_id',
+      'printing_id',
+      'url',
       'storage_provider',
       'storage_bucket',
       'storage_key',
+      'storage_path',
+      'sha256',
       'content_sha256',
       'perceptual_hash',
       'mime_type',
@@ -357,8 +534,10 @@ async function reuseExactSourceMatch(supabase, asset, sourceUrl) {
       'height',
       'byte_size',
       'derivative_list',
+      'cache_control',
       'archival_storage_key',
       'last_verified_at',
+      'retention_status',
     ].join(','))
     .eq('asset_type', 'card_image')
     .eq('original_source_url', sourceUrl)
@@ -453,7 +632,7 @@ async function mirrorOne(supabase, storage, asset, options) {
   const exactSourceReuse = await reuseExactSourceMatch(supabase, asset, sourceUrl);
   if (exactSourceReuse) return exactSourceReuse;
 
-  const image = await downloadApprovedImage(sourceUrl, options.timeoutMs, options.maxBytes);
+  const image = await downloadApprovedImage(sourceUrl, options.timeoutMs, options.maxBytes, options.provider);
   const mirrored = await buildApprovedCatalogueAsset({
     assetId: asset.id,
     assetType: asset.asset_type,
@@ -526,15 +705,23 @@ async function mirrorOneWithDatabaseRetry(supabase, storage, asset, options) {
 
 async function main() {
   if (hasFlag('help')) {
-    console.log('node scripts/mirror-approved-catalogue-assets.mjs --provider=tcgdex --language=en --limit=100 --concurrency=2 --target=staging [--afterId=<uuid>] [--throughId=<uuid>] [--assetIds=<uuid,...>]');
+    console.log('node scripts/mirror-approved-catalogue-assets.mjs --provider=tcgdex|pikaqian|pokemon_card_jp_official|pokedata_japanese --language=en|ja|zh-cn|ko --limit=100 --concurrency=2 --target=staging [--afterId=<uuid>] [--throughId=<uuid>] [--assetIds=<uuid,...>]');
     return;
   }
   requireStaging();
   const provider = arg('provider');
-  if (!ALLOWED_PROVIDERS.has(provider)) throw new Error('Use --provider=tcgdex or --provider=pikaqian.');
+  if (!ALLOWED_PROVIDERS.has(provider)) {
+    throw new Error('Use --provider=tcgdex, --provider=pikaqian, --provider=pokemon_card_jp_official, or --provider=pokedata_japanese.');
+  }
   const language = requiredLanguage(arg('language'));
   if (provider === 'pikaqian' && language !== 'zh-cn') {
     throw new Error('PikaQian catalogue assets are restricted to --language=zh-cn.');
+  }
+  if (provider === 'pokemon_card_jp_official' && language !== 'ja') {
+    throw new Error('Official Japanese catalogue assets are restricted to --language=ja.');
+  }
+  if (provider === 'pokedata_japanese' && language !== 'ja') {
+    throw new Error('PokeData Japanese catalogue assets are restricted to --language=ja.');
   }
   const limit = boundedInteger(arg('limit', '100'), 100, 1, 2000);
   const concurrency = boundedInteger(arg('concurrency', '2'), 2, 1, 6);
@@ -612,7 +799,9 @@ async function main() {
   if (!ok) process.exitCode = 1;
 }
 
-main().catch((error) => {
-  console.error(JSON.stringify({ ok: false, error: errorMessage(error) }, null, 2));
-  process.exitCode = 1;
-});
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(JSON.stringify({ ok: false, error: errorMessage(error) }, null, 2));
+    process.exitCode = 1;
+  });
+}

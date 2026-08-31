@@ -344,7 +344,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Envelope"
+                $ref: "#/components/schemas/AssetManifestResponse"
   /assets/scans/presigned-upload:
     post:
       tags: [Assets]
@@ -1233,12 +1233,289 @@ components:
     CardsResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [cards]
+              properties:
+                cards:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Card"
     CardResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [card]
+              properties:
+                card:
+                  $ref: "#/components/schemas/Card"
     CardVariantsResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [cardId, variants]
+              properties:
+                cardId:
+                  type: string
+                  format: uuid
+                variants:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/CardVariant"
+    AssetManifestResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [assets]
+              properties:
+                assets:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/CatalogueAsset"
+    CatalogueAssetDerivative:
+      type: object
+      additionalProperties: true
+      required: [deliveryPath, deliveryUrl]
+      properties:
+        role:
+          type: [string, "null"]
+        storageProvider:
+          type: [string, "null"]
+        storageBucket:
+          type: [string, "null"]
+        storageKey:
+          type: [string, "null"]
+        deliveryPath:
+          type: [string, "null"]
+        deliveryUrl:
+          type: [string, "null"]
+          format: uri
+        mimeType:
+          type: [string, "null"]
+        width:
+          type: [integer, "null"]
+        height:
+          type: [integer, "null"]
+        byteSize:
+          type: [integer, "null"]
+        contentSha256:
+          type: [string, "null"]
+        cacheControl:
+          type: [string, "null"]
+    CatalogueAsset:
+      type: object
+      required:
+        - assetId
+        - assetType
+        - cardId
+        - variantId
+        - deliveryPath
+        - deliveryUrl
+        - permissionStatus
+        - derivatives
+      properties:
+        assetId:
+          type: string
+        assetType:
+          type: string
+        game:
+          type: [string, "null"]
+        setId:
+          type: [string, "null"]
+          format: uuid
+        cardId:
+          type: [string, "null"]
+          format: uuid
+        variantId:
+          type: [string, "null"]
+          format: uuid
+        deliveryPath:
+          type: [string, "null"]
+        deliveryUrl:
+          type: [string, "null"]
+          format: uri
+        sourceAttribution:
+          type: [string, "null"]
+        permissionStatus:
+          type: string
+        contentSha256:
+          type: [string, "null"]
+        perceptualHash:
+          type: [string, "null"]
+        mimeType:
+          type: [string, "null"]
+        width:
+          type: [integer, "null"]
+        height:
+          type: [integer, "null"]
+        byteSize:
+          type: [integer, "null"]
+        derivatives:
+          type: array
+          items:
+            $ref: "#/components/schemas/CatalogueAssetDerivative"
+        cacheControl:
+          type: [string, "null"]
+        externallyReferenced:
+          type: boolean
+        unavailableReason:
+          type: [string, "null"]
+        lastVerifiedAt:
+          type: [string, "null"]
+          format: date-time
+        updatedAt:
+          type: [string, "null"]
+          format: date-time
+    CardVariant:
+      type: object
+      required:
+        - variantId
+        - canonicalId
+        - variantCode
+        - imageVariantId
+        - image
+      properties:
+        variantId:
+          type: string
+          format: uuid
+        canonicalId:
+          type: string
+        variantCode:
+          type: string
+        variantLabel:
+          type: [string, "null"]
+        finishCode:
+          type: [string, "null"]
+        finishLabel:
+          type: [string, "null"]
+        artworkKey:
+          type: [string, "null"]
+        nativeImageStatus:
+          type: [string, "null"]
+        sameArtworkAsVariantId:
+          type: [string, "null"]
+          format: uuid
+        imageVariantId:
+          type: [string, "null"]
+          format: uuid
+        image:
+          anyOf:
+            - $ref: "#/components/schemas/CatalogueAsset"
+            - type: "null"
+        updatedAt:
+          type: [string, "null"]
+          format: date-time
+    Card:
+      type: object
+      required:
+        - cardId
+        - catalogueVersionId
+        - game
+        - languageCode
+        - set
+        - collectorNumber
+        - names
+        - rarity
+        - defaultVariantId
+        - variants
+      properties:
+        cardId:
+          type: string
+          format: uuid
+        catalogueVersionId:
+          type: [string, "null"]
+          format: uuid
+        game:
+          type: string
+        languageCode:
+          $ref: "#/components/schemas/LanguageCode"
+        language:
+          type: object
+          required: [englishName, nativeName]
+          properties:
+            englishName:
+              type: [string, "null"]
+            nativeName:
+              type: [string, "null"]
+        set:
+          type: object
+          required: [setId, setCode, nativeName, englishDisplayName]
+          properties:
+            setId:
+              type: string
+              format: uuid
+            setCode:
+              type: [string, "null"]
+            nativeName:
+              type: [string, "null"]
+            englishDisplayName:
+              type: [string, "null"]
+        collectorNumber:
+          type: object
+          required: [value, prefix, sort, suffix, sortKey]
+          properties:
+            value:
+              type: string
+            prefix:
+              type: [string, "null"]
+            sort:
+              type: [integer, "null"]
+            suffix:
+              type: [string, "null"]
+            sortKey:
+              type: [string, "null"]
+        names:
+          type: object
+          required: [native, englishDisplay]
+          properties:
+            native:
+              type: string
+            englishDisplay:
+              type: [string, "null"]
+            englishDisplaySource:
+              type: [string, "null"]
+              enum: [printing, concept, null]
+        details:
+          type: object
+          required: [supertype, subtypes, artist]
+          properties:
+            supertype:
+              type: [string, "null"]
+            subtypes:
+              type: array
+              items:
+                type: string
+            artist:
+              type: [string, "null"]
+        rarity:
+          type: object
+          required: [code, label]
+          properties:
+            code:
+              type: [string, "null"]
+            label:
+              type: [string, "null"]
+        defaultVariantId:
+          type: string
+          format: uuid
+        variants:
+          type: array
+          items:
+            $ref: "#/components/schemas/CardVariant"
+        updatedAt:
+          type: [string, "null"]
+          format: date-time
     CardPriceResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"
@@ -1322,12 +1599,50 @@ components:
             - exact_alias
             - exact_translated_name
             - fuzzy_name
+        cardId:
+          type: string
+          format: uuid
+        variantId:
+          type: string
+          format: uuid
+        canonicalId:
+          type: string
+        setId:
+          type: string
+          format: uuid
+        setCode:
+          type: [string, "null"]
+        collectorNumber:
+          type: string
+        nativeName:
+          type: [string, "null"]
+        englishDisplayName:
+          type: [string, "null"]
+        englishDisplaySource:
+          type: [string, "null"]
+          enum: [printing, concept, null]
+        languageCode:
+          $ref: "#/components/schemas/LanguageCode"
+        variantCode:
+          type: string
+        matchedName:
+          type: [string, "null"]
+        matchedNameType:
+          type: [string, "null"]
+        matchedSetCode:
+          type: string
+        card:
+          $ref: "#/components/schemas/Card"
+        set:
+          type: object
+          additionalProperties: true
     Envelope:
       type: object
       required: [data, meta]
       properties:
         data:
           type: object
+          additionalProperties: true
         meta:
           $ref: "#/components/schemas/EnvelopeMeta"
     ErrorEnvelope:

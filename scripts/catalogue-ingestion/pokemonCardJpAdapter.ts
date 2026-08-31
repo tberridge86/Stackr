@@ -431,10 +431,10 @@ export class PokemonCardJpOfficialSourceAdapter implements SourceAdapter {
         pageSize: OFFICIAL_PAGE_SIZE,
         maximumCardsPerRun: MAX_BATCH_LIMIT,
         detailConcurrency: this.detailConcurrency,
-        scheduling: 'manual_approval_required',
+        scheduling: 'approved_staging_refresh',
       },
       capabilities: ['sets', 'cards', 'assets', 'conditional_requests'],
-      automatedRefreshAllowed: false,
+      automatedRefreshAllowed: true,
     };
   }
 
@@ -652,6 +652,7 @@ export class PokemonCardJpOfficialSourceAdapter implements SourceAdapter {
         id: reference.cardID,
         cardID: reference.cardID,
         name,
+        officialDetailName: detail.name,
         localId: detail.collectorNumber,
         number: detail.collectorNumber,
         set,
@@ -660,6 +661,7 @@ export class PokemonCardJpOfficialSourceAdapter implements SourceAdapter {
         officialSearchHitCount: search.hitCount,
         image: imageUrl,
         imageUrl,
+        officialDetailImageUrl: detail.imageUrl,
         artist: detail.artist,
         rarity: detail.rarityProviderCode,
         supertype: detail.supertype,
@@ -783,20 +785,51 @@ export class PokemonCardJpOfficialSourceAdapter implements SourceAdapter {
   async fetchAssets(scope: FetchScope = {}) {
     const cards = await this.fetchCards(scope);
     return cards.flatMap((card) => {
-      const imageUrl = cleanText(card.payload.imageUrl ?? card.payload.image);
-      if (!imageUrl) return [];
+      const payload = card.payload;
+      const set = payload.set && typeof payload.set === 'object' && !Array.isArray(payload.set)
+        ? payload.set as Record<string, unknown>
+        : {};
+      const cardID = cleanText(payload.cardID ?? payload.id);
+      const setCode = cleanText(payload.setCode ?? set.code ?? set.id);
+      const collectorNumber = cleanText(payload.localId ?? payload.number);
+      const nativeName = cleanText(payload.officialDetailName);
+      const imageUrl = absoluteOfficialUrl(payload.officialDetailImageUrl, this.baseUrl);
+      if (!cardID || !imageUrl) return [];
       return [{
-        ...card,
-        providerRecordId: `${card.providerRecordId}:normal:normal:image`,
+        provider: 'pokemon_card_jp_official',
+        providerRecordId: `${cardID}:normal:normal:image`,
         recordType: 'asset' as const,
+        languageCode: 'ja',
+        sourceUrl: card.sourceUrl,
+        sourceEndpoint: card.sourceEndpoint,
+        providerUpdatedAt: card.providerUpdatedAt,
         licenceStatus: this.assetLicenceStatus,
+        attributionText: ATTRIBUTION,
+        httpMetadata: card.httpMetadata,
         payload: {
-          ...card.payload,
+          id: cardID,
+          cardID,
+          name: nativeName,
+          nativeName,
+          localId: collectorNumber,
+          number: collectorNumber,
+          set: {
+            ...set,
+            id: setCode,
+            code: setCode,
+          },
+          setCode,
+          printedTotal: positiveInteger(payload.printedTotal ?? set.printedTotal),
+          image: imageUrl,
+          imageUrl,
           image_url: imageUrl,
+          official_image_url: imageUrl,
           image_language_code: 'ja',
           asset_type: 'card_image',
           variant: 'normal',
           finish: 'normal',
+          detailParserVersion: payload.detailParserVersion,
+          officialDetailUrl: payload.officialDetailUrl ?? card.sourceUrl,
         },
       }];
     });
@@ -862,7 +895,7 @@ export class PokemonCardJpOfficialSourceAdapter implements SourceAdapter {
         path: 'languageCode',
       });
     }
-    if (['card', 'asset'].includes(record.recordType)) {
+    if (record.recordType === 'card') {
       const normalised = this.normaliseRecord(record);
       if (!normalised.nativeName) {
         issues.push({ code: 'native_name_missing', severity: 'error', message: 'Official Japanese card detail is missing its native name.' });
@@ -877,17 +910,50 @@ export class PokemonCardJpOfficialSourceAdapter implements SourceAdapter {
           message: 'Official Japanese card detail has no printed collector number; no synthetic identity was created.',
         });
       }
-      if (record.recordType === 'asset') {
-        const image = cleanText(normalised.imageUrl);
-        const officialOrigin = new URL(this.baseUrl).origin;
-        if (!image || new URL(image).origin !== officialOrigin || !new URL(image).pathname.startsWith('/assets/images/card_images/')) {
-          issues.push({
-            code: 'official_image_url_invalid',
-            severity: 'error',
-            message: 'Japanese card image must use the official card-images path on the configured official origin.',
-            path: 'payload.image_url',
-          });
-        }
+    }
+    if (record.recordType === 'asset') {
+      const normalised = this.normaliseRecord(record);
+      if (!cleanText(record.payload.cardID)) {
+        issues.push({
+          code: 'official_card_id_missing',
+          severity: 'error',
+          message: 'Official Japanese image reference must retain its card ID for exact existing-identity mapping.',
+          path: 'payload.cardID',
+        });
+      }
+      if (!normalised.setCode) {
+        issues.push({
+          code: 'set_code_missing',
+          severity: 'error',
+          message: 'Official Japanese image detail is missing its exact printed set code.',
+          path: 'payload.setCode',
+        });
+      }
+      if (!normalised.collectorNumber) {
+        issues.push({
+          code: 'collector_number_missing',
+          severity: 'error',
+          message: 'Official Japanese image detail is missing its exact printed collector number.',
+          path: 'payload.localId',
+        });
+      }
+      if (!normalised.nativeName) {
+        issues.push({
+          code: 'native_name_missing',
+          severity: 'error',
+          message: 'Official Japanese image detail is missing its native card name.',
+          path: 'payload.name',
+        });
+      }
+      const image = cleanText(normalised.imageUrl);
+      const officialOrigin = new URL(this.baseUrl).origin;
+      if (!image || new URL(image).origin !== officialOrigin || !new URL(image).pathname.startsWith('/assets/images/card_images/')) {
+        issues.push({
+          code: 'official_image_url_invalid',
+          severity: 'error',
+          message: 'Japanese card image must use the official card-images path on the configured official origin.',
+          path: 'payload.image_url',
+        });
       }
     }
     return {

@@ -12,7 +12,9 @@ import {
 } from './catalogue-ingestion/tcgdexOrdering';
 import {
   CatalogueIngestionRunner,
+  canRelinkExternalIdentifierAsset,
   calculateExponentialBackoff,
+  chooseExistingVariantForCardImage,
   isMissingVariantRepairPrecondition,
   isResolvedDeprecatedVariantAlias,
   isSafeUnsupportedPrimaryVariantCorrection,
@@ -55,6 +57,7 @@ const tcgdexAdapter = readFileSync('scripts/catalogue-ingestion/tcgdexAdapter.ts
 const legacySync = readFileSync('scripts/sync-tcgdex-catalogue.mjs', 'utf8');
 const backendRoute = readFileSync('backend/routes/catalogueIngestion.js', 'utf8');
 const catalogueWorkflow = readFileSync('.github/workflows/catalogue-ingestion-ci.yml', 'utf8');
+const japaneseCompletionWorkflow = readFileSync('.github/workflows/complete-japanese-catalogue-images.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 
 function expectSql(pattern: RegExp, message: string) {
@@ -102,10 +105,45 @@ function assertBoundedCatalogueWrites() {
     /Report language quality \(advisory\)[\s\S]+continue-on-error: true/,
     'a busy staging quality view must not invalidate a completed one-time snapshot import',
   );
-  assert.doesNotMatch(
+  assert.match(
     catalogueWorkflow,
-    /npm run catalogue:ingest -- run-language/,
-    'the one-time TCGdex workflow must import from its pinned local snapshot rather than the live card API',
+    /Import exact sets from the pinned TCGdex snapshot[\s\S]+catalogue-master\.ts apply[\s\S]+--provider=tcgdex/,
+    'the one-time TCGdex path must keep importing from its pinned local snapshot',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /options: \[tcgdex, pikaqian, pokemon_card_jp_official, pokedata_japanese\]/,
+    'the controlled workflow must expose the reviewed Japanese image providers',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /Import bounded official Japanese catalogue ranges[\s\S]+--source=pokemon-card-jp-official[\s\S]+--language=ja/,
+    'the official Japanese path must import exact ja ranges',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /Import bounded official Japanese catalogue ranges[\s\S]+asset_args\+=\(--allowImageAssets --approvedOnlyAssets --assetLicenceStatus=approved\)/,
+    'the official Japanese path must import approved image references',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /Import bounded official Japanese catalogue ranges[\s\S]+--assetsOnly/,
+    'the official Japanese path must never overwrite catalogue metadata',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /CATALOGUE_BATCH_SIZE >= 100 && CATALOGUE_BATCH_SIZE <= 500[\s\S]+hitCnt[\s\S]+matrix=\$\{JSON\.stringify\(\{ include \}\)\}/,
+    'Japanese catalogue discovery must produce a bounded dynamic matrix from the live official count',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /--source=pokemon-card-jp-official[\s\S]+--licenceStatus=approved[\s\S]+--assetLicenceStatus=approved[\s\S]+--assetsOnly[\s\S]+--target=staging/,
+    'Japanese official writes must be explicitly approved and staging-only',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /Enforce 100% effective staging coverage[\s\S]+effectiveAppReadyPercent[\s\S]+== 100/,
+    'the completion workflow must not describe partial Japanese app coverage as complete',
   );
 }
 
@@ -264,6 +302,130 @@ function assertPinnedPrimaryVariantCorrectionSafety() {
     deprecatedPrintingId: 'printing-1',
     correctionTargetPrintingId: 'printing-2',
   }), false);
+}
+
+function assertExternalIdentifierAssetRelinkingSafety() {
+  const healthy = {
+    id: 'healthy-asset',
+    publicly_servable: true,
+    rights_status: 'approved',
+    permission_status: 'approved',
+    storage_provider: 'external_reference',
+    retention_status: 'active',
+    deprecated_at: null,
+    deleted_at: null,
+  };
+
+  for (const retired of [
+    { ...healthy, id: 'retired-asset', deprecated_at: '2026-08-31T00:00:00.000Z' },
+    { ...healthy, id: 'deleted-asset', deleted_at: '2026-08-31T00:00:00.000Z' },
+    { ...healthy, id: 'unavailable-asset', storage_provider: 'unavailable' },
+    { ...healthy, id: 'non-public-asset', publicly_servable: false },
+    { ...healthy, id: 'inactive-asset', retention_status: 'delete_scheduled' },
+  ]) {
+    assert.equal(
+      canRelinkExternalIdentifierAsset(retired, healthy),
+      true,
+      `a stale provider identity should move off ${retired.id}`,
+    );
+  }
+
+  assert.equal(
+    canRelinkExternalIdentifierAsset({ ...healthy, id: 'another-healthy-asset' }, healthy),
+    false,
+    'two different healthy assets must remain an identity conflict',
+  );
+  assert.equal(
+    canRelinkExternalIdentifierAsset(
+      { ...healthy, id: 'retired-asset', retention_status: 'unavailable' },
+      { ...healthy, publicly_servable: false },
+    ),
+    false,
+    'a retired identity must never be relinked to an unhealthy candidate',
+  );
+  assert.equal(
+    canRelinkExternalIdentifierAsset(healthy, healthy),
+    false,
+    'an already-idempotent asset identity does not require relinking',
+  );
+  assert.match(
+    ingestionPipeline,
+    /canRelinkExternalIdentifierAsset\(existingAsset, candidateAsset\)/,
+    'the external identifier write path must apply the tested relink safety predicate',
+  );
+}
+
+function assertJapaneseAssetOnlyVariantSelection() {
+  assert.doesNotMatch(
+    ingestionPipeline,
+    /official_card_id_not_present_in_existing_japanese_catalogue/,
+    'an unmapped official card ID must continue to the exact set + collector + variant matcher',
+  );
+  assert.match(
+    ingestionPipeline,
+    /if \(mappedVariantId\) \{[\s\S]+official_card_image_attached_by_existing_provider_identity[\s\S]+const setMatch = await findSetId/,
+    'mapped official IDs use their guarded identity while unmapped IDs fall through to exact catalogue identity',
+  );
+  assert.match(
+    ingestionPipeline,
+    /identifierRows \?\? \[\]\)\.length > 1[\s\S]+Official Japanese card ID maps to multiple current variants; image attachment was refused/,
+    'ambiguous official card-ID mappings must remain quarantined',
+  );
+  assert.match(
+    ingestionPipeline,
+    /mappedVariant\.artwork_key !== `pokemon_card_jp_official:\$\{providerCardExternalId\}`[\s\S]+lacks matching official artwork evidence/,
+    'a mapped official card ID must not bypass artwork-key evidence',
+  );
+  const exact = chooseExistingVariantForCardImage([
+    { id: 'normal', canonical_key: 'expected', is_default: false },
+    { id: 'reverse', canonical_key: 'other', is_default: true },
+  ], 'expected');
+  assert.deepEqual(exact, {
+    status: 'matched',
+    variantId: 'normal',
+    reason: 'card_image_attached_to_exact_canonical_variant',
+  });
+
+  const existingDefault = chooseExistingVariantForCardImage([
+    { id: 'legacy-default', canonical_key: 'legacy', is_default: true, variant_code: 'normal', finish_code: 'normal' },
+    { id: 'legacy-reverse', canonical_key: 'legacy-reverse', is_default: false, variant_code: 'reverse_holo', finish_code: 'reverse_holo' },
+  ], 'missing-normal');
+  assert.deepEqual(existingDefault, {
+    status: 'matched',
+    variantId: 'legacy-default',
+    reason: 'card_image_attached_to_existing_default_variant',
+  });
+
+  assert.deepEqual(
+    chooseExistingVariantForCardImage([
+      {
+        id: 'normal-only',
+        canonical_key: 'pokemon:ja:set:001:normal',
+        is_default: true,
+        variant_code: 'normal',
+        finish_code: 'normal',
+      },
+    ], 'pokemon:ja:set:001:master_ball', 'master_ball'),
+    { status: 'conflicted', reason: 'exact_variant_missing' },
+    'finish-specific images must not be attached to a normal fallback variant',
+  );
+
+  assert.equal(
+    chooseExistingVariantForCardImage([
+      { id: 'a', canonical_key: 'a', is_default: false },
+      { id: 'b', canonical_key: 'b', is_default: false },
+    ], 'missing-normal').status,
+    'conflicted',
+    'asset-only Japanese imports must not invent or guess a variant',
+  );
+  assert.equal(
+    chooseExistingVariantForCardImage([
+      { id: 'only-holo', canonical_key: 'legacy-holo', is_default: true, variant_code: 'holo', finish_code: 'holo' },
+    ], 'missing-normal').status,
+    'conflicted',
+    'official normal artwork must not be attached to a holo-only or special variant',
+  );
+  assert.match(catalogueIngest, /assetsOnly: hasFlag\('assetsOnly'\)/);
 }
 
 function assertDeterministicTcgdexCardOrdering() {
@@ -1008,6 +1170,8 @@ async function main() {
   assertCanonicalStagingSourceGuard();
   assertBoundedCatalogueWrites();
   assertPinnedPrimaryVariantCorrectionSafety();
+  assertExternalIdentifierAssetRelinkingSafety();
+  assertJapaneseAssetOnlyVariantSelection();
   assertDeterministicTcgdexCardOrdering();
   assertRecognitionRoleIsLeastPrivilege();
   assertMigrationAddsIngestionState();

@@ -1,0 +1,649 @@
+name: Complete Japanese catalogue images
+
+on:
+  workflow_dispatch:
+    inputs:
+      ingest_batch_size:
+        description: Official Japanese cards per resumable ingestion shard
+        required: true
+        default: '500'
+        type: string
+      write_concurrency:
+        description: Concurrent staging writes inside one ingestion shard
+        required: true
+        default: '8'
+        type: string
+      pokedata_set_batch_size:
+        description: PokeData Japanese sets per bounded image-only shard
+        required: true
+        default: '50'
+        type: string
+      max_records:
+        description: Optional acceptance cap; empty means the official universe
+        required: false
+        default: ''
+        type: string
+      mirror_batch_size:
+        description: Approved image references per resumable mirror batch
+        required: true
+        default: '500'
+        type: string
+      mirror_batches:
+        description: Maximum mirror batches; reruns resume deferred references
+        required: true
+        default: '60'
+        type: string
+      mirror_concurrency:
+        description: Concurrent provider image transfers
+        required: true
+        default: '4'
+        type: string
+      publish_version:
+        description: Optional staging catalogue version label
+        required: false
+        default: ''
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/complete-japanese-catalogue-images.yml'
+      - 'scripts/catalogue-ingest.ts'
+      - 'scripts/catalogue-ingestion/pokemonCardJpAdapter.ts'
+      - 'scripts/catalogue-ingestion/pokedataJapaneseImageAdapter.ts'
+      - 'scripts/ingest-pokedata-japanese-images.ts'
+      - 'scripts/catalogue-ingestion/adapters.ts'
+      - 'scripts/catalogue-ingestion/pipeline.ts'
+      - 'scripts/complete-japanese-catalogue-images.mjs'
+      - 'scripts/mirror-approved-catalogue-assets.mjs'
+      - 'scripts/verify-japanese-catalogue-api-storage.mjs'
+      - 'scripts/verify-japanese-staging-gateway.mjs'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: stackr-staging-database-maintenance
+  cancel-in-progress: false
+
+env:
+  SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+  SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+  STACKR_CATALOGUE_IMPORT_TARGET: staging
+  DO_NOT_TRACK: '1'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      matrix: ${{ steps.shards.outputs.matrix }}
+      hit_count: ${{ steps.shards.outputs.hit_count }}
+      target_count: ${{ steps.shards.outputs.target_count }}
+    env:
+      CATALOGUE_BATCH_SIZE: ${{ inputs.ingest_batch_size || '500' }}
+      CATALOGUE_MAX_RECORDS: ${{ inputs.max_records || '' }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+      POKEDATA_SET_BATCH_SIZE: ${{ inputs.pokedata_set_batch_size || '50' }}
+      CATALOGUE_MIRROR_BATCH_SIZE: ${{ inputs.mirror_batch_size || '500' }}
+      CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
+      CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency || '4' }}
+    steps:
+      - name: Verify staging-only bounded inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SUPABASE_PROJECT_REF" == 'lmwfhvexfcoyeuoyrlco' ]]
+          [[ "$SUPABASE_URL" == 'https://lmwfhvexfcoyeuoyrlco.supabase.co' ]]
+          [[ "$STACKR_CATALOGUE_IMPORT_TARGET" == 'staging' ]]
+          [[ "$CATALOGUE_BATCH_SIZE" =~ ^[0-9]+$ ]]
+          [[ "$CATALOGUE_WRITE_CONCURRENCY" =~ ^[0-9]+$ ]]
+          [[ "$POKEDATA_SET_BATCH_SIZE" =~ ^[0-9]+$ ]]
+          [[ -z "$CATALOGUE_MAX_RECORDS" || "$CATALOGUE_MAX_RECORDS" =~ ^[1-9][0-9]*$ ]]
+          [[ "$CATALOGUE_MIRROR_BATCH_SIZE" =~ ^[0-9]+$ ]]
+          [[ "$CATALOGUE_MIRROR_BATCHES" =~ ^[0-9]+$ ]]
+          [[ "$CATALOGUE_MIRROR_CONCURRENCY" =~ ^[0-9]+$ ]]
+          (( CATALOGUE_BATCH_SIZE >= 100 && CATALOGUE_BATCH_SIZE <= 500 ))
+          (( CATALOGUE_WRITE_CONCURRENCY >= 1 && CATALOGUE_WRITE_CONCURRENCY <= 16 ))
+          (( POKEDATA_SET_BATCH_SIZE >= 1 && POKEDATA_SET_BATCH_SIZE <= 50 ))
+          (( CATALOGUE_MIRROR_BATCH_SIZE >= 1 && CATALOGUE_MIRROR_BATCH_SIZE <= 2000 ))
+          (( CATALOGUE_MIRROR_BATCHES >= 1 && CATALOGUE_MIRROR_BATCHES <= 100 ))
+          (( CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 6 ))
+
+      - name: Discover official Japanese catalogue and build resumable shards
+        id: shards
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const endpoint = new URL('https://www.pokemon-card.com/card-search/resultAPI.php');
+          for (const [key, value] of Object.entries({
+            keyword: '',
+            se_ta: '',
+            regulation_sidebar_form: 'all',
+            pg: '',
+            illust: '',
+            sm_and_keyword: 'true',
+            page: '1',
+          })) endpoint.searchParams.set(key, value);
+
+          const response = await fetch(endpoint, {
+            headers: {
+              Accept: 'application/json, text/javascript, */*; q=0.01',
+              Referer: 'https://www.pokemon-card.com/card-search/',
+              'User-Agent': 'StackR-Catalogue-Audit/1.0 (+https://stackrtcg.com)',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            signal: AbortSignal.timeout(30_000),
+          });
+          if (!response.ok) throw new Error(`Official Japanese catalogue returned HTTP ${response.status}.`);
+          const payload = await response.json();
+          const hitCount = Number(payload.hitCnt ?? 0);
+          if (payload.result !== 1 || !Number.isInteger(hitCount) || hitCount <= 0) {
+            throw new Error('Official Japanese catalogue did not return a positive hit count.');
+          }
+          const batchSize = Number(process.env.CATALOGUE_BATCH_SIZE);
+          const requestedMaximum = Number(process.env.CATALOGUE_MAX_RECORDS || hitCount);
+          const targetCount = Math.min(hitCount, requestedMaximum);
+          const include = [];
+          for (let offset = 0; offset < targetCount; offset += batchSize) {
+            include.push({ offset, limit: Math.min(batchSize, targetCount - offset) });
+          }
+          if (include.length === 0 || include.length > 256) {
+            throw new Error(`Official Japanese shard count ${include.length} is outside GitHub's matrix limit.`);
+          }
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, [
+            `matrix=${JSON.stringify({ include })}`,
+            `hit_count=${hitCount}`,
+            `target_count=${targetCount}`,
+            '',
+          ].join('\n'));
+          console.log(JSON.stringify({
+            hitCount,
+            targetCount,
+            batchSize,
+            shards: include.length,
+          }, null, 2));
+          NODE
+
+  ingest:
+    needs: prepare
+    name: ingest-ja-${{ matrix.offset }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: staging
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    env:
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install catalogue and image pipeline dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+      - name: Import exact official Japanese metadata and image references
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue/japanese
+          report="reports/catalogue/japanese/ingest-${{ matrix.offset }}.json"
+          run_key="official-jp:${GITHUB_SHA}:offset-${{ matrix.offset }}:limit-${{ matrix.limit }}"
+          npx tsx scripts/catalogue-ingest.ts run-language \
+            --source=pokemon-card-jp-official \
+            --language=ja \
+            --offset="${{ matrix.offset }}" \
+            --limit="${{ matrix.limit }}" \
+            --runKey="$run_key" \
+            --licenceStatus=approved \
+            --assetLicenceStatus=approved \
+            --allowImageAssets \
+            --assetsOnly \
+            --approvedOnlyAssets \
+            --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
+            --target=staging | tee "$report"
+          jq -e '.ok == true' "$report" >/dev/null
+      - name: Upload Japanese ingestion evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: japanese-ingest-${{ github.run_id }}-${{ matrix.offset }}
+          path: reports/catalogue/japanese/ingest-${{ matrix.offset }}.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+  pokedata-ingest:
+    needs: prepare
+    outputs:
+      matched_sets: ${{ steps.pokedata.outputs.matched_sets }}
+      unmatched_sets: ${{ steps.pokedata.outputs.unmatched_sets }}
+      ambiguous_sets: ${{ steps.pokedata.outputs.ambiguous_sets }}
+      selected_sets: ${{ steps.pokedata.outputs.selected_sets }}
+      resumed_sets: ${{ steps.pokedata.outputs.resumed_sets }}
+      conflicted_records: ${{ steps.pokedata.outputs.conflicted_records }}
+      failed_sets: ${{ steps.pokedata.outputs.failed_sets }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: staging
+    env:
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency || '8' }}
+      POKEDATA_SET_BATCH_SIZE: ${{ inputs.pokedata_set_batch_size || '50' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install catalogue ingestion dependencies
+        run: npm ci
+      - name: Import exact-crosswalk PokeData Japanese image references
+        id: pokedata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue/japanese/pokedata
+          parts="$RUNNER_TEMP/japanese-pokedata-ingest.jsons"
+          : > "$parts"
+          offset=0
+          for (( shard=1; shard<=20; shard++ )); do
+            report="reports/catalogue/japanese/pokedata/ingest-${offset}.json"
+            npm run --silent catalogue:ingest-pokedata-japanese-images -- \
+              --offset="$offset" \
+              --limit="$POKEDATA_SET_BATCH_SIZE" \
+              --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
+              --requestId="pokedata-jp:${GITHUB_RUN_ID}:${offset}" \
+              --target=staging | tee "$report"
+            jq -e '
+              .ok == true
+              and .metadataCreated == false
+              and .productionModified == false
+              and .batch.failedSets == 0
+            ' "$report" >/dev/null
+            jq -c . "$report" >> "$parts"
+            selected="$(jq -r '.batch.selectedSets' "$report")"
+            [[ "$selected" =~ ^[0-9]+$ ]]
+            if (( selected < POKEDATA_SET_BATCH_SIZE )); then break; fi
+            offset=$((offset + POKEDATA_SET_BATCH_SIZE))
+          done
+          [[ -s "$parts" ]]
+          summary=reports/catalogue/japanese/pokedata/summary.json
+          jq -s '
+            def total($path): map(getpath($path) // 0) | add // 0;
+            . as $reports
+            |
+            {
+              schemaVersion: 1,
+              language: "ja",
+              mode: "image-only",
+              stagingOnly: true,
+              metadataCreated: false,
+              productionModified: false,
+              crosswalkDigest: .[0].crosswalkDigest,
+              crosswalkDigests: (map(.crosswalkDigest) | unique),
+              shards: length,
+              matchedSets: (.[0].setTotals.matched // 0),
+              unmatchedSets: (.[0].setTotals.unmatched // 0),
+              ambiguousSets: (.[0].setTotals.ambiguous // 0),
+              selectedSets: total(["batch", "selectedSets"]),
+              resumedSets: total(["batch", "resumedSets"]),
+              attemptedSets: total(["batch", "attemptedSets"]),
+              failedSets: total(["batch", "failedSets"]),
+              totals: {
+                requested: total(["totals", "requested"]),
+                retrieved: total(["totals", "retrieved"]),
+                inserted: total(["totals", "inserted"]),
+                updated: total(["totals", "updated"]),
+                skipped: total(["totals", "skipped"]),
+                conflicted: total(["totals", "conflicted"]),
+                decisions: total(["totals", "decisions"])
+              }
+            }
+            | .ok = (
+                all($reports[]; .ok == true)
+                and ((.crosswalkDigests | length) == 1)
+                and .failedSets == 0
+                and .productionModified == false
+              )
+          ' "$parts" > "$summary"
+          jq . "$summary"
+          jq -e '
+            .ok == true
+            and .crosswalkDigest != null
+            and (.crosswalkDigests | length) == 1
+            and .selectedSets == .matchedSets
+          ' "$summary" >/dev/null
+          {
+            echo "matched_sets=$(jq -r '.matchedSets' "$summary")"
+            echo "unmatched_sets=$(jq -r '.unmatchedSets' "$summary")"
+            echo "ambiguous_sets=$(jq -r '.ambiguousSets' "$summary")"
+            echo "selected_sets=$(jq -r '.selectedSets' "$summary")"
+            echo "resumed_sets=$(jq -r '.resumedSets' "$summary")"
+            echo "conflicted_records=$(jq -r '.totals.conflicted' "$summary")"
+            echo "failed_sets=$(jq -r '.failedSets' "$summary")"
+          } >> "$GITHUB_OUTPUT"
+      - name: Upload PokeData Japanese ingestion evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: japanese-pokedata-ingest-${{ github.run_id }}
+          path: reports/catalogue/japanese/pokedata
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+  mirror:
+    needs: [ingest, pokedata-ingest]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: staging
+    env:
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      CATALOGUE_MIRROR_BATCH_SIZE: ${{ inputs.mirror_batch_size || '500' }}
+      CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
+      CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency || '4' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install image pipeline dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+      - name: Drain bounded resumable Japanese mirror ranges
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue/japanese
+          providers=(pokedata_japanese pokemon_card_jp_official)
+          provider_reports=()
+          for provider in "${providers[@]}"; do
+            parts="$RUNNER_TEMP/japanese-${provider}-mirror.jsons"
+            : > "$parts"
+            after_id=''
+            for (( batch=1; batch<=CATALOGUE_MIRROR_BATCHES; batch++ )); do
+              result="$RUNNER_TEMP/japanese-${provider}-mirror-${batch}.json"
+              cursor_args=()
+              if [[ -n "$after_id" ]]; then cursor_args+=("--afterId=$after_id"); fi
+              node scripts/mirror-approved-catalogue-assets.mjs \
+                --provider="$provider" \
+                --language=ja \
+                --limit="$CATALOGUE_MIRROR_BATCH_SIZE" \
+                --concurrency="$CATALOGUE_MIRROR_CONCURRENCY" \
+                --target=staging \
+                "${cursor_args[@]}" > "$result"
+              jq . "$result"
+              jq -c . "$result" >> "$parts"
+              after_id="$(jq -r '.cursor.nextAfterId // empty' "$result")"
+              if [[ "$(jq -r '.cursor.exhausted' "$result")" == 'true' ]]; then break; fi
+              [[ -n "$after_id" ]] || { echo "Japanese ${provider} mirror cursor did not advance."; exit 1; }
+            done
+            provider_report="$RUNNER_TEMP/japanese-${provider}-mirror-summary.json"
+            jq -s --arg provider "$provider" '
+              def total($name): map(.summary[$name] // 0) | add // 0;
+              {
+                schemaVersion: 1,
+                provider: $provider,
+                language: "ja",
+                stagingOnly: true,
+                productionModified: false,
+                batches: length,
+                inspected: (map(.inspected // 0) | add // 0),
+                mirrored: total("mirrored"),
+                reusedExisting: total("reused_existing"),
+                sourceUnavailable: total("source_unavailable"),
+                deferred: total("deferred"),
+                failed: total("failed"),
+                scanExhausted: (.[-1].cursor.exhausted == true)
+              }
+              | .queueDrained = (.scanExhausted and .deferred == 0 and .failed == 0)
+              | .ok = .queueDrained
+            ' "$parts" > "$provider_report"
+            provider_reports+=("$provider_report")
+          done
+          jq -s '
+            {
+              schemaVersion: 1,
+              language: "ja",
+              stagingOnly: true,
+              productionModified: false,
+              providers: .,
+              inspected: (map(.inspected) | add // 0),
+              mirrored: (map(.mirrored) | add // 0),
+              reusedExisting: (map(.reusedExisting) | add // 0),
+              sourceUnavailable: (map(.sourceUnavailable) | add // 0),
+              deferred: (map(.deferred) | add // 0),
+              failed: (map(.failed) | add // 0)
+            }
+            | .ok = (all(.providers[]; .ok == true) and .failed == 0 and .deferred == 0)
+          ' "${provider_reports[@]}" > reports/catalogue/japanese/mirror.json
+          jq . reports/catalogue/japanese/mirror.json
+          jq -e '.ok == true' reports/catalogue/japanese/mirror.json >/dev/null
+      - name: Upload Japanese mirror evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: japanese-mirror-${{ github.run_id }}
+          path: reports/catalogue/japanese/mirror.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+  complete-and-publish:
+    needs: [prepare, ingest, pokedata-ingest, mirror]
+    if: always() && needs.prepare.result == 'success' && needs.ingest.result == 'success' && needs.pokedata-ingest.result == 'success' && needs.mirror.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install catalogue and image pipeline dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+      - name: Complete explicit Japanese image aliases and missing derivatives
+        id: completion
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue/japanese
+          node scripts/complete-japanese-catalogue-images.mjs \
+            --target=staging \
+            --report=reports/catalogue/japanese/completion.json
+          jq . reports/catalogue/japanese/completion.json
+
+      - name: Publish the completed Japanese staging shard
+        id: publication
+        if: always() && hashFiles('reports/catalogue/japanese/completion.json') != ''
+        continue-on-error: true
+        shell: bash
+        env:
+          PUBLISH_VERSION_INPUT: ${{ inputs.publish_version || '' }}
+        run: |
+          set -euo pipefail
+          jq -e '.ok == true and .productionModified == false and .effectiveAppReadyPercent == 100 and .failed == 0 and .conflicts == 0' \
+            reports/catalogue/japanese/completion.json >/dev/null
+          requested="$PUBLISH_VERSION_INPUT"
+          if [[ -n "$requested" ]]; then
+            [[ "$requested" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{7,159}$ ]] || {
+              echo 'Japanese staging publish versions must use the approved catalogue-label format.'
+              exit 1
+            }
+            version="$requested"
+          else
+            version="$(node --input-type=module <<'NODE'
+          import { createClient } from '@supabase/supabase-js';
+          const client = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false },
+          });
+          const { data, error } = await client.schema('catalog').from('catalogue_versions')
+            .select('version_label,published_at')
+            .eq('language_code', 'en')
+            .eq('status', 'published')
+            .is('deprecated_at', null)
+            .order('published_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (error) throw error;
+          if (!data?.version_label) throw new Error('No active published English catalogue version was found.');
+          process.stdout.write(data.version_label);
+          NODE
+            )"
+          fi
+          printf '%s\n' "$version" > reports/catalogue/japanese/publish-version.txt
+          npx tsx scripts/catalogue-master.ts publish \
+            --language=ja \
+            --version="$version" \
+            --coverage-limited \
+            --target=staging | tee reports/catalogue/japanese/publication.json
+
+      - name: Verify every published Japanese API image and Storage object
+        id: api-storage
+        if: steps.publication.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run catalogue:verify-japanese-api-storage -- \
+            --output=reports/catalogue/japanese/api-storage-verification.json \
+            --probe-concurrency=16 \
+            --probe-retries=3
+
+      - name: Verify every Japanese image through the deployed staging gateway
+        id: deployed-api
+        if: steps.api-storage.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        env:
+          STACKR_STAGING_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL || 'https://stackr-api-gateway-staging.berridge14.workers.dev' }}
+        run: |
+          set -euo pipefail
+          node scripts/verify-japanese-staging-gateway.mjs \
+            --gateway="$STACKR_STAGING_GATEWAY_URL" \
+            --output=reports/catalogue/japanese/deployed-gateway-verification.json \
+            --set-concurrency=4 \
+            --probe-concurrency=4 \
+            --probe-retries=3
+
+      - name: Report direct and effective Japanese app coverage
+        if: always()
+        shell: bash
+        env:
+          COMPLETION_OUTCOME: ${{ steps.completion.outcome }}
+          PUBLICATION_OUTCOME: ${{ steps.publication.outcome }}
+          API_STORAGE_OUTCOME: ${{ steps.api-storage.outcome }}
+          DEPLOYED_API_OUTCOME: ${{ steps.deployed-api.outcome }}
+          POKEDATA_MATCHED_SETS: ${{ needs.pokedata-ingest.outputs.matched_sets }}
+          POKEDATA_UNMATCHED_SETS: ${{ needs.pokedata-ingest.outputs.unmatched_sets }}
+          POKEDATA_AMBIGUOUS_SETS: ${{ needs.pokedata-ingest.outputs.ambiguous_sets }}
+          POKEDATA_SELECTED_SETS: ${{ needs.pokedata-ingest.outputs.selected_sets }}
+          POKEDATA_RESUMED_SETS: ${{ needs.pokedata-ingest.outputs.resumed_sets }}
+          POKEDATA_CONFLICTED_RECORDS: ${{ needs.pokedata-ingest.outputs.conflicted_records }}
+          POKEDATA_FAILED_SETS: ${{ needs.pokedata-ingest.outputs.failed_sets }}
+        run: |
+          set -euo pipefail
+          report=reports/catalogue/japanese/completion.json
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [[ -s "$report" ]]; then
+            direct="$(jq -r '.directAppReadyPercent // .coverage.directAppReadyPercent // 0' "$report")"
+            effective="$(jq -r '.effectiveAppReadyPercent // .coverage.effectiveAppReadyPercent // 0' "$report")"
+            variants="$(jq -r '.variantCount // .coverage.variantCount // 0' "$report")"
+            direct_count="$(jq -r '.directAppReadyCount // .coverage.directAppReadyCount // 0' "$report")"
+            effective_count="$(jq -r '.effectiveAppReadyCount // .coverage.effectiveAppReadyCount // 0' "$report")"
+            aliases="$(jq -r '.aliasesCreated // .summary.aliasesCreated // 0' "$report")"
+            derivatives="$(jq -r '.derivativesRepaired // .summary.derivativesRepaired // 0' "$report")"
+            conflicts="$(jq -r '.conflicts // .summary.conflicts // 0' "$report")"
+            api_report=reports/catalogue/japanese/api-storage-verification.json
+            api_coverage="$(jq -r '.apiAppReadyCoveragePercent // 0' "$api_report" 2>/dev/null || printf '0')"
+            storage_coverage="$(jq -r '.storageProbe.coveragePercent // 0' "$api_report" 2>/dev/null || printf '0')"
+            gateway_report=reports/catalogue/japanese/deployed-gateway-verification.json
+            deployed_api_coverage="$(jq -r '.apiAppReadyCoveragePercent // 0' "$gateway_report" 2>/dev/null || printf '0')"
+            deployed_requests="$(jq -r '.gateway.requests // 0' "$gateway_report" 2>/dev/null || printf '0')"
+            deployed_cache_bypass="$(jq -r '.gateway.cacheBypassPercent // 0' "$gateway_report" 2>/dev/null || printf '0')"
+            deployed_storage_sample="$(jq -r '.gatewayStorageSample.coveragePercent // 0' "$gateway_report" 2>/dev/null || printf '0')"
+            body="Japanese staging images: direct app-ready **${direct}%** (${direct_count}/${variants}); effective app-ready with explicit same-printing finish fallbacks **${effective}%** (${effective_count}/${variants}); in-process API-visible **${api_coverage}%**; Storage objects reachable **${storage_coverage}%**; deployed staging API-visible **${deployed_api_coverage}%** across **${deployed_requests}** cache-bypassed requests; deployed Storage sample **${deployed_storage_sample}%**; gateway cache bypass **${deployed_cache_bypass}%**; finish fallbacks created **${aliases}**; derivative repairs **${derivatives}**; completion conflicts **${conflicts}**. PokeData exact set crosswalk: matched **${POKEDATA_MATCHED_SETS}**, processed **${POKEDATA_SELECTED_SETS}**, resumed **${POKEDATA_RESUMED_SETS}**, unmatched **${POKEDATA_UNMATCHED_SETS}**, ambiguous **${POKEDATA_AMBIGUOUS_SETS}**, quarantined records **${POKEDATA_CONFLICTED_RECORDS}**, failed sets **${POKEDATA_FAILED_SETS}**. Completion: **${COMPLETION_OUTCOME}**; staging publication: **${PUBLICATION_OUTCOME}**; API/Storage verification: **${API_STORAGE_OUTCOME}**; deployed staging API verification: **${DEPLOYED_API_OUTCOME}**; production released: **0%**. Evidence: ${run_url}"
+          else
+            body="Japanese staging image completion did not produce a coverage report. Production released: **0%**. Diagnostics: ${run_url}"
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/issues/74/comments" --method POST --field body="$body"
+
+      - name: Upload Japanese completion evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: japanese-completion-${{ github.run_id }}
+          path: reports/catalogue/japanese
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Enforce 100% effective staging coverage
+        if: always()
+        shell: bash
+        env:
+          COMPLETION_OUTCOME: ${{ steps.completion.outcome }}
+          PUBLICATION_OUTCOME: ${{ steps.publication.outcome }}
+          API_STORAGE_OUTCOME: ${{ steps.api-storage.outcome }}
+          DEPLOYED_API_OUTCOME: ${{ steps.deployed-api.outcome }}
+        run: |
+          set -euo pipefail
+          [[ "$COMPLETION_OUTCOME" == 'success' ]]
+          [[ "$PUBLICATION_OUTCOME" == 'success' ]]
+          [[ "$API_STORAGE_OUTCOME" == 'success' ]]
+          [[ "$DEPLOYED_API_OUTCOME" == 'success' ]]
+          jq -e '
+            .ok == true
+            and .productionModified == false
+            and ((.effectiveAppReadyPercent // .coverage.effectiveAppReadyPercent) == 100)
+            and ((.conflicts // .summary.conflicts // 0) == 0)
+            and ((.failed // .summary.failed // 0) == 0)
+          ' reports/catalogue/japanese/completion.json >/dev/null
+          jq -e '
+            .ok == true
+            and .apiAppReadyCoveragePercent == 100
+            and .storageProbe.coveragePercent == 100
+            and .blockers.failedStorageProbes == 0
+          ' reports/catalogue/japanese/api-storage-verification.json >/dev/null
+          jq -e '
+            .ok == true
+            and .verificationMode == "deployed-staging-gateway"
+            and .gateway.origin == "https://stackr-api-gateway-staging.berridge14.workers.dev"
+            and .gateway.requests > 2
+            and .gateway.cacheBypassPercent == 100
+            and .gateway.requestIdPercent == 100
+            and (.gateway.apiVersions | length) == 1
+            and .expectedVariantCount > 0
+            and .enumeratedVariantCount == .expectedVariantCount
+            and .apiAppReadyCoveragePercent == 100
+            and .gatewayStorageSample.checked == 4
+            and .gatewayStorageSample.failed == 0
+            and .gatewayStorageSample.coveragePercent == 100
+          ' reports/catalogue/japanese/deployed-gateway-verification.json >/dev/null

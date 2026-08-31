@@ -14,7 +14,7 @@ on:
         required: true
         default: tcgdex
         type: choice
-        options: [tcgdex, pikaqian]
+        options: [tcgdex, pikaqian, pokemon_card_jp_official, pokedata_japanese]
       language:
         description: TCGdex language batch (PikaQian is always zh-cn)
         required: true
@@ -150,6 +150,14 @@ jobs:
           if [[ "${{ inputs.operation }}" == "snapshot" && "${{ inputs.provider }}" == "tcgdex" ]]; then
             [[ -n "$CATALOGUE_SET_ID" ]] || { echo 'Pinned TCGdex snapshots require one or more exact set IDs.'; exit 1; }
           fi
+          if [[ "${{ inputs.provider }}" == "pokemon_card_jp_official" && "$CATALOGUE_LANGUAGE" != "ja" ]]; then
+            echo 'Official Japanese catalogue operations require ja.'
+            exit 1
+          fi
+          if [[ "${{ inputs.provider }}" == "pokedata_japanese" ]]; then
+            [[ "$CATALOGUE_LANGUAGE" == 'ja' ]] || { echo 'PokeData Japanese operations require ja.'; exit 1; }
+            (( CATALOGUE_BATCH_LIMIT <= 50 )) || { echo 'PokeData Japanese batches are limited to 50 sets.'; exit 1; }
+          fi
           if [[ "${{ inputs.operation }}" == "mirror" ]]; then
             [[ "$CATALOGUE_LANGUAGE" =~ ^(en|ja|zh-cn|ko)$ ]] \
               || { echo 'Mirror operations require en, ja, zh-cn, or ko.'; exit 1; }
@@ -266,6 +274,50 @@ jobs:
             --apply \
             "${scope_args[@]}" \
             "${asset_args[@]}"
+      - name: Import bounded official Japanese catalogue ranges
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pokemon_card_jp_official'
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset_args=()
+          if [[ "$CATALOGUE_INCLUDE_ASSETS" == "true" ]]; then
+            asset_args+=(--allowImageAssets --approvedOnlyAssets --assetLicenceStatus=approved)
+          fi
+          for (( batch=0; batch<CATALOGUE_BATCH_COUNT; batch++ )); do
+            batch_offset=$((CATALOGUE_START_OFFSET + batch * CATALOGUE_BATCH_LIMIT))
+            run_key="official-jp:${GITHUB_SHA}:offset-${batch_offset}:limit-${CATALOGUE_BATCH_LIMIT}"
+            echo "Importing official Japanese cards at offset ${batch_offset}"
+            npx tsx scripts/catalogue-ingest.ts run-language \
+              --source=pokemon-card-jp-official \
+              --language=ja \
+              --offset="$batch_offset" \
+              --limit="$CATALOGUE_BATCH_LIMIT" \
+              --runKey="$run_key" \
+              --licenceStatus=approved \
+              --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
+              --target=staging \
+              --assetsOnly \
+              "${asset_args[@]}"
+          done
+      - name: Import bounded PokeData Japanese image ranges
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pokedata_japanese'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$CATALOGUE_INCLUDE_ASSETS" == 'true' ]] || {
+            echo 'PokeData Japanese is image-only; include_assets must be enabled.'
+            exit 1
+          }
+          for (( batch=0; batch<CATALOGUE_BATCH_COUNT; batch++ )); do
+            batch_offset=$((CATALOGUE_START_OFFSET + batch * CATALOGUE_BATCH_LIMIT))
+            echo "Importing PokeData Japanese sets at offset ${batch_offset}"
+            npm run --silent catalogue:ingest-pokedata-japanese-images -- \
+              --offset="$batch_offset" \
+              --limit="$CATALOGUE_BATCH_LIMIT" \
+              --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
+              --requestId="pokedata-jp:${GITHUB_RUN_ID}:${batch_offset}" \
+              --target=staging
+          done
       - name: Report language quality (advisory)
         if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex' && inputs.report_quality
         continue-on-error: true
@@ -280,6 +332,22 @@ jobs:
         run: >-
           npm run catalogue:ingest -- quality-report
           --language=zh-cn
+          --limit=500
+
+      - name: Report official Japanese quality (advisory)
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pokemon_card_jp_official' && inputs.report_quality
+        continue-on-error: true
+        run: >-
+          npm run catalogue:ingest -- quality-report
+          --language=ja
+          --limit=500
+
+      - name: Report PokeData Japanese quality (advisory)
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pokedata_japanese' && inputs.report_quality
+        continue-on-error: true
+        run: >-
+          npm run catalogue:ingest -- quality-report
+          --language=ja
           --limit=500
 
       - name: Mirror approved provider images into Stackr storage

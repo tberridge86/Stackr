@@ -1132,7 +1132,7 @@ function assertImagePipelineRules() {
   assert.match(pipeline, /healthyExactLanguageImage/, 'healthy exact-language images must not be overwritten');
   assert.match(
     pipeline,
-    /linkVariantAssetExternalId\(healthyExactLanguageImage\[0\]\.id as string\)/,
+    /linkVariantAssetExternalId\(healthyExactLanguageImage\.id\)/,
     'existing healthy images must retain their provider asset identifier',
   );
   assert.match(pipeline, /acquisition_source/, 'assets must record their acquisition source');
@@ -1322,6 +1322,11 @@ function assertPublishRules() {
 
   assert.match(masterScript, /requirePreviousLanguagesPublished/, 'publish must enforce language release order');
   assert.match(masterScript, /snapshotPublishedLanguage/, 'publish must create a language snapshot');
+  assert.match(
+    masterScript,
+    /existing\?\.id && existing\.status === 'published'[\s\S]+candidateVersionKey[\s\S]+randomUUID\(\)/,
+    'republishing an unchanged label must snapshot a separate candidate instead of demoting the active row',
+  );
   assert.match(masterScript, /includedSetIds/, 'controlled staging publication must limit snapshot membership to the reviewed set');
   assert.match(
     masterScript,
