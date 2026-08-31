@@ -634,6 +634,7 @@ function assertIdentityAndReportRules() {
     'pikaqian-coverage.csv',
     'rights-blocked.csv',
     'image-leftovers.csv',
+    'exact-approved-image-candidates.csv',
     'same-artwork-references.csv',
     'scan-acquisition-queue.csv',
   ]) {
@@ -695,6 +696,97 @@ function assertSetCompletionStatusRules() {
   ]) {
     assert.match(masterScript, new RegExp(requiredColumn), `${requiredColumn} must be reported`);
   }
+}
+
+function assertCardImageInventorySummary() {
+  const inventory = masterCatalogueInternals.buildCardImageInventory({
+    sources: [{ id: 'source-tcgdex', code: 'tcgdex' }],
+    sets: [],
+    printings: [],
+    variants: [{
+      id: 'variant-ja',
+      printing_id: 'printing-ja',
+      set_id: 'set-ja',
+      language_code: 'ja',
+      collector_number: '1',
+      variant_code: 'normal',
+      finish_code: 'normal',
+      canonical_key: 'ja:set-ja:1:normal:normal',
+      deprecated_at: null,
+    }],
+    languages: ['ja'],
+    assets: [
+      {
+        id: 'stored-image',
+        source_id: 'source-tcgdex',
+        set_id: 'set-ja',
+        printing_id: 'printing-ja',
+        variant_id: 'variant-ja',
+        asset_type: 'card_image',
+        url: 'https://staging.invalid/stored.webp',
+        rights_status: 'approved',
+        permission_status: 'approved',
+        publicly_servable: true,
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'ja/set-ja/1/original.webp',
+        content_sha256: 'a'.repeat(64),
+        derivative_list: [{ role: 'card-grid' }, { role: 'search-result' }],
+        unavailable_reason: null,
+        deleted_at: null,
+        deprecated_at: null,
+      },
+      {
+        id: 'duplicate-reference',
+        source_id: 'source-tcgdex',
+        set_id: 'set-ja',
+        printing_id: 'printing-ja',
+        variant_id: 'variant-ja',
+        asset_type: 'card_image',
+        url: 'https://provider.invalid/reference.webp',
+        rights_status: 'approved',
+        permission_status: 'approved',
+        publicly_servable: true,
+        storage_provider: 'external_reference',
+        unavailable_reason: 'duplicate_content:11111111-1111-1111-1111-111111111111',
+        derivative_list: [],
+        deleted_at: null,
+        deprecated_at: null,
+      },
+      {
+        id: 'deleted-image',
+        source_id: 'source-tcgdex',
+        set_id: 'set-ja',
+        printing_id: 'printing-ja',
+        variant_id: 'variant-ja',
+        asset_type: 'card_image',
+        url: 'https://staging.invalid/deleted.webp',
+        rights_status: 'approved',
+        permission_status: 'approved',
+        publicly_servable: true,
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'ja/set-ja/1/deleted.webp',
+        derivative_list: [{ role: 'card-grid' }, { role: 'search-result' }, { role: 'detail-page' }],
+        deleted_at: '2026-08-31T00:00:00.000Z',
+        deprecated_at: null,
+      },
+    ],
+  });
+
+  assert.deepEqual(inventory.requiredDerivativeRoles, ['card-grid', 'search-result', 'detail-page']);
+  assert.equal(inventory.totals.assets, 2);
+  assert.equal(inventory.totals.withStorageObject, 1);
+  assert.equal(inventory.totals.withContentSha256, 1);
+  assert.equal(inventory.totals.storedMissingRequiredDerivatives, 1);
+  assert.equal(inventory.totals.requiredDerivativesReady, 0);
+  const stored = inventory.groups.find((row) => row.storageProvider === 'supabase_storage');
+  assert.equal(stored?.provider, 'tcgdex');
+  assert.equal(stored?.derivativeRoleCounts['card-grid'], 1);
+  assert.equal(stored?.derivativeRoleCounts['search-result'], 1);
+  assert.equal(stored?.derivativeRoleCounts['detail-page'], 0);
+  const duplicate = inventory.groups.find((row) => row.storageProvider === 'external_reference');
+  assert.equal(duplicate?.unavailableReason, 'duplicate_content');
 }
 
 async function assertSetArtRules() {
@@ -1367,6 +1459,7 @@ async function main() {
   await assertTcgdexPinnedSnapshot();
   assertIdentityAndReportRules();
   assertSetCompletionStatusRules();
+  assertCardImageInventorySummary();
   await assertSetArtRules();
   assertImageLeftoverClassification();
   assertImagePipelineRules();

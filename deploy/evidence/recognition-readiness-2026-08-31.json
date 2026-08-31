@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "stackr-recognition-readiness-snapshot-v1.0.0",
+  "capturedAt": "2026-08-31T08:46:23Z",
+  "status": "blocked",
+  "productionAccepted": false,
+  "sourceEvidence": [
+    {
+      "path": "ml/models/embedding-model-registry-v1.json",
+      "sha256": "5360cf07573d1a5cba5ec67313aef18e7a6b6526144049ee788bbc765da295d9"
+    },
+    {
+      "path": "deploy/release-manifest.json",
+      "sha256": "878e419dae57ffa53498a680c44a15d2037217999e0e23a62471ed73e0737e9d"
+    },
+    {
+      "path": "deploy/evidence/staging-readiness-2026-08-11.json",
+      "sha256": "b32190fee345a17080101c5fb51cbe5761f792f8fdf14785acf3f321ee6bc17f"
+    },
+    {
+      "path": "deploy/evidence/dinov2-pilot-publication-approved-2026-08-06.json",
+      "sha256": "cb4f67f079c96cfc3bda5502fd3608aa32677049a0dc91eb1bed02501c5b92d6"
+    }
+  ],
+  "model": {
+    "candidateModelId": "dinov2_vits14",
+    "candidateSelectionStatus": "candidate",
+    "selectedModelId": null,
+    "activeModelSelected": false,
+    "decision": "candidate_not_selected"
+  },
+  "index": {
+    "activeIndexVersion": null,
+    "activeIndexValidated": false,
+    "decision": "not_active_or_validated"
+  },
+  "realCameraPilot": {
+    "uniqueImages": 142,
+    "identityClasses": 6,
+    "physicalCardSessions": 6,
+    "physicalCardSessionsPerIdentity": 1,
+    "developmentTop1": 0.75,
+    "queryImagesExcludedFromIndexedReferences": true,
+    "modelSelectionAndProtectedTestSeparated": false,
+    "protectedPhysicalSessionMetricAvailable": false,
+    "decision": "development_pilot_only"
+  },
+  "nextEvidenceStep": {
+    "capturePlan": "ml/data_manifests/protected-six-card-capture-plan-v1.json",
+    "requiredNewIndependentSessionsPerIdentity": 1,
+    "requiredIdentityClasses": 6,
+    "productionAcceptanceAllowed": false
+  },
+  "blockers": [
+    "no_selected_model",
+    "no_validated_active_index",
+    "model_selection_and_protected_test_not_separated",
+    "one_physical_card_session_per_identity",
+    "six_identity_classes_only",
+    "single_language_only"
+  ]
+}

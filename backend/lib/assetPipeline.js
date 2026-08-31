@@ -112,6 +112,79 @@ async function putContentAddressedObject(storage, input) {
   }
 }
 
+export async function buildCatalogueAssetRepairFromStoredOriginal(input) {
+  assertAssetType(input.assetType);
+  if (input.permissionStatus !== 'approved' || input.rightsStatus !== 'approved') {
+    throw new Error('Stored catalogue asset repair requires approved permission and rights status.');
+  }
+
+  const validation = validateImageBuffer(input.buffer, {
+    declaredMimeType: input.mimeType,
+    allowedMimeTypes: IMAGE_MIME_TYPES,
+    maxBytes: input.maxBytes ?? 12 * 1024 * 1024,
+  });
+  if (!validation.ok) {
+    const error = new Error('Stored catalogue asset image validation failed.');
+    error.details = validation.reasons;
+    throw error;
+  }
+
+  const requestedRoles = new Set(input.derivativeRoles ?? CATALOGUE_DERIVATIVE_SPECS.map((spec) => spec.role));
+  const supportedRoles = new Set(CATALOGUE_DERIVATIVE_SPECS.map((spec) => spec.role));
+  for (const role of requestedRoles) {
+    if (!supportedRoles.has(role)) throw new Error(`Unsupported catalogue derivative role: ${role}`);
+  }
+
+  const metadata = await sharp(input.buffer).metadata();
+  const displayMetadata = metadata.autoOrient ?? metadata;
+  const bucket = input.bucket ?? STACKR_ASSET_BUCKETS.publicCatalogue;
+  const derivativeList = [];
+  for (const spec of CATALOGUE_DERIVATIVE_SPECS) {
+    if (!requestedRoles.has(spec.role)) continue;
+    const derivative = await derivativeImage(input.buffer, spec);
+    const key = contentHashStorageKey({
+      visibility: 'public',
+      assetType: input.assetType,
+      sha256: derivative.sha256,
+      role: spec.role,
+      extension: derivative.extension,
+    });
+    await putContentAddressedObject(input.storage, {
+      bucket,
+      key,
+      body: derivative.buffer,
+      contentType: derivative.mimeType,
+      cacheControl: IMMUTABLE_CACHE_CONTROL,
+      upsert: false,
+    });
+    derivativeList.push({
+      role: spec.role,
+      storageProvider: input.storage.id,
+      storageBucket: bucket,
+      storageKey: key,
+      mimeType: derivative.mimeType,
+      width: derivative.width,
+      height: derivative.height,
+      byteSize: derivative.byteSize,
+      contentSha256: derivative.sha256,
+      cacheControl: IMMUTABLE_CACHE_CONTROL,
+    });
+  }
+
+  const contentSha256 = sha256(input.buffer);
+  return {
+    sha256: contentSha256,
+    content_sha256: contentSha256,
+    perceptual_hash: await imageHash(input.buffer),
+    mime_type: validation.mimeType,
+    width: displayMetadata.width ?? validation.width,
+    height: displayMetadata.height ?? validation.height,
+    byte_size: input.buffer.length,
+    derivative_list: derivativeList,
+    last_verified_at: new Date().toISOString(),
+  };
+}
+
 export async function buildApprovedCatalogueAsset(input) {
   assertAssetType(input.assetType);
 

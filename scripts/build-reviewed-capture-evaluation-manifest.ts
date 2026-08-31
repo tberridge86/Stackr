@@ -18,6 +18,8 @@ type ConsentEvidence = {
   scope?: string;
   ownerStatement?: string;
   reviewedPhysicalCardSessions?: string[];
+  modelSelectionPhysicalCardSessions?: string[];
+  protectedTestPhysicalCardSessions?: string[];
   productionPublicationApproved?: boolean;
 };
 
@@ -118,6 +120,22 @@ export function buildReviewedCaptureEvaluationManifest({
   const rows = parseManualCsv(reviewBytes.toString('utf8')) as CaptureRow[];
   if (!rows.length) throw new Error('Capture review manifest has no rows.');
   const reviewedSessions = new Set((consent.reviewedPhysicalCardSessions ?? []).map(clean));
+  const modelSelectionSessions = new Set((consent.modelSelectionPhysicalCardSessions ?? []).map(clean));
+  const protectedTestSessions = new Set((consent.protectedTestPhysicalCardSessions ?? []).map(clean));
+  const explicitSessionRolesDeclared = modelSelectionSessions.size > 0 || protectedTestSessions.size > 0;
+  if (explicitSessionRolesDeclared && (!modelSelectionSessions.size || !protectedTestSessions.size)) {
+    throw new Error('Both model-selection and protected-test physical sessions must be declared.');
+  }
+  for (const session of modelSelectionSessions) {
+    if (protectedTestSessions.has(session)) {
+      throw new Error(`Physical session ${session} cannot be both model-selection and protected-test evidence.`);
+    }
+  }
+  for (const session of [...modelSelectionSessions, ...protectedTestSessions]) {
+    if (!reviewedSessions.has(session)) {
+      throw new Error(`Evaluation-role session ${session} is not included in reviewed consent.`);
+    }
+  }
   const verifiedRows = rows
     .map((row) => Object.fromEntries(Object.entries(row).map(([key, value]) => [key, clean(value)])) as CaptureRow)
     .sort((left, right) => left.relative_path.localeCompare(right.relative_path));
@@ -126,6 +144,11 @@ export function buildReviewedCaptureEvaluationManifest({
     assertEligible(row);
     if (!reviewedSessions.has(row.physical_card_session_id)) {
       throw new Error(`Consent evidence does not cover session ${row.physical_card_session_id}.`);
+    }
+    if (explicitSessionRolesDeclared
+      && !modelSelectionSessions.has(row.physical_card_session_id)
+      && !protectedTestSessions.has(row.physical_card_session_id)) {
+      throw new Error(`Physical session ${row.physical_card_session_id} has no evaluation role.`);
     }
     const imagePath = insideRoot(resolvedRoot, row.relative_path);
     if (!existsSync(imagePath)) throw new Error(`Capture file is missing: ${row.relative_path}`);
@@ -159,10 +182,25 @@ export function buildReviewedCaptureEvaluationManifest({
     sessions.add(row.physical_card_session_id);
     sessionsByIdentity.set(identity, sessions);
   }
-  const protectedTestEligible = [...sessionsByIdentity.values()].every((sessions) => sessions.size >= 2);
+  for (const session of [...modelSelectionSessions, ...protectedTestSessions]) {
+    if (!sessionIdentity.has(session)) {
+      throw new Error(`Evaluation-role session ${session} has no reviewed capture rows.`);
+    }
+  }
+  const identities = [...sessionsByIdentity.keys()];
+  const hasTwoSessionsPerIdentity = [...sessionsByIdentity.values()].every((sessions) => sessions.size >= 2);
+  const modelSelectionIdentities = new Set(
+    [...modelSelectionSessions].map((session) => sessionIdentity.get(session)).filter(Boolean),
+  );
+  const protectedTestIdentities = new Set(
+    [...protectedTestSessions].map((session) => sessionIdentity.get(session)).filter(Boolean),
+  );
+  const protectedTestEligible = explicitSessionRolesDeclared
+    && hasTwoSessionsPerIdentity
+    && identities.every((identity) => modelSelectionIdentities.has(identity) && protectedTestIdentities.has(identity));
 
   return {
-    schemaVersion: 'stackr-reviewed-capture-evaluation-manifest-v1.1.0',
+    schemaVersion: 'stackr-reviewed-capture-evaluation-manifest-v1.2.0',
     generatedAt,
     privacyScope: consent.scope,
     productionPublicationApproved,
@@ -179,6 +217,10 @@ export function buildReviewedCaptureEvaluationManifest({
       exactDuplicateImagesRemoved: verifiedRows.length - uniqueRows.length,
       identityClasses: sessionsByIdentity.size,
       physicalCardSessions: sessionIdentity.size,
+      hasTwoSessionsPerIdentity,
+      explicitSessionRolesDeclared,
+      modelSelectionPhysicalCardSessions: modelSelectionSessions.size,
+      protectedTestPhysicalCardSessions: protectedTestSessions.size,
       protectedTestEligible,
     },
     evaluationPolicy: {
@@ -186,8 +228,8 @@ export function buildReviewedCaptureEvaluationManifest({
       modelSelectionAndProtectedTestSeparated: protectedTestEligible,
       productionAcceptanceAllowed: false,
       reason: protectedTestEligible
-        ? 'Private reviewed captures are eligible for a future protected split, but this manifest does not approve production.'
-        : 'At least two physical-card sessions per identity are required before model selection and protected testing can be separated.',
+        ? 'Reviewed captures explicitly separate model-selection and protected-test physical sessions, but this manifest does not approve production.'
+        : 'At least two physical-card sessions and explicit, disjoint model-selection/protected-test roles are required for every identity.',
     },
     publicationPolicy: {
       cataloguePublicationAllowed: productionPublicationApproved,
@@ -207,6 +249,11 @@ export function buildReviewedCaptureEvaluationManifest({
       width: Number(row.width),
       height: Number(row.height),
       physicalCardSessionId: row.physical_card_session_id,
+      evaluationRole: modelSelectionSessions.has(row.physical_card_session_id)
+        ? 'model_selection'
+        : protectedTestSessions.has(row.physical_card_session_id)
+          ? 'protected_test'
+          : null,
       identityKey: identityKey(row),
       language: languageTag(row.language),
       setCode: row.set_code,

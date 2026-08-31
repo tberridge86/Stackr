@@ -28,6 +28,17 @@ WP32 uses its workbook weights: 096 is one third, 097 is five twelfths and 098 i
 | Staging mobile binary | 100% | PASS |
 | Integrated real-user pilot | 0% | BLOCKED |
 
+## Recognition Readiness — 2026-08-31
+
+| Item | Current evidence | Status |
+| --- | --- | --- |
+| DINOv2 ViT-S/14 | Registry status is `candidate`; `selectedModelId` is `null` | CANDIDATE — NOT SELECTED |
+| Recognition index | No active index version; release validation gate is false | NOT ACTIVE OR VALIDATED |
+| Real-camera pilot | 142 images, 6 identities and 6 physical-card sessions | DEVELOPMENT PILOT ONLY |
+| Protected physical-session evaluation | One session per identity; model-selection and protected sessions are not separated | NO PROTECTED METRIC |
+
+The published 75% top-1 result is from the six-identity development pilot. It is not protected-test or production-acceptance evidence. The smallest next evidence step is one new independent physical-card session for each of the same six cards. The pending identities and capture rules are pinned in `ml/data_manifests/protected-six-card-capture-plan-v1.json`; the source-of-truth snapshot is `deploy/evidence/recognition-readiness-2026-08-31.json`.
+
 ## Evidence Produced in 096
 
 - Source commit and tree are pinned.

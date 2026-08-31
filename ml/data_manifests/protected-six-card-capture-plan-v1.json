@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "stackr-protected-six-card-capture-plan-v1.0.0",
+  "status": "capture_required",
+  "productionAcceptanceAllowed": false,
+  "sourceIdentityEvidence": {
+    "pilotReportPath": "deploy/evidence/dinov2-pilot-publication-approved-2026-08-06.json",
+    "pilotReportSha256": "cb4f67f079c96cfc3bda5502fd3608aa32677049a0dc91eb1bed02501c5b92d6",
+    "cataloguePath": "catalogue/zh-cn/151c/reviewed-owned-captures.json",
+    "catalogueSha256": "184424346e601be3468a09eb3fbcdb89735a3b840bc289007d2b0c516082debd",
+    "originalSessionPath": "scripts/import-approved-capture-catalogue-assets.mjs",
+    "originalSessionSha256": "ead106e80c9fc78be5fc957646a84572a2430c213d31916d9fc623d5aa201a02"
+  },
+  "modelContext": {
+    "candidateModelId": "dinov2_vits14",
+    "candidateSelectionStatus": "candidate",
+    "selectedModelId": null
+  },
+  "indexContext": {
+    "activeIndexVersion": null,
+    "activeIndexValidated": false
+  },
+  "priorPilot": {
+    "uniqueImages": 142,
+    "identityClasses": 6,
+    "physicalCardSessions": 6,
+    "physicalCardSessionsPerIdentity": 1,
+    "modelSelectionAndProtectedTestSeparated": false,
+    "protectedPhysicalSessionMetricAvailable": false
+  },
+  "captureRequirement": {
+    "requiredNewIndependentSessionsPerIdentity": 1,
+    "requiredNewPhysicalCardSessions": 6,
+    "technicalMinimumNewImagesPerIdentity": 1,
+    "recommendedNewImagesPerIdentity": 3,
+    "requiredCardSide": "front",
+    "rules": [
+      "Use the same six physical cards represented in the source pilot.",
+      "Capture every planned session independently from the original session.",
+      "Do not reuse, crop or transform any model-selection image as a protected image.",
+      "Keep query images excluded from indexed references.",
+      "Record user consent, image hashes and reviewed labels before evaluation."
+    ]
+  },
+  "consentRoleUpdate": {
+    "modelSelectionPhysicalCardSessions": [
+      "Vulpix_1",
+      "venonat_1",
+      "Magneton_1",
+      "Voltorb_1",
+      "Seaking_1",
+      "Omanyte_1"
+    ],
+    "protectedTestPhysicalCardSessions": [
+      "151c-037-protected-session-2",
+      "151c-048-protected-session-2",
+      "151c-082-protected-session-2",
+      "151c-100-protected-session-2",
+      "151c-119-protected-session-2",
+      "151c-138-protected-session-2"
+    ]
+  },
+  "identities": [
+    {
+      "identityKey": "151c|037/151|normal|normal|vulpix|zh-Hans",
+      "language": "zh-cn",
+      "normalizedLanguage": "zh-Hans",
+      "setCode": "151c",
+      "collectorNumber": "037/151",
+      "variant": "normal",
+      "finish": "normal",
+      "cardName": "Vulpix",
+      "modelSelectionPhysicalCardSessionId": "Vulpix_1",
+      "newPhysicalCardSessionId": "151c-037-protected-session-2"
+    },
+    {
+      "identityKey": "151c|048/151|normal|normal|venonat|zh-Hans",
+      "language": "zh-cn",
+      "normalizedLanguage": "zh-Hans",
+      "setCode": "151c",
+      "collectorNumber": "048/151",
+      "variant": "normal",
+      "finish": "normal",
+      "cardName": "Venonat",
+      "modelSelectionPhysicalCardSessionId": "venonat_1",
+      "newPhysicalCardSessionId": "151c-048-protected-session-2"
+    },
+    {
+      "identityKey": "151c|082/151|normal|normal|magneton|zh-Hans",
+      "language": "zh-cn",
+      "normalizedLanguage": "zh-Hans",
+      "setCode": "151c",
+      "collectorNumber": "082/151",
+      "variant": "normal",
+      "finish": "normal",
+      "cardName": "Magneton",
+      "modelSelectionPhysicalCardSessionId": "Magneton_1",
+      "newPhysicalCardSessionId": "151c-082-protected-session-2"
+    },
+    {
+      "identityKey": "151c|100/151|normal|normal|voltorb|zh-Hans",
+      "language": "zh-cn",
+      "normalizedLanguage": "zh-Hans",
+      "setCode": "151c",
+      "collectorNumber": "100/151",
+      "variant": "normal",
+      "finish": "normal",
+      "cardName": "Voltorb",
+      "modelSelectionPhysicalCardSessionId": "Voltorb_1",
+      "newPhysicalCardSessionId": "151c-100-protected-session-2"
+    },
+    {
+      "identityKey": "151c|119/151|normal|normal|seaking|zh-Hans",
+      "language": "zh-cn",
+      "normalizedLanguage": "zh-Hans",
+      "setCode": "151c",
+      "collectorNumber": "119/151",
+      "variant": "normal",
+      "finish": "normal",
+      "cardName": "Seaking",
+      "modelSelectionPhysicalCardSessionId": "Seaking_1",
+      "newPhysicalCardSessionId": "151c-119-protected-session-2"
+    },
+    {
+      "identityKey": "151c|138/151|normal|normal|omanyte|zh-Hans",
+      "language": "zh-cn",
+      "normalizedLanguage": "zh-Hans",
+      "setCode": "151c",
+      "collectorNumber": "138/151",
+      "variant": "normal",
+      "finish": "normal",
+      "cardName": "Omanyte",
+      "modelSelectionPhysicalCardSessionId": "Omanyte_1",
+      "newPhysicalCardSessionId": "151c-138-protected-session-2"
+    }
+  ]
+}

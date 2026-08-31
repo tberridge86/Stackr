@@ -29,6 +29,7 @@ const REPORT_FILES = {
   missingCardImages: `${REPORT_DIR}/missing-card-images.csv`,
   missingSetArt: `${REPORT_DIR}/missing-set-art.csv`,
   imageLeftovers: `${REPORT_DIR}/image-leftovers.csv`,
+  exactApprovedImageCandidates: `${REPORT_DIR}/exact-approved-image-candidates.csv`,
   sameArtworkReferences: `${REPORT_DIR}/same-artwork-references.csv`,
   scanAcquisitionQueue: `${REPORT_DIR}/scan-acquisition-queue.csv`,
   conflicts: `${REPORT_DIR}/conflicts.csv`,
@@ -166,6 +167,7 @@ type VariantRow = {
 
 type AssetRow = {
   id: string;
+  source_id?: string | null;
   set_id: string | null;
   printing_id: string | null;
   variant_id: string | null;
@@ -178,10 +180,14 @@ type AssetRow = {
   original_source_identifier?: string | null;
   source_attribution?: string | null;
   storage_provider?: string | null;
+  storage_bucket?: string | null;
   storage_path?: string | null;
   storage_key?: string | null;
   content_sha256?: string | null;
   perceptual_hash?: string | null;
+  derivative_list?: Array<Record<string, unknown>> | null;
+  unavailable_reason?: string | null;
+  deleted_at?: string | null;
   deprecated_at?: string | null;
 };
 
@@ -407,6 +413,7 @@ function reportFiles(reportDir: string) {
     missingCardImages: `${reportDir}/missing-card-images.csv`,
     missingSetArt: `${reportDir}/missing-set-art.csv`,
     imageLeftovers: `${reportDir}/image-leftovers.csv`,
+    exactApprovedImageCandidates: `${reportDir}/exact-approved-image-candidates.csv`,
     sameArtworkReferences: `${reportDir}/same-artwork-references.csv`,
     scanAcquisitionQueue: `${reportDir}/scan-acquisition-queue.csv`,
     conflicts: `${reportDir}/conflicts.csv`,
@@ -1478,6 +1485,115 @@ function assetIsApproved(asset: AssetRow) {
   return asset.asset_type === 'card_image' && assetRightsAreApproved(asset);
 }
 
+const REQUIRED_CATALOGUE_DERIVATIVE_ROLES = ['card-grid', 'search-result', 'detail-page'] as const;
+const PHYSICAL_ASSET_STORAGE_PROVIDERS = new Set(['supabase_storage', 's3_compatible', 'local_dev']);
+
+function unavailableReasonCategory(value: unknown) {
+  const reason = cleanText(value);
+  if (!reason) return 'none';
+  if (reason.startsWith('duplicate_content:')) return 'duplicate_content';
+  return reason;
+}
+
+function buildCardImageInventory(input: {
+  assets: AssetRow[];
+  sources: SetScopeSourceRow[];
+  sets: SetRow[];
+  printings: PrintingRow[];
+  variants: VariantRow[];
+  languages: SupportedCatalogueLanguageCode[];
+}) {
+  const sourceCodeById = new Map(input.sources.map((source) => [source.id, source.code]));
+  const languageBySetId = new Map(input.sets.map((set) => [set.id, normaliseLanguageCode(set.language_code)]));
+  const languageByPrintingId = new Map(input.printings.map((printing) => [printing.id, normaliseLanguageCode(printing.language_code)]));
+  const languageByVariantId = new Map(input.variants.map((variant) => [variant.id, normaliseLanguageCode(variant.language_code)]));
+  const selectedLanguages = new Set(input.languages);
+  const groups = new Map<string, {
+    provider: string;
+    storageProvider: string;
+    unavailableReason: string;
+    assets: number;
+    withContentSha256: number;
+    withStorageObject: number;
+    storedMissingRequiredDerivatives: number;
+    requiredDerivativesReady: number;
+    derivativeRoleCounts: Record<(typeof REQUIRED_CATALOGUE_DERIVATIVE_ROLES)[number], number>;
+  }>();
+
+  for (const asset of input.assets) {
+    if (asset.asset_type !== 'card_image' || asset.deprecated_at != null || asset.deleted_at != null) continue;
+    const language = (asset.variant_id ? languageByVariantId.get(asset.variant_id) : null)
+      ?? (asset.printing_id ? languageByPrintingId.get(asset.printing_id) : null)
+      ?? (asset.set_id ? languageBySetId.get(asset.set_id) : null);
+    if (!language || !selectedLanguages.has(language as SupportedCatalogueLanguageCode)) continue;
+
+    const provider = asset.source_id ? sourceCodeById.get(asset.source_id) ?? 'unknown' : 'unknown';
+    const storageProvider = cleanText(asset.storage_provider) ?? 'unknown';
+    const unavailableReason = unavailableReasonCategory(asset.unavailable_reason);
+    const key = JSON.stringify([provider, storageProvider, unavailableReason]);
+    const group = groups.get(key) ?? {
+      provider,
+      storageProvider,
+      unavailableReason,
+      assets: 0,
+      withContentSha256: 0,
+      withStorageObject: 0,
+      storedMissingRequiredDerivatives: 0,
+      requiredDerivativesReady: 0,
+      derivativeRoleCounts: {
+        'card-grid': 0,
+        'search-result': 0,
+        'detail-page': 0,
+      },
+    };
+    group.assets += 1;
+    const hasContentSha256 = Boolean(cleanText(asset.content_sha256));
+    if (hasContentSha256) group.withContentSha256 += 1;
+    const storageKey = cleanText(asset.storage_key) ?? cleanText(asset.storage_path);
+    const hasStorageObject = Boolean(PHYSICAL_ASSET_STORAGE_PROVIDERS.has(storageProvider)
+      && cleanText(asset.storage_bucket)
+      && storageKey);
+    if (hasStorageObject) group.withStorageObject += 1;
+    const derivativeRoles = new Set((Array.isArray(asset.derivative_list) ? asset.derivative_list : [])
+      .map((derivative) => cleanText(derivative?.role))
+      .filter(Boolean) as string[]);
+    for (const role of REQUIRED_CATALOGUE_DERIVATIVE_ROLES) {
+      if (derivativeRoles.has(role)) group.derivativeRoleCounts[role] += 1;
+    }
+    const hasRequiredDerivatives = REQUIRED_CATALOGUE_DERIVATIVE_ROLES.every((role) => derivativeRoles.has(role));
+    if (hasStorageObject && !hasRequiredDerivatives) group.storedMissingRequiredDerivatives += 1;
+    if (hasStorageObject
+      && hasContentSha256
+      && asset.rights_status === 'approved'
+      && (asset.permission_status == null || asset.permission_status === 'approved')
+      && asset.publicly_servable
+      && hasRequiredDerivatives) {
+      group.requiredDerivativesReady += 1;
+    }
+    groups.set(key, group);
+  }
+
+  const rows = [...groups.values()].sort((left, right) => (
+    right.assets - left.assets
+    || left.provider.localeCompare(right.provider)
+    || left.storageProvider.localeCompare(right.storageProvider)
+    || left.unavailableReason.localeCompare(right.unavailableReason)
+  ));
+  return {
+    scope: 'active_card_images_linked_to_selected_languages',
+    requiredDerivativeRoles: [...REQUIRED_CATALOGUE_DERIVATIVE_ROLES],
+    unavailableReasonGrouping: 'duplicate_content identifiers are grouped as duplicate_content; all other values are exact',
+    totals: {
+      assets: rows.reduce((sum, row) => sum + row.assets, 0),
+      withContentSha256: rows.reduce((sum, row) => sum + row.withContentSha256, 0),
+      withStorageObject: rows.reduce((sum, row) => sum + row.withStorageObject, 0),
+      storedMissingRequiredDerivatives: rows.reduce((sum, row) => sum + row.storedMissingRequiredDerivatives, 0),
+      requiredDerivativesReady: rows.reduce((sum, row) => sum + row.requiredDerivativesReady, 0),
+    },
+    groups: rows,
+  };
+}
+
 function providerSetRefsByCanonicalSetId(
   sources: SetScopeSourceRow[],
   identifiers: SetScopeIdentifierRow[],
@@ -1806,7 +1922,7 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     fetchAllFiltered(db, 'catalog', 'sets', 'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at', configureLanguageQuery) as Promise<SetRow[]>,
     fetchAllFiltered(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number,deprecated_at', configureLanguageQuery) as Promise<PrintingRow[]>,
     fetchAllFiltered(db, 'catalog', 'card_variants', 'id,printing_id,set_id,language_code,collector_number,variant_code,finish_code,canonical_key,artwork_key,deprecated_at', configureLanguageQuery) as Promise<VariantRow[]>,
-    fetchAll(db, 'catalog', 'assets', 'id,set_id,printing_id,variant_id,asset_type,url,rights_status,permission_status,publicly_servable,original_source_url,original_source_identifier,source_attribution,storage_provider,storage_path,storage_key,content_sha256,perceptual_hash,deprecated_at') as Promise<AssetRow[]>,
+    fetchAll(db, 'catalog', 'assets', 'id,source_id,set_id,printing_id,variant_id,asset_type,url,rights_status,permission_status,publicly_servable,original_source_url,original_source_identifier,source_attribution,storage_provider,storage_bucket,storage_path,storage_key,content_sha256,perceptual_hash,derivative_list,unavailable_reason,deleted_at,deprecated_at') as Promise<AssetRow[]>,
     fetchAllFiltered(
       db,
       'ingest',
@@ -2076,12 +2192,22 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     return { ...row, completion_percentage: coveragePercent(row) };
   });
 
-  const imageLeftovers = classifyImageLeftovers({
+  const classifiedImageLeftovers = classifyImageLeftovers({
     sets: activeSets,
     variants: activeVariants,
     assets,
     rawRecords: activeRawRecords,
   });
+  const isSelectedImageLanguage = (row: Record<string, unknown>) => (
+    selectedLanguages.has(String(row.language) as SupportedCatalogueLanguageCode)
+  );
+  const imageLeftovers = {
+    leftovers: classifiedImageLeftovers.leftovers.filter(isSelectedImageLanguage),
+    groupA: classifiedImageLeftovers.groupA.filter(isSelectedImageLanguage),
+    groupB: classifiedImageLeftovers.groupB.filter(isSelectedImageLanguage),
+    groupC: classifiedImageLeftovers.groupC.filter(isSelectedImageLanguage),
+    conflicts: classifiedImageLeftovers.conflicts.filter(isSelectedImageLanguage),
+  };
   const missingCardImages = imageLeftovers.leftovers.map((row) => ({
     ...row,
     reason: row.group === 'A'
@@ -2367,6 +2493,25 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     'conflict_required',
     'conflict_type',
   ]);
+  writeCsv(files.exactApprovedImageCandidates, imageLeftovers.groupA, [
+    'language',
+    'set_id',
+    'set_code',
+    'set_name',
+    'collector_number',
+    'variant',
+    'finish',
+    'variant_id',
+    'native_image_status',
+    'candidate_count',
+    'candidate_provider',
+    'candidate_provider_group',
+    'candidate_provider_id',
+    'candidate_source_url',
+    'scan_queue_required',
+    'conflict_required',
+    'conflict_type',
+  ]);
   writeCsv(files.sameArtworkReferences, imageLeftovers.groupB, [
     'language',
     'set_id',
@@ -2407,8 +2552,12 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
 
   const summary = {
     generatedAt: new Date().toISOString(),
+    target: 'staging',
+    stagingProjectRef: STAGING_SUPABASE_REF,
+    readOnly: true,
     sourceOfTruth: 'staging_supabase',
     productionModified: false,
+    languages: args.languages,
     completionGates: [
       'missing_card_records',
       'missing_required_variants',
@@ -2458,7 +2607,15 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     providerReports: {
       pikaqianCoverageRows: pikaqianCoverageRows.length,
     },
-    byLanguage: SUPPORTED_CATALOGUE_LANGUAGE_CODES.map((language) => {
+    cardImageInventory: buildCardImageInventory({
+      assets,
+      sources,
+      sets: activeSets,
+      printings: activePrintings,
+      variants: activeVariants,
+      languages: args.languages,
+    }),
+    byLanguage: args.languages.map((language) => {
       const rows = coverageRows.filter((row) => row.language === language);
       return {
         language,
@@ -3609,6 +3766,7 @@ export const masterCatalogueInternals = {
   deriveSetCompletionStatus,
   expectedFromRaw,
   assetRightsAreApproved,
+  buildCardImageInventory,
   providerSetRefsByCanonicalSetId,
   LANGUAGE_PUBLISH_ORDER,
   percentComplete,
