@@ -111,9 +111,10 @@ STACKR_GATEWAY_URL
 STACKR_MIGRATION_BASELINE_APPROVED
 STACKR_MODEL_INDEX_RELEASE_APPROVED
 STACKR_STORAGE_BACKUP_APPROVED
+STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED
 ```
 
-The three approval variables must remain `false` until their corresponding evidence is reviewed. `SUPABASE_PROJECT_REF` must be `lmwfhvexfcoyeuoyrlco` in staging and `oakdbbzdqwurpjnoqhmu` in production; preflight rejects a crossed environment.
+The four approval variables must remain `false` until their corresponding evidence is reviewed. `SUPABASE_PROJECT_REF` must be `lmwfhvexfcoyeuoyrlco` in staging and `oakdbbzdqwurpjnoqhmu` in production; preflight rejects a crossed environment. Owner-attested catalogue ingestion is staging-only and does not satisfy the catalogue-rights release approval.
 
 ## Workflow Responsibilities
 

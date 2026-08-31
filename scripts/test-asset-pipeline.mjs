@@ -487,8 +487,13 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /environment: staging[\s\S]+POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256[\s\S]+POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256[\s\S]+\^\[0-9a-fA-F\]\{64\}\$/,
-    'Japanese image recovery must fail closed until reviewed written-rights evidence is registered for both providers',
+    /environment: staging[\s\S]+STACKR_IMAGE_PERMISSION_MODE: owner_attested[\s\S]+STACKR_TRIGGER_ACTOR_ID:[\s\S]+STACKR_REPOSITORY_OWNER_ID:[\s\S]+Japanese image recovery must be triggered by the repository owner/,
+    'Japanese image recovery must accept the owner permission attestation while remaining owner-only and staging-only',
+  );
+  assert.doesNotMatch(
+    japaneseCompletionWorkflow,
+    /POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256|POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256/,
+    'owner-attested staging recovery must not depend on manually registered rights-evidence secrets',
   );
   assert.match(
     japaneseCompletionWorkflow,

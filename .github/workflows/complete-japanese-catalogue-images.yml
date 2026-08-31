@@ -90,8 +90,10 @@ env:
 jobs:
   prepare:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.actor_id == github.repository_owner_id) ||
+      (github.event_name == 'push' &&
+       github.actor_id == github.repository_owner_id) ||
       (github.event.issue.number == 74 &&
        github.event.issue.pull_request == null &&
        github.actor_id == github.repository_owner_id &&
@@ -112,22 +114,20 @@ jobs:
       CATALOGUE_MIRROR_BATCH_SIZE: ${{ inputs.mirror_batch_size || '500' }}
       CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
       CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency || '4' }}
-      POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256: ${{ secrets.POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256 }}
-      POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256: ${{ secrets.POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256 }}
+      STACKR_IMAGE_PERMISSION_MODE: owner_attested
+      STACKR_TRIGGER_ACTOR_ID: ${{ github.actor_id }}
+      STACKR_REPOSITORY_OWNER_ID: ${{ github.repository_owner_id }}
     steps:
-      - name: Verify staging-only bounds and reviewed rights evidence
+      - name: Verify staging-only bounds and owner permission attestation
         shell: bash
         run: |
           set -euo pipefail
           [[ "$SUPABASE_PROJECT_REF" == 'lmwfhvexfcoyeuoyrlco' ]]
           [[ "$SUPABASE_URL" == 'https://lmwfhvexfcoyeuoyrlco.supabase.co' ]]
           [[ "$STACKR_CATALOGUE_IMPORT_TARGET" == 'staging' ]]
-          [[ "$POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256" =~ ^[0-9a-fA-F]{64}$ ]] || {
-            echo 'PokeData Japanese written-rights evidence has not been reviewed and registered.'
-            exit 1
-          }
-          [[ "$POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256" =~ ^[0-9a-fA-F]{64}$ ]] || {
-            echo 'Pokemon Card Japan written-rights evidence has not been reviewed and registered.'
+          [[ "$STACKR_IMAGE_PERMISSION_MODE" == 'owner_attested' ]]
+          [[ "$STACKR_TRIGGER_ACTOR_ID" == "$STACKR_REPOSITORY_OWNER_ID" ]] || {
+            echo 'Japanese image recovery must be triggered by the repository owner.'
             exit 1
           }
           [[ "$CATALOGUE_BATCH_SIZE" =~ ^[0-9]+$ ]]
