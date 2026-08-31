@@ -172,10 +172,10 @@ export async function resolveCatalogueAssetRepairSource(supabase, sourceCode) {
   return data;
 }
 
-function scopedEmptyDerivativeQuery(supabase, input, selectOptions = undefined) {
+function scopedEmptyDerivativeQuery(supabase, input, selectOptions = undefined, columns = undefined) {
   let query = supabase.schema('catalog').from('assets')
     .select(
-      `${ASSET_COLUMNS},language_scope:card_variants!assets_variant_id_fkey!inner(language_code,deprecated_at)`,
+      columns ?? `${ASSET_COLUMNS},language_scope:card_variants!assets_variant_id_fkey!inner(language_code,deprecated_at)`,
       selectOptions,
     )
     .eq('source_id', input.sourceId)
@@ -213,9 +213,32 @@ export async function listStoredCatalogueAssetRepairBatch(supabase, input = {}) 
 export async function countStoredCatalogueAssetRepairCandidates(supabase, input = {}) {
   assertApprovedCatalogueAssetRepairScope(input);
   const { count, error } = await scopedEmptyDerivativeQuery(supabase, input, { count: 'exact', head: true });
-  if (error) throw error;
-  if (!Number.isSafeInteger(count) || count < 0) throw new Error('Staging repair candidate count was not returned.');
-  return count;
+  if (!error && Number.isSafeInteger(count) && count >= 0) return count;
+
+  const pageSize = 500;
+  const maximumCandidates = 2500;
+  let afterId = clean(input.afterId);
+  let total = 0;
+  while (total <= maximumCandidates) {
+    const { data, error: pageError } = await scopedEmptyDerivativeQuery(
+      supabase,
+      { ...input, afterId },
+      undefined,
+      'id,language_scope:card_variants!assets_variant_id_fkey!inner(language_code,deprecated_at)',
+    )
+      .order('id', { ascending: true })
+      .limit(pageSize);
+    if (pageError) throw pageError;
+    const rows = data ?? [];
+    total += rows.length;
+    if (rows.length < pageSize) return total;
+    const nextAfterId = clean(rows.at(-1)?.id);
+    if (!nextAfterId || (afterId && nextAfterId <= afterId)) {
+      throw new Error('Staging repair count cursor did not advance.');
+    }
+    afterId = nextAfterId;
+  }
+  throw new Error(`Staging repair candidate count exceeded the audited ${maximumCandidates}-asset bound.`);
 }
 
 export async function repairStoredCatalogueAsset(supabase, storage, asset, input = {}) {
