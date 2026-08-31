@@ -461,8 +461,44 @@ function addStats(target: Required<RunnerStats>, addition: Required<RunnerStats>
   }
 }
 
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error);
+function jsonSafeDiagnosticValue(value: unknown) {
+  if (value == null || ['string', 'number', 'boolean'].includes(typeof value)) return value;
+  const constructorName = value && typeof value === 'object'
+    ? cleanText((value as { constructor?: { name?: unknown } }).constructor?.name)
+    : null;
+  return `[${constructorName ?? typeof value} omitted]`;
+}
+
+export function describePokeDataIngestionError(error: unknown) {
+  const record = error && typeof error === 'object'
+    ? error as Record<string, unknown>
+    : null;
+  let message = error instanceof Error ? cleanText(error.message) : cleanText(record?.message);
+  if (!message && record) {
+    const objectName = cleanText(record.name);
+    const objectCode = cleanText(record.code);
+    const label = objectName && objectName !== 'Error'
+      ? objectName
+      : 'PokeData ingestion failure';
+    message = objectCode ? `${label} (${objectCode})` : `${label}.`;
+  }
+  message ??= error == null
+    ? 'Unknown PokeData ingestion failure.'
+    : String(error);
+
+  const diagnostics: Record<string, unknown> = { message };
+  const errorName = cleanText(record?.name);
+  if (errorName && errorName !== 'Error') {
+    diagnostics.name = errorName;
+  }
+  if (record) {
+    for (const key of ['code', 'details', 'hint']) {
+      if (record[key] !== undefined) diagnostics[key] = jsonSafeDiagnosticValue(record[key]);
+    }
+    const status = record.status ?? record.statusCode ?? record.responseStatus;
+    if (status !== undefined) diagnostics.status = jsonSafeDiagnosticValue(status);
+  }
+  return Object.freeze(diagnostics);
 }
 
 function failedRunnerResult(result: RunnerResult) {
@@ -575,6 +611,7 @@ export async function ingestPokeDataJapaneseImages(
 
     if (!accepted) {
       failures += 1;
+      const errorDetails = describePokeDataIngestionError(lastError);
       runs.push({
         status: 'failed',
         attempts,
@@ -585,7 +622,8 @@ export async function ingestPokeDataJapaneseImages(
         providerReportedSetCode: match.providerReportedSetCode,
         identityPolicy: match.identityPolicy,
         runKey: setRunKey(runKeyPrefix, match.providerSetId),
-        error: errorMessage(lastError),
+        error: errorDetails.message,
+        errorDetails,
       });
       continue;
     }
@@ -792,10 +830,12 @@ const isDirectExecution = process.argv[1]
 
 if (isDirectExecution) {
   main().catch((error) => {
+    const errorDetails = describePokeDataIngestionError(error);
     console.error(JSON.stringify({
       ok: false,
       job: POKEDATA_JAPANESE_IMAGE_INGESTION_CONTRACT,
-      error: errorMessage(error),
+      error: errorDetails.message,
+      errorDetails,
       metadataCreated: false,
       productionModified: false,
     }, null, 2));

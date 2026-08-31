@@ -9,6 +9,7 @@ import {
   buildExactPokeDataSetCrosswalk,
   canonicalSetImportRunKey,
   completedRunMatches,
+  describePokeDataIngestionError,
   exactCrosswalkDigest,
   fetchActiveJapaneseCatalogueSets,
   ingestPokeDataJapaneseImages,
@@ -17,6 +18,61 @@ import {
   type ActiveJapaneseCatalogueSet,
   type PokeDataJapaneseImageIngestionOptions,
 } from './ingest-pokedata-japanese-images';
+
+assert.equal(
+  describePokeDataIngestionError(new Error('ordinary failure')).message,
+  'ordinary failure',
+);
+assert.deepEqual(
+  describePokeDataIngestionError({
+    message: 'canceling statement due to statement timeout',
+    code: '57014',
+    details: null,
+    hint: null,
+    status: 500,
+  }),
+  {
+    message: 'canceling statement due to statement timeout',
+    code: '57014',
+    details: null,
+    hint: null,
+    status: 500,
+  },
+  'PostgREST object failures must retain their diagnostic fields',
+);
+assert.deepEqual(
+  describePokeDataIngestionError(Object.assign(new Error('custom database error'), {
+    code: 'XX001',
+    statusCode: 503,
+  })),
+  { message: 'custom database error', code: 'XX001', status: 503 },
+  'Error subclasses must retain attached database and response diagnostics',
+);
+assert.deepEqual(
+  describePokeDataIngestionError({ code: '57014' }),
+  { message: 'PokeData ingestion failure (57014)', code: '57014' },
+  'objects without messages must use only whitelisted diagnostic fields',
+);
+assert.deepEqual(
+  describePokeDataIngestionError({
+    code: 'FETCH_FAILED',
+    details: { headers: { authorization: 'must-not-leak' } },
+    config: { headers: { authorization: 'must-not-leak' } },
+  }),
+  {
+    message: 'PokeData ingestion failure (FETCH_FAILED)',
+    code: 'FETCH_FAILED',
+    details: '[Object omitted]',
+  },
+  'non-whitelisted SDK error fields must not reach logs or artifacts',
+);
+const circularFailure: Record<string, unknown> = {};
+circularFailure.self = circularFailure;
+assert.equal(
+  describePokeDataIngestionError(circularFailure).message,
+  'PokeData ingestion failure.',
+  'object failures must never collapse back to [object Object]',
+);
 
 function catalogueSet(
   id: string,
@@ -458,9 +514,66 @@ async function testDriver() {
   assert.equal(m5Run.identityPolicy, 'frozen_provider_id_override');
 }
 
+async function testExhaustedObjectFailureReport() {
+  const postgrestFailure = {
+    message: 'canceling statement due to statement timeout',
+    code: '57014',
+    details: 'fixture query exceeded the role timeout',
+    hint: null,
+    status: 500,
+  };
+  const adapter = new PokeDataJapaneseImageSourceAdapter({
+    baseUrl: 'https://fixture.pokedata.test',
+    requestDelayMs: 0,
+    sleepImpl: async () => undefined,
+    fetchImpl: async () => jsonResponse([
+      { id: 20, code: 'SV1V', name: 'Violet ex Japanese', language: 'JAPANESE', tcg: 'Pokemon' },
+    ]),
+  });
+  let attempts = 0;
+  const sleeps: number[] = [];
+  const report = await ingestPokeDataJapaneseImages(
+    {} as never,
+    adapter,
+    {
+      offset: 0,
+      limit: 1,
+      writeConcurrency: 1,
+      maxAttempts: 2,
+      requestTimeoutMs: 30_000,
+      setPauseMs: 0,
+      retryBaseMs: 10,
+      runKeyPrefix: 'failure-fixture',
+      requestIdPrefix: 'failure-request',
+    },
+    {
+      fetchCatalogueSets: async () => [catalogueSet('catalogue-violet', 'SV1V', 'Violet ex')],
+      readCompletedRuns: async () => new Map(),
+      createRunner: () => ({
+        async run() {
+          attempts += 1;
+          throw postgrestFailure;
+        },
+      }),
+      sleep: async (milliseconds) => { sleeps.push(milliseconds); },
+    },
+  );
+
+  assert.equal(report.ok, false);
+  assert.equal(attempts, 2);
+  assert.deepEqual(sleeps, [10]);
+  assert.equal(report.runs.length, 1);
+  assert.equal(report.runs[0].status, 'failed');
+  assert.equal(report.runs[0].attempts, 2);
+  assert.equal(report.runs[0].error, postgrestFailure.message);
+  assert.deepEqual(report.runs[0].errorDetails, postgrestFailure);
+  assert.equal(JSON.stringify(report).includes('[object Object]'), false);
+}
+
 async function main() {
   await testActiveCatalogueQuery();
   await testDriver();
+  await testExhaustedObjectFailureReport();
 
   const parsed = parsePokeDataJapaneseImageIngestionOptions([
     '--offset=5',

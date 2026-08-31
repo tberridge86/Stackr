@@ -69,6 +69,7 @@ jobs:
       - run: npm run test:variant-resolver
       - run: npm run test:catalogue-schema
       - run: npm run test:catalogue-ingestion
+      - run: npm run test:pokedata-japanese-images
       - run: npm run test:master-catalogue-importer
       - run: npm run test:catalogue-gap-report
       - run: npm run test:four-language-catalogue-backfill

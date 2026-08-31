@@ -39,6 +39,10 @@ const publicationReadMigration = readFileSync(
   'supabase/migrations/20260810170607_optimize_raw_source_publication_reads.sql',
   'utf8',
 );
+const launchConflictSetResolutionMigration = readFileSync(
+  'supabase/migrations/20260831200554_repair_launch_catalogue_conflict_set_resolution.sql',
+  'utf8',
+);
 const stackrApiService = readFileSync('backend/lib/stackrApiV1.js', 'utf8');
 
 function assertRequiredCommandsExist() {
@@ -1252,6 +1256,30 @@ function assertQualityReportRules() {
   );
 }
 
+function assertLaunchConflictSetResolutionRules() {
+  assert.match(launchConflictSetResolutionMigration, /with \(security_invoker = true\)/);
+  assert.match(
+    launchConflictSetResolutionMigration,
+    /when conflict\.proposed_set_id ~\* '\^\[0-9a-f\]\{8\}/,
+    'provider conflict IDs must be syntax-checked before a UUID cast',
+  );
+  assert.doesNotMatch(
+    launchConflictSetResolutionMigration,
+    /nullif\(conflict\.proposed_payload ->> 'set_id', ''\)::uuid/i,
+    'provider-native set IDs must never be cast directly to UUID',
+  );
+  assert.match(
+    launchConflictSetResolutionMigration,
+    /candidate\.language_code = conflict\.proposed_language_code[\s\S]+lower\(candidate\.set_code\) = lower\(conflict\.proposed_set_code\)[\s\S]+having count\(\*\) = 1/,
+    'a provider-native ID may resolve only through one active language/set-code identity',
+  );
+  assert.match(
+    launchConflictSetResolutionMigration,
+    /on entity_set\.id is null[\s\S]+and payload_uuid_set\.id is null/,
+    'language/set-code fallback must not override a canonical conflict identity',
+  );
+}
+
 function assertAssetManifestRules() {
   assert.match(assetManifestIdentityMigration, /with \(security_invoker = true\)/);
   assert.match(assetManifestIdentityMigration, /coalesce\(a\.asset_id, a\.id::text\) as asset_id/);
@@ -1591,6 +1619,7 @@ async function main() {
   assertImageLeftoverClassification();
   assertImagePipelineRules();
   assertQualityReportRules();
+  assertLaunchConflictSetResolutionRules();
   assertAssetManifestRules();
   assertPublishRules();
   assertAppReadsPublishedSnapshots();

@@ -329,6 +329,8 @@ jobs:
             completed=false
             for attempt in 1 2 3; do
               attempt_report="reports/catalogue/japanese/pokedata/ingest-${offset}-attempt-${attempt}.json"
+              attempt_stderr="${attempt_report%.json}.stderr.log"
+              attempt_ok=false
               if npm run --silent catalogue:ingest-pokedata-japanese-images -- \
                 --offset="$offset" \
                 --limit="$POKEDATA_SET_BATCH_SIZE" \
@@ -337,8 +339,13 @@ jobs:
                 --retryBaseMs=2000 \
                 --setPauseMs=2000 \
                 --requestId="pokedata-jp:${GITHUB_RUN_ID}:${offset}:attempt-${attempt}" \
-                --target=staging | tee "$attempt_report" \
-                && jq -e '
+                --target=staging \
+                2> "$attempt_stderr" \
+                | tee "$attempt_report"; then
+                attempt_ok=true
+              fi
+              cat "$attempt_stderr" >&2
+              if [[ "$attempt_ok" == 'true' ]] && jq -e '
                   .ok == true
                   and .metadataCreated == false
                   and .productionModified == false
