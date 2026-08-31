@@ -9,12 +9,109 @@ import {
   parseCursor,
   searchFixtureCatalogue,
   toCardSummary,
+  toCatalogueAsset,
 } from '../backend/lib/stackrApiV1.js';
 
 const setId = '11111111-1111-4111-8111-111111111111';
 const cardId = '22222222-2222-4222-8222-222222222222';
 const variantId = '33333333-3333-4333-8333-333333333333';
+const sharedArtworkVariantId = '99999999-9999-4999-8999-999999999999';
 const manifestEtag = '"stackr-v1-test-manifest"';
+
+function assertAssetDeliveryProjection() {
+  const row = {
+    asset_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    asset_type: 'card_image',
+    game_code: 'pokemon',
+    set_id: setId,
+    printing_id: cardId,
+    variant_id: variantId,
+    storage_provider: 'supabase_storage',
+    storage_bucket: 'stackr-catalogue-public',
+    storage_key: 'catalogue/original card.webp',
+    permission_status: 'approved',
+    derivative_list: [{
+      role: 'card-grid',
+      storageBucket: 'stackr-catalogue-public',
+      storageKey: 'catalogue/card grid.webp',
+      mimeType: 'image/webp',
+    }],
+  };
+  const custom = toCatalogueAsset(row, { assetBaseUrl: 'https://assets.stackr.example/' });
+  assert.equal(custom.deliveryUrl, 'https://assets.stackr.example/catalogue/original%20card.webp');
+  assert.equal(custom.derivatives[0].deliveryUrl, 'https://assets.stackr.example/catalogue/card%20grid.webp');
+
+  const publicStorage = toCatalogueAsset(row, { supabaseUrl: 'https://project.supabase.co/' });
+  assert.equal(
+    publicStorage.deliveryUrl,
+    'https://project.supabase.co/storage/v1/object/public/stackr-catalogue-public/catalogue/original%20card.webp',
+  );
+  assert.equal(
+    publicStorage.derivatives[0].deliveryUrl,
+    'https://project.supabase.co/storage/v1/object/public/stackr-catalogue-public/catalogue/card%20grid.webp',
+  );
+
+  const external = toCatalogueAsset({
+    ...row,
+    storage_provider: 'external_reference',
+    external_url: 'https://images.example/card.webp',
+  }, { supabaseUrl: 'https://project.supabase.co/' });
+  assert.equal(external.deliveryPath, null);
+  assert.equal(external.deliveryUrl, 'https://images.example/card.webp');
+  const unsafeExternal = toCatalogueAsset({
+    ...row,
+    storage_provider: 'external_reference',
+    external_url: 'javascript:alert(1)',
+  }, { supabaseUrl: 'https://project.supabase.co/' });
+  assert.equal(unsafeExternal.deliveryUrl, null);
+
+  for (const provider of ['s3_compatible', 'local_dev']) {
+    const customProvider = toCatalogueAsset({
+      ...row,
+      storage_provider: provider,
+    }, { assetBaseUrl: 'https://assets.stackr.example/' });
+    assert.equal(customProvider.deliveryPath, 'catalogue/original card.webp');
+    assert.equal(customProvider.deliveryUrl, 'https://assets.stackr.example/catalogue/original%20card.webp');
+
+    const withoutProviderBase = toCatalogueAsset({
+      ...row,
+      storage_provider: provider,
+      external_url: `https://${provider}.example/card.webp`,
+    }, { supabaseUrl: 'https://project.supabase.co/' });
+    assert.equal(withoutProviderBase.deliveryUrl, `https://${provider}.example/card.webp`);
+  }
+
+  const unsafe = toCatalogueAsset({
+    ...row,
+    storage_key: 'catalogue/../private/card.webp',
+    external_url: 'https://images.example/safe-fallback.webp',
+  }, { assetBaseUrl: 'https://assets.stackr.example/' });
+  assert.equal(unsafe.deliveryPath, null);
+  assert.equal(unsafe.deliveryUrl, 'https://images.example/safe-fallback.webp');
+  assert.equal(new URL(unsafe.deliveryUrl).pathname, '/safe-fallback.webp');
+
+  const unsafeBucket = toCatalogueAsset({
+    ...row,
+    storage_bucket: '..',
+    external_url: 'https://images.example/bucket-fallback.webp',
+  }, { supabaseUrl: 'https://project.supabase.co/' });
+  assert.equal(unsafeBucket.deliveryUrl, 'https://images.example/bucket-fallback.webp');
+
+  const legacyDerivativePath = toCatalogueAsset({
+    ...row,
+    derivative_list: [{
+      role: 'detail-page',
+      storageProvider: 'supabase_storage',
+      storageBucket: 'stackr-catalogue-public',
+      deliveryPath: 'catalogue/detail card.webp',
+    }],
+  }, { supabaseUrl: 'https://project.supabase.co/' });
+  assert.equal(legacyDerivativePath.derivatives[0].deliveryPath, 'catalogue/detail card.webp');
+  assert.equal(
+    legacyDerivativePath.derivatives[0].deliveryUrl,
+    'https://project.supabase.co/storage/v1/object/public/stackr-catalogue-public/catalogue/detail%20card.webp',
+  );
+}
 
 async function assertEnglishPresentationProjection() {
   const card = toCardSummary([{
@@ -210,6 +307,9 @@ async function assertSearchServerClientIsolation() {
     card_native_name: 'リザードンex',
     card_english_display_name: 'Charizard ex',
     variant_code: 'normal',
+    native_image_status: 'same_artwork_reference',
+    same_artwork_as_variant_id: sharedArtworkVariantId,
+    catalogue_version_id: '44444444-4444-4444-8444-444444444444',
   };
   const searchSupabase = {
     schema(schema) {
@@ -238,14 +338,252 @@ async function assertSearchServerClientIsolation() {
       };
     },
   };
-  const catalogue = createCatalogueV1Service({ supabase, searchSupabase });
+  const assetOperations = [];
+  const assetSupabase = {
+    schema(schema) {
+      assert.equal(schema, 'api');
+      return {
+        from(table) {
+          assert.equal(table, 'asset_manifest');
+          const filters = [];
+          return {
+            select() { return this; },
+            eq(column, value) { filters.push(['eq', column, value]); return this; },
+            in(column, value) { filters.push(['in', column, value]); return this; },
+            order(column, options) { filters.push(['order', column, options]); return this; },
+            range(from, to) { filters.push(['range', from, to]); return this; },
+            then(resolve, reject) {
+              assetOperations.push(filters);
+              const variantFilter = filters.find(([name, column]) => name === 'in' && column === 'variant_id');
+              const data = variantFilter?.[2]?.includes(sharedArtworkVariantId)
+                ? [{
+                    asset_row_id: 'bbbbbbbb-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                    asset_id: 'bbbbbbbb-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                    asset_type: 'card_image',
+                    set_id: setId,
+                    printing_id: cardId,
+                    variant_id: variantId,
+                    catalogue_version_id: '44444444-4444-4444-8444-444444444444',
+                    storage_provider: 'supabase_storage',
+                    storage_bucket: null,
+                    storage_key: 'cards/missing-bucket-native.webp',
+                    external_url: 'https://images.example/non-ready-native.webp',
+                    permission_status: 'approved',
+                    derivative_list: ['card-grid', 'search-result', 'detail-page'].map((role) => ({
+                      role,
+                      storageKey: `cards/missing-bucket-native-${role}.webp`,
+                    })),
+                  }, {
+                    asset_row_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                    asset_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                    asset_type: 'card_image',
+                    set_id: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
+                    printing_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                    variant_id: sharedArtworkVariantId,
+                    catalogue_version_id: '55555555-5555-4555-8555-555555555555',
+                    storage_provider: 'supabase_storage',
+                    storage_bucket: 'stackr-catalogue-public',
+                    storage_key: 'cards/shared.webp',
+                    permission_status: 'approved',
+                    derivative_list: ['card-grid', 'search-result', 'detail-page'].map((role) => ({
+                      role,
+                      storageBucket: 'stackr-catalogue-public',
+                      storageKey: `cards/shared-${role}.webp`,
+                    })),
+                  }]
+                : [];
+              return Promise.resolve({ data, error: null }).then(resolve, reject);
+            },
+          };
+        },
+      };
+    },
+  };
+  const catalogue = createCatalogueV1Service({
+    supabase,
+    searchSupabase,
+    assetSupabase,
+    supabaseUrl: 'https://project.supabase.co',
+  });
   const result = await catalogue.search({ q: 'SV2a 157', language: 'ja', limit: 1 });
   assert.equal(catalogueClientUsed, false);
   assert.equal(result.results[0].reason, 'exact_set_code_collector_number');
+  assert.equal(result.results[0].card.catalogueVersionId, '44444444-4444-4444-8444-444444444444');
+  assert.equal(result.results[0].card.variants[0].image.variantId, sharedArtworkVariantId);
+  assert.equal(
+    result.results[0].card.variants[0].image.derivatives.find((item) => item.role === 'search-result').deliveryUrl,
+    'https://project.supabase.co/storage/v1/object/public/stackr-catalogue-public/cards/shared-search-result.webp',
+  );
   const cardSearch = operations.find((operation) => operation.table === 'catalogue_cards');
   assert.deepEqual(cardSearch?.filters.find(([name, column]) => name === 'in' && column === 'set_id'), ['in', 'set_id', [setId]]);
   assert.deepEqual(cardSearch?.filters.find(([name, column]) => name === 'eq' && column === 'collector_number'), ['eq', 'collector_number', '157']);
   assert.equal(operations.some((operation) => operation.table === 'catalogue_external_identifiers'), false);
+  assert.ok(assetOperations.some((filters) => filters.some(([name, column]) => name === 'in' && column === 'variant_id')));
+  assert.ok(assetOperations.some((filters) => filters.some(([name, column]) => name === 'in' && column === 'printing_id')));
+  assert.ok(assetOperations.every((filters) => filters.some(([name]) => name === 'range')));
+}
+
+async function assertSiblingVariantIsNotAnImageFallback() {
+  const catalogueVersionId = '44444444-4444-4444-8444-444444444444';
+  const siblingVariantId = 'aaaaaaaa-1111-4111-8111-111111111111';
+  const cardRow = {
+    variant_id: variantId,
+    catalogue_version_id: catalogueVersionId,
+    canonical_key: 'pokemon:ja:11111111-1111-4111-8111-111111111111:157/165:normal',
+    game_code: 'pokemon',
+    language_code: 'ja',
+    set_id: setId,
+    printing_id: cardId,
+    collector_number: '157/165',
+    card_native_name: 'リザードンex',
+    variant_code: 'normal',
+  };
+  const supabase = {
+    schema(schema) {
+      assert.equal(schema, 'api');
+      return {
+        from(table) {
+          assert.equal(table, 'catalogue_cards');
+          return {
+            select() { return this; },
+            eq() { return this; },
+            order() { return this; },
+            limit() { return this; },
+            then(resolve, reject) {
+              return Promise.resolve({ data: [cardRow], error: null }).then(resolve, reject);
+            },
+          };
+        },
+      };
+    },
+  };
+  const assetSupabase = {
+    schema(schema) {
+      assert.equal(schema, 'api');
+      return {
+        from(table) {
+          assert.equal(table, 'asset_manifest');
+          const filters = [];
+          return {
+            select() { return this; },
+            eq(column, value) { filters.push(['eq', column, value]); return this; },
+            in(column, value) { filters.push(['in', column, value]); return this; },
+            order() { return this; },
+            range() { return this; },
+            then(resolve, reject) {
+              const printingQuery = filters.some(([name, column]) => name === 'in' && column === 'printing_id');
+              const data = printingQuery
+                ? [{
+                    asset_row_id: 'bbbbbbbb-1111-4111-8111-111111111111',
+                    asset_id: 'sibling-image',
+                    asset_type: 'card_image',
+                    catalogue_version_id: catalogueVersionId,
+                    printing_id: cardId,
+                    variant_id: siblingVariantId,
+                    storage_provider: 'supabase_storage',
+                    storage_bucket: 'stackr-catalogue-public',
+                    storage_key: 'cards/sibling.webp',
+                    permission_status: 'approved',
+                  }]
+                : [];
+              return Promise.resolve({ data, error: null }).then(resolve, reject);
+            },
+          };
+        },
+      };
+    },
+  };
+  const catalogue = createCatalogueV1Service({
+    supabase,
+    assetSupabase,
+    supabaseUrl: 'https://project.supabase.co',
+  });
+  const result = await catalogue.setCards(setId, { limit: 1 });
+  assert.equal(result.cards[0].variants[0].image, null);
+}
+
+async function assertHydrationPaginatesAssetRows() {
+  const catalogueVersionId = '44444444-4444-4444-8444-444444444444';
+  const cardRow = {
+    variant_id: variantId,
+    catalogue_version_id: catalogueVersionId,
+    canonical_key: 'pokemon:ja:11111111-1111-4111-8111-111111111111:157/165:normal',
+    game_code: 'pokemon',
+    language_code: 'ja',
+    set_id: setId,
+    printing_id: cardId,
+    collector_number: '157/165',
+    card_native_name: 'リザードンex',
+    variant_code: 'normal',
+  };
+  const supabase = {
+    schema() {
+      return {
+        from() {
+          return {
+            select() { return this; },
+            eq() { return this; },
+            order() { return this; },
+            limit() { return this; },
+            then(resolve, reject) {
+              return Promise.resolve({ data: [cardRow], error: null }).then(resolve, reject);
+            },
+          };
+        },
+      };
+    },
+  };
+  const allVariantRows = Array.from({ length: 1001 }, (_, index) => ({
+    asset_row_id: `asset-row-${index}`,
+    asset_id: index === 1000 ? 'best-page-two' : `external-${index}`,
+    asset_type: 'card_image',
+    catalogue_version_id: catalogueVersionId,
+    printing_id: cardId,
+    variant_id: variantId,
+    storage_provider: index === 1000 ? 'supabase_storage' : 'external_reference',
+    storage_bucket: index === 1000 ? 'stackr-catalogue-public' : null,
+    storage_key: index === 1000 ? 'cards/best.webp' : null,
+    external_url: index === 1000 ? null : `https://images.example/${index}.webp`,
+    permission_status: 'approved',
+    derivative_list: [],
+  }));
+  const reads = [];
+  const assetSupabase = {
+    schema() {
+      return {
+        from() {
+          const filters = [];
+          let selectedRange = [0, 999];
+          return {
+            select() { return this; },
+            eq(column, value) { filters.push(['eq', column, value]); return this; },
+            in(column, value) { filters.push(['in', column, value]); return this; },
+            order() { return this; },
+            range(from, to) { selectedRange = [from, to]; return this; },
+            then(resolve, reject) {
+              const variantQuery = filters.some(([name, column]) => name === 'in' && column === 'variant_id');
+              reads.push({ variantQuery, selectedRange });
+              const data = variantQuery
+                ? allVariantRows.slice(selectedRange[0], selectedRange[1] + 1)
+                : [];
+              return Promise.resolve({ data, error: null }).then(resolve, reject);
+            },
+          };
+        },
+      };
+    },
+  };
+  const catalogue = createCatalogueV1Service({
+    supabase,
+    assetSupabase,
+    supabaseUrl: 'https://project.supabase.co',
+  });
+  const result = await catalogue.setCards(setId, { limit: 1 });
+  assert.equal(result.cards[0].variants[0].image.assetId, 'best-page-two');
+  assert.deepEqual(
+    reads.filter((read) => read.variantQuery).map((read) => read.selectedRange),
+    [[0, 999], [1000, 1999]],
+  );
 }
 
 async function assertAssetManifestCursorQuery() {
@@ -548,9 +886,12 @@ async function readJson(response) {
   return await response.json();
 }
 
+assertAssetDeliveryProjection();
 await assertAssetManifestCursorQuery();
 await assertAssetManifestServerClientIsolation();
 await assertSearchServerClientIsolation();
+await assertSiblingVariantIsNotAnImageFallback();
+await assertHydrationPaginatesAssetRows();
 
 await assertEnglishPresentationProjection();
 
@@ -661,9 +1002,20 @@ assert.doesNotMatch(openApi, /\/rest\/v1/);
 assert.match(openApi, /exact_set_code_collector_number/);
 assert.match(openApi, /If-None-Match/);
 assert.match(openApi, /\/assets\/manifest:[\s\S]+#\/components\/parameters\/Cursor/);
+assert.match(openApi, /\/assets\/manifest:[\s\S]+#\/components\/schemas\/AssetManifestResponse/);
+assert.match(openApi, /SearchResult:[\s\S]+card:\s+\$ref: "#\/components\/schemas\/Card"/);
 
 const client = await readFile(new URL('../lib/stackrApiV1.ts', import.meta.url), 'utf8');
 const domainAdapter = await readFile(new URL('../lib/stackrDomainAdapter.ts', import.meta.url), 'utf8');
+const generatedContract = await readFile(new URL('../lib/generated/stackr-api-v1.d.ts', import.meta.url), 'utf8');
+assert.match(generatedContract, /AssetManifestResponse:[\s\S]+assets: components\["schemas"\]\["CatalogueAsset"\]\[\]/);
+assert.match(generatedContract, /SearchResult:[\s\S]+card\?: components\["schemas"\]\["Card"\]/);
+assert.match(generatedContract, /Card:[\s\S]+set: \{[\s\S]+setId: string;[\s\S]+collectorNumber: \{[\s\S]+value: string;/);
+assert.doesNotMatch(generatedContract, /data: Record<string, never>/);
+assert.match(domainAdapter, /asset\.cardId === card\.cardId && !asset\.variantId/);
+assert.match(domainAdapter, /const needsManifestFallback = cards\.some/);
+assert.match(domainAdapter, /fetchStackrAssetsForPrinting\(client, printingId\)/);
+assert.doesNotMatch(domainAdapter, /const hasEmbeddedImages = cards\.some/);
 for (const method of [
   'health',
   'ready',

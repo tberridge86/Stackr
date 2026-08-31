@@ -48,6 +48,7 @@ const shard: StackrCatalogueShard = {
   }],
   cards: [{
     cardId: 'pokemon:en:set-sv1-en:001:normal',
+    catalogueVersionId: null,
     game: 'pokemon',
     languageCode: 'en',
     set: {
@@ -81,6 +82,42 @@ const shard: StackrCatalogueShard = {
         finishCode: 'normal',
         finishLabel: 'Normal',
         artworkKey: 'artwork-a',
+        imageVariantId: 'variant-normal',
+        image: {
+          assetId: 'asset-normal',
+          assetType: 'card_image',
+          game: 'pokemon',
+          setId: 'set-sv1-en',
+          cardId: 'pokemon:en:set-sv1-en:001:normal',
+          variantId: 'variant-normal',
+          deliveryPath: 'cards/original.webp',
+          deliveryUrl: 'https://assets.stackr.example/cards/original.webp',
+          sourceAttribution: 'Fixture',
+          permissionStatus: 'approved',
+          contentSha256: null,
+          perceptualHash: null,
+          mimeType: 'image/webp',
+          width: 734,
+          height: 1024,
+          byteSize: 1000,
+          derivatives: [
+            {
+              role: 'card-grid',
+              deliveryPath: 'cards/grid.webp',
+              deliveryUrl: 'https://assets.stackr.example/cards/grid.webp',
+            },
+            {
+              role: 'detail-page',
+              deliveryPath: 'cards/detail.webp',
+              deliveryUrl: 'https://assets.stackr.example/cards/detail.webp',
+            },
+          ],
+          cacheControl: 'public, max-age=31536000, immutable',
+          externallyReferenced: false,
+          unavailableReason: null,
+          lastVerifiedAt: null,
+          updatedAt: '2026-07-28T00:00:00.000Z',
+        },
         updatedAt: '2026-07-28T00:00:00.000Z',
       },
       {
@@ -91,6 +128,8 @@ const shard: StackrCatalogueShard = {
         finishCode: 'reverse_holo',
         finishLabel: 'Reverse holo',
         artworkKey: 'artwork-a',
+        imageVariantId: 'variant-reverse',
+        image: null,
         updatedAt: '2026-07-28T00:00:00.000Z',
       },
     ],
@@ -115,6 +154,8 @@ async function bootstrapAndExactLookup() {
   });
   assert.equal(exact.length, 1);
   assert.equal(exact[0].cardId, 'pokemon:en:set-sv1-en:001:normal');
+  assert.equal(exact[0].imageSmall, 'https://assets.stackr.example/cards/grid.webp');
+  assert.equal(exact[0].imageLarge, 'https://assets.stackr.example/cards/detail.webp');
 
   const snapshot = store.snapshot?.();
   assert.equal(snapshot?.variants.length, 2);

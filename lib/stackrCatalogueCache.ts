@@ -191,6 +191,21 @@ function toCachedSet(set: StackrSet): StackrCachedSet {
   };
 }
 
+function cardImageUrl(card: StackrCard, roles: string[]) {
+  const defaultVariant = card.variants.find((variant) => variant.variantId === card.defaultVariantId)
+    ?? card.variants[0];
+  const image = defaultVariant?.image;
+  if (!image) return null;
+  for (const derivative of image.derivatives ?? []) {
+    const role = cleanString(derivative.role)?.toLowerCase();
+    if (role && roles.includes(role)) {
+      const url = cleanString(derivative.deliveryUrl ?? derivative.deliveryPath);
+      if (url) return url;
+    }
+  }
+  return cleanString(image.deliveryUrl ?? image.deliveryPath);
+}
+
 function toCachedCard(card: StackrCard): StackrCachedCardIdentity {
   return {
     cardId: card.cardId,
@@ -204,8 +219,8 @@ function toCachedCard(card: StackrCard): StackrCachedCardIdentity {
     nativeName: card.names.native,
     englishDisplayName: card.names.englishDisplay,
     defaultVariantId: card.defaultVariantId,
-    imageSmall: null,
-    imageLarge: null,
+    imageSmall: cardImageUrl(card, ['card-grid', 'search-result']),
+    imageLarge: cardImageUrl(card, ['detail-page']),
     updatedAt: card.updatedAt,
   };
 }

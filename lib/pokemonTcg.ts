@@ -1,5 +1,6 @@
 import { Image, InteractionManager } from 'react-native';
 import { PRICE_API_URL } from './config';
+import { resolvePokeDataJapaneseSetCode } from './pokedataJapaneseSetIdentity';
 import {
   getEnglishCardDisplayName,
   getEnglishSetDisplayName,
@@ -315,10 +316,6 @@ const POKEDATA_CARD_FINISH_PATTERNS: { key: string; suffix: RegExp }[] = [
   { key: 'normal', suffix: /\s+non[-\s]?holo$/i },
 ];
 
-const POKEDATA_JAPANESE_SET_CODE_OVERRIDES: Record<string, string> = {
-  '3858': 'M5',
-};
-
 function getPokeDataLanguage(value?: string | null): PokemonCardLanguage {
   const raw = String(value ?? '').trim().toUpperCase();
   if (raw === 'JAPANESE') return 'ja';
@@ -360,14 +357,15 @@ function normalizePokeDataDate(value?: string | null) {
 
 function getPokeDataSetId(set: any) {
   const language = getPokeDataLanguage(set?.language);
+  const sourceId = String(set?.id ?? '').trim();
   const code = String(set?.code ?? '').trim();
-  if (code) {
-    const normalizedCode = normalizeSetId(code);
+  const effectiveCode = language === 'ja'
+    ? resolvePokeDataJapaneseSetCode(sourceId, code).effectiveCode
+    : code || null;
+  if (effectiveCode) {
+    const normalizedCode = normalizeSetId(effectiveCode);
     return language === 'zh-tw' ? `zh-tw:${normalizedCode}` : normalizedCode;
   }
-  const sourceId = String(set?.id ?? '').trim();
-  const overrideCode = language === 'ja' ? POKEDATA_JAPANESE_SET_CODE_OVERRIDES[sourceId] : null;
-  if (overrideCode) return normalizeSetId(overrideCode);
   return language === 'zh-tw' ? `zh-tw:pokedata:${set?.id}` : `pokedata:${set?.id}`;
 }
 
@@ -486,7 +484,9 @@ function normalizeSetLanguageFilter(language?: string | null): PokemonSetLanguag
 function mapPokeDataSet(set: any): PokemonSet {
   const language = getPokeDataLanguage(set?.language);
   const pokedataId = String(set?.id ?? '').trim();
-  const setCode = String(set?.code ?? POKEDATA_JAPANESE_SET_CODE_OVERRIDES[pokedataId] ?? '').trim();
+  const setCode = language === 'ja'
+    ? resolvePokeDataJapaneseSetCode(pokedataId, set?.code).effectiveCode ?? ''
+    : String(set?.code ?? '').trim();
   const setId = getPokeDataSetId(set);
   const displayFallback = cleanPokeDataSetName(set?.name) || setId;
   const englishDisplayName = getEnglishSetDisplayName({

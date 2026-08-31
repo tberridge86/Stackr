@@ -58,7 +58,7 @@ concurrency:
       github.event.issue.pull_request == null &&
       github.actor == 'tberridge86' &&
       github.event.comment.body == '/run-four-language-catalogue-images')) &&
-      'stackr-staging-four-language-catalogue-images' ||
+      'stackr-staging-database-maintenance' ||
       format('stackr-staging-four-language-catalogue-images-noop-{0}', github.run_id)
     }}
   # The importer is resumable and idempotent: the newest reviewed run safely

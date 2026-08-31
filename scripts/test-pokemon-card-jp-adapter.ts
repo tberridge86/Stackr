@@ -25,9 +25,9 @@ const searchResponse = {
     },
     {
       cardID: '50461',
-      cardThumbFile: '/assets/images/card_images/large/MEM/050461_T_HAIPABORU.jpg',
-      cardNameAltText: 'ハイパーボール',
-      cardNameViewText: 'ハイパーボール',
+      cardThumbFile: '/assets/images/card_images/small/MEM/050461_T_HAIPABORU_THUMB.jpg',
+      cardNameAltText: '検索表示名',
+      cardNameViewText: '検索表示名',
     },
   ],
 };
@@ -100,7 +100,7 @@ async function main() {
     assetLicenceStatus: 'approved',
   });
   assert.equal(adapter.identifySource().code, 'pokemon_card_jp_official');
-  assert.equal(adapter.identifySource().automatedRefreshAllowed, false);
+  assert.equal(adapter.identifySource().automatedRefreshAllowed, true);
   assert.deepEqual(adapter.identifySource().capabilities, ['sets', 'cards', 'assets', 'conditional_requests']);
   assert.throws(
     () => new PokemonCardJpOfficialSourceAdapter({ language: 'zh-cn' }),
@@ -142,7 +142,43 @@ async function main() {
   assert.equal(assets.length, 1);
   assert.equal(assets[0].recordType, 'asset');
   assert.equal(assets[0].licenceStatus, 'approved');
+  assert.equal(assets[0].payload.cardID, '50461');
+  assert.equal(assets[0].payload.setCode, 'MEM');
+  assert.equal(assets[0].payload.localId, '010');
+  assert.equal(assets[0].payload.name, 'ハイパーボール');
+  assert.equal(
+    assets[0].payload.image_url,
+    'https://www.pokemon-card.com/assets/images/card_images/large/MEM/050461_T_HAIPABORU.jpg',
+    'asset ingestion must use the verbatim detail-page image rather than the search thumbnail',
+  );
+  assert.equal(assets[0].payload.official_image_url, assets[0].payload.image_url);
+  const normalisedAsset = adapter.normaliseRecord(assets[0]);
+  assert.equal(normalisedAsset.setCode, 'MEM');
+  assert.equal(normalisedAsset.collectorNumber, '010');
+  assert.equal(normalisedAsset.nativeName, 'ハイパーボール');
   assert.equal(adapter.validateRecord(assets[0]).ok, true);
+  const incompleteAsset = {
+    ...assets[0],
+    payload: {
+      ...assets[0].payload,
+      set: {},
+      setCode: null,
+      localId: null,
+      number: null,
+      name: null,
+      nativeName: null,
+    },
+  };
+  const incompleteAssetValidation = adapter.validateRecord(incompleteAsset);
+  assert.equal(incompleteAssetValidation.ok, false);
+  assert.deepEqual(
+    incompleteAssetValidation.issues
+      .filter((issue) => issue.severity === 'error')
+      .map((issue) => issue.code)
+      .filter((code) => ['set_code_missing', 'collector_number_missing', 'native_name_missing'].includes(code))
+      .sort(),
+    ['collector_number_missing', 'native_name_missing', 'set_code_missing'],
+  );
   assert.equal(
     requests.filter((url) => url.includes('/card/50461/')).length,
     1,

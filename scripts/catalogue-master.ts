@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
@@ -3069,17 +3069,33 @@ async function upsertDraftCatalogueVersion(
   };
   const { data: existing, error: lookupError } = await db.schema('catalog')
     .from('catalogue_versions')
-    .select('id,status')
+    .select('id,status,version_key')
     .eq('version_key', versionKey)
     .maybeSingle();
   if (lookupError) throw lookupError;
+
+  // Never turn the currently published row back into a draft. Snapshotting can
+  // take minutes and any failure would otherwise remove the active language
+  // from the published API views. Build a separate candidate and let the
+  // activation transaction supersede the old row only after the snapshot is
+  // complete.
+  if (existing?.id && existing.status === 'published') {
+    const candidateVersionKey = `${versionKey}:candidate:${randomUUID()}`;
+    const { data, error } = await db.schema('catalog')
+      .from('catalogue_versions')
+      .insert({ ...row, version_key: candidateVersionKey })
+      .select('id,status,version_key')
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  }
 
   if (existing?.id) {
     const { data, error } = await db.schema('catalog')
       .from('catalogue_versions')
       .update(row)
       .eq('id', existing.id)
-      .select('id,status')
+      .select('id,status,version_key')
       .maybeSingle();
     if (error) throw error;
     return data;
@@ -3088,7 +3104,7 @@ async function upsertDraftCatalogueVersion(
   const { data, error } = await db.schema('catalog')
     .from('catalogue_versions')
     .insert(row)
-    .select('id,status')
+    .select('id,status,version_key')
     .maybeSingle();
   if (error) throw error;
   return data;
@@ -3594,7 +3610,7 @@ async function publishMaster(args: Args) {
     productionModified: false,
     language,
     version,
-    versionKey: publicationVersionKey(language, version),
+    versionKey: versionRow.version_key ?? publicationVersionKey(language, version),
     catalogueVersionId: versionRow.id,
     snapshot,
     releaseEligible: !args.controlledStaging,

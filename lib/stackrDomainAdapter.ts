@@ -216,6 +216,7 @@ function legacyCardToStackrCard(card: StackrLegacyCard): StackrCard {
   const canonicalId = `legacy:${card.language}:${card.set.id}:${card.number}:unresolved`;
   return {
     cardId: card.id,
+    catalogueVersionId: null,
     game: 'pokemon',
     languageCode: toStackrApiLanguage(card.language) ?? 'en',
     set: {
@@ -242,6 +243,8 @@ function legacyCardToStackrCard(card: StackrLegacyCard): StackrCard {
       finishCode: null,
       finishLabel: null,
       artworkKey: null,
+      imageVariantId: variantId,
+      image: null,
       updatedAt: null,
     }],
     updatedAt: null,
@@ -379,11 +382,24 @@ function firstAsset(assets: StackrCatalogueAsset[], types: string[]) {
 function derivativeUrl(asset: StackrCatalogueAsset | undefined, hints: string[]) {
   if (!asset) return undefined;
   for (const derivative of asset.derivatives ?? []) {
-    const key = String(derivative.key ?? derivative.name ?? derivative.type ?? '').toLowerCase();
-    const url = clean(derivative.url ?? derivative.deliveryUrl ?? derivative.path);
+    const key = String(derivative.role ?? derivative.key ?? derivative.name ?? derivative.type ?? '').toLowerCase();
+    const url = clean(derivative.url)
+      ?? clean(derivative.deliveryUrl)
+      ?? clean(derivative.deliveryPath)
+      ?? clean(derivative.path);
     if (url && hints.some((hint) => key.includes(hint))) return url;
   }
   return assetUrl(asset);
+}
+
+function embeddedCardImageAssets(card: StackrCard) {
+  const byId = new Map<string, StackrCatalogueAsset>();
+  for (const variant of card.variants) {
+    const asset = variant.image;
+    if (!asset?.assetId) continue;
+    byId.set(asset.assetId, asset);
+  }
+  return [...byId.values()];
 }
 
 function primaryCardImageAsset(card: StackrCard, assets: StackrCatalogueAsset[]) {
@@ -401,9 +417,19 @@ function primaryCardImageAsset(card: StackrCard, assets: StackrCatalogueAsset[])
     if (asset) return asset;
   }
   return firstAsset(
-    assets.filter((asset) => asset.cardId === card.cardId),
+    assets.filter((asset) => asset.cardId === card.cardId && !asset.variantId),
     ['card_image'],
   );
+}
+
+async function fetchStackrAssetsForPrinting(
+  client: StackrApiClient,
+  printingId: string,
+) {
+  return allPages<StackrCatalogueAsset>(async (cursor) => {
+    const response = await client.assetManifest({ printingId, cursor, limit: 250 });
+    return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
+  });
 }
 
 export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsset[] = []): StackrLegacySet {
@@ -452,7 +478,13 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
 }
 
 export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogueAsset[] = []): StackrLegacyCard {
-  const cardAssets = assets.filter((asset) => asset.cardId === card.cardId || card.variants.some((variant) => variant.variantId === asset.variantId));
+  const relevantVariantIds = new Set(card.variants.flatMap((variant) => [
+    variant.variantId,
+    variant.imageVariantId,
+    variant.sameArtworkAsVariantId,
+  ]).filter((value): value is string => Boolean(value)));
+  const allAssets = [...embeddedCardImageAssets(card), ...assets];
+  const cardAssets = allAssets.filter((asset) => asset.cardId === card.cardId || relevantVariantIds.has(asset.variantId ?? ''));
   const primary = primaryCardImageAsset(card, cardAssets);
   const raw = {
     english_display_name: card.names.englishDisplay,
@@ -650,11 +682,16 @@ export async function fetchStackrCardsForSet(
     });
     return { rows: response.data.cards, nextCursor: response.meta.pagination?.nextCursor ?? null };
   });
+  const needsManifestFallback = cards.some((card) => (
+    !primaryCardImageAsset(card, embeddedCardImageAssets(card))
+  ));
   const [assets, setResponse] = await Promise.all([
-    allPages<StackrCatalogueAsset>(async (cursor) => {
-      const response = await client.assetManifest({ setId, cursor, limit: 500 });
-      return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
-    }),
+    needsManifestFallback
+      ? allPages<StackrCatalogueAsset>(async (cursor) => {
+          const response = await client.assetManifest({ setId, cursor, limit: 500 });
+          return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
+        })
+      : Promise.resolve([] as StackrCatalogueAsset[]),
     client.set(setId),
   ]);
   return cards.map((card) => {
@@ -736,8 +773,12 @@ export async function fetchStackrCard(
   }
   const resolved = await resolveStackrCard(reference, options, client);
   if (!resolved) return null;
-  const assets = await client.assetManifest({ printingId: resolved.card.cardId, limit: 50 });
-  return stackrCardToLegacyCard(resolved.card, assets.data.assets);
+  const embeddedAssets = embeddedCardImageAssets(resolved.card);
+  if (primaryCardImageAsset(resolved.card, embeddedAssets)) {
+    return stackrCardToLegacyCard(resolved.card, embeddedAssets);
+  }
+  const assets = await fetchStackrAssetsForPrinting(client, resolved.card.cardId);
+  return stackrCardToLegacyCard(resolved.card, assets);
 }
 
 export function stackrLegacyCardToRow(card: StackrLegacyCard) {
@@ -918,11 +959,13 @@ export async function searchStackrCards(
     limit: Math.max(1, Math.min(100, options.limit ?? 40)),
   });
   const cards = response.data.results.filter((result) => result.type === 'card' && result.card);
-  const printingIds = [...new Set(cards.map((result) => result.card!.cardId))];
-  const assets = await Promise.all(printingIds.map(async (printingId) => {
-    const manifest = await client.assetManifest({ printingId, limit: 20 });
-    return manifest.data.assets;
-  }));
+  const printingIds = [...new Set(cards
+    .map((result) => result.card!)
+    .filter((card) => !primaryCardImageAsset(card, embeddedCardImageAssets(card)))
+    .map((card) => card.cardId))];
+  const assets = await Promise.all(printingIds.map((printingId) => (
+    fetchStackrAssetsForPrinting(client, printingId)
+  )));
   const assetsByPrinting = new Map(printingIds.map((id, index) => [id, assets[index]]));
   return cards.map((result) => stackrCardToLegacyCard(result.card!, assetsByPrinting.get(result.card!.cardId) ?? []));
 }

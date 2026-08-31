@@ -93,6 +93,22 @@ export type StackrSet = {
   sourceUpdatedAt: string | null;
 };
 
+export type StackrCatalogueAssetDerivative = {
+  role?: string | null;
+  storageProvider?: string | null;
+  storageBucket?: string | null;
+  storageKey?: string | null;
+  deliveryPath: string | null;
+  deliveryUrl: string | null;
+  mimeType?: string | null;
+  width?: number | null;
+  height?: number | null;
+  byteSize?: number | null;
+  contentSha256?: string | null;
+  cacheControl?: string | null;
+  [key: string]: unknown;
+};
+
 export type StackrCardVariant = {
   variantId: string;
   canonicalId: string;
@@ -103,12 +119,14 @@ export type StackrCardVariant = {
   artworkKey: string | null;
   nativeImageStatus?: string | null;
   sameArtworkAsVariantId?: string | null;
-  imageVariantId?: string | null;
+  imageVariantId: string | null;
+  image: StackrCatalogueAsset | null;
   updatedAt: string | null;
 };
 
 export type StackrCard = {
   cardId: string;
+  catalogueVersionId: string | null;
   game: string;
   languageCode: StackrApiLanguageCode;
   language?: {
@@ -164,7 +182,7 @@ export type StackrCatalogueAsset = {
   width: number | null;
   height: number | null;
   byteSize: number | null;
-  derivatives: Array<Record<string, unknown>>;
+  derivatives: StackrCatalogueAssetDerivative[];
   cacheControl: string | null;
   externallyReferenced: boolean;
   unavailableReason: string | null;

@@ -688,9 +688,139 @@ export interface components {
         SeriesResponse: components["schemas"]["Envelope"];
         SetsResponse: components["schemas"]["Envelope"];
         SetResponse: components["schemas"]["Envelope"];
-        CardsResponse: components["schemas"]["Envelope"];
-        CardResponse: components["schemas"]["Envelope"];
-        CardVariantsResponse: components["schemas"]["Envelope"];
+        CardsResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                cards: components["schemas"]["Card"][];
+            };
+        };
+        CardResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                card: components["schemas"]["Card"];
+            };
+        };
+        CardVariantsResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                /** Format: uuid */
+                cardId: string;
+                variants: components["schemas"]["CardVariant"][];
+            };
+        };
+        AssetManifestResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                assets: components["schemas"]["CatalogueAsset"][];
+            };
+        };
+        CatalogueAssetDerivative: {
+            role?: string | null;
+            storageProvider?: string | null;
+            storageBucket?: string | null;
+            storageKey?: string | null;
+            deliveryPath: string | null;
+            /** Format: uri */
+            deliveryUrl: string | null;
+            mimeType?: string | null;
+            width?: number | null;
+            height?: number | null;
+            byteSize?: number | null;
+            contentSha256?: string | null;
+            cacheControl?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        CatalogueAsset: {
+            assetId: string;
+            assetType: string;
+            game?: string | null;
+            /** Format: uuid */
+            setId?: string | null;
+            /** Format: uuid */
+            cardId: string | null;
+            /** Format: uuid */
+            variantId: string | null;
+            deliveryPath: string | null;
+            /** Format: uri */
+            deliveryUrl: string | null;
+            sourceAttribution?: string | null;
+            permissionStatus: string;
+            contentSha256?: string | null;
+            perceptualHash?: string | null;
+            mimeType?: string | null;
+            width?: number | null;
+            height?: number | null;
+            byteSize?: number | null;
+            derivatives: components["schemas"]["CatalogueAssetDerivative"][];
+            cacheControl?: string | null;
+            externallyReferenced?: boolean;
+            unavailableReason?: string | null;
+            /** Format: date-time */
+            lastVerifiedAt?: string | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
+        };
+        CardVariant: {
+            /** Format: uuid */
+            variantId: string;
+            canonicalId: string;
+            variantCode: string;
+            variantLabel?: string | null;
+            finishCode?: string | null;
+            finishLabel?: string | null;
+            artworkKey?: string | null;
+            nativeImageStatus?: string | null;
+            /** Format: uuid */
+            sameArtworkAsVariantId?: string | null;
+            /** Format: uuid */
+            imageVariantId: string | null;
+            image: components["schemas"]["CatalogueAsset"] | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
+        };
+        Card: {
+            /** Format: uuid */
+            cardId: string;
+            /** Format: uuid */
+            catalogueVersionId: string | null;
+            game: string;
+            languageCode: components["schemas"]["LanguageCode"];
+            language?: {
+                englishName: string | null;
+                nativeName: string | null;
+            };
+            set: {
+                /** Format: uuid */
+                setId: string;
+                setCode: string | null;
+                nativeName: string | null;
+                englishDisplayName: string | null;
+            };
+            collectorNumber: {
+                value: string;
+                prefix: string | null;
+                sort: number | null;
+                suffix: string | null;
+                sortKey: string | null;
+            };
+            names: {
+                native: string;
+                englishDisplay: string | null;
+                /** @enum {string|null} */
+                englishDisplaySource?: "printing" | "concept" | null;
+            };
+            details?: {
+                supertype: string | null;
+                subtypes: string[];
+                artist: string | null;
+            };
+            rarity: {
+                code: string | null;
+                label: string | null;
+            };
+            /** Format: uuid */
+            defaultVariantId: string;
+            variants: components["schemas"]["CardVariant"][];
+            /** Format: date-time */
+            updatedAt?: string | null;
+        };
         CardPriceResponse: components["schemas"]["Envelope"] & {
             data?: {
                 /** Format: uuid */
@@ -725,9 +855,33 @@ export interface components {
             type: "card" | "set";
             /** @enum {string} */
             reason: "exact_canonical_id" | "exact_external_id" | "exact_set_code_collector_number" | "exact_collector_number" | "exact_collector_number_in_set" | "exact_name_in_set" | "exact_name" | "exact_alias" | "exact_translated_name" | "fuzzy_name";
+            /** Format: uuid */
+            cardId?: string;
+            /** Format: uuid */
+            variantId?: string;
+            canonicalId?: string;
+            /** Format: uuid */
+            setId?: string;
+            setCode?: string | null;
+            collectorNumber?: string;
+            nativeName?: string | null;
+            englishDisplayName?: string | null;
+            /** @enum {string|null} */
+            englishDisplaySource?: "printing" | "concept" | null;
+            languageCode?: components["schemas"]["LanguageCode"];
+            variantCode?: string;
+            matchedName?: string | null;
+            matchedNameType?: string | null;
+            matchedSetCode?: string;
+            card?: components["schemas"]["Card"];
+            set?: {
+                [key: string]: unknown;
+            };
         };
         Envelope: {
-            data: Record<string, never>;
+            data: {
+                [key: string]: unknown;
+            };
             meta: components["schemas"]["EnvelopeMeta"];
         };
         ErrorEnvelope: {
@@ -1222,7 +1376,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Envelope"];
+                    "application/json": components["schemas"]["AssetManifestResponse"];
                 };
             };
         };

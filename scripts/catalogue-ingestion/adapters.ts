@@ -1,6 +1,7 @@
 import { ManualCsvSourceAdapter, ManualJsonSourceAdapter } from './manualAdapters';
 import { PikaQianApiSourceAdapter } from './pikaqianAdapter';
 import { PokemonCardJpOfficialSourceAdapter } from './pokemonCardJpAdapter';
+import { PokeDataJapaneseImageSourceAdapter } from './pokedataJapaneseImageAdapter';
 import { PikaQianSourceAdapter, XimilarResidualScanSourceAdapter } from './providerFileAdapters';
 import { TcgdexSourceAdapter } from './tcgdexAdapter';
 import { normaliseLanguageCode, type SourceAdapter } from './sourceAdapter';
@@ -51,6 +52,14 @@ export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
       assetLicenceStatus: options.assetLicenceStatus ?? 'under_review',
     });
   }
+  if (source === 'pokedata-japanese' || source === 'pokedata-jp' || source === 'pokedata_japanese') {
+    return new PokeDataJapaneseImageSourceAdapter({
+      language: options.language,
+      baseUrl: options.baseUrl,
+      licenceStatus: options.licenceStatus ?? 'approved',
+      assetLicenceStatus: options.assetLicenceStatus ?? 'approved',
+    });
+  }
   if (source === 'pikaqian') {
     const language = normaliseLanguageCode(options.language ?? 'zh-cn');
     if (language !== 'zh-cn') {
@@ -84,6 +93,7 @@ export const supportedSourceAdapters = [
   'manual-json',
   'tcgdex',
   'pokemon-card-jp-official',
+  'pokedata-japanese',
   'pikaqian',
   'ximilar-residual-scans',
 ];
