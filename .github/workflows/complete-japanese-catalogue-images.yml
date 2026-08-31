@@ -386,6 +386,15 @@ jobs:
       CATALOGUE_MIRROR_BATCHES: ${{ inputs.mirror_batches || '60' }}
       CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency || '4' }}
     steps:
+      - name: Report Japanese staging recovery start
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          body="Japanese staging image recovery started with **one database writer** and resumable provider retries. Production released: **0%**. Live evidence: ${run_url}"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/74/comments" --method POST --field body="$body"
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
