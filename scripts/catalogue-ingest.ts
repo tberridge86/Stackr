@@ -96,6 +96,12 @@ Examples:
 Image assets:
   Off by default. Use --allowImageAssets only after each imported record has
   language + set_code + collector_number + variant + finish.
+
+Official Japanese recovery:
+  Use --preserveExistingMetadata on a full official ja pass to create missing
+  canonical metadata without patching existing set, printing, variant, finish,
+  name, rarity, or artwork metadata. The later asset phase may still update
+  approved image lifecycle and processing-status fields.
 `);
 }
 
@@ -218,6 +224,7 @@ async function main() {
     allowImageAssets: hasFlag('allowImageAssets'),
     assetsOnly: hasFlag('assetsOnly') || hasFlag('assets-only'),
     approvedOnlyAssets: hasFlag('approvedOnlyAssets') || hasFlag('approved-only'),
+    preserveExistingMetadata: hasFlag('preserveExistingMetadata') || hasFlag('preserve-existing-metadata'),
     writeConcurrency,
   });
   console.log(JSON.stringify(result, null, 2));

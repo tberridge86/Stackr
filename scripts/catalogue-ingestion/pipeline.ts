@@ -38,6 +38,7 @@ type ImportOptions = FetchScope & {
   setsOnly?: boolean;
   assetsOnly?: boolean;
   approvedOnlyAssets?: boolean;
+  preserveExistingMetadata?: boolean;
   writeConcurrency?: number;
   runMetadata?: Record<string, unknown>;
 };
@@ -45,6 +46,7 @@ type ImportOptions = FetchScope & {
 type ImportStats = {
   recordsRequested: number;
   recordsRetrieved: number;
+  recordsByTypeRetrieved: Partial<Record<ProviderRecord['recordType'], number>>;
   recordsInserted: number;
   recordsUpdated: number;
   recordsSkipped: number;
@@ -111,12 +113,6 @@ export function classifyMappedOfficialImageTarget(input: {
   if (!expectedArtworkKey || !mapped?.id || mapped.languageCode !== 'ja') {
     return { status: 'conflict' as const, expectedArtworkKey, reason: 'inactive_or_non_japanese_target' };
   }
-  if (mapped.artworkKey === expectedArtworkKey) {
-    return { status: 'exact' as const, expectedArtworkKey, reason: 'existing_exact_artwork_key' };
-  }
-  if (mapped.artworkKey != null) {
-    return { status: 'conflict' as const, expectedArtworkKey, reason: 'different_existing_artwork_key' };
-  }
   if (!input.resolvedSetId || mapped.setId !== input.resolvedSetId) {
     return { status: 'conflict' as const, expectedArtworkKey, reason: 'set_identity_mismatch' };
   }
@@ -139,6 +135,12 @@ export function classifyMappedOfficialImageTarget(input: {
   );
   if (!classificationIsCompatible) {
     return { status: 'conflict' as const, expectedArtworkKey, reason: 'target_classification_mismatch' };
+  }
+  if (mapped.artworkKey === expectedArtworkKey) {
+    return { status: 'exact' as const, expectedArtworkKey, reason: 'existing_exact_artwork_key' };
+  }
+  if (mapped.artworkKey != null) {
+    return { status: 'conflict' as const, expectedArtworkKey, reason: 'different_existing_artwork_key' };
   }
   return { status: 'repair' as const, expectedArtworkKey, reason: 'exact_mapped_null_artwork_key' };
 }
@@ -256,6 +258,49 @@ export function isResolvedDeprecatedVariantAlias(input: {
     && input.correctionTargetPrintingId === input.deprecatedPrintingId
     && (!input.externalVariantId || input.externalVariantId === input.correctionTargetId)
   );
+}
+
+export function classifyPreservedMetadataTarget(input: {
+  preserveExistingMetadata?: boolean;
+  externalVariantId?: string | null;
+  canonicalVariantId?: string | null;
+}) {
+  if (!input.preserveExistingMetadata) return { status: 'normal_upsert' as const };
+  const externalVariantId = cleanText(input.externalVariantId);
+  const canonicalVariantId = cleanText(input.canonicalVariantId);
+  if (externalVariantId && externalVariantId !== canonicalVariantId) {
+    return {
+      status: 'conflict' as const,
+      reason: canonicalVariantId
+        ? 'external_and_canonical_identity_disagree'
+        : 'external_identity_requires_mutation',
+    };
+  }
+  if (canonicalVariantId) {
+    return {
+      status: 'preserve' as const,
+      variantId: canonicalVariantId,
+    };
+  }
+  return { status: 'create_missing' as const };
+}
+
+export function classifyPreservedVariantCreation(input: {
+  preserveExistingMetadata?: boolean;
+  printingExists: boolean;
+  activeSiblingVariantIds: readonly string[];
+}) {
+  if (
+    input.preserveExistingMetadata
+    && input.printingExists
+    && input.activeSiblingVariantIds.length > 0
+  ) {
+    return {
+      status: 'conflict' as const,
+      reason: 'active_sibling_variant_requires_review',
+    };
+  }
+  return { status: 'create_missing' as const };
 }
 
 export function isSafeUnsupportedPrimaryVariantCorrection(input: {
@@ -476,7 +521,7 @@ function canonicalRunKey(adapter: SourceAdapter, options: ImportOptions) {
     options.language ?? 'all',
     options.setId ?? 'all',
     options.providerRecordId ?? 'all',
-    options.setsOnly ? 'sets-only' : options.assetsOnly ? 'assets-only' : options.allowImageAssets ? 'with-assets' : 'metadata',
+    `${options.setsOnly ? 'sets-only' : options.assetsOnly ? 'assets-only' : options.allowImageAssets ? 'with-assets' : 'metadata'}${options.preserveExistingMetadata ? '+preserve-existing-metadata' : ''}`,
     options.runKey ?? new Date().toISOString().slice(0, 10),
   ].join(':').toLowerCase();
 }
@@ -504,6 +549,9 @@ function validateImportOptions(options: ImportOptions): ImportOptions {
   const writeConcurrency = options.writeConcurrency ?? 1;
   if (!Number.isInteger(writeConcurrency) || writeConcurrency < 1 || writeConcurrency > 16) {
     throw new Error('Catalogue write concurrency must be an integer from 1 to 16.');
+  }
+  if (options.preserveExistingMetadata && options.assetsOnly) {
+    throw new Error('Preserving existing metadata requires a full metadata pass; do not combine it with assets-only ingestion.');
   }
   return {
     ...options,
@@ -739,6 +787,7 @@ async function startImportRun(
       setsOnly: Boolean(options.setsOnly),
       assetsOnly: Boolean(options.assetsOnly),
       approvedOnlyAssets: Boolean(options.approvedOnlyAssets),
+      preserveExistingMetadata: Boolean(options.preserveExistingMetadata),
       workstream: options.runMetadata ?? {},
     },
   };
@@ -1156,6 +1205,7 @@ async function upsertSet(
   rawRecordId: string,
   normalised: NormalisedRecord,
   requestId?: string,
+  preserveExistingMetadata = false,
 ) {
   const nativeName = cleanText(normalised.nativeName) ?? cleanText(normalised.englishDisplayName);
   if (!nativeName) {
@@ -1224,6 +1274,22 @@ async function upsertSet(
         notes: 'Provider set identifier already points to another canonical set.',
       });
       return { status: 'conflicted' as const };
+    }
+    if (preserveExistingMetadata) {
+      await auditDecision(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        requestId,
+        decisionType: 'skipped',
+        entitySchema: 'catalog',
+        entityTable: 'sets',
+        entityId: match.setId,
+        confidence: normalised.sourceConfidence,
+        reason: 'existing_set_metadata_preserved',
+        proposed: updateRow,
+      });
+      return { status: 'skipped' as const, setId: match.setId };
     }
     const { error } = await table(db, 'catalog', 'sets').update(updateRow).eq('id', match.setId);
     if (error) throw error;
@@ -1333,6 +1399,33 @@ async function insertNameIfMissing(
   if (error) throw error;
 }
 
+type ActiveRetainedAssetState = {
+  id?: string | null;
+  retention_status?: string | null;
+};
+
+type ExactLanguageImageState = ActiveRetainedAssetState & {
+  storage_provider?: string | null;
+  storage_key?: string | null;
+  derivative_list?: Array<{ role?: string | null }> | null;
+};
+
+export function isActiveRetainedAsset<T extends ActiveRetainedAssetState>(
+  asset: T | null | undefined,
+): asset is T & { id: string; retention_status: 'active' } {
+  return Boolean(asset?.id && asset.retention_status === 'active');
+}
+
+export function isReusableExactLanguageImage(asset: ExactLanguageImageState | null | undefined) {
+  const roles = new Set((asset?.derivative_list ?? []).map((item) => item?.role).filter(Boolean));
+  return Boolean(
+    isActiveRetainedAsset(asset)
+    && ['supabase_storage', 's3_compatible', 'local_dev'].includes(asset.storage_provider ?? '')
+    && asset.storage_key
+    && ['card-grid', 'search-result', 'detail-page'].every((role) => roles.has(role)),
+  );
+}
+
 async function upsertAssetForVariant(
   db: SupabaseClientLike,
   sourceId: string,
@@ -1403,8 +1496,12 @@ async function upsertAssetForVariant(
     return assetId;
   };
 
-  const safelyReuseKnownDuplicate = async (duplicate: { id?: string | null; variant_id?: string | null } | null | undefined) => {
-    if (!duplicate?.id || !duplicate.variant_id) return null;
+  const safelyReuseKnownDuplicate = async (duplicate: {
+    id?: string | null;
+    variant_id?: string | null;
+    retention_status?: string | null;
+  } | null | undefined) => {
+    if (!isActiveRetainedAsset(duplicate) || !duplicate?.id || !duplicate.variant_id) return null;
     if (duplicate.variant_id === variantId) return linkVariantAssetExternalId(duplicate.id);
     const { data: scopes, error: scopeError } = await table(db, 'catalog', 'card_variants')
       .select('id,printing_id,language_code')
@@ -1419,26 +1516,17 @@ async function upsertAssetForVariant(
   };
 
   const { data: exactLanguageImages, error: healthyLookupError } = await table(db, 'catalog', 'assets')
-    .select('id, storage_provider, storage_key, derivative_list')
+    .select('id, storage_provider, storage_key, derivative_list, retention_status')
     .eq('variant_id', variantId)
     .eq('asset_type', normalised.assetType ?? 'card_image')
     .eq('rights_status', 'approved')
     .eq('permission_status', 'approved')
     .eq('publicly_servable', true)
+    .eq('retention_status', 'active')
     .is('deprecated_at', null)
     .is('deleted_at', null);
   if (healthyLookupError) throw healthyLookupError;
-  const healthyExactLanguageImage = (exactLanguageImages ?? []).find((asset: {
-    id: string;
-    storage_provider?: string | null;
-    storage_key?: string | null;
-    derivative_list?: Array<{ role?: string | null }> | null;
-  }) => {
-    const roles = new Set((asset.derivative_list ?? []).map((item) => item?.role).filter(Boolean));
-    return ['supabase_storage', 's3_compatible', 'local_dev'].includes(asset.storage_provider ?? '')
-      && Boolean(asset.storage_key)
-      && ['card-grid', 'search-result', 'detail-page'].every((role) => roles.has(role));
-  });
+  const healthyExactLanguageImage = (exactLanguageImages ?? []).find(isReusableExactLanguageImage);
   if (healthyExactLanguageImage) {
     return linkVariantAssetExternalId(healthyExactLanguageImage.id);
   }
@@ -1446,12 +1534,13 @@ async function upsertAssetForVariant(
   const imageSha256 = cleanText(normalised.imageSha256)?.toLowerCase();
   if (imageSha256) {
     const { data: duplicateBySha, error: duplicateShaError } = await table(db, 'catalog', 'assets')
-      .select('id,variant_id')
+      .select('id,variant_id,retention_status')
       .eq('asset_type', 'card_image')
       .eq('rights_status', 'approved')
       .eq('permission_status', 'approved')
       .eq('publicly_servable', true)
       .eq('content_sha256', imageSha256)
+      .eq('retention_status', 'active')
       .is('deprecated_at', null)
       .is('deleted_at', null)
       .limit(1);
@@ -1464,12 +1553,13 @@ async function upsertAssetForVariant(
   const imagePerceptualHash = cleanText(normalised.imagePerceptualHash)?.toLowerCase();
   if (imagePerceptualHash) {
     const { data: duplicateByPhash, error: duplicatePhashError } = await table(db, 'catalog', 'assets')
-      .select('id,variant_id')
+      .select('id,variant_id,retention_status')
       .eq('asset_type', 'card_image')
       .eq('rights_status', 'approved')
       .eq('permission_status', 'approved')
       .eq('publicly_servable', true)
       .eq('perceptual_hash', imagePerceptualHash)
+      .eq('retention_status', 'active')
       .is('deprecated_at', null)
       .is('deleted_at', null)
       .limit(1);
@@ -1480,26 +1570,28 @@ async function upsertAssetForVariant(
   }
 
   const { data: existingByUrl, error: lookupError } = await table(db, 'catalog', 'assets')
-    .select('id')
+    .select('id,retention_status')
     .eq('variant_id', variantId)
     .eq('source_id', sourceId)
     .eq('url', normalised.imageUrl)
+    .eq('retention_status', 'active')
     .is('deprecated_at', null)
     .is('deleted_at', null)
     .limit(1);
   if (lookupError) throw lookupError;
-  let existing = existingByUrl ?? [];
+  let existing = (existingByUrl ?? []).filter(isActiveRetainedAsset);
   if (existing.length === 0) {
     const { data: existingBySourceUrl, error: sourceLookupError } = await table(db, 'catalog', 'assets')
-      .select('id')
+      .select('id,retention_status')
       .eq('variant_id', variantId)
       .eq('source_id', sourceId)
       .eq('original_source_url', normalised.imageUrl)
+      .eq('retention_status', 'active')
       .is('deprecated_at', null)
       .is('deleted_at', null)
       .limit(1);
     if (sourceLookupError) throw sourceLookupError;
-    existing = existingBySourceUrl ?? [];
+    existing = (existingBySourceUrl ?? []).filter(isActiveRetainedAsset);
   }
   if ((existing ?? []).length > 0) {
     const existingId = existing[0].id as string;
@@ -1534,6 +1626,7 @@ async function upsertAssetForVariant(
       original_source_identifier: normalised.providerRecordId,
       source_attribution: normalised.provider,
       externally_referenced: true,
+      retention_status: 'active',
       acquisition_source: normalised.provider === 'pikaqian' || normalised.provider === 'tcgdex'
         ? 'provider_url'
         : 'approved_commercial_provider',
@@ -1710,7 +1803,11 @@ async function upsertCardVariant(
   importRunId: string,
   rawRecordId: string,
   normalised: NormalisedRecord,
-  options: { requestId?: string; allowImageAssets?: boolean } = {},
+  options: {
+    requestId?: string;
+    allowImageAssets?: boolean;
+    preserveExistingMetadata?: boolean;
+  } = {},
 ) {
   const requestId = options.requestId;
   if (!normalised.collectorNumber || !normalised.nativeName) {
@@ -1872,6 +1969,24 @@ async function upsertCardVariant(
   }
 
   const identityVariantId = identityRow?.id;
+  const preservedTarget = classifyPreservedMetadataTarget({
+    preserveExistingMetadata: options.preserveExistingMetadata,
+    externalVariantId,
+    canonicalVariantId: identityVariantId,
+  });
+  if (preservedTarget.status === 'conflict') {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'identity_collision',
+      canonicalKey,
+      proposed: normalised.raw,
+      existing: { externalVariantId, identityVariantId },
+      notes: `Preserve-existing-metadata mode refused identity mutation: ${preservedTarget.reason}.`,
+    });
+    return { status: 'conflicted' as const };
+  }
   if (externalVariantId && identityVariantId && externalVariantId !== identityVariantId) {
     const released = await releaseSupportedPrimaryVariantAlias(db, {
       sourceId,
@@ -1943,12 +2058,93 @@ async function upsertCardVariant(
     return { status: 'conflicted' as const };
   }
 
-  await ensureNamedStampTaxonomy(db, normalised);
-  const conceptId = await ensureConcept(db, normalised);
-  const rarityId = await getRarityId(db, normalised.gameCode, normalised.rarityCode);
   const existingVariant = identityRows[0] ?? (externalVariantId ? { id: externalVariantId, printing_id: null } : null);
+  if (preservedTarget.status === 'preserve' && existingVariant?.id) {
+    const { data: variant, error: variantError } = await table(db, 'catalog', 'card_variants')
+      .select('id,printing_id,canonical_key,language_code,set_id,collector_number,variant_code,finish_code,artwork_key')
+      .eq('id', existingVariant.id)
+      .is('deprecated_at', null)
+      .maybeSingle();
+    if (variantError) throw variantError;
+    const preservedClassification = variant?.id && cleanText(normalised.raw.cardID)
+      ? classifyMappedOfficialImageTarget({
+          cardId: cleanText(normalised.raw.cardID)!,
+          resolvedSetId: setMatch.setId,
+          providerCollectorNumber: normalised.collectorNumber,
+          requestedVariantCode: normalised.variantCode,
+          requestedFinishCode: normalised.finishCode,
+          mappedVariant: {
+            id: variant.id,
+            languageCode: variant.language_code,
+            setId: variant.set_id,
+            collectorNumber: variant.collector_number,
+            variantCode: variant.variant_code,
+            finishCode: variant.finish_code,
+            artworkKey: variant.artwork_key,
+          },
+        })
+      : null;
+    if (!variant?.id
+      || variant.canonical_key !== canonicalKey
+      || !preservedClassification
+      || preservedClassification.status === 'conflict') {
+      await quarantine(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        conflictType: 'identity_collision',
+        canonicalKey,
+        proposed: normalised.raw,
+        existing: {
+          variant: variant ?? null,
+          classification: preservedClassification,
+        },
+        notes: 'Preserve-existing-metadata mode requires one active exact canonical variant with compatible finish and artwork evidence.',
+      });
+      return { status: 'conflicted' as const };
+    }
+    const link = await linkExternalId(db, {
+      sourceId,
+      rawRecordId,
+      sourceEntityType: 'card',
+      externalId: normalised.providerRecordId,
+      languageCode: normalised.languageCode,
+      variantId: variant.id,
+      confidence: normalised.sourceConfidence,
+      sourceUpdatedAt: normalised.sourceUpdatedAt,
+    });
+    if (link.status === 'conflict') {
+      await quarantine(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        conflictType: 'duplicate_external_id',
+        canonicalKey,
+        proposed: normalised.raw,
+        existing: link.existing,
+        notes: 'Preserve-existing-metadata mode refused to relink an official card identity.',
+      });
+      return { status: 'conflicted' as const };
+    }
+    await auditDecision(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      requestId,
+      decisionType: 'skipped',
+      entitySchema: 'catalog',
+      entityTable: 'card_variants',
+      entityId: variant.id,
+      canonicalKey,
+      confidence: normalised.sourceConfidence,
+      reason: 'existing_card_metadata_preserved_asset_deferred',
+      proposed: normalised.raw,
+    });
+    return { status: 'skipped' as const, variantId: variant.id as string };
+  }
 
   if (existingVariant?.id) {
+    await ensureNamedStampTaxonomy(db, normalised);
     const { data: variant, error: variantError } = await table(db, 'catalog', 'card_variants')
       .select('id, printing_id, canonical_key, variant_code, artwork_key')
       .eq('id', existingVariant.id)
@@ -2018,6 +2214,8 @@ async function upsertCardVariant(
       repairedProviderIdentity = true;
     }
 
+    const conceptId = await ensureConcept(db, normalised);
+    const rarityId = await getRarityId(db, normalised.gameCode, normalised.rarityCode);
     const printingPatch = {
       card_concept_id: conceptId,
       ...sparsePrintingMetadataPatch(normalised, rarityId),
@@ -2113,6 +2311,48 @@ async function upsertCardVariant(
     return { status: 'conflicted' as const };
   }
 
+  let printingId = printingRows[0]?.id as string | undefined;
+  let activeSiblingVariants: Array<{
+    id: string;
+    canonical_key: string | null;
+    variant_code: string | null;
+    finish_code: string | null;
+    is_default: boolean | null;
+    artwork_key: string | null;
+  }> = [];
+  if (options.preserveExistingMetadata && printingId) {
+    const siblings = await table(db, 'catalog', 'card_variants')
+      .select('id,canonical_key,variant_code,finish_code,is_default,artwork_key')
+      .eq('printing_id', printingId)
+      .is('deprecated_at', null);
+    if (siblings.error) throw siblings.error;
+    activeSiblingVariants = siblings.data ?? [];
+  }
+  const preservedCreation = classifyPreservedVariantCreation({
+    preserveExistingMetadata: options.preserveExistingMetadata,
+    printingExists: Boolean(printingId),
+    activeSiblingVariantIds: activeSiblingVariants.map((variant) => variant.id),
+  });
+  if (preservedCreation.status === 'conflict') {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'identity_collision',
+      canonicalKey,
+      proposed: normalised.raw,
+      existing: { printingId, activeSiblingVariants },
+      notes: `Preserve-existing-metadata mode refused variant creation: ${preservedCreation.reason}.`,
+    });
+    return { status: 'conflicted' as const };
+  }
+
+  await ensureNamedStampTaxonomy(db, normalised);
+  const shouldWritePrintingMetadata = !printingId || !options.preserveExistingMetadata;
+  const conceptId = shouldWritePrintingMetadata ? await ensureConcept(db, normalised) : null;
+  const rarityId = shouldWritePrintingMetadata
+    ? await getRarityId(db, normalised.gameCode, normalised.rarityCode)
+    : null;
   const printingPatch = {
     card_concept_id: conceptId,
     ...sparsePrintingMetadataPatch(normalised, rarityId),
@@ -2124,12 +2364,13 @@ async function upsertCardVariant(
     rarity_id: rarityId,
     source_updated_at: cleanText(normalised.sourceUpdatedAt),
   };
-  let printingId = printingRows[0]?.id as string | undefined;
   if (printingId) {
-    const { error } = await table(db, 'catalog', 'card_printings')
-      .update(printingPatch)
-      .eq('id', printingId);
-    if (error) throw error;
+    if (!options.preserveExistingMetadata) {
+      const { error } = await table(db, 'catalog', 'card_printings')
+        .update(printingPatch)
+        .eq('id', printingId);
+      if (error) throw error;
+    }
   } else {
     const { data: printing, error: printingError } = await table(db, 'catalog', 'card_printings').insert({
       game_code: normalised.gameCode,
@@ -2185,7 +2426,7 @@ async function upsertCardVariant(
     confidence: normalised.sourceConfidence,
     sourceUpdatedAt: normalised.sourceUpdatedAt,
   });
-  if (options.allowImageAssets && hasCompleteCardImageIdentity(normalised)) {
+  if (!options.preserveExistingMetadata && options.allowImageAssets && hasCompleteCardImageIdentity(normalised)) {
     await upsertAssetForVariant(db, sourceId, importRunId, rawRecordId, normalised, variant.id);
   }
   const link = await linkExternalId(db, {
@@ -2235,6 +2476,7 @@ async function upsertCardImage(
   rawRecordId: string,
   normalised: NormalisedRecord,
   requestId?: string,
+  preserveExistingMetadata = false,
 ) {
   const providerCardExternalId = cleanText(normalised.raw.cardID);
   if (normalised.provider === 'pokemon_card_jp_official' && providerCardExternalId) {
@@ -2286,7 +2528,7 @@ async function upsertCardImage(
       });
       let artworkBackfilled = false;
       let resolvedSet: Awaited<ReturnType<typeof findSetId>> | null = null;
-      if (classification.status === 'conflict' && mappedVariant?.id && mappedVariant.artwork_key == null) {
+      if (classification.status === 'conflict' && mappedVariant?.id) {
         resolvedSet = await findSetId(db, sourceId, normalised);
         classification = classifyMappedOfficialImageTarget({
           cardId: providerCardExternalId,
@@ -2306,46 +2548,54 @@ async function upsertCardImage(
         });
       }
       if (classification.status === 'repair' && mappedVariant?.id && classification.expectedArtworkKey) {
-        let update = table(db, 'catalog', 'card_variants')
-          .update({ artwork_key: classification.expectedArtworkKey })
-          .eq('id', mappedVariant.id)
-          .eq('language_code', 'ja')
-          .eq('set_id', mappedVariant.set_id)
-          .eq('collector_number', mappedVariant.collector_number)
-          .eq('variant_code', mappedVariant.variant_code)
-          .is('artwork_key', null)
-          .is('deprecated_at', null);
-        update = mappedVariant.finish_code == null
-          ? update.is('finish_code', null)
-          : update.eq('finish_code', mappedVariant.finish_code);
-        const { data: repairedRows, error: repairError } = await update.select('id,artwork_key');
-        if (repairError) throw repairError;
-        if ((repairedRows ?? []).length === 1) {
-          artworkBackfilled = true;
+        if (preserveExistingMetadata) {
           classification = {
             status: 'exact',
             expectedArtworkKey: classification.expectedArtworkKey,
-            reason: 'exact_artwork_key_compare_and_set',
+            reason: 'compatible_null_artwork_preserved_without_mutation',
           };
         } else {
-          const { data: concurrentVariant, error: concurrentVariantError } = await table(db, 'catalog', 'card_variants')
-            .select('id,artwork_key')
+          let update = table(db, 'catalog', 'card_variants')
+            .update({ artwork_key: classification.expectedArtworkKey })
             .eq('id', mappedVariant.id)
             .eq('language_code', 'ja')
-            .is('deprecated_at', null)
-            .maybeSingle();
-          if (concurrentVariantError) throw concurrentVariantError;
-          classification = concurrentVariant?.artwork_key === classification.expectedArtworkKey
-            ? {
-                status: 'exact',
-                expectedArtworkKey: classification.expectedArtworkKey,
-                reason: 'concurrent_exact_artwork_key_compare_and_set',
-              }
-            : {
-                status: 'conflict',
-                expectedArtworkKey: classification.expectedArtworkKey,
-                reason: 'artwork_key_compare_and_set_lost',
-              };
+            .eq('set_id', mappedVariant.set_id)
+            .eq('collector_number', mappedVariant.collector_number)
+            .eq('variant_code', mappedVariant.variant_code)
+            .is('artwork_key', null)
+            .is('deprecated_at', null);
+          update = mappedVariant.finish_code == null
+            ? update.is('finish_code', null)
+            : update.eq('finish_code', mappedVariant.finish_code);
+          const { data: repairedRows, error: repairError } = await update.select('id,artwork_key');
+          if (repairError) throw repairError;
+          if ((repairedRows ?? []).length === 1) {
+            artworkBackfilled = true;
+            classification = {
+              status: 'exact',
+              expectedArtworkKey: classification.expectedArtworkKey,
+              reason: 'exact_artwork_key_compare_and_set',
+            };
+          } else {
+            const { data: concurrentVariant, error: concurrentVariantError } = await table(db, 'catalog', 'card_variants')
+              .select('id,artwork_key')
+              .eq('id', mappedVariant.id)
+              .eq('language_code', 'ja')
+              .is('deprecated_at', null)
+              .maybeSingle();
+            if (concurrentVariantError) throw concurrentVariantError;
+            classification = concurrentVariant?.artwork_key === classification.expectedArtworkKey
+              ? {
+                  status: 'exact',
+                  expectedArtworkKey: classification.expectedArtworkKey,
+                  reason: 'concurrent_exact_artwork_key_compare_and_set',
+                }
+              : {
+                  status: 'conflict',
+                  expectedArtworkKey: classification.expectedArtworkKey,
+                  reason: 'artwork_key_compare_and_set_lost',
+                };
+          }
         }
       }
       if (classification.status !== 'exact') {
@@ -2440,7 +2690,7 @@ async function upsertCardImage(
   }
 
   const { data: variantRows, error: variantError } = await table(db, 'catalog', 'card_variants')
-    .select('id,canonical_key,is_default,variant_code,finish_code')
+    .select('id,canonical_key,is_default,variant_code,finish_code,language_code,set_id,collector_number,artwork_key')
     .eq('printing_id', printingRows![0].id)
     .is('deprecated_at', null);
   if (variantError) throw variantError;
@@ -2448,6 +2698,7 @@ async function upsertCardImage(
     variantRows ?? [],
     canonicalKey,
     normalised.variantCode ?? 'normal',
+    normalised.finishCode ?? normalised.variantCode ?? 'normal',
   );
   if (selection.status !== 'matched') {
     await quarantine(db, {
@@ -2459,11 +2710,47 @@ async function upsertCardImage(
       existing: { canonicalKey, variantIds: (variantRows ?? []).map((variant: { id: string }) => variant.id) },
       notes: selection.reason === 'ambiguous_existing_variants'
         ? 'Card image has no exact variant and the existing printing has no single safe default.'
+        : selection.reason === 'exact_variant_finish_mismatch'
+          ? 'Card image canonical variant exists but its finish is incompatible with the requested image finish.'
         : selection.reason === 'exact_variant_missing'
           ? 'Finish-specific card image has no exact existing variant; asset-only ingestion never downgrades it to normal.'
           : 'Card image printing has no active variant; asset-only ingestion never fabricates one.',
     });
     return { status: 'conflicted' as const };
+  }
+
+  if (preserveExistingMetadata && normalised.provider === 'pokemon_card_jp_official' && providerCardExternalId) {
+    const selectedVariant = (variantRows ?? []).find((variant: { id: string }) => variant.id === selection.variantId);
+    const classification = selectedVariant
+      ? classifyMappedOfficialImageTarget({
+          cardId: providerCardExternalId,
+          resolvedSetId: setMatch.setId,
+          providerCollectorNumber: normalised.collectorNumber,
+          requestedVariantCode: normalised.variantCode,
+          requestedFinishCode: normalised.finishCode,
+          mappedVariant: {
+            id: selectedVariant.id,
+            languageCode: selectedVariant.language_code,
+            setId: selectedVariant.set_id,
+            collectorNumber: selectedVariant.collector_number,
+            variantCode: selectedVariant.variant_code,
+            finishCode: selectedVariant.finish_code,
+            artworkKey: selectedVariant.artwork_key,
+          },
+        })
+      : null;
+    if (!classification || classification.status === 'conflict') {
+      await quarantine(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        conflictType: 'identity_collision',
+        proposed: normalised.raw,
+        existing: { canonicalKey, selectedVariant: selectedVariant ?? null, classification },
+        notes: 'Preserve-existing-metadata mode refused an official image without compatible finish and artwork evidence.',
+      });
+      return { status: 'conflicted' as const };
+    }
   }
 
   const assetId = await upsertAssetForVariant(
@@ -2502,8 +2789,16 @@ export function chooseExistingVariantForCardImage(
   }>,
   canonicalKey: string,
   requestedVariantCode = 'normal',
+  requestedFinishCode = requestedVariantCode,
 ) {
-  const exact = variants.filter((variant) => variant.canonical_key === canonicalKey);
+  const requestedFinish = cleanText(requestedFinishCode) ?? requestedVariantCode;
+  const exactCanonical = variants.filter((variant) => variant.canonical_key === canonicalKey);
+  const exact = exactCanonical.filter((variant) => {
+    const existingFinish = cleanText(variant.finish_code);
+    return requestedFinish === 'normal'
+      ? existingFinish == null || existingFinish === 'normal'
+      : existingFinish === requestedFinish;
+  });
   if (exact.length === 1) {
     return {
       status: 'matched' as const,
@@ -2512,6 +2807,9 @@ export function chooseExistingVariantForCardImage(
     };
   }
   if (exact.length > 1) return { status: 'conflicted' as const, reason: 'ambiguous_existing_variants' as const };
+  if (exactCanonical.length > 0) {
+    return { status: 'conflicted' as const, reason: 'exact_variant_finish_mismatch' as const };
+  }
   if (requestedVariantCode !== 'normal') {
     return {
       status: 'conflicted' as const,
@@ -2549,7 +2847,12 @@ async function reconcileRecord(
   importRunId: string,
   rawRecordId: string,
   normalised: NormalisedRecord,
-  options: { requestId?: string; allowImageAssets?: boolean; approvedOnlyAssets?: boolean } = {},
+  options: {
+    requestId?: string;
+    allowImageAssets?: boolean;
+    approvedOnlyAssets?: boolean;
+    preserveExistingMetadata?: boolean;
+  } = {},
 ) {
   const requestId = options.requestId;
   if (normalised.recordType === 'asset' && options.approvedOnlyAssets && normalised.licenceStatus !== 'approved') {
@@ -2599,7 +2902,15 @@ async function reconcileRecord(
   }
 
   if (normalised.recordType === 'set') {
-    return upsertSet(db, sourceId, importRunId, rawRecordId, normalised, requestId);
+    return upsertSet(
+      db,
+      sourceId,
+      importRunId,
+      rawRecordId,
+      normalised,
+      requestId,
+      options.preserveExistingMetadata,
+    );
   }
   if (normalised.recordType === 'asset' && !options.allowImageAssets) {
     await auditDecision(db, {
@@ -2655,12 +2966,21 @@ async function reconcileRecord(
     return { status: 'conflicted' as const };
   }
   if (normalised.recordType === 'asset') {
-    return upsertCardImage(db, sourceId, importRunId, rawRecordId, normalised, requestId);
+    return upsertCardImage(
+      db,
+      sourceId,
+      importRunId,
+      rawRecordId,
+      normalised,
+      requestId,
+      options.preserveExistingMetadata,
+    );
   }
   if (['card', 'printing', 'variant'].includes(normalised.recordType)) {
     return upsertCardVariant(db, sourceId, importRunId, rawRecordId, normalised, {
       requestId,
       allowImageAssets: options.allowImageAssets,
+      preserveExistingMetadata: options.preserveExistingMetadata,
     });
   }
   await auditDecision(db, {
@@ -2687,9 +3007,16 @@ export class CatalogueIngestionRunner {
   async run(options: ImportOptions = {}) {
     const safeOptions = validateImportOptions(options);
     const sourceIdentity = this.adapter.identifySource();
+    if (safeOptions.preserveExistingMetadata && (
+      sourceIdentity.code !== 'pokemon_card_jp_official'
+      || safeOptions.language !== 'ja'
+    )) {
+      throw new Error('Preserve-existing-metadata mode is restricted to the official Japanese provider and language ja.');
+    }
     const stats: ImportStats = {
       recordsRequested: 0,
       recordsRetrieved: 0,
+      recordsByTypeRetrieved: {},
       recordsInserted: 0,
       recordsUpdated: 0,
       recordsSkipped: 0,
@@ -2712,6 +3039,11 @@ export class CatalogueIngestionRunner {
     const uniqueRecords = dedupeProviderRecords(records, safeOptions);
     stats.recordsRequested = uniqueRecords.size;
     stats.recordsRetrieved = uniqueRecords.size;
+    for (const record of uniqueRecords.values()) {
+      stats.recordsByTypeRetrieved[record.recordType] = (
+        stats.recordsByTypeRetrieved[record.recordType] ?? 0
+      ) + 1;
+    }
 
     const preparedRecords: Array<{
       record: ProviderRecord;
@@ -2786,6 +3118,7 @@ export class CatalogueIngestionRunner {
           requestId: safeOptions.requestId,
           allowImageAssets: safeOptions.allowImageAssets,
           approvedOnlyAssets: safeOptions.approvedOnlyAssets,
+          preserveExistingMetadata: safeOptions.preserveExistingMetadata,
         });
         if (result.status === 'inserted') stats.recordsInserted += 1;
         else if (result.status === 'updated') stats.recordsUpdated += 1;

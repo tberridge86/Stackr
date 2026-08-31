@@ -15,9 +15,13 @@ import {
   canRelinkExternalIdentifierAsset,
   calculateExponentialBackoff,
   classifyMappedOfficialImageTarget,
+  classifyPreservedMetadataTarget,
+  classifyPreservedVariantCreation,
   chooseExistingVariantForCardImage,
   isMissingVariantRepairPrecondition,
+  isActiveRetainedAsset,
   isResolvedDeprecatedVariantAlias,
+  isReusableExactLanguageImage,
   isSafeUnsupportedPrimaryVariantCorrection,
   isSafeSupportedPrimaryAliasTarget,
   isVariantRepairNotApplicable,
@@ -141,12 +145,12 @@ function assertBoundedCatalogueWrites() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /--source=pokemon-card-jp-official[\s\S]+--licenceStatus=approved[\s\S]+--assetLicenceStatus=approved[\s\S]+--assetsOnly[\s\S]+--target=staging/,
-    'Japanese official writes must be explicitly approved and staging-only',
+    /--source=pokemon-card-jp-official[\s\S]+--licenceStatus=approved[\s\S]+--assetLicenceStatus=approved[\s\S]+--preserveExistingMetadata[\s\S]+--target=staging/,
+    'Japanese official writes must preserve existing metadata and remain explicitly approved and staging-only',
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /Enforce 100% effective staging coverage[\s\S]+effectiveAppReadyPercent[\s\S]+== 100/,
+    /Enforce [^\n]*100% effective staging coverage[\s\S]+effectiveAppReadyPercent[\s\S]+== 100/,
     'the completion workflow must not describe partial Japanese app coverage as complete',
   );
 }
@@ -359,6 +363,57 @@ function assertExternalIdentifierAssetRelinkingSafety() {
   );
 }
 
+function assertAssetReuseRequiresActiveRetention() {
+  const reusable = {
+    id: 'active-derived-asset',
+    retention_status: 'active',
+    storage_provider: 'supabase_storage',
+    storage_key: 'cards/ja/active.webp',
+    derivative_list: [
+      { role: 'card-grid' },
+      { role: 'search-result' },
+      { role: 'detail-page' },
+    ],
+  };
+  assert.equal(isReusableExactLanguageImage(reusable), true);
+  assert.equal(
+    isReusableExactLanguageImage({ ...reusable, retention_status: 'delete_scheduled' }),
+    false,
+    'a delete-scheduled derivative must not suppress retaining the fresh official source',
+  );
+  assert.equal(
+    isReusableExactLanguageImage({ ...reusable, retention_status: 'unavailable' }),
+    false,
+    'an unavailable derivative must not suppress retaining the fresh official source',
+  );
+  assert.equal(isActiveRetainedAsset({ id: 'active-url', retention_status: 'active' }), true);
+  assert.equal(
+    isActiveRetainedAsset({ id: 'retired-url', retention_status: 'delete_scheduled' }),
+    false,
+    'an exact URL match is reusable only while its retained asset remains active',
+  );
+  assert.match(
+    ingestionPipeline,
+    /\.select\('id, storage_provider, storage_key, derivative_list, retention_status'\)[\s\S]{0,500}\.eq\('retention_status', 'active'\)/,
+    'healthy exact-image lookup must request and require active retention',
+  );
+  assert.match(
+    ingestionPipeline,
+    /\.eq\('url', normalised\.imageUrl\)[\s\S]{0,180}\.eq\('retention_status', 'active'\)/,
+    'exact source URL reuse must exclude non-active assets',
+  );
+  assert.match(
+    ingestionPipeline,
+    /\.eq\('original_source_url', normalised\.imageUrl\)[\s\S]{0,180}\.eq\('retention_status', 'active'\)/,
+    'original source URL reuse must exclude non-active assets',
+  );
+  assert.match(
+    ingestionPipeline,
+    /\.eq\('content_sha256', imageSha256\)[\s\S]{0,180}\.eq\('retention_status', 'active'\)[\s\S]+\.eq\('perceptual_hash', imagePerceptualHash\)[\s\S]{0,180}\.eq\('retention_status', 'active'\)/,
+    'hash-based reuse must also exclude non-active assets',
+  );
+}
+
 function assertJapaneseAssetOnlyVariantSelection() {
   assert.doesNotMatch(
     ingestionPipeline,
@@ -427,7 +482,23 @@ function assertJapaneseAssetOnlyVariantSelection() {
     resolvedSetId: null,
     providerCollectorNumber: null,
     mappedVariant: { ...mappedBase, artworkKey: 'pokemon_card_jp_official:50451' },
-  }).status, 'exact', 'a concurrent exact compare-and-set remains idempotent');
+  }).status, 'conflict', 'an exact artwork key must not bypass structural identity evidence');
+  assert.equal(classifyMappedOfficialImageTarget({
+    ...officialTarget,
+    mappedVariant: { ...mappedBase, artworkKey: 'pokemon_card_jp_official:50451' },
+  }).status, 'exact', 'a structurally compatible exact artwork key remains idempotent');
+  assert.deepEqual(classifyMappedOfficialImageTarget({
+    ...officialTarget,
+    mappedVariant: {
+      ...mappedBase,
+      finishCode: 'holo',
+      artworkKey: 'pokemon_card_jp_official:50451',
+    },
+  }), {
+    status: 'conflict',
+    expectedArtworkKey: 'pokemon_card_jp_official:50451',
+    reason: 'target_classification_mismatch',
+  }, 'an exact artwork key must not bypass an incompatible target finish');
   const officialRepairUpdate = ingestionPipeline.match(
     /\.update\(\{ artwork_key: classification\.expectedArtworkKey \}\)[\s\S]{0,1200}?\.select\('id,artwork_key'\)/,
   )?.[0] ?? '';
@@ -446,6 +517,19 @@ function assertJapaneseAssetOnlyVariantSelection() {
     variantId: 'normal',
     reason: 'card_image_attached_to_exact_canonical_variant',
   });
+  assert.deepEqual(
+    chooseExistingVariantForCardImage([
+      {
+        id: 'wrong-finish',
+        canonical_key: 'expected',
+        is_default: true,
+        variant_code: 'normal',
+        finish_code: 'holo',
+      },
+    ], 'expected', 'normal', 'normal'),
+    { status: 'conflicted', reason: 'exact_variant_finish_mismatch' },
+    'an exact canonical key must not override incompatible finish evidence',
+  );
 
   const existingDefault = chooseExistingVariantForCardImage([
     { id: 'legacy-default', canonical_key: 'legacy', is_default: true, variant_code: 'normal', finish_code: 'normal' },
@@ -487,6 +571,178 @@ function assertJapaneseAssetOnlyVariantSelection() {
     'official normal artwork must not be attached to a holo-only or special variant',
   );
   assert.match(catalogueIngest, /assetsOnly: hasFlag\('assetsOnly'\)/);
+}
+
+async function assertPreserveExistingMetadataMode() {
+  assert.deepEqual(
+    classifyPreservedMetadataTarget({ preserveExistingMetadata: false }),
+    { status: 'normal_upsert' },
+  );
+  assert.deepEqual(
+    classifyPreservedMetadataTarget({
+      preserveExistingMetadata: true,
+      externalVariantId: 'variant-ja',
+      canonicalVariantId: 'variant-ja',
+    }),
+    { status: 'preserve', variantId: 'variant-ja' },
+  );
+  assert.deepEqual(
+    classifyPreservedMetadataTarget({
+      preserveExistingMetadata: true,
+      canonicalVariantId: 'variant-ja',
+    }),
+    { status: 'preserve', variantId: 'variant-ja' },
+  );
+  assert.deepEqual(
+    classifyPreservedMetadataTarget({ preserveExistingMetadata: true }),
+    { status: 'create_missing' },
+  );
+  assert.deepEqual(
+    classifyPreservedMetadataTarget({
+      preserveExistingMetadata: true,
+      externalVariantId: 'stale-variant',
+      canonicalVariantId: 'exact-variant',
+    }),
+    { status: 'conflict', reason: 'external_and_canonical_identity_disagree' },
+  );
+  assert.deepEqual(
+    classifyPreservedMetadataTarget({
+      preserveExistingMetadata: true,
+      externalVariantId: 'stale-variant',
+    }),
+    { status: 'conflict', reason: 'external_identity_requires_mutation' },
+  );
+  assert.deepEqual(
+    classifyPreservedVariantCreation({
+      preserveExistingMetadata: true,
+      printingExists: true,
+      activeSiblingVariantIds: ['existing-unclassified-default'],
+    }),
+    { status: 'conflict', reason: 'active_sibling_variant_requires_review' },
+    'preserve mode must not create a second normal/default variant beside any active sibling',
+  );
+  assert.deepEqual(
+    classifyPreservedVariantCreation({
+      preserveExistingMetadata: true,
+      printingExists: true,
+      activeSiblingVariantIds: [],
+    }),
+    { status: 'create_missing' },
+    'an existing printing with no active variant may receive its missing canonical variant',
+  );
+  assert.deepEqual(
+    classifyPreservedVariantCreation({
+      preserveExistingMetadata: false,
+      printingExists: true,
+      activeSiblingVariantIds: ['existing-unclassified-default'],
+    }),
+    { status: 'create_missing' },
+    'the extra sibling guard is scoped to the preserve-only recovery mode',
+  );
+
+  await assert.rejects(
+    () => new CatalogueIngestionRunner(noDbAccess(), fakeAdapter([])).run({
+      language: 'ja',
+      dryRun: true,
+      assetsOnly: true,
+      preserveExistingMetadata: true,
+    }),
+    /requires a full metadata pass/,
+  );
+  await assert.rejects(
+    () => new CatalogueIngestionRunner(noDbAccess(), fakeAdapter([])).run({
+      language: 'ja',
+      dryRun: true,
+      preserveExistingMetadata: true,
+    }),
+    /restricted to the official Japanese provider/,
+  );
+
+  assert.match(
+    catalogueIngest,
+    /preserveExistingMetadata: hasFlag\('preserveExistingMetadata'\) \|\| hasFlag\('preserve-existing-metadata'\)/,
+    'the CLI must expose camel-case and kebab-case forms of the guarded mode',
+  );
+  assert.match(
+    ingestionPipeline,
+    /preserveExistingMetadata \? '\+preserve-existing-metadata' : ''/,
+    'preserved-metadata runs need a distinct resumable run key without changing existing run keys',
+  );
+  assert.match(
+    ingestionPipeline,
+    /reason: 'existing_set_metadata_preserved'[\s\S]+return \{ status: 'skipped' as const, setId: match\.setId \}[\s\S]+catalog', 'sets'\)\.update/,
+    'existing sets must be linked and audited without metadata updates',
+  );
+  assert.match(
+    ingestionPipeline,
+    /if \(!options\.preserveExistingMetadata\) \{[\s\S]{0,300}catalog', 'card_printings'\)[\s\S]{0,200}\.update\(printingPatch\)/,
+    'an existing printing must not be patched when only its missing variant is created',
+  );
+  const preservationGuard = ingestionPipeline.indexOf('const preservedTarget = classifyPreservedMetadataTarget');
+  const firstAliasRelease = ingestionPipeline.indexOf('releaseSupportedPrimaryVariantAlias(db', preservationGuard);
+  assert.ok(
+    preservationGuard >= 0 && firstAliasRelease > preservationGuard,
+    'preserve mode must reject identity disagreements before any alias release or repair path',
+  );
+  assert.match(
+    ingestionPipeline,
+    /compatible_null_artwork_preserved_without_mutation/,
+    'the official asset phase may accept compatible null artwork without changing artwork metadata',
+  );
+  assert.match(
+    ingestionPipeline,
+    /\.select\('id,canonical_key,variant_code,finish_code,is_default,artwork_key'\)[\s\S]{0,1600}classifyPreservedVariantCreation[\s\S]{0,500}preservedCreation\.status === 'conflict'/,
+    'preserve mode must inspect active sibling variants before creating a missing default variant',
+  );
+  const preservedExistingCardStart = ingestionPipeline.indexOf("if (preservedTarget.status === 'preserve'");
+  const preservedExistingCardEnd = ingestionPipeline.indexOf('if (existingVariant?.id)', preservedExistingCardStart);
+  const preservedExistingCardPath = ingestionPipeline.slice(preservedExistingCardStart, preservedExistingCardEnd);
+  assert.ok(preservedExistingCardStart >= 0 && preservedExistingCardEnd > preservedExistingCardStart);
+  assert.doesNotMatch(
+    preservedExistingCardPath,
+    /upsertAssetForVariant/,
+    'the preserve-mode card phase must defer image attachment to the dedicated asset phase',
+  );
+  assert.match(
+    ingestionPipeline,
+    /if \(!options\.preserveExistingMetadata && options\.allowImageAssets/,
+    'new preserve-mode variants must also defer their image attachment to the asset phase',
+  );
+  assert.match(
+    catalogueIngest,
+    /existing set, printing, variant, finish,[\s\S]+image lifecycle and processing-status fields/,
+    'CLI help must distinguish preserved canonical metadata from mutable image lifecycle fields',
+  );
+}
+
+async function assertDryRunReportsDedupedRecordTypes() {
+  const card = providerRecord('ja', 'official-card-1');
+  const adapter: SourceAdapter = {
+    ...fakeAdapter([]),
+    fetchSets: async () => [{
+      ...providerRecord('ja', 'official-set-1'),
+      recordType: 'set',
+    }],
+    fetchCards: async () => [card, { ...card, payload: { ...card.payload } }],
+    fetchVariants: async () => [],
+    fetchAssets: async () => [{
+      ...providerRecord('ja', 'official-card-1:image'),
+      recordType: 'asset',
+    }],
+  };
+  const result = await new CatalogueIngestionRunner(noDbAccess(), adapter).run({
+    language: 'ja',
+    allowImageAssets: true,
+    dryRun: true,
+  });
+  assert.equal(result.ok, true);
+  assert.ok(result.stats);
+  assert.equal(result.stats.recordsRetrieved, 3, 'the duplicate card must be counted once');
+  assert.deepEqual(result.stats.recordsByTypeRetrieved, {
+    set: 1,
+    card: 1,
+    asset: 1,
+  }, 'dry-run reports need an honest post-deduplication denominator by provider record type');
 }
 
 function assertDeterministicTcgdexCardOrdering() {
@@ -721,12 +977,12 @@ async function assertStrictForeignLanguageSafety() {
     recordType: 'set',
     languageCode: 'zh-cn',
     licenceStatus: 'approved',
-      payload: {
-        id: 'SV4a',
-        name: 'Set Name',
-        releaseDate: '2023-12-01',
-        cardCount: { official: 165, total: 190 },
-      },
+    payload: {
+      id: 'SV4a',
+      name: 'Set Name',
+      releaseDate: '2023-12-01',
+      cardCount: { official: 165, total: 190 },
+    },
   });
   assert.equal(setRecord.setCode, 'SV4a', 'TCGdex set-list IDs must become canonical set codes');
   assert.equal(setRecord.providerSetId, 'SV4a', 'TCGdex set-list IDs must remain exact provider set IDs');
@@ -766,14 +1022,8 @@ async function assertStrictForeignLanguageSafety() {
     'printed totals must update without overwriting a proven larger total when total is absent',
   );
   assert.deepEqual(
-    sparseSetMetadataPatch({
-      printedTotal: 165,
-      total: 190,
-    }),
-    {
-      printed_total: 165,
-      total: 190,
-    },
+    sparseSetMetadataPatch({ printedTotal: 165, total: 190 }),
+    { printed_total: 165, total: 190 },
     'an explicit provider total must still update alongside the printed total',
   );
   assert.deepEqual(
@@ -1335,7 +1585,10 @@ async function main() {
   assertBoundedCatalogueWrites();
   assertPinnedPrimaryVariantCorrectionSafety();
   assertExternalIdentifierAssetRelinkingSafety();
+  assertAssetReuseRequiresActiveRetention();
   assertJapaneseAssetOnlyVariantSelection();
+  await assertPreserveExistingMetadataMode();
+  await assertDryRunReportsDedupedRecordTypes();
   assertDeterministicTcgdexCardOrdering();
   assertRecognitionRoleIsLeastPrivilege();
   assertMigrationAddsIngestionState();
