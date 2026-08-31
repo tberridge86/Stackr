@@ -35,7 +35,7 @@ on:
 
 permissions:
   contents: read
-  issues: read
+  issues: write
 
 concurrency:
   group: stackr-staging-stored-catalogue-asset-repair
@@ -90,6 +90,7 @@ jobs:
         run: |
           set -euo pipefail
           npm ci
+          npm ci --prefix backend
           npm run test:asset-repair
           mkdir -p "$EVIDENCE_DIR"
 
@@ -174,3 +175,23 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
           compression-level: 9
+
+      - name: Report the issue-command result
+        if: always() && github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          candidates='unknown'
+          remaining='not-applicable'
+          if [[ -s "$EVIDENCE_DIR/result.json" ]]; then
+            candidates="$(jq -r '.candidates // "unknown"' "$EVIDENCE_DIR/result.json")"
+          fi
+          if [[ -s "$EVIDENCE_DIR/remaining.json" ]]; then
+            remaining="$(jq -r '.candidates // "unknown"' "$EVIDENCE_DIR/remaining.json")"
+          fi
+          body="Staging stored-asset ${MODE} finished with status **${JOB_STATUS}**. Candidates: **${candidates}**; remaining after execution: **${remaining}**. Production targeting is rejected. Evidence: ${run_url}"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/74/comments" --method POST --field body="$body"
