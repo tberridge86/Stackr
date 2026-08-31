@@ -183,7 +183,7 @@ if (migrationReconciliation.status === 0) {
   const localMigrations = readdirSync('supabase/migrations')
     .filter((name) => /^\d{14}_.+\.sql$/.test(name))
     .sort();
-  assert.equal(localMigrations.at(-1), '20260831123000_index_ingest_conflict_deduplication.sql');
+  assert.equal(localMigrations.at(-1), '20260831202805_repair_launch_catalogue_conflict_set_resolution.sql');
   assert.ok(localMigrations.includes('20260827093110_emergency_client_write_containment.sql'));
   assert.ok(localMigrations.includes('20260827124944_gate0_financial_route_containment.sql'));
   assert.notEqual(migrationAlignmentGate.status, 0, 'global deployment must remain blocked while staging evidence trails');

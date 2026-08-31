@@ -40,7 +40,7 @@ const publicationReadMigration = readFileSync(
   'utf8',
 );
 const launchConflictSetResolutionMigration = readFileSync(
-  'supabase/migrations/20260831200554_repair_launch_catalogue_conflict_set_resolution.sql',
+  'supabase/migrations/20260831202805_repair_launch_catalogue_conflict_set_resolution.sql',
   'utf8',
 );
 const stackrApiService = readFileSync('backend/lib/stackrApiV1.js', 'utf8');
