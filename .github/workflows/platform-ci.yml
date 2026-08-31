@@ -107,6 +107,10 @@ jobs:
       - run: >-
           node scripts/test-seller-inventory-batch-migration.mjs
           --db-url=postgresql://postgres:postgres@127.0.0.1:5432/postgres
+      - run: >-
+          npm run test:official-japanese-metadata-bootstrap-migration --
+          --db-url=postgresql://postgres:postgres@127.0.0.1:5432/postgres
+          --allow-destructive-local-database
       - name: Start and reset local Supabase
         if: vars.SUPABASE_LOCAL_BASELINE_READY == 'true'
         run: |

@@ -135,6 +135,7 @@
     "generate:api-contract": "openapi-typescript docs/stackr-api/openapi.v1.yaml -o lib/generated/stackr-api-v1.d.ts",
     "check:api-contract": "node scripts/deploy/check-generated-contract.mjs && node scripts/test-api-gateway-openapi-route-coverage.mjs",
     "test:database-migrations": "tsx scripts/test-canonical-catalogue-schema.ts && tsx scripts/test-catalogue-ingestion.ts && tsx scripts/test-master-catalogue-importer.ts && node scripts/test-deployment-database-contract.mjs && node scripts/test-critical-security-containment.mjs && node scripts/test-gate0-database-hardening.mjs",
+    "test:official-japanese-metadata-bootstrap-migration": "node scripts/test-official-japanese-metadata-bootstrap-migration.mjs",
     "test:security-containment": "node scripts/test-critical-security-containment.mjs",
     "test:deployment": "npm run deploy:verify-baseline && node scripts/test-deployment-tooling.mjs && node scripts/test-staging-rebuild-tooling.mjs && npm run test:mobile-runtime-config && node scripts/test-deployment-commerce-disabled-smoke.mjs",
     "test:deployment-commerce-disabled-smoke": "node scripts/test-deployment-commerce-disabled-smoke.mjs",
