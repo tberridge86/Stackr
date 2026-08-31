@@ -241,7 +241,10 @@ function assertStorageContractAndSqlScope() {
   assert.match(workflow, /github\.event\.comment\.body == '\/apply-stackr-staging-card-image-aliases'/);
   assert.match(workflow, /REPAIR_MAX_BATCHES:.*'20'/);
   assert.match(workflow, /REPAIR_LIMIT:.*'500'/);
-  assert.match(workflow, /SUPABASE_STAGING_DB_URL: \$\{\{ secrets\.SUPABASE_STAGING_DB_URL \}\}/);
+  assert.match(
+    workflow,
+    /SUPABASE_STAGING_DB_URL: \$\{\{ secrets\.SUPABASE_STAGING_DB_URL \|\| secrets\.SUPABASE_DB_URL \}\}/,
+  );
   assert.match(workflow, /\[\[ "\$SUPABASE_STAGING_DB_URL" != \*'oakdbbzdqwurpjnoqhmu'\* \]\]/);
   assert.doesNotMatch(workflow, /SUPABASE_PRODUCTION_DB_URL|SUPABASE_PROD_DB_URL/);
 }

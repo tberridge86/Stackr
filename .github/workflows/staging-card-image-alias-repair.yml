@@ -65,7 +65,7 @@ jobs:
     environment: staging
     env:
       SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
-      SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+      SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL || secrets.SUPABASE_DB_URL }}
       REPAIR_MODE: ${{ github.event_name == 'issue_comment' && 'apply' || inputs.mode }}
       REPAIR_LIMIT: ${{ github.event_name == 'issue_comment' && '500' || inputs.limit }}
       REPAIR_AFTER_ID: ${{ github.event_name == 'issue_comment' && '' || inputs.after_id }}
