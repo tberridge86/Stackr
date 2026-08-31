@@ -1933,7 +1933,13 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       configureActiveProviderLanguageQuery,
       250,
     ) as Promise<RawRecordRow[]>,
-    fetchAll(db, 'ingest', 'data_conflicts', 'id,conflict_type,severity,status,entity_schema,entity_table,entity_id,canonical_key,proposed_payload,existing_payload,internal_notes') as Promise<ConflictRow[]>,
+    fetchAllFiltered(
+      db,
+      'ingest',
+      'data_conflicts',
+      'id,conflict_type,severity,status,entity_schema,entity_table,entity_id,canonical_key,proposed_payload,existing_payload,internal_notes',
+      (query) => query.in('status', ['open', 'in_review']),
+    ) as Promise<ConflictRow[]>,
     fetchAllFiltered(
       db,
       'ingest',
