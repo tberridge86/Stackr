@@ -162,16 +162,16 @@ if (migrationReconciliation.status === 0) {
   assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
   assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 } else {
-  // The root production ledger is seven reviewed migrations ahead of the last
+  // The repository ledger is eight reviewed migrations ahead of the last
   // legacy reconciliation evidence: Premium Seller, the byte-identical
   // emergency containment capture, Gate 0, and the unapplied staging-first
   // catalogue natural-identity reconciliation, followed by staging's atomic
-  // exact raw-revision retention, immutable run-observation provenance, and
-  // the ingestion conflict-deduplication lookup index.
+  // exact raw-revision retention, immutable run-observation provenance,
+  // conflict-deduplication lookup index, and launch conflict-report repair.
   // Normal production workflows remain fail-closed; staging applies
   // migrations only through scoped paths.
   const reconciliation = JSON.parse(migrationReconciliation.stdout);
-  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 7);
+  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 8);
   assert.deepEqual(reconciliation.errors, [
     'local_migration_count_drift',
     'staging_migration_count_drift',
