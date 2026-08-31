@@ -1096,6 +1096,59 @@ async function findSetId(db: SupabaseClientLike, sourceId: string, normalised: N
   return { status: 'missing' as const, reason: 'set_not_found' };
 }
 
+// Supabase leaves omitted UPDATE columns unchanged. Keep partial provider fields
+// out of the patch instead of translating their absence into destructive NULLs.
+export function sparseSetMetadataPatch(
+  normalised: Pick<
+    NormalisedRecord,
+    'englishDisplayName' | 'releaseDate' | 'printedTotal' | 'total' | 'sourceUpdatedAt'
+  >,
+) {
+  const patch: Record<string, string | number> = {};
+  const englishDisplayName = cleanText(normalised.englishDisplayName);
+  const releaseDate = cleanText(normalised.releaseDate);
+  const sourceUpdatedAt = cleanText(normalised.sourceUpdatedAt);
+  if (englishDisplayName) patch.english_display_name = englishDisplayName;
+  if (releaseDate) patch.release_date = releaseDate;
+  if (normalised.printedTotal != null) patch.printed_total = normalised.printedTotal;
+  if (normalised.total != null) patch.total = normalised.total;
+  if (sourceUpdatedAt) patch.source_updated_at = sourceUpdatedAt;
+  return patch;
+}
+
+export function sparsePrintingMetadataPatch(
+  normalised: Pick<NormalisedRecord, 'nativeName' | 'englishDisplayName' | 'sourceUpdatedAt'>,
+  rarityId: string | null,
+) {
+  const patch: Record<string, string> = {};
+  const nativeName = cleanText(normalised.nativeName);
+  const englishDisplayName = cleanText(normalised.englishDisplayName);
+  const sourceUpdatedAt = cleanText(normalised.sourceUpdatedAt);
+  if (nativeName) patch.native_name = nativeName;
+  if (englishDisplayName) patch.english_display_name = englishDisplayName;
+  if (rarityId) patch.rarity_id = rarityId;
+  if (sourceUpdatedAt) patch.source_updated_at = sourceUpdatedAt;
+  return patch;
+}
+
+export function sparseVariantMetadataPatch(
+  normalised: Pick<
+    NormalisedRecord,
+    'finishCode' | 'artworkKey' | 'sourceConfidence' | 'sourceUpdatedAt'
+  >,
+) {
+  const patch: Record<string, string | number> = {
+    source_confidence: normalised.sourceConfidence,
+  };
+  const finishCode = cleanText(normalised.finishCode);
+  const artworkKey = cleanText(normalised.artworkKey);
+  const sourceUpdatedAt = cleanText(normalised.sourceUpdatedAt);
+  if (finishCode) patch.finish_code = finishCode;
+  if (artworkKey) patch.artwork_key = artworkKey;
+  if (sourceUpdatedAt) patch.source_updated_at = sourceUpdatedAt;
+  return patch;
+}
+
 async function upsertSet(
   db: SupabaseClientLike,
   sourceId: string,
@@ -1104,7 +1157,7 @@ async function upsertSet(
   normalised: NormalisedRecord,
   requestId?: string,
 ) {
-  const nativeName = normalised.nativeName ?? normalised.englishDisplayName;
+  const nativeName = cleanText(normalised.nativeName) ?? cleanText(normalised.englishDisplayName);
   if (!nativeName) {
     await quarantine(db, {
       sourceId,
@@ -1131,16 +1184,22 @@ async function upsertSet(
     return { status: 'conflicted' as const };
   }
 
-  const row = {
+  const requiredRow = {
     game_code: normalised.gameCode,
     language_code: normalised.languageCode,
     set_code: normalised.setCode ?? normalised.providerSetId ?? null,
     provider_set_code: normalised.providerSetId ?? normalised.setCode ?? null,
     native_name: nativeName,
-    english_display_name: normalised.englishDisplayName,
+  };
+  const optionalRow = sparseSetMetadataPatch(normalised);
+  const updateRow = { ...requiredRow, ...optionalRow };
+  const insertRow = {
+    ...requiredRow,
+    english_display_name: cleanText(normalised.englishDisplayName),
+    release_date: cleanText(normalised.releaseDate),
     printed_total: normalised.printedTotal ?? null,
     total: normalised.total ?? normalised.printedTotal ?? null,
-    source_updated_at: normalised.sourceUpdatedAt ?? null,
+    source_updated_at: cleanText(normalised.sourceUpdatedAt),
   };
 
   if (match.status === 'matched') {
@@ -1160,13 +1219,13 @@ async function upsertSet(
         importRunId,
         rawRecordId,
         conflictType: 'identity_collision',
-        proposed: row,
+        proposed: insertRow,
         existing: link.existing,
         notes: 'Provider set identifier already points to another canonical set.',
       });
       return { status: 'conflicted' as const };
     }
-    const { error } = await table(db, 'catalog', 'sets').update(row).eq('id', match.setId);
+    const { error } = await table(db, 'catalog', 'sets').update(updateRow).eq('id', match.setId);
     if (error) throw error;
     await auditDecision(db, {
       sourceId,
@@ -1179,12 +1238,12 @@ async function upsertSet(
       entityId: match.setId,
       confidence: normalised.sourceConfidence,
       reason: 'set_external_or_exact_code_match',
-      proposed: row,
+      proposed: updateRow,
     });
     return { status: 'updated' as const, setId: match.setId };
   }
 
-  const { data, error } = await table(db, 'catalog', 'sets').insert(row).select('id').maybeSingle();
+  const { data, error } = await table(db, 'catalog', 'sets').insert(insertRow).select('id').maybeSingle();
   if (error) throw error;
   await linkExternalId(db, {
     sourceId,
@@ -1207,7 +1266,7 @@ async function upsertSet(
     entityId: data.id,
     confidence: normalised.sourceConfidence,
     reason: 'new_set_from_provider_record',
-    proposed: row,
+    proposed: insertRow,
   });
   return { status: 'inserted' as const, setId: data.id as string };
 }
@@ -1961,22 +2020,14 @@ async function upsertCardVariant(
 
     const printingPatch = {
       card_concept_id: conceptId,
-      native_name: normalised.nativeName,
-      english_display_name: normalised.englishDisplayName,
-      rarity_id: rarityId,
-      source_updated_at: normalised.sourceUpdatedAt ?? null,
+      ...sparsePrintingMetadataPatch(normalised, rarityId),
     };
     const { error: printingError } = await table(db, 'catalog', 'card_printings')
       .update(printingPatch)
       .eq('id', variant.printing_id);
     if (printingError) throw printingError;
 
-    const variantPatch: Record<string, unknown> = {
-      finish_code: normalised.finishCode ?? null,
-      artwork_key: normalised.artworkKey ?? null,
-      source_confidence: normalised.sourceConfidence,
-      source_updated_at: normalised.sourceUpdatedAt ?? null,
-    };
+    const variantPatch: Record<string, unknown> = sparseVariantMetadataPatch(normalised);
     if (repairedProviderIdentity) {
       variantPatch.variant_code = normalised.variantCode ?? 'normal';
       variantPatch.canonical_key = canonicalKey;
@@ -2064,10 +2115,14 @@ async function upsertCardVariant(
 
   const printingPatch = {
     card_concept_id: conceptId,
-    native_name: normalised.nativeName,
-    english_display_name: normalised.englishDisplayName,
+    ...sparsePrintingMetadataPatch(normalised, rarityId),
+  };
+  const printingInsert = {
+    card_concept_id: conceptId,
+    native_name: cleanText(normalised.nativeName),
+    english_display_name: cleanText(normalised.englishDisplayName),
     rarity_id: rarityId,
-    source_updated_at: normalised.sourceUpdatedAt ?? null,
+    source_updated_at: cleanText(normalised.sourceUpdatedAt),
   };
   let printingId = printingRows[0]?.id as string | undefined;
   if (printingId) {
@@ -2085,7 +2140,7 @@ async function upsertCardVariant(
       collector_number_sort: normalised.collectorNumberSort,
       collector_number_suffix: normalised.collectorNumberSuffix,
       collector_number_sort_key: normalised.collectorNumberSortKey,
-      ...printingPatch,
+      ...printingInsert,
     })
       .select('id')
       .maybeSingle();

@@ -103,6 +103,7 @@ export type NormalisedRecord = {
   collectorNumberSortKey?: string | null;
   nativeName?: string | null;
   englishDisplayName?: string | null;
+  releaseDate?: string | null;
   printedTotal?: number | null;
   total?: number | null;
   rarityCode?: string | null;
