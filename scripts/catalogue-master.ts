@@ -1905,14 +1905,34 @@ function classifyImageLeftovers(input: {
 function coveragePercent(row: {
   expected_cards: number;
   stored_card_records: number;
+  stored_required_variants: number;
   exact_native_images: number;
+  missing_english_display_name: number;
+  missing_release_date: number;
+  missing_card_native_names: number;
+  missing_native_name_index_rows: number;
   image_completion_percentage: number;
   set_art_completion_percentage: number;
   unresolved_identity_conflicts: number;
   unvalidated_images: number;
 }) {
   const expected = Math.max(1, row.expected_cards);
-  const metadataScore = Math.min(row.stored_card_records, expected) / expected;
+  const storedCardRecords = Math.max(0, row.stored_card_records);
+  const storedRequiredVariants = Math.max(0, row.stored_required_variants);
+  const missingCardNativeNames = Math.max(0, row.missing_card_native_names);
+  const missingNativeNameIndexRows = Math.max(0, row.missing_native_name_index_rows);
+  const printingNameRequirements = Math.max(storedCardRecords, missingCardNativeNames);
+  const nativeNameIndexRequirements = Math.max(storedRequiredVariants, missingNativeNameIndexRows);
+  const metadataRequirements = expected
+    + 2
+    + printingNameRequirements
+    + nativeNameIndexRequirements;
+  const completedMetadataRequirements = Math.min(storedCardRecords, expected)
+    + Number(row.missing_english_display_name <= 0)
+    + Number(row.missing_release_date <= 0)
+    + Math.max(printingNameRequirements - missingCardNativeNames, 0)
+    + Math.max(nativeNameIndexRequirements - missingNativeNameIndexRows, 0);
+  const metadataScore = completedMetadataRequirements / metadataRequirements;
   const imageScore = row.image_completion_percentage / 100;
   const setArtScore = row.set_art_completion_percentage / 100;
   const conflictPenalty = (row.unresolved_identity_conflicts > 0 || row.unvalidated_images > 0) ? 0.9 : 1;
