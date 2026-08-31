@@ -25,6 +25,7 @@ const tinyPng = Buffer.from(
   'base64',
 );
 const repairCli = readFileSync('scripts/repair-stored-catalogue-assets.mjs', 'utf8');
+const repairLibrary = readFileSync('backend/lib/catalogueAssetRepair.js', 'utf8');
 const repairWorkflow = readFileSync('.github/workflows/catalogue-stored-asset-repair.yml', 'utf8');
 const platformCi = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
 
@@ -160,6 +161,11 @@ function assertCliIsBoundedAndReadOnlyByDefault() {
     repairCli,
     /hasFlag\('execute'\) && hasFlag\('count'\)/,
     'exact candidate counts must remain read-only',
+  );
+  assert.match(
+    repairLibrary,
+    /const pageSize = 500;[\s\S]+const maximumCandidates = 2500;[\s\S]+count cursor did not advance/,
+    'timed-out exact counts must fall back to a bounded deterministic read-only census',
   );
   assert.match(
     platformCi,

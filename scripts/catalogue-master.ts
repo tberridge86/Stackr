@@ -1913,7 +1913,9 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
   const configureLanguageQuery = (query: any) => query.in('language_code', args.languages);
   const configureProviderLanguageQuery = (query: any) => {
     const languageQuery = configureLanguageQuery(query);
-    return args.provider ? languageQuery.in('source_id', selectedSourceIds) : languageQuery;
+    return selectedSourceIds.length > 0
+      ? languageQuery.in('source_id', selectedSourceIds)
+      : languageQuery;
   };
   const configureActiveProviderLanguageQuery = (query: any) => (
     configureProviderLanguageQuery(query).is('deprecated_at', null)
