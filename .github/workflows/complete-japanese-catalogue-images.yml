@@ -1,6 +1,8 @@
 name: Complete Japanese catalogue images
 
 on:
+  issue_comment:
+    types: [created]
   workflow_dispatch:
     inputs:
       ingest_batch_size:
@@ -63,7 +65,15 @@ permissions:
   issues: write
 
 concurrency:
-  group: stackr-staging-database-maintenance
+  group: ${{
+    (github.event_name != 'issue_comment' ||
+      (github.event.issue.number == 74 &&
+       github.event.issue.pull_request == null &&
+       github.actor == 'tberridge86' &&
+       github.event.comment.body == '/run-japanese-catalogue-images')) &&
+    'stackr-staging-database-maintenance' ||
+    format('stackr-japanese-catalogue-images-noop-{0}', github.run_id)
+    }}
   cancel-in-progress: true
 
 env:
@@ -74,6 +84,12 @@ env:
 
 jobs:
   prepare:
+    if: >-
+      github.event_name != 'issue_comment' ||
+      (github.event.issue.number == 74 &&
+       github.event.issue.pull_request == null &&
+       github.actor == 'tberridge86' &&
+       github.event.comment.body == '/run-japanese-catalogue-images')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
