@@ -29,6 +29,7 @@ import {
   sparseSetMetadataPatch,
   sparseVariantMetadataPatch,
   payloadChecksum,
+  parseOfficialJapaneseBootstrapResult,
   parseRetainedRawRecord,
   reconciliationPhase,
   releasedExactlyOnePrimaryAlias,
@@ -152,6 +153,102 @@ function assertBoundedCatalogueWrites() {
     japaneseCompletionWorkflow,
     /Enforce [^\n]*100% effective staging coverage[\s\S]+effectiveAppReadyPercent[\s\S]+== 100/,
     'the completion workflow must not describe partial Japanese app coverage as complete',
+  );
+}
+
+function assertOfficialJapaneseAtomicBootstrap() {
+  const created = parseOfficialJapaneseBootstrapResult({
+    status: 'created',
+    reason: 'missing_official_japanese_identity_created',
+    setId: '11111111-1111-4111-8111-111111111111',
+    printingId: '22222222-2222-4222-8222-222222222222',
+    variantId: '33333333-3333-4333-8333-333333333333',
+    canonicalKey: 'pokemon:ja:11111111-1111-4111-8111-111111111111:001:normal',
+    printingCreated: true,
+    variantCreated: true,
+  });
+  if (created.status === 'conflict') assert.fail('created bootstrap response was parsed as a conflict');
+  assert.equal(created.status, 'created');
+  assert.equal(created.variantId, '33333333-3333-4333-8333-333333333333');
+  assert.equal(created.printingCreated, true);
+  assert.equal(created.variantCreated, true);
+
+  const existing = parseOfficialJapaneseBootstrapResult({
+    status: 'existing',
+    reason: 'exact_official_japanese_identity_preserved',
+    setId: '11111111-1111-4111-8111-111111111111',
+    printingId: '22222222-2222-4222-8222-222222222222',
+    variantId: '33333333-3333-4333-8333-333333333333',
+    canonicalKey: 'pokemon:ja:11111111-1111-4111-8111-111111111111:001:normal',
+    printingCreated: false,
+    variantCreated: false,
+  });
+  if (existing.status === 'conflict') assert.fail('existing bootstrap response was parsed as a conflict');
+  assert.equal(existing.status, 'existing');
+  assert.equal(existing.printingCreated, false);
+  assert.equal(existing.variantCreated, false);
+
+  const conflict = parseOfficialJapaneseBootstrapResult({
+    status: 'conflict',
+    reason: 'official_and_canonical_identity_disagree',
+    canonicalKey: 'pokemon:ja:11111111-1111-4111-8111-111111111111:001:normal',
+    printingId: '22222222-2222-4222-8222-222222222222',
+  });
+  assert.equal(conflict.status, 'conflict');
+  assert.equal(conflict.reason, 'official_and_canonical_identity_disagree');
+  assert.equal(conflict.canonicalKey, 'pokemon:ja:11111111-1111-4111-8111-111111111111:001:normal');
+
+  for (const invalid of [
+    null,
+    [],
+    {},
+    { status: 'unknown' },
+    { status: 'conflict', reason: '' },
+    {
+      status: 'created',
+      reason: 'missing_official_japanese_identity_created',
+      setId: 'not-a-uuid',
+      printingId: '22222222-2222-4222-8222-222222222222',
+      variantId: '33333333-3333-4333-8333-333333333333',
+      canonicalKey: 'pokemon:ja:set:001:normal',
+      printingCreated: true,
+      variantCreated: true,
+    },
+    {
+      status: 'existing',
+      reason: 'exact_official_japanese_identity_preserved',
+      setId: '11111111-1111-4111-8111-111111111111',
+      printingId: '22222222-2222-4222-8222-222222222222',
+      variantId: '33333333-3333-4333-8333-333333333333',
+      canonicalKey: 'pokemon:ja:set:001:normal',
+      printingCreated: false,
+    },
+  ]) {
+    assert.throws(
+      () => parseOfficialJapaneseBootstrapResult(invalid),
+      `invalid atomic bootstrap payload must fail closed: ${JSON.stringify(invalid)}`,
+    );
+  }
+
+  assert.match(
+    ingestionPipeline,
+    /options\.preserveExistingMetadata[\s\S]{0,500}normalised\.provider === 'pokemon_card_jp_official'[\s\S]{0,500}normalised\.recordType === 'card'[\s\S]{0,500}normalised\.languageCode === 'ja'[\s\S]{0,800}bootstrapOfficialJapaneseCardIdentity/,
+    'the atomic identity bootstrap must be limited to preserved official Japanese card metadata',
+  );
+  assert.match(
+    ingestionPipeline,
+    /normalised\.variantCode \?\? 'normal'\) === 'normal'[\s\S]{0,300}normalised\.finishCode \?\? 'normal'\) === 'normal'/,
+    'the atomic bootstrap must never create inferred Japanese finish variants',
+  );
+  assert.match(
+    ingestionPipeline,
+    /ingest\.rpc\('bootstrap_official_japanese_card_identity'/,
+    'official Japanese identity creation must use the single atomic database RPC',
+  );
+  assert.match(
+    ingestionPipeline,
+    /if \(normalised\.recordType === 'asset'\) \{[\s\S]{0,500}upsertCardImage[\s\S]{0,500}\['card', 'printing', 'variant'\][\s\S]{0,300}upsertCardVariant/,
+    'official image attachment must remain a separate asset phase after identity bootstrapping',
   );
 }
 
@@ -1583,6 +1680,7 @@ function assertBackendRouteIsProtected() {
 async function main() {
   assertCanonicalStagingSourceGuard();
   assertBoundedCatalogueWrites();
+  assertOfficialJapaneseAtomicBootstrap();
   assertPinnedPrimaryVariantCorrectionSafety();
   assertExternalIdentifierAssetRelinkingSafety();
   assertAssetReuseRequiresActiveRetention();

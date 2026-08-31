@@ -43,6 +43,10 @@ const launchConflictSetResolutionMigration = readFileSync(
   'supabase/migrations/20260831200554_repair_launch_catalogue_conflict_set_resolution.sql',
   'utf8',
 );
+const atomicOfficialJapaneseBootstrapMigration = readFileSync(
+  'supabase/migrations/20260831213000_atomic_official_japanese_card_bootstrap.sql',
+  'utf8',
+);
 const stackrApiService = readFileSync('backend/lib/stackrApiV1.js', 'utf8');
 
 function assertRequiredCommandsExist() {
@@ -306,6 +310,73 @@ function assertProviderRules() {
     pipeline,
     /native_image_status: 'available', same_artwork_as_variant_id: null/,
     'approved native imagery must clear any previous artwork fallback',
+  );
+}
+
+function assertAtomicOfficialJapaneseBootstrapMigration() {
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /create or replace function ingest\.bootstrap_official_japanese_card_identity\s*\(/i,
+    'official Japanese identity creation must be exposed only through the reviewed atomic function',
+  );
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /language plpgsql\s+security invoker\s+set search_path = ''/i,
+    'the bootstrap must use caller permissions with a blank search path',
+  );
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /source_row\.code <> 'pokemon_card_jp_official'[\s\S]{0,180}source_row\.licence_status <> 'approved'[\s\S]{0,180}not source_row\.active/i,
+    'only the active approved official Japanese source may bootstrap identities',
+  );
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /set_record\.game_code = 'pokemon'[\s\S]{0,120}set_record\.language_code = 'ja'[\s\S]{0,120}set_record\.deprecated_at is null/i,
+    'the target must be an active Japanese Pokemon set',
+  );
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /raw_source_record_observations[\s\S]{0,700}import_run\.status = 'running'[\s\S]{0,700}raw_record\.record_type = 'card'[\s\S]{0,500}raw_record\.language_code = 'ja'[\s\S]{0,500}raw_record\.licence_status = 'approved'[\s\S]{0,500}observation\.validation_status = 'valid'/i,
+    'the bootstrap must prove the card belongs to the current approved retained observation',
+  );
+  assert.ok(
+    [...atomicOfficialJapaneseBootstrapMigration.matchAll(/pg_advisory_xact_lock/gi)].length >= 2,
+    'provider and canonical identities must each be protected by an advisory transaction lock',
+  );
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /collector_number\s*=\s*p_collector_number/i,
+    'collector numbers must be compared as opaque provider text',
+  );
+  assert.doesNotMatch(
+    atomicOfficialJapaneseBootstrapMigration,
+    /(?:collector_number|p_collector_number)\s*::\s*(?:int|integer|bigint|numeric|decimal)|(?:ltrim|regexp_replace)\s*\([^)]*(?:collector_number|p_collector_number)/i,
+    'collector identity must not collapse leading zeroes through casts or normalization',
+  );
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /insert into catalog\.card_printings[\s\S]+on conflict \(game_code, language_code, set_id, collector_number\)\s+where deprecated_at is null\s+do nothing/i,
+    'printing insertion must target the active partial unique identity',
+  );
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /'normal',[\s\S]{0,100}'normal',[\s\S]{0,160}expected_canonical_key/i,
+    'the bootstrap may create only the reviewed normal variant and finish',
+  );
+  assert.doesNotMatch(
+    atomicOfficialJapaneseBootstrapMigration,
+    /update\s+catalog\.card_(?:printings|variants)\b/i,
+    'the bootstrap must preserve existing printing and variant metadata',
+  );
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /revoke all on function ingest\.bootstrap_official_japanese_card_identity[\s\S]+from public, anon, authenticated/i,
+    'untrusted API roles must not execute the bootstrap',
+  );
+  assert.match(
+    atomicOfficialJapaneseBootstrapMigration,
+    /grant execute on function ingest\.bootstrap_official_japanese_card_identity[\s\S]+to service_role/i,
+    'only the staging ingestion service role may execute the bootstrap',
   );
 }
 
@@ -1607,6 +1678,7 @@ async function main() {
   assertCanonicalStagingSourceGuard();
   assertDryRunApplyRules();
   assertProviderRules();
+  assertAtomicOfficialJapaneseBootstrapMigration();
   await assertPikaQianApiAdapter();
   await assertPikaQianUnboundedPaginationAndLanguageScope();
   await assertPikaQianSnapshotSetCovers();

@@ -457,6 +457,11 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
+    /const canarySize = Math\.min\(100, targetCount\)[\s\S]+offset: 0, limit: canarySize, phase: 'canary'[\s\S]+offset = canarySize[\s\S]+fail-fast: true[\s\S]+max-parallel: 1/,
+    'official Japanese recovery must run a 100-card first shard before bounded post-canary shards and stop on failure',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
     /official-jp-preserve:[\s\S]+--allowImageAssets[\s\S]+--approvedOnlyAssets[\s\S]+--preserveExistingMetadata[\s\S]+pokedata-ingest:[\s\S]+needs: \[prepare, official-ingest\]/,
     'official Japanese metadata and exact images must be preserved or created before PokeData attaches finish-specific scans',
   );
@@ -487,8 +492,13 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /environment: staging[\s\S]+POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256[\s\S]+POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256[\s\S]+\^\[0-9a-fA-F\]\{64\}\$/,
-    'Japanese image recovery must fail closed until reviewed written-rights evidence is registered for both providers',
+    /environment: staging[\s\S]+STACKR_IMAGE_PERMISSION_MODE: owner_attested[\s\S]+STACKR_TRIGGER_ACTOR_ID:[\s\S]+STACKR_REPOSITORY_OWNER_ID:[\s\S]+Japanese image recovery must be triggered by the repository owner/,
+    'Japanese image recovery must accept the owner permission attestation while remaining owner-only and staging-only',
+  );
+  assert.doesNotMatch(
+    japaneseCompletionWorkflow,
+    /POKEDATA_JAPANESE_RIGHTS_EVIDENCE_SHA256|POKEMON_CARD_JP_RIGHTS_EVIDENCE_SHA256/,
+    'owner-attested staging recovery must not depend on manually registered rights-evidence secrets',
   );
   assert.match(
     japaneseCompletionWorkflow,

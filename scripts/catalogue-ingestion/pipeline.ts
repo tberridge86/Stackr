@@ -91,6 +91,56 @@ export function parseRetainedRawRecord(value: unknown) {
   return { id, changed: changed as 'inserted' | 'updated' | 'reused' };
 }
 
+export function parseOfficialJapaneseBootstrapResult(value: unknown) {
+  const record = value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+  const status = cleanText(record?.status);
+  const reason = cleanText(record?.reason);
+  if (!status || !reason || !['created', 'existing', 'conflict'].includes(status)) {
+    throw new Error('invalid_official_japanese_bootstrap_response');
+  }
+
+  const canonicalKey = cleanText(record?.canonicalKey);
+  const printingId = cleanText(record?.printingId);
+  if (status === 'conflict') {
+    return {
+      status: 'conflict' as const,
+      reason,
+      canonicalKey,
+      printingId,
+    };
+  }
+
+  const setId = cleanText(record?.setId);
+  const variantId = cleanText(record?.variantId);
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (
+    !setId
+    || !printingId
+    || !variantId
+    || !canonicalKey
+    || !uuidPattern.test(setId)
+    || !uuidPattern.test(printingId)
+    || !uuidPattern.test(variantId)
+    || typeof record?.printingCreated !== 'boolean'
+    || typeof record?.variantCreated !== 'boolean'
+  ) {
+    throw new Error('invalid_official_japanese_bootstrap_response');
+  }
+
+  return {
+    status: status as 'created' | 'existing',
+    reason,
+    setId,
+    printingId,
+    variantId,
+    canonicalKey,
+    printingCreated: record.printingCreated,
+    variantCreated: record.variantCreated,
+  };
+}
+
 export function classifyMappedOfficialImageTarget(input: {
   cardId: string;
   resolvedSetId?: string | null;
@@ -881,6 +931,78 @@ async function retainRawRecord(
   });
   if (error) throw error;
   return parseRetainedRawRecord(data);
+}
+
+async function bootstrapOfficialJapaneseCardIdentity(
+  db: SupabaseClientLike,
+  input: {
+    sourceId: string;
+    importRunId: string;
+    rawRecordId: string;
+    setId: string;
+    normalised: NormalisedRecord;
+  },
+) {
+  const { normalised } = input;
+  const externalId = cleanText(normalised.raw.cardID);
+  const collectorNumber = cleanText(normalised.collectorNumber);
+  const nativeName = cleanText(normalised.nativeName);
+  const artworkKey = cleanText(normalised.artworkKey);
+  const expectedArtworkKey = externalId ? `pokemon_card_jp_official:${externalId}` : null;
+  if (
+    !externalId
+    || externalId !== normalised.providerRecordId
+    || !collectorNumber
+    || !nativeName
+    || !normalised.collectorNumberSortKey
+    || artworkKey !== expectedArtworkKey
+  ) {
+    return {
+      status: 'conflict' as const,
+      reason: 'official_japanese_bootstrap_input_mismatch',
+      canonicalKey: null,
+      printingId: null,
+    };
+  }
+
+  const ingest = db.schema('ingest');
+  if (!ingest.rpc) throw new Error('official_japanese_bootstrap_rpc_unavailable');
+  const { data, error } = await ingest.rpc('bootstrap_official_japanese_card_identity', {
+    p_source_id: input.sourceId,
+    p_import_run_id: input.importRunId,
+    p_raw_record_id: input.rawRecordId,
+    p_external_id: externalId,
+    p_set_id: input.setId,
+    p_collector_number: collectorNumber,
+    p_collector_number_prefix: normalised.collectorNumberPrefix ?? null,
+    p_collector_number_sort: normalised.collectorNumberSort ?? null,
+    p_collector_number_suffix: normalised.collectorNumberSuffix ?? null,
+    p_collector_number_sort_key: normalised.collectorNumberSortKey,
+    p_native_name: nativeName,
+    p_normalized_name: normaliseName(nativeName),
+    p_artwork_key: artworkKey,
+    p_source_confidence: normalised.sourceConfidence,
+    p_source_updated_at: normalised.sourceUpdatedAt ?? null,
+  });
+  if (error) throw error;
+
+  const result = parseOfficialJapaneseBootstrapResult(data);
+  if (
+    result.status !== 'conflict'
+    && (
+      result.setId !== input.setId
+      || result.canonicalKey !== catalogVariantCanonicalKey({
+        gameCode: 'pokemon',
+        languageCode: 'ja',
+        setId: input.setId,
+        collectorNumber,
+        variantCode: 'normal',
+      })
+    )
+  ) {
+    throw new Error('official_japanese_bootstrap_identity_mismatch');
+  }
+  return result;
 }
 
 async function auditDecision(
@@ -1843,6 +1965,63 @@ async function upsertCardVariant(
     collectorNumber: normalised.collectorNumber,
     variantCode: normalised.variantCode ?? 'normal',
   });
+
+  const useAtomicOfficialJapaneseBootstrap = (
+    options.preserveExistingMetadata === true
+    && normalised.provider === 'pokemon_card_jp_official'
+    && normalised.recordType === 'card'
+    && normalised.gameCode === 'pokemon'
+    && normalised.languageCode === 'ja'
+    && (normalised.variantCode ?? 'normal') === 'normal'
+    && (normalised.finishCode ?? 'normal') === 'normal'
+  );
+  if (useAtomicOfficialJapaneseBootstrap) {
+    const bootstrapped = await bootstrapOfficialJapaneseCardIdentity(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      setId: setMatch.setId,
+      normalised,
+    });
+    if (bootstrapped.status === 'conflict') {
+      await quarantine(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        conflictType: 'identity_collision',
+        canonicalKey: bootstrapped.canonicalKey ?? canonicalKey,
+        proposed: normalised.raw,
+        existing: {
+          reason: bootstrapped.reason,
+          printingId: bootstrapped.printingId,
+        },
+        notes: `Atomic official Japanese identity bootstrap refused the record: ${bootstrapped.reason}.`,
+      });
+      return { status: 'conflicted' as const };
+    }
+
+    await auditDecision(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      requestId,
+      decisionType: bootstrapped.status === 'created' ? 'created' : 'skipped',
+      entitySchema: 'catalog',
+      entityTable: 'card_variants',
+      entityId: bootstrapped.variantId,
+      canonicalKey: bootstrapped.canonicalKey,
+      confidence: normalised.sourceConfidence,
+      reason: bootstrapped.reason,
+      proposed: normalised.raw,
+      existing: bootstrapped.status === 'existing'
+        ? { printingId: bootstrapped.printingId, variantId: bootstrapped.variantId }
+        : undefined,
+    });
+    return {
+      status: bootstrapped.status === 'created' ? 'inserted' as const : 'skipped' as const,
+      variantId: bootstrapped.variantId,
+    };
+  }
 
   const externalMatch = await table(db, 'ingest', 'external_identifiers')
     .select('variant_id')
