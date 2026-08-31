@@ -27,6 +27,10 @@ const tinyPng = Buffer.from(
 const repairCli = readFileSync('scripts/repair-stored-catalogue-assets.mjs', 'utf8');
 const repairLibrary = readFileSync('backend/lib/catalogueAssetRepair.js', 'utf8');
 const repairWorkflow = readFileSync('.github/workflows/catalogue-stored-asset-repair.yml', 'utf8');
+const repairIndexMigration = readFileSync(
+  'supabase/staging-migrations/overrides/20260831095500_optimize_stored_catalogue_derivative_repair.sql',
+  'utf8',
+);
 const platformCi = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
 
 function readyDerivative(role) {
@@ -391,6 +395,10 @@ async function main() {
   assert.match(repairWorkflow, /if: env\.MODE == 'execute'[\s\S]+--execute/);
   assert.match(repairWorkflow, /--maxAssets="\$MAX_ASSETS"/);
   assert.doesNotMatch(repairWorkflow, /oakdbbzdqwurpjnoqhmu|environment: production/);
+  assert.match(repairIndexMigration, /on catalog\.assets \(source_id, id\)/);
+  assert.match(repairIndexMigration, /storage_provider = 'supabase_storage'/);
+  assert.match(repairIndexMigration, /derivative_list = '\[\]'::jsonb/);
+  assert.match(repairIndexMigration, /deprecated_at is null[\s\S]+deleted_at is null/);
   console.log('Stored catalogue asset repair tests passed.');
 }
 
