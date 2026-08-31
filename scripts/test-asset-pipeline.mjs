@@ -457,8 +457,8 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /write_concurrency:[\s\S]+default: '1'[\s\S]+cancel-in-progress: false/,
-    'Japanese staging recovery must queue behind shared maintenance and use conservative write concurrency',
+    /write_concurrency:[\s\S]+default: '1'[\s\S]+cancel-in-progress: \$\{\{ github\.event_name == 'push' \}\}/,
+    'Japanese staging recovery code changes must replace stale runs while owner-dispatched recovery remains queued',
   );
   assert.match(
     japaneseCompletionWorkflow,

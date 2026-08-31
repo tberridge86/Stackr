@@ -76,7 +76,9 @@ concurrency:
     'stackr-staging-database-maintenance' ||
     format('stackr-japanese-catalogue-images-noop-{0}', github.run_id)
     }}
-  cancel-in-progress: false
+  # A code change must replace an unsafe/stale run. Owner-dispatched recovery
+  # requests still queue behind the shared staging maintenance writer.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 env:
   SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
