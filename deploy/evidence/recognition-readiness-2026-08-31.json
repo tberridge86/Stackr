@@ -10,7 +10,7 @@
     },
     {
       "path": "deploy/release-manifest.json",
-      "sha256": "878e419dae57ffa53498a680c44a15d2037217999e0e23a62471ed73e0737e9d"
+      "sha256": "f106cdf255454f5d0b9eb6982e66803e7b78022a409fd6b44f685f7b87696418"
     },
     {
       "path": "deploy/evidence/staging-readiness-2026-08-11.json",
