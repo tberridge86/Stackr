@@ -108,6 +108,7 @@ const releaseGateApprovals = {
   activeModelSelected: 'STACKR_MODEL_INDEX_RELEASE_APPROVED',
   activeIndexValidated: 'STACKR_MODEL_INDEX_RELEASE_APPROVED',
   storageBackupVerified: 'STACKR_STORAGE_BACKUP_APPROVED',
+  catalogueRightsEvidenceVerified: 'STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED',
 };
 const requiredCatalogueLanguages = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 const releaseGateWarnings = {
@@ -115,6 +116,7 @@ const releaseGateWarnings = {
   activeModelSelected: 'active_model_not_selected',
   activeIndexValidated: 'active_index_not_validated',
   storageBackupVerified: 'storage_backup_not_verified',
+  catalogueRightsEvidenceVerified: 'catalogue_rights_evidence_not_verified',
 };
 for (const [gate, warning] of Object.entries(releaseGateWarnings)) {
   if (manifest.releaseGates[gate] !== true) warnings.push(warning);
@@ -163,7 +165,10 @@ if (releaseMode) {
     ? ['storageBackupVerified']
     : catalogueApiReleaseMode
     ? ['migrationHistoryAligned', 'storageBackupVerified']
-    : Object.keys(releaseGateApprovals);
+    : ['migrationHistoryAligned', 'activeModelSelected', 'activeIndexValidated', 'storageBackupVerified'];
+  if (deploymentEnvironment === 'production') {
+    requiredReleaseGates.push('catalogueRightsEvidenceVerified');
+  }
   for (const gate of requiredReleaseGates) {
     const approvalVariable = releaseGateApprovals[gate];
     if (manifest.releaseGates[gate] !== true) errors.push(`release_gate_not_ready:${gate}`);

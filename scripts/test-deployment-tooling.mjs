@@ -333,10 +333,47 @@ const catalogueAssetsProductionPreflight = run(
     SUPABASE_PRODUCTION_SECRET_KEY: 'test-only-production-key',
   },
 );
-assert.equal(
+assert.notEqual(
   catalogueAssetsProductionPreflight.status,
   0,
-  catalogueAssetsProductionPreflight.stderr || catalogueAssetsProductionPreflight.stdout,
+  'production catalogue promotion must remain blocked until rights evidence is compiled',
+);
+assert.match(
+  catalogueAssetsProductionPreflight.stdout,
+  /release_gate_not_ready:catalogueRightsEvidenceVerified/,
+);
+assert.match(
+  catalogueAssetsProductionPreflight.stdout,
+  /release_approval_missing:STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED/,
+);
+const ownerApprovedButUnverifiedCatalogueAssetsPreflight = run(
+  'scripts/deploy/preflight.mjs',
+  ['--catalogue-assets-release'],
+  {
+    STACKR_DEPLOYMENT_ENVIRONMENT: 'production',
+    STACKR_DEPLOYMENT_SCOPE: 'catalogue_assets',
+    STACKR_STORAGE_BACKUP_APPROVED: 'true',
+    STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED: 'true',
+    SUPABASE_ACCESS_TOKEN: 'test-only',
+    SUPABASE_DB_URL: 'postgresql://test-only',
+    SUPABASE_PROJECT_REF: releaseManifest.components.database.projectRef,
+    SUPABASE_STAGING_DB_URL: 'postgresql://test-only-staging',
+    SUPABASE_STAGING_SECRET_KEY: 'test-only-staging-key',
+    SUPABASE_PRODUCTION_SECRET_KEY: 'test-only-production-key',
+  },
+);
+assert.notEqual(
+  ownerApprovedButUnverifiedCatalogueAssetsPreflight.status,
+  0,
+  'protected approval must not override the checked-in rights-evidence hold',
+);
+assert.match(
+  ownerApprovedButUnverifiedCatalogueAssetsPreflight.stdout,
+  /release_gate_not_ready:catalogueRightsEvidenceVerified/,
+);
+assert.doesNotMatch(
+  ownerApprovedButUnverifiedCatalogueAssetsPreflight.stdout,
+  /release_approval_missing:STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED/,
 );
 assert.doesNotMatch(
   catalogueAssetsProductionPreflight.stdout,
@@ -3396,6 +3433,7 @@ assert.match(productionWorkflow, /versions deploy/);
 assert.match(productionWorkflow, /rollout-percentage/);
 assert.match(productionWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: production/);
 assert.match(productionWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
+assert.match(productionWorkflow, /STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED/);
 assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);

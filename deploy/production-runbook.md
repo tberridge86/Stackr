@@ -12,6 +12,7 @@ All of these must be true:
 - Supabase reports a recent completed physical backup and the workflow can create and verify ephemeral schema/data dumps.
 - Object-storage recovery has been restore-tested; `storageBackupVerified=true` is committed and `STACKR_STORAGE_BACKUP_APPROVED=true` was independently approved.
 - Stage 6 approved the production model and inactive index; `STACKR_MODEL_INDEX_RELEASE_APPROVED=true` is evidence-backed.
+- Owner-attested staging catalogue ingestion is not production approval. Keep `catalogueRightsEvidenceVerified=false` and `STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED` unset until the complete catalogue rights-evidence pack has been compiled and reviewed.
 - A valid inactive catalogue version UUID and embedding index UUID are recorded.
 - Railway rolling deployment compatibility has been reviewed.
 - The current gateway tag, recognition deployment ID, catalogue version, index version and EAS update group are recorded for rollback.

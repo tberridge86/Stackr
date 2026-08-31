@@ -46,6 +46,7 @@
     "activeModelSelected": false,
     "activeIndexValidated": false,
     "storageBackupVerified": true,
+    "catalogueRightsEvidenceVerified": false,
     "productionCanaryPercent": 5
   }
 }
