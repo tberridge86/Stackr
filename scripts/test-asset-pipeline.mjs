@@ -457,13 +457,18 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /write_concurrency:[\s\S]+default: '2'[\s\S]+cancel-in-progress: true/,
+    /write_concurrency:[\s\S]+default: '1'[\s\S]+cancel-in-progress: true/,
     'Japanese staging recovery must replace a broken attempt and use conservative write concurrency',
   );
   assert.match(
     japaneseCompletionWorkflow,
     /for attempt in 1 2 3 4[\s\S]+attempt \* 15/,
     'official Japanese ingestion must retry transient provider and database timeouts with bounded backoff',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /for \(\( shard=1; shard<=20; shard\+\+ \)\); do[\s\S]+for attempt in 1 2 3[\s\S]+failedSets == 0[\s\S]+attempt \* 30/,
+    'PokeData shards must retry failed sets after resuming already-completed set runs',
   );
   assert.match(
     japaneseCompletionWorkflow,
