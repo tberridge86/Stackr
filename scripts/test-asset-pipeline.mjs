@@ -457,18 +457,31 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
-    /write_concurrency:[\s\S]+default: '1'[\s\S]+cancel-in-progress: true/,
-    'Japanese staging recovery must replace a broken attempt and use conservative write concurrency',
+    /write_concurrency:[\s\S]+default: '1'[\s\S]+cancel-in-progress: false/,
+    'Japanese staging recovery must queue behind shared maintenance and use conservative write concurrency',
   );
   assert.match(
     japaneseCompletionWorkflow,
     /Report Japanese staging recovery start[\s\S]+GITHUB_RUN_ID[\s\S]+one database writer[\s\S]+Production released: \*\*0%\*\*[\s\S]+issues\/74\/comments/,
     'Japanese recovery must publish a staging-only run heartbeat before provider work starts',
   );
+  const compactJapaneseCompletionWorkflow = japaneseCompletionWorkflow.replace(/\s+/g, ' ');
+  const ownerCommandGuard = [
+    "github.event.issue.number == 74 &&",
+    'github.event.issue.pull_request == null &&',
+    'github.actor_id == github.repository_owner_id &&',
+    "github.actor == 'tberridge86' &&",
+    "github.event.comment.body == '/run-japanese-catalogue-images'",
+  ].join(' ');
+  assert.equal(
+    compactJapaneseCompletionWorkflow.split(ownerCommandGuard).length - 1,
+    2,
+    'the immutable owner, issue, non-PR, and exact-command guard must protect both concurrency and preparation',
+  );
   assert.match(
-    japaneseCompletionWorkflow,
-    /issue_comment:[\s\S]+types: \[created\][\s\S]+github\.event\.issue\.number == 74[\s\S]+github\.event\.issue\.pull_request == null[\s\S]+github\.actor == 'tberridge86'[\s\S]+github\.event\.comment\.body == '\/run-japanese-catalogue-images'/,
-    'Japanese recovery issue commands must be exact, owner-only, and limited to issue 74',
+    compactJapaneseCompletionWorkflow,
+    /issue_comment: types: \[created\][\s\S]+github\.event_name == 'workflow_dispatch' \|\| github\.event_name == 'push' \|\|/,
+    'Japanese recovery must fail closed to dispatch, push, or the explicit owner command',
   );
   assert.match(
     japaneseCompletionWorkflow,
