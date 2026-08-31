@@ -112,7 +112,12 @@ export function assertStagingAliasRepairTarget({ target, projectRef, connectionS
     throw new Error(`Card-image alias repair refuses production project ${PRODUCTION_PROJECT_REF}.`);
   }
   try {
-    return normalizePostgresUrl(rawConnectionString, STAGING_PROJECT_REF).normalized;
+    const normalized = new URL(normalizePostgresUrl(rawConnectionString, STAGING_PROJECT_REF).normalized);
+    if (normalized.hostname.endsWith('.pooler.supabase.com')
+      && (!normalized.port || normalized.port === '5432')) {
+      normalized.port = '6543';
+    }
+    return normalized.toString();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Staging database URL failed closed: ${message}.`);

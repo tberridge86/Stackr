@@ -106,6 +106,12 @@ function assertOptionAndTargetGuards() {
     connectionString: GOOD_DB_URL,
   });
   assert.match(normalized, new RegExp(`postgres\\.${STAGING_PROJECT_REF}`));
+  const transactionPooler = assertStagingAliasRepairTarget({
+    target: 'staging',
+    projectRef: STAGING_PROJECT_REF,
+    connectionString: GOOD_DB_URL.replace(':6543/', ':5432/'),
+  });
+  assert.equal(new URL(transactionPooler).port, '6543');
   assert.throws(() => assertStagingAliasRepairTarget({
     target: 'production',
     projectRef: STAGING_PROJECT_REF,
