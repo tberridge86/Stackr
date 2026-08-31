@@ -467,6 +467,16 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     japaneseCompletionWorkflow,
+    /issue_comment:[\s\S]+types: \[created\][\s\S]+github\.event\.issue\.number == 74[\s\S]+github\.event\.issue\.pull_request == null[\s\S]+github\.actor == 'tberridge86'[\s\S]+github\.event\.comment\.body == '\/run-japanese-catalogue-images'/,
+    'Japanese recovery issue commands must be exact, owner-only, and limited to issue 74',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
+    /format\('stackr-japanese-catalogue-images-noop-\{0\}', github\.run_id\)[\s\S]+prepare:[\s\S]+if: >-[\s\S]+github\.event\.comment\.body == '\/run-japanese-catalogue-images'/,
+    'unauthorised issue comments must use an isolated no-op group and skip staging preparation',
+  );
+  assert.match(
+    japaneseCompletionWorkflow,
     /for attempt in 1 2 3 4[\s\S]+attempt \* 15/,
     'official Japanese ingestion must retry transient provider and database timeouts with bounded backoff',
   );
