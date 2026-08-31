@@ -55,8 +55,10 @@ jobs:
           set -euo pipefail
           npm ci
           npm ci --prefix backend
-          npm run test:master-catalogue-importer
-          npm run test:catalogue-gap-report
+          env -u SUPABASE_URL -u SUPABASE_SECRET_KEY -u STACKR_CATALOGUE_IMPORT_TARGET \
+            npm run test:master-catalogue-importer
+          env -u SUPABASE_URL -u SUPABASE_SECRET_KEY -u STACKR_CATALOGUE_IMPORT_TARGET \
+            npm run test:catalogue-gap-report
 
       - name: Build the full read-only gap report
         shell: bash
