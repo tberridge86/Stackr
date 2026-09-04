@@ -72,6 +72,10 @@ import {
   normalizePokemonCardLanguage,
   type PokemonCardLanguage,
 } from '../../lib/pokemonTcg';
+import {
+  getPokemonSetLanguageFromPrefixedId,
+  stripPokemonSetLanguagePrefix,
+} from '../../lib/pokemonSetIdentity';
 import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { checkAchievements, recordAchievementEvent } from '../../lib/achievements';
@@ -384,8 +388,9 @@ const inferBinderLanguage = (language?: PokemonCardLanguage | string | null, set
   const explicit = String(language ?? '').trim();
   if (explicit) return normalizePokemonCardLanguage(explicit);
   const rawSetId = String(setId ?? '').trim().toLowerCase();
-  const strippedSetId = rawSetId.replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
-  if (/^(zh-tw|zh_tw|zhtw|zh):/i.test(rawSetId)) return 'zh-tw';
+  const strippedSetId = stripPokemonSetLanguagePrefix(rawSetId);
+  const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(rawSetId);
+  if (prefixedLanguage) return prefixedLanguage;
   return rawSetId.startsWith('ja:') || rawSetId.startsWith('jp:') || /^sv\d+[a-z]$/i.test(strippedSetId) ? 'ja' : 'en';
 };
 

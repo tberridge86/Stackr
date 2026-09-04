@@ -24,6 +24,10 @@ import {
   type PokemonSet,
 } from '../../lib/pokemonTcg';
 import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import {
+  getPokemonSetLanguageFromPrefixedId,
+  stripPokemonSetLanguagePrefix,
+} from '../../lib/pokemonSetIdentity';
 import { createBinder, fetchBinderById } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { BINDER_COVERS } from '../../lib/binderCovers';
@@ -51,8 +55,9 @@ const BASE_ERA_SET_IDS = [
 
 const SET_LANGUAGE_OPTIONS: { key: PokemonCardLanguage; label: string }[] = [
   { key: 'en', label: 'English' },
-  { key: 'ja', label: 'Japan' },
-  { key: 'zh-tw', label: 'Chinese' },
+  { key: 'ja', label: 'Japanese' },
+  { key: 'zh-cn', label: 'Simplified' },
+  { key: 'zh-tw', label: 'Traditional' },
 ];
 
 const cardShadow = {
@@ -169,7 +174,7 @@ function getSetLogoSource(set: PokemonSet | null | undefined, fallbackLanguage?:
 }
 
 function stripSetLanguagePrefix(setId?: string | null) {
-  return String(setId ?? '').trim().replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
+  return stripPokemonSetLanguagePrefix(setId);
 }
 
 function isSameSetId(left?: string | null, right?: string | null) {
@@ -181,20 +186,23 @@ function isSameSetId(left?: string | null, right?: string | null) {
 function inferSetLanguageFromId(setId?: string | null): PokemonCardLanguage {
   const raw = String(setId ?? '').trim().toLowerCase();
   const stripped = stripSetLanguagePrefix(raw);
-  if (/^(zh-tw|zh_tw|zhtw|zh):/i.test(raw)) return 'zh-tw';
+  const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(raw);
+  if (prefixedLanguage) return prefixedLanguage;
   return raw.startsWith('ja:') || raw.startsWith('jp:') || /^sv\d+[a-z]$/i.test(stripped) ? 'ja' : 'en';
 }
 
 function getSetLanguageLabel(language?: PokemonCardLanguage | string | null) {
   const normalized = normalizePokemonCardLanguage(language);
-  if (normalized === 'ja') return 'Japan';
-  if (normalized === 'zh-tw') return 'Chinese';
+  if (normalized === 'ja') return 'Japanese';
+  if (normalized === 'zh-cn') return 'Simplified Chinese';
+  if (normalized === 'zh-tw') return 'Traditional Chinese';
   return 'English';
 }
 
 function getSetLanguageBadge(language?: PokemonCardLanguage | string | null) {
   const normalized = normalizePokemonCardLanguage(language);
   if (normalized === 'ja') return 'JP';
+  if (normalized === 'zh-cn') return 'SC';
   if (normalized === 'zh-tw') return 'TC';
   return null;
 }
@@ -407,7 +415,10 @@ export default function NewBinderScreen() {
   const loadSets = useCallback(async () => {
     try {
       setLoadingSets(true);
-      const data = await fetchAllSets({ language: setLanguage });
+      const data = await fetchAllSets({
+        language: setLanguage,
+        preferCanonicalApi: setLanguage !== 'en',
+      });
       setSets(data);
 
       if (paramSourceSetId) {
@@ -1072,7 +1083,15 @@ export default function NewBinderScreen() {
                   <TextInput
                     value={setSearch}
                     onChangeText={setSetSearch}
-                    placeholder={setLanguage === 'ja' ? 'Search Japanese sets...' : setLanguage === 'zh-tw' ? 'Search Chinese sets...' : 'Search English sets...'}
+                    placeholder={
+                      setLanguage === 'ja'
+                        ? 'Search Japanese sets...'
+                        : setLanguage === 'zh-cn'
+                          ? 'Search Simplified Chinese sets...'
+                          : setLanguage === 'zh-tw'
+                            ? 'Search Traditional Chinese sets...'
+                            : 'Search English sets...'
+                    }
                     placeholderTextColor={theme.colors.textSoft}
                     autoCorrect={false}
                     autoCapitalize="words"

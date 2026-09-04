@@ -71,6 +71,7 @@
     "test:scan-quality": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-scan-quality.ts",
     "test:local-ocr-card-matcher": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-local-ocr-card-matcher.ts",
     "test:binder-page-scan": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-binder-page-scan.ts",
+    "test:binder-foreign-set-picker": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-binder-foreign-set-picker.ts",
     "test:card-vision-native-config": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-stackr-card-vision-native-config.ts",
     "test:card-localisation": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-card-localisation.ts",
     "test:capture-geometry": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-capture-geometry.ts",

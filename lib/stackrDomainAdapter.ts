@@ -15,8 +15,17 @@ import {
 } from './pokemonDisplayNames';
 import { supabase } from './supabase';
 import { enforceTcgdexRuntimeImagePolicy } from './tcgdexControlledCardReference';
+import {
+  normalizePokemonSetReferenceForLookup,
+  stripPokemonSetLanguagePrefix,
+} from './pokemonSetIdentity';
+import {
+  firstNonEmptyCatalogueRows,
+  preferNonEmptyCatalogueRows,
+} from './resilientCatalogueRead';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const PREFERRED_CATALOGUE_READ_TIMEOUT_MS = 7000;
 const EXACT_CARD_REASONS = new Set([
   'exact_canonical_id',
   'exact_external_id',
@@ -598,16 +607,17 @@ async function allPages<T>(load: (cursor: string | null) => Promise<{ rows: T[];
   return rows;
 }
 
-export async function fetchStackrSets(
+async function fetchCanonicalStackrSets(
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
+  includeAssets = true,
 ) {
-  if (!useStackrApi(client)) return legacySets(language);
   const apiLanguage = toStackrApiLanguage(language);
   const sets = await allPages<StackrSet>(async (cursor) => {
     const response = await client.sets({ language: apiLanguage ?? undefined, cursor, limit: 250 });
     return { rows: response.data.sets, nextCursor: response.meta.pagination?.nextCursor ?? null };
   });
+  if (!includeAssets) return sets.map((set) => stackrSetToLegacySet(set));
   const setAssetTypes = ['set_logo', 'set_symbol', 'set_cover', 'set_artwork'] as const;
   const assets = (await Promise.all(setAssetTypes.map((assetType) => (
     allPages<StackrCatalogueAsset>(async (cursor) => {
@@ -618,32 +628,66 @@ export async function fetchStackrSets(
   return sets.map((set) => stackrSetToLegacySet(set, assets.filter((asset) => asset.setId === set.setId)));
 }
 
-export async function resolveStackrSetId(
+export async function fetchStackrSets(
+  language?: string | null,
+  client: StackrApiClient = stackrApiClient,
+) {
+  if (!useStackrApi(client)) return legacySets(language);
+  return fetchCanonicalStackrSets(language, client);
+}
+
+export function fetchPreferredStackrSets(
+  language?: string | null,
+  client: StackrApiClient = stackrApiClient,
+) {
+  return preferNonEmptyCatalogueRows(
+    () => fetchCanonicalStackrSets(language, client, false),
+    () => legacySets(language),
+    { preferredTimeoutMs: PREFERRED_CATALOGUE_READ_TIMEOUT_MS },
+  );
+}
+
+async function resolveLegacyStackrSetId(
+  reference: string,
+  language?: string | null,
+) {
+  const value = String(reference ?? '').trim();
+  if (!value) return null;
+  const normalizedReference = normalizePokemonSetReferenceForLookup(value);
+  if (UUID_PATTERN.test(normalizedReference)) return normalizedReference;
+  const sets = await legacySets(language);
+  const normalized = value.toLowerCase();
+  const normalizedUnprefixed = normalizedReference.toLowerCase();
+  const exact = sets.find((set) => (
+    [
+      set.id,
+      set.externalIds.setCode,
+      set.externalIds.legacy,
+      set.name,
+      set.localName,
+    ].some((candidate) => {
+      const normalizedCandidate = String(candidate ?? '').toLowerCase();
+      return normalizedCandidate === normalized || normalizedCandidate === normalizedUnprefixed;
+    })
+  ));
+  return exact?.id ?? null;
+}
+
+async function resolveCanonicalStackrSetId(
   reference: string,
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
 ) {
   const value = String(reference ?? '').trim();
   if (!value) return null;
-  if (!useStackrApi(client)) {
-    const sets = await legacySets(language);
-    const normalized = value.toLowerCase();
-    const exact = sets.find((set) => (
-      set.id.toLowerCase() === normalized
-      || set.externalIds.setCode?.toLowerCase() === normalized
-      || set.externalIds.legacy?.toLowerCase() === normalized
-      || set.name.toLowerCase() === normalized
-      || set.localName?.toLowerCase() === normalized
-    ));
-    return exact?.id ?? null;
-  }
-  if (UUID_PATTERN.test(value)) return value;
+  const unprefixedValue = normalizePokemonSetReferenceForLookup(value);
+  if (UUID_PATTERN.test(unprefixedValue)) return unprefixedValue;
   const response = await client.sets({
     language: toStackrApiLanguage(language) ?? undefined,
-    setCode: value,
+    setCode: unprefixedValue,
     limit: 25,
   });
-  const normalized = value.toLowerCase();
+  const normalized = unprefixedValue.toLowerCase();
   const exact = response.data.sets.find((set) => (
     set.setCode?.toLowerCase() === normalized
     || set.setId.toLowerCase() === normalized
@@ -653,27 +697,47 @@ export async function resolveStackrSetId(
   return (exact ?? response.data.sets[0])?.setId ?? null;
 }
 
-export async function fetchStackrCardsForSet(
+export function resolveStackrSetId(
   reference: string,
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
 ) {
-  if (!useStackrApi(client)) {
-    const setId = await resolveStackrSetId(reference, language, client) ?? reference;
-    const normalizedLanguage = language && language !== 'all' ? legacyLanguage(language) : null;
-    let pokemonQuery = supabase.from('pokemon_cards').select('*').eq('set_id', setId).order('number', { ascending: true });
-    let canonicalQuery = supabase.from('tcg_cards').select('*').eq('set_id', setId).order('collector_number', { ascending: true });
-    if (normalizedLanguage) {
-      pokemonQuery = pokemonQuery.eq('language', normalizedLanguage);
-      canonicalQuery = canonicalQuery.eq('language', normalizedLanguage);
-    }
-    const [pokemonResult, canonicalResult] = await Promise.all([pokemonQuery, canonicalQuery]);
-    const cards = [...(pokemonResult.data ?? []), ...(canonicalResult.data ?? [])].map(legacyRowToCard);
-    const byId = new Map(cards.map((card) => [card.id, card]));
-    if (!cards.length && pokemonResult.error && canonicalResult.error) throw pokemonResult.error;
-    return [...byId.values()];
+  return useStackrApi(client)
+    ? resolveCanonicalStackrSetId(reference, language, client)
+    : resolveLegacyStackrSetId(reference, language);
+}
+
+async function fetchLegacyStackrCardsForSet(
+  reference: string,
+  language?: string | null,
+) {
+  const setId = await resolveLegacyStackrSetId(reference, language) ?? reference;
+  const normalizedLanguage = language && language !== 'all' ? legacyLanguage(language) : null;
+  const references = [...new Set([reference, setId].flatMap((candidate) => {
+    const raw = String(candidate ?? '').trim();
+    const stripped = stripPokemonSetLanguagePrefix(raw);
+    const prefixed = normalizedLanguage && stripped ? `${normalizedLanguage}:${stripped}` : null;
+    return [raw, raw.toLowerCase(), raw.toUpperCase(), stripped, stripped.toLowerCase(), stripped.toUpperCase(), prefixed];
+  }).filter((value): value is string => Boolean(value)))];
+  let pokemonQuery = supabase.from('pokemon_cards').select('*').in('set_id', references).order('number', { ascending: true });
+  let canonicalQuery = supabase.from('tcg_cards').select('*').in('set_id', references).order('collector_number', { ascending: true });
+  if (normalizedLanguage) {
+    pokemonQuery = pokemonQuery.eq('language', normalizedLanguage);
+    canonicalQuery = canonicalQuery.eq('language', normalizedLanguage);
   }
-  const setId = await resolveStackrSetId(reference, language, client);
+  const [pokemonResult, canonicalResult] = await Promise.all([pokemonQuery, canonicalQuery]);
+  const cards = [...(pokemonResult.data ?? []), ...(canonicalResult.data ?? [])].map(legacyRowToCard);
+  const byId = new Map(cards.map((card) => [card.id, card]));
+  if (!cards.length && pokemonResult.error && canonicalResult.error) throw pokemonResult.error;
+  return [...byId.values()];
+}
+
+async function fetchCanonicalStackrCardsForSet(
+  reference: string,
+  language?: string | null,
+  client: StackrApiClient = stackrApiClient,
+) {
+  const setId = await resolveCanonicalStackrSetId(reference, language, client);
   if (!setId) return [];
   const cards = await allPages<StackrCard>(async (cursor) => {
     const response = await client.setCards(setId, {
@@ -704,6 +768,43 @@ export async function fetchStackrCardsForSet(
     rawSet.series = setResponse.data.set.seriesNativeName ?? setResponse.data.set.seriesEnglishDisplayName;
     return mapped;
   });
+}
+
+export function fetchStackrCardsForSet(
+  reference: string,
+  language?: string | null,
+  client: StackrApiClient = stackrApiClient,
+) {
+  return useStackrApi(client)
+    ? fetchCanonicalStackrCardsForSet(reference, language, client)
+    : fetchLegacyStackrCardsForSet(reference, language);
+}
+
+export function fetchPreferredStackrCardsForSet(
+  reference: string,
+  language?: string | null,
+  client: StackrApiClient = stackrApiClient,
+) {
+  return fetchPreferredStackrCardsForReferences([reference], language, client);
+}
+
+export function fetchPreferredStackrCardsForReferences(
+  references: string[],
+  language?: string | null,
+  client: StackrApiClient = stackrApiClient,
+) {
+  const candidates = [...new Set(references.map((value) => String(value ?? '').trim()).filter(Boolean))];
+  return preferNonEmptyCatalogueRows(
+    () => firstNonEmptyCatalogueRows(
+      candidates,
+      (candidate) => fetchCanonicalStackrCardsForSet(candidate, language, client),
+    ),
+    () => firstNonEmptyCatalogueRows(
+      candidates,
+      (candidate) => fetchLegacyStackrCardsForSet(candidate, language),
+    ),
+    { preferredTimeoutMs: PREFERRED_CATALOGUE_READ_TIMEOUT_MS },
+  );
 }
 
 function cardResult(results: StackrSearchResult[]) {

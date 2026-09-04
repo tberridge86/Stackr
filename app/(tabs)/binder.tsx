@@ -51,6 +51,10 @@ import {
   normalizePokemonSetId,
   type PokemonCardLanguage,
 } from '../../lib/pokemonTcg';
+import {
+  getPokemonSetLanguageFromPrefixedId,
+  stripPokemonSetLanguagePrefix,
+} from '../../lib/pokemonSetIdentity';
 import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
 import { StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrActionButton } from '../../components/StackrActionButton';
@@ -195,14 +199,15 @@ const getBinderLogoSource = (item: BinderRecord): ImageSourcePropType | null => 
 };
 
 const stripSetLanguagePrefix = (setId?: string | null) =>
-  String(setId ?? '').trim().replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
+  stripPokemonSetLanguagePrefix(setId);
 
 const inferBinderLanguage = (language?: string | null, setId?: string | null): PokemonCardLanguage => {
   const explicit = String(language ?? '').trim();
   if (explicit) return normalizePokemonCardLanguage(explicit);
   const rawSetId = String(setId ?? '').trim().toLowerCase();
   const strippedSetId = stripSetLanguagePrefix(rawSetId);
-  if (/^(zh-tw|zh_tw|zhtw|zh):/i.test(rawSetId)) return 'zh-tw';
+  const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(rawSetId);
+  if (prefixedLanguage) return prefixedLanguage;
   return rawSetId.startsWith('ja:') || rawSetId.startsWith('jp:') || /^sv\d+[a-z]$/i.test(strippedSetId) ? 'ja' : 'en';
 };
 
@@ -213,7 +218,7 @@ const getSetLookupCandidates = (setId?: string | null) => {
   const raw = String(setId ?? '').trim();
   if (!raw) return [];
   const stripped = stripSetLanguagePrefix(raw);
-  return [...new Set([raw, stripped, `ja:${stripped}`, `zh-tw:${stripped}`, `en:${stripped}`].filter(Boolean))];
+  return [...new Set([raw, stripped, `ja:${stripped}`, `zh-cn:${stripped}`, `zh-tw:${stripped}`, `en:${stripped}`].filter(Boolean))];
 };
 
 const getCountTotal = (count?: BinderCardCount) =>

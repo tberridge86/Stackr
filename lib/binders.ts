@@ -13,6 +13,10 @@ import {
   hasTcgdexRuntimeImageOverlay,
 } from './tcgdexControlledCardReference';
 import { selectTcgdexReferencePersistenceImage } from './tcgdexReferencePersistence';
+import {
+  getPokemonSetLanguageFromPrefixedId,
+  stripPokemonSetLanguagePrefix,
+} from './pokemonSetIdentity';
 
 export type BinderType = 'official' | 'custom';
 export type BinderCardMode = 'raw' | 'graded';
@@ -99,12 +103,13 @@ function inferBinderLanguage(language?: PokemonCardLanguage | string | null, set
   if (explicit) return normalizePokemonCardLanguage(explicit);
   const rawSetId = String(setId ?? '').trim().toLowerCase();
   const strippedSetId = stripSetLanguagePrefix(rawSetId);
-  if (/^(zh-tw|zh_tw|zhtw|zh):/i.test(rawSetId)) return 'zh-tw';
+  const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(rawSetId);
+  if (prefixedLanguage) return prefixedLanguage;
   return rawSetId.startsWith('ja:') || rawSetId.startsWith('jp:') || /^sv\d+[a-z]$/i.test(strippedSetId) ? 'ja' : 'en';
 }
 
 function stripSetLanguagePrefix(setId?: string | null) {
-  return String(setId ?? '').trim().replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
+  return stripPokemonSetLanguagePrefix(setId);
 }
 
 function getSetIdentityKey(setId?: string | null, language?: PokemonCardLanguage | string | null) {
@@ -115,7 +120,7 @@ function getSetLookupCandidates(setId?: string | null) {
   const raw = String(setId ?? '').trim();
   if (!raw) return [];
   const stripped = stripSetLanguagePrefix(raw);
-  return [...new Set([raw, stripped, `ja:${stripped}`, `zh-tw:${stripped}`, `en:${stripped}`].filter(Boolean))];
+  return [...new Set([raw, stripped, `ja:${stripped}`, `zh-cn:${stripped}`, `zh-tw:${stripped}`, `en:${stripped}`].filter(Boolean))];
 }
 
 function normalizeBinderCardNumber(value?: string | number | null) {
@@ -557,7 +562,10 @@ async function fetchBinderCardsUncached(
     } : null),
   })), binderLanguage);
 }
-  const setCards = await fetchCardsForSet(binder.source_set_id, { language: binderLanguage });
+  const setCards = await fetchCardsForSet(binder.source_set_id, {
+    language: binderLanguage,
+    preferCanonicalApi: binderLanguage !== 'en',
+  });
 
   const savedByCardKey = new Map(
     savedRows.map((row) => [
