@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { selectTcgdexReferencePersistenceImage } from '../lib/tcgdexReferencePersistence';
+
+const controlled = 'https://assets.tcgdex.net/ja/cards/sv2a/157/low.webp';
+const existing = 'https://catalogue.stackr.test/cards/157.webp';
+assert.equal(selectTcgdexReferencePersistenceImage(controlled), null, 'a newly issued display reference must not persist');
+assert.equal(selectTcgdexReferencePersistenceImage(controlled, existing), existing, 'an update must retain its existing stored value');
+assert.equal(selectTcgdexReferencePersistenceImage('https://catalogue.stackr.test/cards/new.webp', existing), 'https://catalogue.stackr.test/cards/new.webp');
+const scanResultSource = readFileSync('app/scan/result.tsx', 'utf8');
+assert.match(scanResultSource, /select\('image_url'\)/, 'scan binder upsert must read the existing stored image');
+assert.match(scanResultSource, /if \(existingBinderCardError\) throw existingBinderCardError/, 'scan binder upsert must fail closed when the stored image cannot be read');
+assert.match(scanResultSource, /selectTcgdexReferencePersistenceImage\([\s\S]*?selectedCard\.image_small[\s\S]*?existingBinderCard\?\.image_url/, 'scan binder upsert must preserve stored images while filtering display references');
+assert.match(scanResultSource, /persistedImageUrl[\s\S]{0,120}\? \{ image_url: persistedImageUrl \} : \{\}/, 'scan binder upsert must omit a new controlled reference');
+const listingSource = readFileSync('features/listing/CreateListingScreen.tsx', 'utf8');
+assert.match(listingSource, /function listingCardForPersistence[\s\S]*?existing\?\.id === card\.id[\s\S]*?selectTcgdexReferencePersistenceImage\(card\.image_small, existingCard\?\.image_small\)/, 'listing drafts must exclude new display-only references while preserving the same card\'s stored image');
+assert.match(listingSource, /selectedCard: listingCardForPersistence\(selectedCard, persistedDraftSelectedCardRef\.current\)/, 'listing draft serialization must use the preservation-aware projection');
+assert.match(listingSource, /persistedDraftSelectedCardRef\.current = draftState\.selectedCard/, 'listing autosave must retain its last persisted image baseline');
+assert.match(listingSource, /const stockImageUrl = selectTcgdexReferencePersistenceImage/, 'listing publication must exclude a controlled stock image');
+const inventorySource = readFileSync('lib/inventory.ts', 'utf8');
+assert.match(inventorySource, /function inventorySnapshotForPersistence[\s\S]*?selectTcgdexReferencePersistenceImage/, 'inventory snapshots must exclude controlled references');
+assert.match(inventorySource, /function inventoryMovementForPersistence[\s\S]*?selectTcgdexReferencePersistenceImage/, 'inventory movements must exclude controlled references');
+assert.match(inventorySource, /function inventorySaleForPersistence[\s\S]*?selectTcgdexReferencePersistenceImage/, 'inventory sales must exclude controlled references');
+console.log('Binder image persistence preserves stored values and excludes display-only TCGdex references.');

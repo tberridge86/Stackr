@@ -131,6 +131,13 @@ import { scanStore } from '../../lib/scanStore';
 import { supabase } from '../../lib/supabase';
 import { stackrApiClient } from '../../lib/stackrApiV1';
 import { fetchStackrCardRows } from '../../lib/stackrDomainAdapter';
+import { hydrateScanCardRowsWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
+import { attachLiveTcgdexCardReferences } from '../../lib/pokemonTcg';
+import {
+  serializeScanCardsForNavigation,
+  toScanResultNavigationCard as toResultCard,
+  type ScanResultNavigationCard as ScanResultCard,
+} from '../../lib/scanNavigationSerialization';
 import {
   getPersistentStackrCatalogueCache,
   stackrCachedCardToIdentifiedCard,
@@ -240,26 +247,6 @@ type ScanRouteParams = {
   layout?: string | string[];
   parentSessionId?: string | string[];
   replacePocketIndex?: string | string[];
-};
-
-type ScanResultCard = {
-  id: string;
-  name: string;
-  number: string;
-  set_id: string;
-  set_name: string;
-  set_printed_total?: number | null;
-  series: string;
-  rarity: string;
-  image_small: string;
-  image_large?: string | null;
-  raw_data?: any;
-  language?: string | null;
-  release_date: string;
-  scan_provider?: string | null;
-  scan_confidence?: number | null;
-  scan_visual_similarity?: number | null;
-  scan_final_score?: number | null;
 };
 
 function logCameraDiagnostic(event: string, payload: DiagnosticLogPayload = {}) {
@@ -522,34 +509,6 @@ function buildOcrSearchQuery(text?: string | null) {
     .slice(0, 8)
     .join(' ')
     .slice(0, 220);
-}
-
-function toResultCard(row: any): ScanResultCard {
-  const raw = row.raw_data ?? {};
-  const set = raw.set ?? row.set ?? {};
-  const images = raw.images ?? {};
-
-  return {
-    id: String(row.id),
-    name: String(row.name ?? raw.name ?? 'Unknown card'),
-    number: String(row.number ?? raw.number ?? ''),
-    set_id: String(row.set_id ?? set.id ?? ''),
-    set_name: String(row.set_name ?? set.name ?? row.set_id ?? 'Unknown set'),
-    set_printed_total: set.printedTotal ?? set.total ?? row.set_printed_total ?? null,
-    series: String(row.series ?? set.series ?? ''),
-    rarity: String(row.rarity ?? raw.rarity ?? ''),
-    image_small: String(row.image_small ?? images.small ?? row.image_large ?? images.large ?? ''),
-    image_large: row.image_large ?? images.large ?? row.image_small ?? images.small ?? null,
-    raw_data: {
-      images,
-      set,
-      rarity: raw.rarity,
-      subtypes: raw.subtypes,
-      tcgplayer: raw.tcgplayer,
-    },
-    language: row.language ?? raw.language ?? null,
-    release_date: String(row.release_date ?? set.releaseDate ?? set.release_date ?? ''),
-  };
 }
 
 function readScore(value: unknown) {
@@ -1698,7 +1657,10 @@ export default function ScanScreen() {
     }
 
     if (rowsById.size > 0 && identifiedRank.size > 0) {
-      return [...rowsById.values()]
+      const hydratedRows = await hydrateScanCardRowsWithLiveTcgdexReferences(
+        [...rowsById.values()], attachLiveTcgdexCardReferences,
+      );
+      return hydratedRows
         .sort((a, b) => (identifiedRank.get(a.id) ?? 999) - (identifiedRank.get(b.id) ?? 999))
         .slice(0, MAX_RESULT_CARDS)
         .map(toResultCard)
@@ -1958,7 +1920,7 @@ export default function ScanScreen() {
     router.replace({
       pathname: '/scan/result',
       params: {
-        cardsJson: JSON.stringify([card]),
+        cardsJson: serializeScanCardsForNavigation([card]),
         scanSessionId: routeInstanceId.current,
         mode,
         intent: scanIntent,
@@ -3313,7 +3275,7 @@ export default function ScanScreen() {
       router.replace({
         pathname: '/scan/result',
         params: {
-          cardsJson: JSON.stringify(cards),
+          cardsJson: serializeScanCardsForNavigation(cards),
           scanSessionId: routeInstanceId.current,
           mode,
           intent: scanIntent,

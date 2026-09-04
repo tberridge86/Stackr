@@ -15,6 +15,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import { Text } from '../../components/Text';
 import { StackrProfileAvatar } from '../../components/StackrProfileAvatar';
 import {
@@ -177,9 +178,9 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
 // ===============================
 
 const getBinderLogoUrl = (item: BinderRecord): string | null => {
-  return item.source_set_logo_url
+  return enforceSetVisualRuntimePolicy(item.source_set_logo_url
     ?? item.source_set_symbol_url
-    ?? getPokemonSetLogoUrl(item.source_set_id, item.language)
+    ?? getPokemonSetLogoUrl(item.source_set_id, item.language))
     ?? null;
 };
 
@@ -997,7 +998,7 @@ export default function BinderLibraryScreen() {
         id: card.id,
         set_id: card.set_id ?? null,
         language: normalizePokemonCardLanguage(card.language),
-        name: card.english_display_name ?? card.canonical_name ?? card.local_name ?? null,
+        name: card.local_name ?? card.raw_payload?.local_name ?? card.canonical_name ?? card.english_display_name ?? null,
         number: card.collector_number ?? card.raw_payload?.localId ?? null,
         rarity: card.rarity ?? card.raw_payload?.rarity ?? null,
         raw_data: card.raw_payload ?? null,

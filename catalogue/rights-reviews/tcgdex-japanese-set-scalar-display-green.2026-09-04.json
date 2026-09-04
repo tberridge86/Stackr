@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "stackr-green-metadata-activation-decision-v1",
+  "decisionId": "tcgdex-japanese-set-scalar-display-green:2026-09-04",
+  "classification": "green",
+  "status": "authorized_under_internal_operating_boundary",
+  "recordedAt": "2026-09-04T10:10:00.000Z",
+  "authorityReviewOwner": "Jack Berridge",
+  "activationAuthorized": true,
+  "publicRuntimeDisplayAuthorized": true,
+  "publicRuntimeImportAuthorized": false,
+  "canonicalDatabaseWriteAuthorized": false,
+  "scope": {
+    "sourceCode": "tcgdex",
+    "repository": "tcgdex/cards-database",
+    "pinnedCommit": "dd4fc9460b54b91c25df750c68ca36b9946448e2",
+    "language": "ja",
+    "fields": [
+      "release_date",
+      "set_printed_total"
+    ],
+    "recordCount": 8,
+    "purpose": "Exact-code and exact-native-name Japanese factual set scalar display supplements, while the authentic Japanese title remains primary.",
+    "allowedSurfaces": [
+      "search",
+      "collection",
+      "binder",
+      "inventory",
+      "set_checklist",
+      "product_identification"
+    ],
+    "excludedUses": [
+      "canonical_database_write",
+      "canonical_release_date_or_printed_total_backfill",
+      "chinese_metadata",
+      "english_set_name_or_translation",
+      "series_identity_or_mapping",
+      "card_rules_or_flavour_text",
+      "artwork",
+      "set_logo",
+      "expansion_symbol",
+      "pack_or_product_artwork",
+      "assets",
+      "derivatives",
+      "embeddings",
+      "model_training"
+    ]
+  },
+  "bindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+    "rightsRegistryPath": "catalogue/source-rights-registry.json",
+    "rightsRegistrySha256": "53805cec7470b726190d1b268a2b93c5b0e6d96dd8287428a036f591456b250e",
+    "evidencePath": "catalogue/rights-evidence/tcgdex-japanese-set-scalar-display.2026-09-04.json",
+    "evidenceSha256": "dff3d8facbbeb7a440ef79462b3a36cdb42b7870ab8da399f7bffd3a21931828",
+    "metadataLicenseEvidencePath": "catalogue/rights-evidence/tcgdex-metadata-mit.2026-09-04.json",
+    "metadataLicenseEvidenceSha256": "75992e1dde37c54806ac135c2fd49642c24c3429702ef3d6074fc8f986da8211",
+    "frozenSourcePath": "catalogue/tcgdex-japanese-set-scalar-display-source.2026-09-04.json",
+    "frozenSourceSha256": "fa9fd6e81342a5c26b60366be1109d00f15e4afc10a8875cd36f52b3edc13c5d",
+    "thirdPartyNoticePath": "THIRD_PARTY_NOTICES.md",
+    "thirdPartyNoticeSha256": "3bf318589be0f4fcac922891c1714fbec406536cbf4772e429d9f1e138290b7b",
+    "boundaryCompatibilityReviewPath": "catalogue/rights-reviews/stackrtcg-ip-boundary-green-compatibility.2026-09-04.json",
+    "boundaryCompatibilityReviewSha256": "aff5f9e97ab0d32cb7a4cc573f4acbedbabfa70613a46f77bd7bdc4969c2a1e4"
+  },
+  "reviewAuditProvenance": {
+    "activationAuthority": false,
+    "candidateSha256": "2c4358e3f0a5c7f3f781c77bb4c9364265a47fd19cbd59c9b7c514c7d7017ea5",
+    "reviewPackSha256": "dc083ee718b3313bbc61340372763be8bac19c478e08d9f7e7d015e9fd2ddc97",
+    "manifestSha256": "e099f2e9498e89b99e60a20f53c717c32951cf465a7f23e02d8a31f319067ca9"
+  },
+  "runtimeControls": {
+    "exactJapaneseSetCodeRequired": true,
+    "exactNativeJapaneseSetNameRequired": true,
+    "nativeNameRemainsPrimary": true,
+    "englishLabelsRequired": [
+      "Release date:",
+      "Set size:"
+    ],
+    "sourceKillSwitches": [
+      "EXPO_PUBLIC_DISABLE_TCGDEX_METADATA",
+      "STACKR_DISABLE_TCGDEX_METADATA"
+    ],
+    "killSwitchValue": "true",
+    "failClosedOnBindingMismatch": true
+  },
+  "relationshipToPendingCjkReview": "This decision activates only eight exact Japanese scalar display records. It does not alter or approve the pending Wikidata, Chinese editorial, Japanese editorial, official-site, set-name, series-identity, or canonical-repair lanes.",
+  "signature": null,
+  "signatureRequired": false
+}

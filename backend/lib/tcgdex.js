@@ -8,6 +8,8 @@ const TCGDEX_BASE_URL = process.env.TCGDEX_API_BASE_URL || 'https://api.tcgdex.n
 const TCGDEX_CACHE_TTL_MS = Number(process.env.TCGDEX_CACHE_TTL_MS || 10 * 60 * 1000);
 const USD_TO_GBP = Number(process.env.USD_TO_GBP || 0.79);
 const EUR_TO_GBP = Number(process.env.EUR_TO_GBP || 0.86);
+const CONTROLLED_CARD_REFERENCE_LANGUAGES = new Set(['ja', 'zh-tw', 'zh-cn']);
+const TCGDEX_ASSET_HOST = 'assets.tcgdex.net';
 
 const tcgdexCache = new Map();
 const tcgdexInflight = new Map();
@@ -151,6 +153,42 @@ function withSetAsset(url, extension = 'webp') {
   return `${value.replace(/\/$/, '')}.${extension}`;
 }
 
+function isControlledCardReferenceLanguage(language) {
+  return CONTROLLED_CARD_REFERENCE_LANGUAGES.has(normalizeLanguage(language));
+}
+
+function controlledCardReferencesDisabled() {
+  return process.env.EXPO_PUBLIC_DISABLE_TCGDEX_CARD_REFERENCES === 'true'
+    || process.env.STACKR_DISABLE_TCGDEX_CARD_REFERENCES === 'true';
+}
+
+function controlledCardReferenceDenied(language, providerSetId, providerCardId) {
+  const raw = String(process.env.EXPO_PUBLIC_TCGDEX_CARD_REFERENCE_DENYLIST || '').trim();
+  if (!raw || raw.length > 16_384) return raw.length > 16_384;
+  const key = `${language}:${providerSetId}:${providerCardId}`.toLowerCase();
+  return raw.split(',').some((entry) => entry.trim().toLowerCase() === key);
+}
+
+/** Only a live or TTL-cached TCGdex card record can issue this display descriptor. */
+export function resolveTcgdexControlledCardReference(card, language) {
+  const lang = normalizeLanguage(language);
+  if (!isControlledCardReferenceLanguage(lang) || controlledCardReferencesDisabled()) return null;
+  const providerCardId = String(card?.id || '').trim();
+  const providerSetId = String(card?.set?.id || '').trim();
+  const localId = String(card?.localId || '').trim();
+  let url;
+  try { url = new URL(String(card?.image || '').trim()); } catch { return null; }
+  if (!providerCardId || !providerSetId || !localId || url.protocol !== 'https:'
+    || url.hostname !== TCGDEX_ASSET_HOST || url.port || url.username || url.password || url.search || url.hash) return null;
+  const segments = url.pathname.split('/').filter(Boolean);
+  if (segments.length !== 4 || segments.some((segment) => !/^[A-Za-z0-9._~-]+$/.test(segment))) return null;
+  const [urlLanguage, resourceType, urlSetId, urlLocalId] = segments;
+  if (urlLanguage !== lang || resourceType !== 'cards' || urlSetId !== providerSetId
+    || urlLocalId !== localId || providerCardId !== `${providerSetId}-${localId}`
+    || controlledCardReferenceDenied(lang, providerSetId, providerCardId)) return null;
+  return { uri: `${url.origin}/${segments.join('/')}/low.webp`, sourceCode: 'tcgdex', attributionText: 'TCGdex reference', cachePolicy: 'memory', providerCardId, providerSetId, localId, provenance: 'tcgdex_live_or_ttl_cached_provider_card_record' };
+}
+
 function mapSetBrief(set, language) {
   const lang = normalizeLanguage(language);
   const meta = getLanguageMeta(lang);
@@ -205,6 +243,7 @@ function mapSetBrief(set, language) {
 
 function mapCardBrief(card, language, context = {}) {
   const lang = normalizeLanguage(language);
+  const controlled = isControlledCardReferenceLanguage(lang);
   const meta = getLanguageMeta(lang);
   const localName = card?.name ?? card?.id ?? null;
   const contextSet = card?.set ?? context.set ?? null;
@@ -225,7 +264,7 @@ function mapCardBrief(card, language, context = {}) {
       localName,
       raw,
     });
-  const displayName = englishDisplayName ?? localName;
+  const displayName = localName ?? englishDisplayName;
   return {
     id: card?.id ?? null,
     providerCardId: card?.id ?? null,
@@ -236,9 +275,10 @@ function mapCardBrief(card, language, context = {}) {
     name: displayName,
     localName,
     englishDisplayName,
-    image: card?.image ? withCardImageAsset(card.image, 'high') : null,
-    imageSmall: card?.image ? withCardImageAsset(card.image, 'low') : null,
-    imageBase: card?.image ?? null,
+    image: controlled ? null : (card?.image ? withCardImageAsset(card.image, 'high') : null),
+    imageSmall: controlled ? null : (card?.image ? withCardImageAsset(card.image, 'low') : null),
+    imageBase: controlled ? null : (card?.image ?? null),
+    controlledReference: controlled ? resolveTcgdexControlledCardReference(raw, lang) : null,
     raw,
   };
 }
@@ -395,10 +435,10 @@ export async function searchTcgdexCards({ query, language = 'ja', limit = 20 }) 
   const params = new URLSearchParams({ name: trimmed });
   const results = await fetchJson(`/${lang}/cards?${params.toString()}`);
   const list = Array.isArray(results) ? results : Array.isArray(results?.value) ? results.value : [];
-  return list.slice(0, Math.max(1, Math.min(Number(limit) || 20, 100))).map((card) => ({
-    ...mapCardBrief(card, lang),
-    image: card.image ? withCardImageAsset(card.image, 'low') : null,
-  }));
+  return list.slice(0, Math.max(1, Math.min(Number(limit) || 20, 100))).map((card) => {
+    const mapped = mapCardBrief(card, lang);
+    return isControlledCardReferenceLanguage(lang) ? mapped : { ...mapped, image: card.image ? withCardImageAsset(card.image, 'low') : null };
+  });
 }
 
 export async function fetchTcgdexCard(cardId, language = 'ja') {
@@ -576,10 +616,10 @@ function resolveTcgdexPrice(card, language = 'ja') {
       source: 'tcgdex',
       providerCardId: card?.id ?? null,
       language: lang,
-      name: englishDisplayName ?? localName,
+      name: localName ?? englishDisplayName,
       localName,
       englishDisplayName,
-      setName: setEnglishDisplayName ?? localSetName,
+      setName: localSetName ?? setEnglishDisplayName,
       setLocalName: localSetName,
       setEnglishDisplayName,
       number: card?.localId ?? null,
@@ -598,10 +638,10 @@ function resolveTcgdexPrice(card, language = 'ja') {
     source: 'tcgdex',
     providerCardId: card?.id ?? null,
     language: lang,
-    name: englishDisplayName ?? localName,
+    name: localName ?? englishDisplayName,
     localName,
     englishDisplayName,
-    setName: setEnglishDisplayName ?? localSetName,
+    setName: localSetName ?? setEnglishDisplayName,
     setLocalName: localSetName,
     setEnglishDisplayName,
     number: card?.localId ?? null,

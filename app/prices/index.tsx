@@ -36,6 +36,8 @@ import { listingCategoryIcons } from '../../lib/listingCategoryIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import { fetchStackrCardRows, fetchStackrPrice, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
+import { attachLiveTcgdexCardReferences } from '../../lib/pokemonTcg';
+import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 
 
 // ===============================
@@ -463,7 +465,10 @@ export default function MarketScreen() {
       if (!rows.length) { setWatchlistCards([]); setWatchlistPriceMap({}); return; }
 
       const cardIds = rows.map((r) => r.card_id);
-      const cardRows = await fetchStackrCardRows(cardIds);
+      const cardRows = await hydrateCardReferenceRowMapWithLiveTcgdexReferences(
+        await fetchStackrCardRows(cardIds),
+        attachLiveTcgdexCardReferences,
+      );
       const cardMap = Object.fromEntries(cardIds.flatMap((id) => {
         const row = cardRows.get(id);
         return row ? [[id, mapCard(row)]] : [];

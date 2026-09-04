@@ -1,0 +1,192 @@
+{
+  "bindings": {
+    "contractSha256": "d525dbe9939f40823e30a2b8b16dcba1b4187cec986175574058d66013619fed",
+    "githubResponses": {
+      "github-master-commit": "0182ef3fa3fbf822efaded0ec615ed941d8143f3ffdb9998fe7f007c6c55ddf4",
+      "github-source-CBB1C": "bd9a27ada31dcc71197ba253476999fae00e3b309a4724e03bfd8669bd553818",
+      "github-source-CSV1C": "1224d60892407d81b0eacbdd0550a88f3fe75b348427e829d9842f4151ba098d"
+    },
+    "producerSha256": "3fab43f880f3b83e796bf0d2f7ea229178f64a1070f561e753d5d396abc3b1ad",
+    "providerResponses": {
+      "tcgdex-zh-cn-set-CBB1C-not-found": "48212812e9ab050a07347f48f3148441df607995fdd425d31bc6f47fe20a1cf9",
+      "tcgdex-zh-cn-set-CSV1C": "3391be685bc4b6153b73d94fb93f6070d65c60486ec0efd814e30fba6640aff3",
+      "tcgdex-zh-cn-sets": "69170515af0564d353d0400905ccbb759ee402455a88021f433453fe23f056da"
+    }
+  },
+  "canonicalCollision": {
+    "disposition": "block_until_reviewed_case_variant_reconciliation",
+    "rows": [
+      {
+        "exactExternalIdentifiers": [
+          "CSV1C"
+        ],
+        "printingCount": 0,
+        "providerSetCode": "CSV1C",
+        "setCode": "CSV1C",
+        "setId": "1f2add00-9ae7-4a7e-9b01-2e8f0fb8e059",
+        "variantCount": 0
+      },
+      {
+        "exactExternalIdentifiers": [],
+        "printingCount": 167,
+        "providerSetCode": "csv1c",
+        "setCode": "csv1c",
+        "setId": "31225f01-ead5-4e8d-83f8-c06978e706da",
+        "variantCount": 393
+      },
+      {
+        "exactExternalIdentifiers": [],
+        "printingCount": 115,
+        "providerSetCode": "cbb1c",
+        "setCode": "cbb1c",
+        "setId": "6fddd811-836e-4304-8d28-f36caef0d044",
+        "variantCount": 115
+      }
+    ],
+    "totalPrintingCount": 282,
+    "totalVariantCount": 508
+  },
+  "canonicalRepairOutstanding": [
+    "CSV1C",
+    "CBB1C"
+  ],
+  "disposition": "provider_source_reconciled_canonical_collision_blocked",
+  "evidenceId": "provider-resolution:2026-08-14:42a5f7613be7f7e92c71d286",
+  "exactPathToResolve": [
+    "Review the three active case-variant canonical set rows and select one canonical row for CSV1C and one for CBB1C without moving or deleting data automatically.",
+    "Prove printing and variant preservation for the populated csv1c (167/393) and cbb1c (115/115) rows.",
+    "Attach exact current external identifiers CSV1C and CBB1C to the reviewed canonical rows; do not use case-folded matching.",
+    "Deprecate only redundant rows after a reviewed dry-run reports zero lost printings, variants, assets, mappings or provenance.",
+    "Regenerate canonical evidence, provider baseline evidence and this resolution bundle before enabling the worldwide claim."
+  ],
+  "inputDuplicateRowCount": 2,
+  "noRowsDiscarded": true,
+  "observedAt": "2026-08-14T00:35:00.000Z",
+  "outputResolutionRowCount": 2,
+  "productionModified": false,
+  "providerDenominatorReconciled": true,
+  "releaseClaimEligible": false,
+  "resolutionLedgerSha256": "59fef5159f65dd4b4ff9fce5dc5245b1b70cda5ea2b63e177b8c8d3eaa22b089",
+  "resolvedBaseline": {
+    "metrics": {
+      "perLanguage": {
+        "en": {
+          "aliasOnlyCount": 0,
+          "blockers": [],
+          "canonicalAbsentCount": 120,
+          "canonicalIdentifierCollisionCount": 0,
+          "canonicalLanguageContaminationCount": 0,
+          "canonicalOnlyProviderMappingCount": 19615,
+          "claimEligible": true,
+          "exactCanonicalPrintingCount": 23324,
+          "exactCanonicalSetCount": 218,
+          "exactPrintingCoveragePct": 99.488142,
+          "exactSetCoveragePct": 100,
+          "providerCardVariantDeclarationsObservedCount": 0,
+          "providerContaminationCount": 0,
+          "providerDeclaredPhysicalVariantRowCount": 0,
+          "providerPhysicalVariantCoverageClaimEligible": false,
+          "providerPrintingCount": 23444,
+          "providerSetCount": 218
+        },
+        "ja": {
+          "aliasOnlyCount": 0,
+          "blockers": [],
+          "canonicalAbsentCount": 0,
+          "canonicalIdentifierCollisionCount": 0,
+          "canonicalLanguageContaminationCount": 0,
+          "canonicalOnlyProviderMappingCount": 8966,
+          "claimEligible": true,
+          "exactCanonicalPrintingCount": 8159,
+          "exactCanonicalSetCount": 177,
+          "exactPrintingCoveragePct": 100,
+          "exactSetCoveragePct": 100,
+          "providerCardVariantDeclarationsObservedCount": 0,
+          "providerContaminationCount": 0,
+          "providerDeclaredPhysicalVariantRowCount": 0,
+          "providerPhysicalVariantCoverageClaimEligible": false,
+          "providerPrintingCount": 8159,
+          "providerSetCount": 177
+        },
+        "ko": {
+          "aliasOnlyCount": 0,
+          "blockers": [],
+          "canonicalAbsentCount": 0,
+          "canonicalIdentifierCollisionCount": 0,
+          "canonicalLanguageContaminationCount": 0,
+          "canonicalOnlyProviderMappingCount": 239,
+          "claimEligible": true,
+          "exactCanonicalPrintingCount": 239,
+          "exactCanonicalSetCount": 95,
+          "exactPrintingCoveragePct": 100,
+          "exactSetCoveragePct": 100,
+          "providerCardVariantDeclarationsObservedCount": 0,
+          "providerContaminationCount": 0,
+          "providerDeclaredPhysicalVariantRowCount": 0,
+          "providerPhysicalVariantCoverageClaimEligible": false,
+          "providerPrintingCount": 239,
+          "providerSetCount": 95
+        },
+        "zh-cn": {
+          "aliasOnlyCount": 0,
+          "blockers": [
+            "canonical_case_variant_set_collision"
+          ],
+          "canonicalAbsentCount": 1,
+          "canonicalIdentifierCollisionCount": 0,
+          "canonicalLanguageContaminationCount": 0,
+          "canonicalOnlyProviderMappingCount": 902,
+          "claimEligible": false,
+          "exactCanonicalPrintingCount": 877,
+          "exactCanonicalSetCount": 56,
+          "exactPrintingCoveragePct": null,
+          "exactSetCoveragePct": 98.245614,
+          "providerCardVariantDeclarationsObservedCount": 0,
+          "providerContaminationCount": 0,
+          "providerDeclaredPhysicalVariantRowCount": 0,
+          "providerPhysicalVariantCoverageClaimEligible": false,
+          "providerPrintingCount": 877,
+          "providerSetCount": 57
+        },
+        "zh-tw": {
+          "aliasOnlyCount": 0,
+          "blockers": [],
+          "canonicalAbsentCount": 0,
+          "canonicalIdentifierCollisionCount": 0,
+          "canonicalLanguageContaminationCount": 0,
+          "canonicalOnlyProviderMappingCount": 4486,
+          "claimEligible": true,
+          "exactCanonicalPrintingCount": 7436,
+          "exactCanonicalSetCount": 98,
+          "exactPrintingCoveragePct": 100,
+          "exactSetCoveragePct": 100,
+          "providerCardVariantDeclarationsObservedCount": 0,
+          "providerContaminationCount": 0,
+          "providerDeclaredPhysicalVariantRowCount": 0,
+          "providerPhysicalVariantCoverageClaimEligible": false,
+          "providerPrintingCount": 7436,
+          "providerSetCount": 98
+        }
+      },
+      "worldwide": {
+        "claimEligible": false,
+        "coverageTargetPct": 80,
+        "everyLanguageTargetMet": false,
+        "exactCanonicalPrintingCount": 40035,
+        "exactCanonicalPrintingCoveragePct": null,
+        "informationalReconciledPrintingCoveragePct": 99.701158,
+        "physicalVariantCoverageClaimEligible": false,
+        "providerPrintingBaselineCount": 40155,
+        "targetMet": false
+      }
+    },
+    "sourceEvidenceId": "provider-baseline:2026-08-14:261591f165afdcd4a1328bb1",
+    "sourceManifestSha256": "dd09b3e089d8afdeca70f6e8e9959e325c813b1c4addded888ce0abf6dd387e6"
+  },
+  "schemaVersion": "1.0.0",
+  "sourceCommit": {
+    "repository": "tcgdex/cards-database",
+    "sha": "ccb9cef3f9a545be89cd5e716cc1c72f99070bac",
+    "signatureVerified": true
+  }
+}

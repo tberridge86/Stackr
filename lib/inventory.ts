@@ -7,6 +7,7 @@ import {
   SellerInventoryCommitReconciliationRequiredError,
 } from './sellerBatchCommit';
 import { loadRemoteWithCache } from './sellerRemoteCache';
+import { selectTcgdexReferencePersistenceImage } from './tcgdexReferencePersistence';
 
 export { sellerCacheKey } from './sellerCache';
 
@@ -199,6 +200,22 @@ function inventoryPayload(items: InventoryItem[], usePersistedSnapshot: boolean)
   }));
 }
 
+function inventorySnapshotForPersistence(snapshot: InventoryCardSnapshot, existing?: InventoryCardSnapshot | null) {
+  return {
+    ...snapshot,
+    image_small: selectTcgdexReferencePersistenceImage(snapshot.image_small, existing?.image_small),
+    image_large: selectTcgdexReferencePersistenceImage(snapshot.image_large, existing?.image_large),
+  };
+}
+
+function inventoryMovementForPersistence(movement: InventoryMovement) {
+  return { ...movement, image_small: selectTcgdexReferencePersistenceImage(movement.image_small) };
+}
+
+function inventorySaleForPersistence(sale: InventorySaleTransaction | null | undefined) {
+  return sale ? { ...sale, lines: sale.lines.map((line) => ({ ...line, image_small: selectTcgdexReferencePersistenceImage(line.image_small) })) } : null;
+}
+
 function isRetryableSellerBatchError(error: any) {
   const code = String(error?.code ?? '');
   const status = Number(error?.status ?? error?.statusCode ?? 0);
@@ -330,7 +347,7 @@ export async function commitSellerInventoryBatch(input: {
 
   const requestToken = input.requestId ?? createBatchId('request');
   const requestId = sellerBatchRequestId(user.id, requestToken);
-  const movements = (input.movements ?? []).map((movement): InventoryMovement => ({
+  const movements = (input.movements ?? []).map((movement): InventoryMovement => inventoryMovementForPersistence({
     ...movement,
     id: movement.id ?? createBatchId('movement'),
     created_at: movement.created_at ?? new Date().toISOString(),
@@ -339,10 +356,10 @@ export async function commitSellerInventoryBatch(input: {
   const rpcInput = {
     p_request_id: requestId,
     p_expected_inventory: inventoryPayload(input.expectedItems, true),
-    p_inventory: inventoryPayload(input.items, false),
+    p_inventory: input.items.map((item) => ({ ...item, card: inventorySnapshotForPersistence(item.card, item.persisted_card_snapshot) })),
     p_movements: movements,
-    p_sale: input.sale ?? null,
-    p_binder_deltas: input.binderDeltas ?? [],
+    p_sale: inventorySaleForPersistence(input.sale),
+    p_binder_deltas: (input.binderDeltas ?? []).map((delta) => ({ ...delta, image_url: selectTcgdexReferencePersistenceImage(delta.image_url) })),
   };
 
   const verifyCommitIdentity = () => currentSellerCommitIdentityMatches(user.id);
@@ -373,10 +390,10 @@ export async function commitSellerInventoryBatch(input: {
     );
   }
 
-  const committedItems = input.items.map((item) => ({
-    ...item,
-    persisted_card_snapshot: item.card,
-  }));
+  const committedItems = input.items.map((item) => {
+    const persistedCard = inventorySnapshotForPersistence(item.card, item.persisted_card_snapshot);
+    return { ...item, card: persistedCard, persisted_card_snapshot: persistedCard };
+  });
 
   // Remote data is authoritative. Cache only after the complete database
   // transaction succeeds; a cache failure cannot turn a committed batch into

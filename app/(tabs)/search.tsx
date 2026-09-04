@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -1441,8 +1442,8 @@ export default function GlobalSearchScreen() {
             <SearchSetRailItem
               key={set.id}
               name={set.name}
-              logoUri={set.images?.logo ?? null}
-              artworkUri={getPokemonSetVisualUrl(set) ?? set.images?.symbol ?? getPokemonSetSymbolUrl(set.id, set.language)}
+              logoUri={enforceSetVisualRuntimePolicy(set.images?.logo) ?? null}
+              artworkUri={enforceSetVisualRuntimePolicy(getPokemonSetVisualUrl(set) ?? set.images?.symbol ?? getPokemonSetSymbolUrl(set.id, set.language))}
               series={set.series}
               year={set.releaseDate ? new Date(set.releaseDate).getFullYear() : null}
               total={Number(set.printedTotal ?? set.total ?? 0) > 0 ? Number(set.printedTotal ?? set.total) : null}

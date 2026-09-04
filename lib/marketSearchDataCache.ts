@@ -1,6 +1,8 @@
 import { supabase } from './supabase';
 import { getCuratedPokemonCardDbRow } from './curatedPokemonCatalogue';
 import { fetchStackrCardRows } from './stackrDomainAdapter';
+import { attachLiveTcgdexCardReferences, type PokemonCard } from './pokemonTcg';
+import { hydrateScanCardRowsWithLiveTcgdexReferences, type ScanCardReferenceRow } from './scanCardReferenceHydration';
 import {
   getEnglishCardDisplayName,
   getLocalCardName,
@@ -23,6 +25,14 @@ export type PokemonCardDetailRow = {
   image_large?: string | null;
   raw_data?: any;
 };
+
+async function hydrateMarketDisplayRows<T extends PokemonCardDetailRow & ScanCardReferenceRow>(rows: T[]) {
+  return hydrateScanCardRowsWithLiveTcgdexReferences(
+    rows,
+    attachLiveTcgdexCardReferences as <U extends PokemonCard>(cards: U[], maxSetRequests?: number) => Promise<U[]>,
+    8,
+  );
+}
 
 type CanonicalCardDetailRow = {
   id: string;
@@ -207,11 +217,13 @@ export async function fetchCachedPokemonCardDetails(cardIds: string[]) {
     const batchKey = getBatchKey('pokemon-card-details', chunk);
     const request = cardDetailInflight.get(batchKey) ?? (async () => {
       const stackrRows = await fetchStackrCardRows(chunk);
+      const hydratedRows = await hydrateMarketDisplayRows([...stackrRows.values()] as PokemonCardDetailRow[]);
+      const hydratedById = new Map(hydratedRows.map((row) => [row.id, row]));
       const rows = new Map<string, PokemonCardDetailRow>();
       const foundIds = new Set<string>();
 
       for (const legacyId of chunk) {
-        const row = stackrRows.get(legacyId);
+        const row = hydratedById.get(legacyId) ?? stackrRows.get(legacyId);
         if (!row?.id) continue;
         const mapped: PokemonCardDetailRow = row;
         foundIds.add(legacyId);

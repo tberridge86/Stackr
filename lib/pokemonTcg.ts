@@ -23,6 +23,23 @@ import {
   type StackrLegacyCard,
   type StackrLegacySet,
 } from './stackrDomainAdapter';
+import {
+  fetchForeignPokemonCard,
+  fetchForeignPokemonSet,
+  type ForeignPokemonCardBrief,
+} from './foreignPokemon';
+import {
+  defineTcgdexRuntimeImageOverlay,
+  enforceTcgdexRuntimeImagePolicy,
+  isTcgdexControlledCardReferenceSourceEnabled,
+} from './tcgdexControlledCardReference';
+import {
+  getTcgdexControlledReferenceLookupIdentity,
+  matchTcgdexProviderCardFromLiveSet,
+  normalizeTcgdexCollectorIdentity,
+  type TcgdexControlledReferenceLanguage,
+  type TcgdexControlledReferenceLookupIdentity,
+} from './tcgdexControlledReferenceLookup';
 
 export type PokemonSet = {
   id: string;
@@ -152,6 +169,67 @@ function fromStackrCard(card: StackrLegacyCard): PokemonCard {
   const mapped = card as PokemonCard;
   rememberApprovedCardAssets(mapped);
   return mapped;
+}
+
+/**
+ * Fill display-only gaps from an exact, current provider card record. The
+ * issued low reference is kept only on the returned in-memory model.
+ */
+export async function attachLiveTcgdexCardReferences<T extends PokemonCard>(cards: T[], maxSetRequests = 8): Promise<T[]> {
+  if (!isTcgdexControlledCardReferenceSourceEnabled()) return cards;
+  type LookupEntry = { card: PokemonCard; identity: TcgdexControlledReferenceLookupIdentity };
+  type LookupGroup = { language: TcgdexControlledReferenceLanguage; providerSetId: string; entries: LookupEntry[] };
+  const groups = new Map<string, LookupGroup>();
+  for (const card of cards) {
+    if (card.images?.small || card.images?.large) continue;
+    const language = normalizePokemonCardLanguage(card.language);
+    if (language !== 'ja' && language !== 'zh-tw' && language !== 'zh-cn') continue;
+    const identity = getTcgdexControlledReferenceLookupIdentity(card, language);
+    if (!identity) continue;
+    const key = `${language}:${identity.providerSetId}`;
+    const group = groups.get(key) ?? { language, providerSetId: identity.providerSetId, entries: [] };
+    group.entries.push({ card, identity }); groups.set(key, group);
+  }
+  const selectedGroups = [...groups.values()].slice(0, Math.max(0, Math.floor(maxSetRequests)));
+  if (!selectedGroups.length) return cards;
+  const liveUrisByCard = new Map<PokemonCard, string>();
+  const pendingDetails = new Map<string, { language: TcgdexControlledReferenceLanguage; providerCardId: string; entries: LookupEntry[] }>();
+  const liveReferenceUri = (reference: ForeignPokemonCardBrief, identity: TcgdexControlledReferenceLookupIdentity, language: TcgdexControlledReferenceLanguage) => {
+    const descriptor = reference.controlledReference;
+    if (reference.language !== language || !descriptor || descriptor.sourceCode !== 'tcgdex'
+      || descriptor.providerCardId !== reference.providerCardId || descriptor.providerSetId !== identity.providerSetId
+      || normalizeTcgdexCollectorIdentity(descriptor.localId) !== identity.collectorKey
+      || (identity.providerCardId && descriptor.providerCardId !== identity.providerCardId)) return null;
+    return enforceTcgdexRuntimeImagePolicy(reference.imageSmall);
+  };
+  const queueDetail = (entry: LookupEntry, providerCardId: string, language: TcgdexControlledReferenceLanguage) => {
+    const key = `${language}:${providerCardId}`;
+    const pending = pendingDetails.get(key) ?? { language, providerCardId, entries: [] };
+    pending.entries.push({ card: entry.card, identity: { ...entry.identity, providerCardId } }); pendingDetails.set(key, pending);
+  };
+  await Promise.all(selectedGroups.map(async (group) => {
+    const set = await fetchForeignPokemonSet(group.providerSetId, { language: group.language }).catch(() => null);
+    const exactSet = set && set.language === group.language && (set.providerSetId ?? set.id) === group.providerSetId ? set : null;
+    for (const entry of group.entries) {
+      const candidate = matchTcgdexProviderCardFromLiveSet(entry.identity, exactSet?.cards ?? [], group.language);
+      if (candidate) {
+        const identity = { ...entry.identity, providerCardId: candidate.providerCardId };
+        const uri = liveReferenceUri(candidate, identity, group.language);
+        if (uri) { liveUrisByCard.set(entry.card, uri); continue; }
+        queueDetail(entry, candidate.providerCardId, group.language);
+      } else if (entry.identity.providerCardId) queueDetail(entry, entry.identity.providerCardId, group.language);
+    }
+  }));
+  await Promise.all([...pendingDetails.values()].slice(0, Math.min(24, cards.length, selectedGroups.length * 8)).map(async (pending) => {
+    const reference = await fetchForeignPokemonCard(pending.providerCardId, { language: pending.language }).catch(() => null);
+    if (!reference) return;
+    for (const entry of pending.entries) { const uri = liveReferenceUri(reference, entry.identity, pending.language); if (uri) liveUrisByCard.set(entry.card, uri); }
+  }));
+  return cards.map((card) => {
+    const uri = liveUrisByCard.get(card); if (!uri) return card;
+    const displayCard = { ...card, images: { small: uri, large: card.images?.large }, imageStatus: card.images?.large ? card.imageStatus : 'provider_reference_low' } as T;
+    return defineTcgdexRuntimeImageOverlay(displayCard, 'images', displayCard.images, uri) as T;
+  });
 }
 
 const SET_ID_ALIASES: Record<string, string> = {
@@ -1752,7 +1830,10 @@ export async function fetchPokemonTcgApiCardsByQuery(
   if (inflight) return inflight;
 
   const request = (async () => {
-    const cards = (await searchStackrCards(safeQuery, { limit })).map(fromStackrCard);
+    const cards = await attachLiveTcgdexCardReferences(
+      (await searchStackrCards(safeQuery, { limit })).map(fromStackrCard),
+      6,
+    );
 
     pokemonTcgApiSearchCache.set(cacheKey, {
       expiresAt: Date.now() + POKEMON_TCG_API_SEARCH_CACHE_TTL_MS,
@@ -1815,7 +1896,10 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
   }
 
   const request = (async () => {
-    const cards = (await fetchStackrCardsForSet(setId, language)).map(fromStackrCard);
+    const cards = await attachLiveTcgdexCardReferences(
+      (await fetchStackrCardsForSet(setId, language)).map(fromStackrCard),
+      1,
+    );
 
     cardsForSetCache.set(cacheKey, {
       expiresAt: Date.now() + POKEMON_SET_CARDS_CACHE_TTL_MS,
@@ -1935,9 +2019,13 @@ function mapPokemonCardDbRow(data: any): PokemonCard {
 function mapCanonicalCardDbRow(data: any): PokemonCard {
   const raw = data.raw_payload ?? {};
   const rawImages = raw.images && typeof raw.images === 'object' ? raw.images : {};
-  const images = {
+  const storedImages = {
     small: data.image_small_url ?? rawImages.small ?? undefined,
     large: data.image_large_url ?? rawImages.large ?? undefined,
+  };
+  const images = {
+    small: enforceTcgdexRuntimeImagePolicy(storedImages.small) ?? undefined,
+    large: enforceTcgdexRuntimeImagePolicy(storedImages.large) ?? undefined,
   };
   const language = normalizePokemonCardLanguage(data.language ?? raw.language);
   const localName = getLocalCardName({
@@ -2039,7 +2127,7 @@ function mapCanonicalCardDbRow(data: any): PokemonCard {
       english_display_name: englishDisplayName ?? data.english_display_name ?? raw.english_display_name ?? null,
       number,
       localId: raw.localId ?? number,
-      images,
+      images: storedImages,
       set: setData,
       language: data.language ?? raw.language,
       region: data.region ?? raw.region,
@@ -2052,5 +2140,5 @@ export async function fetchCardById(
   options: { language?: PokemonCardLanguage | string | null } = {}
 ): Promise<PokemonCard | null> {
   const card = await fetchStackrCard(cardId, { language: options.language });
-  return card ? fromStackrCard(card) : null;
+  return card ? (await attachLiveTcgdexCardReferences([fromStackrCard(card)], 1))[0] ?? null : null;
 }

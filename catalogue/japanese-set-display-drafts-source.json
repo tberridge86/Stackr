@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "stackr-japanese-set-display-drafts-source-v3",
+  "policy": {
+    "use": "review_only_quarantined_pending_amber_approval",
+    "nativeNameRemainsPrimary": true,
+    "canonicalDatabaseWriteAuthorized": false,
+    "artworkAuthorized": false,
+    "activationAuthorized": false,
+    "publicRuntimeImportAuthorized": false,
+    "sourceOfNativeName": "pinned_tcgdex_source_only",
+    "removedRedOfficialPageRecordCount": 26,
+    "removedRedOfficialPageSourceSha256": "b592f6a61aff3cec174a8dbe734d82c602a70708c6b14314771d8ece57f21b97"
+  },
+  "exclusions": {
+    "ambiguousVariantCodes": ["DP4", "DP5", "SA", "MG"],
+    "needsVariantReviewCodes": ["CLF", "DP1", "PPP", "CLL", "DPP", "DPtP", "CLK", "LP"]
+  },
+  "pinnedTcgdex": {
+    "repository": "tcgdex/cards-database",
+    "commit": "dd4fc9460b54b91c25df750c68ca36b9946448e2",
+    "licence": "MIT"
+  },
+  "entries": [
+    {"canonicalSetId":"8063eabc-362a-4f15-a4ec-4ed73824252d","setCode":"PCG1","nativeName":"伝説の飛翔","englishTranslation":"Flight of Legends","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG1.ts","sourceSha256":"3573099ff83929a1da1dd1e7fad056e9e4cee52933cd8c0f540b33f860e5ae0d","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG1.ts"}
+    ,{"canonicalSetId":"9fa08d47-d2cd-4829-85b6-819692a6850a","setCode":"PCG2","nativeName":"蒼空の激突","englishTranslation":"Clash of the Blue Sky","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG2.ts","sourceSha256":"36c8284e21fadfd63c1dcc0eec8f48fd734fa0f2a97a803057b025849eb2db24","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG2.ts"}
+    ,{"canonicalSetId":"12f2bb10-ec15-4783-bc9b-c946546a1abc","setCode":"PCG3","nativeName":"ロケット団の逆襲","englishTranslation":"Rocket Gang Strikes Back","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG3.ts","sourceSha256":"b8f0ba1aa96d01e4e79ca975691499a4acc6780f89e3126efe93df7408997382","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG3.ts"}
+    ,{"canonicalSetId":"af6617ed-ed99-445f-8869-5a330740efc2","setCode":"PCG4","nativeName":"金の空、銀の海","englishTranslation":"Golden Sky, Silvery Ocean","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG4.ts","sourceSha256":"d90d274df69b494681de6473cf3683524a826332ba92d0b821c7d9bc5bdad252","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG4.ts"}
+    ,{"canonicalSetId":"f8cb8c30-41dc-42a3-977a-23baba96fa69","setCode":"PCG5","nativeName":"まぼろしの森","englishTranslation":"Mirage Forest","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG5.ts","sourceSha256":"053e7f712902b4cf61e27ebb1b0cc8b65965d8ac4b3534ece0e93f59bcf7be9b","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG5.ts"}
+    ,{"canonicalSetId":"8fdf462f-ca9c-47e7-a92d-1936b082a12d","setCode":"PCG6","nativeName":"ホロンの研究塔","englishTranslation":"Holon Research Tower","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG6.ts","sourceSha256":"b72e5c77398253df002db08153ab7bb398b1be53f75b173ec3b40d141fca42a3","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG6.ts"}
+    ,{"canonicalSetId":"421a8323-4094-4c7f-8622-fb6af390becc","setCode":"PCG7","nativeName":"ホロンの幻影","englishTranslation":"Holon Phantom","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG7.ts","sourceSha256":"820b328486358b6d18d73f92410ed09103f4a0a6259f8ee20224ed37d062a39a","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG7.ts"}
+    ,{"canonicalSetId":"d832f428-8d51-4ac0-a3cf-a5d38bddb88d","setCode":"PCG8","nativeName":"きせきの結晶","englishTranslation":"Miracle Crystal","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG8.ts","sourceSha256":"ca1437d3327093bfd70c0d98f1a6008a7130be15057f11c22dece6214bedf98e","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG8.ts"}
+    ,{"canonicalSetId":"b5ef438a-ddcb-4093-8c9b-572639565af5","setCode":"PCG9","nativeName":"さいはての攻防","englishTranslation":"Offense and Defense of the Furthest Ends","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG9.ts","sourceSha256":"b1fa39349b5b06a691159959719e26a12af20e2b7f28acb439a03f065832ab94","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG9.ts"}
+    ,{"canonicalSetId":"81c25448-8d94-4736-a1c6-608597bc9622","setCode":"PCG10","nativeName":"ワールドチャンピオンズパック","englishTranslation":"World Champions Pack","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/PCG/PCG10.ts","sourceSha256":"9d6253339276e1c076faa7514f50d91d0c878d1ec7054870b020792d5dd7cf07","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/PCG/PCG10.ts"}
+    ,{"canonicalSetId":"47879bc4-23b1-4eed-99d5-ef0f3548418b","setCode":"M6","nativeName":"ストームエメラルダ","englishTranslation":"Storm Emeralda","sourceKind":"pinned_tcgdex_native_title","sourcePath":"data-asia/M/M6.ts","sourceSha256":"bb57cf15269a31ab857e526903e2db03bba1ff09e1a198a96c2e51439800e2a2","sourceUrl":"https://github.com/tcgdex/cards-database/blob/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/M/M6.ts"}
+  ]
+}

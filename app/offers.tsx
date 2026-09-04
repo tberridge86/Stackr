@@ -23,6 +23,8 @@ import {
   TradeOffer,
 } from '../lib/tradeOffers';
 import { fetchStackrCardRows } from '../lib/stackrDomainAdapter';
+import { attachLiveTcgdexCardReferences } from '../lib/pokemonTcg';
+import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../lib/scanCardReferenceHydration';
 
 type SegmentKey = 'received' | 'sent' | 'history';
 type OfferListConfirmAction = {
@@ -134,7 +136,9 @@ export default function OffersScreen() {
       ));
 
       if (allCardIds.length > 0) {
-        const previews = await fetchStackrCardRows(allCardIds);
+        const previews = await hydrateCardReferenceRowMapWithLiveTcgdexReferences(
+          await fetchStackrCardRows(allCardIds), attachLiveTcgdexCardReferences,
+        );
 
         const map: Record<string, any> = {};
         previews.forEach((card: any) => {

@@ -1,0 +1,806 @@
+{
+  "evidenceIds": [
+    "provider-resolution:2026-08-14:42a5f7613be7f7e92c71d286",
+    "pitch-black-me05:2026-08-14:200886c74e76d24388c89543"
+  ],
+  "files": [
+    {
+      "bytes": 255422,
+      "path": "pitch-black-canonical-snapshot.json",
+      "role": "pitch_black_canonical_snapshot",
+      "sha256": "e42d65a438269b8ae6f0244450ac6a66d85d9c969cde1d007ef921d5f9b1edab"
+    },
+    {
+      "bytes": 12868,
+      "path": "pitch-black-me05-evidence.json",
+      "role": "pitch_black_report",
+      "sha256": "dcd0863863be79504b899791b97cbb203290b8bdf84a5b86b4c888b5adf0d647"
+    },
+    {
+      "bytes": 141178,
+      "path": "pitch-black-me05-repair-plan.jsonl",
+      "role": "pitch_black_repair_plan",
+      "sha256": "e7e2b5a90320aeef827d8aa082d172aeab9a5abd5ebff5c5206508379c83dece"
+    },
+    {
+      "bytes": 1207,
+      "path": "provider-set-resolution-ledger.jsonl",
+      "role": "resolution_ledger",
+      "sha256": "59fef5159f65dd4b4ff9fce5dc5245b1b70cda5ea2b63e177b8c8d3eaa22b089"
+    },
+    {
+      "bytes": 191235,
+      "path": "raw/github-master-commit.json",
+      "role": "raw_remote_response",
+      "sha256": "0182ef3fa3fbf822efaded0ec615ed941d8143f3ffdb9998fe7f007c6c55ddf4"
+    },
+    {
+      "bytes": 1379,
+      "path": "raw/github-source-CBB1C.json",
+      "role": "raw_remote_response",
+      "sha256": "bd9a27ada31dcc71197ba253476999fae00e3b309a4724e03bfd8669bd553818"
+    },
+    {
+      "bytes": 1371,
+      "path": "raw/github-source-CSV1C.json",
+      "role": "raw_remote_response",
+      "sha256": "1224d60892407d81b0eacbdd0550a88f3fe75b348427e829d9842f4151ba098d"
+    },
+    {
+      "bytes": 2854,
+      "path": "raw/tcgdex-en-card-me05-001.json",
+      "role": "raw_remote_response",
+      "sha256": "633f27eccf34c21e2290de0176cedf035d3b84275bffd9663a6ed13bc034b1b4"
+    },
+    {
+      "bytes": 2709,
+      "path": "raw/tcgdex-en-card-me05-002.json",
+      "role": "raw_remote_response",
+      "sha256": "a0d4084ac3eaed22e2c186d507699463e45f41a6581c8aa6879244d201c1f57c"
+    },
+    {
+      "bytes": 2671,
+      "path": "raw/tcgdex-en-card-me05-003.json",
+      "role": "raw_remote_response",
+      "sha256": "49a32349f861c79cd3a4f19fc9e06b38bfa6031edccf27016bd5cb858a24c2a0"
+    },
+    {
+      "bytes": 2059,
+      "path": "raw/tcgdex-en-card-me05-004.json",
+      "role": "raw_remote_response",
+      "sha256": "9414a96302fb98f21c7924e60f56c799b9f043086e8c76ef5e357014389ae0c1"
+    },
+    {
+      "bytes": 2879,
+      "path": "raw/tcgdex-en-card-me05-005.json",
+      "role": "raw_remote_response",
+      "sha256": "8dd134d3513f81d86bafad165053a8e4d7d7c3fa89e040309cc21756d68a31d8"
+    },
+    {
+      "bytes": 2994,
+      "path": "raw/tcgdex-en-card-me05-006.json",
+      "role": "raw_remote_response",
+      "sha256": "4fb76383bb919f54bc3a82d7fe85d3267ad1add963ac469a1e10dd2489fbe37b"
+    },
+    {
+      "bytes": 2845,
+      "path": "raw/tcgdex-en-card-me05-007.json",
+      "role": "raw_remote_response",
+      "sha256": "ed580809403af81a57888f18ab4de65083b24e5589738d3e0721d6d5f18d6a43"
+    },
+    {
+      "bytes": 2070,
+      "path": "raw/tcgdex-en-card-me05-008.json",
+      "role": "raw_remote_response",
+      "sha256": "11c836737d9f806cd21c1cd21f7f48123907ce4e8de86fa72abb9f373e0a2bf8"
+    },
+    {
+      "bytes": 2973,
+      "path": "raw/tcgdex-en-card-me05-009.json",
+      "role": "raw_remote_response",
+      "sha256": "0141c72f81aa3c0cef38aef86ca13c4068e074cda4f73a43080495b738c0180b"
+    },
+    {
+      "bytes": 2850,
+      "path": "raw/tcgdex-en-card-me05-010.json",
+      "role": "raw_remote_response",
+      "sha256": "b7be694ab89b3244c21ffe6e878f42f4b6fd939c3b38f7b754804cb125f95e86"
+    },
+    {
+      "bytes": 2681,
+      "path": "raw/tcgdex-en-card-me05-011.json",
+      "role": "raw_remote_response",
+      "sha256": "7dae5d427ab7fac9a4b561ad0545bbdca6fe3d6972fa63890d9709d677b489ce"
+    },
+    {
+      "bytes": 2120,
+      "path": "raw/tcgdex-en-card-me05-012.json",
+      "role": "raw_remote_response",
+      "sha256": "e77b5d45ac6659be9fdda9d3ce942cdfd69d0627a0daafb34d102d5cad7ced93"
+    },
+    {
+      "bytes": 2633,
+      "path": "raw/tcgdex-en-card-me05-013.json",
+      "role": "raw_remote_response",
+      "sha256": "6ad5f11b8e4edcfd2b83915413a7f8cdf068569c70fe90a6a44a16463b7a74cb"
+    },
+    {
+      "bytes": 2840,
+      "path": "raw/tcgdex-en-card-me05-014.json",
+      "role": "raw_remote_response",
+      "sha256": "11fe563260b37fc3f7c3a30df1bb14abf4c597f4712385e298fcb61ad5efc6cd"
+    },
+    {
+      "bytes": 2697,
+      "path": "raw/tcgdex-en-card-me05-015.json",
+      "role": "raw_remote_response",
+      "sha256": "62629f4001d9d316db3215ecfdfef06ce5bfc0025e0f746974a8b88384dc64ea"
+    },
+    {
+      "bytes": 1905,
+      "path": "raw/tcgdex-en-card-me05-016.json",
+      "role": "raw_remote_response",
+      "sha256": "d10b404f76524f50f8ce013ce7d0fd25e3327b5b43433e0d8983f623ea77731c"
+    },
+    {
+      "bytes": 2749,
+      "path": "raw/tcgdex-en-card-me05-017.json",
+      "role": "raw_remote_response",
+      "sha256": "c42473fe55305552dee753ac52e524edf1cd4d7ba26ec8a44bf984246cffd94b"
+    },
+    {
+      "bytes": 2616,
+      "path": "raw/tcgdex-en-card-me05-018.json",
+      "role": "raw_remote_response",
+      "sha256": "0d1335770d67f0cd00d670fa35e42896d9b7d130ec1ab8ba817faa12c6065229"
+    },
+    {
+      "bytes": 2658,
+      "path": "raw/tcgdex-en-card-me05-019.json",
+      "role": "raw_remote_response",
+      "sha256": "8ac50316c346af976d762d53e25cbe817b4536b2cdd6e2b2d1a15f7e3adbaaae"
+    },
+    {
+      "bytes": 2328,
+      "path": "raw/tcgdex-en-card-me05-020.json",
+      "role": "raw_remote_response",
+      "sha256": "d1fd3c1510aa54c7187297c3e99806700446db475405f5bb2a9dd79b48f4baf6"
+    },
+    {
+      "bytes": 2679,
+      "path": "raw/tcgdex-en-card-me05-021.json",
+      "role": "raw_remote_response",
+      "sha256": "ff3745c18ad353fe7f03312456210872acb8cc2e94f79b2c3d39b6fb08d8cd90"
+    },
+    {
+      "bytes": 2759,
+      "path": "raw/tcgdex-en-card-me05-022.json",
+      "role": "raw_remote_response",
+      "sha256": "934d3081e0301553b256600aeb1c612a136f90fffed039d3ca467e602953e85e"
+    },
+    {
+      "bytes": 2698,
+      "path": "raw/tcgdex-en-card-me05-023.json",
+      "role": "raw_remote_response",
+      "sha256": "32a35a15fe61d075b02cb7b0eec3786c74d6d6d6d5653d6657c98f97c1993df1"
+    },
+    {
+      "bytes": 2963,
+      "path": "raw/tcgdex-en-card-me05-024.json",
+      "role": "raw_remote_response",
+      "sha256": "ed7ab262f054d4e006554a887331a071eed415a8d0de8453eff8055869ddaec3"
+    },
+    {
+      "bytes": 2721,
+      "path": "raw/tcgdex-en-card-me05-025.json",
+      "role": "raw_remote_response",
+      "sha256": "2b5721ceadb2e3b43e78040aecdf3896f67a6be7b0c310f6434528eb6915eb38"
+    },
+    {
+      "bytes": 2936,
+      "path": "raw/tcgdex-en-card-me05-026.json",
+      "role": "raw_remote_response",
+      "sha256": "230f419d0f3204c7fe7f269aa5068c6be83da834181d3b0c96bac07442b8b4e6"
+    },
+    {
+      "bytes": 1991,
+      "path": "raw/tcgdex-en-card-me05-027.json",
+      "role": "raw_remote_response",
+      "sha256": "0ea0cabae2cdc2b8f35c2de2c9f20cd38b3c9e36baad6ccd859bc47781e7f0b1"
+    },
+    {
+      "bytes": 2970,
+      "path": "raw/tcgdex-en-card-me05-028.json",
+      "role": "raw_remote_response",
+      "sha256": "078b9b937cce7a18c76973e008dc785cf2547cbdec288fa2908622027ef6b1f0"
+    },
+    {
+      "bytes": 2790,
+      "path": "raw/tcgdex-en-card-me05-029.json",
+      "role": "raw_remote_response",
+      "sha256": "1924b56e66ac29343ad5ec13376ff3d1575e5df60e2128e540fa5add14bdb9da"
+    },
+    {
+      "bytes": 2861,
+      "path": "raw/tcgdex-en-card-me05-030.json",
+      "role": "raw_remote_response",
+      "sha256": "af86d38913edcc275d71d9215dc2fbfd8dd6236353734ecf327f6a6799e9b157"
+    },
+    {
+      "bytes": 2027,
+      "path": "raw/tcgdex-en-card-me05-031.json",
+      "role": "raw_remote_response",
+      "sha256": "01e28963e0199415e72a23323e57676ef79e6053353953b14fbf1d40f8dbbd5c"
+    },
+    {
+      "bytes": 2925,
+      "path": "raw/tcgdex-en-card-me05-032.json",
+      "role": "raw_remote_response",
+      "sha256": "b26a78a6410298b827ce5ef2227465cb06044f72ded3c1ff08b0909b05220d2d"
+    },
+    {
+      "bytes": 2869,
+      "path": "raw/tcgdex-en-card-me05-033.json",
+      "role": "raw_remote_response",
+      "sha256": "4cdaa2dd5b0c48989a6063732ff82e53186327da38b766aaa02cab152be4a7ab"
+    },
+    {
+      "bytes": 2998,
+      "path": "raw/tcgdex-en-card-me05-034.json",
+      "role": "raw_remote_response",
+      "sha256": "43037cdd103d6fe22dfdbedaeab6d7001fd8c9eb7aa74fddd2730c6d03053231"
+    },
+    {
+      "bytes": 2875,
+      "path": "raw/tcgdex-en-card-me05-035.json",
+      "role": "raw_remote_response",
+      "sha256": "4cf91702ec7112462581a5bfad6930b7a7dee91f0b464838ab71bf6e53b76d22"
+    },
+    {
+      "bytes": 2680,
+      "path": "raw/tcgdex-en-card-me05-036.json",
+      "role": "raw_remote_response",
+      "sha256": "cb65d4c6ff4632401cbf3d7cbba9424ba4b6191f1f7e868ad68cb6159ef70cfb"
+    },
+    {
+      "bytes": 2793,
+      "path": "raw/tcgdex-en-card-me05-037.json",
+      "role": "raw_remote_response",
+      "sha256": "8fc670730bd7862dc5f0d9ef9160ecf7de8aea9fc79c2a5be944cd9fb962ca40"
+    },
+    {
+      "bytes": 2083,
+      "path": "raw/tcgdex-en-card-me05-038.json",
+      "role": "raw_remote_response",
+      "sha256": "4e8155eb2a01cfa7344382d602e0961926f215f9e5a4b17262a87c0d7142b7af"
+    },
+    {
+      "bytes": 2812,
+      "path": "raw/tcgdex-en-card-me05-039.json",
+      "role": "raw_remote_response",
+      "sha256": "10d1769d76f79df1f3ad39e1a5ef405cebed4bdce7a08b59d9041d34c4b9c326"
+    },
+    {
+      "bytes": 2785,
+      "path": "raw/tcgdex-en-card-me05-040.json",
+      "role": "raw_remote_response",
+      "sha256": "8744f4066a860b0fcaeab11a304c3d07f50eb4e8783f5f9ab3e0d7d0ba5ad0aa"
+    },
+    {
+      "bytes": 3018,
+      "path": "raw/tcgdex-en-card-me05-041.json",
+      "role": "raw_remote_response",
+      "sha256": "c9ca3e985649b55be1fa0bae504dbe2dfaf8134ec949253a1d3603724d829b05"
+    },
+    {
+      "bytes": 2617,
+      "path": "raw/tcgdex-en-card-me05-042.json",
+      "role": "raw_remote_response",
+      "sha256": "f225f2de8c183e7f59e2fd329700c05ee24986919c65863f59e7dfa4948163c9"
+    },
+    {
+      "bytes": 2670,
+      "path": "raw/tcgdex-en-card-me05-043.json",
+      "role": "raw_remote_response",
+      "sha256": "36f43d8a60d78b077cd1afe013f4967de3828c9f4d7546c886e69e8b4ed4ce17"
+    },
+    {
+      "bytes": 2789,
+      "path": "raw/tcgdex-en-card-me05-044.json",
+      "role": "raw_remote_response",
+      "sha256": "2ef4b660f8b2f99f16a680a1f57234b1917e3f9422e9f6f03c0f3b789813bbce"
+    },
+    {
+      "bytes": 2184,
+      "path": "raw/tcgdex-en-card-me05-045.json",
+      "role": "raw_remote_response",
+      "sha256": "e39d84a937e55d5468a20b108b164a4538fbe588008e38b123f24782f2949ade"
+    },
+    {
+      "bytes": 2806,
+      "path": "raw/tcgdex-en-card-me05-046.json",
+      "role": "raw_remote_response",
+      "sha256": "cdd81879dbac96f076428c118ce8a4ae7cdcf88150745aed183e5b972c4c3aa2"
+    },
+    {
+      "bytes": 2876,
+      "path": "raw/tcgdex-en-card-me05-047.json",
+      "role": "raw_remote_response",
+      "sha256": "4b1eaf386c15ae7970e3b72c9c64666c1fc6a63b0f96b737a40b2fe7105d12ba"
+    },
+    {
+      "bytes": 2023,
+      "path": "raw/tcgdex-en-card-me05-048.json",
+      "role": "raw_remote_response",
+      "sha256": "cb90daecc2c017ce50b627d1d9415123599eca586aa821f434e77508a969e931"
+    },
+    {
+      "bytes": 2734,
+      "path": "raw/tcgdex-en-card-me05-049.json",
+      "role": "raw_remote_response",
+      "sha256": "a040fa04d7dd9baf7d7a4a55517218a6cd5dfc82b7878fd8bc6b7246c38fc293"
+    },
+    {
+      "bytes": 2936,
+      "path": "raw/tcgdex-en-card-me05-050.json",
+      "role": "raw_remote_response",
+      "sha256": "3f374a06c0598c7f804ac2c3a721d1adbf6f8a5626a90dad5467c9c9a29fb0dd"
+    },
+    {
+      "bytes": 2795,
+      "path": "raw/tcgdex-en-card-me05-051.json",
+      "role": "raw_remote_response",
+      "sha256": "bc29d63285275a4f639fbab34ff10fe9408cdebf059291ad77d8da2607203d9c"
+    },
+    {
+      "bytes": 2842,
+      "path": "raw/tcgdex-en-card-me05-052.json",
+      "role": "raw_remote_response",
+      "sha256": "e7565e8994c779872d85b417e2648aa40dfb32c376164b9e5d6274cadae07d0c"
+    },
+    {
+      "bytes": 2673,
+      "path": "raw/tcgdex-en-card-me05-053.json",
+      "role": "raw_remote_response",
+      "sha256": "46f5543e2872675da9d4702c56d2c2c06a3ba8e08adf837072e867d9e62e5955"
+    },
+    {
+      "bytes": 2849,
+      "path": "raw/tcgdex-en-card-me05-054.json",
+      "role": "raw_remote_response",
+      "sha256": "5663d8c1bcb69e9115900574b10152ff6b8b91a78a9b29a10dbd5d3675f89042"
+    },
+    {
+      "bytes": 1950,
+      "path": "raw/tcgdex-en-card-me05-055.json",
+      "role": "raw_remote_response",
+      "sha256": "ac132f1e6d2e85e5996a73e311f717bc8aeeca04e23477a294789cccded084d0"
+    },
+    {
+      "bytes": 2957,
+      "path": "raw/tcgdex-en-card-me05-056.json",
+      "role": "raw_remote_response",
+      "sha256": "94912530da966cee1e3fd615a99875266f445838b91a9cf57450a089e016d13d"
+    },
+    {
+      "bytes": 2640,
+      "path": "raw/tcgdex-en-card-me05-057.json",
+      "role": "raw_remote_response",
+      "sha256": "53c49fb4d7e619ce58273dae6b467b24a038baafd2a296e45669f11098962f10"
+    },
+    {
+      "bytes": 2875,
+      "path": "raw/tcgdex-en-card-me05-058.json",
+      "role": "raw_remote_response",
+      "sha256": "410075a4a1138e33381e9a8290c69563eb325d6749e2743ac5494397cf9b6111"
+    },
+    {
+      "bytes": 2131,
+      "path": "raw/tcgdex-en-card-me05-059.json",
+      "role": "raw_remote_response",
+      "sha256": "0b74c6b211dd3bf3cde20a76f49c92659a9b3a8e79829f4a5c23299c479369dd"
+    },
+    {
+      "bytes": 2823,
+      "path": "raw/tcgdex-en-card-me05-060.json",
+      "role": "raw_remote_response",
+      "sha256": "80f7aeb0a6bcb88bdbaf2d4aa6bdfd6cf2e02d486b4eee80d95b6ffe4fce57e0"
+    },
+    {
+      "bytes": 2781,
+      "path": "raw/tcgdex-en-card-me05-061.json",
+      "role": "raw_remote_response",
+      "sha256": "9a361dfcfd33f5a8c8088cc04e52777addcc82fc0ff9cd57a6f1b6d170cfc750"
+    },
+    {
+      "bytes": 2305,
+      "path": "raw/tcgdex-en-card-me05-062.json",
+      "role": "raw_remote_response",
+      "sha256": "04726074887ee4523aeb500c9c22c939736c256a69eabfdb0f441f296d6a5d1b"
+    },
+    {
+      "bytes": 2769,
+      "path": "raw/tcgdex-en-card-me05-063.json",
+      "role": "raw_remote_response",
+      "sha256": "13f6bd0c18d831f87a92a4895c5f08c346f67cef18bf0d738685dcdc2e32d827"
+    },
+    {
+      "bytes": 2916,
+      "path": "raw/tcgdex-en-card-me05-064.json",
+      "role": "raw_remote_response",
+      "sha256": "a02f0f6636da43fa4ef938d56ae946e0cb2b953bd228bebe1d0cfb72639569a9"
+    },
+    {
+      "bytes": 2091,
+      "path": "raw/tcgdex-en-card-me05-065.json",
+      "role": "raw_remote_response",
+      "sha256": "ec5ca7c8a067976e5508e326a2fe1b1659694ff3cf801c7f773e5c4ab2afbcca"
+    },
+    {
+      "bytes": 2763,
+      "path": "raw/tcgdex-en-card-me05-066.json",
+      "role": "raw_remote_response",
+      "sha256": "ed2db8e12c0c039b8747ca5449d1540911edb2f5a7b4999817469c15ce312d7d"
+    },
+    {
+      "bytes": 2874,
+      "path": "raw/tcgdex-en-card-me05-067.json",
+      "role": "raw_remote_response",
+      "sha256": "56a2d3ee69125b2340b04d7693466566fc0ca09717e091bb8af88aea94a3988a"
+    },
+    {
+      "bytes": 2951,
+      "path": "raw/tcgdex-en-card-me05-068.json",
+      "role": "raw_remote_response",
+      "sha256": "f77de0c4dcdd4111992170e34e92951be846c260e010c354ae3586d483b4bd4b"
+    },
+    {
+      "bytes": 2641,
+      "path": "raw/tcgdex-en-card-me05-069.json",
+      "role": "raw_remote_response",
+      "sha256": "8271399c41e992a39264ba4fda223fe4a68efe8a253b7e4f3025f6fae0cea2f7"
+    },
+    {
+      "bytes": 2342,
+      "path": "raw/tcgdex-en-card-me05-070.json",
+      "role": "raw_remote_response",
+      "sha256": "91277ff37026dc145779de3b329da61c11a00ddb2717619cc1af46175263a82a"
+    },
+    {
+      "bytes": 2915,
+      "path": "raw/tcgdex-en-card-me05-071.json",
+      "role": "raw_remote_response",
+      "sha256": "f588bedd4933b84a71f30eb96436b117a4cb80b3feaa8747bb374c5d47936e22"
+    },
+    {
+      "bytes": 2942,
+      "path": "raw/tcgdex-en-card-me05-072.json",
+      "role": "raw_remote_response",
+      "sha256": "61a9d607dfcbb80bb5b4b306afc66a8448738d7387ffa3e7b6db866709767e37"
+    },
+    {
+      "bytes": 2945,
+      "path": "raw/tcgdex-en-card-me05-073.json",
+      "role": "raw_remote_response",
+      "sha256": "ffa33b865278166d550e13de0bed2dd927d101c89d98dd3e494175eb30770693"
+    },
+    {
+      "bytes": 2678,
+      "path": "raw/tcgdex-en-card-me05-074.json",
+      "role": "raw_remote_response",
+      "sha256": "31689c5785db5d6c466c15ce3fba722544f3f64686447e8f50159273f9387ff2"
+    },
+    {
+      "bytes": 2538,
+      "path": "raw/tcgdex-en-card-me05-075.json",
+      "role": "raw_remote_response",
+      "sha256": "6d9cb354c0f148ccc2ed1cc984e90edd9f13bdbd3e1c0fe5036bca8a4487d895"
+    },
+    {
+      "bytes": 2687,
+      "path": "raw/tcgdex-en-card-me05-076.json",
+      "role": "raw_remote_response",
+      "sha256": "aec2d2f1039dcd3c9b3ba913e384cc3c6940557e54462cba94f64dbacf2cf537"
+    },
+    {
+      "bytes": 2786,
+      "path": "raw/tcgdex-en-card-me05-077.json",
+      "role": "raw_remote_response",
+      "sha256": "2713f789edfb04b0a5dfc0c6be864ea73f82b4dd6fa6d56125693ac225462a0b"
+    },
+    {
+      "bytes": 2663,
+      "path": "raw/tcgdex-en-card-me05-078.json",
+      "role": "raw_remote_response",
+      "sha256": "c3464a9bbb8973710aea081d18e871d579e9bb7165b6dd4a1965d54ad530cc81"
+    },
+    {
+      "bytes": 2549,
+      "path": "raw/tcgdex-en-card-me05-079.json",
+      "role": "raw_remote_response",
+      "sha256": "6de31ed99600641f9972fc1699f84c6862c9379059fec95f02c6bfa76bbdd1e0"
+    },
+    {
+      "bytes": 2634,
+      "path": "raw/tcgdex-en-card-me05-080.json",
+      "role": "raw_remote_response",
+      "sha256": "75fc588b8ec40d5d1a061492703fe6a47abe96cbd0c584249c1a45242c691404"
+    },
+    {
+      "bytes": 2643,
+      "path": "raw/tcgdex-en-card-me05-081.json",
+      "role": "raw_remote_response",
+      "sha256": "91978d5732d47de447dd697f3a817bf5aa5fd981b484c391607af46825b1d110"
+    },
+    {
+      "bytes": 2834,
+      "path": "raw/tcgdex-en-card-me05-082.json",
+      "role": "raw_remote_response",
+      "sha256": "b27aa47ce1b64114276f9437dac9c49affd0b152f6831f1c34ac6a44c1ad626a"
+    },
+    {
+      "bytes": 2034,
+      "path": "raw/tcgdex-en-card-me05-083.json",
+      "role": "raw_remote_response",
+      "sha256": "047b19b5a5f585f0f815585d54ab7d6e92379efee59c41cfffa7915e5ee994bd"
+    },
+    {
+      "bytes": 2040,
+      "path": "raw/tcgdex-en-card-me05-084.json",
+      "role": "raw_remote_response",
+      "sha256": "00cb7763145e2835d471efbf4701a2d6002959a7d00aa6a67010473594a3cd24"
+    },
+    {
+      "bytes": 1779,
+      "path": "raw/tcgdex-en-card-me05-085.json",
+      "role": "raw_remote_response",
+      "sha256": "7bf33fbff1a84efe140b2771aaff05f492859f902047d88f3302643377bea79a"
+    },
+    {
+      "bytes": 1865,
+      "path": "raw/tcgdex-en-card-me05-086.json",
+      "role": "raw_remote_response",
+      "sha256": "c75b067a69a8068d590d33ddd46884254d8a45ef02eb73f6a840d92d3d395ec8"
+    },
+    {
+      "bytes": 1745,
+      "path": "raw/tcgdex-en-card-me05-087.json",
+      "role": "raw_remote_response",
+      "sha256": "db8582d834281d242c63bb93cd085a421419e477ba939baa7a715c26ab19c6bb"
+    },
+    {
+      "bytes": 2071,
+      "path": "raw/tcgdex-en-card-me05-088.json",
+      "role": "raw_remote_response",
+      "sha256": "191707f6c4291725bf342c0c4e5c554f27b38310eed91386f8a11c1d361123a8"
+    },
+    {
+      "bytes": 2077,
+      "path": "raw/tcgdex-en-card-me05-089.json",
+      "role": "raw_remote_response",
+      "sha256": "202ed684b7a37d9befc5337c5cef31d4edf2f18242cb14b58363110e0488db73"
+    },
+    {
+      "bytes": 1976,
+      "path": "raw/tcgdex-en-card-me05-090.json",
+      "role": "raw_remote_response",
+      "sha256": "9fd968122f01b6810bd14e1e380fcf67aaa5d92d0a8061153dfb454b594141a8"
+    },
+    {
+      "bytes": 1931,
+      "path": "raw/tcgdex-en-card-me05-091.json",
+      "role": "raw_remote_response",
+      "sha256": "a02aaa17886ec7bf27b6217c06952b4c05b5a7f7bc1cf7345c3cf4827460a5cc"
+    },
+    {
+      "bytes": 1959,
+      "path": "raw/tcgdex-en-card-me05-092.json",
+      "role": "raw_remote_response",
+      "sha256": "4f062d9fdee712e50e93324f329e988571122e24f4cd0c4674478015a1eef296"
+    },
+    {
+      "bytes": 2056,
+      "path": "raw/tcgdex-en-card-me05-093.json",
+      "role": "raw_remote_response",
+      "sha256": "c613454705dd2bdac9c9331e40c0e43162664dc23b5d6d7357701443aa1cf8ff"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/tcgdex-en-card-me05-094.json",
+      "role": "raw_remote_response",
+      "sha256": "f9104d2952c07101fd6d16ad1e9f3c7e4243ed921af13b2e9fff1909282ce13f"
+    },
+    {
+      "bytes": 2075,
+      "path": "raw/tcgdex-en-card-me05-095.json",
+      "role": "raw_remote_response",
+      "sha256": "109ba92e1bfe0cd8275a9a396f993182a353355463411562a2e3c81ab45aef66"
+    },
+    {
+      "bytes": 2052,
+      "path": "raw/tcgdex-en-card-me05-096.json",
+      "role": "raw_remote_response",
+      "sha256": "777d848d0fcc2e1f5433b4dc62f7a1152ca09062c610be39f417b8896a9f425d"
+    },
+    {
+      "bytes": 1900,
+      "path": "raw/tcgdex-en-card-me05-097.json",
+      "role": "raw_remote_response",
+      "sha256": "f26d6ac25b09b939ae6fb8f8b2e88eb6ea1db859c1281c921b5a2dfd32b128f1"
+    },
+    {
+      "bytes": 1988,
+      "path": "raw/tcgdex-en-card-me05-098.json",
+      "role": "raw_remote_response",
+      "sha256": "6808c2a3fadf7f62b13b858db3ef1f50602dde5daa8ab27548287b4433cac160"
+    },
+    {
+      "bytes": 2076,
+      "path": "raw/tcgdex-en-card-me05-099.json",
+      "role": "raw_remote_response",
+      "sha256": "666794f1b9a80a036f58c53cbaab2d7fc3816b3639bdda42c4a28c56f46567ae"
+    },
+    {
+      "bytes": 2184,
+      "path": "raw/tcgdex-en-card-me05-100.json",
+      "role": "raw_remote_response",
+      "sha256": "deec71725b3d564a12f5d94de5bd0edaccb569cbb6fdb334f206fd3e14ef8912"
+    },
+    {
+      "bytes": 2038,
+      "path": "raw/tcgdex-en-card-me05-101.json",
+      "role": "raw_remote_response",
+      "sha256": "fd596ae48c5175390468322339cba569af3f9e95283f2e1affc598c69a79c522"
+    },
+    {
+      "bytes": 1948,
+      "path": "raw/tcgdex-en-card-me05-102.json",
+      "role": "raw_remote_response",
+      "sha256": "4a60695b5b5b537d7f4ddaf6dfab6cd5dbb7d3b3e890090a75c97cd34c0c4817"
+    },
+    {
+      "bytes": 2098,
+      "path": "raw/tcgdex-en-card-me05-103.json",
+      "role": "raw_remote_response",
+      "sha256": "652db746f26cba70be284e8973267d0a57325b6890736a12bb773ab5d3714712"
+    },
+    {
+      "bytes": 1810,
+      "path": "raw/tcgdex-en-card-me05-104.json",
+      "role": "raw_remote_response",
+      "sha256": "6bc622abed3e2e13cf5e590365c2f5c964e744cf67b59b89aa07a485de765b27"
+    },
+    {
+      "bytes": 1651,
+      "path": "raw/tcgdex-en-card-me05-105.json",
+      "role": "raw_remote_response",
+      "sha256": "c4923748222805c407d00c9b3e763ae92988b74b4eb4b2d89aa372227dd21d6b"
+    },
+    {
+      "bytes": 1620,
+      "path": "raw/tcgdex-en-card-me05-106.json",
+      "role": "raw_remote_response",
+      "sha256": "3e64e4ebfcf5bc92d747efc1a65cc9c736218927da73b7c2894a8192ab12c6af"
+    },
+    {
+      "bytes": 1654,
+      "path": "raw/tcgdex-en-card-me05-107.json",
+      "role": "raw_remote_response",
+      "sha256": "e8bf8ddc567d8007dcb0c75869de19672aad4600a087cc329f68d11d738d7788"
+    },
+    {
+      "bytes": 1877,
+      "path": "raw/tcgdex-en-card-me05-108.json",
+      "role": "raw_remote_response",
+      "sha256": "1ccae6c5bf719c222892824a5a078c9b4a41798ea859d8b0b6b389614ea270b5"
+    },
+    {
+      "bytes": 1743,
+      "path": "raw/tcgdex-en-card-me05-109.json",
+      "role": "raw_remote_response",
+      "sha256": "ab9333bd4044c08e4349d645fcfeb998777e4768f1fbd465633fa0d8039dddd5"
+    },
+    {
+      "bytes": 1801,
+      "path": "raw/tcgdex-en-card-me05-110.json",
+      "role": "raw_remote_response",
+      "sha256": "3d230238d15ed4a4d6708e200a2887f4db11b40b0df53eee05e3a8b6e20afa12"
+    },
+    {
+      "bytes": 1726,
+      "path": "raw/tcgdex-en-card-me05-111.json",
+      "role": "raw_remote_response",
+      "sha256": "c2cddc3da3819efb53ba5f896284f087e74ff2fe8c9997872469ed17b4f70251"
+    },
+    {
+      "bytes": 1747,
+      "path": "raw/tcgdex-en-card-me05-112.json",
+      "role": "raw_remote_response",
+      "sha256": "0fa1b0ce2a2b551aaaaddb65a574f8360f08fd14eb208378cd7408778ef75a70"
+    },
+    {
+      "bytes": 1934,
+      "path": "raw/tcgdex-en-card-me05-113.json",
+      "role": "raw_remote_response",
+      "sha256": "ef5613359423c98a8c896e268c09b6f63af5e792530fed253f4bdddc8d80c056"
+    },
+    {
+      "bytes": 2006,
+      "path": "raw/tcgdex-en-card-me05-114.json",
+      "role": "raw_remote_response",
+      "sha256": "e58e843139ea2e12bbc232a63777706fed22d3b461e175492a3e51d80a41ce8c"
+    },
+    {
+      "bytes": 2106,
+      "path": "raw/tcgdex-en-card-me05-115.json",
+      "role": "raw_remote_response",
+      "sha256": "4e45a36bb745d39a37e6bfae4cf9f47b810764dca596cfea829b7b76a3f9b6e3"
+    },
+    {
+      "bytes": 2065,
+      "path": "raw/tcgdex-en-card-me05-116.json",
+      "role": "raw_remote_response",
+      "sha256": "7c090a8c3abe3f47b1ca633fab26fd675a0ba3055206fd2cd580fadd78aa3202"
+    },
+    {
+      "bytes": 1983,
+      "path": "raw/tcgdex-en-card-me05-117.json",
+      "role": "raw_remote_response",
+      "sha256": "35a17905cf0f7a7a66f4d96db8e7d8ead1a327c5a2de4871fd0e17df59b2ca2f"
+    },
+    {
+      "bytes": 1898,
+      "path": "raw/tcgdex-en-card-me05-118.json",
+      "role": "raw_remote_response",
+      "sha256": "1859487adf91a887d4f48e0304b6a30b6d36c77a51547567c7f9d3433db3bf31"
+    },
+    {
+      "bytes": 1783,
+      "path": "raw/tcgdex-en-card-me05-119.json",
+      "role": "raw_remote_response",
+      "sha256": "5101ca5860415da37775a26e0785faf6c9d08e782cbfd6c0aaee4e0605fbdd8c"
+    },
+    {
+      "bytes": 2079,
+      "path": "raw/tcgdex-en-card-me05-120.json",
+      "role": "raw_remote_response",
+      "sha256": "7eda080b0f1105725288b1a600371953fc9786f0fca273d444165b0640b2f8aa"
+    },
+    {
+      "bytes": 13051,
+      "path": "raw/tcgdex-en-set-me05.json",
+      "role": "raw_remote_response",
+      "sha256": "eadcb847f523aa557a97c4b47aef4f7f828cfe1150ceeb160779244e614e431a"
+    },
+    {
+      "bytes": 168,
+      "path": "raw/tcgdex-zh-cn-set-CBB1C-not-found.json",
+      "role": "raw_remote_response",
+      "sha256": "48212812e9ab050a07347f48f3148441df607995fdd425d31bc6f47fe20a1cf9"
+    },
+    {
+      "bytes": 240,
+      "path": "raw/tcgdex-zh-cn-set-CSV1C.json",
+      "role": "raw_remote_response",
+      "sha256": "3391be685bc4b6153b73d94fb93f6070d65c60486ec0efd814e30fba6640aff3"
+    },
+    {
+      "bytes": 4553,
+      "path": "raw/tcgdex-zh-cn-sets.json",
+      "role": "raw_remote_response",
+      "sha256": "69170515af0564d353d0400905ccbb759ee402455a88021f433453fe23f056da"
+    },
+    {
+      "bytes": 7856,
+      "path": "resolved-provider-baseline-evidence.json",
+      "role": "resolution_report",
+      "sha256": "84afd5d01a71017efca3e2052c6b61499d0be51e5c29c499d2be5188ecb0d1b5"
+    }
+  ],
+  "generatedAt": "2026-08-14T00:35:00.000Z",
+  "imageDownloadsAttempted": 0,
+  "productionModified": false,
+  "remoteRequestCount": 127,
+  "schemaVersion": "1.0.0",
+  "stagingModified": false
+}

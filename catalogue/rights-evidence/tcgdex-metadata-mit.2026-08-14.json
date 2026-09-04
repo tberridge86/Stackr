@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0.0",
+  "evidenceId": "tcgdex-metadata-mit:2026-08-14:ccb9cef3f9a545be89cd5e716cc1c72f99070bac",
+  "sourceCode": "tcgdex",
+  "observedAt": "2026-08-14T01:10:00.000Z",
+  "repository": "tcgdex/cards-database",
+  "pinnedCommitSha": "ccb9cef3f9a545be89cd5e716cc1c72f99070bac",
+  "documents": [
+    {
+      "role": "database_license",
+      "url": "https://raw.githubusercontent.com/tcgdex/cards-database/ccb9cef3f9a545be89cd5e716cc1c72f99070bac/LICENSE",
+      "sha256": "12e7dd2d018848b9997d0226c4632f01da86ec4bf6ebe0c8b19953d5e5eeb6ff",
+      "bytes": 1063,
+      "finding": "MIT licence grants use, copy, modification, publication, distribution, sublicensing and sale rights for the licensed software and associated documentation, subject to preserving its notice."
+    },
+    {
+      "role": "database_scope_statement",
+      "url": "https://raw.githubusercontent.com/tcgdex/cards-database/ccb9cef3f9a545be89cd5e716cc1c72f99070bac/README.md",
+      "sha256": "53ac142f33db1f5ef0eda7edf28bcb3738135e491f9ea66d83c9ba14a8aac59b",
+      "bytes": 6452,
+      "finding": "The repository states that the database is licensed under the MIT License and documents direct API access."
+    }
+  ],
+  "scopeAssessment": {
+    "metadataDiscovery": "supported_after_authorised_review",
+    "automatedMetadataFetch": "supported_after_authorised_review",
+    "automatedAssetFetch": "not_granted_by_this_evidence",
+    "persistOriginalAsset": "not_granted_by_this_evidence",
+    "publicDisplay": "not_granted_by_this_evidence",
+    "createDerivatives": "not_granted_by_this_evidence",
+    "createEmbeddings": "not_granted_by_this_evidence",
+    "trainModels": "not_granted_by_this_evidence"
+  },
+  "requiredConditions": [
+    "Preserve the TCGdex copyright and MIT permission notice with substantial copies of the licensed database material.",
+    "Keep Pokémon card artwork acquisition, storage, display, derivatives, embeddings and model training outside this metadata approval.",
+    "Require an authorised Stackr reviewer signature over each exact repair bundle before canonical writes."
+  ],
+  "legalStatus": "operational_evidence_pending_authorised_stackr_review",
+  "disclaimer": "This is a bounded operational evidence record, not legal advice and not permission to scrape, store, display or train on Pokémon card artwork."
+}

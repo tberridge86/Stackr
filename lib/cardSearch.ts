@@ -10,6 +10,7 @@ import {
   getPreferredSetDisplayName,
 } from './pokemonDisplayNames';
 import {
+  attachLiveTcgdexCardReferences,
   fetchAllSets,
   fetchPokemonTcgApiCardsByQuery,
   normalizePokemonCardLanguage,
@@ -878,10 +879,10 @@ export async function searchLocalPokemonCards<T extends SearchRow = SearchRow>(
   const trimmed = input.trim();
   if (trimmed.length < 2) return [];
   const limit = options.limit ?? 80;
-  const cards = await searchStackrCards(trimmed, {
+  const cards = await attachLiveTcgdexCardReferences(await searchStackrCards(trimmed, {
     language: isAllLanguageSearch(options.language) ? null : options.language,
     limit,
-  });
+  }));
   return cards.map((card) => ({
     id: card.id,
     name: card.name,

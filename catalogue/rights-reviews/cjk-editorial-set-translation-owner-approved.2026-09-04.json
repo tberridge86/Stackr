@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "stackr-cjk-display-metadata-rights-review-v1",
+  "reviewId": "cjk-editorial-set-translation-owner-approved:2026-09-04",
+  "status": "approved_active_runtime_only",
+  "classification": "amber",
+  "activationAuthorized": true,
+  "approvalRecordedAt": "2026-09-04T17:09:50.019Z",
+  "approvingPerson": "Jack Berridge",
+  "approvingRole": "Founder and Director, StackrTCG Ltd.",
+  "ownerAttestation": {
+    "path": "catalogue/rights-evidence/cjk-app-metadata-permission-owner-attestation.2026-09-04.json",
+    "sha256": "13e9bc1ffa4635cdc10110f0e8dc7356dcb7433d73e60755cc019ba075137d11",
+    "statement": "Owner direction authorises the bounded, native-primary CJK app metadata lane without further permission challenge in this task."
+  },
+  "boundary": {
+    "path": "docs/stackrtcg-ip-operating-boundary.md",
+    "classification": "amber_requires_recorded_rights_review_before_activation",
+    "nativeNameRemainsPrimary": true,
+    "canonicalDatabaseWriteAuthorized": false
+  },
+  "sourceFiles": {
+    "catalogue/source-rights-registry.json": "53805cec7470b726190d1b268a2b93c5b0e6d96dd8287428a036f591456b250e",
+    "catalogue/rights-evidence/tcgdex-metadata-mit.2026-08-14.json": "178de363fd396d6de895f2bfb36cc91138b58b1cb447a85ae08427b80c3f0b03",
+    "catalogue/japanese-set-display-drafts-source.json": "e17095374fa563da0a517b0c7f97859ef4525822f226ffb114ed2c428403f7d3",
+    "catalogue/chinese-set-translation-draft-native-name-source.json": "54de7602708fdf2f785393f4c25f27dcd2924fea5179f17c3e5f40914eedf8f6",
+    "catalogue/tcgdex-chinese-set-identity-display-source.json": "bef7c15704acca9b2e993398d3f36a9acc630619339dc83dc20284d7983bc629",
+    "scripts/build-chinese-set-translation-draft-review-pack.ts": "c6eac83af5f0419c5b42849c3682b89b874765b1cd20d6b32bdb2eee8393eefa"
+  },
+  "lanes": [
+    {
+      "id": "japanese_editorial_set_translation_candidates",
+      "classification": "amber",
+      "status": "approved_active_runtime_only",
+      "activationAuthorized": true,
+      "count": 11,
+      "language": "ja",
+      "asset_or_data": "Eleven exact Stackr editorial English translation candidates paired with hash-bound Japanese TCGdex native set titles.",
+      "source": "catalogue/japanese-set-display-drafts-source.json; native titles are pinned TCGdex fields and English wording is Stackr editorial.",
+      "owner_or_licensor": "Stackr authors the English editorial wording; applicable native product-title rights are used under the owner attestation and TCGdex source record.",
+      "permitted_purpose": "Runtime-only, native-primary supplementary set identification within the Stackr app.",
+      "territory": "Worldwide in-app delivery where StackrTCG offers the feature.",
+      "term": "Duration of represented permission; disable immediately on withdrawal, expiry, or substantiated complaint.",
+      "transformation_rights": "Whitespace/NFKC normalization and exact key comparison only; no card text, artwork, logo, or symbol transformation.",
+      "storage_rights": "Hash-bound generated runtime maps only; no canonical database field write, rewrite, cleanup, or source ingestion.",
+      "deletion_requirements": "Runtime kill switch and prompt removal by language/set on withdrawal, source mismatch, or complaint; retain this audit record.",
+      "attribution": "Retain source provenance and use the visible label English translation:; no claim that the wording is official.",
+      "downstream_delivery_rights": "Client and backend response display inside StackrTCG only; no bulk export, API corpus, resale, or third-party distribution.",
+      "approving_person": "Jack Berridge"
+    },
+    {
+      "id": "chinese_editorial_set_translation_candidates",
+      "classification": "amber",
+      "status": "approved_active_runtime_only",
+      "activationAuthorized": true,
+      "counts": { "zh-cn": 49, "zh-tw": 77, "total": 126 },
+      "languages": ["zh-cn", "zh-tw"],
+      "asset_or_data": "One hundred twenty-six exact Stackr model-assisted editorial English translation candidates paired with hash-bound Simplified- or Traditional-Chinese native set names.",
+      "source": "catalogue/chinese-set-translation-draft-native-name-source.json and the two hash-bound TCGdex Chinese identity corrections; English wording is Stackr editorial.",
+      "owner_or_licensor": "Stackr authors the English editorial wording; applicable native product-title rights are used under the owner attestation and recorded provider-source evidence.",
+      "permitted_purpose": "Runtime-only, native-primary supplementary set identification within the Stackr app.",
+      "territory": "Worldwide in-app delivery where StackrTCG offers the feature.",
+      "term": "Duration of represented permission; disable immediately on withdrawal, expiry, or substantiated complaint.",
+      "transformation_rights": "Whitespace/NFKC normalization and exact language, set-code, and native-name comparison only; no card text, artwork, logo, or symbol transformation.",
+      "storage_rights": "Hash-bound generated runtime maps only; no canonical database field write, rewrite, cleanup, or source ingestion.",
+      "deletion_requirements": "Runtime kill switch and prompt removal by language/set on withdrawal, source mismatch, or complaint; retain this audit record.",
+      "attribution": "Retain source provenance and use the visible label English translation:; no claim that the wording is official.",
+      "downstream_delivery_rights": "Client and backend response display inside StackrTCG only; no bulk export, API corpus, resale, or third-party distribution.",
+      "approving_person": "Jack Berridge"
+    }
+  ],
+  "controls": {
+    "exactLanguageSetCodeAndNormalizedNativeNameRequired": true,
+    "nativeNameRemainsPrimary": true,
+    "englishTextLabel": "English translation:",
+    "englishTextAuthoritative": false,
+    "canonicalDatabaseWriteAuthorized": false,
+    "storedCatalogueRewriteAuthorized": false,
+    "runtimeKillSwitches": ["EXPO_PUBLIC_DISABLE_CJK_EDITORIAL_SET_TRANSLATIONS", "STACKR_DISABLE_CJK_EDITORIAL_SET_TRANSLATIONS"],
+    "redAndPendingLanesRemainFailClosed": ["wikidata_cc0_species_labels", "automated_pokemon_card_com_collection", "unreviewed_cjk_metadata_imports"]
+  }
+}

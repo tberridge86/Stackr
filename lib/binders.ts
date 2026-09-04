@@ -7,9 +7,20 @@ import { getCachedOrFetch, invalidateRequestCache } from './requestCache';
 import { bumpCollectionSummaryVersion } from './collectionSummaryInvalidation';
 import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 import { fetchStackrPriceSnapshots, fetchStackrSetRows } from './stackrDomainAdapter';
+import { enforceSetVisualRuntimePolicy } from './providerSetMarkRuntimePolicy';
+import {
+  defineTcgdexRuntimeImageOverlay,
+  hasTcgdexRuntimeImageOverlay,
+} from './tcgdexControlledCardReference';
+import { selectTcgdexReferencePersistenceImage } from './tcgdexReferencePersistence';
 
 export type BinderType = 'official' | 'custom';
 export type BinderCardMode = 'raw' | 'graded';
+
+/** A live TCGdex reference is display-only; never let it become a binder row value. */
+export function binderImageUrlForPersistence(candidate: string | null | undefined, existing: string | null | undefined = null) {
+  return selectTcgdexReferencePersistenceImage(candidate, existing);
+}
 
 export type BinderRecord = {
   id: string;
@@ -445,9 +456,9 @@ async function attachSetBrandingToBinders(binders: BinderRecord[]): Promise<Bind
 
     return {
       ...binder,
-      source_set_logo_url: set.images.logo ?? binder.source_set_logo_url ?? null,
-      source_set_symbol_url: set.images.symbol ?? binder.source_set_symbol_url ?? null,
-      source_set_cover_url: set.images.cover ?? set.images.artwork ?? binder.source_set_cover_url ?? null,
+      source_set_logo_url: enforceSetVisualRuntimePolicy(set.images.logo) ?? enforceSetVisualRuntimePolicy(binder.source_set_logo_url) ?? null,
+      source_set_symbol_url: enforceSetVisualRuntimePolicy(set.images.symbol ?? binder.source_set_symbol_url) ?? null,
+      source_set_cover_url: enforceSetVisualRuntimePolicy(set.images.cover ?? set.images.artwork ?? binder.source_set_cover_url) ?? null,
       source_set_display_name: names.displayName,
       source_set_local_name: names.localName,
       source_set_english_display_name: names.englishDisplayName,
@@ -842,7 +853,7 @@ export async function addCardsToBinder(
       set_id: card.setId,
       language,
       card_name: card.cardName ?? null,
-      image_url: card.imageUrl ?? null,
+      image_url: binderImageUrlForPersistence(card.imageUrl),
       set_name: card.setName ?? null,
       slot_order: maxSlot + 1 + index,
       owned: false,
@@ -1075,7 +1086,7 @@ export async function updateBinderCardOwned(
           notes: '',
           card_name: cardMeta?.cardName ?? null,
           card_number: cardMeta?.cardNumber ?? null,
-          image_url: cardMeta?.imageUrl ?? null,
+          image_url: binderImageUrlForPersistence(cardMeta?.imageUrl),
           set_name: cardMeta?.setName ?? null,
           ebay_price: price?.ebay_price ?? null,
           tcg_price: price?.tcg_price ?? null,
@@ -1230,7 +1241,7 @@ export async function updateBinderCardQuantity(
     const language = normalizePokemonCardLanguage(cardMeta?.language);
     const { data: existingVariantQuantity } = await supabase
       .from('binder_cards')
-      .select('owned_quantity, card_name')
+      .select('owned_quantity, card_name, image_url')
       .eq('binder_id', virtual.binderId)
       .eq('card_id', virtual.cardId)
       .eq('set_id', virtual.setId)
@@ -1255,7 +1266,7 @@ export async function updateBinderCardQuantity(
         notes: '',
         card_name: cardMeta?.cardName ?? null,
         card_number: cardMeta?.cardNumber ?? null,
-        image_url: cardMeta?.imageUrl ?? null,
+        image_url: binderImageUrlForPersistence(cardMeta?.imageUrl, existingVariantQuantity?.image_url),
         set_name: cardMeta?.setName ?? null,
         ebay_price: price?.ebay_price ?? null,
         tcg_price: price?.tcg_price ?? null,

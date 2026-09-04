@@ -572,7 +572,9 @@ export default function NewBinderScreen() {
         sourceSetCoverUrl,
         sourceSetDisplayName: type === 'official' ? selectedSet?.name ?? name.trim() : null,
         sourceSetLocalName: type === 'official' ? selectedSet?.localName ?? null : null,
-        sourceSetEnglishDisplayName: type === 'official' ? selectedSet?.englishDisplayName ?? selectedSet?.name ?? name.trim() : null,
+        sourceSetEnglishDisplayName: type === 'official'
+          ? selectedSet?.englishDisplayName ?? (setLanguage === 'en' ? selectedSet?.name ?? name.trim() : null)
+          : null,
         language: type === 'official' ? setLanguage : 'en',
         edition: resolvedEdition ?? null,
         defaultCondition,

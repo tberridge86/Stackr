@@ -320,6 +320,12 @@ export function createV1Router(options = {}) {
     sendEnvelope(req, res, await getService().cardVariants(req.params.cardId));
   }));
 
+  router.post('/cards/display-artwork-references', asyncRoute(async (req, res) => {
+    sendEnvelope(req, res, await getService().sameArtworkDisplayReferences(req.body ?? {}), {
+      cacheControl: NO_STORE_CACHE_CONTROL,
+    });
+  }));
+
   router.get('/assets/manifest', asyncRoute(async (req, res) => {
     const manifest = await getService().assetManifest(req.query);
     sendEnvelope(req, res, { assets: manifest.assets }, {

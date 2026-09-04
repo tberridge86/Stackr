@@ -1,0 +1,236 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryId": "stackr-catalogue-source-rights-v1",
+  "defaultDecision": "deny_and_quarantine",
+  "reviewMaxAgeDays": 90,
+  "legalDisclaimer": "This registry is an operational fail-closed policy, not a legal opinion. A capability is allowed only when its status is approved and the cited permission evidence covers that exact use.",
+  "capabilityStatuses": [
+    "approved",
+    "conditional",
+    "review_required",
+    "prohibited",
+    "not_applicable"
+  ],
+  "requiredCapabilities": [
+    "metadataDiscovery",
+    "automatedMetadataFetch",
+    "automatedAssetFetch",
+    "persistOriginalAsset",
+    "publicDisplay",
+    "createDerivatives",
+    "createEmbeddings",
+    "trainModels"
+  ],
+  "sources": [
+    {
+      "code": "stackr_manual",
+      "displayName": "Stackr manual catalogue curation",
+      "sourceType": "manual",
+      "active": true,
+      "termsUrl": null,
+      "lastReviewedAt": "2026-08-13",
+      "permissionEvidenceRef": "internal-policy:stackr-manual-catalogue-curation",
+      "attributionRequired": false,
+      "capabilities": {
+        "metadataDiscovery": "approved",
+        "automatedMetadataFetch": "not_applicable",
+        "automatedAssetFetch": "not_applicable",
+        "persistOriginalAsset": "not_applicable",
+        "publicDisplay": "not_applicable",
+        "createDerivatives": "not_applicable",
+        "createEmbeddings": "not_applicable",
+        "trainModels": "not_applicable"
+      },
+      "notes": "Approval covers Stackr-authored catalogue metadata only. It grants no rights to third-party card artwork."
+    },
+    {
+      "code": "stackr_owned_capture",
+      "displayName": "Stackr-controlled physical capture",
+      "sourceType": "manual",
+      "active": true,
+      "termsUrl": null,
+      "lastReviewedAt": "2026-08-13",
+      "permissionEvidenceRef": null,
+      "attributionRequired": false,
+      "capabilities": {
+        "metadataDiscovery": "conditional",
+        "automatedMetadataFetch": "not_applicable",
+        "automatedAssetFetch": "not_applicable",
+        "persistOriginalAsset": "conditional",
+        "publicDisplay": "review_required",
+        "createDerivatives": "review_required",
+        "createEmbeddings": "review_required",
+        "trainModels": "review_required"
+      },
+      "notes": "Owning the capture pixels does not by itself settle rights in the underlying card artwork. Public display and ML uses require a use-specific review."
+    },
+    {
+      "code": "partner_licensed_capture",
+      "displayName": "Partner-provided licensed physical capture",
+      "sourceType": "manual",
+      "active": true,
+      "termsUrl": null,
+      "lastReviewedAt": "2026-08-13",
+      "permissionEvidenceRef": null,
+      "attributionRequired": true,
+      "capabilities": {
+        "metadataDiscovery": "conditional",
+        "automatedMetadataFetch": "not_applicable",
+        "automatedAssetFetch": "not_applicable",
+        "persistOriginalAsset": "conditional",
+        "publicDisplay": "conditional",
+        "createDerivatives": "conditional",
+        "createEmbeddings": "conditional",
+        "trainModels": "conditional"
+      },
+      "notes": "Each partner agreement must be attached per asset and must enumerate storage, display, derivatives, embeddings and model training separately."
+    },
+    {
+      "code": "collector_consented_capture",
+      "displayName": "Collector-contributed capture",
+      "sourceType": "manual",
+      "active": true,
+      "termsUrl": null,
+      "lastReviewedAt": "2026-08-13",
+      "permissionEvidenceRef": null,
+      "attributionRequired": true,
+      "capabilities": {
+        "metadataDiscovery": "conditional",
+        "automatedMetadataFetch": "not_applicable",
+        "automatedAssetFetch": "not_applicable",
+        "persistOriginalAsset": "conditional",
+        "publicDisplay": "review_required",
+        "createDerivatives": "review_required",
+        "createEmbeddings": "review_required",
+        "trainModels": "review_required"
+      },
+      "notes": "Contributor consent and deletion handling are required. Contributor consent alone may not settle underlying artwork rights."
+    },
+    {
+      "code": "tcgdex",
+      "displayName": "TCGdex",
+      "sourceType": "catalogue",
+      "active": true,
+      "termsUrl": "https://tcgdex.dev/",
+      "lastReviewedAt": "2026-09-04",
+      "permissionEvidenceRef": "file:catalogue/rights-evidence/tcgdex-metadata-mit.2026-09-04.json#sha256=75992e1dde37c54806ac135c2fd49642c24c3429702ef3d6074fc8f986da8211",
+      "attributionRequired": true,
+      "capabilities": {
+        "metadataDiscovery": "approved",
+        "automatedMetadataFetch": "approved",
+        "automatedAssetFetch": "conditional",
+        "persistOriginalAsset": "conditional",
+        "publicDisplay": "conditional",
+        "createDerivatives": "conditional",
+        "createEmbeddings": "conditional",
+        "trainModels": "review_required"
+      },
+      "notes": "Factual metadata is approved under the pinned TCGdex MIT evidence and Stackr's 2026-09-04 operating boundary, with attribution and native-primary English supplementation. Every asset capability remains conditional and fail-closed: only controlled-provider low-resolution card references may use a separately enforced delivery route. Set logos, symbols, pack art, bulk mirroring, downloadable originals, and model training are not approved by this entry."
+    },
+    {
+      "code": "pokemon_tcg_api",
+      "displayName": "Pokemon TCG API",
+      "sourceType": "catalogue",
+      "active": true,
+      "termsUrl": null,
+      "lastReviewedAt": "2026-08-13",
+      "permissionEvidenceRef": null,
+      "attributionRequired": true,
+      "capabilities": {
+        "metadataDiscovery": "conditional",
+        "automatedMetadataFetch": "conditional",
+        "automatedAssetFetch": "review_required",
+        "persistOriginalAsset": "review_required",
+        "publicDisplay": "review_required",
+        "createDerivatives": "review_required",
+        "createEmbeddings": "review_required",
+        "trainModels": "review_required"
+      },
+      "notes": "Community API access is not treated as a licence to mirror or train on artwork."
+    },
+    {
+      "code": "ptcg_database_snapshot",
+      "displayName": "Pinned type-null/PTCG-database metadata snapshot",
+      "sourceType": "catalogue",
+      "active": true,
+      "termsUrl": "https://github.com/type-null/PTCG-database/blob/90e28f12dde837353c3f4d231edfe236cfe9ba80/LICENSE",
+      "lastReviewedAt": "2026-09-03",
+      "permissionEvidenceRef": "github:type-null/PTCG-database@90e28f12dde837353c3f4d231edfe236cfe9ba80/LICENSE",
+      "attributionRequired": true,
+      "capabilities": {
+        "metadataDiscovery": "conditional",
+        "automatedMetadataFetch": "not_applicable",
+        "automatedAssetFetch": "prohibited",
+        "persistOriginalAsset": "prohibited",
+        "publicDisplay": "prohibited",
+        "createDerivatives": "prohibited",
+        "createEmbeddings": "prohibited",
+        "trainModels": "prohibited"
+      },
+      "notes": "Metadata may be reviewed from this exact local pinned snapshot. Upstream card and set image URLs remain pointer-only evidence: this entry grants no automated access to official Pokemon sites and no artwork rights."
+    },
+    {
+      "code": "pikaqian",
+      "displayName": "PikaQian",
+      "sourceType": "catalogue",
+      "active": true,
+      "termsUrl": null,
+      "lastReviewedAt": "2026-08-13",
+      "permissionEvidenceRef": null,
+      "attributionRequired": true,
+      "capabilities": {
+        "metadataDiscovery": "conditional",
+        "automatedMetadataFetch": "conditional",
+        "automatedAssetFetch": "review_required",
+        "persistOriginalAsset": "review_required",
+        "publicDisplay": "review_required",
+        "createDerivatives": "review_required",
+        "createEmbeddings": "review_required",
+        "trainModels": "review_required"
+      },
+      "notes": "An API key proves access, not commercial image or ML rights. Keep fetched assets quarantined until contract evidence is attached."
+    },
+    {
+      "code": "ximilar_residual_scans",
+      "displayName": "Ximilar residual identity scans",
+      "sourceType": "recognition",
+      "active": true,
+      "termsUrl": "https://www.ximilar.com/terms-and-conditions/",
+      "lastReviewedAt": "2026-08-13",
+      "permissionEvidenceRef": null,
+      "attributionRequired": false,
+      "capabilities": {
+        "metadataDiscovery": "conditional",
+        "automatedMetadataFetch": "not_applicable",
+        "automatedAssetFetch": "prohibited",
+        "persistOriginalAsset": "prohibited",
+        "publicDisplay": "prohibited",
+        "createDerivatives": "prohibited",
+        "createEmbeddings": "prohibited",
+        "trainModels": "prohibited"
+      },
+      "notes": "Use supplied recognition output only. The Stackr importer explicitly forbids Ximilar bulk image harvesting."
+    },
+    {
+      "code": "pokemon_official_web",
+      "displayName": "Official Pokemon websites",
+      "sourceType": "catalogue",
+      "active": false,
+      "termsUrl": "https://assets.pokemon.com/assets/cms2-en-uk/pdf/trainer-club/pokemon_website_terms_of_use.pdf",
+      "lastReviewedAt": "2026-08-13",
+      "permissionEvidenceRef": null,
+      "attributionRequired": true,
+      "capabilities": {
+        "metadataDiscovery": "review_required",
+        "automatedMetadataFetch": "prohibited",
+        "automatedAssetFetch": "prohibited",
+        "persistOriginalAsset": "prohibited",
+        "publicDisplay": "prohibited",
+        "createDerivatives": "prohibited",
+        "createEmbeddings": "prohibited",
+        "trainModels": "prohibited"
+      },
+      "notes": "Not an acquisition source. Current published terms prohibit automated operation and bulk downloading into a database absent separate permission."
+    }
+  ]
+}

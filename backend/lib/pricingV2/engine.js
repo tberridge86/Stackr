@@ -73,7 +73,7 @@ async function fetchCardRow(supabase, cardId, productType = 'raw_card') {
   if (canonicalCard) {
     return {
       id: canonicalCard.id,
-      name: canonicalCard.canonical_name ?? canonicalCard.english_display_name ?? canonicalCard.local_name,
+      name: canonicalCard.local_name ?? canonicalCard.canonical_name ?? canonicalCard.english_display_name,
       language: canonicalCard.language,
       region: canonicalCard.region,
       number: canonicalCard.collector_number,

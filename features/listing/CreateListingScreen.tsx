@@ -120,6 +120,7 @@ import {
 } from '../../lib/listingPhotoValidation';
 import { getProductPriceWithFallback, searchMarketProducts, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
 import { getPokemonCardImageUrls, getPokemonCardLanguageLabel, normalizePokemonCardLanguage } from '../../lib/pokemonTcg';
+import { selectTcgdexReferencePersistenceImage } from '../../lib/tcgdexReferencePersistence';
 import { fetchPokeTraceCardPrice, getPreferredMarketPrice } from '../../lib/pricing';
 import { buildScanRouteParamsForIntent } from '../../lib/scanIntent';
 import {
@@ -445,6 +446,34 @@ const getCardImageUrl = (card: SelectedCard | null) => {
   );
 };
 
+function listingCardForPersistence(card: SelectedCard | null, existing: SelectedCard | null = null) {
+  if (!card) return null;
+  const existingCard = existing?.id === card.id ? existing : null;
+  const imageSmall = selectTcgdexReferencePersistenceImage(card.image_small, existingCard?.image_small);
+  const imageLarge = selectTcgdexReferencePersistenceImage(card.image_large, existingCard?.image_large);
+  const rawImageSmall = selectTcgdexReferencePersistenceImage(
+    card.raw_data?.images?.small,
+    existingCard?.raw_data?.images?.small,
+  );
+  const rawImageLarge = selectTcgdexReferencePersistenceImage(
+    card.raw_data?.images?.large,
+    existingCard?.raw_data?.images?.large,
+  );
+  return {
+    ...card,
+    image_small: imageSmall,
+    image_large: imageLarge,
+    raw_data: {
+      ...card.raw_data,
+      images: {
+        ...(card.raw_data?.images ?? {}),
+        small: rawImageSmall,
+        large: rawImageLarge,
+      },
+    },
+  };
+}
+
 const isMissingListingMediaColumnError = (error: any) => {
   if (!error) return false;
   const message = [
@@ -611,8 +640,11 @@ function mapForeignCardRow(card: ForeignPokemonCardBrief | ForeignPokemonCard): 
   const detailed = card as ForeignPokemonCard;
   const set = detailed.set ?? null;
   const pricing = detailed.pricing ?? null;
-  const imageSmall = card.imageSmall ?? card.image ?? (card.imageBase ? `${card.imageBase.replace(/\/$/, '')}/low.webp` : null);
-  const imageLarge = card.image ?? (card.imageBase ? `${card.imageBase.replace(/\/$/, '')}/high.webp` : imageSmall);
+  // A foreign row may include a provider image base, but a controlled card
+  // reference may only be used after the exact live record validation path
+  // has supplied its display URL. Never construct provider asset paths here.
+  const imageSmall = card.imageSmall ?? card.image ?? null;
+  const imageLarge = card.image ?? imageSmall;
   return {
     id: card.id,
     name: card.name,
@@ -809,6 +841,7 @@ export default function CreateListingScreen() {
   const searchRequestIdRef = useRef(0);
   const ownedCardsRequestIdRef = useRef(0);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const persistedDraftSelectedCardRef = useRef<SelectedCard | null>(null);
   const suppressNextAutoSaveRef = useRef(false);
   const listingActionHandledRef = useRef<string | null>(null);
   const photoCatalogueMatchRef = useRef<string | null>(null);
@@ -816,7 +849,7 @@ export default function CreateListingScreen() {
   const routeHasPrefill = Boolean(params.cardId || params.productName);
   const listingSubjectType = resolveListingSubjectTypeForSelection({
     requested: storedListingSubjectType,
-    selectedCard,
+    selectedCard: listingCardForPersistence(selectedCard),
     selectedProduct,
   });
   const isGradedSlabListing = listingSubjectType === 'graded_slab';
@@ -1091,6 +1124,7 @@ export default function CreateListingScreen() {
     photoCatalogueSuggestionRef.current += 1;
     if (searchTimer.current) clearTimeout(searchTimer.current);
     suppressNextAutoSaveRef.current = true;
+    persistedDraftSelectedCardRef.current = null;
     setStep('category');
     setIdentificationMethod(null);
     setSelectedCard(null);
@@ -1205,6 +1239,7 @@ export default function CreateListingScreen() {
         const draft = JSON.parse(raw) as DraftState;
         if (!isCurrentDraftIdentity()) return;
         const restoredSelectedCard = draft.selectedCard ?? null;
+        persistedDraftSelectedCardRef.current = restoredSelectedCard;
         const restoredSelectedProduct = draft.selectedProduct ?? null;
         const restoredSubjectType = resolveListingSubjectTypeForSelection({
           requested: draft.listingSubjectType,
@@ -1263,7 +1298,7 @@ export default function CreateListingScreen() {
   const buildDraftState = useCallback((): DraftState => ({
     step,
     identificationMethod,
-    selectedCard,
+    selectedCard: listingCardForPersistence(selectedCard, persistedDraftSelectedCardRef.current),
     selectedProduct,
     manualIdentity,
     listingSubjectType,
@@ -1343,7 +1378,9 @@ export default function CreateListingScreen() {
           if (error) throw error;
           if (user?.id !== draftSessionUserId) return;
           if (getCreateListingDraftKey(user.id) !== draftStorageKey) return;
-          await AsyncStorage.setItem(draftStorageKey, JSON.stringify(buildDraftState()));
+          const draftState = buildDraftState();
+          await AsyncStorage.setItem(draftStorageKey, JSON.stringify(draftState));
+          persistedDraftSelectedCardRef.current = draftState.selectedCard;
           setDraftSaved(true);
           setTimeout(() => setDraftSaved(false), 1400);
         } catch (error) {
@@ -2587,7 +2624,9 @@ export default function CreateListingScreen() {
           ? `product:${selectedProduct.id}`
           : `manual:${manualIdentity.state}:${slugify(resolvedName) || Date.now()}`;
       const setId = selectedCard?.set_id ?? selectedProduct?.set_name ?? null;
-      const stockImageUrl = selectedCard ? getCardImageUrl(selectedCard) : catalogueImageUrl;
+      const stockImageUrl = selectTcgdexReferencePersistenceImage(
+        selectedCard ? getCardImageUrl(selectedCard) : catalogueImageUrl,
+      );
       const frontUrl = uploadResult.bySlot.front ?? uploadResult.bySlot.packaging_front ?? uploadResult.bySlot.slab_front ?? null;
       const backUrl = uploadResult.bySlot.back ?? uploadResult.bySlot.packaging_back ?? uploadResult.bySlot.slab_back ?? null;
       const listingMedia: ListingMediaItem[] = [

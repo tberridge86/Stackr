@@ -4,6 +4,7 @@ import React from 'react';
 import {
   InteractionManager,
   StyleSheet,
+  Text,
   View,
   type ImageSourcePropType,
   type ImageStyle,
@@ -11,6 +12,11 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useTheme } from './theme-context';
+import {
+  enforceTcgdexRuntimeImagePolicy,
+  isTcgdexControlledCardReferenceUrl,
+  TCGDEX_CONTROLLED_CARD_REFERENCE_POLICY,
+} from '../lib/tcgdexControlledCardReference';
 
 type StackrImagePriority = 'low' | 'normal' | 'high';
 
@@ -37,6 +43,22 @@ type StackrImageProps = {
 
 const prefetchedUris = new Set<string>();
 
+function sanitizeImageSource(source?: ImageSourcePropType | null): ImageSourcePropType | null {
+  if (source == null || typeof source === 'number') return source ?? null;
+  if (Array.isArray(source)) {
+    const sanitized = source.flatMap((candidate) => {
+      const next = sanitizeImageSource(candidate as ImageSourcePropType);
+      return next == null ? [] : Array.isArray(next) ? next : [next];
+    });
+    return sanitized.length ? sanitized as ImageSourcePropType : null;
+  }
+  if (typeof source === 'object' && typeof source.uri === 'string') {
+    const uri = enforceTcgdexRuntimeImagePolicy(source.uri);
+    return uri ? { ...source, uri } : null;
+  }
+  return source;
+}
+
 const getBestUri = ({
   thumbnailUri,
   uri,
@@ -48,7 +70,7 @@ export async function prefetchStackrImages(
   urls: (string | null | undefined)[],
   limit = 18
 ) {
-  const uniqueUrls = [...new Set(urls.filter((url): url is string => Boolean(url)))].filter(
+  const uniqueUrls = [...new Set(urls.map((url) => enforceTcgdexRuntimeImagePolicy(url)).filter((url): url is string => Boolean(url)))].filter(
     (url) => !prefetchedUris.has(url)
   );
   const nextUrls = uniqueUrls.slice(0, limit);
@@ -57,7 +79,13 @@ export async function prefetchStackrImages(
   nextUrls.forEach((url) => prefetchedUris.add(url));
 
   try {
-    return await ExpoImage.prefetch(nextUrls, { cachePolicy: 'memory-disk' });
+    const controlled = nextUrls.filter(isTcgdexControlledCardReferenceUrl);
+    const ordinary = nextUrls.filter((url) => !isTcgdexControlledCardReferenceUrl(url));
+    const results = await Promise.all([
+      ordinary.length ? ExpoImage.prefetch(ordinary, { cachePolicy: 'memory-disk' }) : true,
+      controlled.length ? ExpoImage.prefetch(controlled, { cachePolicy: 'memory' }) : true,
+    ]);
+    return results.every(Boolean);
   } catch {
     nextUrls.forEach((url) => prefetchedUris.delete(url));
     return false;
@@ -99,7 +127,7 @@ function StackrImageBase({
 }: StackrImageProps) {
   const { theme } = useTheme();
   const [failed, setFailed] = React.useState(false);
-  const remoteUri = getBestUri({ thumbnailUri, uri, fullUri });
+  const remoteUri = enforceTcgdexRuntimeImagePolicy(getBestUri({ thumbnailUri, uri, fullUri }));
   const isRemoteImage = Boolean(remoteUri);
   const remoteSource = remoteUri
     ? {
@@ -107,9 +135,11 @@ function StackrImageBase({
         cacheKey: cacheKey ?? remoteUri,
       }
     : null;
+  const sanitizedSource = sanitizeImageSource(source);
+  const sanitizedFallbackSource = sanitizeImageSource(fallbackSource);
   const resolvedSource = failed
-    ? fallbackSource ?? source ?? null
-    : source ?? remoteSource ?? fallbackSource ?? null;
+    ? sanitizedFallbackSource ?? sanitizedSource ?? null
+    : sanitizedSource ?? remoteSource ?? sanitizedFallbackSource ?? null;
   const backgroundColor = placeholderColor ?? theme.colors.surface;
 
   React.useEffect(() => {
@@ -120,7 +150,7 @@ function StackrImageBase({
     if (!prefetch || !remoteUri || prefetchedUris.has(remoteUri)) return;
     prefetchedUris.add(remoteUri);
     const task = InteractionManager.runAfterInteractions(() => {
-      ExpoImage.prefetch(remoteUri, { cachePolicy: 'memory-disk' }).catch(() => {
+      ExpoImage.prefetch(remoteUri, { cachePolicy: isTcgdexControlledCardReferenceUrl(remoteUri) ? 'memory' : 'memory-disk' }).catch(() => {
         prefetchedUris.delete(remoteUri);
       });
     });
@@ -145,7 +175,7 @@ function StackrImageBase({
           contentFit={contentFit}
           placeholder={isRemoteImage ? { blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' } : undefined}
           placeholderContentFit={contentFit}
-          cachePolicy="memory-disk"
+          cachePolicy={isTcgdexControlledCardReferenceUrl(remoteUri) ? 'memory' : 'memory-disk'}
           priority={priority}
           transition={transition}
           recyclingKey={remoteUri ?? cacheKey ?? undefined}
@@ -161,6 +191,12 @@ function StackrImageBase({
       {!resolvedSource && showFallbackIcon ? (
         <View style={styles.fallbackIcon}>
           <Ionicons name="image-outline" size={20} color={theme.colors.textSoft} />
+        </View>
+      ) : null}
+
+      {isTcgdexControlledCardReferenceUrl(remoteUri) ? (
+        <View pointerEvents="none" style={styles.providerAttribution}>
+          <Text style={styles.providerAttributionText}>{TCGDEX_CONTROLLED_CARD_REFERENCE_POLICY.attributionText}</Text>
         </View>
       ) : null}
     </View>
@@ -184,4 +220,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  providerAttribution: { position: 'absolute', right: 3, bottom: 3, paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4, backgroundColor: 'rgba(15, 23, 42, 0.78)' },
+  providerAttributionText: { color: '#FFFFFF', fontSize: 7, lineHeight: 9, fontWeight: '700' },
 });

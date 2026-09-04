@@ -34,6 +34,18 @@ export const ROUTES = [
   { id: 'card', pattern: new RegExp(`^/v1/cards/${UUID}$`), ...publicGet, query: query() },
   { id: 'card_variants', pattern: new RegExp(`^/v1/cards/${UUID}/variants$`), ...publicGet, query: query() },
   {
+    id: 'same_artwork_display_references',
+    pattern: /^\/v1\/cards\/display-artwork-references$/,
+    methods: ['POST'],
+    auth: 'public',
+    target: 'backend',
+    cache: 'none',
+    rate: 'catalogue',
+    body: 'sameArtworkDisplayReferences',
+    maxBodyBytes: 16 * 1024,
+    query: query(),
+  },
+  {
     id: 'card_price',
     pattern: new RegExp(`^/v1/cards/${UUID}/price$`),
     ...publicGet,

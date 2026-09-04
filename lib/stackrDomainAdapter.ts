@@ -14,6 +14,7 @@ import {
   getLocalSetName,
 } from './pokemonDisplayNames';
 import { supabase } from './supabase';
+import { enforceTcgdexRuntimeImagePolicy } from './tcgdexControlledCardReference';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const EXACT_CARD_REASONS = new Set([
@@ -155,8 +156,8 @@ function legacyRowToCard(row: any): StackrLegacyCard {
     },
     rarity: clean(row.rarity ?? raw.rarity) ?? undefined,
     images: {
-      small: clean(row.image_small ?? row.image_small_url ?? row.image_url ?? raw.images?.small) ?? undefined,
-      large: clean(row.image_large ?? row.image_large_url ?? row.image_url ?? raw.images?.large) ?? undefined,
+      small: enforceTcgdexRuntimeImagePolicy(clean(row.image_small ?? row.image_small_url ?? row.image_url ?? raw.images?.small)) ?? undefined,
+      large: enforceTcgdexRuntimeImagePolicy(clean(row.image_large ?? row.image_large_url ?? row.image_url ?? raw.images?.large)) ?? undefined,
     },
     set: {
       id: setId,
@@ -311,7 +312,7 @@ function legacySetRow(row: any): StackrLegacySet {
     fallbackName: row.name ?? row.canonical_name ?? id,
     raw,
   });
-  const name = englishDisplayName ?? localName ?? id;
+  const name = localName ?? englishDisplayName ?? id;
   return {
     id,
     name,
@@ -452,11 +453,11 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
     localName,
     englishDisplayName: set.englishDisplayName,
   });
-  const name = englishDisplayName ?? localName ?? set.setCode ?? set.setId;
+  const name = localName ?? englishDisplayName ?? set.setCode ?? set.setId;
   return {
     id: set.setId,
     name,
-    series: set.seriesEnglishDisplayName ?? set.seriesNativeName ?? 'Other',
+    series: set.seriesNativeName ?? set.seriesEnglishDisplayName ?? 'Other',
     printedTotal: Number(set.printedTotal ?? 0),
     total: Number(set.total ?? set.printedTotal ?? 0),
     releaseDate: set.releaseDate ?? '',
@@ -502,13 +503,13 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
   };
   const presentation = buildForeignCardPresentation({
     id: card.cardId,
-    name: card.names.englishDisplay ?? card.names.native,
+    name: card.names.native ?? card.names.englishDisplay,
     localName: card.names.native,
     number: card.collectorNumber.value,
     language: card.languageCode,
     set: {
       id: card.set.setId,
-      name: card.set.englishDisplayName ?? card.set.nativeName,
+      name: card.set.nativeName ?? card.set.englishDisplayName,
       localName: card.set.nativeName,
       englishDisplayName: card.set.englishDisplayName,
     },
@@ -700,7 +701,7 @@ export async function fetchStackrCardsForSet(
     rawSet.printedTotal = setResponse.data.set.printedTotal;
     rawSet.total = setResponse.data.set.total;
     rawSet.releaseDate = setResponse.data.set.releaseDate;
-    rawSet.series = setResponse.data.set.seriesEnglishDisplayName ?? setResponse.data.set.seriesNativeName;
+    rawSet.series = setResponse.data.set.seriesNativeName ?? setResponse.data.set.seriesEnglishDisplayName;
     return mapped;
   });
 }

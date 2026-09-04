@@ -9,6 +9,12 @@ export const SUPPORTED_LANGUAGE_CODES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const EXACT_NAME_TYPES = new Set(['native', 'english_display']);
 const ALIAS_NAME_TYPES = new Set(['alias', 'translated', 'search_normalized']);
+const SAME_ARTWORK_DISPLAY_REFERENCE_LIMIT = 50;
+const SAME_ARTWORK_MAX_WIDTH = 512;
+const SAME_ARTWORK_MAX_HEIGHT = 720;
+const SAME_ARTWORK_MAX_BYTES = 512 * 1024;
+const SAME_ARTWORK_MIME_TYPES = new Set(['image/webp', 'image/jpeg', 'image/png']);
+const APPROVED_ASSET_PERMISSION_STATUSES = new Set(['approved', 'global_owner_approved']);
 
 export class ApiError extends Error {
   constructor(status, code, message, details = undefined) {
@@ -292,6 +298,57 @@ export function toCatalogueAsset(row, options = {}) {
     lastVerifiedAt: row.last_verified_at ?? null,
     updatedAt: row.updated_at ?? null,
   };
+}
+
+export function parseSameArtworkDisplayReferenceInput(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)
+    || Object.keys(input).some((key) => key !== 'references')
+    || !Array.isArray(input.references)
+    || input.references.length < 1
+    || input.references.length > SAME_ARTWORK_DISPLAY_REFERENCE_LIMIT) {
+    throw new ApiError(400, 'invalid_same_artwork_references', `references must contain between 1 and ${SAME_ARTWORK_DISPLAY_REFERENCE_LIMIT} source identities.`);
+  }
+  const seen = new Set();
+  return input.references.map((reference) => {
+    if (!reference || typeof reference !== 'object' || Array.isArray(reference)
+      || Object.keys(reference).some((key) => !['sourceCardId', 'sourceDefaultVariantId'].includes(key))) {
+      throw new ApiError(400, 'invalid_same_artwork_reference', 'Each reference must contain only sourceCardId and sourceDefaultVariantId.');
+    }
+    const sourceCardIdRaw = clean(reference.sourceCardId);
+    const sourceDefaultVariantIdRaw = clean(reference.sourceDefaultVariantId);
+    if (!isUuid(sourceCardIdRaw) || !isUuid(sourceDefaultVariantIdRaw)) {
+      throw new ApiError(400, 'invalid_same_artwork_reference', 'Same-artwork source identities must be canonical UUIDs.');
+    }
+    const sourceCardId = sourceCardIdRaw.toLowerCase();
+    const sourceDefaultVariantId = sourceDefaultVariantIdRaw.toLowerCase();
+    const key = `${sourceCardId}:${sourceDefaultVariantId}`;
+    if (seen.has(key)) throw new ApiError(400, 'duplicate_same_artwork_reference', 'Same-artwork source identities must not be duplicated.');
+    seen.add(key);
+    return { sourceCardId, sourceDefaultVariantId };
+  });
+}
+
+function lowResolutionSameArtworkDisplay(row, assetUrlOptions) {
+  if (!row || row.asset_type !== 'card_image'
+    || !APPROVED_ASSET_PERMISSION_STATUSES.has(String(row.permission_status ?? ''))
+    || row.unavailable_reason != null) return null;
+  const width = Number(row.width);
+  const height = Number(row.height);
+  const byteSize = Number(row.byte_size);
+  if (!Number.isSafeInteger(width) || width < 1 || width > SAME_ARTWORK_MAX_WIDTH
+    || !Number.isSafeInteger(height) || height < 1 || height > SAME_ARTWORK_MAX_HEIGHT
+    || !Number.isSafeInteger(byteSize) || byteSize < 1 || byteSize > SAME_ARTWORK_MAX_BYTES
+    || !SAME_ARTWORK_MIME_TYPES.has(String(row.mime_type ?? '').toLowerCase())) return null;
+  const attribution = clean(row.source_attribution);
+  const url = clean(toCatalogueAsset(row, assetUrlOptions).deliveryUrl);
+  if (!attribution || !url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password || (parsed.port && parsed.port !== '443')) return null;
+  } catch {
+    return null;
+  }
+  return { kind: 'same_artwork_reference', url, attribution, width, height };
 }
 
 function preferredAssetScore(row, options = {}) {
@@ -1146,6 +1203,56 @@ export function createCatalogueV1Service(options) {
         cardId: detail.card.cardId,
         variants: detail.card.variants,
       };
+    },
+
+    async sameArtworkDisplayReferences(input = {}) {
+      const references = parseSameArtworkDisplayReferenceInput(input);
+      const sourceCardIds = [...new Set(references.map((reference) => reference.sourceCardId))];
+      const sourceRows = await queryRows(table(supabase, 'api', 'catalogue_cards').select('*').in('printing_id', sourceCardIds).limit(Math.min(1000, Math.max(100, sourceCardIds.length * 20))));
+      const rowsByPrinting = new Map();
+      for (const row of sourceRows) {
+        const printingId = clean(row.printing_id)?.toLowerCase();
+        if (printingId) rowsByPrinting.set(printingId, [...(rowsByPrinting.get(printingId) ?? []), row]);
+      }
+      const candidates = [];
+      for (const reference of references) {
+        const defaultRows = (rowsByPrinting.get(reference.sourceCardId) ?? []).filter((row) => row.variant_code === 'normal');
+        if (defaultRows.length !== 1) continue;
+        const sourceRow = defaultRows[0];
+        const sourceVariantId = clean(sourceRow.variant_id)?.toLowerCase();
+        const targetVariantId = clean(sourceRow.same_artwork_as_variant_id)?.toLowerCase();
+        if (sourceVariantId !== reference.sourceDefaultVariantId || sourceRow.native_image_status !== 'same_artwork_reference' || !isUuid(targetVariantId) || targetVariantId === reference.sourceDefaultVariantId) continue;
+        candidates.push({ ...reference, sourceRow, targetVariantId });
+      }
+      if (!candidates.length) return { references: [] };
+      const targetVariantIds = [...new Set(candidates.map((candidate) => candidate.targetVariantId))];
+      const targetRows = await queryRows(table(supabase, 'api', 'catalogue_cards').select('*').in('variant_id', targetVariantIds).limit(targetVariantIds.length * 2 + 1));
+      const targetByVariant = new Map();
+      for (const row of targetRows) {
+        const id = clean(row.variant_id)?.toLowerCase();
+        if (id) targetByVariant.set(id, [...(targetByVariant.get(id) ?? []), row]);
+      }
+      const compatible = candidates.filter((candidate) => {
+        const rows = targetByVariant.get(candidate.targetVariantId) ?? [];
+        return rows.length === 1 && rows[0].game_code === candidate.sourceRow.game_code && rows[0].language_code === candidate.sourceRow.language_code;
+      });
+      if (!compatible.length) return { references: [] };
+      const ids = [...new Set(compatible.map((candidate) => candidate.targetVariantId))];
+      const assetRows = await queryRows(table(assetSupabase, 'api', 'asset_manifest').select('*').eq('asset_type', 'card_image').in('variant_id', ids).limit(Math.min(1000, ids.length * 20 + 1)));
+      const assetsByVariant = new Map();
+      for (const row of assetRows) {
+        const id = clean(row.variant_id)?.toLowerCase();
+        if (id) assetsByVariant.set(id, [...(assetsByVariant.get(id) ?? []), row]);
+      }
+      const resolved = [];
+      for (const candidate of compatible) {
+        const display = (assetsByVariant.get(candidate.targetVariantId) ?? [])
+          .map((row) => lowResolutionSameArtworkDisplay(row, assetUrlOptions))
+          .filter(Boolean)
+          .sort((left, right) => left.width * left.height - right.width * right.height)[0];
+        if (display) resolved.push({ sourceCardId: candidate.sourceCardId, sourceDefaultVariantId: candidate.sourceDefaultVariantId, display });
+      }
+      return { references: resolved };
     },
 
     async assetManifest(input = {}) {

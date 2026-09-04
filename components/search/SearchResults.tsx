@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Text } from '../Text';
 import { StackrImage } from '../StackrImage';
+import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import { StackrCardActionIcon } from '../StackrScreen';
 import { useTheme } from '../theme-context';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../RaritySymbol';
@@ -271,7 +272,7 @@ export function SearchSetRailItem({
       }}
     >
       <View style={{ height: 76, borderRadius: 13, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-        <StackrImage uri={logoUri ?? artworkUri} contentFit="contain" rounded={12} style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} showFallbackIcon={false} />
+        <StackrImage uri={enforceSetVisualRuntimePolicy(logoUri)} fullUri={enforceSetVisualRuntimePolicy(artworkUri)} contentFit="contain" rounded={12} style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} showFallbackIcon={false} />
         {!logoUri && !artworkUri ? <Ionicons name={searchIcons.sets} size={26} color={theme.colors.textSoft} /> : null}
       </View>
       <Text style={{ color: theme.colors.text, fontSize: 14.5, lineHeight: 18, fontWeight: '900' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.78}>
@@ -534,7 +535,7 @@ export function SearchSetResult({
       accessibilityLabel={`Open set ${name}`}
       leading={
         <View style={{ width: 64, height: 52, borderRadius: 12, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
-          <StackrImage uri={logoUri ?? artworkUri} contentFit="contain" rounded={12} style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} showFallbackIcon={false} />
+          <StackrImage uri={enforceSetVisualRuntimePolicy(logoUri)} fullUri={enforceSetVisualRuntimePolicy(artworkUri)} contentFit="contain" rounded={12} style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} showFallbackIcon={false} />
           {!logoUri && !artworkUri ? <Ionicons name={searchIcons.sets} size={24} color={theme.colors.textSoft} /> : null}
         </View>
       }

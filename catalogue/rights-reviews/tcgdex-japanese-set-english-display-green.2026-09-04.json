@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "stackr-green-metadata-activation-decision-v1",
+  "decisionId": "tcgdex-japanese-set-english-display-green:2026-09-04",
+  "classification": "green",
+  "status": "authorized_under_internal_operating_boundary",
+  "recordedAt": "2026-09-04T09:26:07.000Z",
+  "authorityReviewOwner": "Jack Berridge",
+  "activationAuthorized": true,
+  "publicRuntimeImportAuthorized": true,
+  "canonicalDatabaseWriteAuthorized": false,
+  "scope": {
+    "sourceCode": "tcgdex",
+    "repository": "tcgdex/cards-database",
+    "pinnedCommit": "dd4fc9460b54b91c25df750c68ca36b9946448e2",
+    "language": "ja",
+    "field": "set_english_display_supplement",
+    "purpose": "Exact set-code English identification supplement with the authentic Japanese title remaining primary.",
+    "allowedSurfaces": [
+      "search",
+      "collection",
+      "binder",
+      "inventory",
+      "set_checklist",
+      "product_identification"
+    ],
+    "excludedUses": [
+      "canonical_database_write",
+      "unofficial_translation_as_official",
+      "card_rules_or_flavour_text",
+      "artwork",
+      "set_logo",
+      "expansion_symbol",
+      "pack_or_product_artwork",
+      "model_training"
+    ]
+  },
+  "bindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+    "rightsRegistryPath": "catalogue/source-rights-registry.json",
+    "rightsRegistrySha256": "53805cec7470b726190d1b268a2b93c5b0e6d96dd8287428a036f591456b250e",
+    "evidencePath": "catalogue/rights-evidence/tcgdex-metadata-mit.2026-09-04.json",
+    "evidenceSha256": "75992e1dde37c54806ac135c2fd49642c24c3429702ef3d6074fc8f986da8211",
+    "frozenSourcePath": "catalogue/tcgdex-japanese-set-english-display-source.json",
+    "frozenSourceSha256": "92639734fb2bb7167c96d720a651c66ccf618d160bd9169e04dc6ba0a77280f9",
+    "thirdPartyNoticePath": "THIRD_PARTY_NOTICES.md",
+    "thirdPartyNoticeSha256": "3bf318589be0f4fcac922891c1714fbec406536cbf4772e429d9f1e138290b7b",
+    "boundaryCompatibilityReviewPath": "catalogue/rights-reviews/stackrtcg-ip-boundary-green-compatibility.2026-09-04.json",
+    "boundaryCompatibilityReviewSha256": "aff5f9e97ab0d32cb7a4cc573f4acbedbabfa70613a46f77bd7bdc4969c2a1e4"
+  },
+  "runtimeControls": {
+    "exactJapaneseSetCodeRequired": true,
+    "nativeNameRemainsPrimary": true,
+    "englishLabelRequired": true,
+    "manualReviewedMapKeepsPrecedence": true,
+    "sourceKillSwitches": [
+      "EXPO_PUBLIC_DISABLE_TCGDEX_METADATA",
+      "STACKR_DISABLE_TCGDEX_METADATA"
+    ],
+    "killSwitchValue": "true",
+    "failClosedOnBindingMismatch": true
+  },
+  "relationshipToPendingCjkReview": "This decision activates only the exact pinned TCGdex Japanese display-supplement lane classified green by the operating boundary. It does not alter or approve the pending Wikidata, Chinese editorial, Japanese editorial, or official-site lanes in cjk-display-metadata-pending.2026-09-04.json.",
+  "signature": null,
+  "signatureRequired": false
+}

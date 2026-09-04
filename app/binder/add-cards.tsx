@@ -46,9 +46,9 @@ const cleanCardText = (value: unknown) => {
 const containsCjkText = (value: unknown) => /[\u3040-\u30ff\u3400-\u9fff]/.test(String(value ?? ''));
 
 const getCardPrimaryName = (item: PokemonSearchCard) =>
-  cleanCardText(item.englishName)
-  ?? (!containsCjkText(item.name) ? cleanCardText(item.name) : null)
+  cleanCardText(item.localName)
   ?? cleanCardText(item.name)
+  ?? cleanCardText(item.englishName)
   ?? 'Unknown card';
 
 const getCardSupportingName = (item: PokemonSearchCard, primaryName: string) => {
@@ -60,9 +60,10 @@ const getCardSupportingName = (item: PokemonSearchCard, primaryName: string) => 
 };
 
 const getSetPrimaryName = (item: PokemonSearchCard, fallbackName: string | null) =>
-  cleanCardText(item.set?.englishName)
-  ?? (!containsCjkText(fallbackName) ? cleanCardText(fallbackName) : null)
+  cleanCardText(item.set?.localName)
+  ?? cleanCardText(item.set?.name)
   ?? cleanCardText(fallbackName)
+  ?? cleanCardText(item.set?.englishName)
   ?? cleanCardText(item.set?.id)
   ?? 'Unknown set';
 

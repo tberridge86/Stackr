@@ -19,6 +19,8 @@ import { fetchUserCardAvailability } from '../../lib/cardOwnership';
 import { fetchOwnedCardRows } from '../../lib/ownership';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
+import { attachLiveTcgdexCardReferences } from '../../lib/pokemonTcg';
+import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 import {
   sanitizeMarketplaceCondition,
   sanitizeMarketplaceGrade,
@@ -478,7 +480,9 @@ export default function NewOfferScreen() {
       ? (getCachedCardSync(setIdValue, cardIdValue) as any)
       : null;
 
-    const cardRows = await fetchStackrCardRows([cardIdValue]);
+    const cardRows = await hydrateCardReferenceRowMapWithLiveTcgdexReferences(
+      await fetchStackrCardRows([cardIdValue]), attachLiveTcgdexCardReferences,
+    );
     const cardRow = cardRows.get(cardIdValue) ?? null;
 
     if (cardRow || cached) {
@@ -679,7 +683,7 @@ export default function NewOfferScreen() {
     }));
 
     const [cardRowsById, snapshotsById] = await Promise.all([
-      fetchStackrCardRows(cardIds),
+      fetchStackrCardRows(cardIds).then((rows) => hydrateCardReferenceRowMapWithLiveTcgdexReferences(rows, attachLiveTcgdexCardReferences)),
       fetchStackrPriceSnapshots(cardIds).catch((error: any) => {
         console.log('Trade snapshot lookup failed:', error?.message ?? error);
         return new Map();

@@ -4,6 +4,10 @@ import {
   getEnglishSetDisplayName,
   getPreferredSetDisplayName,
 } from './cardDisplayNames.js';
+import {
+  isTcgdexAssetPointer,
+  sanitizeTcgdexAssetPointersForPublicDisplay,
+} from './cataloguePublicAssetPolicy.js';
 import { normalizeTcgdexLanguage } from './tcgdex.js';
 
 const TCGDEX_BASE_URL = process.env.TCGDEX_API_BASE_URL || 'https://api.tcgdex.net/v2';
@@ -31,6 +35,7 @@ const imageProbeCache = new Map();
 const pokeWalletSetCache = new Map();
 
 const SUPPORTED_LANGUAGES = new Set(['en', 'ja', 'zh-tw', 'zh-cn', 'ko']);
+const CONTROLLED_CARD_REFERENCE_LANGUAGES = new Set(['ja', 'zh-tw', 'zh-cn']);
 const PROVIDER = 'tcgdex';
 const JAPANESE_CARD_UNIVERSE_TARGET = Number(process.env.STACKR_JAPANESE_CARD_UNIVERSE_TARGET || 30000);
 const PRODUCTION_SUPABASE_REFS = new Set(['oakdbbzdqwurpjnoqhmu']);
@@ -89,6 +94,17 @@ function normalizeLanguage(value = 'en') {
     throw error;
   }
   return language;
+}
+
+/**
+ * Public legacy DTOs suppress exact TCGdex-hosted pointers only. Existing
+ * Stackr-hosted, bundled, relative, or other reviewed values are preserved.
+ */
+export function sanitizeTcgdexCataloguePublicPayload(value, language = value?.language) {
+  const languageKey = normalizeTcgdexLanguage(language);
+  return CONTROLLED_CARD_REFERENCE_LANGUAGES.has(languageKey)
+    ? sanitizeTcgdexAssetPointersForPublicDisplay(value)
+    : value;
 }
 
 function assertLegacyCatalogueMutationAllowed(jobName) {
@@ -584,43 +600,11 @@ function uniqueByUrl(candidates) {
 }
 
 function buildTcgdexImageCandidates(card) {
-  const base = safeUrl(imageBaseFromRecord(card));
-  if (!base) return [];
-  if (hasImageExtension(base)) {
-    return uniqueByUrl([{
-      provider: PROVIDER,
-      source: PROVIDER,
-      url: base,
-      quality: /\/high[/.]?/i.test(base) || /_hires/i.test(base) ? 'high' : 'original',
-      format: imageFormatFromUrl(base),
-      base,
-    }]);
-  }
-
-  const clean = base.replace(/\/$/, '');
-  const patterns = [
-    ['high', 'webp', `${clean}/high.webp`],
-    ['high', 'png', `${clean}/high.png`],
-    ['high', 'jpg', `${clean}/high.jpg`],
-    ['high', 'jpg', `${clean}/high.jpeg`],
-    ['low', 'webp', `${clean}/low.webp`],
-    ['low', 'png', `${clean}/low.png`],
-    ['low', 'jpg', `${clean}/low.jpg`],
-    ['low', 'jpg', `${clean}/low.jpeg`],
-    ['original', 'webp', `${clean}.webp`],
-    ['original', 'png', `${clean}.png`],
-    ['original', 'jpg', `${clean}.jpg`],
-    ['original', 'jpg', `${clean}.jpeg`],
-  ];
-
-  return uniqueByUrl(patterns.map(([quality, format, url]) => ({
-    provider: PROVIDER,
-    source: PROVIDER,
-    url,
-    quality,
-    format,
-    base,
-  })));
+  // Legacy catalogue jobs are never allowed to synthesize or persist provider
+  // card artwork. The live reference module owns the sole permitted display
+  // path and validates exact current provider records before issuing low.webp.
+  void card;
+  return [];
 }
 
 function normalizeCollectorNumber(value) {
@@ -1729,7 +1713,7 @@ function mapCardRows(language, setRow, card) {
       localName,
       raw: card,
     });
-  const displayName = englishDisplayName ?? localName;
+  const displayName = localName ?? englishDisplayName;
   const raw = {
     ...card,
     language,
@@ -2308,7 +2292,7 @@ function formatCatalogueSetForClient(set, coverImageUrl = null) {
     raw: set.raw_payload,
   });
   const fallbackCoverImageUrl = coverImageUrl ?? getRawSetCoverImageUrl(set.raw_payload);
-  return {
+  return sanitizeTcgdexCataloguePublicPayload({
     ...set,
     name: displayName,
     localName,
@@ -2328,7 +2312,7 @@ function formatCatalogueSetForClient(set, coverImageUrl = null) {
       display_name: displayName,
       cover_image_url: fallbackCoverImageUrl ?? null,
     },
-  };
+  }, set.language);
 }
 
 export async function listCatalogueSets(db, options = {}) {
@@ -2344,14 +2328,14 @@ export async function listCatalogueSets(db, options = {}) {
   if (q) query = query.or(`canonical_name.ilike.%${q}%,local_name.ilike.%${q}%,english_display_name.ilike.%${q}%,set_code.ilike.%${q}%`);
   const result = await fetchRowsWithCount(query, options.page, options.limit ?? 100);
   const coverImages = await fetchSetCoverImages(db, result.rows.map((row) => row.id));
-  return {
+  return sanitizeTcgdexCataloguePublicPayload({
     language,
     region: getCatalogueRegion(language),
     count: result.count,
     page: result.page,
     limit: result.limit,
     sets: result.rows.map((row) => formatCatalogueSetForClient(row, coverImages.get(row.id))).filter(Boolean),
-  };
+  }, language);
 }
 
 export async function repairSetAssetUrls(db, options = {}) {
@@ -2444,12 +2428,13 @@ function formatCatalogueCardForClient(card) {
     localName: card.local_name ?? card.raw_payload?.local_name ?? card.raw_payload?.name,
     raw: card.raw_payload,
   });
-  const name = englishDisplayName ?? card.local_name ?? card.canonical_name ?? card.id;
-  const setName = card.raw_payload?.set?.english_display_name
-    ?? card.raw_payload?.set?.display_name
+  const name = card.local_name ?? card.canonical_name ?? englishDisplayName ?? card.id;
+  const setName = card.raw_payload?.set?.local_name
     ?? card.raw_payload?.set?.name
+    ?? card.raw_payload?.set?.display_name
+    ?? card.raw_payload?.set?.english_display_name
     ?? null;
-  return {
+  return sanitizeTcgdexCataloguePublicPayload({
     ...card,
     name,
     localName: card.local_name ?? card.canonical_name,
@@ -2467,7 +2452,7 @@ function formatCatalogueCardForClient(card) {
           }
         : card.raw_payload?.set,
     },
-  };
+  }, card.language);
 }
 
 export async function getCatalogueCard(db, cardId, options = {}) {
@@ -2554,6 +2539,7 @@ async function fetchLatestPrices(db, cardIds) {
 
 export async function listCatalogueSetCards(db, setId, options = {}) {
   const language = normalizeLanguage(options.language ?? 'en');
+  const controlledReferenceLanguage = CONTROLLED_CARD_REFERENCE_LANGUAGES.has(language);
   const canonicalSetId = stackrSetId(language, setId);
   let query = db
     .from('tcg_cards')
@@ -2573,6 +2559,7 @@ export async function listCatalogueSetCards(db, setId, options = {}) {
     const image = images.get(card.id);
     const price = prices.get(card.id);
     const imageUrl = image?.variants?.grid ?? image?.resolved_image_url ?? card.image_small_url ?? null;
+    const providerPointerBlocked = controlledReferenceLanguage && isTcgdexAssetPointer(imageUrl);
     const englishDisplayName = card.english_display_name
       ?? getEnglishCardDisplayName({
         id: card.id,
@@ -2584,15 +2571,16 @@ export async function listCatalogueSetCards(db, setId, options = {}) {
         localName: card.local_name ?? card.raw_payload?.name,
         raw: card.raw_payload,
       });
-    return {
+    return sanitizeTcgdexCataloguePublicPayload({
       id: card.id,
-      name: englishDisplayName ?? card.canonical_name ?? card.local_name,
+      name: card.local_name ?? card.canonical_name ?? englishDisplayName,
       localName: card.local_name ?? card.canonical_name,
       englishDisplayName,
       setId: card.set_id,
-      setName: card.raw_payload?.set?.english_display_name
-        ?? card.raw_payload?.set?.display_name
+      setName: card.raw_payload?.set?.local_name
         ?? card.raw_payload?.set?.name
+        ?? card.raw_payload?.set?.display_name
+        ?? card.raw_payload?.set?.english_display_name
         ?? null,
       collectorNumber: card.collector_number,
       language: card.language,
@@ -2601,10 +2589,10 @@ export async function listCatalogueSetCards(db, setId, options = {}) {
       rarity: card.rarity,
       image: {
         url: imageUrl,
-        status: image?.resolution_status ?? card.image_status ?? 'missing',
-        source: image?.resolution_source ?? (imageUrl ? PROVIDER : 'stackr_placeholder'),
-        width: image?.image_width ?? null,
-        height: image?.image_height ?? null,
+        status: providerPointerBlocked ? 'rights_blocked' : image?.resolution_status ?? card.image_status ?? 'missing',
+        source: providerPointerBlocked ? 'controlled_provider_live_reference_only' : image?.resolution_source ?? (imageUrl ? PROVIDER : 'stackr_placeholder'),
+        width: providerPointerBlocked ? null : image?.image_width ?? null,
+        height: providerPointerBlocked ? null : image?.image_height ?? null,
       },
       pricing: formatDisplayPrice(price),
       pricingStatus: price?.pricing_status ?? card.pricing_status ?? 'unsupported',
@@ -2612,7 +2600,7 @@ export async function listCatalogueSetCards(db, setId, options = {}) {
       duplicateQuantity: 0,
       completionStatus: card.data_completeness ?? card.record_status ?? 'partial',
       raw: options.includeRaw ? card.raw_payload : undefined,
-    };
+    }, language);
   });
 
   return {

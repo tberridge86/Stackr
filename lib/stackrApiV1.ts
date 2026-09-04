@@ -1,6 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRICE_API_URL, STACKR_API_URL } from './config';
+import { normalizeStackrApiBaseUrl } from './stackrApiTransportPolicy';
 import { supabase } from './supabase';
+
+const STACKR_CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type StackrApiLanguageCode = 'en' | 'ja' | 'zh-cn' | 'zh-tw' | 'zh-Hans' | 'zh-Hant' | 'ko';
 
@@ -188,6 +191,21 @@ export type StackrCatalogueAsset = {
   unavailableReason: string | null;
   lastVerifiedAt: string | null;
   updatedAt: string | null;
+};
+
+export type StackrSameArtworkDisplayReferenceInput = {
+  sourceCardId: string;
+  sourceDefaultVariantId: string;
+};
+
+export type StackrSameArtworkDisplayReference = StackrSameArtworkDisplayReferenceInput & {
+  display: {
+    kind: 'same_artwork_reference';
+    url: string;
+    attribution: string;
+    width: number;
+    height: number;
+  };
 };
 
 export type StackrDeltaChange = {
@@ -634,7 +652,7 @@ export class StackrApiClient {
   private readonly createIdempotencyKey: () => string;
 
   constructor(options: StackrApiV1ClientOptions = {}) {
-    this.baseUrl = options.baseUrl ?? `${STACKR_API_URL || PRICE_API_URL}/v1`;
+    this.baseUrl = normalizeStackrApiBaseUrl(options.baseUrl ?? `${STACKR_API_URL || PRICE_API_URL}/v1`);
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.headers = {
       'X-Stackr-Api-Version': '1',
@@ -811,6 +829,32 @@ export class StackrApiClient {
 
   cardVariants(cardId: string) {
     return this.request<{ cardId: string; variants: StackrCardVariant[] }>(`/cards/${encodeURIComponent(cardId)}/variants`);
+  }
+
+  sameArtworkDisplayReferences(references: StackrSameArtworkDisplayReferenceInput[]) {
+    if (!Array.isArray(references) || references.length < 1 || references.length > 50) {
+      throw new Error('sameArtworkDisplayReferences requires between 1 and 50 source identities.');
+    }
+    const keys = new Set<string>();
+    const normalizedReferences: StackrSameArtworkDisplayReferenceInput[] = [];
+    for (const reference of references) {
+      if (!STACKR_CANONICAL_UUID_PATTERN.test(reference.sourceCardId)
+        || !STACKR_CANONICAL_UUID_PATTERN.test(reference.sourceDefaultVariantId)) {
+        throw new Error('sameArtworkDisplayReferences requires canonical UUID identities.');
+      }
+      const normalizedReference = {
+        sourceCardId: reference.sourceCardId.toLowerCase(),
+        sourceDefaultVariantId: reference.sourceDefaultVariantId.toLowerCase(),
+      };
+      const key = `${normalizedReference.sourceCardId}:${normalizedReference.sourceDefaultVariantId}`;
+      if (keys.has(key)) throw new Error('sameArtworkDisplayReferences does not accept duplicate identities.');
+      keys.add(key);
+      normalizedReferences.push(normalizedReference);
+    }
+    return this.post<{ references: StackrSameArtworkDisplayReference[] }>(
+      '/cards/display-artwork-references',
+      { references: normalizedReferences },
+    );
   }
 
   assetManifest(query: {

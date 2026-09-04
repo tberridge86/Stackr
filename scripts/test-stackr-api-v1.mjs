@@ -6,6 +6,7 @@ import {
   ApiError,
   createCatalogueV1Service,
   normalizeSearchText,
+  parseSameArtworkDisplayReferenceInput,
   parseCursor,
   searchFixtureCatalogue,
   toCardSummary,
@@ -17,6 +18,29 @@ const cardId = '22222222-2222-4222-8222-222222222222';
 const variantId = '33333333-3333-4333-8333-333333333333';
 const sharedArtworkVariantId = '99999999-9999-4999-8999-999999999999';
 const manifestEtag = '"stackr-v1-test-manifest"';
+
+{
+  const reference = {
+    sourceCardId: 'abcdefab-cdef-4abc-8def-abcdefabcdef',
+    sourceDefaultVariantId: 'abcdefac-cdef-4abc-8def-abcdefabcdef',
+  };
+  assert.deepEqual(
+    parseSameArtworkDisplayReferenceInput({ references: [{
+      sourceCardId: reference.sourceCardId.toUpperCase(),
+      sourceDefaultVariantId: reference.sourceDefaultVariantId.toUpperCase(),
+    }] }),
+    [{ ...reference }],
+    'same-artwork UUID input must normalize to lowercase before lookup',
+  );
+  assert.throws(
+    () => parseSameArtworkDisplayReferenceInput({ references: [reference, {
+      sourceCardId: reference.sourceCardId.toUpperCase(),
+      sourceDefaultVariantId: reference.sourceDefaultVariantId.toUpperCase(),
+    }] }),
+    (error) => error instanceof ApiError && error.code === 'duplicate_same_artwork_reference',
+    'case-only UUID duplicates must be rejected',
+  );
+}
 
 function assertAssetDeliveryProjection() {
   const row = {

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "stackr-tcgdex-chinese-set-identity-display-source-v1",
+  "source": {
+    "repository": "tcgdex/cards-database",
+    "pinnedCommit": "dd4fc9460b54b91c25df750c68ca36b9946448e2",
+    "licence": "MIT"
+  },
+  "policy": {
+    "use": "runtime_translation_draft_native_identity_only",
+    "nativeNameRemainsPrimary": true,
+    "strictLanguageCodeAndNativeNameMatchRequired": true,
+    "pathStemRekeyAllowedOnlyForReviewedCbb1cTypo": true,
+    "canonicalDatabaseWriteAuthorized": false
+  },
+  "reviewedResolutionEvidence": {
+    "evidenceId": "provider-resolution:2026-08-14:42a5f7613be7f7e92c71d286",
+    "files": {
+      "catalogue/provider-resolution-evidence-contract.2026-08-14.json": "d525dbe9939f40823e30a2b8b16dcba1b4187cec986175574058d66013619fed",
+      "reports/catalogue/provider-resolution/2026-08-14/manifest.json": "36bb85d319cfb1b17bede1ac06f99ba428b560c8a34e9b6b690607e00a2e7560",
+      "reports/catalogue/provider-resolution/2026-08-14/resolved-provider-baseline-evidence.json": "84afd5d01a71017efca3e2052c6b61499d0be51e5c29c499d2be5188ecb0d1b5",
+      "reports/catalogue/provider-resolution/2026-08-14/provider-set-resolution-ledger.jsonl": "59fef5159f65dd4b4ff9fce5dc5245b1b70cda5ea2b63e177b8c8d3eaa22b089",
+      "reports/catalogue/provider-resolution/2026-08-14/raw/github-source-CSV1C.json": "1224d60892407d81b0eacbdd0550a88f3fe75b348427e829d9842f4151ba098d",
+      "reports/catalogue/provider-resolution/2026-08-14/raw/github-source-CBB1C.json": "bd9a27ada31dcc71197ba253476999fae00e3b309a4724e03bfd8669bd553818"
+    }
+  },
+  "entries": {
+    "cbb1c": {
+      "effectiveCode": "CBB1C",
+      "providerPath": "data-asia/SV/CBB1C.ts",
+      "sourceSha256": "9abfe118c4b63298bc8afe3fc3c5d1432c35a2128654881209075a2fc8074224",
+      "declaredCode": "CSV1C",
+      "nativeName": "宝石包 第一卷",
+      "normalizedNativeName": "宝石包第一卷",
+      "officialCardCount": 9,
+      "releaseDate": "2025-01-17",
+      "resolution": "path_stem_rekey_of_reviewed_internal_id_typo"
+    },
+    "csv1c": {
+      "effectiveCode": "CSV1C",
+      "providerPath": "data-asia/SV/CSV1C.ts",
+      "sourceSha256": "b03f3e0bac65af408a7c8a9764569e8d844cb7c33446dfb9d5a6ff7294589211",
+      "declaredCode": "CSV1C",
+      "nativeName": "亘古开来",
+      "normalizedNativeName": "亘古开来",
+      "officialCardCount": 127,
+      "releaseDate": "2025-01-17",
+      "resolution": "exact_source_code"
+    }
+  }
+}

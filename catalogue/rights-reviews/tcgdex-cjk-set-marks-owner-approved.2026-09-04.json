@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "stackr-amber-controlled-provider-activation-decision-v1",
+  "decisionId": "tcgdex-cjk-set-marks-owner-approved:2026-09-04",
+  "classification": "amber",
+  "status": "authorized_on_review_owner_permission_attestation",
+  "recordedAt": "2026-09-04T16:36:23.830Z",
+  "approvingPerson": "Jack Berridge",
+  "approvingRole": "Founder and Director, StackrTCG Ltd.",
+  "activationAuthorized": true,
+  "publicRuntimeDisplayAuthorized": true,
+  "canonicalDatabaseWriteAuthorized": false,
+  "assetPersistenceAuthorized": false,
+  "review": {
+    "assetOrData": "TCGdex provider-issued Japanese, Traditional-Chinese, and Simplified-Chinese set logos and expansion symbols.",
+    "source": "TCGdex API and assets.tcgdex.net provider delivery.",
+    "ownerOrLicensor": "The applicable asset rights owner or licensor, under permissions represented as held by the StackrTCG review owner.",
+    "permittedPurpose": "Bounded in-app set identification on search, collection, binder, inventory, checklist, card-detail, set-detail, recognition-result, and product-identification surfaces.",
+    "territory": "Worldwide app delivery where StackrTCG makes the relevant feature available.",
+    "term": "For the duration of the represented permission, with immediate disablement on expiry, withdrawal, or substantiated takedown.",
+    "transformationRights": "Provider-documented webp selection and responsive in-app sizing only.",
+    "storageRights": "Provider-served runtime delivery and ordinary memory/network caching only; no Stackr asset mirror or catalogue asset write.",
+    "deletionRequirements": "Source, language, set, or mark must be disabled promptly on expiry, withdrawal, or substantiated complaint.",
+    "attribution": "TCGdex reference.",
+    "downstreamDeliveryRights": "In-app display only; no standalone download, export, asset resale, or corpus distribution."
+  },
+  "scope": {
+    "sourceCode": "tcgdex",
+    "providerHost": "assets.tcgdex.net",
+    "assetTypes": [
+      "set_logo",
+      "expansion_symbol"
+    ],
+    "languages": [
+      "ja",
+      "zh-tw",
+      "zh-cn"
+    ],
+    "rendition": "webp",
+    "excludedUses": [
+      "canonical_catalogue_rewrite",
+      "provider_asset_mirror",
+      "pack_or_product_artwork",
+      "high_resolution_or_print_delivery",
+      "download_or_export",
+      "model_training",
+      "merchandise_or_replica"
+    ]
+  },
+  "bindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+    "rightsRegistryPath": "catalogue/source-rights-registry.json",
+    "rightsRegistrySha256": "53805cec7470b726190d1b268a2b93c5b0e6d96dd8287428a036f591456b250e",
+    "evidencePath": "catalogue/rights-evidence/tcgdex-cjk-set-marks.2026-09-04.json",
+    "evidenceSha256": "e33913070b820fd3fe25ecc7c0cf27112f3116e3073a4a4518fb63c0deb93845",
+    "ownerAttestationPath": "catalogue/rights-evidence/cjk-app-image-permission-owner-attestation.2026-09-04.json",
+    "ownerAttestationSha256": "0afd34fee2453ca87bf50383ce5aac3519439308297f9200855c57cc49bea0ad"
+  },
+  "runtimeControls": {
+    "httpsExactHostOnly": true,
+    "credentialsQueryFragmentAndNonDefaultPortForbidden": true,
+    "safePathSegmentsOnly": true,
+    "webpOnly": true,
+    "runtimeOnly": true,
+    "neutralFallbackOnFailure": true,
+    "sourceKillSwitches": [
+      "EXPO_PUBLIC_DISABLE_TCGDEX_SET_MARKS",
+      "STACKR_DISABLE_TCGDEX_SET_MARKS"
+    ],
+    "denylistEnvironmentVariable": "EXPO_PUBLIC_TCGDEX_SET_MARK_DENYLIST",
+    "killSwitchValue": "true"
+  },
+  "signature": null,
+  "signatureRequired": false
+}

@@ -1,4 +1,8 @@
 import { PRICE_API_URL } from './config';
+import {
+  resolveTcgdexControlledCardReference,
+  stripTcgdexReferencesFromValueBeforePersistence,
+} from './tcgdexControlledCardReference';
 
 export type ForeignPokemonLanguageCode =
   | 'en'
@@ -64,6 +68,18 @@ export type ForeignPokemonCardBrief = {
   image?: string | null;
   imageSmall?: string | null;
   imageBase?: string | null;
+  controlledReference?: ForeignPokemonControlledCardReference | null;
+};
+
+export type ForeignPokemonControlledCardReference = {
+  uri: string;
+  sourceCode: 'tcgdex';
+  attributionText: 'TCGdex reference';
+  cachePolicy: 'memory';
+  providerCardId: string;
+  providerSetId: string;
+  localId: string;
+  provenance: 'tcgdex_live_or_ttl_cached_provider_card_record';
 };
 
 export type ForeignPokemonPriceVariant = {
@@ -115,6 +131,22 @@ export type ForeignPokemonCard = ForeignPokemonCardBrief & {
   raw?: unknown;
 };
 
+const FOREIGN_SET_REFERENCE_CACHE_TTL_MS = 10 * 60 * 1000;
+const foreignSetReferenceCache = new Map<string, { expiresAt: number; value: ForeignPokemonSet | null }>();
+const foreignSetReferenceInflight = new Map<string, Promise<ForeignPokemonSet | null>>();
+
+function sanitizeForeignSetRaw(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value ?? null;
+  const { logo: _logo, logoBase: _logoBase, symbol: _symbol, symbolBase: _symbolBase, cover: _cover, artwork: _artwork, image: _image, images: _images, cards: _cards, ...safe } = value as Record<string, unknown>;
+  return stripTcgdexReferencesFromValueBeforePersistence(safe);
+}
+
+function sanitizeForeignCardRaw(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value ?? null;
+  const { image: _image, imageBase: _imageBase, imageSmall: _imageSmall, imageLarge: _imageLarge, images: _images, set, ...safe } = value as Record<string, unknown>;
+  return stripTcgdexReferencesFromValueBeforePersistence({ ...safe, set: sanitizeForeignSetRaw(set) });
+}
+
 function assertPriceApiUrl() {
   if (!PRICE_API_URL) throw new Error('Missing EXPO_PUBLIC_PRICE_API_URL');
   return PRICE_API_URL.replace(/\/$/, '');
@@ -127,6 +159,30 @@ async function fetchForeignJson<T>(path: string): Promise<T> {
     throw new Error(json?.detail?.message ?? json?.detail ?? json?.error ?? `Foreign Pokemon API failed: ${response.status}`);
   }
   return json as T;
+}
+
+export function hydrateForeignPokemonControlledCardReference(
+  card: ForeignPokemonCardBrief | ForeignPokemonCard,
+  envelope: { source?: string | null; language?: string | null; providerSetId?: string | null },
+) {
+  if (!['ja', 'zh-tw', 'zh-cn'].includes(card.language)) return card;
+  const descriptor = card.controlledReference;
+  const safeRaw = sanitizeForeignCardRaw((card as ForeignPokemonCard).raw);
+  if (envelope.source !== 'tcgdex' || !descriptor
+    || descriptor.sourceCode !== 'tcgdex'
+    || descriptor.provenance !== 'tcgdex_live_or_ttl_cached_provider_card_record'
+    || descriptor.providerCardId !== card.providerCardId
+    || descriptor.localId !== String(card.localId ?? card.number ?? '')
+    || (envelope.language && envelope.language !== card.language)
+    || (envelope.providerSetId && envelope.providerSetId !== descriptor.providerSetId)) {
+    return { ...card, ...((card as ForeignPokemonCard).raw === undefined ? {} : { raw: safeRaw }), image: null, imageSmall: null, imageBase: null, controlledReference: null };
+  }
+  const resolved = resolveTcgdexControlledCardReference({
+    language: card.language, providerCardId: descriptor.providerCardId,
+    providerSetId: descriptor.providerSetId, localId: descriptor.localId,
+    providerLowResolutionUri: descriptor.uri, provenance: descriptor.provenance,
+  });
+  return { ...card, ...((card as ForeignPokemonCard).raw === undefined ? {} : { raw: safeRaw }), image: resolved?.uri ?? null, imageSmall: resolved?.uri ?? null, imageBase: null, controlledReference: resolved ? descriptor : null };
 }
 
 export async function fetchForeignPokemonLanguages(): Promise<ForeignPokemonLanguage[]> {
@@ -154,10 +210,21 @@ export async function fetchForeignPokemonSet(
   const params = new URLSearchParams();
   if (options.language) params.set('language', String(options.language));
   const query = params.toString();
-  const json = await fetchForeignJson<{ set: ForeignPokemonSet }>(
+  const cacheKey = `${String(options.language ?? '').trim().toLowerCase()}:${setId.trim()}`;
+  const cached = foreignSetReferenceCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  const inflight = foreignSetReferenceInflight.get(cacheKey);
+  if (inflight) return inflight;
+  const request = (async () => {
+  const json = await fetchForeignJson<{ source?: string; language?: string; set: ForeignPokemonSet }>(
     `/api/foreign/sets/${encodeURIComponent(setId)}${query ? `?${query}` : ''}`
   );
-  return json.set ?? null;
+  if (!json.set) return null;
+  return { ...json.set, cards: (json.set.cards ?? []).map((card) => hydrateForeignPokemonControlledCardReference(card, { source: json.source, language: json.language, providerSetId: json.set.providerSetId ?? json.set.id })) };
+  })();
+  foreignSetReferenceInflight.set(cacheKey, request);
+  try { const value = await request; foreignSetReferenceCache.set(cacheKey, { expiresAt: Date.now() + FOREIGN_SET_REFERENCE_CACHE_TTL_MS, value }); return value; }
+  finally { foreignSetReferenceInflight.delete(cacheKey); }
 }
 
 export async function searchForeignPokemonCards(options: {
@@ -175,10 +242,10 @@ export async function searchForeignPokemonCards(options: {
   if (options.number?.trim()) params.set('number', options.number.trim());
   if (options.limit) params.set('limit', String(options.limit));
   if (options.includeDetails) params.set('includeDetails', 'true');
-  const json = await fetchForeignJson<{ cards: (ForeignPokemonCardBrief | ForeignPokemonCard)[] }>(
+  const json = await fetchForeignJson<{ source?: string; language?: string; cards: (ForeignPokemonCardBrief | ForeignPokemonCard)[] }>(
     `/api/foreign/cards/search?${params.toString()}`
   );
-  return json.cards ?? [];
+  return (json.cards ?? []).map((card) => hydrateForeignPokemonControlledCardReference(card, { source: json.source, language: json.language, providerSetId: options.setId ?? null }));
 }
 
 export async function fetchForeignPokemonCard(
@@ -188,10 +255,10 @@ export async function fetchForeignPokemonCard(
   const params = new URLSearchParams();
   if (options.language) params.set('language', String(options.language));
   const query = params.toString();
-  const json = await fetchForeignJson<{ card: ForeignPokemonCard }>(
+  const json = await fetchForeignJson<{ source?: string; language?: string; card: ForeignPokemonCard }>(
     `/api/foreign/cards/${encodeURIComponent(cardId)}${query ? `?${query}` : ''}`
   );
-  return json.card ?? null;
+  return json.card ? hydrateForeignPokemonControlledCardReference(json.card, { source: json.source, language: json.language }) as ForeignPokemonCard : null;
 }
 
 export async function fetchForeignPokemonCardPricing(

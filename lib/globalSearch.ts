@@ -3,6 +3,7 @@ import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 import { expandSearchQuery, normaliseSearchText } from './searchNormalisation';
 import { supabase } from './supabase';
 import { getPokemonCardLanguageLabel, normalizePokemonCardLanguage } from './pokemonTcg';
+import { enforceSetVisualRuntimePolicy } from './providerSetMarkRuntimePolicy';
 import { fetchStackrSets } from './stackrDomainAdapter';
 import { sanitizeGate0CommerceCopy } from './gate0CommerceCopy';
 import { sanitizeMarketplaceListingPresentationFields } from './marketplacePresentation';
@@ -134,7 +135,7 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
       category: 'sets',
       title: set.name,
       subtitle: joinSubtitle([set.series, set.printedTotal ?? set.total ? `${set.printedTotal ?? set.total} cards` : null]),
-      imageUrl: set.images.logo ?? set.images.symbol ?? set.images.cover ?? null,
+      imageUrl: enforceSetVisualRuntimePolicy(set.images.logo ?? set.images.symbol ?? set.images.cover) ?? null,
       route: `/set/${set.id}`,
       raw: set,
     }));
