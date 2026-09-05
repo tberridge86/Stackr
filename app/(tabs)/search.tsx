@@ -31,6 +31,11 @@ import {
 } from '../../components/search/SearchResults';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { ScrollToEndButton } from '../../components/ScrollToEndButton';
+import {
+  POKEMON_LANGUAGE_DESCRIPTORS,
+  PokemonLanguageFlagIcon,
+  type PokemonLanguageBadgeCode,
+} from '../../components/PokemonLanguageBadge';
 import { useTheme } from '../../components/theme-context';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchOwnedCardRows } from '../../lib/ownership';
@@ -76,7 +81,7 @@ import { sanitizeMarketplaceListingPresentationFields } from '../../lib/marketpl
 type SearchCategory = 'all' | 'cards' | 'sets' | 'sealed' | 'graded' | 'collectors' | ListingCategoryKey;
 type SearchSortKey = 'relevance' | 'priceAsc' | 'priceDesc' | 'rarity' | 'set' | 'gradeDesc' | 'newest';
 type SearchPriceBucket = 'all' | 'under10' | '10to50' | '50to100' | '100plus';
-type SearchLanguageFilter = 'all' | 'en' | 'ja' | 'zh-tw';
+type SearchLanguageFilter = 'all' | 'en' | 'ja' | 'zh-cn' | 'zh-tw';
 
 type CardResult = {
   id: string;
@@ -199,11 +204,12 @@ const SEARCH_PRICE_BUCKETS: { key: SearchPriceBucket; label: string }[] = [
   { key: '100plus', label: '£100+' },
 ];
 
-const SEARCH_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string }[] = [
+const SEARCH_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string; flagLanguage?: PokemonLanguageBadgeCode }[] = [
   { key: 'all', label: 'Any language' },
-  { key: 'en', label: 'English' },
-  { key: 'ja', label: 'Japanese' },
-  { key: 'zh-tw', label: 'Traditional Chinese' },
+  { key: 'en', label: POKEMON_LANGUAGE_DESCRIPTORS.en.label, flagLanguage: 'en' },
+  { key: 'ja', label: POKEMON_LANGUAGE_DESCRIPTORS.ja.label, flagLanguage: 'ja' },
+  { key: 'zh-cn', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-cn'].label, flagLanguage: 'zh-cn' },
+  { key: 'zh-tw', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-tw'].label, flagLanguage: 'zh-tw' },
 ];
 
 const SEARCH_GRADER_FILTERS = ['PSA', 'BGS', 'CGC', 'TAG', 'ACE'];
@@ -1841,6 +1847,7 @@ export default function GlobalSearchScreen() {
               <SearchFilterOption
                 key={language.key}
                 label={language.label}
+                leading={language.flagLanguage ? <PokemonLanguageFlagIcon language={language.flagLanguage} size={16} decorative /> : undefined}
                 active={selectedLanguage === language.key}
                 onPress={() => setSelectedLanguage(language.key)}
               />
@@ -2053,12 +2060,14 @@ function SearchFilterOption({
   label,
   icon,
   imageIcon,
+  leading,
   active,
   onPress,
 }: {
   label: string;
   icon?: keyof typeof Ionicons.glyphMap;
   imageIcon?: ImageSourcePropType;
+  leading?: React.ReactNode;
   active: boolean;
   onPress: () => void;
 }) {
@@ -2083,13 +2092,13 @@ function SearchFilterOption({
         gap: 6,
       }}
     >
-      {imageIcon ? (
+      {leading ?? (imageIcon ? (
         <StackrCardActionIcon source={imageIcon} frameSize={22} artworkSize={18} />
       ) : icon ? (
         <Ionicons name={icon} size={14} color={active ? theme.colors.primary : theme.colors.textSoft} />
       ) : active ? (
         <Ionicons name="checkmark-circle" size={14} color={theme.colors.primary} />
-      ) : null}
+      ) : null)}
       <Text
         numberOfLines={1}
         ellipsizeMode="tail"

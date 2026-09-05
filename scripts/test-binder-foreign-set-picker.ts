@@ -90,8 +90,8 @@ async function main() {
   assert.match(pokemonTcgSource, /function mergeApprovedSetImages/);
 
   const pickerSource = readFileSync('app/binder/new.tsx', 'utf8');
-  assert.match(pickerSource, /\{ key: 'zh-cn', label: 'Simplified' \}/);
-  assert.match(pickerSource, /\{ key: 'zh-tw', label: 'Traditional' \}/);
+  assert.match(pickerSource, /\{ key: 'zh-cn', label: 'Simplified Chinese' \}/);
+  assert.match(pickerSource, /\{ key: 'zh-tw', label: 'Traditional Chinese' \}/);
   assert.match(pickerSource, /preferCanonicalApi: setLanguage !== 'en'/);
 
   const binderSource = readFileSync('lib/binders.ts', 'utf8');

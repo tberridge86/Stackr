@@ -23,6 +23,7 @@ import {
 } from '../../components/PremiumUI';
 import { BinderArtwork } from '../../components/BinderArtwork';
 import { BINDER_MODE_BADGE_SOURCES, BinderModeIconBadge } from '../../components/BinderModeBadge';
+import { getPokemonLanguageDescriptor, PokemonLanguageFlagIcon } from '../../components/PokemonLanguageBadge';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -509,7 +510,8 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
   const isOfficial = item.type === 'official';
   const isMasterSet = masterSets[item.id] === true;
   const isGraded = item.card_mode === 'graded';
-  const isJapanese = normalizePokemonCardLanguage(item.language) === 'ja';
+  const languageDescriptor = isOfficial ? getPokemonLanguageDescriptor(item.language) : undefined;
+  const isJapanese = languageDescriptor?.code === 'ja';
   const knownTotal = isOfficial ? getCountTotal(progress) : null;
   const percentage = isOfficial ? getBinderProgressPercent(progress) : 0;
   const innerWidth = Math.max(106, cardWidth - 16);
@@ -680,11 +682,11 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
         >
           <Ionicons name="ellipsis-horizontal" size={18} color={STACKR_BINDER_COLORS.textSoft} />
         </Pressable>
-        {(isMasterSet || isGraded || isJapanese) && (
+        {(isMasterSet || isGraded || languageDescriptor) && (
           <View style={{ position: 'absolute', left: 7, top: 7, flexDirection: 'row', gap: 3 }}>
-            {isJapanese ? (
+            {languageDescriptor ? (
               <View style={{
-                width: 36,
+                width: languageDescriptor.code === 'en' ? 44 : 28,
                 height: 22,
                 borderRadius: 11,
                 backgroundColor: '#FFFFFF',
@@ -693,9 +695,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <Text style={{ color: STACKR_BINDER_COLORS.primary, fontSize: 10, fontWeight: '900' }}>
-                  JP
-                </Text>
+                <PokemonLanguageFlagIcon language={languageDescriptor.code} size={16} decorative />
               </View>
             ) : null}
             {isGraded ? <BinderModeIconBadge type="graded" size={38} /> : null}

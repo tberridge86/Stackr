@@ -41,6 +41,7 @@ import {
 } from '../../components/market/MarketComponents';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrImage, prefetchStackrImagesAfterInteractions } from '../../components/StackrImage';
+import { POKEMON_LANGUAGE_DESCRIPTORS, PokemonLanguageFlagIcon } from '../../components/PokemonLanguageBadge';
 import { StackrScreen } from '../../components/StackrScreen';
 import { formatSlabCompanyLabel } from '../../components/SlabStickerLabel';
 import { useProfile } from '../../components/profile-context';
@@ -77,7 +78,7 @@ import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrS
 
 type PrimaryFilter = 'all' | ListingCategoryKey;
 type SortKey = 'recommended' | 'recent' | 'priceAsc' | 'priceDesc' | 'bestValue' | 'relevant' | 'chase' | 'rarity' | 'set' | 'gradeDesc' | 'type';
-type MarketLanguageFilter = 'en' | 'ja' | 'zh-tw';
+type MarketLanguageFilter = 'en' | 'ja' | 'zh-cn' | 'zh-tw';
 type Workspace = 'discover' | 'myListings';
 type MarketLayoutMode = 'browse' | 'compact';
 type SellerFilter = { userId: string; name?: string | null } | null;
@@ -148,9 +149,10 @@ const MARKET_GRADER_FILTERS = ['PSA', 'BGS', 'CGC', 'TAG', 'ACE'];
 const MARKET_GRADE_FILTERS = ['10', '9.5', '9', '8', '7 or lower'];
 const MARKET_FALLBACK_RARITIES = ['Common', 'Uncommon', 'Rare', 'Double Rare', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Secret Rare', 'Promo'];
 const MARKET_LANGUAGE_FILTERS: { key: MarketLanguageFilter; label: string }[] = [
-  { key: 'en', label: 'English' },
-  { key: 'ja', label: 'Japanese' },
-  { key: 'zh-tw', label: 'Traditional Chinese' },
+  { key: 'en', label: POKEMON_LANGUAGE_DESCRIPTORS.en.label },
+  { key: 'ja', label: POKEMON_LANGUAGE_DESCRIPTORS.ja.label },
+  { key: 'zh-cn', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-cn'].label },
+  { key: 'zh-tw', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-tw'].label },
 ];
 type MarketListingTypeFilter = {
   key: MarketListingVariant;
@@ -1572,7 +1574,7 @@ export default function TheMarketTab() {
       : `${displayListings.length} listing${displayListings.length === 1 ? '' : 's'}`;
 
   const activeFilterChips = useMemo(() => {
-    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+    const chips: { key: string; label: string; language?: MarketLanguageFilter; onRemove: () => void }[] = [];
     const categoryLabel = MARKET_CATEGORY_FILTERS.find((filter) => filter.key === primaryFilter)?.label;
     if (primaryFilter !== 'all') chips.push({ key: 'category', label: categoryLabel ?? 'Category', onRemove: () => setPrimaryFilter('all') });
     selectedListingTypes.forEach((value) => {
@@ -1590,7 +1592,7 @@ export default function TheMarketTab() {
     selectedGrades.forEach((value) => chips.push({ key: `grade:${value}`, label: `Grade ${value}`, onRemove: () => setSelectedGrades((current) => current.filter((item) => item !== value)) }));
     selectedLanguages.forEach((value) => {
       const label = MARKET_LANGUAGE_FILTERS.find((filter) => filter.key === value)?.label ?? value;
-      chips.push({ key: `language:${value}`, label, onRemove: () => setSelectedLanguages((current) => current.filter((item) => item !== value)) });
+      chips.push({ key: `language:${value}`, label, language: value, onRemove: () => setSelectedLanguages((current) => current.filter((item) => item !== value)) });
     });
     if (minPrice.trim() || maxPrice.trim()) chips.push({ key: 'price', label: `${minPrice.trim() ? `£${minPrice.trim()}` : '£0'}-${maxPrice.trim() ? `£${maxPrice.trim()}` : 'Any'}`, onRemove: () => { setMinPrice(''); setMaxPrice(''); } });
     if (photosOnly) chips.push({ key: 'photos', label: 'Seller photos', onRemove: () => setPhotosOnly(false) });
@@ -1902,6 +1904,7 @@ export default function TheMarketTab() {
                 paddingHorizontal: 9,
               }}
             >
+              {chip.language ? <PokemonLanguageFlagIcon language={chip.language} size={14} decorative /> : null}
               <Text style={{ color: theme.colors.primary, fontSize: 11.2, lineHeight: 14, fontWeight: '900' }} numberOfLines={1}>
                 {chip.label}
               </Text>
@@ -2247,6 +2250,8 @@ export default function TheMarketTab() {
                 <MarketFilterChip
                   key={language.key}
                   label={language.label}
+                  leading={<PokemonLanguageFlagIcon language={language.key} size={16} decorative />}
+                  accessibilityLabel={`Filter ${language.label} listings`}
                   active={active}
                   onPress={() => toggleLanguageFilter(language.key)}
                 />

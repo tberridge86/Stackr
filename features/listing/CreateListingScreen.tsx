@@ -58,6 +58,7 @@ import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/Rarit
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrCardActionIcon, StackrScreen } from '../../components/StackrScreen';
 import { StackrImage } from '../../components/StackrImage';
+import { getPokemonLanguageDescriptor, PokemonLanguageFlagIcon } from '../../components/PokemonLanguageBadge';
 import { Text } from '../../components/Text';
 import { useTheme } from '../../components/theme-context';
 import { assertCanCommitQuantity, fetchUserCardAvailability } from '../../lib/cardOwnership';
@@ -311,6 +312,7 @@ const LISTING_LANGUAGE_OPTIONS: { key: ForeignPokemonLanguageCode; label: string
   { key: 'es', label: 'Spanish', shortLabel: 'ES' },
   { key: 'it', label: 'Italian', shortLabel: 'IT' },
   { key: 'pt-br', label: 'Portuguese', shortLabel: 'PT' },
+  { key: 'zh-cn', label: 'Simplified Chinese', shortLabel: 'CN' },
   { key: 'zh-tw', label: 'Traditional Chinese', shortLabel: 'TW' },
   { key: 'id', label: 'Indonesian', shortLabel: 'ID' },
   { key: 'th', label: 'Thai', shortLabel: 'TH' },
@@ -3076,6 +3078,7 @@ export default function CreateListingScreen() {
       >
         {LISTING_LANGUAGE_OPTIONS.map((option) => {
           const active = option.key === listingLanguage;
+          const descriptor = getPokemonLanguageDescriptor(option.key);
           return (
             <TouchableOpacity
               key={option.key}
@@ -3083,7 +3086,7 @@ export default function CreateListingScreen() {
               onPress={() => handleListingLanguageChange(option.key)}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={`${option.label} catalogue`}
+              accessibilityLabel={`${descriptor?.label ?? option.label} catalogue`}
               style={[
                 styles.recentChip,
                 {
@@ -3094,11 +3097,15 @@ export default function CreateListingScreen() {
                 },
               ]}
             >
-              <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontSize: 12, fontWeight: '900' }}>
-                {option.shortLabel}
-              </Text>
+              {descriptor ? (
+                <PokemonLanguageFlagIcon language={descriptor.code} size={18} decorative />
+              ) : (
+                <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontSize: 12, fontWeight: '900' }}>
+                  {option.shortLabel}
+                </Text>
+              )}
               <Text style={{ color: active ? 'rgba(255,255,255,0.88)' : theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>
-                {option.label}
+                {descriptor?.label ?? option.label}
               </Text>
             </TouchableOpacity>
           );

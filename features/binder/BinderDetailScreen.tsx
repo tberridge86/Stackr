@@ -34,6 +34,7 @@ import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { BinderArtwork } from '../../components/BinderArtwork';
 import { BinderModeIconBadge, BinderModePill } from '../../components/BinderModeBadge';
+import { getPokemonLanguageDescriptor, PokemonLanguageBadge } from '../../components/PokemonLanguageBadge';
 import SlabStickerLabel, {
   SLAB_GRADE_SHORTCUTS,
   SLAB_GRADING_COMPANIES,
@@ -3137,6 +3138,15 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 </Text>
 
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 }}>
+                  {binder.type === 'official' && getPokemonLanguageDescriptor(binder.language) ? (
+                    <PokemonLanguageBadge
+                      language={getPokemonLanguageDescriptor(binder.language)!.code}
+                      variant="compact"
+                      size={14}
+                      textColor={theme.colors.text}
+                      style={{ borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}
+                    />
+                  ) : null}
                   {binder.type === 'official' && masterSetEnabled && binder.card_mode !== 'graded' ? <BinderModePill type="master" /> : null}
                   {binder.edition ? (
                     <View style={{ borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: theme.colors.secondary + '18', borderWidth: 1, borderColor: theme.colors.secondary + '35' }}>

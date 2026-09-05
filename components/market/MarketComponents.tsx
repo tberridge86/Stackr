@@ -13,6 +13,7 @@ import { StackrImage } from '../StackrImage';
 import { StackrCardActionIcon } from '../StackrScreen';
 import { StackrBottomSheet } from '../StackrModalSystem';
 import { StackrProfileAvatar } from '../StackrProfileAvatar';
+import { getPokemonLanguageDescriptor, PokemonLanguageFlagIcon } from '../PokemonLanguageBadge';
 import { useTheme } from '../theme-context';
 import { marketIcons, type MarketIconName } from '../../lib/marketIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
@@ -441,6 +442,8 @@ export function MarketFilterChip({
   active,
   icon,
   imageIcon,
+  leading,
+  accessibilityLabel,
   disabled,
   onPress,
 }: {
@@ -448,6 +451,8 @@ export function MarketFilterChip({
   active?: boolean;
   icon?: MarketIconName;
   imageIcon?: ImageSourcePropType;
+  leading?: React.ReactNode;
+  accessibilityLabel?: string;
   disabled?: boolean;
   onPress: () => void;
 }) {
@@ -458,6 +463,7 @@ export function MarketFilterChip({
       disabled={disabled}
       activeOpacity={0.82}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ selected: Boolean(active), disabled: Boolean(disabled) }}
       style={{
         minHeight: 34,
@@ -480,7 +486,7 @@ export function MarketFilterChip({
         opacity: disabled ? 0.64 : 1,
       }}
     >
-      {imageIcon ? (
+      {leading ?? (imageIcon ? (
         <StackrCardActionIcon
           source={imageIcon}
           frameSize={stackrSellCategoryIconSizes.chipFrame - 4}
@@ -488,7 +494,7 @@ export function MarketFilterChip({
         />
       ) : icon ? (
         <Ionicons name={icon} size={14} color={active ? theme.colors.primary : theme.colors.textSoft} />
-      ) : null}
+      ) : null)}
       <Text
         numberOfLines={1}
         adjustsFontSizeToFit
@@ -599,13 +605,6 @@ function getCompactTransactionPrimary(primary: string) {
   return primary;
 }
 
-function getLanguageLabel(language?: string | null) {
-  const normalized = String(language ?? '').trim().toLowerCase();
-  if (['ja', 'jp', 'jpn', 'japanese'].includes(normalized)) return 'Japanese';
-  if (normalized && normalized !== 'en' && normalized !== 'english') return normalized.toUpperCase();
-  return null;
-}
-
 function getListingIdentityLine(item: MarketListingCardData) {
   return [item.setName, item.cardNumber ? `#${item.cardNumber}` : null].filter(Boolean).join(' - ') || 'Collector listing';
 }
@@ -683,9 +682,9 @@ export function MarketListingCard({
   const variant = getVariantCopy(item.variantType);
   const transaction = getListingTransaction(item, variant);
   const identityLine = getListingIdentityLine(item);
-  const languageLabel = getLanguageLabel(item.language);
+  const languageDescriptor = getPokemonLanguageDescriptor(item.language);
   const conditionLine = getListingConditionLine(item);
-  const detailsLine = [identityLine, languageLabel].filter(Boolean).join(' - ');
+  const detailsLine = identityLine;
   const sellerLabel = item.isMine ? 'Your listing' : item.sellerName ?? 'Collector listing';
   const compactPrimary = getCompactTransactionPrimary(transaction.primary);
   const trustLabel = item.verified && !item.isMine ? 'Verified seller' : sellerLabel;
@@ -774,9 +773,12 @@ export function MarketListingCard({
             </TouchableOpacity>
           ) : null}
         </View>
-        <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 15, fontWeight: '700' }} numberOfLines={1}>
-          {detailsLine}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, minWidth: 0 }}>
+          {languageDescriptor ? <PokemonLanguageFlagIcon language={languageDescriptor.code} size={14} decorative /> : null}
+          <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 15, fontWeight: '700', flexShrink: 1 }} numberOfLines={1}>
+            {[detailsLine, languageDescriptor?.label].filter(Boolean).join(' - ')}
+          </Text>
+        </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: compact ? 1 : 2 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text

@@ -1363,8 +1363,10 @@ async function fetchEnrichedCatalogueSets(language: PokemonSetLanguageFilter): P
   const apiBase = getCatalogueApiBaseUrl();
   if (!apiBase) return null;
 
-  const languages = language === 'all' ? ['en', 'ja', 'zh-tw'] : [language];
-  const supported = languages.filter((entry): entry is PokemonCardLanguage => entry === 'en' || entry === 'ja' || entry === 'zh-tw');
+  const languages = language === 'all' ? ['en', 'ja', 'zh-cn', 'zh-tw'] : [language];
+  const supported = languages.filter((entry): entry is PokemonCardLanguage => (
+    entry === 'en' || entry === 'ja' || entry === 'zh-cn' || entry === 'zh-tw'
+  ));
   if (!supported.length) return null;
 
   const fetched = await Promise.all(supported.map(async (lang) => {

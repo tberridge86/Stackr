@@ -1,4 +1,3 @@
-import { theme } from '../../lib/theme';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
@@ -8,6 +7,7 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  ScrollView,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,6 +20,17 @@ import { StackrPageTitle } from '../../components/StackrScreen';
 import { supabase } from '../../lib/supabase';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
+import {
+  getPokemonLanguageDescriptor,
+  POKEMON_LANGUAGE_DESCRIPTORS,
+  PokemonLanguageFlagIcon,
+  type PokemonLanguageBadgeCode,
+} from '../../components/PokemonLanguageBadge';
+import {
+  getEnglishSetDisplaySupplement,
+  getEnglishSupplementalName,
+  getPreferredSetDisplayName,
+} from '../../lib/pokemonDisplayNames';
 
 // ===============================
 // CONSTANTS
@@ -74,14 +85,15 @@ function groupSetsBySeries(sets: PokemonSet[]): { series: string; sets: PokemonS
     );
 }
 
-type DiscoverSetLanguage = 'en' | 'ja' | 'zh-tw';
+type DiscoverSetLanguage = Extract<PokemonLanguageBadgeCode, 'en' | 'ja' | 'zh-cn' | 'zh-tw'>;
 type DiscoverLanguageFilter = 'all' | DiscoverSetLanguage;
 
-const LANGUAGE_FILTERS: { key: DiscoverLanguageFilter; label: string; flag: string }[] = [
-  { key: 'all', label: 'All', flag: '◎' },
-  { key: 'en', label: 'English', flag: '🇬🇧🇺🇸' },
-  { key: 'ja', label: 'Japanese', flag: '🇯🇵' },
-  { key: 'zh-tw', label: 'Chinese', flag: '🇨🇳' },
+const LANGUAGE_FILTERS: { key: DiscoverLanguageFilter; label: string; language?: DiscoverSetLanguage }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'en', label: POKEMON_LANGUAGE_DESCRIPTORS.en.label, language: 'en' },
+  { key: 'ja', label: POKEMON_LANGUAGE_DESCRIPTORS.ja.label, language: 'ja' },
+  { key: 'zh-cn', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-cn'].label, language: 'zh-cn' },
+  { key: 'zh-tw', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-tw'].label, language: 'zh-tw' },
 ];
 
 function getSeriesKey(language: DiscoverSetLanguage, series: string) {
@@ -89,17 +101,23 @@ function getSeriesKey(language: DiscoverSetLanguage, series: string) {
 }
 
 function getLanguageHeaderCopy(language: Exclude<DiscoverSetLanguage, 'en'>) {
+  if (language === 'zh-cn') {
+    return {
+      title: 'Simplified Chinese Sets',
+      subtitle: 'Expand for official Simplified Chinese binders',
+      seriesPrefix: 'Simplified Chinese',
+    };
+  }
+
   if (language === 'zh-tw') {
     return {
-      badge: 'TC',
-      title: 'Chinese Sets',
+      title: 'Traditional Chinese Sets',
       subtitle: 'Expand for official Traditional Chinese binders',
-      seriesPrefix: 'Chinese',
+      seriesPrefix: 'Traditional Chinese',
     };
   }
 
   return {
-    badge: 'JP',
     title: 'Japanese Sets',
     subtitle: 'Expand for official Japanese binders',
     seriesPrefix: 'Japan',
@@ -221,6 +239,25 @@ function SetCard({
 }) {
   const [logoFailed, setLogoFailed] = useState(false);
   const { theme } = useTheme();
+  const raw = (item as any).raw_data ?? {};
+  const setIdentityInput = {
+    id: item.id,
+    sourceId: item.externalIds?.tcgdex ?? raw.source_id ?? raw.provider_id ?? null,
+    setCode: item.externalIds?.setCode ?? raw.set_code ?? item.id,
+    language: item.language ?? raw.language ?? null,
+    region: item.region ?? raw.region ?? null,
+    localName: item.localName ?? raw.local_name ?? raw.localName ?? item.name ?? null,
+    englishDisplayName: item.englishDisplayName ?? raw.english_display_name ?? raw.englishDisplayName ?? null,
+    canonicalName: item.name,
+    fallbackName: item.id,
+    raw,
+  };
+  const displayName = getPreferredSetDisplayName(setIdentityInput);
+  const rawEnglishSupplement = getEnglishSetDisplaySupplement(setIdentityInput);
+  const englishValue = getEnglishSupplementalName(displayName, rawEnglishSupplement?.value);
+  const englishSupplement = rawEnglishSupplement && englishValue
+    ? { ...rawEnglishSupplement, value: englishValue }
+    : null;
   const logoSource = getJapaneseSetLogoSourceForSet({
     id: item.id,
     language: item.language,
@@ -237,6 +274,8 @@ function SetCard({
   return (
     <TouchableOpacity
       onPress={() => router.push({ pathname: '/set/[id]', params: { id: item.id } })}
+      accessibilityRole="button"
+      accessibilityLabel={`Open set ${displayName}`}
       style={{
         backgroundColor: theme.colors.card,
         borderRadius: 16,
@@ -281,10 +320,15 @@ function SetCard({
       {/* Set info */}
       <View style={{ flex: 1 }}>
         <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }} numberOfLines={1}>
-          {item.name}
+          {displayName}
         </Text>
+        {englishSupplement ? (
+          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginTop: 2 }} numberOfLines={1}>
+            {englishSupplement.label} {englishSupplement.value}
+          </Text>
+        ) : null}
         <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }}>
-          {item.language === 'zh-tw' ? 'Chinese · ' : item.language === 'ja' ? 'Japan · ' : ''}{item.total} cards · {item.releaseDate ?? ''}
+          {getPokemonLanguageDescriptor(item.language)?.label ?? item.language ?? 'English'} · {item.total} cards · {item.releaseDate ?? ''}
         </Text>
       </View>
 
@@ -351,7 +395,8 @@ export default function ExploreScreen() {
   const { theme } = useTheme();
   const [englishSets, setEnglishSets] = useState<PokemonSet[]>([]);
   const [japaneseSets, setJapaneseSets] = useState<PokemonSet[]>([]);
-  const [chineseSets, setChineseSets] = useState<PokemonSet[]>([]);
+  const [simplifiedChineseSets, setSimplifiedChineseSets] = useState<PokemonSet[]>([]);
+  const [traditionalChineseSets, setTraditionalChineseSets] = useState<PokemonSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
@@ -361,7 +406,8 @@ export default function ExploreScreen() {
     new Set([getSeriesKey('en', 'Scarlet & Violet'), getSeriesKey('en', 'Sword & Shield')])
   );
   const [japaneseSetsExpanded, setJapaneseSetsExpanded] = useState(false);
-  const [chineseSetsExpanded, setChineseSetsExpanded] = useState(false);
+  const [simplifiedChineseSetsExpanded, setSimplifiedChineseSetsExpanded] = useState(false);
+  const [traditionalChineseSetsExpanded, setTraditionalChineseSetsExpanded] = useState(false);
 
   // ===============================
   // LOAD
@@ -372,15 +418,17 @@ export default function ExploreScreen() {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
 
-      const [englishData, japaneseData, chineseData, existingBinders] = await Promise.all([
+      const [englishData, japaneseData, simplifiedChineseData, traditionalChineseData, existingBinders] = await Promise.all([
         fetchAllSets({ language: 'en' }),
         fetchAllSets({ language: 'ja' }),
+        fetchAllSets({ language: 'zh-cn' }),
         fetchAllSets({ language: 'zh-tw' }),
         fetchExistingSetBinders(),
       ]);
       setEnglishSets(englishData);
       setJapaneseSets(japaneseData);
-      setChineseSets(chineseData);
+      setSimplifiedChineseSets(simplifiedChineseData);
+      setTraditionalChineseSets(traditionalChineseData);
       setExistingBindersBySet(existingBinders);
     } catch (error) {
       console.log('Failed to load sets', error);
@@ -410,10 +458,15 @@ export default function ExploreScreen() {
     return japaneseSets.filter((set) => matchesSetSearch(set, q));
   }, [japaneseSets, search]);
 
-  const searchedChineseSets = useMemo(() => {
+  const searchedSimplifiedChineseSets = useMemo(() => {
     const q = search.trim();
-    return chineseSets.filter((set) => matchesSetSearch(set, q));
-  }, [chineseSets, search]);
+    return simplifiedChineseSets.filter((set) => matchesSetSearch(set, q));
+  }, [simplifiedChineseSets, search]);
+
+  const searchedTraditionalChineseSets = useMemo(() => {
+    const q = search.trim();
+    return traditionalChineseSets.filter((set) => matchesSetSearch(set, q));
+  }, [traditionalChineseSets, search]);
 
   const filteredEnglishSets = useMemo(
     () => languageFilter === 'all' || languageFilter === 'en' ? searchedEnglishSets : [],
@@ -425,14 +478,19 @@ export default function ExploreScreen() {
     [languageFilter, searchedJapaneseSets]
   );
 
-  const filteredChineseSets = useMemo(
-    () => languageFilter === 'all' || languageFilter === 'zh-tw' ? searchedChineseSets : [],
-    [languageFilter, searchedChineseSets]
+  const filteredSimplifiedChineseSets = useMemo(
+    () => languageFilter === 'all' || languageFilter === 'zh-cn' ? searchedSimplifiedChineseSets : [],
+    [languageFilter, searchedSimplifiedChineseSets]
+  );
+
+  const filteredTraditionalChineseSets = useMemo(
+    () => languageFilter === 'all' || languageFilter === 'zh-tw' ? searchedTraditionalChineseSets : [],
+    [languageFilter, searchedTraditionalChineseSets]
   );
 
   const filteredSets = useMemo(
-    () => [...filteredEnglishSets, ...filteredJapaneseSets, ...filteredChineseSets],
-    [filteredEnglishSets, filteredJapaneseSets, filteredChineseSets]
+    () => [...filteredEnglishSets, ...filteredJapaneseSets, ...filteredSimplifiedChineseSets, ...filteredTraditionalChineseSets],
+    [filteredEnglishSets, filteredJapaneseSets, filteredSimplifiedChineseSets, filteredTraditionalChineseSets]
   );
 
   const isSearching = search.trim().length > 0;
@@ -447,9 +505,14 @@ export default function ExploreScreen() {
     [filteredJapaneseSets]
   );
 
-  const groupedChineseSeries = useMemo(
-    () => groupSetsBySeries(filteredChineseSets),
-    [filteredChineseSets]
+  const groupedSimplifiedChineseSeries = useMemo(
+    () => groupSetsBySeries(filteredSimplifiedChineseSets),
+    [filteredSimplifiedChineseSets]
+  );
+
+  const groupedTraditionalChineseSeries = useMemo(
+    () => groupSetsBySeries(filteredTraditionalChineseSets),
+    [filteredTraditionalChineseSets]
   );
 
   const toggleSeries = (language: DiscoverSetLanguage, series: string) => {
@@ -467,17 +530,20 @@ export default function ExploreScreen() {
 
   const expandAll = () => {
     setJapaneseSetsExpanded(true);
-    setChineseSetsExpanded(true);
+    setSimplifiedChineseSetsExpanded(true);
+    setTraditionalChineseSetsExpanded(true);
     setExpandedSeries(new Set([
       ...groupedEnglishSeries.map((g) => getSeriesKey('en', g.series)),
       ...groupedJapaneseSeries.map((g) => getSeriesKey('ja', g.series)),
-      ...groupedChineseSeries.map((g) => getSeriesKey('zh-tw', g.series)),
+      ...groupedSimplifiedChineseSeries.map((g) => getSeriesKey('zh-cn', g.series)),
+      ...groupedTraditionalChineseSeries.map((g) => getSeriesKey('zh-tw', g.series)),
     ]));
   };
 
   const collapseAll = () => {
     setJapaneseSetsExpanded(false);
-    setChineseSetsExpanded(false);
+    setSimplifiedChineseSetsExpanded(false);
+    setTraditionalChineseSetsExpanded(false);
     setExpandedSeries(new Set());
   };
 
@@ -486,13 +552,16 @@ export default function ExploreScreen() {
     if (nextFilter === 'all') return;
 
     if (nextFilter === 'ja') setJapaneseSetsExpanded(true);
-    if (nextFilter === 'zh-tw') setChineseSetsExpanded(true);
+    if (nextFilter === 'zh-cn') setSimplifiedChineseSetsExpanded(true);
+    if (nextFilter === 'zh-tw') setTraditionalChineseSetsExpanded(true);
 
     const groups = nextFilter === 'en'
       ? groupedEnglishSeries
       : nextFilter === 'ja'
         ? groupedJapaneseSeries
-        : groupedChineseSeries;
+        : nextFilter === 'zh-cn'
+          ? groupedSimplifiedChineseSeries
+          : groupedTraditionalChineseSeries;
     setExpandedSeries((prev) => {
       const next = new Set(prev);
       groups.forEach((group) => next.add(getSeriesKey(nextFilter, group.series)));
@@ -505,7 +574,7 @@ export default function ExploreScreen() {
   // ===============================
 
   type ListItem =
-    | { type: 'languageHeader'; language: 'ja' | 'zh-tw'; count: number; expanded: boolean }
+    | { type: 'languageHeader'; language: Exclude<DiscoverSetLanguage, 'en'>; count: number; expanded: boolean }
     | { type: 'header'; language: DiscoverSetLanguage; series: string; count: number }
     | { type: 'set'; set: PokemonSet; series: string };
 
@@ -555,14 +624,34 @@ export default function ExploreScreen() {
     if (languageFilter === 'all') {
       items.push({
         type: 'languageHeader',
-        language: 'zh-tw',
-        count: filteredChineseSets.length,
-        expanded: chineseSetsExpanded,
+        language: 'zh-cn',
+        count: filteredSimplifiedChineseSets.length,
+        expanded: simplifiedChineseSetsExpanded,
       });
     }
 
-    if (languageFilter === 'zh-tw' || (languageFilter === 'all' && chineseSetsExpanded)) {
-      for (const group of groupedChineseSeries) {
+    if (languageFilter === 'zh-cn' || (languageFilter === 'all' && simplifiedChineseSetsExpanded)) {
+      for (const group of groupedSimplifiedChineseSeries) {
+        items.push({ type: 'header', language: 'zh-cn', series: group.series, count: group.sets.length });
+        if (expandedSeries.has(getSeriesKey('zh-cn', group.series))) {
+          for (const set of group.sets) {
+            items.push({ type: 'set', set, series: group.series });
+          }
+        }
+      }
+    }
+
+    if (languageFilter === 'all') {
+      items.push({
+        type: 'languageHeader',
+        language: 'zh-tw',
+        count: filteredTraditionalChineseSets.length,
+        expanded: traditionalChineseSetsExpanded,
+      });
+    }
+
+    if (languageFilter === 'zh-tw' || (languageFilter === 'all' && traditionalChineseSetsExpanded)) {
+      for (const group of groupedTraditionalChineseSeries) {
         items.push({ type: 'header', language: 'zh-tw', series: group.series, count: group.sets.length });
         if (expandedSeries.has(getSeriesKey('zh-tw', group.series))) {
           for (const set of group.sets) {
@@ -573,7 +662,22 @@ export default function ExploreScreen() {
     }
 
     return items;
-  }, [groupedEnglishSeries, groupedJapaneseSeries, groupedChineseSeries, expandedSeries, isSearching, filteredSets, filteredJapaneseSets.length, filteredChineseSets.length, japaneseSetsExpanded, chineseSetsExpanded, languageFilter]);
+  }, [
+    expandedSeries,
+    filteredJapaneseSets.length,
+    filteredSimplifiedChineseSets.length,
+    filteredTraditionalChineseSets.length,
+    filteredSets,
+    groupedEnglishSeries,
+    groupedJapaneseSeries,
+    groupedSimplifiedChineseSeries,
+    groupedTraditionalChineseSeries,
+    isSearching,
+    japaneseSetsExpanded,
+    languageFilter,
+    simplifiedChineseSetsExpanded,
+    traditionalChineseSetsExpanded,
+  ]);
 
   if (loading) {
     return (
@@ -599,7 +703,7 @@ export default function ExploreScreen() {
         {/* Header */}
         <StackrPageTitle title="Discover Sets" accentText="Sets" style={{ marginBottom: 4 }} />
         <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 14 }}>
-          Filter English, Japanese or Chinese sets · {englishSets.length + japaneseSets.length + chineseSets.length} sets available
+          Filter English, Japanese, Simplified Chinese or Traditional Chinese sets · {englishSets.length + japaneseSets.length + simplifiedChineseSets.length + traditionalChineseSets.length} sets available
         </Text>
 
         {/* Search */}
@@ -631,16 +735,18 @@ export default function ExploreScreen() {
           )}
         </View>
 
-        <View style={{ flexDirection: 'row', gap: 7, marginTop: 10 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 7, marginTop: 10, paddingRight: 8 }}>
           {LANGUAGE_FILTERS.map((option) => {
             const active = languageFilter === option.key;
             const count = option.key === 'all'
-              ? searchedEnglishSets.length + searchedJapaneseSets.length + searchedChineseSets.length
+              ? searchedEnglishSets.length + searchedJapaneseSets.length + searchedSimplifiedChineseSets.length + searchedTraditionalChineseSets.length
               : option.key === 'en'
                 ? searchedEnglishSets.length
                 : option.key === 'ja'
                   ? searchedJapaneseSets.length
-                  : searchedChineseSets.length;
+                  : option.key === 'zh-cn'
+                    ? searchedSimplifiedChineseSets.length
+                    : searchedTraditionalChineseSets.length;
 
             return (
               <TouchableOpacity
@@ -653,8 +759,7 @@ export default function ExploreScreen() {
                 accessibilityState={{ selected: active }}
                 accessibilityLabel={`Show ${option.label} sets`}
                 style={{
-                  flex: option.key === 'all' ? 0.74 : 1,
-                  minHeight: 34,
+                  minHeight: 44,
                   borderRadius: 999,
                   borderWidth: 1,
                   borderColor: active ? theme.colors.primary : theme.colors.border,
@@ -665,16 +770,23 @@ export default function ExploreScreen() {
                   paddingVertical: 6,
                 }}
               >
-                <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontSize: 12, lineHeight: 15, fontWeight: '900' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
-                  {option.flag} {option.label}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  {option.language ? (
+                    <PokemonLanguageFlagIcon language={option.language} size={15} decorative />
+                  ) : (
+                    <Ionicons name="apps-outline" size={14} color={active ? theme.colors.primary : theme.colors.textSoft} />
+                  )}
+                  <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontSize: 12, lineHeight: 15, fontWeight: '900' }} numberOfLines={1}>
+                    {option.label}
+                  </Text>
+                </View>
                 <Text numeric style={{ color: theme.colors.textSoft, fontSize: 9.5, lineHeight: 12, fontWeight: '800', marginTop: 1 }}>
                   {count}
                 </Text>
               </TouchableOpacity>
             );
           })}
-        </View>
+        </ScrollView>
 
         {/* Expand / collapse all — only when not searching */}
         </View>
@@ -742,10 +854,12 @@ export default function ExploreScreen() {
               return (
                 <TouchableOpacity
                   onPress={() => {
-                    if (item.language === 'zh-tw') {
-                      setChineseSetsExpanded((current) => !current);
-                    } else {
+                    if (item.language === 'ja') {
                       setJapaneseSetsExpanded((current) => !current);
+                    } else if (item.language === 'zh-cn') {
+                      setSimplifiedChineseSetsExpanded((current) => !current);
+                    } else {
+                      setTraditionalChineseSetsExpanded((current) => !current);
                     }
                   }}
                   style={{
@@ -762,21 +876,7 @@ export default function ExploreScreen() {
                   }}
                   activeOpacity={0.76}
                 >
-                  <View style={{
-                    width: 34,
-                    height: 24,
-                    borderRadius: 999,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#FFFFFF',
-                    borderWidth: 1,
-                    borderColor: theme.colors.primary + '30',
-                    marginRight: 10,
-                  }}>
-                    <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
-                      {copy.badge}
-                    </Text>
-                  </View>
+                  <PokemonLanguageFlagIcon language={item.language} size={28} decorative style={{ marginRight: 10 }} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
                       {copy.title}
