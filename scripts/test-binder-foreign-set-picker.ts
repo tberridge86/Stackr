@@ -145,6 +145,10 @@ async function main() {
   assert.match(pokemonTcgSource, /catch \(error\) \{\s*candidateError = error;\s*continue;/);
   assert.match(pokemonTcgSource, /function mergeApprovedSetImages/);
   assert.match(pokemonTcgSource, /cacheNonEmptyCatalogueRows\(allSetsCache, cacheKey, sets,/);
+  assert.match(pokemonTcgSource, /cacheNonEmptyCatalogueRows\(cardsForSetCache, cacheKey, cards,/);
+  assert.match(pokemonTcgSource, /export function invalidatePokemonCatalogueCardCaches\(\) \{\s*cardsForSetCache\.clear\(\);\s*invalidateForeignPokemonSetReferenceCache\(\);/);
+  const binderDetailSource = readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
+  assert.match(binderDetailSource, /if \(forceRefresh\) \{\s*invalidateBinderCaches\(binderId\);\s*invalidatePokemonCatalogueCardCaches\(\);/);
 
   const pickerSource = readFileSync('app/binder/new.tsx', 'utf8');
   assert.match(pickerSource, /POKEMON_CATALOGUE_LANGUAGE_OPTIONS/);
@@ -163,7 +167,7 @@ async function main() {
   const binderSource = readFileSync('lib/binders.ts', 'utf8');
   assert.match(
     binderSource,
-    /fetchCardsForSet\(binder\.source_set_id, \{\s*language: binderLanguage,\s*preferCanonicalApi: binderLanguage !== 'en',/,
+    /fetchCardsForSet\(binder\.catalogue_set_id \?\? binder\.source_set_id, \{\s*language: binderLanguage,\s*preferCanonicalApi: binderLanguage !== 'en',/,
   );
   assert.match(binderSource, /`zh-cn:\$\{stripped\}`/);
 

@@ -33,6 +33,7 @@ import { cacheNonEmptyCatalogueRows, readNonEmptyCatalogueRows } from './resilie
 import {
   fetchForeignPokemonCard,
   fetchForeignPokemonSet,
+  invalidateForeignPokemonSetReferenceCache,
   type ForeignPokemonCardBrief,
 } from './foreignPokemon';
 import {
@@ -150,6 +151,12 @@ let allSetsCache = new Map<string, { expiresAt: number; value: PokemonSet[] }>()
 let allSetsInflight = new Map<string, Promise<PokemonSet[]>>();
 const cardsForSetCache = new Map<string, { expiresAt: number; value: PokemonCard[] }>();
 const cardsForSetInflight = new Map<string, Promise<PokemonCard[]>>();
+
+/** Reload metadata and approved runtime image references after an explicit retry. */
+export function invalidatePokemonCatalogueCardCaches() {
+  cardsForSetCache.clear();
+  invalidateForeignPokemonSetReferenceCache();
+}
 const pokemonTcgApiSearchCache = new Map<string, { expiresAt: number; value: PokemonCard[] }>();
 const pokemonTcgApiSearchInflight = new Map<string, Promise<PokemonCard[]>>();
 let pokeDataSetsCache: { expiresAt: number; value: any[] } | null = null;
@@ -1914,10 +1921,8 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
   const setIdCandidates = getPokemonSetIdLookupCandidates(setId, language);
   const readLane = options.preferCanonicalApi ? 'canonical-api' : 'default';
   const cacheKey = `${readLane}:${language}:${setIdCandidates.join('|')}`;
-  const cached = cardsForSetCache.get(cacheKey);
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.value;
-  }
+  const cached = readNonEmptyCatalogueRows(cardsForSetCache, cacheKey);
+  if (cached) return cached;
 
   const inflight = cardsForSetInflight.get(cacheKey);
   if (inflight) {
@@ -1948,10 +1953,7 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
       1,
     );
 
-    cardsForSetCache.set(cacheKey, {
-      expiresAt: Date.now() + POKEMON_SET_CARDS_CACHE_TTL_MS,
-      value: cards,
-    });
+    cacheNonEmptyCatalogueRows(cardsForSetCache, cacheKey, cards, Date.now() + POKEMON_SET_CARDS_CACHE_TTL_MS);
     return cards;
   })();
 

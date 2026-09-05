@@ -135,6 +135,11 @@ const FOREIGN_SET_REFERENCE_CACHE_TTL_MS = 10 * 60 * 1000;
 const foreignSetReferenceCache = new Map<string, { expiresAt: number; value: ForeignPokemonSet | null }>();
 const foreignSetReferenceInflight = new Map<string, Promise<ForeignPokemonSet | null>>();
 
+/** Explicit user retry only; this clears runtime responses, never stored assets. */
+export function invalidateForeignPokemonSetReferenceCache() {
+  foreignSetReferenceCache.clear();
+}
+
 function sanitizeForeignSetRaw(value: unknown) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return value ?? null;
   const { logo: _logo, logoBase: _logoBase, symbol: _symbol, symbolBase: _symbolBase, cover: _cover, artwork: _artwork, image: _image, images: _images, cards: _cards, ...safe } = value as Record<string, unknown>;
@@ -212,7 +217,7 @@ export async function fetchForeignPokemonSet(
   const query = params.toString();
   const cacheKey = `${String(options.language ?? '').trim().toLowerCase()}:${setId.trim()}`;
   const cached = foreignSetReferenceCache.get(cacheKey);
-  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  if (cached?.value && cached.expiresAt > Date.now()) return cached.value;
   const inflight = foreignSetReferenceInflight.get(cacheKey);
   if (inflight) return inflight;
   const request = (async () => {
@@ -223,7 +228,12 @@ export async function fetchForeignPokemonSet(
   return { ...json.set, cards: (json.set.cards ?? []).map((card) => hydrateForeignPokemonControlledCardReference(card, { source: json.source, language: json.language, providerSetId: json.set.providerSetId ?? json.set.id })) };
   })();
   foreignSetReferenceInflight.set(cacheKey, request);
-  try { const value = await request; foreignSetReferenceCache.set(cacheKey, { expiresAt: Date.now() + FOREIGN_SET_REFERENCE_CACHE_TTL_MS, value }); return value; }
+  try {
+    const value = await request;
+    if (value) foreignSetReferenceCache.set(cacheKey, { expiresAt: Date.now() + FOREIGN_SET_REFERENCE_CACHE_TTL_MS, value });
+    else foreignSetReferenceCache.delete(cacheKey);
+    return value;
+  }
   finally { foreignSetReferenceInflight.delete(cacheKey); }
 }
 

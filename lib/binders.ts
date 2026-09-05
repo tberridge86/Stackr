@@ -6,7 +6,10 @@ import { recordAchievementEvent } from './achievements';
 import { getCachedOrFetch, invalidateRequestCache } from './requestCache';
 import { bumpCollectionSummaryVersion } from './collectionSummaryInvalidation';
 import { getPreferredSetDisplayName } from './pokemonDisplayNames';
-import { fetchStackrPriceSnapshots, fetchStackrSetRows } from './stackrDomainAdapter';
+import { fetchPreferredStackrSets, fetchStackrPriceSnapshots } from './stackrDomainAdapter';
+import { resolveBinderSetIdentity } from './binderSetIdentity';
+import { findSavedBinderCardMatch, normalizeBinderCollectorNumber } from './binderCardIdentity';
+import { positiveCatalogueCount, preserveUnmatchedBinderRows } from './binderCataloguePresentation';
 import { enforceSetVisualRuntimePolicy } from './providerSetMarkRuntimePolicy';
 import {
   defineTcgdexRuntimeImageOverlay,
@@ -53,9 +56,17 @@ export type BinderRecord = {
   source_set_display_name?: string | null;
   source_set_local_name?: string | null;
   source_set_english_display_name?: string | null;
+  /** Read-time catalogue supplements; never included in binder write payloads. */
+  catalogue_set_id?: string | null;
+  catalogue_set_references?: string[];
+  catalogue_set_total?: number | null;
+  catalogue_set_printed_total?: number | null;
+  catalogue_identity_status?: 'resolved' | 'ambiguous' | 'unresolved';
 };
 
 export type BinderCardRecord = {
+  /** Read-time status only; unmatched saved cards remain available for review. */
+  catalogue_match_status?: 'catalogue' | 'saved-only';
   card?: any | null;
   id: string;
   binder_id: string;
@@ -112,36 +123,11 @@ function stripSetLanguagePrefix(setId?: string | null) {
   return stripPokemonSetLanguagePrefix(setId);
 }
 
-function getSetIdentityKey(setId?: string | null, language?: PokemonCardLanguage | string | null) {
-  return `${inferBinderLanguage(language, setId)}:${stripSetLanguagePrefix(setId).toLowerCase()}`;
-}
-
 function getSetLookupCandidates(setId?: string | null) {
   const raw = String(setId ?? '').trim();
   if (!raw) return [];
   const stripped = stripSetLanguagePrefix(raw);
   return [...new Set([raw, stripped, `ja:${stripped}`, `zh-cn:${stripped}`, `zh-tw:${stripped}`, `en:${stripped}`].filter(Boolean))];
-}
-
-function normalizeBinderCardNumber(value?: string | number | null) {
-  return String(value ?? '').trim().replace(/^0+(?=\d)/, '').toLowerCase();
-}
-
-function getBinderCardNumberMergeKey(
-  language: PokemonCardLanguage | string | null | undefined,
-  setId: string | null | undefined,
-  number: string | number | null | undefined
-) {
-  const normalizedNumber = normalizeBinderCardNumber(number);
-  if (!normalizedNumber) return null;
-  return `${normalizePokemonCardLanguage(language)}:${stripSetLanguagePrefix(setId).toLowerCase()}:${normalizedNumber}`;
-}
-
-function chooseSavedBinderCardRow(current: BinderCardRecord | undefined, incoming: BinderCardRecord) {
-  if (!current) return incoming;
-  if (incoming.owned && !current.owned) return incoming;
-  if ((incoming.owned_quantity ?? 1) > (current.owned_quantity ?? 1)) return incoming;
-  return current;
 }
 
 function cleanUrl(value?: string | null) {
@@ -221,6 +207,7 @@ function getSnapshotPriceCacheKey(cardId: string, language?: string | null) {
 }
 
 export function invalidateBinderCaches(binderId?: string) {
+  invalidateRequestCache('binder:catalogue-sets');
   bumpCollectionSummaryVersion();
   invalidateRequestCache('binders:');
   if (binderId) {
@@ -434,23 +421,44 @@ async function attachSetBrandingToBinders(binders: BinderRecord[]): Promise<Bind
 
   if (!sourceSetIds.length) return binders;
 
-  const brandingByReference = await fetchStackrSetRows(sourceSetIds);
+  const catalogueSets = await getCachedOrFetch('binder:catalogue-sets', 5 * 60 * 1000, async () => {
+    const sets = await fetchPreferredStackrSets();
+    // Empty/error metadata reads must be retryable, not cached for five minutes.
+    if (!sets.length) throw new Error('Binder catalogue metadata is temporarily unavailable.');
+    return sets;
+  }).catch(() => []);
 
   return binders.map((binder) => {
-    const language = inferBinderLanguage(binder.language, binder.source_set_id);
-    const set = binder.source_set_id
-      ? getSetLookupCandidates(binder.source_set_id)
-        .map((reference) => brandingByReference.get(reference))
-        .find(Boolean) ?? null
+    if (binder.type !== 'official' || !binder.source_set_id) return binder;
+    const identity = resolveBinderSetIdentity({
+      language: binder.language,
+      sourceSetId: binder.source_set_id,
+      storedNativeSetName: binder.source_set_local_name ?? binder.source_set_display_name ?? binder.name,
+      storedEnglishSetName: binder.source_set_english_display_name,
+      candidates: catalogueSets,
+    });
+    const language = identity.language ?? binder.language ?? null;
+    const set = identity.status === 'resolved'
+      ? catalogueSets.find((candidate) => candidate.id === identity.setId && candidate.language === language) ?? null
       : null;
+    const catalogue = {
+      catalogue_set_id: set?.id ?? null,
+      catalogue_set_references: set
+        ? [set.id, binder.source_set_id, set.externalIds.setCode, set.externalIds.legacy, set.externalIds.tcgdex].filter((value): value is string => Boolean(value))
+        : [binder.source_set_id],
+      catalogue_set_total: positiveCatalogueCount(set?.total),
+      catalogue_set_printed_total: positiveCatalogueCount(set?.printedTotal),
+      catalogue_identity_status: identity.status,
+    };
     const names = {
-      displayName: set?.name ?? binder.name,
-      localName: set?.localName ?? null,
-      englishDisplayName: set?.englishDisplayName ?? null,
+      displayName: set?.name ?? binder.source_set_display_name ?? binder.name,
+      localName: set?.localName ?? binder.source_set_local_name ?? null,
+      englishDisplayName: set?.englishDisplayName ?? binder.source_set_english_display_name ?? null,
     };
     if (!set) {
       return {
         ...binder,
+        ...catalogue,
         source_set_cover_url: binder.source_set_cover_url ?? null,
         source_set_display_name: names.displayName,
         source_set_local_name: names.localName,
@@ -461,13 +469,14 @@ async function attachSetBrandingToBinders(binders: BinderRecord[]): Promise<Bind
 
     return {
       ...binder,
+      ...catalogue,
       source_set_logo_url: enforceSetVisualRuntimePolicy(set.images.logo) ?? enforceSetVisualRuntimePolicy(binder.source_set_logo_url) ?? null,
-      source_set_symbol_url: enforceSetVisualRuntimePolicy(set.images.symbol ?? binder.source_set_symbol_url) ?? null,
-      source_set_cover_url: enforceSetVisualRuntimePolicy(set.images.cover ?? set.images.artwork ?? binder.source_set_cover_url) ?? null,
+      source_set_symbol_url: enforceSetVisualRuntimePolicy(set.images.symbol) ?? enforceSetVisualRuntimePolicy(binder.source_set_symbol_url) ?? null,
+      source_set_cover_url: enforceSetVisualRuntimePolicy(set.images.cover ?? set.images.artwork) ?? enforceSetVisualRuntimePolicy(binder.source_set_cover_url) ?? null,
       source_set_display_name: names.displayName,
       source_set_local_name: names.localName,
       source_set_english_display_name: names.englishDisplayName,
-      language: inferBinderLanguage(binder.language ?? set.language, binder.source_set_id),
+      language,
     };
   });
 }
@@ -562,31 +571,36 @@ async function fetchBinderCardsUncached(
     } : null),
   })), binderLanguage);
 }
-  const setCards = await fetchCardsForSet(binder.source_set_id, {
+  // Unresolved historical identities must not silently become English editions.
+  if (binder.catalogue_identity_status === 'ambiguous'
+    || (binder.catalogue_identity_status === 'unresolved' && !binder.language)) {
+    return preserveUnmatchedBinderRows([], savedRows);
+  }
+  const setCards = await fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id, {
     language: binderLanguage,
     preferCanonicalApi: binderLanguage !== 'en',
-  });
+  }).catch(() => []);
+  if (!setCards.length) return preserveUnmatchedBinderRows([], savedRows);
 
-  const savedByCardKey = new Map(
-    savedRows.map((row) => [
-      `${normalizePokemonCardLanguage(row.language ?? binderLanguage)}:${row.set_id}:${row.card_id}`,
-      row,
-    ])
-  );
-  const savedByCardNumberKey = new Map<string, BinderCardRecord>();
-  for (const row of savedRows) {
-    const key = getBinderCardNumberMergeKey(
-      row.language ?? binderLanguage,
-      row.set_id,
-      row.card_number ?? row.card?.number ?? row.card?.raw_data?.number ?? row.card?.raw_data?.localId
-    );
-    if (key) savedByCardNumberKey.set(key, chooseSavedBinderCardRow(savedByCardNumberKey.get(key), row));
+  const catalogueCollectorCounts = new Map<string, number>();
+  for (const card of setCards) {
+    const collector = normalizeBinderCollectorNumber(card.number);
+    if (collector) catalogueCollectorCounts.set(collector, (catalogueCollectorCounts.get(collector) ?? 0) + 1);
   }
+  const consumedSavedRows = new Set<string>();
 
   const rows = setCards.map((card, index) => {
     const setId = binder.source_set_id as string;
-    const existing = savedByCardKey.get(`${binderLanguage}:${setId}:${card.id}`)
-      ?? savedByCardNumberKey.get(getBinderCardNumberMergeKey(binderLanguage, setId, card.number) ?? '');
+    const collector = normalizeBinderCollectorNumber(card.number);
+    const existing = findSavedBinderCardMatch({
+      savedRows: savedRows.filter((row) => !consumedSavedRows.has(row.id)),
+      cardId: card.id,
+      collectorNumber: card.number,
+      language: binderLanguage,
+      setReferences: binder.catalogue_set_references ?? [setId],
+      allowCollectorMatch: Boolean(collector && catalogueCollectorCounts.get(collector) === 1),
+    });
+    if (existing) consumedSavedRows.add(existing.id);
     const defaultCondition = binder.default_condition || 'Near Mint';
     const setName = getPreferredSetDisplayName({
       id: setId,
@@ -604,6 +618,7 @@ async function fetchBinderCardsUncached(
     if (existing) {
       return {
         ...existing,
+        catalogue_match_status: 'catalogue' as const,
         language: binderLanguage,
         owned_quantity: Math.max(1, Number(existing.owned_quantity ?? 1)),
         slot_order: existing.slot_order ?? index,
@@ -621,7 +636,7 @@ async function fetchBinderCardsUncached(
           tcgplayer: card.tcgplayer ?? null,
           raw_data: card.raw_data ?? null,
           images: {
-            small: card.images?.small ?? null,
+            small: card.images?.small ?? existing.card?.images?.small ?? existing.image_url ?? null,
             large: card.images?.large ?? null,
           },
         },
@@ -629,6 +644,7 @@ async function fetchBinderCardsUncached(
     }
 
     return {
+      catalogue_match_status: 'catalogue' as const,
       id: makeVirtualBinderCardId(binderId, setId, card.id),
       binder_id: binderId,
       card_id: card.id,
@@ -668,7 +684,7 @@ async function fetchBinderCardsUncached(
     };
   });
 
-  return attachLatestSnapshotPrices(rows, binderLanguage);
+  return attachLatestSnapshotPrices(preserveUnmatchedBinderRows<BinderCardRecord>(rows, savedRows), binderLanguage);
 }
 
 // ===============================
