@@ -29,10 +29,9 @@ import { useAppMode } from '../../components/app-mode-context';
 import { useProfile } from '../../components/profile-context';
 import { StackrProfileAvatar } from '../../components/StackrProfileAvatar';
 import { fetchBinders, fetchBinderCards, type BinderCardRecord, type BinderRecord } from '../../lib/binders';
-import { getCollectionSummary } from '../../lib/collectionSummary';
+import { fetchOwnedCardRows, type OwnedCardRow } from '../../lib/ownership';
 import { supabase } from '../../lib/supabase';
-import { createActivityPost } from '../../lib/activity';
-import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
+import { PRICE_API_URL } from '../../lib/config';
 import { ValueTrackerCard } from '../../components/ValueTrackerCard';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { getPokemonCardImageUrls } from '../../lib/pokemonTcg';
@@ -71,6 +70,12 @@ import {
 } from '../../lib/mintyInsightService';
 import { getCustomBinderNameArtKeyForBinder } from '../../lib/customBinderNameArt';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
+import { loadCollectionPrices, type CollectionPriceResult } from '../../lib/collectionPricingApi';
+import {
+  getCollectionPriceCoverageLabel,
+  summariseCollectionPricing,
+  type CollectionPricingSummary,
+} from '../../lib/collectionPricingState';
 import { sanitizeMarketplaceCondition } from '../../lib/marketplacePresentation';
 import {
   sanitizeGate0CommerceCopy,
@@ -110,6 +115,10 @@ const getChaseCardKey = (item: Pick<HomeCardPreview, 'cardId' | 'setId'>) => `${
 type HomeBinderCard = BinderCardRecord & {
   __binderId: string;
   __binderEdition: string | null;
+  __binderCardMode: 'raw' | 'graded' | null;
+  __binderDefaultCondition: string | null;
+  __binderDefaultGradeCompany: string | null;
+  __binderDefaultGrade: string | null;
   __masterSetEnabled: boolean;
 };
 
@@ -119,17 +128,29 @@ type HomeBinderCardGroup = {
 };
 
 type HomeCollectionCacheSnapshot = {
+  pricingContractVersion: 2;
   cachedAt: number;
   mintyDataRefreshedAt?: string | null;
   chartRange: ChartRange;
   chartData: number[];
-  collectionTotal: number;
+  collectionTotal: number | null;
+  collectionPricingSummary: CollectionPricingSummary;
   collectionChangeAmount: number;
   collectionChangePercent: number;
   ownedCardCount: number;
   activeBinder: HomeBinderSummary | null;
   duplicateSummary: HomeDuplicateSummary;
   missingCards: HomeCardPreview[];
+};
+
+const EMPTY_COLLECTION_PRICING: CollectionPricingSummary = {
+  total: null,
+  totalUnits: 0,
+  pricedUnits: 0,
+  unpricedUnits: 0,
+  staleUnits: 0,
+  latestCalculatedAt: null,
+  state: 'empty',
 };
 
 // ===============================
@@ -178,129 +199,11 @@ const HUB_TIP_ITEMS = [
 // HELPERS
 // ===============================
 
-const formatMoney = (value: number) => `\u00A3${value.toFixed(2)}`;
-const formatSignedMoney = (value: number) => `${value > 0 ? '+' : ''}\u00A3${value.toFixed(2)}`;
-const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
-
 const EMPTY_DUPLICATE_SUMMARY: HomeDuplicateSummary = {
   count: 0,
   estimatedValue: 0,
+  estimatedValueAvailable: false,
   items: [],
-};
-
-const toDayKey = (value: Date | string) => {
-  const date = typeof value === 'string' ? new Date(value) : value;
-  return date.toISOString().split('T')[0];
-};
-
-const buildDayKeys = (range: ChartRange, availableDays: string[]) => {
-  const anchor = availableDays.length
-    ? new Date(availableDays[availableDays.length - 1])
-    : new Date();
-  anchor.setHours(0, 0, 0, 0);
-
-  const count = range === '7D' ? 8 : 31;
-  return Array.from({ length: count }, (_, index) => {
-    const date = new Date(anchor);
-    date.setDate(anchor.getDate() - (count - 1 - index));
-    return toDayKey(date);
-  });
-};
-
-const getSnapshotPriceGbp = (row: any): number | null => {
-  if (!row) return null;
-  if (typeof row.tcg_mid === 'number') return row.tcg_mid;
-  if (typeof row.tcg_low === 'number') return row.tcg_low;
-  return null;
-};
-
-const TCG_PRICE_VARIANT_PRIORITY = [
-  'holofoil',
-  'reverseHolofoil',
-  'reverseHoloEnergy',
-  'reverseHoloPokeball',
-  'normal',
-  'unlimitedHolofoil',
-  'unlimited',
-  '1stEditionHolofoil',
-  '1stEditionNormal',
-];
-
-const TCG_PRICE_VARIANT_FALLBACKS: Record<string, string[]> = {
-  card: TCG_PRICE_VARIANT_PRIORITY,
-  normal: ['normal', 'unlimited'],
-  unlimited: ['unlimited', 'normal'],
-  holofoil: ['holofoil', 'unlimitedHolofoil'],
-  unlimitedHolofoil: ['unlimitedHolofoil', 'holofoil'],
-  reverseHolofoil: ['reverseHolofoil', 'reverseHoloEnergy', 'reverseHoloPokeball', 'holofoil', 'normal'],
-  reverseHoloEnergy: ['reverseHoloEnergy', 'reverseHolofoil', 'normal'],
-  reverseHoloPokeball: ['reverseHoloPokeball', 'reverseHolofoil', 'normal'],
-  '1stEditionNormal': ['1stEditionNormal'],
-  '1stEditionHolofoil': ['1stEditionHolofoil'],
-};
-
-const TCG_PRICE_EDITION_FALLBACKS: Record<string, string[]> = {
-  '1st_edition': [
-    '1stEditionHolofoil',
-    '1stEditionNormal',
-  ],
-  unlimited: [
-    'unlimitedHolofoil',
-    'unlimited',
-    'holofoil',
-    'normal',
-    'reverseHolofoil',
-    'reverseHoloEnergy',
-    'reverseHoloPokeball',
-  ],
-};
-
-const toGbpFromUsd = (value: number) => Math.round(value * USD_TO_GBP * 100) / 100;
-
-const getTcgEntryUsd = (entry: any): number | null => {
-  const value = entry?.market ?? entry?.mid ?? entry?.low;
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
-};
-
-const getTcgPriceFromPricesGbp = (prices: any, variant?: string | null, edition?: string | null): number | null => {
-  if (!prices) return null;
-
-  const preferred = variant
-    ? TCG_PRICE_VARIANT_FALLBACKS[variant] ?? [variant, ...TCG_PRICE_VARIANT_PRIORITY]
-    : edition
-      ? TCG_PRICE_EDITION_FALLBACKS[edition] ?? TCG_PRICE_VARIANT_PRIORITY
-      : TCG_PRICE_VARIANT_PRIORITY;
-
-  for (const key of preferred) {
-    const usd = getTcgEntryUsd(prices[key]);
-    if (usd != null) return toGbpFromUsd(usd);
-  }
-
-  if (variant || edition) return null;
-
-  for (const entry of Object.values(prices) as any[]) {
-    const usd = getTcgEntryUsd(entry);
-    if (usd != null) return toGbpFromUsd(usd);
-  }
-
-  return null;
-};
-
-const getOwnedCardCurrentTcgGbp = (card: any, variant?: string | null, edition?: string | null): number | null => {
-  const prices =
-    card?.card?.tcgplayer?.prices ??
-    card?.card?.raw_data?.tcgplayer?.prices ??
-    card?.raw_data?.tcgplayer?.prices ??
-    card?.tcgplayer?.prices ??
-    null;
-  const variantPrice = getTcgPriceFromPricesGbp(prices, variant, edition);
-  const direct = card?.tcg_price;
-  const directPrice = typeof direct === 'number' && Number.isFinite(direct) && direct > 0
-    ? Math.round(direct * 100) / 100
-    : null;
-
-  if ((variant || edition) && variantPrice != null) return variantPrice;
-  return directPrice ?? variantPrice;
 };
 
 const getHomeMasterSetStorageKey = (binderId: string) => `${HOME_MASTER_SET_STORAGE_PREFIX}${binderId}`;
@@ -312,51 +215,6 @@ const isHomeMasterSetEnabled = async (binderId: string) => {
     console.log('Failed to load home master set setting', error);
     return false;
   }
-};
-
-const buildFallbackTrend = (latestTotal: number, range: ChartRange, changeAmount = 0) => {
-  if (latestTotal <= 0) return [];
-  const count = range === '7D' ? 8 : 31;
-  const previousTotal = Number.isFinite(changeAmount) && changeAmount !== 0
-    ? Math.max(0, latestTotal - changeAmount)
-    : latestTotal;
-
-  return Array.from({ length: count }, (_, index) => {
-    const progress = index / (count - 1);
-    const baseline = previousTotal + (latestTotal - previousTotal) * progress;
-    const wiggle = range === '30D' ? 0 : Math.sin(index * 1.7) * latestTotal * 0.003;
-    return Number((index === count - 1 || changeAmount === 0 ? baseline : baseline + wiggle).toFixed(2));
-  });
-};
-
-const alignTrendWithChange = (values: number[], changeAmount: number) => {
-  if (values.length < 2 || !Number.isFinite(changeAmount) || changeAmount === 0) return values;
-  const chartChange = values[values.length - 1] - values[0];
-  if ((changeAmount < 0 && chartChange > 0) || (changeAmount > 0 && chartChange < 0)) {
-    return [...values].reverse();
-  }
-  return values;
-};
-
-const smoothTrendValues = (values: number[], range: ChartRange) => {
-  if (range !== '30D' || values.length < 5) return values;
-  const radius = 2;
-  return values.map((value, index) => {
-    if (index === 0 || index === values.length - 1) return value;
-
-    let weightedTotal = 0;
-    let weightSum = 0;
-    for (let offset = -radius; offset <= radius; offset += 1) {
-      const nextIndex = index + offset;
-      if (nextIndex < 0 || nextIndex >= values.length) continue;
-      const weight = radius + 1 - Math.abs(offset);
-      weightedTotal += values[nextIndex] * weight;
-      weightSum += weight;
-    }
-
-    const smoothed = weightSum > 0 ? weightedTotal / weightSum : value;
-    return Number((smoothed * 0.78 + value * 0.22).toFixed(2));
-  });
 };
 
 const buildMintyRefreshSignature = ({
@@ -408,23 +266,11 @@ const getCardSetName = (card: BinderCardRecord) =>
 const getCardRarity = (card: BinderCardRecord) =>
   card.card?.rarity ?? card.card?.raw_data?.rarity ?? null;
 
-const getBinderCardPriceGbp = (card: BinderCardRecord, edition?: string | null) => {
-  const tcg = getOwnedCardCurrentTcgGbp(card, null, edition);
-  const fallback = [card.tcg_price, card.ebay_price, card.cardmarket_price].find(
-    (value) => typeof value === 'number' && Number.isFinite(value) && value > 0
-  );
-  return tcg ?? fallback ?? null;
-};
-
 const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: Record<string, string> = {}): HomeBinderSummary[] =>
   groups.map(({ binder, cards }) => {
     const ownedCards = cards.filter((card) => getOwnedQuantity(card) > 0);
     const owned = ownedCards.length;
     const total = cards.length;
-    const value = ownedCards.reduce((sum, card) => {
-      const price = getBinderCardPriceGbp(card, binder.edition) ?? 0;
-      return sum + price * getOwnedQuantity(card);
-    }, 0);
     const duplicateCount = ownedCards.reduce(
       (sum, card) => sum + Math.max(0, getOwnedQuantity(card) - 1),
       0
@@ -436,10 +282,9 @@ const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: 
         setId: card.set_id,
         name: getCardDisplayName(card),
         imageUrl: getCardImageUrl(card),
-        estimatedValue: getBinderCardPriceGbp(card, binder.edition),
+        estimatedValue: null,
       }))
-      .filter((card) => (card.estimatedValue ?? 0) > 0 || card.imageUrl)
-      .sort((a, b) => (b.estimatedValue ?? 0) - (a.estimatedValue ?? 0))
+      .filter((card) => card.imageUrl)
       .slice(0, 3);
 
     return {
@@ -461,7 +306,9 @@ const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: 
       total,
       missing: Math.max(0, total - owned),
       duplicateCount,
-      value,
+      value: 0,
+      valueAvailable: false,
+      valueCoverageLabel: null,
       completionPercent: total ? Math.round((owned / total) * 100) : 0,
       topValueCards,
     };
@@ -477,19 +324,16 @@ const selectActiveBinder = (summaries: HomeBinderSummary[]) => {
 const buildDuplicateSummary = (groups: HomeBinderCardGroup[]): HomeDuplicateSummary => {
   const duplicateMap = new Map<string, HomeDuplicateItem>();
 
-  for (const { binder, cards } of groups) {
+  for (const { cards } of groups) {
     for (const card of cards) {
       const extraQuantity = Math.max(0, getOwnedQuantity(card) - 1);
       if (!extraQuantity) continue;
 
       const key = `${card.set_id ?? ''}:${card.card_id}`;
-      const price = getBinderCardPriceGbp(card, binder.edition) ?? 0;
       const current = duplicateMap.get(key);
-      const estimatedValue = price * extraQuantity;
 
       if (current) {
         current.extraQuantity += extraQuantity;
-        current.estimatedValue += estimatedValue;
       } else {
         duplicateMap.set(key, {
           cardId: card.card_id,
@@ -498,7 +342,8 @@ const buildDuplicateSummary = (groups: HomeBinderCardGroup[]): HomeDuplicateSumm
           setName: getCardSetName(card),
           imageUrl: getCardImageUrl(card),
           extraQuantity,
-          estimatedValue,
+          estimatedValue: 0,
+          estimatedValueAvailable: false,
         });
       }
     }
@@ -507,7 +352,8 @@ const buildDuplicateSummary = (groups: HomeBinderCardGroup[]): HomeDuplicateSumm
   const items = [...duplicateMap.values()].sort((a, b) => b.estimatedValue - a.estimatedValue);
   return {
     count: items.reduce((sum, item) => sum + item.extraQuantity, 0),
-    estimatedValue: items.reduce((sum, item) => sum + item.estimatedValue, 0),
+    estimatedValue: 0,
+    estimatedValueAvailable: false,
     items,
   };
 };
@@ -530,10 +376,204 @@ const buildMissingCards = (
       number: card.card_number ?? card.card?.number ?? null,
       rarity: getCardRarity(card),
       imageUrl: getCardImageUrl(card),
-      estimatedValue: getBinderCardPriceGbp(card, group.binder.edition),
+      estimatedValue: null,
     }))
-    .sort((a, b) => (b.estimatedValue ?? 0) - (a.estimatedValue ?? 0))
     .slice(0, 5);
+};
+
+type HomeOwnedPricingUnit = {
+  key: string;
+  card: HomeBinderCard | null;
+  binderIds: string[];
+  cardId: string;
+  setId: string;
+  quantity: number;
+  variant: string | null;
+  condition: string | null;
+  gradeCompany: string | null;
+  grade: string | null;
+  productType: 'raw_card' | 'graded_card';
+  identityExact: boolean;
+};
+
+const homeCardKey = (setId?: string | null, cardId?: string | null) => `${setId ?? ''}:${cardId ?? ''}`;
+
+const buildHomeOwnedPricingUnits = (
+  allCards: HomeBinderCard[],
+  ownedRows: OwnedCardRow[],
+): HomeOwnedPricingUnit[] => {
+  const cardsByIdentity = new Map<string, HomeBinderCard[]>();
+  for (const card of allCards) {
+    const key = homeCardKey(card.set_id, card.card_id);
+    cardsByIdentity.set(key, [...(cardsByIdentity.get(key) ?? []), card]);
+  }
+
+  const units: HomeOwnedPricingUnit[] = ownedRows.map((row) => {
+    const cardKey = homeCardKey(row.set_id, row.card_id);
+    const matchingCards = cardsByIdentity.get(cardKey) ?? [];
+    const card = matchingCards[0] ?? null;
+    const explicitCondition = String(row.condition ?? '').trim() || null;
+    const explicitGradeCompany = String(row.grade_company ?? '').trim() || null;
+    const explicitGrade = String(row.grade ?? '').trim() || null;
+    const binderModes = [...new Set(matchingCards.map((candidate) => (
+      candidate.__binderCardMode === 'graded' ? 'graded' : 'raw'
+    )))];
+    const hasExplicitGradeIdentity = Boolean(explicitGradeCompany || explicitGrade);
+    const binderMode = binderModes.length === 1 ? binderModes[0] : null;
+    const productType = hasExplicitGradeIdentity || binderMode === 'graded'
+      ? 'graded_card' as const
+      : 'raw_card' as const;
+    const unanimousDefault = (read: (candidate: HomeBinderCard) => string | null) => {
+      const values = [...new Set(matchingCards
+        .map(read)
+        .map((value) => String(value ?? '').trim())
+        .filter(Boolean))];
+      return values.length === 1 ? values[0] : null;
+    };
+    return {
+      key: [cardKey, row.variant, row.condition ?? '', row.grade_company ?? '', row.grade ?? ''].join(':'),
+      card,
+      binderIds: [...new Set(matchingCards.map((candidate) => candidate.__binderId))],
+      cardId: row.card_id,
+      setId: row.set_id,
+      quantity: Math.max(1, Number(row.quantity ?? 1)),
+      variant: row.variant || null,
+      condition: explicitCondition ?? (productType === 'raw_card'
+        ? unanimousDefault((candidate) => candidate.__binderDefaultCondition)
+        : null),
+      gradeCompany: explicitGradeCompany ?? (productType === 'graded_card'
+        ? unanimousDefault((candidate) => candidate.__binderDefaultGradeCompany)
+        : null),
+      grade: explicitGrade ?? (productType === 'graded_card'
+        ? unanimousDefault((candidate) => candidate.__binderDefaultGrade)
+        : null),
+      productType,
+      identityExact: binderModes.length <= 1 || hasExplicitGradeIdentity,
+    };
+  });
+
+  const canonicalCardKeys = new Set(ownedRows.map((row) => homeCardKey(row.set_id, row.card_id)));
+  const legacyCardKeys = new Set<string>();
+  for (const card of allCards) {
+    const cardKey = homeCardKey(card.set_id, card.card_id);
+    if (!card.owned || canonicalCardKeys.has(cardKey) || legacyCardKeys.has(cardKey)) continue;
+    legacyCardKeys.add(cardKey);
+    const matchingCards = cardsByIdentity.get(cardKey) ?? [card];
+    units.push({
+      key: `legacy:${cardKey}:${card.condition ?? ''}:${card.grade_company ?? ''}:${card.grade ?? ''}`,
+      card,
+      binderIds: [...new Set(matchingCards.map((candidate) => candidate.__binderId))],
+      cardId: card.card_id,
+      setId: card.set_id,
+      quantity: getOwnedQuantity(card),
+      variant: card.__binderEdition ?? null,
+      condition: card.condition || card.__binderDefaultCondition,
+      gradeCompany: card.grade_company || card.__binderDefaultGradeCompany,
+      grade: card.grade || card.__binderDefaultGrade,
+      productType: card.grade_company
+        || card.grade
+        || card.__binderCardMode === 'graded'
+        ? 'graded_card'
+        : 'raw_card',
+      identityExact: true,
+    });
+  }
+
+  return units;
+};
+
+const pricingInputForHomeUnit = (unit: HomeOwnedPricingUnit) => ({
+  key: unit.key,
+  references: unit.identityExact
+    ? [...new Set([unit.card?.api_card_id, unit.cardId].filter((value): value is string => Boolean(value)))]
+    : [],
+  quantity: unit.quantity,
+  language: unit.card?.language ?? null,
+  setId: unit.card?.api_set_id ?? unit.setId,
+  variantCode: unit.variant,
+  productType: unit.productType,
+  condition: unit.condition,
+  grader: unit.gradeCompany,
+  grade: unit.grade,
+});
+
+const pricingSummaryForResults = (results: CollectionPriceResult[]) => summariseCollectionPricing(
+  results.map((result) => ({
+    quantity: result.quantity,
+    centralValue: result.central,
+    evidenceStatus: result.status,
+    freshness: result.freshness,
+    calculatedAt: result.calculatedAt,
+    staleAfter: result.staleAfter,
+  })),
+);
+
+const applyHomeBinderPrices = (
+  summaries: HomeBinderSummary[],
+  units: HomeOwnedPricingUnit[],
+  results: CollectionPriceResult[],
+) => {
+  const resultByKey = new Map(results.map((result) => [result.key, result]));
+  return summaries.map((summary) => {
+    const binderUnits = units.filter((unit) => unit.binderIds.includes(summary.id));
+    const binderResults = binderUnits
+      .map((unit) => resultByKey.get(unit.key))
+      .filter((result): result is CollectionPriceResult => Boolean(result));
+    const pricing = pricingSummaryForResults(binderResults);
+    const priceByCard = new Map<string, number>();
+    for (const unit of binderUnits) {
+      const result = resultByKey.get(unit.key);
+      if (result?.central == null || result.status === 'unavailable') continue;
+      priceByCard.set(homeCardKey(unit.setId, unit.cardId), result.central);
+    }
+    return {
+      ...summary,
+      value: pricing.total ?? 0,
+      valueAvailable: pricing.total != null,
+      valueCoverageLabel: pricing.state === 'partial' || pricing.state === 'stale'
+        ? getCollectionPriceCoverageLabel(pricing)
+        : null,
+      topValueCards: summary.topValueCards
+        .map((card) => ({ ...card, estimatedValue: priceByCard.get(homeCardKey(card.setId, card.cardId)) ?? null }))
+        .sort((a, b) => (b.estimatedValue ?? -1) - (a.estimatedValue ?? -1)),
+    };
+  });
+};
+
+const applyHomeDuplicatePrices = (
+  summary: HomeDuplicateSummary,
+  units: HomeOwnedPricingUnit[],
+  results: CollectionPriceResult[],
+): HomeDuplicateSummary => {
+  if (!summary.count) return summary;
+  const resultByKey = new Map(results.map((result) => [result.key, result]));
+  const pricedByCard = new Map<string, { value: number; quantity: number }>();
+  for (const unit of units) {
+    const extraQuantity = Math.max(0, unit.quantity - 1);
+    if (!extraQuantity) continue;
+    const result = resultByKey.get(unit.key);
+    if (result?.central == null || result.status === 'unavailable') continue;
+    const key = homeCardKey(unit.setId, unit.cardId);
+    const current = pricedByCard.get(key) ?? { value: 0, quantity: 0 };
+    current.value += result.central * extraQuantity;
+    current.quantity += extraQuantity;
+    pricedByCard.set(key, current);
+  }
+  const items = summary.items.map((item) => {
+    const priced = pricedByCard.get(homeCardKey(item.setId, item.cardId));
+    return {
+      ...item,
+      estimatedValue: priced?.value ?? 0,
+      estimatedValueAvailable: Boolean(priced && priced.quantity === item.extraQuantity),
+    };
+  });
+  const allPriced = items.length > 0 && items.every((item) => item.estimatedValueAvailable);
+  return {
+    ...summary,
+    estimatedValue: items.reduce((total, item) => total + (item.estimatedValueAvailable ? item.estimatedValue : 0), 0),
+    estimatedValueAvailable: allPriced,
+    items,
+  };
 };
 
 const activityIconForType = (type?: string | null): keyof typeof Ionicons.glyphMap => {
@@ -654,7 +694,9 @@ export default function HubScreen() {
   const [chartData, setChartData] = useState<number[]>([]);
 
   // Collection value
-  const [collectionTotal, setCollectionTotal] = useState(0);
+  const [collectionTotal, setCollectionTotal] = useState<number | null>(null);
+  const [collectionPricingSummary, setCollectionPricingSummary] = useState<CollectionPricingSummary>(EMPTY_COLLECTION_PRICING);
+  const [collectionPricingWarning, setCollectionPricingWarning] = useState<string | null>(null);
   const [collectionChangeAmount, setCollectionChangeAmount] = useState(0);
   const [collectionChangePercent, setCollectionChangePercent] = useState(0);
   const [collectionValueLoading, setCollectionValueLoading] = useState(true);
@@ -691,8 +733,8 @@ export default function HubScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const valuePostKeyRef = useRef<string | null>(null);
   const hasLoadedCollectionValueRef = useRef(false);
+  const hasSuccessfulCollectionPricingRef = useRef(false);
   const cachedHomeSnapshotUserIdRef = useRef<string | null>(null);
   const homeSessionUserIdRef = useRef<string | null>(null);
   const homeCollectionRequestRef = useRef(0);
@@ -871,7 +913,7 @@ export default function HubScreen() {
       ) return;
       setApiMintyInsight(result.insight ?? null);
       setMintyInsightError(result.error ?? null);
-    } catch (error) {
+    } catch {
       if (mintyInsightRequestRef.current === requestId) {
         setApiMintyInsight(null);
         setMintyInsightError('Minty insight is temporarily unavailable.');
@@ -1044,7 +1086,10 @@ export default function HubScreen() {
         if (cachedHomeSnapshotUserIdRef.current) {
           cachedHomeSnapshotUserIdRef.current = null;
           hasLoadedCollectionValueRef.current = false;
-          setCollectionTotal(0);
+          hasSuccessfulCollectionPricingRef.current = false;
+          setCollectionTotal(null);
+          setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
+          setCollectionPricingWarning(null);
           setCollectionChangeAmount(0);
           setCollectionChangePercent(0);
           setOwnedCardCount(0);
@@ -1060,7 +1105,10 @@ export default function HubScreen() {
       if (cachedHomeSnapshotUserIdRef.current === trustedUserId) return false;
       if (cachedHomeSnapshotUserIdRef.current !== null) {
         hasLoadedCollectionValueRef.current = false;
-        setCollectionTotal(0);
+        hasSuccessfulCollectionPricingRef.current = false;
+        setCollectionTotal(null);
+        setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
+        setCollectionPricingWarning(null);
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
         setOwnedCardCount(0);
@@ -1084,7 +1132,13 @@ export default function HubScreen() {
         raw,
         trustedUserId,
       );
-      if (!snapshot || typeof snapshot.collectionTotal !== 'number') {
+      if (
+        !snapshot
+        || snapshot.pricingContractVersion !== 2
+        || (snapshot.collectionTotal !== null && typeof snapshot.collectionTotal !== 'number')
+        || !snapshot.collectionPricingSummary
+      ) {
+        hasSuccessfulCollectionPricingRef.current = false;
         await AsyncStorage.removeItem(storageKey);
         return false;
       }
@@ -1093,32 +1147,31 @@ export default function HubScreen() {
       if (confirmationError) throw confirmationError;
       if (confirmedUser?.id !== trustedUserId) {
         hasLoadedCollectionValueRef.current = false;
+        hasSuccessfulCollectionPricingRef.current = false;
         return false;
       }
       cachedHomeSnapshotUserIdRef.current = trustedUserId;
 
       setCollectionTotal(snapshot.collectionTotal);
+      setCollectionPricingSummary(snapshot.collectionPricingSummary as CollectionPricingSummary);
+      setCollectionPricingWarning(null);
       setCollectionChangeAmount(Number(snapshot.collectionChangeAmount ?? 0));
       setCollectionChangePercent(Number(snapshot.collectionChangePercent ?? 0));
       setOwnedCardCount(Number(snapshot.ownedCardCount ?? 0));
       setActiveBinder(snapshot.activeBinder ?? null);
       setDuplicateSummary(snapshot.duplicateSummary ?? EMPTY_DUPLICATE_SUMMARY);
       setMissingCards(Array.isArray(snapshot.missingCards) ? snapshot.missingCards : []);
-      setMintyDataRefreshedAt(
-        snapshot.mintyDataRefreshedAt
-          ?? (typeof snapshot.cachedAt === 'number' ? new Date(snapshot.cachedAt).toISOString() : null)
-      );
-      if (snapshot.chartRange === chartRange && Array.isArray(snapshot.chartData)) {
-        setChartData(snapshot.chartData);
-      }
+      setMintyDataRefreshedAt(snapshot.mintyDataRefreshedAt ?? null);
+      setChartData([]);
       hasLoadedCollectionValueRef.current = true;
+      hasSuccessfulCollectionPricingRef.current = snapshot.collectionTotal != null;
       setCollectionValueLoading(false);
       return true;
     } catch (error) {
       console.log('Home collection cache hydrate failed', error);
       return false;
     }
-  }, [chartRange]);
+  }, []);
 
   const saveHomeCollectionCache = useCallback(async (
     trustedUserId: string,
@@ -1147,6 +1200,7 @@ export default function HubScreen() {
   const loadCollectionValue = useCallback(async () => {
     const requestId = ++homeCollectionRequestRef.current;
     setCollectionValueError(null);
+    setCollectionPricingWarning(null);
     setHomeDataError(null);
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -1195,6 +1249,10 @@ export default function HubScreen() {
                 ...card,
                 __binderId: binder.id,
                 __binderEdition: binder.edition ?? null,
+                __binderCardMode: binder.card_mode ?? null,
+                __binderDefaultCondition: binder.default_condition ?? null,
+                __binderDefaultGradeCompany: binder.default_grade_company ?? null,
+                __binderDefaultGrade: binder.default_grade ?? null,
                 __masterSetEnabled: masterSetEnabled,
               })),
             };
@@ -1222,347 +1280,101 @@ export default function HubScreen() {
       const nextMissingCards = buildMissingCards(binderGroups, nextActiveBinder);
 
       if (!await confirmCurrentRequest()) return;
-      setActiveBinder(nextActiveBinder);
-      setDuplicateSummary(nextDuplicateSummary);
-      setMissingCards(nextMissingCards);
-
-      const getSnapshotIdsForCard = (card: any) => [
-        ...new Set([card.card_id, card.api_card_id].filter(Boolean)),
-      ] as string[];
-
-      const variantSetIds = [
-        ...new Set(
-          allCards
-            .map((card) => card.set_id)
-            .filter(Boolean)
-        ),
-      ] as string[];
-      const ownedVariantsByCard = new Map<string, Set<string>>();
-
-      if (variantSetIds.length) {
-        if (isCurrentRequest()) {
-          const { data: variantRows, error: variantError } = await supabase
-            .from('user_card_variants')
-            .select('card_id, set_id, variant')
-            .eq('user_id', trustedUserId)
-            .in('set_id', variantSetIds);
-
-          if (variantError) {
-            console.log('Hub variants failed:', variantError.message);
-          } else {
-            for (const row of variantRows ?? []) {
-              if (!row.card_id || !row.set_id || !row.variant) continue;
-              const key = `${row.set_id}:${row.card_id}`;
-              if (!ownedVariantsByCard.has(key)) ownedVariantsByCard.set(key, new Set());
-              ownedVariantsByCard.get(key)!.add(row.variant);
-            }
-          }
-        }
+      if (!hasLoadedCollectionValueRef.current) {
+        setActiveBinder(nextActiveBinder);
+        setDuplicateSummary(nextDuplicateSummary);
+        setMissingCards(nextMissingCards);
       }
 
-      const ownedUnits: {
-        card: any;
-        variant: string | null;
-        snapshotIds: string[];
-        currentTcgPriceGbp: number | null;
-      }[] = [];
-      const countedVariantKeys = new Set<string>();
-      const countedOwnedCardKeys = new Set<string>();
-
-      const addOwnedUnit = (card: any, variant: string | null) => {
-        ownedUnits.push({
-          card,
-          variant,
-          snapshotIds: getSnapshotIdsForCard(card),
-          currentTcgPriceGbp: getOwnedCardCurrentTcgGbp(card, variant, card.__binderEdition),
-        });
-      };
-
-      for (const card of allCards) {
-        const variantCardKey = `${card.set_id}:${card.card_id}`;
-        const ownedVariants = [...(ownedVariantsByCard.get(variantCardKey) ?? new Set<string>())];
-
-        if (card.__masterSetEnabled && ownedVariants.length) {
-          for (const variant of ownedVariants) {
-            const variantUnitKey = `${variantCardKey}:${variant}`;
-            if (countedVariantKeys.has(variantUnitKey)) continue;
-            countedVariantKeys.add(variantUnitKey);
-            addOwnedUnit(card, variant);
-          }
-          continue;
-        }
-
-        if (!card.__masterSetEnabled && ownedVariants.length) {
-          for (const variant of ownedVariants) {
-            const variantUnitKey = `${variantCardKey}:${variant}`;
-            if (countedVariantKeys.has(variantUnitKey)) continue;
-            countedVariantKeys.add(variantUnitKey);
-            addOwnedUnit(card, variant);
-          }
-          continue;
-        }
-
-        if (card.owned) {
-          if (countedOwnedCardKeys.has(variantCardKey) || [...countedVariantKeys].some((key) => key.startsWith(`${variantCardKey}:`))) {
-            continue;
-          }
-          countedOwnedCardKeys.add(variantCardKey);
-          addOwnedUnit(card, null);
-        }
+      let ownedRows: OwnedCardRow[] = [];
+      try {
+        ownedRows = await fetchOwnedCardRows();
+      } catch (ownershipError) {
+        console.log('Home canonical ownership failed; using binder ownership only', ownershipError);
       }
+      const ownedUnits = buildHomeOwnedPricingUnits(allCards, ownedRows);
+      const ownedUnitCount = ownedUnits.reduce((total, unit) => total + unit.quantity, 0);
+      if (!await confirmCurrentRequest()) return;
+      setOwnedCardCount(ownedUnitCount);
 
-      const sharedSummary = await getCollectionSummary({ forceRefresh: true, staleWhileRefresh: true }).catch((error) => {
-        console.log('Home shared collection summary failed:', error?.message ?? error);
-        return null;
-      });
-      const sharedOwnedCount = sharedSummary?.totalCardsOwned ?? ownedUnits.length;
+      const priceResults = ownedUnits.length
+        ? await loadCollectionPrices(ownedUnits.map(pricingInputForHomeUnit))
+        : [];
+      const nextPricingSummary = pricingSummaryForResults(priceResults);
+      const pricedBinderSummaries = applyHomeBinderPrices(binderSummaries, ownedUnits, priceResults);
+      const nextPricedActiveBinder = selectActiveBinder(pricedBinderSummaries);
+      nextDuplicateSummary = applyHomeDuplicatePrices(nextDuplicateSummary, ownedUnits, priceResults);
+      const hadCachedPricing = hasSuccessfulCollectionPricingRef.current;
+      const requestFailures = priceResults.filter((result) => result.requestError).length;
 
       if (!await confirmCurrentRequest()) return;
-      setOwnedCardCount(sharedOwnedCount);
-      if (nextDuplicateSummary.count === 0 && (sharedSummary?.duplicateCopies ?? 0) > 0) {
-        nextDuplicateSummary = {
-          count: sharedSummary?.duplicateCopies ?? 0,
-          estimatedValue: 0,
-          items: [],
-        };
-        setDuplicateSummary(nextDuplicateSummary);
-      }
-
-      const snapshotCardIds = [...new Set(ownedUnits.flatMap((unit) => unit.snapshotIds))];
-
-      if (!ownedUnits.length) {
-        const fallbackTotal = sharedSummary?.collectionValue ?? 0;
-        const fallbackChartData = buildFallbackTrend(fallbackTotal, chartRange, 0);
-        const refreshedAt = new Date().toISOString();
-        if (!await confirmCurrentRequest()) return;
-        setCollectionTotal(fallbackTotal);
-        setCollectionChangeAmount(0);
-        setCollectionChangePercent(0);
-        setChartData(fallbackChartData);
-        setMintyDataRefreshedAt(refreshedAt);
+      if (nextPricingSummary.state === 'unavailable' && hadCachedPricing) {
+        setCollectionPricingWarning('Live refresh is unavailable. Showing your last successful stored-price read.');
         setCollectionValueError(null);
-        void saveHomeCollectionCache(trustedUserId, {
-          mintyDataRefreshedAt: refreshedAt,
-          chartRange,
-          chartData: fallbackChartData,
-          collectionTotal: fallbackTotal,
-          collectionChangeAmount: 0,
-          collectionChangePercent: 0,
-          ownedCardCount: sharedOwnedCount,
-          activeBinder: nextActiveBinder,
-          duplicateSummary: nextDuplicateSummary,
-          missingCards: nextMissingCards,
-        });
-        refreshMintyForMarketSignature(buildMintyRefreshSignature({
-          chartRange,
-          total: fallbackTotal,
-          change: 0,
-          percent: 0,
-          ownedCount: sharedOwnedCount,
-          activeBinder: nextActiveBinder,
-          duplicateCount: nextDuplicateSummary.count,
-          missingCards: nextMissingCards,
-        }));
         return;
       }
 
-      const snapshotColumns = 'user_id, card_id, tcg_mid, tcg_low, snapshot_at';
-      let data: any[] = [];
-      if (snapshotCardIds.length) {
-        const snapshots = await fetchStackrPriceSnapshots(snapshotCardIds);
-        data = snapshotCardIds.flatMap((cardId) => {
-          const snapshot = snapshots.get(cardId);
-          return snapshot?.snapshot_at
-            ? [{ card_id: cardId, tcg_mid: snapshot.market_central, tcg_low: snapshot.market_low, snapshot_at: snapshot.snapshot_at }]
-            : [];
-        });
-      }
+      const pricingWarning = requestFailures > 0
+        ? `Could not refresh ${requestFailures} price${requestFailures === 1 ? '' : 's'}. ${getCollectionPriceCoverageLabel(nextPricingSummary)}.`
+        : nextPricingSummary.state === 'partial'
+          ? `${getCollectionPriceCoverageLabel(nextPricingSummary)}. The amount shown is the known subtotal.${nextPricingSummary.staleUnits ? ' Some stored prices may also be stale.' : ''}`
+          : nextPricingSummary.state === 'stale'
+            ? 'Stored prices are stale. Refresh will retry without replacing them with £0.'
+            : null;
+      const refreshedAt = nextPricingSummary.latestCalculatedAt;
 
-      const snapshotByCardDay = new Map<string, any>();
-      for (const row of data) {
-        snapshotByCardDay.set(`${row.card_id}:${String(row.snapshot_at).split('T')[0]}`, row);
-      }
-      const snapshotRows = [...snapshotByCardDay.values()].sort(
-        (a, b) => new Date(a.snapshot_at).getTime() - new Date(b.snapshot_at).getTime()
-      );
-      const snapshotDays = new Set(snapshotRows.map((row) => String(row.snapshot_at).split('T')[0]));
-
-      // Collection value is TCG-only: public daily snapshots first, current TCG card/variant prices as instant fallback.
-      const groupedByCard: Record<string, any[]> = {};
-      const groupedByDay: Record<string, Record<string, number>> = {};
-
-      for (const row of snapshotRows) {
-        if (!groupedByCard[row.card_id]) groupedByCard[row.card_id] = [];
-        groupedByCard[row.card_id].push(row);
-
-        const day = String(row.snapshot_at).split('T')[0];
-        if (!groupedByDay[day]) groupedByDay[day] = {};
-
-        const priceGbp = getSnapshotPriceGbp(row);
-        if (priceGbp != null) groupedByDay[day][row.card_id] = priceGbp;
-      }
-
-      let totalLatest = 0;
-      let comparableLatest = 0;
-      let comparablePrevious = 0;
-      let cardsWithPrevious = 0;
-      let currentlyPricedCards = 0;
-
-      for (const unit of ownedUnits) {
-        const snapshots = unit.snapshotIds
-          .flatMap((cardId) => groupedByCard[cardId] ?? [])
-          .sort((a, b) => new Date(a.snapshot_at).getTime() - new Date(b.snapshot_at).getTime());
-        const latest = snapshots[snapshots.length - 1];
-        const previous = snapshots[snapshots.length - 2];
-
-        const latestGbp = unit.currentTcgPriceGbp ?? getSnapshotPriceGbp(latest);
-        const previousGbp = getSnapshotPriceGbp(previous);
-
-        if (latestGbp != null) {
-          totalLatest += latestGbp;
-          currentlyPricedCards += 1;
-        }
-
-        if (latestGbp != null && previousGbp != null) {
-          comparableLatest += latestGbp;
-          comparablePrevious += previousGbp;
-          cardsWithPrevious += 1;
-        }
-      }
-
-      const change = cardsWithPrevious > 0 ? comparableLatest - comparablePrevious : 0;
-      const percent = cardsWithPrevious > 0 && comparablePrevious !== 0
-        ? (change / comparablePrevious) * 100
-        : 0;
-
-      const days = buildDayKeys(chartRange, Object.keys(groupedByDay).sort());
-      const firstDay = days[0];
-      const lastDay = days[days.length - 1];
-
-      const latestByCard: Record<string, number> = {};
-      for (const row of snapshotRows) {
-        const day = String(row.snapshot_at).split('T')[0];
-        if (day >= firstDay) continue;
-        const priceGbp = getSnapshotPriceGbp(row);
-        if (priceGbp != null) latestByCard[row.card_id] = priceGbp;
-      }
-
-      const chartPoints = days.map((day) => {
-        const pricesForDay = groupedByDay[day] ?? {};
-        Object.entries(pricesForDay).forEach(([cardId, price]) => {
-          if (typeof price === 'number') latestByCard[cardId] = price;
-        });
-        let dayTotal = 0;
-        let pricedCount = 0;
-        for (const unit of ownedUnits) {
-          const price = day === lastDay && unit.currentTcgPriceGbp != null
-            ? unit.currentTcgPriceGbp
-            : unit.snapshotIds
-              .map((cardId) => latestByCard[cardId])
-              .find((value) => typeof value === 'number');
-          if (typeof price === 'number') {
-            dayTotal += price;
-            pricedCount += 1;
-          }
-        }
-        return { value: dayTotal, pricedCount };
-      });
-
-      const usableChartPoints = chartPoints
-        .map((point, index) => ({ ...point, day: days[index] }))
-        .filter((point) => (
-          Number.isFinite(point.value) &&
-          point.value > 0 &&
-          currentlyPricedCards > 0 &&
-          point.pricedCount === currentlyPricedCards
-      ));
-      const chartValues = usableChartPoints.map((point) => point.value);
-
-      const hasRealChartHistory = chartValues.length >= 2;
-      const rawDisplayChartValues = hasRealChartHistory
-        ? alignTrendWithChange(chartValues, change)
-        : buildFallbackTrend(totalLatest, chartRange, change);
-      const displayChartValues = smoothTrendValues(rawDisplayChartValues, chartRange);
-      const debugText = [
-        `ownedUnits=${ownedUnits.length}`,
-        `masterVariants=${countedVariantKeys.size}`,
-        `ids=${snapshotCardIds.length}`,
-        `publicTcg=${data.length}`,
-        `currentTcg=${ownedUnits.filter((unit) => unit.currentTcgPriceGbp != null).length}`,
-        `rows=${snapshotRows.length}`,
-        `days=${snapshotDays.size}`,
-        `points=${chartValues.length}`,
-        `priced=${currentlyPricedCards}`,
-        `comparable=${cardsWithPrevious}`,
-      ].join(' ');
-      console.log('Hub price chart debug:', debugText);
-
-      const displayTotalLatest = sharedSummary?.collectionValue ?? totalLatest;
-      const refreshedAt = new Date().toISOString();
-
-      if (!await confirmCurrentRequest()) return;
-      setCollectionTotal(displayTotalLatest);
-      setCollectionChangeAmount(change);
-      setCollectionChangePercent(percent);
-      setChartData(displayChartValues);
+      setActiveBinder(nextPricedActiveBinder);
+      setDuplicateSummary(nextDuplicateSummary);
+      setMissingCards(nextMissingCards);
+      setCollectionTotal(nextPricingSummary.total);
+      setCollectionPricingSummary(nextPricingSummary);
+      setCollectionPricingWarning(pricingWarning);
+      setCollectionChangeAmount(0);
+      setCollectionChangePercent(0);
+      setChartData([]);
       setMintyDataRefreshedAt(refreshedAt);
       setCollectionValueError(null);
+      cachedHomeSnapshotUserIdRef.current = trustedUserId;
+      hasSuccessfulCollectionPricingRef.current = nextPricingSummary.total != null;
+
       void saveHomeCollectionCache(trustedUserId, {
+        pricingContractVersion: 2,
         mintyDataRefreshedAt: refreshedAt,
         chartRange,
-        chartData: displayChartValues,
-        collectionTotal: displayTotalLatest,
-        collectionChangeAmount: change,
-        collectionChangePercent: percent,
-        ownedCardCount: sharedOwnedCount,
-        activeBinder: nextActiveBinder,
+        chartData: [],
+        collectionTotal: nextPricingSummary.total,
+        collectionPricingSummary: nextPricingSummary,
+        collectionChangeAmount: 0,
+        collectionChangePercent: 0,
+        ownedCardCount: ownedUnitCount,
+        activeBinder: nextPricedActiveBinder,
         duplicateSummary: nextDuplicateSummary,
         missingCards: nextMissingCards,
       });
-      refreshMintyForMarketSignature(buildMintyRefreshSignature({
-        chartRange,
-        total: displayTotalLatest,
-        change,
-        percent,
-        ownedCount: sharedOwnedCount,
-        activeBinder: nextActiveBinder,
-        duplicateCount: nextDuplicateSummary.count,
-        missingCards: nextMissingCards,
-      }));
 
-      // Keep daily movement in the hero and Value History; do not duplicate it in activity.
-      const shouldPostValueActivity = valuePostKeyRef.current === '__post_value_activity__';
-      if (shouldPostValueActivity && chartRange === '7D' && cardsWithPrevious > 0 && Math.abs(change) > 1) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const { data: existingPost } = await supabase
-            .from('activity_feed')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('type', 'value_change')
-            .gte('created_at', today.toISOString())
-            .limit(1);
-          const alreadyPosted = Array.isArray(existingPost) && existingPost.length > 0;
-          const postKey = `${user.id}-${today.toISOString()}-${change.toFixed(2)}`;
-          if (!alreadyPosted && valuePostKeyRef.current !== postKey) {
-            valuePostKeyRef.current = postKey;
-            createActivityPost({
-              type: 'value_change',
-              title: change > 0 ? 'Collection value is up today' : 'Collection value is down today',
-              subtitle: `${formatSignedMoney(change)} (${formatSignedPercent(percent)}) · Total ${formatMoney(totalLatest)}`,
-              valueChange: change,
-              isPositive: change > 0,
-            }).catch((err) => console.log('Failed to create value activity post', err));
-          }
-        }
+      if (nextPricingSummary.total != null) {
+        refreshMintyForMarketSignature(buildMintyRefreshSignature({
+          chartRange,
+          total: nextPricingSummary.total,
+          change: 0,
+          percent: 0,
+          ownedCount: ownedUnitCount,
+          activeBinder: nextPricedActiveBinder,
+          duplicateCount: nextDuplicateSummary.count,
+          missingCards: nextMissingCards,
+        }));
       }
+
+      /* Price history remains empty until the API exposes comparable valuation-estimate snapshots. */
+      return;
+
     } catch (error) {
       console.log('Failed to calculate collection value', error);
       if (homeCollectionRequestRef.current !== requestId) return;
-      if (!hasLoadedCollectionValueRef.current) {
-        setCollectionTotal(0);
+      if (!hasSuccessfulCollectionPricingRef.current) {
+        setCollectionTotal(null);
+        setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
+        setCollectionPricingWarning(null);
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
         setChartData([]);
@@ -1570,8 +1382,13 @@ export default function HubScreen() {
         setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
         setMissingCards([]);
       }
-      setCollectionValueError('We could not refresh market prices. Pull to refresh or try again.');
-      setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
+      if (hasSuccessfulCollectionPricingRef.current) {
+        setCollectionPricingWarning('Refresh failed. Showing your last successful stored-price read.');
+        setCollectionValueError(null);
+      } else {
+        setCollectionValueError('We could not load stored market prices. Pull to refresh or try again.');
+        setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
+      }
     } finally {
       if (homeCollectionRequestRef.current === requestId) {
         hasLoadedCollectionValueRef.current = true;
@@ -1898,9 +1715,12 @@ export default function HubScreen() {
       mintyInsightRequestRef.current += 1;
       cachedHomeSnapshotUserIdRef.current = null;
       hasLoadedCollectionValueRef.current = false;
+      hasSuccessfulCollectionPricingRef.current = false;
       mintyMarketSignatureRef.current = null;
 
-      setCollectionTotal(0);
+      setCollectionTotal(null);
+      setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
+      setCollectionPricingWarning(null);
       setCollectionChangeAmount(0);
       setCollectionChangePercent(0);
       setOwnedCardCount(0);
@@ -1993,7 +1813,7 @@ export default function HubScreen() {
   }, [chartRange, loadCollectionValue]);
 
   const localMintyInsight = useMemo(() => buildMintyHomeInsight({
-    totalValue: collectionTotal,
+    totalValue: collectionTotal ?? 0,
     absoluteChange: collectionChangeAmount,
     percentageChange: collectionChangePercent,
     changePeriodLabel: chartRange,
@@ -2023,7 +1843,9 @@ export default function HubScreen() {
     ownedCardCount,
     recentActivity,
   ]);
-  const mintyInsight = sanitizeMintyInsightForGate0(apiMintyInsight ?? localMintyInsight);
+  const mintyInsight = sanitizeMintyInsightForGate0(
+    collectionTotal != null ? apiMintyInsight ?? localMintyInsight : localMintyInsight,
+  );
 
   const openMintyAction = useCallback((insight: MintyInsight) => {
     switch (insight.recommended_route) {
@@ -2287,7 +2109,10 @@ export default function HubScreen() {
             trendRange={chartRange}
             onTrendRangeChange={setChartRange}
             ownedCount={ownedCardCount}
-            mintyInsight={mintyInsight}
+            pricingState={collectionPricingSummary.state}
+            pricingCoverageLabel={getCollectionPriceCoverageLabel(collectionPricingSummary)}
+            pricingWarning={collectionPricingWarning}
+            mintyInsight={chartData.length >= 2 ? mintyInsight : null}
             mintyInsightUpdating={mintyInsightRefreshing}
             mintyInsightError={mintyInsightError}
             isLoading={collectionValueLoading}

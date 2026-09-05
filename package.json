@@ -28,6 +28,7 @@
     "pricing-v2:refresh": "tsx scripts/pricing-v2-refresh-worker.ts",
     "pricing-v2:compare": "tsx scripts/pricing-v2-compare.ts",
     "test:pricing-v2": "tsx scripts/test-pricing-v2.ts",
+    "test:collection-pricing-ui": "tsx scripts/test-collection-pricing-state.ts && tsx scripts/test-collection-pricing-api.ts",
     "test:seller-stock-out-routing": "tsx scripts/test-seller-stock-out-routing.ts",
     "test:premium-seller-access": "tsx scripts/test-premium-seller-access.ts",
     "test:commerce-release-lock": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-commerce-release-lock.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-gate0-dynamic-copy.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-minty-gate0-copy.ts",

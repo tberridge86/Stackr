@@ -52,6 +52,8 @@ export type HomeBinderSummary = {
   missing: number;
   duplicateCount: number;
   value: number;
+  valueAvailable?: boolean;
+  valueCoverageLabel?: string | null;
   completionPercent: number;
   topValueCards: HomeBinderTopValueCard[];
 };
@@ -72,11 +74,13 @@ export type HomeDuplicateItem = {
   imageUrl: string | null;
   extraQuantity: number;
   estimatedValue: number;
+  estimatedValueAvailable?: boolean;
 };
 
 export type HomeDuplicateSummary = {
   count: number;
   estimatedValue: number;
+  estimatedValueAvailable?: boolean;
   items: HomeDuplicateItem[];
 };
 
@@ -184,7 +188,7 @@ export const HOME_TOKENS = {
 } as const;
 
 const formatMoney = (value: number | null | undefined, fallback = 'Price pending') => {
-  if (value == null || !Number.isFinite(value) || value === 0) return fallback;
+  if (value == null || !Number.isFinite(value)) return fallback;
   const sign = value < 0 ? '-' : '';
   const abs = Math.abs(value);
   return `${sign}\u00A3${abs.toFixed(abs >= 1000 ? 0 : 2)}`;
@@ -757,7 +761,9 @@ export function ContinueBinderCard({
               </Text>
               <Text style={[styles.continueStatDivider, { color: theme.colors.textSoft }]}>|</Text>
               <Text style={[styles.continueCompactStatText, { color: theme.colors.text }]} numberOfLines={1}>
-                {formatMoney(binder.value)} est. value
+                {binder.valueAvailable
+                  ? `${formatMoney(binder.value)}${binder.valueCoverageLabel ? ' known' : ' est. value'}`
+                  : 'Price unavailable'}
               </Text>
               <Text style={[styles.continueStatDivider, { color: theme.colors.textSoft }]}>|</Text>
               <Text style={[styles.continueCompactStatText, { color: HOME_HERO_PRIMARY }]} numberOfLines={1}>
@@ -878,7 +884,7 @@ function DuplicateResultCard({ item }: { item: HomeDuplicateItem }) {
             <Text style={[styles.rowSub, styles.duplicateRailSetText, { color: theme.colors.textSoft }]} numberOfLines={1}>{item.setName}</Text>
           )}
           <Text style={[styles.duplicateRailValue, { color: HOME_HERO_PRIMARY }]} numberOfLines={1}>
-            {formatMoney(item.estimatedValue)}
+            {item.estimatedValueAvailable ? formatMoney(item.estimatedValue) : 'Price unavailable'}
           </Text>
         </View>
       </View>
@@ -889,9 +895,11 @@ function DuplicateResultCard({ item }: { item: HomeDuplicateItem }) {
 function DuplicateSummaryBar({
   count,
   value,
+  valueAvailable,
 }: {
   count: number;
   value: number;
+  valueAvailable?: boolean;
 }) {
   return (
     <LinearGradient
@@ -913,9 +921,9 @@ function DuplicateSummaryBar({
       </View>
       <View style={styles.duplicateSummaryValuePill}>
         <Text numeric style={styles.duplicateSummaryValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
-          {formatMoney(value)}
+          {valueAvailable ? formatMoney(value) : 'Unavailable'}
         </Text>
-        <Text style={styles.duplicateSummaryValueLabel}>est. value</Text>
+        <Text style={styles.duplicateSummaryValueLabel}>{valueAvailable ? 'known value' : 'price status'}</Text>
       </View>
     </LinearGradient>
   );
@@ -942,12 +950,14 @@ function DuplicateArtworkRail({
 function DuplicatesHeader({
   count,
   value,
+  valueAvailable,
 }: {
   count: number;
   value: number;
+  valueAvailable?: boolean;
 }) {
   return (
-    <DuplicateSummaryBar count={count} value={value} />
+    <DuplicateSummaryBar count={count} value={value} valueAvailable={valueAvailable} />
   );
 }
 
@@ -986,7 +996,11 @@ function DuplicatePremiumBody({
   const { theme } = useTheme();
   return (
     <>
-      <DuplicatesHeader count={summary.count} value={summary.estimatedValue} />
+      <DuplicatesHeader
+        count={summary.count}
+        value={summary.estimatedValue}
+        valueAvailable={summary.estimatedValueAvailable}
+      />
       <DuplicateArtworkRail items={visibleItems} />
 
       {insightText ? (

@@ -31,8 +31,17 @@ import {
   fetchBinders,
   deleteBinder,
   BinderRecord,
-  getEstimatedValue,
 } from '../../lib/binders';
+import {
+  loadCollectionPrices,
+  type CollectionPriceInput,
+} from '../../lib/collectionPricingApi';
+import {
+  getCollectionPriceCoverageLabel,
+  summariseCollectionPricing,
+  type CollectionPricingSummary,
+} from '../../lib/collectionPricingState';
+import { fetchOwnedCardRows, type OwnedCardRow } from '../../lib/ownership';
 import { supabase } from '../../lib/supabase';
 import {
   getKnownPokemonSetTotal,
@@ -166,10 +175,6 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
 // ===============================
 // HELPERS
 // ===============================
-
-const getPreferredBinderCardPrice = (card: any): number => {
-  return card?.ebay_price ?? card?.tcg_price ?? card?.cardmarket_price ?? 0;
-};
 
 const getBinderLogoUrl = (item: BinderRecord): string | null => {
   return item.source_set_logo_url
@@ -320,7 +325,7 @@ type BinderCardProps = {
   item: BinderRecord;
   counts: BinderCardCountMap;
   masterSets: BinderMasterSetMap;
-  value: number | null;
+  value: BinderPricingSummary | null;
   customNameArtKey?: string | null;
   confirmDeleteBinder: (binder: BinderRecord) => void;
   index: number;
@@ -501,9 +506,6 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
   const isJapanese = normalizePokemonCardLanguage(item.language) === 'ja';
   const knownTotal = isOfficial ? getCountTotal(progress) : null;
   const percentage = isOfficial ? getBinderProgressPercent(progress) : 0;
-  const ownedLabel = isOfficial
-    ? getBinderOwnedLabel(progress)
-    : `${progress.owned ?? 0} card${(progress.owned ?? 0) === 1 ? '' : 's'} owned`;
   const innerWidth = Math.max(106, cardWidth - 16);
   const logoSource = isOfficial ? getBinderLogoSource(item) : null;
   const logoUrl = isOfficial && !logoSource ? getBinderLogoUrl(item) : null;
@@ -535,6 +537,11 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
   const fallbackNameLineHeight = isJapanese
     ? hasBinderLabel ? 18 : nameIsLong ? 18 : 20
     : hasBinderLabel ? 11 : nameIsLong ? 11 : 12;
+  const valueLabel = value?.total != null ? `£${value.total.toFixed(2)}` : 'Price unavailable';
+  const valueCaption = value
+    ? getCollectionPriceCoverageLabel(value)
+    : 'Checking stored prices';
+  const staleValue = value?.staleUnits ? ' · may be stale' : '';
 
   // Column-based rotation
   const col = index % columns;
@@ -732,10 +739,10 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
         ) : null}
         <View style={{ marginTop: 5, backgroundColor: STACKR_BINDER_COLORS.softLavender, borderRadius: 12, borderWidth: 1, borderColor: STACKR_BINDER_COLORS.border, paddingHorizontal: 8, paddingVertical: 6, gap: 2 }}>
           <Text numeric numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82} style={{ ...numericTextStyle, color: STACKR_BINDER_COLORS.primary, fontSize: 12.5, lineHeight: 15, fontWeight: '900', textAlign: 'center' }}>
-            {'\u00A3'}{(value ?? 0).toFixed(2)}
+            {valueLabel}
           </Text>
           <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={{ ...typeScale.caption, color: STACKR_BINDER_COLORS.textSoft, fontSize: 11.5, lineHeight: 14, fontWeight: '900', textAlign: 'center' }}>
-            {ownedLabel}
+            {valueCaption}{staleValue}
           </Text>
         </View>
       </View>
@@ -755,11 +762,15 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
 // MAIN COMPONENT
 // ===============================
 
-type BinderValueMap = Record<string, number>;
+type BinderPricingSummary = CollectionPricingSummary;
+type BinderValueMap = Record<string, BinderPricingSummary>;
 
 type BinderSummaryRow = {
+  id: string;
   binder_id: string;
   card_id: string;
+  api_card_id?: string | null;
+  card_name?: string | null;
   set_id: string | null;
   language?: PokemonCardLanguage | null;
   owned: boolean | null;
@@ -767,6 +778,9 @@ type BinderSummaryRow = {
   tcg_price: number | null;
   cardmarket_price: number | null;
   condition?: string | null;
+  owned_quantity?: number | null;
+  grade_company?: string | null;
+  grade?: string | null;
 };
 
 type BinderOfficialCardRow = {
@@ -936,7 +950,7 @@ export default function BinderLibraryScreen() {
     ] = await Promise.all([
       supabase
         .from('binder_cards')
-        .select('binder_id, card_id, set_id, language, owned, ebay_price, tcg_price, cardmarket_price, condition')
+        .select('id, binder_id, card_id, api_card_id, card_name, set_id, language, owned, owned_quantity, condition, grade_company, grade')
         .in('binder_id', binderIds),
       setIdCandidates.length
         ? supabase
@@ -965,12 +979,18 @@ export default function BinderLibraryScreen() {
     ]);
 
     if (cardRowsResult.error) throw cardRowsResult.error;
-    if (setRowsResult.error) throw setRowsResult.error;
+    if (setRowsResult.error) console.log('Binder set totals failed:', setRowsResult.error.message);
     if (canonicalSetRowsResult.error) console.log('Canonical binder set totals failed:', canonicalSetRowsResult.error.message);
-    if (officialCardsResult.error) throw officialCardsResult.error;
+    if (officialCardsResult.error) console.log('Binder official catalogue metadata failed:', officialCardsResult.error.message);
     if (canonicalOfficialCardsResult.error) console.log('Canonical binder official cards failed:', canonicalOfficialCardsResult.error.message);
 
     const rows = (cardRowsResult.data ?? []) as BinderSummaryRow[];
+    const canonicalOwnedRows: OwnedCardRow[] = currentUserId
+      ? await fetchOwnedCardRows().catch((error) => {
+        console.log('Binder canonical ownership failed; using binder ownership only', error);
+        return [];
+      })
+      : [];
     const officialCards = [
       ...((officialCardsResult.data ?? []) as BinderOfficialCardRow[]),
       ...((canonicalOfficialCardsResult.data ?? []) as any[]).map((card): BinderOfficialCardRow => ({
@@ -1000,9 +1020,12 @@ export default function BinderLibraryScreen() {
 
     const rowsByBinder = new Map<string, BinderSummaryRow[]>();
     const globalOwnedKeys = new Set(
-      rows
-        .filter((row) => row.owned)
-        .map((row) => `${getLanguageSetKey(row.set_id, row.language)}:${row.card_id}`)
+      [
+        ...rows
+          .filter((row) => row.owned)
+          .map((row) => `${getLanguageSetKey(row.set_id, row.language)}:${row.card_id}`),
+        ...canonicalOwnedRows.map((row) => `${getLanguageSetKey(row.set_id, null)}:${row.card_id}`),
+      ]
     );
     const cardsBySet = new Map<string, BinderOfficialCardRow[]>();
     const officialCardKeys = new Set<string>();
@@ -1050,6 +1073,7 @@ export default function BinderLibraryScreen() {
 
     const nextCounts: BinderCardCountMap = {};
     const nextValues: BinderValueMap = {};
+    const ownedRowsByBinder = new Map<string, BinderSummaryRow[]>();
 
     for (const binder of data) {
       const binderLanguage = inferBinderLanguage(binder.language, binder.source_set_id);
@@ -1058,6 +1082,7 @@ export default function BinderLibraryScreen() {
       const ownedRows = binderRows.filter((row) =>
         row.owned || globalOwnedKeys.has(`${getLanguageSetKey(row.set_id, row.language ?? binderLanguage)}:${row.card_id}`)
       );
+      ownedRowsByBinder.set(binder.id, ownedRows);
       const storedOfficialTotal = binder.source_set_id ? setTotals.get(binderSetKey) ?? null : null;
       const knownOfficialTotal = getKnownPokemonSetTotal(binder.source_set_id, binderLanguage) ?? null;
       const officialTotal = storedOfficialTotal && storedOfficialTotal > 0
@@ -1090,11 +1115,78 @@ export default function BinderLibraryScreen() {
         total,
         totalKnown: typeof total === 'number' && total > 0,
       };
+    }
 
-      nextValues[binder.id] = ownedRows.reduce((sum, row) => {
-        const base = getPreferredBinderCardPrice(row);
-        return sum + getEstimatedValue(base, row.condition ?? 'Near Mint');
-      }, 0);
+    const priceInputs: CollectionPriceInput[] = [];
+    const priceKeysByBinder = new Map<string, string[]>();
+    for (const binder of data) {
+      const keys: string[] = [];
+      const binderRows = rowsByBinder.get(binder.id) ?? [];
+      const normalizedBinderSetId = normalizePokemonSetId(stripSetLanguagePrefix(binder.source_set_id));
+      const rowForOwnedIdentity = (owned: OwnedCardRow) => binderRows.find((row) => (
+        row.card_id === owned.card_id
+        && normalizePokemonSetId(stripSetLanguagePrefix(row.set_id)) === normalizePokemonSetId(stripSetLanguagePrefix(owned.set_id))
+      )) ?? null;
+      const canonicalRowsForBinder = canonicalOwnedRows.filter((owned) => {
+        if (rowForOwnedIdentity(owned)) return true;
+        return binder.type === 'official'
+          && Boolean(normalizedBinderSetId)
+          && normalizePokemonSetId(stripSetLanguagePrefix(owned.set_id)) === normalizedBinderSetId;
+      });
+      const canonicalCardKeys = new Set(canonicalRowsForBinder.map((row) => (
+        `${normalizePokemonSetId(stripSetLanguagePrefix(row.set_id))}:${row.card_id}`
+      )));
+
+      for (const row of canonicalRowsForBinder) {
+        const metadata = rowForOwnedIdentity(row);
+        const key = `${binder.id}:owned:${row.id ?? [row.set_id, row.card_id, row.variant, row.condition, row.grade_company, row.grade].join(':')}`;
+        keys.push(key);
+        priceInputs.push({
+          key,
+          references: [metadata?.api_card_id, row.card_id, metadata?.card_name].filter((value): value is string => Boolean(value)),
+          quantity: Math.max(1, Number(row.quantity ?? 1) || 1),
+          language: metadata?.language ?? binder.language,
+          setId: metadata?.set_id ?? row.set_id ?? binder.source_set_id,
+          variantCode: row.variant,
+          productType: row.grade_company || row.grade || binder.card_mode === 'graded' ? 'graded_card' : 'raw_card',
+          condition: row.condition ?? metadata?.condition ?? binder.default_condition,
+          grader: row.grade_company ?? metadata?.grade_company ?? binder.default_grade_company,
+          grade: row.grade ?? metadata?.grade ?? binder.default_grade,
+        });
+      }
+
+      for (const row of ownedRowsByBinder.get(binder.id) ?? []) {
+        const canonicalCardKey = `${normalizePokemonSetId(stripSetLanguagePrefix(row.set_id))}:${row.card_id}`;
+        if (canonicalCardKeys.has(canonicalCardKey)) continue;
+        const key = `${binder.id}:legacy:${row.id}`;
+        keys.push(key);
+        priceInputs.push({
+          key,
+          references: [row.api_card_id, row.card_id, row.card_name].filter((value): value is string => Boolean(value)),
+          quantity: Math.max(1, Number(row.owned_quantity ?? 1) || 1),
+          language: row.language ?? binder.language,
+          setId: row.set_id ?? binder.source_set_id,
+          productType: row.grade_company || row.grade || binder.card_mode === 'graded' ? 'graded_card' : 'raw_card',
+          condition: row.condition ?? binder.default_condition,
+          grader: row.grade_company ?? binder.default_grade_company,
+          grade: row.grade ?? binder.default_grade,
+        });
+      }
+      priceKeysByBinder.set(binder.id, keys);
+    }
+
+    const prices = await loadCollectionPrices(priceInputs);
+    const pricesByKey = new Map(prices.map((price) => [price.key, price]));
+    for (const binder of data) {
+      const priceRows = (priceKeysByBinder.get(binder.id) ?? []).map((key) => pricesByKey.get(key)).filter(Boolean);
+      nextValues[binder.id] = summariseCollectionPricing(priceRows.map((price) => ({
+        quantity: price!.quantity,
+        centralValue: price!.central,
+        evidenceStatus: price!.status,
+        freshness: price!.freshness,
+        calculatedAt: price!.calculatedAt,
+        staleAfter: price!.staleAfter,
+      })));
     }
 
     return {
@@ -1234,7 +1326,8 @@ export default function BinderLibraryScreen() {
     };
 
     const getOwned = (id: string) => counts[id]?.owned ?? 0;
-    const getValue = (id: string) => values[id] ?? 0;
+    // Unknown values sort after known prices; do not treat missing estimates as £0.
+    const getValue = (id: string) => values[id]?.total ?? Number.NEGATIVE_INFINITY;
 
     switch (sortBy) {
       case 'alphabetical':

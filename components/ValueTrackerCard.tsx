@@ -18,12 +18,13 @@ import { Text } from './Text';
 import { useTheme } from './theme-context';
 import { numericTextStyle, tabularNumberStyle, typeScale } from '../lib/typography';
 import type { MintyEvidenceSource, MintyInsight, MintyInsightFeedback } from '../lib/mintyInsights';
+import type { CollectionPricingState } from '../lib/collectionPricingState';
 
 type CurrencyCode = 'GBP' | 'USD' | 'EUR';
 type TrendRange = '7D' | '30D';
 
 export type ValueTrackerCardProps = {
-  totalValue: number;
+  totalValue: number | null;
   currency?: CurrencyCode;
   percentageChange?: number;
   absoluteChange?: number;
@@ -32,6 +33,9 @@ export type ValueTrackerCardProps = {
   trendRange?: TrendRange;
   onTrendRangeChange?: (range: TrendRange) => void;
   ownedCount?: number;
+  pricingState?: CollectionPricingState;
+  pricingCoverageLabel?: string | null;
+  pricingWarning?: string | null;
   mintyInsight?: MintyInsight | null;
   mintyInsightUpdating?: boolean;
   mintyInsightError?: string | null;
@@ -144,30 +148,9 @@ function alignTrendWithDirection(values: number[], direction: number) {
   return values;
 }
 
-function buildDisplayTrend(
-  values: number[],
-  totalValue: number,
-  absoluteChange: number,
-  percentageChange: number
-) {
+function buildDisplayTrend(values: number[], absoluteChange: number, percentageChange: number) {
   const direction = getChangeDirection(absoluteChange, percentageChange);
-
-  if (values.length >= 2) return alignTrendWithDirection(values, direction);
-  if (values.length === 1) return [values[0], values[0]];
-  if (!Number.isFinite(totalValue) || totalValue <= 0) return [];
-
-  const count = 6;
-  const previousValue = Number.isFinite(absoluteChange) && absoluteChange !== 0
-    ? Math.max(0, totalValue - absoluteChange)
-    : totalValue * (direction < 0 ? 1.03 : direction > 0 ? 0.97 : 1);
-
-  return Array.from({ length: count }, (_, index) => {
-    const progress = index / (count - 1);
-    const baseline = previousValue + (totalValue - previousValue) * progress;
-    const wiggle = Math.sin(index * 1.7) * totalValue * 0.003;
-    const value = index === count - 1 || direction === 0 ? baseline : baseline + wiggle;
-    return Number(Math.max(0, value).toFixed(2));
-  });
+  return values.length >= 2 ? alignTrendWithDirection(values, direction) : [];
 }
 
 function getSmoothLinePath(points: { x: number; y: number }[]) {
@@ -274,6 +257,9 @@ export function ValueTrackerCard({
   trendRange = '7D',
   onTrendRangeChange,
   ownedCount,
+  pricingState,
+  pricingCoverageLabel,
+  pricingWarning,
   mintyInsight,
   mintyInsightUpdating = false,
   mintyInsightError = null,
@@ -290,9 +276,9 @@ export function ValueTrackerCard({
   const { width: screenWidth } = useWindowDimensions();
   const isCompactLayout = screenWidth < 360;
   const chartWidth = isCompactLayout
-    ? Math.max(220, Math.min(screenWidth - 72, 300))
-    : 126;
-  const chartHeight = isCompactLayout ? 58 : 54;
+    ? Math.max(190, Math.min(screenWidth - 96, 260))
+    : 108;
+  const chartHeight = isCompactLayout ? 46 : 40;
   const values = useMemo(() => getFiniteTrend(trendData), [trendData]);
   const derivedAbsoluteChange = values.length >= 2 ? values[values.length - 1] - values[0] : 0;
   const derivedPercent = values.length >= 2 && values[0] !== 0
@@ -305,11 +291,13 @@ export function ValueTrackerCard({
   const changeIcon = signalDirection > 0 ? 'arrow-up' : signalDirection < 0 ? 'arrow-down' : 'remove';
   const changeColor = '#6938F5';
   const changeBackground = '#F7F3FF';
-  const hasValue = Number.isFinite(totalValue) && totalValue > 0;
-  const isEmpty = !isLoading && !error && !hasValue;
+  const hasValue = totalValue != null && Number.isFinite(totalValue);
+  const hasTrackedCards = (ownedCount ?? 0) > 0;
+  const isEmpty = !isLoading && !hasTrackedCards && pricingState !== 'unavailable';
+  const isUnavailable = !isLoading && hasTrackedCards && !hasValue;
   const displayTrend = useMemo(
-    () => buildDisplayTrend(values, totalValue, displayChange, displayPercent),
-    [displayChange, displayPercent, totalValue, values]
+    () => buildDisplayTrend(values, displayChange, displayPercent),
+    [displayChange, displayPercent, values]
   );
   const marketRefresh = React.useRef(new Animated.Value(1)).current;
   const hasAnimatedMarketRefresh = React.useRef(false);
@@ -317,7 +305,7 @@ export function ValueTrackerCard({
   const fallbackMintyGeneratedAt = React.useMemo(() => new Date().toISOString(), []);
   const marketRefreshKey = useMemo(
     () => [
-      Math.round((Number.isFinite(totalValue) ? totalValue : 0) * 100),
+      Math.round((totalValue != null && Number.isFinite(totalValue) ? totalValue : 0) * 100),
       Math.round((Number.isFinite(displayChange) ? displayChange : 0) * 100),
       Math.round((Number.isFinite(displayPercent) ? displayPercent : 0) * 10),
       displayTrend.map((value) => Math.round(value * 100)).join(','),
@@ -332,17 +320,21 @@ export function ValueTrackerCard({
   });
   const chartStroke = '#6938F5';
   const accessibilityChange = `${formatSignedCurrency(displayChange, currency)}, ${formatSignedPercent(displayPercent)} over ${changePeriodLabel}`;
-  const interactive = Boolean(onPress) && !isLoading && !error && !isEmpty;
-  const showTrendPanel = hasValue && !isLoading && !error;
+  const interactive = Boolean(onPress) && !isLoading && !isEmpty;
+  const hasTrendSignal = displayTrend.length >= 2;
+  const showTrendPanel = hasValue && hasTrendSignal && !isLoading;
+  const trackedFallbackCopy = hasTrendSignal
+    ? `Your tracked collection is ${signalWord}. I will focus on the cards you own, the cards you want, and binder gaps before broader market noise.`
+    : 'Your cards are tracked, but there are not yet two comparable stored valuation snapshots. I will not infer movement until the history is real.';
   const fallbackInsight: MintyInsight = {
     id: 'collection-market-fallback',
     title: 'Collection check-in',
     body: ownedCount && ownedCount > 0
-      ? `Your tracked collection is ${signalWord}. I will focus on the cards you own, the cards you want, and binder gaps before broader market noise.`
+      ? trackedFallbackCopy
       : 'Start adding owned or wanted cards and I can make this advice specific to your collection goals.',
     action_label: ownedCount && ownedCount > 0 ? 'Review collection' : 'Discover cards',
     explanation: ownedCount && ownedCount > 0
-      ? `Your tracked collection is ${signalWord}. I will focus on the cards you own, the cards you want, and binder gaps before broader market noise.`
+      ? trackedFallbackCopy
       : 'Start adding owned or wanted cards and I can make this advice specific to your collection goals.',
     evidence: [
       {
@@ -360,7 +352,9 @@ export function ValueTrackerCard({
     confidence: Math.abs(displayPercent) < 1 ? 'Low' : 'Medium',
     confidence_score: Math.abs(displayPercent) < 1 ? 32 : 56,
     personalisation_reason: ownedCount && ownedCount > 0
-      ? `Based on ${ownedCount} owned card${ownedCount === 1 ? '' : 's'} and current value movement.`
+      ? hasTrendSignal
+        ? `Based on ${ownedCount} owned card${ownedCount === 1 ? '' : 's'} and current value movement.`
+        : `Based on ${ownedCount} owned card${ownedCount === 1 ? '' : 's'}; movement is withheld until comparable history exists.`
       : 'No collection behaviour has been linked yet.',
     related_user_goal: 'watching_market',
     related_cards: [],
@@ -377,7 +371,7 @@ export function ValueTrackerCard({
       market_movement_strength: Math.min(100, Math.round(Math.abs(displayPercent) * 12)),
       confidence_score: Math.abs(displayPercent) < 1 ? 32 : 56,
       potential_user_value: 48,
-      freshness: 68,
+      freshness: hasTrendSignal ? 68 : 0,
       actionability: 44,
     },
   };
@@ -452,7 +446,7 @@ export function ValueTrackerCard({
       );
     }
 
-    if (error) {
+    if (error && !hasValue) {
       return (
         <View style={styles.vaultMessageContent}>
           <View style={styles.vaultMessageIcon}>
@@ -496,6 +490,28 @@ export function ValueTrackerCard({
       );
     }
 
+    if (isUnavailable) {
+      return (
+        <View style={styles.vaultMessageContent}>
+          <View style={styles.vaultMessageIcon}>
+            <Ionicons name="analytics-outline" size={22} color="#6938F5" />
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={[styles.vaultMessageTitle, { color: theme.colors.text }]}>No stored market estimate yet</Text>
+            <Text style={[styles.vaultMessageCopy, { color: theme.colors.textSoft }]} numberOfLines={2}>
+              {pricingWarning || 'Your cards are tracked. Stored market estimates are not available yet.'}
+            </Text>
+          </View>
+          {onRetry ? (
+            <TouchableOpacity onPress={onRetry} activeOpacity={0.82} style={styles.vaultStateButton}>
+              <Ionicons name="refresh" size={15} color="#FFFFFF" />
+              <Text style={styles.vaultStateButtonText}>Refresh</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      );
+    }
+
     return (
       <View style={[styles.vaultValueMainRow, isCompactLayout && styles.vaultValueMainRowCompact]}>
         <View style={styles.vaultValueColumn}>
@@ -513,17 +529,27 @@ export function ValueTrackerCard({
               },
             ]}
           >
-            {formatCurrency(totalValue, currency)}
+            {formatCurrency(totalValue ?? 0, currency)}
           </Text>
-          <View style={[styles.vaultChangeBadge, isCompactLayout && styles.vaultChangeBadgeCompact, { backgroundColor: changeBackground }]}>
-            <ValueMovement
-              icon={changeIcon}
-              amount={`${formatSignedCurrency(displayChange, currency)} today`}
-              percentage={`${formatSignedPercent(displayPercent)} ${changePeriodLabel}`}
-              accentColor={changeColor}
-              metaColor={theme.colors.textSoft}
-            />
-          </View>
+          <Text style={[styles.vaultKnownValueLabel, { color: theme.colors.textSoft }]}>
+            {pricingState === 'partial' ? 'Known subtotal' : 'Stored market estimate'}
+          </Text>
+          {showTrendPanel ? (
+            <View style={[styles.vaultChangeBadge, isCompactLayout && styles.vaultChangeBadgeCompact, { backgroundColor: changeBackground }]}>
+              <ValueMovement
+                icon={changeIcon}
+                amount={`${formatSignedCurrency(displayChange, currency)} today`}
+                percentage={`${formatSignedPercent(displayPercent)} ${changePeriodLabel}`}
+                accentColor={changeColor}
+                metaColor={theme.colors.textSoft}
+              />
+            </View>
+          ) : null}
+          {pricingWarning ? (
+            <Text style={[styles.vaultPricingWarning, { color: theme.colors.textSoft }]} numberOfLines={2}>
+              {pricingWarning}
+            </Text>
+          ) : null}
         </View>
 
         {showTrendPanel ? (
@@ -551,13 +577,18 @@ export function ValueTrackerCard({
                 d={chartPath.linePath}
                 fill="none"
                 stroke={chartStroke}
-                strokeWidth={2.6}
+                strokeWidth={1.8}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </Svg>
           </View>
-        ) : null}
+        ) : (
+          <View style={[styles.vaultHistoryBuilding, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+            <Ionicons name="pulse-outline" size={15} color="#6938F5" />
+            <Text style={[styles.vaultHistoryBuildingText, { color: theme.colors.textSoft }]}>History building</Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -571,7 +602,7 @@ export function ValueTrackerCard({
         accessibilityRole={interactive ? 'button' : undefined}
         accessibilityLabel={
           hasValue
-            ? `Total collection value ${formatCurrency(totalValue, currency)}. ${accessibilityChange}.`
+            ? `Known collection value ${formatCurrency(totalValue ?? 0, currency)}.${showTrendPanel ? ` ${accessibilityChange}.` : ' Price history is building.'}`
             : undefined
         }
         style={styles.vaultTouchable}
@@ -589,7 +620,7 @@ export function ValueTrackerCard({
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={[styles.vaultEyebrow, { color: theme.colors.textSoft }]}>Collection Value</Text>
               <Text style={[styles.vaultSourceText, { color: theme.colors.textSoft }]}>
-                {ownedCount ? `${ownedCount} card${ownedCount === 1 ? '' : 's'} tracked` : 'Updated today'}
+                {pricingCoverageLabel || (ownedCount ? `${ownedCount} card${ownedCount === 1 ? '' : 's'} tracked` : 'No cards tracked')}
               </Text>
             </View>
             {showTrendPanel ? (
@@ -989,6 +1020,20 @@ const styles = StyleSheet.create({
     ...tabularNumberStyle,
     fontWeight: '900',
   },
+  vaultKnownValueLabel: {
+    ...typeScale.micro,
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: '700',
+    marginTop: 1,
+  },
+  vaultPricingWarning: {
+    ...typeScale.micro,
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '600',
+    marginTop: 6,
+  },
   vaultChangeBadge: {
     alignSelf: 'flex-start',
     minHeight: 32,
@@ -1042,6 +1087,23 @@ const styles = StyleSheet.create({
   },
   vaultChartPanelCompact: {
     alignSelf: 'stretch',
+  },
+  vaultHistoryBuilding: {
+    width: 108,
+    minHeight: 42,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+  },
+  vaultHistoryBuildingText: {
+    ...typeScale.micro,
+    fontSize: 9,
+    lineHeight: 12,
+    fontWeight: '800',
   },
   vaultInsightRow: {
     minHeight: 64,
