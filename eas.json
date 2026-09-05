@@ -94,6 +94,35 @@
         "EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK": "false"
       }
     },
+    "production-owner": {
+      "extends": "production",
+      "distribution": "store",
+      "environment": "production",
+      "channel": "owner-recognition",
+      "env": {
+        "STACKR_MOBILE_APP_VARIANT": "production",
+        "STACKR_MOBILE_ENVIRONMENT": "production",
+        "STACKR_MOBILE_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
+        "STACKR_MOBILE_API_URL": "https://api.stackrtcg.com",
+        "STACKR_MOBILE_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
+        "STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt",
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
+        "EXPO_PUBLIC_BETA_TRADE_DEMO_MODE": "true",
+        "EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED": "false",
+        "EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED": "false",
+        "EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS": "false",
+        "EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK": "false",
+        "EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK": "false",
+        "EXPO_PUBLIC_STACKR_API_ENABLED": "true",
+        "EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED": "true",
+        "EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY": "false",
+        "EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED": "false",
+        "EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED": "false",
+        "EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE": "false",
+        "STACKR_OWNER_RECOGNITION_BUILD": "true",
+        "EXPO_PUBLIC_OWNER_RECOGNITION_ENABLED": "true"
+      }
+    },
     "production": {
       "autoIncrement": true,
       "environment": "production",

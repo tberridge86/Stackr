@@ -17,6 +17,7 @@ import { Text } from '../components/Text';
 import { useAppMode } from '../components/app-mode-context';
 import { useTheme } from '../components/theme-context';
 import { supabase } from '../lib/supabase';
+import { OWNER_PRIVATE_RECOGNITION_ENABLED } from '../lib/ownerRecognitionCore';
 
 const SETTINGS_ICONS = {
   account: require('../assets/rev2/03-ui-illustrations/hero-icons/profile.png'),
@@ -91,6 +92,11 @@ export default function SettingsScreen() {
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <StackrBackdrop />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 72 }} showsVerticalScrollIndicator={false}>
+        {OWNER_PRIVATE_RECOGNITION_ENABLED && <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/scan/owner')}
+          style={{ padding: 16, marginBottom: 14, backgroundColor: theme.colors.card, borderRadius: 16 }}>
+          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Private recognition &amp; my capture dataset</Text>
+          <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>Owner account only · SigLIP · manual review</Text>
+        </TouchableOpacity>}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 }}>
           <StackrBackButton onPress={() => router.back()} />
           <View style={{ flex: 1 }}>
