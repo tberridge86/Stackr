@@ -13,7 +13,7 @@ on:
         default: 5
         type: number
       monitor_minutes:
-        description: Observation period before the workflow succeeds
+        description: Bounded EAS client-insight observation period
         required: true
         default: 15
         type: number
@@ -22,7 +22,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: stackr-production-mobile-update
+  group: stackr-production-deployment
   cancel-in-progress: false
 
 jobs:
@@ -33,6 +33,7 @@ jobs:
     environment: production
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      STACKR_MOBILE_UPDATE_MESSAGE: Stackr mobile production ${{ github.sha }} run ${{ github.run_id }}
       STACKR_MOBILE_APP_VARIANT: production
       STACKR_MOBILE_ENVIRONMENT: production
       STACKR_MOBILE_PRICE_API_URL: ${{ vars.STACKR_BACKEND_URL }}
@@ -82,14 +83,24 @@ jobs:
           CANARY_PERCENT: ${{ inputs.canary_percent }}
           MONITOR_MINUTES: ${{ inputs.monitor_minutes }}
         run: |
+          if ! [[ "$CANARY_PERCENT" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Production mobile canary percentage must be a decimal integer."
+            exit 1
+          fi
           if [ "$CANARY_PERCENT" -lt 1 ] || [ "$CANARY_PERCENT" -gt 10 ]; then
             echo "Production mobile canary must be between 1 and 10 percent."
+            exit 1
+          fi
+          if ! [[ "$MONITOR_MINUTES" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Monitor period must be a decimal integer."
             exit 1
           fi
           if [ "$MONITOR_MINUTES" -lt 1 ] || [ "$MONITOR_MINUTES" -gt 60 ]; then
             echo "Monitor period must be between 1 and 60 minutes."
             exit 1
           fi
+          printf 'STACKR_EAS_CANARY_PERCENT=%s\n' "$CANARY_PERCENT" >> "$GITHUB_ENV"
+          printf 'STACKR_EAS_MONITOR_MINUTES=%s\n' "$MONITOR_MINUTES" >> "$GITHUB_ENV"
 
       - name: Validate production gateway readiness
         run: |
@@ -132,6 +143,12 @@ jobs:
               --require-safe-release-flags \
               | jq -er '.runtimeVersion | select(type == "string")'
           )"
+          case "$runtime_version" in
+            ''|*[!A-Za-z0-9._-]*)
+              echo "Production runtime version contains unsupported characters."
+              exit 1
+              ;;
+          esac
           npx --yes eas-cli@21.4.0 build:list \
             --status finished \
             --channel production \
@@ -152,11 +169,10 @@ jobs:
             --required-platforms=android,ios \
             --github-env="$GITHUB_ENV" \
             > "$RUNNER_TEMP/eas-compatible-builds-attestation.json"
+          printf 'STACKR_EAS_ATTESTED_RUNTIME_VERSION=%s\n' "$runtime_version" >> "$GITHUB_ENV"
           rm -f "$RUNNER_TEMP/eas-compatible-builds.raw.json"
 
       - name: Publish mobile canary
-        env:
-          CANARY_PERCENT: ${{ inputs.canary_percent }}
         run: |
           env \
             -u STACKR_MOBILE_APP_VARIANT \
@@ -179,8 +195,12 @@ jobs:
             -u EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED \
             -u EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE \
             npx --yes eas-cli@21.4.0 env:exec production \
-              'npm run mobile:verify-runtime -- --expected-environment=production --expected-app-variant=production --require-explicit --require-safe-release-flags && npx --yes eas-cli@21.4.0 update --channel production --platform all --rollout-percentage "$CANARY_PERCENT" --message "Stackr mobile production $GITHUB_SHA" --json --non-interactive > "$RUNNER_TEMP/eas-update.json"' \
+              'npm run mobile:verify-runtime -- --expected-environment=production --expected-app-variant=production --require-explicit --require-safe-release-flags && npx --yes eas-cli@21.4.0 update --channel production --platform all --rollout-percentage "$STACKR_EAS_CANARY_PERCENT" --message "$STACKR_MOBILE_UPDATE_MESSAGE" --json --non-interactive > "$RUNNER_TEMP/eas-update.json"' \
               --non-interactive
+          printf 'STACKR_MOBILE_UPDATE_COMMAND_SUCCEEDED=true\n' >> "$GITHUB_ENV"
+
+      - name: Attest published mobile canary
+        run: |
           node scripts/deploy/capture-eas-update-group.mjs \
             --file="$RUNNER_TEMP/eas-update.json" \
             --github-env="$GITHUB_ENV" \
@@ -189,14 +209,51 @@ jobs:
           node scripts/deploy/capture-eas-update-group.mjs \
             --file="$RUNNER_TEMP/eas-update.json" \
             --github-env="$GITHUB_ENV" \
-            --expected-runtime="$(node -p "require('./app.json').expo.version")" \
+            --expected-runtime="$STACKR_EAS_ATTESTED_RUNTIME_VERSION" \
             --expected-git-sha="$GITHUB_SHA" \
-            --expected-message="Stackr mobile production $GITHUB_SHA" \
+            --expected-message="$STACKR_MOBILE_UPDATE_MESSAGE" \
             --expected-platforms=android,ios \
             > "$RUNNER_TEMP/eas-update-attestation.json"
 
-      - name: Upload production mobile deployment attestation
-        if: ${{ !cancelled() && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true' }}
+      - name: Observe EAS mobile client health
+        run: |
+          mkdir -p "$RUNNER_TEMP/eas-update-insights"
+          deadline=$((SECONDS + STACKR_EAS_MONITOR_MINUTES * 60))
+          attempt=0
+          while true; do
+            attempt=$((attempt + 1))
+            insights_file="$RUNNER_TEMP/eas-update-insights/attempt-$attempt.json"
+            assessment_file="$RUNNER_TEMP/eas-update-insights/attempt-$attempt-assessment.json"
+            if npx --yes eas-cli@21.4.0 update:insights "$STACKR_EAS_UPDATE_GROUP_ID" \
+              --days 1 --json --non-interactive > "$insights_file"; then
+              node scripts/deploy/verify-eas-update-insights.mjs \
+                --file="$insights_file" \
+                --expected-group="$STACKR_EAS_UPDATE_GROUP_ID" \
+                --required-platforms=android,ios \
+                --min-launches=1 \
+                --min-unique-users=1 \
+                --max-failed-launches=0 \
+                --max-crash-rate-percent=0 \
+                --allow-pending-adoption \
+                > "$assessment_file"
+              if jq -e '.healthy == true' "$assessment_file" > /dev/null; then
+                exit 0
+              fi
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "No healthy EAS client adoption was observed within the bounded canary window."
+              exit 1
+            fi
+            remaining_seconds=$((deadline - SECONDS))
+            wait_seconds=60
+            if [ "$remaining_seconds" -lt "$wait_seconds" ]; then
+              wait_seconds="$remaining_seconds"
+            fi
+            sleep "$wait_seconds"
+          done
+
+      - name: Upload production mobile publication evidence
+        if: ${{ always() && (env.STACKR_MOBILE_UPDATE_COMMAND_SUCCEEDED == 'true' || env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: stackr-production-mobile-attestation-${{ github.run_id }}
@@ -209,19 +266,25 @@ jobs:
           retention-days: 90
           compression-level: 9
 
-      - name: Observe production mobile canary
-        env:
-          MONITOR_MINUTES: ${{ inputs.monitor_minutes }}
-        run: |
-          sleep "$((MONITOR_MINUTES * 60))"
-          curl --fail --silent --show-error "$STACKR_MOBILE_API_URL/v1/health" > /dev/null
-          curl --fail --silent --show-error "$STACKR_MOBILE_API_URL/v1/ready" > /dev/null
+      - name: Upload EAS mobile client-health evidence
+        if: ${{ always() && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-mobile-insights-${{ github.run_id }}
+          path: ${{ runner.temp }}/eas-update-insights
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 9
 
       - name: Roll back mobile update after a failed canary
-        if: failure() && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true'
+        if: ${{ failure() && (env.STACKR_MOBILE_UPDATE_COMMAND_SUCCEEDED == 'true' || env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true') }}
         continue-on-error: true
-        run: >-
-          npx --yes eas-cli@21.4.0 update:revert-update-rollout
-          --group "$STACKR_EAS_UPDATE_GROUP_ID"
-          --message "Automatic rollback for GitHub run $GITHUB_RUN_ID"
-          --non-interactive
+        run: |
+          rollback_target=(--channel production)
+          if [[ "$STACKR_EAS_UPDATE_GROUP_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+            rollback_target=(--group "$STACKR_EAS_UPDATE_GROUP_ID")
+          fi
+          npx --yes eas-cli@21.4.0 update:revert-update-rollout \
+            "${rollback_target[@]}" \
+            --message "Automatic rollback for GitHub run $GITHUB_RUN_ID" \
+            --non-interactive

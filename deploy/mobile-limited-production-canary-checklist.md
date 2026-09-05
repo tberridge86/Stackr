@@ -60,11 +60,15 @@ The protected GitHub `production` environment must map `STACKR_BACKEND_URL=https
 - [ ] Workflow input `confirmation` is exactly `PUBLISH MOBILE CANARY`.
 - [ ] `canary_percent=5` and `monitor_minutes=15` for the initial cohort.
 - [ ] The workflow has no migration, catalogue, Railway, gateway, model, index, or store-submission inputs and must not invoke those release paths.
+- [ ] EAS update insights observe at least one launch and one unique user across the iOS/Android group, with zero failed launches and a zero-percent reported crash rate; malformed evidence, no adoption before timeout, or a threshold breach fails closed and reverses the rollout.
+- [ ] Raw EAS insights and the threshold assessment are retained with the update/build attestation. Gateway health is only a pre-publish dependency check and is not treated as mobile-client health.
+- [ ] The authenticated 393 × 852 functional smoke remains a separate reviewer requirement: EAS insights cannot prove that login, Home, Collection, prices, search, or images behave correctly.
+- [ ] During the bounded canary window, an authorised reviewer repeats the authenticated functional smoke on a compatible production device build that received the update and records the update group plus pass/fail result; this human evidence is not automated by the workflow.
 - [ ] A reviewer records the EAS update group, platforms, runtime, commit SHA, and five-percent rollout evidence.
 
 ## Hold and rollback
 
 - [ ] Hold the canary on any login, price-history, collection, image, crash, or cross-environment error.
 - [ ] Do not promote beyond five percent until the 15-minute observation window and reviewer smoke pass.
-- [ ] If the canary fails, use the workflow's attested EAS rollout-revert step and record the update group ID and reason.
+- [ ] If the canary fails, the workflow reverses the attested update group. If publication succeeded but its JSON could not be parsed, the serialized production-deployment lock allows the supported `production` channel rollback fallback to target the latest rollout.
 - [ ] Store submission remains a separate, explicitly approved action.
