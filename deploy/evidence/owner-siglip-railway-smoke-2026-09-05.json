@@ -138,6 +138,8 @@
     "taskRailwaySshKeyRevoked": true,
     "taskLocalSshPrivateAndPublicCopiesDeleted": true,
     "existingUserSshKeysChanged": false,
-    "serviceTokenRetainedForAuthorizedBackendHandoff": true
+    "serviceTokenRetainedForAuthorizedBackendHandoff": false,
+    "temporaryLocalHandoffCredentialRemovedAfterBackendVerification": true,
+    "deployedRailwayCredentialChangedByCleanup": false
   }
 }
