@@ -482,12 +482,13 @@ async function assertSiblingVariantIsNotAnImageFallback() {
       assert.equal(schema, 'api');
       return {
         from(table) {
-          assert.equal(table, 'catalogue_cards');
+          assert.ok(['catalogue_cards', 'catalogue_sets'].includes(table));
           return {
             select() { return this; },
             eq() { return this; },
             order() { return this; },
             limit() { return this; },
+            maybeSingle() { return Promise.resolve({ data: { catalogue_version_id: catalogueVersionId }, error: null }); },
             then(resolve, reject) {
               return Promise.resolve({ data: [cardRow], error: null }).then(resolve, reject);
             },
@@ -564,6 +565,7 @@ async function assertHydrationPaginatesAssetRows() {
             eq() { return this; },
             order() { return this; },
             limit() { return this; },
+            maybeSingle() { return Promise.resolve({ data: { catalogue_version_id: catalogueVersionId }, error: null }); },
             then(resolve, reject) {
               return Promise.resolve({ data: [cardRow], error: null }).then(resolve, reject);
             },

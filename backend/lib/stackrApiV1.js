@@ -1171,6 +1171,18 @@ export function createCatalogueV1Service(options) {
         .limit(limit + 1);
       query = applyLanguageFilter(query, input.language);
       query = applyIdCursor(query, 'variant_id', input.cursor);
+      // Bind the card read to the set's currently published catalogue. Without
+      // this predicate Postgres can walk every published version's variants
+      // before applying the set filter, even for a tiny binder page.
+      const publishedSet = await queryMaybeOne(table(supabase, 'api', 'catalogue_sets')
+        .select('catalogue_version_id')
+        .eq('set_id', setId)
+        .maybeSingle());
+      if (!publishedSet) return { cards: [], pagination: { limit, nextCursor: null } };
+      if (!isUuid(publishedSet.catalogue_version_id)) {
+        throw new ApiError(502, 'catalogue_version_unavailable', 'The published set catalogue version is unavailable.');
+      }
+      query = query.eq('catalogue_version_id', publishedSet.catalogue_version_id);
       const { rows, pagination } = pageFromRows(await queryRows(query), limit, 'variant_id');
       const cards = groupCardRows(sortCardsForDisplay(rows));
       return { cards: await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions), pagination };
