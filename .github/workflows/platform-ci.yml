@@ -15,6 +15,9 @@ concurrency:
 
 jobs:
   release-candidate-gate:
+    # WP32 remains an explicit, separately-invoked no-go assessment. It must not
+    # block unrelated mobile release maintenance after the frozen candidate.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
