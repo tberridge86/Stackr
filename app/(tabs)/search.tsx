@@ -32,9 +32,10 @@ import {
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { ScrollToEndButton } from '../../components/ScrollToEndButton';
 import {
-  POKEMON_LANGUAGE_DESCRIPTORS,
+  getPokemonLanguageDescriptor,
+  POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
   PokemonLanguageFlagIcon,
-  type PokemonLanguageBadgeCode,
+  type PokemonCatalogueLanguageCode,
 } from '../../components/PokemonLanguageBadge';
 import { useTheme } from '../../components/theme-context';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
@@ -81,7 +82,7 @@ import { sanitizeMarketplaceListingPresentationFields } from '../../lib/marketpl
 type SearchCategory = 'all' | 'cards' | 'sets' | 'sealed' | 'graded' | 'collectors' | ListingCategoryKey;
 type SearchSortKey = 'relevance' | 'priceAsc' | 'priceDesc' | 'rarity' | 'set' | 'gradeDesc' | 'newest';
 type SearchPriceBucket = 'all' | 'under10' | '10to50' | '50to100' | '100plus';
-type SearchLanguageFilter = 'all' | 'en' | 'ja' | 'zh-cn' | 'zh-tw';
+type SearchLanguageFilter = 'all' | PokemonCatalogueLanguageCode;
 
 type CardResult = {
   id: string;
@@ -204,12 +205,13 @@ const SEARCH_PRICE_BUCKETS: { key: SearchPriceBucket; label: string }[] = [
   { key: '100plus', label: '£100+' },
 ];
 
-const SEARCH_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string; flagLanguage?: PokemonLanguageBadgeCode }[] = [
+const SEARCH_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string; flagLanguage?: PokemonCatalogueLanguageCode }[] = [
   { key: 'all', label: 'Any language' },
-  { key: 'en', label: POKEMON_LANGUAGE_DESCRIPTORS.en.label, flagLanguage: 'en' },
-  { key: 'ja', label: POKEMON_LANGUAGE_DESCRIPTORS.ja.label, flagLanguage: 'ja' },
-  { key: 'zh-cn', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-cn'].label, flagLanguage: 'zh-cn' },
-  { key: 'zh-tw', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-tw'].label, flagLanguage: 'zh-tw' },
+  ...POKEMON_CATALOGUE_LANGUAGE_OPTIONS.map((option) => ({
+    key: option.key,
+    label: option.label,
+    flagLanguage: option.key,
+  })),
 ];
 
 const SEARCH_GRADER_FILTERS = ['PSA', 'BGS', 'CGC', 'TAG', 'ACE'];
@@ -312,10 +314,7 @@ function normaliseFilterValue(value: string | number | null | undefined) {
 
 function normaliseLanguageCode(value: string | null | undefined) {
   const normalised = normaliseFilterValue(value);
-  if (normalised === 'ja' || normalised === 'jp' || normalised === 'japanese') return 'ja';
-  if (normalised === 'zh tw' || normalised === 'zh' || normalised === 'zhtw' || normalised === 'chinese' || normalised === 'traditional chinese' || normalised === 'tc' || normalised === 'tw' || normalised === 'taiwan') return 'zh-tw';
-  if (normalised === 'en' || normalised === 'english') return 'en';
-  return normalised;
+  return getPokemonLanguageDescriptor(value)?.code ?? normalised;
 }
 
 function getRarityRank(rarity: string | null | undefined) {

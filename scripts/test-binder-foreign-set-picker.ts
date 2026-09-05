@@ -7,8 +7,10 @@ import {
   stripPokemonSetLanguagePrefix,
 } from '../lib/pokemonSetIdentity';
 import {
+  cacheNonEmptyCatalogueRows,
   firstNonEmptyCatalogueRows,
   preferNonEmptyCatalogueRows,
+  readNonEmptyCatalogueRows,
 } from '../lib/resilientCatalogueRead';
 
 const languageCases = [
@@ -96,8 +98,44 @@ async function verifyReadFallback() {
   assert.ok(Date.now() - startedAt < 1000, 'a stalled preferred read must reach the fallback promptly');
 }
 
+function verifyNonEmptyCatalogueCachePolicy() {
+  const cache = new Map<string, { expiresAt: number; value: string[] }>();
+  const expiresAt = Date.now() + 60_000;
+
+  cache.set('sets:zh-tw:canonical-api', { expiresAt, value: [] });
+  assert.equal(
+    readNonEmptyCatalogueRows(cache, 'sets:zh-tw:canonical-api'),
+    null,
+    'an empty entry retained by an older app bundle must be ignored immediately',
+  );
+  assert.equal(cache.has('sets:zh-tw:canonical-api'), false, 'the legacy empty entry must be deleted');
+
+  assert.equal(
+    cacheNonEmptyCatalogueRows(cache, 'sets:zh-cn:canonical-api', ['CSV1C'], expiresAt),
+    true,
+    'a populated Simplified-Chinese catalogue response must be cacheable',
+  );
+  assert.deepEqual(cache.get('sets:zh-cn:canonical-api'), { expiresAt, value: ['CSV1C'] });
+  assert.deepEqual(readNonEmptyCatalogueRows(cache, 'sets:zh-cn:canonical-api'), ['CSV1C']);
+
+  assert.equal(
+    cacheNonEmptyCatalogueRows(cache, 'sets:zh-cn:canonical-api', [], expiresAt),
+    false,
+    'an empty CJK response must not be cached as a ten-minute no-results state',
+  );
+  assert.equal(cache.has('sets:zh-cn:canonical-api'), false, 'an empty retry result must clear stale cache state');
+
+  assert.equal(
+    cacheNonEmptyCatalogueRows(cache, 'sets:zh-tw:canonical-api', [], expiresAt),
+    false,
+    'an initial empty Traditional-Chinese response must leave the next picker open eligible to retry',
+  );
+  assert.equal(cache.has('sets:zh-tw:canonical-api'), false);
+}
+
 async function main() {
   await verifyReadFallback();
+  verifyNonEmptyCatalogueCachePolicy();
 
   const pokemonTcgSource = readFileSync('lib/pokemonTcg.ts', 'utf8');
   assert.match(pokemonTcgSource, /export function getPokemonSetIdLookupCandidates/);
@@ -106,11 +144,21 @@ async function main() {
   assert.match(pokemonTcgSource, /for \(const candidate of setIdCandidates\)/);
   assert.match(pokemonTcgSource, /catch \(error\) \{\s*candidateError = error;\s*continue;/);
   assert.match(pokemonTcgSource, /function mergeApprovedSetImages/);
+  assert.match(pokemonTcgSource, /cacheNonEmptyCatalogueRows\(allSetsCache, cacheKey, sets,/);
 
   const pickerSource = readFileSync('app/binder/new.tsx', 'utf8');
-  assert.match(pickerSource, /\{ key: 'zh-cn', label: 'Simplified Chinese' \}/);
-  assert.match(pickerSource, /\{ key: 'zh-tw', label: 'Traditional Chinese' \}/);
-  assert.match(pickerSource, /preferCanonicalApi: setLanguage !== 'en'/);
+  assert.match(pickerSource, /POKEMON_CATALOGUE_LANGUAGE_OPTIONS/);
+  assert.match(pickerSource, /preferCanonicalApi: requestedLanguage !== 'en'/);
+  assert.match(pickerSource, /accessibilityLabel=\{`Retry loading \$\{getSetLanguageLabel\(setLanguage\)\} sets`\}/);
+  assert.match(pickerSource, /No \$\{getSetLanguageLabel\(requestedLanguage\)\} sets were returned/);
+
+  const languageBadgeSource = readFileSync('components/PokemonLanguageBadge.tsx', 'utf8');
+  assert.match(languageBadgeSource, /POKEMON_CATALOGUE_LANGUAGE_OPTIONS/);
+  assert.match(
+    languageBadgeSource,
+    /POKEMON_CATALOGUE_LANGUAGE_CODES = \[\s*'en', 'ja', 'zh-cn', 'zh-tw',\s*\]/s,
+    'the shared selectable-set language list must retain English, Japanese, and both Chinese editions',
+  );
 
   const binderSource = readFileSync('lib/binders.ts', 'utf8');
   assert.match(

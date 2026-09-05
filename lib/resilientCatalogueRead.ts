@@ -19,6 +19,53 @@ export async function firstNonEmptyCatalogueRows<Candidate, Row>(
   throw lastError;
 }
 
+export type CatalogueRowsCacheEntry<Row> = {
+  expiresAt: number;
+  value: Row[];
+};
+
+/**
+ * Returns only a live, populated catalogue entry. Empty entries created by an
+ * older app bundle are discarded so a refreshed client can retry immediately.
+ */
+export function readNonEmptyCatalogueRows<Row>(
+  cache: Map<string, CatalogueRowsCacheEntry<Row>>,
+  key: string,
+  now = Date.now(),
+) {
+  const cached = cache.get(key);
+  if (!cached) {
+    return null;
+  }
+
+  if (cached.expiresAt <= now || !cached.value.length) {
+    cache.delete(key);
+    return null;
+  }
+
+  return cached.value;
+}
+
+/**
+ * Empty catalogue reads are treated as transient and are never retained.
+ * This lets a language picker recover immediately after a failed gateway or
+ * fallback read instead of presenting an empty catalogue for the full TTL.
+ */
+export function cacheNonEmptyCatalogueRows<Row>(
+  cache: Map<string, CatalogueRowsCacheEntry<Row>>,
+  key: string,
+  rows: Row[],
+  expiresAt: number,
+) {
+  if (!rows.length) {
+    cache.delete(key);
+    return false;
+  }
+
+  cache.set(key, { expiresAt, value: rows });
+  return true;
+}
+
 export async function preferNonEmptyCatalogueRows<T>(
   preferredRead: (signal: AbortSignal) => Promise<T[]>,
   fallbackRead: () => Promise<T[]>,

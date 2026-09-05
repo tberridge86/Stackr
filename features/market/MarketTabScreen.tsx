@@ -41,7 +41,12 @@ import {
 } from '../../components/market/MarketComponents';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrImage, prefetchStackrImagesAfterInteractions } from '../../components/StackrImage';
-import { POKEMON_LANGUAGE_DESCRIPTORS, PokemonLanguageFlagIcon } from '../../components/PokemonLanguageBadge';
+import {
+  getPokemonLanguageDescriptor,
+  POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
+  PokemonLanguageFlagIcon,
+  type PokemonCatalogueLanguageCode,
+} from '../../components/PokemonLanguageBadge';
 import { StackrScreen } from '../../components/StackrScreen';
 import { formatSlabCompanyLabel } from '../../components/SlabStickerLabel';
 import { useProfile } from '../../components/profile-context';
@@ -78,7 +83,7 @@ import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrS
 
 type PrimaryFilter = 'all' | ListingCategoryKey;
 type SortKey = 'recommended' | 'recent' | 'priceAsc' | 'priceDesc' | 'bestValue' | 'relevant' | 'chase' | 'rarity' | 'set' | 'gradeDesc' | 'type';
-type MarketLanguageFilter = 'en' | 'ja' | 'zh-cn' | 'zh-tw';
+type MarketLanguageFilter = PokemonCatalogueLanguageCode;
 type Workspace = 'discover' | 'myListings';
 type MarketLayoutMode = 'browse' | 'compact';
 type SellerFilter = { userId: string; name?: string | null } | null;
@@ -148,12 +153,8 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 const MARKET_GRADER_FILTERS = ['PSA', 'BGS', 'CGC', 'TAG', 'ACE'];
 const MARKET_GRADE_FILTERS = ['10', '9.5', '9', '8', '7 or lower'];
 const MARKET_FALLBACK_RARITIES = ['Common', 'Uncommon', 'Rare', 'Double Rare', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Secret Rare', 'Promo'];
-const MARKET_LANGUAGE_FILTERS: { key: MarketLanguageFilter; label: string }[] = [
-  { key: 'en', label: POKEMON_LANGUAGE_DESCRIPTORS.en.label },
-  { key: 'ja', label: POKEMON_LANGUAGE_DESCRIPTORS.ja.label },
-  { key: 'zh-cn', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-cn'].label },
-  { key: 'zh-tw', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-tw'].label },
-];
+const MARKET_LANGUAGE_FILTERS: { key: MarketLanguageFilter; label: string }[] =
+  POKEMON_CATALOGUE_LANGUAGE_OPTIONS.map((option) => ({ key: option.key, label: option.label }));
 type MarketListingTypeFilter = {
   key: MarketListingVariant;
   label: string;
@@ -414,10 +415,7 @@ function normalise(value: string | null | undefined) {
 
 function normaliseLanguageCode(value: string | null | undefined) {
   const normalised = normalise(value);
-  if (normalised === 'ja' || normalised === 'jp' || normalised === 'japanese') return 'ja';
-  if (normalised === 'zh tw' || normalised === 'zh' || normalised === 'zhtw' || normalised === 'chinese' || normalised === 'traditional chinese' || normalised === 'tc' || normalised === 'tw' || normalised === 'taiwan') return 'zh-tw';
-  if (normalised === 'en' || normalised === 'english') return 'en';
-  return normalised;
+  return getPokemonLanguageDescriptor(value)?.code ?? normalised;
 }
 
 function parseGradeValue(value: string | number | null | undefined) {
