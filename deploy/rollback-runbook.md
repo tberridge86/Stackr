@@ -29,13 +29,15 @@ npx wrangler versions deploy `
   --yes
 ```
 
-## Catalogue API Or Recognition Service
+## Backend Or Recognition Service
 
 Use the deployment ID that Railway reports as rollback-eligible:
 
 ```powershell
 $env:RAILWAY_API_TOKEN = '<set locally; do not paste into chat>'
-node scripts/deploy/railway-rollback.mjs --deployment='<deployment-id>'
+node scripts/deploy/railway-rollback.mjs `
+  --component='<backend-or-recognition>' `
+  --deployment='<deployment-id>'
 Remove-Item Env:RAILWAY_API_TOKEN
 ```
 
@@ -115,6 +117,20 @@ npm run deploy:smoke -- `
   --backend='<backend-url>' `
   --recognition='<recognition-url>' `
   --allow-recognition-not-ready
+```
+
+After a backend pricing rollback, also repeat the exact read-only pricing contract checks:
+
+```powershell
+$env:BACKEND_ORIGIN_KEY = '<set locally; do not paste into chat>'
+node scripts/deploy/production-pricing-smoke.mjs `
+  --backend='<backend-url>' `
+  --gateway='<gateway-url>' `
+  --variant-id='<canonical-variant-uuid>' `
+  --expected-backend-commit='<known-good-40-character-git-sha>' `
+  --expected-backend-deployment='<known-good-railway-deployment-id>' `
+  --backend-origin-key-env=BACKEND_ORIGIN_KEY
+Remove-Item Env:BACKEND_ORIGIN_KEY
 ```
 
 Then verify authentication, one catalogue lookup, one structured search, one ambiguous scan, current manifest versions, logs without secret/image payloads, and the incident metric that triggered rollback.

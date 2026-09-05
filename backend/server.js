@@ -1,5 +1,6 @@
 /* eslint-env node */
 import 'dotenv/config';
+import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 import express from 'express';
 import compression from 'compression';
@@ -116,13 +117,37 @@ function getSupabaseProjectRef() {
   }
 }
 
+function getBundledSourceCommit() {
+  try {
+    const value = readFileSync(new URL('./.stackr-source-commit', import.meta.url), 'utf8').trim();
+    return /^[0-9a-f]{40}$/i.test(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 function getRailwayCommit() {
   return String(
-    process.env.RAILWAY_GIT_COMMIT_SHA
+    getBundledSourceCommit()
+      ?? process.env.RAILWAY_GIT_COMMIT_SHA
       ?? process.env.RAILWAY_GIT_COMMIT_HASH
       ?? process.env.SOURCE_COMMIT
       ?? '',
   ).slice(0, 12) || null;
+}
+
+function getHealthSourceCommit() {
+  const bundledCommit = getBundledSourceCommit();
+  if (bundledCommit) return { commit: bundledCommit.slice(0, 12), source: 'bundled_workflow_sha' };
+  const railwayCommit = String(
+    process.env.RAILWAY_GIT_COMMIT_SHA
+      ?? process.env.RAILWAY_GIT_COMMIT_HASH
+      ?? '',
+  ).trim();
+  if (/^[0-9a-f]{40}$/i.test(railwayCommit)) {
+    return { commit: railwayCommit.slice(0, 12), source: 'railway_git_sha' };
+  }
+  return { commit: null, source: null };
 }
 
 function getApiV1SupabaseKeyInfo() {
@@ -156,8 +181,11 @@ function getPublicRuntimeSummary() {
 }
 
 function getHealthRuntimeAttestation() {
+  const sourceCommit = getHealthSourceCommit();
   return {
-    gitCommit: getRailwayCommit(),
+    gitCommit: sourceCommit.commit,
+    gitCommitSource: sourceCommit.source,
+    deploymentId: String(process.env.RAILWAY_DEPLOYMENT_ID ?? '').trim() || null,
     railwayEnvironment: process.env.RAILWAY_ENVIRONMENT_NAME ?? null,
     supabaseProjectRef: getSupabaseProjectRef(),
   };

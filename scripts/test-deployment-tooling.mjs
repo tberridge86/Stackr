@@ -4,6 +4,7 @@ import { X509Certificate } from 'node:crypto';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 function run(script, args = [], env = {}) {
   return spawnSync(process.execPath, [script, ...args], {
@@ -503,18 +504,26 @@ const backendServer = readFileSync('backend/server.js', 'utf8');
 assert.match(backendServer, /res\.setHeader\('X-Request-Id', requestId\)/);
 assert.match(
   backendServer,
-  /function getHealthRuntimeAttestation\(\) \{[\s\S]*gitCommit: getRailwayCommit\(\)[\s\S]*railwayEnvironment:[\s\S]*supabaseProjectRef: getSupabaseProjectRef\(\)/,
+  /function getHealthRuntimeAttestation\(\) \{[\s\S]*gitCommit: sourceCommit\.commit[\s\S]*gitCommitSource: sourceCommit\.source[\s\S]*deploymentId:[\s\S]*railwayEnvironment:[\s\S]*supabaseProjectRef: getSupabaseProjectRef\(\)/,
   'backend health must always expose the minimal deployment attestation',
 );
+assert.match(backendServer, /getBundledSourceCommit\(\)[\s\S]*\.stackr-source-commit/);
+assert.match(backendServer, /function getHealthSourceCommit\(\)[\s\S]*bundled_workflow_sha[\s\S]*railway_git_sha/);
+const healthSourceCommit = backendServer.match(/function getHealthSourceCommit\(\) \{[\s\S]*?\n\}/)?.[0] ?? '';
+assert.doesNotMatch(healthSourceCommit, /SOURCE_COMMIT/);
 const backendHealthHandler = backendServer.match(/app\.get\(\['\/health', '\/api\/health'\][\s\S]*?\n\}\);/)?.[0] ?? '';
 assert.match(backendHealthHandler, /runtime: getHealthRuntimeAttestation\(\)/);
 assert.doesNotMatch(backendHealthHandler, /KeyPreview|publicPreview|STACKR_HEALTH_RUNTIME_DIAGNOSTICS/);
 
 const rollbackTool = readFileSync('scripts/deploy/railway-rollback.mjs', 'utf8');
-assert.match(rollbackTool, /component !== 'recognition'/);
+assert.match(rollbackTool, /backend: 'RAILWAY_BACKEND_SERVICE_ID'/);
+assert.match(rollbackTool, /recognition: 'RAILWAY_RECOGNITION_SERVICE_ID'/);
 assert.match(rollbackTool, /serviceId environmentId/);
+assert.match(rollbackTool, /RAILWAY_BACKEND_SERVICE_ID/);
 assert.match(rollbackTool, /RAILWAY_RECOGNITION_SERVICE_ID/);
 assert.match(rollbackTool, /RAILWAY_ENVIRONMENT_ID/);
+assert.match(rollbackTool, /deployment\.status !== 'SUCCESS'/);
+assert.match(rollbackTool, /verifyOnly/);
 assert.match(
   rollbackTool,
   /mutation deploymentRollback\(\$id: String!\) \{ deploymentRollback\(id: \$id\) \}/,
@@ -533,7 +542,7 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(rollbackTool, /console\.log\([^\n]*(?:RAILWAY_TOKEN|RAILWAY_API_TOKEN)/);
 
-const rollbackMockImport = `--import=${path.resolve('scripts/test-fixtures/mock-railway-rollback-fetch.mjs')}`;
+const rollbackMockImport = `--import=${pathToFileURL(path.resolve('scripts/test-fixtures/mock-railway-rollback-fetch.mjs')).href}`;
 const rollbackEnvironment = {
   NODE_OPTIONS: [process.env.NODE_OPTIONS, rollbackMockImport].filter(Boolean).join(' '),
   RAILWAY_API_TOKEN: 'test',
@@ -542,13 +551,13 @@ const rollbackEnvironment = {
   MOCK_RAILWAY_SERVICE_ID: 'recognition-service',
   MOCK_RAILWAY_ENVIRONMENT_ID: 'staging-environment',
 };
-const backendRollback = run(
+const unsupportedRollback = run(
   'scripts/deploy/railway-rollback.mjs',
   ['--component=catalogue-api', '--deployment=backend-deployment'],
   { NODE_OPTIONS: rollbackMockImport },
 );
-assert.notEqual(backendRollback.status, 0, 'catalogue API rollback must remain source-locked');
-assert.match(backendRollback.stderr, /catalogue-api rollback is source-locked/);
+assert.notEqual(unsupportedRollback.status, 0, 'unapproved Railway components must remain blocked');
+assert.match(unsupportedRollback.stderr, /supports only backend or recognition/);
 
 const disguisedBackendRollback = run(
   'scripts/deploy/railway-rollback.mjs',
@@ -574,9 +583,59 @@ const recognitionRollback = run(
 assert.equal(recognitionRollback.status, 0, recognitionRollback.stderr || recognitionRollback.stdout);
 assert.match(recognitionRollback.stdout, /"deploymentRollback": true/);
 
+const backendRollbackEnvironment = {
+  NODE_OPTIONS: [process.env.NODE_OPTIONS, rollbackMockImport].filter(Boolean).join(' '),
+  RAILWAY_API_TOKEN: 'test',
+  RAILWAY_BACKEND_SERVICE_ID: 'backend-service',
+  RAILWAY_ENVIRONMENT_ID: 'production-environment',
+  MOCK_RAILWAY_SERVICE_ID: 'backend-service',
+  MOCK_RAILWAY_ENVIRONMENT_ID: 'production-environment',
+};
+const backendRollbackVerification = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+  backendRollbackEnvironment,
+);
+assert.equal(
+  backendRollbackVerification.status,
+  0,
+  backendRollbackVerification.stderr || backendRollbackVerification.stdout,
+);
+assert.match(backendRollbackVerification.stdout, /"verified": true/);
+assert.doesNotMatch(backendRollbackVerification.stdout, /"deploymentRollback": true/);
+
+const failedBackendRollbackTarget = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+  { ...backendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'FAILED' },
+);
+assert.notEqual(failedBackendRollbackTarget.status, 0, 'failed deployments must not be accepted as rollback targets');
+assert.match(failedBackendRollbackTarget.stderr, /not a known-good successful deployment/);
+
+const ineligibleBackendRollbackTarget = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+  { ...backendRollbackEnvironment, MOCK_RAILWAY_CAN_ROLLBACK: 'false' },
+);
+assert.notEqual(ineligibleBackendRollbackTarget.status, 0, 'non-rollback-eligible deployments must be rejected');
+assert.match(ineligibleBackendRollbackTarget.stderr, /not rollback-eligible/);
+
+const backendRollback = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=backend', '--deployment=backend-deployment'],
+  { ...backendRollbackEnvironment, MOCK_RAILWAY_ALLOW_MUTATION: 'true' },
+);
+assert.equal(backendRollback.status, 0, backendRollback.stderr || backendRollback.stdout);
+assert.match(backendRollback.stdout, /"component": "backend"/);
+assert.match(backendRollback.stdout, /"deploymentRollback": true/);
+
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
 const platformCiWorkflow = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
+const productionBackendOnlyJob = productionWorkflow.slice(
+  productionWorkflow.indexOf('  backend_only:'),
+  productionWorkflow.indexOf('  deploy:', productionWorkflow.indexOf('  backend_only:')),
+);
 const productionBackendHardeningWorkflow = readFileSync(
   '.github/workflows/deploy-production-backend-hardening.yml',
   'utf8',
@@ -724,6 +783,65 @@ assert.match(
 assert.match(rollbackWorkflow, /Smoke-test surviving public paths[\s\S]*--require-commerce-disabled/);
 assert.match(stagingWorkflow, /Attest staging source revision[\s\S]*git rev-parse HEAD/);
 assert.match(productionWorkflow, /Attest production source revision[\s\S]*git rev-parse HEAD/);
+assert.match(
+  productionWorkflow,
+  /backend_only:[\s\S]+github\.ref == 'refs\/heads\/main'[\s\S]+inputs\.confirmation == 'DEPLOY PRODUCTION'[\s\S]+inputs\.release_scope == 'backend_only'/,
+  'backend-only production deployment must require the exact main ref and confirmation',
+);
+assert.match(productionBackendOnlyJob, /STACKR_EXPECTED_MAIN_SHA: \$\{\{ inputs\.expected_main_sha \}\}/);
+assert.match(productionBackendOnlyJob, /test "\$\(git rev-parse HEAD\)" = "\$GITHUB_SHA"/);
+assert.match(productionBackendOnlyJob, /"\$STACKR_EXPECTED_MAIN_SHA" != "\$GITHUB_SHA"/);
+assert.match(productionBackendOnlyJob, /PREVIOUS_BACKEND_DEPLOYMENT_ID: \$\{\{ inputs\.previous_backend_deployment_id \}\}/);
+assert.match(
+  productionBackendOnlyJob,
+  /Validate known-good backend rollback target[\s\S]+--component=backend[\s\S]+--deployment="\$PREVIOUS_BACKEND_DEPLOYMENT_ID"[\s\S]+--verify-only/,
+);
+assert.match(productionBackendOnlyJob, /npm run ci:secret-scan[\s\S]+--history-range="HEAD\^\.\.HEAD"/);
+for (const releaseCheck of [
+  'npm run lint',
+  'npm run typecheck',
+  'npm run typecheck:backend',
+  'npm test --prefix backend',
+  'npm run test:stackr-api-v1',
+  'npm run test:collection-pricing-ui',
+  'npm run test:commerce-release-lock',
+  'node scripts/test-deployment-tooling.mjs',
+  'npm run test:production-pricing-smoke',
+]) {
+  assert.ok(productionBackendOnlyJob.includes(releaseCheck), `backend-only release must run ${releaseCheck}`);
+}
+assert.match(
+  productionBackendOnlyJob,
+  /@railway\/cli@5\.30\.1 up "\$GITHUB_WORKSPACE\/backend" --detach --yes --json/,
+  'backend-only deploy must capture the exact deployment ID returned by Railway up',
+);
+assert.match(productionBackendOnlyJob, /result\?\.deploymentId/);
+assert.match(productionBackendOnlyJob, /\.stackr-source-commit/);
+assert.match(productionBackendOnlyJob, /RAILWAY_DEPLOYMENT_ID="\$railway_deployment_id"/);
+assert.match(productionBackendOnlyJob, /--limit 1000/);
+assert.doesNotMatch(productionBackendOnlyJob, /--limit 1(?:\s|$)|deployment redeploy/);
+assert.match(
+  productionBackendOnlyJob,
+  /Validate known-good backend rollback target[\s\S]+set -euo pipefail[\s\S]+railway-rollback\.mjs/,
+);
+assert.match(
+  productionBackendOnlyJob,
+  /Smoke-test exact pricing reads through backend and gateway[\s\S]+set -euo pipefail[\s\S]+production-pricing-smoke\.mjs/,
+);
+assert.match(productionBackendOnlyJob, /STACKR_BACKEND_DEPLOY_ATTEMPTED=true/);
+assert.match(
+  productionBackendOnlyJob,
+  /production-pricing-smoke\.mjs[\s\S]+--backend="\$STACKR_BACKEND_URL"[\s\S]+--gateway="\$STACKR_GATEWAY_URL"[\s\S]+--variant-id="\$STACKR_PRICING_SMOKE_VARIANT_ID"[\s\S]+--expected-backend-commit="\$STACKR_EXPECTED_MAIN_SHA"[\s\S]+--expected-backend-deployment="\$STACKR_BACKEND_DEPLOYMENT_ID"/,
+);
+assert.match(
+  productionBackendOnlyJob,
+  /Roll back backend after a failed deployment or smoke check[\s\S]+if: failure\(\) && env\.STACKR_BACKEND_DEPLOY_ATTEMPTED == 'true'[\s\S]+--component=backend[\s\S]+PREVIOUS_BACKEND_DEPLOYMENT_ID/,
+);
+assert.doesNotMatch(
+  productionBackendOnlyJob,
+  /SUPABASE_(?:ACCESS_TOKEN|DB_URL|STAGING|PRODUCTION_SECRET)|supabase@|db push|promote-catalogue|release-database|wrangler|eas-cli|RAILWAY_RECOGNITION_SERVICE_ID|recognition-service|CLOUDFLARE|EXPO_TOKEN|variable set/,
+  'backend-only release must never mutate database, storage, catalogue, gateway, recognition, mobile, or runtime variables',
+);
 assert.match(stagingWorkflow, /EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'[\s\S]*Validate effective EAS preview environment/);
 assert.match(productionWorkflow, /EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'[\s\S]*Validate effective EAS production environment/);
 assert.match(stagingWorkflow, /env:exec preview[\s\S]*--require-safe-release-flags/);
@@ -731,10 +849,9 @@ assert.match(productionWorkflow, /env:exec production[\s\S]*--require-safe-relea
 assert.doesNotMatch(rollbackWorkflow, /catalogue-api/);
 assert.match(rollbackWorkflow, /--component=recognition/);
 assert.match(rollbackWorkflow, /RAILWAY_RECOGNITION_SERVICE_ID/);
-assert.doesNotMatch(
-  productionWorkflow,
-  /previous_backend_deployment_id|PREVIOUS_BACKEND_DEPLOYMENT_ID|Roll back catalogue API deployment/,
-);
+assert.match(productionWorkflow, /previous_backend_deployment_id/);
+assert.match(productionWorkflow, /PREVIOUS_BACKEND_DEPLOYMENT_ID/);
+assert.doesNotMatch(productionWorkflow, /Roll back catalogue API deployment/);
 assert.match(
   productionWorkflow,
   /railway-rollback\.mjs[\s\S]+--component=recognition[\s\S]+PREVIOUS_RECOGNITION_DEPLOYMENT_ID/,
@@ -3554,7 +3671,7 @@ assert.match(productionWorkflow, /STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED/);
 assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
-assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[catalogue_assets, catalogue_api, full_platform\]/);
+assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[backend_only, catalogue_assets, catalogue_api, full_platform\]/);
 assert.match(productionWorkflow, /--require-catalogue-api-ready/);
 assert.match(
   productionWorkflow,

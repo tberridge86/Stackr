@@ -7,8 +7,8 @@ globalThis.fetch = async (_url, options = {}) => {
       data: {
         deployment: {
           id: body.variables?.id ?? null,
-          status: 'SUCCESS',
-          canRollback: true,
+          status: process.env.MOCK_RAILWAY_DEPLOYMENT_STATUS ?? 'SUCCESS',
+          canRollback: process.env.MOCK_RAILWAY_CAN_ROLLBACK !== 'false',
           serviceId: process.env.MOCK_RAILWAY_SERVICE_ID ?? null,
           environmentId: process.env.MOCK_RAILWAY_ENVIRONMENT_ID ?? null,
         },

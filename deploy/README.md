@@ -121,13 +121,15 @@ The four approval variables must remain `false` until their corresponding eviden
 - `platform-ci.yml`: lint, type checks, unit/integration tests, migration contracts, OpenAPI drift, image build, dependency and secret scans, and benchmark smoke tests.
 - `capture-production-schema-baseline.yml`: manual read-only capture of the missing production-era schema baseline using a separately protected environment and a one-day private artifact.
 - `deploy-staging.yml`: verifies backup, dry-runs migrations, deploys both Railway services, requires model/index readiness, deploys the staging gateway, and optionally publishes an EAS update.
-- `deploy-production.yml`: reruns release checks, verifies backup, applies compatible migrations, deploys rolling services, activates catalogue/index versions, starts a Cloudflare and optional EAS canary, monitors, and optionally promotes.
+- `deploy-production.yml`: provides a narrowly isolated `backend_only` Railway code rollout with automatic rollback and pricing smoke checks; its other scopes rerun broad release checks, verify backup, apply compatible migrations, deploy rolling services, activate catalogue/index versions, start a Cloudflare and optional EAS canary, monitor, and optionally promote.
 - `rollback.yml`: restores one known-good gateway, Railway deployment, catalogue version, index/model combination, reverts an in-progress EAS rollout, or republishes a known-good EAS update group.
 - `ingestion-workers.yml`: manual provider scopes plus a schedule that remains disabled until both terms-approval variables are true.
 
 Supabase logical backups are written only to the ephemeral GitHub runner and removed in an `always()` step. They are never uploaded as public workflow artifacts.
 
 ## Release Order
+
+An approved `backend_only` release follows its own bounded order: bind the exact `main` SHA, rerun substantive checks and secret scans, verify the known-good Railway backend rollback ID, deploy only `backend/`, then run direct-origin and public-gateway GET-only health, price, history, and movers probes. It never enters the database, catalogue, recognition, gateway, or mobile steps below.
 
 1. Verify CI and approvals.
 2. Verify a recent Supabase physical backup and make ephemeral logical dumps.
