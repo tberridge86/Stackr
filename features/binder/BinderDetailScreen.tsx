@@ -1,4 +1,5 @@
 import { useTheme } from '../../components/theme-context';
+import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -33,6 +34,7 @@ import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { BinderArtwork } from '../../components/BinderArtwork';
 import { BinderModeIconBadge, BinderModePill } from '../../components/BinderModeBadge';
+import { getPokemonLanguageDescriptor, PokemonLanguageBadge } from '../../components/PokemonLanguageBadge';
 import SlabStickerLabel, {
   SLAB_GRADE_SHORTCUTS,
   SLAB_GRADING_COMPANIES,
@@ -71,6 +73,10 @@ import {
   normalizePokemonCardLanguage,
   type PokemonCardLanguage,
 } from '../../lib/pokemonTcg';
+import {
+  getPokemonSetLanguageFromPrefixedId,
+  stripPokemonSetLanguagePrefix,
+} from '../../lib/pokemonSetIdentity';
 import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { checkAchievements, recordAchievementEvent } from '../../lib/achievements';
@@ -203,10 +209,8 @@ function getPreviewCardEnglishName(card: CardPreviewResult | null | undefined) {
 
 function getPreviewCardDisplayName(card: CardPreviewResult | null | undefined, fallback = 'Card') {
   if (!card) return fallback;
-  const englishName = getPreviewCardEnglishName(card);
-  if (englishName) return englishName;
-
   const localName = getPreviewCardLocalName(card);
+  const englishName = getPreviewCardEnglishName(card);
   const language = normalizePokemonCardLanguage(card.language);
 
   return getPreferredCardDisplayName({
@@ -214,7 +218,7 @@ function getPreviewCardDisplayName(card: CardPreviewResult | null | undefined, f
     setId: card.set_id ?? null,
     language,
     localName,
-    englishDisplayName: card.english_name ?? null,
+    englishDisplayName: englishName,
     fallbackName: card.name ?? card.card_id ?? fallback,
     raw: {
       name: card.name,
@@ -240,26 +244,34 @@ function getPreviewCardSupportingName(card: CardPreviewResult | null | undefined
 function getPreviewSetDisplayName(card: CardPreviewResult | null | undefined, fallback?: string | null) {
   if (!card) return cleanPreviewText(fallback) ?? 'Unknown set';
   const raw = getPreviewCardRawData(card);
-  return cleanPreviewText(card.english_set_name)
-    ?? getPreferredSetDisplayName({
-      id: card.set_id ?? raw.set?.id ?? null,
-      sourceId: raw.set?.tcgdex_id ?? raw.set?.source_id ?? raw.source_id ?? card.set_id ?? null,
-      setCode: raw.set?.set_code ?? raw.set?.tcgdex_id ?? raw.set_code ?? card.set_id ?? null,
-      language: card.language ?? raw.language ?? raw.set?.language ?? null,
-      region: raw.region ?? raw.set?.region ?? null,
-      localName: card.local_set_name ?? raw.set?.local_name ?? raw.set?.name ?? null,
-      englishDisplayName: raw.set?.english_display_name ?? raw.set?.englishDisplayName ?? null,
-      canonicalName: card.set_name ?? raw.set?.name ?? null,
-      fallbackName: fallback ?? card.set_id ?? null,
-      raw: raw.set ?? raw,
-    })
+  const language = normalizePokemonCardLanguage(card.language ?? raw.language ?? raw.set?.language);
+  const localSetName = cleanPreviewText(card.local_set_name)
+    ?? cleanPreviewText(raw.set?.local_name)
+    ?? cleanPreviewText(raw.set?.name)
+    ?? (language !== 'en' && containsCjkText(card.set_name) ? cleanPreviewText(card.set_name) : null);
+  const englishSetName = cleanPreviewText(card.english_set_name)
+    ?? cleanPreviewText(raw.set?.english_display_name)
+    ?? cleanPreviewText(raw.set?.englishDisplayName);
+  return getPreferredSetDisplayName({
+    id: card.set_id ?? raw.set?.id ?? null,
+    sourceId: raw.set?.tcgdex_id ?? raw.set?.source_id ?? raw.source_id ?? card.set_id ?? null,
+    setCode: raw.set?.set_code ?? raw.set?.tcgdex_id ?? raw.set_code ?? card.set_id ?? null,
+    language,
+    region: raw.region ?? raw.set?.region ?? null,
+    localName: localSetName,
+    englishDisplayName: englishSetName,
+    canonicalName: card.set_name ?? raw.set?.name ?? null,
+    fallbackName: card.set_name ?? fallback ?? card.set_id ?? null,
+    raw: raw.set ?? {},
+  })
     ?? cleanPreviewText(fallback)
     ?? 'Unknown set';
 }
 
 function getPreviewSetSupportingName(card: CardPreviewResult | null | undefined, primarySetName: string) {
-  const localSetName = cleanPreviewText(card?.local_set_name ?? getPreviewCardRawData(card)?.set?.local_name);
-  const englishSetName = cleanPreviewText(card?.english_set_name);
+  const rawSet = getPreviewCardRawData(card)?.set;
+  const localSetName = cleanPreviewText(card?.local_set_name ?? rawSet?.local_name ?? rawSet?.name);
+  const englishSetName = cleanPreviewText(card?.english_set_name ?? rawSet?.english_display_name ?? rawSet?.englishDisplayName);
   if (containsCjkText(primarySetName) && englishSetName && englishSetName !== primarySetName) return englishSetName;
   if (localSetName && localSetName !== primarySetName && containsCjkText(localSetName)) return localSetName;
   return null;
@@ -377,8 +389,9 @@ const inferBinderLanguage = (language?: PokemonCardLanguage | string | null, set
   const explicit = String(language ?? '').trim();
   if (explicit) return normalizePokemonCardLanguage(explicit);
   const rawSetId = String(setId ?? '').trim().toLowerCase();
-  const strippedSetId = rawSetId.replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
-  if (/^(zh-tw|zh_tw|zhtw|zh):/i.test(rawSetId)) return 'zh-tw';
+  const strippedSetId = stripPokemonSetLanguagePrefix(rawSetId);
+  const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(rawSetId);
+  if (prefixedLanguage) return prefixedLanguage;
   return rawSetId.startsWith('ja:') || rawSetId.startsWith('jp:') || /^sv\d+[a-z]$/i.test(strippedSetId) ? 'ja' : 'en';
 };
 
@@ -2039,7 +2052,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           card_id: card.id,
           set_id: card.set_id ?? null,
           language: normalizedLanguage,
-          name: cleanPreviewText(englishName ?? localName ?? card.name) ?? card.id,
+          name: cleanPreviewText(localName ?? card.name ?? englishName) ?? card.id,
           local_name: localName,
           english_name: englishName,
           set_name: setDisplayName ?? englishSetName ?? localSetName ?? card.set_id,
@@ -2090,7 +2103,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         language,
         cardName: getPreviewCardDisplayName(card, card.card_id),
         imageUrl: card.image_url ?? null,
-        setName: card.set_name ?? null,
+        setName: getPreviewSetDisplayName(card, derivedSetId),
         gradeCompany: binder?.card_mode === 'graded' ? addGradeCompany : null,
         grade: binder?.card_mode === 'graded' ? finalAddGrade : null,
       }]);
@@ -2146,7 +2159,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     language: card.language ?? binder?.language ?? 'en',
     cardName: getPreviewCardDisplayName(card, card.card_id),
     imageUrl: card.image_url ?? null,
-    setName: card.set_name ?? null,
+    setName: getPreviewSetDisplayName(card, getPreviewSetId(card)),
   }))
   .filter((c) => c.setId);
 
@@ -2936,7 +2949,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     })
     : null;
   const officialSetLogoUrl = binder.type === 'official' && !officialSetLogoSource
-    ? binder.source_set_logo_url ?? binder.source_set_symbol_url ?? getPokemonSetLogoUrl(binder.source_set_id ?? binder.cover_key, binder.language)
+    ? enforceSetVisualRuntimePolicy(binder.source_set_logo_url ?? binder.source_set_symbol_url ?? getPokemonSetLogoUrl(binder.source_set_id ?? binder.cover_key, binder.language))
     : undefined;
   const officialSetArtworkUrl = binder.type === 'official'
     ? officialSetLogoUrl
@@ -3125,6 +3138,15 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 </Text>
 
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 }}>
+                  {binder.type === 'official' && getPokemonLanguageDescriptor(binder.language) ? (
+                    <PokemonLanguageBadge
+                      language={getPokemonLanguageDescriptor(binder.language)!.code}
+                      variant="compact"
+                      size={14}
+                      textColor={theme.colors.text}
+                      style={{ borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}
+                    />
+                  ) : null}
                   {binder.type === 'official' && masterSetEnabled && binder.card_mode !== 'graded' ? <BinderModePill type="master" /> : null}
                   {binder.edition ? (
                     <View style={{ borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: theme.colors.secondary + '18', borderWidth: 1, borderColor: theme.colors.secondary + '35' }}>

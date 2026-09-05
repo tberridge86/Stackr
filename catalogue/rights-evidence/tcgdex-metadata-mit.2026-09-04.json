@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "stackr-source-rights-evidence-v1",
+  "evidenceId": "tcgdex-metadata-mit:2026-09-04:dd4fc9460b54b91c25df750c68ca36b9946448e2",
+  "sourceCode": "tcgdex",
+  "observedAt": "2026-09-04T09:26:07.000Z",
+  "repository": "tcgdex/cards-database",
+  "pinnedCommitSha": "dd4fc9460b54b91c25df750c68ca36b9946448e2",
+  "documents": [
+    {
+      "role": "database_license",
+      "url": "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/LICENSE",
+      "sha256": "12e7dd2d018848b9997d0226c4632f01da86ec4bf6ebe0c8b19953d5e5eeb6ff",
+      "bytes": 1063,
+      "finding": "The pinned repository uses the MIT licence and requires preservation of its copyright and permission notice."
+    },
+    {
+      "role": "database_scope_statement",
+      "url": "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/README.md",
+      "sha256": "52d10b2a8db1eaaaa3d534d71e1c32a770635b1dde469a9a77e3227b879306f9",
+      "bytes": 6620,
+      "finding": "The pinned README describes a multilingual card database, documents API access, states that the database is MIT-licensed, and states that it is not affiliated with Nintendo or The Pokemon Company."
+    },
+    {
+      "role": "japanese_set_english_identification_map",
+      "url": "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/scripts/utils-data/jp_set_translations.ts",
+      "sha256": "8420715261c1a3b2237c822294e7ea3fe8e544ad970c8c0d60612752967957f5",
+      "bytes": 9416,
+      "finding": "The pinned source contains the exact Japanese set-code to English identification map frozen in Stackr's local source artifact."
+    }
+  ],
+  "localBindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "81bf7a056d8a0312ac7283917bb24f884100e2c2859a077a8503e8c132ad5ca6",
+    "frozenJapaneseSetSourcePath": "catalogue/tcgdex-japanese-set-english-display-source.json",
+    "frozenJapaneseSetSourceSha256": "92639734fb2bb7167c96d720a651c66ccf618d160bd9169e04dc6ba0a77280f9",
+    "thirdPartyNoticePath": "THIRD_PARTY_NOTICES.md",
+    "thirdPartyNoticeSha256": "3bf318589be0f4fcac922891c1714fbec406536cbf4772e429d9f1e138290b7b"
+  },
+  "scopeAssessment": {
+    "metadataDiscovery": "approved",
+    "automatedMetadataFetch": "approved",
+    "japaneseSetEnglishDisplaySupplement": "approved_green_native_primary_display_only",
+    "canonicalDatabaseWrite": "not_authorized_by_this_evidence",
+    "automatedAssetFetch": "conditional_controlled_provider_only",
+    "persistOriginalAsset": "conditional_short_lived_or_private_only",
+    "publicDisplay": "conditional_low_resolution_card_reference_only",
+    "createDerivatives": "conditional_operational_transforms_only",
+    "createEmbeddings": "conditional_private_identification_only",
+    "trainModels": "review_required"
+  },
+  "requiredConditions": [
+    "Keep the authentic printed language primary and label English only as supplemental identification.",
+    "Use only an exact Japanese set code from the hash-bound source; do not infer a match from a translated title.",
+    "Preserve the TCGdex copyright, MIT notice, exact source revision, and provenance.",
+    "Do not treat this metadata evidence as artwork, set-logo, symbol, product-image, canonical-write, or model-training permission.",
+    "Disable the source-specific runtime lane on provenance failure, source withdrawal, or a substantiated rights complaint."
+  ],
+  "legalStatus": "internally_authorized_green_metadata_only",
+  "authority": "docs/stackrtcg-ip-operating-boundary.md",
+  "disclaimer": "This is a bounded operational evidence record, not legal advice and not permission to copy from Pokemon-operated services or to use underlying artwork, logos, symbols, product imagery, expressive card text, or training corpora."
+}

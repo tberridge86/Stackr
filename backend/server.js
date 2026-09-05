@@ -46,7 +46,6 @@ import {
   listJapaneseSetProducts,
   listJapaneseSets,
   searchCatalogue,
-  syncJapaneseCatalogue,
 } from './lib/japaneseCatalogue.js';
 import {
   getCatalogueCard,
@@ -2342,20 +2341,10 @@ app.get('/catalogue/search', async (req, res) => {
 
 app.post('/admin/catalogue/jp/sync', async (req, res) => {
   if (!requireAdminAccess(req, res)) return;
-
-  try {
-    const body = req.body ?? {};
-    const allCardsValue = body.allCards ?? req.query.allCards;
-    const options = {
-      seriesId: body.seriesId ?? req.query.seriesId,
-      setId: body.setId ?? req.query.setId,
-      allCards: String(allCardsValue ?? '').toLowerCase() === 'true',
-    };
-    const result = await syncJapaneseCatalogue(supabase, options);
-    return res.json({ ok: true, region: 'JP', language: 'ja', ...result });
-  } catch (error) {
-    return res.status(500).json({ error: 'Japanese catalogue sync failed', detail: getErrorMessage(error) });
-  }
+  return res.status(410).json({
+    error: 'Japanese catalogue sync is retired',
+    detail: 'The legacy route cannot write provider images or metadata to catalogue tables.',
+  });
 });
 
 app.get('/admin/catalogue/jp/health', async (req, res) => {

@@ -720,3 +720,23 @@ test('quality report route rejects raw scan fields before contacting the backend
   assert.equal(response.status, 400);
   assert.equal(called, false);
 });
+
+test('same-artwork reference UUID duplicates are rejected case-insensitively before forwarding', async () => {
+  let forwarded = false;
+  const sourceCardId = 'abcdefab-cdef-4abc-8def-abcdefabcdef';
+  const sourceDefaultVariantId = 'abcdefac-cdef-4abc-8def-abcdefabcdef';
+  const response = await handleRequest(request('/v1/cards/display-artwork-references', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ references: [
+      { sourceCardId, sourceDefaultVariantId },
+      { sourceCardId: sourceCardId.toUpperCase(), sourceDefaultVariantId: sourceDefaultVariantId.toUpperCase() },
+    ] }),
+  }), environment(), context(), {
+    cache: new MemoryCache(),
+    fetchImpl: async () => { forwarded = true; return new Response('{}'); },
+  });
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).error.code, 'duplicate_same_artwork_reference');
+  assert.equal(forwarded, false);
+});

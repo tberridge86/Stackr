@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "stackr-source-rights-evidence-v1",
+  "evidenceId": "tcgdex-japanese-set-scalar-display:2026-09-04:dd4fc9460b54b91c25df750c68ca36b9946448e2",
+  "sourceCode": "tcgdex",
+  "observedAt": "2026-09-04T10:10:00.000Z",
+  "repository": "tcgdex/cards-database",
+  "pinnedCommitSha": "dd4fc9460b54b91c25df750c68ca36b9946448e2",
+  "documents": [
+    {
+      "role": "database_license",
+      "url": "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/LICENSE",
+      "sha256": "12e7dd2d018848b9997d0226c4632f01da86ec4bf6ebe0c8b19953d5e5eeb6ff",
+      "finding": "The pinned repository uses the MIT licence and requires preservation of its copyright and permission notice."
+    },
+    {
+      "role": "database_scope_statement",
+      "url": "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/README.md",
+      "sha256": "52d10b2a8db1eaaaa3d534d71e1c32a770635b1dde469a9a77e3227b879306f9",
+      "finding": "The pinned README describes a multilingual card database and API under the MIT licence."
+    },
+    {
+      "role": "exact_japanese_set_scalar_records",
+      "urls": [
+        "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/BW/DS.ts",
+        "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/SM/SM3p.ts",
+        "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/M/M6.ts",
+        "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/SM/SM4p.ts",
+        "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/BW/SC.ts",
+        "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/XYb/XY.ts",
+        "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/DP/DP2.ts",
+        "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/data-asia/DP/DP3.ts"
+      ],
+      "finding": "The complete eight-record, source-file hash inventory is frozen locally; this record is limited to the exact Japanese release-date and positive printed-total facts in that inventory."
+    }
+  ],
+  "localBindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "81bf7a056d8a0312ac7283917bb24f884100e2c2859a077a8503e8c132ad5ca6",
+    "rightsRegistryPath": "catalogue/source-rights-registry.json",
+    "rightsRegistrySha256": "53805cec7470b726190d1b268a2b93c5b0e6d96dd8287428a036f591456b250e",
+    "metadataLicenseEvidencePath": "catalogue/rights-evidence/tcgdex-metadata-mit.2026-09-04.json",
+    "metadataLicenseEvidenceSha256": "75992e1dde37c54806ac135c2fd49642c24c3429702ef3d6074fc8f986da8211",
+    "thirdPartyNoticePath": "THIRD_PARTY_NOTICES.md",
+    "thirdPartyNoticeSha256": "3bf318589be0f4fcac922891c1714fbec406536cbf4772e429d9f1e138290b7b",
+    "frozenSourcePath": "catalogue/tcgdex-japanese-set-scalar-display-source.2026-09-04.json",
+    "frozenSourceSha256": "fa9fd6e81342a5c26b60366be1109d00f15e4afc10a8875cd36f52b3edc13c5d"
+  },
+  "reviewAuditProvenance": {
+    "activationAuthority": false,
+    "candidateSha256": "2c4358e3f0a5c7f3f781c77bb4c9364265a47fd19cbd59c9b7c514c7d7017ea5",
+    "reviewPackSha256": "dc083ee718b3313bbc61340372763be8bac19c478e08d9f7e7d015e9fd2ddc97",
+    "manifestSha256": "e099f2e9498e89b99e60a20f53c717c32951cf465a7f23e02d8a31f319067ca9",
+    "note": "These hashes document the read-only temporary audit that identified the rows. Only the tracked frozen source, evidence, and green decision authorize runtime display."
+  },
+  "scopeAssessment": {
+    "japaneseSetScalarDisplaySupplement": "approved_green_native_primary_display_only",
+    "canonicalDatabaseWrite": "not_authorized_by_this_evidence",
+    "artwork": "not_authorized",
+    "translation": "not_authorized",
+    "seriesIdentity": "not_authorized",
+    "modelTraining": "not_authorized"
+  },
+  "requiredConditions": [
+    "Use only the eight frozen records, with an exact Japanese language, normalized set code, and exact native set-name match.",
+    "Keep the native Japanese title primary; render only the English labels Release date: and Set size: beside the scalar values.",
+    "Do not write, backfill, merge, export, or otherwise treat the values as canonical release_date or printed_total.",
+    "Fail closed on binding mismatch, source withdrawal, a substantiated rights complaint, or either TCGdex metadata kill switch.",
+    "Do not use this evidence for Chinese metadata, English translations, series IDs, card text, artwork, logos, symbols, product art, assets, derivatives, embeddings, or training."
+  ],
+  "legalStatus": "internally_authorized_green_metadata_display_only",
+  "authority": "docs/stackrtcg-ip-operating-boundary.md",
+  "disclaimer": "This bounded factual-display evidence is not authority to mutate the catalogue or to use expressive text, artwork, marks, product imagery, Chinese metadata, series mappings, or training corpora."
+}

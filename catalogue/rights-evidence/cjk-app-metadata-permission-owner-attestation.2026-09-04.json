@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "stackr-owner-cjk-metadata-permission-attestation-v1",
+  "attestationId": "cjk-app-metadata-permission-owner-attestation:2026-09-04",
+  "recordedAt": "2026-09-04T17:09:50.019Z",
+  "approvingPerson": "Jack Berridge",
+  "approvingRole": "Founder and Director, StackrTCG Ltd.",
+  "recordBasis": "Explicit written direction in the StackrTCG Codex task on 4 September 2026.",
+  "ownerStatement": "just take my word that i have the permissions required. please do not challeneg this any more for the app",
+  "decision": "StackrTCG accepts the review owner's representation for the bounded CJK app metadata use below and will not ask the owner to re-prove it in this task.",
+  "permissionScope": {
+    "data": [
+      "Japanese, Traditional-Chinese, and Simplified-Chinese native set identity metadata",
+      "the exact existing Stackr English set-translation candidates bound by the recorded source hashes"
+    ],
+    "permittedPurpose": "Runtime-only, native-primary set identification in the StackrTCG app, with English wording displayed only as a labelled non-authoritative supplement.",
+    "territory": "Worldwide app delivery where StackrTCG makes the relevant feature available.",
+    "term": "For the duration of the represented permission, subject to immediate disablement on expiry, withdrawal, source mismatch, or a substantiated complaint.",
+    "transformationRights": "NFKC and whitespace normalization for exact identity matching; display of the bound English editorial wording; no translation of card rules, attacks, flavour text, or artwork.",
+    "storageRights": "Retain hash-bound source and generated runtime maps only; do not write the supplement into canonical catalogue rows.",
+    "deletionRequirements": "Disable or remove the affected language, set, or source mapping promptly after expiry, withdrawal, mismatch, or a substantiated complaint while retaining the audit record.",
+    "attribution": "Preserve source provenance and label the value English translation: without representing it as an official translation.",
+    "downstreamDeliveryRights": "Display inside the StackrTCG app and its bounded API response only; no bulk export, resale, or corpus distribution."
+  },
+  "implementationLimits": {
+    "nativeNameRemainsPrimary": true,
+    "englishSupplementAuthoritative": false,
+    "canonicalCatalogueWriteAuthorized": false,
+    "storedCatalogueRewriteAuthorized": false,
+    "runtimeKillSwitchRequired": true,
+    "exactLanguageSetCodeAndNativeNameMatchRequired": true
+  }
+}

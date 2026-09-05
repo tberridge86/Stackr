@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "stackr-operating-boundary-compatibility-review-v1",
+  "reviewId": "stackrtcg-ip-boundary-green-compatibility:2026-09-04",
+  "classification": "green_binding_reconfirmation",
+  "status": "recorded_current_authority_compatibility",
+  "recordedAt": "2026-09-04T11:29:23.562Z",
+  "authority": {
+    "path": "docs/stackrtcg-ip-operating-boundary.md",
+    "sha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+    "reviewOwnerNamedByAuthority": "Jack Berridge",
+    "taskInstruction": "Proceed under the named operating-boundary file as internal authority for green work, require recorded review for amber work, and fail closed on red work."
+  },
+  "priorDecisionAuthoritySha256": "81bf7a056d8a0312ac7283917bb24f884100e2c2859a077a8503e8c132ad5ca6",
+  "currentContentFindings": {
+    "tcgdexMetadataGreenAuthorityPresent": true,
+    "controlledLowResolutionCardReferenceGreenAuthorityPresent": true,
+    "nativeLanguagePrimaryAndEnglishSupplementalRequirementPresent": true,
+    "providerIdentifiersAndImageUrlsMayBeRetained": true,
+    "publicDeliveryStillRequiresControlledProviderValidation": true,
+    "neutralPlaceholderOnFailureStillRequired": true,
+    "productionDeploymentSeparatelyAuthorized": false
+  },
+  "reconfirmedGreenDecisions": [
+    "tcgdex-japanese-set-english-display-green:2026-09-04",
+    "tcgdex-low-resolution-card-reference-green:2026-09-04",
+    "tcgdex-japanese-set-scalar-display-green:2026-09-04"
+  ],
+  "limits": {
+    "activatesAmberUses": false,
+    "activatesRedUses": false,
+    "authorizesSetLogosOrSymbols": false,
+    "authorizesProductOrPackArtwork": false,
+    "authorizesHighResolutionPublicDelivery": false,
+    "authorizesCatalogueAssetMirroring": false,
+    "authorizesCanonicalDatabaseMutation": false,
+    "authorizesDeployment": false
+  },
+  "reviewConclusion": "The current authority text continues to support the three previously recorded, narrowly scoped green display lanes. Rebinding those decisions does not activate an amber or red use. Existing stored identifiers and historical provider URLs may remain at rest; only a current provider-validated, low-resolution reference may enter the public display lane.",
+  "signature": null,
+  "signatureRequired": false
+}

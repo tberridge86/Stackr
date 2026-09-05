@@ -214,6 +214,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CardVariantsResponse"
+  /cards/display-artwork-references:
+    post:
+      tags: [Assets]
+      operationId: resolveSameArtworkDisplayReferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SameArtworkDisplayReferencesRequest"
+      responses:
+        "200":
+          description: Approved low-resolution same-artwork references for supplied canonical printing identities.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SameArtworkDisplayReferencesResponse"
+        "400":
+          $ref: "#/components/responses/Error"
   /cards/{variantId}/price:
     get:
       tags: [Market]
@@ -1270,6 +1289,66 @@ components:
                   type: array
                   items:
                     $ref: "#/components/schemas/CardVariant"
+    SameArtworkDisplayReferencesRequest:
+      type: object
+      additionalProperties: false
+      required: [references]
+      properties:
+        references:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: object
+            additionalProperties: false
+            required: [sourceCardId, sourceDefaultVariantId]
+            properties:
+              sourceCardId:
+                type: string
+                format: uuid
+              sourceDefaultVariantId:
+                type: string
+                format: uuid
+    SameArtworkDisplayReferencesResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [references]
+              properties:
+                references:
+                  type: array
+                  items:
+                    type: object
+                    required: [sourceCardId, sourceDefaultVariantId, display]
+                    properties:
+                      sourceCardId:
+                        type: string
+                        format: uuid
+                      sourceDefaultVariantId:
+                        type: string
+                        format: uuid
+                      display:
+                        type: object
+                        additionalProperties: false
+                        required: [kind, url, attribution, width, height]
+                        properties:
+                          kind:
+                            type: string
+                            enum: [same_artwork_reference]
+                          url:
+                            type: string
+                            format: uri
+                          attribution:
+                            type: string
+                          width:
+                            type: integer
+                            minimum: 1
+                          height:
+                            type: integer
+                            minimum: 1
     AssetManifestResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"

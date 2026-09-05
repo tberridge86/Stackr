@@ -1,6 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRICE_API_URL, STACKR_API_URL } from './config';
+import {
+  createStackrApiFetch,
+  normalizeStackrApiBaseUrl,
+  type StackrApiFetch,
+} from './stackrApiTransportPolicy';
+import {
+  resolveStackrApiDeviceIdForRequest,
+  rewriteStackrApiUrlForLoopbackPreview,
+  stripStackrPreviewProxyAuthorization,
+} from './stackrPreviewApiProxy';
 import { supabase } from './supabase';
+
+const STACKR_CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type StackrApiLanguageCode = 'en' | 'ja' | 'zh-cn' | 'zh-tw' | 'zh-Hans' | 'zh-Hant' | 'ko';
 
@@ -190,6 +202,21 @@ export type StackrCatalogueAsset = {
   updatedAt: string | null;
 };
 
+export type StackrSameArtworkDisplayReferenceInput = {
+  sourceCardId: string;
+  sourceDefaultVariantId: string;
+};
+
+export type StackrSameArtworkDisplayReference = StackrSameArtworkDisplayReferenceInput & {
+  display: {
+    kind: 'same_artwork_reference';
+    url: string;
+    attribution: string;
+    width: number;
+    height: number;
+  };
+};
+
 export type StackrDeltaChange = {
   sequence: number;
   operation: 'insert' | 'update' | 'deprecation' | 'correct' | 'delete_marker';
@@ -376,8 +403,6 @@ export type StackrObservabilityDashboard = {
   releaseGates: StackrQualityReleaseGate[];
 };
 
-type FetchLike = typeof fetch;
-
 export type StackrRecognitionLanguageCode = StackrApiLanguageCode | 'unknown';
 
 export type StackrRecognitionScriptCode =
@@ -550,7 +575,7 @@ export class StackrApiV1Error extends Error {
 
 export type StackrApiV1ClientOptions = {
   baseUrl?: string;
-  fetchImpl?: FetchLike;
+  fetchImpl?: StackrApiFetch;
   headers?: Record<string, string>;
   getAccessToken?: () => Promise<string | null>;
   getDeviceId?: () => Promise<string>;
@@ -627,15 +652,15 @@ function assertNoImagePayload(value: unknown) {
 
 export class StackrApiClient {
   private readonly baseUrl: string;
-  private readonly fetchImpl: FetchLike;
+  private readonly fetchImpl: StackrApiFetch;
   private readonly headers: Record<string, string>;
   private readonly getAccessToken: () => Promise<string | null>;
   private readonly getDeviceId: () => Promise<string>;
   private readonly createIdempotencyKey: () => string;
 
   constructor(options: StackrApiV1ClientOptions = {}) {
-    this.baseUrl = options.baseUrl ?? `${STACKR_API_URL || PRICE_API_URL}/v1`;
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    this.baseUrl = normalizeStackrApiBaseUrl(options.baseUrl ?? `${STACKR_API_URL || PRICE_API_URL}/v1`);
+    this.fetchImpl = createStackrApiFetch(options.fetchImpl);
     this.headers = {
       'X-Stackr-Api-Version': '1',
       ...(options.headers ?? {}),
@@ -650,14 +675,27 @@ export class StackrApiClient {
     query?: Record<string, string | number | boolean | null | undefined>,
     init: RequestInit = {},
   ): Promise<StackrApiEnvelope<T>> {
-    const deviceId = await this.getDeviceId();
-    const response = await this.fetchImpl(buildUrl(this.baseUrl, path, query), {
+    const remoteUrl = buildUrl(this.baseUrl, path, query);
+    const requestMethod = init.method ?? 'GET';
+    const requestUrl = rewriteStackrApiUrlForLoopbackPreview(remoteUrl, requestMethod);
+    const isLoopbackPreviewRead = requestUrl !== remoteUrl;
+    // The same-origin development proxy forwards anonymous public reads only.
+    // Avoid touching device storage for a value that is deliberately not sent
+    // upstream; browser storage can be unavailable in embedded previews.
+    const deviceId = await resolveStackrApiDeviceIdForRequest(remoteUrl, requestUrl, this.getDeviceId);
+    let requestHeaders: Record<string, string> = {
+      ...this.headers,
+      ...(deviceId ? { 'X-Stackr-Device-Id': deviceId } : {}),
+      ...(init.headers as Record<string, string> | undefined),
+    };
+    // The preview proxy intentionally accepts only anonymous public reads.
+    // Authenticated API calls always keep their validated HTTPS origin.
+    if (isLoopbackPreviewRead) {
+      requestHeaders = stripStackrPreviewProxyAuthorization(requestHeaders);
+    }
+    const response = await this.fetchImpl(requestUrl, {
       ...init,
-      headers: {
-        ...this.headers,
-        'X-Stackr-Device-Id': deviceId,
-        ...(init.headers as Record<string, string> | undefined),
-      },
+      headers: requestHeaders,
     });
 
     if (response.status === 304) {
@@ -793,16 +831,20 @@ export class StackrApiClient {
     region?: string;
     cursor?: string | null;
     limit?: number;
-  } = {}) {
-    return this.request<{ sets: StackrSet[] }>('/sets', query);
+  } = {}, init: RequestInit = {}) {
+    return this.request<{ sets: StackrSet[] }>('/sets', query, init);
   }
 
-  set(setId: string) {
-    return this.request<{ set: StackrSet }>(`/sets/${encodeURIComponent(setId)}`);
+  set(setId: string, init: RequestInit = {}) {
+    return this.request<{ set: StackrSet }>(`/sets/${encodeURIComponent(setId)}`, undefined, init);
   }
 
-  setCards(setId: string, query: { language?: StackrApiLanguageCode; cursor?: string | null; limit?: number } = {}) {
-    return this.request<{ cards: StackrCard[] }>(`/sets/${encodeURIComponent(setId)}/cards`, query);
+  setCards(
+    setId: string,
+    query: { language?: StackrApiLanguageCode; cursor?: string | null; limit?: number } = {},
+    init: RequestInit = {},
+  ) {
+    return this.request<{ cards: StackrCard[] }>(`/sets/${encodeURIComponent(setId)}/cards`, query, init);
   }
 
   card(cardId: string) {
@@ -813,6 +855,32 @@ export class StackrApiClient {
     return this.request<{ cardId: string; variants: StackrCardVariant[] }>(`/cards/${encodeURIComponent(cardId)}/variants`);
   }
 
+  sameArtworkDisplayReferences(references: StackrSameArtworkDisplayReferenceInput[]) {
+    if (!Array.isArray(references) || references.length < 1 || references.length > 50) {
+      throw new Error('sameArtworkDisplayReferences requires between 1 and 50 source identities.');
+    }
+    const keys = new Set<string>();
+    const normalizedReferences: StackrSameArtworkDisplayReferenceInput[] = [];
+    for (const reference of references) {
+      if (!STACKR_CANONICAL_UUID_PATTERN.test(reference.sourceCardId)
+        || !STACKR_CANONICAL_UUID_PATTERN.test(reference.sourceDefaultVariantId)) {
+        throw new Error('sameArtworkDisplayReferences requires canonical UUID identities.');
+      }
+      const normalizedReference = {
+        sourceCardId: reference.sourceCardId.toLowerCase(),
+        sourceDefaultVariantId: reference.sourceDefaultVariantId.toLowerCase(),
+      };
+      const key = `${normalizedReference.sourceCardId}:${normalizedReference.sourceDefaultVariantId}`;
+      if (keys.has(key)) throw new Error('sameArtworkDisplayReferences does not accept duplicate identities.');
+      keys.add(key);
+      normalizedReferences.push(normalizedReference);
+    }
+    return this.post<{ references: StackrSameArtworkDisplayReference[] }>(
+      '/cards/display-artwork-references',
+      { references: normalizedReferences },
+    );
+  }
+
   assetManifest(query: {
     assetType?: string;
     setId?: string;
@@ -820,8 +888,8 @@ export class StackrApiClient {
     variantId?: string;
     cursor?: string | null;
     limit?: number;
-  } = {}) {
-    return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', query);
+  } = {}, init: RequestInit = {}) {
+    return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', query, init);
   }
 
   cardPrice(variantId: string, query: {

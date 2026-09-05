@@ -6,6 +6,7 @@ import {
   ApiError,
   createCatalogueV1Service,
   normalizeSearchText,
+  parseSameArtworkDisplayReferenceInput,
   parseCursor,
   searchFixtureCatalogue,
   toCardSummary,
@@ -17,6 +18,29 @@ const cardId = '22222222-2222-4222-8222-222222222222';
 const variantId = '33333333-3333-4333-8333-333333333333';
 const sharedArtworkVariantId = '99999999-9999-4999-8999-999999999999';
 const manifestEtag = '"stackr-v1-test-manifest"';
+
+{
+  const reference = {
+    sourceCardId: 'abcdefab-cdef-4abc-8def-abcdefabcdef',
+    sourceDefaultVariantId: 'abcdefac-cdef-4abc-8def-abcdefabcdef',
+  };
+  assert.deepEqual(
+    parseSameArtworkDisplayReferenceInput({ references: [{
+      sourceCardId: reference.sourceCardId.toUpperCase(),
+      sourceDefaultVariantId: reference.sourceDefaultVariantId.toUpperCase(),
+    }] }),
+    [{ ...reference }],
+    'same-artwork UUID input must normalize to lowercase before lookup',
+  );
+  assert.throws(
+    () => parseSameArtworkDisplayReferenceInput({ references: [reference, {
+      sourceCardId: reference.sourceCardId.toUpperCase(),
+      sourceDefaultVariantId: reference.sourceDefaultVariantId.toUpperCase(),
+    }] }),
+    (error) => error instanceof ApiError && error.code === 'duplicate_same_artwork_reference',
+    'case-only UUID duplicates must be rejected',
+  );
+}
 
 function assertAssetDeliveryProjection() {
   const row = {
@@ -1058,8 +1082,17 @@ assert.match(client, /'X-Stackr-Device-Id': deviceId/);
 assert.match(client, /Authorization: `Bearer \$\{accessToken\}`/);
 assert.match(client, /assetManifest\([\s\S]+cursor\?: string \| null/);
 assert.doesNotMatch(client, /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RECOGNITION_SERVICE_SECRET|BACKEND_ORIGIN_KEY/);
-assert.match(domainAdapter, /client\.assetManifest\(\{ assetType, cursor, limit: 500 \}\)/);
-assert.match(domainAdapter, /client\.assetManifest\(\{ setId, cursor, limit: 500 \}\)/);
+assert.match(
+  domainAdapter,
+  /client\.assetManifest\(\s*\{ assetType, cursor, limit: 500 \},\s*\{ signal: pageSignal \},\s*\)/,
+);
+assert.match(
+  domainAdapter,
+  /client\.assetManifest\(\s*\{ setId, cursor, limit: 500 \},\s*\{ signal: pageSignal \},\s*\)/,
+);
+assert.match(domainAdapter, /client\.sets\([\s\S]*?\{ signal: pageSignal \},\s*\)/);
+assert.match(domainAdapter, /client\.setCards\([\s\S]*?\{ signal: pageSignal \},\s*\)/);
+assert.match(domainAdapter, /client\.set\(setId, \{ signal \}\)/);
 assert.doesNotMatch(domainAdapter, /client\.assetManifest\(\{[^}]*limit:\s*1000/);
 assert.match(openApi, /\/assets\/manifest:[\s\S]+#\/components\/parameters\/Cursor[\s\S]+#\/components\/parameters\/Limit/);
 assert.match(openApi, /Limit:\s+[\s\S]*?name: limit[\s\S]*?maximum: 500/);

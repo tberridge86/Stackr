@@ -1,0 +1,162 @@
+{
+  "schemaVersion": "stackr-cjk-display-metadata-rights-review-v1",
+  "reviewId": "cjk-display-metadata-pending:2026-09-04",
+  "status": "partially_superseded_pending",
+  "activationAuthorized": false,
+  "reviewOwner": "Jack Berridge",
+  "recordPurpose": "Historical fail-closed ledger for the lanes that remain pending or prohibited. This record is not the activation authority for bounded runtime uses later approved in the records below.",
+  "boundary": {
+    "path": "docs/stackrtcg-ip-operating-boundary.md",
+    "classification": "amber_requires_recorded_rights_review_before_activation",
+    "requiredAmberFields": [
+      "asset_or_data",
+      "source",
+      "owner_or_licensor",
+      "permitted_purpose",
+      "territory",
+      "term",
+      "transformation_rights",
+      "storage_rights",
+      "deletion_requirements",
+      "attribution",
+      "downstream_delivery_rights",
+      "approving_person"
+    ]
+  },
+  "sourceFiles": {
+    "catalogue/source-rights-registry.json": "bdf7fcb16c8ec7f9de8859f33a1659a06062622303f4c2a39193fcda9757c210",
+    "catalogue/rights-evidence/tcgdex-metadata-mit.2026-08-14.json": "178de363fd396d6de895f2bfb36cc91138b58b1cb447a85ae08427b80c3f0b03",
+    "catalogue/tcgdex-japanese-set-english-display-source.json": "92639734fb2bb7167c96d720a651c66ccf618d160bd9169e04dc6ba0a77280f9",
+    "catalogue/tcgdex-chinese-set-identity-display-source.json": "bef7c15704acca9b2e993398d3f36a9acc630619339dc83dc20284d7983bc629",
+    "catalogue/japanese-set-display-drafts-source.json": "e17095374fa563da0a517b0c7f97859ef4525822f226ffb114ed2c428403f7d3",
+    "scripts/build-wikidata-pokemon-species-display-lookup.ts": "6f8a4363fac6c626d34cbf60ce1a764ee7899b97aaf8ba5f038e360f886bdce4"
+  },
+  "supersedingRecords": [
+    {
+      "path": "catalogue/rights-evidence/cjk-app-metadata-permission-owner-attestation.2026-09-04.json",
+      "sha256": "13e9bc1ffa4635cdc10110f0e8dc7356dcb7433d73e60755cc019ba075137d11",
+      "scope": "Bounded runtime-only Japanese, Traditional-Chinese, and Simplified-Chinese native set identity metadata and exact hash-bound English set supplements."
+    },
+    {
+      "path": "catalogue/rights-reviews/cjk-editorial-set-translation-owner-approved.2026-09-04.json",
+      "sha256": "756deba35b402b9714937a84f0db88b858945af6d861320dcdca71374630c205",
+      "scope": "Exact 11 Japanese and 126 Chinese native-primary editorial English set supplements, runtime only."
+    },
+    {
+      "path": "catalogue/rights-reviews/tcgdex-japanese-set-english-display-green.2026-09-04.json",
+      "sha256": "8b1d61c4954cc0ca2631232fffe625f05338a5e45baeeacfc479913a41b7931f",
+      "scope": "Exact pinned Japanese set English-display supplement classified green."
+    },
+    {
+      "path": "catalogue/rights-reviews/tcgdex-cjk-set-marks-owner-approved.2026-09-04.json",
+      "sha256": "6f8152e827d70b8a8ee09c023620332815f9a2183017c822dc5f86d60411c072",
+      "scope": "Exact provider-issued CJK set logos and symbols under the runtime URL allow-list; no persistence."
+    },
+    {
+      "path": "catalogue/rights-reviews/tcgdex-low-resolution-card-reference-green.2026-09-04.json",
+      "sha256": "1cdfac042494f4ec3f78ef23de1a6bf0d1cc351eba43a0bedb000923bf8520ba",
+      "scope": "Exact low-resolution provider card references under their separate runtime policy; no persistence."
+    }
+  ],
+  "redEvidenceDisposition": {
+    "automatedPokemonCardComRecordCount": 26,
+    "removedSourceSha256": "b592f6a61aff3cec174a8dbe734d82c602a70708c6b14314771d8ece57f21b97",
+    "trackedCandidatePayloadRetained": false,
+    "generatedCandidatePayloadRetained": false,
+    "note": "The collected titles and page URLs were removed from tracked and generated candidate payloads. Only this count and hash remain as minimal compliance evidence."
+  },
+  "lanes": [
+    {
+      "id": "tcgdex_pinned_cjk_set_metadata",
+      "classification": "amber",
+      "status": "superseded_for_bounded_runtime_use",
+      "activationAuthorized": false,
+      "asset_or_data": "Pinned TCGdex Japanese and Chinese set metadata, including 256 Japanese English-display values and exact native set-identity fields.",
+      "source": "tcgdex/cards-database at dd4fc9460b54b91c25df750c68ca36b9946448e2; prior MIT evidence is pinned separately at ccb9cef3f9a545be89cd5e716cc1c72f99070bac.",
+      "owner_or_licensor": "TCGdex repository licensor is stated as MIT; ownership and commercial database-right scope for underlying compiled Pokémon metadata remain unconfirmed.",
+      "permitted_purpose": "Requested only: native-primary, supplemental set identification in Stackr collection, search, inventory, and genuine secondary-market workflows; no canonical database write, artwork, logo, symbol, or asset delivery.",
+      "territory": "Unconfirmed; requested worldwide digital service territory.",
+      "term": "Unconfirmed; no activation until a written term is recorded.",
+      "transformation_rights": "Unconfirmed for normalization, code lookup, and English-display supplementation; no derivative artwork use requested.",
+      "storage_rights": "Unconfirmed for durable production storage of copied compiled metadata; current tracked source is review-only.",
+      "deletion_requirements": "Unconfirmed; pending review must define removal/replacement and retention obligations.",
+      "attribution": "Required by the current source-rights registry; exact presentation and notice text pending review.",
+      "downstream_delivery_rights": "Unconfirmed for client and backend delivery of copied set metadata.",
+      "approving_person": null,
+      "missingRequiredReviewFields": [],
+      "supersededBy": [
+        "catalogue/rights-evidence/cjk-app-metadata-permission-owner-attestation.2026-09-04.json",
+        "catalogue/rights-reviews/tcgdex-japanese-set-english-display-green.2026-09-04.json",
+        "catalogue/rights-reviews/cjk-editorial-set-translation-owner-approved.2026-09-04.json"
+      ],
+      "remainingUnapprovedScope": ["canonical catalogue writes", "bulk export or corpus distribution", "uses outside the bounded StackrTCG runtime response and in-app display"],
+      "notes": "This earlier pending description is superseded only for the exact bounded runtime metadata uses named above. The later records do not authorize canonical rewrites, broad source ingestion, bulk export, or unrelated metadata fields."
+    },
+    {
+      "id": "wikidata_cc0_species_labels",
+      "classification": "amber",
+      "status": "pending_unapproved",
+      "activationAuthorized": false,
+      "asset_or_data": "Wikidata CC0 Pokémon species labels used as English supplemental identification for Japanese, Traditional Chinese, and Simplified Chinese card names.",
+      "source": "Read-only Wikidata SPARQL label snapshot, hash-bound by scripts/build-wikidata-pokemon-species-display-lookup.ts; media access is prohibited by the lookup contract.",
+      "owner_or_licensor": "Wikidata contributors under CC0 for database labels; Pokémon names and marks remain subject to their respective rights holders.",
+      "permitted_purpose": "Requested only: short, native-primary species-name supplementation for identification; no card text, artwork, or identity inference beyond the reviewed species match.",
+      "territory": "CC0 dedication is worldwide, but product/trademark presentation review remains required for Stackr deployment territory.",
+      "term": "CC0 is intended to be perpetual; Stackr feature activation remains pending this review.",
+      "transformation_rights": "CC0 labels may be normalized and paired with native labels; no expressive card text or artwork transformation is authorized.",
+      "storage_rights": "Requested only for the minimal hash-bound label lookup; no media storage.",
+      "deletion_requirements": "Replace or remove on provenance failure, identity mismatch, legal request, or review withdrawal; final retention policy pending.",
+      "attribution": "CC0 does not require attribution, but provenance should remain recorded.",
+      "downstream_delivery_rights": "Unconfirmed for public client/backend delivery pending approval of the exact Stackr feature and jurisdictional presentation.",
+      "approving_person": null,
+      "missingRequiredReviewFields": ["approving person", "final downstream delivery decision", "final deletion/retention policy"],
+      "notes": "CC0 label provenance does not license Pokémon artwork, official logos, stylised marks, or card expressive text."
+    },
+    {
+      "id": "cjk_editorial_translation_drafts",
+      "classification": "amber",
+      "status": "superseded_for_exact_reviewed_candidates",
+      "activationAuthorized": false,
+      "asset_or_data": "Stackr-reviewed, non-authoritative English translation drafts for 11 Japanese TCGdex-sourced set titles plus the pending Traditional-Chinese and Simplified-Chinese review candidates.",
+      "source": "Native titles from the pending TCGdex and Chinese identity lanes only; English wording is editorial and explicitly labelled English translation. Red pokemon-card.com records have been removed.",
+      "owner_or_licensor": "Stackr is the proposed editor of the translation wording; upstream native-title and product-name rights remain unresolved as stated in the underlying source lanes.",
+      "permitted_purpose": "Requested only: native-primary supplemental identification, never representation as official translation and never canonical metadata write.",
+      "territory": "Unconfirmed; requested worldwide digital service territory.",
+      "term": "Unconfirmed; no activation until review approval is recorded.",
+      "transformation_rights": "Unconfirmed for translation of source set titles; no translation of attack text, flavour text, rules text, or other full creative card text is in scope.",
+      "storage_rights": "Requested only for minimal display-draft lookup records; production retention remains unapproved.",
+      "deletion_requirements": "Remove affected draft promptly on source dispute, title correction, review withdrawal, or rights-holder request; final retention process pending.",
+      "attribution": "Source provenance and non-authoritative label must remain available; final attribution treatment pending.",
+      "downstream_delivery_rights": "Unconfirmed for public application delivery of translated product-title text.",
+      "approving_person": null,
+      "missingRequiredReviewFields": [],
+      "supersededBy": ["catalogue/rights-reviews/cjk-editorial-set-translation-owner-approved.2026-09-04.json"],
+      "remainingUnapprovedScope": ["unreviewed or newly generated CJK translations", "card rules, attacks, flavour text, or other expressive card text", "canonical catalogue writes"],
+      "notes": "The exact hash-bound 11 Japanese and 126 Chinese candidates are governed by the later owner-approved runtime-only record. New or unreviewed translations remain fail closed."
+    },
+    {
+      "id": "automated_pokemon_card_com_collection",
+      "classification": "red",
+      "status": "rejected_quarantined",
+      "activationAuthorized": false,
+      "asset_or_data": "Automated collection, scraping, bulk downloading, or database ingestion from pokemon-card.com card-detail pages.",
+      "source": "pokemon-card.com; catalogue/source-rights-registry.json source code pokemon_official_web.",
+      "owner_or_licensor": "Official Pokémon website operator and applicable rights holders; no permission evidence is recorded.",
+      "permitted_purpose": "None. This lane is prohibited and quarantined.",
+      "territory": "Not applicable while rejected.",
+      "term": "Not applicable while rejected.",
+      "transformation_rights": "Not granted.",
+      "storage_rights": "Not granted.",
+      "deletion_requirements": "The accidentally collected title/page payload has been removed from tracked and generated activation candidates; retain only the count and source hash in this compliance record unless a separate legal hold requires more.",
+      "attribution": "Not applicable; attribution does not cure the prohibition.",
+      "downstream_delivery_rights": "Not granted.",
+      "approving_person": null,
+      "missingRequiredReviewFields": ["written rights-holder permission for any future proposal"],
+      "prohibitionEvidence": "source-rights registry marks pokemon_official_web automatedMetadataFetch, automatedAssetFetch, persistOriginalAsset, publicDisplay, createDerivatives, embeddings, and training as prohibited; operating boundary red rules prohibit scraping or bulk downloading where terms or controls prohibit it.",
+      "disposition": "removed_from_tracked_and_generated_candidate_payloads"
+    }
+  ],
+  "signature": null,
+  "approvalRecordedAt": null,
+  "nextAction": "Use the exact later records for their bounded runtime scopes. Keep Wikidata species labels, new or unreviewed CJK metadata/translation imports, canonical rewrites, and the rejected official-site automation lane fail closed unless separately reviewed."
+}

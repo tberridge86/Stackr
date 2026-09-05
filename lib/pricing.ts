@@ -56,9 +56,11 @@ type PokeTracePriceTier = {
 type PokeTraceCard = {
   id?: string;
   name?: string;
+  localName?: string;
+  englishName?: string;
   cardNumber?: string;
   number?: string;
-  set?: { name?: string; slug?: string } | string | null;
+  set?: { name?: string; localName?: string; englishName?: string; slug?: string } | string | null;
   market?: 'US' | 'EU' | string;
   currency?: 'USD' | 'EUR' | 'GBP' | string;
   prices?: {
@@ -442,8 +444,8 @@ export async function fetchPokeTraceCardPrice(
     const value: PokeTraceCardPriceResult = {
       source: 'stackr-api',
       providerCardId: result.resolved.variantId,
-      name: card.names.englishDisplay ?? card.names.native,
-      setName: card.set.englishDisplayName ?? card.set.nativeName ?? card.set.setCode,
+      name: card.names.native ?? card.names.englishDisplay,
+      setName: card.set.nativeName ?? card.set.englishDisplayName ?? card.set.setCode,
       number: card.collectorNumber.value,
       market: input.market ?? null,
       currency: price.currency,
@@ -470,9 +472,15 @@ export async function fetchPokeTraceCardPrice(
       sourceBreakdown: price.sourceBreakdown,
       raw: {
         id: result.resolved.variantId,
-        name: card.names.englishDisplay ?? card.names.native,
+        name: card.names.native ?? card.names.englishDisplay,
+        englishName: card.names.englishDisplay ?? undefined,
+        localName: card.names.native,
         cardNumber: card.collectorNumber.value,
-        set: { name: card.set.englishDisplayName ?? card.set.nativeName ?? card.set.setId },
+        set: {
+          name: card.set.nativeName ?? card.set.englishDisplayName ?? card.set.setId,
+          englishName: card.set.englishDisplayName ?? undefined,
+          localName: card.set.nativeName ?? undefined,
+        },
         currency: price.currency,
         totalSaleCount: price.sample.sold,
       },
@@ -921,8 +929,8 @@ export async function fetchPptCardWithPsaGrades(identifier: string, setName?: st
   };
   return {
     id: result.resolved.variantId,
-    name: result.resolved.card.names.englishDisplay ?? result.resolved.card.names.native,
-    setName: result.resolved.card.set.englishDisplayName ?? result.resolved.card.set.nativeName ?? undefined,
+    name: result.resolved.card.names.native ?? result.resolved.card.names.englishDisplay,
+    setName: result.resolved.card.set.nativeName ?? result.resolved.card.set.englishDisplayName ?? undefined,
     number: result.resolved.card.collectorNumber.value,
     ebay: {
       psa8: grade,

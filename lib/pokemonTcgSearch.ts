@@ -103,7 +103,7 @@ export async function searchPokemonCards(
       return {
         id: card.id,
         language: normalizedLanguage,
-        name: cleanText(englishName ?? localName ?? card.name) ?? card.id,
+        name: cleanText(localName ?? card.name ?? englishName) ?? card.id,
         localName: cleanText(localName),
         englishName: cleanText(englishName),
         number: cleanText(card.number ?? raw.localId ?? raw.number),
@@ -114,7 +114,7 @@ export async function searchPokemonCards(
         },
         set: {
           id: card.set_id ?? undefined,
-          name: cleanText(setDisplayName ?? setEnglishName ?? setLocalName),
+          name: cleanText(setLocalName ?? setDisplayName ?? setEnglishName),
           localName: setLocalName,
           englishName: setEnglishName,
           series: raw.set?.series ?? undefined,

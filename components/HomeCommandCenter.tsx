@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
@@ -543,9 +544,9 @@ export function ContinueBinderCard({
     })
     : null;
   const setLogoUrl = binder?.type === 'official' && !setLogoSource
-    ? binder.sourceSetLogoUrl
+    ? enforceSetVisualRuntimePolicy(binder.sourceSetLogoUrl
       ?? binder.sourceSetSymbolUrl
-      ?? getPokemonSetLogoUrl(binder.sourceSetId, binder.sourceSetLanguage)
+      ?? getPokemonSetLogoUrl(binder.sourceSetId, binder.sourceSetLanguage))
     : undefined;
   const customNameArt = binder?.type === 'custom' ? getCustomBinderNameArt(binder.customNameArtKey) : null;
   const showsCompletion = binder?.type === 'official';

@@ -319,6 +319,26 @@ function validateObservabilityRefresh(payload) {
   }
 }
 
+function validateSameArtworkDisplayReferences(payload) {
+  rejectUnknownKeys(payload, new Set(['references']));
+  if (!Array.isArray(payload.references) || payload.references.length < 1 || payload.references.length > 50) {
+    bad('invalid_same_artwork_references', 'references must contain between 1 and 50 source identities.');
+  }
+  const seen = new Set();
+  for (const reference of payload.references) {
+    if (!reference || typeof reference !== 'object' || Array.isArray(reference)) {
+      bad('invalid_same_artwork_reference', 'Each reference must be an object.');
+    }
+    rejectUnknownKeys(reference, new Set(['sourceCardId', 'sourceDefaultVariantId']));
+    if (!UUID_PATTERN.test(reference.sourceCardId ?? '') || !UUID_PATTERN.test(reference.sourceDefaultVariantId ?? '')) {
+      bad('invalid_same_artwork_reference', 'Same-artwork source identities must be canonical UUIDs.');
+    }
+    const key = `${reference.sourceCardId}:${reference.sourceDefaultVariantId}`.toLowerCase();
+    if (seen.has(key)) bad('duplicate_same_artwork_reference', 'Same-artwork source identities must not be duplicated.');
+    seen.add(key);
+  }
+}
+
 export function parseAndValidateJson(bodyBytes, kind, pathname = '') {
   let payload;
   try {
@@ -338,6 +358,7 @@ export function parseAndValidateJson(bodyBytes, kind, pathname = '') {
   if (kind === 'assetMigrationCommand') validateAssetMigrationCommand(payload);
   if (kind === 'qualityEvaluation') validateQualityEvaluation(payload);
   if (kind === 'observabilityRefresh') validateObservabilityRefresh(payload);
+  if (kind === 'sameArtworkDisplayReferences') validateSameArtworkDisplayReferences(payload);
   return payload;
 }
 

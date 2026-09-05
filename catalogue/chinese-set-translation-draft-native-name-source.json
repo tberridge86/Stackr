@@ -1,0 +1,512 @@
+{
+  "schemaVersion": "stackr-chinese-set-translation-draft-native-name-source-v1",
+  "sourceSnapshot": {
+    "providerBaselinePath": "reports/catalogue/provider-baseline/2026-08-14/raw/{zh-cn,zh-tw}.sets.json",
+    "baselineSha256": {
+      "zh-cn": "69170515af0564d353d0400905ccbb759ee402455a88021f433453fe23f056da",
+      "zh-tw": "06790ef53153231dff8e872415e75cb474fd71ab5f92ec6bb0bec5cbe49ba358"
+    }
+  },
+  "nativeNames": {
+    "zh-cn": {
+      "cbb2c": {
+        "nativeName": "宝石包Vol.2",
+        "normalizedNativeName": "宝石包Vol.2"
+      },
+      "cbb3c": {
+        "nativeName": "宝石包Vol.3",
+        "normalizedNativeName": "宝石包Vol.3"
+      },
+      "cbb4c": {
+        "nativeName": "宝石包 Vol.4",
+        "normalizedNativeName": "宝石包Vol.4"
+      },
+      "cbb5c": {
+        "nativeName": "宝石包 Vol.5",
+        "normalizedNativeName": "宝石包Vol.5"
+      },
+      "cs1.5c": {
+        "nativeName": "极巨攻防",
+        "normalizedNativeName": "极巨攻防"
+      },
+      "cs1ac": {
+        "nativeName": "横空出世 赫",
+        "normalizedNativeName": "横空出世赫"
+      },
+      "cs1bc": {
+        "nativeName": "极巨争锋 焰",
+        "normalizedNativeName": "极巨争锋焰"
+      },
+      "cs2.5c": {
+        "nativeName": "璀璨反击",
+        "normalizedNativeName": "璀璨反击"
+      },
+      "cs2ac": {
+        "nativeName": "浓墨重彩 黎",
+        "normalizedNativeName": "浓墨重彩黎"
+      },
+      "cs2bc": {
+        "nativeName": "浓墨重彩 靛",
+        "normalizedNativeName": "浓墨重彩靛"
+      },
+      "cs3.5c": {
+        "nativeName": "怒炎灼天",
+        "normalizedNativeName": "怒炎灼天"
+      },
+      "cs3ac": {
+        "nativeName": "洪荒演武 茂",
+        "normalizedNativeName": "洪荒演武茂"
+      },
+      "cs3bc": {
+        "nativeName": "洪荒演武 激",
+        "normalizedNativeName": "洪荒演武激"
+      },
+      "cs4.5c": {
+        "nativeName": "终末炎舞",
+        "normalizedNativeName": "终末炎舞"
+      },
+      "cs4ac": {
+        "nativeName": "九彩汇聚 朋",
+        "normalizedNativeName": "九彩汇聚朋"
+      },
+      "cs4bc": {
+        "nativeName": "九彩汇聚 源",
+        "normalizedNativeName": "九彩汇聚源"
+      },
+      "cs5.5c": {
+        "nativeName": "暗影夺辉",
+        "normalizedNativeName": "暗影夺辉"
+      },
+      "cs5ac": {
+        "nativeName": "勇魅群星 魅",
+        "normalizedNativeName": "勇魅群星魅"
+      },
+      "cs5bc": {
+        "nativeName": "勇魅群星 勇",
+        "normalizedNativeName": "勇魅群星勇"
+      },
+      "cs6.5c": {
+        "nativeName": "胜象星引",
+        "normalizedNativeName": "胜象星引"
+      },
+      "cs6ac": {
+        "nativeName": "碧海暗影 啸",
+        "normalizedNativeName": "碧海暗影啸"
+      },
+      "cs6bc": {
+        "nativeName": "碧海暗影 逐",
+        "normalizedNativeName": "碧海暗影逐"
+      },
+      "csm1.5c": {
+        "nativeName": "对战精英",
+        "normalizedNativeName": "对战精英"
+      },
+      "csm1a": {
+        "nativeName": "风暴涌现",
+        "normalizedNativeName": "风暴涌现"
+      },
+      "csm1b": {
+        "nativeName": "风暴涌现",
+        "normalizedNativeName": "风暴涌现"
+      },
+      "csm1cc": {
+        "nativeName": "横空出世 泽",
+        "normalizedNativeName": "横空出世泽"
+      },
+      "csm2.5c": {
+        "nativeName": "炫奇争胜",
+        "normalizedNativeName": "炫奇争胜"
+      },
+      "csm2ac": {
+        "nativeName": "交相辉映 沐",
+        "normalizedNativeName": "交相辉映沐"
+      },
+      "csm2b": {
+        "nativeName": "闪耀协同效应",
+        "normalizedNativeName": "闪耀协同效应"
+      },
+      "csm2cc": {
+        "nativeName": "交相辉映 唤",
+        "normalizedNativeName": "交相辉映唤"
+      },
+      "csmpic": {
+        "nativeName": "对战派对组合 奖励包",
+        "normalizedNativeName": "对战派对组合奖励包"
+      },
+      "csv2c": {
+        "nativeName": "奇迹启程",
+        "normalizedNativeName": "奇迹启程"
+      },
+      "csv3c": {
+        "nativeName": "无畏太晶",
+        "normalizedNativeName": "无畏太晶"
+      },
+      "csv4c": {
+        "nativeName": "嘉奖回合",
+        "normalizedNativeName": "嘉奖回合"
+      },
+      "csv5c": {
+        "nativeName": "黑晶炽诚",
+        "normalizedNativeName": "黑晶炽诚"
+      },
+      "csv6c": {
+        "nativeName": "真实玄虚",
+        "normalizedNativeName": "真实玄虚"
+      },
+      "csv7c": {
+        "nativeName": "利刃猛醒",
+        "normalizedNativeName": "利刃猛醒"
+      },
+      "csv8c": {
+        "nativeName": "璀璨诡幻",
+        "normalizedNativeName": "璀璨诡幻"
+      },
+      "csv9.5c": {
+        "nativeName": "太晶盛聚",
+        "normalizedNativeName": "太晶盛聚"
+      },
+      "csv9c": {
+        "nativeName": "星彩晶璃",
+        "normalizedNativeName": "星彩晶璃"
+      },
+      "sv10": {
+        "nativeName": "火箭隊的榮耀",
+        "normalizedNativeName": "火箭隊的榮耀"
+      },
+      "sv7": {
+        "nativeName": "星晶奇跡",
+        "normalizedNativeName": "星晶奇跡"
+      },
+      "sv7a": {
+        "nativeName": "樂園騰龍",
+        "normalizedNativeName": "樂園騰龍"
+      },
+      "sv8": {
+        "nativeName": "超電突圍",
+        "normalizedNativeName": "超電突圍"
+      },
+      "sv8a": {
+        "nativeName": "太晶慶典ex",
+        "normalizedNativeName": "太晶慶典ex"
+      },
+      "sv9": {
+        "nativeName": "對戰搭檔",
+        "normalizedNativeName": "對戰搭檔"
+      },
+      "sv9a": {
+        "nativeName": "熱風競技場",
+        "normalizedNativeName": "熱風競技場"
+      }
+    },
+    "zh-tw": {
+      "s10a": {
+        "nativeName": "黑暗亡靈",
+        "normalizedNativeName": "黑暗亡靈"
+      },
+      "s10b": {
+        "nativeName": "Pokémon GO",
+        "normalizedNativeName": "PokémonGO"
+      },
+      "s10d": {
+        "nativeName": "時間觀察者",
+        "normalizedNativeName": "時間觀察者"
+      },
+      "s10p": {
+        "nativeName": "空間魔術師",
+        "normalizedNativeName": "空間魔術師"
+      },
+      "s11": {
+        "nativeName": "三連音爆",
+        "normalizedNativeName": "三連音爆"
+      },
+      "s11a": {
+        "nativeName": "白熱奧祕",
+        "normalizedNativeName": "白熱奧祕"
+      },
+      "s12": {
+        "nativeName": "思維激盪",
+        "normalizedNativeName": "思維激盪"
+      },
+      "s12a": {
+        "nativeName": "天地萬物VSTAR",
+        "normalizedNativeName": "天地萬物VSTAR"
+      },
+      "s5a": {
+        "nativeName": "雙璧戰士",
+        "normalizedNativeName": "雙璧戰士"
+      },
+      "s5i": {
+        "nativeName": "一撃大師",
+        "normalizedNativeName": "一撃大師"
+      },
+      "s5r": {
+        "nativeName": "連撃大師",
+        "normalizedNativeName": "連撃大師"
+      },
+      "s6a": {
+        "nativeName": "伊布英雄",
+        "normalizedNativeName": "伊布英雄"
+      },
+      "s6h": {
+        "nativeName": "銀白戰槍",
+        "normalizedNativeName": "銀白戰槍"
+      },
+      "s6k": {
+        "nativeName": "漆黑幽魂",
+        "normalizedNativeName": "漆黑幽魂"
+      },
+      "s7d": {
+        "nativeName": "摩天巔峰",
+        "normalizedNativeName": "摩天巔峰"
+      },
+      "s7r": {
+        "nativeName": "蒼空烈流",
+        "normalizedNativeName": "蒼空烈流"
+      },
+      "s8": {
+        "nativeName": "匯流藝術",
+        "normalizedNativeName": "匯流藝術"
+      },
+      "s8a": {
+        "nativeName": "25週年收藏款",
+        "normalizedNativeName": "25週年收藏款"
+      },
+      "s9": {
+        "nativeName": "星星誕生",
+        "normalizedNativeName": "星星誕生"
+      },
+      "s9a": {
+        "nativeName": "對戰地區",
+        "normalizedNativeName": "對戰地區"
+      },
+      "sc1a": {
+        "nativeName": "劍&盾 SET A",
+        "normalizedNativeName": "劍&盾SETA"
+      },
+      "sc1b": {
+        "nativeName": "劍&盾 SET B",
+        "normalizedNativeName": "劍&盾SETB"
+      },
+      "sc1d": {
+        "nativeName": "劍&盾",
+        "normalizedNativeName": "劍&盾"
+      },
+      "sc2a": {
+        "nativeName": "無極力量 SET A",
+        "normalizedNativeName": "無極力量SETA"
+      },
+      "sc2b": {
+        "nativeName": "無極力量 SET B",
+        "normalizedNativeName": "無極力量SETB"
+      },
+      "sc2d": {
+        "nativeName": "無極力量",
+        "normalizedNativeName": "無極力量"
+      },
+      "sca": {
+        "nativeName": "搭檔",
+        "normalizedNativeName": "搭檔"
+      },
+      "scb": {
+        "nativeName": "挑戰",
+        "normalizedNativeName": "挑戰"
+      },
+      "scd": {
+        "nativeName": "強大",
+        "normalizedNativeName": "強大"
+      },
+      "sdl": {
+        "nativeName": "噴火龍",
+        "normalizedNativeName": "噴火龍"
+      },
+      "sdm": {
+        "nativeName": "超夢",
+        "normalizedNativeName": "超夢"
+      },
+      "sdp": {
+        "nativeName": "皮卡丘",
+        "normalizedNativeName": "皮卡丘"
+      },
+      "sh": {
+        "nativeName": "寶可夢卡牌家庭組合",
+        "normalizedNativeName": "寶可夢卡牌家庭組合"
+      },
+      "si": {
+        "nativeName": "初階牌組100",
+        "normalizedNativeName": "初階牌組100"
+      },
+      "sj": {
+        "nativeName": "藏瑪然特VS無極汰那",
+        "normalizedNativeName": "藏瑪然特VS無極汰那"
+      },
+      "sk": {
+        "nativeName": "頂級訓練家收藏箱 VSTAR",
+        "normalizedNativeName": "頂級訓練家收藏箱VSTAR"
+      },
+      "sld": {
+        "nativeName": "起始組合VSTAR 達克萊伊",
+        "normalizedNativeName": "起始組合VSTAR達克萊伊"
+      },
+      "sll": {
+        "nativeName": "起始組合VSTAR 路卡利歐",
+        "normalizedNativeName": "起始組合VSTAR路卡利歐"
+      },
+      "sn": {
+        "nativeName": "初階牌組100 特別版",
+        "normalizedNativeName": "初階牌組100特別版"
+      },
+      "sp5": {
+        "nativeName": "強大",
+        "normalizedNativeName": "強大"
+      },
+      "sp6": {
+        "nativeName": "VSTAR特別組合",
+        "normalizedNativeName": "VSTAR特別組合"
+      },
+      "spd": {
+        "nativeName": "VSTAR&VMAX 高級牌組 代歐奇希斯",
+        "normalizedNativeName": "VSTAR&VMAX高級牌組代歐奇希斯"
+      },
+      "spz": {
+        "nativeName": "VSTAR&VMAX 高級牌組 捷拉奧拉",
+        "normalizedNativeName": "VSTAR&VMAX高級牌組捷拉奧拉"
+      },
+      "sv1a": {
+        "nativeName": "三連音爆",
+        "normalizedNativeName": "三連音爆"
+      },
+      "sv1s": {
+        "nativeName": "朱ex",
+        "normalizedNativeName": "朱ex"
+      },
+      "sv1v": {
+        "nativeName": "紫ex",
+        "normalizedNativeName": "紫ex"
+      },
+      "sv2a": {
+        "nativeName": "寶可夢卡牌151",
+        "normalizedNativeName": "寶可夢卡牌151"
+      },
+      "sv2d": {
+        "nativeName": "碟旋暴擊",
+        "normalizedNativeName": "碟旋暴擊"
+      },
+      "sv2p": {
+        "nativeName": "冰雪險境",
+        "normalizedNativeName": "冰雪險境"
+      },
+      "sv3": {
+        "nativeName": "黯焰支配者",
+        "normalizedNativeName": "黯焰支配者"
+      },
+      "sv3a": {
+        "nativeName": "激狂駭浪",
+        "normalizedNativeName": "激狂駭浪"
+      },
+      "sv4a": {
+        "nativeName": "閃色寶藏ex",
+        "normalizedNativeName": "閃色寶藏ex"
+      },
+      "sv4k": {
+        "nativeName": "古代咆哮",
+        "normalizedNativeName": "古代咆哮"
+      },
+      "sv4m": {
+        "nativeName": "未來閃光",
+        "normalizedNativeName": "未來閃光"
+      },
+      "sv5a": {
+        "nativeName": "緋紅薄霧",
+        "normalizedNativeName": "緋紅薄霧"
+      },
+      "sv5m": {
+        "nativeName": "異度審判",
+        "normalizedNativeName": "異度審判"
+      },
+      "sv6": {
+        "nativeName": "變幻假面",
+        "normalizedNativeName": "變幻假面"
+      },
+      "sv6a": {
+        "nativeName": "黑夜漫遊者",
+        "normalizedNativeName": "黑夜漫遊者"
+      },
+      "sv7": {
+        "nativeName": "星晶奇跡",
+        "normalizedNativeName": "星晶奇跡"
+      },
+      "sv7a": {
+        "nativeName": "樂園騰龍",
+        "normalizedNativeName": "樂園騰龍"
+      },
+      "sv8": {
+        "nativeName": "超電突圍",
+        "normalizedNativeName": "超電突圍"
+      },
+      "sv8a": {
+        "nativeName": "太晶慶典ex",
+        "normalizedNativeName": "太晶慶典ex"
+      },
+      "sv9": {
+        "nativeName": "對戰搭檔",
+        "normalizedNativeName": "對戰搭檔"
+      },
+      "sv9a": {
+        "nativeName": "熱風競技場",
+        "normalizedNativeName": "熱風競技場"
+      },
+      "sval": {
+        "nativeName": "起始組合ex 呆火鱷&電龍 ex",
+        "normalizedNativeName": "起始組合ex呆火鱷&電龍ex"
+      },
+      "svam": {
+        "nativeName": "起始組合ex 新葉喵&路卡利歐 ex",
+        "normalizedNativeName": "起始組合ex新葉喵&路卡利歐ex"
+      },
+      "svaw": {
+        "nativeName": "起始組合ex 潤水鴨&謎擬Ｑ ex",
+        "normalizedNativeName": "起始組合ex潤水鴨&謎擬Qex"
+      },
+      "svb": {
+        "nativeName": "頂級訓練家收藏箱ex",
+        "normalizedNativeName": "頂級訓練家收藏箱ex"
+      },
+      "svc": {
+        "nativeName": "皮卡丘特別組合",
+        "normalizedNativeName": "皮卡丘特別組合"
+      },
+      "svd": {
+        "nativeName": "ex初階牌組",
+        "normalizedNativeName": "ex初階牌組"
+      },
+      "svel": {
+        "nativeName": "骨紋巨聲鱷ex",
+        "normalizedNativeName": "骨紋巨聲鱷ex"
+      },
+      "svem": {
+        "nativeName": "超夢ex",
+        "normalizedNativeName": "超夢ex"
+      },
+      "svf": {
+        "nativeName": "黯焰支配者",
+        "normalizedNativeName": "黯焰支配者"
+      },
+      "svhk": {
+        "nativeName": "未來密勒頓ex",
+        "normalizedNativeName": "未來密勒頓ex"
+      },
+      "svhm": {
+        "nativeName": "閃色寶藏ex",
+        "normalizedNativeName": "閃色寶藏ex"
+      },
+      "svp": {
+        "nativeName": "特典卡 朱&紫",
+        "normalizedNativeName": "特典卡朱&紫"
+      },
+      "svp1": {
+        "nativeName": "ex特別組合",
+        "normalizedNativeName": "ex特別組合"
+      }
+    }
+  }
+}

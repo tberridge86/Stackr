@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "stackr-amber-local-asset-activation-decision-v1",
+  "decisionId": "stackr-japanese-set-logo-pack-owner-approved:2026-09-04",
+  "classification": "amber",
+  "status": "authorized_on_review_owner_permission_attestation",
+  "recordedAt": "2026-09-04T16:36:23.830Z",
+  "approvingPerson": "Jack Berridge",
+  "approvingRole": "Founder and Director, StackrTCG Ltd.",
+  "activationAuthorized": true,
+  "publicRuntimeDisplayAuthorized": true,
+  "canonicalDatabaseWriteAuthorized": false,
+  "existingBundledAssetRetentionAuthorized": true,
+  "review": {
+    "assetOrData": "The 204-file Stackr-bundled Japanese set-logo pack identified by the bound manifest and aggregate file ledger.",
+    "source": "assets/rev2/11-japanese-set-logo/logos, derived from the source sheets recorded in the bound local manifest.",
+    "ownerOrLicensor": "The applicable asset rights owner or licensor, under permissions represented as held by the StackrTCG review owner.",
+    "permittedPurpose": "Bounded in-app Japanese set identification on search, collection, binder, inventory, checklist, card-detail, set-detail, recognition-result, and product-identification surfaces.",
+    "territory": "Worldwide app delivery where StackrTCG makes the relevant feature available.",
+    "term": "For the duration of the represented permission, with immediate disablement on expiry, withdrawal, or substantiated takedown.",
+    "transformationRights": "Existing reviewed crops plus responsive in-app sizing only; no new artwork generation.",
+    "storageRights": "Retain and bundle only the exact files bound by the reviewed manifest and aggregate ledger.",
+    "deletionRequirements": "Disable and remove an affected bundled file in the next release after expiry, withdrawal, or a substantiated complaint while preserving the audit trail.",
+    "attribution": "No additional visible attribution required by the represented permission; retain the local manifest and decision record.",
+    "downstreamDeliveryRights": "Display as part of the StackrTCG app only; no standalone asset archive, export, resale, or corpus distribution."
+  },
+  "scope": {
+    "sourceCode": "stackr_bundled_japanese_set_logo_pack",
+    "language": "ja",
+    "assetType": "set_logo",
+    "assetCount": 204,
+    "assetDirectory": "assets/rev2/11-japanese-set-logo/logos",
+    "manifestPath": "assets/rev2/11-japanese-set-logo/manifest.json",
+    "manifestSha256": "699a5c571703d76456b3bd67f0c9c44be3c31c424b57636a9f86707004e8c543",
+    "aggregateFileLedgerSha256": "9dc0dca09918262a0e1fca9bc3c1fe5fdc3829bb54a44f537c1ca72de4c5b236",
+    "excludedUses": [
+      "canonical_catalogue_rewrite",
+      "standalone_download_or_export",
+      "asset_resale",
+      "model_training",
+      "new_artwork_generation",
+      "merchandise_or_replica"
+    ]
+  },
+  "bindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+    "ownerAttestationPath": "catalogue/rights-evidence/cjk-app-image-permission-owner-attestation.2026-09-04.json",
+    "ownerAttestationSha256": "0afd34fee2453ca87bf50383ce5aac3519439308297f9200855c57cc49bea0ad"
+  },
+  "runtimeControls": {
+    "exactJapaneseIdentityRequired": true,
+    "ambiguousCrossLanguageMatchesForbidden": true,
+    "manifestBoundAssetOnly": true,
+    "neutralFallbackOnFailure": true,
+    "sourceKillSwitches": [
+      "EXPO_PUBLIC_DISABLE_JAPANESE_SET_LOGOS",
+      "STACKR_DISABLE_JAPANESE_SET_LOGOS"
+    ],
+    "killSwitchValue": "true"
+  },
+  "signature": null,
+  "signatureRequired": false
+}

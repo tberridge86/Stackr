@@ -14,6 +14,7 @@ import {
 import { getBinderCover } from '../lib/binderCovers';
 import { getJapaneseSetLogoSourceForSet } from '../lib/japaneseSetLogos';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
+import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
 import { stackrFonts } from '../lib/typography';
 import { StackrImage } from './StackrImage';
 import { useTheme } from './theme-context';
@@ -77,8 +78,8 @@ export function BinderArtwork({
       name: setName,
       englishDisplayName: setName,
     }));
-  const resolvedLogoUrl = fallbackLogoUrl
-    ?? (cover || resolvedLogoSource ? undefined : getPokemonSetLogoUrl(coverKey ?? sourceSetId, sourceSetLanguage));
+  const resolvedLogoUrl = enforceSetVisualRuntimePolicy(fallbackLogoUrl
+    ?? (cover || resolvedLogoSource ? undefined : getPokemonSetLogoUrl(coverKey ?? sourceSetId, sourceSetLanguage)));
   const hasResolvedLogo = Boolean((resolvedLogoSource || resolvedLogoUrl) && !logoFailed);
   const shouldDockFallbackLogo = !cover?.image && !fallbackArtSource && hasResolvedLogo;
   const setMarkPrimary = useMemo(() => {

@@ -15,6 +15,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import { Text } from '../../components/Text';
 import { StackrProfileAvatar } from '../../components/StackrProfileAvatar';
 import {
@@ -22,6 +23,7 @@ import {
 } from '../../components/PremiumUI';
 import { BinderArtwork } from '../../components/BinderArtwork';
 import { BINDER_MODE_BADGE_SOURCES, BinderModeIconBadge } from '../../components/BinderModeBadge';
+import { getPokemonLanguageDescriptor, PokemonLanguageFlagIcon } from '../../components/PokemonLanguageBadge';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -50,6 +52,10 @@ import {
   normalizePokemonSetId,
   type PokemonCardLanguage,
 } from '../../lib/pokemonTcg';
+import {
+  getPokemonSetLanguageFromPrefixedId,
+  stripPokemonSetLanguagePrefix,
+} from '../../lib/pokemonSetIdentity';
 import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
 import { StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrActionButton } from '../../components/StackrActionButton';
@@ -177,9 +183,9 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
 // ===============================
 
 const getBinderLogoUrl = (item: BinderRecord): string | null => {
-  return item.source_set_logo_url
+  return enforceSetVisualRuntimePolicy(item.source_set_logo_url
     ?? item.source_set_symbol_url
-    ?? getPokemonSetLogoUrl(item.source_set_id, item.language)
+    ?? getPokemonSetLogoUrl(item.source_set_id, item.language))
     ?? null;
 };
 
@@ -194,14 +200,15 @@ const getBinderLogoSource = (item: BinderRecord): ImageSourcePropType | null => 
 };
 
 const stripSetLanguagePrefix = (setId?: string | null) =>
-  String(setId ?? '').trim().replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
+  stripPokemonSetLanguagePrefix(setId);
 
 const inferBinderLanguage = (language?: string | null, setId?: string | null): PokemonCardLanguage => {
   const explicit = String(language ?? '').trim();
   if (explicit) return normalizePokemonCardLanguage(explicit);
   const rawSetId = String(setId ?? '').trim().toLowerCase();
   const strippedSetId = stripSetLanguagePrefix(rawSetId);
-  if (/^(zh-tw|zh_tw|zhtw|zh):/i.test(rawSetId)) return 'zh-tw';
+  const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(rawSetId);
+  if (prefixedLanguage) return prefixedLanguage;
   return rawSetId.startsWith('ja:') || rawSetId.startsWith('jp:') || /^sv\d+[a-z]$/i.test(strippedSetId) ? 'ja' : 'en';
 };
 
@@ -212,7 +219,7 @@ const getSetLookupCandidates = (setId?: string | null) => {
   const raw = String(setId ?? '').trim();
   if (!raw) return [];
   const stripped = stripSetLanguagePrefix(raw);
-  return [...new Set([raw, stripped, `ja:${stripped}`, `zh-tw:${stripped}`, `en:${stripped}`].filter(Boolean))];
+  return [...new Set([raw, stripped, `ja:${stripped}`, `zh-cn:${stripped}`, `zh-tw:${stripped}`, `en:${stripped}`].filter(Boolean))];
 };
 
 const getCountTotal = (count?: BinderCardCount) =>
@@ -503,7 +510,8 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
   const isOfficial = item.type === 'official';
   const isMasterSet = masterSets[item.id] === true;
   const isGraded = item.card_mode === 'graded';
-  const isJapanese = normalizePokemonCardLanguage(item.language) === 'ja';
+  const languageDescriptor = isOfficial ? getPokemonLanguageDescriptor(item.language) : undefined;
+  const isJapanese = languageDescriptor?.code === 'ja';
   const knownTotal = isOfficial ? getCountTotal(progress) : null;
   const percentage = isOfficial ? getBinderProgressPercent(progress) : 0;
   const innerWidth = Math.max(106, cardWidth - 16);
@@ -674,11 +682,11 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
         >
           <Ionicons name="ellipsis-horizontal" size={18} color={STACKR_BINDER_COLORS.textSoft} />
         </Pressable>
-        {(isMasterSet || isGraded || isJapanese) && (
+        {(isMasterSet || isGraded || languageDescriptor) && (
           <View style={{ position: 'absolute', left: 7, top: 7, flexDirection: 'row', gap: 3 }}>
-            {isJapanese ? (
+            {languageDescriptor ? (
               <View style={{
-                width: 36,
+                width: languageDescriptor.code === 'en' ? 44 : 28,
                 height: 22,
                 borderRadius: 11,
                 backgroundColor: '#FFFFFF',
@@ -687,9 +695,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <Text style={{ color: STACKR_BINDER_COLORS.primary, fontSize: 10, fontWeight: '900' }}>
-                  JP
-                </Text>
+                <PokemonLanguageFlagIcon language={languageDescriptor.code} size={16} decorative />
               </View>
             ) : null}
             {isGraded ? <BinderModeIconBadge type="graded" size={38} /> : null}
@@ -997,7 +1003,7 @@ export default function BinderLibraryScreen() {
         id: card.id,
         set_id: card.set_id ?? null,
         language: normalizePokemonCardLanguage(card.language),
-        name: card.english_display_name ?? card.canonical_name ?? card.local_name ?? null,
+        name: card.local_name ?? card.raw_payload?.local_name ?? card.canonical_name ?? card.english_display_name ?? null,
         number: card.collector_number ?? card.raw_payload?.localId ?? null,
         rarity: card.rarity ?? card.raw_payload?.rarity ?? null,
         raw_data: card.raw_payload ?? null,

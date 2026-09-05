@@ -27,6 +27,8 @@ import {
   TradeOfferCard,
 } from '../../lib/tradeOffers';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
+import { attachLiveTcgdexCardReferences } from '../../lib/pokemonTcg';
+import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { StackrCenterModal } from '../../components/StackrModalSystem';
 import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
@@ -291,7 +293,7 @@ export default function OfferDetailScreen() {
 
       if (allCardIds.length > 0) {
         const [cards, prices] = await Promise.all([
-          fetchStackrCardRows(allCardIds),
+          fetchStackrCardRows(allCardIds).then((rows) => hydrateCardReferenceRowMapWithLiveTcgdexReferences(rows, attachLiveTcgdexCardReferences)),
           fetchStackrPriceSnapshots(allCardIds),
         ]);
         if (!isCurrentIdentity(userId, generation)) return;

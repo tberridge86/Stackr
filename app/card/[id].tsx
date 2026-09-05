@@ -493,13 +493,18 @@ export default function CardDetailScreen() {
           <Text style={styles.translationStatusText}>
             {presentation.languageLabel} card image · {
               presentation.englishDisplayName
-                ? 'card identity shown in English'
+                ? 'English identification supplement available'
                 : 'English title translation pending'
             }
           </Text>
-          {presentation.nativeName && presentation.nativeName !== presentation.englishDisplayName ? (
+          {presentation.englishDisplayName && presentation.englishDisplayName !== presentation.name ? (
             <Text style={styles.nativeNameText}>
-              Native name: {presentation.nativeName}
+              English name: {presentation.englishDisplayName}
+            </Text>
+          ) : null}
+          {presentation.englishSetDisplayName && presentation.englishSetDisplayName !== presentation.setName ? (
+            <Text style={styles.nativeNameText}>
+              English set: {presentation.englishSetDisplayName}
             </Text>
           ) : null}
           {presentation.withheldNativeDetails ? (

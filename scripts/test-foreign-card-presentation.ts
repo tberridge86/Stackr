@@ -27,9 +27,11 @@ const japanese = buildForeignCardPresentation({
   },
 });
 
-assert.equal(japanese.name, 'Charizard ex');
+assert.equal(japanese.name, 'リザードンex');
 assert.equal(japanese.nativeName, 'リザードンex');
-assert.equal(japanese.setName, 'Pokemon Card 151');
+assert.equal(japanese.englishDisplayName, 'Charizard ex');
+assert.equal(japanese.setName, 'ポケモンカード151');
+assert.equal(japanese.englishSetDisplayName, 'Pokemon Card 151');
 assert.equal(japanese.details.attacks?.[0]?.name, 'Brave Wing');
 assert.equal(japanese.details.attacks?.[0]?.text, 'English effect text.');
 assert.equal(japanese.translationStatus, 'verified');
@@ -67,9 +69,11 @@ const chinese = buildForeignCardPresentation({
   },
 });
 
-assert.equal(chinese.name, 'Pikachu');
+assert.equal(chinese.name, '皮卡丘');
 assert.equal(chinese.nativeName, '皮卡丘');
-assert.equal(chinese.setName, 'Scarlet & Violet');
+assert.equal(chinese.englishDisplayName, 'Pikachu');
+assert.equal(chinese.setName, '朱&紫');
+assert.equal(chinese.englishSetDisplayName, 'Scarlet & Violet');
 
 const frenchWithoutTranslation = buildForeignCardPresentation({
   id: 'fr:base:004',
@@ -104,9 +108,11 @@ async function assertNativeImageBoundary() {
     'the card detail image must remain the selected native variant image',
   );
   assert.match(cardScreen, /name=\{presentation\.name\}/);
-  assert.match(cardScreen, /Native name: \{presentation\.nativeName\}/);
+  assert.match(cardScreen, /English name: \{presentation\.englishDisplayName\}/);
+  assert.match(cardScreen, /English set: \{presentation\.englishSetDisplayName\}/);
 
   const adapter = await readFile(path.resolve(process.cwd(), 'lib/stackrDomainAdapter.ts'), 'utf8');
+  assert.equal((adapter.match(/const name = localName \?\? englishDisplayName/g) ?? []).length, 2);
   assert.match(adapter, /card\.defaultVariantId/);
   assert.match(adapter, /selected_image_variant_id: primary\?\.variantId \?\? null/);
   assert.match(adapter, /native_image_retained: true/);

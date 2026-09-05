@@ -588,7 +588,7 @@ export async function syncStackrCatalogueInBackground(input: {
 export function stackrCachedCardToIdentifiedCard(card: StackrCachedCardIdentity) {
   return {
     id: card.cardId,
-    name: card.englishDisplayName ?? card.nativeName,
+    name: card.nativeName,
     number: card.collectorNumber,
     set_id: card.setId,
     set_name: card.setCode ?? card.setId,
@@ -601,6 +601,9 @@ export function stackrCachedCardToIdentifiedCard(card: StackrCachedCardIdentity)
       stackrLocalCache: true,
       canonicalId: card.canonicalId,
       language: card.languageCode,
+      local_name: card.nativeName,
+      native_name: card.nativeName,
+      english_display_name: card.englishDisplayName,
       reasons: ['exact_cached_identity'],
     },
   };

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "stackr-green-controlled-provider-activation-decision-v1",
+  "decisionId": "tcgdex-low-resolution-card-reference-green:2026-09-04",
+  "classification": "green",
+  "status": "authorized_under_internal_operating_boundary",
+  "recordedAt": "2026-09-04T09:50:31.541Z",
+  "authorityReviewOwner": "Jack Berridge",
+  "activationAuthorized": true,
+  "publicRuntimeDisplayAuthorized": true,
+  "canonicalDatabaseWriteAuthorized": false,
+  "assetPersistenceAuthorized": false,
+  "scope": {
+    "sourceCode": "tcgdex",
+    "assetType": "low_resolution_card_reference",
+    "providerHost": "assets.tcgdex.net",
+    "rendition": "low.webp",
+    "pixelDimensions": "245x337",
+    "languages": [
+      "ja",
+      "zh-tw",
+      "zh-cn"
+    ],
+    "purpose": "Proportionate provider-served card identification reference with native card identity remaining primary.",
+    "allowedSurfaces": [
+      "search",
+      "collection",
+      "recognition_match",
+      "inventory",
+      "binder",
+      "set_checklist",
+      "card_and_product_identification"
+    ],
+    "excludedUses": [
+      "set_logo",
+      "expansion_or_rarity_symbol",
+      "pack_or_product_artwork",
+      "listing_photo",
+      "high_resolution_or_zoom_delivery",
+      "download_or_export",
+      "disk_cache_or_asset_mirror",
+      "canonical_or_catalogue_asset_write",
+      "image_derivative_generation",
+      "recognition_corpus_persistence",
+      "model_training"
+    ]
+  },
+  "bindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+    "rightsRegistryPath": "catalogue/source-rights-registry.json",
+    "rightsRegistrySha256": "53805cec7470b726190d1b268a2b93c5b0e6d96dd8287428a036f591456b250e",
+    "evidencePath": "catalogue/rights-evidence/tcgdex-low-resolution-card-reference.2026-09-04.json",
+    "evidenceSha256": "c54a029c4470e3e6c4b0bbc8653bb728ac7495bdb1146bc82683f8aff9d6d905",
+    "noticePath": "docs/third-party/tcgdex-card-reference-notice.md",
+    "noticeSha256": "e3d997e8cbd5dd4ac5d601682125ef25fa7b3b9a0a1a46dc02910e3f6a1a718b",
+    "databaseLicenseEvidencePath": "catalogue/rights-evidence/tcgdex-metadata-mit.2026-09-04.json",
+    "databaseLicenseEvidenceSha256": "75992e1dde37c54806ac135c2fd49642c24c3429702ef3d6074fc8f986da8211",
+    "providerDocumentationCommit": "80901ffd39158eac1366c27faca49d7fdc0c4e23",
+    "boundaryCompatibilityReviewPath": "catalogue/rights-reviews/stackrtcg-ip-boundary-green-compatibility.2026-09-04.json",
+    "boundaryCompatibilityReviewSha256": "aff5f9e97ab0d32cb7a4cc573f4acbedbabfa70613a46f77bd7bdc4969c2a1e4"
+  },
+  "runtimeControls": {
+    "exactProviderCardRecordRequired": true,
+    "exactLanguageSetCardPathRequired": true,
+    "httpsExactHostOnly": true,
+    "queryFragmentCredentialsAndCustomPortForbidden": true,
+    "lowWebpOnly": true,
+    "memoryCacheOnly": true,
+    "visibleAttribution": "TCGdex reference",
+    "neutralPlaceholderOnFailure": true,
+    "sourceKillSwitches": [
+      "EXPO_PUBLIC_DISABLE_TCGDEX_CARD_REFERENCES",
+      "STACKR_DISABLE_TCGDEX_CARD_REFERENCES"
+    ],
+    "denylistEnvironmentVariable": "EXPO_PUBLIC_TCGDEX_CARD_REFERENCE_DENYLIST",
+    "denylistKeyFormat": "language:providerSetId:providerCardId",
+    "killSwitchValue": "true",
+    "failClosedOnBindingMismatch": true
+  },
+  "relationshipToOtherReviews": "This decision activates only exact low-resolution TCGdex card references. It does not alter the pending CJK metadata review, approve any set mark or product artwork, authorize old planning reports, or authorize asset acquisition, storage, database writes, derivatives, embeddings, or training.",
+  "signature": null,
+  "signatureRequired": false
+}

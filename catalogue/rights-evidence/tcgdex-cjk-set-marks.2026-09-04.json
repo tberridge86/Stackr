@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "stackr-controlled-provider-set-mark-evidence-v1",
+  "evidenceId": "tcgdex-cjk-set-marks:2026-09-04:80901ffd39158eac1366c27faca49d7fdc0c4e23",
+  "sourceCode": "tcgdex",
+  "observedAt": "2026-09-04T16:36:23.830Z",
+  "provider": {
+    "name": "TCGdex",
+    "documentationUrl": "https://tcgdex.dev/assets",
+    "assetHost": "assets.tcgdex.net",
+    "attributionText": "TCGdex reference"
+  },
+  "providerDocumentation": {
+    "repository": "tcgdex/documentation",
+    "commitSha": "80901ffd39158eac1366c27faca49d7fdc0c4e23",
+    "path": "src/content/docs/assets.mdx",
+    "sha256": "0d1fc6baea2c3fed59d002f3d2c69b4f61b50a2c45b739799c1145ff1643e9bf",
+    "finding": "TCGdex documents provider-issued set logo and symbol URLs and supports webp delivery from assets.tcgdex.net."
+  },
+  "ownerPermissionAttestation": {
+    "path": "catalogue/rights-evidence/cjk-app-image-permission-owner-attestation.2026-09-04.json",
+    "sha256": "0afd34fee2453ca87bf50383ce5aac3519439308297f9200855c57cc49bea0ad",
+    "approvingPerson": "Jack Berridge"
+  },
+  "localBindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+    "sourceRightsRegistryPath": "catalogue/source-rights-registry.json",
+    "sourceRightsRegistrySha256": "53805cec7470b726190d1b268a2b93c5b0e6d96dd8287428a036f591456b250e"
+  },
+  "authorizedRuntimeRoute": {
+    "classification": "amber_owner_attested",
+    "assetTypes": [
+      "set_logo",
+      "expansion_symbol"
+    ],
+    "languages": [
+      "ja",
+      "zh-tw",
+      "zh-cn"
+    ],
+    "delivery": "provider_served_runtime_only",
+    "format": "webp",
+    "allowedPathShape": "https://assets.tcgdex.net/{ja|zh-tw|zh-cn|univ}/{seriesId}/{setId}/{logo|symbol}.webp",
+    "allowedSurfaces": [
+      "search",
+      "collection",
+      "binder",
+      "inventory",
+      "set_checklist",
+      "card_detail",
+      "set_detail",
+      "recognition_result",
+      "product_identification"
+    ],
+    "excludedUses": [
+      "canonical_catalogue_rewrite",
+      "persistent_provider_asset_mirror",
+      "standalone_download_or_export",
+      "pack_or_product_artwork",
+      "model_training",
+      "merchandise_or_replica"
+    ]
+  },
+  "requiredRuntimeControls": [
+    "Require HTTPS, exact assets.tcgdex.net host, no credentials, no non-default port, no query, and no fragment.",
+    "Accept only safe provider path segments ending in logo.webp or symbol.webp for an approved CJK or universal provider scope.",
+    "Provide client and server kill switches plus a set-mark denylist.",
+    "Keep provider set marks runtime-only and leave existing catalogue values unchanged.",
+    "Render a language-aware neutral fallback on any rejection or load failure."
+  ],
+  "legalStatus": "internally_authorized_amber_app_display_on_owner_permission_attestation"
+}

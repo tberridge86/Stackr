@@ -3,6 +3,7 @@ import {
   getEnglishSetDisplayName,
   getPreferredSetDisplayName,
 } from './cardDisplayNames.js';
+import { sanitizeTcgdexAssetPointersForPublicDisplay } from './cataloguePublicAssetPolicy.js';
 
 const TCGDEX_BASE_URL = process.env.TCGDEX_API_BASE_URL || 'https://api.tcgdex.net/v2';
 const TCGDEX_TIMEOUT_MS = Number(process.env.TCGDEX_TIMEOUT_MS || 9000);
@@ -71,18 +72,23 @@ function stripLanguagePrefix(value, language = JAPANESE_LANGUAGE) {
   return clean.toLowerCase().startsWith(prefix) ? clean.slice(prefix.length) : clean;
 }
 
-function withWebpAsset(url, size = 'high') {
-  if (!url) return null;
-  const value = String(url).trim();
-  if (/\.(webp|png|jpe?g)(?:[?#].*)?$/i.test(value)) return value;
-  return `${value.replace(/\/$/, '')}/${size}.webp`;
+function unavailableProviderAsset() {
+  // This legacy ingest lane is not authorized to mint, cache, or persist a
+  // TCGdex image. Controlled display references are resolved elsewhere.
+  return null;
 }
 
-function withSetWebpAsset(url) {
-  if (!url) return null;
-  const value = String(url).trim();
-  if (/\.(webp|png|jpe?g)(?:[?#].*)?$/i.test(value)) return value;
-  return `${value.replace(/\/$/, '')}.webp`;
+function assertLegacyJapaneseCatalogueSyncDisabled() {
+  throw new Error('Legacy Japanese catalogue sync is disabled: use the controlled staging lane.');
+}
+
+/**
+ * Hide only exact TCGdex-hosted provider pointers from the legacy public DTO.
+ * Field names are deliberately irrelevant: existing Stackr-hosted, bundled,
+ * relative, and other reviewed values must remain byte-for-byte unchanged.
+ */
+export function sanitizeJapaneseCataloguePublicRows(value) {
+  return sanitizeTcgdexAssetPointersForPublicDisplay(value);
 }
 
 function buildJapaneseSetDisplayNames(set, sourceId, id) {
@@ -214,8 +220,8 @@ function mapSetRow(set, seriesId = null) {
   const { localName, englishDisplayName, displayName } = buildJapaneseSetDisplayNames(set, sourceId, id);
   const printedTotal = toNumberOrNull(set.cardCount?.official);
   const actualTotal = toNumberOrNull(set.cardCount?.total ?? set.cards?.length);
-  const logo = set.logo ? withSetWebpAsset(set.logo) : null;
-  const symbol = set.symbol ? withSetWebpAsset(set.symbol) : null;
+  const logo = unavailableProviderAsset(set.logo);
+  const symbol = unavailableProviderAsset(set.symbol);
   const rawPayload = {
     ...(set ?? {}),
     language: JAPANESE_LANGUAGE,
@@ -253,7 +259,7 @@ function mapLegacySetRow(set, seriesId = null) {
   const canonical = mapSetRow(set, seriesId);
   return {
     id: canonical.id,
-    name: canonical.english_display_name ?? canonical.raw_payload?.display_name ?? canonical.local_name ?? canonical.source_id,
+    name: canonical.local_name ?? canonical.raw_payload?.display_name ?? canonical.english_display_name ?? canonical.source_id,
     series: set.serie?.name ?? set.serie?.id ?? seriesId ?? '',
     printed_total: canonical.printed_total ?? 0,
     total: canonical.actual_total ?? canonical.printed_total ?? 0,
@@ -287,8 +293,8 @@ function mapCardRow(card, fallbackSet) {
     raw: card,
   });
   const setNames = buildJapaneseSetDisplayNames(card.set ?? fallbackSet, setSourceId, setId);
-  const small = card.image ? withWebpAsset(card.image, 'low') : null;
-  const large = card.image ? withWebpAsset(card.image, 'high') : null;
+  const small = unavailableProviderAsset(card.image);
+  const large = unavailableProviderAsset(card.image);
   const subtypes = [card.stage, ...(Array.isArray(card.types) ? card.types : [])].filter(Boolean);
 
   return {
@@ -320,7 +326,7 @@ function mapCardRow(card, fallbackSet) {
       stackr_db_id: id,
       local_name: localName,
       english_display_name: englishDisplayName,
-      display_name: englishDisplayName ?? localName,
+      display_name: localName ?? englishDisplayName,
       set: {
         ...(card.set ?? {}),
         id: setId,
@@ -341,7 +347,7 @@ function mapLegacyCardRow(card, fallbackSet) {
   const canonical = mapCardRow(card, fallbackSet);
   return {
     id: canonical.id,
-    name: canonical.english_display_name ?? canonical.local_name ?? canonical.source_id,
+    name: canonical.local_name ?? canonical.english_display_name ?? canonical.source_id,
     set_id: canonical.set_id,
     language: JAPANESE_LANGUAGE,
     region: JAPANESE_REGION,
@@ -506,8 +512,8 @@ function mapMarketProductCompatibilityRow(product) {
   return {
     id: product.id,
     product_type: product.product_type,
-    name: product.english_display_name ?? product.canonical_name,
-    set_name: product.english_display_name ?? product.local_name ?? product.set_id,
+    name: product.local_name ?? product.canonical_name ?? product.english_display_name,
+    set_name: product.local_name ?? product.english_display_name ?? product.set_id,
     language: product.language,
     region: product.region,
     release_year: releaseYear,
@@ -627,6 +633,7 @@ async function recordSyncError(db, syncRunId, syncName, entityType, entityId, er
 }
 
 export async function syncJapaneseSeries(db) {
+  assertLegacyJapaneseCatalogueSyncDisabled();
   const series = await fetchTcgdexPagedArray(`/${JAPANESE_LANGUAGE}/series`);
   const rows = series.map((serie, index) => mapSeriesRow(serie, index + 1));
   await upsertRows(db, 'tcg_series', rows);
@@ -636,6 +643,7 @@ export async function syncJapaneseSeries(db) {
 }
 
 export async function syncJapaneseSets(db, options = {}) {
+  assertLegacyJapaneseCatalogueSyncDisabled();
   const seriesRows = options.seriesId
     ? [{ source_id: stripLanguagePrefix(options.seriesId), id: stackrId(JAPANESE_LANGUAGE, stripLanguagePrefix(options.seriesId)) }]
     : (await syncJapaneseSeries(db)).rows;
@@ -662,6 +670,7 @@ export async function syncJapaneseSets(db, options = {}) {
 }
 
 export async function syncJapaneseCardsForSet(db, setId, syncRunId = null) {
+  assertLegacyJapaneseCatalogueSyncDisabled();
   const sourceSetId = stripLanguagePrefix(setId);
   const set = await fetchTcgdexJson(`/${JAPANESE_LANGUAGE}/sets/${encodeURIComponent(sourceSetId)}`);
   const expectedTotal = toNumberOrNull(set?.cardCount?.total) ?? set?.cards?.length ?? 0;
@@ -742,6 +751,7 @@ export async function syncJapaneseCardsForSet(db, setId, syncRunId = null) {
 }
 
 export async function syncJapaneseSealedProducts(db, options = {}) {
+  assertLegacyJapaneseCatalogueSyncDisabled();
   let query = db
     .from('tcg_sets')
     .select('id, source_id, set_code, canonical_name, local_name, english_display_name, release_date')
@@ -768,6 +778,7 @@ export async function syncJapaneseSealedProducts(db, options = {}) {
 }
 
 export async function verifyJapaneseCatalogue(db) {
+  assertLegacyJapaneseCatalogueSyncDisabled();
   const { data, error } = await db
     .from('japanese_catalogue_health')
     .select('*')
@@ -792,6 +803,7 @@ export async function verifyJapaneseCatalogue(db) {
 }
 
 export async function syncJapaneseCatalogue(db, options = {}) {
+  assertLegacyJapaneseCatalogueSyncDisabled();
   const syncRunId = await startSyncRun(db, 'japanese_catalogue', options);
   const summary = {
     recordsRequested: 0,
@@ -866,7 +878,7 @@ export async function listJapaneseSeries(db) {
     .eq('language', JAPANESE_LANGUAGE)
     .order('display_order', { ascending: true, nullsFirst: false });
   if (error) throw error;
-  return data ?? [];
+  return sanitizeJapaneseCataloguePublicRows(data ?? []);
 }
 
 export async function listJapaneseSets(db, options = {}) {
@@ -887,14 +899,14 @@ export async function listJapaneseSets(db, options = {}) {
 
   const { data, error } = await query;
   if (error) throw error;
-  return data ?? [];
+  return sanitizeJapaneseCataloguePublicRows(data ?? []);
 }
 
 export async function getJapaneseSet(db, setId) {
   const id = stackrId(JAPANESE_LANGUAGE, stripLanguagePrefix(setId));
   const { data, error } = await db.from('tcg_sets').select('*').eq('id', id).maybeSingle();
   if (error) throw error;
-  return data ?? null;
+  return sanitizeJapaneseCataloguePublicRows(data ?? null);
 }
 
 export async function listJapaneseSetCards(db, setId, options = {}) {
@@ -908,7 +920,7 @@ export async function listJapaneseSetCards(db, setId, options = {}) {
     .order('collector_number', { ascending: true })
     .range((page - 1) * limit, (page * limit) - 1);
   if (error) throw error;
-  return data ?? [];
+  return sanitizeJapaneseCataloguePublicRows(data ?? []);
 }
 
 export async function listJapaneseSetProducts(db, setId) {
@@ -919,21 +931,21 @@ export async function listJapaneseSetProducts(db, setId) {
     .eq('set_id', id)
     .order('product_type', { ascending: true });
   if (error) throw error;
-  return data ?? [];
+  return sanitizeJapaneseCataloguePublicRows(data ?? []);
 }
 
 export async function getJapaneseCard(db, cardId) {
   const id = stackrId(JAPANESE_LANGUAGE, stripLanguagePrefix(cardId));
   const { data, error } = await db.from('tcg_cards').select('*').eq('id', id).maybeSingle();
   if (error) throw error;
-  return data ?? null;
+  return sanitizeJapaneseCataloguePublicRows(data ?? null);
 }
 
 export async function getJapaneseProduct(db, productId) {
   const id = cleanValue(productId).startsWith('ja:') ? cleanValue(productId) : stackrId(JAPANESE_LANGUAGE, stripLanguagePrefix(productId));
   const { data, error } = await db.from('sealed_products').select('*').eq('id', id).maybeSingle();
   if (error) throw error;
-  return data ?? null;
+  return sanitizeJapaneseCataloguePublicRows(data ?? null);
 }
 
 export async function searchCatalogue(db, options = {}) {
@@ -969,7 +981,7 @@ export async function searchCatalogue(db, options = {}) {
       .limit(limit),
   ]);
 
-  return {
+  return sanitizeJapaneseCataloguePublicRows({
     query: q,
     cards: cards.error ? [] : cards.data ?? [],
     sets: sets.error ? [] : sets.data ?? [],
@@ -981,7 +993,7 @@ export async function searchCatalogue(db, options = {}) {
       products: products.error?.message,
       listings: listings.error?.message,
     },
-  };
+  });
 }
 
 export async function getJapaneseCatalogueHealth(db) {

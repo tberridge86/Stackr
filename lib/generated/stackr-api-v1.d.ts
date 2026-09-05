@@ -180,6 +180,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cards/display-artwork-references": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resolveSameArtworkDisplayReferences"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cards/{variantId}/price": {
         parameters: {
             query?: never;
@@ -705,6 +721,33 @@ export interface components {
                 variants: components["schemas"]["CardVariant"][];
             };
         };
+        SameArtworkDisplayReferencesRequest: {
+            references: {
+                /** Format: uuid */
+                sourceCardId: string;
+                /** Format: uuid */
+                sourceDefaultVariantId: string;
+            }[];
+        };
+        SameArtworkDisplayReferencesResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                references: {
+                    /** Format: uuid */
+                    sourceCardId: string;
+                    /** Format: uuid */
+                    sourceDefaultVariantId: string;
+                    display: {
+                        /** @enum {string} */
+                        kind: "same_artwork_reference";
+                        /** Format: uri */
+                        url: string;
+                        attribution: string;
+                        width: number;
+                        height: number;
+                    };
+                }[];
+            };
+        };
         AssetManifestResponse: components["schemas"]["Envelope"] & {
             data?: {
                 assets: components["schemas"]["CatalogueAsset"][];
@@ -1215,6 +1258,31 @@ export interface operations {
                     "application/json": components["schemas"]["CardVariantsResponse"];
                 };
             };
+        };
+    };
+    resolveSameArtworkDisplayReferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SameArtworkDisplayReferencesRequest"];
+            };
+        };
+        responses: {
+            /** @description Approved low-resolution same-artwork references for supplied canonical printing identities. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SameArtworkDisplayReferencesResponse"];
+                };
+            };
+            400: components["responses"]["Error"];
         };
     };
     getCardVariantPrice: {

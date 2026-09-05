@@ -34,7 +34,7 @@ import { supabase } from '../../lib/supabase';
 import { PRICE_API_URL } from '../../lib/config';
 import { ValueTrackerCard } from '../../components/ValueTrackerCard';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
-import { getPokemonCardImageUrls } from '../../lib/pokemonTcg';
+import { attachLiveTcgdexCardReferences, getPokemonCardImageUrls } from '../../lib/pokemonTcg';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { getStackrHomeWordmarkWidth, stackrLogoSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
@@ -78,6 +78,13 @@ import {
   type CollectionValueRead,
   type CollectionPricingSummary,
 } from '../../lib/collectionPricingState';
+import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
+
+const fetchHomeDisplayCardRows = async (cardIds: string[]) => (
+  hydrateCardReferenceRowMapWithLiveTcgdexReferences(
+    await fetchStackrCardRows(cardIds), attachLiveTcgdexCardReferences,
+  )
+);
 import { sanitizeMarketplaceCondition } from '../../lib/marketplacePresentation';
 import {
   sanitizeGate0CommerceCopy,
@@ -619,7 +626,7 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
   if (!cardIds.length) return items;
 
   try {
-    const officialCards = await fetchStackrCardRows(cardIds);
+    const officialCards = await fetchHomeDisplayCardRows(cardIds);
 
     const activityImageByCardId = new Map<string, string>();
     const cardNameByCardId = new Map<string, string>();
@@ -1000,7 +1007,7 @@ export default function HubScreen() {
 
         if (flagData?.length) {
           const cardIds = [...new Set(flagData.map((f) => f.card_id))];
-          const previews = await fetchStackrCardRows(cardIds);
+          const previews = await fetchHomeDisplayCardRows(cardIds);
           const previewMap: Record<string, any> = {};
           previews.forEach((card: any) => {
             previewMap[card.id] = {
@@ -1046,7 +1053,7 @@ export default function HubScreen() {
 
           if (strictMatches.length) {
             const cardIds = [...new Set(strictMatches.map((listing) => listing.card_id))];
-            const previews = await fetchStackrCardRows(cardIds);
+            const previews = await fetchHomeDisplayCardRows(cardIds);
             const previewMap: Record<string, any> = {};
             previews.forEach((card: any) => {
               previewMap[card.id] = {
@@ -1519,7 +1526,7 @@ export default function HubScreen() {
 
       const cardIds = [...new Set(mergedRows.map((row) => row.card_id))];
       const [officialCardMap, priceMap] = await Promise.all([
-        fetchStackrCardRows(cardIds),
+        fetchHomeDisplayCardRows(cardIds),
         fetchStackrPriceSnapshots(cardIds),
       ]);
 

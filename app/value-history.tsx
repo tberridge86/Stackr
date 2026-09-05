@@ -20,12 +20,13 @@ import { StackrBackdrop } from '../components/StackrBackdrop';
 import { StackrBackButton } from '../components/StackrBackButton';
 import { StackrPageTitle } from '../components/StackrScreen';
 import { fetchBinderCards, fetchBinders, type BinderCardRecord, type BinderRecord } from '../lib/binders';
-import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
+import { attachLiveTcgdexCardReferences, getPokemonSetLogoUrl } from '../lib/pokemonTcg';
 import { getPreferredSetDisplayName } from '../lib/pokemonDisplayNames';
 import { stackrIcons } from '../lib/stackrIcons';
 import { stackrTabContentPadding } from '../lib/stackrSizing';
 import { tabularNumberStyle, typeScale } from '../lib/typography';
 import { fetchStackrCardRows } from '../lib/stackrDomainAdapter';
+import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../lib/scanCardReferenceHydration';
 import { stackrApiClient } from '../lib/stackrApiV1';
 import { loadCollectionPrices } from '../lib/collectionPricingApi';
 import { summariseCollectionPricing } from '../lib/collectionPricingState';
@@ -171,7 +172,9 @@ async function fetchPreviews(cardIds: string[]) {
   const previews = new Map<string, CardPreview>();
   if (!ids.length) return previews;
 
-  const cardsById = await fetchStackrCardRows(ids);
+  const cardsById = await hydrateCardReferenceRowMapWithLiveTcgdexReferences(
+    await fetchStackrCardRows(ids), attachLiveTcgdexCardReferences,
+  );
   for (const id of ids) {
     const card = cardsById.get(id);
     if (!card) continue;

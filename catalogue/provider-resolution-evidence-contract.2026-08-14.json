@@ -1,0 +1,172 @@
+{
+  "schemaVersion": "1.0.0",
+  "contractId": "stackr-provider-resolution:2026-08-14",
+  "asOfDate": "2026-08-14",
+  "provider": {
+    "code": "tcgdex",
+    "apiBaseUrl": "https://api.tcgdex.net/v2",
+    "requestTimeoutMs": 30000,
+    "maximumResponseBytes": 524288,
+    "maximumConcurrency": 8
+  },
+  "duplicateSetResolution": {
+    "language": "zh-cn",
+    "observedProviderId": "CSV1C",
+    "expectedDuplicateRows": 2,
+    "sourceRepository": "tcgdex/cards-database",
+    "sourceBranch": "master",
+    "sourcePaths": [
+      {
+        "resolvedProviderId": "CSV1C",
+        "path": "data-asia/SV/CSV1C.ts",
+        "expectedName": "亘古开来",
+        "expectedOfficialCount": 127,
+        "expectedReleaseDate": "2025-01-17",
+        "expectedInternalId": "CSV1C",
+        "resolution": "retain_exact"
+      },
+      {
+        "resolvedProviderId": "CBB1C",
+        "path": "data-asia/SV/CBB1C.ts",
+        "expectedName": "宝石包 第一卷",
+        "expectedOfficialCount": 9,
+        "expectedReleaseDate": "2025-01-17",
+        "expectedInternalId": "CSV1C",
+        "resolution": "rekey_source_internal_id_typo"
+      }
+    ],
+    "coveragePolicy": "one_for_one_rekey_never_discard",
+    "canonicalMatchPolicy": "exact_current_external_identifier_only",
+    "canonicalCollisionDisposition": "block_until_reviewed_case_variant_reconciliation",
+    "expectedCanonicalCaseVariants": [
+      {
+        "setId": "1f2add00-9ae7-4a7e-9b01-2e8f0fb8e059",
+        "setCode": "CSV1C",
+        "providerSetCode": "CSV1C",
+        "printingCount": 0,
+        "variantCount": 0,
+        "exactExternalIdentifiers": [
+          "CSV1C"
+        ]
+      },
+      {
+        "setId": "31225f01-ead5-4e8d-83f8-c06978e706da",
+        "setCode": "csv1c",
+        "providerSetCode": "csv1c",
+        "printingCount": 167,
+        "variantCount": 393,
+        "exactExternalIdentifiers": []
+      },
+      {
+        "setId": "6fddd811-836e-4304-8d28-f36caef0d044",
+        "setCode": "cbb1c",
+        "providerSetCode": "cbb1c",
+        "printingCount": 115,
+        "variantCount": 115,
+        "exactExternalIdentifiers": []
+      }
+    ]
+  },
+  "pitchBlack": {
+    "language": "en",
+    "providerSetId": "me05",
+    "expectedName": "Pitch Black",
+    "expectedReleaseDate": "2026-07-17",
+    "expectedPrintingCount": 120,
+    "legacyCanonicalSetId": "2f77da8e-8199-4634-b30d-385565560731",
+    "targetCanonicalSetId": "d6d58c17-5923-496e-94ef-5819f34ae10c",
+    "allowedVariantFlags": [
+      "firstEdition",
+      "holo",
+      "normal",
+      "reverse",
+      "wPromo"
+    ],
+    "repairPolicy": "review_only_no_mutation",
+    "collectorMatchPolicy": "unique_numeric_bijection_requires_name_match"
+  },
+  "canonicalRead": {
+    "projectRef": "lmwfhvexfcoyeuoyrlco",
+    "productionProjectRefsDenied": [
+      "oakdbbzdqwurpjnoqhmu"
+    ],
+    "pageSize": 500,
+    "maximumRowsPerTable": 1000,
+    "tables": {
+      "sets": [
+        "id",
+        "game_code",
+        "language_code",
+        "set_code",
+        "provider_set_code",
+        "native_name",
+        "english_display_name",
+        "release_date",
+        "printed_total",
+        "total",
+        "deprecated_at"
+      ],
+      "card_printings": [
+        "id",
+        "game_code",
+        "set_id",
+        "language_code",
+        "collector_number",
+        "native_name",
+        "english_display_name",
+        "rarity_id",
+        "supertype",
+        "artist",
+        "source_updated_at",
+        "deprecated_at"
+      ],
+      "card_variants": [
+        "id",
+        "printing_id",
+        "game_code",
+        "set_id",
+        "language_code",
+        "collector_number",
+        "variant_code",
+        "finish_code",
+        "canonical_key",
+        "deprecated_at"
+      ]
+    }
+  },
+  "canonicalEvidence": {
+    "path": "catalogue/provider-resolution-pitch-black-canonical-read.2026-08-14.json",
+    "requiredSha256": "60e6e905c31755db4ea546a3ad073a10a5d027b4d4973ba9a77612a64b15bb5a",
+    "requiredAttestationId": "pitch-black-canonical-read:2026-08-14:20260814003206736",
+    "accessPath": "supabase_execute_sql",
+    "operation": "select",
+    "expectedRowCounts": {
+      "sets": 2,
+      "card_printings": 240,
+      "card_variants": 314
+    },
+    "expectedPerSet": {
+      "2f77da8e-8199-4634-b30d-385565560731": {
+        "printings": 120,
+        "variants": 120
+      },
+      "d6d58c17-5923-496e-94ef-5819f34ae10c": {
+        "printings": 120,
+        "variants": 194
+      }
+    }
+  },
+  "baselineEvidence": {
+    "requiredEvidenceId": "provider-baseline:2026-08-14:261591f165afdcd4a1328bb1",
+    "requiredContractId": "stackr-provider-baseline:tcgdex:2026-08-14"
+  },
+  "outputs": {
+    "resolutionReport": "resolved-provider-baseline-evidence.json",
+    "resolutionLedger": "provider-set-resolution-ledger.jsonl",
+    "pitchBlackReport": "pitch-black-me05-evidence.json",
+    "pitchBlackPlan": "pitch-black-me05-repair-plan.jsonl",
+    "canonicalSnapshot": "pitch-black-canonical-snapshot.json",
+    "manifest": "manifest.json",
+    "rawDirectory": "raw"
+  }
+}

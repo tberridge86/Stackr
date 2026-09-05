@@ -1,0 +1,13 @@
+# Byte-hashed CJK rights records and generated lookups must remain stable on Windows.
+/.gitattributes text eol=lf
+/THIRD_PARTY_NOTICES.md text eol=lf
+/docs/stackrtcg-ip-operating-boundary.md text eol=lf
+/docs/stackrtcg-ip-operating-boundary.md -whitespace
+/docs/third-party/tcgdex-card-reference-notice.md text eol=lf
+/catalogue/*.json text eol=lf
+/catalogue/rights-evidence/*.json text eol=lf
+/catalogue/rights-reviews/*.json text eol=lf
+/lib/generated/*.generated.ts text eol=lf
+/backend/lib/generated/*.generated.mjs text eol=lf
+/scripts/build-chinese-set-translation-draft-review-pack.ts text eol=lf
+/reports/catalogue/provider-resolution/2026-08-14/** -text

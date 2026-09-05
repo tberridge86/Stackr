@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "stackr-controlled-provider-card-reference-evidence-v1",
+  "evidenceId": "tcgdex-low-resolution-card-reference:2026-09-04:80901ffd39158eac1366c27faca49d7fdc0c4e23",
+  "sourceCode": "tcgdex",
+  "observedAt": "2026-09-04T09:50:31.541Z",
+  "provider": {
+    "name": "TCGdex",
+    "apiDocumentationUrl": "https://tcgdex.dev/",
+    "assetHost": "assets.tcgdex.net",
+    "attributionText": "TCGdex reference"
+  },
+  "documents": [
+    {
+      "role": "asset_delivery_contract",
+      "repository": "tcgdex/documentation",
+      "commitSha": "80901ffd39158eac1366c27faca49d7fdc0c4e23",
+      "path": "src/content/docs/assets.mdx",
+      "url": "https://raw.githubusercontent.com/tcgdex/documentation/80901ffd39158eac1366c27faca49d7fdc0c4e23/src/content/docs/assets.mdx",
+      "sha256": "0d1fc6baea2c3fed59d002f3d2c69b4f61b50a2c45b739799c1145ff1643e9bf",
+      "bytes": 3096,
+      "finding": "TCGdex documents an extension-less provider card-image base, permits quality and extension selection, identifies low as 245x337, and recommends webp for web display. Set symbols and logos use a distinguishable non-card URL shape and are outside this decision."
+    },
+    {
+      "role": "provider_card_image_field_contract",
+      "repository": "tcgdex/documentation",
+      "commitSha": "80901ffd39158eac1366c27faca49d7fdc0c4e23",
+      "path": "src/content/docs/reference/card-brief.md",
+      "url": "https://raw.githubusercontent.com/tcgdex/documentation/80901ffd39158eac1366c27faca49d7fdc0c4e23/src/content/docs/reference/card-brief.md",
+      "sha256": "2f80e4eecce970fa26c6148a7cb1cfd138e97e692e695c7a901c74fc87b1be14",
+      "bytes": 727,
+      "finding": "The documented CardBrief response supplies a nullable image field as an assets.tcgdex.net card-image base associated with the provider card ID and local ID."
+    },
+    {
+      "role": "database_license",
+      "repository": "tcgdex/cards-database",
+      "commitSha": "dd4fc9460b54b91c25df750c68ca36b9946448e2",
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/tcgdex/cards-database/dd4fc9460b54b91c25df750c68ca36b9946448e2/LICENSE",
+      "sha256": "12e7dd2d018848b9997d0226c4632f01da86ec4bf6ebe0c8b19953d5e5eeb6ff",
+      "bytes": 1063,
+      "finding": "The pinned TCGdex database uses the MIT licence and requires preservation of its copyright and permission notice. This is provider evidence, not a warranty of underlying Pokemon artwork rights."
+    }
+  ],
+  "localBindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "81bf7a056d8a0312ac7283917bb24f884100e2c2859a077a8503e8c132ad5ca6",
+    "sourceRightsRegistryPath": "catalogue/source-rights-registry.json",
+    "sourceRightsRegistrySha256": "53805cec7470b726190d1b268a2b93c5b0e6d96dd8287428a036f591456b250e",
+    "metadataLicenseEvidencePath": "catalogue/rights-evidence/tcgdex-metadata-mit.2026-09-04.json",
+    "metadataLicenseEvidenceSha256": "75992e1dde37c54806ac135c2fd49642c24c3429702ef3d6074fc8f986da8211",
+    "noticePath": "docs/third-party/tcgdex-card-reference-notice.md",
+    "noticeSha256": "e3d997e8cbd5dd4ac5d601682125ef25fa7b3b9a0a1a46dc02910e3f6a1a718b"
+  },
+  "registryPosture": {
+    "automatedAssetFetch": "conditional",
+    "persistOriginalAsset": "conditional",
+    "publicDisplay": "conditional",
+    "createDerivatives": "conditional",
+    "createEmbeddings": "conditional",
+    "trainModels": "review_required"
+  },
+  "authorizedControlledRoute": {
+    "classification": "green_when_all_conditions_hold",
+    "assetType": "card_reference_image",
+    "rendition": "low.webp",
+    "pixelDimensions": "245x337",
+    "delivery": "provider_served_only",
+    "cachePolicy": "memory_only",
+    "languages": [
+      "ja",
+      "zh-tw",
+      "zh-cn"
+    ],
+    "allowedSurfaces": [
+      "search",
+      "collection",
+      "recognition_match",
+      "inventory",
+      "binder",
+      "set_checklist",
+      "product_identification"
+    ],
+    "excludedUses": [
+      "set_logo",
+      "expansion_symbol",
+      "rarity_symbol",
+      "pack_or_product_artwork",
+      "marketplace_listing_photo",
+      "high_resolution_delivery",
+      "full_screen_zoom",
+      "download_or_export",
+      "persistent_cache_or_mirror",
+      "canonical_asset_write",
+      "derivative_asset_generation",
+      "recognition_corpus_persistence",
+      "model_training"
+    ]
+  },
+  "requiredRuntimeControls": [
+    "Accept only an exact provider-supplied image base from a TCGdex card record whose language, provider set ID, provider card ID, and local collector ID match the URL path.",
+    "Require HTTPS, the exact assets.tcgdex.net host, the default port, no credentials, no query, no fragment, and a card path rather than a logo or symbol path.",
+    "Construct and return only the provider-documented low.webp rendition; never expose high, png, jpg, an extension-less base, or a standalone original.",
+    "Display the provider attribution text TCGdex reference on the rendered reference image.",
+    "Use memory-only image caching and do not prefetch the reference into persistent disk cache.",
+    "Provide client and backend source kill switches plus an exact language:set:card denial key.",
+    "Return null and render a neutral named placeholder on any mismatch, missing control, denied key, provider failure, withdrawal, or substantiated rights complaint.",
+    "Do not route set marks, product artwork, listing photos, canonical writes, asset acquisition, or training through this decision."
+  ],
+  "authority": "docs/stackrtcg-ip-operating-boundary.md",
+  "legalStatus": "internally_authorized_conditional_green_controlled_provider_route",
+  "disclaimer": "This evidence records Stackr's bounded controlled-provider risk decision. It is not a Pokemon licence and does not represent that TCGdex owns every underlying artwork right."
+}

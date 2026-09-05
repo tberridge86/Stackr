@@ -29,6 +29,9 @@ import { Redirect, router, Stack, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { fetchBinders } from '../../lib/binders';
 import { fetchStackrPrice } from '../../lib/stackrDomainAdapter';
+import { selectTcgdexReferencePersistenceImage } from '../../lib/tcgdexReferencePersistence';
+import { hydrateScanCardRowsWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
+import { attachLiveTcgdexCardReferences } from '../../lib/pokemonTcg';
 import { getScanAttemptDiagnostics } from '../../lib/scanDiagnostics';
 import { logScanLearningEvent } from '../../lib/scanLearning';
 import { getScannerClientContext } from '../../lib/scannerClientContext';
@@ -80,6 +83,7 @@ type TCGCard = {
   image_small: string;
   image_large?: string | null;
   raw_data?: any;
+  external_ids?: Record<string, unknown> | null;
   language?: string | null;
   release_date: string;
   editionHint?: '1st_edition' | 'unlimited' | 'shadowless' | null;
@@ -338,7 +342,7 @@ function ScanResultScreen() {
     rectifiedImageHeight?: string;
   }>();
 
-  const cards = useMemo<TCGCard[]>(() => {
+  const serializedCards = useMemo<TCGCard[]>(() => {
     if (!params.cardsJson) return [];
     try {
       const parsed = JSON.parse(params.cardsJson);
@@ -347,6 +351,7 @@ function ScanResultScreen() {
       return [];
     }
   }, [params.cardsJson]);
+  const [cards, setCards] = useState<TCGCard[]>(serializedCards);
   const incomingMode = typeof params.mode === 'string' ? params.mode : undefined;
   const incomingFlow = typeof params.flow === 'string' ? params.flow : undefined;
   const incomingQuery = typeof params.q === 'string' ? params.q : undefined;
@@ -385,7 +390,7 @@ function ScanResultScreen() {
     card?.editionHint ? EDITION_LABELS[card.editionHint] : null;
 
   const [selectedCard, setSelectedCard] = useState<TCGCard | null>(
-    cards.length === 1 ? cards[0] : null
+    serializedCards.length === 1 ? serializedCards[0] : null
   );
   const [binders, setBinders] = useState<BinderOption[]>([]);
   const [selectedBinderId, setSelectedBinderId] = useState<string | null>(null);
@@ -405,6 +410,28 @@ function ScanResultScreen() {
   const [chaseSaving, setChaseSaving] = useState(false);
   const [feedbackSaving, setFeedbackSaving] = useState(false);
   const [rejectedPrediction, setRejectedPrediction] = useState<TCGCard | null>(null);
+  useEffect(() => {
+    let disposed = false;
+    setCards(serializedCards);
+
+    void hydrateScanCardRowsWithLiveTcgdexReferences(
+      serializedCards,
+      attachLiveTcgdexCardReferences,
+    ).then((hydratedCards) => {
+      if (disposed) return;
+      // The hydrator defines a non-enumerable overlay only after exact live
+      // identity validation. `cardsJson` remains the sanitized source of truth.
+      setCards(hydratedCards);
+      setSelectedCard((current) => {
+        if (!current) return hydratedCards.length === 1 ? hydratedCards[0] ?? null : null;
+        return hydratedCards.find((card) => card.id === current.id) ?? current;
+      });
+    }).catch(() => {
+      // A provider lookup failure must not make the serialized result unusable.
+    });
+
+    return () => { disposed = true; };
+  }, [serializedCards]);
   const selectedIsChase = selectedCard ? isWanted(selectedCard.id, selectedCard.set_id) : false;
   const selectedMatchConfidence = selectedCard ? getMatchConfidence(selectedCard) : null;
   const selectedLocalQuickScanStatus = localQuickScanExperienceEnabled
@@ -734,6 +761,17 @@ function ScanResultScreen() {
     try {
       setAdding(true);
       const databaseStartedAt = Date.now();
+      const { data: existingBinderCard, error: existingBinderCardError } = await supabase
+        .from('binder_cards')
+        .select('image_url')
+        .eq('binder_id', selectedBinderId)
+        .eq('card_id', selectedCard.id)
+        .maybeSingle();
+      if (existingBinderCardError) throw existingBinderCardError;
+      const persistedImageUrl = selectTcgdexReferencePersistenceImage(
+        selectedCard.image_small,
+        existingBinderCard?.image_url ?? null,
+      );
 
         const { error } = await supabase
           .from('binder_cards')
@@ -746,7 +784,7 @@ function ScanResultScreen() {
             notes: '',
             card_name: selectedCard.name,
             card_number: selectedCard.number,
-            image_url: selectedCard.image_small,
+            ...(persistedImageUrl ? { image_url: persistedImageUrl } : {}),
             set_name: selectedCard.set_name,
           },
           {

@@ -1,3 +1,20 @@
+import {
+  JAPANESE_SET_DISPLAY_DRAFT_LOOKUP_METADATA,
+  JAPANESE_SET_DISPLAY_DRAFTS_BY_CODE,
+} from './generated/japaneseSetDisplayDrafts.generated.mjs';
+import {
+  CHINESE_SET_TRANSLATION_DRAFT_LOOKUP_METADATA,
+  CHINESE_SET_TRANSLATION_DRAFTS_BY_LANGUAGE,
+} from './generated/chineseSetTranslationDrafts.generated.mjs';
+import {
+  TCGDEX_JAPANESE_SET_ENGLISH_LOOKUP_METADATA,
+  TCGDEX_JAPANESE_SET_ENGLISH_NAMES,
+} from './generated/tcgdexJapaneseSetEnglishNames.generated.mjs';
+import {
+  STACKR_JAPANESE_SET_IDENTITIES_BY_CODE,
+  STACKR_JAPANESE_SET_IDENTITY_LOOKUP_METADATA,
+} from './generated/stackrJapaneseSetIdentity.generated.mjs';
+
 const KANTO_SPECIES_BY_DEX_ID = {
   1: 'Bulbasaur',
   2: 'Ivysaur',
@@ -466,6 +483,36 @@ function getSetKeyCandidates(input = {}) {
   ].map(normalizeSetKey).filter(Boolean);
 }
 
+function normalizeNativeName(value) {
+  return String(value ?? '').normalize('NFKC').replace(/\s+/gu, '').trim();
+}
+
+function getExactCjkLanguage(input = {}) {
+  const values = [input.language, input.raw?.language, input.raw?.set?.language]
+    .map(clean).filter(Boolean).map((value) => value.toLowerCase().replace(/_/g, '-'));
+  if (!values.length) return null;
+  const normalized = values.map((value) => value === 'jp' ? 'ja' : value);
+  return normalized.every((value) => value === 'ja') ? 'ja'
+    : normalized.every((value) => value === 'zh-cn') ? 'zh-cn'
+      : normalized.every((value) => value === 'zh-tw') ? 'zh-tw' : null;
+}
+
+function getExactSetCode(input = {}) {
+  const values = [input.setCode, input.raw?.set_code, input.raw?.setCode, input.raw?.set?.set_code, input.raw?.set?.setCode]
+    .map(normalizeSetKey).filter(Boolean);
+  return [...new Set(values)].length === 1 ? values[0] : null;
+}
+
+function isCjkEditorialSetTranslationsEnabled() {
+  return JAPANESE_SET_DISPLAY_DRAFT_LOOKUP_METADATA.rightsGate.activationAuthorized === true
+    && JAPANESE_SET_DISPLAY_DRAFT_LOOKUP_METADATA.rightsGate.publicRuntimeImportAuthorized === true
+    && JAPANESE_SET_DISPLAY_DRAFT_LOOKUP_METADATA.rightsGate.canonicalDatabaseWriteAuthorized === false
+    && CHINESE_SET_TRANSLATION_DRAFT_LOOKUP_METADATA.rightsGate.activationAuthorized === true
+    && CHINESE_SET_TRANSLATION_DRAFT_LOOKUP_METADATA.rightsGate.publicRuntimeImportAuthorized === true
+    && CHINESE_SET_TRANSLATION_DRAFT_LOOKUP_METADATA.rightsGate.canonicalDatabaseWriteAuthorized === false
+    && process.env.STACKR_DISABLE_CJK_EDITORIAL_SET_TRANSLATIONS !== 'true';
+}
+
 export function getLocalSetName(input = {}) {
   return clean(input.localName)
     ?? clean(input.raw?.local_name)
@@ -507,6 +554,55 @@ export function getEnglishSetDisplayName(input = {}) {
   }
 
   return null;
+}
+
+function hasExactProviderJapaneseLanguage(input = {}) {
+  const languages = [input.language, input.raw?.language, input.raw?.set?.language]
+    .map(clean)
+    .filter(Boolean);
+  return languages.length > 0 && languages.every((value) => value.toLowerCase().replace(/_/g, '-') === 'ja');
+}
+
+export function getEnglishSetDisplaySupplement(input = {}) {
+  const authoritative = getEnglishSetDisplayName(input);
+  if (authoritative) return { value: authoritative, label: 'English set:', status: 'authoritative_english_display_name', provenance: 'canonical_or_provider_english_display_name', authoritative: true };
+  if (TCGDEX_JAPANESE_SET_ENGLISH_LOOKUP_METADATA.rightsGate.activationAuthorized === true
+    && TCGDEX_JAPANESE_SET_ENGLISH_LOOKUP_METADATA.rightsGate.publicRuntimeImportAuthorized === true
+    && TCGDEX_JAPANESE_SET_ENGLISH_LOOKUP_METADATA.rightsGate.canonicalDatabaseWriteAuthorized === false
+    && STACKR_JAPANESE_SET_IDENTITY_LOOKUP_METADATA.policy.canonicalDatabaseWriteAuthorized === false
+    && process.env.EXPO_PUBLIC_DISABLE_TCGDEX_METADATA !== 'true'
+    && process.env.STACKR_DISABLE_TCGDEX_METADATA !== 'true'
+    && hasExactProviderJapaneseLanguage(input)) {
+    const code = getExactSetCode(input);
+    const nativeName = getLocalSetName(input);
+    const identities = code ? STACKR_JAPANESE_SET_IDENTITIES_BY_CODE[code] ?? [] : [];
+    if (code && nativeName && identities.length === 1 && identities[0]?.normalizedNativeName === normalizeNativeName(nativeName)) {
+      const value = cleanEnglishDisplayCandidate(TCGDEX_JAPANESE_SET_ENGLISH_NAMES[code]);
+      if (value) return { value, label: 'English set:', status: 'provider_metadata_english_supplement', provenance: 'tcgdex_mit_pinned_japanese_set_code_map+stackr_catalog_sets_identity_snapshot', authoritative: false };
+    }
+  }
+  if (!isCjkEditorialSetTranslationsEnabled()) return null;
+  const language = getExactCjkLanguage(input);
+  const code = getExactSetCode(input);
+  const nativeName = getLocalSetName(input);
+  if (!language || !code || !nativeName) return null;
+  const record = language === 'ja' ? JAPANESE_SET_DISPLAY_DRAFTS_BY_CODE[code] : CHINESE_SET_TRANSLATION_DRAFTS_BY_LANGUAGE[language]?.[code];
+  return record && normalizeNativeName(nativeName) === record.normalizedNativeName
+    ? { value: record.englishTranslation, label: 'English translation:', status: 'model_translation_draft', provenance: 'stackr_owner_approved_editorial_set_translation_runtime_map', authoritative: false }
+    : null;
+}
+
+export function getChineseSetEnglishTranslationDraft(input = {}) {
+  const supplement = getEnglishSetDisplaySupplement(input);
+  const language = getExactCjkLanguage(input);
+  return (language === 'zh-cn' || language === 'zh-tw') && supplement?.status === 'model_translation_draft'
+    ? supplement
+    : null;
+}
+
+export function getJapaneseSetEnglishTranslationDraft(input = {}) {
+  const supplement = getEnglishSetDisplaySupplement(input);
+  return getExactCjkLanguage(input) === 'ja' && supplement?.status === 'model_translation_draft' ? supplement : null;
 }
 
 function readDexIds(value) {
@@ -582,8 +678,10 @@ export function getEnglishCardDisplayName(input = {}) {
 }
 
 export function getPreferredSetDisplayName(input = {}) {
+  const localName = getLocalSetName(input);
+  if (localName) return localName;
+  if (isNonEnglishSet(input)) return clean(input.id) ?? clean(input.sourceId) ?? clean(input.setCode) ?? 'Unknown set';
   return getEnglishSetDisplayName(input)
-    ?? getLocalSetName(input)
     ?? clean(input.canonicalName)
     ?? clean(input.fallbackName)
     ?? clean(input.raw?.name)

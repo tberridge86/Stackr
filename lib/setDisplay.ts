@@ -1,5 +1,6 @@
 import { getPokemonSetLogoUrl, getPokemonSetVisualUrl } from './pokemonTcg';
 import { getPreferredSetDisplayName } from './pokemonDisplayNames';
+import { enforceSetVisualRuntimePolicy } from './providerSetMarkRuntimePolicy';
 
 type SetDisplayInput = {
   setId?: string | null;
@@ -63,13 +64,13 @@ export function getDisplaySetName(input: SetDisplayInput, fallback = 'Pokemon TC
 
 export function getDisplaySetLogoUrl(input: SetDisplayInput) {
   const setId = input.setId ?? input.set?.id ?? input.rawData?.set?.id ?? null;
-  return (
-    getPokemonSetVisualUrl(input.set, input.rawData?.language ?? input.rawData?.set?.language ?? null) ??
-    input.rawData?.set?.images?.logo ??
-    input.rawData?.set?.images?.symbol ??
-    input.rawData?.set?.images?.cover ??
-    input.rawData?.set?.cover_image_url ??
-    getPokemonSetLogoUrl(setId) ??
-    null
-  );
+  const language = input.rawData?.language ?? input.rawData?.set?.language ?? null;
+  return ([
+    getPokemonSetVisualUrl(input.set, language),
+    input.rawData?.set?.images?.logo,
+    input.rawData?.set?.images?.symbol,
+    input.rawData?.set?.images?.cover,
+    input.rawData?.set?.cover_image_url,
+    getPokemonSetLogoUrl(setId, language),
+  ]).map((candidate) => enforceSetVisualRuntimePolicy(candidate)).find(Boolean) ?? null;
 }
