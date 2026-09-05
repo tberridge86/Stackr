@@ -791,10 +791,10 @@ assert.match(
 assert.match(productionBackendOnlyJob, /STACKR_EXPECTED_MAIN_SHA: \$\{\{ inputs\.expected_main_sha \}\}/);
 assert.match(productionBackendOnlyJob, /test "\$\(git rev-parse HEAD\)" = "\$GITHUB_SHA"/);
 assert.match(productionBackendOnlyJob, /"\$STACKR_EXPECTED_MAIN_SHA" != "\$GITHUB_SHA"/);
-assert.match(productionBackendOnlyJob, /PREVIOUS_BACKEND_DEPLOYMENT_ID: \$\{\{ inputs\.previous_backend_deployment_id \}\}/);
+assert.doesNotMatch(productionWorkflow, /previous_backend_deployment_id/);
 assert.match(
   productionBackendOnlyJob,
-  /Validate known-good backend rollback target[\s\S]+--component=backend[\s\S]+--deployment="\$PREVIOUS_BACKEND_DEPLOYMENT_ID"[\s\S]+--verify-only/,
+  /Discover and attest the live backend rollback target[\s\S]+discover-live-railway-backend\.mjs[\s\S]+--project="\$RAILWAY_PROJECT_ID"[\s\S]+--environment="\$RAILWAY_ENVIRONMENT_ID"[\s\S]+--service="\$RAILWAY_BACKEND_SERVICE_ID"[\s\S]+--github-env="\$GITHUB_ENV"[\s\S]+rollback-target\.json[\s\S]+Deploy backend code only/,
 );
 assert.match(productionBackendOnlyJob, /npm run ci:secret-scan[\s\S]+--history-range="HEAD\^\.\.HEAD"/);
 for (const releaseCheck of [
@@ -806,6 +806,7 @@ for (const releaseCheck of [
   'npm run test:collection-pricing-ui',
   'npm run test:commerce-release-lock',
   'node scripts/test-deployment-tooling.mjs',
+  'node scripts/test-railway-live-backend-discovery.mjs',
   'npm run test:production-pricing-smoke',
 ]) {
   assert.ok(productionBackendOnlyJob.includes(releaseCheck), `backend-only release must run ${releaseCheck}`);
@@ -822,7 +823,7 @@ assert.match(productionBackendOnlyJob, /--limit 1000/);
 assert.doesNotMatch(productionBackendOnlyJob, /--limit 1(?:\s|$)|deployment redeploy/);
 assert.match(
   productionBackendOnlyJob,
-  /Validate known-good backend rollback target[\s\S]+set -euo pipefail[\s\S]+railway-rollback\.mjs/,
+  /Discover and attest the live backend rollback target[\s\S]+set -euo pipefail[\s\S]+discover-live-railway-backend\.mjs/,
 );
 assert.match(
   productionBackendOnlyJob,
@@ -849,7 +850,6 @@ assert.match(productionWorkflow, /env:exec production[\s\S]*--require-safe-relea
 assert.doesNotMatch(rollbackWorkflow, /catalogue-api/);
 assert.match(rollbackWorkflow, /--component=recognition/);
 assert.match(rollbackWorkflow, /RAILWAY_RECOGNITION_SERVICE_ID/);
-assert.match(productionWorkflow, /previous_backend_deployment_id/);
 assert.match(productionWorkflow, /PREVIOUS_BACKEND_DEPLOYMENT_ID/);
 assert.doesNotMatch(productionWorkflow, /Roll back catalogue API deployment/);
 assert.match(
