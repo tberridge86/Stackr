@@ -39,7 +39,7 @@ Tools added:
 
 Passing checks include API HTTPS/UUID regressions, API v1 integration, gateway (24 tests), backend (24 tests), language flags, native-language display, foreign-card presentation, controlled reference images, binder image non-persistence, set-mark policy, CJK audit tests, collection pricing UI/API, seller routing/access, and new binder identity/presentation and coverage regressions. Standard lint reported no errors and ten existing app/component warnings; wider touched-file lint also reported existing warnings, not errors.
 
-Final post-edit app typecheck and backend typecheck passed. The production-targeted web export is recorded in the PR/build handoff after completion. This worktree defaults to staging unless the production build variant/environment are explicitly set; production export is local verification only, not deployment.
+Final post-edit app typecheck and backend typecheck passed. The production-targeted web export passed with 92 routes. Local output: `D:/Stackr-1/.tmp/cjk-binder-build-20260905-production`. Entry bundle: `entry-7b18cced3ab8c99f82449cff5aba070f.js`, SHA-256 `59314c64a790ea27e961a2c59b20205f5f9a69d9a91e4670ed9f87ad51180480`. The exported configuration contains production app/environment values, and the bundle includes the new saved-card matcher and both refresh-cache functions. This is build verification, not an authenticated UI test or deployment.
 
 The connected Codex browser remains at the login screen. The user is signed into a separate browser in the screenshot. Existing/new-binder visual verification, including actually seeing loaded native-language cards and checking owned quantities, remains outstanding. Do not report this as passed from API responses or source assertions.
 
