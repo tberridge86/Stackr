@@ -77,6 +77,90 @@ assert.notEqual(
   'staging and production Supabase refs must be isolated',
 );
 
+const { verifyPriceRefreshRuntime } = await import('./deploy/verify-price-refresh-runtime.mjs');
+const productionProjectRef = releaseManifest.components.database.projectRef;
+const testOnlyProductionKey = ['sb', 'secret', 'A'.repeat(24)].join('_');
+const verifiedPriceRefreshRequests = [];
+const verifiedPriceRefreshRuntime = await verifyPriceRefreshRuntime({
+  environment: {
+    PRICE_API_URL: 'https://prices.production.invalid',
+    SUPABASE_SERVICE_ROLE_KEY: testOnlyProductionKey,
+    SUPABASE_URL: `https://${productionProjectRef}.supabase.co`,
+  },
+  request: async (url, options) => {
+    verifiedPriceRefreshRequests.push({ url: String(url), options });
+    if (url.hostname.endsWith('.supabase.co')) {
+      return new Response(JSON.stringify([{ code: 'en' }]), {
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+    return new Response(JSON.stringify({
+      ok: true,
+      runtime: {
+        railwayEnvironment: 'production',
+        supabaseProjectRef: productionProjectRef,
+      },
+    }), { headers: { 'content-type': 'application/json' } });
+  },
+});
+assert.equal(verifiedPriceRefreshRuntime.projectRef, productionProjectRef);
+assert.equal(verifiedPriceRefreshRequests.length, 2);
+assert.equal(
+  verifiedPriceRefreshRequests[0].url,
+  `https://${productionProjectRef}.supabase.co/rest/v1/catalogue_languages?select=code&limit=1`,
+);
+assert.equal(verifiedPriceRefreshRequests[0].options.headers.apikey, testOnlyProductionKey);
+assert.equal(
+  verifiedPriceRefreshRequests[0].options.headers.Authorization,
+  undefined,
+  'modern Supabase secret keys must not be sent as JWT bearer tokens',
+);
+assert.equal(verifiedPriceRefreshRequests[1].url, 'https://prices.production.invalid/health');
+
+await assert.rejects(
+  verifyPriceRefreshRuntime({
+    environment: {
+      PRICE_API_URL: 'https://prices.production.invalid',
+      SUPABASE_SERVICE_ROLE_KEY: testOnlyProductionKey,
+      SUPABASE_URL: `https://${releaseManifest.components.database.stagingProjectRef}.supabase.co`,
+    },
+    request: async () => new Response('{}'),
+  }),
+  /must target the release-manifest production project/,
+);
+
+await assert.rejects(
+  verifyPriceRefreshRuntime({
+    environment: {
+      PRICE_API_URL: 'https://prices.production.invalid',
+      SUPABASE_SERVICE_ROLE_KEY: ['sb', 'publishable', 'A'.repeat(24)].join('_'),
+      SUPABASE_URL: `https://${productionProjectRef}.supabase.co`,
+    },
+    request: async () => new Response('{}'),
+  }),
+  /is not a server-side Supabase credential/,
+);
+
+await assert.rejects(
+  verifyPriceRefreshRuntime({
+    environment: {
+      PRICE_API_URL: 'https://prices.staging.invalid',
+      SUPABASE_SERVICE_ROLE_KEY: testOnlyProductionKey,
+      SUPABASE_URL: `https://${productionProjectRef}.supabase.co`,
+    },
+    request: async (url) => url.hostname.endsWith('.supabase.co')
+      ? new Response(JSON.stringify([{ code: 'en' }]))
+      : new Response(JSON.stringify({
+        ok: true,
+        runtime: {
+          railwayEnvironment: 'staging',
+          supabaseProjectRef: releaseManifest.components.database.stagingProjectRef,
+        },
+      })),
+  }),
+  /PRICE_API_URL is not the approved production backend runtime/,
+);
+
 const catalogueWorkerSecretsTemp = mkdtempSync(path.join(tmpdir(), 'stackr-catalogue-worker-secrets-test-'));
 try {
   const catalogueSecrets = {
@@ -501,6 +585,7 @@ const productionBackendHardeningApproval = JSON.parse(
   readFileSync('deploy/production-backend-hardening-approval.json', 'utf8'),
 );
 const productionMonitorWorkflow = readFileSync('.github/workflows/production-api-monitor.yml', 'utf8');
+const priceRefreshWorkflow = readFileSync('.github/workflows/price-refresh.yml', 'utf8');
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
@@ -763,6 +848,38 @@ assert.match(productionMonitorWorkflow, /body\?\.runtime\?\.supabaseProjectRef !
 assert.match(productionMonitorWorkflow, /issues: write/);
 assert.match(productionMonitorWorkflow, /if: failure\(\)[\s\S]+gh issue (?:comment|create)/);
 assert.match(productionMonitorWorkflow, /if: success\(\)[\s\S]+gh issue close/);
+assert.doesNotMatch(
+  priceRefreshWorkflow,
+  /environment:\s*production/,
+  'frequent scheduled price refreshes must not wait on the protected production deployment approval gate',
+);
+assert.match(
+  priceRefreshWorkflow,
+  /SUPABASE_URL: \$\{\{ vars\.STACKR_SUPABASE_URL \|\| 'https:\/\/oakdbbzdqwurpjnoqhmu\.supabase\.co' \}\}/,
+);
+assert.match(
+  priceRefreshWorkflow,
+  /SUPABASE_SERVICE_ROLE_KEY: \$\{\{ secrets\.SUPABASE_PRODUCTION_SECRET_KEY \|\| secrets\.SUPABASE_SERVICE_ROLE_KEY \}\}/,
+);
+assert.match(
+  priceRefreshWorkflow,
+  /PRICE_API_URL: \$\{\{ vars\.STACKR_BACKEND_URL \|\| 'https:\/\/pocketvault-production\.up\.railway\.app' \}\}/,
+);
+assert.match(
+  priceRefreshWorkflow,
+  /Verify production runtime bindings[\s\S]*node scripts\/deploy\/verify-price-refresh-runtime\.mjs[\s\S]*Install dependencies/,
+);
+assert.doesNotMatch(priceRefreshWorkflow, /SUPABASE_URL: \$\{\{ secrets\.SUPABASE_URL \}\}/);
+assert.doesNotMatch(priceRefreshWorkflow, /PRICE_API_URL: \$\{\{ secrets\.PRICE_API_URL \}\}/);
+assert.doesNotMatch(
+  priceRefreshWorkflow,
+  /cron: '8 2 \* \* \*'|npm run daily-tcgcsv-sync/,
+  'the broken full-universe Node lane must not run on a schedule or invoke its mobile pricing import',
+);
+assert.match(
+  priceRefreshWorkflow,
+  /Block disabled full universe sync[\s\S]*full-universe lane is disabled until daily-tcgcsv-sync has a Node-only pricing provider boundary[\s\S]*exit 1/,
+);
 assert.equal(productionBackendHardeningApproval.status, 'approved');
 assert.equal(productionBackendHardeningApproval.scope, 'production_backend_hardening_only');
 assert.equal(productionBackendHardeningApproval.catalogueChangesAllowed, false);
