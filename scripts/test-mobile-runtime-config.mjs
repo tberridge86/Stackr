@@ -373,6 +373,18 @@ assert.doesNotMatch(
 assert.match(productionMobileWorkflow, /github\.ref == 'refs\/heads\/main'[\s\S]*inputs\.confirmation == 'PUBLISH MOBILE CANARY'/);
 assert.match(productionMobileWorkflow, /environment: production[\s\S]*EXPO_TOKEN: \$\{\{ secrets\.EXPO_TOKEN \}\}/);
 assert.match(productionMobileWorkflow, /concurrency:\s+group: stackr-production-deployment\s+cancel-in-progress: false/);
+const productionMobileJobTimeoutMinutes = Number(
+  productionMobileWorkflow.match(/timeout-minutes:\s*([0-9]+)/)?.[1],
+);
+const productionMobileMaxMonitorMinutes = Number(
+  productionMobileWorkflow.match(/"\$MONITOR_MINUTES" -gt ([0-9]+)/)?.[1],
+);
+assert.ok(
+  Number.isSafeInteger(productionMobileJobTimeoutMinutes)
+    && Number.isSafeInteger(productionMobileMaxMonitorMinutes)
+    && productionMobileJobTimeoutMinutes >= productionMobileMaxMonitorMinutes + 30,
+  'mobile canary job timeout must preserve at least 30 minutes beyond the maximum monitor window',
+);
 const productionMobileInputValidation = productionMobileWorkflow.slice(
   productionMobileWorkflow.indexOf('- name: Validate limited canary inputs'),
   productionMobileWorkflow.indexOf('- name: Validate production gateway readiness'),
