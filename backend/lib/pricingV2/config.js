@@ -35,6 +35,23 @@ export const pricingV2Config = {
       refreshIntervalHours: numberFromEnv('PRICING_V2_EBAY_SOLD_REFRESH_HOURS', 12),
       authorisedEndpoint: process.env.EBAY_SOLD_API_URL || '',
       authorisedToken: process.env.EBAY_SOLD_API_KEY || '',
+      // Possessing an endpoint token is not itself enough to call listings
+      // verified sales. This requires an explicit approval at deployment.
+      authorisedSoldData: booleanFromEnv('PRICING_V2_EBAY_SOLD_AUTHORISED', false),
+    },
+    poketrace_sold: {
+      id: 'poketrace_sold',
+      displayName: 'PokeTrace completed eBay sales',
+      // This is deliberately opt-in twice. A key alone must never enable a
+      // third-party completed-sales feed in production.
+      enabled: booleanFromEnv('PRICING_V2_POKETRACE_SOLD_ENABLED', false),
+      authorisedSoldData: booleanFromEnv('PRICING_V2_POKETRACE_SOLD_AUTHORISED', false),
+      reliabilityWeight: numberFromEnv('PRICING_V2_POKETRACE_SOLD_WEIGHT', 0.9),
+      refreshIntervalHours: numberFromEnv('PRICING_V2_POKETRACE_SOLD_REFRESH_HOURS', 6),
+      apiBaseUrl: process.env.POKETRACE_API_BASE_URL || 'https://api.poketrace.com/v1',
+      apiKey: process.env.POKETRACE_API_KEY || '',
+      listingsLimit: numberFromEnv('PRICING_V2_POKETRACE_SOLD_LIMIT', 20),
+      timeoutMs: numberFromEnv('PRICING_V2_POKETRACE_SOLD_TIMEOUT_MS', 8000),
     },
     ebay_active: {
       id: 'ebay_active',
@@ -59,6 +76,9 @@ export const pricingV2Config = {
       enabled: booleanFromEnv('PRICING_V2_MANUAL_COMP_ENABLED', true),
       reliabilityWeight: numberFromEnv('PRICING_V2_MANUAL_COMP_WEIGHT', 0.95),
       refreshIntervalHours: numberFromEnv('PRICING_V2_MANUAL_COMP_REFRESH_HOURS', 24),
+      // Manual review is an authorised source, but each row still has to pass
+      // the same immutable evidence and completion checks as provider data.
+      authorisedSoldData: true,
     },
   },
 };

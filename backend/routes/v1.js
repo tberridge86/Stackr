@@ -13,6 +13,7 @@ import {
 } from '../lib/stackrApiV1.js';
 import {
   MARKET_CACHE_CONTROL,
+  MARKET_HISTORY_CACHE_CONTROL,
   createMarketPricingService,
 } from '../lib/marketPricing/service.js';
 import { createTracedFetch } from '../lib/traceContext.js';
@@ -202,6 +203,19 @@ function sendError(req, res, error) {
   });
 }
 
+function bearerToken(req) {
+  const header = String(req.headers.authorization ?? '').trim();
+  return header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : null;
+}
+
+async function authenticatedUserId(req) {
+  const token = bearerToken(req);
+  if (!token) throw new ApiError(401, 'authentication_required', 'Sign in is required to request a price refresh.');
+  const { data, error } = await getSupabaseAdmin().auth.getUser(token);
+  if (error || !data?.user?.id) throw new ApiError(401, 'authentication_required', 'Your sign-in session is not valid.');
+  return data.user.id;
+}
+
 function errorForLog(error) {
   if (error instanceof Error) {
     return {
@@ -245,6 +259,7 @@ export function createV1Router(options = {}) {
   const router = express.Router();
   const getService = options.getService ?? (() => options.service ?? defaultService());
   const getPricingService = options.getPricingService ?? (() => options.pricingService ?? defaultPricingService());
+  const getAuthenticatedUserId = options.getAuthenticatedUserId ?? authenticatedUserId;
 
   router.use((req, res, next) => {
     req.stackrRequestId = requestIdFrom(req);
@@ -345,6 +360,33 @@ export function createV1Router(options = {}) {
     sendEnvelope(req, res, { variantId: history.variantId, observations: history.observations }, {
       cacheControl: MARKET_CACHE_CONTROL,
       pagination: history.pagination,
+    });
+  }));
+
+  router.get('/market/price-snapshots', asyncRoute(async (req, res) => {
+    const variantIds = String(req.query.variantIds ?? '').split(',').map((id) => id.trim()).filter(Boolean);
+    const history = await getPricingService().snapshotHistory(variantIds, req.query);
+    sendEnvelope(req, res, history, {
+      cacheControl: MARKET_HISTORY_CACHE_CONTROL,
+    });
+  }));
+
+  router.post('/cards/:variantId/price-refresh', asyncRoute(async (req, res) => {
+    const userId = await getAuthenticatedUserId(req);
+    const refresh = await getPricingService().requestSnapshotRefresh(req.params.variantId, req.body ?? {}, userId);
+    sendEnvelope(req, res, refresh, {
+      status: refresh.status === 'queued' ? 202 : 200,
+      cacheControl: NO_STORE_CACHE_CONTROL,
+    });
+  }));
+
+  router.post('/market/price-refresh', asyncRoute(async (req, res) => {
+    const userId = await getAuthenticatedUserId(req);
+    const { variantIds, ...input } = req.body ?? {};
+    const refresh = await getPricingService().requestSnapshotRefreshBatch(variantIds, input, userId);
+    sendEnvelope(req, res, refresh, {
+      status: refresh.summary.queued > 0 ? 202 : 200,
+      cacheControl: NO_STORE_CACHE_CONTROL,
     });
   }));
 

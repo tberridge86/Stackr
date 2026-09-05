@@ -73,11 +73,17 @@ import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackr
 import { loadCollectionPrices, type CollectionPriceResult } from '../../lib/collectionPricingApi';
 import {
   getCollectionPriceCoverageLabel,
-  getComparableCollectionValueReads,
   summariseCollectionPricing,
   type CollectionValueRead,
   type CollectionPricingSummary,
 } from '../../lib/collectionPricingState';
+import { stackrApiClient } from '../../lib/stackrApiV1';
+import {
+  buildVerifiedHomeSnapshotTrend,
+  supportsHomeSnapshotScope,
+  takeRotatingStringBatch,
+  type HomeSnapshotTrendEntry,
+} from '../../lib/homePriceRefreshCore';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 
 const fetchHomeDisplayCardRows = async (cardIds: string[]) => (
@@ -163,6 +169,11 @@ const EMPTY_COLLECTION_PRICING: CollectionPricingSummary = {
   state: 'empty',
 };
 const MAX_COLLECTION_VALUE_READS = 4_000;
+const HOME_LIVE_PRICE_POLL_MS = 3 * 60 * 1000;
+const HOME_AUTOMATIC_PRICE_REFRESH_MS = 15 * 60 * 1000;
+const HOME_AUTOMATIC_PRICE_REFRESH_LIMIT = 12;
+const HOME_MANUAL_PRICE_REFRESH_LIMIT = 100;
+const HOME_PRICE_REFRESH_BATCH_SIZE = 12;
 
 // ===============================
 // CONSTANTS
@@ -752,6 +763,12 @@ export default function HubScreen() {
   const hasLoadedCollectionValueRef = useRef(false);
   const hasSuccessfulCollectionPricingRef = useRef(false);
   const collectionValueReadsRef = useRef<CollectionValueRead[]>([]);
+  const refreshableVariantIdsRef = useRef<string[]>([]);
+  const providerRefreshCursorRef = useRef(0);
+  const providerRefreshSignatureRef = useRef<string | null>(null);
+  const providerRefreshEnqueueInFlightRef = useRef(false);
+  const automaticProviderRefreshAtRef = useRef(0);
+  const livePricePollInFlightRef = useRef(false);
   const cachedHomeSnapshotUserIdRef = useRef<string | null>(null);
   const homeSessionUserIdRef = useRef<string | null>(null);
   const homeCollectionRequestRef = useRef(0);
@@ -1322,23 +1339,62 @@ export default function HubScreen() {
         ? await loadCollectionPrices(ownedUnits.map(pricingInputForHomeUnit))
         : [];
       const nextPricingSummary = pricingSummaryForResults(priceResults);
-      const currentValueRead: CollectionValueRead | null = (
-        nextPricingSummary.state === 'fresh'
-        && nextPricingSummary.total != null
-        && priceResults.length === ownedUnits.length
-      ) ? {
-        capturedAt: new Date().toISOString(),
-        total: nextPricingSummary.total,
-        totalUnits: nextPricingSummary.totalUnits,
-        pricedUnits: nextPricingSummary.pricedUnits,
-        identitySignature: collectionIdentitySignature(priceResults),
-      } : null;
-      const nextValueReads = currentValueRead
-        ? [...collectionValueReadsRef.current, currentValueRead].slice(-MAX_COLLECTION_VALUE_READS)
-        : collectionValueReadsRef.current;
-      const nextChartData = currentValueRead
-        ? getComparableCollectionValueReads(nextValueReads, currentValueRead, chartRange === '7D' ? 7 : 30)
-        : [];
+      const identitySignature = collectionIdentitySignature(priceResults);
+      const rawSnapshotEntries: HomeSnapshotTrendEntry[] = [];
+      let canReadSnapshotHistory = priceResults.length === ownedUnits.length;
+      for (const [index, unit] of ownedUnits.entries()) {
+        const price = priceResults[index];
+        if (
+          !supportsHomeSnapshotScope(unit.productType, unit.condition)
+          || !price?.variantId
+          || price.central == null
+          || price.status === 'unavailable'
+        ) {
+          canReadSnapshotHistory = false;
+          continue;
+        }
+        rawSnapshotEntries.push({ variantId: price.variantId, quantity: unit.quantity });
+      }
+      const refreshableVariantIds = [...new Set(
+        priceResults.flatMap((price, index) => (
+          supportsHomeSnapshotScope(ownedUnits[index]?.productType, ownedUnits[index]?.condition) && price.variantId ? [price.variantId] : []
+        )),
+      )].sort();
+      refreshableVariantIdsRef.current = refreshableVariantIds;
+      if (providerRefreshSignatureRef.current !== identitySignature) {
+        providerRefreshSignatureRef.current = identitySignature;
+        providerRefreshCursorRef.current = 0;
+      }
+
+      let nextChartData: number[] = [];
+      if (canReadSnapshotHistory && rawSnapshotEntries.length === ownedUnits.length && refreshableVariantIds.length) {
+        const rangeDays = chartRange === '7D' ? 7 : 30;
+        const nowMs = Date.now();
+        try {
+          const responses = await Promise.all(
+            Array.from({ length: Math.ceil(refreshableVariantIds.length / 24) }, (_, index) => (
+              stackrApiClient.marketPriceSnapshots({
+                variantIds: refreshableVariantIds.slice(index * 24, (index + 1) * 24),
+                rangeDays,
+              })
+            )),
+          );
+          if (!await confirmCurrentRequest()) return;
+          nextChartData = buildVerifiedHomeSnapshotTrend(
+            rawSnapshotEntries,
+            responses.flatMap((response) => response.data.snapshots),
+            {
+              rangeStartMs: nowMs - rangeDays * 24 * 60 * 60 * 1000,
+              nowMs,
+              bucketMs: chartRange === '7D' ? 30 * 60 * 1000 : 24 * 60 * 60 * 1000,
+            },
+          );
+        } catch (historyError) {
+          console.log('Home stored price history unavailable', historyError);
+        }
+      }
+      // A chart point must represent a persisted provider snapshot, never an app read.
+      const nextValueReads: CollectionValueRead[] = [];
       const chartChange = nextChartData.length >= 2
         ? nextChartData[nextChartData.length - 1] - nextChartData[0]
         : 0;
@@ -1458,12 +1514,89 @@ export default function HubScreen() {
     loadCollectionValueRef.current = loadCollectionValue;
   }, [loadCollectionValue]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      void loadCollectionValueRef.current();
-    }, 3 * 60 * 1000);
-    return () => clearInterval(interval);
+  const enqueueAutomaticProviderRefresh = useCallback(async () => {
+    const now = Date.now();
+    if (
+      providerRefreshEnqueueInFlightRef.current
+      || now - automaticProviderRefreshAtRef.current < HOME_AUTOMATIC_PRICE_REFRESH_MS
+    ) return;
+    const batch = takeRotatingStringBatch(
+      refreshableVariantIdsRef.current,
+      providerRefreshCursorRef.current,
+      HOME_AUTOMATIC_PRICE_REFRESH_LIMIT,
+    );
+    if (!batch.items.length) return;
+
+    providerRefreshEnqueueInFlightRef.current = true;
+    automaticProviderRefreshAtRef.current = now;
+    providerRefreshCursorRef.current = batch.nextCursor;
+    try {
+      // This only enqueues provider work. Current UI values continue to be stored snapshots.
+      await stackrApiClient.requestMarketPriceRefresh(batch.items, { productType: 'raw_card', currency: 'GBP' });
+    } catch (error) {
+      console.log('Home automatic price refresh could not be queued', error);
+    } finally {
+      providerRefreshEnqueueInFlightRef.current = false;
+    }
   }, []);
+
+  const refreshLivePrices = useCallback(async () => {
+    if (providerRefreshEnqueueInFlightRef.current) {
+      Alert.alert('Live price refresh in progress', 'A provider refresh request is already being queued. Stored prices have not been changed yet.');
+      return;
+    }
+    const variantIds = [...new Set(refreshableVariantIdsRef.current)].slice(0, HOME_MANUAL_PRICE_REFRESH_LIMIT);
+    if (!variantIds.length) {
+      Alert.alert(
+        'Live price refresh unavailable',
+        'Add cards with an exact raw-card match first. Nothing was queued and the stored values have not changed.',
+      );
+      return;
+    }
+
+    providerRefreshEnqueueInFlightRef.current = true;
+    setRefreshing(true);
+    const summary = { queued: 0, alreadyQueued: 0, cooldown: 0 };
+    try {
+      const batches = Array.from(
+        { length: Math.ceil(variantIds.length / HOME_PRICE_REFRESH_BATCH_SIZE) },
+        (_, index) => variantIds.slice(index * HOME_PRICE_REFRESH_BATCH_SIZE, (index + 1) * HOME_PRICE_REFRESH_BATCH_SIZE),
+      );
+      for (const batch of batches) {
+        const response = await stackrApiClient.requestMarketPriceRefresh(batch, { productType: 'raw_card', currency: 'GBP' });
+        summary.queued += response.data.summary.queued;
+        summary.alreadyQueued += response.data.summary.already_queued;
+        summary.cooldown += response.data.summary.cooldown;
+      }
+      await loadCollectionValueRef.current();
+      const detail = summary.queued
+        ? `${summary.queued} ${summary.queued === 1 ? 'refresh was' : 'refreshes were'} queued for background processing. Stored prices stay visible until the provider writes a new snapshot.`
+        : summary.alreadyQueued
+          ? `${summary.alreadyQueued} ${summary.alreadyQueued === 1 ? 'card is' : 'cards are'} already queued. Stored prices stay visible until a new snapshot is written.`
+          : `${summary.cooldown} ${summary.cooldown === 1 ? 'card is' : 'cards are'} in the provider cooldown. No price was changed.`;
+      Alert.alert(summary.queued ? 'Live price refresh queued' : 'Live price refresh checked', detail);
+    } catch (error) {
+      console.log('Home manual price refresh could not be queued', error);
+      const pending = summary.queued + summary.alreadyQueued;
+      Alert.alert('Live price refresh interrupted', pending
+        ? `${pending} card refreshes are confirmed queued or already pending. The remaining requests could not be confirmed. Stored prices remain visible while processing continues.`
+        : 'The refresh request could not be confirmed. Stored prices remain visible; retrying is safe and will not duplicate pending requests.');
+    } finally {
+      providerRefreshEnqueueInFlightRef.current = false;
+      setRefreshing(false);
+    }
+  }, []);
+
+  const pollLivePrices = useCallback(async () => {
+    if (livePricePollInFlightRef.current) return;
+    livePricePollInFlightRef.current = true;
+    try {
+      await loadCollectionValueRef.current();
+      await enqueueAutomaticProviderRefresh();
+    } finally {
+      livePricePollInFlightRef.current = false;
+    }
+  }, [enqueueAutomaticProviderRefresh]);
 
   const loadChaseCards = useCallback(async () => {
     const requestId = ++homeChaseRequestRef.current;
@@ -1779,6 +1912,10 @@ export default function HubScreen() {
       hasLoadedCollectionValueRef.current = false;
       hasSuccessfulCollectionPricingRef.current = false;
       collectionValueReadsRef.current = [];
+      refreshableVariantIdsRef.current = [];
+      providerRefreshCursorRef.current = 0;
+      providerRefreshSignatureRef.current = null;
+      automaticProviderRefreshAtRef.current = 0;
       mintyMarketSignatureRef.current = null;
 
       setCollectionTotal(null);
@@ -1841,9 +1978,14 @@ export default function HubScreen() {
   useFocusEffect(useCallback(() => {
     let cancelled = false;
     let secondaryTimer: ReturnType<typeof setTimeout> | null = null;
+    const livePriceTimer = setInterval(() => {
+      void pollLivePrices();
+    }, HOME_LIVE_PRICE_POLL_MS);
 
-    void applyCachedHomeCollection();
-    void loadCollectionValueRef.current();
+    void (async () => {
+      await applyCachedHomeCollection();
+      if (!cancelled) void pollLivePrices();
+    })();
     void loadAll();
 
     secondaryTimer = setTimeout(() => {
@@ -1854,9 +1996,10 @@ export default function HubScreen() {
 
     return () => {
       cancelled = true;
+      clearInterval(livePriceTimer);
       if (secondaryTimer) clearTimeout(secondaryTimer);
     };
-  }, [applyCachedHomeCollection, loadAll, loadChaseCards, loadRecentActivity]));
+  }, [applyCachedHomeCollection, loadAll, loadChaseCards, loadRecentActivity, pollLivePrices]));
 
   useEffect(() => {
     if (appModeHydrated && premiumSellerAccess.allowed && !hasChosenMode) {
@@ -2053,10 +2196,10 @@ export default function HubScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => {
-              loadAll(true);
-              loadCollectionValue();
-              loadChaseCards();
-              loadRecentActivity();
+              void refreshLivePrices();
+              void loadAll(true);
+              void loadChaseCards();
+              void loadRecentActivity();
             }}
             tintColor={theme.colors.primary}
           />
@@ -2181,7 +2324,9 @@ export default function HubScreen() {
             isLoading={collectionValueLoading}
             error={collectionValueError}
             onPress={() => router.push('/value-history')}
-            onRetry={loadCollectionValue}
+            onRetry={refreshLivePrices}
+            onRefresh={refreshLivePrices}
+            refreshing={refreshing}
             onEmptyAction={() => router.push({ pathname: '/scan', params: { mode: 'market' } })}
             onMintyAction={openMintyAction}
             onMintyInsightFeedback={handleMintyInsightFeedback}

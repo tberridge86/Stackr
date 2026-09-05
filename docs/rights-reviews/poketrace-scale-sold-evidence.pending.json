@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "stackr-amber-rights-review-v1",
+  "featureKey": "poketrace_scale_sold_evidence",
+  "approvalStatus": "pending",
+  "operatingBoundaryReference": "docs/stackrtcg-ip-operating-boundary.md (effective 2026-09-04)",
+  "dataAsset": "PokeTrace Scale card identity records, provider price-history responses, and individual completed eBay listing evidence",
+  "source": "PokeTrace Scale API",
+  "ownerOrLicensor": "PokeTrace",
+  "permittedPurpose": "Pending written permission for StackrTCG card matching, price-history caching, commercial sale evidence, storage, and contextual display",
+  "territory": "Pending review",
+  "term": "Pending review",
+  "transformationRights": "Pending review; proposed normalisation, exact matching, currency conversion, and aggregate market estimates only",
+  "storageRights": "Pending review; proposed immutable raw evidence plus canonical sale observations",
+  "deletionRequirements": "Pending review",
+  "attribution": "Pending review",
+  "downstreamDeliveryRights": "Pending review; no bulk redistribution or resale of the provider feed",
+  "approvingPerson": "",
+  "approvedAt": null,
+  "expiresAt": null,
+  "writtenPermissionReference": "",
+  "evidenceReferences": ["https://poketrace.com/terms", "https://poketrace.com/docs/listings", "https://poketrace.com/docs/authentication", "https://poketrace.com/docs/cards", "https://poketrace.com/docs/price-history", "https://poketrace.com/pricing", "https://poketrace.com/privacy"],
+  "reviewNotes": "Public pages re-reviewed on 2026-09-04. Internal approval is recorded separately and cannot substitute for provider evidence. This remains pending and is not permission to call or activate PokeTrace. Attach the provider's written commercial permission and complete every review field before a database administrator records approval."
+}

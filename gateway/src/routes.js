@@ -7,6 +7,7 @@ export const RATE_LIMITS = Object.freeze({
   catalogue: { limit: 600, windowSeconds: 60 },
   search: { limit: 60, windowSeconds: 60 },
   pricing: { limit: 120, windowSeconds: 60 },
+  priceRefresh: { limit: 30, windowSeconds: 60 },
   scan: { limit: 30, windowSeconds: 60 },
   imageFallback: { limit: 5, windowSeconds: 60 },
   admin: { limit: 20, windowSeconds: 60 },
@@ -62,6 +63,20 @@ export const ROUTES = [
     query: query('productType', 'currency', 'condition', 'grader', 'grade', 'observationType', 'cursor', 'limit'),
   },
   { id: 'market_movers', pattern: /^\/v1\/market\/movers$/, ...publicGet, cache: 'market', rate: 'pricing', query: query('productType', 'currency', 'limit') },
+  { id: 'market_price_snapshots', pattern: /^\/v1\/market\/price-snapshots$/, ...publicGet, cache: 'none', rate: 'pricing', query: query('variantIds', 'rangeDays') },
+  {
+    id: 'card_price_refresh',
+    pattern: new RegExp(`^/v1/cards/${UUID}/price-refresh$`),
+    methods: ['POST'], auth: 'user', target: 'backend', cache: 'none', rate: 'priceRefresh',
+    body: 'priceRefresh', maxBodyBytes: 8 * 1024, timeoutMs: 12_000,
+    idempotent: true, forwardUserJwt: true, query: query(),
+  },
+  {
+    id: 'market_price_refresh', pattern: /^\/v1\/market\/price-refresh$/,
+    methods: ['POST'], auth: 'user', target: 'backend', cache: 'none', rate: 'priceRefresh',
+    body: 'priceRefreshBatch', maxBodyBytes: 16 * 1024, timeoutMs: 12_000,
+    idempotent: true, forwardUserJwt: true, query: query(),
+  },
   { id: 'market_opportunities', pattern: /^\/v1\/market\/opportunities$/, ...publicGet, cache: 'market', rate: 'pricing', query: query('productType', 'currency', 'limit') },
   { id: 'search', pattern: /^\/v1\/search$/, ...publicGet, cache: 'search', rate: 'search', query: query('q', 'language', 'setId', 'limit') },
   {

@@ -50,6 +50,8 @@ export type ValueTrackerCardProps = {
 type ValueTrackerActionProps = {
   onEmptyAction?: () => void;
   onRetry?: () => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 };
 
 const CARD_WIDTH = 104;
@@ -139,18 +141,8 @@ const getChangeDirection = (absoluteChange: number, percentageChange: number) =>
   return 0;
 };
 
-function alignTrendWithDirection(values: number[], direction: number) {
-  if (values.length < 2 || direction === 0) return values;
-  const chartDirection = values[values.length - 1] - values[0];
-  if ((direction < 0 && chartDirection > 0) || (direction > 0 && chartDirection < 0)) {
-    return [...values].reverse();
-  }
-  return values;
-}
-
-function buildDisplayTrend(values: number[], absoluteChange: number, percentageChange: number) {
-  const direction = getChangeDirection(absoluteChange, percentageChange);
-  return values.length >= 2 ? alignTrendWithDirection(values, direction) : [];
+function buildDisplayTrend(values: number[]) {
+  return values.length >= 2 ? values : [];
 }
 
 function getSmoothLinePath(points: { x: number; y: number }[]) {
@@ -268,6 +260,8 @@ export function ValueTrackerCard({
   onPress,
   onEmptyAction,
   onRetry,
+  onRefresh,
+  refreshing = false,
   onMintyAction,
   onMintyInsightFeedback,
   onMintySettingsPress,
@@ -277,8 +271,8 @@ export function ValueTrackerCard({
   const isCompactLayout = screenWidth < 360;
   const chartWidth = isCompactLayout
     ? Math.max(190, Math.min(screenWidth - 96, 260))
-    : 108;
-  const chartHeight = isCompactLayout ? 46 : 40;
+    : 104;
+  const chartHeight = isCompactLayout ? 42 : 38;
   const values = useMemo(() => getFiniteTrend(trendData), [trendData]);
   const derivedAbsoluteChange = values.length >= 2 ? values[values.length - 1] - values[0] : 0;
   const derivedPercent = values.length >= 2 && values[0] !== 0
@@ -296,8 +290,8 @@ export function ValueTrackerCard({
   const isEmpty = !isLoading && !hasTrackedCards && pricingState !== 'unavailable';
   const isUnavailable = !isLoading && hasTrackedCards && !hasValue;
   const displayTrend = useMemo(
-    () => buildDisplayTrend(values, displayChange, displayPercent),
-    [displayChange, displayPercent, values]
+    () => buildDisplayTrend(values),
+    [values]
   );
   const marketRefresh = React.useRef(new Animated.Value(1)).current;
   const hasAnimatedMarketRefresh = React.useRef(false);
@@ -643,6 +637,26 @@ export function ValueTrackerCard({
                     );
                   })}
               </View>
+            ) : null}
+            {onRefresh ? (
+              <TouchableOpacity
+                activeOpacity={0.82}
+                disabled={refreshing}
+                onPress={(event) => {
+                  event.stopPropagation();
+                  onRefresh();
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Queue live price refresh"
+                accessibilityHint="Queues provider work. Stored prices stay visible until a new snapshot is written."
+                style={styles.vaultRefreshAction}
+              >
+                {refreshing ? (
+                  <ActivityIndicator size="small" color="#6938F5" />
+                ) : (
+                  <Ionicons name="refresh" size={17} color="#6938F5" />
+                )}
+              </TouchableOpacity>
             ) : null}
             {interactive ? (
               <View style={styles.vaultTopAction}>
@@ -1352,6 +1366,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  vaultRefreshAction: {
+    width: 36,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   vaultTopActionText: {
     color: '#6938F5',

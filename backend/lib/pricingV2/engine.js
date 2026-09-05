@@ -6,6 +6,10 @@ import { normaliseObservation } from './normalise.js';
 import { calculatePricingEstimate } from './statistics.js';
 import { calculateConfidence } from './confidence.js';
 import { createPricingSourceAdapters } from './adapters/index.js';
+import { persistPokeTraceSoldEvidence } from '../marketPricing/pokeTraceEvidence.js';
+import { publishCanonicalPriceEstimate } from '../marketPricing/publishEstimates.js';
+import { pokeTraceConditionCode } from '../marketPricing/pokeTraceEvidence.js';
+import { projectCanonicalSnapshot } from './snapshotProjection.js';
 
 function dateAfterHours(hours) {
   return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
@@ -16,8 +20,31 @@ function isTruthy(value) {
 }
 
 function getNumeric(value) {
+  if (value == null || value === '' || typeof value === 'boolean') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function publicPriceType(row) {
+  const requested = row?.price_type ?? null;
+  if (['recent_sold_value', 'thin_sold_value', 'thin_sold_market_estimate'].includes(requested)) {
+    return 'recent_sold_market_estimate';
+  }
+  return requested;
+}
+
+export function publicConfidenceExplanation(row, state, provenLastSold) {
+  const explanation = row?.confidence_explanation
+    ?? row?.calculation_summary?.confidenceExplanation
+    ?? null;
+  if (!provenLastSold && /verified\s+(?:recent\s+)?sold|sold\s+comp/i.test(String(explanation ?? ''))) {
+    const count = Number(row?.comp_count ?? 0);
+    return `Based on ${count} recent sold-market observation${count === 1 ? '' : 's'}; this is an aggregate estimate, not an individually confirmed sale.`;
+  }
+  return explanation
+    ?? (state === 'asking_price_indication'
+      ? 'Low confidence: based mainly on current asking prices.'
+      : 'Insufficient exact market evidence.');
 }
 
 function publicSnapshotState(row) {
@@ -93,6 +120,32 @@ async function fetchCardRow(supabase, cardId, productType = 'raw_card') {
   return null;
 }
 
+function cardRowFromRefreshOptions(cardId, options = {}) {
+  if (!options.canonicalVariantId || !options.canonicalCardName || !options.cardNumber) return null;
+  return {
+    id: cardId,
+    name: options.canonicalCardName,
+    language: options.language ?? 'en',
+    number: options.cardNumber,
+    rarity: options.rarity ?? null,
+    set_id: options.setId ?? null,
+    raw_data: {
+      canonical_name: options.canonicalCardName,
+      canonical_variant_id: options.canonicalVariantId,
+      canonical_printing_id: options.canonicalPrintingId ?? null,
+      number: options.cardNumber,
+      rarity: options.rarity ?? null,
+      variant: options.variant ?? null,
+      finish: options.finish ?? null,
+      set: {
+        id: options.setId ?? null,
+        name: options.canonicalSetName ?? null,
+        set_code: options.setCode ?? null,
+      },
+    },
+  };
+}
+
 async function fetchLatestSnapshot(supabase, identity) {
   const { data, error } = await supabase
     .from('market_price_snapshots')
@@ -134,9 +187,11 @@ function snapshotToResponse(row, identity, extra = {}) {
       : [];
   const state = publicSnapshotState(row);
   const value = row?.market_price_gbp ?? (state === 'asking_price_indication' ? row?.active_listing_indication_gbp : null);
+  const provenLastSold = false;
 
   return {
     cardId: identity.cardId,
+    canonicalVariantId: identity.canonicalVariantId,
     identityKey: identity.identityKey,
     currency: 'GBP',
     state,
@@ -146,19 +201,17 @@ function snapshotToResponse(row, identity, extra = {}) {
     confidence: {
       score: Math.round(getNumeric(row?.confidence_score) ?? 0),
       label: row?.confidence_label ?? 'low',
-      explanation: row?.confidence_explanation
-        ?? row?.calculation_summary?.confidenceExplanation
-        ?? (state === 'asking_price_indication'
-          ? 'Low confidence: based mainly on current asking prices.'
-          : 'Insufficient exact market evidence.'),
+      explanation: publicConfidenceExplanation(row, state, provenLastSold),
     },
     evidence: {
       compCount: row?.comp_count ?? 0,
-      soldCompCount: row?.sold_comp_count ?? 0,
+      soldCompCount: provenLastSold ? row?.sold_comp_count ?? 0 : 0,
       activeListingCount: row?.active_listing_count ?? 0,
       sourceCount: row?.source_count ?? 0,
       primarySource: row?.primary_source ?? 'none',
-      priceType: row?.price_type ?? null,
+      priceType: publicPriceType(row),
+      provenLastSold,
+      lastSoldObservationId: provenLastSold ? row.last_sold_observation_id : null,
     },
     sourceBreakdown,
     lastUpdated: row?.calculated_at ?? row?.snapshot_at ?? null,
@@ -175,6 +228,7 @@ function snapshotToResponse(row, identity, extra = {}) {
 function unavailableResponse(identity, extra = {}) {
   return {
     cardId: identity.cardId,
+    canonicalVariantId: identity.canonicalVariantId,
     identityKey: identity.identityKey,
     currency: 'GBP',
     state: 'insufficient_exact_market_evidence',
@@ -219,6 +273,29 @@ async function queuePricingRefresh(supabase, identity, reason = 'pricing_v2_miss
         pricingEngine: 'v2',
         identityKey: identity.identityKey,
         productType: identity.productType,
+        // The pending-row uniqueness constraint is exact-variant scoped. Keep
+        // every identity component used to rebuild that exact scope so a
+        // worker cannot silently turn this into a printing-level refresh.
+        canonicalVariantId: identity.canonicalVariantId,
+        canonicalPrintingId: identity.canonicalPrintingId,
+        canonicalCardName: identity.canonicalCardName,
+        canonicalSetName: identity.canonicalSetName,
+        setCode: identity.setCode,
+        cardNumber: identity.cardNumber,
+        rarity: identity.rarity,
+        variantCode: identity.variant,
+        finishCode: identity.finish,
+        edition: identity.edition,
+        condition: identity.rawCondition,
+        rawCondition: identity.rawCondition,
+        promoCode: identity.promoCode,
+        gradingCompany: identity.gradingCompany,
+        grade: identity.grade,
+        qualifier: identity.qualifier,
+        sealedProductType: identity.sealedProductType,
+        packageVariant: identity.packageVariant,
+        releaseRegion: identity.releaseRegion,
+        currency: 'GBP',
         methodologyVersion: PRICING_METHODOLOGY_VERSION,
       },
     });
@@ -313,8 +390,19 @@ async function persistSources(supabase, adapters) {
   await supabase.from('pricing_sources').upsert(rows, { onConflict: 'id' });
 }
 
-async function persistSnapshot(supabase, identity, estimate, confidence) {
-  const calculatedAt = new Date().toISOString();
+export function buildPricingSnapshotRow(identity, estimate, confidence, now = new Date().toISOString()) {
+  const calculatedAt = estimate.calculatedAt ?? now;
+  // Legacy snapshot values are aggregates. Individually evidenced sale amounts
+  // belong exclusively to canonical sold history, with their original currency.
+  const persistedPriceType = ['recent_sold_value', 'thin_sold_value', 'thin_sold_market_estimate'].includes(estimate.priceType)
+    ? 'recent_sold_market_estimate'
+    : estimate.priceType;
+  const publicConfidence = persistedPriceType === 'recent_sold_market_estimate'
+    ? {
+        ...confidence,
+        explanation: `Aggregate of ${estimate.compCount} sold-market observations; not an individual last-sale price.`,
+      }
+    : confidence;
   const row = {
     user_id: null,
     card_id: identity.cardId,
@@ -327,26 +415,34 @@ async function persistSnapshot(supabase, identity, estimate, confidence) {
     ebay_sold_estimate_gbp: estimate.ebaySoldEstimate,
     secondary_consensus_gbp: estimate.secondaryConsensusEstimate,
     active_listing_indication_gbp: estimate.activeListingIndication,
-    confidence_score: confidence.score,
-    confidence_label: confidence.label,
-    confidence_explanation: confidence.explanation,
+    confidence_score: publicConfidence.score,
+    confidence_label: publicConfidence.label,
+    confidence_explanation: publicConfidence.explanation,
     comp_count: estimate.compCount,
-    sold_comp_count: estimate.soldCompCount,
+    sold_comp_count: 0,
     active_listing_count: estimate.activeListingCount,
     source_count: estimate.sourceCount,
     volatility: estimate.volatility,
     primary_source: estimate.primarySource,
-    price_type: estimate.priceType,
+    price_type: persistedPriceType,
+    proven_last_sold: false,
+    last_sold_observation_id: null,
     methodology_version: PRICING_METHODOLOGY_VERSION,
     calculated_at: calculatedAt,
-    stale_after: dateAfterHours(pricingV2Config.staleAfterHours),
-    is_stale: false,
+    stale_after: estimate.staleAfter ?? dateAfterHours(pricingV2Config.staleAfterHours),
+    is_stale: estimate.isStale ?? false,
     source_breakdown: estimate.sourceBreakdown,
     pricing_identity_json: identity,
     calculation_summary: {
       decisionCase: estimate.decisionCase,
-      priceType: estimate.priceType,
-      confidenceExplanation: confidence.explanation,
+      priceType: persistedPriceType,
+      candidatePriceType: estimate.priceType,
+      provenLastSold: false,
+      lastSoldObservationId: null,
+      aggregateSoldEstimate: persistedPriceType === 'recent_sold_market_estimate',
+      priceBasis: estimate.priceBasis ?? 'unknown_or_mixed_normalisation',
+      canonicalEstimateVersionId: estimate.canonicalEstimateVersionId ?? null,
+      confidenceExplanation: publicConfidence.explanation,
       rejectedObservationCount: estimate.rejectedObservationCount,
       outlierCount: estimate.outlierCount,
       disagreementPercentage: estimate.disagreementPercentage,
@@ -357,6 +453,11 @@ async function persistSnapshot(supabase, identity, estimate, confidence) {
     snapshot_at: calculatedAt,
   };
 
+  return row;
+}
+
+async function persistSnapshot(supabase, identity, estimate, confidence) {
+  const row = buildPricingSnapshotRow(identity, estimate, confidence);
   const { data, error } = await supabase
     .from('market_price_snapshots')
     .insert(row)
@@ -458,7 +559,8 @@ export async function refreshPricingForCard(supabase, cardId, options = {}) {
   }
 
   const productType = options.productType ?? (options.gradingCompany || options.grade ? 'graded_card' : 'raw_card');
-  const cardRow = await fetchCardRow(supabase, cardId, productType);
+  const cardRow = await fetchCardRow(supabase, cardId, productType)
+    ?? cardRowFromRefreshOptions(cardId, options);
   if (!cardRow) throw new Error(`Card not found: ${cardId}`);
 
   const identity = buildCanonicalIdentity(cardRow, { ...options, cardId, productType });
@@ -491,12 +593,48 @@ export async function refreshPricingForCard(supabase, cardId, options = {}) {
     const match = scoreObservationMatch(raw, identity, pricingV2Config);
     return normaliseObservation(raw, identity, match, pricingV2Config);
   });
+  const qualifiedPokeTraceSaleCount = observations.filter((observation) => (
+    observation.sourceId === 'poketrace_sold'
+      && observation.sourceType === 'sold_transaction'
+      && observation.metadata?.soldProvenance?.qualified === true
+  )).length;
+  let retained = { rows: [], result: null };
+  try {
+    retained = await persistPokeTraceSoldEvidence(supabase, identity, observations);
+    if (retained.rows.length !== qualifiedPokeTraceSaleCount) {
+      throw new Error('Every qualified PokeTrace sale must resolve to one retained canonical evidence row.');
+    }
+  } catch (error) {
+    accessLimitations.push({
+      source: 'poketrace_sold',
+      status: 'evidence_not_retained',
+      message: error?.message ?? String(error),
+    });
+    if (qualifiedPokeTraceSaleCount > 0) throw error;
+  }
   await persistObservations(supabase, observations);
 
   const estimate = calculatePricingEstimate(observations, pricingV2Config);
   const confidence = calculateConfidence(estimate, observations, identity);
   await enqueueReviewIfNeeded(supabase, identity, estimate).catch(() => {});
-  const snapshot = await persistSnapshot(supabase, identity, estimate, confidence);
-
-  return snapshotToResponse(snapshot, identity, { accessLimitations });
+  // A retained provider sale is not enough: publish the canonical estimate
+  // consumed by /v1/card prices before completing the exact refresh request.
+  // This separate switch stays off until the provenance migrations are proven.
+  let canonicalPublication = { status: 'disabled', writtenCount: 0 };
+  if (isTruthy(process.env.PRICING_V2_CANONICAL_PUBLISH_ENABLED)
+    && identity.canonicalVariantId && productType === 'raw_card') {
+    const condition = pokeTraceConditionCode(String(identity.rawCondition ?? '').replace(/^raw_/, ''));
+    if (!condition) throw new Error('Canonical publication cannot resolve the exact raw condition.');
+    canonicalPublication = await publishCanonicalPriceEstimate(supabase, {
+      variantId: identity.canonicalVariantId,
+      condition,
+      currency: options.currency ?? 'GBP',
+      dryRun: false,
+    });
+  }
+  const projection = projectCanonicalSnapshot(identity, estimate, confidence, canonicalPublication);
+  const snapshot = await persistSnapshot(supabase, identity, projection.estimate, projection.confidence);
+  // Included observation IDs are an internal transactional write plan, not an API payload.
+  const { estimate: _internalEstimate, ...publicationSummary } = canonicalPublication;
+  return { ...snapshotToResponse(snapshot, identity, { accessLimitations }), canonicalPublication: publicationSummary };
 }

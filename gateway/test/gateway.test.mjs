@@ -14,6 +14,66 @@ import { createGatewayOriginAuth } from '../../backend/lib/gatewayOriginAuth.js'
 const USER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const DEVICE_ID = 'device:test:00000001';
 
+test('price snapshots accept bounded canonical IDs and reject invalid ranges before forwarding', async () => {
+  const second = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  let forwarded = 0;
+  const fetchImpl = async (url) => {
+    forwarded += 1;
+    assert.equal(new URL(url).searchParams.get('rangeDays'), '7');
+    return Response.json({ data: { snapshots: [] } });
+  };
+  const ok = await handleRequest(request(`/v1/market/price-snapshots?variantIds=${USER_ID},${second}&rangeDays=7`), environment(), context(), { fetchImpl, cache: new MemoryCache() });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get('cache-control'), 'no-store');
+  for (const query of ['', `variantIds=${USER_ID}&rangeDays=365`, `variantIds=${USER_ID},${USER_ID.toUpperCase()}`, 'variantIds=not-a-uuid']) {
+    const response = await handleRequest(request(`/v1/market/price-snapshots?${query}`), environment(), context(), { fetchImpl, cache: new MemoryCache() });
+    assert.equal(response.status, 400);
+  }
+  assert.equal(forwarded, 1);
+});
+
+test('price refresh requires authentication, bounded payloads and idempotency; forwards only the verified user token', async () => {
+  const env = environment();
+  let forwarded = 0;
+  const makeRequest = (body, key = 'live-price-refresh:000001', path = '/v1/market/price-refresh') => request(path, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer user-access-token', 'Content-Type': 'application/json',
+      'X-Stackr-Device-Id': DEVICE_ID, ...(key ? { 'Idempotency-Key': key } : {}) },
+    body: JSON.stringify(body),
+  });
+  const deps = {
+    cache: new MemoryCache(), verifyAuth: async () => authenticated(),
+    fetchImpl: async (_url, init) => {
+      forwarded += 1;
+      assert.equal(init.headers.get('authorization'), 'Bearer user-access-token');
+      return Response.json({ data: { summary: { queued: 1 } } }, { status: 202 });
+    },
+  };
+  const body = { variantIds: [USER_ID], productType: 'raw_card', currency: 'GBP' };
+  const unauthenticated = await handleRequest(makeRequest(body), env, context(), {
+    ...deps, verifyAuth: async () => { throw new GatewayError(401, 'authentication_required', 'Sign in.'); },
+  });
+  assert.equal(unauthenticated.status, 401);
+  const missingKey = await handleRequest(makeRequest(body, null), env, context(), deps);
+  assert.equal(missingKey.status, 400);
+  for (const invalid of [
+    { ...body, variantIds: [] }, { ...body, variantIds: [USER_ID, USER_ID.toUpperCase()] },
+    { ...body, variantIds: Array(13).fill(USER_ID) }, { ...body, currency: 'USD' },
+    { ...body, productType: 'graded_card' }, { ...body, providerApiKey: 'forbidden' },
+  ]) {
+    assert.equal((await handleRequest(makeRequest(invalid), env, context(), deps)).status, 400);
+  }
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const result = await handleRequest(makeRequest(body), env, context(), deps);
+    assert.equal(result.status, 202);
+    assert.equal(result.headers.get('cache-control'), 'no-store');
+  }
+  assert.equal(forwarded, 1, 'Retrying the same request must replay without additional queue writes');
+  const single = await handleRequest(makeRequest({ currency: 'GBP', productType: 'raw_card' }, 'live-price-refresh:single:0001', `/v1/cards/${USER_ID}/price-refresh`), env, context(), deps);
+  assert.equal(single.status, 202);
+  assert.equal(forwarded, 2);
+});
+
 class MemoryStorage {
   constructor() {
     this.values = new Map();

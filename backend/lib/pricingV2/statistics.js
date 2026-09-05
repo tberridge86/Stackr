@@ -1,4 +1,5 @@
 import { pricingV2Config } from './config.js';
+import { hasQualifiedSoldProvenance } from '../marketPricing/soldProvenance.js';
 
 function median(values) {
   if (!values.length) return null;
@@ -146,7 +147,9 @@ export function calculatePricingEstimate(observations, config = pricingV2Config)
   const deduped = dedupeObservations(exact);
   const outlierTagged = removeOutliers(deduped);
   const included = outlierTagged.filter((row) => !row.outlier);
-  const sold = included.filter((row) => row.sourceType === 'sold_transaction');
+  // Defence in depth: even a caller that bypassed normalisation cannot make a
+  // bare sold_transaction row produce a recent_sold_value estimate.
+  const sold = included.filter(hasQualifiedSoldProvenance);
   const secondary = included.filter((row) => row.sourceType === 'market_estimate' || row.sourceType === 'market_price');
   const active = included.filter((row) => row.sourceType === 'active_listing');
   const soldEstimate = estimateGroup(sold);

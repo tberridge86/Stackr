@@ -260,6 +260,8 @@ export type StackrSearchResult = {
 
 export type StackrMarketProductType = 'raw_card' | 'graded_card' | 'sealed_product';
 export type StackrMarketEvidenceStatus =
+  | 'legacy_cached_market_estimate'
+  | 'recent_sold_market_estimate'
   | 'recent_sold_value'
   | 'thin_sold_value'
   | 'market_estimate'
@@ -273,6 +275,9 @@ export type StackrCardPrice = {
   currency: string;
   status: StackrMarketEvidenceStatus;
   priceType: StackrMarketEvidenceStatus;
+  priceBasis?: string;
+  quoteScope?: 'exact_variant' | 'printing_level';
+  primarySource?: string;
   estimates: {
     low: number | null;
     central: number | null;
@@ -292,7 +297,7 @@ export type StackrCardPrice = {
     score: number;
     label: 'high' | 'medium' | 'low' | 'insufficient_evidence';
   };
-  freshness: 'fresh' | 'stale' | 'expired' | 'unknown';
+  freshness: 'fresh' | 'stale' | 'expired' | 'unknown' | 'source_timestamped';
   sourceBreakdown: Array<Record<string, unknown>>;
   outliers: Record<string, unknown>;
   fallbackEstimate: {
@@ -307,6 +312,12 @@ export type StackrCardPrice = {
 };
 
 export type StackrPriceHistoryObservation = {
+  provenLastSold?: boolean;
+  saleVerificationState?: string | null;
+  transactionStatus?: string | null;
+  evidenceSha256?: string | null;
+  provenanceVersion?: string | null;
+  lastSoldEvidence?: Record<string, unknown> | null;
   observationId: string;
   observationType: 'sold_observation' | 'active_listing';
   variantId: string | null;
@@ -327,6 +338,37 @@ export type StackrPriceHistoryObservation = {
   sourceTitle: string | null;
   parsedMatchConfidence: number | null;
   duplicateGroupId: string | null;
+};
+
+/** A persisted market snapshot for the compact collection history chart. */
+export type StackrPriceSnapshotHistoryItem = {
+  cardId: string;
+  variantId: string;
+  calculatedAt: string | null;
+  snapshotAt: string | null;
+  marketCentral: number | null;
+  currency: string;
+  priceType: StackrMarketEvidenceStatus;
+  freshness: 'fresh' | 'stale' | 'unknown' | 'source_timestamped';
+  staleAfter?: string | null;
+  primarySource?: string | null;
+  priceBasis?: string;
+  quoteScope: 'exact_variant' | 'printing_level';
+};
+
+export type StackrPriceRefreshRequest = {
+  productType?: StackrMarketProductType;
+  currency?: string;
+  language?: StackrApiLanguageCode;
+};
+
+export type StackrPriceRefreshStatus = {
+  variantId: string;
+  status: 'queued' | 'already_queued' | 'cooldown';
+  queuedAt: string;
+  earliestRefreshAt: string;
+  providerRefreshPending: boolean;
+  quoteScope: 'exact_variant' | 'printing_level';
 };
 
 export type StackrMarketMover = {
@@ -928,6 +970,31 @@ export class StackrApiClient {
 
   search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }) {
     return this.request<{ query: string; normalizedQuery: string; results: StackrSearchResult[] }>('/search', query);
+  }
+
+  marketPriceSnapshots(query: { variantIds: string[]; rangeDays?: 7 | 30 }) {
+    const variantIds = [...new Set(query.variantIds.map((value) => String(value).trim()).filter(Boolean))];
+    if (!variantIds.length || variantIds.length > 24) {
+      throw new Error('marketPriceSnapshots requires between 1 and 24 variant IDs.');
+    }
+    if (query.rangeDays != null && query.rangeDays !== 7 && query.rangeDays !== 30) {
+      throw new Error('marketPriceSnapshots rangeDays must be either 7 or 30.');
+    }
+    return this.request<{ snapshots: StackrPriceSnapshotHistoryItem[]; limit: number; rangeDays?: 7 | 30; bucketMinutes?: 30 | 1440 }>('/market/price-snapshots', {
+      variantIds: variantIds.join(','),
+      rangeDays: query.rangeDays,
+    });
+  }
+
+  requestMarketPriceRefresh(variantIds: string[], payload: StackrPriceRefreshRequest = {}) {
+    const ids = [...new Set(variantIds.map((value) => String(value).trim()).filter(Boolean))];
+    if (!ids.length || ids.length > 12) {
+      throw new Error('requestMarketPriceRefresh requires between 1 and 12 variant IDs per request.');
+    }
+    return this.authenticatedPost<{
+      items: StackrPriceRefreshStatus[];
+      summary: { queued: number; already_queued: number; cooldown: number };
+    }>('/market/price-refresh', { variantIds: ids, ...payload });
   }
 
   recognitionIdentify(payload: StackrRecognitionIdentifyRequest) {

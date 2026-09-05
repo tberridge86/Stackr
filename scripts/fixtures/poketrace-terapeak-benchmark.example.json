@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "stackr-poketrace-terapeak-manual-sample-v1",
+  "manifest": {
+    "schemaVersion": "stackr-private-benchmark-evidence-manifest-v1",
+    "reviewer": "Example Benchmark Reviewer",
+    "capturedAt": "2026-09-04T01:00:00.000Z",
+    "rightsReviewReference": "private/example-approved-terapeak-rights-review.json",
+    "rightsReviewSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "sourceTermsReference": "private/example-terapeak-terms-snapshot.txt",
+    "privateEvidenceIndexSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "retentionUntil": "2030-09-04T01:00:00.000Z",
+    "attestation": {
+      "manuallyCollected": true,
+      "noScraping": true,
+      "noAutomation": true,
+      "no130point": true,
+      "exactListingPairsReviewed": true,
+      "privateEvidenceIndexReviewed": true,
+      "providerEvidenceFingerprintsRecomputed": true
+    }
+  },
+  "records": [
+    {
+      "canonicalIdentityKey": "pokemon-base-set:charizard:4:unlimited",
+      "conditionOrGrade": "PSA 8",
+      "evidenceReference": "private-evidence-row-example-001",
+      "capturedAt": "2026-09-04T01:00:00.000Z",
+      "reviewedBy": "Example Benchmark Reviewer",
+      "poketrace": {
+        "itemId": "123456789012",
+        "price": 410.0,
+        "currency": "GBP",
+        "soldAt": "2026-08-18T14:00:00.000Z",
+        "title": "Pokemon Base Set Charizard 4/102 PSA 8",
+        "url": "https://www.ebay.co.uk/itm/123456789012",
+        "anomaly": false,
+        "identityKey": "pokemon-base-set:charizard:4:unlimited",
+        "conditionOrGrade": "PSA 8",
+        "evidenceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "terapeak": {
+        "listingId": "123456789012",
+        "finalPrice": 400.0,
+        "currency": "GBP",
+        "soldAt": "2026-08-18T14:00:00.000Z",
+        "notes": "Manually transcribed from Product Research on 2026-08-19.",
+        "identityKey": "pokemon-base-set:charizard:4:unlimited",
+        "conditionOrGrade": "PSA 8",
+        "evidenceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    }
+  ]
+}

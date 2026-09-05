@@ -14,6 +14,8 @@ import { normaliseObservation } from '../backend/lib/pricingV2/normalise.js';
 import { calculatePricingEstimate } from '../backend/lib/pricingV2/statistics.js';
 
 const migration = readFileSync('supabase/migrations/20260728171416_stackr_market_pricing_service.sql', 'utf8');
+const snapshotBucketMigration = readFileSync('supabase/migrations/20260904130000_market_price_snapshot_history_buckets.sql', 'utf8');
+const snapshotQueueMigration = readFileSync('supabase/migrations/20260904131000_exact_variant_price_refresh_queue.sql', 'utf8');
 const rollback = readFileSync('supabase/manual/rollback_20260728171416_stackr_market_pricing_service.sql', 'utf8');
 const openApi = readFileSync('docs/stackr-api/openapi.v1.yaml', 'utf8');
 
@@ -63,6 +65,16 @@ function assertMigrationShape() {
 
   assert.match(rollback, /drop view if exists api\.market_price_estimates/, 'rollback must drop API projection');
   assert.match(rollback, /drop table if exists market\.price_estimates/, 'rollback must drop price estimates');
+  assert.match(snapshotBucketMigration, /canonical_identity_key[\s\S]+?canonicalVariantId[\s\S]+?__legacy_printing_scope__/i,
+    'snapshot buckets must keep exact canonical identity scope separate from printing-level history');
+  assert.match(snapshotBucketMigration, /source-null historical row must never displace a labelled estimate/i,
+    'snapshot bucket selection must filter unlabelled rows before choosing a winner');
+  assert.match(snapshotBucketMigration, /tcgdex_tcgplayer[\s\S]+tcgdex_cardmarket/i,
+    'known TCGdex source labels must remain eligible for chart history');
+  assert.match(snapshotBucketMigration, /jsonb_array_elements\(case[\s\S]+?else '\[\]'::jsonb/i,
+    'source breakdown parsing must be safe for malformed JSON shapes');
+  assert.doesNotMatch(snapshotQueueMigration, /create\s+or\s+replace\s+function\s+api\.market_price_snapshot_history/i,
+    'later queue migration must not overwrite the identity-aware history RPC');
 }
 
 function assertOpenApiAndClientContract() {
@@ -148,7 +160,8 @@ function assertPricingMathAndTitleValidation() {
     observation('Charizard ex 157/165 Pokemon Card 151 Japanese SR', 999, rawIdentity, { externalReference: 'outlier' }),
   ];
   const estimate = calculatePricingEstimate(soldRows);
-  assert.equal(estimate.priceType, 'recent_sold_value');
+  assert.equal(estimate.priceType, 'market_estimate', 'unproven sold labels must not create a recent-sold value');
+  assert.equal(estimate.soldCompCount, 0, 'unproven sold labels must not count as sold comps');
   assert.equal(estimate.outlierCount, 1, 'MAD outlier handling must reject the obvious outlier');
   assert.ok(estimate.marketEstimate >= 100 && estimate.marketEstimate <= 115, 'outlier must not dominate central estimate');
 
@@ -311,11 +324,450 @@ async function assertInvalidServiceInput() {
   );
 }
 
+function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [] }) {
+  const limits = [];
+  const inserted = [];
+  const rpcCalls = [];
+  const rangeCalls = [];
+  const equalities = [];
+  const catalogueCards = Array.isArray(metadata) ? metadata : [metadata];
+  function query(schemaName, tableName) {
+    let rows = schemaName === 'api' && tableName === 'catalogue_cards'
+      ? catalogueCards
+      : schemaName === 'api' && tableName === 'catalogue_external_identifiers'
+        ? []
+        : schemaName === 'api' && tableName === 'market_price_snapshot_history'
+          ? snapshots
+          : schemaName === 'api' && tableName === 'market_price_estimates'
+            ? estimates
+        : tableName === 'market_price_snapshots'
+          ? snapshots
+          : tableName === 'price_refresh_queue'
+            ? queueRows
+          : [];
+    let single = false;
+    const builder = {
+      select() { return builder; },
+      eq(column, value) {
+        equalities.push({ schemaName, tableName, column, value });
+        rows = rows.filter((row) => row[column] === value);
+        return builder;
+      },
+      is(column, value) {
+        rows = rows.filter((row) => (row[column] ?? null) === value);
+        return builder;
+      },
+      in(column, values) {
+        rows = rows.filter((row) => values.includes(row[column]));
+        return builder;
+      },
+      or() { return builder; },
+      order(column, options = {}) {
+        rows = [...rows].sort((left, right) => {
+          const a = left[column] ?? '';
+          const b = right[column] ?? '';
+          return options.ascending === false ? String(b).localeCompare(String(a)) : String(a).localeCompare(String(b));
+        });
+        return builder;
+      },
+      limit(value) {
+        limits.push({ schemaName, tableName, value });
+        rows = rows.slice(0, value);
+        return builder;
+      },
+      range(from, to) {
+        rangeCalls.push({ schemaName, tableName, from, to });
+        rows = rows.slice(from, to + 1);
+        return builder;
+      },
+      insert(value) {
+        inserted.push(value);
+        rows = [{ requested_at: '2026-09-05T00:00:00.000Z', run_after: '2026-09-05T00:00:00.000Z' }];
+        return builder;
+      },
+      maybeSingle() { single = true; return builder; },
+      then(resolve, reject) {
+        return Promise.resolve({ data: single ? (rows[0] ?? null) : rows, error: null }).then(resolve, reject);
+      },
+    };
+    return builder;
+  }
+  return {
+    limits,
+    inserted,
+    rpcCalls,
+    rangeCalls,
+    equalities,
+    schema(schemaName) {
+      return {
+        from: (tableName) => query(schemaName, tableName),
+        rpc(name, args) {
+          rpcCalls.push({ schemaName, name, args });
+          return query(schemaName, name);
+        },
+      };
+    },
+    from(tableName) { return query('public', tableName); },
+  };
+}
+
+async function assertLabelledLegacySnapshotFallback() {
+  const variantId = '33333333-3333-4333-8333-333333333333';
+  const siblingVariantId = '44444444-4444-4444-8444-444444444444';
+  const printingId = '55555555-5555-4555-8555-555555555555';
+  const metadata = {
+    variant_id: variantId,
+    printing_id: printingId,
+    language_code: 'ja',
+    set_id: '11111111-1111-4111-8111-111111111111',
+    set_code: 'SV2a',
+    set_english_display_name: 'Pokemon Card 151',
+    collector_number: '157',
+    card_english_display_name: 'Charizard ex',
+    rarity_code: 'SR',
+    variant_code: 'standard',
+    finish_code: 'normal',
+  };
+  const snapshot = (overrides = {}) => ({
+    card_id: printingId,
+    language: 'ja',
+    primary_source: 'tcgdex',
+    tcgdex_price: 123.45,
+    snapshot_at: new Date().toISOString(),
+    pricing_identity_json: { canonicalVariantId: variantId, productType: 'raw_card', condition: 'raw_near_mint' },
+    ...overrides,
+  });
+  const supabase = createSnapshotSupabase({
+    metadata,
+    snapshots: [
+      snapshot({ tcgdex_price: 120, pricing_identity_json: { canonicalVariantId: siblingVariantId, productType: 'raw_card', condition: 'raw_near_mint' } }),
+      snapshot({ tcgdex_price: 121, language: 'en' }),
+      snapshot({ tcgdex_price: 122, pricing_identity_json: { canonicalVariantId: variantId, productType: 'raw_card', condition: 'raw_lightly_played' } }),
+      snapshot({ tcgdex_price: 124, primary_source: null }),
+      snapshot({
+        primary_source: 'poketrace_sold',
+        tcgdex_price: null,
+        market_price_gbp: 130,
+        price_type: 'recent_sold_value',
+        methodology_version: 'pricing-v2.0.0',
+        source_breakdown: [{ sourceId: 'poketrace_sold', observationCount: 3 }],
+        calculation_summary: { priceBasis: 'item_price_excludes_shipping' },
+        snapshot_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      }),
+      snapshot({
+        primary_source: 'manual_verified_import',
+        tcgdex_price: null,
+        market_price_gbp: 127,
+        price_type: 'recent_sold_value',
+        methodology_version: 'pricing-v2.0.0',
+        source_breakdown: [{ sourceId: 'manual_verified_import', observationCount: 3 }],
+        calculation_summary: { priceBasis: 'item_price_excludes_shipping' },
+        snapshot_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+      }),
+      snapshot(),
+    ],
+  });
+  const service = createMarketPricingService({ supabase });
+  const price = await service.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  assert.equal(price.status, 'legacy_cached_market_estimate');
+  assert.equal(price.estimates.central, 123.45);
+  assert.equal(price.quoteScope, 'exact_variant');
+  assert.equal(price.primarySource, 'tcgdex');
+  assert.equal(price.priceBasis, 'provider_market_estimate_shipping_unknown');
+  assert.equal(price.sample.sold, 0, 'legacy estimates must never claim sold comps');
+  assert.equal(price.sample.active, 0, 'legacy estimates must never claim active listings');
+  assert.equal(price.sourceBreakdown[0].sourceType, 'legacy_cached_market_snapshot');
+  assert.equal(price.lastSoldEvidence, undefined, 'legacy estimates must not fabricate a last-sold record');
+
+  const history = await service.snapshotHistory([variantId], { currency: 'GBP', rangeDays: 30 });
+  assert.equal(history.snapshots.length, 3, 'only exact, labelled legacy or canonical estimate rows may appear');
+  const canonicalPoint = history.snapshots.find((item) => item.primarySource === 'poketrace_sold');
+  assert.equal(canonicalPoint.marketCentral, 130);
+  assert.equal(canonicalPoint.priceType, 'recent_sold_market_estimate');
+  assert.equal(canonicalPoint.provenLastSold, false);
+  assert.equal(canonicalPoint.lastSoldEvidence, null);
+  assert.equal(canonicalPoint.priceBasis, 'item_price_excludes_shipping');
+  const importedPoint = history.snapshots.find((item) => item.primarySource === 'manual_verified_import');
+  assert.equal(importedPoint.marketCentral, 127);
+  assert.equal(importedPoint.priceType, 'recent_sold_market_estimate');
+  assert.equal(importedPoint.provenLastSold, false, 'a manual evidence aggregate is never an individual last sale');
+  assert.equal(importedPoint.lastSoldEvidence, null);
+  assert.equal(importedPoint.priceBasis, 'item_price_excludes_shipping');
+  assert.deepEqual(supabase.rpcCalls[0], {
+    schemaName: 'api',
+    name: 'market_price_snapshot_history',
+    args: { p_card_ids: [variantId, printingId], p_range_days: 30 },
+  }, 'range history must use the identity-aware bucket RPC rather than a global snapshot cap');
+  assert.ok(supabase.limits.some((entry) => entry.tableName === 'market_price_snapshots' && entry.value <= 128), '30-day snapshot reads must stay bounded');
+
+  const empty = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata, snapshots: [snapshot({ tcgdex_price: null, tcg_mid: null, tcg_low: null, market_price_gbp: null })] }),
+  });
+  const unavailable = await empty.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  assert.equal(unavailable.status, 'unavailable', 'a numeric null must not become a £0 legacy price');
+  assert.equal(unavailable.estimates.central, null);
+
+  const usd = await service.price(variantId, { productType: 'raw_card', currency: 'USD', condition: 'near_mint' });
+  assert.equal(usd.status, 'unavailable', 'a GBP snapshot must not serve a USD request');
+}
+
+async function assertRawPriceDefaultsNearMint() {
+  const variantId = '77777777-7777-4777-8777-777777777777';
+  const supabase = createSnapshotSupabase({
+    metadata: { variant_id: variantId },
+    estimates: [],
+  });
+  const service = createMarketPricingService({ supabase });
+  await service.price(variantId, { productType: 'raw_card', currency: 'GBP' });
+  assert.ok(supabase.equalities.some((entry) => (
+    entry.tableName === 'market_price_estimates'
+      && entry.column === 'condition_code'
+      && entry.value === 'raw_near_mint'
+  )), 'an unspecified raw-card request must query near-mint, not the newest condition');
+}
+
+async function assertCanonicalSnapshotLabelsAndBasis() {
+  const variantId = '66666666-6666-4666-8666-666666666666';
+  const printingId = '55555555-5555-4555-8555-555555555555';
+  const metadata = {
+    variant_id: variantId, printing_id: printingId, language_code: 'en',
+    set_id: '11111111-1111-4111-8111-111111111111', set_code: 'base-set',
+    set_english_display_name: 'Base Set', collector_number: '4/102',
+    card_english_display_name: 'Charizard', rarity_code: 'Holo Rare', variant_code: 'normal', finish_code: 'normal',
+  };
+  const snapshot = (source, priceType, calculationSummary = {}) => ({
+    card_id: printingId, language: 'en', primary_source: source, market_price_gbp: 100,
+    snapshot_at: new Date().toISOString(), pricing_identity_json: { canonicalVariantId: variantId, productType: 'raw_card', condition: 'raw_near_mint' },
+    price_type: priceType, methodology_version: 'pricing-v2.0.0',
+    source_breakdown: [{ sourceId: source, observationCount: 3 }], calculation_summary: calculationSummary,
+  });
+  const itemFor = async (row) => {
+    const service = createMarketPricingService({ supabase: createSnapshotSupabase({ metadata, snapshots: [row] }) });
+    return (await service.snapshotHistory([variantId], { currency: 'GBP', rangeDays: 30 })).snapshots[0];
+  };
+  const secondary = await itemFor(snapshot('existing_stackr_source', 'recent_sold_market_estimate'));
+  assert.equal(secondary.priceType, 'market_estimate', 'a secondary cache is not sold-market evidence without source semantics');
+  assert.equal(secondary.priceBasis, 'unknown_or_mixed_normalisation', 'an undeclared basis must not imply item-only pricing');
+  assert.equal(secondary.provenLastSold, false);
+
+  const sold = await itemFor(snapshot('poketrace_sold', 'recent_sold_market_estimate', { priceBasis: 'normalised_delivered_price_gbp' }));
+  assert.equal(sold.priceType, 'recent_sold_market_estimate', 'a declared sold estimate from a sold-capable source is labelled as aggregate sold-market');
+  assert.equal(sold.priceBasis, 'normalised_delivered_price_gbp');
+  assert.equal(sold.provenLastSold, false, 'an aggregate must never become a confirmed individual sale');
+
+  const asking = await itemFor(snapshot('ebay_active', 'asking_price_indication'));
+  assert.equal(asking.priceType, 'asking_price_indication');
+  assert.equal(asking.priceBasis, 'unknown_or_mixed_normalisation', 'active-source identity alone cannot prove shipping treatment');
+}
+
+async function assertManualRefreshIdentityAndGate() {
+  const variantId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  const printingId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  const metadata = {
+    variant_id: variantId,
+    printing_id: printingId,
+    language_code: 'en',
+    set_id: '11111111-1111-4111-8111-111111111111',
+    set_code: 'base-set',
+    set_english_display_name: 'Base Set',
+    collector_number: '4/102',
+    card_english_display_name: 'Charizard',
+    rarity_code: 'Holo Rare',
+    variant_code: 'first_edition',
+    finish_code: 'reverse_holo',
+  };
+  const blockedDb = {
+    schema() { throw new Error('disabled refresh must not read the database'); },
+    from() { throw new Error('disabled refresh must not write the queue'); },
+  };
+  const disabled = createMarketPricingService({ supabase: blockedDb, refreshEnabled: false });
+  await assert.rejects(
+    () => disabled.requestSnapshotRefresh(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' }),
+    (error) => error.code === 'price_refresh_not_enabled',
+  );
+  await assert.rejects(
+    () => disabled.requestSnapshotRefreshBatch([variantId], { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' }),
+    (error) => error.code === 'price_refresh_not_enabled',
+  );
+
+  const supabase = createSnapshotSupabase({ metadata });
+  const enabled = createMarketPricingService({ supabase, refreshEnabled: true });
+  await enabled.requestSnapshotRefresh(variantId.toUpperCase(), {
+    productType: 'raw_card', currency: 'GBP', condition: 'near_mint',
+  });
+  assert.equal(supabase.inserted.length, 1, 'an enabled refresh should create one exact queue row');
+  const queued = supabase.inserted[0].metadata;
+  assert.equal(queued.canonicalVariantId, variantId);
+  assert.equal(queued.setCode, 'base-set');
+  assert.equal(queued.rarity, 'Holo Rare');
+  assert.equal(queued.variantCode, 'first_edition');
+  assert.equal(queued.finishCode, 'reverse_holo');
+  assert.equal(queued.condition, 'raw_near_mint');
+  assert.equal(queued.rawCondition, 'raw_near_mint');
+  const rehydrated = buildCanonicalIdentity({
+    id: printingId,
+    name: queued.canonicalCardName,
+    language: 'en',
+    number: queued.cardNumber,
+    rarity: queued.rarity,
+    set_id: metadata.set_id,
+    raw_data: {
+      canonical_variant_id: queued.canonicalVariantId,
+      canonical_printing_id: queued.canonicalPrintingId,
+      number: queued.cardNumber,
+      rarity: queued.rarity,
+      variant: queued.variantCode,
+      finish: queued.finishCode,
+      set: { id: metadata.set_id, name: queued.canonicalSetName, set_code: queued.setCode },
+    },
+  }, {
+    cardId: printingId,
+    canonicalVariantId: queued.canonicalVariantId,
+    canonicalPrintingId: queued.canonicalPrintingId,
+    canonicalCardName: queued.canonicalCardName,
+    canonicalSetName: queued.canonicalSetName,
+    setId: metadata.set_id,
+    setCode: queued.setCode,
+    cardNumber: queued.cardNumber,
+    rarity: queued.rarity,
+    variant: queued.variantCode,
+    finish: queued.finishCode,
+    edition: queued.edition,
+    condition: queued.condition,
+    rawCondition: queued.rawCondition,
+    productType: queued.productType,
+    language: 'en',
+  });
+  assert.equal(rehydrated.identityKey, queued.identityKey, 'non-default finish and edition must survive worker rehydration exactly');
+
+  const parser = createMarketPricingService({ supabase: blockedDb, refreshEnabled: true });
+  await assert.rejects(
+    () => parser.snapshotHistory([variantId, variantId.toUpperCase()], { currency: 'GBP' }),
+    (error) => error.code === 'duplicate_variant_ids',
+  );
+  await assert.rejects(
+    () => parser.snapshotHistory([variantId, 'not-a-uuid'], { currency: 'GBP' }),
+    (error) => error.code === 'invalid_variant_ids',
+  );
+  await assert.rejects(
+    () => parser.requestSnapshotRefreshBatch([variantId, variantId.toUpperCase()], { productType: 'raw_card', currency: 'GBP' }),
+    (error) => error.code === 'duplicate_variant_ids',
+  );
+}
+
+async function assertIdentityAwareDenseRangeHistory() {
+  const firstVariantId = '11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  const secondVariantId = '22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  const printingId = '33333333-cccc-4ccc-8ccc-cccccccccccc';
+  const catalogueCards = [firstVariantId, secondVariantId].map((variantId, index) => ({
+    variant_id: variantId,
+    printing_id: printingId,
+    language_code: 'en',
+    set_id: '11111111-1111-4111-8111-111111111111',
+    set_code: 'base-set',
+    set_english_display_name: 'Base Set',
+    collector_number: '4/102',
+    card_english_display_name: 'Charizard',
+    rarity_code: 'Holo Rare',
+    variant_code: index ? 'reverse_holo' : 'normal',
+    finish_code: index ? 'reverse_holo' : 'normal',
+  }));
+  const now = Date.now();
+  const snapshots = [];
+  for (const [index, variantId] of [firstVariantId, secondVariantId].entries()) {
+    for (let day = 0; day < 30; day += 1) {
+      snapshots.push({
+        card_id: printingId,
+        language: 'en',
+        primary_source: 'poketrace_sold',
+        market_price_gbp: 100 + index * 50 + day,
+        snapshot_at: new Date(now - 30 * 86_400_000 + 60_000 + day * 86_400_000).toISOString(),
+        pricing_identity_json: { canonicalVariantId: variantId, productType: 'raw_card', condition: 'raw_near_mint' },
+        price_type: 'recent_sold_value',
+        methodology_version: 'pricing-v2.0.0',
+        source_breakdown: [{ sourceId: 'poketrace_sold', observationCount: 3 }],
+      });
+    }
+    snapshots.push({
+      card_id: printingId,
+      language: 'en',
+      primary_source: 'poketrace_sold',
+      market_price_gbp: 200 + index,
+      snapshot_at: new Date(now - 120_000).toISOString(),
+      pricing_identity_json: { canonicalVariantId: variantId, productType: 'raw_card', condition: 'raw_near_mint' },
+      price_type: 'recent_sold_value',
+      methodology_version: 'pricing-v2.0.0',
+      source_breakdown: [{ sourceId: 'poketrace_sold', observationCount: 3 }],
+    });
+    snapshots.push({
+      card_id: printingId,
+      language: 'en',
+      primary_source: 'poketrace_sold',
+      market_price_gbp: 50 + index,
+      snapshot_at: new Date(now - 31 * 86_400_000).toISOString(),
+      pricing_identity_json: { canonicalVariantId: variantId, productType: 'raw_card', condition: 'raw_near_mint' },
+      price_type: 'recent_sold_value',
+      methodology_version: 'pricing-v2.0.0',
+      source_breakdown: [{ sourceId: 'poketrace_sold', observationCount: 3 }],
+    });
+  }
+  // A source-null sibling row is newer than the valid rows. The SQL function
+  // filters it before buckets are chosen; service filtering keeps the same
+  // fail-closed rule when exercising the returned payload.
+  snapshots.push({
+    card_id: printingId,
+    language: 'en',
+    market_price_gbp: 9999,
+    snapshot_at: new Date(now - 30_000).toISOString(),
+    pricing_identity_json: { canonicalVariantId: firstVariantId, productType: 'raw_card', condition: 'raw_near_mint' },
+  });
+  const supabase = createSnapshotSupabase({ metadata: catalogueCards, snapshots });
+  const service = createMarketPricingService({ supabase });
+  const history = await service.snapshotHistory([firstVariantId, secondVariantId], { currency: 'GBP', rangeDays: 30 });
+  const first = history.snapshots.filter((row) => row.variantId === firstVariantId);
+  const second = history.snapshots.filter((row) => row.variantId === secondVariantId);
+  assert.equal(first.length, 32, 'the first sibling retains 31 range points plus a baseline');
+  assert.equal(second.length, 32, 'the second sibling cannot be displaced by the first sibling history');
+  assert.ok(history.snapshots.every((row) => row.primarySource === 'poketrace_sold'));
+  assert.ok(history.snapshots.every((row) => row.marketCentral < 9999));
+  assert.equal(supabase.rpcCalls.length, 1);
+  assert.ok(supabase.rpcCalls[0].args.p_card_ids.length <= 120);
+}
+
+async function assertPagedRangeHistoryKeepsBaseline() {
+  const variantId = '88888888-8888-4888-8888-888888888888';
+  const printingId = '99999999-9999-4999-8999-999999999999';
+  const now = Date.now();
+  const metadata = {
+    variant_id: variantId, printing_id: printingId, language_code: 'en',
+    set_id: '11111111-1111-4111-8111-111111111111', set_code: 'base-set',
+    set_english_display_name: 'Base Set', collector_number: '4/102',
+    card_english_display_name: 'Charizard', rarity_code: 'Holo Rare', variant_code: 'normal', finish_code: 'normal',
+  };
+  const valid = (snapshotAt, price) => ({
+    card_id: printingId, language: 'en', primary_source: 'poketrace_sold', market_price_gbp: price,
+    snapshot_at: snapshotAt, pricing_identity_json: { canonicalVariantId: variantId, productType: 'raw_card', condition: 'raw_near_mint' },
+    price_type: 'recent_sold_value', methodology_version: 'pricing-v2.0.0', source_breakdown: [{ sourceId: 'poketrace_sold', observationCount: 3 }],
+  });
+  const snapshots = Array.from({ length: 1_000 }, (_, index) => valid(new Date(now - 60_000 - index * 1_000).toISOString(), 100 + index));
+  snapshots.push(valid(new Date(now - 31 * 86_400_000).toISOString(), 50));
+  const supabase = createSnapshotSupabase({ metadata, snapshots });
+  const history = await createMarketPricingService({ supabase }).snapshotHistory([variantId], { currency: 'GBP', rangeDays: 30 });
+  assert.equal(supabase.rangeCalls.length, 2, 'a full RPC page must fetch its next page');
+  assert.ok(history.snapshots.some((row) => row.marketCentral === 50), 'the page-two pre-range baseline must be retained');
+}
+
 assertMigrationShape();
 assertOpenApiAndClientContract();
 assertPricingMathAndTitleValidation();
 await assertEbayAdapterBoundary();
 await assertRoutes();
 await assertInvalidServiceInput();
+await assertLabelledLegacySnapshotFallback();
+await assertRawPriceDefaultsNearMint();
+await assertCanonicalSnapshotLabelsAndBasis();
+await assertManualRefreshIdentityAndGate();
+await assertIdentityAwareDenseRangeHistory();
+await assertPagedRangeHistoryKeepsBaseline();
 
 console.log('Market pricing service tests passed.');
