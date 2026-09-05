@@ -370,7 +370,9 @@ assert.doesNotMatch(
   /eas-cli@21\.4\.0 update --channel production[^\n]*--environment/,
   'production publication must use the already-validated EAS environment snapshot',
 );
-assert.match(productionMobileWorkflow, /github\.ref == 'refs\/heads\/main'[\s\S]*inputs\.confirmation == 'PUBLISH MOBILE CANARY'/);
+assert.match(productionMobileWorkflow, /github\.ref == 'refs\/heads\/main'[\s\S]*github\.actor == github\.repository_owner/);
+assert.doesNotMatch(productionMobileWorkflow, /\bconfirmation:/);
+assert.doesNotMatch(productionMobileWorkflow, /PUBLISH MOBILE CANARY/);
 assert.match(productionMobileWorkflow, /environment: production[\s\S]*EXPO_TOKEN: \$\{\{ secrets\.EXPO_TOKEN \}\}/);
 assert.match(productionMobileWorkflow, /concurrency:\s+group: stackr-production-deployment\s+cancel-in-progress: false/);
 const productionMobileJobTimeoutMinutes = Number(

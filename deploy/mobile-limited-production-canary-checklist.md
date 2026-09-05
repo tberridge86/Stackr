@@ -36,10 +36,10 @@ The protected environment must also provide `STACKR_MOBILE_SUPABASE_PUBLISHABLE_
 
 The protected GitHub `production` environment must map `STACKR_BACKEND_URL=https://pocketvault-production.up.railway.app`, `STACKR_GATEWAY_URL=https://api.stackrtcg.com`, and `STACKR_SUPABASE_URL=https://oakdbbzdqwurpjnoqhmu.supabase.co`. Its `STACKR_SUPABASE_PUBLISHABLE_KEY` secret must be the same reviewed production publishable key.
 
-## Build credentials and reviewer inputs
+## Build credentials and owner inputs
 
 - [ ] GitHub environment secret `EXPO_TOKEN` exists and belongs to an Expo account with access to EAS project `22048198-a309-41d2-a2bf-aa354c76be3a`.
-- [ ] The GitHub `production` environment has at least one required reviewer protection rule, and an authorised reviewer other than the workflow initiator approves the exact commit.
+- [ ] The repository owner dispatches the workflow from the exact reviewed `main` commit; the workflow rejects non-owner actors and non-`main` refs.
 - [ ] Both iOS and Android production builds are `FINISHED`, use build profile/channel `production`, have runtime version `1.0.3`, and are bound to the exact release commit SHA.
 - [ ] Apple signing and Google Play credentials are available to EAS, but no submit command is run in this lane.
 
@@ -57,7 +57,7 @@ The protected GitHub `production` environment must map `STACKR_BACKEND_URL=https
 ## Limited canary review
 
 - [ ] Run `Publish Stackr Mobile Production Canary` only from the reviewed commit after it reaches `main`; do not use `Deploy Stackr Production Canary` for this mobile-only lane.
-- [ ] Workflow input `confirmation` is exactly `PUBLISH MOBILE CANARY`.
+- [ ] The workflow is dispatched by the repository owner; there is no typed confirmation phrase or duplicate reviewer ceremony.
 - [ ] `canary_percent=5` and `monitor_minutes=15` for the initial cohort.
 - [ ] The workflow has no migration, catalogue, Railway, gateway, model, index, or store-submission inputs and must not invoke those release paths.
 - [ ] EAS update insights observe at least one launch and one unique user across the iOS/Android group, with zero failed launches and a zero-percent reported crash rate; malformed evidence, no adoption before timeout, or a threshold breach fails closed and reverses the rollout.

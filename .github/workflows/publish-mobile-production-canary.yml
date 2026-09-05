@@ -3,10 +3,6 @@ name: Publish Stackr Mobile Production Canary
 on:
   workflow_dispatch:
     inputs:
-      confirmation:
-        description: Type PUBLISH MOBILE CANARY
-        required: true
-        type: string
       canary_percent:
         description: Initial EAS rollout percentage (1-10)
         required: true
@@ -27,7 +23,7 @@ concurrency:
 
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH MOBILE CANARY'
+    if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: production
