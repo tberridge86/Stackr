@@ -123,6 +123,12 @@ jobs:
       EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS: 'false'
       EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK: 'false'
       EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK: 'false'
+      EXPO_PUBLIC_STACKR_API_ENABLED: 'true'
+      EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED: 'true'
+      EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY: 'false'
+      EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED: 'false'
+      EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED: 'false'
+      EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE: 'false'
       BACKEND_ORIGIN_KEY: ${{ secrets.BACKEND_ORIGIN_KEY }}
       BACKEND_ADMIN_KEY: ${{ secrets.BACKEND_ADMIN_KEY }}
       RECOGNITION_SERVICE_SECRET: ${{ secrets.RECOGNITION_SERVICE_SECRET }}
@@ -268,6 +274,12 @@ jobs:
             -u EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS \
             -u EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK \
             -u EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK \
+            -u EXPO_PUBLIC_STACKR_API_ENABLED \
+            -u EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED \
+            -u EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY \
+            -u EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED \
+            -u EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED \
+            -u EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE \
             npx --yes eas-cli@21.4.0 env:exec production \
               'npm run mobile:verify-runtime -- --expected-environment=production --expected-app-variant=production --require-explicit --require-safe-release-flags' \
               --non-interactive
@@ -578,6 +590,12 @@ jobs:
             -u EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS \
             -u EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK \
             -u EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK \
+            -u EXPO_PUBLIC_STACKR_API_ENABLED \
+            -u EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED \
+            -u EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY \
+            -u EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED \
+            -u EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED \
+            -u EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE \
             npx --yes eas-cli@21.4.0 env:exec production \
               'npm run mobile:verify-runtime -- --expected-environment=production --expected-app-variant=production --require-explicit --require-safe-release-flags && npx --yes eas-cli@21.4.0 update --channel production --platform all --rollout-percentage "$CANARY_PERCENT" --message "Stackr production $GITHUB_SHA" --json --non-interactive > "$RUNNER_TEMP/eas-update.json"' \
               --non-interactive

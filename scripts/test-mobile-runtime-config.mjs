@@ -5,11 +5,14 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { verifyCompatibleBuilds } from './deploy/verify-eas-compatible-builds.mjs';
 import { verifyEasRollbackTarget } from './deploy/verify-eas-rollback-target.mjs';
+import { verifyEasUpdateInsights } from './deploy/verify-eas-update-insights.mjs';
 
 const require = createRequire(import.meta.url);
 const {
+  MOBILE_PRODUCTION_RELEASE_FLAGS,
   MOBILE_RUNTIME_ENV_VARIABLES,
   MOBILE_SAFE_RELEASE_FLAGS,
+  mobileReleaseFlagsForEnvironment,
   resolveMobileRuntimeConfig,
   targets,
 } = require('../config/mobile-runtime.cjs');
@@ -144,8 +147,9 @@ for (const [field, variable] of [
   ['priceApiUrl', 'STACKR_MOBILE_PRICE_API_URL'],
   ['stackrApiUrl', 'STACKR_MOBILE_API_URL'],
 ]) assert.equal(productionEnv[variable], targets.production[field], `production:${variable}`);
+assert.equal(productionEnv.EXPO_PUBLIC_SCAN_PROVIDER, undefined);
 
-for (const profile of Object.values(eas.build)) {
+for (const [profileName, profile] of Object.entries(eas.build)) {
   for (const variable of [
     'EXPO_PUBLIC_PRICE_API_URL',
     'EXPO_PUBLIC_STACKR_API_URL',
@@ -153,7 +157,9 @@ for (const profile of Object.values(eas.build)) {
     'EXPO_PUBLIC_SUPABASE_ANON_KEY',
     'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
   ]) assert.equal(profile.env?.[variable], undefined, `${variable} must not select a mobile target`);
-  const expectedProfileFlags = profile === eas.build['seller-canary']
+  const expectedProfileFlags = profileName === 'production'
+    ? MOBILE_PRODUCTION_RELEASE_FLAGS
+    : profileName === 'seller-canary'
     ? { ...MOBILE_SAFE_RELEASE_FLAGS, EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: 'true' }
     : MOBILE_SAFE_RELEASE_FLAGS;
   for (const [variable, expectedValue] of Object.entries(expectedProfileFlags)) {
@@ -310,6 +316,7 @@ assert.doesNotMatch(
   'staging publication must use the already-validated EAS environment snapshot',
 );
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
+const productionMobileWorkflow = readFileSync('.github/workflows/publish-mobile-production-canary.yml', 'utf8');
 for (const variable of MOBILE_RUNTIME_ENV_VARIABLES) {
   assert.match(productionWorkflow, new RegExp(`\\b${variable}:`), `${variable} must be passed to production EAS`);
 }
@@ -317,7 +324,7 @@ assert.match(productionWorkflow, /--expected-environment=production --expected-a
 assert.match(productionWorkflow, /eas-cli@21\.4\.0 env:exec production/);
 for (const variable of [
   ...MOBILE_RUNTIME_ENV_VARIABLES,
-  ...Object.keys(MOBILE_SAFE_RELEASE_FLAGS),
+  ...Object.keys(MOBILE_PRODUCTION_RELEASE_FLAGS),
 ]) {
   assert.match(
     productionWorkflow,
@@ -363,6 +370,95 @@ assert.doesNotMatch(
   /eas-cli@21\.4\.0 update --channel production[^\n]*--environment/,
   'production publication must use the already-validated EAS environment snapshot',
 );
+assert.match(productionMobileWorkflow, /github\.ref == 'refs\/heads\/main'[\s\S]*inputs\.confirmation == 'PUBLISH MOBILE CANARY'/);
+assert.match(productionMobileWorkflow, /environment: production[\s\S]*EXPO_TOKEN: \$\{\{ secrets\.EXPO_TOKEN \}\}/);
+assert.match(productionMobileWorkflow, /concurrency:\s+group: stackr-production-deployment\s+cancel-in-progress: false/);
+const productionMobileJobTimeoutMinutes = Number(
+  productionMobileWorkflow.match(/timeout-minutes:\s*([0-9]+)/)?.[1],
+);
+const productionMobileMaxMonitorMinutes = Number(
+  productionMobileWorkflow.match(/"\$MONITOR_MINUTES" -gt ([0-9]+)/)?.[1],
+);
+assert.ok(
+  Number.isSafeInteger(productionMobileJobTimeoutMinutes)
+    && Number.isSafeInteger(productionMobileMaxMonitorMinutes)
+    && productionMobileJobTimeoutMinutes >= productionMobileMaxMonitorMinutes + 30,
+  'mobile canary job timeout must preserve at least 30 minutes beyond the maximum monitor window',
+);
+const productionMobileInputValidation = productionMobileWorkflow.slice(
+  productionMobileWorkflow.indexOf('- name: Validate limited canary inputs'),
+  productionMobileWorkflow.indexOf('- name: Validate production gateway readiness'),
+);
+for (const expected of [
+  'if ! [[ "$CANARY_PERCENT" =~ ^[1-9][0-9]*$ ]]',
+  'Production mobile canary percentage must be a decimal integer.',
+  'if ! [[ "$MONITOR_MINUTES" =~ ^[1-9][0-9]*$ ]]',
+  'Monitor period must be a decimal integer.',
+  "STACKR_EAS_CANARY_PERCENT=%s\\n",
+  "STACKR_EAS_MONITOR_MINUTES=%s\\n",
+]) assert.ok(productionMobileInputValidation.includes(expected), `missing strict mobile input validation: ${expected}`);
+assert.match(
+  productionMobileWorkflow,
+  /Validate effective EAS production environment[\s\S]*env:exec production[\s\S]*--expected-environment=production[\s\S]*--require-safe-release-flags/,
+);
+assert.match(
+  productionMobileWorkflow,
+  /Require compatible production mobile builds[\s\S]*case "\$runtime_version" in[\s\S]*Production runtime version contains unsupported characters[\s\S]*build:list[\s\S]*--channel production[\s\S]*--build-profile production[\s\S]*--git-commit-hash "\$GITHUB_SHA"[\s\S]*verify-eas-compatible-builds\.mjs[\s\S]*--required-platforms=android,ios[\s\S]*STACKR_EAS_ATTESTED_RUNTIME_VERSION=%s/,
+);
+const productionMobilePublish = productionMobileWorkflow.slice(
+  productionMobileWorkflow.indexOf('- name: Publish mobile canary'),
+  productionMobileWorkflow.indexOf('- name: Attest published mobile canary'),
+);
+assert.ok(productionMobilePublish.includes('--rollout-percentage "$STACKR_EAS_CANARY_PERCENT"'));
+assert.ok(productionMobilePublish.includes('STACKR_MOBILE_UPDATE_COMMAND_SUCCEEDED=true'));
+assert.doesNotMatch(productionMobilePublish, /capture-eas-update-group/);
+const productionMobileAttestation = productionMobileWorkflow.slice(
+  productionMobileWorkflow.indexOf('- name: Attest published mobile canary'),
+  productionMobileWorkflow.indexOf('- name: Observe EAS mobile client health'),
+);
+for (const expected of [
+  'capture-eas-update-group.mjs',
+  '--mode=publish-evidence',
+  '--expected-runtime="$STACKR_EAS_ATTESTED_RUNTIME_VERSION"',
+  '--expected-platforms=android,ios',
+]) assert.ok(productionMobileAttestation.includes(expected), `missing mobile publication attestation: ${expected}`);
+assert.doesNotMatch(
+  productionMobileWorkflow,
+  /--expected-runtime="\$\(node -p "require\('\.\/app\.json'\)\.expo\.version"\)"/,
+  'production update attestation must reuse the runtime proven by compatible builds',
+);
+assert.match(
+  productionMobileWorkflow,
+  /Observe EAS mobile client health[\s\S]*update:insights "\$STACKR_EAS_UPDATE_GROUP_ID"[\s\S]*verify-eas-update-insights\.mjs[\s\S]*--min-launches=1[\s\S]*--min-unique-users=1[\s\S]*--max-failed-launches=0[\s\S]*--max-crash-rate-percent=0/,
+);
+const productionMobileObservation = productionMobileWorkflow.slice(
+  productionMobileWorkflow.indexOf('- name: Observe EAS mobile client health'),
+  productionMobileWorkflow.indexOf('- name: Upload production mobile publication evidence'),
+);
+assert.doesNotMatch(
+  productionMobileObservation,
+  /v1\/(?:health|ready)|STACKR_MOBILE_API_URL/,
+  'gateway readiness must not be treated as post-publish mobile client health',
+);
+assert.match(
+  productionMobileWorkflow,
+  /Upload production mobile publication evidence[\s\S]*always\(\)[\s\S]*STACKR_MOBILE_UPDATE_COMMAND_SUCCEEDED == 'true'[\s\S]*STACKR_MOBILE_UPDATE_PUBLISHED == 'true'[\s\S]*eas-update\.json[\s\S]*if-no-files-found: error/,
+);
+assert.match(
+  productionMobileWorkflow,
+  /Upload EAS mobile client-health evidence[\s\S]*always\(\)[\s\S]*eas-update-insights[\s\S]*if-no-files-found: warn/,
+);
+assert.match(
+  productionMobileWorkflow,
+  /Roll back mobile update after a failed canary[\s\S]*STACKR_MOBILE_UPDATE_COMMAND_SUCCEEDED == 'true'[\s\S]*rollback_target=\(--channel production\)[\s\S]*rollback_target=\(--group "\$STACKR_EAS_UPDATE_GROUP_ID"\)[\s\S]*update:revert-update-rollout/,
+);
+for (const forbidden of ['railway', 'wrangler', 'supabase db', 'eas-cli@21.4.0 submit']) {
+  assert.equal(
+    productionMobileWorkflow.toLowerCase().includes(forbidden),
+    false,
+    `mobile production workflow must not contain ${forbidden}`,
+  );
+}
 
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 assert.match(
@@ -396,7 +492,7 @@ function verifierEnvironment(appVariant, environment, target) {
     STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY: target.supabasePublishableKey,
     STACKR_MOBILE_PRICE_API_URL: target.priceApiUrl,
     STACKR_MOBILE_API_URL: target.stackrApiUrl,
-    ...MOBILE_SAFE_RELEASE_FLAGS,
+    ...mobileReleaseFlagsForEnvironment(environment),
   };
 }
 
@@ -480,6 +576,20 @@ assertVerifierFails(
   (env) => { env.STACKR_MOBILE_SUPABASE_URL = targets.production.supabaseUrl; },
   /mobile_runtime_target_mismatch:staging:supabaseUrl/,
 );
+assertVerifierFails(
+  'production',
+  'production',
+  targets.production,
+  (env) => { delete env.EXPO_PUBLIC_STACKR_API_ENABLED; },
+  /mobile_runtime_safe_release_flag_mismatch:EXPO_PUBLIC_STACKR_API_ENABLED/,
+);
+assertVerifierFails(
+  'production',
+  'production',
+  targets.production,
+  (env) => { env.EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY = 'true'; },
+  /mobile_runtime_safe_release_flag_mismatch:EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY/,
+);
 
 const compatibleBuildSha = 'a'.repeat(40);
 const compatibleBuildNow = Date.parse('2026-08-27T12:00:00.000Z');
@@ -557,6 +667,58 @@ assert.throws(
     nowMs: compatibleBuildNow,
   }),
   /eas_compatible_build_invalid:android:expirationDate/,
+);
+
+const insightsGroupId = '77777777-7777-4777-8777-777777777777';
+const healthyInsights = {
+  groupId: insightsGroupId,
+  timespan: { daysBack: 1 },
+  platforms: [
+    {
+      platform: 'android',
+      updateId: '88888888-8888-4888-8888-888888888888',
+      totals: { uniqueUsers: 1, installs: 1, failedInstalls: 0, crashRatePercent: 0 },
+    },
+    {
+      platform: 'ios',
+      updateId: '99999999-9999-4999-8999-999999999999',
+      totals: { uniqueUsers: 0, installs: 0, failedInstalls: 0, crashRatePercent: 0 },
+    },
+  ],
+};
+const insightThresholds = {
+  groupId: insightsGroupId,
+  platforms: 'android,ios',
+  minLaunches: 1,
+  minUniqueUsers: 1,
+  maxFailedLaunches: 0,
+  maxCrashRatePercent: 0,
+  allowPendingAdoption: false,
+};
+assert.equal(verifyEasUpdateInsights(healthyInsights, insightThresholds).healthy, true);
+const pendingInsights = {
+  ...healthyInsights,
+  platforms: healthyInsights.platforms.map((entry) => ({
+    ...entry,
+    totals: { ...entry.totals, uniqueUsers: 0, installs: 0 },
+  })),
+};
+assert.equal(
+  verifyEasUpdateInsights(pendingInsights, { ...insightThresholds, allowPendingAdoption: true }).pendingAdoption,
+  true,
+);
+assert.throws(
+  () => verifyEasUpdateInsights(pendingInsights, insightThresholds),
+  /eas_update_insights_adoption_insufficient/,
+);
+assert.throws(
+  () => verifyEasUpdateInsights({
+    ...healthyInsights,
+    platforms: healthyInsights.platforms.map((entry, index) => index === 0
+      ? { ...entry, totals: { ...entry.totals, failedInstalls: 1, crashRatePercent: 50 } }
+      : entry),
+  }, insightThresholds),
+  /eas_update_insights_unhealthy:android:crashRatePercent/,
 );
 
 const rollbackGroupId = '33333333-3333-4333-8333-333333333333';

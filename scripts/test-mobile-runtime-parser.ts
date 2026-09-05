@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import targets from '../config/mobile-runtime-targets.json';
+import { getRecognitionFeatureFlags } from '../lib/recognition/featureFlags';
 
 process.env.STACKR_NODE_TOOLING_RUNTIME = 'true';
 
@@ -7,6 +9,15 @@ const {
   assertMobileRuntimeNativeIdentity,
   parseMobileRuntimeConfig,
 } = require('../lib/mobileRuntimeConfig') as typeof import('../lib/mobileRuntimeConfig');
+
+const productionProfile = JSON.parse(readFileSync('eas.json', 'utf8')).build.production.env;
+const productionRecognitionFlags = getRecognitionFeatureFlags(productionProfile);
+assert.equal(productionRecognitionFlags.stackrApiEnabled, true);
+assert.equal(productionRecognitionFlags.imageFallbackEnabled, true);
+assert.equal(productionRecognitionFlags.stackrRecognitionPrimary, false);
+assert.equal(productionRecognitionFlags.onDeviceEmbeddingEnabled, false);
+assert.equal(productionRecognitionFlags.localRecognitionEnabled, false);
+assert.equal(productionRecognitionFlags.localRecognitionShadowMode, false);
 
 for (const [environment, target] of Object.entries(targets)) {
   const appVariant = environment === 'production' ? 'production' : 'staging';

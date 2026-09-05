@@ -20,6 +20,15 @@ const MOBILE_SAFE_RELEASE_FLAGS = Object.freeze({
   EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK: 'false',
   EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK: 'false',
 });
+const MOBILE_PRODUCTION_RELEASE_FLAGS = Object.freeze({
+  ...MOBILE_SAFE_RELEASE_FLAGS,
+  EXPO_PUBLIC_STACKR_API_ENABLED: 'true',
+  EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED: 'true',
+  EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY: 'false',
+  EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED: 'false',
+  EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED: 'false',
+  EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE: 'false',
+});
 const NON_PRODUCTION_VARIANTS = new Set([
   'development',
   'preview',
@@ -40,6 +49,12 @@ function environmentForVariant(appVariant) {
     throw new Error(`mobile_runtime_variant_invalid:${appVariant}`);
   }
   return appVariant === 'production' ? 'production' : 'staging';
+}
+
+function mobileReleaseFlagsForEnvironment(environment) {
+  if (environment === 'production') return MOBILE_PRODUCTION_RELEASE_FLAGS;
+  if (environment === 'staging') return MOBILE_SAFE_RELEASE_FLAGS;
+  throw new Error(`mobile_runtime_environment_invalid:${environment}`);
 }
 
 function assertMobileRuntimeConfig(runtimeConfig, expectedEnvironment) {
@@ -111,11 +126,13 @@ function resolveMobileRuntimeConfig(env = process.env) {
 }
 
 module.exports = {
+  MOBILE_PRODUCTION_RELEASE_FLAGS,
   MOBILE_RUNTIME_ENV_VARIABLES,
   MOBILE_SAFE_RELEASE_FLAGS,
   MOBILE_RUNTIME_SCHEMA_VERSION,
   assertMobileRuntimeConfig,
   environmentForVariant,
+  mobileReleaseFlagsForEnvironment,
   resolveMobileRuntimeConfig,
   targets,
 };
