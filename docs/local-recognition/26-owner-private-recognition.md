@@ -66,3 +66,58 @@ tests or the synthetic holdout. Never retune on a consumed holdout.
 Rollback: disable `STACKR_OWNER_RECOGNITION_ENABLED` and stop the dedicated private
 service. No catalogue/index activation or database migration is needed. Public
 production recognition flags and auto-add remain unchanged.
+
+## Verified production activation (5 September 2026)
+
+The owner-only backend is deployed at commit
+`b852318c4331d99996088cb2ee8982246890fbff`, Railway deployment
+`7c390364-331c-4a94-bcd6-031cd0e8cebe`. GitHub production run
+[`33987712075`](https://github.com/tberridge86/Stackr/actions/runs/33987712075)
+passed, including the existing backend and gateway pricing smoke checks. Its
+attested previous backend deployment is `54b02356-39ab-4993-973b-64b056fb6e4e`.
+
+The separate, private-only model service is deployment
+`930b12b2-1a3e-4b0b-a01a-a79d95c6ad6f`. Readiness validates the pinned FP32 model,
+768-dimensional gallery and all 48,011 reference rows. An actual temporary owner
+session successfully called both status and identify through the public backend;
+unauthenticated and invalid-token calls were rejected. The reference smoke is an
+identity-plumbing check, not a measurement of real-card camera accuracy. Temporary
+verification sessions were revoked without signing out the owner's other sessions.
+See `deploy/evidence/owner-siglip-railway-smoke-2026-09-05.json` for measured evidence.
+
+The private iOS submission profile is `production-owner`, pinned to App Store
+Connect app `6772118450` and the internal `Team (Expo)` group. Before submission,
+verify that this group still contains only the owner. Do not assign the owner
+build to the external beta group, request external beta review, or use a public
+TestFlight link. Submit an explicitly verified build ID, never an unqualified
+latest build. Successful server activation does not mean a native build has
+finished or that a phone has been tested.
+
+The first owner build, iOS 24 (`6d481164-33ef-4d42-ac00-1cc23f74895f`), passed the
+previously failing Metro bundle stage but was superseded before distribution.
+Final review found that the native rectifier used a screen-scaled renderer while
+reporting pixel dimensions. The follow-up explicitly sets renderer scale to one
+for full-card and derivative outputs. This requires a new native binary, not an
+OTA-only update. The static regression check guards the source contract; it is
+not a claim that a 3× iPhone has been exercised. Apple's documented default is the
+[main screen's scale](https://developer.apple.com/documentation/uikit/uigraphicsimagerendererformat/scale).
+
+## First installation check
+
+1. Install the specifically identified owner build from the owner's internal
+   TestFlight account. Sign in with the existing owner Stackr account.
+2. Open **Settings → Private recognition & my capture dataset** (or the flask
+   button in Scan). Wait for **Ready · SigLIP FP32 · private server processing**.
+3. Photograph one upright card, with all four corners visible against a plain,
+   contrasting background. A retake diagnostic must not silently accept a match.
+4. Review the candidate's language, set, number and variant. Select the correct
+   candidate only when those identifiers agree; otherwise leave it unresolved.
+5. Enter a stable label for that physical card and save one capture. Leave and
+   reopen the screen to check persistence. Delete a disposable capture to check
+   the deletion control. No collection item should be created by either action.
+
+Record failures and successful scans alike, including retakes, language/variant,
+device/OS, response time and crashes. Do not label model output as ground truth
+without checking the physical card. Keep multiple photographs of the same card
+together when later assigning protected benchmark groups; these first captures
+do not retrospectively become a zero-overlap holdout.

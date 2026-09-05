@@ -6,6 +6,10 @@ const eas = JSON.parse(readFileSync('eas.json', 'utf8'));
 const config = JSON.parse(readFileSync('app.json', 'utf8')).expo;
 const owner = eas.build['production-owner'];
 const production = eas.build.production;
+const ownerSubmission = eas.submit['production-owner'];
+assert.equal(ownerSubmission.ios.ascAppId, '6772118450');
+assert.deepEqual(ownerSubmission.ios.groups, ['Team (Expo)']);
+assert.equal(ownerSubmission.android, undefined, 'Owner submission must remain iOS-only');
 assert.equal(owner.extends, 'production');
 assert.equal(owner.environment, 'production');
 assert.equal(owner.channel, 'owner-recognition');
@@ -26,4 +30,4 @@ try {
   for (const key of Object.keys(process.env)) if (!(key in before)) delete process.env[key];
   Object.assign(process.env, before);
 }
-console.log('Owner build uses production services, a private update channel and an isolated runtime.');
+console.log('Owner build uses production services, a private update channel and an isolated runtime; submission targets the pinned Apple app and owner internal group.');

@@ -132,10 +132,18 @@ enum StackrCardRectifier {
     return output
   }
 
+  private static func pixelRenderer(width: Int, height: Int) -> UIGraphicsImageRenderer {
+    let format = UIGraphicsImageRendererFormat()
+    // These dimensions describe image pixels, not screen points. The default
+    // screen scale would otherwise multiply every output's raster dimensions.
+    format.scale = 1
+    return UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: format)
+  }
+
   private static func render(_ image: CIImage, width: Int, height: Int) -> UIImage {
     let context = CIContext()
     let extent = image.extent
-    let output = UIGraphicsImageRenderer(size: CGSize(width: width, height: height)).image { rendererContext in
+    let output = pixelRenderer(width: width, height: height).image { rendererContext in
       rendererContext.cgContext.setFillColor(UIColor.white.cgColor)
       rendererContext.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
       guard let cgImage = context.createCGImage(image, from: extent) else { return }
@@ -145,7 +153,7 @@ enum StackrCardRectifier {
   }
 
   private static func resize(_ image: UIImage, width: Int, height: Int) -> UIImage {
-    UIGraphicsImageRenderer(size: CGSize(width: width, height: height)).image { _ in
+    pixelRenderer(width: width, height: height).image { _ in
       image.draw(in: CGRect(x: 0, y: 0, width: width, height: height))
     }
   }
