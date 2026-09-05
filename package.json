@@ -102,6 +102,7 @@
     "asset:repair-stored-catalogue": "node scripts/repair-stored-catalogue-assets.mjs",
     "test:asset-pipeline": "node scripts/test-asset-pipeline.mjs",
     "test:asset-repair": "node scripts/test-stored-catalogue-asset-repair.mjs",
+    "test:asset-manifest-query-equivalence": "node scripts/test-asset-manifest-card-image-equivalence.mjs",
     "test:japanese-catalogue-completion": "node scripts/test-japanese-catalogue-completion.mjs",
     "test:japanese-api-storage": "node scripts/test-japanese-catalogue-api-storage.mjs && node scripts/test-japanese-staging-gateway.mjs",
     "test:pokedata-japanese-images": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-pokedata-japanese-image-adapter.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-ingest-pokedata-japanese-images.ts",

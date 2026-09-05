@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
 import createV1Router from '../backend/routes/v1.js';
@@ -1093,8 +1094,16 @@ assert.match(
   /client\.assetManifest\(\s*\{ setId, cursor, limit: 500 \},\s*\{ signal: pageSignal \},\s*\)/,
 );
 assert.match(domainAdapter, /client\.sets\([\s\S]*?\{ signal: pageSignal \},\s*\)/);
-assert.match(domainAdapter, /client\.setCards\([\s\S]*?\{ signal: pageSignal \},\s*\)/);
-assert.match(domainAdapter, /client\.set\(setId, \{ signal \}\)/);
+assert.match(
+  domainAdapter,
+  /const cards = await allPages[\s\S]*?client\.setCards\([\s\S]*?\{ signal: pageSignal \},\s*\)[\s\S]*?\}, signal\);/,
+  'canonical cards must remain a mandatory, parent-cancellable read',
+);
+assert.match(
+  domainAdapter,
+  /readOptionalCatalogueEnrichment\(\(enrichmentSignal\) => client\.set\(setId, \{ signal: enrichmentSignal \}\), signal\)/,
+  'set-detail enrichment must use its own bounded child signal',
+);
 assert.doesNotMatch(domainAdapter, /client\.assetManifest\(\{[^}]*limit:\s*1000/);
 assert.match(openApi, /\/assets\/manifest:[\s\S]+#\/components\/parameters\/Cursor[\s\S]+#\/components\/parameters\/Limit/);
 assert.match(openApi, /Limit:\s+[\s\S]*?name: limit[\s\S]*?maximum: 500/);

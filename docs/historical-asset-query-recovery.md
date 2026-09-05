@@ -124,3 +124,71 @@ As an operational diagnostic, inspect whether catalogue table statistics are
 stale when reviewing the execution plan. That observation is not permission to
 run `ANALYZE`, alter planner settings, or otherwise mutate production; any such
 maintenance remains a separately authorised release operation.
+
+## Candidate measurement — 5 September continuation
+
+The parameterized, read-only prototype is retained in
+`docs/sql/asset-manifest-card-image-candidate.sql`. It expands requested variants
+with all variants belonging to requested printings, then unions CVA-owned and
+asset-owned variant/printing matches. This covers all five identity sources
+above without narrowing by language, set or published version. `MATERIALIZED`
+candidate identities plus a lateral final view lookup keep the measured plan
+from starting again with all published assets. This is a prototype, **not an
+installed RPC, migration, or activated backend path**.
+
+The same six-Japanese-variant page was checked read-only:
+
+- The candidate's estimated plan uses `card_variants_printing_idx`,
+  `assets_variant_public_idx`, and the covering CVA asset lookup index. Its
+  final manifest join uses individual asset and version identities and retains
+  the unchanged view filters.
+- It still includes a sequential CVA variant scan and an unindexed
+  `catalog.assets.printing_id` scan. At this observation, estimated rows were
+  76,657 CVA rows (12 MB heap) and 60,281 asset rows (214 MB heap, 433 MB including
+  indexes/TOAST). These are storage/plan diagnostics, not image-gap counts.
+- `EXPLAIN (ANALYZE, BUFFERS)` of the complete candidate was cancelled by its
+  five-second statement deadline. A separately isolated SELECT of asset IDs
+  for the same six printing IDs also exceeded a two-second deadline. Neither
+  timeout returned an execution time or actual row count; do not report either
+  as a completed benchmark.
+- The existing `api.asset_manifest` view was confirmed to have
+  `security_invoker=true`. No view, index, function, table statistic, catalogue
+  row, storage object or ownership record was changed.
+
+The first index rehearsal should test a covering asset-printing lookup, such
+as `(printing_id) INCLUDE (id)` with a non-null-printing predicate, against this
+unchanged candidate. A narrower card-image partial index requires the matching
+asset-type predicate in the candidate as well as an equivalence check. Do not
+remove the printing branch to obtain a faster result. Rehearse any additional
+CVA indexes only if the next actual plan proves they are needed.
+
+This work does **not** clear the release gate: no complete current/candidate
+production multiset comparison finished, no Chinese candidate timing was
+established, and no production repair was applied. The release pause remains
+in force. The next owner-authorized database rehearsal must establish full
+row/DTO equivalence and end-to-end page latency before backend activation.
+
+### Non-vacuous identity regression proof
+
+`docs/sql/asset-manifest-card-image-equivalence-fixture.sql` contains only local
+`VALUES` CTEs: versions, assets, version-asset links and variant identities. It
+does not reference application tables. The fixture mirrors the current view's
+coalesced identities and eligibility rules, then compares complete projected
+rows in both directions using `EXCEPT ALL`. A required eight-row reference
+population prevents two empty results from passing. URL, attribution, MIME,
+permission/rights/retention/storage and effective identities are compared.
+
+The fixture was executed read-only on PostgreSQL 17 on 5 September: `passed`
+was true, expected and actual counts were eight, and missing/unexpected arrays
+were empty. Four additional fixture-only mutations disabled each candidate
+branch independently. All four correctly failed: removing CVA variant, CVA
+printing, asset variant and asset printing branches left respectively six,
+seven, five and seven of the expected eight rows. No real catalogue table was
+read by those fixture executions, and no database object was created.
+
+`npm run test:asset-manifest-query-equivalence` runs the offline JS model,
+including negative branch-removal and missing-inheritance tests. It explicitly
+does not claim to run PostgreSQL. `--sql` on its underlying script emits the
+self-contained SQL for a separately authorized database test. These fixtures
+prove the tested semantic cases, not live four-language coverage, RLS policy
+behavior, production query equivalence, or image delivery performance.

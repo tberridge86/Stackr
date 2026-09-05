@@ -131,3 +131,45 @@ Independent review verified no stored catalogue/ownership mutation and kept the
 remaining manifest performance and signed-in UI checks open. Optional set-mark
 reads are bounded but currently global by asset type; narrowing them to exact
 binder set IDs remains a follow-up, not a completeness claim.
+
+### Asset-query proof and fresh regression pass — later continuation
+
+The complete read-only asset candidate now has a retained SQL prototype and
+self-contained PostgreSQL equivalence fixtures. It preserves direct and
+inherited CVA/asset identities, exact coalesce precedence, same-artwork links
+across published versions, duplicate elimination and all final manifest
+eligibility rules. The fixture returned eight expected/eight actual complete
+rows with no differences. Removing each of the four candidate branches made
+the SQL fixture fail as intended; the offline test also catches omitted
+printing-to-variant inheritance. These are non-vacuous fixture proofs, not
+proof that all current production artwork is being served.
+
+The complete six-Japanese-ID candidate still did not finish before its
+five-second deadline. Its required asset-printing branch has no suitable
+index; the isolated branch did not finish before two seconds. The asset heap
+was 214 MB at this observation. An owner-authorized index rehearsal and actual
+four-language/effective-DTO comparisons are still required. No index, function,
+view, statistics, stored content or ownership record was changed. Full details
+are in `docs/historical-asset-query-recovery.md`.
+
+A fresh API run initially exposed a stale source assertion left behind by the
+optional-enrichment refactor. The assertion was corrected to require a
+mandatory parent-cancellable card read and a separately bounded set-detail
+child signal. The full API test then passed. Fresh app/backend typechecks,
+standard lint (zero errors, ten existing warnings), gateway 24/24, backend
+27/27, binder identity/quantities/picker, native/English language presentation,
+flags, controlled images, reference non-persistence, set-mark policy and
+marketplace pricing/routing/access tests passed. New offline asset-query
+regressions also passed.
+
+Focused lint of the two edited test scripts passed with one existing
+default-import naming warning. The API test now explicitly imports Node's
+`Buffer` for its existing malformed-cursor test; runtime application code is
+unchanged.
+
+This continuation changes tests and review evidence only, not application
+runtime code. The previously verified 92-route production-configured build
+and its `entry-ad05de483d209c3601e46e19194db01a.js` entry remain the preview
+artifact; a fresh HTTP check of port 8087 returned that entry and status 200.
+No new build or signed-in binder verification is claimed. PR #134 remains
+draft, and the owner-paused production release has not been resumed.
