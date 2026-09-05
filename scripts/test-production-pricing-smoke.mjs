@@ -40,7 +40,9 @@ const server = createServer((request, response) => {
   }
 
   let data = null;
-  if (request.url === '/v1/health') data = { ok: true };
+  if (request.url === '/v1/health') {
+    data = { status: 'ok', service: 'stackr-api', apiVersion: '1' };
+  }
   if (request.url?.startsWith(`/v1/cards/${variantId}/price?`)) data = { variantId, availability: 'unavailable' };
   if (request.url?.startsWith(`/v1/cards/${variantId}/price-history?`)) data = { variantId, observations: [] };
   if (request.url?.startsWith('/v1/market/movers?')) data = { movers: [] };
