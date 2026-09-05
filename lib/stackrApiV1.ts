@@ -1,6 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRICE_API_URL, STACKR_API_URL } from './config';
 import { normalizeStackrApiBaseUrl } from './stackrApiTransportPolicy';
+import {
+  rewriteStackrApiUrlForLoopbackPreview,
+  stripStackrPreviewProxyAuthorization,
+} from './stackrPreviewApiProxy';
 import { supabase } from './supabase';
 
 const STACKR_CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -669,13 +673,22 @@ export class StackrApiClient {
     init: RequestInit = {},
   ): Promise<StackrApiEnvelope<T>> {
     const deviceId = await this.getDeviceId();
-    const response = await this.fetchImpl(buildUrl(this.baseUrl, path, query), {
+    const remoteUrl = buildUrl(this.baseUrl, path, query);
+    const requestMethod = init.method ?? 'GET';
+    const requestUrl = rewriteStackrApiUrlForLoopbackPreview(remoteUrl, requestMethod);
+    let requestHeaders: Record<string, string> = {
+      ...this.headers,
+      'X-Stackr-Device-Id': deviceId,
+      ...(init.headers as Record<string, string> | undefined),
+    };
+    // The preview proxy intentionally accepts only anonymous public reads.
+    // Authenticated API calls always keep their validated HTTPS origin.
+    if (requestUrl !== remoteUrl) {
+      requestHeaders = stripStackrPreviewProxyAuthorization(requestHeaders);
+    }
+    const response = await this.fetchImpl(requestUrl, {
       ...init,
-      headers: {
-        ...this.headers,
-        'X-Stackr-Device-Id': deviceId,
-        ...(init.headers as Record<string, string> | undefined),
-      },
+      headers: requestHeaders,
     });
 
     if (response.status === 304) {

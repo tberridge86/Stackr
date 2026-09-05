@@ -104,6 +104,7 @@
     "test:japanese-api-storage": "node scripts/test-japanese-catalogue-api-storage.mjs && node scripts/test-japanese-staging-gateway.mjs",
     "test:pokedata-japanese-images": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-pokedata-japanese-image-adapter.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-ingest-pokedata-japanese-images.ts",
     "test:stackr-api-v1": "tsx scripts/test-stackr-api-transport-policy.ts && node scripts/test-stackr-api-v1.mjs",
+    "test:stackr-preview-proxy": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-stackr-preview-proxy.ts",
     "catalogue:audit-current-cjk-provider-images": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/audit-current-cjk-provider-image-coverage.ts",
     "catalogue:probe-current-cjk-provider-images": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/probe-current-cjk-provider-image-urls.ts",
     "catalogue:audit-japanese-set-english-runtime-coverage": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/audit-japanese-set-english-runtime-coverage.ts",
