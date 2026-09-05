@@ -88,7 +88,6 @@ export async function preferNonEmptyCatalogueRows<T>(
           preferredOutcome,
           new Promise<{ status: 'timed-out' }>((resolve) => {
             const timeout = setTimeout(() => resolve({ status: 'timed-out' }), timeoutMs);
-            timeout.unref?.();
             void preferredOutcome.then(() => clearTimeout(timeout));
           }),
         ])
@@ -96,13 +95,13 @@ export async function preferNonEmptyCatalogueRows<T>(
 
     if (preferredResult.status === 'timed-out') {
       controller.abort();
-      const settledResult = await preferredOutcome;
       preferredError = new Error(`Preferred catalogue read timed out after ${timeoutMs}ms.`);
-      if (settledResult.status === 'rejected') {
-        preferredError = preferredError ?? settledResult.error;
-      } else {
-        preferredRows = settledResult.rows;
-      }
+      // `preferredOutcome` always resolves to a settled-status object, so it
+      // cannot become an unhandled rejection.  Do not await it here: a
+      // transport that ignores AbortSignal must not prevent the legacy
+      // fallback from making progress.  A late preferred response is only
+      // observational and must never replace the fallback result.
+      void preferredOutcome;
     } else if (preferredResult.status === 'rejected') {
       preferredError = preferredResult.error;
     } else {

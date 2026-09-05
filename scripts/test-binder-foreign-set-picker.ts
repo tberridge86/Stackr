@@ -74,28 +74,37 @@ async function verifyReadFallback() {
   let activeCanonicalReads = 0;
   let canonicalAborted = false;
   let canonicalSettled = false;
+  const lateCanonical = {
+    resolve: null as ((rows: string[]) => void) | null,
+  };
   const timedOutRows = await preferNonEmptyCatalogueRows(
-    (signal) => new Promise<string[]>((_resolve, reject) => {
+    (signal) => new Promise<string[]>((resolve) => {
       activeCanonicalReads += 1;
+      lateCanonical.resolve = (rows) => {
+        canonicalSettled = true;
+        activeCanonicalReads -= 1;
+        resolve(rows);
+      };
       signal.addEventListener('abort', () => {
         canonicalAborted = true;
-        activeCanonicalReads -= 1;
-        canonicalSettled = true;
-        const error = new Error('canonical request aborted');
-        error.name = 'AbortError';
-        reject(error);
       }, { once: true });
     }),
     async () => {
       assert.equal(canonicalAborted, true, 'timeout must abort the preferred read');
-      assert.equal(canonicalSettled, true, 'preferred read must settle before fallback starts');
-      assert.equal(activeCanonicalReads, 0, 'preferred and fallback reads must never overlap');
+      assert.equal(canonicalSettled, false, 'a non-cooperative preferred read must not block the fallback');
+      assert.equal(activeCanonicalReads, 1, 'the fallback may proceed while an aborted transport settles');
       return ['legacy-after-timeout'];
     },
     { preferredTimeoutMs: 5 },
   );
   assert.deepEqual(timedOutRows, ['legacy-after-timeout']);
   assert.ok(Date.now() - startedAt < 1000, 'a stalled preferred read must reach the fallback promptly');
+  assert.ok(lateCanonical.resolve, 'the non-cooperative preferred read must expose its late resolver');
+  lateCanonical.resolve(['late-canonical']);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(canonicalSettled, true, 'the late preferred read may settle after the fallback');
+  assert.equal(activeCanonicalReads, 0);
+  assert.deepEqual(timedOutRows, ['legacy-after-timeout'], 'a late preferred response must not overwrite the fallback result');
 }
 
 function verifyNonEmptyCatalogueCachePolicy() {
@@ -173,6 +182,7 @@ async function main() {
 
   const adapterSource = readFileSync('lib/stackrDomainAdapter.ts', 'utf8');
   assert.match(adapterSource, /export function fetchPreferredStackrSets/);
+  assert.match(adapterSource, /options: \{ includeAssets\?: boolean \} = \{\}/);
   assert.match(adapterSource, /fetchCanonicalStackrSets\(language, client, false, signal\)/);
   assert.match(adapterSource, /preferredTimeoutMs: PREFERRED_CATALOGUE_READ_TIMEOUT_MS/);
   assert.match(adapterSource, /export function fetchPreferredStackrCardsForSet/);

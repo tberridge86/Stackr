@@ -72,7 +72,7 @@
     "test:local-ocr-card-matcher": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-local-ocr-card-matcher.ts",
     "test:binder-page-scan": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-binder-page-scan.ts",
     "test:binder-foreign-set-picker": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-binder-foreign-set-picker.ts",
-    "test:binder-catalogue": "tsx scripts/test-binder-set-identity.ts && tsx scripts/test-binder-card-identity.ts && tsx scripts/test-binder-catalogue-presentation.ts",
+    "test:binder-catalogue": "tsx scripts/test-binder-set-identity.ts && tsx scripts/test-binder-card-identity.ts && tsx scripts/test-binder-catalogue-presentation.ts && tsx scripts/test-stackr-optional-enrichment.ts",
     "test:four-language-coverage": "tsx scripts/test-four-language-catalogue-coverage.ts && tsx scripts/test-collect-public-catalogue-coverage.ts",
     "test:pokemon-language-flags": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-pokemon-language-flags.ts",
     "test:card-vision-native-config": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-stackr-card-vision-native-config.ts",

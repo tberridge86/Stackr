@@ -52,3 +52,82 @@ The connected Codex browser remains at the login screen. The user is signed into
 5. Complete native image-delivery checks and independent release-population denominators. Do not infer universal coverage from the database or a single provider snapshot.
 
 No production/staging catalogue, Supabase, storage, ownership, or price-refresh mutation was performed. Work remains under `docs/stackrtcg-ip-operating-boundary.md` and the existing recorded source reviews. No source permission was fabricated or broadened.
+
+## Historical-data recovery continuation — evening of 5 September
+
+The user asked for all historically acquired eligible card art, set names and
+marks to reach binders. Read-only production diagnostics confirm that at least
+some apparent image gaps are **delivery failures, not absent artwork**:
+
+- Japanese S12a variants `00334020-2322-465c-ae1a-4dd60ec88197` (115) and
+  `039c5a96-5071-4998-b7c1-53b0cc6454c2` (113) have retained
+  `supabase_storage` card-image rows, with approved permission/rights, active
+  retention and public-catalogue visibility. Asset row IDs are
+  `a897daba-db22-4918-8c3e-407b05dc17f1` and
+  `9db0314a-0912-44b6-b644-7bbcdfda37e4`. No artwork was copied, replaced or
+  deleted. Row presence does not itself verify successful browser delivery.
+- The existing `api.catalogue_cards` query for that Japanese set, ordered by
+  variant UUID with a limit of six, exceeded an eight-second statement timeout.
+  Its plan began with published-version membership and filtered the set late.
+  Adding the exact currently published set version
+  `d560cd01-de2a-4713-9518-b967fb4c5ac9` changed the plan to set/printing index
+  lookups and completed the sampled query in 1,544 ms. The set-version lookup
+  took 19 ms. The plan processed 347 variants for 258 printings; those units
+  must not be confused with card totals or ownership quantities.
+- A separate manifest query for six exact Japanese variants still exceeded
+  five seconds. Its coalesced identity predicate also filters late. The
+  set-card version fix is therefore **not a claim that the complete endpoint
+  is now below the gateway timeout**. A non-lossy candidate-query design and
+  the required equivalence checks are recorded in
+  `docs/historical-asset-query-recovery.md`; it is not a deployed RPC/migration.
+- A fresh public Simplified Chinese `CSV1C` lookup returned the existing set
+  `31225f01-ead5-4e8d-83f8-c06978e706da`, native name `亘古开来`, total 167.
+  The dated nine-card `csv1c` exception above must not be imported as a new set.
+
+Historical approved display content was also checked against its existing
+callers. The Japanese logo map already includes all 204 reviewed pack files;
+the dated runtime audit resolves 177 of 394 set identities (142 direct,
+10 aliases, 25 unique codes). One identity is ambiguous and 216 have no exact
+pack match. The dated name audits cover 270/394 Japanese and 87/220 Chinese
+set identities with English supplements. These figures describe those audit
+populations, not today's total live sets, unique missing cards, or verified
+image loads. No approximate logo/name matches were introduced.
+
+The release coordinator subsequently reported that its owner paused the lane:
+PR #134 must remain draft/reviewable; no merge or deployment authority was
+provided. Authenticated existing-binder visual verification is still pending
+at `http://127.0.0.1:8087/login`. The overnight continuation is attached to this
+task, but neither a schedule nor passing source tests establishes completion.
+
+### Verified continuation build
+
+- `4aa2d40` is the separately reviewable backend set-version query repair.
+- Historical binder branding now explicitly requests approved canonical set
+  assets. Mandatory set facts finish inside the existing preferred-read budget
+  before optional logo/symbol/cover/artwork reads begin. Those optional reads
+  have independent two-second child deadlines; failed marks cannot discard a
+  populated Chinese set list or erase a saved binder image URL.
+- Already fetched cards and embedded images survive failed optional client
+  manifest/set-detail enrichment. Missing totals, dates and series remain
+  missing rather than being invented. Parent cancellation still propagates.
+- A non-cooperative aborted preferred transport no longer blocks fallback
+  forever. Its deadline remains a live timer in Node, so regression assertions
+  now run to completion instead of falsely passing on early process exit.
+- Final app and backend typechecks passed. Standard lint passed with ten
+  existing warnings; touched-source lint passed with twelve existing warnings.
+  API integration, gateway (24), backend (27), binder identity/presentation,
+  optional enrichment/deadlines, actual-completion foreign picker regression,
+  language flags/native-English presentation, controlled images/non-persistence,
+  set marks, CJK audit/coverage, pricing and marketplace routing/access checks
+  passed. No real authenticated binder result is asserted by these tests.
+- The final production-configured web export passed with 92 routes:
+  `D:/Stackr-1/.tmp/cjk-binder-build-20260905-historical-recovery`.
+  Entry: `entry-ad05de483d209c3601e46e19194db01a.js`.
+  SHA-256: `f432f384573ac0ad8030df09f18c8181458abced3c5f4dd64e32b3398db45103`.
+  The isolated preview at port 8087 serves this build. This updates a local
+  preview only; the backend query repair has not been deployed.
+
+Independent review verified no stored catalogue/ownership mutation and kept the
+remaining manifest performance and signed-in UI checks open. Optional set-mark
+reads are bounded but currently global by asset type; narrowing them to exact
+binder set IDs remains a follow-up, not a completeness claim.

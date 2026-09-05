@@ -422,7 +422,7 @@ async function attachSetBrandingToBinders(binders: BinderRecord[]): Promise<Bind
   if (!sourceSetIds.length) return binders;
 
   const catalogueSets = await getCachedOrFetch('binder:catalogue-sets', 5 * 60 * 1000, async () => {
-    const sets = await fetchPreferredStackrSets();
+    const sets = await fetchPreferredStackrSets(null, undefined, { includeAssets: true });
     // Empty/error metadata reads must be retryable, not cached for five minutes.
     if (!sets.length) throw new Error('Binder catalogue metadata is temporarily unavailable.');
     return sets;
