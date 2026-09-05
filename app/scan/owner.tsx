@@ -45,11 +45,14 @@ export default function OwnerRecognitionScreen() {
     if (!user?.id) { setMessage('Sign in with your owner account to scan.'); return; }
     setBusy(true);
     try {
+      // Dataset access does not depend on model readiness; owners can still delete
+      // their saved photos when the recognition service is offline or rolled back.
+      const saved = await listOwnerCaptures(user.id);
+      if (turn !== generation.current) return;
+      setCaptures(saved);
       const available = await getOwnerRecognitionAccess();
       if (turn !== generation.current || available.ownerId !== user.id) return;
       setAccess(available); setMessage('Ready · SigLIP FP32 · private server processing');
-      const saved = await listOwnerCaptures(available.ownerId);
-      if (turn === generation.current) setCaptures(saved);
     } catch (error) {
       if (turn === generation.current) setMessage(error instanceof Error ? error.message : 'Private recognition is unavailable.');
     } finally { if (turn === generation.current) setBusy(false); }
@@ -145,7 +148,7 @@ export default function OwnerRecognitionScreen() {
           style={{ color: theme.colors.text, borderColor: theme.colors.border, borderWidth: 1, padding: 14, borderRadius: 12, marginTop: 12 }} />
         {button(selected ? 'Save my confirmed capture' : 'Save unresolved capture', () => void saveCapture(), busy || !physicalCardId.trim())}
       </View>}
-      {access && <View style={{ marginTop: 24 }}>
+      {user?.id && OWNER_PRIVATE_RECOGNITION_ENABLED && <View style={{ marginTop: 24 }}>
         <Text style={{ color: theme.colors.text, fontWeight: '800' }}>My device dataset · {captures.length} captures</Text>
         <Text style={{ color: theme.colors.textSoft, marginVertical: 8 }}>Saved only on this device under your account. Deleting the app may remove it. These captures are not automatically used for model training.</Text>
         {captures.map((capture) => <View key={capture.id}>
@@ -153,7 +156,7 @@ export default function OwnerRecognitionScreen() {
           {button('Delete this capture', () => Alert.alert('Delete private capture?', 'The saved photograph and label will be permanently removed from this device.', [
             { text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => {
               const turn = generation.current;
-              void deleteOwnerCapture(access.ownerId, capture.id).then(() => listOwnerCaptures(access.ownerId))
+              void deleteOwnerCapture(user.id, capture.id).then(() => listOwnerCaptures(user.id))
                 .then((next) => { if (turn === generation.current) setCaptures(next); })
                 .catch(() => { if (turn === generation.current) setMessage('Could not delete the capture. Try again.'); });
             } },

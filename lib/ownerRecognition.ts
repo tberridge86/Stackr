@@ -51,7 +51,8 @@ export async function identifyOwnerCard(uri: string, ownerId: string) {
 }
 
 async function verifiedLocalDirectory(ownerId: string) {
-  await accessToken(ownerId);
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user || data.user.id !== ownerId) throw new Error('Sign in to access your saved captures.');
   return ownerCaptureDirectory(FileSystem.documentDirectory, ownerId);
 }
 
