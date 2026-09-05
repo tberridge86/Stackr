@@ -23,6 +23,19 @@ export function stripStackrPreviewProxyAuthorization(headers: Record<string, str
   return anonymousHeaders;
 }
 
+/**
+ * Same-origin preview reads are deliberately anonymous and the Metro proxy
+ * never forwards a device identifier. Resolve the identifier lazily so an
+ * embedded browser does not need working persistent storage to load sets.
+ */
+export function resolveStackrApiDeviceIdForRequest(
+  remoteUrl: string,
+  requestUrl: string,
+  getDeviceId: () => Promise<string>,
+) {
+  return requestUrl === remoteUrl ? getDeviceId() : Promise.resolve(null);
+}
+
 function isLoopbackHostname(hostname: string) {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
 }

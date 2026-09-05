@@ -69,9 +69,27 @@ async function verifyReadFallback() {
   assert.deepEqual(emptyRows, ['legacy-after-empty']);
 
   const startedAt = Date.now();
+  let activeCanonicalReads = 0;
+  let canonicalAborted = false;
+  let canonicalSettled = false;
   const timedOutRows = await preferNonEmptyCatalogueRows(
-    () => new Promise<string[]>(() => {}),
-    async () => ['legacy-after-timeout'],
+    (signal) => new Promise<string[]>((_resolve, reject) => {
+      activeCanonicalReads += 1;
+      signal.addEventListener('abort', () => {
+        canonicalAborted = true;
+        activeCanonicalReads -= 1;
+        canonicalSettled = true;
+        const error = new Error('canonical request aborted');
+        error.name = 'AbortError';
+        reject(error);
+      }, { once: true });
+    }),
+    async () => {
+      assert.equal(canonicalAborted, true, 'timeout must abort the preferred read');
+      assert.equal(canonicalSettled, true, 'preferred read must settle before fallback starts');
+      assert.equal(activeCanonicalReads, 0, 'preferred and fallback reads must never overlap');
+      return ['legacy-after-timeout'];
+    },
     { preferredTimeoutMs: 5 },
   );
   assert.deepEqual(timedOutRows, ['legacy-after-timeout']);
@@ -103,7 +121,7 @@ async function main() {
 
   const adapterSource = readFileSync('lib/stackrDomainAdapter.ts', 'utf8');
   assert.match(adapterSource, /export function fetchPreferredStackrSets/);
-  assert.match(adapterSource, /fetchCanonicalStackrSets\(language, client, false\)/);
+  assert.match(adapterSource, /fetchCanonicalStackrSets\(language, client, false, signal\)/);
   assert.match(adapterSource, /preferredTimeoutMs: PREFERRED_CATALOGUE_READ_TIMEOUT_MS/);
   assert.match(adapterSource, /export function fetchPreferredStackrCardsForSet/);
   assert.match(adapterSource, /export function fetchPreferredStackrCardsForReferences/);

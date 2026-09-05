@@ -596,11 +596,23 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
   };
 }
 
-async function allPages<T>(load: (cursor: string | null) => Promise<{ rows: T[]; nextCursor: string | null }>) {
+function throwIfCatalogueReadAborted(signal?: AbortSignal) {
+  if (!signal?.aborted) return;
+  if (signal.reason instanceof Error) throw signal.reason;
+  const error = new Error('Catalogue read aborted.');
+  error.name = 'AbortError';
+  throw error;
+}
+
+async function allPages<T>(
+  load: (cursor: string | null, signal?: AbortSignal) => Promise<{ rows: T[]; nextCursor: string | null }>,
+  signal?: AbortSignal,
+) {
   const rows: T[] = [];
   let cursor: string | null = null;
   do {
-    const page = await load(cursor);
+    throwIfCatalogueReadAborted(signal);
+    const page = await load(cursor, signal);
     rows.push(...page.rows);
     cursor = page.nextCursor;
   } while (cursor);
@@ -611,19 +623,26 @@ async function fetchCanonicalStackrSets(
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
   includeAssets = true,
+  signal?: AbortSignal,
 ) {
   const apiLanguage = toStackrApiLanguage(language);
-  const sets = await allPages<StackrSet>(async (cursor) => {
-    const response = await client.sets({ language: apiLanguage ?? undefined, cursor, limit: 250 });
+  const sets = await allPages<StackrSet>(async (cursor, pageSignal) => {
+    const response = await client.sets(
+      { language: apiLanguage ?? undefined, cursor, limit: 250 },
+      { signal: pageSignal },
+    );
     return { rows: response.data.sets, nextCursor: response.meta.pagination?.nextCursor ?? null };
-  });
+  }, signal);
   if (!includeAssets) return sets.map((set) => stackrSetToLegacySet(set));
   const setAssetTypes = ['set_logo', 'set_symbol', 'set_cover', 'set_artwork'] as const;
   const assets = (await Promise.all(setAssetTypes.map((assetType) => (
-    allPages<StackrCatalogueAsset>(async (cursor) => {
-      const response = await client.assetManifest({ assetType, cursor, limit: 500 });
+    allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
+      const response = await client.assetManifest(
+        { assetType, cursor, limit: 500 },
+        { signal: pageSignal },
+      );
       return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
-    })
+    }, signal)
   )))).flat();
   return sets.map((set) => stackrSetToLegacySet(set, assets.filter((asset) => asset.setId === set.setId)));
 }
@@ -641,7 +660,7 @@ export function fetchPreferredStackrSets(
   client: StackrApiClient = stackrApiClient,
 ) {
   return preferNonEmptyCatalogueRows(
-    () => fetchCanonicalStackrSets(language, client, false),
+    (signal) => fetchCanonicalStackrSets(language, client, false, signal),
     () => legacySets(language),
     { preferredTimeoutMs: PREFERRED_CATALOGUE_READ_TIMEOUT_MS },
   );
@@ -677,16 +696,20 @@ async function resolveCanonicalStackrSetId(
   reference: string,
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
+  signal?: AbortSignal,
 ) {
   const value = String(reference ?? '').trim();
   if (!value) return null;
   const unprefixedValue = normalizePokemonSetReferenceForLookup(value);
   if (UUID_PATTERN.test(unprefixedValue)) return unprefixedValue;
-  const response = await client.sets({
-    language: toStackrApiLanguage(language) ?? undefined,
-    setCode: unprefixedValue,
-    limit: 25,
-  });
+  const response = await client.sets(
+    {
+      language: toStackrApiLanguage(language) ?? undefined,
+      setCode: unprefixedValue,
+      limit: 25,
+    },
+    { signal },
+  );
   const normalized = unprefixedValue.toLowerCase();
   const exact = response.data.sets.find((set) => (
     set.setCode?.toLowerCase() === normalized
@@ -736,28 +759,36 @@ async function fetchCanonicalStackrCardsForSet(
   reference: string,
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
+  signal?: AbortSignal,
 ) {
-  const setId = await resolveCanonicalStackrSetId(reference, language, client);
+  const setId = await resolveCanonicalStackrSetId(reference, language, client, signal);
   if (!setId) return [];
-  const cards = await allPages<StackrCard>(async (cursor) => {
-    const response = await client.setCards(setId, {
-      language: toStackrApiLanguage(language) ?? undefined,
-      cursor,
-      limit: 250,
-    });
+  const cards = await allPages<StackrCard>(async (cursor, pageSignal) => {
+    const response = await client.setCards(
+      setId,
+      {
+        language: toStackrApiLanguage(language) ?? undefined,
+        cursor,
+        limit: 250,
+      },
+      { signal: pageSignal },
+    );
     return { rows: response.data.cards, nextCursor: response.meta.pagination?.nextCursor ?? null };
-  });
+  }, signal);
   const needsManifestFallback = cards.some((card) => (
     !primaryCardImageAsset(card, embeddedCardImageAssets(card))
   ));
   const [assets, setResponse] = await Promise.all([
     needsManifestFallback
-      ? allPages<StackrCatalogueAsset>(async (cursor) => {
-          const response = await client.assetManifest({ setId, cursor, limit: 500 });
+      ? allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
+          const response = await client.assetManifest(
+            { setId, cursor, limit: 500 },
+            { signal: pageSignal },
+          );
           return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
-        })
+        }, signal)
       : Promise.resolve([] as StackrCatalogueAsset[]),
-    client.set(setId),
+    client.set(setId, { signal }),
   ]);
   return cards.map((card) => {
     const mapped = stackrCardToLegacyCard(card, assets);
@@ -795,9 +826,9 @@ export function fetchPreferredStackrCardsForReferences(
 ) {
   const candidates = [...new Set(references.map((value) => String(value ?? '').trim()).filter(Boolean))];
   return preferNonEmptyCatalogueRows(
-    () => firstNonEmptyCatalogueRows(
+    (signal) => firstNonEmptyCatalogueRows(
       candidates,
-      (candidate) => fetchCanonicalStackrCardsForSet(candidate, language, client),
+      (candidate) => fetchCanonicalStackrCardsForSet(candidate, language, client, signal),
     ),
     () => firstNonEmptyCatalogueRows(
       candidates,

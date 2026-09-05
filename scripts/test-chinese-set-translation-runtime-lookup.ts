@@ -37,8 +37,16 @@ assert.equal(clientMetadata.tcgdexChineseIdentityDisplaySource?.reviewedResoluti
 assert.equal(clientMetadata.rightsGate.activationAuthorized, true);
 assert.equal(clientMetadata.rightsGate.publicRuntimeImportAuthorized, true);
 assert.equal(clientMetadata.rightsGate.canonicalDatabaseWriteAuthorized, false);
-const rightsReview = JSON.parse(readFileSync('catalogue/rights-reviews/cjk-display-metadata-pending.2026-09-04.json', 'utf8')) as { activationAuthorized?: unknown };
+const rightsReview = JSON.parse(readFileSync('catalogue/rights-reviews/cjk-display-metadata-pending.2026-09-04.json', 'utf8')) as {
+  activationAuthorized?: unknown;
+  status?: unknown;
+  supersedingRecords?: { path?: unknown }[];
+};
 assert.equal(rightsReview.activationAuthorized, false);
+assert.equal(rightsReview.status, 'partially_superseded_pending');
+assert.ok(rightsReview.supersedingRecords?.some((record) => (
+  record.path === 'catalogue/rights-reviews/cjk-editorial-set-translation-owner-approved.2026-09-04.json'
+)));
 
 const simplifiedDraft = { language: 'zh-cn', setCode: 'CS5.5C', localName: '暗影夺辉' };
 const traditionalDraft = { language: 'zh-tw', setCode: 'SVAM', localName: '起始組合ex 新葉喵&路卡利歐ex' };

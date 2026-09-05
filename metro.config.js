@@ -2,6 +2,7 @@ const { getDefaultConfig } = require('expo/metro-config');
 const { Worker } = require('node:worker_threads');
 const path = require('path');
 const { resolveMobileRuntimeConfig } = require('./config/mobile-runtime.cjs');
+const { isAuthorizedPreviewRead } = require('./scripts/stackr-preview-proxy-policy.cjs');
 
 const config = getDefaultConfig(__dirname);
 const escapePathForRegex = (targetPath) => targetPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -38,16 +39,6 @@ function configuredPreviewGateway(value) {
   }
 }
 
-function isLoopbackHost(value) {
-  const hostname = String(value || '').replace(/:\d+$/, '').toLowerCase();
-  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
-}
-
-function isAllowedPreviewRead(pathname) {
-  return pathname === '/sets' || pathname === '/assets/manifest'
-    || /^\/sets\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?:\/cards)?$/i.test(pathname);
-}
-
 const gateway = configuredPreviewGateway(previewGateway);
 const previewProxyWorkerPath = path.resolve(__dirname, 'scripts/stackr-preview-proxy-worker.cjs');
 const existingEnhanceMiddleware = config.server?.enhanceMiddleware;
@@ -63,7 +54,7 @@ config.server = {
         return downstream(request, response, next);
       }
       const upstreamPath = requestUrl.pathname.slice(previewProxyPrefix.length) || '/';
-      if (request.method !== 'GET' || !isLoopbackHost(request.headers.host) || !gateway || !isAllowedPreviewRead(upstreamPath)) {
+      if (!isAuthorizedPreviewRead(request, gateway, upstreamPath)) {
         response.statusCode = 404;
         response.end();
         return undefined;

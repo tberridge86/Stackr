@@ -1,7 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRICE_API_URL, STACKR_API_URL } from './config';
-import { normalizeStackrApiBaseUrl } from './stackrApiTransportPolicy';
 import {
+  createStackrApiFetch,
+  normalizeStackrApiBaseUrl,
+  type StackrApiFetch,
+} from './stackrApiTransportPolicy';
+import {
+  resolveStackrApiDeviceIdForRequest,
   rewriteStackrApiUrlForLoopbackPreview,
   stripStackrPreviewProxyAuthorization,
 } from './stackrPreviewApiProxy';
@@ -398,8 +403,6 @@ export type StackrObservabilityDashboard = {
   releaseGates: StackrQualityReleaseGate[];
 };
 
-type FetchLike = typeof fetch;
-
 export type StackrRecognitionLanguageCode = StackrApiLanguageCode | 'unknown';
 
 export type StackrRecognitionScriptCode =
@@ -572,7 +575,7 @@ export class StackrApiV1Error extends Error {
 
 export type StackrApiV1ClientOptions = {
   baseUrl?: string;
-  fetchImpl?: FetchLike;
+  fetchImpl?: StackrApiFetch;
   headers?: Record<string, string>;
   getAccessToken?: () => Promise<string | null>;
   getDeviceId?: () => Promise<string>;
@@ -649,7 +652,7 @@ function assertNoImagePayload(value: unknown) {
 
 export class StackrApiClient {
   private readonly baseUrl: string;
-  private readonly fetchImpl: FetchLike;
+  private readonly fetchImpl: StackrApiFetch;
   private readonly headers: Record<string, string>;
   private readonly getAccessToken: () => Promise<string | null>;
   private readonly getDeviceId: () => Promise<string>;
@@ -657,7 +660,7 @@ export class StackrApiClient {
 
   constructor(options: StackrApiV1ClientOptions = {}) {
     this.baseUrl = normalizeStackrApiBaseUrl(options.baseUrl ?? `${STACKR_API_URL || PRICE_API_URL}/v1`);
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    this.fetchImpl = createStackrApiFetch(options.fetchImpl);
     this.headers = {
       'X-Stackr-Api-Version': '1',
       ...(options.headers ?? {}),
@@ -672,18 +675,22 @@ export class StackrApiClient {
     query?: Record<string, string | number | boolean | null | undefined>,
     init: RequestInit = {},
   ): Promise<StackrApiEnvelope<T>> {
-    const deviceId = await this.getDeviceId();
     const remoteUrl = buildUrl(this.baseUrl, path, query);
     const requestMethod = init.method ?? 'GET';
     const requestUrl = rewriteStackrApiUrlForLoopbackPreview(remoteUrl, requestMethod);
+    const isLoopbackPreviewRead = requestUrl !== remoteUrl;
+    // The same-origin development proxy forwards anonymous public reads only.
+    // Avoid touching device storage for a value that is deliberately not sent
+    // upstream; browser storage can be unavailable in embedded previews.
+    const deviceId = await resolveStackrApiDeviceIdForRequest(remoteUrl, requestUrl, this.getDeviceId);
     let requestHeaders: Record<string, string> = {
       ...this.headers,
-      'X-Stackr-Device-Id': deviceId,
+      ...(deviceId ? { 'X-Stackr-Device-Id': deviceId } : {}),
       ...(init.headers as Record<string, string> | undefined),
     };
     // The preview proxy intentionally accepts only anonymous public reads.
     // Authenticated API calls always keep their validated HTTPS origin.
-    if (requestUrl !== remoteUrl) {
+    if (isLoopbackPreviewRead) {
       requestHeaders = stripStackrPreviewProxyAuthorization(requestHeaders);
     }
     const response = await this.fetchImpl(requestUrl, {
@@ -824,16 +831,20 @@ export class StackrApiClient {
     region?: string;
     cursor?: string | null;
     limit?: number;
-  } = {}) {
-    return this.request<{ sets: StackrSet[] }>('/sets', query);
+  } = {}, init: RequestInit = {}) {
+    return this.request<{ sets: StackrSet[] }>('/sets', query, init);
   }
 
-  set(setId: string) {
-    return this.request<{ set: StackrSet }>(`/sets/${encodeURIComponent(setId)}`);
+  set(setId: string, init: RequestInit = {}) {
+    return this.request<{ set: StackrSet }>(`/sets/${encodeURIComponent(setId)}`, undefined, init);
   }
 
-  setCards(setId: string, query: { language?: StackrApiLanguageCode; cursor?: string | null; limit?: number } = {}) {
-    return this.request<{ cards: StackrCard[] }>(`/sets/${encodeURIComponent(setId)}/cards`, query);
+  setCards(
+    setId: string,
+    query: { language?: StackrApiLanguageCode; cursor?: string | null; limit?: number } = {},
+    init: RequestInit = {},
+  ) {
+    return this.request<{ cards: StackrCard[] }>(`/sets/${encodeURIComponent(setId)}/cards`, query, init);
   }
 
   card(cardId: string) {
@@ -877,8 +888,8 @@ export class StackrApiClient {
     variantId?: string;
     cursor?: string | null;
     limit?: number;
-  } = {}) {
-    return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', query);
+  } = {}, init: RequestInit = {}) {
+    return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', query, init);
   }
 
   cardPrice(variantId: string, query: {

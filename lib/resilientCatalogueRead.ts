@@ -20,7 +20,7 @@ export async function firstNonEmptyCatalogueRows<Candidate, Row>(
 }
 
 export async function preferNonEmptyCatalogueRows<T>(
-  preferredRead: () => Promise<T[]>,
+  preferredRead: (signal: AbortSignal) => Promise<T[]>,
   fallbackRead: () => Promise<T[]>,
   options: { preferredTimeoutMs?: number } = {},
 ): Promise<T[]> {
@@ -28,27 +28,40 @@ export async function preferNonEmptyCatalogueRows<T>(
   let preferredError: unknown;
 
   try {
-    const preferredPromise = Promise.resolve().then(preferredRead);
+    const controller = new AbortController();
+    const preferredOutcome = Promise.resolve()
+      .then(() => preferredRead(controller.signal))
+      .then(
+        (rows) => ({ status: 'fulfilled' as const, rows }),
+        (error: unknown) => ({ status: 'rejected' as const, error }),
+      );
     const timeoutMs = Math.max(0, Number(options.preferredTimeoutMs ?? 0));
-    preferredRows = timeoutMs > 0
-      ? await new Promise<T[]>((resolve, reject) => {
-          const timeout = setTimeout(
-            () => reject(new Error(`Preferred catalogue read timed out after ${timeoutMs}ms.`)),
-            timeoutMs,
-          );
-          preferredPromise.then(
-            (rows) => {
-              clearTimeout(timeout);
-              resolve(rows);
-            },
-            (error) => {
-              clearTimeout(timeout);
-              reject(error);
-            },
-          );
-        })
-      : await preferredPromise;
-    if (preferredRows.length) return preferredRows;
+    const preferredResult = timeoutMs > 0
+      ? await Promise.race([
+          preferredOutcome,
+          new Promise<{ status: 'timed-out' }>((resolve) => {
+            const timeout = setTimeout(() => resolve({ status: 'timed-out' }), timeoutMs);
+            timeout.unref?.();
+            void preferredOutcome.then(() => clearTimeout(timeout));
+          }),
+        ])
+      : await preferredOutcome;
+
+    if (preferredResult.status === 'timed-out') {
+      controller.abort();
+      const settledResult = await preferredOutcome;
+      preferredError = new Error(`Preferred catalogue read timed out after ${timeoutMs}ms.`);
+      if (settledResult.status === 'rejected') {
+        preferredError = preferredError ?? settledResult.error;
+      } else {
+        preferredRows = settledResult.rows;
+      }
+    } else if (preferredResult.status === 'rejected') {
+      preferredError = preferredResult.error;
+    } else {
+      preferredRows = preferredResult.rows;
+    }
+    if (preferredRows?.length) return preferredRows;
   } catch (error) {
     preferredError = error;
   }

@@ -18,3 +18,15 @@ export function normalizeStackrApiBaseUrl(value: string) {
   }
   return url.toString().replace(/\/$/, '');
 }
+
+export type StackrApiFetch = typeof fetch;
+
+/**
+ * Expo web may install its final fetch implementation after application modules
+ * are evaluated. Keep injected transports fixed, but resolve the browser global
+ * when each ordinary request starts so the client cannot retain a stale polyfill.
+ */
+export function createStackrApiFetch(fetchImpl?: StackrApiFetch): StackrApiFetch {
+  if (fetchImpl) return fetchImpl;
+  return (input, init) => globalThis.fetch(input, init);
+}
