@@ -8,8 +8,10 @@ import { verifyEasRollbackTarget } from './deploy/verify-eas-rollback-target.mjs
 
 const require = createRequire(import.meta.url);
 const {
+  MOBILE_PRODUCTION_RELEASE_FLAGS,
   MOBILE_RUNTIME_ENV_VARIABLES,
   MOBILE_SAFE_RELEASE_FLAGS,
+  mobileReleaseFlagsForEnvironment,
   resolveMobileRuntimeConfig,
   targets,
 } = require('../config/mobile-runtime.cjs');
@@ -144,8 +146,9 @@ for (const [field, variable] of [
   ['priceApiUrl', 'STACKR_MOBILE_PRICE_API_URL'],
   ['stackrApiUrl', 'STACKR_MOBILE_API_URL'],
 ]) assert.equal(productionEnv[variable], targets.production[field], `production:${variable}`);
+assert.equal(productionEnv.EXPO_PUBLIC_SCAN_PROVIDER, undefined);
 
-for (const profile of Object.values(eas.build)) {
+for (const [profileName, profile] of Object.entries(eas.build)) {
   for (const variable of [
     'EXPO_PUBLIC_PRICE_API_URL',
     'EXPO_PUBLIC_STACKR_API_URL',
@@ -153,7 +156,9 @@ for (const profile of Object.values(eas.build)) {
     'EXPO_PUBLIC_SUPABASE_ANON_KEY',
     'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
   ]) assert.equal(profile.env?.[variable], undefined, `${variable} must not select a mobile target`);
-  const expectedProfileFlags = profile === eas.build['seller-canary']
+  const expectedProfileFlags = profileName === 'production'
+    ? MOBILE_PRODUCTION_RELEASE_FLAGS
+    : profileName === 'seller-canary'
     ? { ...MOBILE_SAFE_RELEASE_FLAGS, EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: 'true' }
     : MOBILE_SAFE_RELEASE_FLAGS;
   for (const [variable, expectedValue] of Object.entries(expectedProfileFlags)) {
@@ -310,6 +315,7 @@ assert.doesNotMatch(
   'staging publication must use the already-validated EAS environment snapshot',
 );
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
+const productionMobileWorkflow = readFileSync('.github/workflows/publish-mobile-production-canary.yml', 'utf8');
 for (const variable of MOBILE_RUNTIME_ENV_VARIABLES) {
   assert.match(productionWorkflow, new RegExp(`\\b${variable}:`), `${variable} must be passed to production EAS`);
 }
@@ -317,7 +323,7 @@ assert.match(productionWorkflow, /--expected-environment=production --expected-a
 assert.match(productionWorkflow, /eas-cli@21\.4\.0 env:exec production/);
 for (const variable of [
   ...MOBILE_RUNTIME_ENV_VARIABLES,
-  ...Object.keys(MOBILE_SAFE_RELEASE_FLAGS),
+  ...Object.keys(MOBILE_PRODUCTION_RELEASE_FLAGS),
 ]) {
   assert.match(
     productionWorkflow,
@@ -363,6 +369,31 @@ assert.doesNotMatch(
   /eas-cli@21\.4\.0 update --channel production[^\n]*--environment/,
   'production publication must use the already-validated EAS environment snapshot',
 );
+assert.match(productionMobileWorkflow, /github\.ref == 'refs\/heads\/main'[\s\S]*inputs\.confirmation == 'PUBLISH MOBILE CANARY'/);
+assert.match(productionMobileWorkflow, /environment: production[\s\S]*EXPO_TOKEN: \$\{\{ secrets\.EXPO_TOKEN \}\}/);
+assert.match(
+  productionMobileWorkflow,
+  /Validate effective EAS production environment[\s\S]*env:exec production[\s\S]*--expected-environment=production[\s\S]*--require-safe-release-flags/,
+);
+assert.match(
+  productionMobileWorkflow,
+  /Require compatible production mobile builds[\s\S]*build:list[\s\S]*--channel production[\s\S]*--build-profile production[\s\S]*--git-commit-hash "\$GITHUB_SHA"[\s\S]*--required-platforms=android,ios/,
+);
+assert.match(
+  productionMobileWorkflow,
+  /Publish mobile canary[\s\S]*--rollout-percentage "\$CANARY_PERCENT"[\s\S]*capture-eas-update-group\.mjs[\s\S]*--mode=publish-evidence[\s\S]*--expected-platforms=android,ios/,
+);
+assert.match(
+  productionMobileWorkflow,
+  /Roll back mobile update after a failed canary[\s\S]*update:revert-update-rollout[\s\S]*--group "\$STACKR_EAS_UPDATE_GROUP_ID"/,
+);
+for (const forbidden of ['railway', 'wrangler', 'supabase db', 'eas-cli@21.4.0 submit']) {
+  assert.equal(
+    productionMobileWorkflow.toLowerCase().includes(forbidden),
+    false,
+    `mobile production workflow must not contain ${forbidden}`,
+  );
+}
 
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 assert.match(
@@ -396,7 +427,7 @@ function verifierEnvironment(appVariant, environment, target) {
     STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY: target.supabasePublishableKey,
     STACKR_MOBILE_PRICE_API_URL: target.priceApiUrl,
     STACKR_MOBILE_API_URL: target.stackrApiUrl,
-    ...MOBILE_SAFE_RELEASE_FLAGS,
+    ...mobileReleaseFlagsForEnvironment(environment),
   };
 }
 
@@ -479,6 +510,20 @@ assertVerifierFails(
   targets.staging,
   (env) => { env.STACKR_MOBILE_SUPABASE_URL = targets.production.supabaseUrl; },
   /mobile_runtime_target_mismatch:staging:supabaseUrl/,
+);
+assertVerifierFails(
+  'production',
+  'production',
+  targets.production,
+  (env) => { delete env.EXPO_PUBLIC_STACKR_API_ENABLED; },
+  /mobile_runtime_safe_release_flag_mismatch:EXPO_PUBLIC_STACKR_API_ENABLED/,
+);
+assertVerifierFails(
+  'production',
+  'production',
+  targets.production,
+  (env) => { env.EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY = 'true'; },
+  /mobile_runtime_safe_release_flag_mismatch:EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY/,
 );
 
 const compatibleBuildSha = 'a'.repeat(40);

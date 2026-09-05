@@ -5,8 +5,8 @@ import path from 'node:path';
 const require = createRequire(import.meta.url);
 const {
   MOBILE_RUNTIME_ENV_VARIABLES,
-  MOBILE_SAFE_RELEASE_FLAGS,
   assertMobileRuntimeConfig,
+  mobileReleaseFlagsForEnvironment,
   resolveMobileRuntimeConfig,
 } = require('../../config/mobile-runtime.cjs');
 
@@ -26,7 +26,8 @@ if (expectedEnvironment !== 'staging' && expectedEnvironment !== 'production') {
 }
 if (!expectedAppVariant) throw new Error('Pass --expected-app-variant=<variant>.');
 if (requireSafeReleaseFlags) {
-  for (const [variable, expectedValue] of Object.entries(MOBILE_SAFE_RELEASE_FLAGS)) {
+  const expectedReleaseFlags = mobileReleaseFlagsForEnvironment(expectedEnvironment);
+  for (const [variable, expectedValue] of Object.entries(expectedReleaseFlags)) {
     if (process.env[variable] !== expectedValue) {
       throw new Error(`mobile_runtime_safe_release_flag_mismatch:${variable}`);
     }

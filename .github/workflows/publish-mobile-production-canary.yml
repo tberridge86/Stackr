@@ -1,0 +1,227 @@
+name: Publish Stackr Mobile Production Canary
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type PUBLISH MOBILE CANARY
+        required: true
+        type: string
+      canary_percent:
+        description: Initial EAS rollout percentage (1-10)
+        required: true
+        default: 5
+        type: number
+      monitor_minutes:
+        description: Observation period before the workflow succeeds
+        required: true
+        default: 15
+        type: number
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-production-mobile-update
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH MOBILE CANARY'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      STACKR_MOBILE_APP_VARIANT: production
+      STACKR_MOBILE_ENVIRONMENT: production
+      STACKR_MOBILE_PRICE_API_URL: ${{ vars.STACKR_BACKEND_URL }}
+      STACKR_MOBILE_API_URL: ${{ vars.STACKR_GATEWAY_URL }}
+      STACKR_MOBILE_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+      STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'
+      EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: 'false'
+      EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED: 'false'
+      EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED: 'false'
+      EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS: 'false'
+      EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK: 'false'
+      EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK: 'false'
+      EXPO_PUBLIC_STACKR_API_ENABLED: 'true'
+      EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED: 'true'
+      EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY: 'false'
+      EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED: 'false'
+      EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED: 'false'
+      EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE: 'false'
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Attest production source revision
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Re-run mobile release checks
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run test:mobile-runtime-config
+          npm run mobile:verify-runtime -- --expected-environment=production --expected-app-variant=production --require-explicit --require-safe-release-flags
+
+      - name: Validate limited canary inputs
+        env:
+          CANARY_PERCENT: ${{ inputs.canary_percent }}
+          MONITOR_MINUTES: ${{ inputs.monitor_minutes }}
+        run: |
+          if [ "$CANARY_PERCENT" -lt 1 ] || [ "$CANARY_PERCENT" -gt 10 ]; then
+            echo "Production mobile canary must be between 1 and 10 percent."
+            exit 1
+          fi
+          if [ "$MONITOR_MINUTES" -lt 1 ] || [ "$MONITOR_MINUTES" -gt 60 ]; then
+            echo "Monitor period must be between 1 and 60 minutes."
+            exit 1
+          fi
+
+      - name: Validate production gateway readiness
+        run: |
+          curl --fail --silent --show-error "$STACKR_MOBILE_API_URL/v1/health" > /dev/null
+          curl --fail --silent --show-error "$STACKR_MOBILE_API_URL/v1/ready" > /dev/null
+
+      - name: Validate effective EAS production environment
+        run: |
+          env \
+            -u STACKR_MOBILE_APP_VARIANT \
+            -u STACKR_MOBILE_ENVIRONMENT \
+            -u STACKR_MOBILE_PRICE_API_URL \
+            -u STACKR_MOBILE_API_URL \
+            -u STACKR_MOBILE_SUPABASE_URL \
+            -u STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY \
+            -u EXPO_PUBLIC_BETA_TRADE_DEMO_MODE \
+            -u EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED \
+            -u EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED \
+            -u EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED \
+            -u EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS \
+            -u EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK \
+            -u EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK \
+            -u EXPO_PUBLIC_STACKR_API_ENABLED \
+            -u EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED \
+            -u EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY \
+            -u EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED \
+            -u EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED \
+            -u EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE \
+            npx --yes eas-cli@21.4.0 env:exec production \
+              'npm run mobile:verify-runtime -- --expected-environment=production --expected-app-variant=production --require-explicit --require-safe-release-flags' \
+              --non-interactive
+
+      - name: Require compatible production mobile builds
+        run: |
+          runtime_version="$(
+            node scripts/deploy/verify-mobile-runtime-config.mjs \
+              --expected-environment=production \
+              --expected-app-variant=production \
+              --require-explicit \
+              --require-safe-release-flags \
+              | jq -er '.runtimeVersion | select(type == "string")'
+          )"
+          npx --yes eas-cli@21.4.0 build:list \
+            --status finished \
+            --channel production \
+            --runtime-version "$runtime_version" \
+            --app-identifier com.tommo86.Stackr \
+            --build-profile production \
+            --git-commit-hash "$GITHUB_SHA" \
+            --limit 10 \
+            --json \
+            --non-interactive \
+            > "$RUNNER_TEMP/eas-compatible-builds.raw.json"
+          node scripts/deploy/verify-eas-compatible-builds.mjs \
+            --file="$RUNNER_TEMP/eas-compatible-builds.raw.json" \
+            --expected-runtime="$runtime_version" \
+            --expected-channel=production \
+            --expected-profile=production \
+            --expected-git-sha="$GITHUB_SHA" \
+            --required-platforms=android,ios \
+            --github-env="$GITHUB_ENV" \
+            > "$RUNNER_TEMP/eas-compatible-builds-attestation.json"
+          rm -f "$RUNNER_TEMP/eas-compatible-builds.raw.json"
+
+      - name: Publish mobile canary
+        env:
+          CANARY_PERCENT: ${{ inputs.canary_percent }}
+        run: |
+          env \
+            -u STACKR_MOBILE_APP_VARIANT \
+            -u STACKR_MOBILE_ENVIRONMENT \
+            -u STACKR_MOBILE_PRICE_API_URL \
+            -u STACKR_MOBILE_API_URL \
+            -u STACKR_MOBILE_SUPABASE_URL \
+            -u STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY \
+            -u EXPO_PUBLIC_BETA_TRADE_DEMO_MODE \
+            -u EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED \
+            -u EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED \
+            -u EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED \
+            -u EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS \
+            -u EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK \
+            -u EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK \
+            -u EXPO_PUBLIC_STACKR_API_ENABLED \
+            -u EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED \
+            -u EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY \
+            -u EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED \
+            -u EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED \
+            -u EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE \
+            npx --yes eas-cli@21.4.0 env:exec production \
+              'npm run mobile:verify-runtime -- --expected-environment=production --expected-app-variant=production --require-explicit --require-safe-release-flags && npx --yes eas-cli@21.4.0 update --channel production --platform all --rollout-percentage "$CANARY_PERCENT" --message "Stackr mobile production $GITHUB_SHA" --json --non-interactive > "$RUNNER_TEMP/eas-update.json"' \
+              --non-interactive
+          node scripts/deploy/capture-eas-update-group.mjs \
+            --file="$RUNNER_TEMP/eas-update.json" \
+            --github-env="$GITHUB_ENV" \
+            --mode=publish-evidence \
+            > "$RUNNER_TEMP/eas-update-publish-evidence.json"
+          node scripts/deploy/capture-eas-update-group.mjs \
+            --file="$RUNNER_TEMP/eas-update.json" \
+            --github-env="$GITHUB_ENV" \
+            --expected-runtime="$(node -p "require('./app.json').expo.version")" \
+            --expected-git-sha="$GITHUB_SHA" \
+            --expected-message="Stackr mobile production $GITHUB_SHA" \
+            --expected-platforms=android,ios \
+            > "$RUNNER_TEMP/eas-update-attestation.json"
+
+      - name: Upload production mobile deployment attestation
+        if: ${{ !cancelled() && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-mobile-attestation-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/eas-compatible-builds-attestation.json
+            ${{ runner.temp }}/eas-update.json
+            ${{ runner.temp }}/eas-update-publish-evidence.json
+            ${{ runner.temp }}/eas-update-attestation.json
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 9
+
+      - name: Observe production mobile canary
+        env:
+          MONITOR_MINUTES: ${{ inputs.monitor_minutes }}
+        run: |
+          sleep "$((MONITOR_MINUTES * 60))"
+          curl --fail --silent --show-error "$STACKR_MOBILE_API_URL/v1/health" > /dev/null
+          curl --fail --silent --show-error "$STACKR_MOBILE_API_URL/v1/ready" > /dev/null
+
+      - name: Roll back mobile update after a failed canary
+        if: failure() && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true'
+        continue-on-error: true
+        run: >-
+          npx --yes eas-cli@21.4.0 update:revert-update-rollout
+          --group "$STACKR_EAS_UPDATE_GROUP_ID"
+          --message "Automatic rollback for GitHub run $GITHUB_RUN_ID"
+          --non-interactive
