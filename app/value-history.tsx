@@ -19,14 +19,17 @@ import { useTheme } from '../components/theme-context';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { StackrBackButton } from '../components/StackrBackButton';
 import { StackrPageTitle } from '../components/StackrScreen';
-import { fetchBinderCards, fetchBinders, type BinderCardRecord } from '../lib/binders';
+import { fetchBinderCards, fetchBinders, type BinderCardRecord, type BinderRecord } from '../lib/binders';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
 import { getPreferredSetDisplayName } from '../lib/pokemonDisplayNames';
 import { stackrIcons } from '../lib/stackrIcons';
 import { stackrTabContentPadding } from '../lib/stackrSizing';
 import { tabularNumberStyle, typeScale } from '../lib/typography';
-import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../lib/stackrDomainAdapter';
+import { fetchStackrCardRows } from '../lib/stackrDomainAdapter';
 import { stackrApiClient } from '../lib/stackrApiV1';
+import { loadCollectionPrices } from '../lib/collectionPricingApi';
+import { summariseCollectionPricing } from '../lib/collectionPricingState';
+import { fetchOwnedCardRows } from '../lib/ownership';
 
 type RangeKey = '7D' | '30D' | '6M' | '12M';
 type MoverDisplayMode = 'money' | 'percent';
@@ -49,10 +52,18 @@ type Mover = {
   snapshotAt?: string | null;
 };
 type OwnedCardUnit = {
-  card: BinderCardRecord;
+  key: string;
+  card: BinderCardRecord | null;
+  cardId: string;
+  setId: string;
   ids: string[];
   quantity: number;
-  currentValue: number;
+  variant: string | null;
+  condition: string | null;
+  gradeCompany: string | null;
+  grade: string | null;
+  productType: 'raw_card' | 'graded_card';
+  identityExact: boolean;
 };
 
 const RANGES: { key: RangeKey; label: string; days: number }[] = [
@@ -89,26 +100,10 @@ const toDayKey = (value: Date | string) => {
   return date.toISOString().split('T')[0];
 };
 
-const buildDayKeys = (days: number) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Array.from({ length: days + 1 }, (_, index) => {
-    const date = new Date(today);
-    date.setDate(today.getDate() - (days - index));
-    return toDayKey(date);
-  });
-};
-
 const getSnapshotValue = (row: any): number | null => {
   const value = row?.tcgdex_price ?? row?.tcg_mid ?? row?.tcg_low ?? row?.ebay_average ?? row?.cardmarket_trend;
   const parsed = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-};
-
-const getCurrentCardValue = (card: BinderCardRecord) => {
-  const direct = typeof card.tcg_price === 'number' && Number.isFinite(card.tcg_price) ? card.tcg_price : null;
-  const fallback = typeof card.ebay_price === 'number' && Number.isFinite(card.ebay_price) ? card.ebay_price : null;
-  return direct ?? fallback ?? 0;
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 };
 
 const getOwnedQuantity = (card: BinderCardRecord) =>
@@ -116,32 +111,6 @@ const getOwnedQuantity = (card: BinderCardRecord) =>
 
 const getCardIds = (card: BinderCardRecord) =>
   [...new Set([card.card_id, card.api_card_id].filter(Boolean))] as string[];
-
-const getCardImageUrl = (card: BinderCardRecord): string | null =>
-  card.image_url ??
-  card.card?.image_url ??
-  card.card?.images?.small ??
-  card.card?.images?.large ??
-  card.card?.raw_data?.images?.small ??
-  card.card?.raw_data?.images?.large ??
-  null;
-
-const getCardName = (card: BinderCardRecord) =>
-  card.card_name ?? card.card?.name ?? card.card?.raw_data?.name ?? card.card_id;
-
-const getCardSetName = (card: BinderCardRecord) =>
-  getPreferredSetDisplayName({
-    id: card.set_id ?? card.card?.set?.id ?? card.card?.raw_data?.set?.id ?? null,
-    sourceId: card.card?.raw_data?.set?.tcgdex_id ?? card.card?.raw_data?.set?.source_id ?? card.set_id ?? null,
-    setCode: card.card?.raw_data?.set?.set_code ?? card.card?.raw_data?.set?.tcgdex_id ?? card.set_id ?? null,
-    language: card.language ?? card.card?.language ?? card.card?.raw_data?.language ?? card.card?.raw_data?.set?.language ?? null,
-    region: card.card?.region ?? card.card?.raw_data?.region ?? card.card?.raw_data?.set?.region ?? null,
-    localName: card.card?.raw_data?.set?.local_name ?? card.card?.raw_data?.set?.name ?? null,
-    englishDisplayName: card.card?.raw_data?.set?.english_display_name ?? card.card?.raw_data?.set?.englishDisplayName ?? null,
-    canonicalName: card.card?.set?.name ?? card.card?.raw_data?.set?.name ?? card.set_name ?? null,
-    fallbackName: card.set_name ?? card.set_id ?? null,
-    raw: card.card?.raw_data?.set ?? card.card?.raw_data,
-  });
 
 function groupLatestTwoSnapshots(rows: any[]) {
   const grouped = new Map<string, any[]>();
@@ -233,13 +202,11 @@ async function fetchPreviews(cardIds: string[]) {
 async function executeMarketSnapshotRowsQuery({
   since,
   before,
-  cardIds,
   ascending = false,
   limit = 12000,
 }: {
   since: string;
   before?: string | null;
-  cardIds?: string[];
   ascending?: boolean;
   limit?: number;
 }): Promise<any[]> {
@@ -250,15 +217,8 @@ async function executeMarketSnapshotRowsQuery({
     return Number.isFinite(timestamp) && timestamp >= lowerBound && timestamp < upperBound;
   };
 
-  if (cardIds?.length) {
-    const snapshots = await fetchStackrPriceSnapshots(cardIds);
-    return cardIds.flatMap((cardId) => {
-      const snapshot = snapshots.get(cardId);
-      if (!snapshot?.snapshot_at || !withinWindow(snapshot.snapshot_at)) return [];
-      return [{ card_id: cardId, tcg_mid: snapshot.market_central, snapshot_at: snapshot.snapshot_at }];
-    }).slice(0, limit);
-  }
-
+  // marketMovers exposes two stored valuation estimates. Do not substitute a
+  // current /price response here: it is one estimate, not price history.
   const response = await stackrApiClient.marketMovers({ productType: 'raw_card', currency: 'GBP', limit: Math.min(limit, 100) });
   const rows = response.data.movers.flatMap((mover) => {
     const cardId = mover.variantId;
@@ -303,52 +263,6 @@ async function fetchGeneralMarketSnapshotRows(since: string): Promise<any[]> {
 
   const fallbackRows = await fetchMarketSnapshotRows({ since, before: oldestLoadedAt, limit: 6000 });
   return [...latestRows, ...fallbackRows];
-}
-
-function buildHistoryRanges(
-  ownedUnits: OwnedCardUnit[],
-  ownedSnapshots: any[],
-  currentTotal: number
-): Record<RangeKey, HistoryPoint[]> {
-  const byDay = new Map<string, Map<string, number>>();
-  for (const row of ownedSnapshots) {
-    const value = getSnapshotValue(row);
-    if (value == null || !row.card_id || !row.snapshot_at) continue;
-    const day = String(row.snapshot_at).split('T')[0];
-    if (!byDay.has(day)) byDay.set(day, new Map());
-    byDay.get(day)!.set(row.card_id, value);
-  }
-
-  return Object.fromEntries(RANGES.map((item) => {
-    const latestById = new Map<string, number>();
-    const days = buildDayKeys(item.days);
-    const lastDay = days[days.length - 1];
-    let hasSeenRealSnapshot = false;
-
-    const points = days.flatMap((day): HistoryPoint[] => {
-      const dayPrices = byDay.get(day);
-      if (dayPrices) {
-        dayPrices.forEach((value, cardId) => latestById.set(cardId, value));
-        hasSeenRealSnapshot = true;
-      }
-
-      if (!hasSeenRealSnapshot && day !== lastDay) return [];
-
-      const value = day === lastDay
-        ? currentTotal
-        : ownedUnits.reduce((total, unit) => {
-          const snapshotValue = unit.ids
-            .map((id) => latestById.get(id))
-            .find((price) => typeof price === 'number');
-          const fallbackValue = unit.currentValue > 0 ? unit.currentValue : 0;
-          return total + (snapshotValue ?? fallbackValue) * unit.quantity;
-        }, 0);
-
-      return [{ day, value }];
-    });
-
-    return [item.key, points];
-  })) as Record<RangeKey, HistoryPoint[]>;
 }
 
 function getChartPath(points: HistoryPoint[], width: number, height: number) {
@@ -805,13 +719,17 @@ export default function ValueHistoryScreen() {
   const [generalMovers, setGeneralMovers] = useState<Mover[]>([]);
   const [personalMovers, setPersonalMovers] = useState<Mover[]>([]);
   const [trackedMarketCount, setTrackedMarketCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [generalLoading, setGeneralLoading] = useState(true);
+  const [collectionLoading, setCollectionLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [collectionError, setCollectionError] = useState<string | null>(null);
+  const [currentCollectionValue, setCurrentCollectionValue] = useState<number | null>(null);
+  const [collectionCoverage, setCollectionCoverage] = useState<string | null>(null);
 
   const activePoints = pointsByRange[range];
   const first = activePoints[0]?.value ?? 0;
-  const latest = activePoints[activePoints.length - 1]?.value ?? 0;
+  const latest = activePoints[activePoints.length - 1]?.value ?? currentCollectionValue ?? 0;
   const change = latest - first;
   const percent = first > 0 ? (change / first) * 100 : 0;
   const positive = change >= 0;
@@ -836,23 +754,23 @@ export default function ValueHistoryScreen() {
     [generalLosers, generalRisers, moverDisplayMode]
   );
   const latestMarketDirection = latestMarketLead?.change ?? 0;
-  const generalMarketStatus: AsyncStatus = loading
+  const generalMarketStatus: AsyncStatus = generalLoading
     ? 'loading'
-    : error
+    : generalError
       ? 'error'
       : generalRisers.length || generalLosers.length
         ? 'ready'
         : 'empty';
-  const personalMarketStatus: AsyncStatus = loading
+  const personalMarketStatus: AsyncStatus = collectionLoading
     ? 'loading'
-    : error
+    : collectionError
       ? 'error'
       : personalRisers.length || personalLosers.length
         ? 'ready'
         : 'empty';
-  const historyStatus: AsyncStatus = loading
+  const historyStatus: AsyncStatus = collectionLoading
     ? 'loading'
-    : error
+    : collectionError
       ? 'error'
       : activePoints.length === 0
         ? 'empty'
@@ -862,7 +780,7 @@ export default function ValueHistoryScreen() {
             ? 'unchanged'
             : 'ready';
   const historyStateCopy = historyStatus === 'empty'
-    ? 'No valuation snapshots yet.'
+    ? collectionCoverage ?? 'Price history is building. It appears after two comparable stored valuation estimates.'
     : historyStatus === 'single'
       ? 'One snapshot found. More are needed for a trend.'
       : historyStatus === 'unchanged'
@@ -870,130 +788,185 @@ export default function ValueHistoryScreen() {
         : null;
 
   const loadMarketScreen = useCallback(async (isRefresh = false) => {
-    try {
-      if (isRefresh) setRefreshing(true);
-      setLoading(!isRefresh);
-      setError(null);
+    if (isRefresh) setRefreshing(true);
+    setGeneralLoading(!isRefresh);
+    setCollectionLoading(!isRefresh);
+    setGeneralError(null);
+    setCollectionError(null);
 
+    const loadGeneralMarket = async () => {
       const marketSince = new Date();
       marketSince.setDate(marketSince.getDate() - 21);
+      try {
+        const marketRows = await fetchGeneralMarketSnapshotRows(marketSince.toISOString());
 
-      const [marketRows, binders] = await Promise.all([
-        fetchGeneralMarketSnapshotRows(marketSince.toISOString()),
-        fetchBinders(),
-      ]);
+        const groupedMarket = groupLatestTwoSnapshots(marketRows);
+        const marketCardIds = [...groupedMarket.keys()];
+        setTrackedMarketCount(marketCardIds.length);
+        const rawGeneralMovers = marketCardIds
+          .map((cardId) => buildMoverFromSnapshots(cardId, groupedMarket.get(cardId) ?? [], null, 1))
+          .filter((item): item is Mover => Boolean(item));
+        const rawGeneralCandidates = [
+          ...getTopMovers(rawGeneralMovers, 'up', 'money'),
+          ...getTopMovers(rawGeneralMovers, 'down', 'money'),
+          ...getTopMovers(rawGeneralMovers, 'up', 'percent'),
+          ...getTopMovers(rawGeneralMovers, 'down', 'percent'),
+        ].filter((item, index, list) => list.findIndex((candidate) => candidate.cardId === item.cardId) === index);
+        const marketPreviewMap = await fetchPreviews(rawGeneralCandidates.map((item) => item.cardId));
+        setGeneralMovers(rawGeneralCandidates.map((item) => {
+          const preview = marketPreviewMap.get(item.cardId);
+          return preview ? { ...item, name: preview.name, setId: preview.setId, setName: preview.setName, imageUrl: preview.imageUrl } : item;
+        }));
+      } catch (err) {
+        console.log('General market load failed', err);
+        setGeneralMovers([]);
+        setTrackedMarketCount(0);
+        setGeneralError('General market data is temporarily unavailable.');
+      } finally {
+        setGeneralLoading(false);
+      }
+    };
 
-      const groupedMarket = groupLatestTwoSnapshots(marketRows);
-      const marketCardIds = [...groupedMarket.keys()];
-      setTrackedMarketCount(marketCardIds.length);
-      const rawGeneralMovers = marketCardIds
-        .map((cardId) => buildMoverFromSnapshots(cardId, groupedMarket.get(cardId) ?? [], null, 1))
-        .filter((item): item is Mover => Boolean(item));
-      const rawGeneralCandidates = [
-        ...getTopMovers(rawGeneralMovers, 'up', 'money'),
-        ...getTopMovers(rawGeneralMovers, 'down', 'money'),
-        ...getTopMovers(rawGeneralMovers, 'up', 'percent'),
-        ...getTopMovers(rawGeneralMovers, 'down', 'percent'),
-      ].filter((item, index, list) => list.findIndex((candidate) => candidate.cardId === item.cardId) === index);
-      const marketPreviewMap = await fetchPreviews(rawGeneralCandidates.map((item) => item.cardId));
-      const hydrateMover = (item: Mover) => {
-        const preview = marketPreviewMap.get(item.cardId);
-        return preview
-          ? { ...item, name: preview.name, setId: preview.setId, setName: preview.setName, imageUrl: preview.imageUrl }
-          : item;
-      };
-      setGeneralMovers(rawGeneralCandidates.map(hydrateMover));
-
-      const cards = (await Promise.all(binders.map((binder) => fetchBinderCards(binder.id)))).flat();
-      const ownedByKey = new Map<string, OwnedCardUnit>();
-
-      for (const card of cards) {
-        const quantity = getOwnedQuantity(card);
-        if (!quantity) continue;
-
-        const key = `${card.set_id ?? ''}:${card.card_id}`;
-        const current = ownedByKey.get(key);
-        const currentValue = getCurrentCardValue(card);
-
-        if (!current) {
-          ownedByKey.set(key, {
+    const loadCollection = async () => {
+      try {
+        const [binders, canonicalOwnedRows] = await Promise.all([
+          fetchBinders(),
+          fetchOwnedCardRows().catch((error) => {
+            console.log('Canonical collection ownership load failed', error);
+            return [];
+          }),
+        ]);
+        const cardResults = await Promise.allSettled(binders.map((binder) => fetchBinderCards(binder.id)));
+        const cards = cardResults.flatMap((result) => result.status === 'fulfilled' ? result.value : []);
+        const bindersById = new Map<string, BinderRecord>(binders.map((binder) => [binder.id, binder]));
+        const cardsByIdentity = new Map<string, BinderCardRecord[]>();
+        for (const card of cards) {
+          const identity = `${card.set_id ?? ''}:${card.card_id}`;
+          cardsByIdentity.set(identity, [...(cardsByIdentity.get(identity) ?? []), card]);
+        }
+        const unanimousDefault = (
+          matchingBinders: BinderRecord[],
+          read: (binder: BinderRecord) => string | null | undefined,
+        ) => {
+          const values = [...new Set(matchingBinders
+            .map((binder) => String(read(binder) ?? '').trim())
+            .filter(Boolean))];
+          return values.length === 1 ? values[0] : null;
+        };
+        const canonicalIdentities = new Set(canonicalOwnedRows.map((row) => `${row.set_id}:${row.card_id}`));
+        const ownedUnits: OwnedCardUnit[] = canonicalOwnedRows.map((row) => {
+          const identity = `${row.set_id}:${row.card_id}`;
+          const matchingCards = cardsByIdentity.get(identity) ?? [];
+          const card = matchingCards[0] ?? null;
+          const matchingBinders = [...new Map(matchingCards
+            .map((candidate) => bindersById.get(candidate.binder_id))
+            .filter((binder): binder is BinderRecord => Boolean(binder))
+            .map((binder) => [binder.id, binder])).values()];
+          const explicitCondition = String(row.condition ?? '').trim() || null;
+          const explicitGradeCompany = String(row.grade_company ?? '').trim() || null;
+          const explicitGrade = String(row.grade ?? '').trim() || null;
+          const binderModes = [...new Set(matchingBinders.map((binder) => (
+            binder.card_mode === 'graded' ? 'graded' : 'raw'
+          )))];
+          const hasExplicitGradeIdentity = Boolean(explicitGradeCompany || explicitGrade);
+          const binderMode = binderModes.length === 1 ? binderModes[0] : null;
+          const productType = hasExplicitGradeIdentity || binderMode === 'graded'
+            ? 'graded_card' as const
+            : 'raw_card' as const;
+          const gradeCompany = explicitGradeCompany
+            ?? (productType === 'graded_card'
+              ? unanimousDefault(matchingBinders, (binder) => binder.default_grade_company)
+              : null);
+          const grade = explicitGrade
+            ?? (productType === 'graded_card'
+              ? unanimousDefault(matchingBinders, (binder) => binder.default_grade)
+              : null);
+          const condition = explicitCondition
+            ?? (productType === 'raw_card'
+              ? unanimousDefault(matchingBinders, (binder) => binder.default_condition)
+              : null);
+          return {
+            key: [identity, row.variant, row.condition ?? '', row.grade_company ?? '', row.grade ?? ''].join(':'),
             card,
+            cardId: row.card_id,
+            setId: row.set_id,
+            ids: [...new Set([card?.api_card_id, row.card_id].filter((value): value is string => Boolean(value)))],
+            quantity: Math.max(0, Number(row.quantity ?? 1)),
+            variant: row.variant || null,
+            condition,
+            gradeCompany,
+            grade,
+            productType,
+            identityExact: binderModes.length <= 1 || hasExplicitGradeIdentity,
+          };
+        });
+        const legacyIdentities = new Set<string>();
+        for (const card of cards) {
+          const identity = `${card.set_id ?? ''}:${card.card_id}`;
+          const quantity = getOwnedQuantity(card);
+          if (!quantity || canonicalIdentities.has(identity) || legacyIdentities.has(identity)) continue;
+          legacyIdentities.add(identity);
+          const binder = bindersById.get(card.binder_id) ?? null;
+          const gradeCompany = card.grade_company || binder?.default_grade_company || null;
+          const grade = card.grade || binder?.default_grade || null;
+          const productType = gradeCompany || grade || binder?.card_mode === 'graded'
+            ? 'graded_card' as const
+            : 'raw_card' as const;
+          ownedUnits.push({
+            key: `legacy:${identity}:${card.condition ?? ''}:${card.grade_company ?? ''}:${card.grade ?? ''}`,
+            card,
+            cardId: card.card_id,
+            setId: card.set_id,
             ids: getCardIds(card),
             quantity,
-            currentValue,
+            variant: binder?.edition ?? null,
+            condition: card.condition || binder?.default_condition || null,
+            gradeCompany,
+            grade,
+            productType,
+            identityExact: true,
           });
-          continue;
         }
-
-        current.quantity = Math.max(current.quantity, quantity);
-        current.currentValue = Math.max(current.currentValue, currentValue);
-        current.ids = [...new Set([...current.ids, ...getCardIds(card)])];
-      }
-
-      const ownedUnits = [...ownedByKey.values()];
-      const snapshotIds = [...new Set(ownedUnits.flatMap((unit) => unit.ids))];
-      const currentTotal = ownedUnits.reduce((total, unit) => total + unit.currentValue * unit.quantity, 0);
-
-      if (!snapshotIds.length) {
-        const empty = Object.fromEntries(RANGES.map((item) => [
-          item.key,
-          currentTotal > 0
-            ? (() => {
-              const days = buildDayKeys(item.days);
-              return [{ day: days[days.length - 1] ?? toDayKey(new Date()), value: currentTotal }];
-            })()
-            : [],
-        ])) as Record<RangeKey, HistoryPoint[]>;
-        setPointsByRange(empty);
+        const prices = await loadCollectionPrices(ownedUnits.map((unit) => ({
+          key: unit.key,
+          references: unit.identityExact ? unit.ids : [],
+          quantity: unit.quantity,
+          language: unit.card?.language,
+          setId: unit.card?.api_set_id ?? unit.setId,
+          variantCode: unit.variant,
+          productType: unit.productType,
+          condition: unit.condition,
+          grader: unit.gradeCompany,
+          grade: unit.grade,
+        })));
+        const summary = summariseCollectionPricing(prices.map((price) => ({
+          quantity: price.quantity,
+          centralValue: price.central,
+          evidenceStatus: price.status,
+          freshness: price.freshness,
+          calculatedAt: price.calculatedAt,
+          staleAfter: price.staleAfter,
+        })));
+        setCurrentCollectionValue(summary.total);
+        setCollectionCoverage(summary.total == null
+          ? 'No stored collection estimates are available yet.'
+          : summary.unpricedUnits > 0
+            ? `Known value covers ${summary.pricedUnits} of ${summary.totalUnits} cards. Price history is building.`
+            : 'Price history is building. It appears after two comparable stored valuation estimates.');
+        // /price is a current estimate and /price-history is sale/asking evidence.
+        // Neither can truthfully make a collection valuation chart by themselves.
+        setPointsByRange({ '7D': [], '30D': [], '6M': [], '12M': [] });
         setPersonalMovers([]);
-        return;
+      } catch (err) {
+        console.log('Collection pricing load failed', err);
+        setCollectionError('Your collection prices are temporarily unavailable.');
+      } finally {
+        setCollectionLoading(false);
       }
+    };
 
-      const since = new Date();
-      since.setDate(since.getDate() - 370);
-
-      const ownedSnapshots = await executeMarketSnapshotRowsQuery({
-        since: since.toISOString(),
-        cardIds: snapshotIds,
-        ascending: true,
-        limit: 10000,
-      });
-
-      const personalPreviewMap = new Map<string, CardPreview>();
-      for (const unit of ownedUnits) {
-        personalPreviewMap.set(unit.card.card_id, {
-          name: getCardName(unit.card),
-          setId: unit.card.set_id ?? unit.card.api_set_id ?? unit.card.card?.set?.id ?? unit.card.card?.raw_data?.set?.id ?? null,
-          setName: getCardSetName(unit.card),
-          imageUrl: getCardImageUrl(unit.card),
-        });
-      }
-
-      const latestOwnedRows = [...(ownedSnapshots ?? [])].sort(
-        (a, b) => new Date(b.snapshot_at).getTime() - new Date(a.snapshot_at).getTime()
-      );
-      const groupedOwnedSnapshots = groupLatestTwoSnapshots(latestOwnedRows);
-      const nextPersonalMovers = ownedUnits
-        .map((unit) => {
-          const snapshots = unit.ids
-            .flatMap((id) => groupedOwnedSnapshots.get(id) ?? [])
-            .sort((a, b) => new Date(b.snapshot_at).getTime() - new Date(a.snapshot_at).getTime());
-          return buildMoverFromSnapshots(
-            unit.card.card_id,
-            snapshots,
-            personalPreviewMap.get(unit.card.card_id),
-            unit.quantity
-          );
-        })
-        .filter((item): item is Mover => Boolean(item));
-      setPersonalMovers(nextPersonalMovers);
-
-      setPointsByRange(buildHistoryRanges(ownedUnits, ownedSnapshots ?? [], currentTotal));
-    } catch (err) {
-      console.log('Market movement load failed', err);
-      setError('Could not load market movement.');
-    } finally {
-      setLoading(false);
+    await Promise.all([loadGeneralMarket(), loadCollection()]);
+    if (isRefresh) {
       setRefreshing(false);
     }
   }, []);
@@ -1073,18 +1046,7 @@ export default function ValueHistoryScreen() {
           </View>
         </View>
 
-        {loading ? (
-          <View style={[styles.loadingCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <ActivityIndicator color={theme.colors.primary} />
-            <Text style={[styles.loadingText, { color: theme.colors.textSoft }]}>Loading market movement...</Text>
-          </View>
-        ) : error ? (
-          <View style={[styles.loadingCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Ionicons name="alert-circle-outline" size={24} color="#EF4444" />
-            <Text style={[styles.loadingText, { color: theme.colors.textSoft }]}>{error}</Text>
-          </View>
-        ) : (
-          <>
+        <>
             <SectionCard
               eyebrow="GENERAL MARKET"
               title="General market"
@@ -1092,30 +1054,34 @@ export default function ValueHistoryScreen() {
               variant="open"
             >
               <MoverDisplayToggle value={moverDisplayMode} onChange={setMoverDisplayMode} />
-              {generalMarketStatus === 'ready' ? (
+              {generalMarketStatus === 'loading' ? (
+                <View style={styles.inlineLoading}><ActivityIndicator color={theme.colors.primary} /></View>
+              ) : generalMarketStatus === 'ready' ? (
                 <View style={styles.moverColumns}>
                   <MoverColumn title="Risers" items={generalRisers} direction="up" displayMode={moverDisplayMode} />
                   <MoverColumn title="Fallers" items={generalLosers} direction="down" displayMode={moverDisplayMode} />
                 </View>
               ) : (
-                <EmptyMovers message={trackedMarketCount > 0 ? 'No meaningful movers in the latest snapshots.' : 'No market-wide snapshots yet.'} />
+                <EmptyMovers message={generalError ?? (trackedMarketCount > 0 ? 'No meaningful movers in the latest stored estimates.' : 'No market-wide valuation estimates yet.')} />
               )}
             </SectionCard>
 
             <SectionCard
               eyebrow="YOUR COLLECTION"
-              title="My collection"
-              subtitle={`Owned cards by ${moverDisplayMode === 'money' ? 'cash change' : 'percentage change'}.`}
+              title="Collection movers"
+              subtitle="Building from comparable stored estimates. A single refresh is never presented as movement."
               variant="open"
             >
               <MoverDisplayToggle value={moverDisplayMode} onChange={setMoverDisplayMode} />
-              {personalMarketStatus === 'ready' ? (
+              {personalMarketStatus === 'loading' ? (
+                <View style={styles.inlineLoading}><ActivityIndicator color={theme.colors.primary} /></View>
+              ) : personalMarketStatus === 'ready' ? (
                 <View style={styles.moverColumns}>
                   <MoverColumn title="Risers" items={personalRisers} direction="up" displayMode={moverDisplayMode} personal />
                   <MoverColumn title="Fallers" items={personalLosers} direction="down" displayMode={moverDisplayMode} personal />
                 </View>
               ) : (
-                <EmptyMovers message="No personal movers yet. Two snapshots are needed." />
+                <EmptyMovers message={collectionError ?? 'Collection movers will appear after two comparable stored estimates.'} />
               )}
             </SectionCard>
 
@@ -1124,10 +1090,14 @@ export default function ValueHistoryScreen() {
               title="Collection history"
               subtitle="A separate trend view for your owned cards."
             >
-              <Text style={[styles.historyValue, { color: theme.colors.text }]}>{formatMoney(latest)}</Text>
-              <Text style={[styles.historyChange, { color: positive ? '#10B981' : '#EF4444' }]}>
-                {formatSignedMoney(change)} ({formatPercent(percent)}) over {RANGES.find((item) => item.key === range)?.label}
+              <Text style={[styles.historyValue, { color: theme.colors.text }]}>
+                {currentCollectionValue == null ? '--' : formatMoney(currentCollectionValue)}
               </Text>
+              {historyStatus === 'ready' ? (
+                <Text style={[styles.historyChange, { color: positive ? '#10B981' : '#EF4444' }]}>
+                  {formatSignedMoney(change)} ({formatPercent(percent)}) over {RANGES.find((item) => item.key === range)?.label}
+                </Text>
+              ) : null}
               {historyStateCopy ? (
                 <Text style={[styles.historyStateCopy, { color: theme.colors.textSoft }]}>{historyStateCopy}</Text>
               ) : null}
@@ -1154,14 +1124,15 @@ export default function ValueHistoryScreen() {
                 })}
               </View>
 
-              {historyStatus === 'empty' ? (
-                <EmptyMovers message="No valuation snapshots for this range yet." />
+              {historyStatus === 'loading' ? (
+                <View style={styles.inlineLoading}><ActivityIndicator color={theme.colors.primary} /></View>
+              ) : historyStatus !== 'ready' && historyStatus !== 'unchanged' ? (
+                <EmptyMovers message={collectionError ?? 'Price history is building. It appears after two comparable stored valuation estimates.'} />
               ) : (
                 <ValueHistoryChart points={activePoints} />
               )}
             </SectionCard>
-          </>
-        )}
+        </>
       </ScrollView>
     </SafeAreaView>
   );
@@ -1542,6 +1513,11 @@ const styles = StyleSheet.create({
     ...typeScale.support,
     marginTop: 10,
     textAlign: 'center',
+  },
+  inlineLoading: {
+    minHeight: 92,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   historyValue: {
     ...typeScale.heroValue,

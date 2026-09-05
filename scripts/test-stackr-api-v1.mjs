@@ -223,6 +223,21 @@ async function assertAssetManifestServerClientIsolation() {
     'the asset client must never fall back to a public Supabase key',
   );
 
+  const adminStart = route.indexOf('function getSupabaseAdmin()');
+  const adminEnd = route.indexOf('\nfunction createApiSchemaFetch()', adminStart);
+  assert.ok(adminStart >= 0 && adminEnd > adminStart, 'admin Supabase client is missing');
+  const adminClient = route.slice(adminStart, adminEnd);
+  assert.match(
+    adminClient,
+    /getSupabaseServerKeyCandidate\(\)/,
+    'protected pricing views must use the server-only Supabase key selector',
+  );
+  assert.doesNotMatch(
+    adminClient,
+    /getSupabaseKeyCandidate\(\)/,
+    'protected pricing views must never fall back to a public Supabase key',
+  );
+
   const defaultServiceStart = route.indexOf('function defaultService()');
   const defaultServiceEnd = route.indexOf('\nfunction defaultPricingService()', defaultServiceStart);
   assert.ok(defaultServiceStart >= 0 && defaultServiceEnd > defaultServiceStart, 'default v1 service wiring is missing');
