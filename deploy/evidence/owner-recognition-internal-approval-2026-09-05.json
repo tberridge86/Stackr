@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "stackr-owner-recognition-approval-v1",
+  "date": "2026-09-05",
+  "status": "approved_for_owner_only_implementation_and_deployment",
+  "approvingParty": "Stackr owner, by written instruction in this Codex task",
+  "recordBasis": "User requested full recognition inside an app accessible only to them, explicitly approved proceeding and updating the internal rules.",
+  "scope": ["production-configured private app", "server-verified owner-only SigLIP FP32 recognition", "own physical-card capture and private labels", "metadata-only operational telemetry"],
+  "modelVersion": "siglip2_vision_256_768",
+  "modelSha256": "f01886dd1d66979f44125db8f482639c9c32cf27d4cc3baa6f1b7d55d2d198d7",
+  "automaticAcceptance": false,
+  "autoAdd": false,
+  "publicRecognitionRollout": false,
+  "automaticTrainingReuse": false,
+  "thirdPartyPermissionGrantedByThisRecord": false,
+  "technicalDeploymentVerified": false,
+  "realDeviceValidationCompleted": false,
+  "supersedes": "Pending internal amber/staging-only activation restrictions only for the specified owner-only evaluation. Does not rewrite earlier evidence or source permissions."
+}

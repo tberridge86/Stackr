@@ -49,6 +49,16 @@ Comparable services including eBay, Rare Candy, HoloDex, Collectr, PokePulse, Po
 
 ## Permission matrix
 
+### Owner-only recognition evaluation: standing internal approval (5 September 2026)
+
+The owner's written instructions in the Stackr Codex task on 5 September 2026 approve implementing and deploying private recognition for their own signed-in account in a production-configured app. This section records that internal decision now; it is not pending a second amber form, a staging-only review, or another confirmation phrase. It supersedes earlier internal records that prohibit activation solely because that private-evaluation review is pending. Historical records remain unchanged.
+
+Within this scope, work may proceed with the existing pinned SigLIP FP32 baseline, its documented non-reconstructive reference gallery, authenticated matching of the owner's own physical-card photographs, private capture/label collection, diagnostics, and an owner-distributed app build. Existing production infrastructure may be used; a separate staging environment is not required. Model processing may run on the private server while native inference is completed. The app must accurately disclose which route it uses.
+
+Owner access is enforced by server-verified identity and an explicit owner allowlist, not by an admin label, build-link secrecy, or a client feature flag. Automatic acceptance and auto-add remain off. Recognition photographs are transient unless the owner explicitly saves a capture to their private dataset; saved captures have deletion controls and are not automatically used for training or public catalogue artwork. Real-device accuracy and performance must be measured, not inferred from synthetic benchmarks.
+
+This is an internal approval for the specified personal evaluation, not a claim that personal use grants additional third-party rights. It does not expand source access, permit prohibited scraping, expose a public image corpus, or approve a general commercial recognition rollout. Ordinary technical verification and account isolation still apply.
+
 ### Green: development may proceed
 
 The following work is internally approved, subject to ordinary security, privacy, quality, and deployment controls:

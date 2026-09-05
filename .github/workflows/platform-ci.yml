@@ -52,6 +52,7 @@ jobs:
       - run: npm run test:asset-pipeline
       - run: npm run test:asset-repair
       - run: npm run test:recognition-orchestrator
+      - run: npm run test:owner-recognition
       - run: npx tsx scripts/test-haptics.ts
       - run: npm run test:scanner-calibration
       - run: npm run test:scanner-pipeline

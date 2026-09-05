@@ -83,7 +83,11 @@ recognition-service/
 supabase/
 deploy/
 docs/
-scripts/
+# Metro loads these two runtime helpers even during native bundling.
+# Ignore directory contents so exact file exceptions can take effect.
+scripts/*
+!scripts/stackr-preview-proxy-policy.cjs
+!scripts/stackr-preview-proxy-worker.cjs
 .github/
 ml/
 data/
