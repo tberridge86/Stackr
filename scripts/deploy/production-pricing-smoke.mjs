@@ -136,7 +136,9 @@ export async function runProductionPricingSmoke({
       key: 'health',
       path: '/v1/health',
       inspectData(data) {
-        if (data.ok !== true) throw new Error('health payload was not ready');
+        if (data.status !== 'ok' || data.apiVersion !== '1') {
+          throw new Error('health payload was not ready');
+        }
       },
     },
     {
