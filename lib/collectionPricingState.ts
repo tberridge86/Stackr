@@ -112,6 +112,47 @@ export function getCollectionPriceHistoryState(points: readonly number[] | null 
   return finitePointCount >= 2 ? 'ready' : 'building';
 }
 
+export type CollectionValueRead = {
+  capturedAt: string;
+  total: number;
+  totalUnits: number;
+  pricedUnits: number;
+  identitySignature: string;
+};
+
+/**
+ * Keeps only real, successful collection-total reads whose exact owned-unit
+ * identity and coverage match the present collection. No missing interval is
+ * filled, so the UI can honestly remain in "History building" state.
+ */
+export function getComparableCollectionValueReads(
+  reads: readonly CollectionValueRead[] | null | undefined,
+  current: Pick<CollectionValueRead, 'totalUnits' | 'pricedUnits' | 'identitySignature'>,
+  rangeDays: 7 | 30,
+  now: number = Date.now(),
+): number[] {
+  const cutoff = now - rangeDays * 24 * 60 * 60 * 1000;
+  const seenAt = new Set<string>();
+  const values = (reads ?? [])
+    .map((read) => ({ ...read, timestamp: Date.parse(read.capturedAt) }))
+    .filter((read) => (
+      Number.isFinite(read.timestamp)
+      && read.timestamp >= cutoff
+      && read.timestamp <= now
+      && Number.isFinite(read.total)
+      && read.totalUnits === current.totalUnits
+      && read.pricedUnits === current.pricedUnits
+      && read.identitySignature === current.identitySignature
+    ))
+    .sort((left, right) => left.timestamp - right.timestamp)
+    .flatMap((read) => {
+      if (seenAt.has(read.capturedAt)) return [];
+      seenAt.add(read.capturedAt);
+      return [read.total];
+    });
+  return values.length >= 2 ? values : [];
+}
+
 export function getCollectionPriceCoverageLabel(summary: Pick<CollectionPricingSummary, 'state' | 'pricedUnits' | 'totalUnits' | 'staleUnits'>) {
   if (summary.state === 'empty') return 'No cards tracked';
   if (summary.state === 'unavailable') return 'No stored market estimates yet';

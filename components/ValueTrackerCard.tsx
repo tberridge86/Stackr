@@ -538,7 +538,7 @@ export function ValueTrackerCard({
             <View style={[styles.vaultChangeBadge, isCompactLayout && styles.vaultChangeBadgeCompact, { backgroundColor: changeBackground }]}>
               <ValueMovement
                 icon={changeIcon}
-                amount={`${formatSignedCurrency(displayChange, currency)} today`}
+                amount={`${formatSignedCurrency(displayChange, currency)} ${changePeriodLabel}`}
                 percentage={`${formatSignedPercent(displayPercent)} ${changePeriodLabel}`}
                 accentColor={changeColor}
                 metaColor={theme.colors.textSoft}

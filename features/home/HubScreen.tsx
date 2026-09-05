@@ -73,7 +73,9 @@ import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackr
 import { loadCollectionPrices, type CollectionPriceResult } from '../../lib/collectionPricingApi';
 import {
   getCollectionPriceCoverageLabel,
+  getComparableCollectionValueReads,
   summariseCollectionPricing,
+  type CollectionValueRead,
   type CollectionPricingSummary,
 } from '../../lib/collectionPricingState';
 import { sanitizeMarketplaceCondition } from '../../lib/marketplacePresentation';
@@ -133,6 +135,7 @@ type HomeCollectionCacheSnapshot = {
   mintyDataRefreshedAt?: string | null;
   chartRange: ChartRange;
   chartData: number[];
+  collectionValueReads?: CollectionValueRead[];
   collectionTotal: number | null;
   collectionPricingSummary: CollectionPricingSummary;
   collectionChangeAmount: number;
@@ -152,6 +155,7 @@ const EMPTY_COLLECTION_PRICING: CollectionPricingSummary = {
   latestCalculatedAt: null,
   state: 'empty',
 };
+const MAX_COLLECTION_VALUE_READS = 4_000;
 
 // ===============================
 // CONSTANTS
@@ -508,6 +512,11 @@ const pricingSummaryForResults = (results: CollectionPriceResult[]) => summarise
   })),
 );
 
+const collectionIdentitySignature = (results: CollectionPriceResult[]) => results
+  .map((result) => `${result.key}:${result.variantId ?? 'unresolved'}:${result.quantity}`)
+  .sort()
+  .join('|');
+
 const applyHomeBinderPrices = (
   summaries: HomeBinderSummary[],
   units: HomeOwnedPricingUnit[],
@@ -735,6 +744,7 @@ export default function HubScreen() {
 
   const hasLoadedCollectionValueRef = useRef(false);
   const hasSuccessfulCollectionPricingRef = useRef(false);
+  const collectionValueReadsRef = useRef<CollectionValueRead[]>([]);
   const cachedHomeSnapshotUserIdRef = useRef<string | null>(null);
   const homeSessionUserIdRef = useRef<string | null>(null);
   const homeCollectionRequestRef = useRef(0);
@@ -1116,6 +1126,7 @@ export default function HubScreen() {
         setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
         setMissingCards([]);
         setChartData([]);
+        collectionValueReadsRef.current = [];
         setMintyDataRefreshedAt(null);
         setChaseCards([]);
         setRecentActivity([]);
@@ -1162,6 +1173,9 @@ export default function HubScreen() {
       setDuplicateSummary(snapshot.duplicateSummary ?? EMPTY_DUPLICATE_SUMMARY);
       setMissingCards(Array.isArray(snapshot.missingCards) ? snapshot.missingCards : []);
       setMintyDataRefreshedAt(snapshot.mintyDataRefreshedAt ?? null);
+      collectionValueReadsRef.current = Array.isArray(snapshot.collectionValueReads)
+        ? snapshot.collectionValueReads.slice(-MAX_COLLECTION_VALUE_READS)
+        : [];
       setChartData([]);
       hasLoadedCollectionValueRef.current = true;
       hasSuccessfulCollectionPricingRef.current = snapshot.collectionTotal != null;
@@ -1301,6 +1315,30 @@ export default function HubScreen() {
         ? await loadCollectionPrices(ownedUnits.map(pricingInputForHomeUnit))
         : [];
       const nextPricingSummary = pricingSummaryForResults(priceResults);
+      const currentValueRead: CollectionValueRead | null = (
+        nextPricingSummary.state === 'fresh'
+        && nextPricingSummary.total != null
+        && priceResults.length === ownedUnits.length
+      ) ? {
+        capturedAt: new Date().toISOString(),
+        total: nextPricingSummary.total,
+        totalUnits: nextPricingSummary.totalUnits,
+        pricedUnits: nextPricingSummary.pricedUnits,
+        identitySignature: collectionIdentitySignature(priceResults),
+      } : null;
+      const nextValueReads = currentValueRead
+        ? [...collectionValueReadsRef.current, currentValueRead].slice(-MAX_COLLECTION_VALUE_READS)
+        : collectionValueReadsRef.current;
+      const nextChartData = currentValueRead
+        ? getComparableCollectionValueReads(nextValueReads, currentValueRead, chartRange === '7D' ? 7 : 30)
+        : [];
+      const chartChange = nextChartData.length >= 2
+        ? nextChartData[nextChartData.length - 1] - nextChartData[0]
+        : 0;
+      const chartStart = nextChartData[0] ?? null;
+      const chartChangePercent = chartStart != null && chartStart !== 0
+        ? (chartChange / chartStart) * 100
+        : 0;
       const pricedBinderSummaries = applyHomeBinderPrices(binderSummaries, ownedUnits, priceResults);
       const nextPricedActiveBinder = selectActiveBinder(pricedBinderSummaries);
       nextDuplicateSummary = applyHomeDuplicatePrices(nextDuplicateSummary, ownedUnits, priceResults);
@@ -1329,9 +1367,10 @@ export default function HubScreen() {
       setCollectionTotal(nextPricingSummary.total);
       setCollectionPricingSummary(nextPricingSummary);
       setCollectionPricingWarning(pricingWarning);
-      setCollectionChangeAmount(0);
-      setCollectionChangePercent(0);
-      setChartData([]);
+      setCollectionChangeAmount(chartChange);
+      setCollectionChangePercent(chartChangePercent);
+      setChartData(nextChartData);
+      collectionValueReadsRef.current = nextValueReads;
       setMintyDataRefreshedAt(refreshedAt);
       setCollectionValueError(null);
       cachedHomeSnapshotUserIdRef.current = trustedUserId;
@@ -1341,11 +1380,12 @@ export default function HubScreen() {
         pricingContractVersion: 2,
         mintyDataRefreshedAt: refreshedAt,
         chartRange,
-        chartData: [],
+        chartData: nextChartData,
+        collectionValueReads: nextValueReads,
         collectionTotal: nextPricingSummary.total,
         collectionPricingSummary: nextPricingSummary,
-        collectionChangeAmount: 0,
-        collectionChangePercent: 0,
+        collectionChangeAmount: chartChange,
+        collectionChangePercent: chartChangePercent,
         ownedCardCount: ownedUnitCount,
         activeBinder: nextPricedActiveBinder,
         duplicateSummary: nextDuplicateSummary,
@@ -1356,8 +1396,8 @@ export default function HubScreen() {
         refreshMintyForMarketSignature(buildMintyRefreshSignature({
           chartRange,
           total: nextPricingSummary.total,
-          change: 0,
-          percent: 0,
+          change: chartChange,
+          percent: chartChangePercent,
           ownedCount: ownedUnitCount,
           activeBinder: nextPricedActiveBinder,
           duplicateCount: nextDuplicateSummary.count,
@@ -1365,7 +1405,6 @@ export default function HubScreen() {
         }));
       }
 
-      /* Price history remains empty until the API exposes comparable valuation-estimate snapshots. */
       return;
 
     } catch (error) {
@@ -1399,9 +1438,25 @@ export default function HubScreen() {
 
   const loadCollectionValueRef = useRef(loadCollectionValue);
 
+  const handleChartRangeChange = useCallback((nextRange: ChartRange) => {
+    if (nextRange === chartRange) return;
+    homeCollectionRequestRef.current += 1;
+    setChartData([]);
+    setCollectionChangeAmount(0);
+    setCollectionChangePercent(0);
+    setChartRange(nextRange);
+  }, [chartRange]);
+
   useEffect(() => {
     loadCollectionValueRef.current = loadCollectionValue;
   }, [loadCollectionValue]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      void loadCollectionValueRef.current();
+    }, 3 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const loadChaseCards = useCallback(async () => {
     const requestId = ++homeChaseRequestRef.current;
@@ -1716,6 +1771,7 @@ export default function HubScreen() {
       cachedHomeSnapshotUserIdRef.current = null;
       hasLoadedCollectionValueRef.current = false;
       hasSuccessfulCollectionPricingRef.current = false;
+      collectionValueReadsRef.current = [];
       mintyMarketSignatureRef.current = null;
 
       setCollectionTotal(null);
@@ -2104,10 +2160,10 @@ export default function HubScreen() {
             currency="GBP"
             percentageChange={collectionChangePercent}
             absoluteChange={collectionChangeAmount}
-            changePeriodLabel="Today"
+            changePeriodLabel={chartRange}
             trendData={chartData}
             trendRange={chartRange}
-            onTrendRangeChange={setChartRange}
+            onTrendRangeChange={handleChartRangeChange}
             ownedCount={ownedCardCount}
             pricingState={collectionPricingSummary.state}
             pricingCoverageLabel={getCollectionPriceCoverageLabel(collectionPricingSummary)}

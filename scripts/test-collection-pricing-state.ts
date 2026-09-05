@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  getComparableCollectionValueReads,
   getCollectionPriceCoverageLabel,
   getCollectionPriceHistoryState,
   summariseCollectionPricing,
@@ -64,5 +65,18 @@ assert.equal(unknownFreshness.state, 'stale', 'Unknown freshness must not be pre
 assert.equal(getCollectionPriceHistoryState([]), 'building');
 assert.equal(getCollectionPriceHistoryState([Number.NaN, 4]), 'building');
 assert.equal(getCollectionPriceHistoryState([0, 4]), 'ready');
+
+const comparableReads = getComparableCollectionValueReads([
+  { capturedAt: '2026-09-05T10:00:00.000Z', total: 13, totalUnits: 3, pricedUnits: 3, identitySignature: 'owned-a' },
+  { capturedAt: '2026-09-05T10:03:00.000Z', total: 16, totalUnits: 3, pricedUnits: 3, identitySignature: 'owned-a' },
+  { capturedAt: '2026-09-05T10:06:00.000Z', total: 19, totalUnits: 4, pricedUnits: 4, identitySignature: 'owned-b' },
+  { capturedAt: '2026-09-05T12:03:00.000Z', total: 99, totalUnits: 3, pricedUnits: 3, identitySignature: 'owned-a' },
+], { totalUnits: 3, pricedUnits: 3, identitySignature: 'owned-a' }, 7, now);
+assert.deepEqual(comparableReads, [13, 16], 'Only in-range reads with identical owned-unit signatures and complete coverage may form the chart.');
+
+const sparseReads = getComparableCollectionValueReads([
+  { capturedAt: '2026-09-05T10:00:00.000Z', total: 13, totalUnits: 3, pricedUnits: 3, identitySignature: 'owned-a' },
+], { totalUnits: 3, pricedUnits: 3, identitySignature: 'owned-a' }, 7, now);
+assert.deepEqual(sparseReads, [], 'One real read must remain History building.');
 
 console.log('Collection pricing state tests passed');
