@@ -8,11 +8,23 @@ on:
         required: true
         type: string
       release_scope:
-        description: Promote catalogue assets only, launch the catalogue API, or release the full platform after recognition approval
+        description: Deploy backend code only, promote catalogue assets, launch the catalogue API, or release the full platform after recognition approval
         required: true
         default: catalogue_assets
         type: choice
-        options: [catalogue_assets, catalogue_api, full_platform]
+        options: [backend_only, catalogue_assets, catalogue_api, full_platform]
+      expected_main_sha:
+        description: Exact 40-character main SHA approved for a backend-only deployment
+        required: false
+        type: string
+      previous_backend_deployment_id:
+        description: Known-good production backend deployment ID for automatic rollback
+        required: false
+        type: string
+      pricing_smoke_variant_id:
+        description: Canonical variant UUID used for read-only price smoke probes
+        required: false
+        type: string
       gateway_bootstrap:
         description: First release only - create the production Worker at 100 percent
         required: true
@@ -80,8 +92,217 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  backend_only:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope == 'backend_only'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    env:
+      STACKR_DEPLOYMENT_ENVIRONMENT: production
+      STACKR_DEPLOYMENT_SCOPE: backend_only
+      STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      STACKR_PRICING_SMOKE_VARIANT_ID: ${{ inputs.pricing_smoke_variant_id }}
+      PREVIOUS_BACKEND_DEPLOYMENT_ID: ${{ inputs.previous_backend_deployment_id }}
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      STACKR_BACKEND_URL: ${{ vars.STACKR_BACKEND_URL }}
+      STACKR_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL }}
+      BACKEND_ORIGIN_KEY: ${{ secrets.BACKEND_ORIGIN_KEY }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+
+      - name: Validate exact backend-only production release
+        shell: bash
+        env:
+          GATEWAY_BOOTSTRAP: ${{ inputs.gateway_bootstrap }}
+          APPLY_MIGRATIONS: ${{ inputs.apply_migrations }}
+          PUBLISH_MOBILE_UPDATE: ${{ inputs.publish_mobile_update }}
+          PROMOTE_GATEWAY: ${{ inputs.promote_gateway }}
+          PREVIOUS_GATEWAY_TAG: ${{ inputs.previous_gateway_tag }}
+          PREVIOUS_RECOGNITION_DEPLOYMENT_ID: ${{ inputs.previous_recognition_deployment_id }}
+          PREVIOUS_CATALOGUE_VERSION_ID: ${{ inputs.previous_catalogue_version_id }}
+          PREVIOUS_INDEX_VERSION_ID: ${{ inputs.previous_index_version_id }}
+          CATALOGUE_VERSION_ID: ${{ inputs.catalogue_version_id }}
+          CATALOGUE_RELEASE_LABEL: ${{ inputs.catalogue_release_label }}
+          INDEX_VERSION_ID: ${{ inputs.index_version_id }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+          if ! [[ "$STACKR_EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo 'Backend-only deployment requires a lowercase 40-character expected_main_sha.' >&2
+            exit 1
+          fi
+          if [ "$STACKR_EXPECTED_MAIN_SHA" != "$GITHUB_SHA" ]; then
+            echo 'expected_main_sha does not match the exact main revision selected for this run.' >&2
+            exit 1
+          fi
+          if [ -z "$PREVIOUS_BACKEND_DEPLOYMENT_ID" ]; then
+            echo 'Backend-only deployment requires previous_backend_deployment_id.' >&2
+            exit 1
+          fi
+          if ! [[ "$STACKR_PRICING_SMOKE_VARIANT_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]; then
+            echo 'Backend-only deployment requires a canonical pricing_smoke_variant_id UUID.' >&2
+            exit 1
+          fi
+          for value in "$GATEWAY_BOOTSTRAP" "$APPLY_MIGRATIONS" "$PUBLISH_MOBILE_UPDATE" "$PROMOTE_GATEWAY"; do
+            if [ "$value" != 'false' ]; then
+              echo 'Backend-only deployment forbids gateway, migration, and mobile controls.' >&2
+              exit 1
+            fi
+          done
+          for value in "$PREVIOUS_GATEWAY_TAG" "$PREVIOUS_RECOGNITION_DEPLOYMENT_ID" "$PREVIOUS_CATALOGUE_VERSION_ID" "$PREVIOUS_INDEX_VERSION_ID" "$CATALOGUE_VERSION_ID" "$CATALOGUE_RELEASE_LABEL" "$INDEX_VERSION_ID"; do
+            if [ -n "$value" ]; then
+              echo 'Backend-only deployment forbids catalogue, gateway, and recognition identifiers.' >&2
+              exit 1
+            fi
+          done
+          for variable in RAILWAY_API_TOKEN RAILWAY_PROJECT_ID RAILWAY_ENVIRONMENT_ID RAILWAY_BACKEND_SERVICE_ID STACKR_BACKEND_URL STACKR_GATEWAY_URL BACKEND_ORIGIN_KEY; do
+            if [ -z "${!variable:-}" ]; then
+              echo "Backend-only deployment requires $variable." >&2
+              exit 1
+            fi
+          done
+          mkdir -p "$RUNNER_TEMP/stackr-production-backend-only"
+
+      - name: Install backend-only pinned dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+
+      - name: Scan backend-only release for secrets
+        run: |
+          npm run ci:secret-scan
+          npm run ci:secret-scan -- --history-range="HEAD^..HEAD"
+
+      - name: Re-run backend-only release checks
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run typecheck:backend
+          npm test --prefix backend
+          npm run test:stackr-api-v1
+          npm run test:collection-pricing-ui
+          npm run test:commerce-release-lock
+          node scripts/test-deployment-tooling.mjs
+          npm run test:production-pricing-smoke
+
+      - name: Validate known-good backend rollback target
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/deploy/railway-rollback.mjs \
+            --component=backend \
+            --deployment="$PREVIOUS_BACKEND_DEPLOYMENT_ID" \
+            --verify-only \
+            | tee "$RUNNER_TEMP/stackr-production-backend-only/rollback-target.json"
+
+      - name: Deploy backend code only
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'STACKR_BACKEND_DEPLOY_ATTEMPTED=true' >> "$GITHUB_ENV"
+          SOURCE_COMMIT_PATH="$GITHUB_WORKSPACE/backend/.stackr-source-commit" node -e 'const fs=require("node:fs"); const sha=String(process.env.GITHUB_SHA ?? "").trim(); if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error("GITHUB_SHA is not a full lowercase Git SHA."); fs.writeFileSync(process.env.SOURCE_COMMIT_PATH, `${sha}\n`, { encoding: "utf8", mode: 0o444 });'
+          railway_up_result="$RUNNER_TEMP/stackr-production-backend-only/railway-up.json"
+          npx --yes @railway/cli@5.30.1 up "$GITHUB_WORKSPACE/backend" --detach --yes --json \
+            --message "Stackr backend-only $GITHUB_SHA" \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            | tee "$railway_up_result"
+
+          railway_deployment_id="$(
+            node -e 'const fs=require("node:fs"); const value=fs.readFileSync(process.argv[1], "utf8").trim(); const result=JSON.parse(value); if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.deploymentId ?? "")) throw new Error("Railway up did not return a canonical deployment ID."); process.stdout.write(result.deploymentId);' "$railway_up_result"
+          )"
+          railway_deployment_status='QUEUED'
+
+          if [ "$railway_deployment_id" = "$PREVIOUS_BACKEND_DEPLOYMENT_ID" ]; then
+            echo 'Railway did not create a new backend deployment.' >&2
+            exit 1
+          fi
+
+          railway_deadline=$((SECONDS + 900))
+          while [ "$railway_deployment_status" != 'SUCCESS' ]; do
+            case "$railway_deployment_status" in
+              FAILED|CRASHED|REMOVED|REMOVING|SKIPPED|SLEEPING|NEEDS_APPROVAL|CANCELED|CANCELLED)
+                echo "Railway backend deployment ended with status $railway_deployment_status." >&2
+                exit 1
+                ;;
+            esac
+            if [ "$SECONDS" -ge "$railway_deadline" ]; then
+              echo 'Railway backend deployment did not become healthy within 15 minutes.' >&2
+              exit 1
+            fi
+            sleep 10
+            railway_deployment_status="$(
+              npx --yes @railway/cli@5.30.1 deployment list \
+                --project "$RAILWAY_PROJECT_ID" \
+                --environment "$RAILWAY_ENVIRONMENT_ID" \
+                --service "$RAILWAY_BACKEND_SERVICE_ID" \
+                --limit 1000 \
+                --json | \
+                RAILWAY_DEPLOYMENT_ID="$railway_deployment_id" node -e 'let value=""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const rows=JSON.parse(value); const row=Array.isArray(rows) ? rows.find(item => item?.id === process.env.RAILWAY_DEPLOYMENT_ID) : null; process.stdout.write(typeof row?.status === "string" ? row.status : "NOT_FOUND"); });'
+            )"
+          done
+
+          echo "STACKR_BACKEND_DEPLOYMENT_ID=$railway_deployment_id" >> "$GITHUB_ENV"
+          DEPLOYMENT_ID="$railway_deployment_id" DEPLOYMENT_STATUS="$railway_deployment_status" node -e 'const summary={ deploymentId: process.env.DEPLOYMENT_ID, status: process.env.DEPLOYMENT_STATUS, gitSha: process.env.GITHUB_SHA }; process.stdout.write(JSON.stringify(summary, null, 2));' \
+            > "$RUNNER_TEMP/stackr-production-backend-only/deployment.json"
+
+      - name: Smoke-test exact pricing reads through backend and gateway
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/deploy/production-pricing-smoke.mjs \
+            --backend="$STACKR_BACKEND_URL" \
+            --gateway="$STACKR_GATEWAY_URL" \
+            --variant-id="$STACKR_PRICING_SMOKE_VARIANT_ID" \
+            --expected-backend-commit="$STACKR_EXPECTED_MAIN_SHA" \
+            --expected-backend-deployment="$STACKR_BACKEND_DEPLOYMENT_ID" \
+            --backend-origin-key-env=BACKEND_ORIGIN_KEY \
+            | tee "$RUNNER_TEMP/stackr-production-backend-only/smoke.json"
+
+      - name: Roll back backend after a failed deployment or smoke check
+        if: failure() && env.STACKR_BACKEND_DEPLOY_ATTEMPTED == 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/deploy/railway-rollback.mjs \
+            --component=backend \
+            --deployment="$PREVIOUS_BACKEND_DEPLOYMENT_ID" \
+            | tee "$RUNNER_TEMP/stackr-production-backend-only/rollback.json"
+
+      - name: Scan backend-only deployment evidence
+        id: scan_backend_only_evidence
+        if: always()
+        continue-on-error: true
+        run: node scripts/deploy/secret-scan.mjs --directory="$RUNNER_TEMP/stackr-production-backend-only"
+
+      - name: Upload non-secret backend-only deployment evidence
+        if: always() && steps.scan_backend_only_evidence.outcome == 'success'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-backend-only-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/stackr-production-backend-only
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 9
+
   deploy:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION'
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope != 'backend_only'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     environment: production

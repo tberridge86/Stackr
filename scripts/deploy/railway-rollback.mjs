@@ -5,15 +5,19 @@ function argument(name) {
 
 const component = argument('component');
 const deploymentId = argument('deployment');
-if (component !== 'recognition') {
-  throw new Error('Railway catalogue-api rollback is source-locked while commerce containment is active.');
-}
+const verifyOnly = process.argv.includes('--verify-only');
+const serviceVariableByComponent = {
+  backend: 'RAILWAY_BACKEND_SERVICE_ID',
+  recognition: 'RAILWAY_RECOGNITION_SERVICE_ID',
+};
+const serviceVariable = serviceVariableByComponent[component];
+if (!serviceVariable) throw new Error('Railway rollback supports only backend or recognition deployments.');
 
-const expectedServiceId = String(process.env.RAILWAY_RECOGNITION_SERVICE_ID ?? '').trim();
+const expectedServiceId = String(process.env[serviceVariable] ?? '').trim();
 const expectedEnvironmentId = String(process.env.RAILWAY_ENVIRONMENT_ID ?? '').trim();
 const token = process.env.RAILWAY_API_TOKEN || process.env.RAILWAY_TOKEN;
 if (!deploymentId) throw new Error('Missing --deployment=<railway-deployment-id>.');
-if (!expectedServiceId) throw new Error('RAILWAY_RECOGNITION_SERVICE_ID is required.');
+if (!expectedServiceId) throw new Error(`${serviceVariable} is required.`);
 if (!expectedEnvironmentId) throw new Error('RAILWAY_ENVIRONMENT_ID is required.');
 if (!token) throw new Error('RAILWAY_API_TOKEN or RAILWAY_TOKEN is required.');
 
@@ -45,16 +49,29 @@ const current = await graphql(
 const deployment = current.deployment;
 if (!deployment) throw new Error('The selected Railway deployment was not found.');
 if (deployment.serviceId !== expectedServiceId) {
-  throw new Error('The selected Railway deployment is not a recognition deployment.');
+  throw new Error(`The selected Railway deployment is not a ${component} deployment.`);
 }
 if (deployment.environmentId !== expectedEnvironmentId) {
   throw new Error('The selected Railway deployment belongs to a different environment.');
 }
+if (deployment.status !== 'SUCCESS') {
+  throw new Error('The selected Railway deployment is not a known-good successful deployment.');
+}
 if (!deployment.canRollback) throw new Error('The selected Railway deployment is not rollback-eligible.');
 
-const result = await graphql(
-  'mutation deploymentRollback($id: String!) { deploymentRollback(id: $id) }',
-  { id: deploymentId },
-);
-if (result.deploymentRollback !== true) throw new Error('Railway did not confirm the rollback.');
-console.log(JSON.stringify({ ok: true, deploymentRollback: true }, null, 2));
+if (verifyOnly) {
+  console.log(JSON.stringify({
+    ok: true,
+    verified: true,
+    component,
+    deploymentId: deployment.id,
+    status: deployment.status,
+  }, null, 2));
+} else {
+  const result = await graphql(
+    'mutation deploymentRollback($id: String!) { deploymentRollback(id: $id) }',
+    { id: deploymentId },
+  );
+  if (result.deploymentRollback !== true) throw new Error('Railway did not confirm the rollback.');
+  console.log(JSON.stringify({ ok: true, component, deploymentRollback: true }, null, 2));
+}

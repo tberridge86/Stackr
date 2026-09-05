@@ -2,9 +2,39 @@
 
 ## Authority And Preconditions
 
-Production deployment is a manual GitHub workflow from `main` through the protected `production` environment. It requires a reviewer and a known-good Cloudflare version tag. Do not deploy from a local dirty worktree.
+Production deployment is a manual GitHub workflow from `main` through the protected `production` environment. It requires a reviewer. Full-platform and gateway releases require a known-good Cloudflare version tag; a `backend_only` release instead requires a known-good Railway backend deployment ID. Do not deploy from a local dirty worktree.
 
-All of these must be true:
+### Backend-only code release
+
+Use `backend_only` for an exact, already-reviewed backend code revision that does not need a database, catalogue, gateway, recognition, or mobile change. This lane is independent of the full-platform model/index and catalogue release gates. It remains fail-closed on the exact `main` SHA, the substantive backend/API test suite, secret scans, a validated Railway rollback target, and production read-only smoke checks.
+
+Before dispatch, record:
+
+- the exact 40-character SHA currently at `origin/main`;
+- a known-good, successful, rollback-eligible deployment ID for the production backend service; and
+- a canonical production variant UUID for a read-only raw-card pricing probe.
+
+Dispatch with these exact inputs; leave every catalogue, gateway, recognition, migration, and mobile input at its shown empty or false value:
+
+```powershell
+gh workflow run deploy-production.yml `
+  --ref main `
+  -f confirmation='DEPLOY PRODUCTION' `
+  -f release_scope=backend_only `
+  -f expected_main_sha='<exact-40-character-main-sha>' `
+  -f previous_backend_deployment_id='<known-good-production-backend-deployment-id>' `
+  -f pricing_smoke_variant_id='046ba06b-01c6-44e1-94b5-48e786c3e7a4' `
+  -f gateway_bootstrap=false `
+  -f apply_migrations=false `
+  -f publish_mobile_update=false `
+  -f promote_gateway=false
+```
+
+The backend-only job installs only the root and backend dependency trees, runs lint, frontend/backend type checks, backend/API/pricing/deployment tests and both current-tree and commit secret scans, then validates the supplied rollback deployment against the configured production backend service and environment. It uploads only `backend/` to that Railway service. It never invokes Supabase, catalogue promotion, Cloudflare/Wrangler, recognition, or EAS tooling.
+
+After deployment it performs GET-only checks against both the direct backend and public gateway for health, the exact raw-card price, price history, and market movers. The direct backend checks use the protected origin key without logging it. Any deployment or smoke failure automatically attempts to restore `previous_backend_deployment_id`; the workflow stays failed for review. The run artifact records only non-secret rollback-target, deployment, and smoke evidence.
+
+For catalogue, gateway, recognition, mobile, and full-platform releases, all of these must be true:
 
 - The exact commit passed `Stackr Platform CI` and staging.
 - Supabase production migration history is aligned with the repository and `STACKR_MIGRATION_BASELINE_APPROVED=true` was approved from evidence.
@@ -18,9 +48,9 @@ All of these must be true:
 - The current gateway tag, recognition deployment ID, catalogue version, index version and EAS update group are recorded for rollback.
 - Catalogue API recovery is a forward redeploy of the exact commerce-locked merge SHA; rollback to a pre-lock backend deployment is disabled.
 
-Current status is **NO-GO**: migration alignment and storage backup are verified, but the active-model and active-index gates in `deploy/release-manifest.json` are false. Do not dispatch this workflow until staging has passed on the exact commit and every remaining gate has evidence.
+Current full-platform status is **NO-GO**: migration alignment and storage backup are verified, but the active-model and active-index gates in `deploy/release-manifest.json` are false. This does not block an exact, code-only `backend_only` release that satisfies the separate controls above.
 
-## Release Command
+## Full-platform Release Command
 
 Start with a 5 percent canary and no automatic promotion:
 
