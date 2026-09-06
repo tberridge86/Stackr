@@ -83,6 +83,7 @@ recognition-service/
 supabase/
 deploy/
 docs/
+tools/iphone-preview/
 # Metro loads these two runtime helpers even during native bundling.
 # Ignore directory contents so exact file exceptions can take effect.
 scripts/*
