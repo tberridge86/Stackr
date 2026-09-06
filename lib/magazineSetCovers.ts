@@ -185,7 +185,8 @@ function inputNames(input: MagazineSetCoverLookupInput) {
 }
 
 function explicitIdentityLanguages(input: MagazineSetCoverLookupInput) {
-  return [input.id, input.setId, input.sourceId].map(identityPrefixLanguage);
+  // Every identifier eligible to select a cover must also constrain language.
+  return inputIds(input).map(identityPrefixLanguage);
 }
 
 function matches(input: MagazineSetCoverLookupInput, cover: MagazineSetCoverMetadata) {

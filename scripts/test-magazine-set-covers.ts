@@ -70,6 +70,21 @@ assert.equal(getMagazineSetCoverForSet({ id: 'en:magazine:pokemon-fan-us:issue-0
 assert.equal(getMagazineSetCoverForSet({ id: 'ja:magazine:corocoro-comic:1997-02', language: 'ja' }, 'en', source), null, 'input and fallback language must agree');
 assert.equal(getMagazineSetCoverForSet({ id: 'en:any', englishDisplayName: 'CoroCoro Comic Promo (May 2001)' }, undefined, source), null, 'an English identity prefix cannot resolve a Japanese issue name');
 assert.equal(getMagazineSetCoverForSet({ id: 'zh-tw:any', englishDisplayName: 'CoroCoro Comic Promo (May 2001)' }, undefined, source), null, 'a Chinese identity prefix cannot resolve a Japanese issue name');
+for (const prefix of ['en', 'zh-tw', 'zh-cn', 'ko']) {
+  for (const selector of [
+    { setCode: `${prefix}:any` },
+    { externalIds: { setCode: `${prefix}:any` } },
+    { externalIds: { stackrManual: `${prefix}:any` } },
+    { externalIds: { magazineIssue: `${prefix}:any` } },
+  ]) {
+    assert.equal(getMagazineSetCoverForSet({
+      ...selector, englishDisplayName: 'CoroCoro Comic Promo (May 2001)',
+    }, undefined, source), null, 'secondary identity language conflicts must reject a Japanese issue');
+  }
+}
+assert.equal(getMagazineSetCoverForSet({
+  externalIds: { magazineIssue: 'ja:magazine:corocoro-comic:2001-05' }, language: 'ja',
+}, undefined, source)?.key, 'corocoro-comic-2001-05', 'matching secondary identities remain supported');
 assert.equal(getMagazineSetCoverForSet({ id: 'CA775304-419D-4F6D-9D3E-14661EF010A6', englishDisplayName: 'CoroCoro Comic Promo (May 2001)' }, undefined, source)?.key, 'corocoro-comic-2001-05', 'an unprefixed canonical UUID may accompany an exact issue name');
 assert.equal(getMagazineSetCoverForSet({ id: 'ja:magazine:corocoro-comic:1997-02', setId: 'ja:magazine:corocoro-comic:1997-03', language: 'ja' }, undefined, source), null, 'conflicting exact issues must fail closed');
 assert.equal(getMagazineSetCoverSourceForSet({ id: 'ja:magazine:corocoro-comic:1997-02', language: 'ja' }, undefined, source), 'stub:corocoro-comic-1997-02');
