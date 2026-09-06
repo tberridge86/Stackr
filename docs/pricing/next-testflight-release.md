@@ -1,6 +1,12 @@
-# Next TestFlight release: pricing inclusion queue
+# Next TestFlight release: pricing and approved Home inclusion queue
 
 Prepared 6 September 2026 for the owner's next larger TestFlight release. This is a source-review queue, not an EAS build queue or a TestFlight upload.
+
+## Approved Home added to the local queue — 6 September
+
+The owner approved the later value-first collector Home and asked to include it alongside pricing. Its exact source is frozen in a hash-verified local packet. See [Home inclusion and integration checklist](home-ux-20260906-queue.md) and [source manifest](home-ux-20260906-manifest.json).
+
+**The two implementations are not merged yet.** They overlap in Home and the value tracker and use different pricing interfaces. Port the approved visuals into this candidate's pricing contracts; do not overwrite its nullable totals, evidence states, refresh queue or owner-only safeguards. The local checks and iOS export recorded below apply to the pricing candidate before this Home addition, not a combined release. Combined validation and real-iPhone checks remain required. No build, submission, version change or remote update is part of this queue addition.
 
 ## Release instruction
 
