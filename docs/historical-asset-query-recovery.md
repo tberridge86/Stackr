@@ -1,8 +1,65 @@
-# Historical asset-query recovery design (review only)
+# Historical asset-query recovery
 
-Status: design for a later, release-coordinated implementation. The release
-coordinator is paused: this document is not approval to merge, deploy, change
-the database, or query production.
+## Current status — 6 September 2026
+
+The bounded lookup has been implemented and rehearsed on staging. The pinned
+evidence is in `deploy/evidence/binder-artwork-read-staging-2026-09-06.json`;
+the protected preparation and release order are in `deploy/production-runbook.md`.
+Production preparation and backend deployment have **not** happened. The design
+and 5 September measurements below are historical records, not the current
+implementation status or additional release authority.
+
+Read-only live checks on 6 September, approximately 07:35–07:41 UTC, establish:
+
+- The public Stackr gateway health endpoint returned HTTP 200.
+- Direct backend health reported commit `b852318c4331`, which predates the
+  published-set filtering and bounded artwork lookup fixes in PR #134.
+- An unfiltered, one-row card-image manifest request returned an existing
+  approved asset. Its Supabase Storage card-grid WebP returned HTTP 200 to HEAD.
+  This proves that sampled historical artwork remains reachable, not that every
+  stored image is present or that full language coverage is complete.
+- VSTAR Universe set `d6a23ad9-7d3d-482c-a477-304584a335e3` with `cards?limit=5`
+  returned HTTP 500, database cancellation code `57014`, after about 4.2 seconds
+  (request `b24a2d00-9b56-428e-8c4b-120e0523ab66`). A one-row set-filtered
+  card-image manifest request returned HTTP 504 `downstream_timeout` after
+  about 8.5 seconds (request `2e0c53e7-7f5d-476c-9cd0-72b9613e11c1`).
+- The signed-in binder retained its saved native-language rows and quantities,
+  but displayed “Catalogue needs retry” and “No image”. No ownership controls
+  were operated during inspection.
+- The GitHub production environment still had `protection_rules: []`. The
+  required production reviewer has not been configured; the protected release
+  must not be bypassed. This is a release-configuration dependency, not a new
+  request for artwork permission.
+
+Together these observations locate the reproduced failure in the live API's
+catalogue/artwork lookup, before usable image links reach the binder. They do
+not support deleting, rewriting or re-importing stored catalogue data. Apply
+and attest the two additive preparation migrations before deploying the backend
+that calls their RPC, then verify the signed-in binder end to end.
+
+A separate client regression was also identified: `EditionAwareCardImage`
+preferred a constructed Scrydex Unlimited URL over the caller's stored image.
+The repaired order retains known edition-specific artwork, then the supplied
+image, with the constructed URL last. Its regression check is
+`scripts/test-edition-aware-image-selection.ts`. This change does not repair the
+server timeout and does not change any persisted image URL or ownership row.
+
+### Verification of the client repair
+
+App and backend typechecks passed; app lint passed with ten existing warnings.
+The edition-selection regression, binder identity/presentation/enrichment,
+saved-image persistence, native-language display, shared flags, four-language
+coverage fixtures, reviewed set-mark policy, API integration, all 24 gateway
+tests, all 43 backend tests, marketplace pricing and commerce-lock checks passed.
+These are local regression results, not proof of restored production coverage.
+
+`test:tcgdex-controlled-card-reference` separately failed its existing document
+binding assertion: the recorded boundary hash starts `f93aa675`, while the
+current committed boundary hash starts `a8c7361b`. The boundary and the approval
+record are unchanged by this repair. Do not report an all-green image-policy
+suite or silently replace approval hashes to make that assertion pass.
+
+## Original design and observations
 
 ## Observed failure and invariant
 

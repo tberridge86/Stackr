@@ -63,6 +63,7 @@ jobs:
       - run: npm run test:local-ocr-card-matcher
       - run: npm run test:binder-page-scan
       - run: npm run test:binder-catalogue
+      - run: node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-edition-aware-image-selection.ts
       - run: npm run test:binder-foreign-set-picker
       - run: npm run test:pokemon-language-flags
       - run: node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-binder-add-cards-metadata-persistence.ts

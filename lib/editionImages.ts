@@ -120,3 +120,23 @@ export function getPublicScrydexCardImageUrl(
   if (!cardId || editionHint !== 'unlimited') return null;
   return `https://images.scrydex.com/pokemon/${encodeURIComponent(cardId)}/${size}`;
 }
+
+/**
+ * Prefer evidence for a specific printing, then a supplied catalogue image.
+ * The Scrydex Unlimited address is only a constructed fallback: it is not
+ * evidence that the remote asset exists, so it must never hide a stored card
+ * image that has already been selected by the caller.
+ */
+export function getEditionAwareImageUrl({
+  rawVariantUri,
+  remoteVariantUri,
+  suppliedUri,
+  scrydexUnlimitedUri,
+}: {
+  rawVariantUri?: string | null;
+  remoteVariantUri?: string | null;
+  suppliedUri?: string | null;
+  scrydexUnlimitedUri?: string | null;
+}) {
+  return rawVariantUri ?? remoteVariantUri ?? suppliedUri ?? scrydexUnlimitedUri ?? null;
+}
