@@ -63,3 +63,5 @@ App lint has zero errors and ten existing warnings. Independent review confirmed
 the runtime-only source separation and the two existing promo-set aliases.
 The two mapped CoroCoro cover files were also visually inspected; that is asset
 inspection, not a claim that the new UI was installed or checked on a phone.
+
+The coordinator integrated this slice into [the single TestFlight source queue](releases/next-testflight-pinned-20260906.md), fixed secondary-ID language-prefix conflicts, and verified all 81 unchanged original image hashes in the final local iOS export. That linked receipt records the superseding bundle and exact scope; native-device acceptance and hosted binder recovery are still separate.
