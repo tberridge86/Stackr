@@ -2,6 +2,8 @@
 
 Prepared 6 September 2026 for the owner's next larger TestFlight release. This is a source-review queue, not an EAS build queue or a TestFlight upload.
 
+The five pinned Stackr-1 tasks are now being assembled in the [combined TestFlight source queue](../releases/next-testflight-pinned-20260906.md). Use that handoff for the coordinated release; the pricing branch and receipts below remain component-level history, not a second release to merge independently.
+
 ## Approved Home added to the local queue — 6 September
 
 The owner approved the later value-first collector Home and then explicitly asked to include it alongside pricing. **The Home is now integrated in this local candidate**, with its visuals adapted to the pricing API rather than replacing it. See [combined Home release handoff](home-ux-20260906-queue.md) and the [original approved-source manifest](home-ux-20260906-manifest.json).
