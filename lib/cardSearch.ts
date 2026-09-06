@@ -3,6 +3,7 @@ import { getLocalCardIndex } from './localCardIndex';
 import { findCuratedPokemonSearchRows } from './curatedPokemonCatalogue';
 import { correctPokemonNameQuery } from './pokemonNameAutocorrect';
 import { searchStackrCards } from './stackrDomainAdapter';
+import { parseCardSearchIntent } from './cardSearchIntent';
 import {
   getEnglishCardDisplayName,
   getLocalCardName,
@@ -878,8 +879,10 @@ export async function searchLocalPokemonCards<T extends SearchRow = SearchRow>(
 ): Promise<T[]> {
   const trimmed = input.trim();
   if (trimmed.length < 2) return [];
+  const catalogueQuery = parseCardSearchIntent(trimmed).catalogueQuery;
+  if (catalogueQuery.length < 2) return [];
   const limit = options.limit ?? 80;
-  const cards = await attachLiveTcgdexCardReferences(await searchStackrCards(trimmed, {
+  const cards = await attachLiveTcgdexCardReferences(await searchStackrCards(catalogueQuery, {
     language: isAllLanguageSearch(options.language) ? null : options.language,
     limit,
   }));

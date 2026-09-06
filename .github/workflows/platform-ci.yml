@@ -53,6 +53,7 @@ jobs:
       - run: npm run test:seller-stock-out-routing
       - run: npm run test:premium-seller-access
       - run: npm run test:commerce-release-lock
+      - run: npm run test:ux-service-release
       - run: npm run test:mobile-runtime-config
       - run: npm run test:iphone-preview
       - run: npm run test:stackr-preview-proxy

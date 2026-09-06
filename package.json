@@ -6,6 +6,7 @@
     "start": "expo start",
     "build:web": "expo export --platform web --output-dir dist",
     "typecheck": "tsc --noEmit",
+    "test:ux-service-release": "node --import tsx scripts/test-shared-ux-release.ts && node --import tsx scripts/test-profile-load-state.ts && node --import tsx scripts/test-card-search-intent.mjs && node --import tsx scripts/test-offer-review-release.ts && node --import tsx scripts/test-trade-service-release.ts",
     "typecheck:backend": "tsc --noEmit -p backend/tsconfig.json",
     "test:owner-recognition": "node --test backend/test/owner-recognition-access.test.mjs backend/test/owner-recognition-route.test.mjs && node --import tsx scripts/test-owner-recognition.ts && node --import tsx scripts/test-owner-capture-deletion.ts && node --import tsx scripts/test-owner-recognition-photo.ts && node scripts/test-owner-native-pixel-size.mjs && node scripts/test-owner-mobile-archive.mjs && node scripts/verify-owner-recognition-build.mjs && node scripts/test-owner-submission.mjs",
     "android:dev": "node scripts/run-expo-mobile-variant.mjs development run:android",

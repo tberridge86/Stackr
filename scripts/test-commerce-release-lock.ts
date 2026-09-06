@@ -395,7 +395,8 @@ assert.doesNotMatch(
   /trade_cash_terms|Trade Progress|Mark sent|Mark received|sender_sent|receiver_sent|sender_received|receiver_received|completed_at/,
   'offer detail must sanitize initial and realtime rows without rendering payment or fulfilment state',
 );
-assert.match(offerDetail, /disputed: 'Dispute raised'/);
+assert.match(offerDetail, /disputed: 'Problem flagged'/, 'The existing disputed state is a flag, not a support case');
+assert.match(offerDetail, /updateTradeOfferStatus\(offerId, 'disputed'\)/, 'Keep the existing backend status contract');
 
 const tradeContext = fs.readFileSync('components/trade-context.tsx', 'utf8');
 for (const functionName of ['markTradeSent', 'markTradeReceived']) {

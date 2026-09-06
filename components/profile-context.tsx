@@ -1,5 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { beginProfileLoad, finishProfileLoad, type ProfileLoadState } from '../lib/profileLoadState';
 import { useAuth } from './auth-context';
 
 export type Profile = {
@@ -26,6 +27,7 @@ export type Profile = {
 type ProfileContextType = {
   profile: Profile | null;
   loading: boolean;
+  error: string | null;
   refreshProfile: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
   setFavoriteCard: (cardId: string, setId: string) => Promise<void>;
@@ -35,6 +37,7 @@ type ProfileContextType = {
 const ProfileContext = createContext<ProfileContextType>({
   profile: null,
   loading: true,
+  error: null,
   refreshProfile: async () => {},
   updateProfile: async () => ({ error: null }),
   setFavoriteCard: async () => {},
@@ -43,35 +46,39 @@ const ProfileContext = createContext<ProfileContextType>({
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const accountId: string | null = user?.id ?? null;
+  const currentAccountId = useRef(accountId);
+  currentAccountId.current = accountId;
+  const requestSequence = useRef(0);
+  const [state, setState] = useState<ProfileLoadState<Profile>>({
+    accountId: null, requestId: 0, profile: null, loading: true, error: null,
+  });
+  const belongsToAccount = state.accountId === accountId;
+  const profile = belongsToAccount && !authLoading ? state.profile : null;
+  const loading = authLoading || !belongsToAccount || state.loading;
+  const error = belongsToAccount && !authLoading ? state.error : null;
 
   const refreshProfile = useCallback(async () => {
-    if (!user) {
-      setProfile(null);
-      setLoading(false);
-      return;
+    if (currentAccountId.current !== accountId) return;
+    const requestId = ++requestSequence.current;
+    setState((previous) => beginProfileLoad(previous, accountId, requestId));
+    if (!accountId) return;
+    try {
+      const { data, error: loadError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', accountId)
+        .maybeSingle();
+      setState((previous) => finishProfileLoad(previous, { accountId, requestId, data: data as Profile | null, error: loadError }));
+    } catch (loadError) {
+      setState((previous) => finishProfileLoad(previous, { accountId, requestId, data: null, error: loadError }));
     }
-
-    setLoading(true);
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (!error && data) {
-      setProfile(data as Profile);
-    } else {
-      setProfile(null);
-    }
-
-    setLoading(false);
-  }, [user]);
+  }, [accountId]);
 
   const updateProfile = useCallback(async (updates: Partial<Profile>) => {
     if (!user) return { error: 'No user' };
+    if (currentAccountId.current !== user.id) return { error: new Error('Your account changed. Please reopen your profile before saving.') };
+    if (loading || error) return { error: new Error('Load your profile successfully before making changes.') };
 
     const {
       id: _ignoredId,
@@ -81,7 +88,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       ...publicUpdates
     } = updates;
 
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from('profiles')
       .upsert(
         {
@@ -91,12 +98,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         { onConflict: 'id' }
       );
 
-    if (!error) {
+    if (currentAccountId.current !== user.id) return { error: new Error('Your account changed. Please reopen your profile before saving.') };
+    if (!updateError) {
       await refreshProfile();
     }
 
-    return { error };
-  }, [refreshProfile, user]);
+    return { error: updateError };
+  }, [error, loading, refreshProfile, user]);
 
   const setFavoriteCard = useCallback(async (cardId: string, setId: string) => {
     if (!user) return;
@@ -127,6 +135,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       value={{
         profile,
         loading,
+        error,
         refreshProfile,
         updateProfile,
         setFavoriteCard,
