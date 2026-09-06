@@ -4,9 +4,9 @@ Prepared 6 September 2026 for the owner's next larger TestFlight release. This i
 
 ## Approved Home added to the local queue — 6 September
 
-The owner approved the later value-first collector Home and asked to include it alongside pricing. Its exact source is frozen in a hash-verified local packet. See [Home inclusion and integration checklist](home-ux-20260906-queue.md) and [source manifest](home-ux-20260906-manifest.json).
+The owner approved the later value-first collector Home and then explicitly asked to include it alongside pricing. **The Home is now integrated in this local candidate**, with its visuals adapted to the pricing API rather than replacing it. See [combined Home release handoff](home-ux-20260906-queue.md) and the [original approved-source manifest](home-ux-20260906-manifest.json).
 
-**The two implementations are not merged yet.** They overlap in Home and the value tracker and use different pricing interfaces. Port the approved visuals into this candidate's pricing contracts; do not overwrite its nullable totals, evidence states, refresh queue or owner-only safeguards. The local checks and iOS export recorded below apply to the pricing candidate before this Home addition, not a combined release. Combined validation and real-iPhone checks remain required. No build, submission, version change or remote update is part of this queue addition.
+Nullable totals, evidence states, refresh queue and owner-only safeguards are preserved. The old local checks/export recorded at the bottom of this page apply to the earlier pricing-only candidate; use the linked Home handoff for combined verification. Native-device testing and normal release/activation gates remain required. No build submission, version change or remote update is part of this queue addition.
 
 ## Release instruction
 
@@ -22,12 +22,13 @@ The owner requested: "push this for the next big release in testflight. dont upr
 
 The candidate contains the evidence-preserving live-pricing path, authenticated manual refresh, bounded automatic refresh scheduling, exact-variant stored history, and owner-only pricing access. See [live-pricing readiness](live-pricing-production-readiness.md) for the detailed implementation and rollout order.
 
-The Home tracker replaces the tiny fixed-size sparkline with a responsive chart beneath the value. It uses the actual available card width, retains a thin line and restrained fill, and keeps refresh/range controls available. Missing comparable history stays explicitly unavailable; resizing does not create sample prices, extra sales, or invented movement.
+The integrated Home tracker uses a responsive 76px compact chart beneath the value, before Search/Scan and the collecting goal. It uses the available width, retains a thin line and restrained fill, and keeps a single refresh action and range selector available. Missing comparable history stays explicitly unavailable; resizing does not create sample prices, extra sales, or invented movement. The collector rail, concise updates, English Home captions and quiet Home-only gradient are also included.
 
 ## Checks before including this candidate
 
 - `npm run typecheck`, `npm run typecheck:backend`, `npm run lint`
 - `npm run test:live-pricing`, `npm run test:personal-pricing`, `npm run test:collection-pricing-ui`, `npm run test:poketrace-benchmark`
+- `npm run test:home-release`
 - `npm run test:mobile-runtime-config`, `npm run test:stackr-api-v1`, `npm --prefix gateway test`, `npm run check:api-contract`
 - Isolated pricing migration rehearsal and repository secret scan; no hosted database or provider refresh is needed for these tests.
 - Production-owner configuration validation and a local iOS JavaScript export. An export is not an Apple-signed native build, installation, real-device visual approval, or live-data accuracy test.

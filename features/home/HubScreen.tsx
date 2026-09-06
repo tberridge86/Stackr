@@ -39,10 +39,8 @@ import { stackrBrand } from '../../lib/stackrBrand';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { getStackrHomeWordmarkWidth, stackrLogoSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import {
-  ContinueBinderCard,
   ChaseCardsSheet,
   HOME_TOKENS,
-  HomeActionsRow,
   HomeOpportunitiesSection,
   RecentActivitySection,
   type HomeActivityItem,
@@ -52,6 +50,8 @@ import {
   type HomeDuplicateItem,
   type HomeDuplicateSummary,
 } from '../../components/HomeCommandCenter';
+import { HomeCollectionHero } from '../../components/HomeCollectorSections';
+import { getHomeCardDisplayMetadata } from '../../lib/homeCardDisplayMetadata';
 import {
   DEFAULT_MINTY_FEEDBACK_PROFILE,
   DEFAULT_MINTY_PERSONALISATION_SETTINGS,
@@ -86,11 +86,6 @@ import {
 } from '../../lib/homePriceRefreshCore';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 
-const fetchHomeDisplayCardRows = async (cardIds: string[]) => (
-  hydrateCardReferenceRowMapWithLiveTcgdexReferences(
-    await fetchStackrCardRows(cardIds), attachLiveTcgdexCardReferences,
-  )
-);
 import { sanitizeMarketplaceCondition } from '../../lib/marketplacePresentation';
 import {
   sanitizeGate0CommerceCopy,
@@ -102,6 +97,12 @@ import {
   parseHomeCollectionCache,
   serializeHomeCollectionCache,
 } from '../../lib/homeCollectionCache';
+
+const fetchHomeDisplayCardRows = async (cardIds: string[]) => (
+  hydrateCardReferenceRowMapWithLiveTcgdexReferences(
+    await fetchStackrCardRows(cardIds), attachLiveTcgdexCardReferences,
+  )
+);
 
 // ===============================
 // TYPES
@@ -288,6 +289,17 @@ const getCardSetName = (card: BinderCardRecord) =>
 const getCardRarity = (card: BinderCardRecord) =>
   card.card?.rarity ?? card.card?.raw_data?.rarity ?? null;
 
+const getBinderCardDisplayMetadata = (card: BinderCardRecord) => getHomeCardDisplayMetadata({
+  id: card.card_id,
+  setId: card.set_id,
+  name: getCardDisplayName(card),
+  setName: getCardSetName(card),
+  number: card.card_number ?? card.card?.number,
+  language: card.card?.language ?? card.language ?? card.card?.raw_data?.language,
+  englishDisplayName: card.card?.englishDisplayName,
+  raw: card.card?.raw_data,
+});
+
 const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: Record<string, string> = {}): HomeBinderSummary[] =>
   groups.map(({ binder, cards }) => {
     const ownedCards = cards.filter((card) => getOwnedQuantity(card) > 0);
@@ -303,6 +315,9 @@ const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: 
         cardId: card.card_id,
         setId: card.set_id,
         name: getCardDisplayName(card),
+        setName: getCardSetName(card),
+        number: card.card_number ?? card.card?.number ?? null,
+        ...getBinderCardDisplayMetadata(card),
         imageUrl: getCardImageUrl(card),
         estimatedValue: null,
       }))
@@ -395,6 +410,7 @@ const buildMissingCards = (
       setId: card.set_id,
       name: getCardDisplayName(card),
       setName: getCardSetName(card),
+      ...getBinderCardDisplayMetadata(card),
       number: card.card_number ?? card.card?.number ?? null,
       rarity: getCardRarity(card),
       imageUrl: getCardImageUrl(card),
@@ -641,6 +657,7 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
 
     const activityImageByCardId = new Map<string, string>();
     const cardNameByCardId = new Map<string, string>();
+    const cardMetadataByCardId = new Map<string, ReturnType<typeof getHomeCardDisplayMetadata>>();
 
     for (const cardId of cardIds) {
       const card = officialCards.get(cardId);
@@ -658,6 +675,13 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
 
       if (imageUrl) activityImageByCardId.set(cardId, imageUrl);
       if (card.name) cardNameByCardId.set(cardId, card.name);
+      cardMetadataByCardId.set(cardId, getHomeCardDisplayMetadata({
+        id: cardId,
+        setId: card.set_id,
+        name: card.name,
+        language: card.language,
+        raw: card.raw_data as Record<string, any> | null,
+      }));
     }
 
     return items.map((item) => {
@@ -667,6 +691,8 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
       const resolvedName = cardNameByCardId.get(cardId) ?? null;
       return {
         ...item,
+        cardName: resolvedName,
+        ...cardMetadataByCardId.get(cardId),
         imageUrl: item.imageUrl ?? activityImageByCardId.get(cardId) ?? null,
         title: resolvedName && item.title.includes('Unknown item')
           ? item.title.replace('Unknown item', resolvedName)
@@ -755,7 +781,7 @@ export default function HubScreen() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Recent trade listings
-  const [recentListings, setRecentListings] = useState<HubListing[]>([]);
+  const [, setRecentListings] = useState<HubListing[]>([]);
   const [marketplaceMatches, setMarketplaceMatches] = useState<HubListing[]>([]);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -1684,6 +1710,15 @@ export default function HubScreen() {
           setId,
           name: officialCard?.name ?? row.card_id,
           setName: (officialCard?.raw_data as any)?.set?.name ?? row.set_id ?? 'Wanted card',
+          ...getHomeCardDisplayMetadata({
+            id: row.card_id,
+            setId,
+            name: officialCard?.name,
+            setName: (officialCard?.raw_data as any)?.set?.name,
+            number: cardNumber,
+            language: officialCard?.language,
+            raw: officialCard?.raw_data as Record<string, any> | null,
+          }),
           number: cardNumber,
           rarity: officialCard?.rarity ?? null,
           imageUrl: officialImage ?? null,
@@ -1693,7 +1728,7 @@ export default function HubScreen() {
     } catch (error) {
       console.log('Failed to load home chase cards', error);
       if (homeChaseRequestRef.current !== requestId) return;
-      setChaseCards([]);
+      // Retain this session's last successful cards; account changes clear them separately.
       setChaseError('Could not refresh chase cards.');
     } finally {
       if (homeChaseRequestRef.current === requestId) setChaseLoading(false);
@@ -1856,7 +1891,7 @@ export default function HubScreen() {
     } catch (error) {
       console.log('Failed to load recent home activity', error);
       if (homeActivityRequestRef.current !== requestId) return;
-      setRecentActivity([]);
+      // Keep successful rows visible beside Retry instead of replacing them with an empty state.
       setActivityError('Could not refresh recent activity.');
     } finally {
       if (homeActivityRequestRef.current === requestId) setActivityLoading(false);
@@ -2177,6 +2212,11 @@ export default function HubScreen() {
   };
 
   const profileHasNew = !hasChosenMode;
+  const hasHomeMovement = collectionPricingSummary.state === 'fresh'
+    && !collectionValueError && chartData.length >= 2 && collectionChangeAmount !== 0;
+  const homeMovementSummary = hasHomeMovement
+    ? `${collectionChangeAmount > 0 ? '+' : '-'}£${Math.abs(collectionChangeAmount).toFixed(2)} · ${collectionChangePercent > 0 ? '+' : ''}${collectionChangePercent.toFixed(1)}% over ${chartRange}`
+    : null;
 
   // ===============================
   // MAIN RENDER
@@ -2184,7 +2224,7 @@ export default function HubScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
-      <StackrBackdrop />
+      <StackrBackdrop variant="home" />
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: homeScreenPadding,
@@ -2304,8 +2344,10 @@ export default function HubScreen() {
         </View>
 
         {/* VALUE TRACKER */}
-        <View style={{ marginBottom: 12 }}>
+        {ownedCardCount > 0 || collectionValueLoading || collectionValueError ? (
+        <View style={{ marginBottom: 24 }}>
           <ValueTrackerCard
+            compact
             totalValue={collectionTotal}
             currency="GBP"
             percentageChange={collectionChangePercent}
@@ -2333,44 +2375,79 @@ export default function HubScreen() {
             onMintySettingsPress={() => setMintySettingsOpen(true)}
           />
         </View>
+        ) : null}
 
-        <HomeActionsRow
-          ownedCount={ownedCardCount}
-          listingCount={recentListings.length}
-          onBinders={() => router.push('/binder')}
-          onScan={() => router.push('/scan')}
-          onSearch={() => router.push('/(tabs)/search' as any)}
-          onBuildTrade={() => router.push({ pathname: '/(tabs)/market', params: { mode: 'trade' } } as any)}
-          onCommunity={() => router.push('/(tabs)/community' as any)}
-        />
+        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Search cards, sets and products"
+            onPress={() => router.push('/(tabs)/search')}
+            style={{ flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 13, borderRadius: 16, backgroundColor: theme.colors.card, borderColor: theme.colors.border, borderWidth: 1 }}
+          >
+            <Image source={stackrIcons.searchCard} style={{ width: 24, height: 24 }} resizeMode="contain" />
+            <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 14 }}>Find your next card</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Scan cards"
+            onPress={() => router.push('/scan')}
+            style={{ minHeight: 48, paddingHorizontal: 15, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: theme.colors.primary }}
+          >
+            <Image source={stackrIcons.scanCard} style={{ width: 25, height: 25 }} resizeMode="contain" />
+            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}>Scan</Text>
+          </TouchableOpacity>
+        </View>
 
-        <ContinueBinderCard
+        <HomeCollectionHero
           binder={activeBinder}
+          missingCards={missingCards}
+          chaseCards={chaseCards}
           isLoading={collectionValueLoading && !activeBinder && !homeDataError}
           error={homeDataError}
-          onView={(binderId) => router.push({ pathname: '/binder/[id]', params: { id: binderId } })}
-          onScan={(binderId) => router.push({ pathname: '/scan', params: { mode: 'binder', binderId } })}
-          onCreate={() => router.push('/binder/new')}
+          onRetry={loadCollectionValue}
+          onOpenBinder={(binderId) => router.push({ pathname: '/binder/[id]', params: { id: binderId } })}
+          onCreateBinder={() => router.push('/binder/new')}
+          onCardPress={openChaseCardDetail}
         />
 
+        {(duplicateSummary.count > 0 || chaseCards.length > 0 || hasHomeMovement || chaseError) ? (
         <HomeOpportunitiesSection
           duplicateSummary={duplicateSummary}
           chaseCount={chaseCards.length}
-          marketMoverCount={Math.max(marketplaceMatches.length, collectionChangeAmount !== 0 ? 1 : 0)}
+          hasCollectionMovement={hasHomeMovement}
+          movementSummary={homeMovementSummary}
           isLoading={(collectionValueLoading && duplicateSummary.count === 0 && !homeDataError) || chaseLoading}
-          error={homeDataError ?? chaseError}
+          error={chaseError}
           onDuplicates={() => router.push('/duplicates' as any)}
           onChase={() => openChaseSheet()}
           onMarketMovers={() => router.push('/value-history')}
         />
+        ) : null}
 
+        {(recentActivity.length > 0 || activityError) ? (
         <RecentActivitySection
+          openLayout
           items={recentActivity}
           isLoading={activityLoading}
           error={activityError}
           onRetry={loadRecentActivity}
           onItemPress={openActivityItem}
         />
+        ) : null}
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Explore collector posts and local events"
+          onPress={() => router.push('/(tabs)/community')}
+          style={{ minHeight: 76, borderTopWidth: 1, borderTopColor: theme.colors.border, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16 }}
+        >
+          <Image source={stackrIcons.social} style={{ width: 35, height: 35 }} resizeMode="contain" />
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '700' }}>Collecting is better together</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, marginTop: 3 }}>Collector posts, trades and local meet ups</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={theme.colors.primary} />
+        </TouchableOpacity>
 
       </ScrollView>
 

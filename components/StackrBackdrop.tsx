@@ -1,4 +1,5 @@
 import React from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Image, ImageSourcePropType, ImageStyle, StyleProp, StyleSheet, View } from 'react-native';
 import { useTheme } from './theme-context';
 
@@ -9,12 +10,28 @@ export function StackrBackdrop({
   opacity,
   style,
   source = backdropSource,
+  variant = 'default',
 }: {
   opacity?: number;
   style?: StyleProp<ImageStyle>;
   source?: ImageSourcePropType;
+  /** Approved Home-only quiet palette. Existing screen defaults are unchanged. */
+  variant?: 'default' | 'home';
 }) {
   const { isDark } = useTheme();
+
+  if (variant === 'home') {
+    return (
+      <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill}>
+        <LinearGradient
+          colors={isDark ? ['#140B2D', '#241150', '#07145F'] : ['#FFFFFF', '#F7F3FF', '#EEE7FF']}
+          start={{ x: 0.08, y: 0 }}
+          end={{ x: 0.92, y: 1 }}
+          style={[StyleSheet.absoluteFillObject, opacity === undefined ? null : { opacity }]}
+        />
+      </View>
+    );
+  }
 
   return (
     <View

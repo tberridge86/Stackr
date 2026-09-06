@@ -1,59 +1,72 @@
-# Approved Home: next TestFlight inclusion queue
+# Approved Home + live pricing: next TestFlight
 
-Prepared 6 September 2026 after the owner approved the Home preview and asked to queue it alongside live pricing. **Status: queued for source integration; not a combined build-ready candidate, EAS job, OTA or TestFlight upload.**
+Updated 6 September 2026 after the owner instructed: **include, then queue for TestFlight**. The approved Home is now integrated into the live-pricing source candidate, not merely attached as an unmerged source packet. This is a **local next-release queue**, not an EAS build job, OTA, Apple submission or live-pricing activation.
 
-## What is approved
+## Included
 
-- Value summary first, before Search/Scan and the collecting goal.
-- A measured full-width, 76px-high compact chart in an unboxed 80px host; signed GBP and percentage movement, direction arrow, existing price disclosure and one 7D/30D selector.
-- A collecting goal, short relevant card rail, concise updates and recent activity, using existing Stackr artwork/icons and navigation.
-- English Home captions and detail descriptions while foreign-language artwork, language labels and exact card identity remain unchanged. Missing translations have honest English fallbacks, not invented names.
-- Existing loading, empty, partial and recovery behaviour remains meaningful. Preview values are not evidence of live price accuracy.
+- Value-first Home, a measured 76px compact chart in an 80px unboxed chart area, signed GBP/percentage movement and direction arrow.
+- One top-right refresh action, visible pricing coverage, inline history access and accessible Price details disclosure containing the single 7D/30D control.
+- Search/Scan, collector goal, short card rail, concise On your radar rows, three recent activities before expansion and one Community entry. Original Stackr icons remain in use.
+- English Home card/Chase List/activity captions with original foreign-language artwork and card identities retained. Missing English identification uses honest fallbacks.
+- The approved quiet Home gradient, scoped through an opt-in backdrop variant; other screens are not restyled.
+- Retained successful chase/activity rows when refresh fails, with account-change clearing preserved. Binder Retry calls the real collection loader.
 
-This records the latest approved Home, not automatic approval to merge every prior app change from the shared workspace. The later value-first handoff supersedes the earlier collector-first ordering.
+## Pricing and native boundaries preserved
 
-## Frozen source and fallback
+The visual changes were adapted into the pricing candidate's nullable totals, fresh/partial/stale/unavailable/empty states, known subtotals, warnings, cache and history. The earlier preview implementation did not replace the pricing data layer. Exact-variant refresh queuing, bounded background reads, owner-only access, source/evidence checks and Minty history gating remain intact.
 
-The 17 named source/test/handoff files are copied to `D:/Stackr-release-queue/home-20260906/source`. Every copy was SHA-256 checked against the approved source. The adjacent [manifest](home-ux-20260906-manifest.json) records exact bytes, source checkout and release target. This is a review packet, **not a standalone app or a drop-in overlay**: whole-file snapshots also contain earlier workspace work and depend on the existing app.
+No Home preview route, fixture module, synthetic prices or private-preview props were added to this candidate. Native Home remains `app/(tabs)/index.tsx` -> `features/home/HubScreen.tsx`, using real account data. Local browser QA fixtures exist only in ignored `.tmp` files and are not runtime imports.
 
-Source: `D:/Stackr-1`, HEAD `4de71b535faaac6b876804c5ee156df8b47afbe6`, with existing uncommitted changes. HEAD alone does not reproduce the approved preview; use the file hashes and packet. No environment files, credentials, node_modules, catalogues or unrelated app files were packaged.
+App version **1.0.3**, production-owner profile, owner-only audience and runtime `1.0.3-owner-recognition-v1` remain unchanged. Native build numbers are not reserved or incremented. No credentials, API contracts, database migrations, provider flags or production records changed in this Home integration. Pricing activation still requires the separate [readiness gates](live-pricing-production-readiness.md).
 
-Pre-change fallback remains at `D:/Stackr-fallbacks/before-home-value-priority-20260906/source`; the earlier full fallback at `D:/Stackr-fallbacks/before-ux-refresh-20260905` is untouched. Recovery is selective and requires checking subsequent edits; never reset or clean the shared workspace.
+## Exact integrated application and test files
 
-## Required integration before a release build
+Modified:
 
-The pricing candidate at `e33855e33af17fba91fca8f7f60b2095941a2d1b` already changes `features/home/HubScreen.tsx` and `components/ValueTrackerCard.tsx`. Its API differs from the preview. **Do not copy either approved file over the pricing version.**
+- `features/home/HubScreen.tsx`
+- `components/ValueTrackerCard.tsx`
+- `components/HomeCommandCenter.tsx`
+- `components/StackrBackdrop.tsx`
+- `package.json` — adds `test:home-release`; version/dependencies unchanged.
+- `.github/workflows/platform-ci.yml` — runs the new Home regression suite.
 
-1. Keep the pricing candidate's nullable `totalValue`, `pricingState`, `pricingCoverageLabel`, `pricingWarning`, `refreshing` and `onRefresh` interface. Preserve unavailable versus empty states, known subtotals, stale-price disclosure and retained successful reads after refresh errors. Do not convert unavailable prices into zero.
-2. Keep `loadCollectionPrices`, collection pricing summaries/cache, exact-variant comparable history, authenticated refresh queue, bounded polling and rotating batches. Keep owner-only access and source/evidence checks, including Minty's comparable-history gating. The visual port must not replace the pricing data layer with the older preview workspace implementation.
-3. Port the approved layout, compact chart and English display helpers into those contracts. Adapt `HomeCollectionHero` to the candidate's binder/chase/activity state. Review `HomeCommandCenter` types and the existing BinderArtwork/StackrImage/artwork-fallback dependencies; preserve reference-image policy and original icons. Do not merge unrelated seller, marketplace, inventory or backend changes merely to satisfy imports.
-4. Preview fixtures are not needed in the native release. If retained for developer review, preserve both the route guard and Hub guard: development AND web AND framed AND loopback only. Native and production cannot accept fixture props or contact the optional loopback image helper. Never replace the normal Home route with `/dev/home-pricing-preview`.
-5. Run the existing pricing candidate checks plus the Home regressions against the integrated source, adapting tests to the preserved pricing contracts rather than weakening assertions. Export iOS JavaScript using the existing production-owner configuration, then perform the physical-device checks below. The pricing queue's previous iOS export does **not** include this approved Home.
+Added:
 
-Preserve app version **1.0.3**, the owner-only audience, production-owner profile and `1.0.3-owner-recognition-v1` runtime. Do not reserve a build number, change release flags, publish, submit, deploy or activate providers as part of queue preparation. Pricing activation retains all separate gates in [live-pricing readiness](live-pricing-production-readiness.md).
+- `components/HomeCollectorSections.tsx`
+- `lib/homeDisplayLabels.ts`
+- `lib/homeCardDisplayMetadata.ts`
+- `scripts/test-home-display-labels.ts`
+- `scripts/test-home-collector-sections.ts`
+- `scripts/test-home-value-release-layout.ts`
+- `scripts/test-home-release-integration.ts`
 
-## Verification receipt: approved source, not merged release
+Release documentation and receipts are recorded beside this file. The shared `D:/Stackr-1` app/preview and unrelated worktree changes were not modified. Its Home handoff pointer was updated separately.
 
-Fresh local checks on 6 September passed in `D:/Stackr-1`:
+## Combined verification
 
-- `npm run typecheck`
-- `npm run lint`
-- `npx tsx scripts/test-home-display-labels.ts`
-- `npx tsx scripts/test-home-collector-sections.ts`
-- `npx tsx scripts/test-home-value-layout.ts`
-- `npx tsx scripts/test-home-collector-preview.ts`
-- `npx tsx scripts/test-home-value-presentation.ts`
-- `npx tsx scripts/test-web-control-states.ts`
+- App and backend type checks pass.
+- Standard lint passes with zero errors and ten pre-existing warnings; focused lint of changed Home files passes without warnings.
+- `test:home-release`, `test:collection-pricing-ui`, `test:live-pricing`, `test:personal-pricing`, `test:poketrace-benchmark`, `test:mobile-runtime-config`, `test:stackr-api-v1` pass.
+- Gateway passes 27/27; generated API contract and 37/37 route coverage pass. No gateway/backend code changed in this integration.
+- Production-owner configuration validation and repository secret scan pass.
+- Local iOS export and final browser QA receipts are recorded in the completion section below. A JavaScript/Hermes export is not a signed native build or a physical-device test.
 
-The approved preview was previously reviewed at 393 x 852 and 430 x 932. Tests cover positive/negative movement, measured chart width, empty/loading/partial/error states, English fallback labels and fixture rejection for production/native/unframed/non-loopback environments. This queue preparation does not claim a new native export, signed build, physical-device test or combined pricing/Home regression pass.
+## Completion receipt — 6 September 2026
 
-## What to test in the next TestFlight
+The combined production-owner iOS export passed with 2,725 modules and 471 assets. Verified output: `.tmp/next-testflight-home-pricing-ios-20260906-verified`, Hermes bundle `entry-1040d663f64cb9c9ae95fa8a3831135f.hbc`. Source hashes, bundle SHA-256 and check results are in the [integrated release receipt](home-pricing-integrated-20260906-receipt.json). The exported bundle secret scan passed over 473 files. Expo emitted its existing Android-only `googleServicesFile` warning; the iOS export exited successfully.
 
-- With your real account, value and signed change appear before collecting content. The chart fits without horizontal overflow and the 7D/30D controls still work.
-- No collection is an onboarding state; a failed or unavailable price is not displayed as a GBP0 collection. Partial/stale values explain their coverage and age.
-- A refresh queues work honestly, retains existing successful data on failure, and never manufactures a price change.
-- Binder goals, card details, Chase List, Search and Scan open the intended real screens. No sample records or preview banner appear on iPhone.
-- Japanese/other foreign artwork stays in its original language; Home captions are English and preserve the edition/language label. Missing artwork follows the existing neutral fallback.
-- Check a narrow iPhone and a wider iPhone, large text, VoiceOver labels/reading order, tap targets, safe area and native haptics. Browser review cannot certify these device behaviours.
+Browser QA checked 393 x 852 and 430 x 932 using the actual extracted Home composition and integrated components with isolated local samples. Pricing details/range switching, Chase List, empty and error states, retained successful activity, header alignment and 44px compact controls were reviewed. A wrapped refresh icon was corrected and rechecked. The pricing-error Retry action now has an explicit accessible button role and a regression test.
 
-Release acceptance remains pending until the source integration, combined validation, owner-profile export and native smoke test are complete. Queueing does not weaken any existing release or provider gate.
+This harness uses native-to-web adapters, a simulated safe area and neutral card-artwork placeholders, without the native tab bar or real account/API traffic. It is layout evidence, not physical-iPhone, provider coverage or live-pricing accuracy certification. The normal 4174/8097 user preview remains untouched.
+
+## TestFlight acceptance still required
+
+On a narrow and wider iPhone, check real-account Home load, chart fitting and 7D/30D switching, queued refresh and failure recovery, empty/unavailable/partial/stale pricing, binder/card/Search/Scan navigation, foreign artwork with English Home captions, safe area, large text, VoiceOver and haptics. No preview banner, sample records or loopback image request should appear.
+
+Before a signed release, review the final combined commit/CI, perform normal native build/signing checks and preserve the pricing rollout gates. No remote branch push, EAS build, TestFlight upload, OTA or deployment was performed by this integration.
+
+## Fallback and source traceability
+
+The pre-integration pricing candidate is retained at commit `bb2a221` (with pricing code based on `e33855e`). The originally approved Home source remains frozen at `D:/Stackr-release-queue/home-20260906/source`; its [17-file manifest](home-ux-20260906-manifest.json) is historical snapshot evidence, not the integrated app manifest.
+
+The pre-visual-change fallback at `D:/Stackr-fallbacks/before-home-value-priority-20260906/source` and the earlier full fallback at `D:/Stackr-fallbacks/before-ux-refresh-20260905` are untouched. Any recovery must compare subsequent changes and restore selectively after direction; never reset or clean the shared workspace.

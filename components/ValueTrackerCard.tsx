@@ -25,6 +25,8 @@ type CurrencyCode = 'GBP' | 'USD' | 'EUR';
 type TrendRange = '7D' | '30D';
 
 export type ValueTrackerCardProps = {
+  /** Opt-in Home summary treatment; preserves the pricing-state contract below. */
+  compact?: boolean;
   totalValue: number | null;
   currency?: CurrencyCode;
   percentageChange?: number;
@@ -241,6 +243,7 @@ function ValueMovement({
 }
 
 export function ValueTrackerCard({
+  compact = false,
   totalValue,
   currency = 'GBP',
   percentageChange,
@@ -269,9 +272,9 @@ export function ValueTrackerCard({
 }: ValueTrackerCardProps & ValueTrackerActionProps) {
   const { theme, isDark } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
-  const isCompactLayout = screenWidth < 360;
+  const isCompactLayout = compact || screenWidth < 360;
   const [chartPanelWidth, setChartPanelWidth] = useState(0);
-  const chartHeight = VALUE_TRACKER_CHART_HEIGHT;
+  const chartHeight = compact ? 76 : VALUE_TRACKER_CHART_HEIGHT;
   const chartWidth = getValueTrackerChartWidth(chartPanelWidth, screenWidth);
   const handleChartPanelLayout = useCallback((event: LayoutChangeEvent) => {
     const nextWidth = Math.round(event.nativeEvent.layout.width);
@@ -300,6 +303,7 @@ export function ValueTrackerCard({
   const marketRefresh = React.useRef(new Animated.Value(1)).current;
   const hasAnimatedMarketRefresh = React.useRef(false);
   const [mintyInsightOpen, setMintyInsightOpen] = React.useState(false);
+  const [priceDetailsOpen, setPriceDetailsOpen] = React.useState(false);
   const fallbackMintyGeneratedAt = React.useMemo(() => new Date().toISOString(), []);
   const marketRefreshKey = useMemo(
     () => [
@@ -457,7 +461,7 @@ export function ValueTrackerCard({
             </Text>
           </View>
           {onRetry ? (
-            <TouchableOpacity onPress={onRetry} activeOpacity={0.82} style={styles.vaultStateButton}>
+            <TouchableOpacity onPress={onRetry} accessibilityRole="button" accessibilityLabel="Retry loading collection prices" activeOpacity={0.82} style={styles.vaultStateButton}>
               <Ionicons name="refresh" size={15} color="#FFFFFF" />
               <Text style={styles.vaultStateButtonText}>Retry</Text>
             </TouchableOpacity>
@@ -479,7 +483,7 @@ export function ValueTrackerCard({
             </Text>
           </View>
           {onEmptyAction ? (
-            <TouchableOpacity onPress={onEmptyAction} activeOpacity={0.82} style={styles.vaultStateButton}>
+            <TouchableOpacity onPress={onEmptyAction} accessibilityRole="button" accessibilityLabel="Scan a card for your collection" activeOpacity={0.82} style={styles.vaultStateButton}>
               <Ionicons name="camera" size={15} color="#FFFFFF" />
               <Text style={styles.vaultStateButtonText}>Scan Card</Text>
             </TouchableOpacity>
@@ -501,7 +505,7 @@ export function ValueTrackerCard({
             </Text>
           </View>
           {onRetry ? (
-            <TouchableOpacity onPress={onRetry} activeOpacity={0.82} style={styles.vaultStateButton}>
+            <TouchableOpacity onPress={onRetry} accessibilityRole="button" accessibilityLabel="Refresh collection price estimates" activeOpacity={0.82} style={styles.vaultStateButton}>
               <Ionicons name="refresh" size={15} color="#FFFFFF" />
               <Text style={styles.vaultStateButtonText}>Refresh</Text>
             </TouchableOpacity>
@@ -511,7 +515,7 @@ export function ValueTrackerCard({
     }
 
     return (
-      <View style={styles.vaultValueMainRow}>
+      <View style={[styles.vaultValueMainRow, compact && styles.vaultValueMainRowCompact]}>
         <View style={styles.vaultValueColumn}>
           <Text
             numeric
@@ -522,8 +526,8 @@ export function ValueTrackerCard({
               styles.vaultValueText,
               {
                 color: theme.colors.text,
-                fontSize: isCompactLayout ? 34 : 38,
-                lineHeight: isCompactLayout ? 39 : 44,
+                fontSize: compact ? 32 : isCompactLayout ? 34 : 38,
+                lineHeight: compact ? 38 : isCompactLayout ? 39 : 44,
                 width: '100%',
                 maxWidth: '100%',
               },
@@ -534,7 +538,14 @@ export function ValueTrackerCard({
           <Text style={[styles.vaultKnownValueLabel, { color: theme.colors.textSoft }]}>
             {pricingState === 'partial' ? 'Known subtotal' : 'Stored market estimate'}
           </Text>
-          {showTrendPanel ? (
+          {showTrendPanel ? (compact ? (
+            <View style={styles.vaultCompactMovement}>
+              <Ionicons name={changeIcon} size={14} color={changeColor} />
+              <Text numeric style={[styles.vaultCompactMovementText, { color: theme.colors.textSoft }]}>
+                {formatSignedCurrency(displayChange, currency)} ({formatSignedPercent(displayPercent)}) · {trendRange}
+              </Text>
+            </View>
+          ) : (
             <View style={[styles.vaultChangeBadge, isCompactLayout && styles.vaultChangeBadgeCompact, { backgroundColor: changeBackground }]}>
               <ValueMovement
                 icon={changeIcon}
@@ -544,7 +555,7 @@ export function ValueTrackerCard({
                 metaColor={theme.colors.textSoft}
               />
             </View>
-          ) : null}
+          )) : null}
           {pricingWarning ? (
             <Text style={[styles.vaultPricingWarning, { color: theme.colors.textSoft }]} numberOfLines={2}>
               {pricingWarning}
@@ -556,11 +567,12 @@ export function ValueTrackerCard({
           <View
             style={[
               styles.vaultChartPanel,
+              compact && styles.vaultChartPanelCompact,
               {
                 width: '100%',
-                height: chartHeight + 12,
-                backgroundColor: theme.colors.surface,
-                borderColor: theme.colors.border,
+                height: compact ? 80 : chartHeight + 12,
+                backgroundColor: compact ? 'transparent' : theme.colors.surface,
+                borderColor: compact ? 'transparent' : theme.colors.border,
               },
             ]}
             onLayout={handleChartPanelLayout}
@@ -593,37 +605,45 @@ export function ValueTrackerCard({
     );
   };
 
+  // Compact Home has several independent actions. Keep its outer surface neutral so
+  // assistive technology and touch handling reach each action directly.
+  const CardWrapper: React.ComponentType<any> = compact ? View : TouchableOpacity;
+  const cardWrapperProps = compact
+    ? { accessible: false }
+    : {
+        activeOpacity: 0.88,
+        disabled: !interactive,
+        onPress: interactive ? onPress : undefined,
+        accessibilityRole: interactive ? 'button' : undefined,
+        accessibilityLabel: hasValue
+          ? `Known collection value ${formatCurrency(totalValue ?? 0, currency)}.${showTrendPanel ? ` ${accessibilityChange}.` : ' Price history is building.'}`
+          : undefined,
+      };
+
   return (
     <>
-      <TouchableOpacity
-        activeOpacity={0.88}
-        disabled={!interactive}
-        onPress={interactive ? onPress : undefined}
-        accessibilityRole={interactive ? 'button' : undefined}
-        accessibilityLabel={
-          hasValue
-            ? `Known collection value ${formatCurrency(totalValue ?? 0, currency)}.${showTrendPanel ? ` ${accessibilityChange}.` : ' Price history is building.'}`
-            : undefined
-        }
+      <CardWrapper
+        {...cardWrapperProps}
         style={styles.vaultTouchable}
       >
         <View
           style={[
             styles.vaultCard,
+            compact && styles.vaultCardCompact,
             {
               backgroundColor: isDark ? theme.colors.card : '#FFFFFF',
               borderColor: theme.colors.border,
             },
           ]}
         >
-          <View style={[styles.vaultTopRow, isCompactLayout && styles.vaultTopRowCompact]}>
-            <View style={[styles.vaultTopCopy, isCompactLayout && styles.vaultTopCopyCompact]}>
+          <View style={[styles.vaultTopRow, isCompactLayout && styles.vaultTopRowCompact, compact && styles.vaultTopRowHomeCompact]}>
+            <View style={[styles.vaultTopCopy, isCompactLayout && styles.vaultTopCopyCompact, compact && styles.vaultTopCopyHomeCompact]}>
               <Text style={[styles.vaultEyebrow, { color: theme.colors.textSoft }]}>Collection Value</Text>
               <Text style={[styles.vaultSourceText, { color: theme.colors.textSoft }]}>
                 {pricingCoverageLabel || (ownedCount ? `${ownedCount} card${ownedCount === 1 ? '' : 's'} tracked` : 'No cards tracked')}
               </Text>
             </View>
-            {showTrendPanel ? (
+            {!compact && showTrendPanel ? (
               <View style={[styles.vaultTrendToggle, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                   {(['7D', '30D'] as TrendRange[]).map((range) => {
                     const active = trendRange === range;
@@ -655,6 +675,9 @@ export function ValueTrackerCard({
                 accessibilityRole="button"
                 accessibilityLabel="Queue live price refresh"
                 accessibilityHint="Queues provider work. Stored prices stay visible until a new snapshot is written."
+                accessibilityState={{ disabled: refreshing, busy: refreshing }}
+                aria-disabled={refreshing}
+                aria-busy={refreshing}
                 style={styles.vaultRefreshAction}
               >
                 {refreshing ? (
@@ -664,7 +687,7 @@ export function ValueTrackerCard({
                 )}
               </TouchableOpacity>
             ) : null}
-            {interactive ? (
+            {!compact && interactive ? (
               <View style={styles.vaultTopAction}>
                 <Text variant="buttonSecondary" style={styles.vaultTopActionText}>
                   History
@@ -677,6 +700,52 @@ export function ValueTrackerCard({
           <Animated.View style={{ opacity: marketRefresh, transform: [{ translateY: marketRefreshTranslateY }] }}>
             {renderState()}
           </Animated.View>
+          {compact && (hasValue || hasTrackedCards) ? (
+            <View style={styles.vaultCompactDetails}>
+              <View style={styles.vaultCompactDetailsActions}>
+                <Pressable
+                  onPress={() => setPriceDetailsOpen((open) => !open)}
+                  accessibilityRole="button"
+                  accessibilityLabel={priceDetailsOpen ? 'Hide price details' : 'Show price details'}
+                  accessibilityState={{ expanded: priceDetailsOpen }}
+                  aria-expanded={priceDetailsOpen}
+                  style={styles.vaultCompactDetailsButton}
+                >
+                  <Text style={[styles.vaultCompactDetailsText, { color: theme.colors.textSoft }]}>Price details</Text>
+                  <Ionicons name={priceDetailsOpen ? 'chevron-up' : 'chevron-down'} size={14} color={theme.colors.textSoft} />
+                </Pressable>
+                {interactive ? (
+                  <TouchableOpacity
+                    activeOpacity={0.82}
+                    onPress={onPress}
+                    accessibilityRole="button"
+                    accessibilityLabel="View value history"
+                    style={styles.vaultCompactAction}
+                  >
+                    <Text style={[styles.vaultCompactActionText, { color: theme.colors.primary }]}>View history</Text>
+                    <Ionicons name="chevron-forward" size={14} color={theme.colors.primary} />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+              {priceDetailsOpen ? (
+                <View style={styles.vaultCompactDetailsBody}>
+                  <Text style={[styles.vaultSourceText, { color: theme.colors.textSoft, marginTop: 0 }]}>An estimate, not a guaranteed sale price.</Text>
+                  {showTrendPanel && onTrendRangeChange ? (
+                    <View style={styles.vaultCompactControlRow}>
+                      <Text style={[styles.vaultSourceText, { color: theme.colors.textSoft, marginTop: 0 }]}>Chart period</Text>
+                      <View style={[styles.vaultTrendToggle, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                        {(['7D', '30D'] as TrendRange[]).map((range) => (
+                          <TouchableOpacity key={range} activeOpacity={0.82} onPress={(event) => { event.stopPropagation(); onTrendRangeChange(range); }} accessibilityRole="button" accessibilityLabel={`${range === '7D' ? '7' : '30'}-day chart`} accessibilityState={{ selected: trendRange === range }} aria-pressed={trendRange === range} style={[styles.vaultTrendToggleButton, styles.vaultCompactTrendToggleButton, trendRange === range && styles.vaultTrendToggleButtonActive]}>
+                            <Text style={[styles.vaultTrendToggleText, { color: trendRange === range ? theme.colors.primary : theme.colors.textSoft }]}>{range}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
+            </View>
+          ) : null}
         </View>
         {showInsightRow ? (
           <TouchableOpacity
@@ -720,7 +789,7 @@ export function ValueTrackerCard({
             </View>
           </TouchableOpacity>
         ) : null}
-      </TouchableOpacity>
+      </CardWrapper>
 
       <Modal visible={mintyInsightOpen} transparent animationType="fade" onRequestClose={() => setMintyInsightOpen(false)}>
         <View style={styles.mintyModalRoot}>
@@ -925,6 +994,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 4,
   },
+  vaultCardCompact: {
+    minHeight: 0,
+    borderRadius: 20,
+    padding: 12,
+  },
   vaultTopRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -936,12 +1010,20 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     rowGap: 8,
   },
+  vaultTopRowHomeCompact: {
+    flexWrap: 'nowrap',
+    rowGap: 0,
+    marginBottom: 6,
+  },
   vaultTopCopy: {
     flex: 1,
     minWidth: 0,
   },
   vaultTopCopyCompact: {
     flexBasis: '100%',
+  },
+  vaultTopCopyHomeCompact: {
+    flexBasis: 'auto',
   },
   vaultEyebrow: {
     ...typeScale.caption,
@@ -970,6 +1052,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 9,
+  },
+  vaultCompactTrendToggleButton: {
+    minWidth: 44,
+    minHeight: 44,
   },
   vaultTrendToggleButtonActive: {
     backgroundColor: '#6938F512',
@@ -1041,6 +1127,9 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     gap: 12,
   },
+  vaultValueMainRowCompact: {
+    gap: 8,
+  },
   vaultValueColumn: {
     flex: 1,
     minWidth: 0,
@@ -1077,6 +1166,62 @@ const styles = StyleSheet.create({
   },
   vaultChangeBadgeCompact: {
     borderRadius: 16,
+  },
+  vaultCompactMovement: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  vaultCompactMovementText: {
+    ...tabularNumberStyle,
+    fontSize: 12,
+    lineHeight: 17,
+    flexShrink: 1,
+  },
+  vaultCompactDetails: {
+    marginTop: 4,
+  },
+  vaultCompactDetailsActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  vaultCompactDetailsButton: {
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 4,
+  },
+  vaultCompactDetailsText: {
+    ...typeScale.support,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+  },
+  vaultCompactDetailsBody: {
+    gap: 8,
+    paddingBottom: 4,
+  },
+  vaultCompactControlRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+  },
+  vaultCompactAction: {
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 2,
+  },
+  vaultCompactActionText: {
+    ...typeScale.support,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '800',
   },
   valueMovement: {
     flexDirection: 'row',
@@ -1738,6 +1883,12 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     backgroundColor: 'rgba(48,18,112,0.10)',
     overflow: 'hidden',
+  },
+  vaultChartPanelCompact: {
+    borderWidth: 0,
+    borderRadius: 0,
+    justifyContent: 'flex-start',
+    marginTop: 2,
   },
   stateContent: {
     flex: 1,
