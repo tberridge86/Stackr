@@ -7,6 +7,8 @@ const { resolveMobileRuntimeConfig, targets } = require('../../config/mobile-run
 const {
   buildProductionExpoEnvironment,
   isLocalUrl,
+  isPreviewExpoAlive,
+  isVerifiedExpoUrl,
 } = require('./server.js');
 
 const inherited = {
@@ -74,4 +76,14 @@ for (const remoteOrUnsafeUrl of [
   'file:///tmp/app',
 ]) assert.equal(isLocalUrl(remoteOrUnsafeUrl), false);
 
-console.log('PASS production preview isolation, source config, and release invariants');
+assert.equal(isVerifiedExpoUrl('http://127.0.0.1:8083/login', 'http://127.0.0.1:8083'), true);
+assert.equal(isVerifiedExpoUrl('http://[::1]:8083', 'http://127.0.0.1:8083'), false);
+assert.equal(isVerifiedExpoUrl('http://127.0.0.1:8084', 'http://127.0.0.1:8083'), false);
+assert.equal(isVerifiedExpoUrl('https://example.com', 'http://127.0.0.1:8083'), false);
+assert.equal(isVerifiedExpoUrl('http://127.0.0.1:8083', null), false);
+assert.equal(isPreviewExpoAlive({ killed: false, exitCode: null }), true);
+assert.equal(isPreviewExpoAlive({ killed: true, exitCode: null }), false);
+assert.equal(isPreviewExpoAlive({ killed: false, exitCode: 0 }), false);
+assert.equal(isPreviewExpoAlive(null), false);
+
+console.log('PASS production preview isolation, source attribution, config, and release invariants');

@@ -47,6 +47,19 @@ function isLocalUrl(value) {
   }
 }
 
+function isVerifiedExpoUrl(requestedUrl, verifiedAppUrl) {
+  if (!verifiedAppUrl || !isLocalUrl(requestedUrl)) return false;
+  try {
+    return new URL(requestedUrl).origin === new URL(verifiedAppUrl).origin;
+  } catch {
+    return false;
+  }
+}
+
+function isPreviewExpoAlive(process) {
+  return Boolean(process && !process.killed && process.exitCode === null);
+}
+
 function alternateLoopbackUrl(value) {
   try {
     const url = new URL(value);
@@ -244,7 +257,8 @@ async function main() {
   const startApp = process.argv.includes('--start-app');
   const previewEnvironment = readPreviewEnvironment();
   const previewEnvironmentLabel = environmentLabel(previewEnvironment);
-  const previewSourceLabel = sourceLabel();
+  const previewSourceLabel = `Started from ${sourceLabel()} · live edits may differ`;
+  let verifiedAppUrl = null;
   if (!isLocalUrl(appUrl)) throw new Error('--app-url must be an http(s) localhost URL.');
 
   if (startApp) {
@@ -267,6 +281,10 @@ async function main() {
         throw new Error(`Port ${appPort} is in use, but it is not an Expo server.`);
       } else {
         startExpo(appPort, previewEnvironment);
+        // This is the only case where the host can attribute the server to this
+        // worktree and its explicit environment. A reused server might have
+        // been launched from another checkout or with different Expo settings.
+        verifiedAppUrl = appUrl;
       }
     }
   }
@@ -288,6 +306,7 @@ async function main() {
         return;
       }
       probeExpo(requestedAppUrl).then((ok) => {
+        const verified = isPreviewExpoAlive(appProcess) && isVerifiedExpoUrl(requestedAppUrl, verifiedAppUrl);
         response.writeHead(ok ? 200 : 503, {
           'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'no-store, max-age=0',
@@ -295,8 +314,11 @@ async function main() {
         });
         response.end(JSON.stringify({
           ok,
-          environment: previewEnvironment,
-          message: ok ? `${previewEnvironmentLabel} · Expo live · Fast Refresh on` : `Waiting for ${previewEnvironmentLabel} Expo…`,
+          environment: verified ? previewEnvironment : 'unverified',
+          verified,
+          message: ok
+            ? (verified ? `${previewEnvironmentLabel} · Expo live · Fast Refresh on` : 'Expo live · source/config unverified')
+            : (verified ? `Waiting for ${previewEnvironmentLabel} Expo…` : 'Waiting for external Expo…'),
         }));
       });
       return;
@@ -313,11 +335,14 @@ async function main() {
         response.end('Unable to load iPhone preview UI');
         return;
       }
+      const initialAppVerified = isPreviewExpoAlive(appProcess) && isVerifiedExpoUrl(appUrl, verifiedAppUrl);
       const renderedFile = file
         .toString('utf8')
         .replace('__IPHONE_PREVIEW_APP_URL__', escapeHtmlAttribute(appUrl))
-        .replace('__IPHONE_PREVIEW_ENVIRONMENT__', escapeHtmlAttribute(previewEnvironmentLabel))
-        .replace('__IPHONE_PREVIEW_SOURCE__', escapeHtmlAttribute(previewSourceLabel));
+        .replace('__IPHONE_PREVIEW_ENVIRONMENT__', escapeHtmlAttribute(initialAppVerified ? previewEnvironmentLabel : 'External Expo · config unverified'))
+        .replace('__IPHONE_PREVIEW_SOURCE__', escapeHtmlAttribute(initialAppVerified ? previewSourceLabel : 'External localhost Expo · source unverified'))
+        .replace('__IPHONE_PREVIEW_VERIFIED_ENVIRONMENT__', escapeHtmlAttribute(previewEnvironmentLabel))
+        .replace('__IPHONE_PREVIEW_VERIFIED_SOURCE__', escapeHtmlAttribute(previewSourceLabel));
       response.writeHead(200, {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'no-store, max-age=0',
@@ -367,6 +392,8 @@ if (require.main === module) {
 module.exports = {
   buildProductionExpoEnvironment,
   isLocalUrl,
+  isPreviewExpoAlive,
+  isVerifiedExpoUrl,
   probeExpo,
   sourceLabel,
 };

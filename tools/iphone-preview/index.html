@@ -58,12 +58,14 @@
     <section class="workspace" id="workspace">
       <aside class="meta"><div class="eyebrow">Layout device</div><div class="dimension">iPhone 15</div><div>Exact 393 × 852 layout viewport. Expo Web preview; native iOS APIs require a device or Mac simulator.</div></aside>
       <div class="stage" id="stage"><div class="phone" id="phone"><div class="screen"><iframe id="preview" name="stackr-iphone-15-preview" title="Live app preview" allow="clipboard-read; clipboard-write"></iframe><div class="safe-guide"></div><div class="island"></div><div class="home-indicator"></div></div></div></div>
-      <aside class="meta"><div class="eyebrow">Viewport</div><div class="dimension" id="dimensions">393 × 852</div><div class="eyebrow" style="margin-top:14px">Account environment</div><div class="dimension" style="font-size:16px;letter-spacing:-.02em">__IPHONE_PREVIEW_ENVIRONMENT__</div><div class="eyebrow" style="margin-top:14px">App source</div><div>__IPHONE_PREVIEW_SOURCE__</div><div class="status" id="status"><span class="dot"></span><span>Connecting…</span></div></aside>
+      <aside class="meta"><div class="eyebrow">Viewport</div><div class="dimension" id="dimensions">393 × 852</div><div class="eyebrow" style="margin-top:14px">Account environment</div><div class="dimension" id="preview-environment" style="font-size:16px;letter-spacing:-.02em">__IPHONE_PREVIEW_ENVIRONMENT__</div><div class="eyebrow" style="margin-top:14px">App source</div><div id="preview-source">__IPHONE_PREVIEW_SOURCE__</div><div class="status" id="status"><span class="dot"></span><span>Connecting…</span></div></aside>
     </section>
   </main>
   <script>
     const el = (id) => document.getElementById(id);
-    const phone = el('phone'), workspace = el('workspace'), frame = el('preview'), route = el('route'), appUrl = el('app-url'), status = el('status'), dimensions = el('dimensions');
+    const phone = el('phone'), workspace = el('workspace'), frame = el('preview'), route = el('route'), appUrl = el('app-url'), status = el('status'), dimensions = el('dimensions'), previewEnvironment = el('preview-environment'), previewSource = el('preview-source');
+    const verifiedEnvironment = '__IPHONE_PREVIEW_VERIFIED_ENVIRONMENT__';
+    const verifiedSource = '__IPHONE_PREVIEW_VERIFIED_SOURCE__';
     let landscape = false, frameLoaded = false, frameStarted = false, statusTimer;
     const localHosts = ['localhost', '127.0.0.1', '[::1]', '::1'];
     function localBase() {
@@ -76,6 +78,15 @@
     function source() {
       try { const base = localBase(); if (!base) return ''; const target = new URL(route.value.trim() || '/', `${base.origin}/`); return target.origin === base.origin ? target.href : ''; }
       catch { return ''; }
+    }
+    function updateAttribution(verified) {
+      if (verified) {
+        previewEnvironment.textContent = verifiedEnvironment;
+        previewSource.textContent = verifiedSource;
+      } else {
+        previewEnvironment.textContent = 'External Expo · config unverified';
+        previewSource.textContent = 'External localhost Expo · source unverified';
+      }
     }
     function restoreLocation() {
       const params = new URLSearchParams(window.location.search);
@@ -111,17 +122,18 @@
           frameStarted = true;
           frame.src = url;
         }
+        updateAttribution(result.verified === true);
         setStatus(response.ok && frameLoaded, response.ok && !frameLoaded ? 'Expo ready · loading app…' : result.message);
-      } catch { setStatus(false, 'Waiting for Expo…'); }
+      } catch { updateAttribution(false); setStatus(false, 'Waiting for Expo…'); }
     }
-    function load() { const url = source(); if (!url) return setStatus(false, 'Enter a valid app URL'); frameLoaded = false; frameStarted = false; setStatus(false, 'Connecting…'); checkStatus(); }
+    function load() { updateAttribution(false); const url = source(); if (!url) return setStatus(false, 'Enter a valid app URL'); frameLoaded = false; frameStarted = false; setStatus(false, 'Connecting…'); checkStatus(); }
     function fit() { const naturalWidth = landscape ? 876 : 417; const naturalHeight = landscape ? 417 : 876; const availableWidth = Math.max(280, workspace.clientWidth - 64); const availableHeight = Math.max(280, workspace.clientHeight - 40); const scale = Math.min(availableWidth / naturalWidth, availableHeight / naturalHeight, 1); el('stage').style.setProperty('--scale', scale.toFixed(4)); }
     el('navigation').addEventListener('submit', (event) => { event.preventDefault(); persistLocation(); load(); });
     el('reload').addEventListener('click', () => { setStatus(false, 'Reloading…'); try { frame.contentWindow.location.reload(); } catch { load(); } });
     el('orientation').addEventListener('click', () => { landscape = !landscape; document.body.classList.toggle('landscape', landscape); el('orientation').setAttribute('aria-label', landscape ? 'Switch to portrait' : 'Switch to landscape'); dimensions.textContent = landscape ? '852 × 393' : '393 × 852'; fit(); load(); });
     el('guides').addEventListener('click', (event) => { const active = document.body.classList.toggle('with-guide'); event.currentTarget.classList.toggle('active', active); event.currentTarget.setAttribute('aria-pressed', active); });
     frame.addEventListener('load', () => { if (!frameStarted) return; frameLoaded = true; checkStatus(); });
-    frame.addEventListener('error', () => { frameLoaded = false; setStatus(false, 'Could not reach app'); });
+    frame.addEventListener('error', () => { frameLoaded = false; updateAttribution(false); setStatus(false, 'Could not reach app'); });
     restoreLocation(); new ResizeObserver(fit).observe(workspace); window.addEventListener('resize', fit); fit(); load(); statusTimer = setInterval(checkStatus, 2000); window.addEventListener('beforeunload', () => clearInterval(statusTimer));
   </script>
 </body>

@@ -26,9 +26,9 @@ The production command runs its own Expo instance on port 8083, clears Metro's o
 
 The app code comes from the current local worktree, not a downloaded production build. Production refers to its connection settings; signing in still requires your real account. The launcher uses interactive single-page web output and two Metro workers. It skips Expo CLI online checks without disabling Stackr's own online services.
 
-The right-hand source label shows the exact local Git revision and whether tracked local changes are present. This host, its localhost URLs, and its frame are developer tooling; they are not imported by the app and are not bundled into an iOS archive. No account credentials are stored or supplied by the preview.
+The right-hand source label shows the Git revision at which this host started its Expo child and that child’s environment only while it remains alive. Fast Refresh can include later local edits, so the label never claims to identify the currently rendered code exactly. A pre-existing Expo server, an app URL selected in the toolbar, or a server that replaces a stopped child is deliberately labelled `source/config unverified`: it may come from another worktree or use different settings. This host, its localhost URLs, and its frame are developer tooling; they are not imported by the app and are not bundled into an iOS archive. No account credentials are stored or supplied by the preview.
 
-`--start-app` checks port 8081 first and reuses an existing local app. If it starts Expo itself, it streams that output and shuts down only that child process when the preview host exits.
+`--start-app` checks port 8081 first and can reuse an existing local Expo app, but reused apps are not attributed to this worktree or configuration. If it starts Expo itself, it streams that output and shuts down only that child process when the preview host exits.
 
 Options:
 
