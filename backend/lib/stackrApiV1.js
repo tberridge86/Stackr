@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import { getEnglishCardDisplayName } from './cardDisplayNames.js';
 
 export const STACKR_API_V1 = '1';
@@ -400,6 +401,36 @@ function chunked(values, size = 100) {
   return chunks;
 }
 
+function compareManifestCursor(left, right) {
+  if (left.catalogueVersionId !== right.catalogueVersionId) {
+    return left.catalogueVersionId < right.catalogueVersionId ? -1 : 1;
+  }
+  if (left.assetRowId === right.assetRowId) return 0;
+  return left.assetRowId < right.assetRowId ? -1 : 1;
+}
+
+function manifestCursorFromRow(row) {
+  const catalogueVersionId = clean(row?.catalogue_version_id)?.toLowerCase();
+  const assetRowId = clean(row?.asset_row_id)?.toLowerCase();
+  if (!isUuid(catalogueVersionId) || !isUuid(assetRowId)) {
+    throw new Error('Card-image manifest identity RPC returned an invalid keyset cursor.');
+  }
+  return { catalogueVersionId, assetRowId };
+}
+
+function pairedIdentityBatches(variantIds, printingIds) {
+  if (![...variantIds, ...printingIds].every(isUuid)) {
+    throw new Error('Card-image manifest identity RPC requires UUID identities.');
+  }
+  const variantChunks = chunked(variantIds);
+  const printingChunks = chunked(printingIds);
+  const count = Math.max(variantChunks.length, printingChunks.length);
+  return Array.from({ length: count }, (_, index) => ({
+    variantIds: variantChunks[index] ?? [],
+    printingIds: printingChunks[index] ?? [],
+  }));
+}
+
 async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
   const variantIds = [...new Set(cards.flatMap((card) => card.variants.flatMap((variant) => [
     variant.variantId,
@@ -430,12 +461,45 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
     return batches.flat();
   }
 
-  const [variantRows, printingRows] = await Promise.all([
-    fetchBy('variant_id', variantIds),
-    fetchBy('printing_id', printingIds),
-  ]);
+  async function fetchByIdentityRpc() {
+    const rows = [];
+    for (const batch of pairedIdentityBatches(variantIds, printingIds)) {
+      let cursor = null;
+      for (;;) {
+        const page = await queryRows(assetSupabase.schema('api').rpc(
+          'card_image_manifest_for_identities',
+          {
+            p_variant_ids: batch.variantIds,
+            p_printing_ids: batch.printingIds,
+            p_after_version_id: cursor?.catalogueVersionId ?? null,
+            p_after_asset_id: cursor?.assetRowId ?? null,
+            p_limit: 1000,
+          },
+        ));
+        rows.push(...page);
+        if (page.length < 1000) break;
+        const nextCursor = manifestCursorFromRow(page.at(-1));
+        if (cursor && compareManifestCursor(nextCursor, cursor) <= 0) {
+          throw new Error('Card-image manifest identity RPC returned a non-advancing keyset cursor.');
+        }
+        cursor = nextCursor;
+      }
+    }
+    return rows;
+  }
+
+  let fetchedRows;
+  if (options.assetIdentityRpc === true) {
+    fetchedRows = await fetchByIdentityRpc();
+  } else {
+    const [variantRows, printingRows] = await Promise.all([
+      fetchBy('variant_id', variantIds),
+      fetchBy('printing_id', printingIds),
+    ]);
+    fetchedRows = [...variantRows, ...printingRows];
+  }
   const uniqueRows = new Map();
-  for (const row of [...variantRows, ...printingRows]) {
+  for (const row of fetchedRows) {
     const rowId = clean(row?.asset_row_id) ?? clean(row?.asset_id);
     const key = rowId ? `${clean(row?.catalogue_version_id) ?? '*'}:${rowId}` : null;
     if (key && !uniqueRows.has(key)) uniqueRows.set(key, row);
@@ -1002,6 +1066,7 @@ export function createCatalogueV1Service(options) {
   const assetUrlOptions = {
     assetBaseUrl,
     supabaseUrl: options.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
+    assetIdentityRpc: options.assetIdentityRpc === true,
   };
   const modelIndexVersion = clean(options.modelIndexVersion)
     ?? clean(process.env.STACKR_MODEL_INDEX_VERSION)

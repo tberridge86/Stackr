@@ -3,6 +3,36 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const sql = readFileSync(resolve(process.cwd(), 'docs/sql/asset-manifest-card-image-equivalence-fixture.sql'), 'utf8');
+const rpc = readFileSync(resolve(process.cwd(), 'supabase/migrations/20260906062838_expose_bounded_card_image_identity_read.sql'), 'utf8');
+const indexes = readFileSync(resolve(process.cwd(), 'supabase/migrations/20260906062835_index_asset_printing_identity.sql'), 'utf8');
+
+// Deployment must keep the measured identity expansion and the existing manifest
+// as the final authority; a faster lookup must not loosen eligibility or payloads.
+assert.match(rpc, /returns setof api\.asset_manifest/i);
+assert.match(rpc, /security invoker\s+set search_path = ''/i);
+assert.doesNotMatch(rpc, /security definer|\b(insert into|update|delete from|truncate|drop)\b/i);
+assert.match(rpc, /cardinality\(p_variant_ids\) > 100/);
+assert.match(rpc, /cardinality\(p_printing_ids\) > 100/);
+assert.match(rpc, /p_limit < 1 or p_limit > 1000/);
+assert.match(rpc, /array_ndims\(p_variant_ids\)/);
+assert.match(rpc, /array_position\(p_printing_ids, null\)/);
+assert.match(rpc, /\(p_after_version_id is null\) <> \(p_after_asset_id is null\)/);
+assert.match(rpc, /SELECT id FROM catalog\.card_variants\s+WHERE printing_id = ANY\(p_printing_ids\)/i);
+assert.equal((rpc.match(/FROM catalog\.catalogue_version_assets cva/gi) ?? []).length, 2);
+assert.equal((rpc.match(/FROM catalog\.assets a/gi) ?? []).length, 2);
+assert.match(rpc, /SELECT m\.\* FROM api\.asset_manifest m/i);
+assert.match(rpc, /m\.variant_id = ANY\(p_variant_ids\) OR m\.printing_id = ANY\(p_printing_ids\)/i);
+assert.match(rpc, /\(m\.catalogue_version_id, m\.asset_row_id\) > \(p_after_version_id, p_after_asset_id\)/);
+assert.match(rpc, /ORDER BY m\.catalogue_version_id, m\.asset_row_id\s+LIMIT p_limit/i);
+assert.match(rpc, /revoke all[\s\S]*from public, anon, authenticated;/i);
+assert.match(rpc, /grant execute[\s\S]*to service_role;/i);
+assert.doesNotMatch(rpc, /grant execute[\s\S]*to (public|anon|authenticated)\b/i);
+assert.match(indexes, /set lock_timeout = '1s'/);
+assert.equal((indexes.match(/create index if not exists/gi) ?? []).length, 3);
+assert.match(indexes, /on catalog\.assets \(printing_id\) include \(id\)/);
+assert.match(indexes, /on catalog\.catalogue_version_assets \(variant_id\)/);
+assert.match(indexes, /on catalog\.catalogue_version_assets \(printing_id\)/);
+assert.doesNotMatch(indexes, /\b(insert into|update|delete from|truncate|drop)\b/i);
 const requestedVariants = new Set(['variant-cva']);
 const requestedPrintings = new Set(['printing-cva', 'printing-derived-cva', 'printing-derived-asset', 'printing-asset']);
 const variants = new Map([['variant-cva', 'printing-other'], ['variant-derived-cva', 'printing-derived-cva'], ['variant-derived-asset', 'printing-derived-asset'], ['variant-unrequested', 'printing-other']]);

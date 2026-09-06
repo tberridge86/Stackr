@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-06T06:47:33Z",
+  "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "scope": "Additive identity indexes and backend-only, read-only approved-artwork lookup; no catalogue, asset or ownership row changes.",
+  "migrationSha256": {
+    "20260906062835_index_asset_printing_identity.sql": "80e0898fdcb8b8cb678fe784e9ed260c67bc5457a98fd2f13a24728abb74ee94",
+    "20260906062838_expose_bounded_card_image_identity_read.sql": "4e4b17ae7b84e4e87e1ac3dd1914e524874f512ef3af9dc73cbecbc85bd469c4"
+  },
+  "hashNormalization": "UTF-8 with CRLF normalized to LF",
+  "equivalencePassed": true,
+  "planPassed": true,
+  "sampleMethod": "For each language, read 50 canonical variants from one exact published set/version. Obtain independent reference asset keys using the original manifest variant-or-printing predicate, then compare complete reference manifest DTOs to the new RPC using EXCEPT ALL in both directions. Counts are asset rows, not card coverage.",
+  "sampleResults": [
+    { "language": "en", "variantCount": 50, "printingCount": 48, "expectedRows": 48, "actualRows": 48, "missingRows": 0, "extraRows": 0, "rpcExecutionMs": 343.899 },
+    { "language": "ja", "variantCount": 50, "printingCount": 50, "expectedRows": 50, "actualRows": 50, "missingRows": 0, "extraRows": 0, "rpcExecutionMs": 419.567 },
+    { "language": "zh-cn", "variantCount": 50, "printingCount": 49, "expectedRows": 137, "actualRows": 137, "missingRows": 0, "extraRows": 0, "rpcExecutionMs": 772.24 },
+    { "language": "zh-tw", "variantCount": 50, "printingCount": 48, "expectedRows": 4, "actualRows": 4, "missingRows": 0, "extraRows": 0, "rpcExecutionMs": 170.972 }
+  ],
+  "plan": {
+    "sixJapaneseRowsBeforeIndexesMs": 2837.607,
+    "sixJapaneseRowsAfterIndexesMs": 103.616,
+    "sixJapaneseRowsThroughRpcMs": 216.094,
+    "newIndexesUsed": ["assets_printing_identity_lookup_idx", "catalogue_version_assets_variant_identity_idx", "catalogue_version_assets_printing_identity_idx"],
+    "caveat": "Observed samples with different cache states, not a controlled latency benchmark or production SLO claim. Indexed plans remove the identified broad identity scans."
+  },
+  "validation": {
+    "emptyArraysReturnZero": true,
+    "invalidCasesRejected": 7,
+    "invalidCases": ["null array", "101 identities", "null identity", "multidimensional array", "half cursor", "zero limit", "limit above 1000"],
+    "paginationFirstPageRows": 2,
+    "paginationSecondPageRows": 2,
+    "paginationFullDtoDifferences": 0
+  },
+  "permissions": { "securityInvoker": true, "emptySearchPath": true, "stable": true, "anonymousExecute": false, "authenticatedExecute": false, "serviceRoleExecute": true },
+  "advisors": { "securityFindings": 26, "performanceFindings": 701, "findingsNamingNewObjects": 0, "note": "Existing project findings remain; this is not a clean-project security attestation." },
+  "productionApplied": false,
+  "remaining": ["Protected main-only production preparation", "Exact reviewed backend release", "Authenticated live binder image and quantity verification", "Full historical coverage audit beyond these samples"]
+}

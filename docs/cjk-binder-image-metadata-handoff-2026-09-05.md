@@ -173,3 +173,29 @@ and its `entry-ad05de483d209c3601e46e19194db01a.js` entry remain the preview
 artifact; a fresh HTTP check of port 8087 returned that entry and status 200.
 No new build or signed-in binder verification is claimed. PR #134 remains
 draft, and the owner-paused production release has not been resumed.
+
+### Owner-resumed repair — 6 September
+
+The owner's subsequent “unblock this” resumes this scoped repair and release.
+The signed-in preview is accessible. The existing VSTAR Universe binder renders
+native Japanese names, its saved logo, 75/172 tracked slots, 97 missing slots
+and seven duplicates, but reports catalogue retry and no card images. No
+ownership controls were operated. Those displayed quantities are observations,
+not yet a verified reconciliation of all saved records.
+
+Staging now has three additive identity indexes and a bounded, service-role-only
+security-invoker RPC. It reads the unchanged approved asset manifest and changes
+no catalogue, asset, storage or ownership rows. Complete DTO comparisons against
+independently obtained original-query membership passed for English, Japanese,
+Simplified Chinese and Traditional Chinese: 48, 50, 137 and four asset rows,
+respectively; zero missing or extra rows in every sample. Seven invalid input
+cases were rejected and cursor pagination reproduced the same full DTOs.
+The 50-variant RPC samples completed in 171–772 ms on staging. These are samples,
+not proof of complete card coverage or production latency. Detailed evidence is
+in `deploy/evidence/binder-artwork-read-staging-2026-09-06.json`.
+
+The backend RPC option is implemented and regression-tested but remains off
+until the production dependency is prepared through a protected release path.
+No production database or backend change has been made at this checkpoint.
+The existing broad catalogue release would promote data, so it is not used for
+this read-side repair. A narrowly bounded preparation workflow is being added.

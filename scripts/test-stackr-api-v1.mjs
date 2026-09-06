@@ -628,6 +628,154 @@ async function assertHydrationPaginatesAssetRows() {
   );
 }
 
+async function assertOptInIdentityRpcHydration() {
+  const catalogueVersionId = '44444444-4444-4444-8444-444444444444';
+  const aliasVariantId = '99999999-9999-4999-8999-999999999999';
+  const variantIds = Array.from({ length: 101 }, (_, index) => (
+    `11111111-1111-4111-8111-${(index + 1).toString(16).padStart(12, '0')}`
+  ));
+  const cardRows = variantIds.map((id, index) => ({
+    variant_id: id,
+    same_artwork_as_variant_id: index === 0 ? aliasVariantId : null,
+    catalogue_version_id: catalogueVersionId,
+    canonical_key: `pokemon:ja:${setId}:157/165:${index}`,
+    game_code: 'pokemon',
+    language_code: 'ja',
+    set_id: setId,
+    printing_id: cardId,
+    collector_number: '157/165',
+    card_native_name: 'リザードンex',
+    variant_code: `finish-${index}`,
+  }));
+  const supabase = {
+    schema() {
+      return {
+        from(table) {
+          return {
+            select() { return this; },
+            eq() { return this; },
+            order() { return this; },
+            limit() { return this; },
+            maybeSingle() { return Promise.resolve({ data: { catalogue_version_id: catalogueVersionId }, error: null }); },
+            then(resolve, reject) {
+              const data = table === 'catalogue_sets'
+                ? [{ catalogue_version_id: catalogueVersionId }]
+                : cardRows;
+              return Promise.resolve({ data, error: null }).then(resolve, reject);
+            },
+          };
+        },
+      };
+    },
+  };
+  const pageOne = Array.from({ length: 1000 }, (_, index) => ({
+    asset_row_id: `aaaaaaaa-aaaa-4aaa-8aaa-${(index + 1).toString(16).padStart(12, '0')}`,
+    asset_id: `aaaaaaaa-aaaa-4aaa-8aaa-${(index + 1).toString(16).padStart(12, '0')}`,
+    asset_type: 'card_image',
+    catalogue_version_id: catalogueVersionId,
+    printing_id: cardId,
+    variant_id: aliasVariantId,
+    storage_provider: 'external_reference',
+    external_url: `https://images.example/not-ready-${index}.webp`,
+    permission_status: 'approved',
+    derivative_list: [],
+  }));
+  const readyRow = {
+    asset_row_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+    asset_id: 'best-rpc-alias',
+    asset_type: 'card_image',
+    catalogue_version_id: catalogueVersionId,
+    printing_id: cardId,
+    variant_id: aliasVariantId,
+    storage_provider: 'supabase_storage',
+    storage_bucket: 'stackr-catalogue-public',
+    storage_key: 'cards/rpc-alias.webp',
+    permission_status: 'approved',
+    derivative_list: ['card-grid', 'search-result', 'detail-page'].map((role) => ({
+      role,
+      storageBucket: 'stackr-catalogue-public',
+      storageKey: `cards/rpc-alias-${role}.webp`,
+    })),
+  };
+  const rpcCalls = [];
+  const assetSupabase = {
+    schema(schema) {
+      assert.equal(schema, 'api');
+      return {
+        from() { assert.fail('opt-in RPC hydration must not fall back to asset_manifest reads'); },
+        rpc(name, args) {
+          assert.equal(name, 'card_image_manifest_for_identities');
+          rpcCalls.push(args);
+          const firstChunk = args.p_variant_ids.includes(aliasVariantId);
+          const data = firstChunk && args.p_after_asset_id == null
+            ? pageOne
+            : firstChunk
+              ? [readyRow]
+              : [];
+          return Promise.resolve({ data, error: null });
+        },
+      };
+    },
+  };
+  const catalogue = createCatalogueV1Service({
+    supabase,
+    assetSupabase,
+    assetIdentityRpc: true,
+    supabaseUrl: 'https://project.supabase.co',
+  });
+  const result = await catalogue.setCards(setId, { limit: 120 });
+  assert.equal(result.cards[0].variants[0].image.assetId, 'best-rpc-alias');
+  assert.equal(result.cards[0].variants[0].image.variantId, aliasVariantId);
+  assert.equal(rpcCalls.length, 3, 'two variant chunks and a keyset continuation must be read');
+  assert.equal(rpcCalls[0].p_variant_ids.length, 100);
+  assert.deepEqual(rpcCalls[0].p_printing_ids, [cardId]);
+  assert.equal(rpcCalls[0].p_after_version_id, null);
+  assert.equal(rpcCalls[0].p_after_asset_id, null);
+  assert.equal(rpcCalls[1].p_after_version_id, catalogueVersionId);
+  assert.equal(rpcCalls[1].p_after_asset_id, pageOne.at(-1).asset_row_id);
+  assert.equal(rpcCalls[2].p_variant_ids.length, 2);
+  assert.deepEqual(rpcCalls[2].p_printing_ids, []);
+  assert.ok(rpcCalls.every((args) => args.p_variant_ids.length <= 100 && args.p_printing_ids.length <= 100));
+
+  const failedAssetSupabase = {
+    schema() {
+      return {
+        from() { assert.fail('a failed RPC must not fall back to slow manifest queries'); },
+        rpc() { return Promise.resolve({ data: null, error: new Error('candidate RPC unavailable') }); },
+      };
+    },
+  };
+  const failedCatalogue = createCatalogueV1Service({ supabase, assetSupabase: failedAssetSupabase, assetIdentityRpc: true });
+  await assert.rejects(() => failedCatalogue.setCards(setId, { limit: 120 }), /candidate RPC unavailable/);
+
+  const malformedCursorAssetSupabase = {
+    schema() {
+      return {
+        from() { assert.fail('malformed RPC cursors must fail before fallback reads'); },
+        rpc() { return Promise.resolve({ data: [...pageOne.slice(0, -1), { ...pageOne.at(-1), asset_row_id: 'not-a-uuid' }], error: null }); },
+      };
+    },
+  };
+  const malformedCursorCatalogue = createCatalogueV1Service({ supabase, assetSupabase: malformedCursorAssetSupabase, assetIdentityRpc: true });
+  await assert.rejects(() => malformedCursorCatalogue.setCards(setId, { limit: 120 }), /invalid keyset cursor/);
+
+  let nonAdvancingCall = 0;
+  const nonAdvancingAssetSupabase = {
+    schema() {
+      return {
+        from() { assert.fail('a non-advancing RPC cursor must fail before fallback reads'); },
+        rpc() {
+          nonAdvancingCall += 1;
+          return Promise.resolve({ data: pageOne, error: null });
+        },
+      };
+    },
+  };
+  const nonAdvancingCatalogue = createCatalogueV1Service({ supabase, assetSupabase: nonAdvancingAssetSupabase, assetIdentityRpc: true });
+  await assert.rejects(() => nonAdvancingCatalogue.setCards(setId, { limit: 120 }), /non-advancing keyset cursor/);
+  assert.equal(nonAdvancingCall, 2);
+}
+
 async function assertAssetManifestCursorQuery() {
   const catalogueVersionId = '66666666-6666-4666-8666-666666666666';
   const firstAssetRowId = '77777777-7777-4777-8777-777777777777';
@@ -934,6 +1082,7 @@ await assertAssetManifestServerClientIsolation();
 await assertSearchServerClientIsolation();
 await assertSiblingVariantIsNotAnImageFallback();
 await assertHydrationPaginatesAssetRows();
+await assertOptInIdentityRpcHydration();
 
 await assertEnglishPresentationProjection();
 
