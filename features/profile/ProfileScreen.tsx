@@ -1193,7 +1193,7 @@ function IdentityFlowModal({
 export default function ProfileScreen() {
   const { theme } = useTheme();
   const { mode, premiumSellerAccess, setMode } = useAppMode();
-  const { profile, loading, refreshProfile, updateProfile } = useProfile();
+  const { profile, loading, error: profileError, refreshProfile, updateProfile } = useProfile();
   const { unlocks, refreshAchievements } = useAchievements();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -1553,7 +1553,7 @@ export default function ProfileScreen() {
     Alert.alert(card.name ?? 'Featured card', 'Choose what you want to do with this profile slot.', actions);
   }, [openShowcaseSearch, profile, refreshProfile]);
 
-  if (loading) {
+  if (loading && !profile) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
         <StackrBackdrop />
@@ -1574,18 +1574,20 @@ export default function ProfileScreen() {
         <View style={{ flex: 1, padding: 22, alignItems: 'center', justifyContent: 'center' }}>
           <HeroIcon icon="profile" size={72} label="" />
           <Text style={{ color: theme.colors.text, fontSize: 20, lineHeight: 25, fontWeight: '900', marginTop: 14 }}>
-            No profile found
+            {profileError ? 'Profile unavailable' : 'No profile found'}
           </Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', textAlign: 'center', marginTop: 6 }}>
-            Complete your Stackr profile setup to continue.
+            {profileError ?? 'Complete your Stackr profile setup to continue.'}
           </Text>
           <TouchableOpacity
-            onPress={() => router.push('/profile/setup')}
+            onPress={() => profileError ? void refreshProfile() : router.push('/profile/setup')}
             activeOpacity={0.84}
+            accessibilityRole="button"
+            accessibilityLabel={profileError ? 'Retry loading profile' : 'Set up profile'}
             style={{ marginTop: 18, minHeight: 48, borderRadius: 18, backgroundColor: theme.colors.primary, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center' }}
           >
             <Text style={{ color: '#FFFFFF', fontSize: 14, lineHeight: 17, fontWeight: '900' }}>
-              Set up profile
+              {profileError ? 'Try again' : 'Set up profile'}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -1615,6 +1617,18 @@ export default function ProfileScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: stackrTabContentPadding.standard }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.colors.primary} />}
       >
+        {profileError ? (
+          <TouchableOpacity
+            onPress={() => void refreshProfile()}
+            accessibilityRole="button"
+            accessibilityLabel="Profile could not refresh. Retry loading profile"
+            style={{ minHeight: 44, justifyContent: 'center', marginBottom: 8 }}
+          >
+            <Text style={{ color: theme.colors.textSoft, lineHeight: 20 }}>
+              Could not refresh your profile. Showing the last loaded details. <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>Retry</Text>
+            </Text>
+          </TouchableOpacity>
+        ) : null}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
           <StackrPageTitle title="Profile" accentText="file" />
           <View style={{ flexDirection: 'row', gap: 8 }}>

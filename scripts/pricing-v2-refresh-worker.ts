@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { refreshPricingForCard } from '../backend/lib/pricingV2/engine.js';
+import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -16,35 +17,56 @@ function hasFlag(name: string) {
 }
 
 function requireEnv(name: string) {
+  // The worker intentionally validates a small caller-supplied environment key.
+  // eslint-disable-next-line expo/no-dynamic-env-var
   const value = process.env[name];
   if (!value) throw new Error(`Missing ${name}`);
   return value;
 }
 
-function resolveSupabaseUrl() {
-  const explicit = process.env.SUPABASE_URL;
-  if (explicit) return explicit;
-  const projectRef = process.env.SUPABASE_PROJECT_REF || 'oakdbbzdqwurpjnoqhmu';
-  return `https://${projectRef}.supabase.co`;
-}
+const supabaseTarget = resolvePricingV2SupabaseTarget();
 
 const supabase = createClient(
-  resolveSupabaseUrl(),
+  supabaseTarget.url,
   process.env.SUPABASE_SERVICE_ROLE_KEY || requireEnv('SUPABASE_SECRET_KEY')
 );
 
 async function fetchQueue(limit: number) {
-  const { data, error } = await supabase
+  const dueAt = new Date().toISOString();
+  const dueQuery = () => supabase
     .from('price_refresh_queue')
     .select('*')
     .is('processed_at', null)
-    .lte('run_after', new Date().toISOString())
+    .lte('run_after', dueAt)
     .order('priority', { ascending: false })
-    .order('requested_at', { ascending: true })
-    .limit(limit * 3);
-  if (error) throw error;
-  return (data ?? [])
-    .filter((row: any) => String(row.reason ?? '').startsWith('pricing_v2') || row.metadata?.pricingEngine === 'v2')
+    .order('requested_at', { ascending: true });
+
+  // Filter each V2 ownership signal in PostgREST before limiting. Filtering a
+  // mixed queue in memory allowed a large legacy backlog to starve exact manual
+  // refreshes indefinitely.
+  const results = await Promise.all([
+    dueQuery().like('reason', 'pricing_v2%').limit(limit),
+    dueQuery().eq('metadata->>pricingEngine', 'v2').limit(limit),
+    dueQuery()
+      .eq('reason', 'manual_snapshot_refresh')
+      .in('metadata->>refreshPipeline', ['pricing_v2_exact', 'legacy_snapshot'])
+      .not('metadata->>canonicalVariantId', 'is', null)
+      .limit(limit),
+  ]);
+  for (const result of results) {
+    if (result.error) throw result.error;
+  }
+
+  const unique = new Map<string, any>();
+  for (const result of results) {
+    for (const row of result.data ?? []) unique.set(row.id, row);
+  }
+  return [...unique.values()]
+    .sort((left: any, right: any) => {
+      const priority = Number(right.priority ?? 0) - Number(left.priority ?? 0);
+      if (priority) return priority;
+      return String(left.requested_at ?? '').localeCompare(String(right.requested_at ?? ''));
+    })
     .slice(0, limit);
 }
 
@@ -58,9 +80,21 @@ async function markQueue(row: any, error?: string) {
     : {
         processed_at: new Date().toISOString(),
         last_error: null,
-      };
+  };
   const { error: updateError } = await supabase.from('price_refresh_queue').update(patch).eq('id', row.id);
-  if (updateError) console.log(`Could not update queue row ${row.id}: ${updateError.message}`);
+  if (updateError) throw new Error(`Could not persist queue state for ${row.id}: ${updateError.message}`);
+}
+
+function exactQueueMetadataError(metadata: Record<string, any>) {
+  const missing = (name: string) => !String(metadata[name] ?? '').trim();
+  const required = ['canonicalVariantId', 'identityKey', 'canonicalCardName'];
+  const productType = metadata.productType ?? 'raw_card';
+  if (productType !== 'sealed_product') required.push('cardNumber');
+  if (productType === 'sealed_product') required.push('sealedProductType');
+  const absent = required.filter(missing);
+  return absent.length
+    ? `Exact pricing queue metadata is incomplete (${absent.join(', ')}); refusing printing-level rehydration.`
+    : null;
 }
 
 async function run() {
@@ -69,6 +103,8 @@ async function run() {
   const ignoreFeatureFlag = hasFlag('ignore-feature-flag');
   const delayMs = Number(getArg('delayMs', process.env.PRICING_V2_REFRESH_DELAY_MS ?? '700'));
   const queue = await fetchQueue(limit);
+  const pokeTraceExpected = String(process.env.PRICING_V2_POKETRACE_SOLD_ENABLED ?? '').toLowerCase() === 'true'
+    && String(process.env.PRICING_V2_POKETRACE_SOLD_AUTHORISED ?? '').toLowerCase() === 'true';
 
   const stats = {
     totalQueued: queue.length,
@@ -96,31 +132,73 @@ async function run() {
   for (let index = 0; index < queue.length; index += 1) {
     const row = queue[index];
     try {
+      const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+      const metadataError = exactQueueMetadataError(metadata);
+      if (metadataError) throw new Error(metadataError);
       const result = await refreshPricingForCard(supabase, row.card_id, {
         setId: row.set_id,
         language: row.language,
-        productType: row.metadata?.productType ?? 'raw_card',
+        productType: metadata.productType ?? 'raw_card',
+        canonicalVariantId: metadata.canonicalVariantId ?? metadata.variantId ?? null,
+        canonicalPrintingId: metadata.canonicalPrintingId ?? null,
+        canonicalCardName: metadata.canonicalCardName ?? metadata.name ?? null,
+        canonicalSetName: metadata.canonicalSetName ?? metadata.setName ?? null,
+        setCode: metadata.setCode ?? null,
+        cardNumber: metadata.cardNumber ?? metadata.number ?? null,
+        rarity: metadata.rarity ?? null,
+        variant: metadata.variantCode ?? metadata.variant ?? null,
+        finish: metadata.finishCode ?? metadata.finish ?? null,
+        edition: metadata.edition ?? null,
+        condition: metadata.condition ?? metadata.rawCondition ?? 'raw_near_mint',
+        rawCondition: metadata.rawCondition ?? metadata.condition ?? 'raw_near_mint',
+        promoCode: metadata.promoCode ?? null,
+        gradingCompany: metadata.gradingCompany ?? null,
+        grade: metadata.grade ?? null,
+        qualifier: metadata.qualifier ?? null,
+        sealedProductType: metadata.sealedProductType ?? null,
+        packageVariant: metadata.packageVariant ?? null,
+        releaseRegion: metadata.releaseRegion ?? null,
+        currency: metadata.currency ?? 'GBP',
         ignoreFeatureFlag,
       });
-      stats.completed += 1;
-      if (result.marketPrice != null) stats.priceFound += 1;
-      else stats.priceStillUnavailable += 1;
-      if (result.state === 'insufficient_exact_market_evidence') stats.noExactMatch += 1;
+      if (metadata.identityKey && result.identityKey !== metadata.identityKey) {
+        throw new Error(`Exact pricing identity mismatch: queued ${metadata.identityKey}, received ${result.identityKey ?? 'none'}`);
+      }
+      if (metadata.canonicalVariantId && result.canonicalVariantId !== metadata.canonicalVariantId) {
+        throw new Error(`Exact pricing canonical variant mismatch: queued ${metadata.canonicalVariantId}, received ${result.canonicalVariantId ?? 'none'}`);
+      }
       for (const limitation of result.accessLimitations ?? []) {
         stats.sourceSpecificFailureCounts[limitation.source] = (stats.sourceSpecificFailureCounts[limitation.source] ?? 0) + 1;
       }
-      await markQueue(row);
-      console.log(`[${index + 1}/${queue.length}] ${row.card_id}: ${result.state}`);
+      const pokeTraceFailure = (result.accessLimitations ?? [])
+        .find((limitation: any) => limitation.source === 'poketrace_sold');
+      if (pokeTraceExpected && pokeTraceFailure) {
+        const message = `PokeTrace exact sold-evidence refresh failed: ${pokeTraceFailure.message ?? 'provider unavailable'}`;
+        stats.failed += 1;
+        await markQueue(row, message);
+        console.log(`[${index + 1}/${queue.length}] ${row.card_id}: ${message}`);
+      } else {
+        stats.completed += 1;
+        if (result.marketPrice != null) stats.priceFound += 1;
+        else stats.priceStillUnavailable += 1;
+        if (result.state === 'insufficient_exact_market_evidence') stats.noExactMatch += 1;
+        await markQueue(row);
+        console.log(`[${index + 1}/${queue.length}] ${row.card_id}: ${result.state}`);
+      }
     } catch (error: any) {
+      const message = error?.message ?? String(error);
       stats.failed += 1;
-      await markQueue(row, error?.message ?? String(error));
-      console.log(`[${index + 1}/${queue.length}] ${row.card_id}: failed - ${error?.message ?? error}`);
+      await markQueue(row, message);
+      console.log(`[${index + 1}/${queue.length}] ${row.card_id}: failed - ${message}`);
     }
     if (index + 1 < queue.length) await delay(delayMs);
   }
 
   console.log(JSON.stringify(stats, null, 2));
-  if (stats.failed > 0) process.exitCode = 1;
+  if (stats.failed > 0
+    || (pokeTraceExpected && (stats.sourceSpecificFailureCounts.poketrace_sold ?? 0) > 0)) {
+    process.exitCode = 1;
+  }
 }
 
 run().catch((error) => {

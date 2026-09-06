@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { getSourceConfig, pricingV2Config } from './config.js';
 import { normalizeLanguage, normalizeLanguageForDb } from './identity.js';
+import { validateSoldProvenance } from '../marketPricing/soldProvenance.js';
 
 export function toNumber(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -50,32 +51,47 @@ export function normaliseObservation(rawObservation, identity, match, config = p
   const sourceConfig = getSourceConfig(sourceId);
   const currency = String(rawObservation.currency || rawObservation.originalCurrency || 'GBP').trim().toUpperCase();
   const originalItemPrice = toNumber(rawObservation.itemPrice ?? rawObservation.originalItemPrice ?? rawObservation.price);
-  const originalShippingPrice = toNumber(rawObservation.shippingPrice ?? rawObservation.originalShippingPrice) ?? 0;
-  const normalisedItemPriceGbp = convertToGbp(originalItemPrice, currency, config.currencyRates);
-  const normalisedShippingGbp = convertToGbp(originalShippingPrice, currency, config.currencyRates) ?? 0;
-  const normalisedDeliveredPriceGbp = normalisedItemPriceGbp == null
+  const rawShippingPrice = rawObservation.shippingPrice ?? rawObservation.originalShippingPrice;
+  const originalShippingPrice = rawShippingPrice == null ? null : toNumber(rawShippingPrice);
+  const fetchedAt = rawObservation.fetchedAt || new Date().toISOString();
+  const provenance = rawObservation.sourceType === 'sold_transaction'
+    ? validateSoldProvenance(rawObservation, {
+      sourceConfig,
+      matchScore: match.score,
+      minimumMatchScore: config.minimumMatchScore,
+    })
+    : null;
+  const effectiveItemPrice = provenance?.finalPrice ?? originalItemPrice;
+  const effectiveCurrency = provenance?.currency ?? currency;
+  const normalisedItemPriceGbp = convertToGbp(effectiveItemPrice, effectiveCurrency, config.currencyRates);
+  const normalisedShippingGbp = originalShippingPrice == null
+    ? null
+    : convertToGbp(originalShippingPrice, effectiveCurrency, config.currencyRates);
+  const normalisedDeliveredPriceGbp = normalisedItemPriceGbp == null || normalisedShippingGbp == null
     ? null
     : Math.round((normalisedItemPriceGbp + normalisedShippingGbp) * 100) / 100;
   const shippingFlag = getShippingFlag(normalisedItemPriceGbp, normalisedShippingGbp);
-  const fetchedAt = rawObservation.fetchedAt || new Date().toISOString();
+  const sourceType = provenance && !provenance.qualified
+    ? 'market_estimate'
+    : rawObservation.sourceType || 'market_estimate';
 
   const observation = {
     cardId: identity.cardId,
     canonicalIdentityKey: identity.identityKey,
     identity,
     sourceId,
-    sourceType: rawObservation.sourceType || 'market_estimate',
+    sourceType,
     externalReference: rawObservation.externalReference ?? rawObservation.id ?? null,
     productType: identity.productType,
     title: rawObservation.title ?? identity.canonicalCardName ?? '',
-    originalItemPrice,
+    originalItemPrice: effectiveItemPrice,
     originalShippingPrice,
-    originalCurrency: currency,
-    currencyConversionRate: config.currencyRates[currency] ?? null,
+    originalCurrency: effectiveCurrency,
+    currencyConversionRate: config.currencyRates[effectiveCurrency] ?? null,
     currencyConversionTimestamp: fetchedAt,
     normalisedItemPriceGbp,
     normalisedDeliveredPriceGbp,
-    soldAt: rawObservation.soldAt ?? null,
+    soldAt: provenance?.soldAt ?? rawObservation.soldAt ?? null,
     listedAt: rawObservation.listedAt ?? rawObservation.observedAt ?? null,
     fetchedAt,
     language: normalizeLanguage(rawObservation.language ?? identity.language),
@@ -90,16 +106,19 @@ export function normaliseObservation(rawObservation, identity, match, config = p
     matchExplanation: match.explanation,
     sourceReliability: rawObservation.sourceReliability ?? sourceConfig.reliabilityWeight ?? 0.3,
     includedInEstimate: Boolean(match.accepted && normalisedDeliveredPriceGbp != null && !shippingFlag),
-    exclusionReason: match.accepted
-      ? shippingFlag
-      : match.reasons.join(', '),
+    exclusionReason: provenance && !provenance.qualified
+      ? provenance.reasons.join(', ')
+      : match.accepted
+        ? (originalShippingPrice == null ? 'UNKNOWN_SHIPPING_PRICE' : shippingFlag)
+        : match.reasons.join(', '),
     metadata: {
       ...rawObservation.metadata,
       matchReasons: match.reasons,
       query: rawObservation.query ?? null,
       shippingFlag,
       sourceDisplayName: sourceConfig.displayName,
-      sourceType: rawObservation.sourceType,
+      sourceType,
+      soldProvenance: provenance,
     },
     rawPayload: rawObservation.rawPayload ?? rawObservation.raw ?? rawObservation,
   };

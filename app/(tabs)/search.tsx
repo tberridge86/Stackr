@@ -55,6 +55,7 @@ import {
   type PokemonSet,
 } from '../../lib/pokemonTcg';
 import { getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { searchMarketProducts, productLookupLabel, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
 import { expandSearchQuery, normaliseSearchText } from '../../lib/searchNormalisation';
 import {
@@ -1421,6 +1422,16 @@ export default function GlobalSearchScreen() {
               imageUri={card.imageUri}
               setName={card.setName}
               setLogoUri={getPokemonSetLogoUrl(card.setId)}
+              setLogoSource={getLocalSetArtworkSourceForSet({
+                id: card.setId,
+                language: card.language,
+                name: card.setName,
+                localName: card.raw?.raw_data?.set?.local_name ?? card.raw?.raw_data?.set?.name,
+                englishDisplayName: card.raw?.raw_data?.set?.english_display_name ?? card.raw?.raw_data?.set?.englishDisplayName,
+                setCode: card.raw?.raw_data?.set?.set_code ?? card.raw?.external_ids?.setCode,
+                sourceId: card.raw?.raw_data?.set?.tcgdex_id ?? card.raw?.external_ids?.tcgdex,
+                externalIds: card.raw?.external_ids,
+              })}
               number={card.number}
               rarity={card.rarity}
               estimatedValue={card.estimatedValue}
@@ -1449,6 +1460,16 @@ export default function GlobalSearchScreen() {
               name={set.name}
               logoUri={enforceSetVisualRuntimePolicy(set.images?.logo) ?? null}
               artworkUri={enforceSetVisualRuntimePolicy(getPokemonSetVisualUrl(set) ?? set.images?.symbol ?? getPokemonSetSymbolUrl(set.id, set.language))}
+              artworkSource={getLocalSetArtworkSourceForSet({
+                id: set.id,
+                language: set.language,
+                name: set.name,
+                localName: set.localName,
+                englishDisplayName: set.englishDisplayName,
+                setCode: set.externalIds?.setCode,
+                sourceId: set.externalIds?.tcgdex ?? set.externalIds?.pokedata,
+                externalIds: set.externalIds,
+              })}
               series={set.series}
               year={set.releaseDate ? new Date(set.releaseDate).getFullYear() : null}
               total={Number(set.printedTotal ?? set.total ?? 0) > 0 ? Number(set.printedTotal ?? set.total) : null}

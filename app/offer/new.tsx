@@ -18,6 +18,7 @@ import { getCachedCardSync } from '../../lib/pokemonTcgCache';
 import { fetchUserCardAvailability } from '../../lib/cardOwnership';
 import { fetchOwnedCardRows } from '../../lib/ownership';
 import { stackrBrand } from '../../lib/stackrBrand';
+import { CARD_ONLY_RELEASE_NOTICE } from '../../lib/tradeOfferReview';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 import { attachLiveTcgdexCardReferences } from '../../lib/pokemonTcg';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
@@ -1096,6 +1097,7 @@ export default function NewOfferScreen() {
         ) : (
           <>
             <TextInput
+              accessibilityLabel="Search your owned cards"
               value={offerCardSearch}
               onChangeText={setOfferCardSearch}
               placeholder="Search your owned cards"
@@ -1111,6 +1113,9 @@ export default function NewOfferScreen() {
                 return (
                   <TouchableOpacity
                     key={filter.key}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    aria-pressed={active}
                     onPress={() => setOfferCardFilter(filter.key)}
                     activeOpacity={0.78}
                     style={[styles.offerFilterChip, active && styles.offerFilterChipActive]}
@@ -1139,6 +1144,9 @@ export default function NewOfferScreen() {
               return (
                 <TouchableOpacity
                   key={card.id}
+                  accessibilityRole="checkbox"
+                  accessibilityLabel={`${card.name}${ownershipLabel ? `, ${ownershipLabel}` : ''}`}
+                  accessibilityState={{ checked: selected }}
                   onPress={() => toggleCard(card.id)}
                   style={[
                     styles.selectCardRow,
@@ -1194,9 +1202,13 @@ export default function NewOfferScreen() {
 
 
 
+      <Text style={styles.muted}>{CARD_ONLY_RELEASE_NOTICE}</Text>
     </ScrollView>
     <View style={{ paddingHorizontal: 16, paddingBottom: 110, paddingTop: 8 }}>
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Send offer"
+        accessibilityState={{ disabled: sending || !canSubmitOffer, busy: sending }}
         onPress={sendOffer}
         disabled={sending || !canSubmitOffer}
         style={[styles.sendButton, (sending || !canSubmitOffer) && styles.disabled]}
@@ -1474,6 +1486,10 @@ function makeStyles(theme: any) {
     marginBottom: 10,
   },
   offerFilterChip: {
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 999,
     paddingHorizontal: 11,
     paddingVertical: 7,
@@ -1499,6 +1515,7 @@ function makeStyles(theme: any) {
     gap: 12,
   },
   selectCardRow: {
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -1785,6 +1802,7 @@ function makeStyles(theme: any) {
     fontWeight: '900',
   },
   sendButton: {
+    minHeight: 44,
     backgroundColor: theme.colors.primary,
     paddingVertical: 16,
     borderRadius: 16,

@@ -2,17 +2,24 @@ import { pricingV2Config } from '../config.js';
 import { generatePricingQueries } from '../queryGenerator.js';
 
 function normalizeSoldPayloadItem(item, query) {
-  const price = item.itemPrice ?? item.price ?? item.soldPrice ?? item.totalPrice;
-  const currency = item.currency ?? item.priceCurrency ?? item.originalCurrency ?? 'GBP';
+  // Do not substitute a visible/listing price for a final paid price. Providers
+  // which cannot distinguish the two are useful only as market estimates.
+  const finalPrice = item.finalPrice ?? item.final_price ?? item.soldPrice ?? item.sold_price
+    ?? item.transactionPrice ?? item.transaction_price ?? item.totalPrice ?? item.total_price ?? null;
+  const currency = item.finalPriceCurrency ?? item.final_price_currency ?? item.soldCurrency
+    ?? item.currency ?? item.priceCurrency ?? item.originalCurrency ?? null;
   const soldAt = item.soldAt ?? item.sold_at ?? item.transactionDate ?? item.endTime ?? null;
   const externalReference = item.transactionId ?? item.listingId ?? item.itemId ?? item.id ?? null;
+  const listingUrl = item.listingUrl ?? item.itemWebUrl ?? item.url ?? null;
+  const saleStatus = item.saleVerificationState ?? item.saleStatus ?? item.transactionStatus ?? item.status ?? null;
 
   return {
     sourceId: 'ebay_sold',
     sourceType: 'sold_transaction',
     externalReference,
     title: item.title ?? item.name ?? '',
-    itemPrice: price,
+    itemPrice: finalPrice,
+    finalPrice,
     shippingPrice: item.shippingPrice ?? item.shipping ?? 0,
     currency,
     soldAt,
@@ -21,19 +28,26 @@ function normalizeSoldPayloadItem(item, query) {
     gradingCompany: item.gradingCompany ?? item.grader ?? null,
     grade: item.grade ?? null,
     condition: item.condition ?? null,
+    sourceUrl: listingUrl,
+    saleStatus,
+    saleVerificationState: item.saleVerificationState ?? saleStatus,
     metadata: {
       query,
       saleType: item.saleType ?? item.buyingOption ?? null,
       bestOffer: Boolean(item.bestOffer ?? item.best_offer),
-      listingUrlPermitted: Boolean(item.listingUrl || item.url),
-      listingUrl: item.listingUrl ?? item.url ?? null,
+      listingUrlPermitted: Boolean(listingUrl),
+      listingUrl,
+      saleStatus,
+      finalPriceProvided: finalPrice != null,
     },
     rawPayload: item,
   };
 }
 
 export function createEbaySoldAdapter(config = pricingV2Config.sources.ebay_sold) {
-  const hasAuthorisedAccess = Boolean(config.enabled && config.authorisedEndpoint && config.authorisedToken);
+  const hasAuthorisedAccess = Boolean(
+    config.enabled && config.authorisedEndpoint && config.authorisedToken && config.authorisedSoldData === true,
+  );
 
   return {
     id: 'ebay_sold',
@@ -58,7 +72,7 @@ export function createEbaySoldAdapter(config = pricingV2Config.sources.ebay_sold
       if (!hasAuthorisedAccess) {
         return {
           status: 'unavailable',
-          message: 'No authorised eBay completed/sold transaction provider is configured.',
+          message: 'No explicitly authorised eBay completed/sold transaction provider is configured.',
         };
       }
       return { status: 'ok', message: 'Authorised eBay sold provider configured.' };

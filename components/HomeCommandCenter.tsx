@@ -24,7 +24,8 @@ import { StackrButtonPattern } from './StackrEmboss';
 import { StackrCardActionIcon } from './StackrScreen';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from './RaritySymbol';
 import { stackrIcons } from '../lib/stackrIcons';
-import { getJapaneseSetLogoSourceForSet } from '../lib/japaneseSetLogos';
+import { getHomeActivityDisplayTitle, getHomeCardDisplayName, getHomeCardSetDisplayName, getHomeCardLanguageLabel } from '../lib/homeDisplayLabels';
+import { getLocalSetArtworkSourceForSet } from '../lib/localSetArtwork';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
 import { numericTextStyle, stackrFonts, tabularNumberStyle, typeScale } from '../lib/typography';
 import { getCustomBinderNameArt } from '../lib/customBinderNameArt';
@@ -32,6 +33,13 @@ import { stackrGradients } from '../lib/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type IconName = keyof typeof Ionicons.glyphMap;
+
+type HomeSetEnglishSupplement = {
+  value: string;
+  label: 'English set:' | 'English translation:';
+  authoritative: boolean;
+  status?: string;
+};
 
 export type HomeBinderSummary = {
   id: string;
@@ -63,6 +71,11 @@ export type HomeBinderTopValueCard = {
   cardId: string;
   setId: string | null;
   name: string;
+  englishName?: string | null;
+  setName?: string | null;
+  englishSetSupplement?: HomeSetEnglishSupplement | null;
+  number?: string | null;
+  language?: string | null;
   imageUrl: string | null;
   estimatedValue: number | null;
 };
@@ -71,7 +84,11 @@ export type HomeDuplicateItem = {
   cardId: string;
   setId: string | null;
   name: string;
+  englishName?: string | null;
   setName: string;
+  englishSetSupplement?: HomeSetEnglishSupplement | null;
+  number?: string | null;
+  language?: string | null;
   imageUrl: string | null;
   extraQuantity: number;
   estimatedValue: number;
@@ -89,10 +106,13 @@ export type HomeCardPreview = {
   cardId: string;
   setId: string | null;
   name: string;
+  englishName?: string | null;
   setName: string;
+  englishSetSupplement?: HomeSetEnglishSupplement | null;
   number?: string | null;
   rarity?: string | null;
   imageUrl: string | null;
+  language?: string | null;
   estimatedValue?: number | null;
 };
 
@@ -113,6 +133,10 @@ export type HomeActivityType = 'added' | 'removed' | 'duplicate' | 'favorite' | 
 export type HomeActivityItem = {
   id: string;
   title: string;
+  /** Exact name fragment in title; display-only translation never changes card identity. */
+  cardName?: string | null;
+  englishName?: string | null;
+  language?: string | null;
   subtitle?: string | null;
   createdAt: string;
   valueChange?: number | null;
@@ -536,7 +560,7 @@ export function ContinueBinderCard({
   const hasBinder = Boolean(!isLoading && !error && binder);
   const [setLogoFailed, setSetLogoFailed] = React.useState(false);
   const setLogoSource = binder?.type === 'official'
-    ? getJapaneseSetLogoSourceForSet({
+    ? getLocalSetArtworkSourceForSet({
       id: binder.sourceSetId,
       language: binder.sourceSetLanguage,
       name: binder.name,
@@ -819,7 +843,11 @@ export function ContinueBinderCard({
 
 function DuplicateResultCard({ item }: { item: HomeDuplicateItem }) {
   const { theme } = useTheme();
-  const setLogoSource = item.setId ? getJapaneseSetLogoSourceForSet({ id: item.setId }) : null;
+  const setLogoSource = item.setId ? getLocalSetArtworkSourceForSet({
+    id: item.setId,
+    language: item.language,
+    name: item.setName,
+  }) : null;
   const setLogoUrl = item.setId && !setLogoSource ? getPokemonSetLogoUrl(item.setId) : undefined;
   const reveal = React.useRef(new Animated.Value(0)).current;
   const translateY = reveal.interpolate({
@@ -1117,7 +1145,9 @@ function OpportunityRow({
 export function HomeOpportunitiesSection({
   duplicateSummary,
   chaseCount,
-  marketMoverCount,
+  marketMoverCount = 0,
+  hasCollectionMovement,
+  movementSummary,
   isLoading,
   error,
   onDuplicates,
@@ -1126,7 +1156,9 @@ export function HomeOpportunitiesSection({
 }: {
   duplicateSummary: HomeDuplicateSummary;
   chaseCount: number;
-  marketMoverCount: number;
+  marketMoverCount?: number;
+  hasCollectionMovement?: boolean;
+  movementSummary?: string | null;
   isLoading: boolean;
   error?: string | null;
   onDuplicates: () => void;
@@ -1142,7 +1174,7 @@ export function HomeOpportunitiesSection({
           imageIcon: stackrIcons.duplicates,
           title: `${duplicateSummary.count} duplicate cop${duplicateSummary.count === 1 ? 'y' : 'ies'} to review`,
           subtitle: 'Sort, trade, or organise your extras',
-          value: formatMoney(duplicateSummary.estimatedValue),
+          value: duplicateSummary.estimatedValueAvailable ? formatMoney(duplicateSummary.estimatedValue) : 'Price unavailable',
           onPress: onDuplicates,
         }
       : null,
@@ -1157,13 +1189,13 @@ export function HomeOpportunitiesSection({
           onPress: onChase,
         }
       : null,
-    marketMoverCount > 0
+    (hasCollectionMovement ?? marketMoverCount > 0)
       ? {
           key: 'market',
           icon: 'analytics-outline' as IconName,
           imageIcon: stackrIcons.marketMovers,
-          title: `${marketMoverCount} market mover${marketMoverCount === 1 ? '' : 's'} in your collection`,
-          subtitle: 'Review cards affecting value',
+          title: 'Collection value changed',
+          subtitle: movementSummary ?? 'Review cards affecting value',
           value: 'History',
           onPress: onMarketMovers,
         }
@@ -1180,9 +1212,9 @@ export function HomeOpportunitiesSection({
 
   return (
     <View style={{ marginBottom: 20 }}>
-      <HomeSectionHeader title="Opportunities" />
-      <View style={[styles.card, styles.opportunitiesCardV2, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        {isLoading ? (
+      <HomeSectionHeader title="On your radar" />
+      <View>
+        {isLoading && rows.length === 0 ? (
           [0, 1, 2].map((index) => (
             <View key={index} style={styles.opportunitySkeletonV2}>
               <View style={[styles.opportunityIconV2, { backgroundColor: theme.colors.surface }]} />
@@ -1192,14 +1224,14 @@ export function HomeOpportunitiesSection({
               </View>
             </View>
           ))
-        ) : error ? (
-          <EmptyMessage icon="alert-circle-outline" title="Could not load opportunities" subtitle={error} />
         ) : rows.length ? (
           rows.map((row, index) => (
             <View key={row.key} style={index === rows.length - 1 ? styles.opportunityLastRowV2 : undefined}>
               <OpportunityRow {...row} />
             </View>
           ))
+        ) : error ? (
+          <EmptyMessage icon="alert-circle-outline" title="Could not load collection updates" subtitle={error} actionLabel="Open chase list" onAction={onChase} />
         ) : (
           <EmptyMessage
             icon="albums-outline"
@@ -1207,6 +1239,7 @@ export function HomeOpportunitiesSection({
             subtitle="Add cards to binders or track chase cards to surface trades and market changes."
           />
         )}
+        {error && rows.length > 0 ? <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 18 }}>{error}</Text> : null}
       </View>
     </View>
   );
@@ -1261,6 +1294,8 @@ export function ChaseOrMissingSection({
               <TouchableOpacity
                 key={`${item.setId ?? 'set'}:${item.cardId}`}
                 onPress={() => onItemPress(item)}
+                accessibilityRole="button"
+                accessibilityLabel={`View ${getHomeCardDisplayName(item)}`}
                 activeOpacity={0.84}
                 style={[
                   isChase ? styles.chasePreviewCard : styles.previewCard,
@@ -1288,9 +1323,9 @@ export function ChaseOrMissingSection({
                   />
                 </View>
                 <View style={isChase ? styles.chasePreviewCopy : styles.previewCopy}>
-                  <Text style={[isChase ? styles.chasePreviewTitle : styles.previewTitle, { color: theme.colors.text }]} numberOfLines={isChase ? 1 : 2}>{item.name}</Text>
+                  <Text style={[isChase ? styles.chasePreviewTitle : styles.previewTitle, { color: theme.colors.text }]} numberOfLines={isChase ? 1 : 2}>{getHomeCardDisplayName(item)}</Text>
                   <Text style={[isChase ? styles.chasePreviewSub : styles.previewSub, { color: theme.colors.textSoft }]} numberOfLines={1}>
-                    {isChase ? item.setName : item.number ? `#${item.number}` : item.setName}
+                    {isChase ? getHomeCardSetDisplayName(item) : item.number ? `#${item.number}` : getHomeCardSetDisplayName(item)}
                   </Text>
                   <Text style={[isChase ? styles.chasePreviewAction : styles.previewValue, { color: HOME_HERO_PRIMARY }]} numberOfLines={1}>
                     {isChase ? item.estimatedValue != null ? formatMoney(item.estimatedValue) : 'Value pending' : item.estimatedValue != null ? formatMoney(item.estimatedValue) : 'View'}
@@ -1351,9 +1386,8 @@ export function ChaseCardsSheet({
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const selectedCard = items.find((item) => item.cardId === selectedCardId) ?? items[0] ?? null;
-  const selectedSetLogoSource = selectedCard?.setId ? getJapaneseSetLogoSourceForSet({ id: selectedCard.setId }) : null;
-  const selectedSetLogoUrl = selectedCard?.setId && !selectedSetLogoSource ? getPokemonSetLogoUrl(selectedCard.setId) : null;
-  const cardWidth = Math.min(Math.max(width * 0.76, 244), 330);
+  const selectedCardIndex = selectedCard ? Math.max(0, items.findIndex((item) => item.cardId === selectedCard.cardId)) : -1;
+  const cardWidth = Math.min(Math.max(width - 40, 244), 420);
   const sheetHeight = Math.min(height * 0.9, height - insets.top - 18);
   const estimatedValues = items
     .map((item) => item.estimatedValue)
@@ -1363,9 +1397,9 @@ export function ChaseCardsSheet({
   const renderListingCopy = (listing: HomeChaseListingSuggestion) => {
     const price = listing.askingPrice != null ? `guide price ${formatMoney(listing.askingPrice)}` : listing.tradeOnly ? 'trade proposals' : 'offers open';
     if (listing.sellerDisplayName) {
-      return `${listing.sellerDisplayName} has a browse-only listing for ${selectedCard?.name ?? 'this card'} · ${price}.`;
+      return `${listing.sellerDisplayName} has a browse-only listing for ${selectedCard ? getHomeCardDisplayName(selectedCard) : 'this card'} · ${price}.`;
     }
-    return `${selectedCard?.name ?? 'This card'} has a browse-only listing · ${price}.`;
+    return `${selectedCard ? getHomeCardDisplayName(selectedCard) : 'This card'} has a browse-only listing · ${price}.`;
   };
 
   return (
@@ -1460,8 +1494,8 @@ export function ChaseCardsSheet({
               >
                 {items.map((item) => {
                   const selected = item.cardId === selectedCard?.cardId;
-                  const setLogoSource = item.setId ? getJapaneseSetLogoSourceForSet({ id: item.setId }) : null;
-                  const setLogoUrl = item.setId && !setLogoSource ? getPokemonSetLogoUrl(item.setId) : null;
+                  const displayName = getHomeCardDisplayName(item);
+                  const languageLabel = getHomeCardLanguageLabel(item.language);
                   return (
                     <TouchableOpacity
                       key={`${item.cardId}:${item.setId ?? 'set'}`}
@@ -1477,7 +1511,8 @@ export function ChaseCardsSheet({
                         selected && styles.chaseCarouselCardSelected,
                       ]}
                       accessibilityRole="button"
-                      accessibilityLabel={`Select ${item.name}`}
+                      accessibilityLabel={`Select ${displayName}${languageLabel ? `, ${languageLabel}` : ''}`}
+                      accessibilityState={{ selected }}
                     >
                       {item.imageUrl ? (
                         <StackrImage
@@ -1493,32 +1528,9 @@ export function ChaseCardsSheet({
                         </View>
                       )}
                       <View style={styles.chaseCarouselCopy}>
-                        <Text style={[styles.chaseCarouselTitle, { color: theme.colors.text }]} numberOfLines={2}>{item.name}</Text>
-                        <View style={styles.chaseCarouselSetRow}>
-                          {setLogoSource ? (
-                            <StackrImage
-                              source={setLogoSource}
-                              style={styles.chaseCarouselSetLogo}
-                              contentFit="contain"
-                              priority="low"
-                              showFallbackIcon={false}
-                              placeholderColor="transparent"
-                            />
-                          ) : setLogoUrl ? (
-                            <StackrImage
-                              uri={setLogoUrl}
-                              style={styles.chaseCarouselSetLogo}
-                              contentFit="contain"
-                              priority="low"
-                              showFallbackIcon={false}
-                              placeholderColor="transparent"
-                            />
-                          ) : (
-                            <View style={[styles.chaseSetFallback, { borderColor: theme.colors.border }]}>
-                              <Ionicons name="albums-outline" size={14} color={HOME_HERO_PRIMARY} />
-                            </View>
-                          )}
-                        </View>
+                        <Text style={[styles.chaseCarouselTitle, { color: theme.colors.text }]} numberOfLines={2}>{displayName}</Text>
+                        <Text style={[styles.chaseCarouselMeta, { color: theme.colors.textSoft }]} numberOfLines={2}>{getHomeCardSetDisplayName(item)}</Text>
+                        {item.number || languageLabel ? <Text style={[styles.chaseCarouselMeta, { color: theme.colors.textSoft }]}>{[item.number ? `#${item.number}` : null, languageLabel].filter(Boolean).join(' · ')}</Text> : null}
                         <Text style={[styles.chaseCarouselPrice, { color: HOME_HERO_PRIMARY }]} numberOfLines={1}>
                           {item.estimatedValue != null ? `Est. ${formatMoney(item.estimatedValue)}` : 'Estimated value unavailable'}
                         </Text>
@@ -1528,42 +1540,15 @@ export function ChaseCardsSheet({
                 })}
               </ScrollView>
 
+              {items.length > 1 ? (
+                <View style={[styles.chasePosition, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]} accessibilityRole="text" accessibilityLabel={`Card ${selectedCardIndex + 1} of ${items.length}`}>
+                  <Text numeric style={[styles.chasePositionText, { color: theme.colors.textSoft }]}>{selectedCardIndex + 1} of {items.length}</Text>
+                </View>
+              ) : null}
+
               {selectedCard ? (
-                <View style={[styles.chaseDetailPanel, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                  <View style={styles.chaseDetailHeader}>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={[styles.chaseDetailTitle, { color: theme.colors.text }]} numberOfLines={2}>{selectedCard.name}</Text>
-                      <View style={styles.chaseDetailSetRow}>
-                        {selectedSetLogoSource ? (
-                          <StackrImage
-                            source={selectedSetLogoSource}
-                            style={styles.chaseDetailSetLogo}
-                            contentFit="contain"
-                            priority="low"
-                            showFallbackIcon={false}
-                            placeholderColor="transparent"
-                          />
-                        ) : selectedSetLogoUrl ? (
-                          <StackrImage
-                            uri={selectedSetLogoUrl}
-                            style={styles.chaseDetailSetLogo}
-                            contentFit="contain"
-                            priority="low"
-                            showFallbackIcon={false}
-                            placeholderColor="transparent"
-                          />
-                        ) : (
-                          <View style={[styles.chaseSetFallback, { borderColor: theme.colors.border }]}>
-                            <Ionicons name="albums-outline" size={14} color={HOME_HERO_PRIMARY} />
-                          </View>
-                        )}
-                      </View>
-                    </View>
-                    <Text style={[styles.chaseDetailValue, { color: HOME_HERO_PRIMARY }]} numberOfLines={1}>
-                      {selectedCard.estimatedValue != null ? formatMoney(selectedCard.estimatedValue) : 'Value unavailable'}
-                    </Text>
-                  </View>
-                  <TouchableOpacity onPress={() => onViewCard(selectedCard)} activeOpacity={0.82} style={styles.chaseDetailAction}>
+                <View style={styles.chaseDetailPanel}>
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel="View selected chase card" onPress={() => onViewCard(selectedCard)} activeOpacity={0.82} style={styles.chaseDetailAction}>
                     <Text style={styles.chaseDetailActionText}>View card</Text>
                     <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
                   </TouchableOpacity>
@@ -1648,20 +1633,22 @@ export function RecentActivitySection({
   error,
   onRetry,
   onItemPress,
+  openLayout = false,
 }: {
   items: HomeActivityItem[];
   isLoading: boolean;
   error?: string | null;
   onRetry: () => void;
   onItemPress: (item: HomeActivityItem) => void;
+  openLayout?: boolean;
 }) {
   const { theme } = useTheme();
   const [activityExpanded, setActivityExpanded] = React.useState(false);
-  const visibleLimit = activityExpanded ? 10 : 2;
+  const visibleLimit = activityExpanded ? 10 : 3;
   const visibleItems = items.slice(0, visibleLimit);
-  const canExpandActivity = items.length > 2;
+  const canExpandActivity = items.length > 3;
   const expandedCount = Math.min(items.length, 10);
-  const hiddenActivityCount = Math.max(0, expandedCount - 2);
+  const hiddenActivityCount = Math.max(0, expandedCount - 3);
   const firstActivityId = items[0]?.id;
 
   React.useEffect(() => {
@@ -1670,9 +1657,9 @@ export function RecentActivitySection({
 
   return (
     <View style={{ marginBottom: 20 }}>
-      <HomeSectionHeader title="Recent Activity" subtitle="Your latest collection moves" />
-      <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        {isLoading ? (
+      <HomeSectionHeader title="From your collection" subtitle="Your latest additions and activity" />
+      <View style={openLayout ? undefined : [styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+        {isLoading && items.length === 0 ? (
           [0, 1].map((index) => (
             <View key={index} style={styles.activitySkeletonRow}>
               <View style={[styles.activityCardThumb, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]} />
@@ -1682,18 +1669,21 @@ export function RecentActivitySection({
               </View>
             </View>
           ))
-        ) : error ? (
+        ) : error && items.length === 0 ? (
           <EmptyMessage icon="alert-circle-outline" title="Could not refresh recent activity" subtitle={error} actionLabel="Retry" onAction={onRetry} />
         ) : visibleItems.length > 0 ? (
           <>
             {visibleItems.map((item, index) => {
               const visual = activityVisuals[getActivityType(item)];
+              const displayTitle = getHomeActivityDisplayTitle(item);
               const timestamp = formatRelativeTime(item.createdAt);
 
               return (
                 <TouchableOpacity
                   key={item.id}
                   onPress={() => onItemPress(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${displayTitle}. ${item.subtitle ?? ''}. ${timestamp}`}
                   activeOpacity={0.78}
                   style={[
                     styles.activityRow,
@@ -1731,7 +1721,7 @@ export function RecentActivitySection({
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <View style={styles.activityTitleRow}>
-                      <Text style={[styles.activityTitle, { color: theme.colors.text }]} numberOfLines={2}>{item.title}</Text>
+                      <Text style={[styles.activityTitle, { color: theme.colors.text }]} numberOfLines={2}>{displayTitle}</Text>
                       <Text style={[styles.activityTag, { color: visual.color, backgroundColor: `${visual.color}12` }]} numberOfLines={1}>
                         {visual.label}
                       </Text>
@@ -1756,6 +1746,8 @@ export function RecentActivitySection({
                 activeOpacity={0.78}
                 accessibilityRole="button"
                 accessibilityLabel={activityExpanded ? 'Show fewer recent activities' : `Show ${hiddenActivityCount} more recent activities`}
+                accessibilityState={{ expanded: activityExpanded }}
+                aria-expanded={activityExpanded}
                 style={[styles.activityExpandButton, { backgroundColor: HOME_HERO_SOFT, borderColor: HOME_HERO_BORDER }]}
               >
                 <Text style={[styles.activityExpandText, { color: HOME_HERO_PRIMARY }]}>
@@ -1763,6 +1755,14 @@ export function RecentActivitySection({
                 </Text>
                 <Ionicons name={activityExpanded ? 'chevron-up' : 'chevron-down'} size={15} color={HOME_HERO_PRIMARY} />
               </TouchableOpacity>
+            ) : null}
+            {error ? (
+              <View style={{ paddingVertical: 10 }}>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 18 }}>Showing saved activity. {error}</Text>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel="Retry recent activity" onPress={onRetry} style={{ minHeight: 44, justifyContent: 'center' }}>
+                  <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Retry</Text>
+                </TouchableOpacity>
+              </View>
             ) : null}
           </>
         ) : (
@@ -1951,9 +1951,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   actionsStack: {
-    gap: 10,
+    gap: 8,
     marginTop: 0,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   homeScanBarShell: {
     borderRadius: HOME_TOKENS.radius.xl,
@@ -1961,17 +1961,17 @@ const styles = StyleSheet.create({
     ...cardShadow,
   },
   homeScanBar: {
-    minHeight: 74,
+    minHeight: 68,
     borderRadius: HOME_TOKENS.radius.xl,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 9,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
   homeScanIconFrame: {
-    width: 54,
-    height: 54,
+    width: 50,
+    height: 50,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1983,15 +1983,15 @@ const styles = StyleSheet.create({
   homeScanTitle: {
     ...typeScale.cardTitle,
     color: '#FFFFFF',
-    fontSize: 22,
-    lineHeight: 27,
+    fontSize: 20,
+    lineHeight: 24,
     fontWeight: '900',
   },
   homeScanSubtitle: {
     ...typeScale.caption,
     color: 'rgba(255,255,255,0.78)',
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: 13,
+    lineHeight: 17,
     fontWeight: '700',
   },
   secondaryActionsRow: {
@@ -3371,7 +3371,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   chaseCarouselContent: {
-    paddingRight: 20,
+    paddingRight: 0,
     gap: 14,
   },
   chaseCarouselCard: {
@@ -3440,10 +3440,23 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   chaseDetailPanel: {
+    gap: 0,
+  },
+  chasePosition: {
+    minHeight: 28,
+    alignSelf: 'center',
+    borderRadius: 999,
     borderWidth: 1,
-    borderRadius: 20,
-    padding: 16,
-    gap: 14,
+    paddingHorizontal: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -5,
+  },
+  chasePositionText: {
+    ...numericTextStyle,
+    fontSize: 11.5,
+    lineHeight: 15,
+    fontWeight: '900',
   },
   chaseDetailHeader: {
     flexDirection: 'row',
@@ -3547,6 +3560,7 @@ const styles = StyleSheet.create({
   },
   chaseInsightGhostAction: {
     minHeight: 44,
+    width: '100%',
     borderRadius: 14,
     paddingHorizontal: 14,
     alignItems: 'center',

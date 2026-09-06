@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "home-pricing-integrated-20260906",
+  "status": "integrated_locally_queued_for_next_testflight",
+  "sourceRoot": "D:/Stackr-live-pricing-ready-20260905",
+  "branch": "codex/live-pricing-evidence-ready-20260905",
+  "preIntegrationCommit": "bb2a221",
+  "appVersion": "1.0.3",
+  "profile": "production-owner",
+  "runtime": "1.0.3-owner-recognition-v1",
+  "sourceIntegrated": true,
+  "localIosExportPassed": true,
+  "easBuildQueued": false,
+  "testflightUploaded": false,
+  "remotePushPerformed": false,
+  "livePricingActivationPerformed": false,
+  "deviceQa": "pending",
+  "combinedRemoteCi": "pending_push_and_review",
+  "checks": {
+    "typecheck": "pass",
+    "backendTypecheck": "pass",
+    "lint": "pass; zero errors, ten existing warnings",
+    "focusedHomeLint": "pass; no warnings",
+    "homeRelease": "pass",
+    "collectionPricingUi": "pass",
+    "livePricing": "pass",
+    "personalPricing": "pass",
+    "poketraceBenchmarkTool": "pass",
+    "mobileRuntime": "pass",
+    "stackrApiV1": "pass",
+    "gateway": "27/27 pass",
+    "apiContract": "37/37 pass",
+    "ownerConfiguration": "pass",
+    "repositorySecretScan": "pass",
+    "bundleSecretScan": "473 files; pass"
+  },
+  "visual": {
+    "viewports": [
+      "393x852",
+      "430x932"
+    ],
+    "kind": "isolated browser harness extracting actual Home composition",
+    "states": [
+      "populated",
+      "empty",
+      "error",
+      "retained activity",
+      "price details",
+      "Chase List"
+    ],
+    "nativeDeviceVerified": false,
+    "limitations": [
+      "simulated safe area; no native tab bar",
+      "native view adapters; no real account/API",
+      "neutral card-artwork placeholders; not provider-image coverage certification"
+    ]
+  },
+  "iosExport": {
+    "directory": ".tmp/next-testflight-home-pricing-ios-20260906-verified",
+    "bundle": "_expo/static/js/ios/entry-1040d663f64cb9c9ae95fa8a3831135f.hbc",
+    "sha256": "743a4902b85c8ef928ac92348c8299b6a9c44a571ad0c30b0b643c18575fb3be",
+    "bytes": 9929032,
+    "modules": 2725,
+    "assets": 471,
+    "warning": "Existing android.googleServicesFile warning; iOS export exits 0.",
+    "signed": false
+  },
+  "hashNote": "SHA-256 values describe the verified Windows working-copy bytes; Git normalizes text line endings. The integration commit records portable source content.",
+  "files": [
+    {
+      "path": ".github/workflows/platform-ci.yml",
+      "workingCopySha256": "d9aa64a77582d36ea0d44ecb9327aa6c49771818ba03d0dd0405aff76b979e8c"
+    },
+    {
+      "path": "package.json",
+      "workingCopySha256": "cf41fffd1647df061487c299d08b5bdba766b2148a4f8eec248a523fe5c01049"
+    },
+    {
+      "path": "features/home/HubScreen.tsx",
+      "workingCopySha256": "7490f300db4639f53ba4d17a0f1fc29b6e161154ac5199dcea6dc4d6329a4034"
+    },
+    {
+      "path": "components/ValueTrackerCard.tsx",
+      "workingCopySha256": "dd3a56ea6a6b5181840f0d4e42fa1b60f6f4d765bc9b9d3930c591fc3c1d37db"
+    },
+    {
+      "path": "components/HomeCommandCenter.tsx",
+      "workingCopySha256": "0f123fbab7abab2776c868bf1c241d4bd203c473ae75069a28667961aa1be3fc"
+    },
+    {
+      "path": "components/HomeCollectorSections.tsx",
+      "workingCopySha256": "efeae2215ee13f07c7833ad5e51b81388a33cf4b898bc5ed284989d25d4527dc"
+    },
+    {
+      "path": "components/StackrBackdrop.tsx",
+      "workingCopySha256": "f4130916857fdc4b963a64e859bde37b7fdfb06928c5c62d4a304efe2b5e75c2"
+    },
+    {
+      "path": "lib/homeDisplayLabels.ts",
+      "workingCopySha256": "2979f82409bcbe8dd1b46b97b33e14cac12d787efa4f726b2fa6935daf4eaec0"
+    },
+    {
+      "path": "lib/homeCardDisplayMetadata.ts",
+      "workingCopySha256": "ceedeaf2382d502f4d23221bbf04f90b3d34ec087accd5c56d368e3503095a27"
+    },
+    {
+      "path": "scripts/test-home-display-labels.ts",
+      "workingCopySha256": "242a0a357c7ceae3c90ccad0dddeca37a1c07d906304f7a897a0e2a0cff21a98"
+    },
+    {
+      "path": "scripts/test-home-collector-sections.ts",
+      "workingCopySha256": "3e909771ea5426b4f542792b6ace79a4a4031b69735b2b8298ebacc2fea3bbab"
+    },
+    {
+      "path": "scripts/test-home-value-release-layout.ts",
+      "workingCopySha256": "0f4262f0b61df111fafe0787dea11834b275a9463cb71ac1a489012352ed2434"
+    },
+    {
+      "path": "scripts/test-home-release-integration.ts",
+      "workingCopySha256": "a5a4726b69e7961b446f4a9335a56ccc844884e4973bf3b8dd2984a7e25f32d5"
+    }
+  ]
+}

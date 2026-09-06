@@ -1,15 +1,17 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import {
   REQUIRED_MIGRATIONS,
   assessMigrationHistory,
   assertProductionDatabaseUrl,
+  parseArguments,
   prepareBinderArtworkRead,
   sha256CanonicalLf,
   validateRequiredMigrationSources,
   validateStagingEvidence,
 } from './deploy/prepare-binder-artwork-read.mjs';
+import { normalizePostgresUrl } from './deploy/prepare-postgres-urls.mjs';
 
 const evidenceRaw = readFileSync('deploy/evidence/binder-artwork-read-staging-2026-09-06.json', 'utf8');
 const evidenceDigest = sha256CanonicalLf(evidenceRaw);
@@ -38,6 +40,53 @@ assert.match(workflow, /supabase@2\.110\.0 backups list/);
 assert.match(workflow, /supabase@2\.110\.0 db dump/);
 assert.match(workflow, /verify-backup\.mjs/);
 assert.doesNotMatch(workflow, /supabase@2\.110\.0 db push/);
+assert.match(workflow, /node scripts\/deploy\/prepare-binder-artwork-read\.mjs \\\r?\n\s+--db-url="\$STACKR_SOURCE_DB_URL"/,
+  'artwork preparation must use the same normalized database URL as the successful backups');
+assert.doesNotMatch(workflow, /--db-url="\$SUPABASE_DB_URL"/,
+  'the raw secret must not bypass URL normalization');
+
+const syntheticUrl = 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:synthetic%3Dsecret@aws-0-eu-west-2.pooler.supabase.com:6543/postgres';
+for (const ending of ['', '\n', '\r\n']) {
+  const { normalized } = normalizePostgresUrl(`${syntheticUrl}${ending}`, 'oakdbbzdqwurpjnoqhmu');
+  assert.equal(normalized, syntheticUrl);
+  const parsed = parseArguments([
+    `--db-url=${normalized}`, '--project-ref=oakdbbzdqwurpjnoqhmu',
+    `--expected-evidence-sha256=${evidenceDigest}`, '--apply=true',
+  ]);
+  assert.deepEqual(parsed, {
+    dbUrl: syntheticUrl, projectRef: 'oakdbbzdqwurpjnoqhmu', evidenceSha256: evidenceDigest, apply: true,
+  }, 'normalized LF/CRLF secrets must reach the same exact preparation invocation');
+}
+assert.throws(() => normalizePostgresUrl(syntheticUrl.replace('synthetic', 'synthetic\n'), 'oakdbbzdqwurpjnoqhmu'),
+  /invalid_database_url/, 'embedded newlines must remain invalid');
+for (const [query, parameter] of [['host=untrusted.invalid', 'host'], ['options=-csearch_path=public', 'options']]) {
+  assert.throws(() => normalizePostgresUrl(`${syntheticUrl}?${query}`, 'oakdbbzdqwurpjnoqhmu'),
+    { message: `unsafe_postgres_connection_parameter:${parameter}` },
+    'normalization must not allow connection or session overrides');
+}
+assert.throws(() => normalizePostgresUrl(syntheticUrl, 'lmwfhvexfcoyeuoyrlco'),
+  /database_url_project_mismatch/, 'normalization must retain the exact production target');
+assert.equal(parseArguments([]).apply, false, 'omitting apply must remain verify-only');
+assert.equal(parseArguments(['--apply=false']).apply, false);
+assert.equal(parseArguments([`--db-url=${syntheticUrl}?application_name=a=b`]).dbUrl,
+  `${syntheticUrl}?application_name=a=b`, 'equals signs inside values must be preserved');
+for (const [args, code] of [
+  [[`--db-url=${syntheticUrl}\n`], 'invalid_argument'],
+  [[`--db-url=${syntheticUrl}\r\n`], 'invalid_argument'],
+  [[`--db-url\n=${syntheticUrl}`], 'invalid_argument'],
+  [[syntheticUrl], 'invalid_argument'],
+  [[`--synthetic-secret=${syntheticUrl}`], 'unknown_argument'],
+  [['--apply=false', '--apply=true'], 'duplicate_argument'],
+  [['--apply=TRUE'], 'invalid_apply_argument'],
+  [['--apply='], 'invalid_apply_argument'],
+]) {
+  assert.throws(() => parseArguments(args), { message: code });
+  const cli = spawnSync(process.execPath, ['scripts/deploy/prepare-binder-artwork-read.mjs', ...args], { encoding: 'utf8' });
+  assert.equal(cli.status, 1);
+  assert.equal(cli.stdout, '', 'invalid arguments must fail before database work or success evidence');
+  assert.equal(cli.stderr, `binder_artwork_read_preparation_failed:${code}\n`,
+    'CLI errors must never echo secret values or unknown argument names');
+}
 const hereDocProbe = execFileSync(process.execPath, [
   '--input-type=module', '-', 'deploy/evidence/binder-artwork-read-staging-2026-09-06.json',
 ], {

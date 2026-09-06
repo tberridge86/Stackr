@@ -3,6 +3,12 @@ name: Stackr Price Refresh
 permissions:
   contents: read
 
+# A refresh may contact rate-limited providers and update the same queue rows.
+# Keep every lane serialized; never cancel an in-flight evidence write.
+concurrency:
+  group: stackr-price-refresh
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
     inputs:
@@ -19,29 +25,55 @@ on:
           - owned
           - full-universe
   schedule:
-    # Priority queue and market listings: every 30 minutes.
+    # Exact, user-requested canonical work only: bounded to 30 queue rows.
+    - cron: '*/5 * * * *'
+    # Existing printing-level priority queue and market-listing cadence.
     - cron: '*/30 * * * *'
-    # Chase/watchlist cards: every 2 hours.
     - cron: '17 */2 * * *'
-    # High-value owned cards: every 6 hours.
     - cron: '32 */6 * * *'
-    # Normal owned cards: every 12 hours.
     - cron: '47 */12 * * *'
-    # Full-universe refresh remains disabled until its mobile pricing import is
-    # replaced by a Node-only provider boundary.
+    # Full-universe refresh remains intentionally disabled.
 
 jobs:
   refresh-prices:
+    # Do not pay for dependency installation every five minutes while the
+    # exact worker is disabled. Partial provider configuration still runs its
+    # gate so it fails visibly instead of masquerading as a healthy rollout.
+    if: github.event_name != 'schedule' || github.event.schedule != '*/5 * * * *' || vars.PRICING_ENGINE_V2_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    environment: production
     env:
+      # Keep the existing protected production-secret fallback while binding
+      # V2 workers to an explicit project ref rather than a default database.
       SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL || 'https://oakdbbzdqwurpjnoqhmu.supabase.co' }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      STACKR_EXPECTED_SUPABASE_PROJECT_REF: ${{ vars.STACKR_EXPECTED_SUPABASE_PROJECT_REF }}
       PRICE_API_URL: ${{ vars.STACKR_BACKEND_URL || 'https://pocketvault-production.up.railway.app' }}
       EXPO_PUBLIC_PRICE_API_URL: ${{ vars.STACKR_BACKEND_URL || 'https://pocketvault-production.up.railway.app' }}
       POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
       USD_TO_GBP: ${{ vars.USD_TO_GBP || '0.79' }}
       EUR_TO_GBP: ${{ vars.EUR_TO_GBP || '0.86' }}
+      # All sold-data and canonical publication controls are dormant by
+      # default. Setting a provider key alone has no effect.
+      PRICING_ENGINE_V2_ENABLED: ${{ vars.PRICING_ENGINE_V2_ENABLED || 'false' }}
+      PRICING_V2_CANONICAL_PUBLISH_ENABLED: ${{ vars.PRICING_V2_CANONICAL_PUBLISH_ENABLED || 'false' }}
+      PRICING_V2_EBAY_SOLD_ENABLED: 'false'
+      PRICING_V2_EBAY_SOLD_AUTHORISED: 'false'
+      PRICING_V2_POKETRACE_SOLD_ENABLED: ${{ vars.PRICING_V2_POKETRACE_SOLD_ENABLED || 'false' }}
+      PRICING_V2_POKETRACE_SOLD_AUTHORISED: ${{ vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED || 'false' }}
+      POKETRACE_API_KEY: ${{ secrets.POKETRACE_API_KEY }}
+      POKETRACE_API_BASE_URL: ${{ vars.POKETRACE_API_BASE_URL || 'https://api.poketrace.com/v1' }}
+      POKETRACE_TERAPEAK_BENCHMARK_REPORT: ${{ vars.POKETRACE_TERAPEAK_BENCHMARK_REPORT || '' }}
+      POKETRACE_TERAPEAK_BENCHMARK_REPORT_SHA256: ${{ vars.POKETRACE_TERAPEAK_BENCHMARK_REPORT_SHA256 || '' }}
+      POKETRACE_TERAPEAK_RIGHTS_REVIEW: ${{ vars.POKETRACE_TERAPEAK_RIGHTS_REVIEW || '' }}
+      POKETRACE_TERAPEAK_RIGHTS_REVIEW_SHA256: ${{ vars.POKETRACE_TERAPEAK_RIGHTS_REVIEW_SHA256 || '' }}
+      # Non-PokeTrace V2 runs may use official active eBay listings and the
+      # existing labelled estimates, never eBay sold data.
+      PRICING_V2_EBAY_ACTIVE_ENABLED: ${{ vars.PRICING_V2_EBAY_ACTIVE_ENABLED || 'true' }}
+      EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+      EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+      EBAY_MARKETPLACE_ID: ${{ vars.EBAY_MARKETPLACE_ID || 'EBAY_GB' }}
 
     steps:
       - name: Checkout
@@ -56,7 +88,7 @@ jobs:
       - name: Block disabled full universe sync
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'full-universe'
         run: |
-          echo "The full-universe lane is disabled until daily-tcgcsv-sync has a Node-only pricing provider boundary." >&2
+          echo "The full-universe lane is disabled until a reviewed Node-only provider boundary exists." >&2
           exit 1
 
       - name: Verify production runtime bindings
@@ -65,13 +97,44 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run manual lane
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.lane != 'full-universe'
-        run: npm run price-refresh -- --lane=${{ github.event.inputs.lane }} --force
+      # A partial PokeTrace configuration is a hard gate failure. It is not
+      # silently replaced with a stale cache or a legacy queue worker.
+      - name: Verify PokeTrace activation gates
+        id: poketrace_activation_gate
+        if: (github.event_name == 'schedule' && github.event.schedule == '*/5 * * * *') || (github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'queued')
+        continue-on-error: true
+        run: |
+          if [ "${{ vars.PRICING_V2_POKETRACE_SOLD_ENABLED }}" = 'true' ] || [ "${{ vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED }}" = 'true' ]; then
+            node scripts/check-poketrace-activation-readiness.mjs
+          else
+            echo "PokeTrace sold provider remains deliberately disabled."
+          fi
 
-      - name: Run queued priority refresh
+      - name: Run PokeTrace completed-sale evidence refresh
+        id: poketrace_evidence_refresh
+        if: ((github.event_name == 'schedule' && github.event.schedule == '*/5 * * * *') || (github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'queued')) && vars.PRICING_ENGINE_V2_ENABLED == 'true' && vars.PRICING_V2_POKETRACE_SOLD_ENABLED == 'true' && vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED == 'true' && env.POKETRACE_API_KEY != '' && steps.poketrace_activation_gate.outcome == 'success'
+        continue-on-error: true
+        run: npm run pricing-v2:refresh -- --limit=30 --delayMs=1100
+
+      - name: Run non-PokeTrace exact refresh
+        if: ((github.event_name == 'schedule' && github.event.schedule == '*/5 * * * *') || (github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'queued')) && vars.PRICING_ENGINE_V2_ENABLED == 'true' && vars.PRICING_V2_POKETRACE_SOLD_ENABLED != 'true' && vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED != 'true'
+        run: npm run pricing-v2:refresh -- --limit=30 --delayMs=1100
+
+      - name: Report PokeTrace evidence gate failure
+        if: always() && ((github.event_name == 'schedule' && github.event.schedule == '*/5 * * * *') || (github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'queued')) && (vars.PRICING_V2_POKETRACE_SOLD_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED == 'true') && (steps.poketrace_activation_gate.outcome == 'failure' || steps.poketrace_evidence_refresh.outcome == 'failure')
+        run: |
+          echo "PokeTrace evidence was blocked or failed; exact-variant requests remain pending and are not completed by printing-level fallbacks." >&2
+          exit 1
+
+      # The legacy worker remains printing-level only and retains its old
+      # cadence. It never competes with the 5-minute exact-evidence worker.
+      - name: Run queued printing-level refreshes
         if: github.event_name == 'schedule' && github.event.schedule == '*/30 * * * *'
         run: npm run price-refresh:queued
+
+      - name: Run manual legacy lane
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.lane != 'full-universe' && (github.event.inputs.lane != 'queued' || vars.PRICING_ENGINE_V2_ENABLED != 'true')
+        run: npm run price-refresh -- --lane=${{ github.event.inputs.lane }} --force
 
       - name: Run market listing refresh
         if: github.event_name == 'schedule' && github.event.schedule == '*/30 * * * *'

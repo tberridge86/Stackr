@@ -15,6 +15,7 @@ import { StackrBackButton } from '../../components/StackrBackButton';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../components/profile-context';
+import { useAuth } from '../../components/auth-context';
 import { AVATAR_PRESETS } from '../../lib/avatars';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 
@@ -70,7 +71,44 @@ function getInitials(name: string): string {
 // ===============================
 
 export default function ProfileSetupScreen() {
-  const { profile, updateProfile } = useProfile();
+  const { user } = useAuth();
+  const { profile, loading, error, refreshProfile } = useProfile();
+
+  // Do not initialise a form from an unknown profile: a delayed account read
+  // must not make an existing collector appear to have blank details.
+  if (loading || error || !user) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <View style={{ paddingHorizontal: 20 }}>
+          <StackrBackButton onPress={() => router.back()} />
+        </View>
+        <View style={{ flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center', gap: 12 }}>
+          {loading ? <ActivityIndicator color={theme.colors.primary} /> : null}
+          <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '800', textAlign: 'center' }}>
+            {loading ? 'Loading your profile…' : error ? 'Profile unavailable' : 'Sign in to edit your profile'}
+          </Text>
+          {error ? <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 20 }}>{error}</Text> : null}
+          {error ? (
+            <TouchableOpacity
+              onPress={() => void refreshProfile()}
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading profile"
+              style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 16 }}
+            >
+              <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>Try again</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return <ProfileSetupForm key={user.id} initialProfile={profile} />;
+}
+
+function ProfileSetupForm({ initialProfile }: { initialProfile: ReturnType<typeof useProfile>['profile'] }) {
+  const { updateProfile } = useProfile();
+  const profile = initialProfile;
 
   const [collectorName, setCollectorName] = useState(profile?.collector_name ?? '');
   const [pokemonType, setPokemonType] = useState(profile?.pokemon_type ?? 'water');

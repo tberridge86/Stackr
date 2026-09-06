@@ -203,6 +203,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         get: operations["getCardVariantPrice"];
         put?: never;
         post?: never;
@@ -219,9 +220,61 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         get: operations["getCardVariantPriceHistory"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cards/{variantId}/price-refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Default personal pricing mode permits only the configured owner's Supabase bearer token to queue a refresh. Responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
+        post: operations["requestCardPriceRefresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/market/price-snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
+        get: operations["getMarketPriceSnapshots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/market/price-refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Default personal pricing mode permits only the configured owner's Supabase bearer token to queue a refresh. Responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
+        post: operations["requestMarketPriceRefresh"];
         delete?: never;
         options?: never;
         head?: never;
@@ -235,6 +288,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         get: operations["listMarketMovers"];
         put?: never;
         post?: never;
@@ -251,6 +305,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         get: operations["listMarketOpportunities"];
         put?: never;
         post?: never;
@@ -660,7 +715,7 @@ export interface components {
         /** @enum {string} */
         MarketProductType: "raw_card" | "graded_card" | "sealed_product";
         /** @enum {string} */
-        MarketEvidenceStatus: "recent_sold_value" | "thin_sold_value" | "market_estimate" | "asking_price_indication" | "unavailable";
+        MarketEvidenceStatus: "recent_sold_value" | "thin_sold_value" | "market_estimate" | "asking_price_indication" | "legacy_cached_market_estimate" | "recent_sold_market_estimate" | "unavailable";
         EnvelopeMeta: {
             requestId: string;
             /** @constant */
@@ -872,6 +927,10 @@ export interface components {
                 currency: string;
                 status: components["schemas"]["MarketEvidenceStatus"];
                 priceType?: components["schemas"]["MarketEvidenceStatus"];
+                /** @description Item-only sold prices exclude shipping; provider aggregates may have unknown shipping basis. */
+                priceBasis?: string;
+                /** @enum {string} */
+                quoteScope?: "exact_variant" | "printing_level";
                 estimates: {
                     low?: number | null;
                     central?: number | null;
@@ -884,6 +943,92 @@ export interface components {
             };
         };
         PriceHistoryResponse: components["schemas"]["Envelope"];
+        PriceRefreshRequest: {
+            /** @enum {string} */
+            productType?: "raw_card";
+            /** @enum {string} */
+            currency?: "GBP";
+            language?: components["schemas"]["LanguageCode"];
+        };
+        PriceRefreshBatchRequest: {
+            variantIds: string[];
+            /** @enum {string} */
+            productType?: "raw_card";
+            /** @enum {string} */
+            currency?: "GBP";
+            language?: components["schemas"]["LanguageCode"];
+        };
+        PriceSnapshotHistoryItem: {
+            cardId: string;
+            /** Format: uuid */
+            variantId: string;
+            /** Format: date-time */
+            calculatedAt?: string | null;
+            /** Format: date-time */
+            snapshotAt?: string | null;
+            marketCentral?: number | null;
+            marketLow?: number | null;
+            marketHigh?: number | null;
+            /** @constant */
+            currency: "GBP";
+            confidence: Record<string, never>;
+            sampleCount: number;
+            primarySource?: string | null;
+            priceType: components["schemas"]["MarketEvidenceStatus"];
+            /** Format: date-time */
+            staleAfter?: string | null;
+            isStale: boolean;
+            /** @enum {string} */
+            freshness: "fresh" | "stale" | "unknown" | "source_timestamped";
+            priceBasis?: string;
+            /**
+             * @description Whether the stored estimate matches the requested finish or only the underlying printing.
+             * @enum {string}
+             */
+            quoteScope: "exact_variant" | "printing_level";
+        };
+        PriceSnapshotHistoryResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                snapshots: components["schemas"]["PriceSnapshotHistoryItem"][];
+                limit: number;
+                /**
+                 * @description Present only for a rangeDays request.
+                 * @enum {integer}
+                 */
+                rangeDays?: 7 | 30;
+                /**
+                 * @description Present only for rangeDays; 30 minutes for 7 days and 1440 minutes for 30 days.
+                 * @enum {integer}
+                 */
+                bucketMinutes?: 30 | 1440;
+            };
+        };
+        PriceRefreshItem: {
+            /** Format: uuid */
+            variantId: string;
+            /** @enum {string} */
+            status: "queued" | "already_queued" | "cooldown";
+            /** Format: date-time */
+            queuedAt: string;
+            /** Format: date-time */
+            earliestRefreshAt: string;
+            providerRefreshPending: boolean;
+            /** @enum {string} */
+            quoteScope: "exact_variant" | "printing_level";
+        };
+        PriceRefreshResponse: components["schemas"]["Envelope"] & {
+            data?: components["schemas"]["PriceRefreshItem"];
+        };
+        PriceRefreshBatchResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                items: components["schemas"]["PriceRefreshItem"][];
+                summary: {
+                    queued: number;
+                    already_queued: number;
+                    cooldown: number;
+                };
+            };
+        };
         MarketMoversResponse: components["schemas"]["Envelope"];
         MarketOpportunitiesResponse: components["schemas"]["Envelope"];
         SearchResponse: components["schemas"]["Envelope"] & {
@@ -1302,7 +1447,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Latest provider-neutral price estimate for one exact variant/product identity. */
+            /** @description Latest provider-neutral price estimate for one exact variant/product identity. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1312,6 +1457,9 @@ export interface operations {
                 };
             };
             400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     getCardVariantPriceHistory: {
@@ -1335,7 +1483,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Public-safe pricing evidence history with active and sold rows explicitly labelled. */
+            /** @description Pricing evidence history with active and sold rows explicitly labelled. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1345,6 +1493,121 @@ export interface operations {
                 };
             };
             400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
+    requestCardPriceRefresh: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                variantId: components["parameters"]["VariantId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceRefreshRequest"];
+            };
+        };
+        responses: {
+            /** @description An equivalent refresh is already queued or is in its cooldown period. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceRefreshResponse"];
+                };
+            };
+            /** @description Refresh accepted for asynchronous provider processing; this does not update a quote immediately. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceRefreshResponse"];
+                };
+            };
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
+    getMarketPriceSnapshots: {
+        parameters: {
+            query: {
+                /** @description Comma-separated canonical variant UUIDs; maximum 24 per request. */
+                variantIds: string;
+                /** @description Uses server-side bucketing and includes a baseline immediately before the requested range. */
+                rangeDays?: 7 | 30;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Timestamped global market estimates only. These are not an assertion of an individual last-sold transaction. Private and no-store in default personal owner-only mode. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceSnapshotHistoryResponse"];
+                };
+            };
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
+    requestMarketPriceRefresh: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceRefreshBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Every requested refresh is already queued or is in its cooldown period. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceRefreshBatchResponse"];
+                };
+            };
+            /** @description One or more asynchronous raw-card GBP refreshes were queued. No quote is changed synchronously. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceRefreshBatchResponse"];
+                };
+            };
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     listMarketMovers: {
@@ -1360,7 +1623,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Market identities with recent estimate movement. */
+            /** @description Market identities with recent estimate movement. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1369,6 +1632,9 @@ export interface operations {
                     "application/json": components["schemas"]["MarketMoversResponse"];
                 };
             };
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     listMarketOpportunities: {
@@ -1384,7 +1650,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Active listings below exact-variant estimates. These are not sold comps. */
+            /** @description Active listings below exact-variant estimates. These are not sold comps. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1393,6 +1659,9 @@ export interface operations {
                     "application/json": components["schemas"]["MarketOpportunitiesResponse"];
                 };
             };
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     searchCatalog: {

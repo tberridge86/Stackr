@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "stackr-amber-rights-review-v1",
+  "featureKey": "poketrace_terapeak_manual_benchmark",
+  "approvalStatus": "pending",
+  "operatingBoundaryReference": "docs/stackrtcg-ip-operating-boundary.md (effective 2026-09-04)",
+  "dataAsset": "A manually labelled sample of individual eBay Product Research (Terapeak) sales used only to benchmark PokeTrace Scale accuracy",
+  "source": "eBay Product Research (Terapeak)",
+  "ownerOrLicensor": "eBay",
+  "permittedPurpose": "Pending review of one-off manual accuracy benchmarking; no production ingestion",
+  "territory": "Pending review",
+  "term": "Pending review",
+  "transformationRights": "Pending review; proposed output is aggregate accuracy metrics and mismatch classifications only",
+  "storageRights": "Pending review; proposed raw labelled sample remains private and outside the repository",
+  "deletionRequirements": "Pending review",
+  "attribution": "Pending review",
+  "downstreamDeliveryRights": "Pending review; proposed raw rows are not publicly displayed or delivered",
+  "approvingPerson": "",
+  "approvedAt": null,
+  "expiresAt": null,
+  "controls": {"manualOnly": true, "noScraping": true, "noAutomation": true, "no130point": true, "privateRawSample": true, "uniqueListingIdsOnly": true, "privateEvidenceManifestRequired": true, "providerEvidenceFingerprintsRequired": true, "reviewerMustInspectPrivateEvidenceIndex": true, "reviewerMustRecomputeProviderEvidenceFingerprints": true},
+  "evidenceReferences": ["https://www.ebay.com/help/selling/selling-tools/terapeak?id=4853", "https://pages.ebay.com/aw/en-us/terapeak/subscriptionterms.html", "https://www.ebay.com/help/policies/member-behavior-policies/user-agreement?id=5414", "https://www.ebay.com/help/policies/member-behavior-policies/site-interference-policy?id=4371"],
+  "reviewNotes": "A human-only sample avoids automation, but this review remains pending. The benchmark must not begin until an eBay permission reference covers manual collection, private sample retention, PokeTrace matching, aggregate accuracy metrics, retention/deletion, and no public raw-row delivery. Internal approval cannot replace eBay's written permission."
+}

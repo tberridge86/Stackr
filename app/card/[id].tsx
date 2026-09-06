@@ -31,7 +31,7 @@ import {
 } from '../../lib/pokemonTcgCache';
 import { fetchCardById } from '../../lib/pokemonTcg';
 import { getDisplaySetLogoUrl } from '../../lib/setDisplay';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { fetchPokeTraceCardPrice } from '../../lib/pricing';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { buildForeignCardPresentation } from '../../lib/foreignCardPresentation';
@@ -280,7 +280,7 @@ export default function CardDetailScreen() {
     () => card ? buildForeignCardPresentation(card) : null,
     [card],
   );
-  const setLogoSource = getJapaneseSetLogoSourceForSet({
+  const setLogoSource = getLocalSetArtworkSourceForSet({
     id: resolvedSetId,
     language: card?.language ?? card?.raw_data?.language ?? card?.raw_data?.set?.language ?? null,
     setCode: card?.raw_data?.set?.set_code ?? card?.raw_data?.set?.setCode ?? null,

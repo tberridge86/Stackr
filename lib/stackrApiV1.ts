@@ -260,6 +260,8 @@ export type StackrSearchResult = {
 
 export type StackrMarketProductType = 'raw_card' | 'graded_card' | 'sealed_product';
 export type StackrMarketEvidenceStatus =
+  | 'legacy_cached_market_estimate'
+  | 'recent_sold_market_estimate'
   | 'recent_sold_value'
   | 'thin_sold_value'
   | 'market_estimate'
@@ -273,6 +275,9 @@ export type StackrCardPrice = {
   currency: string;
   status: StackrMarketEvidenceStatus;
   priceType: StackrMarketEvidenceStatus;
+  priceBasis?: string;
+  quoteScope?: 'exact_variant' | 'printing_level';
+  primarySource?: string;
   estimates: {
     low: number | null;
     central: number | null;
@@ -292,7 +297,7 @@ export type StackrCardPrice = {
     score: number;
     label: 'high' | 'medium' | 'low' | 'insufficient_evidence';
   };
-  freshness: 'fresh' | 'stale' | 'expired' | 'unknown';
+  freshness: 'fresh' | 'stale' | 'expired' | 'unknown' | 'source_timestamped';
   sourceBreakdown: Array<Record<string, unknown>>;
   outliers: Record<string, unknown>;
   fallbackEstimate: {
@@ -307,6 +312,12 @@ export type StackrCardPrice = {
 };
 
 export type StackrPriceHistoryObservation = {
+  provenLastSold?: boolean;
+  saleVerificationState?: string | null;
+  transactionStatus?: string | null;
+  evidenceSha256?: string | null;
+  provenanceVersion?: string | null;
+  lastSoldEvidence?: Record<string, unknown> | null;
   observationId: string;
   observationType: 'sold_observation' | 'active_listing';
   variantId: string | null;
@@ -327,6 +338,37 @@ export type StackrPriceHistoryObservation = {
   sourceTitle: string | null;
   parsedMatchConfidence: number | null;
   duplicateGroupId: string | null;
+};
+
+/** A persisted market snapshot for the compact collection history chart. */
+export type StackrPriceSnapshotHistoryItem = {
+  cardId: string;
+  variantId: string;
+  calculatedAt: string | null;
+  snapshotAt: string | null;
+  marketCentral: number | null;
+  currency: string;
+  priceType: StackrMarketEvidenceStatus;
+  freshness: 'fresh' | 'stale' | 'unknown' | 'source_timestamped';
+  staleAfter?: string | null;
+  primarySource?: string | null;
+  priceBasis?: string;
+  quoteScope: 'exact_variant' | 'printing_level';
+};
+
+export type StackrPriceRefreshRequest = {
+  productType?: StackrMarketProductType;
+  currency?: string;
+  language?: StackrApiLanguageCode;
+};
+
+export type StackrPriceRefreshStatus = {
+  variantId: string;
+  status: 'queued' | 'already_queued' | 'cooldown';
+  queuedAt: string;
+  earliestRefreshAt: string;
+  providerRefreshPending: boolean;
+  quoteScope: 'exact_variant' | 'printing_level';
 };
 
 export type StackrMarketMover = {
@@ -677,16 +719,24 @@ export class StackrApiClient {
   ): Promise<StackrApiEnvelope<T>> {
     const remoteUrl = buildUrl(this.baseUrl, path, query);
     const requestMethod = init.method ?? 'GET';
-    const requestUrl = rewriteStackrApiUrlForLoopbackPreview(remoteUrl, requestMethod);
+    const initialHeaders: Record<string, string> = {
+      ...this.headers,
+      ...(init.headers as Record<string, string> | undefined),
+    };
+    // The loopback preview proxy is anonymous by design. An authenticated
+    // request must always remain on the configured HTTPS API origin.
+    const hasAuthorization = Object.keys(initialHeaders).some((name) => name.toLowerCase() === 'authorization');
+    const requestUrl = hasAuthorization
+      ? remoteUrl
+      : rewriteStackrApiUrlForLoopbackPreview(remoteUrl, requestMethod);
     const isLoopbackPreviewRead = requestUrl !== remoteUrl;
     // The same-origin development proxy forwards anonymous public reads only.
     // Avoid touching device storage for a value that is deliberately not sent
     // upstream; browser storage can be unavailable in embedded previews.
     const deviceId = await resolveStackrApiDeviceIdForRequest(remoteUrl, requestUrl, this.getDeviceId);
     let requestHeaders: Record<string, string> = {
-      ...this.headers,
+      ...initialHeaders,
       ...(deviceId ? { 'X-Stackr-Device-Id': deviceId } : {}),
-      ...(init.headers as Record<string, string> | undefined),
     };
     // The preview proxy intentionally accepts only anonymous public reads.
     // Authenticated API calls always keep their validated HTTPS origin.
@@ -899,7 +949,7 @@ export class StackrApiClient {
     grader?: string;
     grade?: string;
   } = {}) {
-    return this.request<StackrCardPrice>(`/cards/${encodeURIComponent(variantId)}/price`, query);
+    return this.authenticatedGet<StackrCardPrice>(`/cards/${encodeURIComponent(variantId)}/price`, query);
   }
 
   cardPriceHistory(variantId: string, query: {
@@ -912,22 +962,47 @@ export class StackrApiClient {
     cursor?: string | null;
     limit?: number;
   } = {}) {
-    return this.request<{ variantId: string; observations: StackrPriceHistoryObservation[] }>(
+    return this.authenticatedGet<{ variantId: string; observations: StackrPriceHistoryObservation[] }>(
       `/cards/${encodeURIComponent(variantId)}/price-history`,
       query,
     );
   }
 
   marketMovers(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
-    return this.request<{ movers: StackrMarketMover[] }>('/market/movers', query);
+    return this.authenticatedGet<{ movers: StackrMarketMover[] }>('/market/movers', query);
   }
 
   marketOpportunities(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
-    return this.request<{ opportunities: StackrMarketOpportunity[] }>('/market/opportunities', query);
+    return this.authenticatedGet<{ opportunities: StackrMarketOpportunity[] }>('/market/opportunities', query);
   }
 
   search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }) {
     return this.request<{ query: string; normalizedQuery: string; results: StackrSearchResult[] }>('/search', query);
+  }
+
+  marketPriceSnapshots(query: { variantIds: string[]; rangeDays?: 7 | 30 }) {
+    const variantIds = [...new Set(query.variantIds.map((value) => String(value).trim()).filter(Boolean))];
+    if (!variantIds.length || variantIds.length > 24) {
+      throw new Error('marketPriceSnapshots requires between 1 and 24 variant IDs.');
+    }
+    if (query.rangeDays != null && query.rangeDays !== 7 && query.rangeDays !== 30) {
+      throw new Error('marketPriceSnapshots rangeDays must be either 7 or 30.');
+    }
+    return this.authenticatedGet<{ snapshots: StackrPriceSnapshotHistoryItem[]; limit: number; rangeDays?: 7 | 30; bucketMinutes?: 30 | 1440 }>('/market/price-snapshots', {
+      variantIds: variantIds.join(','),
+      rangeDays: query.rangeDays,
+    });
+  }
+
+  requestMarketPriceRefresh(variantIds: string[], payload: StackrPriceRefreshRequest = {}) {
+    const ids = [...new Set(variantIds.map((value) => String(value).trim()).filter(Boolean))];
+    if (!ids.length || ids.length > 12) {
+      throw new Error('requestMarketPriceRefresh requires between 1 and 12 variant IDs per request.');
+    }
+    return this.authenticatedPost<{
+      items: StackrPriceRefreshStatus[];
+      summary: { queued: number; already_queued: number; cooldown: number };
+    }>('/market/price-refresh', { variantIds: ids, ...payload });
   }
 
   recognitionIdentify(payload: StackrRecognitionIdentifyRequest) {

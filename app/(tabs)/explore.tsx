@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchAllSets, getPokemonSetLogoUrl, getPokemonSetVisualUrl, normalizePokemonCardLanguage, type PokemonSet } from '../../lib/pokemonTcg';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { StackrBackdrop, StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrPageTitle } from '../../components/StackrScreen';
 import { supabase } from '../../lib/supabase';
@@ -255,7 +255,7 @@ function SetCard({
   const englishSupplement = rawEnglishSupplement && englishValue
     ? { ...rawEnglishSupplement, value: englishValue }
     : null;
-  const logoSource = getJapaneseSetLogoSourceForSet({
+  const logoSource = getLocalSetArtworkSourceForSet({
     id: item.id,
     language: item.language,
     setCode: item.externalIds?.setCode,
