@@ -719,16 +719,24 @@ export class StackrApiClient {
   ): Promise<StackrApiEnvelope<T>> {
     const remoteUrl = buildUrl(this.baseUrl, path, query);
     const requestMethod = init.method ?? 'GET';
-    const requestUrl = rewriteStackrApiUrlForLoopbackPreview(remoteUrl, requestMethod);
+    const initialHeaders: Record<string, string> = {
+      ...this.headers,
+      ...(init.headers as Record<string, string> | undefined),
+    };
+    // The loopback preview proxy is anonymous by design. An authenticated
+    // request must always remain on the configured HTTPS API origin.
+    const hasAuthorization = Object.keys(initialHeaders).some((name) => name.toLowerCase() === 'authorization');
+    const requestUrl = hasAuthorization
+      ? remoteUrl
+      : rewriteStackrApiUrlForLoopbackPreview(remoteUrl, requestMethod);
     const isLoopbackPreviewRead = requestUrl !== remoteUrl;
     // The same-origin development proxy forwards anonymous public reads only.
     // Avoid touching device storage for a value that is deliberately not sent
     // upstream; browser storage can be unavailable in embedded previews.
     const deviceId = await resolveStackrApiDeviceIdForRequest(remoteUrl, requestUrl, this.getDeviceId);
     let requestHeaders: Record<string, string> = {
-      ...this.headers,
+      ...initialHeaders,
       ...(deviceId ? { 'X-Stackr-Device-Id': deviceId } : {}),
-      ...(init.headers as Record<string, string> | undefined),
     };
     // The preview proxy intentionally accepts only anonymous public reads.
     // Authenticated API calls always keep their validated HTTPS origin.
@@ -941,7 +949,7 @@ export class StackrApiClient {
     grader?: string;
     grade?: string;
   } = {}) {
-    return this.request<StackrCardPrice>(`/cards/${encodeURIComponent(variantId)}/price`, query);
+    return this.authenticatedGet<StackrCardPrice>(`/cards/${encodeURIComponent(variantId)}/price`, query);
   }
 
   cardPriceHistory(variantId: string, query: {
@@ -954,18 +962,18 @@ export class StackrApiClient {
     cursor?: string | null;
     limit?: number;
   } = {}) {
-    return this.request<{ variantId: string; observations: StackrPriceHistoryObservation[] }>(
+    return this.authenticatedGet<{ variantId: string; observations: StackrPriceHistoryObservation[] }>(
       `/cards/${encodeURIComponent(variantId)}/price-history`,
       query,
     );
   }
 
   marketMovers(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
-    return this.request<{ movers: StackrMarketMover[] }>('/market/movers', query);
+    return this.authenticatedGet<{ movers: StackrMarketMover[] }>('/market/movers', query);
   }
 
   marketOpportunities(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
-    return this.request<{ opportunities: StackrMarketOpportunity[] }>('/market/opportunities', query);
+    return this.authenticatedGet<{ opportunities: StackrMarketOpportunity[] }>('/market/opportunities', query);
   }
 
   search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }) {
@@ -980,7 +988,7 @@ export class StackrApiClient {
     if (query.rangeDays != null && query.rangeDays !== 7 && query.rangeDays !== 30) {
       throw new Error('marketPriceSnapshots rangeDays must be either 7 or 30.');
     }
-    return this.request<{ snapshots: StackrPriceSnapshotHistoryItem[]; limit: number; rangeDays?: 7 | 30; bucketMinutes?: 30 | 1440 }>('/market/price-snapshots', {
+    return this.authenticatedGet<{ snapshots: StackrPriceSnapshotHistoryItem[]; limit: number; rangeDays?: 7 | 30; bucketMinutes?: 30 | 1440 }>('/market/price-snapshots', {
       variantIds: variantIds.join(','),
       rangeDays: query.rangeDays,
     });

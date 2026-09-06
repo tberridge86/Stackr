@@ -203,6 +203,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         get: operations["getCardVariantPrice"];
         put?: never;
         post?: never;
@@ -219,6 +220,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         get: operations["getCardVariantPriceHistory"];
         put?: never;
         post?: never;
@@ -237,6 +239,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description Default personal pricing mode permits only the configured owner's Supabase bearer token to queue a refresh. Responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         post: operations["requestCardPriceRefresh"];
         delete?: never;
         options?: never;
@@ -251,6 +254,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         get: operations["getMarketPriceSnapshots"];
         put?: never;
         post?: never;
@@ -269,6 +273,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description Default personal pricing mode permits only the configured owner's Supabase bearer token to queue a refresh. Responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         post: operations["requestMarketPriceRefresh"];
         delete?: never;
         options?: never;
@@ -283,6 +288,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         get: operations["listMarketMovers"];
         put?: never;
         post?: never;
@@ -299,6 +305,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule. */
         get: operations["listMarketOpportunities"];
         put?: never;
         post?: never;
@@ -1440,7 +1447,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Latest provider-neutral price estimate for one exact variant/product identity. */
+            /** @description Latest provider-neutral price estimate for one exact variant/product identity. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1450,6 +1457,9 @@ export interface operations {
                 };
             };
             400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     getCardVariantPriceHistory: {
@@ -1473,7 +1483,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Public-safe pricing evidence history with active and sold rows explicitly labelled. */
+            /** @description Pricing evidence history with active and sold rows explicitly labelled. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1483,6 +1493,9 @@ export interface operations {
                 };
             };
             400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     requestCardPriceRefresh: {
@@ -1522,6 +1535,7 @@ export interface operations {
             };
             400: components["responses"]["Error"];
             401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
             422: components["responses"]["Error"];
             503: components["responses"]["Error"];
         };
@@ -1540,7 +1554,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Timestamped global market estimates only. These are not an assertion of an individual last-sold transaction. */
+            /** @description Timestamped global market estimates only. These are not an assertion of an individual last-sold transaction. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1550,7 +1564,10 @@ export interface operations {
                 };
             };
             400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
             422: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     requestMarketPriceRefresh: {
@@ -1588,6 +1605,7 @@ export interface operations {
             };
             400: components["responses"]["Error"];
             401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
             422: components["responses"]["Error"];
             503: components["responses"]["Error"];
         };
@@ -1605,7 +1623,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Market identities with recent estimate movement. */
+            /** @description Market identities with recent estimate movement. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1614,6 +1632,9 @@ export interface operations {
                     "application/json": components["schemas"]["MarketMoversResponse"];
                 };
             };
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     listMarketOpportunities: {
@@ -1629,7 +1650,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Active listings below exact-variant estimates. These are not sold comps. */
+            /** @description Active listings below exact-variant estimates. These are not sold comps. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1638,6 +1659,9 @@ export interface operations {
                     "application/json": components["schemas"]["MarketOpportunitiesResponse"];
                 };
             };
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     searchCatalog: {

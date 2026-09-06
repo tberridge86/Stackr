@@ -46,6 +46,7 @@ jobs:
       - run: npm run typecheck:backend
       - run: npm test --prefix backend
       - run: npm run test:live-pricing
+      - run: npm run test:personal-pricing
       - run: npm run test:poketrace-benchmark
       - run: npm run test:seller-stock-out-routing
       - run: npm run test:premium-seller-access

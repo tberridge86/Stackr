@@ -237,6 +237,8 @@ paths:
     get:
       tags: [Market]
       operationId: getCardVariantPrice
+      description: Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule.
+      security: [{ SupabaseBearer: [] }]
       parameters:
         - $ref: "#/components/parameters/VariantId"
         - $ref: "#/components/parameters/ProductType"
@@ -246,17 +248,22 @@ paths:
         - $ref: "#/components/parameters/Grade"
       responses:
         "200":
-          description: Latest provider-neutral price estimate for one exact variant/product identity.
+          description: Latest provider-neutral price estimate for one exact variant/product identity. Private and no-store in default personal owner-only mode.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CardPriceResponse"
         "400":
           $ref: "#/components/responses/Error"
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
   /cards/{variantId}/price-history:
     get:
       tags: [Market]
       operationId: getCardVariantPriceHistory
+      description: Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule.
+      security: [{ SupabaseBearer: [] }]
       parameters:
         - $ref: "#/components/parameters/VariantId"
         - $ref: "#/components/parameters/ProductType"
@@ -273,17 +280,21 @@ paths:
         - $ref: "#/components/parameters/Limit"
       responses:
         "200":
-          description: Public-safe pricing evidence history with active and sold rows explicitly labelled.
+          description: Pricing evidence history with active and sold rows explicitly labelled. Private and no-store in default personal owner-only mode.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PriceHistoryResponse"
         "400":
           $ref: "#/components/responses/Error"
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
   /cards/{variantId}/price-refresh:
     post:
       tags: [Market]
       operationId: requestCardPriceRefresh
+      description: Default personal pricing mode permits only the configured owner's Supabase bearer token to queue a refresh. Responses are private and no-store. An explicitly configured legacy public mode may relax this access rule.
       security: [{ SupabaseBearer: [] }]
       parameters:
         - $ref: "#/components/parameters/VariantId"
@@ -302,12 +313,15 @@ paths:
           content: { application/json: { schema: { $ref: "#/components/schemas/PriceRefreshResponse" } } }
         "400": { $ref: "#/components/responses/Error" }
         "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
         "503": { $ref: "#/components/responses/Error" }
   /market/price-snapshots:
     get:
       tags: [Market]
       operationId: getMarketPriceSnapshots
+      description: Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule.
+      security: [{ SupabaseBearer: [] }]
       parameters:
         - name: variantIds
           in: query
@@ -321,14 +335,18 @@ paths:
           schema: { type: integer, enum: [7, 30] }
       responses:
         "200":
-          description: Timestamped global market estimates only. These are not an assertion of an individual last-sold transaction.
+          description: Timestamped global market estimates only. These are not an assertion of an individual last-sold transaction. Private and no-store in default personal owner-only mode.
           content: { application/json: { schema: { $ref: "#/components/schemas/PriceSnapshotHistoryResponse" } } }
         "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
   /market/price-refresh:
     post:
       tags: [Market]
       operationId: requestMarketPriceRefresh
+      description: Default personal pricing mode permits only the configured owner's Supabase bearer token to queue a refresh. Responses are private and no-store. An explicitly configured legacy public mode may relax this access rule.
       security: [{ SupabaseBearer: [] }]
       parameters:
         - $ref: "#/components/parameters/IdempotencyKey"
@@ -346,38 +364,49 @@ paths:
           content: { application/json: { schema: { $ref: "#/components/schemas/PriceRefreshBatchResponse" } } }
         "400": { $ref: "#/components/responses/Error" }
         "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
         "503": { $ref: "#/components/responses/Error" }
   /market/movers:
     get:
       tags: [Market]
       operationId: listMarketMovers
+      description: Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule.
+      security: [{ SupabaseBearer: [] }]
       parameters:
         - $ref: "#/components/parameters/ProductType"
         - $ref: "#/components/parameters/Currency"
         - $ref: "#/components/parameters/Limit"
       responses:
         "200":
-          description: Market identities with recent estimate movement.
+          description: Market identities with recent estimate movement. Private and no-store in default personal owner-only mode.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/MarketMoversResponse"
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
   /market/opportunities:
     get:
       tags: [Market]
       operationId: listMarketOpportunities
+      description: Default personal pricing mode requires the configured owner's Supabase bearer token. Successful responses are private and no-store. An explicitly configured legacy public mode may relax this access rule.
+      security: [{ SupabaseBearer: [] }]
       parameters:
         - $ref: "#/components/parameters/ProductType"
         - $ref: "#/components/parameters/Currency"
         - $ref: "#/components/parameters/Limit"
       responses:
         "200":
-          description: Active listings below exact-variant estimates. These are not sold comps.
+          description: Active listings below exact-variant estimates. These are not sold comps. Private and no-store in default personal owner-only mode.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/MarketOpportunitiesResponse"
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
   /search:
     get:
       tags: [Search]

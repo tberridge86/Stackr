@@ -26,6 +26,7 @@ const pricingService = {
 const app = express();
 app.use(express.json());
 app.use('/v1', createV1Router({
+  env: { STACKR_PRICING_ACCESS_MODE: 'public' },
   service: {},
   pricingService,
   getAuthenticatedUserId: async (req) => {

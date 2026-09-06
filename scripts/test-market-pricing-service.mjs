@@ -280,6 +280,7 @@ async function assertRoutes() {
 
   const app = express();
   app.use('/v1', createV1Router({
+    env: { STACKR_PRICING_ACCESS_MODE: 'public' },
     service: {},
     pricingService,
   }));

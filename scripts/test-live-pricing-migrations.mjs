@@ -15,6 +15,7 @@ const TARGET_MIGRATIONS = [
   '20260904123000_poketrace_sold_evidence_provider.sql',
   '20260904130000_market_price_snapshot_history_buckets.sql',
   '20260904131000_exact_variant_price_refresh_queue.sql',
+  '20260906063316_personal_pricing_privacy_boundary.sql',
 ];
 
 function fail(message) {
@@ -469,6 +470,90 @@ async function assertApprovedPokeTraceEvidenceIngests(client) {
   }
 }
 
+async function assertPersonalPricingPrivacy(client) {
+  const ownerId = randomUUID();
+  const otherUserId = randomUUID();
+  const cardId = `privacy-rehearsal-${randomUUID()}`;
+  const observationId = randomUUID();
+  const sharedSnapshotId = randomUUID();
+  const personalSnapshotId = randomUUID();
+  await execute(client, 'begin');
+  try {
+    await client.query(`
+      insert into public.price_observations (id, card_id, source, source_type, raw_payload)
+      values ($1, $2, 'poketrace_sold', 'sold_transaction', '{"listing":{"sourceItemId":"private-evidence"}}'::jsonb)
+    `, [observationId, cardId]);
+    await client.query(`
+      insert into public.market_price_snapshots (id, user_id, card_id, language, market_price_gbp)
+      values ($1, null, $3, 'en', 100), ($2, $4::uuid, $3, 'en', 101)
+    `, [sharedSnapshotId, personalSnapshotId, cardId, ownerId]);
+
+    await client.query('savepoint anonymous_snapshot_probe');
+    await execute(client, 'set local role anon');
+    await expectRejected(
+      () => client.query('select id from public.market_price_snapshots where id = $1', [sharedSnapshotId]),
+      /permission denied/i,
+    );
+    await client.query('rollback to savepoint anonymous_snapshot_probe');
+
+    await execute(client, 'set local role authenticated');
+    await client.query("select set_config('request.jwt.claim.sub', $1, true)", [otherUserId]);
+    const otherRows = await client.query(`
+      select id from public.market_price_snapshots
+      where id in ($1, $2) order by id
+    `, [sharedSnapshotId, personalSnapshotId]);
+    assert.equal(otherRows.rows.length, 0, 'another user must not read shared or owner pricing snapshots');
+    for (const [label, userId] of [
+      ['shared', null],
+      ['another owner', ownerId],
+    ]) {
+      await client.query(`savepoint ${label === 'shared' ? 'shared_insert_probe' : 'cross_owner_insert_probe'}`);
+      await expectRejected(
+        () => client.query(`
+          insert into public.market_price_snapshots (id, user_id, card_id, language, market_price_gbp)
+          values ($1, $2::uuid, $3, 'en', 102)
+        `, [randomUUID(), userId, cardId]),
+        /row-level security|permission denied/i,
+      );
+      await client.query(`rollback to savepoint ${label === 'shared' ? 'shared_insert_probe' : 'cross_owner_insert_probe'}`);
+    }
+    await client.query('savepoint raw_evidence_probe');
+    await expectRejected(
+      () => client.query('select raw_payload from public.price_observations where id = $1', [observationId]),
+      /permission denied/i,
+    );
+    await client.query('rollback to savepoint raw_evidence_probe');
+
+    await client.query("select set_config('request.jwt.claim.sub', $1, true)", [ownerId]);
+    const ownerRows = await client.query('select id from public.market_price_snapshots where id = $1', [personalSnapshotId]);
+    assert.deepEqual(ownerRows.rows.map((row) => row.id), [personalSnapshotId], 'the matching owner keeps personal snapshot access');
+    const writtenSnapshotId = randomUUID();
+    await client.query(`
+      insert into public.market_price_snapshots (id, user_id, card_id, language, market_price_gbp)
+      values ($1, $2::uuid, $3, 'en', 102)
+    `, [writtenSnapshotId, ownerId, cardId]);
+    const updated = await queryOne(client, `
+      update public.market_price_snapshots set market_price_gbp = 103
+      where id = $1 returning market_price_gbp
+    `, [writtenSnapshotId]);
+    assert.equal(Number(updated.market_price_gbp), 103, 'existing owner snapshot writes must remain available');
+    await client.query('savepoint owner_reassignment_probe');
+    await expectRejected(
+      () => client.query('update public.market_price_snapshots set user_id = $2::uuid where id = $1', [writtenSnapshotId, otherUserId]),
+      /row-level security|permission denied/i,
+    );
+    await client.query('rollback to savepoint owner_reassignment_probe');
+
+    await execute(client, 'set local role service_role');
+    const retained = await queryOne(client, 'select raw_payload from public.price_observations where id = $1', [observationId]);
+    assert.equal(retained.raw_payload.listing.sourceItemId, 'private-evidence');
+    const shared = await queryOne(client, 'select id from public.market_price_snapshots where id = $1', [sharedSnapshotId]);
+    assert.equal(shared.id, sharedSnapshotId, 'service role retains shared snapshot processing access');
+  } finally {
+    await execute(client, 'rollback');
+  }
+}
+
 async function runRehearsal(client, options = {}) {
   const root = options.root ?? process.cwd();
   const expectedDatabase = options.expectedDatabase ?? REHEARSAL_DATABASE;
@@ -482,6 +567,7 @@ async function runRehearsal(client, options = {}) {
     ['false last sold', assertFalseLastSoldIsRejected],
     ['manual evidence publication', assertApprovedManualEvidenceCanPublish],
     ['PokeTrace synthetic ingest', assertApprovedPokeTraceEvidenceIngests],
+    ['personal pricing privacy', assertPersonalPricingPrivacy],
   ]) {
     try {
       await check(client);
@@ -518,6 +604,7 @@ export {
   applyMigrations,
   assertApprovedManualEvidenceCanPublish,
   assertApprovedPokeTraceEvidenceIngests,
+  assertPersonalPricingPrivacy,
   migrationFiles,
   preflightBaseline,
   readDbUrl,

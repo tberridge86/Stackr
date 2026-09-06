@@ -21,6 +21,15 @@ create schema if not exists ingest;
 create schema if not exists market;
 create schema if not exists api;
 create schema if not exists audit;
+create schema if not exists auth;
+
+create or replace function auth.uid()
+returns uuid
+language sql
+stable
+as $$
+  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
+$$;
 
 revoke all on schema catalog, ingest, market, api, audit from public;
 grant usage on schema api to anon, authenticated, service_role;
@@ -68,6 +77,35 @@ create table if not exists public.market_price_snapshots (
   is_stale boolean not null default false,
   source_breakdown jsonb not null default '[]'::jsonb
 );
+
+create table if not exists public.price_observations (
+  id uuid primary key default gen_random_uuid(),
+  card_id text,
+  source text not null default 'unknown',
+  source_type text not null default 'market_estimate',
+  raw_payload jsonb not null default '{}'::jsonb
+);
+
+-- Model the pre-existing personal snapshot contract: authenticated users may
+-- manage only their own non-null-user rows. The privacy migration must retain
+-- these writes while closing shared-row reads.
+alter table public.market_price_snapshots enable row level security;
+grant select, insert, update, delete on public.market_price_snapshots to authenticated;
+drop policy if exists "Fixture users manage own personal snapshots" on public.market_price_snapshots;
+create policy "Fixture users manage own personal snapshots"
+  on public.market_price_snapshots
+  for all
+  to authenticated
+  using ((select auth.uid()) = user_id and user_id is not null)
+  with check ((select auth.uid()) = user_id and user_id is not null);
+-- Simulate a legacy permissive insertion policy which the privacy migration
+-- must constrain without deleting unrelated existing policies.
+drop policy if exists "Fixture legacy shared snapshot insert" on public.market_price_snapshots;
+create policy "Fixture legacy shared snapshot insert"
+  on public.market_price_snapshots
+  for insert
+  to authenticated
+  with check (true);
 
 create table if not exists ingest.sources (
   id uuid primary key default gen_random_uuid(),
@@ -312,3 +350,5 @@ revoke all on all tables in schema market from public, anon, authenticated;
 revoke all on all tables in schema ingest from public, anon, authenticated;
 grant all privileges on all tables in schema market, ingest to service_role;
 grant select on all tables in schema catalog to service_role;
+grant select, insert, update on public.price_observations to service_role;
+grant select, insert, update on public.market_price_snapshots to service_role;

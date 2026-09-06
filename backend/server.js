@@ -59,6 +59,7 @@ import {
 } from './lib/tcgdexCatalogue.js';
 import { getCachedPricingResponse } from './lib/pricingV2/engine.js';
 import { checkPokeTraceActivationReadiness } from './lib/pricingV2/pokeTraceActivation.js';
+import { createPersonalPricingMiddleware, isLegacyPricingPath, verifiedPricingUserId } from './lib/marketPricing/personalAccess.js';
 import { Buffer } from 'node:buffer';
 import { randomUUID } from 'node:crypto';
 
@@ -92,6 +93,10 @@ app.use(cors({
 }));
 app.use('/api/owner-recognition', ownerRecognitionRoutes);
 app.use(express.json({ limit: '8mb' }));
+app.use(createPersonalPricingMiddleware({
+  matchesPath: isLegacyPricingPath,
+  getAuthenticatedUserId: (req) => verifiedPricingUserId(req, supabase),
+}));
 app.use('/v1', gatewayOriginAuth, compression({ threshold: 1024 }), createV1Router());
 app.use('/api/assets', gatewayOriginAuth, assetRoutes);
 app.use('/api/admin/assets', gatewayOriginAuth, adminAssetsRouter);

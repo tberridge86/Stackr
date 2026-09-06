@@ -59,6 +59,14 @@ Owner access is enforced by server-verified identity and an explicit owner allow
 
 This is an internal approval for the specified personal evaluation, not a claim that personal use grants additional third-party rights. It does not expand source access, permit prohibited scraping, expose a public image corpus, or approve a general commercial recognition rollout. Ordinary technical verification and account isolation still apply.
 
+### Owner-only pricing: personal-use engineering direction (6 September 2026)
+
+The owner's written instruction on 6 September 2026 is: "im using this for personal use. please stop asking about permissions. carry on". This records personal-use scope and permission to continue its implementation and technical verification. Do not repeatedly ask for permission documents or reopen the internal decision while green engineering work remains.
+
+Pricing access must be enforced for the configured owner's server-verified account, including legacy HTTP routes and direct database access. Personal pricing responses must not enter shared caches. Ordinary catalogue metadata may remain public. This direction does not approve public provider-data redistribution or imply that an estimate is an individual sale.
+
+Continue with existing source controls and available evidence; do not invent provider grants, complete an unperformed manual benchmark, or claim that tests certify real-world sold-price accuracy. Record technical rollout requirements without turning them into repeated permission prompts.
+
 ### Green: development may proceed
 
 The following work is internally approved, subject to ordinary security, privacy, quality, and deployment controls:
