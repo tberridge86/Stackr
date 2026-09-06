@@ -247,16 +247,18 @@ if (migrationReconciliation.status === 0) {
   assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
   assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 } else {
-  // The repository ledger is eight reviewed migrations ahead of the last
+  // The repository ledger is fourteen additional migrations ahead of the last
   // legacy reconciliation evidence: Premium Seller, the byte-identical
   // emergency containment capture, Gate 0, and the unapplied staging-first
   // catalogue natural-identity reconciliation, followed by staging's atomic
   // exact raw-revision retention, immutable run-observation provenance,
-  // conflict-deduplication lookup index, and launch conflict-report repair.
+  // conflict-deduplication lookup index, launch conflict-report repair, and
+  // the six evidence-gated personal-pricing migrations listed below. These
+  // additions do not revise the frozen staging evidence or approve deployment.
   // Normal production workflows remain fail-closed; staging applies
   // migrations only through scoped paths.
   const reconciliation = JSON.parse(migrationReconciliation.stdout);
-  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 8);
+  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 14);
   assert.deepEqual(reconciliation.errors, [
     'local_migration_count_drift',
     'staging_migration_count_drift',
@@ -268,9 +270,17 @@ if (migrationReconciliation.status === 0) {
   const localMigrations = readdirSync('supabase/migrations')
     .filter((name) => /^\d{14}_.+\.sql$/.test(name))
     .sort();
-  assert.equal(localMigrations.at(-1), '20260831202805_repair_launch_catalogue_conflict_set_resolution.sql');
+  assert.equal(localMigrations.at(-1), '20260906063316_personal_pricing_privacy_boundary.sql');
   assert.ok(localMigrations.includes('20260827093110_emergency_client_write_containment.sql'));
   assert.ok(localMigrations.includes('20260827124944_gate0_financial_route_containment.sql'));
+  assert.deepEqual(localMigrations.slice(-6), [
+    '20260903120000_deduplicate_pending_price_refreshes.sql',
+    '20260903210000_verified_sold_provenance.sql',
+    '20260904123000_poketrace_sold_evidence_provider.sql',
+    '20260904130000_market_price_snapshot_history_buckets.sql',
+    '20260904131000_exact_variant_price_refresh_queue.sql',
+    '20260906063316_personal_pricing_privacy_boundary.sql',
+  ]);
   assert.notEqual(migrationAlignmentGate.status, 0, 'global deployment must remain blocked while staging evidence trails');
 }
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
@@ -965,10 +975,10 @@ assert.match(productionMonitorWorkflow, /body\?\.runtime\?\.supabaseProjectRef !
 assert.match(productionMonitorWorkflow, /issues: write/);
 assert.match(productionMonitorWorkflow, /if: failure\(\)[\s\S]+gh issue (?:comment|create)/);
 assert.match(productionMonitorWorkflow, /if: success\(\)[\s\S]+gh issue close/);
-assert.doesNotMatch(
+assert.match(
   priceRefreshWorkflow,
   /environment:\s*production/,
-  'frequent scheduled price refreshes must not wait on the protected production deployment approval gate',
+  'scheduled refreshes must use the reviewed production-secret scope',
 );
 assert.match(
   priceRefreshWorkflow,
@@ -995,7 +1005,7 @@ assert.doesNotMatch(
 );
 assert.match(
   priceRefreshWorkflow,
-  /Block disabled full universe sync[\s\S]*full-universe lane is disabled until daily-tcgcsv-sync has a Node-only pricing provider boundary[\s\S]*exit 1/,
+  /Block disabled full universe sync[\s\S]*full-universe lane is disabled until a reviewed Node-only provider boundary exists[\s\S]*exit 1/,
 );
 assert.equal(productionBackendHardeningApproval.status, 'approved');
 assert.equal(productionBackendHardeningApproval.scope, 'production_backend_hardening_only');
