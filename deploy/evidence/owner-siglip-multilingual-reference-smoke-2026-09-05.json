@@ -1,0 +1,47 @@
+{
+  "purpose": "Bounded multilingual reference plumbing smoke, not camera accuracy or a benchmark",
+  "selectionPredeclaredBeforeCalls": true,
+  "selectionRule": "Lowest numeric vector_index per exact language_code; one cached reference each; no replacement or downloads",
+  "galleryIndex": "siglip2-vision-256-768-r3f9f96cb-full-48011-v1",
+  "metadataSha256": "8869b8c9da5c370210bb9ab683898c46f6d8b3f4552d3f952d1ee37d6938afe3",
+  "languageRowCounts": {"en": 21793, "ja": 3897, "zh-cn": 20175, "zh-tw": 2146},
+  "selected": [
+    {"language": "en", "vectorIndex": 0, "referenceAssetId": "00036ee6-598f-487a-947c-876b9a0e9ba0", "expectedVariantId": "83eb7d96-15f4-44b3-83c0-294bcb29c3b2", "imageSha256": "b80ea93be1c7ca9bab5dd9bb5dfe6c11397bf92bec9d9633d5acdcc954fe6b66", "cachedAtSelection": true, "sameImageVariantIds": ["83eb7d96-15f4-44b3-83c0-294bcb29c3b2"]},
+    {"language": "ja", "vectorIndex": 1, "referenceAssetId": "000494eb-2155-4f9f-a57f-920f7c8d0b75", "expectedVariantId": "7228fab7-87aa-4412-bda1-33ccc7470780", "imageSha256": "45113409fb8410086ebd18b0a96c528883d920f6a3dc6fc3c64d105e43f20a14", "cachedAtSelection": true, "sameImageVariantIds": ["7228fab7-87aa-4412-bda1-33ccc7470780"]},
+    {"language": "zh-cn", "vectorIndex": 2, "referenceAssetId": "00070ee6-85f9-4ac9-9d75-cd8404c10585", "expectedVariantId": "5285c188-44be-4e42-9b8a-e2e6e8b62bd6", "imageSha256": "a69106860c8ff1c7f2758078c5e7e631ae3a7d69d3a35335d18f911764402d3d", "cachedAtSelection": true, "sameImageVariantIds": ["5285c188-44be-4e42-9b8a-e2e6e8b62bd6"]},
+    {"language": "zh-tw", "vectorIndex": 40, "referenceAssetId": "003451ce-a878-437a-95f9-6b87c6140d6a", "expectedVariantId": "e76f5c18-2689-44be-8e97-9da3b9f9a013", "imageSha256": "edc67776d116be7c0806b2ebcb020346e487a9a5b500246888dafa3b131e6130", "cachedAtSelection": true, "sameImageVariantIds": ["e76f5c18-2689-44be-8e97-9da3b9f9a013", "4b119e7a-53e4-48b2-8385-1be4bd051ef1"], "ambiguity": "Two gallery variants use identical reference image bytes; reference matching cannot distinguish them"}
+  ],
+  "execution": {
+    "status": "completed",
+    "checkedAt": "2026-09-05T20:09:19.367Z",
+    "backendUrl": "https://pocketvault-production.up.railway.app",
+    "runtime": {"gitCommit": "b852318c4331", "gitCommitSource": "bundled_workflow_sha", "deploymentId": "7c390364-331c-4a94-bcd6-031cd0e8cebe", "railwayEnvironment": "production"},
+    "ownerStatus": 200,
+    "ownerReady": true,
+    "identifyCalls": 4,
+    "skipped": 0,
+    "allImageHashesVerified": true,
+    "modelVersion": "siglip2_vision_256_768",
+    "indexVersion": "siglip2-vision-256-768-r3f9f96cb-full-48011-v1",
+    "allResponses": {"httpStatus": 200, "status": "review_required", "requiresReview": true, "autoAccept": false, "autoAdd": false},
+    "samples": [
+      {"language": "en", "httpElapsedMs": 1142.6278, "top1VariantId": "83eb7d96-15f4-44b3-83c0-294bcb29c3b2", "top1Similarity": 1, "expectedTop1": true, "expectedInTop5": true, "timings": {"preprocessingMs": 8.408406749367714, "inferenceMs": 92.33861416578293, "searchMs": 44.78660598397255, "totalMs": 145.5336268991232}, "top5VariantIds": ["83eb7d96-15f4-44b3-83c0-294bcb29c3b2", "ba519d4e-0fa1-471b-805b-95160b66d9f6", "4e079236-99e6-4e64-b1ab-b56c459ab11c", "a4a4f65f-9b3e-45a7-8c2c-feaff2a20ca4", "af40e4b5-bc8b-4d32-8803-9cf5404c8d15"]},
+      {"language": "ja", "httpElapsedMs": 667.2939, "top1VariantId": "7228fab7-87aa-4412-bda1-33ccc7470780", "top1Similarity": 1, "expectedTop1": true, "expectedInTop5": true, "timings": {"preprocessingMs": 7.500816136598587, "inferenceMs": 85.17362736165524, "searchMs": 20.562006160616875, "totalMs": 113.2364496588707}, "top5VariantIds": ["7228fab7-87aa-4412-bda1-33ccc7470780", "9de48617-2d9e-47e9-aa4f-89b99dd4eab4", "325125a0-3d53-4dc9-b55b-6d4c212857a1", "d8d83a19-7f0a-4eeb-8539-52a13b6b5c4f", "7976371a-57c6-475f-ae94-6af89f166b02"]},
+      {"language": "zh-cn", "httpElapsedMs": 712.8595, "top1VariantId": "5285c188-44be-4e42-9b8a-e2e6e8b62bd6", "top1Similarity": 1, "expectedTop1": true, "expectedInTop5": true, "timings": {"preprocessingMs": 5.620576441287994, "inferenceMs": 84.24266427755356, "searchMs": 59.27318148314953, "totalMs": 149.13642220199108}, "top5VariantIds": ["5285c188-44be-4e42-9b8a-e2e6e8b62bd6", "00a78fc4-a701-4503-a535-c17578ad7de9", "fdedc088-f90b-45cf-8509-b65c80c0a345", "951f56d0-6c0b-41a1-b25a-2e70a92f3368", "c3a9dcfd-8303-489e-b685-1bdbad3621a9"]},
+      {"language": "zh-tw", "httpElapsedMs": 345.0292, "top1VariantId": "e76f5c18-2689-44be-8e97-9da3b9f9a013", "top1Similarity": 1, "expectedTop1": true, "expectedInTop5": true, "timings": {"preprocessingMs": 8.006930351257324, "inferenceMs": 80.11588454246521, "searchMs": 10.542556643486023, "totalMs": 98.66537153720856}, "top5VariantIds": ["e76f5c18-2689-44be-8e97-9da3b9f9a013", "4b119e7a-53e4-48b2-8385-1be4bd051ef1", "4ad4bdfd-6ac2-4c39-96bb-211fbd705302", "df2c8dd0-b1a6-4583-a4c6-78d1d4787023", "d3ea1ca9-520b-4edf-8232-7f9f7f514cf9"], "ambiguity": {"identicalImageOtherVariantId": "4b119e7a-53e4-48b2-8385-1be4bd051ef1", "otherVariantLanguageLabel": "zh-cn", "otherVariantRank": 2, "otherVariantSimilarity": 1, "interpretation": "Exact similarity tie across two language-labelled variants sharing identical image bytes. Rank 1 is not evidence of successful language or variant disambiguation."}}
+    ],
+    "temporarySessionsCreated": 1,
+    "emailSent": false,
+    "temporarySessionRevoked": true,
+    "revocationScope": "local: only this temporary session",
+    "revokedRefreshDenied": true,
+    "credentialsPersisted": false,
+    "serviceTokenHandoffRecreated": false,
+    "newReferenceDownloads": 0,
+    "catalogueMutations": 0,
+    "deployments": 0,
+    "realDevice": false,
+    "cameraAccuracy": false,
+    "limitations": ["Four existing gallery references, one per available requested language label; not held-out data or a camera accuracy benchmark.", "Deterministic preselection and all four outcomes retained; no replacements, tuning, or additional calls.", "Traditional Chinese sample has a same-byte Simplified Chinese-labelled variant tied at similarity 1; this smoke does not resolve catalogue/reference ambiguity.", "HTTP timings are one sample per reference and are operational observations, not a latency benchmark.", "Access JWTs can remain valid until expiry after local sign-out; credentials remained in process memory and refresh denial was verified."]
+  }
+}

@@ -28,6 +28,7 @@ import { Text } from '../../components/Text';
 import { useTheme } from '../../components/theme-context';
 import { identifyCardsDetailed, type IdentifiedCard, type ScanIdentifyDiagnostics } from '../../lib/recognition/orchestrator';
 import { getRecognitionFeatureFlags } from '../../lib/recognition/featureFlags';
+import { OWNER_PRIVATE_RECOGNITION_ENABLED } from '../../lib/ownerRecognitionCore';
 import { warmLocalOnDeviceV1 } from '../../lib/recognition/localOnDeviceInference';
 import {
   getLocalQuickScanGuidance,
@@ -3766,6 +3767,11 @@ export default function ScanScreen() {
           </View>
 
           <View style={styles.topActions}>
+            {OWNER_PRIVATE_RECOGNITION_ENABLED && <TouchableOpacity
+              onPress={() => router.replace('/scan/owner')}
+              style={styles.iconButton} hitSlop={12} accessibilityRole="button"
+              accessibilityLabel="Private SigLIP recognition and capture dataset"
+            ><Ionicons name="flask-outline" size={22} color="#FFFFFF" /></TouchableOpacity>}
             <TouchableOpacity
               onPress={() => setTorchEnabled((current) => !current)}
               disabled={!permissionGranted || facing !== 'back'}

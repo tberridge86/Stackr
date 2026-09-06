@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "stackr-owner-siglip-local-smoke-v1",
+  "date": "2026-09-05",
+  "scope": "local_reference_runtime_smoke_not_real_device_accuracy",
+  "modelVersion": "siglip2_vision_256_768",
+  "modelSha256": "f01886dd1d66979f44125db8f482639c9c32cf27d4cc3baa6f1b7d55d2d198d7",
+  "indexVersion": "siglip2-vision-256-768-r3f9f96cb-full-48011-v1",
+  "referenceCount": 48011,
+  "inputReferenceAssetId": "00036ee6-598f-487a-947c-876b9a0e9ba0",
+  "inputSha256": "b80ea93be1c7ca9bab5dd9bb5dfe6c11397bf92bec9d9633d5acdcc954fe6b66",
+  "expectedVariantId": "83eb7d96-15f4-44b3-83c0-294bcb29c3b2",
+  "expectedVariantRank": 1,
+  "rawFloat32Cosine": 1.0000001192092896,
+  "responseCosinePolicy": "clamp_to_minus_one_plus_one_for_floating_point_roundoff",
+  "nextCandidateCosine": 0.934273898601532,
+  "timingsMs": {
+    "preprocessing": 1820.0469999999314,
+    "inference": 3611.43879999986,
+    "search": 601.487700000007,
+    "total": 6032.973499999798
+  },
+  "runtime": "onnxruntime 1.28.0 CPUExecutionProvider, Windows, four intra-op threads",
+  "unitTests": {"command": "python -m unittest discover -s tests -p test_owner_siglip.py -v", "passed": 5},
+  "realDeviceTested": false,
+  "remoteDeploymentPerformed": false,
+  "autoAccept": false,
+  "autoAdd": false
+}

@@ -2,7 +2,7 @@
 
 ## Authority And Preconditions
 
-Production deployment is a manual GitHub workflow from `main` through the protected `production` environment. It requires a reviewer. Full-platform and gateway releases require a known-good Cloudflare version tag; a `backend_only` release instead requires a known-good Railway backend deployment ID. Do not deploy from a local dirty worktree.
+Production deployment is a manual GitHub workflow from `main` through the protected `production` environment. It requires a reviewer. Full-platform and gateway releases require a known-good Cloudflare version tag; a `backend_only` release discovers and verifies its current live Railway rollback target before deployment. Do not deploy from a local dirty worktree.
 
 ### Backend-only code release
 
@@ -11,7 +11,6 @@ Use `backend_only` for an exact, already-reviewed backend code revision that doe
 Before dispatch, record:
 
 - the exact 40-character SHA currently at `origin/main`;
-- a known-good, successful, rollback-eligible deployment ID for the production backend service; and
 - a canonical production variant UUID for a read-only raw-card pricing probe.
 
 Dispatch with these exact inputs; leave every catalogue, gateway, recognition, migration, and mobile input at its shown empty or false value:
@@ -22,7 +21,6 @@ gh workflow run deploy-production.yml `
   -f confirmation='DEPLOY PRODUCTION' `
   -f release_scope=backend_only `
   -f expected_main_sha='<exact-40-character-main-sha>' `
-  -f previous_backend_deployment_id='<known-good-production-backend-deployment-id>' `
   -f pricing_smoke_variant_id='046ba06b-01c6-44e1-94b5-48e786c3e7a4' `
   -f gateway_bootstrap=false `
   -f apply_migrations=false `
@@ -30,9 +28,9 @@ gh workflow run deploy-production.yml `
   -f promote_gateway=false
 ```
 
-The backend-only job installs only the root and backend dependency trees, runs lint, frontend/backend type checks, backend/API/pricing/deployment tests and both current-tree and commit secret scans, then validates the supplied rollback deployment against the configured production backend service and environment. It uploads only `backend/` to that Railway service. It never invokes Supabase, catalogue promotion, Cloudflare/Wrangler, recognition, or EAS tooling.
+The backend-only job installs only the root and backend dependency trees, runs lint, frontend/backend type checks, backend/API/pricing/deployment tests and both current-tree and commit secret scans, then discovers the current live deployment in the configured Railway project, service, and environment. Two direct health responses must attest the same production commit and bind to that exact deployment through Railway HTTP request logs. The deployment must be successful and rollback-eligible; missing or ambiguous evidence stops the release. It uploads only `backend/` to that Railway service. It never invokes Supabase, catalogue promotion, Cloudflare/Wrangler, recognition, or EAS tooling.
 
-After deployment it performs GET-only checks against both the direct backend and public gateway for health, the exact raw-card price, price history, and market movers. The direct backend checks use the protected origin key without logging it. Any deployment or smoke failure automatically attempts to restore `previous_backend_deployment_id`; the workflow stays failed for review. The run artifact records only non-secret rollback-target, deployment, and smoke evidence.
+After deployment it performs GET-only checks against both the direct backend and public gateway for health, the exact raw-card price, price history, and market movers. The direct backend checks use the protected origin key without logging it. Any deployment or smoke failure automatically attempts to restore the exact discovered rollback deployment; the workflow stays failed for review. The run artifact records only non-secret rollback-target, deployment, and smoke evidence.
 
 For catalogue, gateway, recognition, mobile, and full-platform releases, all of these must be true:
 

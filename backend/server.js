@@ -22,6 +22,7 @@ import recognitionShadowModeRoutes from './routes/recognitionShadowMode.js';
 import retiredSideEffectRoutes from './routes/retiredSideEffects.js';
 import observabilityRoutes from './routes/observability.js';
 import scanLabRoutes from './routes/scanLab.js';
+import ownerRecognitionRoutes from './routes/ownerRecognition.js';
 import scannerPackRoutes from './routes/scannerPacks.js';
 import shippoRoutes from './routes/shippo.js';
 import stripeRoutes from './routes/stripe.js';
@@ -88,6 +89,7 @@ app.use(cors({
     callback(null, !origin || allowedOrigins.has(origin));
   },
 }));
+app.use('/api/owner-recognition', ownerRecognitionRoutes);
 app.use(express.json({ limit: '8mb' }));
 app.use('/v1', gatewayOriginAuth, compression({ threshold: 1024 }), createV1Router());
 app.use('/api/assets', gatewayOriginAuth, assetRoutes);

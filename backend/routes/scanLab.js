@@ -2,6 +2,7 @@
 import { createHash } from 'node:crypto';
 import express from 'express';
 import { hasTrustedStackrAdminClaim } from '../lib/trustedAuthorization.js';
+import { authenticateOwnerRecognition } from '../lib/ownerRecognitionAccess.js';
 import { createClient } from '@supabase/supabase-js';
 import { validatePrivateScanUpload } from '../lib/assetPipeline.js';
 
@@ -47,8 +48,12 @@ function fail(res, status, error, details = undefined) {
   });
 }
 
-async function requireScanLabAdmin(req, res) {
-  if (!UPLOADS_ENABLED) {
+export async function requireScanLabAdmin(req, res, {
+  env = process.env,
+  supabase: suppliedSupabase,
+  uploadsEnabled = UPLOADS_ENABLED,
+} = {}) {
+  if (!uploadsEnabled) {
     fail(res, 403, 'Scan Lab uploads are disabled on this backend.');
     return null;
   }
@@ -59,7 +64,15 @@ async function requireScanLabAdmin(req, res) {
     return null;
   }
 
-  const supabase = getSupabaseAdmin();
+  const supabase = suppliedSupabase ?? getSupabaseAdmin();
+  if (env.STACKR_OWNER_RECOGNITION_ENABLED === 'true') {
+    const access = await authenticateOwnerRecognition(req, { supabase, env });
+    if (!access.ok) {
+      fail(res, access.status, access.error);
+      return null;
+    }
+    return { supabase, user: access.user };
+  }
   const { data: userData, error: userError } = await supabase.auth.getUser(token);
   const user = userData?.user ?? null;
   if (userError || !user) {
@@ -72,7 +85,7 @@ async function requireScanLabAdmin(req, res) {
     return null;
   }
 
-  return { supabase, user, profile };
+  return { supabase, user };
 }
 
 function normaliseIdentity(identity = {}) {

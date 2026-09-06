@@ -29,11 +29,23 @@
     "requiredPrompt2AncestorCommit": "a869e3a2c0d467b3510ffbc1367544e728dbe0be",
     "approvalPullRequest": 62,
     "approvalRule": "merge-exact-head-after-green-checks",
+    "sourcePinAmendments": [
+      {
+        "date": "2026-09-05",
+        "reviewPullRequest": 132,
+        "sourcePath": "backend/routes/scanLab.js",
+        "previousSha256": "8a74389ed795983673bc85ab39365bcd6837d3b4b30757b0f60383021ca5d2ce",
+        "replacementSha256": "7782ed181e7198eda005d454f4722d2c152e79a3eb8fb1e6d2c0096b12baa561",
+        "authorityRecord": "deploy/evidence/owner-recognition-internal-approval-2026-09-05.json",
+        "reason": "Owner-authorized private Scan Lab access now verifies the single configured owner through server-side authentication when the owner lane is enabled; the existing trusted-admin path remains for the disabled lane.",
+        "scope": "Current reviewed source pin only. The original PR 62 source fingerprint is retained above; historical environment, database and catalogue snapshots are unchanged. This amendment does not assert that PR 132 has merged or that deployment has been verified."
+      }
+    ],
     "sourceSha256": {
       "backend/lib/trustedAuthorization.js": "640344c598ec42fc6288628a92e2a8e1dc6bb3950edea990fd063413f96cbf1c",
       "backend/routes/recognitionFeedback.js": "19d27b36aa415112aa6f621c1a69359017b36b2a0387e08cfd4f8290363ea085",
       "backend/routes/recognitionShadowMode.js": "7f86fb180cf6b5c6a69ef0be8cc1ff7a694b1dc2a5b731c079733a82e2246fa1",
-      "backend/routes/scanLab.js": "8a74389ed795983673bc85ab39365bcd6837d3b4b30757b0f60383021ca5d2ce",
+      "backend/routes/scanLab.js": "7782ed181e7198eda005d454f4722d2c152e79a3eb8fb1e6d2c0096b12baa561",
       "backend/test/trusted-authorization.test.mjs": "dee371eac574abbf2ddf1023243aded6c1c771eeea28831f69a88dabadc15ee2",
       "scripts/test-prompt2-security-p0.mjs": "9d37307270cc1b62dd4844d5448ab4eea4d4b1bf61774e4112976136780e9c05",
       "supabase/manual/prompt2_emergency_profile_authority_containment.sql": "10687898b8c92d5576c8fc894cbaf375c1320f8c5651371cdadeac245ccdb738",

@@ -2,6 +2,10 @@ const { resolveMobileRuntimeConfig } = require('./config/mobile-runtime.cjs');
 
 module.exports = ({ config }) => {
   const runtimeConfig = resolveMobileRuntimeConfig(process.env);
+  const isOwnerRecognitionBuild = process.env.STACKR_OWNER_RECOGNITION_BUILD === 'true';
+  if (isOwnerRecognitionBuild && runtimeConfig.environment !== 'production') {
+    throw new Error('Owner recognition uses the existing production environment.');
+  }
   const isDevApp = runtimeConfig.appVariant === 'development';
   const isStagingApp = runtimeConfig.environment === 'staging' && !isDevApp;
   const variantSuffix = isDevApp ? '.dev' : isStagingApp ? '.staging' : '';
@@ -17,7 +21,7 @@ module.exports = ({ config }) => {
     // Staging updates must never be runtime-compatible with production. Keep
     // the existing production policy so released binaries do not lose OTA
     // compatibility solely because this boundary was introduced.
-    runtimeVersion: runtimeConfig.environment === 'staging'
+    runtimeVersion: isOwnerRecognitionBuild ? `${config.version}-owner-recognition-v1` : runtimeConfig.environment === 'staging'
       ? `${config.version}-${runtimeConfig.appVariant}`
       : config.runtimeVersion,
     extra: {
