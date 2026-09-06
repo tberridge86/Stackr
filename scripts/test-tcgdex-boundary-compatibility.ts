@@ -6,13 +6,14 @@ import {
   assertTcgdexRuntimeBoundaryCompatibility,
   assertTcgdexRuntimeBoundaryCompatibilityWithExpectedHash,
   TCGDEX_RUNTIME_BOUNDARY_COMPATIBILITY_PATH,
+  TCGDEX_PRIOR_RUNTIME_BOUNDARY_COMPATIBILITY_PATH,
 } from './tcgdex-boundary-compatibility';
 
 const boundaryPath = 'docs/stackrtcg-ip-operating-boundary.md';
 const priorReviewPath = 'catalogue/rights-reviews/stackrtcg-ip-boundary-green-compatibility.2026-09-04.json';
 const lowReferencePath = 'catalogue/rights-reviews/tcgdex-low-resolution-card-reference-green.2026-09-04.json';
 const marksPath = 'catalogue/rights-reviews/tcgdex-cjk-set-marks-owner-approved.2026-09-04.json';
-const trackedPaths = [boundaryPath, TCGDEX_RUNTIME_BOUNDARY_COMPATIBILITY_PATH, priorReviewPath, lowReferencePath, marksPath];
+const trackedPaths = [boundaryPath, TCGDEX_RUNTIME_BOUNDARY_COMPATIBILITY_PATH, TCGDEX_PRIOR_RUNTIME_BOUNDARY_COMPATIBILITY_PATH, priorReviewPath, lowReferencePath, marksPath];
 
 function hash(value: Buffer) {
   return createHash('sha256').update(value).digest('hex');
@@ -88,4 +89,38 @@ expectFailure('an unbound current compatibility review must fail closed', (files
   });
 }, true);
 
-console.log('TCGdex boundary compatibility chain checks passed.');
+expectFailure('the prior runtime compatibility review must remain immutable', (files) => {
+  writeJson(files, TCGDEX_PRIOR_RUNTIME_BOUNDARY_COMPATIBILITY_PATH, (review) => {
+    review.currentAuthority.sha256 = '0'.repeat(64);
+  });
+});
+
+expectFailure('the prior runtime compatibility review cannot be removed', (files) => {
+  files.delete(TCGDEX_PRIOR_RUNTIME_BOUNDARY_COMPATIBILITY_PATH);
+});
+
+expectFailure('a pricing bridge cannot rebind the prior runtime review', (files) => {
+  writeJson(files, TCGDEX_RUNTIME_BOUNDARY_COMPATIBILITY_PATH, (review) => {
+    review.priorRuntimeCompatibilityReview.sha256 = '0'.repeat(64);
+  });
+}, true);
+
+expectFailure('a pricing bridge cannot redirect the original authority path', (files) => {
+  writeJson(files, TCGDEX_RUNTIME_BOUNDARY_COMPATIBILITY_PATH, (review) => {
+    review.priorAuthority.path = 'docs/unrelated-authority.md';
+  });
+}, true);
+
+expectFailure('a pricing bridge cannot drop existing runtime controls', (files) => {
+  writeJson(files, TCGDEX_RUNTIME_BOUNDARY_COMPATIBILITY_PATH, (review) => {
+    review.reconfirmedDecisions[0].unchangedRuntimeControls = [];
+  });
+}, true);
+
+expectFailure('a pricing bridge cannot activate new source uses', (files) => {
+  writeJson(files, TCGDEX_RUNTIME_BOUNDARY_COMPATIBILITY_PATH, (review) => {
+    review.documentDeltaDisposition.tcgdexSetMarkPermissionsChanged = true;
+  });
+}, true);
+
+console.log('TCGdex boundary compatibility chain checks passed, including immutable recognition/pricing bridges.');
