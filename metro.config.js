@@ -6,8 +6,36 @@ const { isAuthorizedPreviewRead } = require('./scripts/stackr-preview-proxy-poli
 
 const config = getDefaultConfig(__dirname);
 const escapePathForRegex = (targetPath) => targetPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const ignoredProjectDirs = ['.cache', '.metro-cache', '.tmp', 'tmp', 'dist', 'web-build'].map(
-  (dir) => new RegExp(`${escapePathForRegex(path.resolve(__dirname, dir))}${escapePathForRegex(path.sep)}.*`)
+// These directories are not part of the mobile bundle. Prune them before the
+// Windows fallback watcher walks large catalogues, service trees, or worktrees.
+const ignoredProjectDirs = [
+  '.cache',
+  '.git',
+  '.metro-cache',
+  '.tmp',
+  '.tmp_metadata_provider_20260821',
+  '.tmp_video_frames',
+  '.worktrees',
+  '%SystemDrive%',
+  'backend',
+  'catalogue',
+  'data',
+  'deploy',
+  'dist',
+  'docs',
+  'gateway',
+  'ios-swiftui',
+  'ml',
+  'outputs',
+  'recognition-service',
+  'reports',
+  'supabase',
+  'tmp',
+  'web-build',
+].map(
+  // Metro's crawler uses native paths while its Windows watcher may normalize
+  // them to forward slashes. Match both without excluding lookalike app files.
+  (dir) => new RegExp(`^${path.resolve(__dirname, dir).split(/[\\/]/).map(escapePathForRegex).join('[\\\\/]')}(?:[\\\\/]|$)`)
 );
 const existingBlockList = config.resolver.blockList;
 
