@@ -247,16 +247,17 @@ if (migrationReconciliation.status === 0) {
   assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
   assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 } else {
-  // The repository ledger is eight reviewed migrations ahead of the last
+  // The repository ledger is ten reviewed migrations ahead of the last
   // legacy reconciliation evidence: Premium Seller, the byte-identical
   // emergency containment capture, Gate 0, and the unapplied staging-first
   // catalogue natural-identity reconciliation, followed by staging's atomic
   // exact raw-revision retention, immutable run-observation provenance,
-  // conflict-deduplication lookup index, and launch conflict-report repair.
+  // conflict-deduplication lookup index, launch conflict-report repair,
+  // and the two separately rehearsed, additive binder artwork-read migrations.
   // Normal production workflows remain fail-closed; staging applies
   // migrations only through scoped paths.
   const reconciliation = JSON.parse(migrationReconciliation.stdout);
-  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 8);
+  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 10);
   assert.deepEqual(reconciliation.errors, [
     'local_migration_count_drift',
     'staging_migration_count_drift',
@@ -268,7 +269,11 @@ if (migrationReconciliation.status === 0) {
   const localMigrations = readdirSync('supabase/migrations')
     .filter((name) => /^\d{14}_.+\.sql$/.test(name))
     .sort();
-  assert.equal(localMigrations.at(-1), '20260831202805_repair_launch_catalogue_conflict_set_resolution.sql');
+  assert.deepEqual(localMigrations.slice(-3), [
+    '20260831202805_repair_launch_catalogue_conflict_set_resolution.sql',
+    '20260906062835_index_asset_printing_identity.sql',
+    '20260906062838_expose_bounded_card_image_identity_read.sql',
+  ]);
   assert.ok(localMigrations.includes('20260827093110_emergency_client_write_containment.sql'));
   assert.ok(localMigrations.includes('20260827124944_gate0_financial_route_containment.sql'));
   assert.notEqual(migrationAlignmentGate.status, 0, 'global deployment must remain blocked while staging evidence trails');
