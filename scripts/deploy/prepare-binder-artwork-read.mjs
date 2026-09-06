@@ -319,15 +319,21 @@ async function postApplyContract(client) {
   }
 }
 
-function parseArguments(argv) {
+export function parseArguments(argv) {
   const values = new Map();
+  const allowed = new Set(['db-url', 'project-ref', 'expected-evidence-sha256', 'apply']);
   for (const argument of argv) {
-    const match = /^--([^=]+)=(.*)$/.exec(argument);
-    if (!match) throw new Error(`invalid_argument:${argument}`);
+    // Arguments can contain credentials. Never include supplied text in errors.
+    if (typeof argument !== 'string' || /[\r\n]/.test(argument)) throw new Error('invalid_argument');
+    const match = /^--([a-z][a-z0-9-]*)=(.*)$/.exec(argument);
+    if (!match) throw new Error('invalid_argument');
+    if (!allowed.has(match[1])) throw new Error('unknown_argument');
+    if (values.has(match[1])) throw new Error('duplicate_argument');
     values.set(match[1], match[2]);
   }
-  const allowed = new Set(['db-url', 'project-ref', 'expected-evidence-sha256', 'apply']);
-  for (const key of values.keys()) if (!allowed.has(key)) throw new Error(`unknown_argument:${key}`);
+  if (values.has('apply') && !['true', 'false'].includes(values.get('apply'))) {
+    throw new Error('invalid_apply_argument');
+  }
   return {
     dbUrl: values.get('db-url') ?? '',
     projectRef: values.get('project-ref') ?? '',

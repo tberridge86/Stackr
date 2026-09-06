@@ -2,6 +2,50 @@
 
 ## Current status — 6 September 2026
 
+### Preparation failure and next-release handoff
+
+PR #134 is merged at `9c3d00eb76f2682a0f7a23d6b31f722afb534fde`.
+The owner-approved production preparation run
+[34021293972](https://github.com/tberridge86/Stackr/actions/runs/34021293972)
+passed its reviewer check and physical/logical backup checks, but failed on
+argument parsing before constructing a database client. The final command used
+the raw connection secret instead of the normalized connection already used by
+the backups. Synthetic LF/CRLF input reproduces the parser rejection; no real
+secret was inspected. The migration step made no database connection, DDL or
+migration-ledger write. Runner backup cleanup succeeded.
+
+The follow-up uses `STACKR_SOURCE_DB_URL` for that final command. Tests cover
+normalized LF/CRLF inputs, preserved equals signs, rejected embedded newlines,
+connection overrides, wrong project, duplicate/invalid arguments and verify-only
+defaults. CLI argument errors no longer echo supplied text, including credentials.
+The two migration files, pinned evidence, original manifest, source approvals,
+stored catalogue and ownership data remain unchanged.
+
+Follow-up validation passed: the preparation regression, deployment tooling,
+binder catalogue/quantity preservation, foreign set picker, four-language
+coverage, shared flags and native-language display checks, plus app typecheck.
+App lint passed with ten existing warnings and no errors. Independent review
+found no blocking issue in this four-file follow-up. These checks use synthetic
+fixtures and local code; they do not establish live artwork completeness.
+
+The coordinated owner TestFlight-readiness pass holds new preparation runs,
+deployments and merges. This follow-up is ready for review, not live verification.
+The existing app version remains 1.0.3; no build/runtime settings or app artifact
+were changed by this follow-up. Do not queue the image recovery as complete merely
+because a combined app build succeeds: after the hold is lifted, the exact reviewed
+main revision must pass protected preparation, independent four-language database
+checks, and the backend-only release, in that order.
+
+Verification must cover the shared path across existing binders and new-binder
+set pickers in English, Japanese, Simplified Chinese and Traditional Chinese,
+including multiple sets per language, complete pagination, native image delivery,
+set marks and preserved owned quantities. VSTAR Universe is one regression case,
+not the entire acceptance scope. Set-mark enrichment remains optional and can fail
+separately from card delivery; neither historic asset coverage nor every binder's
+image/metadata completeness has yet been verified in production.
+
+### Earlier implementation and live observations
+
 The bounded lookup has been implemented and rehearsed on staging. The pinned
 evidence is in `deploy/evidence/binder-artwork-read-staging-2026-09-06.json`;
 the protected preparation and release order are in `deploy/production-runbook.md`.
