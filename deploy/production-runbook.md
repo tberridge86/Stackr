@@ -48,6 +48,44 @@ For catalogue, gateway, recognition, mobile, and full-platform releases, all of 
 
 Current full-platform status is **NO-GO**: migration alignment and storage backup are verified, but the active-model and active-index gates in `deploy/release-manifest.json` are false. This does not block an exact, code-only `backend_only` release that satisfies the separate controls above.
 
+## Narrow binder artwork-read preparation
+
+The binder artwork repair is not a catalogue promotion. Before releasing a
+backend revision that opts into `api.card_image_manifest_for_identities`, use
+`prepare-binder-artwork-read.yml` on the exact reviewed `main` revision. This
+separate preparation applies only the two pinned 6 September additive index/RPC
+migrations. It must not run a broad migration push or reconcile unrelated
+staging-only or manually recorded production migrations.
+
+Required evidence is committed in
+`deploy/evidence/binder-artwork-read-staging-2026-09-06.json` and
+`deploy/evidence/binder-artwork-read-production-baseline-2026-09-06.json`.
+The first records non-vacuous four-language full-DTO equivalence, indexed plans,
+pagination and access-control checks. The second freezes the observed existing
+production ledger without rewriting it. Neither record claims complete artwork
+coverage or that production preparation has occurred.
+
+The workflow requires `PREPARE BINDER ARTWORK READ`, the exact reviewed lowercase
+40-character `expected_main_sha`, the canonical-LF staging evidence SHA-256 and
+an explicit `apply_migrations` choice. Verify-only is the default. A real required
+reviewer rule must be configured on the production environment; merely naming
+the environment is insufficient. The 6 September read-only inspection found
+`protection_rules: []`, so live preparation remains blocked until that
+repository setting is corrected by an authorised administrator.
+
+After successful preparation, independently verify the live RPC's permissions,
+four-language identity/payload equivalence and bounded image reads. Only then
+dispatch the existing `backend_only` workflow for the exact reviewed main SHA.
+That second job remains code-only (`apply_migrations=false`): the dependency was
+prepared by the separate reviewed workflow, not silently applied by the backend
+deployment. Retain both run artifacts. Backend rollback leaves the additive
+indexes/function installed; do not remove catalogue data or migration history.
+
+Verify the signed-in VSTAR Universe binder and both Chinese set pickers after
+the backend release. A successful local build, staging comparison or deployment
+health check does not establish that all historical image/metadata gaps are
+closed.
+
 ## Full-platform Release Command
 
 Start with a 5 percent canary and no automatic promotion:

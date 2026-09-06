@@ -199,3 +199,47 @@ until the production dependency is prepared through a protected release path.
 No production database or backend change has been made at this checkpoint.
 The existing broad catalogue release would promote data, so it is not used for
 this read-side repair. A narrowly bounded preparation workflow is being added.
+
+### Reviewed release preparation and refreshed build
+
+The preparation workflow is implemented: exact main SHA and source/evidence
+hashes, actual required-reviewer configuration, recent physical plus ephemeral
+logical backups, frozen existing 122-row production ledger, one bounded
+transaction and complete index/function/manifest/effective-privilege checks.
+It applies only the two additive migrations, never a broad migration push.
+Its actual postcondition SQL passed against staging, including the unchanged
+manifest definition and effective anonymous/authenticated denial. Transaction
+regressions cover verification-only, successful apply, unsafe postconditions and
+rollback. Independent review found no remaining critical issue after fixes.
+
+The backend route opts into the prepared read. Do not deploy that revision
+before preparation succeeds. Cards added from search now pass available native
+name, set name and image candidate through the existing binder persistence
+boundary; display-only provider references remain non-persistent. This changes
+future UI handoff only, not existing catalogue or ownership rows.
+
+Fresh app/backend typechecks passed; standard lint has zero errors and ten
+existing warnings. Backend tests passed 43/43, gateway 24/24, and API, binder
+identity/quantity/picker, language/flags, images, marketplace and preparation
+checks passed. The final API pass includes the new opt-in in its strict
+server-client-isolation assertion. Current-tree secret scanning passed.
+
+The refreshed production-configured web export passed with 93 routes (including
+the owner route already merged on main). Production API and controlled image
+fallback flags were explicitly enabled; private recognition flags were not
+enabled by this build. Output:
+`D:/Stackr-1/.tmp/cjk-binder-build-20260906-bounded-artwork`.
+Entry: `entry-9754abab3eabd262c777f2d7bf50ed4f.js`.
+SHA-256: `3121d2326acc83a9804a8e11202175c1d7d2362135d979f07f7cc0f7cccc8357`.
+The existing 8087 preview still serves the previous build: its process restart
+was rejected by the local tool policy. The preview launcher is updated for the
+next permitted restart; no successful preview switch is claimed.
+
+Production has not been changed. The concrete external release blocker is that
+GitHub's production environment returned `protection_rules: []` despite the
+runbook's reviewer requirement. The new workflow fails closed on that condition.
+An authorised repository administrator must configure a required release
+reviewer before the protected preparation and backend-only release. This is a
+deployment configuration issue, not a new source-rights permission question.
+All-language complete image/metadata coverage and live binder reconciliation
+remain open until the production read repair is activated and observed.

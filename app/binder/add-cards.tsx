@@ -236,6 +236,17 @@ export default function AddCardsToBinderScreen() {
           cardId: card.id,
           setId: card.set?.id ?? '',
           language: card.language ?? binderLanguage,
+          // Keep the presentation already shown to the collector as a
+          // resilience fallback; addCardsToBinder remains the sole image
+          // persistence policy boundary.
+          cardName: getCardPrimaryName(card),
+          imageUrl: card.images?.small ?? card.images?.large ?? null,
+          setName: getSetPrimaryName(card, getDisplaySetName({
+            setId: card.set?.id,
+            setName: card.set?.name,
+            set: card.set,
+            rawData: (card as any).raw_data,
+          })),
         }))
       );
 

@@ -62,6 +62,10 @@ jobs:
       - run: npm run test:scan-quality
       - run: npm run test:local-ocr-card-matcher
       - run: npm run test:binder-page-scan
+      - run: npm run test:binder-catalogue
+      - run: npm run test:binder-foreign-set-picker
+      - run: npm run test:pokemon-language-flags
+      - run: node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-binder-add-cards-metadata-persistence.ts
       - run: npm run test:card-vision-native-config
       - run: npm run test:card-localisation
       - run: npm run test:capture-geometry
@@ -105,6 +109,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database-migrations
+      - run: npm run test:asset-manifest-query-equivalence
+      - run: node scripts/test-prepare-binder-artwork-read.mjs
       - run: >-
           node scripts/test-owned-card-membership-migration.mjs
           --db-url=postgresql://postgres:postgres@127.0.0.1:5432/postgres

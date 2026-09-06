@@ -268,8 +268,8 @@ async function assertAssetManifestServerClientIsolation() {
   assert.ok(defaultServiceStart >= 0 && defaultServiceEnd > defaultServiceStart, 'default v1 service wiring is missing');
   const defaultService = route.slice(defaultServiceStart, defaultServiceEnd);
   assert.match(
-    defaultService,
-    /createCatalogueV1Service\(\{\s*supabase: getCatalogueSupabase\(\),\s*searchSupabase: getSearchSupabase\(\),\s*assetSupabase: getAssetSupabase\(\),\s*\}\)/,
+    defaultService.replace(/\/\/[^\r\n]*/g, ''),
+    /createCatalogueV1Service\(\{\s*supabase: getCatalogueSupabase\(\),\s*searchSupabase: getSearchSupabase\(\),\s*assetSupabase: getAssetSupabase\(\),\s*assetIdentityRpc: true,\s*\}\)/,
     'server-key clients must be scoped to searchSupabase and assetSupabase only',
   );
   assert.doesNotMatch(
@@ -1159,6 +1159,9 @@ await withServer(async (baseUrl) => {
 });
 
 const openApi = await readFile(new URL('../docs/stackr-api/openapi.v1.yaml', import.meta.url), 'utf8');
+const apiRouteSource = await readFile(new URL('../backend/routes/v1.js', import.meta.url), 'utf8');
+assert.match(apiRouteSource, /assetSupabase: getAssetSupabase\(\),[\s\S]*?assetIdentityRpc: true/,
+  'deployed service must use the prepared bounded backend-only image read');
 for (const path of [
   '/health',
   '/ready',
