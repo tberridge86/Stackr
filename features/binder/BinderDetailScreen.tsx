@@ -80,7 +80,7 @@ import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
 } from '../../lib/pokemonSetIdentity';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { checkAchievements, recordAchievementEvent } from '../../lib/achievements';
 import {
@@ -2961,7 +2961,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const binderModeLabel = binder.card_mode === 'graded' ? 'Graded binder' : masterSetEnabled ? 'Master set' : binder.type === 'official' ? 'Official set' : 'Custom binder';
   const customNameArt = binder.type === 'custom' ? getCustomBinderNameArt(customNameArtKey) : null;
   const officialSetLogoSource = binder.type === 'official'
-    ? getJapaneseSetLogoSourceForSet({
+    ? getLocalSetArtworkSourceForSet({
       id: binder.source_set_id ?? binder.cover_key,
       language: binder.language,
       name: officialSetDisplayName ?? binder.name,

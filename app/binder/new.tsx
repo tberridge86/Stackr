@@ -23,7 +23,7 @@ import {
   type PokemonCardLanguage,
   type PokemonSet,
 } from '../../lib/pokemonTcg';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
@@ -163,7 +163,7 @@ function getSetLogoUri(set: PokemonSet | null | undefined, fallbackLanguage?: Po
 
 function getSetLogoSource(set: PokemonSet | null | undefined, fallbackLanguage?: PokemonCardLanguage | string | null) {
   if (!set) return null;
-  return getJapaneseSetLogoSourceForSet({
+  return getLocalSetArtworkSourceForSet({
     id: set.id,
     language: set.language ?? fallbackLanguage,
     setCode: set.externalIds?.setCode,
