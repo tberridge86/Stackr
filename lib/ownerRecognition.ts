@@ -1,6 +1,7 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import { PRICE_API_URL } from './config';
 import { supabase } from './supabase';
+import { deleteOwnerCaptureWithEnvironment } from './ownerCaptureDeletion';
 import {
   createOwnerCaptureRecord, ownerCaptureDirectory, parseOwnerRecognitionResult,
   type OwnerRecognitionResult,
@@ -93,7 +94,9 @@ export async function saveOwnerCapture(input: {
 }
 
 export async function deleteOwnerCapture(ownerId: string, id: string) {
-  if (!/^[a-z0-9-]+$/.test(id)) throw new Error('Invalid capture identifier.');
-  const directory = await verifiedLocalDirectory(ownerId);
-  await FileSystem.deleteAsync(`${directory}${id}/`, { idempotent: true });
+  await deleteOwnerCaptureWithEnvironment(ownerId, id, {
+    verifiedLocalDirectory,
+    assertCurrentOwner: accessToken,
+    deleteDirectory: (directory) => FileSystem.deleteAsync(directory, { idempotent: true }),
+  });
 }
