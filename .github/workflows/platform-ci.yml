@@ -54,6 +54,8 @@ jobs:
       - run: npm run test:premium-seller-access
       - run: npm run test:commerce-release-lock
       - run: npm run test:mobile-runtime-config
+      - run: npm run test:iphone-preview
+      - run: npm run test:stackr-preview-proxy
       - run: npm run test:asset-pipeline
       - run: npm run test:asset-repair
       - run: npm run test:recognition-orchestrator
