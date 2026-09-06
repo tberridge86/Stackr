@@ -59,6 +59,22 @@ current committed boundary hash starts `a8c7361b`. The boundary and the approval
 record are unchanged by this repair. Do not report an all-green image-policy
 suite or silently replace approval hashes to make that assertion pass.
 
+Later on 6 September, an append-only technical compatibility record resolved
+that check without changing the boundary or any historical approval. It pins
+both boundary revisions and the original card-reference and separately reviewed
+set-mark decisions. The only document delta is the owner-only recognition
+section. The original controlled-reference test and adversarial compatibility
+tests now pass, including rejection of altered boundaries, approvals, card or
+mark permissions, missing records and an unbound new review. The new record is
+`catalogue/rights-reviews/tcgdex-runtime-boundary-compatibility.2026-09-06.json`;
+it authorizes no additional source, use, data mutation or deployment.
+
+The owner also approved configuring the production reviewer. The GitHub API
+write and subsequent independent read confirmed `tberridge86` as a required
+reviewer on the existing production environment. This resolves the missing
+reviewer-setting dependency above, not the separate per-run approval or the
+still-pending production preparation and backend deployment.
+
 ## Original design and observations
 
 ## Observed failure and invariant

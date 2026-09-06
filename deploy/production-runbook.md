@@ -71,7 +71,12 @@ an explicit `apply_migrations` choice. Verify-only is the default. A real requir
 reviewer rule must be configured on the production environment; merely naming
 the environment is insufficient. The 6 September read-only inspection found
 `protection_rules: []`, so live preparation remains blocked until that
-repository setting is corrected by an authorised administrator.
+repository setting is corrected by an authorised administrator. The owner
+explicitly approved that setting change later on 6 September. A subsequent
+API write and independent read confirmed required reviewer `tberridge86`
+(user ID `275953861`) on the existing production environment. That configuration
+does not approve a particular preparation or deployment run; the specific run
+still requires its protected-environment review and exact-SHA checks.
 
 After successful preparation, independently verify the live RPC's permissions,
 four-language identity/payload equivalence and bounded image reads. Only then

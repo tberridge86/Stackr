@@ -27,8 +27,8 @@ import {
   isTcgdexAssetPointer,
   sanitizeTcgdexAssetPointersForPublicDisplay,
 } from '../backend/lib/cataloguePublicAssetPolicy.js';
+import { assertTcgdexRuntimeBoundaryCompatibility } from './tcgdex-boundary-compatibility';
 
-const BOUNDARY_PATH = 'docs/stackrtcg-ip-operating-boundary.md';
 const REGISTRY_PATH = 'catalogue/source-rights-registry.json';
 const EVIDENCE_PATH = 'catalogue/rights-evidence/tcgdex-low-resolution-card-reference.2026-09-04.json';
 const NOTICE_PATH = 'docs/third-party/tcgdex-card-reference-notice.md';
@@ -62,6 +62,7 @@ type Decision = {
 };
 
 const decision = readJson<Decision>(DECISION_PATH);
+assertTcgdexRuntimeBoundaryCompatibility((path) => readFileSync(path));
 assert.equal(decision.classification, 'green');
 assert.equal(decision.status, 'authorized_under_internal_operating_boundary');
 assert.equal(decision.activationAuthorized, true);
@@ -82,7 +83,7 @@ for (const excludedUse of [
 ]) {
   assert.ok(decision.scope.excludedUses.includes(excludedUse), `decision must exclude ${excludedUse}`);
 }
-assert.equal(decision.bindings.operatingBoundarySha256, sha256(BOUNDARY_PATH));
+assert.equal(decision.bindings.operatingBoundarySha256, 'f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b');
 assert.equal(decision.bindings.rightsRegistrySha256, sha256(REGISTRY_PATH));
 assert.equal(decision.bindings.evidenceSha256, sha256(EVIDENCE_PATH));
 assert.equal(decision.bindings.noticeSha256, sha256(NOTICE_PATH));

@@ -28,6 +28,8 @@ assert.throws(
 );
 
 const workflow = readFileSync('.github/workflows/prepare-binder-artwork-read.yml', 'utf8');
+assert.match(workflow, /permissions:\s+contents: read\s+actions: read/,
+  'the reviewer-rule inspection requires explicit read-only Actions access');
 assert.match(workflow, /environment:\s+production/);
 assert.match(workflow, /stackr-production-deployment/);
 assert.match(workflow, /production_environment_required_reviewer_protection_missing/);
