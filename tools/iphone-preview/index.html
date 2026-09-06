@@ -118,13 +118,14 @@
       try {
         const response = await fetch(`/api/status?appUrl=${encodeURIComponent(url)}`, { cache: 'no-store' });
         const result = await response.json();
+        if (url !== source()) return;
         if (response.ok && !frameStarted) {
           frameStarted = true;
           frame.src = url;
         }
         updateAttribution(result.verified === true);
         setStatus(response.ok && frameLoaded, response.ok && !frameLoaded ? 'Expo ready · loading app…' : result.message);
-      } catch { updateAttribution(false); setStatus(false, 'Waiting for Expo…'); }
+      } catch { if (url !== source()) return; updateAttribution(false); setStatus(false, 'Waiting for Expo…'); }
     }
     function load() { updateAttribution(false); const url = source(); if (!url) return setStatus(false, 'Enter a valid app URL'); frameLoaded = false; frameStarted = false; setStatus(false, 'Connecting…'); checkStatus(); }
     function fit() { const naturalWidth = landscape ? 876 : 417; const naturalHeight = landscape ? 417 : 876; const availableWidth = Math.max(280, workspace.clientWidth - 64); const availableHeight = Math.max(280, workspace.clientHeight - 40); const scale = Math.min(availableWidth / naturalWidth, availableHeight / naturalHeight, 1); el('stage').style.setProperty('--scale', scale.toFixed(4)); }

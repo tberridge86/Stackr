@@ -86,4 +86,37 @@ assert.equal(isPreviewExpoAlive({ killed: true, exitCode: null }), false);
 assert.equal(isPreviewExpoAlive({ killed: false, exitCode: 0 }), false);
 assert.equal(isPreviewExpoAlive(null), false);
 
-console.log('PASS production preview isolation, source attribution, config, and release invariants');
+async function verifyStatusNavigationRace() {
+  const html = require('node:fs').readFileSync(require('node:path').join(__dirname, 'index.html'), 'utf8');
+  const checkStatusSource = html.match(/async function checkStatus\(\) \{[\s\S]*?\n    \}\n    function load/)[0]
+    .replace(/\n    function load$/, '');
+  for (const changeUrl of [false, true]) {
+    for (const failRequest of [false, true]) {
+      let currentUrl = 'http://127.0.0.1:8083/login';
+      let settle;
+      const response = new Promise((resolve, reject) => { settle = failRequest ? reject : resolve; });
+      const frame = {};
+      const events = [];
+      const check = new Function('source', 'fetch', 'frame', 'updateAttribution', 'setStatus',
+        `let frameStarted = false, frameLoaded = false; ${checkStatusSource}; return checkStatus;`)(
+        () => currentUrl, () => response, frame,
+        (value) => events.push(['attribution', value]), (...values) => events.push(['status', ...values]),
+      );
+      const pending = check();
+      if (changeUrl) currentUrl = 'http://127.0.0.1:8084/';
+      settle(failRequest ? new Error('fixture offline') : { ok: true, json: async () => ({ verified: true }) });
+      await pending;
+      if (changeUrl) {
+        assert.equal(frame.src, undefined, 'An old status response must not load the previous app');
+        assert.deepEqual(events, [], 'An old success/error must not relabel the newly selected app');
+      } else {
+        assert.equal(frame.src, failRequest ? undefined : currentUrl);
+        assert.equal(events.length, 2);
+      }
+    }
+  }
+}
+
+verifyStatusNavigationRace().then(() => {
+  console.log('PASS production preview isolation, source attribution, navigation races, config, and release invariants');
+}).catch((error) => { console.error(error); process.exitCode = 1; });
