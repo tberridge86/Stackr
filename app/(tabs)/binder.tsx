@@ -56,7 +56,7 @@ import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
 } from '../../lib/pokemonSetIdentity';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrActionButton } from '../../components/StackrActionButton';
 import { StackrButtonPattern } from '../../components/StackrEmboss';
@@ -190,7 +190,7 @@ const getBinderLogoUrl = (item: BinderRecord): string | null => {
 };
 
 const getBinderLogoSource = (item: BinderRecord): ImageSourcePropType | null => {
-  return getJapaneseSetLogoSourceForSet({
+  return getLocalSetArtworkSourceForSet({
     id: item.source_set_id,
     language: item.language,
     name: item.source_set_display_name ?? item.name,

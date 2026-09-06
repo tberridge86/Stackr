@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
+  Image,
   type ImageSourcePropType,
   ScrollView,
   TouchableOpacity,
@@ -162,6 +163,7 @@ export function SearchCardRailItem({
   imageUri,
   setName,
   setLogoUri,
+  setLogoSource,
   number,
   rarity,
   estimatedValue,
@@ -173,6 +175,7 @@ export function SearchCardRailItem({
   imageUri?: string | null;
   setName?: string | null;
   setLogoUri?: string | null;
+  setLogoSource?: ImageSourcePropType | null;
   number?: string | null;
   rarity?: string | null;
   estimatedValue?: number | null;
@@ -212,7 +215,9 @@ export function SearchCardRailItem({
         {name}
       </Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 18 }}>
-        {setLogoUri ? (
+        {setLogoSource ? (
+          <Image source={setLogoSource} resizeMode="contain" style={{ width: 38, height: 15 }} />
+        ) : setLogoUri ? (
           <StackrImage uri={setLogoUri} contentFit="contain" rounded={0} style={{ width: 38, height: 15, backgroundColor: 'transparent' }} showFallbackIcon={false} />
         ) : null}
         <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 14, fontWeight: '800' }} numberOfLines={1}>
@@ -236,6 +241,7 @@ export function SearchSetRailItem({
   name,
   logoUri,
   artworkUri,
+  artworkSource,
   series,
   year,
   total,
@@ -246,6 +252,7 @@ export function SearchSetRailItem({
   name: string;
   logoUri?: string | null;
   artworkUri?: string | null;
+  artworkSource?: ImageSourcePropType | null;
   series?: string | null;
   year?: string | number | null;
   total?: number | null;
@@ -272,8 +279,12 @@ export function SearchSetRailItem({
       }}
     >
       <View style={{ height: 76, borderRadius: 13, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-        <StackrImage uri={enforceSetVisualRuntimePolicy(logoUri)} fullUri={enforceSetVisualRuntimePolicy(artworkUri)} contentFit="contain" rounded={12} style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} showFallbackIcon={false} />
-        {!logoUri && !artworkUri ? <Ionicons name={searchIcons.sets} size={26} color={theme.colors.textSoft} /> : null}
+        {artworkSource ? (
+          <Image source={artworkSource} resizeMode="contain" style={{ width: '100%', height: '100%' }} />
+        ) : (
+          <StackrImage uri={enforceSetVisualRuntimePolicy(logoUri)} fullUri={enforceSetVisualRuntimePolicy(artworkUri)} contentFit="contain" rounded={12} style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} showFallbackIcon={false} />
+        )}
+        {!artworkSource && !logoUri && !artworkUri ? <Ionicons name={searchIcons.sets} size={26} color={theme.colors.textSoft} /> : null}
       </View>
       <Text style={{ color: theme.colors.text, fontSize: 14.5, lineHeight: 18, fontWeight: '900' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.78}>
         {name}

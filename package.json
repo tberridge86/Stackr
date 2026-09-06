@@ -159,6 +159,7 @@
     "test:catalogue-gap-report": "node scripts/test-catalogue-gap-report.mjs",
     "test:four-language-catalogue-backfill": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-four-language-catalogue-backfill.ts && node scripts/test-catalogue-mirror-attempts.mjs",
     "test:curated-catalogue": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-curated-corocoro-catalogue.ts",
+    "test:magazine-set-covers": "node scripts/test-magazine-set-cover-pack.mjs && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-magazine-set-covers.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-magazine-set-cover-surfaces.ts",
     "export:scan-lab-manifest": "tsx scripts/export-scan-lab-training-manifest.ts",
     "test:scan-lab-core": "tsx scripts/test-scan-lab-core.ts",
     "test:scan-lab-backend": "node scripts/test-scan-lab-backend-route.mjs",

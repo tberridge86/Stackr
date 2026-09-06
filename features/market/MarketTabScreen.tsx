@@ -75,6 +75,7 @@ import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
 import { marketIcons } from '../../lib/marketIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { getPokemonSetLogoUrl } from '../../lib/pokemonTcg';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { supabase } from '../../lib/supabase';
 import { TRADE_STATUS_LABELS, normaliseTradeStatus } from '../../lib/transactionStates';
 import { fetchMyTradeOffers, TradeOffer } from '../../lib/tradeOffers';
@@ -101,6 +102,7 @@ type SearchSuggestion = {
   subtitle?: string | null;
   imageUri?: string | null;
   setLogoUrl?: string | null;
+  setArtworkSource?: ImageSourcePropType | null;
   listingCount?: number;
   sourceLabel?: string | null;
   primaryActionLabel?: string;
@@ -784,6 +786,16 @@ export default function TheMarketTab() {
           subtitle: [card.number ? `#${card.number}` : null, setName].filter(Boolean).join(' - '),
           imageUri: card.image_small ?? card.image_large ?? card.raw_data?.images?.small ?? null,
           setLogoUrl: setId ? getPokemonSetLogoUrl(setId) : null,
+          setArtworkSource: getLocalSetArtworkSourceForSet({
+            id: setId,
+            language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
+            name: setName,
+            localName: card.raw_data?.set?.local_name ?? card.raw_data?.set?.name ?? null,
+            englishDisplayName: card.raw_data?.set?.english_display_name ?? card.raw_data?.set?.englishDisplayName ?? null,
+            setCode: card.raw_data?.set?.set_code ?? card.external_ids?.setCode ?? null,
+            sourceId: card.raw_data?.set?.tcgdex_id ?? card.external_ids?.tcgdex ?? null,
+            externalIds: card.external_ids,
+          }),
           sourceLabel: 'Catalogue card',
           primaryActionLabel: 'View card',
           secondaryActionLabel: 'View listings',
@@ -2585,6 +2597,8 @@ function MarketSearchSuggestions({
                 rounded={11}
                 style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.surface }}
               />
+            ) : item.setArtworkSource ? (
+              <Image source={item.setArtworkSource} resizeMode="contain" style={{ width: 38, height: 30 }} />
             ) : item.setLogoUrl ? (
               <Image source={{ uri: item.setLogoUrl }} resizeMode="contain" style={{ width: 38, height: 30 }} />
             ) : (
@@ -2663,7 +2677,14 @@ function MarketSearchSuggestions({
                     </Text>
                   </TouchableOpacity>
                 ) : null}
+                {item.setArtworkSource ? (
+                  <Image source={item.setArtworkSource} resizeMode="contain" style={{ width: 36, height: 20 }} />
+                ) : item.setLogoUrl ? (
+                  <Image source={{ uri: item.setLogoUrl }} resizeMode="contain" style={{ width: 36, height: 20 }} />
+                ) : null}
               </View>
+            ) : item.setArtworkSource && item.imageUri ? (
+              <Image source={item.setArtworkSource} resizeMode="contain" style={{ width: 36, height: 20 }} />
             ) : item.setLogoUrl && item.imageUri ? (
               <Image source={{ uri: item.setLogoUrl }} resizeMode="contain" style={{ width: 36, height: 20 }} />
             ) : null}

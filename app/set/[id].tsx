@@ -17,7 +17,7 @@ import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { fetchAllSets, fetchCardsForSet, getKnownPokemonSetTotal, getPokemonSetVisualUrl, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { supabase } from '../../lib/supabase';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrBackButton } from '../../components/StackrBackButton';
@@ -959,7 +959,7 @@ export default function SetDetailScreen() {
     ? Math.min(100, (ownedCardCount / setTotalNumber) * 100)
     : 0;
   const setTotalLabel = setTotalNumber > 0 ? `${setTotalNumber} cards` : 'total unknown';
-  const setLogoSource = getJapaneseSetLogoSourceForSet({
+  const setLogoSource = getLocalSetArtworkSourceForSet({
     id: setInfo?.id ?? setId,
     language: setInfo?.language ?? getRouteSetLanguage(setId),
     setCode: setInfo?.externalIds?.setCode,

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "stackr-owner-supplied-set-cover-review-v1",
+  "decisionId": "magazine-set-cover-pack-owner-directed:2026-09-06",
+  "recordedOn": "2026-09-06",
+  "classification": "amber",
+  "status": "authorized_on_owner_permission_attestation",
+  "approvingPerson": "Jack Berridge",
+  "approvingRole": "Founder and Director, StackrTCG Ltd.",
+  "recordBasis": "Standing owner assurance of app permissions, followed by the owner's explicit supply of this pack and instruction for matching set/binder, search and marketplace identification. This is an internal review record, not an independently verified third-party licence.",
+  "ownerInstructions": [
+    "include these D:\\Stackr-1\\assets\\Pokemon\\_Magazine\\_Cover\\_Art\\_PNGs",
+    "so this should be the \"set logo\" cover art for the set / bvinder - this should also be in the search functions or available in marketplace"
+  ],
+  "activationAuthorized": true,
+  "sourceRightsIndependentlyVerified": false,
+  "productionDeploymentAuthorizedByThisRecord": false,
+  "canonicalDatabaseWriteAuthorized": false,
+  "review": {
+    "assetOrData": "81 original owner-supplied magazine cover PNGs, limited to exact publication/issue set-identification artwork.",
+    "source": "D:/Stackr-1/assets/Pokemon_Magazine_Cover_Art_PNGs; supplied locally by the owner, not fetched from a website in this task.",
+    "ownerOrLicensor": "Applicable rights holder or licensor under the permissions the owner represents are held; no independent chain-of-title verification is asserted.",
+    "permittedPurpose": "Use as cover-style set identification for corresponding sets and binders, search results and marketplace catalogue identification; not card-face artwork or a seller item photograph.",
+    "territory": "Only where covered by the owner's represented app permissions; this record does not independently establish territorial rights.",
+    "term": "Only while the represented permission remains valid. Disable on withdrawal, expiry or substantiated complaint.",
+    "transformationRights": "No image content edits. Responsive contain-fit display only; original bytes preserved.",
+    "storageRights": "Include only the exact supplied files bound by this ledger in the reviewed app source/build. No new provider mirror or external storage upload.",
+    "deletionRequirements": "Source-wide and per-issue runtime disablement, followed by removing affected bundled assets from the next release when needed; retain the review trail.",
+    "attribution": "Retain all source image pixels and embedded publication marks. No additional attribution instruction was supplied or independently verified.",
+    "downstreamDeliveryRights": "Bounded in-app set identification only. No standalone gallery/download, print-ready export, asset resale or artwork corpus distribution."
+  },
+  "scope": {
+    "assetDirectory": "assets/Pokemon_Magazine_Cover_Art_PNGs",
+    "manifestPath": "assets/Pokemon_Magazine_Cover_Art_PNGs/manifest.json",
+    "assetCount": 81,
+    "totalBytes": 57603833,
+    "aggregateFileLedgerSha256": "3b9c023622110d1828b4eb3536cfecbf727a57e27461764fc573e571fe0b2ee7",
+    "languages": [
+      "ja",
+      "en"
+    ],
+    "assetRole": "magazine_issue_set_cover",
+    "excludedUses": [
+      "card_face_replacement",
+      "seller_item_photograph",
+      "invented_promo_membership",
+      "catalogue_or_ownership_rewrite",
+      "new_magazine_collectibles",
+      "standalone_asset_export",
+      "model_training",
+      "new_artwork_generation"
+    ]
+  },
+  "bindings": {
+    "operatingBoundaryPath": "docs/stackrtcg-ip-operating-boundary.md",
+    "operatingBoundarySha256": "3ddb9d0b1fa0057db6a1830a703f86349238a675c4f52e93556e8baff8aebc0a",
+    "standingOwnerAttestationPath": "catalogue/rights-evidence/cjk-app-image-permission-owner-attestation.2026-09-04.json",
+    "standingOwnerAttestationSha256": "0afd34fee2453ca87bf50383ce5aac3519439308297f9200855c57cc49bea0ad",
+    "standingAttestationScopeNote": "The historical record remains unchanged. This new decision records the newly supplied magazine pack and the new explicit set-cover use; it does not claim that this pack was listed in the earlier record."
+  },
+  "runtimeControls": {
+    "exactPublicationAndIssueRequired": true,
+    "languageConflictDenied": true,
+    "neutralFallbackRequired": true,
+    "sourceKillSwitches": [
+      "EXPO_PUBLIC_DISABLE_MAGAZINE_SET_COVERS",
+      "STACKR_DISABLE_MAGAZINE_SET_COVERS"
+    ],
+    "noPersistenceOfBundledRuntimeUri": true
+  }
+}
