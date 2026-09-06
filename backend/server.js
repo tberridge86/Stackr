@@ -58,6 +58,8 @@ import {
   listCatalogueSets,
 } from './lib/tcgdexCatalogue.js';
 import { getCachedPricingResponse } from './lib/pricingV2/engine.js';
+import { checkPokeTraceActivationReadiness } from './lib/pricingV2/pokeTraceActivation.js';
+import { createPersonalPricingMiddleware, isLegacyPricingPath, verifiedPricingUserId } from './lib/marketPricing/personalAccess.js';
 import { Buffer } from 'node:buffer';
 import { randomUUID } from 'node:crypto';
 
@@ -91,6 +93,10 @@ app.use(cors({
 }));
 app.use('/api/owner-recognition', ownerRecognitionRoutes);
 app.use(express.json({ limit: '8mb' }));
+app.use(createPersonalPricingMiddleware({
+  matchesPath: isLegacyPricingPath,
+  getAuthenticatedUserId: (req) => verifiedPricingUserId(req, supabase),
+}));
 app.use('/v1', gatewayOriginAuth, compression({ threshold: 1024 }), createV1Router());
 app.use('/api/assets', gatewayOriginAuth, assetRoutes);
 app.use('/api/admin/assets', gatewayOriginAuth, adminAssetsRouter);
@@ -1188,7 +1194,7 @@ async function fetchCachedEbayCardPrice(cardId, language = 'en') {
 
   const { data, error } = await supabase
     .from('market_price_snapshots')
-    .select('ebay_low, ebay_average, ebay_high, ebay_count, snapshot_at')
+    .select('ebay_low, ebay_average, ebay_high, ebay_count, price_type, proven_last_sold, last_sold_observation_id, snapshot_at')
     .eq('card_id', cardId)
     .eq('language', normalizePriceLanguage(language))
     .not('ebay_average', 'is', null)
@@ -1203,6 +1209,14 @@ async function fetchCachedEbayCardPrice(cardId, language = 'en') {
 
   if (!data) return null;
 
+  // The legacy eBay cache does not load a canonical provenance object.  It
+  // must therefore never expose an individual "Last sold" claim, even if an
+  // older row happened to carry a stronger label.
+  const provenLastSold = false;
+  const priceType = data.price_type === 'recent_sold_value' || data.price_type === 'recent_sold_market_estimate'
+    ? 'recent_sold_market_estimate'
+    : 'asking_price_indication';
+
   return {
     low: data.ebay_low ?? null,
     average: data.ebay_average ?? null,
@@ -1210,6 +1224,10 @@ async function fetchCachedEbayCardPrice(cardId, language = 'en') {
     count: data.ebay_count ?? 0,
     rawCount: data.ebay_count ?? 0,
     soldDataSource: 'cached-ebay',
+    priceType,
+    provenLastSold,
+    lastSoldObservationId: null,
+    lastSoldEvidence: null,
     usedCachedPrice: true,
     cacheSnapshotAt: data.snapshot_at ?? null,
   };
@@ -1224,6 +1242,13 @@ async function saveCachedEbayCardPrice({
   refreshReason = null,
 }) {
   if (!cardId || summary?.average == null) return;
+  const calculatedAt = new Date().toISOString();
+  // Search results are an aggregate indication. They do not constitute an
+  // individually provenance-complete transaction for this legacy path.
+  const hasProvenLastSold = false;
+  const priceType = summary.soldDataSource === 'serpapi'
+    ? 'recent_sold_market_estimate'
+    : 'asking_price_indication';
 
   const { error } = await supabase
     .from('market_price_snapshots')
@@ -1241,7 +1266,14 @@ async function saveCachedEbayCardPrice({
       ebay_average: summary.average ?? null,
       ebay_high: summary.high ?? null,
       ebay_count: summary.count ?? summary.rawCount ?? 0,
-      snapshot_at: new Date().toISOString(),
+      primary_source: 'ebay',
+      price_type: priceType,
+      proven_last_sold: hasProvenLastSold,
+      last_sold_observation_id: null,
+      calculated_at: calculatedAt,
+      stale_after: new Date(Date.parse(calculatedAt) + 6 * 60 * 60 * 1000).toISOString(),
+      is_stale: false,
+      snapshot_at: calculatedAt,
     });
 
   if (error) {
@@ -2620,6 +2652,11 @@ app.get('/api/price/tcgdex', async (req, res) => {
     }
 
     if (cardId && result.price != null) {
+      const snapshotAt = new Date().toISOString();
+      const providerUpdatedAt = result.pricingUpdatedAt && Number.isFinite(new Date(result.pricingUpdatedAt).getTime())
+        ? new Date(result.pricingUpdatedAt).toISOString()
+        : null;
+      const freshnessBase = providerUpdatedAt ?? snapshotAt;
       supabase.from('market_price_snapshots').insert({
         user_id: null,
         card_id: cardId,
@@ -2636,10 +2673,17 @@ app.get('/api/price/tcgdex', async (req, res) => {
         tcgdex_price: result.price,
         tcgdex_price_updated_at: result.pricingUpdatedAt,
         price_source: result.priceSource,
+        primary_source: 'tcgdex',
+        price_type: 'market_estimate',
+        proven_last_sold: false,
+        last_sold_observation_id: null,
+        calculated_at: snapshotAt,
+        stale_after: new Date(Date.parse(freshnessBase) + 6 * 60 * 60 * 1000).toISOString(),
+        is_stale: false,
         refresh_lane: refreshLane,
         refresh_reason: refreshReason,
         source_payload: result.raw ?? null,
-        snapshot_at: new Date().toISOString(),
+        snapshot_at: snapshotAt,
       }).then(({ error }) => {
         if (error) console.log('TCGdex snapshot insert failed:', error.message);
       });
@@ -2842,6 +2886,10 @@ app.get('/api/price/ebay', async (req, res) => {
         count: 0,
         rawCount: 0,
         soldDataSource: 'unavailable',
+        priceType: 'unavailable',
+        provenLastSold: false,
+        lastSoldObservationId: null,
+        lastSoldEvidence: null,
         soldProviderError: getErrorMessage(liveError),
         livePriceError: getErrorMessage(liveError),
         matchConfidence: 'none',
@@ -4582,8 +4630,33 @@ function addPokeTraceCacheMeta(payload, row, options = {}) {
 }
 
 function shouldUseStalePokeTraceCache(error) {
+  if (error?.failClosed === true) return false;
   const status = Number(error?.status ?? 0);
   return status === 429 || status >= 500;
+}
+
+const pokeTraceRightsGateWarnings = new Set();
+
+async function assertPokeTraceRuntimeAuthorised() {
+  try {
+    const activation = checkPokeTraceActivationReadiness();
+    if (activation.active !== true) throw new Error('PokeTrace is disabled.');
+    const { data, error } = await supabase
+      .schema('api')
+      .rpc('is_poketrace_data_use_authorised', {});
+    if (error) throw new Error(`Database rights gate failed: ${error.message}`);
+    if (data !== true) throw new Error('No active recorded amber rights review.');
+  } catch (cause) {
+    const warning = cause?.message ?? String(cause);
+    if (!pokeTraceRightsGateWarnings.has(warning)) {
+      pokeTraceRightsGateWarnings.add(warning);
+      console.log('PokeTrace access blocked by the rights gate:', warning);
+    }
+    const error = new Error('PokeTrace is unavailable pending its reviewed provider-data approvals.');
+    error.status = 503;
+    error.failClosed = true;
+    throw error;
+  }
 }
 
 async function readPokeTraceApiCache(cacheKey, options = {}) {
@@ -4638,6 +4711,7 @@ async function savePokeTraceApiCache(cacheKey, response) {
 }
 
 async function fetchPokeTraceJson(path, params) {
+  await assertPokeTraceRuntimeAuthorised();
   const query = params ? `?${params.toString()}` : '';
   const response = await fetch(`${POKETRACE_API_BASE_URL.replace(/\/$/, '')}${path}${query}`, {
     headers: {
@@ -4660,6 +4734,7 @@ async function fetchPokeTraceJson(path, params) {
 app.get('/api/poketrace/card', async (req, res) => {
   let cacheKey = '';
   try {
+    await assertPokeTraceRuntimeAuthorised();
     if (!POKETRACE_API_KEY) {
       return res.status(500).json({ error: 'Missing POKETRACE_API_KEY' });
     }
@@ -4760,6 +4835,7 @@ app.get('/api/poketrace/card', async (req, res) => {
 app.get('/api/poketrace/card/:id/prices/:tier/history', async (req, res) => {
   let cacheKey = '';
   try {
+    await assertPokeTraceRuntimeAuthorised();
     if (!POKETRACE_API_KEY) {
       return res.status(500).json({ error: 'Missing POKETRACE_API_KEY' });
     }

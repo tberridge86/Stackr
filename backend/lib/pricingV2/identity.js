@@ -46,7 +46,7 @@ const FINISH_ALIASES = [
 ];
 
 const EDITION_ALIASES = [
-  { key: 'first_edition', patterns: [/1st/i, /first edition/i] },
+  { key: 'first_edition', patterns: [/1st/i, /first[\s_-]?edition/i] },
   { key: 'shadowless', patterns: [/shadowless/i] },
   { key: 'unlimited', patterns: [/unlimited/i] },
   { key: 'promotional', patterns: [/promo/i, /promotional/i] },
@@ -128,9 +128,20 @@ function inferFinish({ finish, variant, rarity, raw }) {
   return 'unknown_finish';
 }
 
-function inferEdition({ edition, rarity, raw }) {
+function inferEdition({ edition, variant, rarity, raw }) {
   const explicit = normalizeIdentityPart(edition ?? raw?.edition ?? '', '');
   if (explicit) return explicit;
+
+  // A canonical variant override is stronger than provider/raw text. If it is
+  // present, do not let a stale legacy payload reclassify a normal printing as
+  // first-edition (or vice versa).
+  const canonicalVariant = normalizeLooseText(variant);
+  if (canonicalVariant) {
+    for (const alias of EDITION_ALIASES) {
+      if (alias.patterns.some((pattern) => pattern.test(canonicalVariant))) return alias.key;
+    }
+    return 'modern';
+  }
 
   const haystack = [rarity, raw?.rarity, raw?.variant, raw?.name].filter(Boolean).join(' ');
   for (const alias of EDITION_ALIASES) {
@@ -210,6 +221,8 @@ export function buildCanonicalIdentity(cardRow = {}, overrides = {}) {
 
   const identity = {
     cardId: String(cardRow.id ?? overrides.cardId ?? '').trim(),
+    canonicalVariantId: String(overrides.canonicalVariantId ?? raw?.canonical_variant_id ?? '').trim() || null,
+    canonicalPrintingId: String(overrides.canonicalPrintingId ?? raw?.canonical_printing_id ?? '').trim() || null,
     productType,
     game: 'pokemon',
     characterName: pickFirst(overrides.characterName, raw?.pokemon_name, raw?.subject, canonicalCardName),
@@ -232,7 +245,12 @@ export function buildCanonicalIdentity(cardRow = {}, overrides = {}) {
     releaseRegion: pickFirst(overrides.releaseRegion, cardRow.region, raw?.region, setRaw?.region),
     rarity: pickFirst(overrides.rarity, cardRow.rarity, raw?.rarity),
     finish: inferFinish({ finish: overrides.finish, variant: overrides.variant, rarity: overrides.rarity ?? cardRow.rarity, raw }),
-    edition: inferEdition({ edition: overrides.edition, rarity: overrides.rarity ?? cardRow.rarity, raw }),
+    edition: inferEdition({
+      edition: overrides.edition,
+      variant: overrides.variant,
+      rarity: overrides.rarity ?? cardRow.rarity,
+      raw,
+    }),
     variant: normalizeIdentityPart(overrides.variant ?? raw?.variant ?? '', 'standard'),
     promoCode: normalizeIdentityPart(overrides.promoCode ?? raw?.promoCode ?? raw?.promo_code ?? '', ''),
     gradingCompany: productType === 'graded_card'

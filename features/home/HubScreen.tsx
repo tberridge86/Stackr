@@ -39,10 +39,8 @@ import { stackrBrand } from '../../lib/stackrBrand';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { getStackrHomeWordmarkWidth, stackrLogoSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import {
-  ContinueBinderCard,
   ChaseCardsSheet,
   HOME_TOKENS,
-  HomeActionsRow,
   HomeOpportunitiesSection,
   RecentActivitySection,
   type HomeActivityItem,
@@ -52,6 +50,8 @@ import {
   type HomeDuplicateItem,
   type HomeDuplicateSummary,
 } from '../../components/HomeCommandCenter';
+import { HomeCollectionHero } from '../../components/HomeCollectorSections';
+import { getHomeCardDisplayMetadata } from '../../lib/homeCardDisplayMetadata';
 import {
   DEFAULT_MINTY_FEEDBACK_PROFILE,
   DEFAULT_MINTY_PERSONALISATION_SETTINGS,
@@ -73,18 +73,19 @@ import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackr
 import { loadCollectionPrices, type CollectionPriceResult } from '../../lib/collectionPricingApi';
 import {
   getCollectionPriceCoverageLabel,
-  getComparableCollectionValueReads,
   summariseCollectionPricing,
   type CollectionValueRead,
   type CollectionPricingSummary,
 } from '../../lib/collectionPricingState';
+import { stackrApiClient } from '../../lib/stackrApiV1';
+import {
+  buildVerifiedHomeSnapshotTrend,
+  supportsHomeSnapshotScope,
+  takeRotatingStringBatch,
+  type HomeSnapshotTrendEntry,
+} from '../../lib/homePriceRefreshCore';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 
-const fetchHomeDisplayCardRows = async (cardIds: string[]) => (
-  hydrateCardReferenceRowMapWithLiveTcgdexReferences(
-    await fetchStackrCardRows(cardIds), attachLiveTcgdexCardReferences,
-  )
-);
 import { sanitizeMarketplaceCondition } from '../../lib/marketplacePresentation';
 import {
   sanitizeGate0CommerceCopy,
@@ -96,6 +97,12 @@ import {
   parseHomeCollectionCache,
   serializeHomeCollectionCache,
 } from '../../lib/homeCollectionCache';
+
+const fetchHomeDisplayCardRows = async (cardIds: string[]) => (
+  hydrateCardReferenceRowMapWithLiveTcgdexReferences(
+    await fetchStackrCardRows(cardIds), attachLiveTcgdexCardReferences,
+  )
+);
 
 // ===============================
 // TYPES
@@ -163,6 +170,11 @@ const EMPTY_COLLECTION_PRICING: CollectionPricingSummary = {
   state: 'empty',
 };
 const MAX_COLLECTION_VALUE_READS = 4_000;
+const HOME_LIVE_PRICE_POLL_MS = 3 * 60 * 1000;
+const HOME_AUTOMATIC_PRICE_REFRESH_MS = 15 * 60 * 1000;
+const HOME_AUTOMATIC_PRICE_REFRESH_LIMIT = 12;
+const HOME_MANUAL_PRICE_REFRESH_LIMIT = 100;
+const HOME_PRICE_REFRESH_BATCH_SIZE = 12;
 
 // ===============================
 // CONSTANTS
@@ -277,6 +289,17 @@ const getCardSetName = (card: BinderCardRecord) =>
 const getCardRarity = (card: BinderCardRecord) =>
   card.card?.rarity ?? card.card?.raw_data?.rarity ?? null;
 
+const getBinderCardDisplayMetadata = (card: BinderCardRecord) => getHomeCardDisplayMetadata({
+  id: card.card_id,
+  setId: card.set_id,
+  name: getCardDisplayName(card),
+  setName: getCardSetName(card),
+  number: card.card_number ?? card.card?.number,
+  language: card.card?.language ?? card.language ?? card.card?.raw_data?.language,
+  englishDisplayName: card.card?.englishDisplayName,
+  raw: card.card?.raw_data,
+});
+
 const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: Record<string, string> = {}): HomeBinderSummary[] =>
   groups.map(({ binder, cards }) => {
     const ownedCards = cards.filter((card) => getOwnedQuantity(card) > 0);
@@ -292,6 +315,9 @@ const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: 
         cardId: card.card_id,
         setId: card.set_id,
         name: getCardDisplayName(card),
+        setName: getCardSetName(card),
+        number: card.card_number ?? card.card?.number ?? null,
+        ...getBinderCardDisplayMetadata(card),
         imageUrl: getCardImageUrl(card),
         estimatedValue: null,
       }))
@@ -384,6 +410,7 @@ const buildMissingCards = (
       setId: card.set_id,
       name: getCardDisplayName(card),
       setName: getCardSetName(card),
+      ...getBinderCardDisplayMetadata(card),
       number: card.card_number ?? card.card?.number ?? null,
       rarity: getCardRarity(card),
       imageUrl: getCardImageUrl(card),
@@ -630,6 +657,7 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
 
     const activityImageByCardId = new Map<string, string>();
     const cardNameByCardId = new Map<string, string>();
+    const cardMetadataByCardId = new Map<string, ReturnType<typeof getHomeCardDisplayMetadata>>();
 
     for (const cardId of cardIds) {
       const card = officialCards.get(cardId);
@@ -647,6 +675,13 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
 
       if (imageUrl) activityImageByCardId.set(cardId, imageUrl);
       if (card.name) cardNameByCardId.set(cardId, card.name);
+      cardMetadataByCardId.set(cardId, getHomeCardDisplayMetadata({
+        id: cardId,
+        setId: card.set_id,
+        name: card.name,
+        language: card.language,
+        raw: card.raw_data as Record<string, any> | null,
+      }));
     }
 
     return items.map((item) => {
@@ -656,6 +691,8 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
       const resolvedName = cardNameByCardId.get(cardId) ?? null;
       return {
         ...item,
+        cardName: resolvedName,
+        ...cardMetadataByCardId.get(cardId),
         imageUrl: item.imageUrl ?? activityImageByCardId.get(cardId) ?? null,
         title: resolvedName && item.title.includes('Unknown item')
           ? item.title.replace('Unknown item', resolvedName)
@@ -744,7 +781,7 @@ export default function HubScreen() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Recent trade listings
-  const [recentListings, setRecentListings] = useState<HubListing[]>([]);
+  const [, setRecentListings] = useState<HubListing[]>([]);
   const [marketplaceMatches, setMarketplaceMatches] = useState<HubListing[]>([]);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -752,6 +789,12 @@ export default function HubScreen() {
   const hasLoadedCollectionValueRef = useRef(false);
   const hasSuccessfulCollectionPricingRef = useRef(false);
   const collectionValueReadsRef = useRef<CollectionValueRead[]>([]);
+  const refreshableVariantIdsRef = useRef<string[]>([]);
+  const providerRefreshCursorRef = useRef(0);
+  const providerRefreshSignatureRef = useRef<string | null>(null);
+  const providerRefreshEnqueueInFlightRef = useRef(false);
+  const automaticProviderRefreshAtRef = useRef(0);
+  const livePricePollInFlightRef = useRef(false);
   const cachedHomeSnapshotUserIdRef = useRef<string | null>(null);
   const homeSessionUserIdRef = useRef<string | null>(null);
   const homeCollectionRequestRef = useRef(0);
@@ -1322,23 +1365,62 @@ export default function HubScreen() {
         ? await loadCollectionPrices(ownedUnits.map(pricingInputForHomeUnit))
         : [];
       const nextPricingSummary = pricingSummaryForResults(priceResults);
-      const currentValueRead: CollectionValueRead | null = (
-        nextPricingSummary.state === 'fresh'
-        && nextPricingSummary.total != null
-        && priceResults.length === ownedUnits.length
-      ) ? {
-        capturedAt: new Date().toISOString(),
-        total: nextPricingSummary.total,
-        totalUnits: nextPricingSummary.totalUnits,
-        pricedUnits: nextPricingSummary.pricedUnits,
-        identitySignature: collectionIdentitySignature(priceResults),
-      } : null;
-      const nextValueReads = currentValueRead
-        ? [...collectionValueReadsRef.current, currentValueRead].slice(-MAX_COLLECTION_VALUE_READS)
-        : collectionValueReadsRef.current;
-      const nextChartData = currentValueRead
-        ? getComparableCollectionValueReads(nextValueReads, currentValueRead, chartRange === '7D' ? 7 : 30)
-        : [];
+      const identitySignature = collectionIdentitySignature(priceResults);
+      const rawSnapshotEntries: HomeSnapshotTrendEntry[] = [];
+      let canReadSnapshotHistory = priceResults.length === ownedUnits.length;
+      for (const [index, unit] of ownedUnits.entries()) {
+        const price = priceResults[index];
+        if (
+          !supportsHomeSnapshotScope(unit.productType, unit.condition)
+          || !price?.variantId
+          || price.central == null
+          || price.status === 'unavailable'
+        ) {
+          canReadSnapshotHistory = false;
+          continue;
+        }
+        rawSnapshotEntries.push({ variantId: price.variantId, quantity: unit.quantity });
+      }
+      const refreshableVariantIds = [...new Set(
+        priceResults.flatMap((price, index) => (
+          supportsHomeSnapshotScope(ownedUnits[index]?.productType, ownedUnits[index]?.condition) && price.variantId ? [price.variantId] : []
+        )),
+      )].sort();
+      refreshableVariantIdsRef.current = refreshableVariantIds;
+      if (providerRefreshSignatureRef.current !== identitySignature) {
+        providerRefreshSignatureRef.current = identitySignature;
+        providerRefreshCursorRef.current = 0;
+      }
+
+      let nextChartData: number[] = [];
+      if (canReadSnapshotHistory && rawSnapshotEntries.length === ownedUnits.length && refreshableVariantIds.length) {
+        const rangeDays = chartRange === '7D' ? 7 : 30;
+        const nowMs = Date.now();
+        try {
+          const responses = await Promise.all(
+            Array.from({ length: Math.ceil(refreshableVariantIds.length / 24) }, (_, index) => (
+              stackrApiClient.marketPriceSnapshots({
+                variantIds: refreshableVariantIds.slice(index * 24, (index + 1) * 24),
+                rangeDays,
+              })
+            )),
+          );
+          if (!await confirmCurrentRequest()) return;
+          nextChartData = buildVerifiedHomeSnapshotTrend(
+            rawSnapshotEntries,
+            responses.flatMap((response) => response.data.snapshots),
+            {
+              rangeStartMs: nowMs - rangeDays * 24 * 60 * 60 * 1000,
+              nowMs,
+              bucketMs: chartRange === '7D' ? 30 * 60 * 1000 : 24 * 60 * 60 * 1000,
+            },
+          );
+        } catch (historyError) {
+          console.log('Home stored price history unavailable', historyError);
+        }
+      }
+      // A chart point must represent a persisted provider snapshot, never an app read.
+      const nextValueReads: CollectionValueRead[] = [];
       const chartChange = nextChartData.length >= 2
         ? nextChartData[nextChartData.length - 1] - nextChartData[0]
         : 0;
@@ -1458,12 +1540,89 @@ export default function HubScreen() {
     loadCollectionValueRef.current = loadCollectionValue;
   }, [loadCollectionValue]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      void loadCollectionValueRef.current();
-    }, 3 * 60 * 1000);
-    return () => clearInterval(interval);
+  const enqueueAutomaticProviderRefresh = useCallback(async () => {
+    const now = Date.now();
+    if (
+      providerRefreshEnqueueInFlightRef.current
+      || now - automaticProviderRefreshAtRef.current < HOME_AUTOMATIC_PRICE_REFRESH_MS
+    ) return;
+    const batch = takeRotatingStringBatch(
+      refreshableVariantIdsRef.current,
+      providerRefreshCursorRef.current,
+      HOME_AUTOMATIC_PRICE_REFRESH_LIMIT,
+    );
+    if (!batch.items.length) return;
+
+    providerRefreshEnqueueInFlightRef.current = true;
+    automaticProviderRefreshAtRef.current = now;
+    providerRefreshCursorRef.current = batch.nextCursor;
+    try {
+      // This only enqueues provider work. Current UI values continue to be stored snapshots.
+      await stackrApiClient.requestMarketPriceRefresh(batch.items, { productType: 'raw_card', currency: 'GBP' });
+    } catch (error) {
+      console.log('Home automatic price refresh could not be queued', error);
+    } finally {
+      providerRefreshEnqueueInFlightRef.current = false;
+    }
   }, []);
+
+  const refreshLivePrices = useCallback(async () => {
+    if (providerRefreshEnqueueInFlightRef.current) {
+      Alert.alert('Live price refresh in progress', 'A provider refresh request is already being queued. Stored prices have not been changed yet.');
+      return;
+    }
+    const variantIds = [...new Set(refreshableVariantIdsRef.current)].slice(0, HOME_MANUAL_PRICE_REFRESH_LIMIT);
+    if (!variantIds.length) {
+      Alert.alert(
+        'Live price refresh unavailable',
+        'Add cards with an exact raw-card match first. Nothing was queued and the stored values have not changed.',
+      );
+      return;
+    }
+
+    providerRefreshEnqueueInFlightRef.current = true;
+    setRefreshing(true);
+    const summary = { queued: 0, alreadyQueued: 0, cooldown: 0 };
+    try {
+      const batches = Array.from(
+        { length: Math.ceil(variantIds.length / HOME_PRICE_REFRESH_BATCH_SIZE) },
+        (_, index) => variantIds.slice(index * HOME_PRICE_REFRESH_BATCH_SIZE, (index + 1) * HOME_PRICE_REFRESH_BATCH_SIZE),
+      );
+      for (const batch of batches) {
+        const response = await stackrApiClient.requestMarketPriceRefresh(batch, { productType: 'raw_card', currency: 'GBP' });
+        summary.queued += response.data.summary.queued;
+        summary.alreadyQueued += response.data.summary.already_queued;
+        summary.cooldown += response.data.summary.cooldown;
+      }
+      await loadCollectionValueRef.current();
+      const detail = summary.queued
+        ? `${summary.queued} ${summary.queued === 1 ? 'refresh was' : 'refreshes were'} queued for background processing. Stored prices stay visible until the provider writes a new snapshot.`
+        : summary.alreadyQueued
+          ? `${summary.alreadyQueued} ${summary.alreadyQueued === 1 ? 'card is' : 'cards are'} already queued. Stored prices stay visible until a new snapshot is written.`
+          : `${summary.cooldown} ${summary.cooldown === 1 ? 'card is' : 'cards are'} in the provider cooldown. No price was changed.`;
+      Alert.alert(summary.queued ? 'Live price refresh queued' : 'Live price refresh checked', detail);
+    } catch (error) {
+      console.log('Home manual price refresh could not be queued', error);
+      const pending = summary.queued + summary.alreadyQueued;
+      Alert.alert('Live price refresh interrupted', pending
+        ? `${pending} card refreshes are confirmed queued or already pending. The remaining requests could not be confirmed. Stored prices remain visible while processing continues.`
+        : 'The refresh request could not be confirmed. Stored prices remain visible; retrying is safe and will not duplicate pending requests.');
+    } finally {
+      providerRefreshEnqueueInFlightRef.current = false;
+      setRefreshing(false);
+    }
+  }, []);
+
+  const pollLivePrices = useCallback(async () => {
+    if (livePricePollInFlightRef.current) return;
+    livePricePollInFlightRef.current = true;
+    try {
+      await loadCollectionValueRef.current();
+      await enqueueAutomaticProviderRefresh();
+    } finally {
+      livePricePollInFlightRef.current = false;
+    }
+  }, [enqueueAutomaticProviderRefresh]);
 
   const loadChaseCards = useCallback(async () => {
     const requestId = ++homeChaseRequestRef.current;
@@ -1551,6 +1710,15 @@ export default function HubScreen() {
           setId,
           name: officialCard?.name ?? row.card_id,
           setName: (officialCard?.raw_data as any)?.set?.name ?? row.set_id ?? 'Wanted card',
+          ...getHomeCardDisplayMetadata({
+            id: row.card_id,
+            setId,
+            name: officialCard?.name,
+            setName: (officialCard?.raw_data as any)?.set?.name,
+            number: cardNumber,
+            language: officialCard?.language,
+            raw: officialCard?.raw_data as Record<string, any> | null,
+          }),
           number: cardNumber,
           rarity: officialCard?.rarity ?? null,
           imageUrl: officialImage ?? null,
@@ -1560,7 +1728,7 @@ export default function HubScreen() {
     } catch (error) {
       console.log('Failed to load home chase cards', error);
       if (homeChaseRequestRef.current !== requestId) return;
-      setChaseCards([]);
+      // Retain this session's last successful cards; account changes clear them separately.
       setChaseError('Could not refresh chase cards.');
     } finally {
       if (homeChaseRequestRef.current === requestId) setChaseLoading(false);
@@ -1723,7 +1891,7 @@ export default function HubScreen() {
     } catch (error) {
       console.log('Failed to load recent home activity', error);
       if (homeActivityRequestRef.current !== requestId) return;
-      setRecentActivity([]);
+      // Keep successful rows visible beside Retry instead of replacing them with an empty state.
       setActivityError('Could not refresh recent activity.');
     } finally {
       if (homeActivityRequestRef.current === requestId) setActivityLoading(false);
@@ -1779,6 +1947,10 @@ export default function HubScreen() {
       hasLoadedCollectionValueRef.current = false;
       hasSuccessfulCollectionPricingRef.current = false;
       collectionValueReadsRef.current = [];
+      refreshableVariantIdsRef.current = [];
+      providerRefreshCursorRef.current = 0;
+      providerRefreshSignatureRef.current = null;
+      automaticProviderRefreshAtRef.current = 0;
       mintyMarketSignatureRef.current = null;
 
       setCollectionTotal(null);
@@ -1841,9 +2013,14 @@ export default function HubScreen() {
   useFocusEffect(useCallback(() => {
     let cancelled = false;
     let secondaryTimer: ReturnType<typeof setTimeout> | null = null;
+    const livePriceTimer = setInterval(() => {
+      void pollLivePrices();
+    }, HOME_LIVE_PRICE_POLL_MS);
 
-    void applyCachedHomeCollection();
-    void loadCollectionValueRef.current();
+    void (async () => {
+      await applyCachedHomeCollection();
+      if (!cancelled) void pollLivePrices();
+    })();
     void loadAll();
 
     secondaryTimer = setTimeout(() => {
@@ -1854,9 +2031,10 @@ export default function HubScreen() {
 
     return () => {
       cancelled = true;
+      clearInterval(livePriceTimer);
       if (secondaryTimer) clearTimeout(secondaryTimer);
     };
-  }, [applyCachedHomeCollection, loadAll, loadChaseCards, loadRecentActivity]));
+  }, [applyCachedHomeCollection, loadAll, loadChaseCards, loadRecentActivity, pollLivePrices]));
 
   useEffect(() => {
     if (appModeHydrated && premiumSellerAccess.allowed && !hasChosenMode) {
@@ -2034,6 +2212,11 @@ export default function HubScreen() {
   };
 
   const profileHasNew = !hasChosenMode;
+  const hasHomeMovement = collectionPricingSummary.state === 'fresh'
+    && !collectionValueError && chartData.length >= 2 && collectionChangeAmount !== 0;
+  const homeMovementSummary = hasHomeMovement
+    ? `${collectionChangeAmount > 0 ? '+' : '-'}£${Math.abs(collectionChangeAmount).toFixed(2)} · ${collectionChangePercent > 0 ? '+' : ''}${collectionChangePercent.toFixed(1)}% over ${chartRange}`
+    : null;
 
   // ===============================
   // MAIN RENDER
@@ -2041,7 +2224,7 @@ export default function HubScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
-      <StackrBackdrop />
+      <StackrBackdrop variant="home" />
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: homeScreenPadding,
@@ -2053,10 +2236,10 @@ export default function HubScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => {
-              loadAll(true);
-              loadCollectionValue();
-              loadChaseCards();
-              loadRecentActivity();
+              void refreshLivePrices();
+              void loadAll(true);
+              void loadChaseCards();
+              void loadRecentActivity();
             }}
             tintColor={theme.colors.primary}
           />
@@ -2161,8 +2344,10 @@ export default function HubScreen() {
         </View>
 
         {/* VALUE TRACKER */}
-        <View style={{ marginBottom: 12 }}>
+        {ownedCardCount > 0 || collectionValueLoading || collectionValueError ? (
+        <View style={{ marginBottom: 24 }}>
           <ValueTrackerCard
+            compact
             totalValue={collectionTotal}
             currency="GBP"
             percentageChange={collectionChangePercent}
@@ -2181,51 +2366,88 @@ export default function HubScreen() {
             isLoading={collectionValueLoading}
             error={collectionValueError}
             onPress={() => router.push('/value-history')}
-            onRetry={loadCollectionValue}
+            onRetry={refreshLivePrices}
+            onRefresh={refreshLivePrices}
+            refreshing={refreshing}
             onEmptyAction={() => router.push({ pathname: '/scan', params: { mode: 'market' } })}
             onMintyAction={openMintyAction}
             onMintyInsightFeedback={handleMintyInsightFeedback}
             onMintySettingsPress={() => setMintySettingsOpen(true)}
           />
         </View>
+        ) : null}
 
-        <HomeActionsRow
-          ownedCount={ownedCardCount}
-          listingCount={recentListings.length}
-          onBinders={() => router.push('/binder')}
-          onScan={() => router.push('/scan')}
-          onSearch={() => router.push('/(tabs)/search' as any)}
-          onBuildTrade={() => router.push({ pathname: '/(tabs)/market', params: { mode: 'trade' } } as any)}
-          onCommunity={() => router.push('/(tabs)/community' as any)}
-        />
+        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Search cards, sets and products"
+            onPress={() => router.push('/(tabs)/search')}
+            style={{ flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 13, borderRadius: 16, backgroundColor: theme.colors.card, borderColor: theme.colors.border, borderWidth: 1 }}
+          >
+            <Image source={stackrIcons.searchCard} style={{ width: 24, height: 24 }} resizeMode="contain" />
+            <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 14 }}>Find your next card</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Scan cards"
+            onPress={() => router.push('/scan')}
+            style={{ minHeight: 48, paddingHorizontal: 15, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: theme.colors.primary }}
+          >
+            <Image source={stackrIcons.scanCard} style={{ width: 25, height: 25 }} resizeMode="contain" />
+            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}>Scan</Text>
+          </TouchableOpacity>
+        </View>
 
-        <ContinueBinderCard
+        <HomeCollectionHero
           binder={activeBinder}
+          missingCards={missingCards}
+          chaseCards={chaseCards}
           isLoading={collectionValueLoading && !activeBinder && !homeDataError}
           error={homeDataError}
-          onView={(binderId) => router.push({ pathname: '/binder/[id]', params: { id: binderId } })}
-          onScan={(binderId) => router.push({ pathname: '/scan', params: { mode: 'binder', binderId } })}
-          onCreate={() => router.push('/binder/new')}
+          onRetry={loadCollectionValue}
+          onOpenBinder={(binderId) => router.push({ pathname: '/binder/[id]', params: { id: binderId } })}
+          onCreateBinder={() => router.push('/binder/new')}
+          onCardPress={openChaseCardDetail}
         />
 
+        {(duplicateSummary.count > 0 || chaseCards.length > 0 || hasHomeMovement || chaseError) ? (
         <HomeOpportunitiesSection
           duplicateSummary={duplicateSummary}
           chaseCount={chaseCards.length}
-          marketMoverCount={Math.max(marketplaceMatches.length, collectionChangeAmount !== 0 ? 1 : 0)}
+          hasCollectionMovement={hasHomeMovement}
+          movementSummary={homeMovementSummary}
           isLoading={(collectionValueLoading && duplicateSummary.count === 0 && !homeDataError) || chaseLoading}
-          error={homeDataError ?? chaseError}
+          error={chaseError}
           onDuplicates={() => router.push('/duplicates' as any)}
           onChase={() => openChaseSheet()}
           onMarketMovers={() => router.push('/value-history')}
         />
+        ) : null}
 
+        {(recentActivity.length > 0 || activityError) ? (
         <RecentActivitySection
+          openLayout
           items={recentActivity}
           isLoading={activityLoading}
           error={activityError}
           onRetry={loadRecentActivity}
           onItemPress={openActivityItem}
         />
+        ) : null}
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Explore collector posts and local events"
+          onPress={() => router.push('/(tabs)/community')}
+          style={{ minHeight: 76, borderTopWidth: 1, borderTopColor: theme.colors.border, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16 }}
+        >
+          <Image source={stackrIcons.social} style={{ width: 35, height: 35 }} resizeMode="contain" />
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '700' }}>Collecting is better together</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, marginTop: 3 }}>Collector posts, trades and local meet ups</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={theme.colors.primary} />
+        </TouchableOpacity>
 
       </ScrollView>
 

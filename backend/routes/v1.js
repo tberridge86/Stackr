@@ -13,9 +13,11 @@ import {
 } from '../lib/stackrApiV1.js';
 import {
   MARKET_CACHE_CONTROL,
+  MARKET_HISTORY_CACHE_CONTROL,
   createMarketPricingService,
 } from '../lib/marketPricing/service.js';
 import { createTracedFetch } from '../lib/traceContext.js';
+import { createPersonalPricingMiddleware, PERSONAL_PRICING_CACHE_CONTROL, verifiedPricingUserId } from '../lib/marketPricing/personalAccess.js';
 
 let supabaseAdmin = null;
 let catalogueSupabase = null;
@@ -155,7 +157,9 @@ function logRequest(req, res, startedAt) {
 
 function sendEnvelope(req, res, payload, options = {}) {
   const status = options.status ?? 200;
-  const cacheControl = options.cacheControl ?? DEFAULT_CATALOGUE_CACHE_CONTROL;
+  const cacheControl = res.locals.personalPricing
+    ? PERSONAL_PRICING_CACHE_CONTROL
+    : options.cacheControl ?? DEFAULT_CATALOGUE_CACHE_CONTROL;
   const body = {
     data: payload,
     meta: {
@@ -170,7 +174,9 @@ function sendEnvelope(req, res, payload, options = {}) {
   res.setHeader('X-Stackr-Api-Version', STACKR_API_V1);
   res.setHeader('Cache-Control', cacheControl);
   res.setHeader('ETag', etag);
-  res.setHeader('Vary', 'Accept-Encoding, If-None-Match');
+  res.vary('Accept-Encoding');
+  res.vary('If-None-Match');
+  if (res.locals.personalPricing) res.vary('Authorization');
 
   if (matchesIfNoneMatch(req, etag) && status === 200) {
     res.status(304).end();
@@ -190,7 +196,7 @@ function sendError(req, res, error) {
   const details = error instanceof ApiError ? error.details : postgrestDetails;
   res.setHeader('X-Request-Id', req.stackrRequestId);
   res.setHeader('X-Stackr-Api-Version', STACKR_API_V1);
-  res.setHeader('Cache-Control', NO_STORE_CACHE_CONTROL);
+  res.setHeader('Cache-Control', res.locals.personalPricing ? PERSONAL_PRICING_CACHE_CONTROL : NO_STORE_CACHE_CONTROL);
   res.status(status).json({
     error: {
       code,
@@ -203,6 +209,10 @@ function sendError(req, res, error) {
       generatedAt: new Date().toISOString(),
     },
   });
+}
+
+async function authenticatedUserId(req) {
+  return verifiedPricingUserId(req, getSupabaseAdmin());
 }
 
 function errorForLog(error) {
@@ -248,6 +258,7 @@ export function createV1Router(options = {}) {
   const router = express.Router();
   const getService = options.getService ?? (() => options.service ?? defaultService());
   const getPricingService = options.getPricingService ?? (() => options.pricingService ?? defaultPricingService());
+  const getAuthenticatedUserId = options.getAuthenticatedUserId ?? authenticatedUserId;
 
   router.use((req, res, next) => {
     req.stackrRequestId = requestIdFrom(req);
@@ -257,6 +268,11 @@ export function createV1Router(options = {}) {
     res.on('finish', () => logRequest(req, res, startedAt));
     next();
   });
+
+  router.use(createPersonalPricingMiddleware({
+    env: options.env ?? process.env,
+    getAuthenticatedUserId,
+  }));
 
   router.get('/health', asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().health(req.query), {
@@ -348,6 +364,33 @@ export function createV1Router(options = {}) {
     sendEnvelope(req, res, { variantId: history.variantId, observations: history.observations }, {
       cacheControl: MARKET_CACHE_CONTROL,
       pagination: history.pagination,
+    });
+  }));
+
+  router.get('/market/price-snapshots', asyncRoute(async (req, res) => {
+    const variantIds = String(req.query.variantIds ?? '').split(',').map((id) => id.trim()).filter(Boolean);
+    const history = await getPricingService().snapshotHistory(variantIds, req.query);
+    sendEnvelope(req, res, history, {
+      cacheControl: MARKET_HISTORY_CACHE_CONTROL,
+    });
+  }));
+
+  router.post('/cards/:variantId/price-refresh', asyncRoute(async (req, res) => {
+    const userId = res.locals.pricingUserId ?? await getAuthenticatedUserId(req);
+    const refresh = await getPricingService().requestSnapshotRefresh(req.params.variantId, req.body ?? {}, userId);
+    sendEnvelope(req, res, refresh, {
+      status: refresh.status === 'queued' ? 202 : 200,
+      cacheControl: NO_STORE_CACHE_CONTROL,
+    });
+  }));
+
+  router.post('/market/price-refresh', asyncRoute(async (req, res) => {
+    const userId = res.locals.pricingUserId ?? await getAuthenticatedUserId(req);
+    const { variantIds, ...input } = req.body ?? {};
+    const refresh = await getPricingService().requestSnapshotRefreshBatch(variantIds, input, userId);
+    sendEnvelope(req, res, refresh, {
+      status: refresh.summary.queued > 0 ? 202 : 200,
+      cacheControl: NO_STORE_CACHE_CONTROL,
     });
   }));
 

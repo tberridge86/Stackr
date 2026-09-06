@@ -17,6 +17,7 @@ type Candidate = {
   rarity?: string | null;
   force?: boolean;
   queueId?: string | null;
+  attempts?: number;
 };
 
 type LaneConfig = {
@@ -174,9 +175,14 @@ async function finishRun(
 async function fetchQueuedCandidates(limit: number): Promise<Candidate[]> {
   const { data, error } = await supabase
     .from('price_refresh_queue')
-    .select('id, card_id, set_id, language, reason, priority, metadata')
+    .select('id, card_id, set_id, language, reason, priority, attempts, metadata')
     .is('processed_at', null)
     .lte('run_after', new Date().toISOString())
+    // Exact canonical-variant requests belong exclusively to Pricing V2. A
+    // printing-level fallback must never mark one of them complete.
+    .is('metadata->>canonicalVariantId', null)
+    .is('metadata->>pricingEngine', null)
+    .not('reason', 'like', 'pricing_v2%')
     .order('priority', { ascending: false })
     .order('requested_at', { ascending: true })
     .limit(limit);
@@ -193,6 +199,7 @@ async function fetchQueuedCandidates(limit: number): Promise<Candidate[]> {
     number: row.metadata?.number ?? null,
     force: true,
     queueId: row.id,
+    attempts: Number(row.attempts ?? 0),
   }));
 }
 
@@ -452,7 +459,11 @@ async function refreshCandidate(candidate: Candidate, config: LaneConfig) {
 async function markQueueItem(candidate: Candidate, error?: string) {
   if (!candidate.queueId) return;
   const patch = error
-    ? { attempts: 1, last_error: error.slice(0, 500) }
+    ? {
+        attempts: Number(candidate.attempts ?? 0) + 1,
+        last_error: error.slice(0, 500),
+        run_after: new Date(Date.now() + Math.min(60, Math.pow(2, Number(candidate.attempts ?? 0))) * 60_000).toISOString(),
+      }
     : { processed_at: new Date().toISOString(), last_error: null };
   const { error: updateError } = await supabase
     .from('price_refresh_queue')

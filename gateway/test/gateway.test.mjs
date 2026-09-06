@@ -14,6 +14,177 @@ import { createGatewayOriginAuth } from '../../backend/lib/gatewayOriginAuth.js'
 const USER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const DEVICE_ID = 'device:test:00000001';
 
+test('price snapshots accept bounded canonical IDs and reject invalid ranges before forwarding', async () => {
+  const second = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  let forwarded = 0;
+  const fetchImpl = async (url) => {
+    forwarded += 1;
+    assert.equal(new URL(url).searchParams.get('rangeDays'), '7');
+    return Response.json({ data: { snapshots: [] } });
+  };
+  const publicEnv = environment({ STACKR_PRICING_ACCESS_MODE: 'public' });
+  const ok = await handleRequest(request(`/v1/market/price-snapshots?variantIds=${USER_ID},${second}&rangeDays=7`), publicEnv, context(), { fetchImpl, cache: new MemoryCache() });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get('cache-control'), 'no-store');
+  for (const query of ['', `variantIds=${USER_ID}&rangeDays=365`, `variantIds=${USER_ID},${USER_ID.toUpperCase()}`, 'variantIds=not-a-uuid']) {
+    const response = await handleRequest(request(`/v1/market/price-snapshots?${query}`), publicEnv, context(), { fetchImpl, cache: new MemoryCache() });
+    assert.equal(response.status, 400);
+  }
+  assert.equal(forwarded, 1);
+});
+
+test('personal pricing is owner-only, verified before cache access, and private', async () => {
+  let downstream = 0;
+  const cacheCalls = { match: 0, put: 0 };
+  const cache = {
+    async match() { cacheCalls.match += 1; return undefined; },
+    async put() { cacheCalls.put += 1; },
+  };
+  const fetchImpl = async (_url, init) => {
+    downstream += 1;
+    assert.equal(init.headers.get('authorization'), 'Bearer owner-token');
+    return Response.json({ data: { central: 123 } });
+  };
+  let response = await handleRequest(request(`/v1/cards/${USER_ID}/price`), environment(), context(), {
+    cache,
+    fetchImpl,
+    verifyAuth: async () => authenticated(),
+  });
+  assert.equal(response.status, 503, 'personal mode is the default and fails closed without an owner UUID');
+  assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.match(response.headers.get('vary') ?? '', /Authorization/);
+  assert.equal(downstream, 0);
+
+  const malformedOwner = await handleRequest(request(`/v1/cards/${USER_ID}/price`), environment({
+    STACKR_PRICING_OWNER_USER_ID: 'not-a-uuid',
+  }), context(), { cache, fetchImpl, verifyAuth: async () => authenticated() });
+  assert.equal(malformedOwner.status, 503, 'a malformed owner principal fails closed');
+  assert.equal(malformedOwner.headers.get('cache-control'), 'private, no-store');
+  assert.match(malformedOwner.headers.get('vary') ?? '', /Authorization/);
+
+  const personalEnv = environment({ STACKR_PRICING_OWNER_USER_ID: USER_ID });
+  response = await handleRequest(request(`/v1/cards/${USER_ID}/price`), personalEnv, context(), {
+    cache,
+    fetchImpl,
+    verifyAuth: async () => { throw new GatewayError(401, 'authentication_required', 'Sign in.'); },
+  });
+  assert.equal(response.status, 401, 'anonymous callers cannot read personal pricing');
+  assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.match(response.headers.get('vary') ?? '', /Authorization/);
+  assert.equal(downstream, 0);
+
+  const otherUser = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  response = await handleRequest(request(`/v1/cards/${USER_ID}/price`, {
+    headers: { 'X-Stackr-User-Id': USER_ID },
+  }), personalEnv, context(), {
+    cache,
+    fetchImpl,
+    verifyAuth: async () => authenticated({ sub: otherUser, appMetadata: { role: 'admin' } }),
+  });
+  assert.equal(response.status, 403, 'an admin claim and spoofed header do not bypass the signed owner subject');
+  assert.equal(downstream, 0);
+
+  response = await handleRequest(request(`/v1/cards/${USER_ID}/price`, {
+    headers: { Authorization: 'Bearer owner-token', 'X-Stackr-Device-Id': DEVICE_ID },
+  }), personalEnv, context(), {
+    cache,
+    fetchImpl,
+    verifyAuth: async () => ({ ...authenticated(), token: 'owner-token' }),
+  });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.match(response.headers.get('vary') ?? '', /Authorization/);
+  assert.equal(response.headers.get('x-stackr-cache'), null);
+  assert.deepEqual(cacheCalls, { match: 0, put: 0 }, 'personal pricing must not read or write a shared cache');
+
+  const ownerRefresh = () => request('/v1/market/price-refresh', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer owner-token', 'Content-Type': 'application/json',
+      'X-Stackr-Device-Id': DEVICE_ID, 'Idempotency-Key': 'owner-boundary:replay:0001',
+    },
+    body: JSON.stringify({ variantIds: [USER_ID], productType: 'raw_card', currency: 'GBP' }),
+  });
+  const ownerRefreshDeps = {
+    cache,
+    fetchImpl,
+    verifyAuth: async () => ({ ...authenticated(), token: 'owner-token' }),
+  };
+  const firstOwnerRefresh = await handleRequest(ownerRefresh(), personalEnv, context(), ownerRefreshDeps);
+  const replayedOwnerRefresh = await handleRequest(ownerRefresh(), personalEnv, context(), ownerRefreshDeps);
+  assert.equal(firstOwnerRefresh.status, 200);
+  assert.equal(replayedOwnerRefresh.status, 200);
+  assert.equal(replayedOwnerRefresh.headers.get('x-idempotency-replayed'), 'true');
+  assert.equal(replayedOwnerRefresh.headers.get('cache-control'), 'private, no-store');
+  assert.match(replayedOwnerRefresh.headers.get('vary') ?? '', /Authorization/);
+  assert.equal(downstream, 2, 'an owner idempotency replay must not make a second downstream refresh call');
+
+  const deniedRefresh = await handleRequest(request('/v1/market/price-refresh', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer other-token', 'Content-Type': 'application/json',
+      'X-Stackr-Device-Id': DEVICE_ID, 'Idempotency-Key': 'owner-boundary:denied:0001',
+    },
+    body: JSON.stringify({ variantIds: [USER_ID], productType: 'raw_card', currency: 'GBP' }),
+  }), personalEnv, context(), {
+    cache,
+    fetchImpl,
+    verifyAuth: async () => ({ ...authenticated({ sub: otherUser }), token: 'other-token' }),
+  });
+  assert.equal(deniedRefresh.status, 403, 'the owner boundary applies to price refresh writes too');
+  assert.equal(downstream, 2);
+
+  const invalidMode = await handleRequest(request(`/v1/market/movers`), environment({
+    STACKR_PRICING_ACCESS_MODE: 'team',
+    STACKR_PRICING_OWNER_USER_ID: USER_ID,
+  }), context(), { cache, fetchImpl, verifyAuth: async () => authenticated() });
+  assert.equal(invalidMode.status, 503, 'an unrecognised pricing mode fails closed');
+  assert.equal(invalidMode.headers.get('cache-control'), 'private, no-store');
+  assert.match(invalidMode.headers.get('vary') ?? '', /Authorization/);
+});
+
+test('price refresh requires authentication, bounded payloads and idempotency; forwards only the verified user token', async () => {
+  const env = environment({ STACKR_PRICING_ACCESS_MODE: 'public' });
+  let forwarded = 0;
+  const makeRequest = (body, key = 'live-price-refresh:000001', path = '/v1/market/price-refresh') => request(path, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer user-access-token', 'Content-Type': 'application/json',
+      'X-Stackr-Device-Id': DEVICE_ID, ...(key ? { 'Idempotency-Key': key } : {}) },
+    body: JSON.stringify(body),
+  });
+  const deps = {
+    cache: new MemoryCache(), verifyAuth: async () => authenticated(),
+    fetchImpl: async (_url, init) => {
+      forwarded += 1;
+      assert.equal(init.headers.get('authorization'), 'Bearer user-access-token');
+      return Response.json({ data: { summary: { queued: 1 } } }, { status: 202 });
+    },
+  };
+  const body = { variantIds: [USER_ID], productType: 'raw_card', currency: 'GBP' };
+  const unauthenticated = await handleRequest(makeRequest(body), env, context(), {
+    ...deps, verifyAuth: async () => { throw new GatewayError(401, 'authentication_required', 'Sign in.'); },
+  });
+  assert.equal(unauthenticated.status, 401);
+  const missingKey = await handleRequest(makeRequest(body, null), env, context(), deps);
+  assert.equal(missingKey.status, 400);
+  for (const invalid of [
+    { ...body, variantIds: [] }, { ...body, variantIds: [USER_ID, USER_ID.toUpperCase()] },
+    { ...body, variantIds: Array(13).fill(USER_ID) }, { ...body, currency: 'USD' },
+    { ...body, productType: 'graded_card' }, { ...body, providerApiKey: 'forbidden' },
+  ]) {
+    assert.equal((await handleRequest(makeRequest(invalid), env, context(), deps)).status, 400);
+  }
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const result = await handleRequest(makeRequest(body), env, context(), deps);
+    assert.equal(result.status, 202);
+    assert.equal(result.headers.get('cache-control'), 'no-store');
+  }
+  assert.equal(forwarded, 1, 'Retrying the same request must replay without additional queue writes');
+  const single = await handleRequest(makeRequest({ currency: 'GBP', productType: 'raw_card' }, 'live-price-refresh:single:0001', `/v1/cards/${USER_ID}/price-refresh`), env, context(), deps);
+  assert.equal(single.status, 202);
+  assert.equal(forwarded, 2);
+});
+
 class MemoryStorage {
   constructor() {
     this.values = new Map();

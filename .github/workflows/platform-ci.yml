@@ -45,6 +45,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run typecheck:backend
       - run: npm test --prefix backend
+      - run: npm run test:live-pricing
+      - run: npm run test:personal-pricing
+      - run: npm run test:collection-pricing-ui
+      - run: npm run test:home-release
+      - run: npm run test:poketrace-benchmark
       - run: npm run test:seller-stock-out-routing
       - run: npm run test:premium-seller-access
       - run: npm run test:commerce-release-lock
@@ -95,6 +100,7 @@ jobs:
         image: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stackr_live_pricing_test
         ports:
           - 5432:5432
         options: >-
@@ -126,6 +132,10 @@ jobs:
           npx supabase@2.110.0 start
           npx supabase@2.110.0 db reset --local
           npx supabase@2.110.0 test db --local supabase/tests
+      - name: Rehearse live pricing on isolated PostgreSQL 17
+        run: >-
+          node scripts/test-live-pricing-migrations.mjs --fixture
+          --db-url postgresql://postgres:postgres@127.0.0.1:5432/stackr_live_pricing_test
       - name: Record local baseline blocker
         if: vars.SUPABASE_LOCAL_BASELINE_READY != 'true'
         run: echo "Local reset is gated until the pre-repository production schema is baselined into migrations."

@@ -17,6 +17,7 @@ function targetPath(route, sourcePath) {
 }
 
 function timeoutFor(route, env) {
+  if (route.timeoutMs) return route.timeoutMs;
   if (route.rate === 'imageFallback') return Number(env.IMAGE_FALLBACK_TIMEOUT_MS ?? 12_000);
   if (route.target === 'recognition') return Number(env.RECOGNITION_TIMEOUT_MS ?? 5_000);
   return Number(env.BACKEND_TIMEOUT_MS ?? 4_000);

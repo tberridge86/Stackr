@@ -30,6 +30,56 @@ import { createTraceContext } from './trace.js';
 
 const encoder = new TextEncoder();
 const DEPENDENCY_HEALTH_TIMEOUT_MS = 5_000;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function pricingRouteForAccess(route, env) {
+  if (!route.pricing) return route;
+  const configured = env.STACKR_PRICING_ACCESS_MODE;
+  const mode = configured === undefined || configured === null
+    ? 'personal'
+    : String(configured).trim().toLowerCase();
+  if (mode === 'public') return route;
+  if (mode !== 'personal') {
+    throw new GatewayError(503, 'pricing_access_mode_invalid', 'Pricing access mode is not configured.');
+  }
+  // This mode has one explicit principal. It deliberately ignores roles and
+  // user metadata: an administrator must still be that exact signed-in user.
+  const owner = env.STACKR_PRICING_OWNER_USER_ID;
+  if (typeof owner !== 'string' || !UUID_PATTERN.test(owner.trim())) {
+    throw new GatewayError(503, 'pricing_owner_unconfigured', 'Personal pricing access is not configured.');
+  }
+  return {
+    ...route,
+    auth: 'user',
+    cache: 'none',
+    forwardUserJwt: true,
+    personalPricing: true,
+    pricingOwnerUserId: owner.trim().toLowerCase(),
+  };
+}
+
+function pricingFailureMustBePrivate(route, env) {
+  if (!route?.pricing) return false;
+  const configured = env.STACKR_PRICING_ACCESS_MODE;
+  const mode = configured === undefined || configured === null
+    ? 'personal'
+    : String(configured).trim().toLowerCase();
+  return mode !== 'public';
+}
+
+function appendVary(headers, value) {
+  const values = new Set(String(headers.get('Vary') ?? '').split(',').map((item) => item.trim()).filter(Boolean));
+  values.add(value);
+  headers.set('Vary', [...values].join(', '));
+}
+
+function privatePricingResponse(response) {
+  const output = new Response(response.body, response);
+  output.headers.set('Cache-Control', 'private, no-store');
+  appendVary(output.headers, 'Authorization');
+  output.headers.delete('X-Stackr-Cache');
+  return output;
+}
 
 function envelope(data, requestId, apiVersion, status = 200) {
   return new Response(JSON.stringify({
@@ -188,6 +238,7 @@ async function processRequest(request, env, ctx, deps) {
     validatePath(url.pathname);
     route = matchRoute(url.pathname);
     if (!route) throw new GatewayError(404, 'route_not_found', 'Stackr API route was not found.');
+    route = pricingRouteForAccess(route, env);
     validateQuery(route, url);
     origin = validateOrigin(request, env);
     if (request.method === 'OPTIONS') {
@@ -212,6 +263,9 @@ async function processRequest(request, env, ctx, deps) {
     if (route.auth !== 'public') {
       auth = await (deps.verifyAuth ?? verifySupabaseRequest)(request, env, { fetchImpl: deps.fetchImpl });
       if (route.auth === 'admin') requireAdmin(auth.claims);
+      if (route.personalPricing && String(auth?.claims?.sub ?? '').toLowerCase() !== route.pricingOwnerUserId) {
+        throw new GatewayError(403, 'pricing_owner_required', 'This personal pricing route is restricted to its configured owner.');
+      }
     }
     deviceId = validateDeviceId(request.headers.get('x-stackr-device-id'), route.auth !== 'public');
 
@@ -247,7 +301,8 @@ async function processRequest(request, env, ctx, deps) {
       const begun = await beginIdempotency(env, identity, key, fingerprint);
       idempotency = { identity, key, fingerprint };
       if (begun.state === 'replay') {
-        return secureResponse(replayResponse(begun.response), { requestId, apiVersion, origin, rate, trace });
+        const response = replayResponse(begun.response);
+        return secureResponse(route.personalPricing ? privatePricingResponse(response) : response, { requestId, apiVersion, origin, rate, trace });
       }
     }
 
@@ -291,14 +346,14 @@ async function processRequest(request, env, ctx, deps) {
         await abortIdempotency(env, idempotency.identity, idempotency.key, idempotency.fingerprint);
       }
     }
-    return secureResponse(response, { requestId, apiVersion, origin, rate, trace });
+    return secureResponse(route.personalPricing ? privatePricingResponse(response) : response, { requestId, apiVersion, origin, rate, trace });
   } catch (error) {
     if (idempotency) {
       await abortIdempotency(env, idempotency.identity, idempotency.key, idempotency.fingerprint).catch(() => undefined);
     }
     const response = errorResponse(error, requestId, apiVersion);
     if (error?.details?.retryAfter) response.headers.set('Retry-After', String(error.details.retryAfter));
-    return secureResponse(response, { requestId, apiVersion, origin, rate, trace });
+    return secureResponse((route?.personalPricing || pricingFailureMustBePrivate(route, env)) ? privatePricingResponse(response) : response, { requestId, apiVersion, origin, rate, trace });
   }
 }
 

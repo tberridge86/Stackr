@@ -30,6 +30,13 @@ export function validatePath(pathname) {
 
 function validateQueryValue(name, value) {
   if (value.length > 2048) bad('invalid_query', `${name} is too long.`);
+  if (name === 'variantIds') {
+    validateVariantIds(value.split(','), 24);
+    return;
+  }
+  if (name === 'rangeDays' && !['7', '30'].includes(value)) {
+    bad('invalid_range', 'rangeDays must be 7 or 30.');
+  }
   if (name === 'limit' && (!/^\d+$/.test(value) || Number(value) < 1 || Number(value) > 500)) {
     bad('invalid_limit', 'limit must be an integer between 1 and 500.');
   }
@@ -71,6 +78,9 @@ export function validateQuery(route, url) {
     if (seen.has(name)) bad('duplicate_query_parameter', `Query parameter ${name} may only be supplied once.`);
     seen.add(name);
     validateQueryValue(name, value);
+  }
+  if (route.id === 'market_price_snapshots' && !seen.has('variantIds')) {
+    bad('variant_ids_required', 'variantIds is required.');
   }
 }
 
@@ -339,6 +349,30 @@ function validateSameArtworkDisplayReferences(payload) {
   }
 }
 
+function validateVariantIds(ids, maximum) {
+  if (!Array.isArray(ids) || ids.length < 1 || ids.length > maximum
+    || ids.some((id) => typeof id !== 'string' || !UUID_PATTERN.test(id))) {
+    bad('invalid_variant_ids', `variantIds must contain 1 to ${maximum} canonical UUIDs.`);
+  }
+  if (new Set(ids.map((id) => id.toLowerCase())).size !== ids.length) {
+    bad('duplicate_variant_ids', 'variantIds must not contain duplicates.');
+  }
+}
+
+function validatePriceRefresh(payload, batch) {
+  rejectUnknownKeys(payload, new Set(['productType', 'currency', 'language', ...(batch ? ['variantIds'] : [])]));
+  if (batch) validateVariantIds(payload.variantIds, 12);
+  if (payload.productType != null && payload.productType !== 'raw_card') {
+    bad('invalid_product_type', 'Price refresh currently supports raw_card only.');
+  }
+  if (payload.currency != null && payload.currency !== 'GBP') {
+    bad('invalid_currency', 'Price refresh currently supports GBP only.');
+  }
+  if (payload.language != null && !LANGUAGE_CODES.has(payload.language)) {
+    bad('invalid_language', 'language is not supported.');
+  }
+}
+
 export function parseAndValidateJson(bodyBytes, kind, pathname = '') {
   let payload;
   try {
@@ -347,6 +381,8 @@ export function parseAndValidateJson(bodyBytes, kind, pathname = '') {
     bad('invalid_json', 'Request body is not valid JSON.');
   }
   requireObject(payload);
+  if (kind === 'priceRefresh') validatePriceRefresh(payload, false);
+  if (kind === 'priceRefreshBatch') validatePriceRefresh(payload, true);
   if (kind === 'recognitionIdentify') validateRecognitionIdentify(payload);
   if (kind === 'recognitionEmbed') validateRecognitionEmbed(payload);
   if (kind === 'recognitionFeedback') validateRecognitionFeedback(payload);
