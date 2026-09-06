@@ -6,7 +6,7 @@ Updated 6 September: the owner confirmed personal use and asked that permission 
 
 ## What this candidate delivers
 
-- A smaller Home tracker, explicit manual refresh, foreground-only reads every three minutes, and rotating batches of 12 refresh requests every 15 minutes. Manual runs cover at most 100 eligible cards. These are target polling intervals, not a guarantee of new sales or job-start times.
+- A compact Home tracker with a readable full-width 96px chart, explicit manual refresh, foreground-only reads every three minutes, and rotating batches of 12 refresh requests every 15 minutes. Manual runs cover at most 100 eligible cards. These are target polling intervals, not a guarantee of new sales or job-start times.
 - An authenticated, idempotent refresh queue with exact card, language, printing, finish, edition and condition metadata. Requests return queued/pending/cooldown, never “price updated” before a provider response is stored.
 - One serialized scheduled worker, capped at 30 due requests per run with spacing between cards. Five-minute runs are skipped while disabled; there is no full-catalogue sweep. Gateway writes are limited to 30 per minute, 12 variants per batch, and are not cached.
 - Canonical sale-derived estimates published into the store consumed by the main pricing API, with transactional acknowledgement before the request is completed. The publisher defaults to read-only and admits only exact raw-card GBP sales within a bounded 180-day, 200-observation scope.

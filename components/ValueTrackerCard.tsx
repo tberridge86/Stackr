@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -12,13 +12,14 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import type { DimensionValue } from 'react-native';
+import type { DimensionValue, LayoutChangeEvent } from 'react-native';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Path, Stop } from 'react-native-svg';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
 import { numericTextStyle, tabularNumberStyle, typeScale } from '../lib/typography';
 import type { MintyEvidenceSource, MintyInsight, MintyInsightFeedback } from '../lib/mintyInsights';
 import type { CollectionPricingState } from '../lib/collectionPricingState';
+import { getValueTrackerChartWidth, VALUE_TRACKER_CHART_HEIGHT } from '../lib/valueTrackerChartLayout';
 
 type CurrencyCode = 'GBP' | 'USD' | 'EUR';
 type TrendRange = '7D' | '30D';
@@ -269,10 +270,13 @@ export function ValueTrackerCard({
   const { theme, isDark } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const isCompactLayout = screenWidth < 360;
-  const chartWidth = isCompactLayout
-    ? Math.max(190, Math.min(screenWidth - 96, 260))
-    : 104;
-  const chartHeight = isCompactLayout ? 42 : 38;
+  const [chartPanelWidth, setChartPanelWidth] = useState(0);
+  const chartHeight = VALUE_TRACKER_CHART_HEIGHT;
+  const chartWidth = getValueTrackerChartWidth(chartPanelWidth, screenWidth);
+  const handleChartPanelLayout = useCallback((event: LayoutChangeEvent) => {
+    const nextWidth = Math.round(event.nativeEvent.layout.width);
+    setChartPanelWidth((currentWidth) => currentWidth === nextWidth ? currentWidth : nextWidth);
+  }, []);
   const values = useMemo(() => getFiniteTrend(trendData), [trendData]);
   const derivedAbsoluteChange = values.length >= 2 ? values[values.length - 1] - values[0] : 0;
   const derivedPercent = values.length >= 2 && values[0] !== 0
@@ -507,7 +511,7 @@ export function ValueTrackerCard({
     }
 
     return (
-      <View style={[styles.vaultValueMainRow, isCompactLayout && styles.vaultValueMainRowCompact]}>
+      <View style={styles.vaultValueMainRow}>
         <View style={styles.vaultValueColumn}>
           <Text
             numeric
@@ -520,6 +524,8 @@ export function ValueTrackerCard({
                 color: theme.colors.text,
                 fontSize: isCompactLayout ? 34 : 38,
                 lineHeight: isCompactLayout ? 39 : 44,
+                width: '100%',
+                maxWidth: '100%',
               },
             ]}
           >
@@ -550,14 +556,14 @@ export function ValueTrackerCard({
           <View
             style={[
               styles.vaultChartPanel,
-              isCompactLayout && styles.vaultChartPanelCompact,
               {
-                width: isCompactLayout ? '100%' : chartWidth + 16,
-                height: chartHeight + 10,
+                width: '100%',
+                height: chartHeight + 12,
                 backgroundColor: theme.colors.surface,
                 borderColor: theme.colors.border,
               },
             ]}
+            onLayout={handleChartPanelLayout}
           >
             <Svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
               <Defs>
@@ -610,8 +616,8 @@ export function ValueTrackerCard({
             },
           ]}
         >
-          <View style={styles.vaultTopRow}>
-            <View style={{ flex: 1, minWidth: 0 }}>
+          <View style={[styles.vaultTopRow, isCompactLayout && styles.vaultTopRowCompact]}>
+            <View style={[styles.vaultTopCopy, isCompactLayout && styles.vaultTopCopyCompact]}>
               <Text style={[styles.vaultEyebrow, { color: theme.colors.textSoft }]}>Collection Value</Text>
               <Text style={[styles.vaultSourceText, { color: theme.colors.textSoft }]}>
                 {pricingCoverageLabel || (ownedCount ? `${ownedCount} card${ownedCount === 1 ? '' : 's'} tracked` : 'No cards tracked')}
@@ -903,9 +909,13 @@ const styles = StyleSheet.create({
   vaultTouchable: {
     borderRadius: 24,
     marginBottom: 12,
+    width: '100%',
+    minWidth: 0,
   },
   vaultCard: {
     minHeight: 140,
+    width: '100%',
+    minWidth: 0,
     borderRadius: 24,
     padding: 16,
     borderWidth: 1,
@@ -921,6 +931,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
     marginBottom: 10,
+  },
+  vaultTopRowCompact: {
+    flexWrap: 'wrap',
+    rowGap: 8,
+  },
+  vaultTopCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  vaultTopCopyCompact: {
+    flexBasis: '100%',
   },
   vaultEyebrow: {
     ...typeScale.caption,
@@ -1016,14 +1037,9 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   vaultValueMainRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  vaultValueMainRowCompact: {
     flexDirection: 'column',
     alignItems: 'stretch',
-    gap: 10,
+    gap: 12,
   },
   vaultValueColumn: {
     flex: 1,
@@ -1066,15 +1082,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    maxWidth: '100%',
+    minWidth: 0,
   },
   valueMovementIcon: {
     width: 18,
     height: 18,
+    flexShrink: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
   valueMovementStack: {
     minWidth: 88,
+    flexShrink: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1098,9 +1118,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-  },
-  vaultChartPanelCompact: {
-    alignSelf: 'stretch',
   },
   vaultHistoryBuilding: {
     width: 108,
