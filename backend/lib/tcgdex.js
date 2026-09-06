@@ -10,6 +10,12 @@ const USD_TO_GBP = Number(process.env.USD_TO_GBP || 0.79);
 const EUR_TO_GBP = Number(process.env.EUR_TO_GBP || 0.86);
 const CONTROLLED_CARD_REFERENCE_LANGUAGES = new Set(['ja', 'zh-tw', 'zh-cn']);
 const TCGDEX_ASSET_HOST = 'assets.tcgdex.net';
+const PROVIDER_SERIES_SEGMENT = /^[A-Za-z0-9_-]+$/;
+const RESERVED_NON_CARD_PATH_SEGMENTS = new Set(['sets']);
+
+function isProviderCardPathSegment(value) {
+  return PROVIDER_SERIES_SEGMENT.test(value) && !RESERVED_NON_CARD_PATH_SEGMENTS.has(value.toLowerCase());
+}
 
 const tcgdexCache = new Map();
 const tcgdexInflight = new Map();
@@ -183,7 +189,7 @@ export function resolveTcgdexControlledCardReference(card, language) {
   const segments = url.pathname.split('/').filter(Boolean);
   if (segments.length !== 4 || segments.some((segment) => !/^[A-Za-z0-9._~-]+$/.test(segment))) return null;
   const [urlLanguage, resourceType, urlSetId, urlLocalId] = segments;
-  if (urlLanguage !== lang || resourceType !== 'cards' || urlSetId !== providerSetId
+  if (urlLanguage !== lang || !isProviderCardPathSegment(resourceType) || urlSetId !== providerSetId
     || urlLocalId !== localId || providerCardId !== `${providerSetId}-${localId}`
     || controlledCardReferenceDenied(lang, providerSetId, providerCardId)) return null;
   return { uri: `${url.origin}/${segments.join('/')}/low.webp`, sourceCode: 'tcgdex', attributionText: 'TCGdex reference', cachePolicy: 'memory', providerCardId, providerSetId, localId, provenance: 'tcgdex_live_or_ttl_cached_provider_card_record' };

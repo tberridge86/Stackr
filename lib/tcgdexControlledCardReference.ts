@@ -36,6 +36,12 @@ export type TcgdexControlledCardReference = {
 };
 
 const SAFE_PATH_SEGMENT = /^[A-Za-z0-9._~-]+$/;
+const PROVIDER_SERIES_SEGMENT = /^[A-Za-z0-9_-]+$/;
+const RESERVED_NON_CARD_PATH_SEGMENTS = new Set(['sets']);
+
+function isProviderCardPathSegment(value: string) {
+  return PROVIDER_SERIES_SEGMENT.test(value) && !RESERVED_NON_CARD_PATH_SEGMENTS.has(value.toLowerCase());
+}
 const issuedReferences = new Map<string, string>();
 const MAX_ISSUED_REFERENCES = 20_000;
 
@@ -149,7 +155,7 @@ export function resolveTcgdexControlledCardReference(
 
   const [urlLanguage, resourceType, urlSetId, urlLocalId] = baseSegments;
   if (urlLanguage !== language
-    || resourceType !== 'cards'
+    || !isProviderCardPathSegment(resourceType)
     || urlSetId !== providerSetId
     || urlLocalId !== localId) return null;
 
@@ -178,7 +184,7 @@ export function isTcgdexControlledCardReferenceUrl(value: unknown) {
   const [languageValue, resourceType, setId, localId, rendition] = parsed.segments;
   const language = controlledLanguage(languageValue);
   if (!language
-    || resourceType !== 'cards'
+    || !isProviderCardPathSegment(resourceType)
     || !setId
     || !localId
     || rendition !== TCGDEX_CONTROLLED_CARD_REFERENCE_POLICY.rendition) return false;

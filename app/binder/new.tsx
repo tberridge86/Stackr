@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   TextInput,
@@ -38,6 +38,7 @@ import { BinderArtwork } from '../../components/BinderArtwork';
 import { BinderModeIconBadge } from '../../components/BinderModeBadge';
 import {
   getPokemonLanguageDescriptor,
+  POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
   PokemonLanguageBadge,
   PokemonLanguageFlagIcon,
 } from '../../components/PokemonLanguageBadge';
@@ -59,12 +60,7 @@ const BASE_ERA_SET_IDS = [
   'gym1', 'gym2', 'neo1', 'neo2', 'neo3', 'neo4',
 ];
 
-const SET_LANGUAGE_OPTIONS: { key: PokemonCardLanguage; label: string }[] = [
-  { key: 'en', label: 'English' },
-  { key: 'ja', label: 'Japanese' },
-  { key: 'zh-cn', label: 'Simplified Chinese' },
-  { key: 'zh-tw', label: 'Traditional Chinese' },
-];
+const SET_LANGUAGE_OPTIONS = POKEMON_CATALOGUE_LANGUAGE_OPTIONS;
 
 const cardShadow = {
   shadowColor: '#000',
@@ -199,10 +195,7 @@ function inferSetLanguageFromId(setId?: string | null): PokemonCardLanguage {
 
 function getSetLanguageLabel(language?: PokemonCardLanguage | string | null) {
   const normalized = normalizePokemonCardLanguage(language);
-  if (normalized === 'ja') return 'Japanese';
-  if (normalized === 'zh-cn') return 'Simplified Chinese';
-  if (normalized === 'zh-tw') return 'Traditional Chinese';
-  return 'English';
+  return getPokemonLanguageDescriptor(normalized)?.label ?? 'English';
 }
 
 function getBinderSetEnglishName(
@@ -422,8 +415,10 @@ export default function NewBinderScreen() {
   const [selectedSet, setSelectedSet] = useState<PokemonSet | null>(null);
   const [setSearch, setSetSearch] = useState('');
   const [loadingSets, setLoadingSets] = useState(true);
+  const [setsError, setSetsError] = useState<string | null>(null);
   const [loadingBinder, setLoadingBinder] = useState(isEditMode);
   const [saving, setSaving] = useState(false);
+  const setsRequestIdRef = useRef(0);
 
   const isBaseEra = selectedSet && setLanguage === 'en' ? BASE_ERA_SET_IDS.includes(selectedSet.id) : false;
   const selectedSetEnglishName = getBinderSetEnglishName(selectedSet, setLanguage);
@@ -435,13 +430,20 @@ export default function NewBinderScreen() {
   // ===============================
 
   const loadSets = useCallback(async () => {
+    const requestId = ++setsRequestIdRef.current;
+    const requestedLanguage = setLanguage;
     try {
       setLoadingSets(true);
+      setSetsError(null);
       const data = await fetchAllSets({
-        language: setLanguage,
-        preferCanonicalApi: setLanguage !== 'en',
+        language: requestedLanguage,
+        preferCanonicalApi: requestedLanguage !== 'en',
       });
+      if (requestId !== setsRequestIdRef.current) return;
       setSets(data);
+      if (!data.length) {
+        setSetsError(`No ${getSetLanguageLabel(requestedLanguage)} sets were returned. Please try again.`);
+      }
 
       if (paramSourceSetId) {
         const found = data.find((s) => s.id === paramSourceSetId || isSameSetId(s.id, paramSourceSetId));
@@ -455,8 +457,11 @@ export default function NewBinderScreen() {
       }
     } catch (err) {
       console.log('Failed to load sets', err);
+      if (requestId !== setsRequestIdRef.current) return;
+      setSets([]);
+      setSetsError(`Could not load ${getSetLanguageLabel(requestedLanguage)} sets. Please try again.`);
     } finally {
-      setLoadingSets(false);
+      if (requestId === setsRequestIdRef.current) setLoadingSets(false);
     }
   }, [paramSourceSetId, setLanguage]);
 
@@ -535,6 +540,8 @@ export default function NewBinderScreen() {
   const handleSetLanguageChange = (language: PokemonCardLanguage) => {
     if (isEditMode || language === setLanguage) return;
     setSetLanguage(language);
+    setSets([]);
+    setSetsError(null);
     setSelectedSet(null);
     setSourceSetId(null);
     setSetSearch('');
@@ -1109,15 +1116,7 @@ export default function NewBinderScreen() {
                   <TextInput
                     value={setSearch}
                     onChangeText={setSetSearch}
-                    placeholder={
-                      setLanguage === 'ja'
-                        ? 'Search Japanese sets...'
-                        : setLanguage === 'zh-cn'
-                          ? 'Search Simplified Chinese sets...'
-                          : setLanguage === 'zh-tw'
-                            ? 'Search Traditional Chinese sets...'
-                            : 'Search English sets...'
-                    }
+                    placeholder={`Search ${getSetLanguageLabel(setLanguage)} sets...`}
                     placeholderTextColor={theme.colors.textSoft}
                     autoCorrect={false}
                     autoCapitalize="words"
@@ -1134,7 +1133,40 @@ export default function NewBinderScreen() {
                     <ActivityIndicator color={theme.colors.primary} />
                   ) : (
                     <View style={{ paddingBottom: 8 }}>
-                      {filteredSets.map((item) => {
+                      {setsError ? (
+                        <View style={{ alignItems: 'center', paddingHorizontal: 16, paddingVertical: 20 }}>
+                          <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 19 }}>
+                            {setsError}
+                          </Text>
+                          <TouchableOpacity
+                            onPress={loadSets}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Retry loading ${getSetLanguageLabel(setLanguage)} sets`}
+                            style={{
+                              marginTop: 12,
+                              minHeight: 40,
+                              borderRadius: 12,
+                              paddingHorizontal: 16,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexDirection: 'row',
+                              gap: 7,
+                              backgroundColor: theme.colors.primary + '12',
+                              borderWidth: 1,
+                              borderColor: theme.colors.primary + '40',
+                            }}
+                          >
+                            <Ionicons name="refresh" size={16} color={theme.colors.primary} />
+                            <Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Try again</Text>
+                          </TouchableOpacity>
+                        </View>
+                      ) : filteredSets.length === 0 ? (
+                        <View style={{ alignItems: 'center', paddingHorizontal: 16, paddingVertical: 20 }}>
+                          <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
+                            No sets match this search.
+                          </Text>
+                        </View>
+                      ) : filteredSets.map((item) => {
                         const englishSetName = getBinderSetEnglishName(item, setLanguage);
                         const nativeSetName = item.localName ?? item.name;
                         const showEnglishSupplement = Boolean(

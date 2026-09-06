@@ -1,0 +1,156 @@
+name: Prepare Binder Artwork Read
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type PREPARE BINDER ARTWORK READ
+        required: true
+        type: string
+      expected_main_sha:
+        description: Exact lowercase 40-character main SHA reviewed for this preparation
+        required: true
+        type: string
+      staging_evidence_sha256:
+        description: Canonical-LF SHA-256 of deploy/evidence/binder-artwork-read-staging-2026-09-06.json
+        required: true
+        type: string
+      apply_migrations:
+        description: Apply exactly the two reviewed additive migrations after all checks (false is verification only)
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: stackr-production-deployment
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PREPARE BINDER ARTWORK READ'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.STACKR_GITHUB_PRODUCTION_BACKUPS || secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
+      STACKR_STORAGE_BACKUP_APPROVED: ${{ vars.STACKR_STORAGE_BACKUP_APPROVED }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Validate protected, exact preparation scope
+        shell: bash
+        env:
+          EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+          APPLY_MIGRATIONS: ${{ inputs.apply_migrations }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$EXPECTED_MAIN_SHA" = "$GITHUB_SHA"
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$STACKR_MIGRATION_BASELINE_APPROVED" = 'true'
+          test "$STACKR_STORAGE_BACKUP_APPROVED" = 'true'
+          test -n "$SUPABASE_DB_URL"
+          test -n "$SUPABASE_PROJECT_REF"
+          test "$APPLY_MIGRATIONS" = 'true' -o "$APPLY_MIGRATIONS" = 'false'
+          git diff --exit-code
+
+      - name: Require recorded production reviewer protection
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api --method GET "repos/$GITHUB_REPOSITORY/environments/production" \
+            > "$RUNNER_TEMP/stackr-production-environment.json"
+          node --input-type=module - "$RUNNER_TEMP/stackr-production-environment.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+
+          const environment = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          const reviewerRule = Array.isArray(environment?.protection_rules)
+            ? environment.protection_rules.find((rule) => rule?.type === 'required_reviewers')
+            : null;
+          if (!reviewerRule || !Array.isArray(reviewerRule.reviewers)
+            || reviewerRule.reviewers.length < 1) {
+            throw new Error('production_environment_required_reviewer_protection_missing');
+          }
+          NODE
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Test preparation guards
+        run: node scripts/test-prepare-binder-artwork-read.mjs
+
+      - name: List the latest physical backup
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/stackr-binder-artwork-read-backup"
+          npx --yes supabase@2.110.0 backups list \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --output-format json \
+            > "$RUNNER_TEMP/stackr-binder-artwork-read-backup/physical.json"
+
+      - name: Prepare the normalized production database URL
+        run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
+
+      - name: Create ephemeral logical backups and verify coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-binder-artwork-read-backup/schema.sql"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --data-only \
+            --use-copy \
+            --file "$RUNNER_TEMP/stackr-binder-artwork-read-backup/data.sql"
+          node scripts/deploy/verify-backup.mjs \
+            --physical="$RUNNER_TEMP/stackr-binder-artwork-read-backup/physical.json" \
+            --schema="$RUNNER_TEMP/stackr-binder-artwork-read-backup/schema.sql" \
+            --data="$RUNNER_TEMP/stackr-binder-artwork-read-backup/data.sql" \
+            --require-physical
+
+      - name: Verify or apply exactly reviewed artwork-read migrations
+        shell: bash
+        env:
+          EXPECTED_EVIDENCE_SHA256: ${{ inputs.staging_evidence_sha256 }}
+          APPLY_MIGRATIONS: ${{ inputs.apply_migrations }}
+        run: |
+          set -euo pipefail
+          node scripts/deploy/prepare-binder-artwork-read.mjs \
+            --db-url="$SUPABASE_DB_URL" \
+            --project-ref="$SUPABASE_PROJECT_REF" \
+            --expected-evidence-sha256="$EXPECTED_EVIDENCE_SHA256" \
+            --apply="$APPLY_MIGRATIONS" \
+            | tee "$RUNNER_TEMP/binder-artwork-read-preparation.json"
+
+      - name: Upload non-secret preparation evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-binder-artwork-read-preparation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/binder-artwork-read-preparation.json
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 9
+
+      - name: Remove ephemeral logical backups
+        if: always()
+        shell: bash
+        run: rm -rf "$RUNNER_TEMP/stackr-binder-artwork-read-backup"

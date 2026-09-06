@@ -27,8 +27,8 @@ import {
   isTcgdexAssetPointer,
   sanitizeTcgdexAssetPointersForPublicDisplay,
 } from '../backend/lib/cataloguePublicAssetPolicy.js';
+import { assertTcgdexRuntimeBoundaryCompatibility } from './tcgdex-boundary-compatibility';
 
-const BOUNDARY_PATH = 'docs/stackrtcg-ip-operating-boundary.md';
 const REGISTRY_PATH = 'catalogue/source-rights-registry.json';
 const EVIDENCE_PATH = 'catalogue/rights-evidence/tcgdex-low-resolution-card-reference.2026-09-04.json';
 const NOTICE_PATH = 'docs/third-party/tcgdex-card-reference-notice.md';
@@ -62,6 +62,7 @@ type Decision = {
 };
 
 const decision = readJson<Decision>(DECISION_PATH);
+assertTcgdexRuntimeBoundaryCompatibility((path) => readFileSync(path));
 assert.equal(decision.classification, 'green');
 assert.equal(decision.status, 'authorized_under_internal_operating_boundary');
 assert.equal(decision.activationAuthorized, true);
@@ -82,7 +83,7 @@ for (const excludedUse of [
 ]) {
   assert.ok(decision.scope.excludedUses.includes(excludedUse), `decision must exclude ${excludedUse}`);
 }
-assert.equal(decision.bindings.operatingBoundarySha256, sha256(BOUNDARY_PATH));
+assert.equal(decision.bindings.operatingBoundarySha256, 'f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b');
 assert.equal(decision.bindings.rightsRegistrySha256, sha256(REGISTRY_PATH));
 assert.equal(decision.bindings.evidenceSha256, sha256(EVIDENCE_PATH));
 assert.equal(decision.bindings.noticeSha256, sha256(NOTICE_PATH));
@@ -110,7 +111,7 @@ assert.deepEqual(decision.runtimeControls.sourceKillSwitches, [
 ]);
 assert.equal(decision.runtimeControls.denylistEnvironmentVariable, 'EXPO_PUBLIC_TCGDEX_CARD_REFERENCE_DENYLIST');
 
-function input(language: 'ja' | 'zh-tw' | 'zh-cn') {
+function input(language: 'ja' | 'zh-tw' | 'zh-cn', pathSegment = 'cards') {
   const providerSetId = language === 'ja' ? 'sv1' : language === 'zh-tw' ? 's1h' : 'CS5.5';
   const localId = language === 'ja' ? '001' : language === 'zh-tw' ? '023' : '100';
   const providerCardId = `${providerSetId}-${localId}`;
@@ -119,7 +120,7 @@ function input(language: 'ja' | 'zh-tw' | 'zh-cn') {
     providerSetId,
     providerCardId,
     localId,
-    providerImageBase: `https://assets.tcgdex.net/${language}/cards/${providerSetId}/${localId}`,
+    providerImageBase: `https://assets.tcgdex.net/${language}/${pathSegment}/${providerSetId}/${localId}`,
     provenance: 'tcgdex_live_or_ttl_cached_provider_card_record' as const,
   };
 }
@@ -225,6 +226,36 @@ for (const language of ['ja', 'zh-tw', 'zh-cn'] as const) {
   assert.equal(isTcgdexControlledCardReferenceUrl(resolved?.uri), true);
 }
 
+// Hash-bound 2026-08-14 provider-baseline snapshots document the following
+// CJK series paths: JA S/S12a, JA SV/SV3, zh-TW S/S7D, zh-TW SV/SVD. Any
+// safe single provider namespace can be used only when the exact live/TTL
+// card record supplies it; the last-mile guard accepts it only after issuance.
+for (const { language, segment, setId, localId } of [
+  { language: 'ja', segment: 'S', setId: 'S12a', localId: '001' },
+  { language: 'ja', segment: 'SV', setId: 'SV3', localId: '001' },
+  { language: 'zh-tw', segment: 'S', setId: 'S7D', localId: '001' },
+  { language: 'zh-tw', segment: 'SV', setId: 'SVD', localId: '001' },
+] as const) {
+  const seriesCandidate = {
+    ...input(language, segment),
+    providerSetId: setId,
+    providerCardId: `${setId}-${localId}`,
+    localId,
+    providerImageBase: `https://assets.tcgdex.net/${language}/${segment}/${setId}/${localId}`,
+  };
+  const resolved = resolveTcgdexControlledCardReference(seriesCandidate);
+  assert.equal(resolved?.uri, `${seriesCandidate.providerImageBase}/low.webp`);
+  assert.equal(isTcgdexControlledCardReferenceUrl(resolved?.uri), true);
+}
+
+const syntheticNamespaceCandidate = {
+  ...input('ja', 'promo_2026-special'),
+  providerImageBase: 'https://assets.tcgdex.net/ja/promo_2026-special/sv1/001',
+};
+const syntheticNamespaceResolved = resolveTcgdexControlledCardReference(syntheticNamespaceCandidate);
+assert.equal(syntheticNamespaceResolved?.uri, `${syntheticNamespaceCandidate.providerImageBase}/low.webp`);
+assert.equal(isTcgdexControlledCardReferenceUrl(syntheticNamespaceResolved?.uri), true);
+
 const issuedRuntimeUri = resolveTcgdexControlledCardReference(input('ja'))!.uri;
 const runtimeOverlay = {
   image_small: issuedRuntimeUri,
@@ -308,7 +339,11 @@ for (const invalid of [
   { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/cards/sv1/001#fragment' },
   { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/cards/sv1/001/low.webp' },
   { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/sets/sv1/logo' },
-  { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/not-cards/sv1/001' },
+  { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/sets/sv1/001' },
+  { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/%2F/sv1/001' },
+  { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/../sv1/001' },
+  { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/S/sv2/001' },
+  { ...valid, providerImageBase: 'https://assets.tcgdex.net/zh-tw/S/sv1/001' },
   { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/cards/sv2/001' },
   { ...valid, providerImageBase: 'https://assets.tcgdex.net/ja/cards/sv1/001/not-card' },
 ]) {

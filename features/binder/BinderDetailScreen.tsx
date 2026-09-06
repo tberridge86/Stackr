@@ -1,5 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
+import { getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -55,6 +57,7 @@ import {
   addCardsToBinder,
   fetchBinderById,
   fetchBinderCards,
+  invalidateBinderCaches,
   updateBinderCardOwned,
   updateBinderCardCondition,
   updateBinderCardGrading,
@@ -957,8 +960,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // LOAD
   // ===============================
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (forceRefresh = false) => {
     if (!binderId) return;
+    if (forceRefresh) {
+      invalidateBinderCaches(binderId);
+      invalidatePokemonCatalogueCardCaches();
+    }
 
     try {
       setLoading(true);
@@ -1143,10 +1150,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const displayCards = useMemo(() => {
     const language = normalizePokemonCardLanguage(binder?.language);
     if (binder?.type === 'official' && language === 'ja' && !masterSetEnabled) {
-      return cards.filter((card) => !isJapaneseSecretBinderCard(card));
+      return cards.filter((card) => !isJapaneseSecretBinderCard(card)
+        && !isBinderCardBeyondPrintedTotal(card.card?.number ?? card.card_number, binder.catalogue_set_printed_total));
     }
     return cards;
-  }, [binder?.language, binder?.type, cards, masterSetEnabled]);
+  }, [binder?.language, binder?.type, binder?.catalogue_set_printed_total, cards, masterSetEnabled]);
 
   const sortedCards = useMemo(() => {
     const next = [...displayCards];
@@ -1217,7 +1225,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const cancelPrefetch = prefetchStackrImagesAfterInteractions(
       sortedCards
         .slice(0, firstWindowSize)
-        .map((card) => card.card?.images?.small ?? card.image_url ?? card.card?.images?.large ?? null),
+        .map((card) => getBinderCardImageUri(card)),
       firstWindowSize
     );
 
@@ -1256,7 +1264,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       0
     ))
     .filter((value) => Number.isFinite(value) && value > 0);
-  const officialCatalogueTotal = Math.max(knownOfficialTotal, ...cardSetTotals, 0);
+  const resolvedCatalogueTotal = getBinderCatalogueTotal({
+    printedTotal: binder?.catalogue_set_printed_total,
+    total: binder?.catalogue_set_total,
+    masterSetEnabled,
+    regularCardsOnly: normalizePokemonCardLanguage(binder?.language) === 'ja',
+  });
+  const officialCatalogueTotal = resolvedCatalogueTotal ?? Math.max(knownOfficialTotal, ...cardSetTotals, 0);
+  const catalogueReadIncomplete = binder?.type === 'official' && (
+    binder.catalogue_identity_status === 'ambiguous'
+    || binder.catalogue_identity_status === 'unresolved'
+    || !cards.length
+    || cards.some((card) => card.catalogue_match_status === 'saved-only')
+  );
   const totalKnown = binder?.type !== 'official' || officialCatalogueTotal > 0;
   const totalCount = totalKnown
     ? binder?.type === 'official'
@@ -1268,7 +1288,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     : 0;
 
   useEffect(() => {
-    if (!binderId || !totalKnown || totalCount <= 0 || loading) return;
+    if (!binderId || !totalKnown || totalCount <= 0 || loading || catalogueReadIncomplete) return;
 
     const lastProgress = achievementProgressRef.current[binderId] ?? -1;
     if (progressPercent <= lastProgress && progressPercent < 100) return;
@@ -1295,7 +1315,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         console.log('Binder complete achievement event failed:', achievementError);
       });
     }
-  }, [binderId, loading, masterSetEnabled, progressPercent, totalCount, totalKnown]);
+  }, [binderId, catalogueReadIncomplete, loading, masterSetEnabled, progressPercent, totalCount, totalKnown]);
 
   const binderValue = useMemo(() => {
     return displayCards.reduce((sum, card) => {
@@ -2230,7 +2250,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     drag,
     isActive,
   }: RenderItemParams<BinderCardWithDetails>) => {
-    const imageUri = item.card?.images?.small ?? item.card?.images?.large ?? null;
+    const imageUri = getBinderCardImageUri(item);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const isGradedBinder = binder?.card_mode === 'graded';
     const ownedQuantity = getOwnedQuantity(item);
@@ -2470,7 +2490,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 };
 
   const renderCard = ({ item }: { item: BinderCardWithDetails }) => {
-    const imageUri = item.card?.images?.small ?? item.card?.images?.large ?? null;
+    const imageUri = getBinderCardImageUri(item);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const cardName = getBinderCardDisplayName(item, item.card_id);
     const forTrade = isForTrade(item.card_id, item.set_id);
@@ -2902,6 +2922,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   }
 
   const modalCard = selectedCard?.card;
+  const modalImageUri = selectedCard ? getBinderCardImageUri(selectedCard, 'large') : null;
 
   const boxStyle = {
     backgroundColor: theme.colors.card,
@@ -2967,12 +2988,16 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       : `${missingCount} card${missingCount === 1 ? '' : 's'} left`
     : ownedCardLabel;
   const heroStatusLabel = showsCompletion
-    ? totalNeedsSync
+    ? catalogueReadIncomplete
+      ? 'Catalogue needs retry'
+      : totalNeedsSync
       ? 'Needs sync'
       : `${progressPercent}% complete`
     : binderModeLabel;
   const heroHelperText = showsCompletion
-    ? totalNeedsSync
+    ? catalogueReadIncomplete
+      ? 'Saved cards are retained. Catalogue matching is incomplete; retry to check again.'
+      : totalNeedsSync
       ? 'Sync catalogue totals to calculate completion.'
       : missingCount > 0
       ? `${missingCount} card${missingCount === 1 ? '' : 's'} to complete`
@@ -3181,9 +3206,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               </Text>
             </View>
 
-            <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', marginTop: 2, textAlign: 'center' }} numberOfLines={1}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', marginTop: 2, textAlign: 'center' }}>
               {heroHelperText}
             </Text>
+            {showsCompletion ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Refresh binder catalogue"
+                onPress={() => void load(true)}
+                style={{ alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8 }}
+              >
+                <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '800' }}>Refresh catalogue</Text>
+              </Pressable>
+            ) : null}
 
             {!isReadOnly ? (
               <View style={{ gap: 7, marginTop: 8 }}>
@@ -4273,13 +4308,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                           {binder.card_mode === 'graded' ? (
                             <GradedSlabCard
                               item={selectedCard}
-                              imageUri={modalCard?.images?.large ?? modalCard?.images?.small ?? null}
+                              imageUri={modalImageUri}
                               editionHint={getBinderEditionHint(binder.edition)}
                               size="modal"
                             />
                           ) : (
                             <EditionAwareCardImage
-                              uri={modalCard?.images?.large ?? modalCard?.images?.small ?? undefined}
+                              uri={modalImageUri ?? undefined}
                               cardId={selectedCard.card_id}
                               rawData={modalCard}
                               editionHint={getBinderEditionHint(binder.edition)}

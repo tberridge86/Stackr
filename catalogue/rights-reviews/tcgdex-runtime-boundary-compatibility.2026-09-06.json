@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "stackr-tcgdex-runtime-boundary-compatibility-v1",
+  "reviewId": "tcgdex-runtime-boundary-compatibility:2026-09-06",
+  "classification": "technical_scope_compatibility",
+  "status": "recorded_current_authority_compatibility",
+  "recordedOn": "2026-09-06",
+  "purpose": "Append-only integrity bridge after an unrelated owner-only recognition section changed the operating-boundary document hash. This is a technical compatibility record, not a new human, legal, source, amber, or red approval.",
+  "currentAuthority": {
+    "path": "docs/stackrtcg-ip-operating-boundary.md",
+    "sha256": "a8c7361b9083be744ec433c3e31bd09a0af16237145dd88ecfe12a19c91d8d27"
+  },
+  "priorAuthority": {
+    "path": "docs/stackrtcg-ip-operating-boundary.md",
+    "sha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b"
+  },
+  "documentDeltaDisposition": {
+    "verifiedAgainstGitRange": "6fe233ffb39106979437a3076fad7c4229153876..b852318c4331d99996088cb2ee8982246890fbff",
+    "changedScope": "Owner-only private recognition evaluation controls.",
+    "tcgdexProviderMetadataOrAssetPermissionsChanged": false,
+    "tcgdexCardReferenceRuntimeControlsChanged": false,
+    "tcgdexSetMarkPermissionsChanged": false,
+    "catalogueDataMutationAuthorized": false
+  },
+  "predecessorCompatibilityReview": {
+    "path": "catalogue/rights-reviews/stackrtcg-ip-boundary-green-compatibility.2026-09-04.json",
+    "sha256": "aff5f9e97ab0d32cb7a4cc573f4acbedbabfa70613a46f77bd7bdc4969c2a1e4"
+  },
+  "reconfirmedDecisions": [
+    {
+      "decisionId": "tcgdex-low-resolution-card-reference-green:2026-09-04",
+      "path": "catalogue/rights-reviews/tcgdex-low-resolution-card-reference-green.2026-09-04.json",
+      "sha256": "1cdfac042494f4ec3f78ef23de1a6bf0d1cc351eba43a0bedb000923bf8520ba",
+      "classification": "green",
+      "originalAuthoritySha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+      "unchangedRuntimeControls": [
+        "exactProviderCardRecordRequired",
+        "exactLanguageSetCardPathRequired",
+        "httpsExactHostOnly",
+        "lowWebpOnly",
+        "memoryCacheOnly",
+        "visibleAttribution",
+        "neutralPlaceholderOnFailure",
+        "sourceKillSwitches",
+        "failClosedOnBindingMismatch"
+      ],
+      "doesNotAuthorize": [
+        "canonical_database_write",
+        "asset_persistence",
+        "high_resolution_public_delivery",
+        "set_marks",
+        "new_provider_or_source"
+      ]
+    }
+  ],
+  "amberSeparation": {
+    "decisionId": "tcgdex-cjk-set-marks-owner-approved:2026-09-04",
+    "path": "catalogue/rights-reviews/tcgdex-cjk-set-marks-owner-approved.2026-09-04.json",
+    "sha256": "6f8152e827d70b8a8ee09c023620332815f9a2183017c822dc5f86d60411c072",
+    "classification": "amber",
+    "originalAuthoritySha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+    "existingRecordedReviewRemainsRequired": true,
+    "reconfirmedWithoutActivationOrExpansion": true,
+    "doesNotAuthorize": [
+      "new_set_mark_source",
+      "asset_persistence",
+      "canonical_catalogue_rewrite",
+      "pack_or_product_artwork",
+      "high_resolution_or_print_delivery",
+      "download_or_export",
+      "model_training"
+    ]
+  },
+  "limits": {
+    "activatesAmberUses": false,
+    "activatesRedUses": false,
+    "changesExistingDecisionOrEvidenceHashes": false,
+    "authorizesCatalogueDataMutation": false,
+    "authorizesAssetMirroring": false,
+    "authorizesDeployment": false
+  },
+  "signature": null,
+  "signatureRequired": false
+}

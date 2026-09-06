@@ -22,9 +22,9 @@ import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
 import {
   getPokemonLanguageDescriptor,
-  POKEMON_LANGUAGE_DESCRIPTORS,
+  POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
   PokemonLanguageFlagIcon,
-  type PokemonLanguageBadgeCode,
+  type PokemonCatalogueLanguageCode,
 } from '../../components/PokemonLanguageBadge';
 import {
   getEnglishSetDisplaySupplement,
@@ -85,15 +85,12 @@ function groupSetsBySeries(sets: PokemonSet[]): { series: string; sets: PokemonS
     );
 }
 
-type DiscoverSetLanguage = Extract<PokemonLanguageBadgeCode, 'en' | 'ja' | 'zh-cn' | 'zh-tw'>;
+type DiscoverSetLanguage = PokemonCatalogueLanguageCode;
 type DiscoverLanguageFilter = 'all' | DiscoverSetLanguage;
 
-const LANGUAGE_FILTERS: { key: DiscoverLanguageFilter; label: string; language?: DiscoverSetLanguage }[] = [
+const LANGUAGE_FILTERS: readonly { key: DiscoverLanguageFilter; label: string; language?: DiscoverSetLanguage }[] = [
   { key: 'all', label: 'All' },
-  { key: 'en', label: POKEMON_LANGUAGE_DESCRIPTORS.en.label, language: 'en' },
-  { key: 'ja', label: POKEMON_LANGUAGE_DESCRIPTORS.ja.label, language: 'ja' },
-  { key: 'zh-cn', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-cn'].label, language: 'zh-cn' },
-  { key: 'zh-tw', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-tw'].label, language: 'zh-tw' },
+  ...POKEMON_CATALOGUE_LANGUAGE_OPTIONS.map(({ key, label }) => ({ key, label, language: key })),
 ];
 
 function getSeriesKey(language: DiscoverSetLanguage, series: string) {
@@ -420,9 +417,9 @@ export default function ExploreScreen() {
 
       const [englishData, japaneseData, simplifiedChineseData, traditionalChineseData, existingBinders] = await Promise.all([
         fetchAllSets({ language: 'en' }),
-        fetchAllSets({ language: 'ja' }),
-        fetchAllSets({ language: 'zh-cn' }),
-        fetchAllSets({ language: 'zh-tw' }),
+        fetchAllSets({ language: 'ja', preferCanonicalApi: true }),
+        fetchAllSets({ language: 'zh-cn', preferCanonicalApi: true }),
+        fetchAllSets({ language: 'zh-tw', preferCanonicalApi: true }),
         fetchExistingSetBinders(),
       ]);
       setEnglishSets(englishData);

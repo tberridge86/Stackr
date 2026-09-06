@@ -23,6 +23,10 @@ import {
   firstNonEmptyCatalogueRows,
   preferNonEmptyCatalogueRows,
 } from './resilientCatalogueRead';
+import {
+  readOptionalCatalogueEnrichment,
+  throwIfOptionalCatalogueReadAborted,
+} from './optionalCatalogueEnrichment';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PREFERRED_CATALOGUE_READ_TIMEOUT_MS = 7000;
@@ -99,7 +103,7 @@ function clean(value: unknown) {
   return text || null;
 }
 
-function useStackrApi(client: StackrApiClient) {
+function shouldUseStackrApi(client: StackrApiClient) {
   return client !== stackrApiClient
     || process.env.EXPO_PUBLIC_STACKR_API_ENABLED === 'true'
     || process.env.EXPO_PUBLIC_STACKR_API_ENABLED === '1';
@@ -596,14 +600,6 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
   };
 }
 
-function throwIfCatalogueReadAborted(signal?: AbortSignal) {
-  if (!signal?.aborted) return;
-  if (signal.reason instanceof Error) throw signal.reason;
-  const error = new Error('Catalogue read aborted.');
-  error.name = 'AbortError';
-  throw error;
-}
-
 async function allPages<T>(
   load: (cursor: string | null, signal?: AbortSignal) => Promise<{ rows: T[]; nextCursor: string | null }>,
   signal?: AbortSignal,
@@ -611,7 +607,7 @@ async function allPages<T>(
   const rows: T[] = [];
   let cursor: string | null = null;
   do {
-    throwIfCatalogueReadAborted(signal);
+    throwIfOptionalCatalogueReadAborted(signal);
     const page = await load(cursor, signal);
     rows.push(...page.rows);
     cursor = page.nextCursor;
@@ -634,36 +630,78 @@ async function fetchCanonicalStackrSets(
     return { rows: response.data.sets, nextCursor: response.meta.pagination?.nextCursor ?? null };
   }, signal);
   if (!includeAssets) return sets.map((set) => stackrSetToLegacySet(set));
+  const assets = await fetchCanonicalSetAssetRows(client, signal);
+  return applyCanonicalSetAssets(sets.map((set) => stackrSetToLegacySet(set)), assets);
+}
+
+async function fetchCanonicalSetAssetRows(
+  client: StackrApiClient,
+  parentSignal?: AbortSignal,
+) {
   const setAssetTypes = ['set_logo', 'set_symbol', 'set_cover', 'set_artwork'] as const;
-  const assets = (await Promise.all(setAssetTypes.map((assetType) => (
-    allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
+  const assetResults = await Promise.all(setAssetTypes.map((assetType) => (
+    readOptionalCatalogueEnrichment((enrichmentSignal) => allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
       const response = await client.assetManifest(
         { assetType, cursor, limit: 500 },
         { signal: pageSignal },
       );
       return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
-    }, signal)
-  )))).flat();
-  return sets.map((set) => stackrSetToLegacySet(set, assets.filter((asset) => asset.setId === set.setId)));
+    }, enrichmentSignal), parentSignal)
+  )));
+  // Asset marks are optional enrichment. Preserve the approved factual set row
+  // if a manifest shard is unavailable, but never turn an abort into a partial
+  // successful catalogue read.
+  throwIfOptionalCatalogueReadAborted(parentSignal);
+  return assetResults.flatMap((result) => result ?? []);
+}
+
+function applyCanonicalSetAssets(sets: StackrLegacySet[], assets: StackrCatalogueAsset[]) {
+  return sets.map((set) => {
+    const setAssets = assets.filter((asset) => asset.setId === set.id);
+    const logo = assetUrl(firstAsset(setAssets, ['set_logo']));
+    const symbol = assetUrl(firstAsset(setAssets, ['set_symbol']));
+    const cover = assetUrl(firstAsset(setAssets, ['set_cover', 'set_artwork']));
+    return {
+      ...set,
+      images: {
+        ...set.images,
+        logo: logo ?? set.images.logo,
+        symbol: symbol ?? set.images.symbol,
+        cover: cover ?? set.images.cover,
+        artwork: cover ?? set.images.artwork,
+      },
+    };
+  });
 }
 
 export async function fetchStackrSets(
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
 ) {
-  if (!useStackrApi(client)) return legacySets(language);
+  if (!shouldUseStackrApi(client)) return legacySets(language);
   return fetchCanonicalStackrSets(language, client);
 }
 
 export function fetchPreferredStackrSets(
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
+  options: { includeAssets?: boolean } = {},
 ) {
-  return preferNonEmptyCatalogueRows(
+  const preferredSets = preferNonEmptyCatalogueRows(
+    // Set facts must settle before any optional mark request starts. Otherwise a
+    // stalled global asset shard can consume the preferred-read deadline and
+    // make a populated canonical language appear empty.
     (signal) => fetchCanonicalStackrSets(language, client, false, signal),
     () => legacySets(language),
     { preferredTimeoutMs: PREFERRED_CATALOGUE_READ_TIMEOUT_MS },
   );
+  if (!options.includeAssets) return preferredSets;
+  return preferredSets.then(async (sets) => {
+    // This enrichment deliberately begins only after the seven-second preferred
+    // facts read settles. Its own child deadline cannot discard canonical rows.
+    const assets = await fetchCanonicalSetAssetRows(client);
+    return applyCanonicalSetAssets(sets, assets);
+  });
 }
 
 async function resolveLegacyStackrSetId(
@@ -725,7 +763,7 @@ export function resolveStackrSetId(
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
 ) {
-  return useStackrApi(client)
+  return shouldUseStackrApi(client)
     ? resolveCanonicalStackrSetId(reference, language, client)
     : resolveLegacyStackrSetId(reference, language);
 }
@@ -779,24 +817,31 @@ async function fetchCanonicalStackrCardsForSet(
     !primaryCardImageAsset(card, embeddedCardImageAssets(card))
   ));
   const [assets, setResponse] = await Promise.all([
-    needsManifestFallback
+    readOptionalCatalogueEnrichment((enrichmentSignal) => needsManifestFallback
       ? allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
           const response = await client.assetManifest(
             { setId, cursor, limit: 500 },
             { signal: pageSignal },
           );
           return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
-        }, signal)
-      : Promise.resolve([] as StackrCatalogueAsset[]),
-    client.set(setId, { signal }),
+      }, enrichmentSignal)
+      : Promise.resolve([] as StackrCatalogueAsset[]), signal),
+    readOptionalCatalogueEnrichment((enrichmentSignal) => client.set(setId, { signal: enrichmentSignal }), signal),
   ]);
+  // The canonical card response is authoritative for card identity and native
+  // presentation. The manifest and set are optional image/total enrichment;
+  // a cancelled parent request remains terminal rather than returning partials.
+  throwIfOptionalCatalogueReadAborted(signal);
+  const set = setResponse?.data.set ?? null;
   return cards.map((card) => {
-    const mapped = stackrCardToLegacyCard(card, assets);
+    const mapped = stackrCardToLegacyCard(card, assets ?? []);
     const rawSet = mapped.raw_data.set as Record<string, unknown>;
-    rawSet.printedTotal = setResponse.data.set.printedTotal;
-    rawSet.total = setResponse.data.set.total;
-    rawSet.releaseDate = setResponse.data.set.releaseDate;
-    rawSet.series = setResponse.data.set.seriesNativeName ?? setResponse.data.set.seriesEnglishDisplayName;
+    if (set) {
+      rawSet.printedTotal = set.printedTotal;
+      rawSet.total = set.total;
+      rawSet.releaseDate = set.releaseDate;
+      rawSet.series = set.seriesNativeName ?? set.seriesEnglishDisplayName;
+    }
     return mapped;
   });
 }
@@ -806,7 +851,7 @@ export function fetchStackrCardsForSet(
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
 ) {
-  return useStackrApi(client)
+  return shouldUseStackrApi(client)
     ? fetchCanonicalStackrCardsForSet(reference, language, client)
     : fetchLegacyStackrCardsForSet(reference, language);
 }
@@ -852,7 +897,7 @@ export async function resolveStackrCard(
 ): Promise<StackrResolvedCard | null> {
   const value = String(reference ?? '').trim();
   if (!value) return null;
-  if (!useStackrApi(client)) {
+  if (!shouldUseStackrApi(client)) {
     const exact = await legacyCardMap([value]);
     const exactCard = exact.get(value);
     const candidates = exactCard
@@ -894,7 +939,7 @@ export async function fetchStackrCard(
   options: { language?: string | null; setId?: string | null } = {},
   client: StackrApiClient = stackrApiClient,
 ) {
-  if (!useStackrApi(client)) {
+  if (!shouldUseStackrApi(client)) {
     const exact = await legacyCardMap([reference]);
     const card = exact.get(reference);
     if (card) return card;
@@ -937,7 +982,7 @@ export async function fetchStackrCardRows(
   client: StackrApiClient = stackrApiClient,
 ) {
   const unique = [...new Set(references.map((value) => String(value ?? '').trim()).filter(Boolean))];
-  if (!useStackrApi(client)) {
+  if (!shouldUseStackrApi(client)) {
     const cards = await legacyCardMap(unique);
     return new Map([...cards.entries()].map(([reference, card]) => [reference, stackrLegacyCardToRow(card)]));
   }
@@ -1000,7 +1045,7 @@ export async function fetchStackrPriceSnapshots(
   client: StackrApiClient = stackrApiClient,
 ) {
   const unique = [...new Set(references.map((value) => String(value ?? '').trim()).filter(Boolean))];
-  if (!useStackrApi(client)) {
+  if (!shouldUseStackrApi(client)) {
     const byReference = new Map<string, StackrLegacyPriceSnapshot>();
     if (!unique.length) return byReference;
     const { data, error } = await supabase
@@ -1081,7 +1126,7 @@ export async function searchStackrCards(
 ) {
   const value = String(query ?? '').trim();
   if (value.length < 2) return [];
-  if (!useStackrApi(client)) {
+  if (!shouldUseStackrApi(client)) {
     const cards = await legacySearchCards(value, options.language, options.limit ?? 40);
     return options.setId ? cards.filter((card) => card.set.id === options.setId) : cards;
   }
@@ -1118,7 +1163,7 @@ export async function fetchStackrPrice(
 ): Promise<{ resolved: StackrResolvedCard; price: StackrCardPrice } | null> {
   const resolved = await resolveStackrCard(reference, { language: options.language, setId: options.setId }, client);
   if (!resolved) return null;
-  if (!useStackrApi(client)) {
+  if (!shouldUseStackrApi(client)) {
     const snapshots = await fetchStackrPriceSnapshots([reference, resolved.card.cardId], {
       language: options.language,
     }, client);

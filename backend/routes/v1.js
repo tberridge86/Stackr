@@ -125,6 +125,9 @@ function defaultService() {
     supabase: getCatalogueSupabase(),
     searchSupabase: getSearchSupabase(),
     assetSupabase: getAssetSupabase(),
+    // Prepared separately by the protected additive artwork-read workflow.
+    // Keep client credentials out of this service-role-only lookup.
+    assetIdentityRpc: true,
   });
 }
 

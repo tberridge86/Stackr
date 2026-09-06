@@ -33,6 +33,24 @@ export const POKEMON_LANGUAGE_DESCRIPTORS: Readonly<Record<PokemonLanguageBadgeC
   ko: { code: 'ko', label: 'Korean', compactLabel: 'KR', nativeLabel: '한국어', countryCode: 'KR' },
 };
 
+export type PokemonLanguageOption<Code extends PokemonLanguageBadgeCode = PokemonLanguageBadgeCode> =
+  Omit<PokemonLanguageDescriptor, 'code'> & { key: Code };
+
+export const POKEMON_CATALOGUE_LANGUAGE_CODES = [
+  'en', 'ja', 'zh-cn', 'zh-tw',
+] as const satisfies readonly PokemonLanguageBadgeCode[];
+
+export type PokemonCatalogueLanguageCode = typeof POKEMON_CATALOGUE_LANGUAGE_CODES[number];
+
+function getPokemonLanguageOption<Code extends PokemonLanguageBadgeCode>(code: Code): PokemonLanguageOption<Code> {
+  const { label, compactLabel, nativeLabel, countryCode } = POKEMON_LANGUAGE_DESCRIPTORS[code];
+  return { key: code, label, compactLabel, nativeLabel, countryCode };
+}
+
+/** Languages backed by Stackr's selectable set catalogue. */
+export const POKEMON_CATALOGUE_LANGUAGE_OPTIONS: readonly PokemonLanguageOption<PokemonCatalogueLanguageCode>[] =
+  POKEMON_CATALOGUE_LANGUAGE_CODES.map(getPokemonLanguageOption);
+
 const languageAliases: Readonly<Record<string, PokemonLanguageBadgeCode>> = {
   en: 'en',
   'en-us': 'en',
@@ -62,12 +80,17 @@ const languageAliases: Readonly<Record<string, PokemonLanguageBadgeCode>> = {
   zh_cn: 'zh-cn',
   zhcn: 'zh-cn',
   'zh-hans': 'zh-cn',
+  'chinese-simplified': 'zh-cn',
   simplified: 'zh-cn',
   'simplified-chinese': 'zh-cn',
   'zh-tw': 'zh-tw',
   zh_tw: 'zh-tw',
   zhtw: 'zh-tw',
   'zh-hant': 'zh-tw',
+  'chinese-traditional': 'zh-tw',
+  tc: 'zh-tw',
+  tw: 'zh-tw',
+  taiwan: 'zh-tw',
   traditional: 'zh-tw',
   'traditional-chinese': 'zh-tw',
   id: 'id',
