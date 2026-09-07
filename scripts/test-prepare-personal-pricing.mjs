@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   REQUIRED_BINDER_MIGRATIONS,
   REQUIRED_MIGRATIONS,
@@ -27,6 +30,30 @@ assert.match(workflow, /if: always\(\)\s+shell: bash\s+run: rm -rf "\$RUNNER_TEM
 assert.match(workflow, /--apply="\$\{\{ inputs\.apply_migrations \}\}"/,
   'apply must be an explicit workflow input');
 assert.doesNotMatch(workflow, /supabase@2\.110\.0 db push/, 'the bounded workflow must not run a global migration push');
+const preparationStep = workflow.match(/      - name: Verify or apply the six reviewed personal-pricing migrations\n([\s\S]*?)(?=\n      - |$)/)?.[1];
+assert(preparationStep, 'the preparation step must exist');
+assert.match(preparationStep, /shell: bash/, 'the migration pipeline must use explicit bash failure handling');
+const preparationRun = preparationStep.match(/        run: \|\n([\s\S]*)/)?.[1]
+  .replace(/^          /gm, '').replace('${{ inputs.apply_migrations }}', 'true');
+assert(preparationRun, 'the preparation command must exist');
+if (process.platform !== 'win32') {
+  const runnerTemp = mkdtempSync(join(tmpdir(), 'stackr-pricing-workflow-test-'));
+  try {
+    // Run the actual workflow script under GitHub's unspecified-shell flags.
+    // Stub only node: no credentials or database access are used. A successful
+    // tee must never mask a failed migration or permit the next step to run.
+    for (const exitCode of [0, 23]) {
+      const execution = spawnSync('bash', ['--noprofile', '--norc', '-e', '-c',
+        `node() { return ${exitCode}; }\n${preparationRun}\nprintf 'preparation-complete'\n`,
+      ], { encoding: 'utf8', env: { ...process.env, RUNNER_TEMP: runnerTemp,
+        STACKR_SOURCE_DB_URL: 'test-only-unused', PRICING_OWNER_EMAIL: 'owner@example.invalid' } });
+      assert.ifError(execution.error);
+      assert.equal(execution.status, exitCode, 'the workflow must preserve the migration exit status through tee');
+      assert.equal(execution.stdout.includes('preparation-complete'), exitCode === 0,
+        'a failed migration must stop the workflow before success handling');
+    }
+  } finally { rmSync(runnerTemp, { recursive: true, force: true }); }
+}
 assert.throws(() => assertProductionDatabaseUrl('postgresql://postgres.invalid:x@example.com/postgres'), /project_ref/);
 assert.deepEqual(parseArguments(['--db-url=postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', '--owner-email=tberridge86@gmail.com']).ownerEmail, 'tberridge86@gmail.com');
 assert.equal(parseArguments(['--apply=true']).apply, true);

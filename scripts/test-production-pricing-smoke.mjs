@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
+import express from 'express';
+import { createV1Router } from '../backend/routes/v1.js';
+import { errorResponse, GatewayError } from '../gateway/src/errors.js';
 
 import { runProductionPricingSmoke } from './deploy/production-pricing-smoke.mjs';
 
@@ -11,8 +14,9 @@ const requests = [];
 let healthCommit = expectedCommit.slice(0, 12);
 let pricingConfigMissing = false;
 let pricingServiceUnavailable = false;
+let errorRequestIdMode = 'valid';
 
-const server = createServer((request, response) => {
+const server = createServer(async (request, response) => {
   requests.push({
     path: request.url,
     originKey: request.headers['x-stackr-origin-key'] ?? null,
@@ -44,7 +48,13 @@ const server = createServer((request, response) => {
     response.statusCode = status;
     response.setHeader('cache-control', 'private, no-store');
     response.setHeader('vary', 'Authorization');
-    response.end(JSON.stringify({ error: { code }, meta: { apiVersion: '1', requestId } }));
+    const body = await errorResponse(new GatewayError(status, code, 'Pricing test response'), requestId).json();
+    if (errorRequestIdMode === 'mismatch') body.error.requestId = 'wrong-request-id';
+    if (errorRequestIdMode === 'meta-only') {
+      delete body.error.requestId;
+      body.meta.requestId = requestId;
+    }
+    response.end(JSON.stringify(body));
     return;
   }
 
@@ -150,6 +160,46 @@ try {
     'an unavailable pricing service must not be accepted as an anonymous denial',
   );
   pricingServiceUnavailable = false;
+
+  for (const mode of ['mismatch', 'meta-only']) {
+    errorRequestIdMode = mode;
+    await assert.rejects(runProductionPricingSmoke({
+      backendUrl: baseUrl, gatewayUrl: baseUrl, variantId, backendOriginKey: originKey,
+      expectedBackendCommit: expectedCommit, expectedBackendDeploymentId: expectedDeploymentId, allowHttp: true,
+    }), /valid Stackr API v1 error envelope/, `Reject ${mode} error request IDs`);
+  }
+  errorRequestIdMode = 'valid';
+
+  // Exercise the deployed router and pricing middleware, so a hand-written
+  // response fixture cannot silently diverge from the real API contract.
+  const backendApp = express();
+  backendApp.get('/health', (_req, res) => {
+    res.setHeader('x-request-id', 'backend-runtime-health');
+    res.json({ ok: true, runtime: {
+      gitCommit: expectedCommit.slice(0, 12), gitCommitSource: 'bundled_workflow_sha',
+      deploymentId: expectedDeploymentId, railwayEnvironment: 'production',
+    } });
+  });
+  backendApp.use('/v1', createV1Router({
+    env: { STACKR_PRICING_OWNER_USER_ID: variantId },
+    service: { health: async () => ({ status: 'ok', service: 'stackr-api', apiVersion: '1' }) },
+    getAuthenticatedUserId: async () => { throw new Error('Anonymous smoke must not authenticate'); },
+    pricingService: new Proxy({}, { get() { throw new Error('Anonymous smoke must not read prices'); } }),
+  }));
+  const backendServer = await new Promise((resolve) => {
+    const listener = backendApp.listen(0, '127.0.0.1', () => resolve(listener));
+  });
+  try {
+    const backendUrl = `http://127.0.0.1:${backendServer.address().port}`;
+    const actual = await runProductionPricingSmoke({
+      backendUrl, gatewayUrl: baseUrl, variantId, backendOriginKey: originKey,
+      expectedBackendCommit: expectedCommit, expectedBackendDeploymentId: expectedDeploymentId, allowHttp: true,
+    });
+    assert.equal(actual.ok, true);
+    assert.equal(actual.checks.length, 9);
+  } finally {
+    await new Promise((resolve) => backendServer.close(resolve));
+  }
 
   healthCommit = '0'.repeat(12);
   await assert.rejects(
