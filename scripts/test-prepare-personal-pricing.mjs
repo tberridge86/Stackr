@@ -14,6 +14,8 @@ const workflow = readFileSync('.github/workflows/prepare-personal-pricing.yml', 
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'preparation must be main-only');
 assert.match(workflow, /inputs\.confirmation == 'PREPARE PERSONAL PRICING'/, 'preparation needs an explicit typed confirmation');
 assert.match(workflow, /environment:\s+production/, 'preparation must use production environment protection');
+assert.match(workflow, /SUPABASE_PROJECT_REF:\s*\$\{\{\s*vars\.SUPABASE_PROJECT_REF\s*\}\}/,
+  'the database URL normalizer requires the protected project identity as well as its connection URL');
 assert.match(workflow, /timeout-minutes:\s*30/, 'preparation must have a bounded execution window');
 assert.match(workflow, /cancel-in-progress: false/, 'production preparation must stay serialized');
 assert.match(workflow, /Verify a current physical backup and create logical recovery dumps/,
