@@ -1294,11 +1294,36 @@ export default function ScanScreen() {
   const isInventoryFlow = !isListingFlow && isPremiumSellerInventoryScan({ mode, flow });
   const localQuickScanExperienceEnabled = recognitionFeatureFlags.localRecognitionEnabled && !isBinderPageScan;
   const inlineManualSearchEnabled = localQuickScanExperienceEnabled && !isInventoryFlow;
+  // Keep the camera guide clear of both the safe-area controls and the capture
+  // panel. This is especially important on the shorter iPhones, where a large
+  // card frame previously started underneath the guidance pill.
+  const compactCameraLayout = height < 760 || width < 390;
+  const cameraLayout = useMemo(() => {
+    const topBarHeight = compactCameraLayout ? 42 : 46;
+    const topBarPadding = 8;
+    // A two-line instruction can grow with the user's text-size setting.
+    const guidanceHeight = compactCameraLayout ? 72 : 76;
+    const guidanceTop = insets.top + topBarPadding + topBarHeight + (compactCameraLayout ? 10 : 14);
+    const frameTop = guidanceTop + guidanceHeight + (compactCameraLayout ? 10 : 14);
+    const panelContentHeight = isBinderPageScan
+      ? (compactCameraLayout ? 143 : 157)
+      : (compactCameraLayout ? 130 : 144);
+    const panelBottomPadding = Math.max(
+      compactCameraLayout ? 14 : 18,
+      insets.bottom + (compactCameraLayout ? 6 : 10)
+    );
+
+    return {
+      guidanceTop,
+      frameTop,
+      // The eight-point buffer covers text scaling in the mode labels without
+      // allowing the frame or diagnostics to meet the control panel.
+      bottomControls: panelContentHeight + panelBottomPadding + 8,
+    };
+  }, [compactCameraLayout, insets.bottom, insets.top, isBinderPageScan]);
 
   const frame = useMemo(() => {
-    const topControls = insets.top + (isBinderPageScan ? 138 : 110);
-    const bottomControls = insets.bottom + (isBinderPageScan ? 218 : 174);
-    const availableHeight = Math.max(240, height - topControls - bottomControls);
+    const availableHeight = Math.max(180, height - cameraLayout.frameTop - cameraLayout.bottomControls);
     const sideInset = width < 380 ? SCAN_FRAME_SIDE_INSET_COMPACT : SCAN_FRAME_SIDE_INSET;
     const availableWidth = Math.max(220, width - sideInset * 2);
     const targetFrameWidth = isBinderPageScan && binderPageLayout > 1
@@ -1309,7 +1334,7 @@ export default function ScanScreen() {
         );
     const frameWidth = Math.min(availableWidth, availableHeight * CARD_ASPECT_RATIO, targetFrameWidth);
     const frameHeight = frameWidth / CARD_ASPECT_RATIO;
-    const top = topControls + Math.max(0, (availableHeight - frameHeight) / 2);
+    const top = cameraLayout.frameTop + Math.max(0, (availableHeight - frameHeight) / 2);
     const left = (width - frameWidth) / 2;
     return {
       top,
@@ -1317,7 +1342,7 @@ export default function ScanScreen() {
       width: frameWidth,
       height: frameHeight,
     };
-  }, [binderPageLayout, height, insets.bottom, insets.top, isBinderPageScan, localQuickScanExperienceEnabled, width]);
+  }, [binderPageLayout, cameraLayout.bottomControls, cameraLayout.frameTop, height, isBinderPageScan, localQuickScanExperienceEnabled, width]);
 
   const frameTone = frameAssessment?.ready
     ? '#22C55E'
@@ -3748,10 +3773,10 @@ export default function ScanScreen() {
       </View>
 
       <SafeAreaView pointerEvents="box-none" style={styles.overlay}>
-        <View style={styles.topBar}>
+        <View style={[styles.topBar, compactCameraLayout && styles.topBarCompact]}>
           <TouchableOpacity
             onPress={closeScanner}
-            style={styles.iconButton}
+            style={[styles.iconButton, compactCameraLayout && styles.iconButtonCompact]}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Close scanner"
@@ -3759,7 +3784,7 @@ export default function ScanScreen() {
             <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
           </TouchableOpacity>
 
-          <View style={styles.statusPill}>
+          <View style={[styles.statusPill, compactCameraLayout && styles.statusPillCompact]}>
             <View style={[styles.readyDot, { backgroundColor: cameraReady ? '#22C55E' : '#FBBF24' }]} />
             <Text style={styles.statusText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>
               {activeStatusText}
@@ -3769,13 +3794,13 @@ export default function ScanScreen() {
           <View style={styles.topActions}>
             {OWNER_PRIVATE_RECOGNITION_ENABLED && <TouchableOpacity
               onPress={() => router.replace('/scan/owner')}
-              style={styles.iconButton} hitSlop={12} accessibilityRole="button"
+              style={[styles.iconButton, compactCameraLayout && styles.iconButtonCompact]} hitSlop={12} accessibilityRole="button"
               accessibilityLabel="Private SigLIP recognition and capture dataset"
             ><Ionicons name="flask-outline" size={22} color="#FFFFFF" /></TouchableOpacity>}
             <TouchableOpacity
               onPress={() => setTorchEnabled((current) => !current)}
               disabled={!permissionGranted || facing !== 'back'}
-              style={[styles.iconButton, (!permissionGranted || facing !== 'back') && styles.disabledButton]}
+              style={[styles.iconButton, compactCameraLayout && styles.iconButtonCompact, (!permissionGranted || facing !== 'back') && styles.disabledButton]}
               hitSlop={12}
               accessibilityRole="button"
               accessibilityLabel="Toggle torch"
@@ -3785,7 +3810,7 @@ export default function ScanScreen() {
             <TouchableOpacity
               onPress={switchCamera}
               disabled={!permissionGranted}
-              style={[styles.iconButton, !permissionGranted && styles.disabledButton]}
+              style={[styles.iconButton, compactCameraLayout && styles.iconButtonCompact, !permissionGranted && styles.disabledButton]}
               hitSlop={12}
               accessibilityRole="button"
               accessibilityLabel="Switch camera"
@@ -3796,11 +3821,11 @@ export default function ScanScreen() {
         </View>
 
         <View
-          style={[styles.instructionWrap, { top: Math.max(insets.top + 86, frame.top - 64) }]}
+          style={[styles.instructionWrap, { top: cameraLayout.guidanceTop }]}
           accessibilityRole="text"
           accessibilityLabel={activeGuidanceAccessibilityLabel}
         >
-          <View style={styles.instructionPill}>
+          <View style={[styles.instructionPill, compactCameraLayout && styles.instructionPillCompact]}>
             <View style={[styles.guidanceIcon, { backgroundColor: `${activeGuidanceTone}24` }]}>
               <Ionicons name={activeGuidanceIcon as any} size={18} color={activeGuidanceTone} />
             </View>
@@ -3808,7 +3833,7 @@ export default function ScanScreen() {
               <Text style={styles.guidanceLabel} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
                 {activeGuidanceLabel}
               </Text>
-              <Text style={styles.instructionText} maxFontSizeMultiplier={1.35}>
+              <Text style={styles.instructionText} numberOfLines={2} maxFontSizeMultiplier={1.2}>
                 {activeGuidanceMessage}
               </Text>
             </View>
@@ -3816,7 +3841,13 @@ export default function ScanScreen() {
         </View>
 
         {SCAN_QUALITY_DIAGNOSTICS_ENABLED && scanQualityResult ? (
-          <View pointerEvents="none" style={[styles.qualityDiagnostics, { top: frame.top + frame.height + 10 }]}>
+          <View
+            pointerEvents="none"
+            style={[
+              styles.qualityDiagnostics,
+              { top: Math.max(frame.top + 12, height - cameraLayout.bottomControls - 64) },
+            ]}
+          >
             <Text style={styles.qualityDiagnosticsText}>
               {`Q ${scanQualityResult.passed ? 'pass' : 'fail'} | F ${scanQualityResult.focusScore} G ${scanQualityResult.glareScore} L ${scanQualityResult.exposureScore}`}
             </Text>
@@ -3830,7 +3861,7 @@ export default function ScanScreen() {
         ) : null}
 
         {acceptedPreviewUri && (scannerState === 'CAPTURED' || scannerState === 'IDENTIFYING' || scannerState === 'CONFIRMING') ? (
-          <View pointerEvents="none" style={styles.acceptedPreviewWrap}>
+          <View pointerEvents="none" style={[styles.acceptedPreviewWrap, { bottom: cameraLayout.bottomControls + 12 }]}>
             <Text style={styles.acceptedPreviewLabel}>
               {scannerState === 'IDENTIFYING' ? 'Identifying this card' : 'Captured crop'}
             </Text>
@@ -3861,14 +3892,14 @@ export default function ScanScreen() {
         ) : null}
 
         {mountError ? (
-          <View style={styles.errorCard}>
+          <View style={[styles.errorCard, { bottom: cameraLayout.bottomControls + 12 }]}>
             <Text style={styles.errorTitle}>Camera issue</Text>
             <Text style={styles.errorBody}>{mountError}</Text>
           </View>
         ) : null}
 
         {inlineManualSearchOpen ? (
-          <View style={[styles.inlineManualSearchPanel, { bottom: Math.max(148, insets.bottom + 128) }]}>
+          <View style={[styles.inlineManualSearchPanel, { bottom: cameraLayout.bottomControls + 12 }]}>
             <View style={styles.inlineManualSearchHeader}>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={styles.inlineManualSearchTitle}>Manual search</Text>
@@ -3940,7 +3971,11 @@ export default function ScanScreen() {
           </View>
         ) : null}
 
-        <View style={[styles.bottomPanel, { paddingBottom: Math.max(18, insets.bottom + 10) }]}>
+        <View style={[
+          styles.bottomPanel,
+          compactCameraLayout && styles.bottomPanelCompact,
+          { paddingBottom: Math.max(compactCameraLayout ? 14 : 18, insets.bottom + (compactCameraLayout ? 6 : 10)) },
+        ]}>
           {isBinderPageScan ? (
             <View style={styles.layoutSelector}>
               <Text style={styles.layoutSelectorLabel}>Binder page layout</Text>
@@ -4008,10 +4043,10 @@ export default function ScanScreen() {
             </View>
           ) : null}
 
-          <View style={styles.bottomControls}>
+          <View style={[styles.bottomControls, compactCameraLayout && styles.bottomControlsCompact]}>
             <TouchableOpacity
               onPress={openManualSearch}
-              style={styles.secondaryAction}
+              style={[styles.secondaryAction, compactCameraLayout && styles.secondaryActionCompact]}
               activeOpacity={0.82}
               accessibilityRole="button"
               accessibilityLabel={isListingFlow ? 'Add manually' : 'Search manually without scanning'}
@@ -4029,6 +4064,7 @@ export default function ScanScreen() {
               activeOpacity={0.82}
               style={[
                 styles.captureButton,
+                compactCameraLayout && styles.captureButtonCompact,
                 (!cameraReady || captureBusy || !permissionGranted) && styles.captureDisabled,
               ]}
               accessibilityRole="button"
@@ -4038,11 +4074,11 @@ export default function ScanScreen() {
               {captureBusy ? (
                 <ActivityIndicator color={theme.colors.primary} />
               ) : (
-                <View style={[styles.captureInner, { backgroundColor: theme.colors.primary }]} />
+                <View style={[styles.captureInner, compactCameraLayout && styles.captureInnerCompact, { backgroundColor: theme.colors.primary }]} />
               )}
             </TouchableOpacity>
 
-            <View style={styles.modeNote}>
+            <View style={[styles.modeNote, compactCameraLayout && styles.modeNoteCompact]}>
               <Text style={styles.modeNoteTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>
                 {isBinderPageScan ? 'Page' : scanMode === 'auto' ? 'Hover' : 'Tap'}
               </Text>
@@ -4131,6 +4167,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
+  topBarCompact: {
+    paddingHorizontal: 12,
+    gap: 8,
+  },
   topActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -4146,6 +4186,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  iconButtonCompact: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+  },
   statusPill: {
     minHeight: 42,
     flex: 1,
@@ -4159,6 +4204,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+  },
+  statusPillCompact: {
+    minHeight: 40,
+    paddingHorizontal: 9,
+    gap: 6,
   },
   readyDot: {
     width: 8,
@@ -4189,6 +4239,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  instructionPillCompact: {
+    minHeight: 52,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   guidanceIcon: {
     width: 34,
@@ -4440,6 +4495,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.12)',
     gap: 12,
   },
+  bottomPanelCompact: {
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    gap: 8,
+  },
   layoutSelector: {
     gap: 8,
   },
@@ -4518,6 +4578,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
+  bottomControlsCompact: {
+    gap: 8,
+  },
   captureButton: {
     width: 76,
     height: 76,
@@ -4533,6 +4596,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 8,
   },
+  captureButtonCompact: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+  },
   captureDisabled: {
     opacity: 0.58,
   },
@@ -4540,6 +4608,11 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
+  },
+  captureInnerCompact: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   secondaryAction: {
     width: 104,
@@ -4551,6 +4624,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+  },
+  secondaryActionCompact: {
+    width: 92,
+    minHeight: 48,
   },
   secondaryActionText: {
     color: '#FFFFFF',
@@ -4568,6 +4645,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
+  },
+  modeNoteCompact: {
+    width: 92,
+    minHeight: 48,
   },
   modeNoteTitle: {
     color: '#FFFFFF',

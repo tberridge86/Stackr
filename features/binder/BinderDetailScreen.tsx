@@ -1001,6 +1001,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         { binderId }
       );
 
+      // Saved rows are already presentation-safe fallbacks. Render them before
+      // optional ownership/showcase reads so a later enrichment failure cannot
+      // make an older, unresolved binder look empty.
+      setCards(binderCards);
+
       if (user) {
         const { data, error } = await supabase
           .from('binder_card_showcases')
@@ -5165,7 +5170,6 @@ function MasterVariantIcon({
     </View>
   );
 }
-
 
 
 
