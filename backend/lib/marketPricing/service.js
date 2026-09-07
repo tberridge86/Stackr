@@ -492,13 +492,27 @@ async function resolveSnapshotIdentity(supabase, variantId, metadata = null) {
   const filters = [`variant_id.eq.${variantId}`];
   if (resolved.canonicalPrintingId) filters.push(`printing_id.eq.${resolved.canonicalPrintingId}`);
   const { data, error } = await table(supabase, 'api', 'catalogue_external_identifiers')
-    .select('external_id')
+    .select('source_entity_type,external_id,variant_id,printing_id')
     .eq('language_code', resolved.language)
     .or(filters.join(','));
   if (error) throw error;
   for (const row of data ?? []) {
     const id = clean(row?.external_id);
-    if (id) cardIds.add(id);
+    // A printing's published aliases can belong to a sibling finish or
+    // edition. Only identifiers attached to this exact requested variant are
+    // eligible for legacy snapshot lookup.
+    if (!id || row?.variant_id !== variantId) continue;
+    cardIds.add(id);
+
+    // TCGdex's imported ordinary card identity has one documented suffix:
+    // `<provider-card-id>:normal`. Legacy snapshots use the provider card id
+    // without that suffix. Derive it only from that exact variant identifier;
+    // never strip arbitrary colon suffixes or borrow a sibling's alias.
+    if (isDefaultVariant(resolved)
+      && row?.source_entity_type === 'variant') {
+      const match = /^([A-Za-z0-9][A-Za-z0-9._-]*):normal$/.exec(id);
+      if (match) cardIds.add(match[1]);
+    }
   }
   return { cardIds: [...cardIds], metadata: resolved };
 }

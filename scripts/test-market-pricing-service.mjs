@@ -325,7 +325,7 @@ async function assertInvalidServiceInput() {
   );
 }
 
-function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [] }) {
+function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], externalIdentifiers = [] }) {
   const limits = [];
   const inserted = [];
   const rpcCalls = [];
@@ -336,7 +336,7 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
     let rows = schemaName === 'api' && tableName === 'catalogue_cards'
       ? catalogueCards
       : schemaName === 'api' && tableName === 'catalogue_external_identifiers'
-        ? []
+        ? externalIdentifiers
         : schemaName === 'api' && tableName === 'market_price_snapshot_history'
           ? snapshots
           : schemaName === 'api' && tableName === 'market_price_estimates'
@@ -525,6 +525,69 @@ async function assertRawPriceDefaultsNearMint() {
       && entry.column === 'condition_code'
       && entry.value === 'raw_near_mint'
   )), 'an unspecified raw-card request must query near-mint, not the newest condition');
+}
+
+async function assertNormalVariantProviderBaseSnapshotIdentity() {
+  const normalVariantId = 'f0148213-e8c2-4c66-b063-4d4664876718';
+  const firstEditionVariantId = '32c31265-1471-4e51-9837-c4ef4bc149b9';
+  const printingId = '1f4b68b4-785b-4f6a-a91c-2a179b77b76e';
+  const setId = '85f8c1fc-874d-4b7a-892b-2137adc6647b';
+  const normalMetadata = {
+    variant_id: normalVariantId,
+    printing_id: printingId,
+    language_code: 'en',
+    set_id: setId,
+    set_code: 'base3',
+    set_english_display_name: 'Fossil',
+    collector_number: '38',
+    card_english_display_name: 'Kingler',
+    rarity_code: 'Uncommon',
+    variant_code: 'normal',
+    finish_code: 'normal',
+  };
+  const firstEditionMetadata = {
+    ...normalMetadata,
+    variant_id: firstEditionVariantId,
+    variant_code: 'first_edition',
+    finish_code: 'first_edition',
+  };
+  const snapshot = {
+    card_id: 'base3-38',
+    language: 'en',
+    primary_source: 'tcgdex_tcgplayer',
+    tcgdex_price: 2.8,
+    snapshot_at: '2026-09-06T12:00:00.000Z',
+  };
+  const identifiers = [
+    { source_entity_type: 'variant', external_id: 'base3-38:normal', language_code: 'en', variant_id: normalVariantId, printing_id: null },
+    { source_entity_type: 'asset', external_id: 'base3-38:normal:normal:image', language_code: 'en', variant_id: normalVariantId, printing_id: null },
+    { source_entity_type: 'variant', external_id: 'base3-38', language_code: 'en', variant_id: firstEditionVariantId, printing_id: null },
+  ];
+  const normalService = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata: normalMetadata, snapshots: [snapshot], externalIdentifiers: identifiers }),
+  });
+  const normal = await normalService.price(normalVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  assert.equal(normal.status, 'legacy_cached_market_estimate');
+  assert.equal(normal.estimates.central, 2.8, 'the normal imported TCGdex identifier must resolve its provider base card snapshot');
+  assert.equal(normal.quoteScope, 'printing_level');
+  const history = await normalService.snapshotHistory([normalVariantId], { currency: 'GBP' });
+  assert.deepEqual(history.snapshots.map((entry) => [entry.variantId, entry.marketCentral, entry.quoteScope]), [
+    [normalVariantId, 2.8, 'printing_level'],
+  ], 'history must retain the same source-labelled normal-variant estimate');
+
+  const firstEdition = await createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata: firstEditionMetadata, snapshots: [snapshot], externalIdentifiers: identifiers }),
+  }).price(firstEditionVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  assert.equal(firstEdition.status, 'unavailable', 'a first-edition sibling must not inherit the normal provider base snapshot');
+
+  const unknownSuffix = await createMarketPricingService({
+    supabase: createSnapshotSupabase({
+      metadata: normalMetadata,
+      snapshots: [snapshot],
+      externalIdentifiers: [{ source_entity_type: 'variant', external_id: 'base3-38:unknown', language_code: 'en', variant_id: normalVariantId, printing_id: null }],
+    }),
+  }).price(normalVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  assert.equal(unknownSuffix.status, 'unavailable', 'unknown provider suffixes must never be reduced to a base card id');
 }
 
 async function assertCanonicalSnapshotLabelsAndBasis() {
@@ -765,6 +828,7 @@ await assertEbayAdapterBoundary();
 await assertRoutes();
 await assertInvalidServiceInput();
 await assertLabelledLegacySnapshotFallback();
+await assertNormalVariantProviderBaseSnapshotIdentity();
 await assertRawPriceDefaultsNearMint();
 await assertCanonicalSnapshotLabelsAndBasis();
 await assertManualRefreshIdentityAndGate();
