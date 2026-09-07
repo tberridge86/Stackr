@@ -21,6 +21,10 @@ assert.match(workflow, /test "\$PREVIOUS_GATEWAY_DEPLOYMENT_ID" = '5105e13b-2b9c
 assert.match(workflow, /--keep-vars/);
 assert.match(workflow, /--var "SUPABASE_PUBLISHABLE_KEY:\$publishable_key"/);
 assert.match(workflow, /--name stackr-api-gateway/);
+assert.match(workflow, /secret list[^\n]+--format json/);
+assert.doesNotMatch(workflow, /secret list[^\n]+--json/);
+assert.doesNotMatch(workflow, /secret list[^\n]+--name/, 'secret list appends the environment to an explicit name; use the validated environment config');
+assert.match(workflow, /production_worker_name_mismatch/);
 assert.match(workflow, /BACKEND_ORIGIN_KEY', 'BACKEND_ADMIN_KEY/);
 assert.match(workflow, /STACKR_PRICING_ACCESS_MODE:personal/);
 assert.match(workflow, /versions deploy[\s\S]*"\$release_tag@100"/);
