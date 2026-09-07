@@ -23,6 +23,7 @@ jobs:
   prepare:
     if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PREPARE PERSONAL PRICING'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: production
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
@@ -53,3 +54,7 @@ jobs:
           name: personal-pricing-preparation-${{ github.run_id }}
           path: ${{ runner.temp }}/personal-pricing-preparation.json
           retention-days: 90
+      - name: Remove ephemeral logical backup files
+        if: always()
+        shell: bash
+        run: rm -rf "$RUNNER_TEMP/personal-pricing-backup"

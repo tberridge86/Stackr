@@ -14,11 +14,14 @@ const workflow = readFileSync('.github/workflows/prepare-personal-pricing.yml', 
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'preparation must be main-only');
 assert.match(workflow, /inputs\.confirmation == 'PREPARE PERSONAL PRICING'/, 'preparation needs an explicit typed confirmation');
 assert.match(workflow, /environment:\s+production/, 'preparation must use production environment protection');
+assert.match(workflow, /timeout-minutes:\s*30/, 'preparation must have a bounded execution window');
 assert.match(workflow, /cancel-in-progress: false/, 'production preparation must stay serialized');
 assert.match(workflow, /Verify a current physical backup and create logical recovery dumps/,
   'backup wording must distinguish an existing physical backup from generated logical dumps');
 assert.match(workflow, /supabase@2\.110\.0 backups list/, 'a current physical backup must be checked');
 assert.match(workflow, /supabase@2\.110\.0 db dump/, 'logical recovery dumps must be made before apply');
+assert.match(workflow, /if: always\(\)\s+shell: bash\s+run: rm -rf "\$RUNNER_TEMP\/personal-pricing-backup"/,
+  'ephemeral logical backup files must always be removed from the runner');
 assert.match(workflow, /--apply="\$\{\{ inputs\.apply_migrations \}\}"/,
   'apply must be an explicit workflow input');
 assert.doesNotMatch(workflow, /supabase@2\.110\.0 db push/, 'the bounded workflow must not run a global migration push');
@@ -41,6 +44,8 @@ const client = { async connect() {}, async end() {}, async query(sql) {
 const result = await preparePersonalPricing({ dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', ownerEmail: 'tberridge86@gmail.com' }, () => client);
 assert.equal(result.mode, 'read_only_preparation');
 assert.equal(result.pendingMigrations.length, 6);
+assert.equal(result.initialPendingMigrations.length, 6);
+assert.deepEqual(result.newlyAppliedMigrations, []);
 assert.equal(result.sourceLabelledTcgdexSnapshotCount, 405);
 assert.equal(queries.some((query) => /insert|update|delete|create|alter/i.test(query)), false);
 assert.equal(REQUIRED_MIGRATIONS.length, 6);
@@ -81,4 +86,9 @@ const applied = await preparePersonalPricing({ dbUrl: 'postgresql://postgres.oak
 assert.equal(applied.mode, 'applied');
 assert.equal(applyQueries.filter((query) => query.startsWith('insert into supabase_migrations')).length, 6);
 assert.equal(applyQueries.includes('commit'), true);
+assert.deepEqual(applied.initialPendingMigrations, REQUIRED_MIGRATIONS.map(({ filename }) => filename));
+assert.deepEqual(applied.newlyAppliedMigrations, REQUIRED_MIGRATIONS.map(({ filename }) => filename));
+assert.deepEqual(applied.appliedMigrations, REQUIRED_MIGRATIONS.map(({ filename }) => filename));
+assert.deepEqual(applied.pendingMigrations, []);
+assert.equal(applied.migrationHistoryCount, history.length + REQUIRED_MIGRATIONS.length);
 console.log('Personal pricing preparation tests passed.');

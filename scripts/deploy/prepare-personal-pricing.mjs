@@ -90,6 +90,8 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, apply = false 
       await client.query('select pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext($1))', [lockName]);
       const history = await client.query('select version, name from supabase_migrations.schema_migrations order by version, name');
       const state = migrationState(history.rows);
+      const initialPendingMigrations = state.pending.map((migration) => migration.filename);
+      const initialAppliedMigrations = state.applied.map((migration) => migration.filename);
       const owner = await client.query('select id from auth.users where lower(email) = lower($1) limit 2', [ownerEmail]);
       if (owner.rows.length !== 1) throw new Error('pricing_owner_account_not_unique');
       const snapshots = await client.query(`
@@ -100,7 +102,8 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, apply = false 
         order by 1
       `);
       const sourceLabelledTcgdex = snapshots.rows.find((row) => String(row.source).includes('tcgdex'))?.count ?? 0;
-      if (apply && state.pending.length) {
+      const newlyAppliedMigrations = apply && state.pending.length ? initialPendingMigrations : [];
+      if (newlyAppliedMigrations.length) {
         for (const migration of state.pending) {
           const sql = sources.get(migration.version);
           await client.query(sql);
@@ -108,13 +111,17 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, apply = false 
         }
         await client.query('commit');
       } else await client.query('rollback');
+      const finalAppliedMigrations = [...initialAppliedMigrations, ...newlyAppliedMigrations];
+      const finalPendingMigrations = apply ? [] : initialPendingMigrations;
       return {
         ok: true,
-        mode: apply && state.pending.length ? 'applied' : apply ? 'already_applied' : 'read_only_preparation',
+        mode: newlyAppliedMigrations.length ? 'applied' : apply ? 'already_applied' : 'read_only_preparation',
         ownerId: String(owner.rows[0].id),
-        migrationHistoryCount: history.rows.length,
-        pendingMigrations: state.pending.map((migration) => migration.filename),
-        appliedMigrations: state.applied.map((migration) => migration.filename),
+        migrationHistoryCount: history.rows.length + newlyAppliedMigrations.length,
+        initialPendingMigrations,
+        newlyAppliedMigrations,
+        pendingMigrations: finalPendingMigrations,
+        appliedMigrations: finalAppliedMigrations,
         sourceLabelledTcgdexSnapshotCount: Number(sourceLabelledTcgdex),
         migrationSha256: Object.fromEntries(REQUIRED_MIGRATIONS.map((migration) => [migration.filename, migration.sha256])),
       };
