@@ -18,6 +18,8 @@ No gallery/model replacement, new image store, catalogue import, new native depe
 
 ## Acceptance
 
+Release authority is the owner's request: "so the latest version - can we ensure that its all combined to be the latest and greatest and then push this for 27". PR 144 records the reviewed recognition-feedback route source-pin amendment required by the existing baseline check; it does not change the historical database or catalogue baseline.
+
 Run app/backend type checks, lint, owner recognition/teaching tests, scanner routing, binder catalogue and all-81-cover checks. Verify one temporary non-training image/identity upload and deletion on the deployed service, then remove the canary. Export the owner iOS bundle once and scan it for secrets; confirm runtime/channel before publishing.
 
 After installing build 27, launch Stackr online, allow the update to download, then close and reopen it. Open Scan's flask button, photograph a card and use the correction/teaching controls. Actual physical-camera accuracy, large-text interaction and the phone's receipt of the OTA require device testing; automated and reference-image tests do not establish those results.

@@ -121,13 +121,17 @@ export async function deleteOwnerCapture(ownerId: string, id: string) {
 }
 
 async function feedbackRequest(ownerId: string, path: string, init: RequestInit) {
-  const response = await fetch(`${PRICE_API_URL.replace(/\/$/, '')}/api/recognition-feedback${path}`, {
-    ...init, signal: AbortSignal.timeout(50_000),
-    headers: {...init.headers, Authorization:`Bearer ${await accessToken(ownerId)}`},
-  });
-  const value = await response.json();
-  if (!response.ok || value.ok !== true) throw new Error('Your teaching example could not be backed up. It remains on this device; try again.');
-  return value;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 50_000);
+  try {
+    const response = await fetch(`${PRICE_API_URL.replace(/\/$/, '')}/api/recognition-feedback${path}`, {
+      ...init, signal: controller.signal,
+      headers: {...init.headers, Authorization:`Bearer ${await accessToken(ownerId)}`},
+    });
+    const value = await response.json();
+    if (!response.ok || value.ok !== true) throw new Error('Your teaching example could not be backed up. It remains on this device; try again.');
+    return value;
+  } finally { clearTimeout(timeout); }
 }
 
 const captureOperations = new Set<string>();
