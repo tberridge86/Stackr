@@ -83,7 +83,7 @@ function assertPrivatePricingFailure(body, response, expectedRequestId, name) {
   if (status !== 401 || code !== 'authentication_required') {
     throw new Error(`${name} returned HTTP ${status} (${code || 'missing error code'}) instead of authentication_required.`);
   }
-  if (String(body?.meta?.apiVersion ?? '') !== '1' || String(body?.meta?.requestId ?? '') !== expectedRequestId) {
+  if (String(body?.meta?.apiVersion ?? '') !== '1' || String(body?.error?.requestId ?? '') !== expectedRequestId) {
     throw new Error(`${name} did not return a valid Stackr API v1 error envelope.`);
   }
   if (response.headers.get('cache-control') !== 'private, no-store') {

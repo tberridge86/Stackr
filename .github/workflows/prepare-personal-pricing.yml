@@ -49,7 +49,10 @@ jobs:
           npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" --data-only --use-copy --file "$RUNNER_TEMP/personal-pricing-backup/data.sql"
           node scripts/deploy/verify-backup.mjs --physical="$RUNNER_TEMP/personal-pricing-backup/physical.json" --schema="$RUNNER_TEMP/personal-pricing-backup/schema.sql" --data="$RUNNER_TEMP/personal-pricing-backup/data.sql" --require-physical
       - name: Verify or apply the six reviewed personal-pricing migrations
-        run: node scripts/deploy/prepare-personal-pricing.mjs --db-url="$STACKR_SOURCE_DB_URL" --owner-email="$PRICING_OWNER_EMAIL" --apply="${{ inputs.apply_migrations }}" | tee "$RUNNER_TEMP/personal-pricing-preparation.json"
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/deploy/prepare-personal-pricing.mjs --db-url="$STACKR_SOURCE_DB_URL" --owner-email="$PRICING_OWNER_EMAIL" --apply="${{ inputs.apply_migrations }}" | tee "$RUNNER_TEMP/personal-pricing-preparation.json"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: personal-pricing-preparation-${{ github.run_id }}
