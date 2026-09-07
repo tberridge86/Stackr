@@ -1,0 +1,145 @@
+{
+  "schemaVersion": "stackr-combined-build27-release-v1",
+  "at": "2026-09-07T20:13:16.774Z",
+  "repository": "https://github.com/tberridge86/Stackr",
+  "sourceCommit": "e3c9b00cb668671c5ac74e1c3f05934b1de9240f",
+  "pullRequest": 144,
+  "mainCiRun": 34157965269,
+  "backendWorkflowRun": 34157978091,
+  "backend": {
+    "deploymentId": "3b95c056-803d-49dc-9b0e-000ea2a90e8a",
+    "status": "SUCCESS",
+    "gitSha": "e3c9b00cb668671c5ac74e1c3f05934b1de9240f"
+  },
+  "mobile": {
+    "appVersion": "1.0.3",
+    "nativeBuild": 27,
+    "easBuildId": "1ed0baa9-45ea-4cda-8bf2-4578e4ac118d",
+    "appleBuildId": "ed787c09-852e-4fe4-843b-85f5f7813ebd",
+    "embeddedSource": "a335d64b1c6f025c7e94fa6013614b6d70fbb2c3",
+    "publishedUpdate": [
+      {
+        "id": "01a07d7e-b0da-7080-bae8-0f02bfac530d",
+        "createdAt": "2026-09-07T20:10:49.946Z",
+        "group": "52f41098-a1dd-4572-b9b5-96bb536f66c3",
+        "branch": "owner-recognition",
+        "message": "Build 27: combined camera, canonical teaching corrections, art and binder improvements",
+        "runtimeVersion": "1.0.3-owner-recognition-v1",
+        "platform": "ios",
+        "manifestPermalink": "https://u.expo.dev/update/01a07d7e-b0da-7080-bae8-0f02bfac530d",
+        "isRollBackToEmbedded": false,
+        "gitCommitHash": "e3c9b00cb668671c5ac74e1c3f05934b1de9240f"
+      }
+    ],
+    "servedUpdate": {
+      "at": "2026-09-07T20:12:26.993Z",
+      "ok": true,
+      "servedUpdateId": "01a07d7e-b0da-7080-bae8-0f02bfac530d",
+      "runtimeVersion": "1.0.3-owner-recognition-v1",
+      "channel": "owner-recognition",
+      "assetCount": 555,
+      "bundleSha256": "cc72356b1710c6e28172ab68fe8175413ce64bb4d879681e04c0c2a90623a15f",
+      "environment": "production",
+      "supabaseUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
+      "stackrApiUrl": "https://api.stackrtcg.com",
+      "priceApiUrl": "https://pocketvault-production.up.railway.app"
+    }
+  },
+  "retainedInfrastructure": {
+    "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+    "storageBucket": "stackr-catalogue-public",
+    "gatewayVersion": "855f44bc-c09c-4086-abd2-3d41d5d0b547",
+    "gatewayOrigin": "https://api.stackrtcg.com",
+    "railwayOrigin": "https://pocketvault-production.up.railway.app"
+  },
+  "checks": {
+    "publicServiceChecks": 36,
+    "publicServicePassed": 36,
+    "ownerRecognitionAndPriceChecks": [
+      {
+        "name": "owner_recognition_ready",
+        "ok": true
+      },
+      {
+        "name": "stored_artwork_recognition",
+        "ok": true
+      },
+      {
+        "name": "backend_owner_price",
+        "ok": true
+      },
+      {
+        "name": "backend_owner_snapshot_history",
+        "ok": true
+      },
+      {
+        "name": "gateway_owner_price",
+        "ok": true
+      },
+      {
+        "name": "gateway_owner_snapshot_history",
+        "ok": true
+      }
+    ],
+    "teachingUploadAndWithdrawal": [
+      {
+        "name": "private_photo_upload",
+        "ok": true,
+        "feedbackId": "d0605345-9cd7-4c0c-861e-308cbc33d155"
+      },
+      {
+        "name": "identity_photo_review_round_trip",
+        "ok": true,
+        "status": "queued",
+        "finish": "normal"
+      },
+      {
+        "name": "private_photo_and_record_deleted",
+        "ok": true
+      }
+    ],
+    "temporarySessionClosed": true,
+    "bundle": {
+      "at": "2026-09-07T20:09:56.286Z",
+      "bundle": "_expo/static/js/ios/entry-b1f780429b9720ab5a5c227bbd65e250.hbc",
+      "bundleBytes": 10053440,
+      "bundleSha256": "cc72356b1710c6e28172ab68fe8175413ce64bb4d879681e04c0c2a90623a15f",
+      "assetEntries": 555,
+      "uniqueAssets": 552,
+      "coversVerified": 81,
+      "missingCoverCount": 0,
+      "contents": [
+        {
+          "value": "stackr-owner-capture-v2",
+          "present": true
+        },
+        {
+          "value": "Save for teaching",
+          "present": true
+        },
+        {
+          "value": "ownerTeaching",
+          "present": true
+        }
+      ],
+      "runtimeVersion": "1.0.3-owner-recognition-v1",
+      "channel": "owner-recognition",
+      "environment": "production",
+      "supabaseUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
+      "stackrApiUrl": "https://api.stackrtcg.com",
+      "priceApiUrl": "https://pocketvault-production.up.railway.app",
+      "ok": true
+    },
+    "physicalIphoneTestingPerformed": false
+  },
+  "boundaries": {
+    "trainingContribution": "explicit private upload, queued for review, no automatic retraining",
+    "priceReads": "source-labelled cached estimates and snapshot history verified",
+    "automaticRefreshEnabled": false,
+    "manualRefreshQueueActivated": false,
+    "catalogueImported": false,
+    "modelReplaced": false,
+    "stagingChanged": false,
+    "otaAudience": "owner-recognition channel; earlier compatible owner-runtime binaries can also receive this update"
+  }
+}
