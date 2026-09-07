@@ -8,8 +8,9 @@ const expectedCommit = 'f87d89d803813d8a5eddee4142edd0736f081e7d';
 const expectedDeploymentId = '9f706115-9344-4bb5-b102-fd675ee0b9d9';
 const originKey = 'test-only-origin-key';
 const requests = [];
-let gatewayCacheState = 'BYPASS';
 let healthCommit = expectedCommit.slice(0, 12);
+let pricingConfigMissing = false;
+let pricingServiceUnavailable = false;
 
 const server = createServer((request, response) => {
   requests.push({
@@ -20,11 +21,6 @@ const server = createServer((request, response) => {
   const requestId = `smoke-${requests.length}`;
   response.setHeader('content-type', 'application/json');
   response.setHeader('x-request-id', requestId);
-
-  if (request.headers.authorization === 'Bearer smoke-cache-bypass' && request.url !== '/v1/health') {
-    response.setHeader('x-stackr-cache', gatewayCacheState);
-    response.setHeader('cache-control', gatewayCacheState === 'BYPASS' ? 'no-store' : 'public, max-age=60');
-  }
 
   if (request.url === '/health') {
     response.end(JSON.stringify({
@@ -39,6 +35,19 @@ const server = createServer((request, response) => {
     return;
   }
 
+  const pricingPath = request.url?.includes('/price') || request.url?.startsWith('/v1/market/movers?');
+  if (pricingPath && request.headers.authorization !== 'Bearer owner-access-token') {
+    const status = pricingConfigMissing || pricingServiceUnavailable ? 503 : 401;
+    const code = pricingConfigMissing
+      ? 'pricing_owner_unconfigured'
+      : pricingServiceUnavailable ? 'pricing_service_unavailable' : 'authentication_required';
+    response.statusCode = status;
+    response.setHeader('cache-control', 'private, no-store');
+    response.setHeader('vary', 'Authorization');
+    response.end(JSON.stringify({ error: { code }, meta: { apiVersion: '1', requestId } }));
+    return;
+  }
+
   let data = null;
   if (request.url === '/v1/health') {
     data = { status: 'ok', service: 'stackr-api', apiVersion: '1' };
@@ -50,6 +59,10 @@ const server = createServer((request, response) => {
     response.statusCode = 404;
     response.end(JSON.stringify({ error: 'not_found' }));
     return;
+  }
+  if (pricingPath) {
+    response.setHeader('cache-control', 'private, no-store');
+    response.setHeader('vary', 'Authorization');
   }
   response.end(JSON.stringify({ data, meta: { apiVersion: '1', requestId } }));
 });
@@ -74,22 +87,40 @@ try {
   assert.deepEqual(result.checks.map((check) => check.name), [
     'direct_backend_runtime_health',
     'direct_backend_health',
-    'direct_backend_exact_price',
-    'direct_backend_price_history',
-    'direct_backend_movers',
-    'public_gateway_health',
-    'public_gateway_exact_price',
-    'public_gateway_price_history',
-    'public_gateway_movers',
+    'direct_backend_anonymous_exact_price',
+    'direct_backend_anonymous_price_history',
+    'direct_backend_anonymous_movers',
+    'gateway_health',
+    'gateway_anonymous_exact_price',
+    'gateway_anonymous_price_history',
+    'gateway_anonymous_movers',
   ]);
   assert.equal(requests[0].originKey, null);
   assert.ok(requests.slice(1, 5).every((request) => request.originKey === originKey));
   assert.ok(requests.slice(5).every((request) => request.originKey === null));
   assert.ok(requests.slice(1, 5).every((request) => request.authorization === null));
-  assert.equal(requests[5].authorization, 'Bearer smoke-cache-bypass');
-  assert.ok(requests.slice(6).every((request) => request.authorization === 'Bearer smoke-cache-bypass'));
 
-  gatewayCacheState = 'HIT';
+  const ownerResult = await runProductionPricingSmoke({
+    backendUrl: baseUrl,
+    gatewayUrl: baseUrl,
+    variantId,
+    backendOriginKey: originKey,
+    ownerAccessToken: 'owner-access-token',
+    expectedBackendCommit: expectedCommit,
+    expectedBackendDeploymentId: expectedDeploymentId,
+    allowHttp: true,
+  });
+  assert.equal(ownerResult.ownerPricingValidated, true);
+  assert.deepEqual(ownerResult.checks.slice(-6).map((check) => check.name), [
+    'direct_backend_owner_exact_price',
+    'direct_backend_owner_price_history',
+    'direct_backend_owner_movers',
+    'gateway_owner_exact_price',
+    'gateway_owner_price_history',
+    'gateway_owner_movers',
+  ]);
+
+  pricingConfigMissing = true;
   await assert.rejects(
     runProductionPricingSmoke({
       backendUrl: baseUrl,
@@ -100,9 +131,25 @@ try {
       expectedBackendDeploymentId: expectedDeploymentId,
       allowHttp: true,
     }),
-    /gateway cache bypass/,
+    /pricing configuration failure \(pricing_owner_unconfigured\)/,
   );
-  gatewayCacheState = 'BYPASS';
+  pricingConfigMissing = false;
+
+  pricingServiceUnavailable = true;
+  await assert.rejects(
+    runProductionPricingSmoke({
+      backendUrl: baseUrl,
+      gatewayUrl: baseUrl,
+      variantId,
+      backendOriginKey: originKey,
+      expectedBackendCommit: expectedCommit,
+      expectedBackendDeploymentId: expectedDeploymentId,
+      allowHttp: true,
+    }),
+    /returned HTTP 503 instead of an owner-authentication denial/,
+    'an unavailable pricing service must not be accepted as an anonymous denial',
+  );
+  pricingServiceUnavailable = false;
 
   healthCommit = '0'.repeat(12);
   await assert.rejects(
