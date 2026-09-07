@@ -47,6 +47,8 @@ jobs:
       - run: npm test --prefix backend
       - run: npm run test:live-pricing
       - run: npm run test:personal-pricing
+      - run: node scripts/test-gateway-privacy-smoke.mjs
+      - run: node scripts/test-gateway-privacy-deployment.mjs
       - run: npm run test:collection-pricing-ui
       - run: npm run test:home-release
       - run: npm run test:poketrace-benchmark

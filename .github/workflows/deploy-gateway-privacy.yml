@@ -82,7 +82,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$EXPECTED_MAIN_SHA" = "$GITHUB_SHA"
-          test "$EXPECTED_MAIN_SHA" = '8aed4b2c99bec40ba0fce37e360d552c7074c852'
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$OWNER_USER_ID" = '309453d1-52a2-4f40-81e4-27ae69b520fa'
           test "$PREVIOUS_GATEWAY_VERSION_ID" = 'ab809fc2-d0da-484f-a5b7-908f76013c1d'
           test "$PREVIOUS_GATEWAY_TAG" = 'production-9113bfffc0ae4f0ce841645040a1959d77c0861c'
@@ -106,6 +106,7 @@ jobs:
           npm ci
           npm ci --prefix gateway
           npm test --prefix gateway
+          npm run ci:secret-scan
           node scripts/test-gateway-privacy-smoke.mjs
           node scripts/test-gateway-privacy-deployment.mjs
           npm run build --prefix gateway
@@ -126,8 +127,8 @@ jobs:
           const secrets = JSON.parse(fs.readFileSync(`${root}/secrets-before.json`, 'utf8'));
           const version = versions.find((item) => item?.id === process.env.PREVIOUS_GATEWAY_VERSION_ID);
           if (!version || version?.annotations?.['workers/tag'] !== process.env.PREVIOUS_GATEWAY_TAG) throw new Error('previous_gateway_version_or_tag_not_attested');
-          const deployment = deployments.find((item) => item?.id === process.env.PREVIOUS_GATEWAY_DEPLOYMENT_ID);
-          if (!deployment || deployment?.versions?.length !== 1 || deployment.versions[0]?.version_id !== process.env.PREVIOUS_GATEWAY_VERSION_ID || deployment.versions[0]?.percentage !== 100) throw new Error('current_gateway_deployment_not_exactly_100_percent_previous_version');
+          const deployment = deployments.toSorted((a, b) => Date.parse(b.created_on) - Date.parse(a.created_on))[0];
+          if (deployment?.id !== process.env.PREVIOUS_GATEWAY_DEPLOYMENT_ID || deployment?.versions?.length !== 1 || deployment.versions[0]?.version_id !== process.env.PREVIOUS_GATEWAY_VERSION_ID || deployment.versions[0]?.percentage !== 100) throw new Error('current_gateway_deployment_not_exactly_100_percent_previous_version');
           const names = new Set(secrets.map((secret) => secret?.name));
           for (const name of ['BACKEND_ORIGIN_KEY', 'BACKEND_ADMIN_KEY']) if (!names.has(name)) throw new Error(`required_preserved_gateway_secret_missing:${name}`);
           NODE
@@ -137,22 +138,17 @@ jobs:
         run: |
           set -euo pipefail
           release_tag="gateway-privacy-$GITHUB_SHA"
-          runtime_secrets="$RUNNER_TEMP/stackr-gateway-privacy/runtime-secrets.env"
-          RUNTIME_SECRETS_PATH="$runtime_secrets" node <<'NODE'
-          const fs = require('node:fs');
-          const value = String(process.env.STACKR_SUPABASE_PUBLISHABLE_KEY ?? '').replace(/^\uFEFF/, '').trim();
-          if (!value || /[\r\n]/.test(value)) throw new Error('production_publishable_key_invalid');
-          fs.writeFileSync(process.env.RUNTIME_SECRETS_PATH, `SUPABASE_PUBLISHABLE_KEY=${value}\n`, { encoding: 'utf8', mode: 0o600 });
-          NODE
-          trap 'rm -f "$runtime_secrets"' EXIT
-          echo 'STACKR_GATEWAY_TRAFFIC_CHANGED=true' >> "$GITHUB_ENV"
-          npx --yes wrangler@4.114.0 deploy --cwd gateway --env production --tag "$release_tag" --message "Stackr gateway privacy $GITHUB_SHA" --keep-vars --secrets-file "$runtime_secrets" \
+          publishable_key="$(node -e 'const value=String(process.env.STACKR_SUPABASE_PUBLISHABLE_KEY ?? "").trim(); if (!/^sb_publishable_[A-Za-z0-9_-]+$/.test(value)) throw new Error("production_publishable_key_invalid"); process.stdout.write(value);')"
+          echo "::add-mask::$publishable_key"
+          npx --yes wrangler@4.114.0 versions upload --cwd gateway --env production --tag "$release_tag" --message "Stackr gateway privacy $GITHUB_SHA" --strict --keep-vars \
             --name stackr-api-gateway \
             --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL" \
             --var "SUPABASE_URL:$STACKR_SUPABASE_URL" \
+            --var "SUPABASE_PUBLISHABLE_KEY:$publishable_key" \
             --var 'STACKR_PRICING_ACCESS_MODE:personal' \
             --var "STACKR_PRICING_OWNER_USER_ID:$OWNER_USER_ID"
-          npx --yes wrangler@4.114.0 versions deploy --cwd gateway --name stackr-api-gateway --env production "$release_tag@100" --yes
+          echo 'STACKR_GATEWAY_TRAFFIC_CHANGED=true' >> "$GITHUB_ENV"
+          npx --yes wrangler@4.114.0 versions deploy --cwd gateway --name stackr-api-gateway --env production --version-tag "$release_tag@100" --yes
           echo "STACKR_GATEWAY_RELEASE_TAG=$release_tag" >> "$GITHUB_ENV"
 
       - name: Attest 100 percent gateway privacy deployment
@@ -167,13 +163,14 @@ jobs:
           const versions = JSON.parse(fs.readFileSync(`${root}/versions-after.json`, 'utf8'));
           const deployments = JSON.parse(fs.readFileSync(`${root}/deployments-after.json`, 'utf8'));
           const version = versions.find((item) => item?.annotations?.['workers/tag'] === process.env.STACKR_GATEWAY_RELEASE_TAG);
-          const deployment = deployments[0];
+          const deployment = deployments.toSorted((a, b) => Date.parse(b.created_on) - Date.parse(a.created_on))[0];
           if (!version || !deployment || deployment?.versions?.length !== 1 || deployment.versions[0]?.version_id !== version.id || deployment.versions[0]?.percentage !== 100) throw new Error('new_gateway_version_not_attested_at_100_percent');
           NODE
 
       - name: Smoke gateway health, readiness, and anonymous pricing privacy
         shell: bash
         run: |
+          set -euo pipefail
           node scripts/deploy/gateway-privacy-smoke.mjs --gateway="$STACKR_GATEWAY_URL" --variant-id="$PRICING_SMOKE_VARIANT_ID" | tee "$RUNNER_TEMP/stackr-gateway-privacy/smoke.json"
 
       - name: Restore exact previous gateway version after a failed privacy release
@@ -184,8 +181,13 @@ jobs:
           set -euo pipefail
           npx --yes wrangler@4.114.0 versions deploy --cwd gateway --name stackr-api-gateway --env production "$PREVIOUS_GATEWAY_VERSION_ID@100" --yes | tee "$RUNNER_TEMP/stackr-gateway-privacy/rollback.json"
 
-      - name: Upload non-secret gateway privacy evidence
+      - name: Scan gateway release evidence for secrets
+        id: scan_gateway_evidence
         if: always()
+        run: node scripts/deploy/secret-scan.mjs --directory="$RUNNER_TEMP/stackr-gateway-privacy"
+
+      - name: Upload non-secret gateway privacy evidence
+        if: always() && steps.scan_gateway_evidence.outcome == 'success'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: stackr-production-gateway-privacy-${{ github.run_id }}-${{ github.run_attempt }}
