@@ -30,6 +30,18 @@ const confirmed = createOwnerCaptureRecord({ ...input, selectedVariantId: candid
 assert.equal(confirmed.reviewStatus, 'owner_confirmed');
 assert.equal(confirmed.expectedIdentity?.variantId, candidate.variantId);
 assert.equal(confirmed.physicalCardId, unresolved.physicalCardId);
+assert.equal(confirmed.schemaVersion, 'stackr-owner-capture-v2');
+const correctedIdentity = {
+  variantId: 'canonical-variant', printingId: 'canonical-printing', canonicalKey: 'canonical-key',
+  name: 'Correct card', nativeName: 'Correct card', language: 'en', setId: 'set-id', setCode: 'SET',
+  collectorNumber: '42', variantCode: 'reverse-holo', finishCode: 'reverse-holo', catalogueVersion: 'catalogue-v1',
+};
+const corrected = createOwnerCaptureRecord({ ...input, correctedIdentity, trainingUseApproved: false });
+assert.equal(corrected.reviewStatus, 'owner_corrected');
+assert.equal(corrected.correctedIdentity?.variantId, 'canonical-variant');
+assert.deepEqual(corrected.expectedIdentity, corrected.correctedIdentity);
+assert.equal(corrected.correctedIdentity?.finishCode, 'reverse-holo');
+assert.throws(() => createOwnerCaptureRecord({ ...input, correctedIdentity, trainingUseApproved: true }), /require review/);
 assert.throws(() => createOwnerCaptureRecord({ ...input, selectedVariantId: 'not-a-prediction' }));
 assert.throws(() => createOwnerCaptureRecord({ ...input, physicalCardId: '' }));
 console.log('Owner recognition result and private capture contract tests passed.');

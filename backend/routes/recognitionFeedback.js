@@ -1,5 +1,6 @@
 /* eslint-env node */
 import { createHash } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import express from 'express';
 import { hasTrustedStackrAdminClaim } from '../lib/trustedAuthorization.js';
 import { createClient } from '@supabase/supabase-js';
@@ -354,6 +355,22 @@ router.put(
   }
 );
 
+export async function removeRecognitionFeedbackImage(supabase, bucket, storagePath) {
+  if (!storagePath) return;
+  const { error } = await supabase.storage.from(bucket).remove([storagePath]);
+  if (error) throw error;
+}
+
+export function recognitionFeedbackDeletionPatch(deletedAt) {
+  // Withdrawal/deletion belongs to the owner. Preserve reviewer-only fields:
+  // the existing database trigger correctly protects those independently.
+  return {
+    consent_state: {imageUploadConsent:false,imageUploadWithdrawnAt:deletedAt,deletionRequestedAt:deletedAt},
+    user_label_status:'withdrawn', image_upload_status:'deleted',
+    withdrawn_at:deletedAt, deleted_at:deletedAt,
+  };
+}
+
 router.delete('/items/:feedbackId', async (req, res) => {
   try {
     const auth = await requireUser(req, res);
@@ -371,25 +388,14 @@ router.delete('/items/:feedbackId', async (req, res) => {
       return;
     }
 
-    if (feedback.rectified_image_storage_path) {
-      await auth.supabase.storage.from(STORAGE_BUCKET).remove([feedback.rectified_image_storage_path]);
-    }
+    // Retain retryable metadata when private image removal fails. Never report
+    // a completed deletion while leaving its image in the training bucket.
+    await removeRecognitionFeedbackImage(auth.supabase, STORAGE_BUCKET, feedback.rectified_image_storage_path);
 
     const deletedAt = new Date().toISOString();
     const { error: updateError } = await auth.supabase
       .from('recognition_feedback_items')
-      .update({
-        consent_state: {
-          imageUploadConsent: false,
-          imageUploadWithdrawnAt: deletedAt,
-          deletionRequestedAt: deletedAt,
-        },
-        user_label_status: 'withdrawn',
-        review_status: 'deleted',
-        image_upload_status: 'deleted',
-        withdrawn_at: deletedAt,
-        deleted_at: deletedAt,
-      })
+      .update(recognitionFeedbackDeletionPatch(deletedAt))
       .eq('id', feedback.id)
       .eq('created_by', auth.user.id);
 

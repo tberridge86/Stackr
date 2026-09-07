@@ -31,6 +31,16 @@
     "approvalRule": "merge-exact-head-after-green-checks",
     "sourcePinAmendments": [
       {
+        "date": "2026-09-07",
+        "reviewPullRequest": 144,
+        "sourcePath": "backend/routes/recognitionFeedback.js",
+        "previousSha256": "19d27b36aa415112aa6f621c1a69359017b36b2a0387e08cfd4f8290363ea085",
+        "replacementSha256": "eeca3bb57ced6508f026e0f3322fd33b1c28c23e89f050a3e7903ad47093192e",
+        "authorityRecord": "docs/releases/owner-combined-20260907.md",
+        "reason": "Owner-authorized combined build 27 release fixes private teaching-image withdrawal: propagate storage removal errors and update owner withdrawal fields without writing reviewer-only status columns.",
+        "scope": "Reviewed route source pin only. Historical environment, database and catalogue snapshots remain unchanged. This amendment does not assert deployment success."
+      },
+      {
         "date": "2026-09-05",
         "reviewPullRequest": 132,
         "sourcePath": "backend/routes/scanLab.js",
@@ -43,7 +53,7 @@
     ],
     "sourceSha256": {
       "backend/lib/trustedAuthorization.js": "640344c598ec42fc6288628a92e2a8e1dc6bb3950edea990fd063413f96cbf1c",
-      "backend/routes/recognitionFeedback.js": "19d27b36aa415112aa6f621c1a69359017b36b2a0387e08cfd4f8290363ea085",
+      "backend/routes/recognitionFeedback.js": "eeca3bb57ced6508f026e0f3322fd33b1c28c23e89f050a3e7903ad47093192e",
       "backend/routes/recognitionShadowMode.js": "7f86fb180cf6b5c6a69ef0be8cc1ff7a694b1dc2a5b731c079733a82e2246fa1",
       "backend/routes/scanLab.js": "7782ed181e7198eda005d454f4722d2c152e79a3eb8fb1e6d2c0096b12baa561",
       "backend/test/trusted-authorization.test.mjs": "dee371eac574abbf2ddf1023243aded6c1c771eeea28831f69a88dabadc15ee2",

@@ -33,11 +33,17 @@ export default function CardCameraScreen() {
   const insets = useSafeAreaInsets();
   const safeWidth = Math.max(1, screenWidth - insets.left - insets.right);
   const safeHeight = Math.max(1, screenHeight - insets.top - insets.bottom);
-  const isCompact = safeHeight < 760 || safeWidth < 360;
-  const topControlsHeight = isCompact ? 104 : 122;
-  const bottomControlsHeight = isCompact ? 122 : 140;
-  const scanAreaTop = insets.top + topControlsHeight;
-  const scanAreaBottom = screenHeight - insets.bottom - bottomControlsHeight;
+  const isCompact = safeHeight < 760 || safeWidth < 390;
+  const topButtonOffset = insets.top + 16;
+  // The live guidance has two lines. Reserve that space explicitly so it
+  // cannot sit on the card guide when the device is short or text is larger.
+  const instructionTop = topButtonOffset + 44 + 12;
+  const instructionHeight = isCompact ? 54 : 58;
+  const scanAreaTop = instructionTop + instructionHeight + 12;
+  // This matches the capture button, label, safe-area inset, and a small
+  // breathing gap above them.
+  const bottomControlsHeight = insets.bottom + (isCompact ? 134 : 140);
+  const scanAreaBottom = screenHeight - bottomControlsHeight;
   const availableFrameHeight = Math.max(180, scanAreaBottom - scanAreaTop);
   const guideSideInset = safeWidth < 360 ? COMPACT_SIDE_INSET : REGULAR_SIDE_INSET;
   const maxFrameWidth = Math.max(1, safeWidth - guideSideInset * 2);
@@ -45,7 +51,6 @@ export default function CardCameraScreen() {
   const CARD_HEIGHT = Math.round(CARD_WIDTH / CARD_ASPECT_RATIO);
   const overlayTop = scanAreaTop + Math.max(0, (availableFrameHeight - CARD_HEIGHT) / 2);
   const overlayLeft = insets.left + (safeWidth - CARD_WIDTH) / 2;
-  const topButtonOffset = insets.top + 16;
   const { camera, device, torch, toggleTorch, takePhoto, focusAtPoint, isContinuous, setIsContinuous } = useScanCamera(true, true, {
     cropToCard: true,
     cropFrame: {
@@ -248,11 +253,15 @@ export default function CardCameraScreen() {
       ) : null}
 
       {/* Instructions */}
-      <View style={{ position: 'absolute', top: Math.max(insets.top + 70, overlayTop - 48), left: 0, right: 0, alignItems: 'center' }}>
-        <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700', opacity: 0.95 }}>
+      <View style={{ position: 'absolute', top: instructionTop, left: 16, right: 16, alignItems: 'center' }}>
+        <Text
+          style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700', opacity: 0.95, textAlign: 'center' }}
+          numberOfLines={2}
+          maxFontSizeMultiplier={1.2}
+        >
           {isContinuous ? liveAnalyser.guidance.message : 'Align card within the frame'}
         </Text>
-        <Text style={{ color: '#FFFFFF', fontSize: 12, opacity: 0.7, marginTop: 4 }}>
+        <Text style={{ color: '#FFFFFF', fontSize: 12, opacity: 0.7, marginTop: 4 }} numberOfLines={1} maxFontSizeMultiplier={1.2}>
           Queue: {scanStore.scannedCards.length}
         </Text>
       </View>
