@@ -60,7 +60,9 @@ function dateOrNull(value) {
 const RAW_NEAR_MINT = 'raw_near_mint';
 const SNAPSHOT_HISTORY_RPC_PAGE_SIZE = 1_000;
 const SNAPSHOT_HISTORY_RPC_MAX_ROWS = 40_000;
-const SNAPSHOT_HISTORY_SELECT = 'id,card_id,language,canonical_identity_key,pricing_identity_json,market_price_gbp,low_price_gbp,high_price_gbp,tcgdex_price,tcg_mid,tcg_low,primary_source,price_source,price_type,confidence_score,confidence_label,methodology_version,source_breakdown,calculation_summary,outlier_summary,calculated_at,snapshot_at,stale_after,is_stale';
+// Snapshot rows retain calculation_summary; outlier_summary belongs to the
+// separate canonical estimate projection and is not a snapshot column.
+const SNAPSHOT_HISTORY_SELECT = 'id,card_id,language,canonical_identity_key,pricing_identity_json,market_price_gbp,low_price_gbp,high_price_gbp,tcgdex_price,tcg_mid,tcg_low,primary_source,price_source,price_type,confidence_score,confidence_label,methodology_version,source_breakdown,calculation_summary,calculated_at,snapshot_at,stale_after,is_stale';
 const CONDITION_CODES = new Map([
   ['mint', 'raw_mint'],
   ['raw_mint', 'raw_mint'],
@@ -484,6 +486,7 @@ async function catalogueRefreshMetadata(supabase, variantId) {
 }
 
 async function resolveSnapshotIdentity(supabase, variantId, metadata = null) {
+  variantId = String(variantId).toLowerCase();
   const resolved = metadata ?? await catalogueRefreshMetadata(supabase, variantId);
   const cardIds = new Set([variantId]);
   if (!resolved?.language) return { cardIds: [...cardIds], metadata: resolved };
@@ -498,18 +501,19 @@ async function resolveSnapshotIdentity(supabase, variantId, metadata = null) {
   if (error) throw error;
   for (const row of data ?? []) {
     const id = clean(row?.external_id);
-    // A printing's published aliases can belong to a sibling finish or
-    // edition. Only identifiers attached to this exact requested variant are
-    // eligible for legacy snapshot lookup.
-    if (!id || row?.variant_id !== variantId) continue;
+    // Retain genuine printing aliases, but do not borrow a sibling variant's
+    // identifier merely because it shares the same printing.
+    const exactVariant = row?.variant_id === variantId;
+    const printingAlias = !row?.variant_id && row?.printing_id === resolved.canonicalPrintingId;
+    if (!id || (!exactVariant && !printingAlias)) continue;
     cardIds.add(id);
 
     // TCGdex's imported ordinary card identity has one documented suffix:
     // `<provider-card-id>:normal`. Legacy snapshots use the provider card id
     // without that suffix. Derive it only from that exact variant identifier;
     // never strip arbitrary colon suffixes or borrow a sibling's alias.
-    if (isDefaultVariant(resolved)
-      && row?.source_entity_type === 'variant') {
+    if (exactVariant && isDefaultVariant(resolved)
+      && row?.source_entity_type === 'card') {
       const match = /^([A-Za-z0-9][A-Za-z0-9._-]*):normal$/.exec(id);
       if (match) cardIds.add(match[1]);
     }

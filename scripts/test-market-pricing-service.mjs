@@ -348,7 +348,13 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
           : [];
     let single = false;
     const builder = {
-      select() { return builder; },
+      select(columns = '*') {
+        if (['market_price_snapshots', 'market_price_snapshot_history'].includes(tableName)) {
+          assert.ok(!columns.split(',').includes('outlier_summary'),
+            'outlier_summary is a canonical estimate field, absent from the deployed snapshot table/RPC');
+        }
+        return builder;
+      },
       eq(column, value) {
         equalities.push({ schemaName, tableName, column, value });
         rows = rows.filter((row) => row[column] === value);
@@ -559,9 +565,9 @@ async function assertNormalVariantProviderBaseSnapshotIdentity() {
     snapshot_at: '2026-09-06T12:00:00.000Z',
   };
   const identifiers = [
-    { source_entity_type: 'variant', external_id: 'base3-38:normal', language_code: 'en', variant_id: normalVariantId, printing_id: null },
-    { source_entity_type: 'asset', external_id: 'base3-38:normal:normal:image', language_code: 'en', variant_id: normalVariantId, printing_id: null },
-    { source_entity_type: 'variant', external_id: 'base3-38', language_code: 'en', variant_id: firstEditionVariantId, printing_id: null },
+    { source_entity_type: 'card', external_id: 'base3-38:normal', language_code: 'en', variant_id: normalVariantId, printing_id: null },
+    { source_entity_type: 'card', external_id: 'base3-38:normal:normal:image', language_code: 'en', variant_id: normalVariantId, printing_id: null },
+    { source_entity_type: 'card', external_id: 'base3-38', language_code: 'en', variant_id: firstEditionVariantId, printing_id: null },
   ];
   const normalService = createMarketPricingService({
     supabase: createSnapshotSupabase({ metadata: normalMetadata, snapshots: [snapshot], externalIdentifiers: identifiers }),
@@ -584,10 +590,16 @@ async function assertNormalVariantProviderBaseSnapshotIdentity() {
     supabase: createSnapshotSupabase({
       metadata: normalMetadata,
       snapshots: [snapshot],
-      externalIdentifiers: [{ source_entity_type: 'variant', external_id: 'base3-38:unknown', language_code: 'en', variant_id: normalVariantId, printing_id: null }],
+      externalIdentifiers: [{ source_entity_type: 'card', external_id: 'base3-38:unknown', language_code: 'en', variant_id: normalVariantId, printing_id: null }],
     }),
   }).price(normalVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
   assert.equal(unknownSuffix.status, 'unavailable', 'unknown provider suffixes must never be reduced to a base card id');
+  const printingAlias = await createMarketPricingService({
+    supabase: createSnapshotSupabase({metadata:normalMetadata, snapshots:[snapshot], externalIdentifiers:[
+      {source_entity_type:'card',external_id:'base3-38',language_code:'en',variant_id:null,printing_id:printingId},
+    ]}),
+  }).price(normalVariantId, {currency:'GBP',condition:'near_mint'});
+  assert.equal(printingAlias.estimates.central,2.8,'existing printing-level aliases must remain usable for normal variants');
 }
 
 async function assertCanonicalSnapshotLabelsAndBasis() {
