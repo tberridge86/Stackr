@@ -48,6 +48,14 @@ For catalogue, gateway, recognition, mobile, and full-platform releases, all of 
 
 Current full-platform status is **NO-GO**: migration alignment and storage backup are verified, but the active-model and active-index gates in `deploy/release-manifest.json` are false. This does not block an exact, code-only `backend_only` release that satisfies the separate controls above.
 
+### Gateway-only personal-pricing privacy release
+
+`deploy-gateway-privacy.yml` is a separate, narrow production lane for the existing `stackr-api-gateway` Worker only. It exists to put the reviewed owner-only pricing access controls in front of build 27 without changing Railway code, Supabase schema/data, catalogue state, recognition/model/index state, mobile delivery, or price providers. It always deploys the existing Worker route and Durable Object identity in production; it does not create a Worker, namespace, backend service, or staging deployment.
+
+The workflow is pinned to the reviewed `main` SHA and to the currently attested production Worker version, tag, and 100-percent deployment. It requires the exact successful Platform CI result, verifies the existing origin/admin secret names before upload, uses Wrangler `--keep-vars` to retain every existing remote variable/secret/binding, and supplies only the production backend origin, production Supabase URL, trimmed protected publishable key, and reviewed personal-pricing owner binding. A failed health, readiness, or anonymous-pricing privacy check restores traffic to the exact attested prior version at 100 percent. It deliberately does not probe search: search is a backend rollout concern.
+
+Use it only after the owner UUID has been independently verified. The post-deploy checks require anonymous price, price-history, and movers requests to return `401 authentication_required` with `private, no-store` and `Vary: Authorization`; they do not claim an authenticated price read or activate any provider.
+
 ## Narrow binder artwork-read preparation
 
 The binder artwork repair is not a catalogue promotion. Before releasing a

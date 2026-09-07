@@ -1,0 +1,195 @@
+name: Deploy Stackr Production Gateway Privacy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type DEPLOY GATEWAY PRIVACY
+        required: true
+        type: string
+      expected_main_sha:
+        description: Exact reviewed main SHA
+        required: true
+        type: string
+      pricing_smoke_variant_id:
+        description: Canonical variant UUID used only for anonymous privacy checks
+        required: true
+        type: string
+      owner_user_id:
+        description: Verified personal-pricing owner UUID
+        required: true
+        default: 309453d1-52a2-4f40-81e4-27ae69b520fa
+        type: string
+      previous_gateway_version_id:
+        description: Current 100 percent production Worker version ID
+        required: true
+        default: ab809fc2-d0da-484f-a5b7-908f76013c1d
+        type: string
+      previous_gateway_tag:
+        description: Current production Worker version tag
+        required: true
+        default: production-9113bfffc0ae4f0ce841645040a1959d77c0861c
+        type: string
+      previous_gateway_deployment_id:
+        description: Current 100 percent production Worker deployment ID
+        required: true
+        default: 5105e13b-2b9c-4e3f-a2e0-392c2694cb37
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: stackr-production-deployment
+  cancel-in-progress: false
+
+jobs:
+  gateway_privacy:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY GATEWAY PRIVACY'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: b4c23b0834cc5a113aa4a98fd904b281
+      STACKR_GATEWAY_URL: https://api.stackrtcg.com
+      STACKR_BACKEND_URL: https://pocketvault-production.up.railway.app
+      STACKR_SUPABASE_URL: https://oakdbbzdqwurpjnoqhmu.supabase.co
+      STACKR_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      PRICING_SMOKE_VARIANT_ID: ${{ inputs.pricing_smoke_variant_id }}
+      OWNER_USER_ID: ${{ inputs.owner_user_id }}
+      PREVIOUS_GATEWAY_VERSION_ID: ${{ inputs.previous_gateway_version_id }}
+      PREVIOUS_GATEWAY_TAG: ${{ inputs.previous_gateway_tag }}
+      PREVIOUS_GATEWAY_DEPLOYMENT_ID: ${{ inputs.previous_gateway_deployment_id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            gateway/package-lock.json
+
+      - name: Validate exact production gateway privacy release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$EXPECTED_MAIN_SHA" = "$GITHUB_SHA"
+          test "$EXPECTED_MAIN_SHA" = '8aed4b2c99bec40ba0fce37e360d552c7074c852'
+          test "$OWNER_USER_ID" = '309453d1-52a2-4f40-81e4-27ae69b520fa'
+          test "$PREVIOUS_GATEWAY_VERSION_ID" = 'ab809fc2-d0da-484f-a5b7-908f76013c1d'
+          test "$PREVIOUS_GATEWAY_TAG" = 'production-9113bfffc0ae4f0ce841645040a1959d77c0861c'
+          test "$PREVIOUS_GATEWAY_DEPLOYMENT_ID" = '5105e13b-2b9c-4e3f-a2e0-392c2694cb37'
+          [[ "$PRICING_SMOKE_VARIANT_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$STACKR_SUPABASE_PUBLISHABLE_KEY"
+          git diff --exit-code
+
+      - name: Require exact main CI success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow 'Stackr Platform CI' --commit "$GITHUB_SHA" --limit 20 --json conclusion,status | \
+            node -e 'let input=""; process.stdin.on("data", chunk => input += chunk); process.stdin.on("end", () => { const runs=JSON.parse(input); if (!runs.some(run => run.status === "completed" && run.conclusion === "success")) throw new Error("exact_main_platform_ci_not_successful"); });'
+
+      - name: Install and verify gateway release checks
+        run: |
+          npm ci
+          npm ci --prefix gateway
+          npm test --prefix gateway
+          node scripts/test-gateway-privacy-smoke.mjs
+          node scripts/test-gateway-privacy-deployment.mjs
+          npm run build --prefix gateway
+
+      - name: Attest existing production Worker, route, and rollback target
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/stackr-gateway-privacy"
+          npx --yes wrangler@4.114.0 versions list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/versions-before.json"
+          npx --yes wrangler@4.114.0 deployments list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/deployments-before.json"
+          npx --yes wrangler@4.114.0 secret list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/secrets-before.json"
+          PREVIOUS_GATEWAY_VERSION_ID="$PREVIOUS_GATEWAY_VERSION_ID" PREVIOUS_GATEWAY_TAG="$PREVIOUS_GATEWAY_TAG" PREVIOUS_GATEWAY_DEPLOYMENT_ID="$PREVIOUS_GATEWAY_DEPLOYMENT_ID" RUNNER_TEMP="$RUNNER_TEMP" node <<'NODE'
+          const fs = require('node:fs');
+          const root = `${process.env.RUNNER_TEMP}/stackr-gateway-privacy`;
+          const versions = JSON.parse(fs.readFileSync(`${root}/versions-before.json`, 'utf8'));
+          const deployments = JSON.parse(fs.readFileSync(`${root}/deployments-before.json`, 'utf8'));
+          const secrets = JSON.parse(fs.readFileSync(`${root}/secrets-before.json`, 'utf8'));
+          const version = versions.find((item) => item?.id === process.env.PREVIOUS_GATEWAY_VERSION_ID);
+          if (!version || version?.annotations?.['workers/tag'] !== process.env.PREVIOUS_GATEWAY_TAG) throw new Error('previous_gateway_version_or_tag_not_attested');
+          const deployment = deployments.find((item) => item?.id === process.env.PREVIOUS_GATEWAY_DEPLOYMENT_ID);
+          if (!deployment || deployment?.versions?.length !== 1 || deployment.versions[0]?.version_id !== process.env.PREVIOUS_GATEWAY_VERSION_ID || deployment.versions[0]?.percentage !== 100) throw new Error('current_gateway_deployment_not_exactly_100_percent_previous_version');
+          const names = new Set(secrets.map((secret) => secret?.name));
+          for (const name of ['BACKEND_ORIGIN_KEY', 'BACKEND_ADMIN_KEY']) if (!names.has(name)) throw new Error(`required_preserved_gateway_secret_missing:${name}`);
+          NODE
+
+      - name: Upload privacy runtime binding without replacing existing Worker secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_tag="gateway-privacy-$GITHUB_SHA"
+          runtime_secrets="$RUNNER_TEMP/stackr-gateway-privacy/runtime-secrets.env"
+          RUNTIME_SECRETS_PATH="$runtime_secrets" node <<'NODE'
+          const fs = require('node:fs');
+          const value = String(process.env.STACKR_SUPABASE_PUBLISHABLE_KEY ?? '').replace(/^\uFEFF/, '').trim();
+          if (!value || /[\r\n]/.test(value)) throw new Error('production_publishable_key_invalid');
+          fs.writeFileSync(process.env.RUNTIME_SECRETS_PATH, `SUPABASE_PUBLISHABLE_KEY=${value}\n`, { encoding: 'utf8', mode: 0o600 });
+          NODE
+          trap 'rm -f "$runtime_secrets"' EXIT
+          echo 'STACKR_GATEWAY_TRAFFIC_CHANGED=true' >> "$GITHUB_ENV"
+          npx --yes wrangler@4.114.0 deploy --cwd gateway --env production --tag "$release_tag" --message "Stackr gateway privacy $GITHUB_SHA" --keep-vars --secrets-file "$runtime_secrets" \
+            --name stackr-api-gateway \
+            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL" \
+            --var "SUPABASE_URL:$STACKR_SUPABASE_URL" \
+            --var 'STACKR_PRICING_ACCESS_MODE:personal' \
+            --var "STACKR_PRICING_OWNER_USER_ID:$OWNER_USER_ID"
+          npx --yes wrangler@4.114.0 versions deploy --cwd gateway --name stackr-api-gateway --env production "$release_tag@100" --yes
+          echo "STACKR_GATEWAY_RELEASE_TAG=$release_tag" >> "$GITHUB_ENV"
+
+      - name: Attest 100 percent gateway privacy deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.114.0 versions list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/versions-after.json"
+          npx --yes wrangler@4.114.0 deployments list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/deployments-after.json"
+          STACKR_GATEWAY_RELEASE_TAG="$STACKR_GATEWAY_RELEASE_TAG" RUNNER_TEMP="$RUNNER_TEMP" node <<'NODE'
+          const fs = require('node:fs');
+          const root = `${process.env.RUNNER_TEMP}/stackr-gateway-privacy`;
+          const versions = JSON.parse(fs.readFileSync(`${root}/versions-after.json`, 'utf8'));
+          const deployments = JSON.parse(fs.readFileSync(`${root}/deployments-after.json`, 'utf8'));
+          const version = versions.find((item) => item?.annotations?.['workers/tag'] === process.env.STACKR_GATEWAY_RELEASE_TAG);
+          const deployment = deployments[0];
+          if (!version || !deployment || deployment?.versions?.length !== 1 || deployment.versions[0]?.version_id !== version.id || deployment.versions[0]?.percentage !== 100) throw new Error('new_gateway_version_not_attested_at_100_percent');
+          NODE
+
+      - name: Smoke gateway health, readiness, and anonymous pricing privacy
+        shell: bash
+        run: |
+          node scripts/deploy/gateway-privacy-smoke.mjs --gateway="$STACKR_GATEWAY_URL" --variant-id="$PRICING_SMOKE_VARIANT_ID" | tee "$RUNNER_TEMP/stackr-gateway-privacy/smoke.json"
+
+      - name: Restore exact previous gateway version after a failed privacy release
+        if: failure() && env.STACKR_GATEWAY_TRAFFIC_CHANGED == 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.114.0 versions deploy --cwd gateway --name stackr-api-gateway --env production "$PREVIOUS_GATEWAY_VERSION_ID@100" --yes | tee "$RUNNER_TEMP/stackr-gateway-privacy/rollback.json"
+
+      - name: Upload non-secret gateway privacy evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-gateway-privacy-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/stackr-gateway-privacy
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 9
