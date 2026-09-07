@@ -27,6 +27,7 @@ jobs:
     environment: production
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
       SUPABASE_ACCESS_TOKEN: ${{ secrets.STACKR_GITHUB_PRODUCTION_BACKUPS || secrets.SUPABASE_ACCESS_TOKEN }}
       PRICING_OWNER_EMAIL: tberridge86@gmail.com
     steps:
