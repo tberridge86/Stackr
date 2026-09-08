@@ -24,6 +24,7 @@ import {
   type PokemonSet,
 } from '../../lib/pokemonTcg';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
+import { matchesEnglishSetReference } from '../../lib/englishSetIdentity';
 import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
@@ -446,7 +447,8 @@ export default function NewBinderScreen() {
       }
 
       if (paramSourceSetId) {
-        const found = data.find((s) => s.id === paramSourceSetId || isSameSetId(s.id, paramSourceSetId));
+        const found = data.find((s) => s.id === paramSourceSetId || isSameSetId(s.id, paramSourceSetId)
+          || (requestedLanguage === 'en' && matchesEnglishSetReference(s, paramSourceSetId)));
         if (found) {
           setSelectedSet(found);
           setSourceSetId(found.id);

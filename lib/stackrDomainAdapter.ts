@@ -16,9 +16,12 @@ import {
 import { supabase } from './supabase';
 import { enforceTcgdexRuntimeImagePolicy } from './tcgdexControlledCardReference';
 import {
+  getPokemonSetLanguageFromPrefixedId,
   normalizePokemonSetReferenceForLookup,
   stripPokemonSetLanguagePrefix,
 } from './pokemonSetIdentity';
+import { getEnglishSetReferenceAliases, matchesEnglishSetReference } from './englishSetIdentity';
+import { getPokemonSetDisplaySeries } from './pokemonSetSeries';
 import {
   firstNonEmptyCatalogueRows,
   preferNonEmptyCatalogueRows,
@@ -436,6 +439,90 @@ function primaryCardImageAsset(card: StackrCard, assets: StackrCatalogueAsset[])
   );
 }
 
+function canonicalSetCardIdentity(card: StackrCard) {
+  // These are the canonical API's identity fields. In particular, neither a
+  // translated name nor a display-normalized collector number is safe here.
+  return JSON.stringify([
+    card.cardId,
+    card.set.setId,
+    card.languageCode,
+    card.collectorNumber.value,
+  ]);
+}
+
+function mergeCanonicalVariants(rows: StackrCard[]) {
+  const variants = new Map<string, StackrCard['variants'][number]>();
+  for (const row of rows) {
+    for (const variant of row.variants) {
+      const existing = variants.get(variant.variantId);
+      if (!existing) {
+        variants.set(variant.variantId, variant);
+        continue;
+      }
+      // A repeated variant is expected to describe the same printing. Keep
+      // the first metadata record stable, only filling absent optional fields
+      // from its duplicate (including its embedded asset).
+      variants.set(variant.variantId, {
+        ...variant,
+        ...existing,
+        canonicalId: existing.canonicalId || variant.canonicalId,
+        variantCode: existing.variantCode || variant.variantCode,
+        variantLabel: existing.variantLabel ?? variant.variantLabel,
+        finishCode: existing.finishCode ?? variant.finishCode,
+        finishLabel: existing.finishLabel ?? variant.finishLabel,
+        artworkKey: existing.artworkKey ?? variant.artworkKey,
+        nativeImageStatus: existing.nativeImageStatus ?? variant.nativeImageStatus,
+        sameArtworkAsVariantId: existing.sameArtworkAsVariantId ?? variant.sameArtworkAsVariantId,
+        imageVariantId: existing.imageVariantId ?? variant.imageVariantId,
+        image: existing.image ?? variant.image,
+        updatedAt: existing.updatedAt ?? variant.updatedAt,
+      });
+    }
+  }
+  return [...variants.values()];
+}
+
+/**
+ * The set-cards endpoint can emit one row per default finish. Collapse only
+ * exact canonical card identities before the optional manifest/map stage so a
+ * collection has one row per card while retaining every variant.
+ */
+function normalizeCanonicalSetCards(cards: StackrCard[]) {
+  const groups = new Map<string, StackrCard[]>();
+  for (const card of cards) {
+    const key = canonicalSetCardIdentity(card);
+    const group = groups.get(key);
+    if (group) group.push(card);
+    else groups.set(key, [card]);
+  }
+
+  return [...groups.values()].map((rows) => {
+    let representative = rows[0];
+    // Preserve the first image-bearing default when duplicate responses are
+    // interleaved; do not assign an image from another finish to this default.
+    if (!primaryCardImageAsset(representative, embeddedCardImageAssets(representative))) {
+      representative = rows.find((row) => (
+        Boolean(primaryCardImageAsset(row, embeddedCardImageAssets(row)))
+      )) ?? representative;
+    }
+    const merged = { ...representative, variants: mergeCanonicalVariants(rows) };
+    if (primaryCardImageAsset(merged, embeddedCardImageAssets(merged))) return merged;
+
+    // Some single API rows retain all finish variants but point their default
+    // at a finish with no image. Select only an already-present variant whose
+    // own embedded asset validates as primary; this changes no image ownership.
+    const illustratedVariant = merged.variants.find((variant) => (
+      Boolean(primaryCardImageAsset(
+        { ...merged, defaultVariantId: variant.variantId },
+        embeddedCardImageAssets(merged),
+      ))
+    ));
+    return illustratedVariant
+      ? { ...merged, defaultVariantId: illustratedVariant.variantId }
+      : merged;
+  });
+}
+
 async function fetchStackrAssetsForPrinting(
   client: StackrApiClient,
   printingId: string,
@@ -470,7 +557,11 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
   return {
     id: set.setId,
     name,
-    series: set.seriesNativeName ?? set.seriesEnglishDisplayName ?? 'Other',
+    series: getPokemonSetDisplaySeries({
+      series: set.seriesNativeName ?? set.seriesEnglishDisplayName,
+      language: set.languageCode,
+      setCode: set.setCode,
+    }),
     printedTotal: Number(set.printedTotal ?? 0),
     total: Number(set.total ?? set.printedTotal ?? 0),
     releaseDate: set.releaseDate ?? '',
@@ -738,24 +829,38 @@ async function resolveCanonicalStackrSetId(
 ) {
   const value = String(reference ?? '').trim();
   if (!value) return null;
+  const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(value);
   const unprefixedValue = normalizePokemonSetReferenceForLookup(value);
   if (UUID_PATTERN.test(unprefixedValue)) return unprefixedValue;
-  const response = await client.sets(
-    {
-      language: toStackrApiLanguage(language) ?? undefined,
-      setCode: unprefixedValue,
-      limit: 25,
-    },
-    { signal },
-  );
-  const normalized = unprefixedValue.toLowerCase();
-  const exact = response.data.sets.find((set) => (
-    set.setCode?.toLowerCase() === normalized
-    || set.setId.toLowerCase() === normalized
-    || set.nativeName?.toLowerCase() === normalized
-    || set.englishDisplayName?.toLowerCase() === normalized
-  ));
-  return (exact ?? response.data.sets[0])?.setId ?? null;
+  const apiLanguage = toStackrApiLanguage(language);
+  // The caller's language can be absent on older references. When supplied,
+  // it must not override a contradictory persisted language prefix.
+  if (prefixedLanguage && apiLanguage && prefixedLanguage !== apiLanguage) return null;
+  const references = apiLanguage === 'en'
+    ? getEnglishSetReferenceAliases(unprefixedValue, 'en')
+    : [unprefixedValue];
+  const exactMatches = new Map<string, StackrSet>();
+
+  for (const setCode of references) {
+    const response = await client.sets(
+      { language: apiLanguage ?? undefined, setCode, limit: 25 },
+      { signal },
+    );
+    for (const set of response.data.sets) {
+      const hasRequestedLanguage = !apiLanguage || toLegacyLanguage(set.languageCode) === toLegacyLanguage(apiLanguage);
+      const exact = hasRequestedLanguage && (apiLanguage === 'en'
+        ? matchesEnglishSetReference({
+          id: set.setId,
+          language: set.languageCode,
+          setCode: set.setCode,
+        }, unprefixedValue)
+        : set.setCode?.toLowerCase() === unprefixedValue.toLowerCase()
+          || set.setId.toLowerCase() === unprefixedValue.toLowerCase());
+      if (exact) exactMatches.set(set.setId, set);
+    }
+  }
+
+  return exactMatches.size === 1 ? [...exactMatches.keys()][0] : null;
 }
 
 export function resolveStackrSetId(
@@ -801,7 +906,7 @@ async function fetchCanonicalStackrCardsForSet(
 ) {
   const setId = await resolveCanonicalStackrSetId(reference, language, client, signal);
   if (!setId) return [];
-  const cards = await allPages<StackrCard>(async (cursor, pageSignal) => {
+  const responseCards = await allPages<StackrCard>(async (cursor, pageSignal) => {
     const response = await client.setCards(
       setId,
       {
@@ -813,6 +918,7 @@ async function fetchCanonicalStackrCardsForSet(
     );
     return { rows: response.data.cards, nextCursor: response.meta.pagination?.nextCursor ?? null };
   }, signal);
+  const cards = normalizeCanonicalSetCards(responseCards);
   const needsManifestFallback = cards.some((card) => (
     !primaryCardImageAsset(card, embeddedCardImageAssets(card))
   ));

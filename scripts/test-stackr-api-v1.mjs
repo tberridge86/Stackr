@@ -1248,7 +1248,7 @@ assert.match(
 assert.match(domainAdapter, /client\.sets\([\s\S]*?\{ signal: pageSignal \},\s*\)/);
 assert.match(
   domainAdapter,
-  /const cards = await allPages[\s\S]*?client\.setCards\([\s\S]*?\{ signal: pageSignal \},\s*\)[\s\S]*?\}, signal\);/,
+  /const \w+ = await allPages<StackrCard>[\s\S]*?client\.setCards\([\s\S]*?\{ signal: pageSignal \},\s*\)[\s\S]*?\}, signal\);/,
   'canonical cards must remain a mandatory, parent-cancellable read',
 );
 assert.match(

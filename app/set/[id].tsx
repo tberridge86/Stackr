@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { fetchAllSets, fetchCardsForSet, getKnownPokemonSetTotal, getPokemonSetVisualUrl, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
+import { matchesEnglishSetReference } from '../../lib/englishSetIdentity';
 import { supabase } from '../../lib/supabase';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrBackButton } from '../../components/StackrBackButton';
@@ -655,7 +656,8 @@ export default function SetDetailScreen() {
         fetchAllSets({ language }),
         fetchCardsForSet(setId, { language }),
       ]);
-      const currentSet = allSets.find((s) => s.id === setId || isSameRouteSetId(s.id, setId)) ?? null;
+      const currentSet = allSets.find((s) => s.id === setId || isSameRouteSetId(s.id, setId)
+        || (language === 'en' && matchesEnglishSetReference(s, setId))) ?? null;
       setSetInfo(currentSet);
       setCards(fetchedCards);
 
