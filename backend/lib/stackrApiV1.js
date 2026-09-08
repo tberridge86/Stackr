@@ -203,7 +203,7 @@ function dedupeByVariant(rows) {
   const seen = new Set();
   const deduped = [];
   for (const row of rows) {
-    const key = row?.variant_id ?? row?.canonical_key ?? row?.printing_id;
+    const key = row?.variant_id ?? row?.variantId ?? row?.canonical_key ?? row?.printing_id;
     if (!key || seen.has(key)) continue;
     seen.add(key);
     deduped.push(row);
@@ -766,6 +766,18 @@ async function fetchCardRowsByPrintings(supabase, printingIds) {
     .limit(Math.max(ids.length, 1) * 8));
 }
 
+async function fetchCardRowsForIdentities(supabase, identities) {
+  // A variant-specific name or provider ID must not expand to sibling finishes.
+  // Printing-only identities still intentionally resolve all published variants.
+  const [variantRows, printingRows] = await Promise.all([
+    fetchCardRowsByVariants(supabase, identities.map((identity) => identity.variant_id)),
+    fetchCardRowsByPrintings(supabase, identities
+      .filter((identity) => !identity.variant_id)
+      .map((identity) => identity.printing_id)),
+  ]);
+  return dedupeByVariant([...variantRows, ...printingRows]);
+}
+
 async function fetchSetsByIds(supabase, setIds) {
   const ids = [...new Set(setIds.filter(Boolean))];
   if (!ids.length) return [];
@@ -827,10 +839,7 @@ async function searchExternalId(supabase, parsed, limit, language) {
   const identifiers = await queryRows(query);
   if (!identifiers.length) return [];
 
-  const rows = [
-    ...await fetchCardRowsByVariants(supabase, identifiers.map((item) => item.variant_id)),
-    ...await fetchCardRowsByPrintings(supabase, identifiers.map((item) => item.printing_id)),
-  ];
+  const rows = await fetchCardRowsForIdentities(supabase, identifiers);
   const setRows = await fetchSetsByIds(supabase, identifiers.map((item) => item.set_id));
   return [
     ...dedupeByVariant(rows).map((row) => toSearchResult(row, 'exact_external_id')),
@@ -904,12 +913,10 @@ async function searchNames(supabase, parsed, limit, language, types, reasonForTy
   namesQuery = applyNamePrintingLanguageFilter(namesQuery, language);
   const names = await queryRows(namesQuery);
   if (!names.length) return [];
-  const rows = [
-    ...await fetchCardRowsByVariants(supabase, names.map((name) => name.variant_id)),
-    ...await fetchCardRowsByPrintings(supabase, names.map((name) => name.printing_id)),
-  ];
+  const rows = await fetchCardRowsForIdentities(supabase, names);
   return dedupeByVariant(rows).slice(0, limit).map((row) => {
-    const match = names.find((name) => name.variant_id === row.variant_id || name.printing_id === row.printing_id);
+    const match = names.find((name) => name.variant_id === row.variant_id
+      || (!name.variant_id && name.printing_id === row.printing_id));
     return toSearchResult(row, reasonForType(match?.name_type), {
       matchedName: match?.name ?? null,
       matchedNameType: match?.name_type ?? null,
@@ -934,10 +941,7 @@ async function searchNameWithSetCode(supabase, parsed, limit, language) {
       .limit(Math.max(limit * 4, 80));
     namesQuery = applyNamePrintingLanguageFilter(namesQuery, language);
     const names = await queryRows(namesQuery);
-    const rows = [
-      ...await fetchCardRowsByVariants(supabase, names.map((name) => name.variant_id)),
-      ...await fetchCardRowsByPrintings(supabase, names.map((name) => name.printing_id)),
-    ];
+    const rows = await fetchCardRowsForIdentities(supabase, names);
     results.push(...dedupeByVariant(rows)
       .filter((row) => setIds.includes(row.set_id))
       .map((row) => toSearchResult(row, 'exact_name_in_set', { matchedSetCode: setCode })));
@@ -955,12 +959,10 @@ async function searchFuzzyName(supabase, parsed, limit, language) {
   namesQuery = applyNamePrintingLanguageFilter(namesQuery, language);
   const names = await queryRows(namesQuery);
   if (!names.length) return [];
-  const rows = [
-    ...await fetchCardRowsByVariants(supabase, names.map((name) => name.variant_id)),
-    ...await fetchCardRowsByPrintings(supabase, names.map((name) => name.printing_id)),
-  ];
+  const rows = await fetchCardRowsForIdentities(supabase, names);
   return dedupeByVariant(rows).slice(0, limit).map((row) => {
-    const match = names.find((name) => name.variant_id === row.variant_id || name.printing_id === row.printing_id);
+    const match = names.find((name) => name.variant_id === row.variant_id
+      || (!name.variant_id && name.printing_id === row.printing_id));
     return toSearchResult(row, 'fuzzy_name', {
       matchedName: match?.name ?? null,
       matchedNameType: match?.name_type ?? null,

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "stackr-current-card-image-link-audit-v1",
+  "auditedAt": "2026-09-08T21:07:13.342Z",
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "scope": "approved/public/active catalog.assets card_image rows evaluated against uniquely current published language snapshots and exact variant/printing/set membership",
+  "countsByLanguage": {
+    "en": {
+      "eligibleAssets": 21793,
+      "exactCurrentIdentity": 21793,
+      "exactCurrentUnlinkedAsset": 19,
+      "unlinkedDuplicateTargetImage": 0,
+      "unlinkedNoCurrentTargetImage": 19,
+      "heldIdentityOrMembership": 0,
+      "nativeAvailable": 21793,
+      "nativeNotAvailable": 0
+    },
+    "ja": {
+      "eligibleAssets": 10099,
+      "exactCurrentIdentity": 7919,
+      "exactCurrentUnlinkedAsset": 0,
+      "unlinkedDuplicateTargetImage": 0,
+      "unlinkedNoCurrentTargetImage": 0,
+      "heldIdentityOrMembership": 2180,
+      "nativeAvailable": 6063,
+      "nativeNotAvailable": 4036
+    },
+    "zh-cn": {
+      "eligibleAssets": 19431,
+      "exactCurrentIdentity": 19431,
+      "exactCurrentUnlinkedAsset": 0,
+      "unlinkedDuplicateTargetImage": 0,
+      "unlinkedNoCurrentTargetImage": 0,
+      "heldIdentityOrMembership": 0,
+      "nativeAvailable": 19431,
+      "nativeNotAvailable": 0
+    },
+    "zh-tw": {
+      "eligibleAssets": 2146,
+      "exactCurrentIdentity": 2146,
+      "exactCurrentUnlinkedAsset": 0,
+      "unlinkedDuplicateTargetImage": 0,
+      "unlinkedNoCurrentTargetImage": 0,
+      "heldIdentityOrMembership": 0,
+      "nativeAvailable": 2146,
+      "nativeNotAvailable": 0
+    }
+  },
+  "heldBoundary": {
+    "englishCandidate": "19 exact-current TCGdex SVP stored images promoted in the separate executed receipt deploy/evidence/api-bridge-english-svp-card-images-20260908.json.",
+    "japaneseHeld": "2180 approved assets do not match exact current membership; not safe to link in this audit",
+    "chinese": "no exact-current unlinked candidate"
+  },
+  "noMutationsFromAudit": true
+}
