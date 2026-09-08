@@ -2,7 +2,7 @@
 
 Production received **3,908** approved, public Japanese card-image records from the existing staging catalogue. Each record was checked against the current published production variant, printing, set, language, collector number, variant code, finish code, source approval, and asset policy before insertion.
 
-The recovery manifest is pinned at SHA-256 `29F8DDBA5D7E67F129DBD3FFF30FEEEF979E6D34DC7633E84ACE5058973CC8E9`. Sixteen asset transactions and eight current-version asset-link transactions each recorded inserted IDs in `.tmp/approved-staging-external-*-receipt-batch-*.json`. Post-write verification found 3,908 inserted records, all approved/public/active card images from the approved official Japanese source, plus 3,908 matching current-version links.
+The recovery manifest is pinned at SHA-256 `29F8DDBA5D7E67F129DBD3FFF30FEEEF979E6D34DC7633E84ACE5058973CC8E9`. Durable [rollback evidence](../../deploy/evidence/catalogue-art-recovery-20260908.json) records every inserted asset ID and current-version link pair. Post-write verification found 3,908 inserted records, all approved/public/active card images from the approved official Japanese source, plus 3,908 matching current-version links.
 
 A fresh public API request shows 59 illustrated variants in Japanese M5 (Abyss Eye), from 118 variants. A Chinese control set remains unchanged by this recovery.
 

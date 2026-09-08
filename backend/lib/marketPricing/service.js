@@ -594,37 +594,17 @@ function sameProviderIdentifier(left, right) {
 }
 
 async function exactTcgdexVariantAlias(supabase, variantId, metadata) {
-  const { data: source, error: sourceError } = await table(supabase, 'ingest', 'sources')
-    .select('id,code,active,licence_status,deprecated_at')
-    .eq('code', 'tcgdex')
-    .eq('active', true)
-    .eq('licence_status', 'approved')
-    .is('deprecated_at', null)
-    .maybeSingle();
-  if (sourceError) throw sourceError;
-  if (!source?.id) throw new ApiError(422, 'provider_source_unapproved', 'The TCGdex provider is not approved for this refresh.');
-  const { data: versions, error: versionError } = await table(supabase, 'catalog', 'catalogue_versions')
-    .select('id,status,language_code,deprecated_at,superseded_by_version_id')
-    .eq('status', 'published')
-    .eq('language_code', metadata.language)
-    .is('deprecated_at', null)
-    .is('superseded_by_version_id', null)
-    .limit(2);
-  if (versionError) throw versionError;
-  if ((versions ?? []).length !== 1) throw new ApiError(422, 'catalogue_version_unavailable', 'Exactly one published catalogue version is required for provider identity verification.');
-  const version = versions[0];
-  const { data, error } = await table(supabase, 'catalog', 'catalogue_version_external_identifiers')
-    .select('source_id,source_entity_type,external_id,variant_id,language_code,catalogue_version_id')
-    .eq('catalogue_version_id', version.id)
-    .eq('source_id', source.id)
-    .eq('language_code', metadata.language)
-    .eq('variant_id', variantId)
-    .eq('source_entity_type', 'card')
+  const { data, error } = await supabase
+    .schema('api')
+    .rpc('approved_tcgdex_variant_aliases', {
+      p_variant_id: variantId,
+      p_language_code: metadata.language,
+    })
+    .select('external_id')
     .limit(101);
   if (error) throw error;
   if ((data ?? []).length > 100) throw new ApiError(422, 'provider_identity_truncated', 'Too many provider identifiers are attached to this variant.');
   const aliases = [...new Set((data ?? [])
-    .filter((row) => row?.source_id === source.id && row?.variant_id === variantId && row?.catalogue_version_id === version.id)
     .map((row) => normaliseTcgdexNormalIdentifier(row.external_id))
     .filter(Boolean))];
   if (aliases.length !== 1) {

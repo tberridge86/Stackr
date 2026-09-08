@@ -24,6 +24,7 @@ import {
 } from '../../lib/pokedexCollection';
 import { getDisplaySetName } from '../../lib/setDisplay';
 import { stackrCardImageSizes } from '../../lib/stackrSizing';
+import { stackrHaptics } from '../../lib/haptics';
 
 type PokemonData = {
   id: number;
@@ -239,6 +240,7 @@ export default function PokemonDetailScreen() {
         delayLongPress={360}
         onLongPress={() => {
           longPressedCardId.current = item.id;
+          void stackrHaptics.selection();
           router.push({
             pathname: '/card/[id]',
             params: { id: item.id, setId: item.set_id ?? undefined },

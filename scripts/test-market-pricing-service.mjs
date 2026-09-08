@@ -17,6 +17,7 @@ import { fetchTcgdexNormalCardPrice, summariseTcgdexNormalPricing } from '../bac
 const migration = readFileSync('supabase/migrations/20260728171416_stackr_market_pricing_service.sql', 'utf8');
 const snapshotBucketMigration = readFileSync('supabase/migrations/20260904130000_market_price_snapshot_history_buckets.sql', 'utf8');
 const snapshotQueueMigration = readFileSync('supabase/migrations/20260904131000_exact_variant_price_refresh_queue.sql', 'utf8');
+const providerAliasMigration = readFileSync('supabase/migrations/20260908194309_service_only_tcgdex_variant_aliases.sql', 'utf8');
 const rollback = readFileSync('supabase/manual/rollback_20260728171416_stackr_market_pricing_service.sql', 'utf8');
 const openApi = readFileSync('docs/stackr-api/openapi.v1.yaml', 'utf8');
 
@@ -76,6 +77,18 @@ function assertMigrationShape() {
     'source breakdown parsing must be safe for malformed JSON shapes');
   assert.doesNotMatch(snapshotQueueMigration, /create\s+or\s+replace\s+function\s+api\.market_price_snapshot_history/i,
     'later queue migration must not overwrite the identity-aware history RPC');
+  assert.match(providerAliasMigration, /function api\.approved_tcgdex_variant_aliases\(\s*p_variant_id uuid,\s*p_language_code text/i,
+    'the provider alias bridge must be scoped to one canonical variant and language');
+  assert.match(providerAliasMigration, /security definer[\s\S]*?set search_path = ''/i,
+    'the internal-schema alias bridge must be a search-path-safe definer function');
+  assert.match(providerAliasMigration, /join catalog\.catalogue_version_variants as membership[\s\S]*?membership\.variant_id = cvei\.variant_id/i,
+    'the alias bridge must verify the variant belongs to the current published snapshot');
+  assert.match(providerAliasMigration, /where \(select count\(\*\) from current_versions\) = 1/i,
+    'the alias bridge must reject ambiguous current published versions');
+  assert.match(providerAliasMigration, /source\.code = 'tcgdex'[\s\S]*?source\.active[\s\S]*?source\.licence_status = 'approved'[\s\S]*?source\.deprecated_at is null/i,
+    'the alias bridge must return only approved active TCGdex identities');
+  assert.match(providerAliasMigration, /limit 101[\s\S]*?revoke all on function api\.approved_tcgdex_variant_aliases[\s\S]*?grant execute on function api\.approved_tcgdex_variant_aliases[\s\S]*?service_role/is,
+    'the alias bridge must be bounded and executable only by the service role');
 }
 
 function assertOpenApiAndClientContract() {
@@ -326,7 +339,7 @@ async function assertInvalidServiceInput() {
   );
 }
 
-function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, catalogueExternalIdentifiers = [] }) {
+function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, approvedTcgdexAliases = [] }) {
   const limits = [];
   const inserted = [];
   const rpcCalls = [];
@@ -338,13 +351,9 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
       ? catalogueCards
       : schemaName === 'api' && tableName === 'catalogue_external_identifiers'
         ? externalIdentifiers
-        : schemaName === 'ingest' && tableName === 'sources'
-          ? (tcgdexSource ? [tcgdexSource] : [])
-          : schemaName === 'catalog' && tableName === 'catalogue_versions'
-            ? (publishedVersion ? [publishedVersion] : [])
-            : schemaName === 'catalog' && tableName === 'catalogue_version_external_identifiers'
-              ? catalogueExternalIdentifiers
-              : schemaName === 'api' && tableName === 'market_price_snapshot_history'
+        : schemaName === 'api' && tableName === 'approved_tcgdex_variant_aliases'
+          ? approvedTcgdexAliases.map((row) => ({ external_id: row.external_id }))
+          : schemaName === 'api' && tableName === 'market_price_snapshot_history'
                 ? snapshots
                 : schemaName === 'api' && tableName === 'market_price_estimates'
                   ? estimates
@@ -852,7 +861,7 @@ async function assertExactOwnerProviderRefresh() {
   const source = { id: '44444444-4444-4444-8444-444444444444', code: 'tcgdex', active: true, licence_status: 'approved', deprecated_at: null };
   const version = { id: '33333333-3333-4333-8333-333333333333', status: 'published', language_code: 'en', deprecated_at: null, superseded_by_version_id: null };
   const identifier = { catalogue_version_id: version.id, source_id: source.id, source_entity_type: 'card', external_id: 'base3-4:normal', language_code: 'en', variant_id: variantId };
-  const supabase = createSnapshotSupabase({ metadata, tcgdexSource: source, publishedVersion: version, catalogueExternalIdentifiers: [identifier] });
+  const supabase = createSnapshotSupabase({ metadata, tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: [identifier] });
   let providerCalls = 0;
   const service = createMarketPricingService({
     supabase,
@@ -870,6 +879,9 @@ async function assertExactOwnerProviderRefresh() {
   assert.equal(refreshed.quoteScope, 'exact_variant');
   assert.equal(refreshed.estimates.central, 12.5);
   assert.equal(providerCalls, 1);
+  assert.deepEqual(supabase.rpcCalls.find((call) => call.name === 'approved_tcgdex_variant_aliases'), {
+    schemaName: 'api', name: 'approved_tcgdex_variant_aliases', args: { p_variant_id: variantId, p_language_code: 'en' },
+  }, 'provider aliases must be read through the service-only approved-identity RPC');
   assert.equal(supabase.inserted.length, 1, 'the response is returned only after its exact snapshot was inserted');
   const inserted = supabase.inserted[0];
   assert.equal(inserted.card_id, variantId);
@@ -886,7 +898,7 @@ async function assertExactOwnerProviderRefresh() {
 
   const mismatchedVariantId = '55555555-5555-4555-8555-555555555555';
   const mismatchedService = createMarketPricingService({
-    supabase: createSnapshotSupabase({ metadata: { ...metadata, variant_id: mismatchedVariantId }, tcgdexSource: source, publishedVersion: version, catalogueExternalIdentifiers: [{ ...identifier, variant_id: mismatchedVariantId }] }),
+    supabase: createSnapshotSupabase({ metadata: { ...metadata, variant_id: mismatchedVariantId }, tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: [{ ...identifier, variant_id: mismatchedVariantId }] }),
     fetchTcgdexNormalCardPrice: async () => ({ providerCardId: 'different-card', language: 'en', number: '4/102', price: 12.5, pricingUpdatedAt: new Date().toISOString() }),
   });
   await assert.rejects(
@@ -899,7 +911,7 @@ async function assertExactOwnerProviderRefresh() {
   const ambiguousService = createMarketPricingService({
     supabase: createSnapshotSupabase({
       metadata: { ...metadata, variant_id: ambiguousVariantId }, tcgdexSource: source, publishedVersion: version,
-      catalogueExternalIdentifiers: [
+      approvedTcgdexAliases: [
         { ...identifier, variant_id: ambiguousVariantId },
         { ...identifier, variant_id: ambiguousVariantId, external_id: 'base3-4' },
         { ...identifier, variant_id: ambiguousVariantId, external_id: 'base3-5:normal' },
@@ -915,7 +927,7 @@ async function assertExactOwnerProviderRefresh() {
 
   const wrongLanguageVariantId = '99999999-9999-4999-8999-999999999999';
   const wrongLanguageService = createMarketPricingService({
-    supabase: createSnapshotSupabase({ metadata: { ...metadata, variant_id: wrongLanguageVariantId }, tcgdexSource: source, publishedVersion: version, catalogueExternalIdentifiers: [{ ...identifier, variant_id: wrongLanguageVariantId }] }),
+    supabase: createSnapshotSupabase({ metadata: { ...metadata, variant_id: wrongLanguageVariantId }, tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: [{ ...identifier, variant_id: wrongLanguageVariantId }] }),
     fetchTcgdexNormalCardPrice: async () => ({ providerCardId: 'base3-4', language: 'ja', number: '4/102', price: 12.5, pricingUpdatedAt: new Date().toISOString() }),
   });
   await assert.rejects(
@@ -928,7 +940,7 @@ async function assertExactOwnerProviderRefresh() {
   let resolveQuote;
   let concurrentCalls = 0;
   const concurrentService = createMarketPricingService({
-    supabase: createSnapshotSupabase({ metadata: { ...metadata, variant_id: concurrentVariantId }, tcgdexSource: source, publishedVersion: version, catalogueExternalIdentifiers: [{ ...identifier, variant_id: concurrentVariantId }] }),
+    supabase: createSnapshotSupabase({ metadata: { ...metadata, variant_id: concurrentVariantId }, tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: [{ ...identifier, variant_id: concurrentVariantId }] }),
     fetchTcgdexNormalCardPrice: () => {
       concurrentCalls += 1;
       return new Promise((resolve) => { resolveQuote = resolve; });

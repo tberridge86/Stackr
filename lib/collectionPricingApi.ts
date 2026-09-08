@@ -44,6 +44,10 @@ export type CollectionPriceLoaderOptions = {
   client?: StackrApiClient;
   resolver?: CollectionPriceResolver;
   concurrency?: number;
+  /** Stop scheduling work after the screen/account request is superseded. */
+  isCurrent?: () => boolean;
+  /** Pending entries remain unavailable, so the UI can display an honest partial subtotal. */
+  onProgress?: (results: CollectionPriceResult[], completed: number) => void;
 };
 
 const RAW_CONDITIONS: Record<string, string> = {
@@ -136,8 +140,10 @@ async function loadOne(
   input: CollectionPriceInput,
   client: StackrApiClient,
   resolver: CollectionPriceResolver,
+  isCurrent?: () => boolean,
 ): Promise<CollectionPriceResult> {
   const { reference, resolved, requestError: resolveError } = await resolveAnyReference(input, resolver, client);
+  if (isCurrent && !isCurrent()) return unavailable(input, { unavailableReason: 'Stored price read superseded.' });
   if (!resolved || !reference) {
     return unavailable(input, {
       unavailableReason: resolveError ? 'Card resolution failed.' : 'No exact Stackr card match was found.',
@@ -230,15 +236,29 @@ export async function loadCollectionPrices(
   options: CollectionPriceLoaderOptions = {},
 ): Promise<CollectionPriceResult[]> {
   const client = options.client ?? new (await import('./stackrApiV1')).StackrApiClient();
-  const resolver = options.resolver ?? (await import('./stackrDomainAdapter')).resolveStackrCard;
+  const resolve = options.resolver ?? (await import('./stackrDomainAdapter')).resolveStackrCard;
+  // Sharing is scoped to this load: never retain authenticated prices across accounts.
+  const resolutions = new Map<string, ReturnType<CollectionPriceResolver>>();
+  const resolver: CollectionPriceResolver = (reference, constraints, activeClient) => {
+    const key = JSON.stringify([reference, constraints.language ?? null, constraints.setId ?? null]);
+    let pending = resolutions.get(key);
+    if (!pending) {
+      pending = resolve(reference, constraints, activeClient);
+      resolutions.set(key, pending);
+    }
+    return pending;
+  };
   const concurrency = Math.max(1, Math.min(6, Math.floor(options.concurrency ?? 4)));
-  const results = new Array<CollectionPriceResult>(inputs.length);
+  const results = inputs.map((input) => unavailable(input, { unavailableReason: 'Stored price read pending.' }));
   let nextIndex = 0;
+  let completed = 0;
 
   const worker = async () => {
-    while (nextIndex < inputs.length) {
+    while (nextIndex < inputs.length && (options.isCurrent?.() ?? true)) {
       const index = nextIndex++;
-      results[index] = await loadOne(inputs[index], client, resolver);
+      results[index] = await loadOne(inputs[index], client, resolver, options.isCurrent);
+      completed += 1;
+      if (options.isCurrent?.() ?? true) options.onProgress?.([...results], completed);
     }
   };
 
