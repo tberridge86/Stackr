@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -103,6 +103,7 @@ export default function BinderPageScanResultScreen() {
   );
   const [destinationPage, setDestinationPage] = useState(1);
   const [saving, setSaving] = useState(false);
+  const saveInFlightRef = useRef(false);
   const [selectedPocketIndex, setSelectedPocketIndex] = useState<number | null>(null);
   const scannerClientContext = useMemo(() => getScannerClientContext(), []);
   const scannerFeatureFlags = useMemo(() => getScannerFeatureFlags(), []);
@@ -330,8 +331,14 @@ export default function BinderPageScanResultScreen() {
       return;
     }
 
+    if (saveInFlightRef.current) return;
+    saveInFlightRef.current = true;
     setSaving(true);
     try {
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      if (!session || !authSession?.user.id || authSession.user.id !== session.ownerUserId) {
+        throw new Error('Sign in with the account that started this binder page review before saving.');
+      }
       const databaseStartedAt = Date.now();
       const { data: existingRows, error: existingError } = await supabase
         .from('binder_cards')
@@ -364,6 +371,7 @@ export default function BinderPageScanResultScreen() {
             outcome: 'all_confirmed_cards_already_saved',
           });
         }
+        if (scanSessionId) await markBinderPageScanSessionSaved(scanSessionId, session.ownerUserId);
         Alert.alert('Already in binder', 'All confirmed cards already exist in this binder.');
         return;
       }
@@ -476,6 +484,7 @@ export default function BinderPageScanResultScreen() {
       }
       Alert.alert('Could not save page', error?.message ?? 'Please try again.');
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
   };

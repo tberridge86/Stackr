@@ -53,6 +53,13 @@ assert.equal(await loadBinderPageScanSession('binder-review-owner-a', 'owner-b')
 await markBinderPageScanSessionSaved('binder-review-owner-a', 'owner-a');
 assert.deepEqual(await loadRecoverableBinderPageScanSessions('owner-a'), []);
 
+await Promise.all([0, 1, 2, 3].map((index) => checkpointBinderPageScanSession(session(`capacity-${index}`, 'owner-capacity'))));
+await assert.rejects(
+  () => checkpointBinderPageScanSession(session('capacity-overflow', 'owner-capacity')),
+  /Finish or discard one of your existing binder page reviews/,
+);
+assert.equal((await loadRecoverableBinderPageScanSessions('owner-capacity')).length, 4);
+
 storage.values.set('stackr:binder-page-scan:v1:owner:owner-c', '{"not":"an array"}');
 await assert.rejects(() => loadRecoverableBinderPageScanSessions('owner-c'), /index could not be verified/);
 storage.values.set('stackr:binder-page-scan:v1:session:corrupt', '{"scanSessionId":"corrupt"}');

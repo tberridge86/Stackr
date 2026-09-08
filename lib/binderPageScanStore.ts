@@ -43,8 +43,10 @@ function validateSession(value: unknown): BinderPageScanSession {
   const session = value as Partial<BinderPageScanSession>;
   const scanSessionId = cleanRequired(session.scanSessionId, 'ID');
   const ownerUserId = cleanRequired(session.ownerUserId, 'owner');
-  if (!Number.isInteger(session.layout) || session.layout < 1 || session.layout > 5
-    || typeof session.capturedAt !== 'string' || !Number.isFinite(session.processingMs)
+  const layout = Number(session.layout);
+  const processingMs = Number(session.processingMs);
+  if (!Number.isInteger(layout) || layout < 1 || layout > 5
+    || typeof session.capturedAt !== 'string' || !Number.isFinite(processingMs)
     || !Array.isArray(session.pockets) || !['reviewing', 'saved', undefined].includes(session.reviewState)) {
     throw new Error('Saved binder page review could not be verified.');
   }
@@ -53,9 +55,9 @@ function validateSession(value: unknown): BinderPageScanSession {
     scanSessionId,
     ownerUserId,
     binderId: typeof session.binderId === 'string' ? session.binderId : null,
-    layout: session.layout as BinderPageLayout,
+    layout: layout as BinderPageLayout,
     capturedAt: session.capturedAt,
-    processingMs: session.processingMs,
+    processingMs,
     pockets: session.pockets as BinderPagePocketResult[],
     reviewState: session.reviewState ?? 'reviewing',
   };
@@ -95,11 +97,29 @@ function cache(session: BinderPageScanSession) {
 }
 
 async function checkpointNow(session: BinderPageScanSession) {
-  const body = serialize(session);
-  await persistVerified(sessionKey(session.scanSessionId), body, 'Binder page review could not be saved on this device.');
   const indexKey = ownerIndexKey(session.ownerUserId);
   const existingIds = parseOwnerIndex(await storage.getItem(indexKey));
-  const nextIds = [session.scanSessionId, ...existingIds.filter((id) => id !== session.scanSessionId)].slice(0, MAX_STORED_SESSIONS);
+  const existing = await Promise.all(existingIds.map(async (id) => {
+    const raw = await storage.getItem(sessionKey(id));
+    if (raw === null) throw new Error('Saved binder page review index could not be verified.');
+    const stored = validateSession(JSON.parse(raw));
+    if (stored.ownerUserId !== session.ownerUserId) throw new Error('Saved binder page review index could not be verified.');
+    return stored;
+  }));
+  const unsaved = existing.filter((stored) => stored.reviewState !== 'saved');
+  const isNewUnsaved = session.reviewState !== 'saved' && !existingIds.includes(session.scanSessionId);
+  if (isNewUnsaved && unsaved.length >= MAX_STORED_SESSIONS) {
+    throw new Error('Finish or discard one of your existing binder page reviews before starting another.');
+  }
+  const retainedIds = existing
+    .filter((stored) => stored.reviewState !== 'saved')
+    .map((stored) => stored.scanSessionId)
+    .filter((id) => id !== session.scanSessionId);
+  const nextIds = session.reviewState === 'saved'
+    ? retainedIds
+    : [session.scanSessionId, ...retainedIds];
+  const body = serialize(session);
+  await persistVerified(sessionKey(session.scanSessionId), body, 'Binder page review could not be saved on this device.');
   await persistVerified(indexKey, JSON.stringify(nextIds), 'Binder page review index could not be saved on this device.');
   return cache(session);
 }
