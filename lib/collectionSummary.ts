@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchBinders, fetchBinderCards, type BinderCardRecord, type BinderRecord } from './binders';
+import { fetchBinders, type BinderCardRecord, type BinderRecord } from './binders';
 import { USD_TO_GBP } from './config';
 import { fetchOwnedCardRows, type OwnedCardRow } from './ownership';
 import { getPriceFromPokemonCard } from './pricing';
@@ -26,12 +26,16 @@ export type CollectionSummary = {
 };
 
 let cachedSummary: { userId: string; version: number; expiresAt: number; value: CollectionSummary } | null = null;
-let inflightSummary: Promise<CollectionSummary> | null = null;
+let inflightSummary: { userId: string; version: number; promise: Promise<CollectionSummary> } | null = null;
 
 const toQuantity = (value: unknown) => Math.max(1, Math.floor(Number(value ?? 1) || 1));
 const ownedQuantity = (card: BinderCardRecord) => card.owned ? toQuantity(card.owned_quantity) : 0;
 const cardKey = (setId?: string | null, cardId?: string | null) => `${setId ?? ''}:${cardId ?? ''}`;
 const POKEMON_CARD_COLUMNS = 'id, name, number, rarity, image_small, image_large, set_id, raw_data';
+const SAVED_BINDER_CARD_COLUMNS = 'id, binder_id, card_id, set_id, language, api_card_id, card_name, api_set_id, card_number, image_url, set_name, set_total, slot_order, owned, owned_quantity, condition, grade_company, grade, notes, ebay_price, tcg_price, cardmarket_price, last_price_update, created_at';
+const METADATA_CHUNK_SIZE = 100;
+const METADATA_CONCURRENCY = 3;
+const SAVED_BINDER_CARD_PAGE_SIZE = 1000;
 
 const TCG_PRICE_VARIANT_PRIORITY = [
   'holofoil',
@@ -139,27 +143,57 @@ function chunk<T>(items: T[], size: number) {
   return chunks;
 }
 
+async function mapWithConcurrency<T, R>(items: T[], concurrency: number, mapper: (item: T) => Promise<R>) {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+  const worker = async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await mapper(items[index]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+  return results;
+}
+
 async function fetchPokemonCardsById(cardIds: string[]) {
   const uniqueIds = [...new Set(cardIds.filter(Boolean))];
   const cardMap = new Map<string, any>();
 
-  for (const idChunk of chunk(uniqueIds, 100)) {
+  const rowsByChunk = await mapWithConcurrency(chunk(uniqueIds, METADATA_CHUNK_SIZE), METADATA_CONCURRENCY, async (idChunk) => {
     const { data, error } = await supabase
       .from('pokemon_cards')
       .select(POKEMON_CARD_COLUMNS)
       .in('id', idChunk);
+    if (error) throw error;
+    return data ?? [];
+  });
 
-    if (error) {
-      console.log('Collection summary card lookup failed:', error.message);
-      continue;
-    }
-
-    for (const card of data ?? []) {
-      if (card.id) cardMap.set(card.id, card);
-    }
+  for (const rows of rowsByChunk) {
+    for (const card of rows) if (card.id) cardMap.set(card.id, card);
   }
 
   return cardMap;
+}
+
+async function fetchSavedOwnedBinderCards(binderIds: string[]) {
+  const uniqueBinderIds = [...new Set(binderIds.filter(Boolean))];
+  const rowsByChunk = await mapWithConcurrency(chunk(uniqueBinderIds, METADATA_CHUNK_SIZE), METADATA_CONCURRENCY, async (binderIdChunk) => {
+    const rows: BinderCardRecord[] = [];
+    for (let from = 0; ; from += SAVED_BINDER_CARD_PAGE_SIZE) {
+      const { data, error } = await supabase
+        .from('binder_cards')
+        .select(SAVED_BINDER_CARD_COLUMNS)
+        .in('binder_id', binderIdChunk)
+        .eq('owned', true)
+        .order('slot_order', { ascending: true })
+        .range(from, from + SAVED_BINDER_CARD_PAGE_SIZE - 1);
+      if (error) throw error;
+      rows.push(...((data ?? []) as BinderCardRecord[]));
+      if (!data || data.length < SAVED_BINDER_CARD_PAGE_SIZE) return rows;
+    }
+  });
+  return rowsByChunk.flat();
 }
 
 function buildCardLikeFromOwnedRow(row: OwnedCardRow, card?: any | null) {
@@ -193,10 +227,40 @@ function buildCardLikeFromOwnedRow(row: OwnedCardRow, card?: any | null) {
   };
 }
 
+function buildCardLikeFromSavedBinderRow(row: BinderCardRecord, card?: any | null) {
+  const raw = card?.raw_data ?? row.card?.raw_data ?? {};
+  const images = raw.images ?? {};
+  return {
+    ...row,
+    card_id: row.card_id,
+    set_id: row.set_id,
+    card_name: row.card_name ?? card?.name ?? raw.name ?? row.card_id,
+    card_number: row.card_number ?? card?.number ?? raw.number ?? null,
+    image_url: row.image_url ?? card?.image_small ?? card?.image_large ?? images.small ?? images.large ?? null,
+    card: {
+      id: card?.id ?? row.card_id,
+      name: row.card_name ?? card?.name ?? raw.name ?? row.card_id,
+      number: row.card_number ?? card?.number ?? raw.number ?? null,
+      rarity: card?.rarity ?? raw.rarity ?? null,
+      images: {
+        small: row.image_url ?? card?.image_small ?? images.small ?? null,
+        large: card?.image_large ?? images.large ?? null,
+      },
+      set: raw.set ?? null,
+      tcgplayer: raw.tcgplayer ?? null,
+      cardmarket: raw.cardmarket ?? null,
+      raw_data: raw,
+    },
+    raw_data: raw,
+    tcgplayer: raw.tcgplayer ?? null,
+    tcg_price: row.tcg_price,
+  };
+}
+
 async function getCompletedSetCount(
-  userId: string,
   binders: BinderRecord[],
-  allRows: BinderCardRecord[],
+  savedOwnedRows: BinderCardRecord[],
+  variantRows: OwnedCardRow[],
   masterByBinderId: Map<string, boolean>,
 ) {
   const officialBinders = binders.filter((binder) => binder.type === 'official' && binder.source_set_id);
@@ -205,27 +269,33 @@ async function getCompletedSetCount(
   const setIds = [...new Set(officialBinders.map((binder) => binder.source_set_id).filter(Boolean))] as string[];
   const masterSetIds = [...new Set(officialBinders.filter((binder) => masterByBinderId.get(binder.id)).map((binder) => binder.source_set_id).filter(Boolean))] as string[];
 
-  const [setRowsResult, officialCardsResult, variantRowsResult] = await Promise.all([
+  const [setRowsResult, officialCardsResult] = await Promise.all([
     supabase.from('pokemon_sets').select('id, printed_total, total').in('id', setIds),
     masterSetIds.length
       ? supabase.from('pokemon_cards').select('id, set_id, rarity, raw_data').in('set_id', masterSetIds)
       : Promise.resolve({ data: [], error: null }),
-    masterSetIds.length
-      ? supabase.from('user_card_variants').select('card_id, set_id, variant').eq('user_id', userId).in('set_id', masterSetIds)
-      : Promise.resolve({ data: [], error: null }),
   ]);
 
-  if (setRowsResult.error) return 0;
+  if (setRowsResult.error) throw setRowsResult.error;
+  if (officialCardsResult.error) throw officialCardsResult.error;
   const setTotals = new Map((setRowsResult.data ?? []).map((set: any) => [set.id, Number(set.printed_total ?? set.total ?? 0)]));
-  const rowsByBinder = new Map<string, BinderCardRecord[]>();
-  const globalOwnedKeys = new Set(allRows.filter((row) => row.owned).map((row) => cardKey(row.set_id, row.card_id)));
+  const savedOwnedKeysBySet = new Map<string, Set<string>>();
+  const ownedVariantKeysBySet = new Map<string, Set<string>>();
   const cardsBySet = new Map<string, any[]>();
   const variantsByCard = new Map<string, Set<string>>();
 
-  for (const row of allRows) {
-    const current = rowsByBinder.get(row.binder_id) ?? [];
-    current.push(row);
-    rowsByBinder.set(row.binder_id, current);
+  for (const row of savedOwnedRows) {
+    if (!row.set_id || !row.card_id) continue;
+    const keys = savedOwnedKeysBySet.get(row.set_id) ?? new Set<string>();
+    keys.add(cardKey(row.set_id, row.card_id));
+    savedOwnedKeysBySet.set(row.set_id, keys);
+  }
+
+  for (const row of variantRows) {
+    if (!row.set_id || !row.card_id) continue;
+    const keys = ownedVariantKeysBySet.get(row.set_id) ?? new Set<string>();
+    keys.add(cardKey(row.set_id, row.card_id));
+    ownedVariantKeysBySet.set(row.set_id, keys);
   }
 
   for (const card of officialCardsResult.data ?? []) {
@@ -235,7 +305,7 @@ async function getCompletedSetCount(
     cardsBySet.set(card.set_id, current);
   }
 
-  for (const row of variantRowsResult.data ?? []) {
+  for (const row of variantRows) {
     if (!row.card_id || !row.set_id || !row.variant) continue;
     const key = cardKey(row.set_id, row.card_id);
     if (!variantsByCard.has(key)) variantsByCard.set(key, new Set());
@@ -246,15 +316,16 @@ async function getCompletedSetCount(
   for (const binder of officialBinders) {
     const setId = binder.source_set_id;
     if (!setId) continue;
-    const binderRows = rowsByBinder.get(binder.id) ?? [];
-    const ownedRows = binderRows.filter((row) => row.owned || globalOwnedKeys.has(cardKey(row.set_id, row.card_id)));
-    let owned = ownedRows.length;
+    const ownedCardKeys = new Set([
+      ...(savedOwnedKeysBySet.get(setId) ?? new Set<string>()),
+      ...(ownedVariantKeysBySet.get(setId) ?? new Set<string>()),
+    ]);
+    let owned = ownedCardKeys.size;
     let total = setTotals.get(setId) ?? 0;
 
     if (masterByBinderId.get(binder.id)) {
       const officialCards = cardsBySet.get(setId) ?? [];
       if (officialCards.length) {
-        const ownedRowsByCard = new Set(ownedRows.map((row) => cardKey(row.set_id, row.card_id)));
         owned = 0;
         total = 0;
         for (const card of officialCards) {
@@ -262,7 +333,7 @@ async function getCompletedSetCount(
           const expectedVariants = variants.length > 1 ? variants : ['normal'];
           const key = cardKey(setId, card.id);
           total += expectedVariants.length;
-          owned += expectedVariants.filter((variant) => variantsByCard.get(key)?.has(variant)).length || (ownedRowsByCard.has(key) ? 1 : 0);
+          owned += expectedVariants.filter((variant) => variantsByCard.get(key)?.has(variant)).length || (ownedCardKeys.has(key) ? 1 : 0);
         }
       }
     }
@@ -273,47 +344,34 @@ async function getCompletedSetCount(
   return completed.size;
 }
 
-async function buildCollectionSummary(): Promise<CollectionSummary> {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) throw error;
-  if (!user) {
-    return {
-      totalOwnedItems: 0,
-      totalCardsOwned: 0,
-      uniqueCards: 0,
-      rawCardsOwned: 0,
-      gradedSlabsOwned: 0,
-      sealedProductsOwned: 0,
-      duplicateCopies: 0,
-      collectionValue: 0,
-      binderCount: 0,
-      completedSets: 0,
-      updatedAt: new Date().toISOString(),
-    };
+async function buildCollectionSummary(userId: string): Promise<CollectionSummary> {
+  // The summary only needs binders the user saved and owns. Avoid fetchBinderCards here:
+  // official binders otherwise expand an entire catalogue and attach live price snapshots.
+  const [binders, variantRows] = await Promise.all([
+    fetchBinders({ enrich: false }),
+    fetchOwnedCardRows(),
+  ]);
+  if (binders.some((binder) => binder.user_id !== userId)) {
+    throw new Error('Collection summary received binders for a different account.');
   }
-
-  const binders = await fetchBinders().catch((binderError: any) => {
-    console.log('Collection summary binders failed:', binderError?.message ?? binderError);
-    return [] as BinderRecord[];
-  });
-  const groups = await Promise.all(
-    binders.map(async (binder) => {
-      try {
-        const [cards, masterSetEnabled] = await Promise.all([fetchBinderCards(binder.id), isMasterSetEnabled(binder)]);
-        return { binder, cards, masterSetEnabled };
-      } catch (binderError: any) {
-        console.log('Collection summary binder cards failed:', binder.id, binderError?.message ?? binderError);
-        return { binder, cards: [] as BinderCardRecord[], masterSetEnabled: binder.master_set_enabled === true };
-      }
-    })
-  );
-  const allCards = groups.flatMap((group) => group.cards.map((card) => ({ ...card, __binderMode: group.binder.card_mode ?? 'raw', __binderEdition: group.binder.edition ?? null, __masterSetEnabled: group.masterSetEnabled })));
-  const variantRows = await fetchOwnedCardRows().catch((ownedError) => {
-    console.log('Collection summary owned rows failed:', ownedError?.message ?? ownedError);
-    return [] as OwnedCardRow[];
-  });
+  if (variantRows.some((row) => row.user_id !== userId)) {
+    throw new Error('Collection summary received ownership rows for a different account.');
+  }
+  const [savedOwnedRows, masterSetEnabled] = await Promise.all([
+    fetchSavedOwnedBinderCards(binders.map((binder) => binder.id)),
+    Promise.all(binders.map(async (binder) => [binder.id, await isMasterSetEnabled(binder)] as const)),
+  ]);
+  const knownBinderIds = new Set(binders.map((binder) => binder.id));
+  if (savedOwnedRows.some((row) => !knownBinderIds.has(row.binder_id))) {
+    throw new Error('Collection summary received saved cards outside this account\'s binders.');
+  }
+  const masterEntries = new Map(masterSetEnabled);
+  const binderById = new Map(binders.map((binder) => [binder.id, binder]));
   const variantRowsByCard = getVariantRowsByCard(variantRows);
-  const ownedCardMap = await fetchPokemonCardsById(variantRows.map((row) => row.card_id));
+  const ownedCardMap = await fetchPokemonCardsById([
+    ...variantRows.map((row) => row.card_id),
+    ...savedOwnedRows.map((row) => row.card_id),
+  ]);
 
   let totalOwnedItems = 0;
   let rawCardsOwned = 0;
@@ -351,28 +409,19 @@ async function buildCollectionSummary(): Promise<CollectionSummary> {
     addUnit(card, row.variant || 'normal', row.quantity, mode, unitKey);
   }
 
-  for (const card of allCards) {
+  for (const savedRow of savedOwnedRows) {
+    const binder = binderById.get(savedRow.binder_id);
+    const card = {
+      ...buildCardLikeFromSavedBinderRow(savedRow, ownedCardMap.get(savedRow.card_id)),
+      __binderEdition: binder?.edition ?? null,
+    };
     const key = cardKey(card.set_id, card.card_id);
     if (variantRowsByCard.has(key)) continue;
-    const variants = variantRowsByCard.get(key) ?? [];
-    const mode = card.__binderMode === 'graded' ? 'graded' : 'raw';
-
-    if (variants.length) {
-      for (const row of variants) {
-        addUnit(card, row.variant || 'normal', row.quantity, mode);
-      }
-      continue;
-    }
-
-    const quantity = ownedQuantity(card);
-    if (quantity > 0) addUnit(card, null, quantity, mode);
+    const mode = binder?.card_mode === 'graded' || savedRow.grade_company || savedRow.grade ? 'graded' : 'raw';
+    addUnit(card, null, ownedQuantity(savedRow), mode);
   }
 
-  const masterEntries = new Map(groups.map((group) => [group.binder.id, group.masterSetEnabled]));
-  const completedSets = await getCompletedSetCount(user.id, binders, allCards, masterEntries).catch((completedError: any) => {
-    console.log('Collection summary completed-set count failed:', completedError?.message ?? completedError);
-    return 0;
-  });
+  const completedSets = await getCompletedSetCount(binders, savedOwnedRows, variantRows, masterEntries);
 
   return {
     totalOwnedItems,
@@ -448,27 +497,70 @@ async function writePersistedSummary(userId: string, value: CollectionSummary) {
   }
 }
 
-async function refreshCollectionSummary(userId: string) {
-  inflightSummary = buildCollectionSummary();
-  try {
-    const value = await inflightSummary;
+function getSessionUserId() {
+  return supabase.auth.getSession().then(({ data: { session }, error }) => {
+    if (error) throw error;
+    return session?.user?.id ?? null;
+  });
+}
+
+async function refreshCollectionSummary(userId: string, version: number) {
+  let entry!: { userId: string; version: number; promise: Promise<CollectionSummary> };
+  const promise = (async () => {
+    const value = await buildCollectionSummary(userId);
+    // A refresh may finish after logout, account switch, or an ownership mutation.
+    // Reject for every joined caller rather than allowing a raw build result through.
+    if (inflightSummary !== entry || version !== getCollectionSummaryVersion() || await getSessionUserId() !== userId) {
+      throw new Error('Collection summary changed account or version before completion.');
+    }
     cachedSummary = {
       userId,
-      version: getCollectionSummaryVersion(),
+      version,
       expiresAt: Date.now() + SUMMARY_CACHE_TTL_MS,
       value,
     };
     await writePersistedSummary(userId, value);
     return value;
-  } finally {
-    inflightSummary = null;
+  })();
+  entry = { userId, version, promise };
+  inflightSummary = entry;
+  void promise.then(
+    () => {
+      if (inflightSummary === entry) inflightSummary = null;
+    },
+    () => {
+      if (inflightSummary === entry) inflightSummary = null;
+    }
+  );
+  return promise;
+}
+
+function matchingSummaryInflight(userId: string, version: number) {
+  return inflightSummary?.userId === userId && inflightSummary.version === version
+    ? inflightSummary.promise
+    : null;
+}
+
+function refreshOrJoinCollectionSummary(userId: string, version: number) {
+  return matchingSummaryInflight(userId, version) ?? refreshCollectionSummary(userId, version);
+}
+
+async function ensureCurrentSummaryIdentity(userId: string, version: number) {
+  if (version !== getCollectionSummaryVersion() || await getSessionUserId() !== userId) {
+    throw new Error('Collection summary changed account or version before completion.');
   }
+}
+
+function returnStaleAndRefresh(value: CollectionSummary, userId: string, version: number) {
+  void refreshOrJoinCollectionSummary(userId, version).catch((refreshError) => {
+    console.log('Collection summary background refresh failed:', refreshError?.message ?? refreshError);
+  });
+  return value;
 }
 
 export function invalidateCollectionSummary() {
   bumpCollectionSummaryVersion();
   cachedSummary = null;
-  inflightSummary = null;
 }
 
 export async function getCollectionSummary(options?: {
@@ -476,32 +568,28 @@ export async function getCollectionSummary(options?: {
   staleWhileRefresh?: boolean;
   maxPersistedAgeMs?: number;
 }) {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) throw error;
-  if (!user) return getEmptySummary();
+  const userId = await getSessionUserId();
+  if (!userId) return getEmptySummary();
 
   const now = Date.now();
   const version = getCollectionSummaryVersion();
-  const memoryHit = cachedSummary?.userId === user.id && cachedSummary.version === version ? cachedSummary : null;
+  const memoryHit = cachedSummary?.userId === userId && cachedSummary.version === version ? cachedSummary : null;
   if (!options?.forceRefresh && memoryHit && memoryHit.expiresAt > now) return memoryHit.value;
-  if (!options?.forceRefresh && inflightSummary) return inflightSummary;
-
-  const persisted = version === 0 ? await readPersistedSummary(user.id, options?.maxPersistedAgeMs) : null;
-  if (!options?.forceRefresh && persisted) {
-    cachedSummary = { userId: user.id, version, expiresAt: now + SUMMARY_CACHE_TTL_MS, value: persisted };
-    return persisted;
+  if (options?.staleWhileRefresh && memoryHit) {
+    return returnStaleAndRefresh(memoryHit.value, userId, version);
   }
 
-  if (options?.forceRefresh && options.staleWhileRefresh && (memoryHit || persisted)) {
-    const staleValue = memoryHit?.value ?? persisted!;
-    if (!inflightSummary) {
-      void refreshCollectionSummary(user.id).catch((refreshError) => {
-        console.log('Collection summary background refresh failed:', refreshError?.message ?? refreshError);
-      });
-    }
-    return staleValue;
+  const matchingInflight = matchingSummaryInflight(userId, version);
+  if (!options?.forceRefresh && matchingInflight) return matchingInflight;
+
+  const persisted = version === 0 ? await readPersistedSummary(userId, options?.maxPersistedAgeMs) : null;
+  // AsyncStorage is outside Supabase RLS. Recheck its local identity/version boundary
+  // before using a persisted value or joining a request started meanwhile.
+  await ensureCurrentSummaryIdentity(userId, version);
+  if (persisted && options?.staleWhileRefresh) {
+    cachedSummary = { userId, version, expiresAt: now + SUMMARY_CACHE_TTL_MS, value: persisted };
+    return returnStaleAndRefresh(persisted, userId, version);
   }
 
-  if (inflightSummary) return inflightSummary;
-  return refreshCollectionSummary(user.id);
+  return refreshOrJoinCollectionSummary(userId, version);
 }

@@ -1,6 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import { getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -837,13 +838,17 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const addCardListRef = useRef<FlatList<CardPreviewResult>>(null);
   const [ownedVariants, setOwnedVariants] = useState<Map<string, number>>(new Map());
   const [variantManagedCards, setVariantManagedCards] = useState<Set<string>>(new Set());
+  const [ownershipReady, setOwnershipReady] = useState(false);
   const [masterSetEnabled, setMasterSetEnabled] = useState(false);
   const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
   const [setLogoFailed, setSetLogoFailed] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const achievementProgressRef = useRef<Record<string, number>>({});
+  const activeAccountIdRef = useRef<string | null>(null);
+  const accountGenerationRef = useRef(0);
+  const loadRequestRef = useRef(0);
   const isOwner = Boolean(userId && binder?.user_id === userId);
-  const isReadOnly = routeReadOnly || (Boolean(binder) && !isOwner);
+  const isReadOnly = routeReadOnly || (Boolean(binder) && (!isOwner || !ownershipReady));
 
   useEffect(() => {
     if (selectedCard) setDetailGradeText(selectedCard.grade ?? '10');
@@ -962,6 +967,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
   const load = useCallback(async (forceRefresh = false) => {
     if (!binderId) return;
+    const accountGeneration = accountGenerationRef.current;
+    const requestId = ++loadRequestRef.current;
+    const isCurrentRequest = () => isCurrentAccountRequest(
+      { accountGeneration: accountGenerationRef.current, requestId: loadRequestRef.current },
+      { accountGeneration, requestId },
+    );
+
     if (forceRefresh) {
       invalidateBinderCaches(binderId);
       invalidatePokemonCatalogueCardCaches();
@@ -969,8 +981,15 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
     try {
       setLoading(true);
+      setOwnershipReady(false);
+      setShowcaseRows([]);
+      setOwnedVariants(new Map());
+      setVariantManagedCards(new Set());
 
       const { data: { user } } = await supabase.auth.getUser();
+      if (!isCurrentRequest()) return;
+      if (activeAccountIdRef.current && activeAccountIdRef.current !== user?.id) return;
+      activeAccountIdRef.current = user?.id ?? null;
       setUserId(user?.id ?? null);
 
       const binderData = await measureAsync(
@@ -978,6 +997,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         () => fetchBinderById(binderId),
         { binderId }
       );
+      if (!isCurrentRequest()) return;
 
       if (!binderData || (binderData.user_id !== user?.id && !binderData.is_public)) {
         setBinder(null);
@@ -988,43 +1008,72 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       }
 
       setBinder(binderData);
-      setCustomNameArtKey(
-        binderData.type === 'custom'
-          ? await getCustomBinderNameArtKeyForBinder(binderData.id, binderData.name)
-          : null
-      );
       setIsPublic(Boolean(binderData?.is_public));
 
-      const binderCards = await measureAsync(
-        'binder.fetchBinderCards',
-        () => fetchBinderCards(binderId),
-        { binderId }
-      );
+      const [customNameArtKey, binderCards] = await Promise.all([
+        binderData.type === 'custom'
+          ? getCustomBinderNameArtKeyForBinder(binderData.id, binderData.name)
+          : Promise.resolve(null),
+        measureAsync(
+          'binder.fetchBinderCards',
+          () => fetchBinderCards(binderId),
+          { binderId }
+        ),
+      ]);
+      if (!isCurrentRequest()) return;
+
+      setCustomNameArtKey(customNameArtKey);
 
       // Saved rows are already presentation-safe fallbacks. Render them before
       // optional ownership/showcase reads so a later enrichment failure cannot
       // make an older, unresolved binder look empty.
       setCards(binderCards);
+      setLoading(false);
 
-      if (user) {
-        const { data, error } = await supabase
-          .from('binder_card_showcases')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('binder_id', binderId)
-          .order('sort_order', { ascending: true });
+      if (!user) {
+        setCards(binderCards);
+        setOwnedVariants(new Map());
+        setVariantManagedCards(new Set());
+        setOwnershipReady(true);
+        return;
+      }
 
-        if (error) throw error;
-        setShowcaseRows((data ?? []) as ShowcaseRow[]);
+      void (async () => {
+        const cardIds = binderCards.map((card) => card.card_id);
+        const setIds = Array.from(new Set(binderCards.map((card) => card.set_id).filter(Boolean)));
+        const binderVariantCardKeys = new Set(
+          binderCards.map((card) => getVariantCardKey(card.card_id, card.set_id))
+        );
+        const [showcaseResult, userBindersResult, variantQuantityResult] = await Promise.all([
+          supabase
+            .from('binder_card_showcases')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('binder_id', binderId)
+            .order('sort_order', { ascending: true }),
+          supabase
+            .from('binders')
+            .select('id')
+            .eq('user_id', user.id),
+          cardIds.length > 0
+            ? supabase
+                .from('user_card_variants')
+                .select('card_id, set_id, variant, quantity')
+                .eq('user_id', user.id)
+                .in('card_id', cardIds)
+                .in('set_id', setIds)
+            : Promise.resolve({ data: [], error: null }),
+        ]);
+        if (!isCurrentRequest()) return;
 
-        const { data: userBinders, error: userBindersError } = await supabase
-          .from('binders')
-          .select('id')
-          .eq('user_id', user.id);
+        if (showcaseResult.error) {
+          console.log('Failed to load binder showcases', showcaseResult.error);
+        } else {
+          setShowcaseRows((showcaseResult.data ?? []) as ShowcaseRow[]);
+        }
 
-        if (userBindersError) throw userBindersError;
-
-        const userBinderIds = (userBinders ?? []).map((row) => row.id).filter(Boolean);
+        if (userBindersResult.error) throw userBindersResult.error;
+        const userBinderIds = (userBindersResult.data ?? []).map((row) => row.id).filter(Boolean);
         const { data: ownedRows, error: ownedRowsError } = userBinderIds.length
           ? await supabase
               .from('binder_cards')
@@ -1032,7 +1081,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               .in('binder_id', userBinderIds)
               .eq('owned', true)
           : { data: [], error: null };
-
+        if (!isCurrentRequest()) return;
         if (ownedRowsError) throw ownedRowsError;
 
         const nextGlobalOwnedKeys = new Set(
@@ -1043,67 +1092,92 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           owned: card.owned || nextGlobalOwnedKeys.has(`${card.set_id}:${card.card_id}`),
         })));
 
-        // Load variant ownership for all cards in this binder
-        const cardIds = binderCards.map((c) => c.card_id);
-        if (cardIds.length > 0) {
-          const setIds = Array.from(new Set(binderCards.map((c) => c.set_id).filter(Boolean)));
-          const binderVariantCardKeys = new Set(
-            binderCards.map((card) => getVariantCardKey(card.card_id, card.set_id))
-          );
-          const { data: variantRowsWithQuantity, error: variantQuantityError } = await supabase
+        let variantRows = (variantQuantityResult.data ?? []) as {
+          card_id: string;
+          set_id?: string | null;
+          variant: string;
+          quantity?: number | null;
+        }[];
+        if (variantQuantityResult.error && cardIds.length > 0) {
+          const fallback = await supabase
             .from('user_card_variants')
-            .select('card_id, set_id, variant, quantity')
+            .select('card_id, set_id, variant')
             .eq('user_id', user.id)
             .in('card_id', cardIds)
             .in('set_id', setIds);
-
-          const variantRows = variantQuantityError
-            ? (await supabase
-                .from('user_card_variants')
-                .select('card_id, set_id, variant')
-                .eq('user_id', user.id)
-                .in('card_id', cardIds)
-                .in('set_id', setIds)).data
-            : variantRowsWithQuantity;
-
-          const typedVariantRows = ((variantRows ?? []) as {
-            card_id: string;
-            set_id?: string | null;
-            variant: string;
-            quantity?: number | null;
-          }[]).filter((row) =>
-            Boolean(row.set_id) && binderVariantCardKeys.has(getVariantCardKey(row.card_id, row.set_id ?? ''))
-          );
-
-          setOwnedVariants(new Map(
-            typedVariantRows.map((row) => [
-              getVariantKey(row.card_id, row.set_id ?? '', row.variant),
-              Math.max(1, Number(row.quantity ?? 1)),
-            ])
-          ));
-          setVariantManagedCards(new Set(
-            typedVariantRows.map((row) => getVariantCardKey(row.card_id, row.set_id ?? ''))
-          ));
-        } else {
-          setOwnedVariants(new Map());
-          setVariantManagedCards(new Set());
+          if (!isCurrentRequest()) return;
+          if (fallback.error) throw fallback.error;
+          variantRows = (fallback.data ?? []) as typeof variantRows;
         }
-      } else {
-        setCards(binderCards);
-        setOwnedVariants(new Map());
-        setVariantManagedCards(new Set());
-      }
+
+        const typedVariantRows = variantRows.filter((row) =>
+          Boolean(row.set_id) && binderVariantCardKeys.has(getVariantCardKey(row.card_id, row.set_id ?? ''))
+        );
+
+        setOwnedVariants(new Map(
+          typedVariantRows.map((row) => [
+            getVariantKey(row.card_id, row.set_id ?? '', row.variant),
+            Math.max(1, Number(row.quantity ?? 1)),
+          ])
+        ));
+        setVariantManagedCards(new Set(
+          typedVariantRows.map((row) => getVariantCardKey(row.card_id, row.set_id ?? ''))
+        ));
+        setOwnershipReady(true);
+      })().catch((error) => {
+        if (isCurrentRequest()) {
+          console.log('Failed to load binder ownership', error);
+          if (binderData.user_id === user.id) {
+            Alert.alert(
+              'Ownership details unavailable',
+              'Your cards are visible, but changes stay disabled until ownership details load. Reopen the binder or use Refresh catalogue to try again.'
+            );
+          }
+        }
+      });
     } catch (error) {
-      console.log('Failed to load binder', error);
-      Alert.alert('Error', 'Could not load this binder.');
+      if (isCurrentRequest()) {
+        console.log('Failed to load binder', error);
+        Alert.alert('Error', 'Could not load this binder.');
+      }
     } finally {
-      setLoading(false);
+      if (isCurrentRequest()) setLoading(false);
     }
   }, [binderId]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextAccountId = session?.user.id ?? null;
+      if (activeAccountIdRef.current === nextAccountId) return;
+
+      activeAccountIdRef.current = nextAccountId;
+      accountGenerationRef.current += 1;
+      loadRequestRef.current += 1;
+      setUserId(nextAccountId);
+      setBinder(null);
+      setCustomNameArtKey(null);
+      setIsPublic(false);
+      setCards([]);
+      setShowcaseRows([]);
+      setOwnedVariants(new Map());
+      setVariantManagedCards(new Set());
+      setOwnershipReady(false);
+      setLoading(false);
+
+      if (nextAccountId) {
+        void load();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [load]);
 
   useFocusEffect(
     useCallback(() => {
       load();
+      return () => {
+        loadRequestRef.current += 1;
+      };
     }, [load])
   );
 
@@ -1293,7 +1367,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     : 0;
 
   useEffect(() => {
-    if (!binderId || !totalKnown || totalCount <= 0 || loading || catalogueReadIncomplete) return;
+    if (!binderId || !totalKnown || totalCount <= 0 || loading || !ownershipReady || catalogueReadIncomplete) return;
 
     const lastProgress = achievementProgressRef.current[binderId] ?? -1;
     if (progressPercent <= lastProgress && progressPercent < 100) return;
@@ -1320,7 +1394,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         console.log('Binder complete achievement event failed:', achievementError);
       });
     }
-  }, [binderId, catalogueReadIncomplete, loading, masterSetEnabled, progressPercent, totalCount, totalKnown]);
+  }, [binderId, catalogueReadIncomplete, loading, masterSetEnabled, ownershipReady, progressPercent, totalCount, totalKnown]);
 
   const binderValue = useMemo(() => {
     return displayCards.reduce((sum, card) => {
