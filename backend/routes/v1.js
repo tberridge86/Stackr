@@ -384,6 +384,13 @@ export function createV1Router(options = {}) {
     });
   }));
 
+  router.post('/cards/:variantId/provider-price-refresh', asyncRoute(async (req, res) => {
+    const estimate = await getPricingService().refreshExactProviderEstimate(req.params.variantId, {
+      productType: 'raw_card', currency: 'GBP', condition: 'near_mint',
+    });
+    sendEnvelope(req, res, estimate, { cacheControl: NO_STORE_CACHE_CONTROL });
+  }));
+
   router.post('/market/price-refresh', asyncRoute(async (req, res) => {
     const userId = res.locals.pricingUserId ?? await getAuthenticatedUserId(req);
     const { variantIds, ...input } = req.body ?? {};

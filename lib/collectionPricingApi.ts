@@ -64,6 +64,7 @@ const LEGACY_VARIANT_CODES: Record<string, string> = {
   holofoil: 'holo',
   reverse_holofoil: 'reverse_holo',
   reverse_holo_pokeball: 'poke_ball',
+  master_ball_pattern_holofoil: 'master_ball',
   '1st_edition': 'first_edition',
 };
 

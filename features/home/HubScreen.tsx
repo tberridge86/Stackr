@@ -1295,7 +1295,7 @@ export default function HubScreen() {
         await applyCachedHomeCollection();
       }
 
-      const binders = await fetchBinders().catch((binderError: any) => {
+      const binders = await fetchBinders({ enrich: false }).catch((binderError: any) => {
         console.log('Home binders failed:', binderError?.message ?? binderError);
         return [] as BinderRecord[];
       });
@@ -1360,6 +1360,8 @@ export default function HubScreen() {
       const ownedUnitCount = ownedUnits.reduce((total, unit) => total + unit.quantity, 0);
       if (!await confirmCurrentRequest()) return;
       setOwnedCardCount(ownedUnitCount);
+      // Account and collection content can render while exact prices/history load.
+      setCollectionValueLoading(false);
 
       const priceResults = ownedUnits.length
         ? await loadCollectionPrices(ownedUnits.map(pricingInputForHomeUnit))

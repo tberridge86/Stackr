@@ -12,6 +12,7 @@ import { buildCanonicalIdentity } from '../backend/lib/pricingV2/identity.js';
 import { scoreObservationMatch } from '../backend/lib/pricingV2/matcher.js';
 import { normaliseObservation } from '../backend/lib/pricingV2/normalise.js';
 import { calculatePricingEstimate } from '../backend/lib/pricingV2/statistics.js';
+import { fetchTcgdexNormalCardPrice, summariseTcgdexNormalPricing } from '../backend/lib/tcgdex.js';
 
 const migration = readFileSync('supabase/migrations/20260728171416_stackr_market_pricing_service.sql', 'utf8');
 const snapshotBucketMigration = readFileSync('supabase/migrations/20260904130000_market_price_snapshot_history_buckets.sql', 'utf8');
@@ -325,7 +326,7 @@ async function assertInvalidServiceInput() {
   );
 }
 
-function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], externalIdentifiers = [] }) {
+function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, catalogueExternalIdentifiers = [] }) {
   const limits = [];
   const inserted = [];
   const rpcCalls = [];
@@ -337,15 +338,21 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
       ? catalogueCards
       : schemaName === 'api' && tableName === 'catalogue_external_identifiers'
         ? externalIdentifiers
-        : schemaName === 'api' && tableName === 'market_price_snapshot_history'
-          ? snapshots
-          : schemaName === 'api' && tableName === 'market_price_estimates'
-            ? estimates
-        : tableName === 'market_price_snapshots'
-          ? snapshots
-          : tableName === 'price_refresh_queue'
-            ? queueRows
-          : [];
+        : schemaName === 'ingest' && tableName === 'sources'
+          ? (tcgdexSource ? [tcgdexSource] : [])
+          : schemaName === 'catalog' && tableName === 'catalogue_versions'
+            ? (publishedVersion ? [publishedVersion] : [])
+            : schemaName === 'catalog' && tableName === 'catalogue_version_external_identifiers'
+              ? catalogueExternalIdentifiers
+              : schemaName === 'api' && tableName === 'market_price_snapshot_history'
+                ? snapshots
+                : schemaName === 'api' && tableName === 'market_price_estimates'
+                  ? estimates
+                  : tableName === 'market_price_snapshots'
+                    ? snapshots
+                    : tableName === 'price_refresh_queue'
+                      ? queueRows
+                      : [];
     let single = false;
     const builder = {
       select(columns = '*') {
@@ -833,6 +840,151 @@ async function assertPagedRangeHistoryKeepsBaseline() {
   assert.ok(history.snapshots.some((row) => row.marketCentral === 50), 'the page-two pre-range baseline must be retained');
 }
 
+async function assertExactOwnerProviderRefresh() {
+  const variantId = '77777777-7777-4777-8777-777777777777';
+  const printingId = '66666666-6666-4666-8666-666666666666';
+  const metadata = {
+    variant_id: variantId, printing_id: printingId, language_code: 'en',
+    set_id: '11111111-1111-4111-8111-111111111111', set_code: 'base-set',
+    set_english_display_name: 'Base Set', collector_number: '4/102',
+    card_english_display_name: 'Charizard', rarity_code: 'Holo Rare', variant_code: 'normal', finish_code: 'normal',
+  };
+  const source = { id: '44444444-4444-4444-8444-444444444444', code: 'tcgdex', active: true, licence_status: 'approved', deprecated_at: null };
+  const version = { id: '33333333-3333-4333-8333-333333333333', status: 'published', language_code: 'en', deprecated_at: null, superseded_by_version_id: null };
+  const identifier = { catalogue_version_id: version.id, source_id: source.id, source_entity_type: 'card', external_id: 'base3-4:normal', language_code: 'en', variant_id: variantId };
+  const supabase = createSnapshotSupabase({ metadata, tcgdexSource: source, publishedVersion: version, catalogueExternalIdentifiers: [identifier] });
+  let providerCalls = 0;
+  const service = createMarketPricingService({
+    supabase,
+    fetchTcgdexNormalCardPrice: async (request) => {
+      providerCalls += 1;
+      assert.deepEqual(request, { cardId: 'base3-4', language: 'en' }, 'the documented :normal suffix is normalised before the exact provider request');
+      return {
+        providerCardId: 'base3-4', language: 'en', number: '4/102', price: 12.5, priceSource: 'tcgdex_market',
+        pricingUpdatedAt: new Date().toISOString(), raw: { id: 'base3-4' },
+      };
+    },
+  });
+  const refreshed = await service.refreshExactProviderEstimate(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  assert.equal(refreshed.status, 'legacy_cached_market_estimate');
+  assert.equal(refreshed.quoteScope, 'exact_variant');
+  assert.equal(refreshed.estimates.central, 12.5);
+  assert.equal(providerCalls, 1);
+  assert.equal(supabase.inserted.length, 1, 'the response is returned only after its exact snapshot was inserted');
+  const inserted = supabase.inserted[0];
+  assert.equal(inserted.card_id, variantId);
+  assert.equal(inserted.language, 'en');
+  assert.equal(inserted.primary_source, 'tcgdex');
+  assert.equal(inserted.proven_last_sold, false);
+  assert.equal(inserted.pricing_identity_json.canonicalVariantId, variantId);
+  await assert.rejects(
+    () => service.refreshExactProviderEstimate(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' }),
+    (error) => error.code === 'provider_refresh_cooldown',
+    'repeat owner refreshes must use the cooldown instead of hitting the provider again',
+  );
+  assert.equal(providerCalls, 1);
+
+  const mismatchedVariantId = '55555555-5555-4555-8555-555555555555';
+  const mismatchedService = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata: { ...metadata, variant_id: mismatchedVariantId }, tcgdexSource: source, publishedVersion: version, catalogueExternalIdentifiers: [{ ...identifier, variant_id: mismatchedVariantId }] }),
+    fetchTcgdexNormalCardPrice: async () => ({ providerCardId: 'different-card', language: 'en', number: '4/102', price: 12.5, pricingUpdatedAt: new Date().toISOString() }),
+  });
+  await assert.rejects(
+    () => mismatchedService.refreshExactProviderEstimate(mismatchedVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' }),
+    (error) => error.code === 'exact_provider_quote_unavailable',
+    'a provider quote for another card cannot be persisted',
+  );
+
+  const ambiguousVariantId = '12121212-1212-4121-8121-121212121212';
+  const ambiguousService = createMarketPricingService({
+    supabase: createSnapshotSupabase({
+      metadata: { ...metadata, variant_id: ambiguousVariantId }, tcgdexSource: source, publishedVersion: version,
+      catalogueExternalIdentifiers: [
+        { ...identifier, variant_id: ambiguousVariantId },
+        { ...identifier, variant_id: ambiguousVariantId, external_id: 'base3-4' },
+        { ...identifier, variant_id: ambiguousVariantId, external_id: 'base3-5:normal' },
+      ],
+    }),
+    fetchTcgdexNormalCardPrice: async () => { throw new Error('ambiguous aliases must reject before the provider call'); },
+  });
+  await assert.rejects(
+    () => ambiguousService.refreshExactProviderEstimate(ambiguousVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' }),
+    (error) => error.code === 'ambiguous_provider_identity',
+    'a third valid identifier after a duplicate must still be examined and reject ambiguity',
+  );
+
+  const wrongLanguageVariantId = '99999999-9999-4999-8999-999999999999';
+  const wrongLanguageService = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata: { ...metadata, variant_id: wrongLanguageVariantId }, tcgdexSource: source, publishedVersion: version, catalogueExternalIdentifiers: [{ ...identifier, variant_id: wrongLanguageVariantId }] }),
+    fetchTcgdexNormalCardPrice: async () => ({ providerCardId: 'base3-4', language: 'ja', number: '4/102', price: 12.5, pricingUpdatedAt: new Date().toISOString() }),
+  });
+  await assert.rejects(
+    () => wrongLanguageService.refreshExactProviderEstimate(wrongLanguageVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' }),
+    (error) => error.code === 'exact_provider_quote_unavailable',
+    'a quote returned in another language cannot be persisted',
+  );
+
+  const concurrentVariantId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  let resolveQuote;
+  let concurrentCalls = 0;
+  const concurrentService = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata: { ...metadata, variant_id: concurrentVariantId }, tcgdexSource: source, publishedVersion: version, catalogueExternalIdentifiers: [{ ...identifier, variant_id: concurrentVariantId }] }),
+    fetchTcgdexNormalCardPrice: () => {
+      concurrentCalls += 1;
+      return new Promise((resolve) => { resolveQuote = resolve; });
+    },
+  });
+  const first = concurrentService.refreshExactProviderEstimate(concurrentVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  const second = concurrentService.refreshExactProviderEstimate(concurrentVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(concurrentCalls, 1, 'concurrent refresh requests must share one provider call');
+  resolveQuote({ providerCardId: 'base3-4', language: 'en', number: '4/102', price: 12.5, pricingUpdatedAt: new Date().toISOString() });
+  await Promise.all([first, second]);
+
+  const normal = summariseTcgdexNormalPricing({
+    id: 'base3-4', localId: '4/102', set: { id: 'base3' },
+    pricing: { tcgplayer: { unit: 'USD', updated: new Date().toISOString(), holofoil: { marketPrice: 100 }, normal: { marketPrice: 2 } } },
+  }, 'en');
+  assert.equal(normal.price, 1.58, 'normal pricing must not select a higher holo quote');
+  assert.equal(summariseTcgdexNormalPricing({ id: 'base3-4', pricing: { cardmarket: { unit: 'EUR', 'trend-holo': 9 } } }, 'en'), null,
+    'Cardmarket holo-only pricing cannot be treated as the normal printing');
+  assert.equal(summariseTcgdexNormalPricing({ id: 'base3-4', language: 'ja', pricing: { cardmarket: { unit: 'EUR', trend: 9, updated: new Date().toISOString() } } }, 'en').language, 'ja',
+    'a provider payload language is retained for server-side validation instead of being replaced by the requested language');
+  assert.equal(summariseTcgdexNormalPricing({ id: 'base3-4', pricing: { tcgplayer: { unit: 'JPY', normal: { marketPrice: 100 } } } }, 'en'), null,
+    'an unknown provider currency must not be treated as USD');
+  assert.equal(normal.sourceCurrency, 'USD', 'the quote retains its original provider currency alongside its configured GBP conversion');
+}
+
+async function assertNormalProviderFetchAbortsAndClearsInflight() {
+  const originalFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = (_url, init) => new Promise((_resolve, reject) => {
+    calls += 1;
+    init.signal.addEventListener('abort', () => reject(new Error('aborted')));
+  });
+  try {
+    assert.equal(await fetchTcgdexNormalCardPrice({ cardId: 'test-001', language: 'en', timeoutMs: 1 }), null);
+    assert.equal(await fetchTcgdexNormalCardPrice({ cardId: 'test-001', language: 'en', timeoutMs: 1 }), null);
+    assert.equal(calls, 2, 'an aborted normal-price request must clear its isolated inflight entry');
+    globalThis.fetch = async (_url, init) => ({
+      ok: true,
+      text: () => new Promise((_resolve, reject) => init.signal.addEventListener('abort', () => reject(new Error('body aborted')))),
+    });
+    assert.equal(await fetchTcgdexNormalCardPrice({ cardId: 'body-test-001', language: 'en', timeoutMs: 1 }), null,
+      'the deadline also covers a stalled response body');
+    calls = 0;
+    globalThis.fetch = async () => {
+      calls += 1;
+      return { ok: true, text: async () => JSON.stringify({ id: 'fresh-test-001', localId: '001', pricing: { tcgplayer: { unit: 'GBP', normal: { marketPrice: calls } } } }) };
+    };
+    assert.equal((await fetchTcgdexNormalCardPrice({ cardId: 'fresh-test-001', language: 'en' })).price, 1);
+    assert.equal((await fetchTcgdexNormalCardPrice({ cardId: 'fresh-test-001', language: 'en' })).price, 2,
+      'an explicit provider refresh bypasses the passive provider cache');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
 assertMigrationShape();
 assertOpenApiAndClientContract();
 assertPricingMathAndTitleValidation();
@@ -846,5 +998,7 @@ await assertCanonicalSnapshotLabelsAndBasis();
 await assertManualRefreshIdentityAndGate();
 await assertIdentityAwareDenseRangeHistory();
 await assertPagedRangeHistoryKeepsBaseline();
+await assertExactOwnerProviderRefresh();
+await assertNormalProviderFetchAbortsAndClearsInflight();
 
 console.log('Market pricing service tests passed.');

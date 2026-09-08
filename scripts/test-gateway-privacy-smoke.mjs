@@ -17,6 +17,7 @@ const server = createServer((request, response) => {
     response.end(JSON.stringify({ data: { status: 'ready' }, meta: { apiVersion: '1', requestId } }));
     return;
   }
+  if (request.url.endsWith('/provider-price-refresh')) assert.equal(request.method, 'POST');
   response.statusCode = 401;
   response.setHeader('cache-control', privateErrors ? 'private, no-store' : 'public, max-age=60');
   response.setHeader('vary', privateErrors ? 'Authorization' : 'Origin');
@@ -28,7 +29,7 @@ try {
   const gatewayUrl = `http://127.0.0.1:${server.address().port}`;
   const result = await runGatewayPrivacySmoke({ gatewayUrl, variantId, allowHttp: true });
   assert.equal(result.ok, true);
-  assert.deepEqual(result.checks.map((check) => check.status), [200, 200, 401, 401, 401]);
+  assert.deepEqual(result.checks.map((check) => check.status), [200, 200, 401, 401, 401, 401]);
   privateErrors = false;
   await assert.rejects(
     runGatewayPrivacySmoke({ gatewayUrl, variantId, allowHttp: true }),

@@ -412,7 +412,7 @@ export const getEstimatedValue = (baseValue: number, condition: string): number 
   return baseValue * multiplier;
 };
 
-async function attachSetBrandingToBinders(binders: BinderRecord[]): Promise<BinderRecord[]> {
+async function attachSetBrandingToBinders(binders: BinderRecord[], includeAssets = true): Promise<BinderRecord[]> {
   const sourceSetIds = [...new Set(
     binders
       .filter((binder) => binder.type === 'official' && binder.source_set_id)
@@ -421,8 +421,8 @@ async function attachSetBrandingToBinders(binders: BinderRecord[]): Promise<Bind
 
   if (!sourceSetIds.length) return binders;
 
-  const catalogueSets = await getCachedOrFetch('binder:catalogue-sets', 5 * 60 * 1000, async () => {
-    const sets = await fetchPreferredStackrSets(null, undefined, { includeAssets: true });
+  const catalogueSets = await getCachedOrFetch(`binder:catalogue-sets:${includeAssets ? 'assets' : 'facts'}`, 5 * 60 * 1000, async () => {
+    const sets = await fetchPreferredStackrSets(null, undefined, { includeAssets });
     // Empty/error metadata reads must be retryable, not cached for five minutes.
     if (!sets.length) throw new Error('Binder catalogue metadata is temporarily unavailable.');
     return sets;
@@ -507,9 +507,10 @@ export async function fetchBinders(options: { enrich?: boolean } = {}): Promise<
 }
 
 export async function fetchBinderById(
-  binderId: string
+  binderId: string,
+  options: { includeAssets?: boolean } = {},
 ): Promise<BinderRecord | null> {
-  return getCachedOrFetch(`binder:${binderId}:record`, BINDER_RECORD_CACHE_TTL_MS, async () => {
+  return getCachedOrFetch(`binder:${binderId}:record:${options.includeAssets === false ? 'facts' : 'assets'}`, BINDER_RECORD_CACHE_TTL_MS, async () => {
     const { data, error } = await supabase
       .from('binders')
       .select('*')
@@ -521,7 +522,7 @@ export async function fetchBinderById(
     const binder = (data as BinderRecord | null) ?? null;
     if (!binder) return null;
 
-    return (await attachSetBrandingToBinders([binder]))[0] ?? binder;
+    return (await attachSetBrandingToBinders([binder], options.includeAssets !== false))[0] ?? binder;
   });
 }
 
@@ -544,7 +545,8 @@ async function fetchBinderCardsUncached(
   binderId: string,
   options: { includePrices?: boolean } = {},
 ): Promise<BinderCardRecord[]> {
-  const binder = await fetchBinderById(binderId);
+  // Identity and ownership reads must not wait for every set's visual manifest.
+  const binder = await fetchBinderById(binderId, { includeAssets: false });
 
   if (!binder) return [];
   const binderLanguage = inferBinderLanguage(binder.language, binder.source_set_id);

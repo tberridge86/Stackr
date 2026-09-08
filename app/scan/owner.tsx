@@ -20,6 +20,7 @@ import {
   type OwnerTeachingCardChoice, type OwnerTeachingLanguage,
 } from '../../lib/ownerTeachingCore';
 import type { StackrCard, StackrCardVariant, StackrSet } from '../../lib/stackrApiV1';
+import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
 
 export default function OwnerRecognitionScreen() {
   const { theme } = useTheme();
@@ -166,7 +167,8 @@ export default function OwnerRecognitionScreen() {
   function chooseTeachingSet(set: StackrSet) {
     clearTeachingBelow('set');
     setTeachingSet(set);
-    setTeachingSetQuery(set.setCode ?? set.englishDisplayName ?? set.nativeName ?? set.setId);
+    setTeachingSetQuery(set.setCode ?? getPreferredSetDisplayName({ id: set.setId, language: set.languageCode,
+      localName: set.nativeName, englishDisplayName: set.englishDisplayName }));
   }
 
   async function findTeachingCards() {
@@ -277,7 +279,7 @@ export default function OwnerRecognitionScreen() {
       {access && <Text style={{ color: theme.colors.textSoft, marginTop: 8 }}>Fill the frame with the card face, keep it flat and avoid glare. Scores below are cosine similarities, not probabilities.</Text>}
       {imageUri && <Image source={{ uri: imageUri }} style={{ height: 260, marginTop: 16, borderRadius: 12 }} resizeMode="contain" />}
       {result?.candidates.map((candidate) => <View key={candidate.variantId}>
-        {button(`${selected === candidate.variantId ? '✓ ' : ''}${candidate.nativeName || candidate.name} · ${candidate.collectorNumber} · ${candidate.language}\n${candidate.setCode || candidate.setId} · ${candidate.variantCode || 'variant unspecified'} · similarity ${candidate.similarity.toFixed(3)}`,
+        {button(`${selected === candidate.variantId ? '✓ ' : ''}${getPreferredCardDisplayName({ language: candidate.language, localName: candidate.nativeName, englishDisplayName: candidate.name, collectorNumber: candidate.collectorNumber })} · ${candidate.collectorNumber} · ${candidate.language}\n${candidate.setCode || candidate.setId} · ${candidate.variantCode || 'variant unspecified'} · similarity ${candidate.similarity.toFixed(3)}`,
           () => setSelected(candidate.variantId), busy)}
       </View>)}
       {result && <View style={{ marginTop: 18 }}>
@@ -307,7 +309,7 @@ export default function OwnerRecognitionScreen() {
               maxLength={100} placeholder="Set name or code" placeholderTextColor={theme.colors.textSoft}
               style={{ color: theme.colors.text, borderColor: theme.colors.border, borderWidth: 1, padding: 14, borderRadius: 12, marginTop: 10 }} />
             {button('Find set', () => void findTeachingSets(), busy || teachingBusy)}
-            {teachingSets.slice(0, 12).map((set) => <View key={set.setId}>{button(`${teachingSet?.setId === set.setId ? '✓ ' : ''}${set.setCode ?? set.setId} · ${set.englishDisplayName ?? set.nativeName ?? 'Unnamed set'}`,
+            {teachingSets.slice(0, 12).map((set) => <View key={set.setId}>{button(`${teachingSet?.setId === set.setId ? '✓ ' : ''}${set.setCode ?? set.setId} · ${getPreferredSetDisplayName({ id: set.setId, setCode: set.setCode, language: set.languageCode, localName: set.nativeName, englishDisplayName: set.englishDisplayName })}`,
               () => chooseTeachingSet(set), busy || teachingBusy)}</View>)}
           </>}
           {teachingSet && <>
@@ -316,7 +318,7 @@ export default function OwnerRecognitionScreen() {
               maxLength={40} placeholder="e.g. 157 or TG12" placeholderTextColor={theme.colors.textSoft}
               style={{ color: theme.colors.text, borderColor: theme.colors.border, borderWidth: 1, padding: 14, borderRadius: 12, marginTop: 10 }} />
             {button('Find exact card', () => void findTeachingCards(), busy || teachingBusy)}
-            {teachingCards.map((card) => <View key={card.cardId}>{button(`${card.nativeName || card.name} · ${card.collectorNumber} · ${card.setCode}`,
+            {teachingCards.map((card) => <View key={card.cardId}>{button(`${card.name} · ${card.collectorNumber} · ${card.setCode}`,
               () => void chooseTeachingCard(card), busy || teachingBusy)}</View>)}
           </>}
           {teachingCard && <>

@@ -60,6 +60,7 @@ async function pricingReadsRequireTokenAndStayOffPreviewProxy({ StackrApiClient 
     await client.sets({ language: 'en' });
     await client.cardPrice(VARIANT_ID);
     await client.cardPriceHistory(VARIANT_ID);
+    await client.refreshExactProviderPrice(VARIANT_ID);
     await client.marketMovers();
     await client.marketOpportunities();
     await client.marketPriceSnapshots({ variantIds: [VARIANT_ID], rangeDays: 7 });

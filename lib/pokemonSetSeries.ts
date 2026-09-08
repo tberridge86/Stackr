@@ -32,7 +32,7 @@ export function getPokemonSetDisplaySeries(input: {
   setCode?: string | null;
 }) {
   const storedSeries = input.series?.trim();
-  if (storedSeries) return storedSeries;
+  if (storedSeries && !/[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/u.test(storedSeries)) return storedSeries;
   if (input.language !== 'en') return 'Other';
   const code = String(input.setCode ?? '').trim().toLowerCase().replace(/^en:/, '');
   return ENGLISH_SERIES_CODES.find(([pattern]) => pattern.test(code))?.[1] ?? 'Other';

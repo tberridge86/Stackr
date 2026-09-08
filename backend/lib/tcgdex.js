@@ -117,31 +117,36 @@ function toGbp(value, unit) {
   return money(num * USD_TO_GBP);
 }
 
-async function fetchJson(path) {
+async function fetchJson(path, { timeoutMs = null, isolateInflight = false, forceRefresh = false } = {}) {
   const url = `${TCGDEX_BASE_URL.replace(/\/$/, '')}${path}`;
   const now = Date.now();
   const cached = tcgdexCache.get(url);
-  if (cached && cached.expiresAt > now) return cached.value;
+  if (!forceRefresh && cached && cached.expiresAt > now) return cached.value;
 
-  const inflight = tcgdexInflight.get(url);
+  const inflightKey = isolateInflight ? `${url}#timeout-${timeoutMs ?? 'none'}` : url;
+  const inflight = tcgdexInflight.get(inflightKey);
   if (inflight) return inflight;
 
   const request = (async () => {
-    const response = await fetch(url, { headers: { Accept: 'application/json' } });
-    const text = await response.text();
-    if (!response.ok) {
-      throw new Error(`TCGdex request failed (${response.status}): ${text.slice(0, 240)}`);
+    const controller = timeoutMs ? new AbortController() : null;
+    const timeout = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    try {
+      const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: controller?.signal });
+      const text = await response.text();
+      if (!response.ok) throw new Error(`TCGdex request failed (${response.status}): ${text.slice(0, 240)}`);
+      const value = text ? JSON.parse(text) : null;
+      tcgdexCache.set(url, { value, expiresAt: Date.now() + TCGDEX_CACHE_TTL_MS });
+      return value;
+    } finally {
+      if (timeout) clearTimeout(timeout);
     }
-    const value = text ? JSON.parse(text) : null;
-    tcgdexCache.set(url, { value, expiresAt: Date.now() + TCGDEX_CACHE_TTL_MS });
-    return value;
   })();
 
-  tcgdexInflight.set(url, request);
+  tcgdexInflight.set(inflightKey, request);
   try {
     return await request;
   } finally {
-    tcgdexInflight.delete(url);
+    tcgdexInflight.delete(inflightKey);
   }
 }
 
@@ -664,6 +669,52 @@ function resolveTcgdexPrice(card, language = 'ja') {
   };
 }
 
+export function summariseTcgdexNormalPricing(card, language = 'en') {
+  const lang = normalizeLanguage(language);
+  const tcgplayerNormal = lang === 'en'
+    ? getTcgplayerVariants(card?.pricing).find((entry) => ['normal', 'standard'].includes(String(entry.variant).toLowerCase()))
+    : null;
+  const cardmarketNormal = getCardmarketVariants(card?.pricing).find((entry) => entry.variant === 'standard');
+  const preferred = lang === 'en' ? tcgplayerNormal ?? cardmarketNormal : cardmarketNormal;
+  if (!preferred) return null;
+  const sourceCurrency = String(preferred.currency ?? '').toUpperCase();
+  if (!['GBP', 'EUR', 'USD'].includes(sourceCurrency)) return null;
+  const price = preferred.marketGbp ?? preferred.averageGbp ?? preferred.midGbp ?? preferred.lowGbp;
+  if (!Number.isFinite(price) || price <= 0) return null;
+  let responseLanguage;
+  try { responseLanguage = card?.language == null ? lang : normalizeLanguage(card.language); } catch { return null; }
+  return {
+    providerCardId: card?.id ?? null,
+    providerSetId: card?.set?.id ?? null,
+    language: responseLanguage,
+    number: card?.localId ?? null,
+    price,
+    priceSource: preferred.source,
+    sourceCurrency,
+    pricingUpdatedAt: preferred.updatedAt ?? null,
+    tcg_low: preferred.source === 'tcgdex_tcgplayer' ? preferred.lowGbp ?? null : null,
+    tcg_mid: preferred.source === 'tcgdex_tcgplayer' ? preferred.marketGbp ?? preferred.midGbp ?? null : null,
+    cardmarket_trend: preferred.source === 'tcgdex_cardmarket' ? preferred.marketGbp ?? null : null,
+    raw: card ?? null,
+  };
+}
+
+export async function fetchTcgdexNormalCardPrice({ cardId, language = 'en', timeoutMs = 12_000 }) {
+  const lang = normalizeLanguage(language);
+  if (!cardId) return null;
+  try {
+    const card = await fetchJson(`/${lang}/cards/${encodeURIComponent(String(cardId).trim())}`, { timeoutMs, isolateInflight: true, forceRefresh: true });
+    if (!card?.id) return null;
+    return summariseTcgdexNormalPricing(card, lang);
+  } catch (error) {
+    console.log(JSON.stringify({
+      event: 'tcgdex_normal_price_card_lookup_failure', provider: 'tcgdex', language: lang, cardId,
+      failureReason: error instanceof Error ? error.message : String(error),
+    }));
+    return null;
+  }
+}
+
 function scoreTcgdexCard(card, target = {}) {
   const targetName = normalizeText(target.name);
   const targetSet = normalizeText(target.setName);
@@ -693,6 +744,7 @@ export async function fetchTcgdexCardPrice({
   number,
   language = 'ja',
   searchLimit = 8,
+  exactOnly = false,
 }) {
   const lang = normalizeLanguage(language);
 
@@ -710,6 +762,10 @@ export async function fetchTcgdexCardPrice({
       }));
     }
   }
+
+  // A canonical-price refresh must never widen an unsuccessful exact provider
+  // identifier into a name/set search: that could cross physical finishes.
+  if (exactOnly) return null;
 
   const query = String(name || '').trim();
   if (!query) return null;

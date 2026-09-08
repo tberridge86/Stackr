@@ -845,12 +845,39 @@ export function getEnglishCardDisplayName(input: CardDisplayNameInput) {
   return `${speciesName}${getJapaneseCardSuffix(localName)}`;
 }
 
+function foreignLanguageLabel(value: unknown) {
+  const language = String(value ?? '').trim().toLowerCase().replace(/_/g, '-');
+  if (language === 'ja' || language === 'jp') return 'Japanese';
+  if (language === 'zh-cn' || language === 'zh-hans') return 'Chinese';
+  if (language === 'zh-tw' || language === 'zh-hant') return 'Traditional Chinese';
+  if (language === 'ko') return 'Korean';
+  if (language === 'fr') return 'French';
+  if (language === 'de') return 'German';
+  if (language === 'es') return 'Spanish';
+  if (language === 'it') return 'Italian';
+  return 'Foreign-language';
+}
+
+function englishSafeReference(value: unknown) {
+  const candidate = clean(value);
+  return candidate && !containsNonEnglishScript(candidate) ? candidate : null;
+}
+
+function foreignCardFallback(input: CardDisplayNameInput) {
+  const setCode = englishSafeReference(input.raw?.set?.set_code ?? input.raw?.set?.setCode ?? input.setId);
+  const number = englishSafeReference(input.collectorNumber ?? input.raw?.localId ?? input.raw?.number);
+  const reference = [setCode, number].filter(Boolean).join(' ');
+  return `${foreignLanguageLabel(input.language ?? input.raw?.language)} card${reference ? ` · ${reference}` : ''} (translation pending)`;
+}
+
+function foreignSetFallback(input: SetDisplayNameInput) {
+  const setCode = englishSafeReference(input.setCode ?? input.raw?.set_code ?? input.raw?.setCode ?? input.id ?? input.sourceId);
+  return `${foreignLanguageLabel(input.language ?? input.raw?.language ?? input.raw?.set?.language)} set${setCode ? ` · ${setCode}` : ''} (translation pending)`;
+}
+
+/** English-only metadata policy. Native text remains in raw data and card art. */
 export function getPreferredCardDisplayName(input: CardDisplayNameInput) {
-  const localName = getLocalCardName(input);
-  if (localName) return localName;
-  if (isNonEnglishCard(input)) {
-    return clean(input.id) ?? clean(input.sourceId) ?? 'Unknown card';
-  }
+  if (isNonEnglishCard(input)) return getEnglishCardDisplayName(input) ?? foreignCardFallback(input);
   return getEnglishCardDisplayName(input)
     ?? clean(input.canonicalName)
     ?? clean(input.fallbackName)
@@ -859,11 +886,12 @@ export function getPreferredCardDisplayName(input: CardDisplayNameInput) {
     ?? 'Unknown card';
 }
 
+/** English-only metadata policy. Native text remains in raw data and card art. */
 export function getPreferredSetDisplayName(input: SetDisplayNameInput) {
-  const localName = getLocalSetName(input);
-  if (localName) return localName;
   if (isNonEnglishSet(input)) {
-    return clean(input.id) ?? clean(input.sourceId) ?? clean(input.setCode) ?? 'Unknown set';
+    return getEnglishSetDisplayName(input)
+      ?? getEnglishSetDisplaySupplement(input)?.value
+      ?? foreignSetFallback(input);
   }
   return getEnglishSetDisplayName(input)
     ?? clean(input.canonicalName)
@@ -873,7 +901,6 @@ export function getPreferredSetDisplayName(input: SetDisplayNameInput) {
     ?? 'Unknown set';
 }
 
-/** Keeps English copy supplemental instead of replacing the native title. */
 export function getEnglishSupplementalName(primaryName?: string | null, englishDisplayName?: string | null) {
   const primary = clean(primaryName);
   const english = cleanEnglishDisplayCandidate(englishDisplayName);

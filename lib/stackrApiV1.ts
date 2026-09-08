@@ -1005,6 +1005,13 @@ export class StackrApiClient {
     }>('/market/price-refresh', { variantIds: ids, ...payload });
   }
 
+  refreshExactProviderPrice(variantId: string) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(variantId)) {
+      throw new Error('refreshExactProviderPrice requires a canonical variant UUID.');
+    }
+    return this.authenticatedPost<StackrCardPrice>(`/cards/${encodeURIComponent(variantId)}/provider-price-refresh`, {});
+  }
+
   recognitionIdentify(payload: StackrRecognitionIdentifyRequest) {
     assertNoImagePayload(payload);
     return this.authenticatedPost<StackrRecognitionIdentifyResponse>('/recognition/identify', payload as Record<string, unknown>);

@@ -1,6 +1,7 @@
 import {
   getEnglishCardDisplayName,
   getEnglishSetDisplayName,
+  getEnglishSetDisplaySupplement,
   getLocalCardName,
   getLocalSetName,
 } from './pokemonDisplayNames';
@@ -58,6 +59,7 @@ export type ForeignCardPresentation = {
   translationStatus: 'not_required' | 'verified' | 'partial' | 'pending';
   withheldNativeDetails: boolean;
   details: {
+    artist?: string;
     supertype?: string;
     subtypes?: string[];
     types?: string[];
@@ -278,6 +280,21 @@ export function buildForeignCardPresentation(card: ForeignCardPresentationInput)
     fallbackName: card.set?.name,
     raw: rawSet,
   });
+  const englishSetPresentationName = englishSetDisplayName
+    ?? getEnglishSetDisplaySupplement({
+      id: card.set?.id,
+      setCode: rawSet.set_code ?? rawSet.setCode,
+      language: languageCode,
+      region: card.region ?? raw.region,
+      localName: nativeSetName,
+      fallbackName: card.set?.name,
+      raw: rawSet,
+    })?.value
+    ?? null;
+  const safeNumber = cleanEnglishText(card.number);
+  const safeSetCode = cleanEnglishText(rawSet.set_code ?? rawSet.setCode);
+  const foreignCardFallback = `${languageLabel(languageCode)} card${safeNumber ? ` · ${safeNumber}` : ''} (translation pending)`;
+  const foreignSetFallback = `${languageLabel(languageCode)} set${safeSetCode ? ` · ${safeSetCode}` : ''} (translation pending)`;
 
   if (!isForeign) {
     return {
@@ -293,6 +310,7 @@ export function buildForeignCardPresentation(card: ForeignCardPresentationInput)
       translationStatus: 'not_required',
       withheldNativeDetails: false,
       details: {
+        artist: card.artist,
         supertype: card.supertype,
         subtypes: card.subtypes,
         types: card.types,
@@ -345,15 +363,16 @@ export function buildForeignCardPresentation(card: ForeignCardPresentationInput)
     isForeign: true,
     languageCode,
     languageLabel: languageLabel(languageCode),
-    name: nativeName ?? clean(card.name) ?? englishDisplayName ?? 'Unknown card',
+    name: englishDisplayName ?? foreignCardFallback,
     englishDisplayName,
     nativeName,
-    setName: nativeSetName ?? clean(card.set?.name) ?? englishSetDisplayName ?? 'Unknown set',
-    englishSetDisplayName,
+    setName: englishSetPresentationName ?? foreignSetFallback,
+    englishSetDisplayName: englishSetPresentationName,
     nativeSetName,
     translationStatus,
     withheldNativeDetails,
     details: {
+      artist: cleanEnglishText(firstEnglishField(raw, ['artist'])) ?? cleanEnglishText(card.artist) ?? undefined,
       supertype: translatedSupertype ?? undefined,
       subtypes: translatedSubtypes,
       types: translatedTypes,

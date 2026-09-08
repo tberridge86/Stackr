@@ -1,5 +1,7 @@
 import type { StackrCard, StackrCardVariant, StackrSearchResult } from './stackrApiV1';
 import { normaliseOwnerTeachingIdentity, type OwnerTeachingIdentity } from './ownerRecognitionCore';
+import { getPreferredCardDisplayName, getPreferredSetDisplayName } from './pokemonDisplayNames';
+import { catalogueVariantLabel } from './catalogueVariantPresentation';
 
 export const OWNER_TEACHING_LANGUAGES = [
   { code: 'en', label: 'English' },
@@ -33,12 +35,15 @@ export function ownerTeachingCollectorMatches(candidate: string, query: string) 
 export function ownerTeachingCardChoice(card: StackrCard): OwnerTeachingCardChoice {
   return {
     cardId: card.cardId,
-    name: card.names.englishDisplay ?? card.names.native,
+    name: getPreferredCardDisplayName({ id: card.cardId, language: card.languageCode,
+      localName: card.names.native, englishDisplayName: card.names.englishDisplay,
+      collectorNumber: card.collectorNumber.value, raw: { set: { set_code: card.set.setCode } } }),
     ...(card.names.native && card.names.native !== card.names.englishDisplay ? { nativeName: card.names.native } : {}),
     language: card.languageCode,
     setId: card.set.setId,
     setCode: card.set.setCode ?? card.set.setId,
-    setName: card.set.englishDisplayName ?? card.set.nativeName ?? card.set.setId,
+    setName: getPreferredSetDisplayName({ id: card.set.setId, setCode: card.set.setCode,
+      language: card.languageCode, localName: card.set.nativeName, englishDisplayName: card.set.englishDisplayName }),
     collectorNumber: card.collectorNumber.value,
   };
 }
@@ -54,8 +59,10 @@ export function ownerTeachingSearchChoices(results: StackrSearchResult[]): Owner
 }
 
 export function ownerTeachingVariantLabel(variant: StackrCardVariant) {
-  const variantLabel = variant.variantLabel ?? variant.variantCode;
-  const finishLabel = variant.finishLabel ?? variant.finishCode ?? 'finish unspecified';
+  const englishLabel = (label: string | null | undefined, code: string) =>
+    label && !/[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/u.test(label) ? label : catalogueVariantLabel(code);
+  const variantLabel = englishLabel(variant.variantLabel, variant.variantCode);
+  const finishLabel = englishLabel(variant.finishLabel, variant.finishCode ?? 'finish unspecified');
   return `${variantLabel} · ${finishLabel}`;
 }
 

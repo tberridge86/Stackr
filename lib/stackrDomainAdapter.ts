@@ -12,6 +12,7 @@ import { buildForeignCardPresentation } from './foreignCardPresentation';
 import {
   getEnglishSetDisplayName,
   getLocalSetName,
+  getPreferredSetDisplayName,
 } from './pokemonDisplayNames';
 import { supabase } from './supabase';
 import { enforceTcgdexRuntimeImagePolicy } from './tcgdexControlledCardReference';
@@ -328,11 +329,13 @@ function legacySetRow(row: any): StackrLegacySet {
     fallbackName: row.name ?? row.canonical_name ?? id,
     raw,
   });
-  const name = localName ?? englishDisplayName ?? id;
+  const name = getPreferredSetDisplayName({ id, language, localName, englishDisplayName,
+    setCode: row.set_code ?? raw.set_code, fallbackName: row.name ?? row.canonical_name ?? id, raw });
   return {
     id,
     name,
-    series: String(row.series ?? raw.series ?? 'Other'),
+    series: getPokemonSetDisplaySeries({ series: String(row.series ?? raw.series ?? ''), language,
+      setCode: row.set_code ?? raw.set_code }),
     printedTotal: Number(row.printed_total ?? raw.cardCount?.official ?? 0),
     total: Number(row.total ?? row.actual_total ?? raw.cardCount?.total ?? row.printed_total ?? 0),
     releaseDate: String(row.release_date ?? raw.releaseDate ?? ''),
@@ -553,12 +556,13 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
     localName,
     englishDisplayName: set.englishDisplayName,
   });
-  const name = localName ?? englishDisplayName ?? set.setCode ?? set.setId;
+  const name = getPreferredSetDisplayName({ id: set.setId, setCode: set.setCode,
+    language: set.languageCode, localName, englishDisplayName });
   return {
     id: set.setId,
     name,
     series: getPokemonSetDisplaySeries({
-      series: set.seriesNativeName ?? set.seriesEnglishDisplayName,
+      series: set.seriesEnglishDisplayName ?? set.seriesNativeName,
       language: set.languageCode,
       setCode: set.setCode,
     }),
@@ -768,9 +772,36 @@ function applyCanonicalSetAssets(sets: StackrLegacySet[], assets: StackrCatalogu
 export async function fetchStackrSets(
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
+  options: { includeAssets?: boolean } = {},
 ) {
   if (!shouldUseStackrApi(client)) return legacySets(language);
-  return fetchCanonicalStackrSets(language, client);
+  return fetchCanonicalStackrSets(language, client, options.includeAssets !== false);
+}
+
+/** Read one set's facts first; optional marks are restricted to this exact set. */
+export async function fetchStackrSet(
+  reference: string,
+  language?: string | null,
+  options: { includeAssets?: boolean } = {},
+  client: StackrApiClient = stackrApiClient,
+): Promise<StackrLegacySet | null> {
+  const prefixLanguage = getPokemonSetLanguageFromPrefixedId(reference);
+  if (prefixLanguage && language && toStackrApiLanguage(language) !== prefixLanguage) return null;
+  const setId = await resolveCanonicalStackrSetId(reference, language, client);
+  if (!setId) return null;
+  const response = await client.set(setId);
+  const set = response.data.set;
+  const requestedLanguage = toStackrApiLanguage(language) ?? getPokemonSetLanguageFromPrefixedId(reference);
+  if (requestedLanguage && toLegacyLanguage(set.languageCode) !== requestedLanguage) return null;
+  const facts = stackrSetToLegacySet(set);
+  if (!options.includeAssets) return facts;
+  const results = await Promise.all(['set_logo', 'set_symbol', 'set_cover', 'set_artwork'].map((assetType) =>
+    readOptionalCatalogueEnrichment((signal) => allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
+      const page = await client.assetManifest({ setId, assetType, cursor, limit: 250 }, { signal: pageSignal });
+      return { rows: page.data.assets, nextCursor: page.meta.pagination?.nextCursor ?? null };
+    }, signal)),
+  ));
+  return applyCanonicalSetAssets([facts], results.flatMap((rows) => rows ?? []))[0];
 }
 
 export function fetchPreferredStackrSets(

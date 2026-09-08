@@ -54,7 +54,7 @@ import {
   normalizePokemonCardLanguage,
   type PokemonSet,
 } from '../../lib/pokemonTcg';
-import { getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
+import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { searchMarketProducts, productLookupLabel, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
 import { expandSearchQuery, normaliseSearchText } from '../../lib/searchNormalisation';
@@ -413,20 +413,38 @@ function mapCardResults(
   listingStats = emptyListingStatsMap(),
   ownedMap = new Map<string, number>()
 ): CardResult[] {
-  return cards.map((card: any) => ({
-    id: card.id,
-    name: card.name ?? card.id,
-    setId: getCardSetId(card),
-    setName: getCardSetName(card),
-    language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
-    number: card.number ?? card.raw_data?.number ?? null,
-    rarity: card.rarity ?? card.raw_data?.rarity ?? null,
-    imageUri: card.image_small ?? card.image_large ?? card.raw_data?.images?.small ?? null,
-    estimatedValue: getBestCardValue(card),
-    listingCount: listingStats.get(card.id)?.count ?? 0,
-    ownedQuantity: ownedMap.get(card.id) ?? 0,
-    raw: card,
-  }));
+  return cards.map((card: any) => {
+    const raw = card.raw_data ?? {};
+    const language = card.language ?? raw.language ?? raw.set?.language ?? null;
+    const number = card.number ?? raw.number ?? raw.collector_number ?? null;
+    const setId = getCardSetId(card);
+    return {
+      id: card.id,
+      name: getPreferredCardDisplayName({
+        id: card.id,
+        sourceId: raw.tcgdex_id ?? raw.source_id ?? card.id,
+        setId,
+        collectorNumber: number,
+        language,
+        region: card.region ?? raw.region ?? null,
+        localName: raw.local_name ?? (language !== 'en' ? raw.name ?? card.name ?? null : null),
+        englishDisplayName: raw.english_display_name ?? raw.englishDisplayName ?? card.english_display_name ?? null,
+        canonicalName: card.name,
+        fallbackName: card.id,
+        raw,
+      }),
+      setId,
+      setName: getCardSetName(card),
+      language,
+      number,
+      rarity: card.rarity ?? raw.rarity ?? null,
+      imageUri: card.image_small ?? card.image_large ?? raw.images?.small ?? null,
+      estimatedValue: getBestCardValue(card),
+      listingCount: listingStats.get(card.id)?.count ?? 0,
+      ownedQuantity: ownedMap.get(card.id) ?? 0,
+      raw: card,
+    };
+  });
 }
 
 function mapSetRow(row: any): SetResult {

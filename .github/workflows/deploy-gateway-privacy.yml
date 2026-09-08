@@ -23,17 +23,14 @@ on:
       previous_gateway_version_id:
         description: Current 100 percent production Worker version ID
         required: true
-        default: ab809fc2-d0da-484f-a5b7-908f76013c1d
         type: string
       previous_gateway_tag:
         description: Current production Worker version tag
         required: true
-        default: production-9113bfffc0ae4f0ce841645040a1959d77c0861c
         type: string
       previous_gateway_deployment_id:
         description: Current 100 percent production Worker deployment ID
         required: true
-        default: 5105e13b-2b9c-4e3f-a2e0-392c2694cb37
         type: string
 
 permissions:
@@ -84,9 +81,9 @@ jobs:
           test "$EXPECTED_MAIN_SHA" = "$GITHUB_SHA"
           [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$OWNER_USER_ID" = '309453d1-52a2-4f40-81e4-27ae69b520fa'
-          test "$PREVIOUS_GATEWAY_VERSION_ID" = 'ab809fc2-d0da-484f-a5b7-908f76013c1d'
-          test "$PREVIOUS_GATEWAY_TAG" = 'production-9113bfffc0ae4f0ce841645040a1959d77c0861c'
-          test "$PREVIOUS_GATEWAY_DEPLOYMENT_ID" = '5105e13b-2b9c-4e3f-a2e0-392c2694cb37'
+          [[ "$PREVIOUS_GATEWAY_VERSION_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
+          [[ "$PREVIOUS_GATEWAY_TAG" =~ ^(production|gateway-privacy)-[0-9a-f]{40}$ ]]
+          [[ "$PREVIOUS_GATEWAY_DEPLOYMENT_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
           [[ "$PRICING_SMOKE_VARIANT_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$STACKR_SUPABASE_PUBLISHABLE_KEY"
