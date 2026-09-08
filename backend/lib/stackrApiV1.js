@@ -1396,8 +1396,11 @@ export function createCatalogueV1Service(options) {
         () => searchCanonicalId(searchSupabase, parsed, limit),
         () => searchSetCodeCollector(searchSupabase, parsed, limit, language),
         () => searchExternalId(searchSupabase, parsed, limit, language),
-        () => searchCollectorNumber(searchSupabase, parsed, limit, language, selectedSetId),
+        // A set code containing digits is also a possible collector token.
+        // Resolve the exact name/set pair before attempting a catalogue-wide
+        // collector fallback for queries such as "Pinsir sv08.5".
         () => searchNameWithSetCode(searchSupabase, parsed, limit, language),
+        () => searchCollectorNumber(searchSupabase, parsed, limit, language, selectedSetId),
         () => searchNames(searchSupabase, parsed, limit, language, EXACT_NAME_TYPES, () => 'exact_name'),
         () => searchNames(searchSupabase, parsed, limit, language, ALIAS_NAME_TYPES, (type) => type === 'alias' ? 'exact_alias' : 'exact_translated_name'),
         () => searchFuzzyName(searchSupabase, parsed, limit, language),

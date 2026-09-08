@@ -3,6 +3,7 @@ import { createCatalogueV1Service } from '../backend/lib/stackrApiV1.js';
 
 const enSet = '11111111-1111-4111-8111-111111111111';
 const cnSet = '22222222-2222-4222-8222-222222222222';
+const dottedSet = '33333333-3333-4333-8333-333333333333';
 const makeCard = (language, i) => ({
   printing_id: `30000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
   variant_id: `40000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
@@ -35,7 +36,13 @@ const printingOnlyReverse = {
   ...printingOnlyNormal, variant_id: '40000000-0000-4000-8000-000000009004',
   variant_code: 'reverse_holo', finish_code: 'reverse_holo',
 };
-cards.push(scopedNormal, scopedHoloSibling, printingOnlyNormal, printingOnlyReverse);
+const dottedPinsir = {
+  ...makeCard('en', 903), set_id: dottedSet,
+  printing_id: '30000000-0000-4000-8000-000000009003',
+  variant_id: '40000000-0000-4000-8000-000000009005',
+  collector_number: '003', card_native_name: 'Pinsir', card_english_display_name: 'Pinsir',
+};
+cards.push(scopedNormal, scopedHoloSibling, printingOnlyNormal, printingOnlyReverse, dottedPinsir);
 names.push(
   { name_type: 'alias', name: 'Variant Alias', normalized_name: 'variant alias', printing_id: scopedPrinting, variant_id: scopedNormal.variant_id, printing_language_code: 'en' },
   { name_type: 'english_display', name: 'Exact Scoped', normalized_name: 'exact scoped', printing_id: scopedPrinting, variant_id: scopedNormal.variant_id, printing_language_code: 'en' },
@@ -44,10 +51,14 @@ names.push(
   { name_type: 'alias', name: 'Mixed Identity', normalized_name: 'mixed identity', printing_id: scopedPrinting, variant_id: scopedNormal.variant_id, printing_language_code: 'en' },
   { name_type: 'alias', name: 'Mixed Identity', normalized_name: 'mixed identity', printing_id: printingOnlyPrinting, variant_id: null, printing_language_code: 'en' },
   { name_type: 'alias', name: 'Mixed Identity', normalized_name: 'mixed identity', printing_id: scopedPrinting, variant_id: scopedNormal.variant_id, printing_language_code: 'en' },
+  { name_type: 'english_display', name: 'Pinsir', normalized_name: 'pinsir', printing_id: dottedPinsir.printing_id, variant_id: dottedPinsir.variant_id, printing_language_code: 'en' },
 );
 const cardInReads = [];
+const cardQueryShapes = [];
 const sources = { catalogue_cards: cards, catalogue_card_names: names, catalogue_sets: [{
   set_id: enSet, set_code: 'SVX1', language_code: 'en', game_code: 'pokemon', native_name: 'Scoped Set', english_display_name: 'Scoped Set',
+}, {
+  set_id: dottedSet, set_code: 'sv08.5', language_code: 'en', game_code: 'pokemon', native_name: 'Prismatic Evolutions', english_display_name: 'Prismatic Evolutions',
 }], catalogue_external_identifiers: [{
   source_entity_type: 'variant', external_id: 'variant-external-id', language_code: 'en', set_id: enSet,
   printing_id: scopedPrinting, variant_id: scopedNormal.variant_id, confidence: 1,
@@ -55,20 +66,24 @@ const sources = { catalogue_cards: cards, catalogue_card_names: names, catalogue
 const db = { schema: () => ({ from: (table) => {
   assert.ok(table in sources, `Unexpected table ${table}`);
   const filters = [];
+  const clauses = [];
   let limit = Infinity;
   const query = {
     select() { return this; }, order() { return this; }, range() { return this; },
     limit(n) { limit = n; return this; },
-    eq(key, value) { filters.push((row) => row[key] === value); return this; },
+    eq(key, value) { clauses.push({ operator: 'eq', key, value }); filters.push((row) => row[key] === value); return this; },
     in(key, values) {
       if (table === 'catalogue_cards') cardInReads.push({ key, values: [...values] });
+      clauses.push({ operator: 'in', key, values: [...values] });
       filters.push((row) => values.includes(row[key])); return this;
     },
     ilike(key, value) {
+      clauses.push({ operator: 'ilike', key, value });
       const expression = new RegExp(`^${value.split('%').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*')}$`, 'i');
       filters.push((row) => expression.test(String(row[key] ?? ''))); return this;
     },
     then(resolve, reject) {
+      if (table === 'catalogue_cards') cardQueryShapes.push({ clauses: [...clauses] });
       return Promise.resolve({ data: sources[table].filter((row) => filters.every((filter) => filter(row))).slice(0, limit), error: null }).then(resolve, reject);
     },
   };
@@ -89,8 +104,13 @@ assert.equal(wrongSet.results.length, 0, 'Canonical UUID paths must honor the se
 
 const runAndReadCards = async (query) => {
   cardInReads.length = 0;
+  cardQueryShapes.length = 0;
   const response = await service.search(query);
-  return { cardResults: response.results.filter((row) => row.type === 'card'), reads: cardInReads.map((read) => ({ ...read, values: [...read.values] })) };
+  return {
+    cardResults: response.results.filter((row) => row.type === 'card'),
+    reads: cardInReads.map((read) => ({ ...read, values: [...read.values] })),
+    queryShapes: cardQueryShapes.map((queryShape) => ({ clauses: [...queryShape.clauses] })),
+  };
 };
 
 const external = await runAndReadCards({ q: 'variant-external-id', language: 'en', limit: 10 });
@@ -109,6 +129,20 @@ const exactNameInSet = await runAndReadCards({ q: 'Exact Scoped SVX1', language:
 assert.deepEqual(exactNameInSet.cardResults.map((row) => row.variantId), [scopedNormal.variant_id],
   'A variant-specific exact name plus set must not expand to its sibling finish.');
 assert.deepEqual(exactNameInSet.reads, [{ key: 'variant_id', values: [scopedNormal.variant_id] }]);
+
+const dottedSetName = await runAndReadCards({ q: 'Pinsir sv08.5', language: 'en', limit: 10 });
+assert.deepEqual(dottedSetName.cardResults.map((row) => row.variantId), [dottedPinsir.variant_id],
+  'A name plus dotted set code must resolve the matching card.');
+assert.ok(!dottedSetName.queryShapes.some((queryShape) => queryShape.clauses.some((clause) => clause.key === 'collector_number')),
+  'A name plus dotted set code must resolve before the global collector-number fallback.');
+
+const selectedCollector = await runAndReadCards({ q: '123', language: 'en', setId: enSet, limit: 10 });
+assert.deepEqual(new Set(selectedCollector.cardResults.map((row) => row.variantId)), new Set([
+  scopedNormal.variant_id, scopedHoloSibling.variant_id,
+]), 'An explicit collector number with a selected set must retain each matching finish.');
+assert.ok(selectedCollector.queryShapes.some((queryShape) => queryShape.clauses.some((clause) => clause.key === 'collector_number')
+  && queryShape.clauses.some((clause) => clause.key === 'set_id' && clause.value === enSet)),
+  'Selected-set collector lookup must remain constrained to the selected set.');
 
 const fuzzy = await runAndReadCards({ q: 'Scoped Sol', language: 'en', limit: 10 });
 assert.deepEqual(fuzzy.cardResults.map((row) => row.variantId), [scopedNormal.variant_id],
