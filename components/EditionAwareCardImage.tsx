@@ -20,6 +20,7 @@ import { StackrImage } from './StackrImage';
 
 type Props = {
   uri?: string | null;
+  fallbackUri?: string | null;
   cardId?: string | null;
   rawData?: any;
   editionHint?: ScanEditionHint | null;
@@ -31,6 +32,7 @@ type Props = {
 
 function EditionAwareCardImageBase({
   uri,
+  fallbackUri,
   cardId,
   rawData,
   editionHint,
@@ -96,6 +98,7 @@ function EditionAwareCardImageBase({
       {resolvedDisplayUri ? (
         <StackrImage
           uri={resolvedDisplayUri}
+          fullUri={resolvedDisplayUri === uri ? fallbackUri : undefined}
           style={styles.image}
           imageStyle={imageStyle}
           contentFit={contentFit}

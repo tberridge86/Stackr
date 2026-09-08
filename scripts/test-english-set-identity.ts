@@ -65,7 +65,9 @@ async function main() {
     './optionalCatalogueEnrichment': { readOptionalCatalogueEnrichment: async (read: any) => read(undefined), throwIfOptionalCatalogueReadAborted: () => {} },
   };
   const exports: any = {};
-  vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController, setTimeout, clearTimeout });
+  let clock = 1_000_000;
+  const TestDate = class extends Date { static now() { return clock; } };
+  vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController, setTimeout, clearTimeout, Date: TestDate });
 
   const setCalls: string[] = [];
   const cardRows = Array.from({ length: 180 }, (_, index) => ({
@@ -101,6 +103,81 @@ async function main() {
   assert.equal(await exports.resolveStackrSetId('sv8pt5', 'en', ambiguousClient), null, 'two exact canonical matches must remain unresolved rather than selecting the first row');
   const cards = await exports.fetchStackrCardsForSet('sv8pt5', 'en', client);
   assert.equal(cards.length, 180, 'the legacy Prismatic reference resolves through the canonical 180-card set path');
+
+  let resolutionSearches = 0;
+  const resolutionClient: any = {
+    search: async ({ q, language, setId }: any) => {
+      resolutionSearches += 1;
+      assert.ok(q === 'Provider:Exact' || q === 'provider:exact');
+      assert.ok(language === 'en' || language === 'ja');
+      assert.ok(setId === PRISMATIC_ID || setId === undefined);
+      return { data: { results: [{ type: 'card', reason: 'exact_name', card: cardRows[0], cardId: cardRows[0].cardId, variantId: cardRows[0].defaultVariantId }] } };
+    },
+    assetManifest: async () => ({ data: { assets: [] }, meta: { pagination: { nextCursor: null } } }),
+  };
+  const [firstResolved, secondResolved] = await Promise.all([
+    exports.fetchStackrCard('Provider:Exact', { language: 'en', setId: PRISMATIC_ID }, resolutionClient),
+    exports.fetchStackrCard('Provider:Exact', { language: 'en', setId: PRISMATIC_ID }, resolutionClient),
+  ]);
+  assert.ok(firstResolved && secondResolved);
+  assert.equal(resolutionSearches, 1, 'same client/reference/language/set context shares one in-flight resolution');
+  await exports.fetchStackrCard('Provider:Exact', { language: 'ja', setId: PRISMATIC_ID }, resolutionClient);
+  assert.equal(resolutionSearches, 2, 'language remains part of the cache identity');
+  exports.clearStackrCatalogueCaches(resolutionClient);
+  await exports.fetchStackrCard('Provider:Exact', { language: 'en', setId: PRISMATIC_ID }, resolutionClient);
+  assert.equal(resolutionSearches, 3, 'explicit catalogue refresh clears a client-scoped resolution');
+  clock += 45_001;
+  await exports.fetchStackrCard('Provider:Exact', { language: 'en', setId: PRISMATIC_ID }, resolutionClient);
+  assert.equal(resolutionSearches, 4, 'expired successes resolve again');
+  const secondClient: any = { ...resolutionClient };
+  await exports.fetchStackrCard('Provider:Exact', { language: 'en', setId: PRISMATIC_ID }, secondClient);
+  assert.equal(resolutionSearches, 5, 'client instances never share card-resolution entries');
+  await exports.fetchStackrCard('provider:exact', { language: 'en', setId: PRISMATIC_ID }, resolutionClient);
+  assert.equal(resolutionSearches, 6, 'provider IDs retain resolver case semantics');
+  await exports.fetchStackrCard('Provider:Exact', { language: 'en', setId: 'other-set' }, resolutionClient);
+  assert.equal(resolutionSearches, 7, 'set context remains part of the cache identity');
+
+  let retryCalls = 0;
+  const retryClient: any = {
+    search: async () => {
+      retryCalls += 1;
+      if (retryCalls === 1) throw new Error('temporary');
+      if (retryCalls === 2) return { data: { results: [] } };
+      return { data: { results: [{ type: 'card', reason: 'exact_name', card: cardRows[0], cardId: cardRows[0].cardId, variantId: cardRows[0].defaultVariantId }] } };
+    },
+    assetManifest: async () => ({ data: { assets: [] }, meta: { pagination: { nextCursor: null } } }),
+  };
+  await assert.rejects(exports.fetchStackrCard('Retry', { language: 'en' }, retryClient));
+  assert.equal(await exports.fetchStackrCard('Retry', { language: 'en' }, retryClient), null, 'empty resolution remains uncached');
+  assert.ok(await exports.fetchStackrCard('Retry', { language: 'en' }, retryClient));
+  assert.equal(retryCalls, 3, 'failures and empty responses retry');
+
+  const slowGate: { release: (() => void) | null } = { release: null };
+  const slowClient: any = {
+    search: () => new Promise((resolve) => { slowGate.release = () => resolve({ data: { results: [{ type: 'card', reason: 'exact_name', card: cardRows[0], cardId: cardRows[0].cardId, variantId: cardRows[0].defaultVariantId }] } }); }),
+    assetManifest: async () => ({ data: { assets: [] }, meta: { pagination: { nextCursor: null } } }),
+  };
+  const slow = exports.fetchStackrCard('Slow', { language: 'en' }, slowClient);
+  exports.clearStackrCatalogueCaches(slowClient);
+  assert.ok(slowGate.release);
+  slowGate.release();
+  await slow;
+  let postClearSearches = 0;
+  slowClient.search = async () => { postClearSearches += 1; return { data: { results: [{ type: 'card', reason: 'exact_name', card: cardRows[0], cardId: cardRows[0].cardId, variantId: cardRows[0].defaultVariantId }] } }; };
+  await exports.fetchStackrCard('Slow', { language: 'en' }, slowClient);
+  assert.equal(postClearSearches, 1, 'clearing while in flight prevents late success caching');
+
+  let boundedSearches = 0;
+  const boundedClient: any = {
+    search: async ({ q }: any) => {
+      boundedSearches += 1;
+      return { data: { results: [{ type: 'card', reason: 'exact_name', card: { ...cardRows[0], cardId: `bounded-${q}` }, cardId: `bounded-${q}`, variantId: cardRows[0].defaultVariantId }] } };
+    },
+    assetManifest: async () => ({ data: { assets: [] }, meta: { pagination: { nextCursor: null } } }),
+  };
+  for (let index = 0; index <= 256; index += 1) await exports.fetchStackrCard(`Bound${index}`, { language: 'en' }, boundedClient);
+  await exports.fetchStackrCard('Bound0', { language: 'en' }, boundedClient);
+  assert.equal(boundedSearches, 258, 'the 256-entry bound evicts the oldest success without network fan-out');
 
   for (const languageCode of ['en', 'ja', 'zh-cn', 'zh-tw', 'ko']) {
     let manifestReads = 0;

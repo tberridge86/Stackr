@@ -1,7 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
-import { getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -27,7 +27,6 @@ import {
 import { Text } from '../../components/Text';
 import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect, useLocalSearchParams, Stack } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -69,7 +68,7 @@ import {
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { useTrade } from '../../components/trade-context';
 import { supabase } from '../../lib/supabase';
-import { fetchStackrPrice } from '../../lib/stackrDomainAdapter';
+import { fetchStackrCard, fetchStackrPrice } from '../../lib/stackrDomainAdapter';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
 import {
@@ -99,6 +98,7 @@ import { getIncrementalListWindow, measureAsync, stackrListPerformance } from '.
 import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { createActivityPost } from '../../lib/activity';
+import { stackrHaptics } from '../../lib/haptics';
 import type { ScanEditionHint } from '../../types/scan';
 
 // ===============================
@@ -113,6 +113,7 @@ const CONDITION_OPTIONS = [
   'Heavily Played',
   'Damaged',
 ];
+const STACKR_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const GRADING_COMPANIES = SLAB_GRADING_COMPANIES;
 const GRADES = SLAB_GRADE_SHORTCUTS;
@@ -577,12 +578,14 @@ const matchesAddCardFilters = (card: CardPreviewResult, filters: AddCardFilters)
 function GradedSlabCard({
   item,
   imageUri,
+  fallbackImageUri,
   editionHint,
   size = 'grid',
   opacity = 1,
 }: {
   item: BinderCardWithDetails;
   imageUri: string | null;
+  fallbackImageUri?: string | null;
   editionHint: ScanEditionHint | null;
   size?: 'showcase' | 'grid' | 'modal';
   opacity?: number;
@@ -644,6 +647,7 @@ function GradedSlabCard({
           {imageUri ? (
             <EditionAwareCardImage
               uri={imageUri}
+              fallbackUri={fallbackImageUri}
               cardId={item.card_id}
               rawData={item.card}
               editionHint={editionHint}
@@ -823,6 +827,7 @@ export default function BinderDetailScreen() {
 
   const [selectedCard, setSelectedCard] = useState<BinderCardWithDetails | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
+  const [detailFullImageUri, setDetailFullImageUri] = useState<string | null>(null);
   const [quickActionCard, setQuickActionCard] = useState<BinderCardWithDetails | null>(null);
 
   const [modalEbayPrice, setModalEbayPrice] = useState<EbayModalPrice | null>(null);
@@ -854,6 +859,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const addSearchRequestRef = useRef(0);
   const addResultLongPressRef = useRef<string | null>(null);
+  const detailImageRequestRef = useRef(0);
   const binderListRef = useRef<FlatList<BinderCardWithDetails>>(null);
   const addCardListRef = useRef<FlatList<CardPreviewResult>>(null);
   const [ownedVariants, setOwnedVariants] = useState<Map<string, number>>(new Map());
@@ -922,7 +928,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // ===============================
 
   const closeDetailModal = () => {
+    detailImageRequestRef.current += 1;
     setDetailVisible(false);
+    setDetailFullImageUri(null);
     setModalEbayPrice(null);
     setModalEbayError(false);
     setModalTcgFallbackPrice(null);
@@ -1657,9 +1665,33 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
   const openCardDetail = (item: BinderCardWithDetails) => {
     const latestCard = cards.find((c) => c.id === item.id) ?? item;
+    const imageRequest = ++detailImageRequestRef.current;
+    const canonicalVariantId = getBinderCanonicalVariantId(latestCard) ?? '';
+    const storedSmallImage = latestCard.card?.images?.small ?? null;
+    const storedLargeImage = latestCard.card?.images?.large ?? null;
+    const hasFullImage = Boolean(storedLargeImage && storedLargeImage !== storedSmallImage);
+    setDetailFullImageUri(null);
     setSelectedCard(latestCard);
     setDetailVisible(true);
+    void stackrHaptics.selection();
     fetchModalEbayPrice(latestCard);
+
+    // Upgrade only with the canonical variant ID already attached to this row.
+    // Name searches can select a different language or finish, so they are not
+    // acceptable for a detail image.
+    if (!hasFullImage && STACKR_UUID_PATTERN.test(canonicalVariantId)) {
+      const expectedLanguage = normalizePokemonCardLanguage(latestCard.language ?? binder?.language);
+      void fetchStackrCard(canonicalVariantId).then((resolved) => {
+        const resolvedVariantId = String(resolved?.externalIds?.stackrVariant ?? '').trim();
+        if (detailImageRequestRef.current !== imageRequest
+          || resolvedVariantId !== canonicalVariantId
+          || resolved?.language !== expectedLanguage) return;
+        const fullImage = getBinderCardImageUri({ card: resolved, image_url: null }, 'large');
+        if (fullImage) setDetailFullImageUri(fullImage);
+      }).catch(() => {
+        // Keep the existing same-card image if the optional upgrade is unavailable.
+      });
+    }
   };
 
   const applyCardOwnedChange = async (
@@ -1953,7 +1985,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       return;
     }
 
-    void Haptics.selectionAsync().catch(() => {});
+    void stackrHaptics.selection();
 
     const variants = masterSetEnabled ? getVariants(item.card, item.set_id) : ['card'];
     if (variants.length > 1) {
@@ -3035,7 +3067,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   }
 
   const modalCard = selectedCard?.card;
-  const modalImageUri = selectedCard ? getBinderCardImageUri(selectedCard, 'large') : null;
+  const storedModalImageUri = selectedCard ? getBinderCardImageUri(selectedCard, 'large') : null;
+  const modalImageUri = detailFullImageUri ?? storedModalImageUri;
 
   const boxStyle = {
     backgroundColor: theme.colors.card,
@@ -4422,12 +4455,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                             <GradedSlabCard
                               item={selectedCard}
                               imageUri={modalImageUri}
+                              fallbackImageUri={detailFullImageUri ? storedModalImageUri : undefined}
                               editionHint={getBinderEditionHint(binder.edition)}
                               size="modal"
                             />
                           ) : (
                             <EditionAwareCardImage
                               uri={modalImageUri ?? undefined}
+                              fallbackUri={detailFullImageUri ? storedModalImageUri : undefined}
                               cardId={selectedCard.card_id}
                               rawData={modalCard}
                               editionHint={getBinderEditionHint(binder.edition)}
