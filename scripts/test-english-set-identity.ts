@@ -101,7 +101,48 @@ async function main() {
   const cards = await exports.fetchStackrCardsForSet('sv8pt5', 'en', client);
   assert.equal(cards.length, 180, 'the legacy Prismatic reference resolves through the canonical 180-card set path');
 
-  console.log('English set identity checks passed: verified aliases, language isolation, unique canonical resolution, binder recovery, and Prismatic 180-card lookup.');
+  const imageAsset = {
+    assetId: 'reverse-art', assetType: 'card_image', game: 'pokemon', setId: PRISMATIC_ID, cardId: 'duplicate-card', variantId: 'reverse',
+    deliveryPath: null, deliveryUrl: 'https://images.example/reverse.png', sourceAttribution: null, permissionStatus: 'approved', contentSha256: null,
+    perceptualHash: null, mimeType: 'image/png', width: 300, height: 420, byteSize: 1, derivatives: [], cacheControl: null,
+    externallyReferenced: false, unavailableReason: null, lastVerifiedAt: null, updatedAt: null,
+  };
+  const duplicateRow = (defaultVariantId: string, variants: any[], overrides: Record<string, unknown> = {}) => ({
+    cardId: 'duplicate-card', catalogueVersionId: null, game: 'pokemon', languageCode: 'en',
+    set: prismatic, collectorNumber: { value: '42', prefix: null, sort: 42, suffix: null, sortKey: '42' },
+    names: { native: 'Duplicate', englishDisplay: 'Duplicate', englishDisplaySource: 'printing' }, details: {}, rarity: { label: null, code: null },
+    defaultVariantId, variants, updatedAt: null, ...overrides,
+  });
+  const normal = { variantId: 'normal', canonicalId: 'canonical-normal', variantCode: 'normal', variantLabel: 'Normal', finishCode: 'normal', finishLabel: 'Normal', artworkKey: null, imageVariantId: null, image: null, updatedAt: null };
+  const reverse = { variantId: 'reverse', canonicalId: 'canonical-reverse', variantCode: 'reverse', variantLabel: 'Reverse', finishCode: 'reverse_holo', finishLabel: 'Reverse Holo', artworkKey: null, imageVariantId: null, image: imageAsset, updatedAt: null };
+  const holo = { variantId: 'holo', canonicalId: 'canonical-holo', variantCode: 'holo', variantLabel: 'Holo', finishCode: 'holo', finishLabel: 'Holo', artworkKey: null, imageVariantId: null, image: null, updatedAt: null };
+  const duplicateRows = [
+    duplicateRow('normal', [normal]),
+    duplicateRow('reverse', [reverse]),
+    duplicateRow('holo', [holo]),
+    duplicateRow('normal', [normal], { set: { ...prismatic, setId: 'other-set' } }),
+    duplicateRow('normal', [normal], { languageCode: 'ja' }),
+  ];
+  const duplicateClient = (rows: any[]): any => ({
+    sets: async () => ({ data: { sets: [prismatic] }, meta: { pagination: { nextCursor: null } } }),
+    setCards: async () => ({ data: { cards: rows }, meta: { pagination: { nextCursor: null } } }),
+    assetManifest: async () => ({ data: { assets: [] }, meta: { pagination: { nextCursor: null } } }),
+    set: async () => ({ data: { set: prismatic } }),
+  });
+  const normalizedDuplicates = await exports.fetchStackrCardsForSet('sv08.5', 'en', duplicateClient(duplicateRows));
+  assert.equal(normalizedDuplicates.length, 3, 'only rows with the exact card, set, language, and collector identity merge');
+  const merged = normalizedDuplicates.find((card: any) => card.id === 'duplicate-card' && card.language === 'en' && card.set.id === PRISMATIC_ID);
+  assert.equal(merged.externalIds.stackrVariant, 'reverse', 'an image-bearing duplicate becomes the representative default');
+  assert.equal(merged.images.large, 'https://images.example/reverse.png');
+  assert.deepEqual([...merged.raw_data.stackr.variants.map((variant: any) => variant.variantId)].sort(), ['holo', 'normal', 'reverse']);
+  assert.deepEqual(
+    [...(await exports.fetchStackrCardsForSet('sv08.5', 'en', duplicateClient([duplicateRows[1], duplicateRows[0], duplicateRows[2], duplicateRows[3], duplicateRows[4]])))
+      .find((card: any) => card.id === 'duplicate-card' && card.language === 'en' && card.set.id === PRISMATIC_ID).raw_data.stackr.variants.map((variant: any) => variant.variantId)].sort(),
+    ['holo', 'normal', 'reverse'],
+    'duplicate order does not lose finishes or the first valid image-bearing default',
+  );
+
+  console.log('English set identity checks passed: verified aliases, language isolation, unique canonical resolution, binder recovery, duplicate finish normalization, and Prismatic 180-card lookup.');
 }
 
 void main();

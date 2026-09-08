@@ -439,6 +439,76 @@ function primaryCardImageAsset(card: StackrCard, assets: StackrCatalogueAsset[])
   );
 }
 
+function canonicalSetCardIdentity(card: StackrCard) {
+  // These are the canonical API's identity fields. In particular, neither a
+  // translated name nor a display-normalized collector number is safe here.
+  return JSON.stringify([
+    card.cardId,
+    card.set.setId,
+    card.languageCode,
+    card.collectorNumber.value,
+  ]);
+}
+
+function mergeCanonicalVariants(rows: StackrCard[]) {
+  const variants = new Map<string, StackrCard['variants'][number]>();
+  for (const row of rows) {
+    for (const variant of row.variants) {
+      const existing = variants.get(variant.variantId);
+      if (!existing) {
+        variants.set(variant.variantId, variant);
+        continue;
+      }
+      // A repeated variant is expected to describe the same printing. Keep
+      // the first metadata record stable, only filling absent optional fields
+      // from its duplicate (including its embedded asset).
+      variants.set(variant.variantId, {
+        ...variant,
+        ...existing,
+        canonicalId: existing.canonicalId || variant.canonicalId,
+        variantCode: existing.variantCode || variant.variantCode,
+        variantLabel: existing.variantLabel ?? variant.variantLabel,
+        finishCode: existing.finishCode ?? variant.finishCode,
+        finishLabel: existing.finishLabel ?? variant.finishLabel,
+        artworkKey: existing.artworkKey ?? variant.artworkKey,
+        nativeImageStatus: existing.nativeImageStatus ?? variant.nativeImageStatus,
+        sameArtworkAsVariantId: existing.sameArtworkAsVariantId ?? variant.sameArtworkAsVariantId,
+        imageVariantId: existing.imageVariantId ?? variant.imageVariantId,
+        image: existing.image ?? variant.image,
+        updatedAt: existing.updatedAt ?? variant.updatedAt,
+      });
+    }
+  }
+  return [...variants.values()];
+}
+
+/**
+ * The set-cards endpoint can emit one row per default finish. Collapse only
+ * exact canonical card identities before the optional manifest/map stage so a
+ * collection has one row per card while retaining every variant.
+ */
+function normalizeCanonicalSetCards(cards: StackrCard[]) {
+  const groups = new Map<string, StackrCard[]>();
+  for (const card of cards) {
+    const key = canonicalSetCardIdentity(card);
+    const group = groups.get(key);
+    if (group) group.push(card);
+    else groups.set(key, [card]);
+  }
+
+  return [...groups.values()].map((rows) => {
+    let representative = rows[0];
+    // Preserve the first image-bearing default when duplicate responses are
+    // interleaved; do not assign an image from another finish to this default.
+    if (!primaryCardImageAsset(representative, embeddedCardImageAssets(representative))) {
+      representative = rows.find((row) => (
+        Boolean(primaryCardImageAsset(row, embeddedCardImageAssets(row)))
+      )) ?? representative;
+    }
+    return { ...representative, variants: mergeCanonicalVariants(rows) };
+  });
+}
+
 async function fetchStackrAssetsForPrinting(
   client: StackrApiClient,
   printingId: string,
@@ -822,7 +892,7 @@ async function fetchCanonicalStackrCardsForSet(
 ) {
   const setId = await resolveCanonicalStackrSetId(reference, language, client, signal);
   if (!setId) return [];
-  const cards = await allPages<StackrCard>(async (cursor, pageSignal) => {
+  const responseCards = await allPages<StackrCard>(async (cursor, pageSignal) => {
     const response = await client.setCards(
       setId,
       {
@@ -834,6 +904,7 @@ async function fetchCanonicalStackrCardsForSet(
     );
     return { rows: response.data.cards, nextCursor: response.meta.pagination?.nextCursor ?? null };
   }, signal);
+  const cards = normalizeCanonicalSetCards(responseCards);
   const needsManifestFallback = cards.some((card) => (
     !primaryCardImageAsset(card, embeddedCardImageAssets(card))
   ));
