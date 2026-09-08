@@ -34,6 +34,7 @@ import { COLLECTOR_TABS, SELLER_TABS } from '../lib/routes';
 import { StackrCardActionIcon } from '../components/StackrScreen';
 import { stackrTabBarSizes } from '../lib/stackrSizing';
 import { installRuntimeFetchDiagnostics } from '../lib/runtimeFetchDiagnostics';
+import { stackrHaptics } from '../lib/haptics';
 
 installRuntimeFetchDiagnostics();
 void SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -204,7 +205,10 @@ const PersistentTabBar = memo(function PersistentTabBar() {
         return (
           <TouchableOpacity
             key={tab.key}
-            onPress={() => router.push(tab.route as any)}
+            onPress={() => {
+              if (!active) void stackrHaptics.selection();
+              router.push(tab.route as any);
+            }}
             activeOpacity={0.82}
             accessibilityRole="tab"
             accessibilityLabel={tab.label}

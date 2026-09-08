@@ -155,7 +155,11 @@ async function main() {
   assert.match(pokemonTcgSource, /function mergeApprovedSetImages/);
   assert.match(pokemonTcgSource, /cacheNonEmptyCatalogueRows\(allSetsCache, cacheKey, sets,/);
   assert.match(pokemonTcgSource, /cacheNonEmptyCatalogueRows\(cardsForSetCache, cacheKey, cards,/);
-  assert.match(pokemonTcgSource, /export function invalidatePokemonCatalogueCardCaches\(\) \{\s*cardsForSetCache\.clear\(\);\s*invalidateForeignPokemonSetReferenceCache\(\);/);
+  const invalidateCardCachesBody = pokemonTcgSource.match(/export function invalidatePokemonCatalogueCardCaches\(\) \{([^}]+)\}/)?.[1];
+  assert.ok(invalidateCardCachesBody, 'the catalogue refresh hook must be present');
+  assert.match(invalidateCardCachesBody, /cardsForSetCache\.clear\(\);/);
+  assert.match(invalidateCardCachesBody, /clearStackrCatalogueCaches\(\);/);
+  assert.match(invalidateCardCachesBody, /invalidateForeignPokemonSetReferenceCache\(\);/);
   const binderDetailSource = readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
   assert.match(binderDetailSource, /if \(forceRefresh\) \{\s*invalidateBinderCaches\(binderId\);\s*invalidatePokemonCatalogueCardCaches\(\);/);
 

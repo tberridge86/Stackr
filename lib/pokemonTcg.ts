@@ -16,6 +16,7 @@ import {
 } from './curatedPokemonCatalogue';
 import { supabase } from './supabase';
 import {
+  clearStackrCatalogueCaches,
   fetchPreferredStackrCardsForReferences,
   fetchPreferredStackrSets,
   fetchStackrCard,
@@ -158,6 +159,7 @@ const cardsForSetInflight = new Map<string, Promise<PokemonCard[]>>();
 /** Reload metadata and approved runtime image references after an explicit retry. */
 export function invalidatePokemonCatalogueCardCaches() {
   cardsForSetCache.clear();
+  clearStackrCatalogueCaches();
   invalidateForeignPokemonSetReferenceCache();
 }
 const pokemonTcgApiSearchCache = new Map<string, { expiresAt: number; value: PokemonCard[] }>();

@@ -1,0 +1,376 @@
+{
+  "schemaVersion": "stackr-api-bridge-english-svp-card-images-evidence-v1",
+  "preparedAt": "2026-09-08",
+  "executionStatus": "executed_verified_database",
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+  "expectedCatalogueVersionAssetLinkInsertCount": 19,
+  "policy": "existing production approved/public/active exact-current English TCGdex card-image assets only; no asset, source, storage, or version mutation",
+  "manifestFile": ".tmp/english-svp-card-image-cva-promotion-manifest-20260908.json",
+  "manifestFileSha256": "03274ACB6C70BB9624B4622B9C4BD9D8363E258890E93F31224E440586ECB607",
+  "applyPlanFile": ".tmp/english-svp-card-image-cva-promotion-apply-20260908.sql",
+  "applyPlanSha256": "2936191C4A2228444192A27F8781D5C698B56C5DF137A8C90AC94C1601C2F3E6",
+  "catalogueVersionAssetPairs": [
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "03847461-eb6c-45c9-a0b5-7c473dcf35bf",
+      "variantId": "4226df8d-293b-4f9a-af11-35e2a01da9e2",
+      "printingId": "f15fc1d4-60ac-4b4d-99db-78b5bcdb96fb",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "0b2640c2-65dc-435b-808a-bec6fd9ed0b4",
+      "variantId": "dda361ad-6bb2-4e37-a4e4-21864f2343dc",
+      "printingId": "67383009-61d8-4d0b-8c5e-37e248b7f19a",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "24a5268d-eb4d-4f43-bded-20d3e02854ef",
+      "variantId": "30ab6712-b441-4e46-b74e-8b8e199da5c2",
+      "printingId": "bd8f3352-52d8-4fc2-8402-9e1919bb9281",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "5aff4c49-d5dd-4df4-9bc6-5ff538df1057",
+      "variantId": "5dd758ea-f6bd-4fce-857c-bb84cdd3f677",
+      "printingId": "1888e239-cdcf-4abb-8d2b-78a5f62386ad",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "5fcc091e-f0ea-4e36-8c7a-7efc1dea5601",
+      "variantId": "fdbed061-44b9-432e-b601-8604ce9327c4",
+      "printingId": "b121d5c1-bd70-4a3a-823b-28b66bbc3a66",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "6a668a29-3794-4a3a-b324-3366ee6f80fd",
+      "variantId": "65fa80bd-117d-4f5a-92a0-30b65fc9db94",
+      "printingId": "693bac83-6d96-468a-8be9-f9af0b421cf2",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "7e9ac9e8-bbac-48b2-8e92-bd3be01cfd3c",
+      "variantId": "1c2177df-6650-431d-888f-db4f2be8d72b",
+      "printingId": "6bce01e9-08aa-4b94-8277-39eab7f46bb2",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "807ea957-226e-4d9e-8b46-5117a1e0bb4a",
+      "variantId": "eb8209f3-1e86-41fa-a934-ff69606269b8",
+      "printingId": "1416d436-740a-49d6-b534-5a210ad3c111",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "8ccf68ba-a207-4dd1-a2f6-423ba708a41d",
+      "variantId": "0a889bfd-973a-4616-9b4c-7b1fed81c1e4",
+      "printingId": "a8d840dc-170d-419b-9a1f-66160f4a27cd",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "a3fbdc48-6f8f-4dbc-8aeb-bdfcb54d7cd5",
+      "variantId": "a09f4a2e-8950-4368-a465-b44597e348cd",
+      "printingId": "f9b73e2c-6d2c-4dc5-b4c2-9b967e9a7cfd",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "bb087b87-cb1c-489e-87c4-97ae4d9cb01f",
+      "variantId": "2ca0df31-a672-4184-9547-e1879cf0f7e3",
+      "printingId": "94667915-cbaa-4d28-8719-545e34434e50",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "c96a3f34-dce6-43b4-a57a-49d4b8dfc49b",
+      "variantId": "97ba624d-0f52-475e-80b9-a6cbe39ff2b2",
+      "printingId": "4964f4e4-9b66-4f06-a9ef-46731dfaab7c",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "caec996a-4cc7-41c6-921e-ebe8f96d652e",
+      "variantId": "82e1da83-00af-4e78-a353-9fbd1762c898",
+      "printingId": "255e1caf-4b96-4ccd-b733-4b34a596997a",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "d56bc292-28f4-49f1-8cfa-8ba754388fc6",
+      "variantId": "981537b3-6098-4bd2-b163-070776510654",
+      "printingId": "a063c27a-8757-4cdc-bb4a-bf2be5d44b69",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "ea9aeefa-5f4d-4b68-aa7d-bc24cdaf8453",
+      "variantId": "fa8d3d85-02bf-4483-8b41-da5e2cf38a78",
+      "printingId": "ae0bd0ce-644b-47e9-9aa1-119f2e261197",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "eaf3453f-77ff-46e7-9211-f9a9e2b72dce",
+      "variantId": "b4d8be5a-d865-4a71-8a6d-1bf5b7bbab35",
+      "printingId": "0ce79cc3-8766-4703-8a08-5200fd1c4496",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "ef5010a6-db94-41f3-b51d-37c0b5f674e7",
+      "variantId": "a8473b23-09d3-4651-92b7-8e0c7f0c280d",
+      "printingId": "180685c8-dd8e-49e1-adbc-e95e5f239ba3",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "f7c6007c-b4b4-45a2-8daf-6a6f50db4de1",
+      "variantId": "8d800832-3c35-4d89-a826-542a085754b0",
+      "printingId": "1b79bb08-022b-42f1-a745-267c630ee93e",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    },
+    {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "languageCode": "en",
+      "assetId": "fd169af4-b9bc-4921-8ed2-2632ddd705fd",
+      "variantId": "4d6b4549-6d6c-4ace-a4cc-72877ba29401",
+      "printingId": "aad7533b-d31f-4ab3-be1c-13e441b57f57",
+      "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+      "assetType": "card_image"
+    }
+  ],
+  "rollback": {
+    "order": [
+      "delete exact recorded catalogue_version_assets pairs only"
+    ],
+    "catalogueVersionAssetPairs": [
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "03847461-eb6c-45c9-a0b5-7c473dcf35bf",
+        "variantId": "4226df8d-293b-4f9a-af11-35e2a01da9e2",
+        "printingId": "f15fc1d4-60ac-4b4d-99db-78b5bcdb96fb",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "0b2640c2-65dc-435b-808a-bec6fd9ed0b4",
+        "variantId": "dda361ad-6bb2-4e37-a4e4-21864f2343dc",
+        "printingId": "67383009-61d8-4d0b-8c5e-37e248b7f19a",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "24a5268d-eb4d-4f43-bded-20d3e02854ef",
+        "variantId": "30ab6712-b441-4e46-b74e-8b8e199da5c2",
+        "printingId": "bd8f3352-52d8-4fc2-8402-9e1919bb9281",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "5aff4c49-d5dd-4df4-9bc6-5ff538df1057",
+        "variantId": "5dd758ea-f6bd-4fce-857c-bb84cdd3f677",
+        "printingId": "1888e239-cdcf-4abb-8d2b-78a5f62386ad",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "5fcc091e-f0ea-4e36-8c7a-7efc1dea5601",
+        "variantId": "fdbed061-44b9-432e-b601-8604ce9327c4",
+        "printingId": "b121d5c1-bd70-4a3a-823b-28b66bbc3a66",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "6a668a29-3794-4a3a-b324-3366ee6f80fd",
+        "variantId": "65fa80bd-117d-4f5a-92a0-30b65fc9db94",
+        "printingId": "693bac83-6d96-468a-8be9-f9af0b421cf2",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "7e9ac9e8-bbac-48b2-8e92-bd3be01cfd3c",
+        "variantId": "1c2177df-6650-431d-888f-db4f2be8d72b",
+        "printingId": "6bce01e9-08aa-4b94-8277-39eab7f46bb2",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "807ea957-226e-4d9e-8b46-5117a1e0bb4a",
+        "variantId": "eb8209f3-1e86-41fa-a934-ff69606269b8",
+        "printingId": "1416d436-740a-49d6-b534-5a210ad3c111",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "8ccf68ba-a207-4dd1-a2f6-423ba708a41d",
+        "variantId": "0a889bfd-973a-4616-9b4c-7b1fed81c1e4",
+        "printingId": "a8d840dc-170d-419b-9a1f-66160f4a27cd",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "a3fbdc48-6f8f-4dbc-8aeb-bdfcb54d7cd5",
+        "variantId": "a09f4a2e-8950-4368-a465-b44597e348cd",
+        "printingId": "f9b73e2c-6d2c-4dc5-b4c2-9b967e9a7cfd",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "bb087b87-cb1c-489e-87c4-97ae4d9cb01f",
+        "variantId": "2ca0df31-a672-4184-9547-e1879cf0f7e3",
+        "printingId": "94667915-cbaa-4d28-8719-545e34434e50",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "c96a3f34-dce6-43b4-a57a-49d4b8dfc49b",
+        "variantId": "97ba624d-0f52-475e-80b9-a6cbe39ff2b2",
+        "printingId": "4964f4e4-9b66-4f06-a9ef-46731dfaab7c",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "caec996a-4cc7-41c6-921e-ebe8f96d652e",
+        "variantId": "82e1da83-00af-4e78-a353-9fbd1762c898",
+        "printingId": "255e1caf-4b96-4ccd-b733-4b34a596997a",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "d56bc292-28f4-49f1-8cfa-8ba754388fc6",
+        "variantId": "981537b3-6098-4bd2-b163-070776510654",
+        "printingId": "a063c27a-8757-4cdc-bb4a-bf2be5d44b69",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "ea9aeefa-5f4d-4b68-aa7d-bc24cdaf8453",
+        "variantId": "fa8d3d85-02bf-4483-8b41-da5e2cf38a78",
+        "printingId": "ae0bd0ce-644b-47e9-9aa1-119f2e261197",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "eaf3453f-77ff-46e7-9211-f9a9e2b72dce",
+        "variantId": "b4d8be5a-d865-4a71-8a6d-1bf5b7bbab35",
+        "printingId": "0ce79cc3-8766-4703-8a08-5200fd1c4496",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "ef5010a6-db94-41f3-b51d-37c0b5f674e7",
+        "variantId": "a8473b23-09d3-4651-92b7-8e0c7f0c280d",
+        "printingId": "180685c8-dd8e-49e1-adbc-e95e5f239ba3",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "f7c6007c-b4b4-45a2-8daf-6a6f50db4de1",
+        "variantId": "8d800832-3c35-4d89-a826-542a085754b0",
+        "printingId": "1b79bb08-022b-42f1-a745-267c630ee93e",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      },
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "assetId": "fd169af4-b9bc-4921-8ed2-2632ddd705fd",
+        "variantId": "4d6b4549-6d6c-4ace-a4cc-72877ba29401",
+        "printingId": "aad7533b-d31f-4ab3-be1c-13e441b57f57",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "assetType": "card_image"
+      }
+    ]
+  },
+  "executedAt": "2026-09-08T21:08:06.862Z",
+  "verification": {
+    "exactCurrentVersionLinks": 19,
+    "publicStorageDerivative": {
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    "publicSvPCardsEndpoint": {
+      "status": 500,
+      "note": "Fresh set cards request returned 500 after successful database-link and derivative checks; no retry or mutation performed."
+    }
+  }
+}

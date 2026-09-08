@@ -20,6 +20,19 @@ export function getBinderCardImageUri(row: BinderCardDisplay, size: 'small' | 'l
   return null;
 }
 
+/** A saved finish is more specific than a catalogue row's default variant. */
+export function getBinderCanonicalVariantId(row: {
+  card?: {
+    externalIds?: { stackrVariant?: string | null } | null;
+    raw_data?: { stackr?: { defaultVariantId?: string | null } | null } | null;
+  } | null;
+}) {
+  const explicit = String(row.card?.externalIds?.stackrVariant ?? '').trim();
+  if (explicit) return explicit;
+  const defaultVariant = String(row.card?.raw_data?.stackr?.defaultVariantId ?? '').trim();
+  return defaultVariant || null;
+}
+
 export function positiveCatalogueCount(value: unknown): number | null {
   const number = Number(value);
   return Number.isSafeInteger(number) && number > 0 ? number : null;
