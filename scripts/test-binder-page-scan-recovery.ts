@@ -28,8 +28,8 @@ const makeStorage = (): Storage & { getItem(key: string): Promise<string | null>
 });
 
 const pocket = (index: number, status: 'confirmed' | 'possible_match') => ({
-  index, row: 0, column: index, uri: `file://pocket-${index}.jpg`, candidates: [], selectedCandidateIndex: 0,
-  status, source: 'manual' as const, notes: [],
+  index, row: 0, column: index, cropUri: `file://pocket-${index}.jpg`, candidates: [], selectedCandidateIndex: 0,
+  status, source: 'manual' as const, quality: null, notes: [],
 });
 const session = (scanSessionId: string, ownerUserId: string) => ({
   scanSessionId, ownerUserId, binderId: `binder-${ownerUserId}`, layout: 2 as const,
