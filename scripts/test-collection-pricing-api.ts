@@ -194,6 +194,38 @@ assert.equal(
   assert.match(siblings[0].requestError ?? '', /test request failure/);
   assert.equal(siblings[1].central, 8, 'One request failure must not discard sibling results');
 
+  let current = true;
+  let resolutionCalls = 0;
+  const progress: { completed: number; values: (number | null)[] }[] = [];
+  const progressInputs = Array.from({ length: 8 }, (_, index) => baseInput({ key: `unit-${index}` }));
+  const interrupted = await loadCollectionPrices(progressInputs, {
+    client: client as any,
+    resolver: (async () => { resolutionCalls += 1; return singleVariantResolver(); }) as any,
+    concurrency: 1,
+    isCurrent: () => current,
+    onProgress: (results, completed) => {
+      progress.push({ completed, values: results.map((result) => result.central) });
+      if (completed === 2) current = false;
+    },
+  });
+  assert.equal(progress.length, 2, 'An account switch must stop scheduling and publishing further prices');
+  assert.equal(resolutionCalls, 1, 'Different ownership units of the same card share an identity read within this load');
+  assert.deepEqual(progress[0].values, [12.34, null, null, null, null, null, null, null], 'Pending units remain in the subtotal coverage denominator');
+  assert.equal(interrupted.filter((result) => result.central != null).length, 2);
+  await loadCollectionPrices([baseInput()], {
+    client: client as any,
+    resolver: (async () => { resolutionCalls += 1; return singleVariantResolver(); }) as any,
+  });
+  assert.equal(resolutionCalls, 2, 'A later account/load never reuses the previous load cache');
+  let sameAccount = true;
+  let wrongAccountPriceReads = 0;
+  await loadCollectionPrices([baseInput()], {
+    client: { cardPrice: async () => { wrongAccountPriceReads += 1; return price(10); } } as any,
+    resolver: (async () => { sameAccount = false; return singleVariantResolver(); }) as any,
+    isCurrent: () => sameAccount,
+  });
+  assert.equal(wrongAccountPriceReads, 0, 'A switch during public card resolution must not start an authenticated price read');
+
   console.log('Collection pricing API tests passed');
 }
 

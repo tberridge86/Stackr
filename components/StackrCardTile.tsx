@@ -12,6 +12,7 @@ import { StackrImage } from './StackrImage';
 import { useTheme } from './theme-context';
 import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from './RaritySymbol';
+import { stackrHaptics } from '../lib/haptics';
 
 type StackrCardTileProps = {
   imageUri?: string | null;
@@ -61,13 +62,16 @@ function StackrCardTileBase({
   const cardAccessibilityLabel = accessibilityLabel ?? [
     name,
     rarity ? `${rarity} rarity` : null,
-    hint ?? 'Tap to select. Hold for details.',
+    hint ?? (onLongPress ? 'Tap to select. Hold for details.' : 'Tap to select.'),
   ].filter(Boolean).join('. ');
 
   return (
     <TouchableOpacity
       onPress={onPress}
-      onLongPress={onLongPress}
+      onLongPress={onLongPress ? () => {
+        void stackrHaptics.selection();
+        onLongPress();
+      } : undefined}
       delayLongPress={320}
       disabled={disabled}
       activeOpacity={0.82}

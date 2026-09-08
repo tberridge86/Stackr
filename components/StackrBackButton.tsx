@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { TouchableOpacity, type StyleProp, type ViewStyle } from 'react-native';
 import { useTheme } from './theme-context';
+import { stackrHaptics } from '../lib/haptics';
 
 export function StackrBackButton({
   onPress,
@@ -16,7 +17,10 @@ export function StackrBackButton({
 
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => {
+        void stackrHaptics.selection();
+        onPress();
+      }}
       activeOpacity={0.72}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
