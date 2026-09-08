@@ -1,7 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
-import { getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -1666,11 +1666,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const openCardDetail = (item: BinderCardWithDetails) => {
     const latestCard = cards.find((c) => c.id === item.id) ?? item;
     const imageRequest = ++detailImageRequestRef.current;
-    const canonicalVariantId = String(
-      latestCard.card?.raw_data?.stackr?.defaultVariantId
-      ?? latestCard.card?.externalIds?.stackrVariant
-      ?? ''
-    ).trim();
+    const canonicalVariantId = getBinderCanonicalVariantId(latestCard) ?? '';
     const storedSmallImage = latestCard.card?.images?.small ?? null;
     const storedLargeImage = latestCard.card?.images?.large ?? null;
     const hasFullImage = Boolean(storedLargeImage && storedLargeImage !== storedSmallImage);

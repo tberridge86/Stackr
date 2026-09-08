@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal, preserveUnmatchedBinderRows } from '../lib/binderCataloguePresentation';
+import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal, preserveUnmatchedBinderRows } from '../lib/binderCataloguePresentation';
 
 const saved = {
   image_url: 'https://catalogue.stackr.test/ja/S12a/001.webp',
@@ -23,6 +23,13 @@ assert.equal(getBinderCardImageUri({
   card: { images: { small: 'https://assets.tcgdex.net/ja/S/S12a/001/high.webp' } },
 }), saved.image_url, 'an unissued provider URL must not shadow a usable saved image');
 assert.equal(getBinderCardImageUri({ card: null, image_url: null }), null);
+assert.equal(getBinderCanonicalVariantId({ card: {
+  externalIds: { stackrVariant: 'saved-holo-variant' },
+  raw_data: { stackr: { defaultVariantId: 'catalogue-normal-variant' } },
+} }), 'saved-holo-variant', 'saved variant identity must win over a catalogue default finish');
+assert.equal(getBinderCanonicalVariantId({ card: {
+  externalIds: {}, raw_data: { stackr: { defaultVariantId: 'catalogue-normal-variant' } },
+} }), 'catalogue-normal-variant', 'catalogue default remains the fallback when no saved finish exists');
 
 // The live TCGdex S12a set response distinguishes regular cards from extras.
 assert.equal(getBinderCatalogueTotal({ printedTotal: 172, total: 258, masterSetEnabled: false, regularCardsOnly: true }), 172);
