@@ -51,6 +51,7 @@ jobs:
       - run: node scripts/test-gateway-privacy-deployment.mjs
       - run: npm run test:collection-pricing-ui
       - run: npm run test:home-release
+      - run: npm run test:ux-p1
       - run: npm run test:poketrace-benchmark
       - run: npm run test:seller-stock-out-routing
       - run: npm run test:premium-seller-access
