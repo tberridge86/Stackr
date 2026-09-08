@@ -34,6 +34,15 @@ import {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PREFERRED_CATALOGUE_READ_TIMEOUT_MS = 7000;
+const STACKR_CARD_RESOLUTION_TTL_MS = 45000;
+const MAX_STACKR_CARD_RESOLUTION_ENTRIES = 256;
+type StackrCardResolutionEntry = {
+  generation: number;
+  expiresAt: number | null;
+  promise: Promise<StackrResolvedCard | null>;
+};
+type StackrCardResolutionCache = { generation: number; entries: Map<string, StackrCardResolutionEntry> };
+const stackrCardResolutionCaches = new WeakMap<StackrApiClient, StackrCardResolutionCache>();
 const EXACT_CARD_REASONS = new Set([
   'exact_canonical_id',
   'exact_external_id',
@@ -101,6 +110,40 @@ export type StackrResolvedCard = {
   variantId: string;
   matchedBy: StackrSearchResult['reason'] | 'canonical_uuid';
 };
+
+function stackrCardResolutionCache(client: StackrApiClient) {
+  let cache = stackrCardResolutionCaches.get(client);
+  if (!cache) {
+    cache = { generation: 0, entries: new Map() };
+    stackrCardResolutionCaches.set(client, cache);
+  }
+  return cache;
+}
+
+function pruneStackrCardResolutionCache(cache: StackrCardResolutionCache, now: number) {
+  for (const [key, entry] of cache.entries) {
+    if (entry.expiresAt !== null && entry.expiresAt <= now) cache.entries.delete(key);
+  }
+  while (cache.entries.size >= MAX_STACKR_CARD_RESOLUTION_ENTRIES) {
+    const oldest = cache.entries.keys().next().value as string | undefined;
+    if (!oldest) break;
+    // An evicted in-flight promise still serves its original callers, but its identity
+    // check prevents a late completion from restoring an evicted entry.
+    cache.entries.delete(oldest);
+  }
+}
+
+function stackrCardResolutionKey(reference: string, options: { language?: string | null; setId?: string | null }) {
+  // Match resolveStackrCard's trim-only reference semantics. Provider IDs are not case-folded.
+  return JSON.stringify([String(reference ?? '').trim(), options.language ?? null, options.setId ?? null]);
+}
+
+/** Clears success and in-flight card-resolution work for one API client. */
+export function clearStackrCatalogueCaches(client: StackrApiClient = stackrApiClient) {
+  const cache = stackrCardResolutionCache(client);
+  cache.generation += 1;
+  cache.entries.clear();
+}
 
 function clean(value: unknown) {
   const text = String(value ?? '').trim();
@@ -1071,6 +1114,41 @@ export async function resolveStackrCard(
   };
 }
 
+async function resolveCachedStackrCard(
+  reference: string,
+  options: { language?: string | null; setId?: string | null },
+  client: StackrApiClient,
+) {
+  const cache = stackrCardResolutionCache(client);
+  const key = stackrCardResolutionKey(reference, options);
+  const now = Date.now();
+  const existing = cache.entries.get(key);
+  if (existing && existing.generation === cache.generation && (existing.expiresAt === null || existing.expiresAt > now)) {
+    return existing.promise;
+  }
+  pruneStackrCardResolutionCache(cache, now);
+  const generation = cache.generation;
+  const entry: StackrCardResolutionEntry = {
+    generation,
+    expiresAt: null,
+    promise: Promise.resolve(null),
+  };
+  entry.promise = resolveStackrCard(reference, options, client).then((resolved) => {
+    // Empty responses are not cached. A refresh must be able to discard work that settled late.
+    if (!resolved || cache.generation !== generation || cache.entries.get(key) !== entry) {
+      if (!resolved && cache.entries.get(key) === entry) cache.entries.delete(key);
+      return resolved;
+    }
+    entry.expiresAt = Date.now() + STACKR_CARD_RESOLUTION_TTL_MS;
+    return resolved;
+  }, (error) => {
+    if (cache.entries.get(key) === entry) cache.entries.delete(key);
+    throw error;
+  });
+  cache.entries.set(key, entry);
+  return entry.promise;
+}
+
 export async function fetchStackrCard(
   reference: string,
   options: { language?: string | null; setId?: string | null } = {},
@@ -1086,7 +1164,7 @@ export async function fetchStackrCard(
       : candidates;
     return constrained.length === 1 ? constrained[0] : null;
   }
-  const resolved = await resolveStackrCard(reference, options, client);
+  const resolved = await resolveCachedStackrCard(reference, options, client);
   if (!resolved) return null;
   const embeddedAssets = embeddedCardImageAssets(resolved.card);
   if (primaryCardImageAsset(resolved.card, embeddedAssets)) {

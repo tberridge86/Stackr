@@ -9,6 +9,14 @@ const saved = {
 const before = JSON.stringify(saved);
 assert.equal(getBinderCardImageUri(saved), saved.image_url);
 assert.equal(getBinderCardImageUri(saved, 'large'), saved.image_url);
+assert.equal(getBinderCardImageUri({
+  image_url: saved.image_url,
+  card: { images: {
+    small: 'https://catalogue.stackr.test/en/SVX/001-grid.webp',
+    large: 'https://catalogue.stackr.test/en/SVX/001-detail.webp',
+  } },
+}, 'large'), 'https://catalogue.stackr.test/en/SVX/001-detail.webp',
+  'detail display must prefer the same card’s supplied full-size image');
 assert.equal(JSON.stringify(saved), before, 'display resolution must preserve saved quantities and image fields');
 assert.equal(getBinderCardImageUri({
   ...saved,
