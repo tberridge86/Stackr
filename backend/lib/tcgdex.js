@@ -671,6 +671,7 @@ function resolveTcgdexPrice(card, language = 'ja') {
 
 export function summariseTcgdexNormalPricing(card, language = 'en') {
   const lang = normalizeLanguage(language);
+  if (card?.variants?.normal === false) return null;
   const tcgplayerNormal = lang === 'en'
     ? getTcgplayerVariants(card?.pricing).find((entry) => ['normal', 'standard'].includes(String(entry.variant).toLowerCase()))
     : null;

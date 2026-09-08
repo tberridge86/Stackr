@@ -958,6 +958,8 @@ async function assertExactOwnerProviderRefresh() {
     pricing: { tcgplayer: { unit: 'USD', updated: new Date().toISOString(), holofoil: { marketPrice: 100 }, normal: { marketPrice: 2 } } },
   }, 'en');
   assert.equal(normal.price, 1.58, 'normal pricing must not select a higher holo quote');
+  assert.equal(summariseTcgdexNormalPricing({ id: 'holo-only-1', variants: { normal: false, holo: true }, pricing: { cardmarket: { unit: 'EUR', trend: 9 } } }, 'en'), null,
+    'a provider card without a normal finish cannot lend its generic Cardmarket price to a normal variant');
   assert.equal(summariseTcgdexNormalPricing({ id: 'base3-4', pricing: { cardmarket: { unit: 'EUR', 'trend-holo': 9 } } }, 'en'), null,
     'Cardmarket holo-only pricing cannot be treated as the normal printing');
   assert.equal(summariseTcgdexNormalPricing({ id: 'base3-4', language: 'ja', pricing: { cardmarket: { unit: 'EUR', trend: 9, updated: new Date().toISOString() } } }, 'en').language, 'ja',
