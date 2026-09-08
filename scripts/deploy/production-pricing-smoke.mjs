@@ -40,15 +40,6 @@ function assertV1Envelope(body, expectedRequestId, inspectData) {
   inspectData(body.data);
 }
 
-function assertGatewayCacheBypass(response, name) {
-  if (response.headers.get('x-stackr-cache') !== 'BYPASS') {
-    throw new Error(`${name} was not confirmed as a gateway cache bypass.`);
-  }
-  if (response.headers.get('cache-control') !== 'no-store') {
-    throw new Error(`${name} did not disable client caching.`);
-  }
-}
-
 async function probeJson({
   fetchImpl,
   baseUrl,
@@ -80,11 +71,49 @@ async function probeJson({
   };
 }
 
+function assertPrivatePricingFailure(body, response, expectedRequestId, name) {
+  const status = response.status;
+  const code = String(body?.error?.code ?? '').trim();
+  if (status === 503) {
+    if (code === 'pricing_owner_unconfigured' || code === 'pricing_access_mode_invalid' || code === 'pricing_access_unconfigured') {
+      throw new Error(`${name} found a pricing configuration failure (${code}).`);
+    }
+    throw new Error(`${name} returned HTTP 503 instead of an owner-authentication denial.`);
+  }
+  if (status !== 401 || code !== 'authentication_required') {
+    throw new Error(`${name} returned HTTP ${status} (${code || 'missing error code'}) instead of authentication_required.`);
+  }
+  if (String(body?.meta?.apiVersion ?? '') !== '1' || String(body?.error?.requestId ?? '') !== expectedRequestId) {
+    throw new Error(`${name} did not return a valid Stackr API v1 error envelope.`);
+  }
+  if (response.headers.get('cache-control') !== 'private, no-store') {
+    throw new Error(`${name} did not keep the denied pricing response private.`);
+  }
+  if (!/authorization/i.test(response.headers.get('vary') ?? '')) {
+    throw new Error(`${name} did not vary its denied pricing response by Authorization.`);
+  }
+}
+
+async function probeAnonymousPricingDenial({ fetchImpl, baseUrl, path, name, headers, timeoutMs }) {
+  const startedAt = Date.now();
+  const response = await fetchImpl(new URL(path, baseUrl), {
+    method: 'GET',
+    headers: { accept: 'application/json', ...headers },
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+  const body = await response.json().catch(() => null);
+  const requestId = requestIdFrom(response, body);
+  if (!requestId) throw new Error(`${name} did not return a request ID.`);
+  assertPrivatePricingFailure(body, response, requestId, name);
+  return { name, status: response.status, requestId, durationMs: Date.now() - startedAt };
+}
+
 export async function runProductionPricingSmoke({
   backendUrl,
   gatewayUrl,
   variantId,
   backendOriginKey,
+  ownerAccessToken,
   expectedBackendCommit,
   expectedBackendDeploymentId,
   fetchImpl = fetch,
@@ -95,6 +124,7 @@ export async function runProductionPricingSmoke({
   const gateway = normalizeBaseUrl(gatewayUrl, 'gateway URL', allowHttp);
   const normalizedVariantId = String(variantId ?? '').trim();
   const normalizedOriginKey = String(backendOriginKey ?? '').trim();
+  const normalizedOwnerAccessToken = String(ownerAccessToken ?? '').trim();
   const normalizedCommit = String(expectedBackendCommit ?? '').trim().toLowerCase();
   const normalizedDeploymentId = String(expectedBackendDeploymentId ?? '').trim().toLowerCase();
   if (!UUID_PATTERN.test(normalizedVariantId)) throw new Error('variant ID must be a canonical UUID.');
@@ -131,19 +161,9 @@ export async function runProductionPricingSmoke({
     },
   }));
 
-  const probes = [
-    {
-      key: 'health',
-      path: '/v1/health',
-      inspectData(data) {
-        if (data.status !== 'ok' || data.apiVersion !== '1') {
-          throw new Error('health payload was not ready');
-        }
-      },
-    },
+  const pricingProbes = [
     {
       key: 'exact_price',
-      cachedByGateway: true,
       path: `/v1/cards/${encodeURIComponent(normalizedVariantId)}/price?productType=raw_card&currency=GBP&condition=near_mint`,
       inspectData(data) {
         if (data.variantId !== normalizedVariantId) throw new Error('price payload did not match the requested variant');
@@ -151,7 +171,6 @@ export async function runProductionPricingSmoke({
     },
     {
       key: 'price_history',
-      cachedByGateway: true,
       path: `/v1/cards/${encodeURIComponent(normalizedVariantId)}/price-history?productType=raw_card&currency=GBP&condition=near_mint&limit=1`,
       inspectData(data) {
         if (data.variantId !== normalizedVariantId || !Array.isArray(data.observations)) {
@@ -161,7 +180,6 @@ export async function runProductionPricingSmoke({
     },
     {
       key: 'movers',
-      cachedByGateway: true,
       path: '/v1/market/movers?productType=raw_card&currency=GBP&limit=1',
       inspectData(data) {
         if (!Array.isArray(data.movers)) throw new Error('movers payload was not an array');
@@ -171,31 +189,57 @@ export async function runProductionPricingSmoke({
 
   for (const target of [
     { label: 'direct_backend', baseUrl: backend, headers: { 'x-stackr-origin-key': normalizedOriginKey } },
-    {
-      label: 'public_gateway',
-      baseUrl: gateway,
-      // Gateway market reads are cacheable. A bearer value makes its cache
-      // layer fetch fresh data, and public routes neither authenticate nor
-      // forward it to the backend. The response assertion below is the proof.
-      headers: { authorization: 'Bearer smoke-cache-bypass' },
-      requireCacheBypass: true,
-    },
+    { label: 'gateway', baseUrl: gateway, headers: {} },
   ]) {
-    for (const probe of probes) {
-      results.push(await probeJson({
+    results.push(await probeJson({
+      fetchImpl,
+      baseUrl: target.baseUrl,
+      path: '/v1/health',
+      name: `${target.label}_health`,
+      headers: target.headers,
+      timeoutMs,
+      inspect(body, response, requestId) {
+        assertV1Envelope(body, requestId, (data) => {
+          if (data.status !== 'ok' || data.apiVersion !== '1') throw new Error('health payload was not ready');
+        });
+      },
+    }));
+    for (const probe of pricingProbes) {
+      results.push(await probeAnonymousPricingDenial({
         fetchImpl,
         baseUrl: target.baseUrl,
         path: probe.path,
-        name: `${target.label}_${probe.key}`,
+        name: `${target.label}_anonymous_${probe.key}`,
         headers: target.headers,
         timeoutMs,
-        inspect(body, response, requestId) {
-          assertV1Envelope(body, requestId, probe.inspectData);
-          if (target.requireCacheBypass && probe.cachedByGateway) {
-            assertGatewayCacheBypass(response, `${target.label}_${probe.key}`);
-          }
-        },
       }));
+    }
+  }
+
+  if (normalizedOwnerAccessToken) {
+    for (const target of [
+      { label: 'direct_backend', baseUrl: backend, headers: { 'x-stackr-origin-key': normalizedOriginKey } },
+      { label: 'gateway', baseUrl: gateway, headers: {} },
+    ]) {
+      for (const probe of pricingProbes) {
+        results.push(await probeJson({
+          fetchImpl,
+          baseUrl: target.baseUrl,
+          path: probe.path,
+          name: `${target.label}_owner_${probe.key}`,
+          headers: { ...target.headers, authorization: `Bearer ${normalizedOwnerAccessToken}` },
+          timeoutMs,
+          inspect(body, response, requestId) {
+            assertV1Envelope(body, requestId, probe.inspectData);
+            if (response.headers.get('cache-control') !== 'private, no-store') {
+              throw new Error(`${target.label}_owner_${probe.key} did not keep owner pricing private.`);
+            }
+            if (!/authorization/i.test(response.headers.get('vary') ?? '')) {
+              throw new Error(`${target.label}_owner_${probe.key} did not vary owner pricing by Authorization.`);
+            }
+          },
+        }));
+      }
     }
   }
 
@@ -204,6 +248,7 @@ export async function runProductionPricingSmoke({
     expectedBackendCommit: normalizedCommit,
     expectedBackendDeploymentId: normalizedDeploymentId,
     variantId: normalizedVariantId,
+    ownerPricingValidated: Boolean(normalizedOwnerAccessToken),
     checks: results,
   };
 }
@@ -220,6 +265,7 @@ if (isMain) {
       gatewayUrl: argument('gateway', process.env.STACKR_GATEWAY_URL),
       variantId: argument('variant-id', process.env.STACKR_PRICING_SMOKE_VARIANT_ID),
       backendOriginKey: process.env[originKeyEnvironmentName],
+      ownerAccessToken: argument('owner-access-token', process.env.STACKR_PRICING_OWNER_ACCESS_TOKEN),
       expectedBackendCommit: argument('expected-backend-commit', process.env.STACKR_EXPECTED_MAIN_SHA),
       expectedBackendDeploymentId: argument(
         'expected-backend-deployment',

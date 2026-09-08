@@ -12,7 +12,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { getBinderCover } from '../lib/binderCovers';
-import { getJapaneseSetLogoSourceForSet } from '../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../lib/localSetArtwork';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
 import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
 import { stackrFonts } from '../lib/typography';
@@ -72,7 +72,7 @@ export function BinderArtwork({
   const [logoFailed, setLogoFailed] = useState(false);
   const cover = getBinderCover(coverKey);
   const resolvedLogoSource = fallbackLogoSource
-    ?? (cover ? null : getJapaneseSetLogoSourceForSet({
+    ?? (cover ? null : getLocalSetArtworkSourceForSet({
       id: coverKey ?? sourceSetId,
       language: sourceSetLanguage,
       name: setName,

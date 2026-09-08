@@ -316,6 +316,33 @@ paths:
         "403": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
         "503": { $ref: "#/components/responses/Error" }
+  /cards/{variantId}/provider-price-refresh:
+    post:
+      tags: [Market]
+      operationId: refreshExactProviderPrice
+      description: Refreshes and persists one exact normal/default raw near-mint GBP provider estimate for the configured owner. The server verifies canonical variant identity, language, and provider identifier; it never widens to a name search or asserts a last-sold price. Responses are private and no-store.
+      security: [{ SupabaseBearer: [] }]
+      parameters:
+        - $ref: "#/components/parameters/VariantId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+      responses:
+        "200":
+          description: The newly persisted exact provider market estimate.
+          content: { application/json: { schema: { $ref: "#/components/schemas/CardPriceResponse" } } }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
   /market/price-snapshots:
     get:
       tags: [Market]

@@ -121,8 +121,13 @@ assert.match(
 );
 assert.match(
   runtimeProjection,
-  /enforceSetVisualRuntimePolicy\(set\.images\.cover \?\? set\.images\.artwork \?\? binder\.source_set_cover_url\)/,
+  /enforceSetVisualRuntimePolicy\(set\.images\.cover \?\? set\.images\.artwork\) \?\? enforceSetVisualRuntimePolicy\(binder\.source_set_cover_url\)/,
   'binder read projection must preserve existing cover artwork',
+);
+assert.match(
+  runtimeProjection,
+  /fetchPreferredStackrSets\(null, undefined, \{ includeAssets: true \}\)/,
+  'historical binders must request already approved catalogue set assets, not metadata alone',
 );
 
 const binderListSource = readFileSync('app/(tabs)/binder.tsx', 'utf8');

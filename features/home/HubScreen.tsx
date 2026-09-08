@@ -29,7 +29,8 @@ import { useAppMode } from '../../components/app-mode-context';
 import { useProfile } from '../../components/profile-context';
 import { StackrProfileAvatar } from '../../components/StackrProfileAvatar';
 import { fetchBinders, fetchBinderCards, type BinderCardRecord, type BinderRecord } from '../../lib/binders';
-import { fetchOwnedCardRows, type OwnedCardRow } from '../../lib/ownership';
+import type { OwnedCardRow } from '../../lib/ownership';
+import { fetchHomeSavedCollection, savedBinderCatalogueTotal } from '../../lib/homeSavedCollection';
 import { supabase } from '../../lib/supabase';
 import { PRICE_API_URL } from '../../lib/config';
 import { ValueTrackerCard } from '../../components/ValueTrackerCard';
@@ -141,6 +142,7 @@ type HomeBinderCard = BinderCardRecord & {
 type HomeBinderCardGroup = {
   binder: BinderRecord;
   cards: HomeBinderCard[];
+  savedOnly?: boolean;
 };
 
 type HomeCollectionCacheSnapshot = {
@@ -301,10 +303,10 @@ const getBinderCardDisplayMetadata = (card: BinderCardRecord) => getHomeCardDisp
 });
 
 const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: Record<string, string> = {}): HomeBinderSummary[] =>
-  groups.map(({ binder, cards }) => {
+  groups.map(({ binder, cards, savedOnly }) => {
     const ownedCards = cards.filter((card) => getOwnedQuantity(card) > 0);
     const owned = ownedCards.length;
-    const total = cards.length;
+    const total = savedOnly ? savedBinderCatalogueTotal(binder, cards) : cards.length;
     const duplicateCount = ownedCards.reduce(
       (sum, card) => sum + Math.max(0, getOwnedQuantity(card) - 1),
       0
@@ -432,13 +434,18 @@ type HomeOwnedPricingUnit = {
   grade: string | null;
   productType: 'raw_card' | 'graded_card';
   identityExact: boolean;
+  language: string | null;
 };
+
+type HomePricingDefaults = Pick<HomeBinderCard,
+  '__binderId' | '__binderCardMode' | '__binderDefaultCondition' | '__binderDefaultGradeCompany' | '__binderDefaultGrade'>;
 
 const homeCardKey = (setId?: string | null, cardId?: string | null) => `${setId ?? ''}:${cardId ?? ''}`;
 
 const buildHomeOwnedPricingUnits = (
   allCards: HomeBinderCard[],
   ownedRows: OwnedCardRow[],
+  binders: BinderRecord[] = [],
 ): HomeOwnedPricingUnit[] => {
   const cardsByIdentity = new Map<string, HomeBinderCard[]>();
   for (const card of allCards) {
@@ -450,10 +457,19 @@ const buildHomeOwnedPricingUnits = (
     const cardKey = homeCardKey(row.set_id, row.card_id);
     const matchingCards = cardsByIdentity.get(cardKey) ?? [];
     const card = matchingCards[0] ?? null;
+    const matchingBinders = binders.filter((binder) => binder.type === 'official' && binder.source_set_id === row.set_id);
+    const defaults: HomePricingDefaults[] = matchingCards.length ? matchingCards : matchingBinders.map((binder) => ({
+      __binderId: binder.id,
+      __binderCardMode: binder.card_mode ?? null,
+      __binderDefaultCondition: binder.default_condition ?? null,
+      __binderDefaultGradeCompany: binder.default_grade_company ?? null,
+      __binderDefaultGrade: binder.default_grade ?? null,
+    }));
+    const languages = [...new Set(matchingBinders.map((binder) => binder.language).filter(Boolean))];
     const explicitCondition = String(row.condition ?? '').trim() || null;
     const explicitGradeCompany = String(row.grade_company ?? '').trim() || null;
     const explicitGrade = String(row.grade ?? '').trim() || null;
-    const binderModes = [...new Set(matchingCards.map((candidate) => (
+    const binderModes = [...new Set(defaults.map((candidate) => (
       candidate.__binderCardMode === 'graded' ? 'graded' : 'raw'
     )))];
     const hasExplicitGradeIdentity = Boolean(explicitGradeCompany || explicitGrade);
@@ -461,8 +477,8 @@ const buildHomeOwnedPricingUnits = (
     const productType = hasExplicitGradeIdentity || binderMode === 'graded'
       ? 'graded_card' as const
       : 'raw_card' as const;
-    const unanimousDefault = (read: (candidate: HomeBinderCard) => string | null) => {
-      const values = [...new Set(matchingCards
+    const unanimousDefault = (read: (candidate: HomePricingDefaults) => string | null) => {
+      const values = [...new Set(defaults
         .map(read)
         .map((value) => String(value ?? '').trim())
         .filter(Boolean))];
@@ -471,7 +487,8 @@ const buildHomeOwnedPricingUnits = (
     return {
       key: [cardKey, row.variant, row.condition ?? '', row.grade_company ?? '', row.grade ?? ''].join(':'),
       card,
-      binderIds: [...new Set(matchingCards.map((candidate) => candidate.__binderId))],
+      binderIds: [...new Set(defaults.map((candidate) => candidate.__binderId))],
+      language: card?.language ?? (languages.length === 1 ? languages[0] ?? null : null),
       cardId: row.card_id,
       setId: row.set_id,
       quantity: Math.max(1, Number(row.quantity ?? 1)),
@@ -486,7 +503,7 @@ const buildHomeOwnedPricingUnits = (
         ? unanimousDefault((candidate) => candidate.__binderDefaultGrade)
         : null),
       productType,
-      identityExact: binderModes.length <= 1 || hasExplicitGradeIdentity,
+      identityExact: (binderModes.length <= 1 || hasExplicitGradeIdentity) && (card != null || languages.length <= 1),
     };
   });
 
@@ -514,6 +531,7 @@ const buildHomeOwnedPricingUnits = (
         ? 'graded_card'
         : 'raw_card',
       identityExact: true,
+      language: card.language ?? null,
     });
   }
 
@@ -526,7 +544,7 @@ const pricingInputForHomeUnit = (unit: HomeOwnedPricingUnit) => ({
     ? [...new Set([unit.card?.api_card_id, unit.cardId].filter((value): value is string => Boolean(value)))]
     : [],
   quantity: unit.quantity,
-  language: unit.card?.language ?? null,
+  language: unit.language,
   setId: unit.card?.api_set_id ?? unit.setId,
   variantCode: unit.variant,
   productType: unit.productType,
@@ -1263,6 +1281,7 @@ export default function HubScreen() {
 
   const loadCollectionValue = useCallback(async () => {
     const requestId = ++homeCollectionRequestRef.current;
+    let collectorDataLoaded = false;
     setCollectionValueError(null);
     setCollectionPricingWarning(null);
     setHomeDataError(null);
@@ -1295,22 +1314,19 @@ export default function HubScreen() {
         await applyCachedHomeCollection();
       }
 
-      const binders = await fetchBinders().catch((binderError: any) => {
-        console.log('Home binders failed:', binderError?.message ?? binderError);
-        return [] as BinderRecord[];
-      });
+      const { binders, ownedRows, cardsByBinder } = await fetchHomeSavedCollection(trustedUserId);
       const binderGroups: HomeBinderCardGroup[] = await Promise.all(
         binders.map(async (binder) => {
-          try {
-            const [binderCards, masterSetEnabled] = await Promise.all([
-              fetchBinderCards(binder.id),
-              isHomeMasterSetEnabled(binder.id),
-            ]);
+            const binderCards = cardsByBinder.get(binder.id) ?? [];
+            const masterSetEnabled = await isHomeMasterSetEnabled(binder.id);
 
             return {
               binder,
+              savedOnly: true,
               cards: binderCards.map((card) => ({
                 ...card,
+                language: card.language ?? binder.language,
+                condition: card.condition || binder.default_condition || 'Near Mint',
                 __binderId: binder.id,
                 __binderEdition: binder.edition ?? null,
                 __binderCardMode: binder.card_mode ?? null,
@@ -1320,13 +1336,6 @@ export default function HubScreen() {
                 __masterSetEnabled: masterSetEnabled,
               })),
             };
-          } catch (binderError: any) {
-            console.log('Home binder cards failed:', binder.id, binderError?.message ?? binderError);
-            return {
-              binder,
-              cards: [],
-            };
-          }
         })
       );
       const allCards = binderGroups.flatMap((group) => group.cards);
@@ -1338,32 +1347,77 @@ export default function HubScreen() {
             await getCustomBinderNameArtKeyForBinder(group.binder.id, group.binder.name),
           ] as const)
       );
-      const binderSummaries = buildBinderSummaries(binderGroups, Object.fromEntries(customNameArtEntries));
+      let binderSummaries = buildBinderSummaries(binderGroups, Object.fromEntries(customNameArtEntries));
       const nextActiveBinder = selectActiveBinder(binderSummaries);
       let nextDuplicateSummary = buildDuplicateSummary(binderGroups);
-      const nextMissingCards = buildMissingCards(binderGroups, nextActiveBinder);
+      let nextMissingCards = buildMissingCards(binderGroups, nextActiveBinder);
 
       if (!await confirmCurrentRequest()) return;
-      if (!hasLoadedCollectionValueRef.current) {
-        setActiveBinder(nextActiveBinder);
-        setDuplicateSummary(nextDuplicateSummary);
-        setMissingCards(nextMissingCards);
-      }
-
-      let ownedRows: OwnedCardRow[] = [];
-      try {
-        ownedRows = await fetchOwnedCardRows();
-      } catch (ownershipError) {
-        console.log('Home canonical ownership failed; using binder ownership only', ownershipError);
-      }
-      const ownedUnits = buildHomeOwnedPricingUnits(allCards, ownedRows);
+      collectorDataLoaded = true;
+      setActiveBinder(nextActiveBinder);
+      setDuplicateSummary(nextDuplicateSummary);
+      setMissingCards(nextMissingCards);
+      // Only the displayed binder needs its full catalogue. It must not delay
+      // saved ownership or valuation of the other binders.
+      if (nextActiveBinder) void (async () => {
+        try {
+          const [brandedBinders, catalogueCards] = await Promise.all([
+            fetchBinders(),
+            fetchBinderCards(nextActiveBinder.id, { includePrices: false }),
+          ]);
+          if (!await confirmCurrentRequest()) return;
+          const group = binderGroups.find((item) => item.binder.id === nextActiveBinder.id);
+          if (!group || !catalogueCards.length) return;
+          const enrichedGroup: HomeBinderCardGroup = {
+            ...group,
+            savedOnly: false,
+            binder: brandedBinders.find((binder) => binder.id === group.binder.id) ?? group.binder,
+            cards: catalogueCards.map((card) => ({
+              ...card,
+              __binderId: group.binder.id,
+              __binderEdition: group.binder.edition ?? null,
+              __binderCardMode: group.binder.card_mode ?? null,
+              __binderDefaultCondition: group.binder.default_condition ?? null,
+              __binderDefaultGradeCompany: group.binder.default_grade_company ?? null,
+              __binderDefaultGrade: group.binder.default_grade ?? null,
+              __masterSetEnabled: group.cards.some((card) => card.__masterSetEnabled),
+            })),
+          };
+          const enrichedSummary = buildBinderSummaries([enrichedGroup], Object.fromEntries(customNameArtEntries))[0];
+          binderSummaries = binderSummaries.map((summary) => summary.id === enrichedSummary.id ? enrichedSummary : summary);
+          nextMissingCards = buildMissingCards([enrichedGroup], enrichedSummary);
+          setActiveBinder((current) => current?.id === enrichedSummary.id
+            ? { ...enrichedSummary, value: current.value, valueAvailable: current.valueAvailable, valueCoverageLabel: current.valueCoverageLabel }
+            : current);
+          setMissingCards(nextMissingCards);
+        } catch (error) {
+          console.log('Home optional binder catalogue unavailable', error);
+        }
+      })();
+      const ownedUnits = buildHomeOwnedPricingUnits(allCards, ownedRows, binders);
       const ownedUnitCount = ownedUnits.reduce((total, unit) => total + unit.quantity, 0);
       if (!await confirmCurrentRequest()) return;
       setOwnedCardCount(ownedUnitCount);
+      // Account and collection content can render while exact prices/history load.
+      setCollectionValueLoading(false);
 
       const priceResults = ownedUnits.length
-        ? await loadCollectionPrices(ownedUnits.map(pricingInputForHomeUnit))
+        ? await loadCollectionPrices(ownedUnits.map(pricingInputForHomeUnit), {
+          isCurrent: isCurrentRequest,
+          onProgress: (results, completed) => {
+            if (!isCurrentRequest() || hasSuccessfulCollectionPricingRef.current) return;
+            // Limit renders for large collections; leave pending cards in the coverage denominator.
+            if (completed !== 1 && completed % 12 !== 0 && completed !== ownedUnits.length) return;
+            const partial = pricingSummaryForResults(results);
+            if (partial.total == null) return;
+            setCollectionTotal(partial.total);
+            setCollectionPricingSummary(partial);
+            setCollectionValueLoading(false);
+            setCollectionPricingWarning(`Reading stored prices: ${completed} of ${ownedUnits.length} checked. Showing the known subtotal.`);
+          },
+        })
         : [];
+      if (!isCurrentRequest()) return;
       const nextPricingSummary = pricingSummaryForResults(priceResults);
       const identitySignature = collectionIdentitySignature(priceResults);
       const rawSnapshotEntries: HomeSnapshotTrendEntry[] = [];
@@ -1429,7 +1483,8 @@ export default function HubScreen() {
         ? (chartChange / chartStart) * 100
         : 0;
       const pricedBinderSummaries = applyHomeBinderPrices(binderSummaries, ownedUnits, priceResults);
-      const nextPricedActiveBinder = selectActiveBinder(pricedBinderSummaries);
+      const nextPricedActiveBinder = pricedBinderSummaries.find((binder) => binder.id === nextActiveBinder?.id)
+        ?? selectActiveBinder(pricedBinderSummaries);
       nextDuplicateSummary = applyHomeDuplicatePrices(nextDuplicateSummary, ownedUnits, priceResults);
       const hadCachedPricing = hasSuccessfulCollectionPricingRef.current;
       const requestFailures = priceResults.filter((result) => result.requestError).length;
@@ -1506,16 +1561,18 @@ export default function HubScreen() {
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
         setChartData([]);
-        setActiveBinder(null);
-        setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
-        setMissingCards([]);
+        if (!collectorDataLoaded) {
+          setActiveBinder(null);
+          setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
+          setMissingCards([]);
+        }
       }
       if (hasSuccessfulCollectionPricingRef.current) {
         setCollectionPricingWarning('Refresh failed. Showing your last successful stored-price read.');
         setCollectionValueError(null);
       } else {
         setCollectionValueError('We could not load stored market prices. Pull to refresh or try again.');
-        setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
+        if (!collectorDataLoaded) setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
       }
     } finally {
       if (homeCollectionRequestRef.current === requestId) {

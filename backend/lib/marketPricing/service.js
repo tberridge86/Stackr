@@ -7,6 +7,7 @@ import {
   parseLimit,
 } from '../stackrApiV1.js';
 import { buildCanonicalIdentity } from '../pricingV2/identity.js';
+import { fetchTcgdexNormalCardPrice } from '../tcgdex.js';
 
 export const MARKET_PRICING_VERSION = 'market-pricing-v1.0.0';
 export const MARKET_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -60,7 +61,12 @@ function dateOrNull(value) {
 const RAW_NEAR_MINT = 'raw_near_mint';
 const SNAPSHOT_HISTORY_RPC_PAGE_SIZE = 1_000;
 const SNAPSHOT_HISTORY_RPC_MAX_ROWS = 40_000;
-const SNAPSHOT_HISTORY_SELECT = 'id,card_id,language,canonical_identity_key,pricing_identity_json,market_price_gbp,low_price_gbp,high_price_gbp,tcgdex_price,tcg_mid,tcg_low,primary_source,price_source,price_type,confidence_score,confidence_label,methodology_version,source_breakdown,calculation_summary,outlier_summary,calculated_at,snapshot_at,stale_after,is_stale';
+const PERSONAL_PROVIDER_REFRESH_COOLDOWN_MS = 5 * 60_000;
+const PERSONAL_PROVIDER_REFRESH_TIMEOUT_MS = 12_000;
+const personalProviderRefreshes = new Map();
+// Snapshot rows retain calculation_summary; outlier_summary belongs to the
+// separate canonical estimate projection and is not a snapshot column.
+const SNAPSHOT_HISTORY_SELECT = 'id,card_id,language,canonical_identity_key,pricing_identity_json,market_price_gbp,low_price_gbp,high_price_gbp,tcgdex_price,tcg_mid,tcg_low,primary_source,price_source,price_type,confidence_score,confidence_label,methodology_version,source_breakdown,calculation_summary,calculated_at,snapshot_at,stale_after,is_stale';
 const CONDITION_CODES = new Map([
   ['mint', 'raw_mint'],
   ['raw_mint', 'raw_mint'],
@@ -484,6 +490,7 @@ async function catalogueRefreshMetadata(supabase, variantId) {
 }
 
 async function resolveSnapshotIdentity(supabase, variantId, metadata = null) {
+  variantId = String(variantId).toLowerCase();
   const resolved = metadata ?? await catalogueRefreshMetadata(supabase, variantId);
   const cardIds = new Set([variantId]);
   if (!resolved?.language) return { cardIds: [...cardIds], metadata: resolved };
@@ -492,13 +499,28 @@ async function resolveSnapshotIdentity(supabase, variantId, metadata = null) {
   const filters = [`variant_id.eq.${variantId}`];
   if (resolved.canonicalPrintingId) filters.push(`printing_id.eq.${resolved.canonicalPrintingId}`);
   const { data, error } = await table(supabase, 'api', 'catalogue_external_identifiers')
-    .select('external_id')
+    .select('source_entity_type,external_id,variant_id,printing_id')
     .eq('language_code', resolved.language)
     .or(filters.join(','));
   if (error) throw error;
   for (const row of data ?? []) {
     const id = clean(row?.external_id);
-    if (id) cardIds.add(id);
+    // Retain genuine printing aliases, but do not borrow a sibling variant's
+    // identifier merely because it shares the same printing.
+    const exactVariant = row?.variant_id === variantId;
+    const printingAlias = !row?.variant_id && row?.printing_id === resolved.canonicalPrintingId;
+    if (!id || (!exactVariant && !printingAlias)) continue;
+    cardIds.add(id);
+
+    // TCGdex's imported ordinary card identity has one documented suffix:
+    // `<provider-card-id>:normal`. Legacy snapshots use the provider card id
+    // without that suffix. Derive it only from that exact variant identifier;
+    // never strip arbitrary colon suffixes or borrow a sibling's alias.
+    if (exactVariant && isDefaultVariant(resolved)
+      && row?.source_entity_type === 'card') {
+      const match = /^([A-Za-z0-9][A-Za-z0-9._-]*):normal$/.exec(id);
+      if (match) cardIds.add(match[1]);
+    }
   }
   return { cardIds: [...cardIds], metadata: resolved };
 }
@@ -559,6 +581,116 @@ async function findLegacySnapshotEstimate(supabase, variantId, input = {}) {
   return best;
 }
 
+function normaliseTcgdexNormalIdentifier(value) {
+  const identifier = clean(value);
+  if (!identifier) return null;
+  const suffix = /^([A-Za-z0-9][A-Za-z0-9._-]*):normal$/i.exec(identifier);
+  if (suffix) return suffix[1];
+  return /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(identifier) ? identifier : null;
+}
+
+function sameProviderIdentifier(left, right) {
+  return clean(left)?.toLowerCase() === clean(right)?.toLowerCase();
+}
+
+async function exactTcgdexVariantAlias(supabase, variantId, metadata) {
+  const { data, error } = await supabase
+    .schema('api')
+    .rpc('approved_tcgdex_variant_aliases', {
+      p_variant_id: variantId,
+      p_language_code: metadata.language,
+    })
+    .select('external_id')
+    .limit(101);
+  if (error) throw error;
+  if ((data ?? []).length > 100) throw new ApiError(422, 'provider_identity_truncated', 'Too many provider identifiers are attached to this variant.');
+  const aliases = [...new Set((data ?? [])
+    .map((row) => normaliseTcgdexNormalIdentifier(row.external_id))
+    .filter(Boolean))];
+  if (aliases.length !== 1) {
+    throw new ApiError(422, aliases.length ? 'ambiguous_provider_identity' : 'unresolved_provider_identity', 'Exactly one approved TCGdex identifier is required for this variant.');
+  }
+  return aliases[0];
+}
+
+function providerQuoteIsValid(quote, alias, metadata) {
+  const price = Number(quote?.price);
+  if (!Number.isFinite(price) || price <= 0) return false;
+  if (String(quote?.language ?? '').toLowerCase() !== String(metadata.language).toLowerCase()) return false;
+  if (!sameProviderIdentifier(quote?.providerCardId, alias)) return false;
+  if (String(quote?.number ?? '').replace(/^0+/, '') !== String(metadata.number ?? '').replace(/^0+/, '')) return false;
+  const updatedAt = Date.parse(String(quote?.pricingUpdatedAt ?? ''));
+  return Number.isFinite(updatedAt) && updatedAt <= Date.now() + 5 * 60_000;
+}
+
+async function providerQuoteWithinTimeout(providerFetch, request) {
+  let timeout;
+  try {
+    return await Promise.race([
+      providerFetch(request),
+      new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(new ApiError(503, 'provider_refresh_timeout', 'The provider did not return an estimate in time.')), PERSONAL_PROVIDER_REFRESH_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
+function prunePersonalProviderRefreshes(now) {
+  for (const [key, state] of personalProviderRefreshes) {
+    if (!state.promise && now - state.completedAt >= PERSONAL_PROVIDER_REFRESH_COOLDOWN_MS) personalProviderRefreshes.delete(key);
+  }
+  const completed = [...personalProviderRefreshes.entries()].filter(([, state]) => !state.promise);
+  if (completed.length > 128) {
+    completed.sort(([, left], [, right]) => left.completedAt - right.completedAt);
+    for (const [key] of completed.slice(0, completed.length - 128)) personalProviderRefreshes.delete(key);
+  }
+}
+
+async function refreshExactLegacyProviderEstimate(supabase, variantId, input, providerFetch) {
+  if (!supportedLegacyInput(input)) throw new ApiError(422, 'unsupported_refresh_scope', 'Provider refresh supports only raw near-mint GBP cards.');
+  const metadata = await catalogueRefreshMetadata(supabase, variantId);
+  const identity = canonicalIdentityForMetadata(metadata, RAW_NEAR_MINT);
+  if (!metadata || !identity || !isDefaultVariant(metadata)) throw new ApiError(422, 'unsupported_refresh_scope', 'This provider refresh is available only for an exact normal/default variant.');
+  const alias = await exactTcgdexVariantAlias(supabase, variantId, metadata);
+  const quote = await providerQuoteWithinTimeout(providerFetch, { cardId: alias, language: metadata.language });
+  if (!providerQuoteIsValid(quote, alias, metadata)) throw new ApiError(404, 'exact_provider_quote_unavailable', 'The exact provider card has no current normal estimate.');
+  const snapshotAt = new Date().toISOString();
+  const providerUpdatedAt = new Date(quote.pricingUpdatedAt).toISOString();
+  const staleAfter = new Date(Date.parse(providerUpdatedAt) + 6 * 60 * 60_000).toISOString();
+  const snapshot = {
+    user_id: null, card_id: variantId, set_id: metadata.setId, language: metadata.language,
+    canonical_identity_key: identity.identityKey,
+    pricing_identity_json: { ...identity, canonicalVariantId: variantId, canonical_variant_id: variantId },
+    tcg_low: quote.tcg_low ?? null, tcg_mid: quote.tcg_mid ?? null, cardmarket_trend: quote.cardmarket_trend ?? null,
+    tcgdex_card_id: quote.providerCardId, tcgdex_price: quote.price, tcgdex_price_updated_at: providerUpdatedAt,
+    price_source: quote.priceSource ?? 'tcgdex', primary_source: 'tcgdex', price_type: 'market_estimate', proven_last_sold: false,
+    calculated_at: snapshotAt, snapshot_at: snapshotAt, stale_after: staleAfter, is_stale: Date.parse(staleAfter) <= Date.now(), source_payload: quote.raw ?? null,
+  };
+  const { error } = await supabase.from('market_price_snapshots').insert(snapshot);
+  if (error) throw error;
+  return legacySnapshotEstimate(snapshot, variantId, 'exact_variant');
+}
+
+async function refreshPersonalProviderEstimate(supabase, variantId, input, providerFetch) {
+  const now = Date.now();
+  prunePersonalProviderRefreshes(now);
+  const existing = personalProviderRefreshes.get(variantId);
+  if (existing?.promise) return existing.promise;
+  if (existing?.completedAt && now - existing.completedAt < PERSONAL_PROVIDER_REFRESH_COOLDOWN_MS) throw new ApiError(429, 'provider_refresh_cooldown', 'This exact card was refreshed recently.');
+  const promise = refreshExactLegacyProviderEstimate(supabase, variantId, input, providerFetch);
+  personalProviderRefreshes.set(variantId, { promise, completedAt: null });
+  try {
+    const result = await promise;
+    personalProviderRefreshes.set(variantId, { promise: null, completedAt: Date.now() });
+    return result;
+  } catch (error) {
+    personalProviderRefreshes.delete(variantId);
+    throw error;
+  }
+}
+
 function toSnapshotHistoryItem(row, variantId, scope) {
   const estimate = legacySnapshotEstimate(row, variantId, scope);
   if (!estimate) return null;
@@ -585,8 +717,13 @@ function toSnapshotHistoryItem(row, variantId, scope) {
 export function createMarketPricingService(options) {
   const supabase = options.supabase;
   const refreshEnabled = options.refreshEnabled ?? process.env.MARKET_PRICE_REFRESH_ENABLED === 'true';
+  const providerFetch = options.fetchTcgdexNormalCardPrice ?? fetchTcgdexNormalCardPrice;
 
   return {
+    async refreshExactProviderEstimate(variantId, input = {}) {
+      if (!isUuid(variantId)) throw new ApiError(400, 'invalid_variant_id', 'variantId must be a canonical UUID.');
+      return refreshPersonalProviderEstimate(supabase, String(variantId).toLowerCase(), input, providerFetch);
+    },
     async price(variantId, input = {}) {
       if (!isUuid(variantId)) throw new ApiError(400, 'invalid_variant_id', 'variantId must be a canonical UUID.');
       let query = table(supabase, 'api', 'market_price_estimates')

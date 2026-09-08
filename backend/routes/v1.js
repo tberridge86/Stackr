@@ -127,6 +127,9 @@ function defaultService() {
     supabase: getCatalogueSupabase(),
     searchSupabase: getSearchSupabase(),
     assetSupabase: getAssetSupabase(),
+    // Prepared separately by the protected additive artwork-read workflow.
+    // Keep client credentials out of this service-role-only lookup.
+    assetIdentityRpc: true,
   });
 }
 
@@ -379,6 +382,13 @@ export function createV1Router(options = {}) {
       status: refresh.status === 'queued' ? 202 : 200,
       cacheControl: NO_STORE_CACHE_CONTROL,
     });
+  }));
+
+  router.post('/cards/:variantId/provider-price-refresh', asyncRoute(async (req, res) => {
+    const estimate = await getPricingService().refreshExactProviderEstimate(req.params.variantId, {
+      productType: 'raw_card', currency: 'GBP', condition: 'near_mint',
+    });
+    sendEnvelope(req, res, estimate, { cacheControl: NO_STORE_CACHE_CONTROL });
   }));
 
   router.post('/market/price-refresh', asyncRoute(async (req, res) => {

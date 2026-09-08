@@ -41,7 +41,12 @@ import {
 } from '../../components/market/MarketComponents';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrImage, prefetchStackrImagesAfterInteractions } from '../../components/StackrImage';
-import { POKEMON_LANGUAGE_DESCRIPTORS, PokemonLanguageFlagIcon } from '../../components/PokemonLanguageBadge';
+import {
+  getPokemonLanguageDescriptor,
+  POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
+  PokemonLanguageFlagIcon,
+  type PokemonCatalogueLanguageCode,
+} from '../../components/PokemonLanguageBadge';
 import { StackrScreen } from '../../components/StackrScreen';
 import { formatSlabCompanyLabel } from '../../components/SlabStickerLabel';
 import { useProfile } from '../../components/profile-context';
@@ -70,6 +75,8 @@ import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
 import { marketIcons } from '../../lib/marketIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { getPokemonSetLogoUrl } from '../../lib/pokemonTcg';
+import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { supabase } from '../../lib/supabase';
 import { TRADE_STATUS_LABELS, normaliseTradeStatus } from '../../lib/transactionStates';
 import { fetchMyTradeOffers, TradeOffer } from '../../lib/tradeOffers';
@@ -78,7 +85,7 @@ import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrS
 
 type PrimaryFilter = 'all' | ListingCategoryKey;
 type SortKey = 'recommended' | 'recent' | 'priceAsc' | 'priceDesc' | 'bestValue' | 'relevant' | 'chase' | 'rarity' | 'set' | 'gradeDesc' | 'type';
-type MarketLanguageFilter = 'en' | 'ja' | 'zh-cn' | 'zh-tw';
+type MarketLanguageFilter = PokemonCatalogueLanguageCode;
 type Workspace = 'discover' | 'myListings';
 type MarketLayoutMode = 'browse' | 'compact';
 type SellerFilter = { userId: string; name?: string | null } | null;
@@ -96,6 +103,7 @@ type SearchSuggestion = {
   subtitle?: string | null;
   imageUri?: string | null;
   setLogoUrl?: string | null;
+  setArtworkSource?: ImageSourcePropType | null;
   listingCount?: number;
   sourceLabel?: string | null;
   primaryActionLabel?: string;
@@ -148,12 +156,8 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 const MARKET_GRADER_FILTERS = ['PSA', 'BGS', 'CGC', 'TAG', 'ACE'];
 const MARKET_GRADE_FILTERS = ['10', '9.5', '9', '8', '7 or lower'];
 const MARKET_FALLBACK_RARITIES = ['Common', 'Uncommon', 'Rare', 'Double Rare', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Secret Rare', 'Promo'];
-const MARKET_LANGUAGE_FILTERS: { key: MarketLanguageFilter; label: string }[] = [
-  { key: 'en', label: POKEMON_LANGUAGE_DESCRIPTORS.en.label },
-  { key: 'ja', label: POKEMON_LANGUAGE_DESCRIPTORS.ja.label },
-  { key: 'zh-cn', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-cn'].label },
-  { key: 'zh-tw', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-tw'].label },
-];
+const MARKET_LANGUAGE_FILTERS: { key: MarketLanguageFilter; label: string }[] =
+  POKEMON_CATALOGUE_LANGUAGE_OPTIONS.map((option) => ({ key: option.key, label: option.label }));
 type MarketListingTypeFilter = {
   key: MarketListingVariant;
   label: string;
@@ -414,10 +418,7 @@ function normalise(value: string | null | undefined) {
 
 function normaliseLanguageCode(value: string | null | undefined) {
   const normalised = normalise(value);
-  if (normalised === 'ja' || normalised === 'jp' || normalised === 'japanese') return 'ja';
-  if (normalised === 'zh tw' || normalised === 'zh' || normalised === 'zhtw' || normalised === 'chinese' || normalised === 'traditional chinese' || normalised === 'tc' || normalised === 'tw' || normalised === 'taiwan') return 'zh-tw';
-  if (normalised === 'en' || normalised === 'english') return 'en';
-  return normalised;
+  return getPokemonLanguageDescriptor(value)?.code ?? normalised;
 }
 
 function parseGradeValue(value: string | number | null | undefined) {
@@ -779,14 +780,51 @@ export default function TheMarketTab() {
     }).then((cards) => {
       if (!active) return;
       setCatalogueCardSuggestions((cards ?? []).map((card: any) => {
-        const setId = card.set_id ?? card.raw_data?.set?.id ?? null;
-        const setName = card.raw_data?.set?.name ?? setId;
+        const raw = card.raw_data ?? {};
+        const setRaw = raw.set ?? {};
+        const language = card.language ?? raw.language ?? setRaw.language ?? null;
+        const setId = card.set_id ?? setRaw.id ?? null;
+        const setName = getPreferredSetDisplayName({
+          id: setId,
+          sourceId: setRaw.tcgdex_id ?? setRaw.source_id ?? setId,
+          setCode: setRaw.set_code ?? card.external_ids?.setCode ?? null,
+          language,
+          region: raw.region ?? setRaw.region ?? null,
+          localName: setRaw.local_name ?? setRaw.name ?? null,
+          englishDisplayName: setRaw.english_display_name ?? setRaw.englishDisplayName ?? null,
+          canonicalName: setRaw.name ?? null,
+          fallbackName: setId,
+          raw: setRaw,
+        });
+        const label = getPreferredCardDisplayName({
+          id: card.id,
+          sourceId: raw.tcgdex_id ?? raw.source_id ?? card.id,
+          setId,
+          collectorNumber: card.number ?? raw.number ?? null,
+          language,
+          region: raw.region ?? null,
+          localName: raw.local_name ?? (language !== 'en' ? raw.name ?? card.name ?? null : null),
+          englishDisplayName: raw.english_display_name ?? raw.englishDisplayName ?? card.english_display_name ?? null,
+          canonicalName: card.name,
+          fallbackName: card.id,
+          raw,
+        });
         return {
           key: `catalogue-card:${card.id}`,
-          label: card.name ?? card.id,
+          label,
           subtitle: [card.number ? `#${card.number}` : null, setName].filter(Boolean).join(' - '),
-          imageUri: card.image_small ?? card.image_large ?? card.raw_data?.images?.small ?? null,
+          imageUri: card.image_small ?? card.image_large ?? raw.images?.small ?? null,
           setLogoUrl: setId ? getPokemonSetLogoUrl(setId) : null,
+          setArtworkSource: getLocalSetArtworkSourceForSet({
+            id: setId,
+            language,
+            name: setName,
+            localName: setRaw.local_name ?? setRaw.name ?? null,
+            englishDisplayName: setRaw.english_display_name ?? setRaw.englishDisplayName ?? null,
+            setCode: setRaw.set_code ?? card.external_ids?.setCode ?? null,
+            sourceId: setRaw.tcgdex_id ?? card.external_ids?.tcgdex ?? null,
+            externalIds: card.external_ids,
+          }),
           sourceLabel: 'Catalogue card',
           primaryActionLabel: 'View card',
           secondaryActionLabel: 'View listings',
@@ -2591,6 +2629,8 @@ function MarketSearchSuggestions({
                 rounded={11}
                 style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.surface }}
               />
+            ) : item.setArtworkSource ? (
+              <Image source={item.setArtworkSource} resizeMode="contain" style={{ width: 38, height: 30 }} />
             ) : item.setLogoUrl ? (
               <Image source={{ uri: item.setLogoUrl }} resizeMode="contain" style={{ width: 38, height: 30 }} />
             ) : (
@@ -2669,7 +2709,14 @@ function MarketSearchSuggestions({
                     </Text>
                   </TouchableOpacity>
                 ) : null}
+                {item.setArtworkSource ? (
+                  <Image source={item.setArtworkSource} resizeMode="contain" style={{ width: 36, height: 20 }} />
+                ) : item.setLogoUrl ? (
+                  <Image source={{ uri: item.setLogoUrl }} resizeMode="contain" style={{ width: 36, height: 20 }} />
+                ) : null}
               </View>
+            ) : item.setArtworkSource && item.imageUri ? (
+              <Image source={item.setArtworkSource} resizeMode="contain" style={{ width: 36, height: 20 }} />
             ) : item.setLogoUrl && item.imageUri ? (
               <Image source={{ uri: item.setLogoUrl }} resizeMode="contain" style={{ width: 36, height: 20 }} />
             ) : null}

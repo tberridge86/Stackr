@@ -10,7 +10,7 @@ function pathOf(path) {
 export function isV1PricingPath(path) {
   const value = pathOf(path).replace(/^\/v1(?=\/)/i, '');
   return /^\/market(?:\/|$)/i.test(value)
-    || /^\/cards\/[^/]+\/price(?:-history|-refresh)?\/?$/i.test(value);
+    || /^\/cards\/[^/]+\/(?:price(?:-history|-refresh)?|provider-price-refresh)\/?$/i.test(value);
 }
 
 export function isLegacyPricingPath(path) {

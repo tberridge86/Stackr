@@ -1,5 +1,9 @@
 import { useTheme } from '../../components/theme-context';
+import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
+import { getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
+import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -55,6 +59,7 @@ import {
   addCardsToBinder,
   fetchBinderById,
   fetchBinderCards,
+  invalidateBinderCaches,
   updateBinderCardOwned,
   updateBinderCardCondition,
   updateBinderCardGrading,
@@ -77,7 +82,7 @@ import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
 } from '../../lib/pokemonSetIdentity';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { checkAchievements, recordAchievementEvent } from '../../lib/achievements';
 import {
@@ -149,6 +154,26 @@ function getBinderCardDisplayName(item: BinderCardWithDetails | null | undefined
     canonicalName: card.canonicalName ?? raw?.canonical_name ?? null,
     fallbackName: card.name ?? item.card_name ?? item.card_id ?? fallback,
     raw,
+  });
+}
+
+function getBinderSetDisplayName(item: BinderCardWithDetails | null | undefined, fallback = 'Unknown set') {
+  if (!item) return fallback;
+  const card = item.card ?? {};
+  const raw = card.raw_data ?? card.raw ?? {};
+  const rawSet = raw?.set && typeof raw.set === 'object' ? raw.set : {};
+  const language = normalizePokemonCardLanguage(card.language ?? item.language ?? raw?.language ?? rawSet.language);
+  return getPreferredSetDisplayName({
+    id: item.set_id ?? card.set?.id ?? rawSet.id ?? null,
+    sourceId: card.set?.externalIds?.tcgdex ?? rawSet.tcgdex_id ?? rawSet.source_id ?? null,
+    setCode: card.set?.externalIds?.setCode ?? rawSet.set_code ?? null,
+    language,
+    region: card.region ?? raw?.region ?? rawSet.region ?? null,
+    localName: card.set?.localName ?? rawSet.local_name ?? (language !== 'en' ? rawSet.name ?? item.set_name ?? card.set?.name ?? null : null),
+    englishDisplayName: card.set?.englishDisplayName ?? rawSet.english_display_name ?? rawSet.englishDisplayName ?? null,
+    canonicalName: card.set?.name ?? item.set_name ?? rawSet.name ?? null,
+    fallbackName: item.set_id ?? fallback,
+    raw: rawSet,
   });
 }
 
@@ -234,10 +259,9 @@ function getPreviewCardDisplayName(card: CardPreviewResult | null | undefined, f
 }
 
 function getPreviewCardSupportingName(card: CardPreviewResult | null | undefined, primaryName: string) {
-  const englishName = getPreviewCardEnglishName(card);
-  const localName = getPreviewCardLocalName(card);
-  if (containsCjkText(primaryName) && englishName && englishName !== primaryName) return englishName;
-  if (localName && localName !== primaryName && containsCjkText(localName)) return localName;
+  void card;
+  void primaryName;
+  // Native text is retained in raw data and the card image, not surrounding UI.
   return null;
 }
 
@@ -269,11 +293,9 @@ function getPreviewSetDisplayName(card: CardPreviewResult | null | undefined, fa
 }
 
 function getPreviewSetSupportingName(card: CardPreviewResult | null | undefined, primarySetName: string) {
-  const rawSet = getPreviewCardRawData(card)?.set;
-  const localSetName = cleanPreviewText(card?.local_set_name ?? rawSet?.local_name ?? rawSet?.name);
-  const englishSetName = cleanPreviewText(card?.english_set_name ?? rawSet?.english_display_name ?? rawSet?.englishDisplayName);
-  if (containsCjkText(primarySetName) && englishSetName && englishSetName !== primarySetName) return englishSetName;
-  if (localSetName && localSetName !== primarySetName && containsCjkText(localSetName)) return localSetName;
+  void card;
+  void primarySetName;
+  // Native text is retained in raw data and the card image, not surrounding UI.
   return null;
 }
 
@@ -569,7 +591,7 @@ function GradedSlabCard({
   const grade = item.grade ?? '10';
   const accent = getSlabAccent(company);
   const cardName = getBinderCardDisplayName(item, item.card_id);
-  const setName = item.card?.set?.name ?? item.set_name ?? item.set_id;
+  const setName = getBinderSetDisplayName(item, item.set_id);
   const number = item.card?.number ?? item.card_number ?? null;
   const compact = size !== 'modal';
   const labelHeight = compact ? (size === 'showcase' ? 36 : 44) : 84;
@@ -705,6 +727,8 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
 const getMasterSetStorageKey = (binderId: string) => `stackr:binder-master-set:${binderId}`;
 
 function getVariants(card: any, explicitSetId?: string): string[] {
+  const catalogue = getCatalogueVariantKeys(card);
+  if (catalogue) return catalogue;
   const setId = (explicitSetId ?? card?.set?.id ?? card?.set_id ?? '').toLowerCase();
   const setName = (card?.set?.name ?? card?.raw_data?.set?.name ?? '').toLowerCase();
 
@@ -834,13 +858,17 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const addCardListRef = useRef<FlatList<CardPreviewResult>>(null);
   const [ownedVariants, setOwnedVariants] = useState<Map<string, number>>(new Map());
   const [variantManagedCards, setVariantManagedCards] = useState<Set<string>>(new Set());
+  const [ownershipReady, setOwnershipReady] = useState(false);
   const [masterSetEnabled, setMasterSetEnabled] = useState(false);
   const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
   const [setLogoFailed, setSetLogoFailed] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const achievementProgressRef = useRef<Record<string, number>>({});
+  const activeAccountIdRef = useRef<string | null>(null);
+  const accountGenerationRef = useRef(0);
+  const loadRequestRef = useRef(0);
   const isOwner = Boolean(userId && binder?.user_id === userId);
-  const isReadOnly = routeReadOnly || (Boolean(binder) && !isOwner);
+  const isReadOnly = routeReadOnly || (Boolean(binder) && (!isOwner || !ownershipReady));
 
   useEffect(() => {
     if (selectedCard) setDetailGradeText(selectedCard.grade ?? '10');
@@ -957,13 +985,31 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // LOAD
   // ===============================
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (forceRefresh = false) => {
     if (!binderId) return;
+    const accountGeneration = accountGenerationRef.current;
+    const requestId = ++loadRequestRef.current;
+    const isCurrentRequest = () => isCurrentAccountRequest(
+      { accountGeneration: accountGenerationRef.current, requestId: loadRequestRef.current },
+      { accountGeneration, requestId },
+    );
+
+    if (forceRefresh) {
+      invalidateBinderCaches(binderId);
+      invalidatePokemonCatalogueCardCaches();
+    }
 
     try {
       setLoading(true);
+      setOwnershipReady(false);
+      setShowcaseRows([]);
+      setOwnedVariants(new Map());
+      setVariantManagedCards(new Set());
 
       const { data: { user } } = await supabase.auth.getUser();
+      if (!isCurrentRequest()) return;
+      if (activeAccountIdRef.current && activeAccountIdRef.current !== user?.id) return;
+      activeAccountIdRef.current = user?.id ?? null;
       setUserId(user?.id ?? null);
 
       const binderData = await measureAsync(
@@ -971,6 +1017,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         () => fetchBinderById(binderId),
         { binderId }
       );
+      if (!isCurrentRequest()) return;
 
       if (!binderData || (binderData.user_id !== user?.id && !binderData.is_public)) {
         setBinder(null);
@@ -981,38 +1028,72 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       }
 
       setBinder(binderData);
-      setCustomNameArtKey(
-        binderData.type === 'custom'
-          ? await getCustomBinderNameArtKeyForBinder(binderData.id, binderData.name)
-          : null
-      );
       setIsPublic(Boolean(binderData?.is_public));
 
-      const binderCards = await measureAsync(
-        'binder.fetchBinderCards',
-        () => fetchBinderCards(binderId),
-        { binderId }
-      );
+      const [customNameArtKey, binderCards] = await Promise.all([
+        binderData.type === 'custom'
+          ? getCustomBinderNameArtKeyForBinder(binderData.id, binderData.name)
+          : Promise.resolve(null),
+        measureAsync(
+          'binder.fetchBinderCards',
+          () => fetchBinderCards(binderId),
+          { binderId }
+        ),
+      ]);
+      if (!isCurrentRequest()) return;
 
-      if (user) {
-        const { data, error } = await supabase
-          .from('binder_card_showcases')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('binder_id', binderId)
-          .order('sort_order', { ascending: true });
+      setCustomNameArtKey(customNameArtKey);
 
-        if (error) throw error;
-        setShowcaseRows((data ?? []) as ShowcaseRow[]);
+      // Saved rows are already presentation-safe fallbacks. Render them before
+      // optional ownership/showcase reads so a later enrichment failure cannot
+      // make an older, unresolved binder look empty.
+      setCards(binderCards);
+      setLoading(false);
 
-        const { data: userBinders, error: userBindersError } = await supabase
-          .from('binders')
-          .select('id')
-          .eq('user_id', user.id);
+      if (!user) {
+        setCards(binderCards);
+        setOwnedVariants(new Map());
+        setVariantManagedCards(new Set());
+        setOwnershipReady(true);
+        return;
+      }
 
-        if (userBindersError) throw userBindersError;
+      void (async () => {
+        const cardIds = binderCards.map((card) => card.card_id);
+        const setIds = Array.from(new Set(binderCards.map((card) => card.set_id).filter(Boolean)));
+        const binderVariantCardKeys = new Set(
+          binderCards.map((card) => getVariantCardKey(card.card_id, card.set_id))
+        );
+        const [showcaseResult, userBindersResult, variantQuantityResult] = await Promise.all([
+          supabase
+            .from('binder_card_showcases')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('binder_id', binderId)
+            .order('sort_order', { ascending: true }),
+          supabase
+            .from('binders')
+            .select('id')
+            .eq('user_id', user.id),
+          cardIds.length > 0
+            ? supabase
+                .from('user_card_variants')
+                .select('card_id, set_id, variant, quantity')
+                .eq('user_id', user.id)
+                .in('card_id', cardIds)
+                .in('set_id', setIds)
+            : Promise.resolve({ data: [], error: null }),
+        ]);
+        if (!isCurrentRequest()) return;
 
-        const userBinderIds = (userBinders ?? []).map((row) => row.id).filter(Boolean);
+        if (showcaseResult.error) {
+          console.log('Failed to load binder showcases', showcaseResult.error);
+        } else {
+          setShowcaseRows((showcaseResult.data ?? []) as ShowcaseRow[]);
+        }
+
+        if (userBindersResult.error) throw userBindersResult.error;
+        const userBinderIds = (userBindersResult.data ?? []).map((row) => row.id).filter(Boolean);
         const { data: ownedRows, error: ownedRowsError } = userBinderIds.length
           ? await supabase
               .from('binder_cards')
@@ -1020,7 +1101,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               .in('binder_id', userBinderIds)
               .eq('owned', true)
           : { data: [], error: null };
-
+        if (!isCurrentRequest()) return;
         if (ownedRowsError) throw ownedRowsError;
 
         const nextGlobalOwnedKeys = new Set(
@@ -1031,67 +1112,92 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           owned: card.owned || nextGlobalOwnedKeys.has(`${card.set_id}:${card.card_id}`),
         })));
 
-        // Load variant ownership for all cards in this binder
-        const cardIds = binderCards.map((c) => c.card_id);
-        if (cardIds.length > 0) {
-          const setIds = Array.from(new Set(binderCards.map((c) => c.set_id).filter(Boolean)));
-          const binderVariantCardKeys = new Set(
-            binderCards.map((card) => getVariantCardKey(card.card_id, card.set_id))
-          );
-          const { data: variantRowsWithQuantity, error: variantQuantityError } = await supabase
+        let variantRows = (variantQuantityResult.data ?? []) as {
+          card_id: string;
+          set_id?: string | null;
+          variant: string;
+          quantity?: number | null;
+        }[];
+        if (variantQuantityResult.error && cardIds.length > 0) {
+          const fallback = await supabase
             .from('user_card_variants')
-            .select('card_id, set_id, variant, quantity')
+            .select('card_id, set_id, variant')
             .eq('user_id', user.id)
             .in('card_id', cardIds)
             .in('set_id', setIds);
-
-          const variantRows = variantQuantityError
-            ? (await supabase
-                .from('user_card_variants')
-                .select('card_id, set_id, variant')
-                .eq('user_id', user.id)
-                .in('card_id', cardIds)
-                .in('set_id', setIds)).data
-            : variantRowsWithQuantity;
-
-          const typedVariantRows = ((variantRows ?? []) as {
-            card_id: string;
-            set_id?: string | null;
-            variant: string;
-            quantity?: number | null;
-          }[]).filter((row) =>
-            Boolean(row.set_id) && binderVariantCardKeys.has(getVariantCardKey(row.card_id, row.set_id ?? ''))
-          );
-
-          setOwnedVariants(new Map(
-            typedVariantRows.map((row) => [
-              getVariantKey(row.card_id, row.set_id ?? '', row.variant),
-              Math.max(1, Number(row.quantity ?? 1)),
-            ])
-          ));
-          setVariantManagedCards(new Set(
-            typedVariantRows.map((row) => getVariantCardKey(row.card_id, row.set_id ?? ''))
-          ));
-        } else {
-          setOwnedVariants(new Map());
-          setVariantManagedCards(new Set());
+          if (!isCurrentRequest()) return;
+          if (fallback.error) throw fallback.error;
+          variantRows = (fallback.data ?? []) as typeof variantRows;
         }
-      } else {
-        setCards(binderCards);
-        setOwnedVariants(new Map());
-        setVariantManagedCards(new Set());
-      }
+
+        const typedVariantRows = variantRows.filter((row) =>
+          Boolean(row.set_id) && binderVariantCardKeys.has(getVariantCardKey(row.card_id, row.set_id ?? ''))
+        );
+
+        setOwnedVariants(new Map(
+          typedVariantRows.map((row) => [
+            getVariantKey(row.card_id, row.set_id ?? '', row.variant),
+            Math.max(1, Number(row.quantity ?? 1)),
+          ])
+        ));
+        setVariantManagedCards(new Set(
+          typedVariantRows.map((row) => getVariantCardKey(row.card_id, row.set_id ?? ''))
+        ));
+        setOwnershipReady(true);
+      })().catch((error) => {
+        if (isCurrentRequest()) {
+          console.log('Failed to load binder ownership', error);
+          if (binderData.user_id === user.id) {
+            Alert.alert(
+              'Ownership details unavailable',
+              'Your cards are visible, but changes stay disabled until ownership details load. Reopen the binder or use Refresh catalogue to try again.'
+            );
+          }
+        }
+      });
     } catch (error) {
-      console.log('Failed to load binder', error);
-      Alert.alert('Error', 'Could not load this binder.');
+      if (isCurrentRequest()) {
+        console.log('Failed to load binder', error);
+        Alert.alert('Error', 'Could not load this binder.');
+      }
     } finally {
-      setLoading(false);
+      if (isCurrentRequest()) setLoading(false);
     }
   }, [binderId]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextAccountId = session?.user.id ?? null;
+      if (activeAccountIdRef.current === nextAccountId) return;
+
+      activeAccountIdRef.current = nextAccountId;
+      accountGenerationRef.current += 1;
+      loadRequestRef.current += 1;
+      setUserId(nextAccountId);
+      setBinder(null);
+      setCustomNameArtKey(null);
+      setIsPublic(false);
+      setCards([]);
+      setShowcaseRows([]);
+      setOwnedVariants(new Map());
+      setVariantManagedCards(new Set());
+      setOwnershipReady(false);
+      setLoading(false);
+
+      if (nextAccountId) {
+        void load();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [load]);
 
   useFocusEffect(
     useCallback(() => {
       load();
+      return () => {
+        loadRequestRef.current += 1;
+      };
     }, [load])
   );
 
@@ -1143,10 +1249,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const displayCards = useMemo(() => {
     const language = normalizePokemonCardLanguage(binder?.language);
     if (binder?.type === 'official' && language === 'ja' && !masterSetEnabled) {
-      return cards.filter((card) => !isJapaneseSecretBinderCard(card));
+      return cards.filter((card) => !isJapaneseSecretBinderCard(card)
+        && !isBinderCardBeyondPrintedTotal(card.card?.number ?? card.card_number, binder.catalogue_set_printed_total));
     }
     return cards;
-  }, [binder?.language, binder?.type, cards, masterSetEnabled]);
+  }, [binder?.language, binder?.type, binder?.catalogue_set_printed_total, cards, masterSetEnabled]);
 
   const sortedCards = useMemo(() => {
     const next = [...displayCards];
@@ -1217,7 +1324,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const cancelPrefetch = prefetchStackrImagesAfterInteractions(
       sortedCards
         .slice(0, firstWindowSize)
-        .map((card) => card.card?.images?.small ?? card.image_url ?? card.card?.images?.large ?? null),
+        .map((card) => getBinderCardImageUri(card)),
       firstWindowSize
     );
 
@@ -1256,7 +1363,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       0
     ))
     .filter((value) => Number.isFinite(value) && value > 0);
-  const officialCatalogueTotal = Math.max(knownOfficialTotal, ...cardSetTotals, 0);
+  const resolvedCatalogueTotal = getBinderCatalogueTotal({
+    printedTotal: binder?.catalogue_set_printed_total,
+    total: binder?.catalogue_set_total,
+    masterSetEnabled,
+    regularCardsOnly: normalizePokemonCardLanguage(binder?.language) === 'ja',
+  });
+  const officialCatalogueTotal = resolvedCatalogueTotal ?? Math.max(knownOfficialTotal, ...cardSetTotals, 0);
+  const catalogueReadIncomplete = binder?.type === 'official' && (
+    binder.catalogue_identity_status === 'ambiguous'
+    || binder.catalogue_identity_status === 'unresolved'
+    || !cards.length
+    || cards.some((card) => card.catalogue_match_status === 'saved-only')
+  );
   const totalKnown = binder?.type !== 'official' || officialCatalogueTotal > 0;
   const totalCount = totalKnown
     ? binder?.type === 'official'
@@ -1268,7 +1387,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     : 0;
 
   useEffect(() => {
-    if (!binderId || !totalKnown || totalCount <= 0 || loading) return;
+    if (!binderId || !totalKnown || totalCount <= 0 || loading || !ownershipReady || catalogueReadIncomplete) return;
 
     const lastProgress = achievementProgressRef.current[binderId] ?? -1;
     if (progressPercent <= lastProgress && progressPercent < 100) return;
@@ -1295,7 +1414,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         console.log('Binder complete achievement event failed:', achievementError);
       });
     }
-  }, [binderId, loading, masterSetEnabled, progressPercent, totalCount, totalKnown]);
+  }, [binderId, catalogueReadIncomplete, loading, masterSetEnabled, ownershipReady, progressPercent, totalCount, totalKnown]);
 
   const binderValue = useMemo(() => {
     return displayCards.reduce((sum, card) => {
@@ -1789,7 +1908,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       if (previousQuantity > nextQuantity) {
         await createActivityPost({
           title: nextQuantity <= 0 ? 'Removed from collection' : `Quantity reduced from ${previousQuantity} to ${nextQuantity}`,
-          subtitle: `${cardName}${variant !== 'card' ? ` · ${VARIANT_LABELS[variant] ?? variant}` : ''}`,
+          subtitle: `${cardName}${variant !== 'card' ? ` · ${VARIANT_LABELS[variant] ?? catalogueVariantLabel(variant)}` : ''}`,
           cardId,
           setId,
           type: nextQuantity <= 0 ? 'binder_remove' : 'quantity_reduced',
@@ -1798,7 +1917,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       } else if (previousQuantity === 0 && nextQuantity > 0) {
         await createActivityPost({
           title: 'Added to collection',
-          subtitle: `${cardName}${variant !== 'card' ? ` · ${VARIANT_LABELS[variant] ?? variant}` : ''}`,
+          subtitle: `${cardName}${variant !== 'card' ? ` · ${VARIANT_LABELS[variant] ?? catalogueVariantLabel(variant)}` : ''}`,
           cardId,
           setId,
           type: 'binder_add',
@@ -2032,6 +2151,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           fallbackName: card.name ?? providerCardId,
           raw,
         });
+        const displayName = getPreferredCardDisplayName({
+          id: card.id,
+          sourceId: providerCardId,
+          setId: card.set_id ?? raw.set?.id ?? null,
+          collectorNumber,
+          language: normalizedLanguage,
+          region: raw.region ?? null,
+          localName,
+          englishDisplayName: englishName,
+          canonicalName: raw.canonical_name ?? null,
+          fallbackName: card.id ?? providerCardId,
+          raw,
+        });
         const setDisplayName = getPreferredSetDisplayName({
           id: card.set_id ?? raw.set?.id ?? null,
           sourceId: raw.set?.tcgdex_id ?? raw.set?.source_id ?? raw.source_id ?? card.set_id ?? null,
@@ -2052,10 +2184,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           card_id: card.id,
           set_id: card.set_id ?? null,
           language: normalizedLanguage,
-          name: cleanPreviewText(localName ?? card.name ?? englishName) ?? card.id,
+          name: displayName,
           local_name: localName,
           english_name: englishName,
-          set_name: setDisplayName ?? englishSetName ?? localSetName ?? card.set_id,
+          set_name: setDisplayName ?? englishSetName ?? card.set_id,
           local_set_name: localSetName,
           english_set_name: englishSetName,
           number: collectorNumber,
@@ -2230,7 +2362,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     drag,
     isActive,
   }: RenderItemParams<BinderCardWithDetails>) => {
-    const imageUri = item.card?.images?.small ?? item.card?.images?.large ?? null;
+    const imageUri = getBinderCardImageUri(item);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const isGradedBinder = binder?.card_mode === 'graded';
     const ownedQuantity = getOwnedQuantity(item);
@@ -2263,6 +2395,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           ) : imageUri ? (
             <StackrImage
               uri={imageUri}
+              fullUri={getBinderCardImageUri(item, 'large')}
               style={{
                 width: '100%',
                 aspectRatio: stackrCardImageSizes.cardAspectRatio,
@@ -2470,7 +2603,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 };
 
   const renderCard = ({ item }: { item: BinderCardWithDetails }) => {
-    const imageUri = item.card?.images?.small ?? item.card?.images?.large ?? null;
+    const imageUri = getBinderCardImageUri(item);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const cardName = getBinderCardDisplayName(item, item.card_id);
     const forTrade = isForTrade(item.card_id, item.set_id);
@@ -2488,7 +2621,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         const targetVariant = ownedVariant ?? variants[0];
         const currentQuantity = getDisplayedVariantQuantity(item, targetVariant);
         void handleSetVariantQuantity(item.card_id, item.set_id, targetVariant, currentQuantity + 1);
-        showToast(`${VARIANT_LABELS[targetVariant] ?? targetVariant} quantity increased`);
+        showToast(`${VARIANT_LABELS[targetVariant] ?? catalogueVariantLabel(targetVariant)} quantity increased`);
         return;
       }
       if (isOwned) {
@@ -2507,7 +2640,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         if (!ownedVariant) return;
         const currentQuantity = getDisplayedVariantQuantity(item, ownedVariant);
         void handleSetVariantQuantity(item.card_id, item.set_id, ownedVariant, currentQuantity - 1);
-        showToast(`${VARIANT_LABELS[ownedVariant] ?? ownedVariant} quantity reduced`);
+        showToast(`${VARIANT_LABELS[ownedVariant] ?? catalogueVariantLabel(ownedVariant)} quantity reduced`);
         return;
       }
       if (displayedOwnedQuantity <= 1) return;
@@ -2902,6 +3035,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   }
 
   const modalCard = selectedCard?.card;
+  const modalImageUri = selectedCard ? getBinderCardImageUri(selectedCard, 'large') : null;
 
   const boxStyle = {
     backgroundColor: theme.colors.card,
@@ -2940,7 +3074,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const binderModeLabel = binder.card_mode === 'graded' ? 'Graded binder' : masterSetEnabled ? 'Master set' : binder.type === 'official' ? 'Official set' : 'Custom binder';
   const customNameArt = binder.type === 'custom' ? getCustomBinderNameArt(customNameArtKey) : null;
   const officialSetLogoSource = binder.type === 'official'
-    ? getJapaneseSetLogoSourceForSet({
+    ? getLocalSetArtworkSourceForSet({
       id: binder.source_set_id ?? binder.cover_key,
       language: binder.language,
       name: officialSetDisplayName ?? binder.name,
@@ -2967,12 +3101,16 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       : `${missingCount} card${missingCount === 1 ? '' : 's'} left`
     : ownedCardLabel;
   const heroStatusLabel = showsCompletion
-    ? totalNeedsSync
+    ? catalogueReadIncomplete
+      ? 'Catalogue needs retry'
+      : totalNeedsSync
       ? 'Needs sync'
       : `${progressPercent}% complete`
     : binderModeLabel;
   const heroHelperText = showsCompletion
-    ? totalNeedsSync
+    ? catalogueReadIncomplete
+      ? 'Saved cards are retained. Catalogue matching is incomplete; retry to check again.'
+      : totalNeedsSync
       ? 'Sync catalogue totals to calculate completion.'
       : missingCount > 0
       ? `${missingCount} card${missingCount === 1 ? '' : 's'} to complete`
@@ -3181,9 +3319,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               </Text>
             </View>
 
-            <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', marginTop: 2, textAlign: 'center' }} numberOfLines={1}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', marginTop: 2, textAlign: 'center' }}>
               {heroHelperText}
             </Text>
+            {showsCompletion ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Refresh binder catalogue"
+                onPress={() => void load(true)}
+                style={{ alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8 }}
+              >
+                <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '800' }}>Refresh catalogue</Text>
+              </Pressable>
+            ) : null}
 
             {!isReadOnly ? (
               <View style={{ gap: 7, marginTop: 8 }}>
@@ -4273,13 +4421,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                           {binder.card_mode === 'graded' ? (
                             <GradedSlabCard
                               item={selectedCard}
-                              imageUri={modalCard?.images?.large ?? modalCard?.images?.small ?? null}
+                              imageUri={modalImageUri}
                               editionHint={getBinderEditionHint(binder.edition)}
                               size="modal"
                             />
                           ) : (
                             <EditionAwareCardImage
-                              uri={modalCard?.images?.large ?? modalCard?.images?.small ?? undefined}
+                              uri={modalImageUri ?? undefined}
                               cardId={selectedCard.card_id}
                               rawData={modalCard}
                               editionHint={getBinderEditionHint(binder.edition)}
@@ -4380,7 +4528,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
                     <StackrCardIdentity
                       name={getBinderCardDisplayName(selectedCard, selectedCard.card_id)}
-                      setName={modalCard?.set?.name ?? selectedCard.set_name ?? selectedCard.set_id}
+                      setName={getBinderSetDisplayName(selectedCard, selectedCard.set_id)}
                       number={modalCard?.number ?? selectedCard.card_number ?? null}
                       size="detail"
                       style={{ marginTop: 18 }}
@@ -4467,7 +4615,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               label="Variants"
                               value={
                                 ownedVariants.length > 0
-                                  ? ownedVariants.map((variant) => VARIANT_LABELS[variant] ?? variant).join(', ')
+                                  ? ownedVariants.map((variant) => VARIANT_LABELS[variant] ?? catalogueVariantLabel(variant)).join(', ')
                                   : 'None owned'
                               }
                             />
@@ -4504,7 +4652,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
                       <PokeTraceMarketInsights
                         cardName={getBinderCardDisplayName(selectedCard, selectedCard.card_id)}
-                        setName={modalCard?.set?.name ?? selectedCard.set_name ?? selectedCard.set_id}
+                        setName={getBinderSetDisplayName(selectedCard, selectedCard.set_id)}
                         number={modalCard?.number ?? selectedCard.card_number ?? null}
                         rawCondition={binder.card_mode === 'graded' ? null : selectedCard.condition || 'Near Mint'}
                         gradingCompany={binder.card_mode === 'graded' ? selectedCard.grade_company ?? 'PSA' : null}
@@ -5130,7 +5278,5 @@ function MasterVariantIcon({
     </View>
   );
 }
-
-
 
 

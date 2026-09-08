@@ -21,6 +21,7 @@ import {
   fetchStackrCard,
   fetchStackrCardsForSet,
   fetchStackrSets,
+  fetchStackrSet,
   searchStackrCards,
   type StackrLegacyCard,
   type StackrLegacySet,
@@ -29,9 +30,12 @@ import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
 } from './pokemonSetIdentity';
+import { getEnglishSetReferenceAliases } from './englishSetIdentity';
+import { cacheNonEmptyCatalogueRows, readNonEmptyCatalogueRows } from './resilientCatalogueRead';
 import {
   fetchForeignPokemonCard,
   fetchForeignPokemonSet,
+  invalidateForeignPokemonSetReferenceCache,
   type ForeignPokemonCardBrief,
 } from './foreignPokemon';
 import {
@@ -139,6 +143,7 @@ type PokemonSetLanguageFilter = PokemonCardLanguage | 'all';
 type FetchAllSetsOptions = {
   language?: PokemonSetLanguageFilter | string | null;
   preferCanonicalApi?: boolean;
+  includeAssets?: boolean;
 };
 type FetchCardsForSetOptions = {
   language?: PokemonCardLanguage | string | null;
@@ -149,6 +154,12 @@ let allSetsCache = new Map<string, { expiresAt: number; value: PokemonSet[] }>()
 let allSetsInflight = new Map<string, Promise<PokemonSet[]>>();
 const cardsForSetCache = new Map<string, { expiresAt: number; value: PokemonCard[] }>();
 const cardsForSetInflight = new Map<string, Promise<PokemonCard[]>>();
+
+/** Reload metadata and approved runtime image references after an explicit retry. */
+export function invalidatePokemonCatalogueCardCaches() {
+  cardsForSetCache.clear();
+  invalidateForeignPokemonSetReferenceCache();
+}
 const pokemonTcgApiSearchCache = new Map<string, { expiresAt: number; value: PokemonCard[] }>();
 const pokemonTcgApiSearchInflight = new Map<string, Promise<PokemonCard[]>>();
 let pokeDataSetsCache: { expiresAt: number; value: any[] } | null = null;
@@ -342,7 +353,15 @@ export function getPokemonSetIdLookupCandidates(setId: string, language: Pokemon
   const upperNormalizedStripped = normalizedStripped.toUpperCase();
 
   if (language === 'en') {
-    return uniqueNonEmpty([raw, stripped, normalizedStripped]);
+    const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(raw);
+    // A non-English prefix is a persisted identity hint, never a signal to
+    // reinterpret the stripped code using English legacy aliases.
+    if (prefixedLanguage && prefixedLanguage !== 'en') return uniqueNonEmpty([raw]);
+    return uniqueNonEmpty([
+      ...getEnglishSetReferenceAliases(raw, 'en'),
+      ...getEnglishSetReferenceAliases(stripped, 'en'),
+      ...getEnglishSetReferenceAliases(normalizedStripped, 'en'),
+    ]);
   }
 
   return uniqueNonEmpty([
@@ -1881,10 +1900,10 @@ export async function fetchPokemonTcgApiCardsByQuery(
 export async function fetchAllSets(options: FetchAllSetsOptions = {}): Promise<PokemonSet[]> {
   const language = normalizeSetLanguageFilter(options.language);
   const readLane = options.preferCanonicalApi ? 'canonical-api' : 'default';
-  const cacheKey = `sets:${language}:${readLane}`;
-  const cached = allSetsCache.get(cacheKey);
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.value;
+  const cacheKey = `sets:${language}:${readLane}:${options.includeAssets === false ? 'facts' : 'assets'}`;
+  const cachedSets = readNonEmptyCatalogueRows(allSetsCache, cacheKey);
+  if (cachedSets) {
+    return cachedSets;
   }
 
   const inflight = allSetsInflight.get(cacheKey);
@@ -1894,12 +1913,9 @@ export async function fetchAllSets(options: FetchAllSetsOptions = {}): Promise<P
 
   const request = (async () => {
     const loadSets = options.preferCanonicalApi ? fetchPreferredStackrSets : fetchStackrSets;
-    const sets = (await loadSets(language === 'all' ? null : language)).map(fromStackrSet);
-    prefetchPokemonSetLogos(sets.map((set) => set.id), language === 'all' ? undefined : language);
-    allSetsCache.set(cacheKey, {
-      expiresAt: Date.now() + POKEMON_SET_CACHE_TTL_MS,
-      value: sets,
-    });
+    const sets = (await loadSets(language === 'all' ? null : language, undefined, { includeAssets: options.includeAssets })).map(fromStackrSet);
+    if (options.includeAssets !== false) prefetchPokemonSetLogos(sets.map((set) => set.id), language === 'all' ? undefined : language);
+    cacheNonEmptyCatalogueRows(allSetsCache, cacheKey, sets, Date.now() + POKEMON_SET_CACHE_TTL_MS);
     return sets;
   })();
 
@@ -1911,15 +1927,21 @@ export async function fetchAllSets(options: FetchAllSetsOptions = {}): Promise<P
   }
 }
 
+export async function fetchPokemonSetForDetail(
+  setId: string,
+  options: { language?: string | null; includeAssets?: boolean } = {},
+): Promise<PokemonSet | null> {
+  const set = await fetchStackrSet(setId, options.language, options);
+  return set ? fromStackrSet(set) : null;
+}
+
 export async function fetchCardsForSet(setId: string, options: FetchCardsForSetOptions = {}): Promise<PokemonCard[]> {
   const language = inferPokemonSetLanguage(setId, options.language);
   const setIdCandidates = getPokemonSetIdLookupCandidates(setId, language);
   const readLane = options.preferCanonicalApi ? 'canonical-api' : 'default';
   const cacheKey = `${readLane}:${language}:${setIdCandidates.join('|')}`;
-  const cached = cardsForSetCache.get(cacheKey);
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.value;
-  }
+  const cached = readNonEmptyCatalogueRows(cardsForSetCache, cacheKey);
+  if (cached) return cached;
 
   const inflight = cardsForSetInflight.get(cacheKey);
   if (inflight) {
@@ -1950,10 +1972,7 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
       1,
     );
 
-    cardsForSetCache.set(cacheKey, {
-      expiresAt: Date.now() + POKEMON_SET_CARDS_CACHE_TTL_MS,
-      value: cards,
-    });
+    cacheNonEmptyCatalogueRows(cardsForSetCache, cacheKey, cards, Date.now() + POKEMON_SET_CARDS_CACHE_TTL_MS);
     return cards;
   })();
 

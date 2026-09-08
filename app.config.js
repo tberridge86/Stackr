@@ -2,6 +2,7 @@ const { resolveMobileRuntimeConfig } = require('./config/mobile-runtime.cjs');
 
 module.exports = ({ config }) => {
   const runtimeConfig = resolveMobileRuntimeConfig(process.env);
+  const isIphonePreview = process.env.STACKR_IPHONE_PREVIEW === '1';
   const isOwnerRecognitionBuild = process.env.STACKR_OWNER_RECOGNITION_BUILD === 'true';
   if (isOwnerRecognitionBuild && runtimeConfig.environment !== 'production') {
     throw new Error('Owner recognition uses the existing production environment.');
@@ -17,6 +18,12 @@ module.exports = ({ config }) => {
     // update channels isolate internal variants; changing the slug breaks the
     // projectId-to-slug association before EAS can build them.
     slug: config.slug,
+    web: {
+      ...config.web,
+      // The local device frame needs an interactive SPA, while ordinary web
+      // exports keep the reviewed static-output setting.
+      ...(isIphonePreview ? { output: 'single' } : {}),
+    },
     scheme: isDevApp ? 'stackr-dev' : isStagingApp ? 'stackr-staging' : config.scheme,
     // Staging updates must never be runtime-compatible with production. Keep
     // the existing production policy so released binaries do not lose OTA

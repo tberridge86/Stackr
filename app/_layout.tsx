@@ -26,6 +26,7 @@ import { BETA_TRADE_DEMO_MODE } from '../lib/config';
 import { LatestFeaturesModal } from '../components/LatestFeaturesModal';
 import { StackrPopupProvider } from '../components/StackrPopupProvider';
 import { StackrQueryProvider } from '../components/StackrQueryProvider';
+import { StackrSafeAreaBoundary } from '../components/StackrSafeAreaBoundary';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { stackrIcons } from '../lib/stackrIcons';
 import { stackrFonts, typeScale } from '../lib/typography';
@@ -51,13 +52,13 @@ function configureNativeTypographyDefaults() {
   nativeText.defaultProps = {
     ...textDefaults,
     allowFontScaling: textDefaults.allowFontScaling ?? true,
-    maxFontSizeMultiplier: textDefaults.maxFontSizeMultiplier ?? 1.25,
+    maxFontSizeMultiplier: 0,
     style: [baseTextStyle, textDefaults.style],
   };
   nativeTextInput.defaultProps = {
     ...inputDefaults,
     allowFontScaling: inputDefaults.allowFontScaling ?? true,
-    maxFontSizeMultiplier: inputDefaults.maxFontSizeMultiplier ?? 1.2,
+    maxFontSizeMultiplier: 0,
     style: [baseTextStyle, inputDefaults.style],
   };
 }
@@ -477,9 +478,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <StackrQueryProvider>
-        <AppShell />
-      </StackrQueryProvider>
+      <StackrSafeAreaBoundary>
+        <StackrQueryProvider>
+          <AppShell />
+        </StackrQueryProvider>
+      </StackrSafeAreaBoundary>
     </ThemeProvider>
   );
 }

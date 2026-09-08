@@ -1,0 +1,64 @@
+name: Prepare Personal Pricing
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        required: true
+        type: string
+      apply_migrations:
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: stackr-production-deployment
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PREPARE PERSONAL PRICING'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.STACKR_GITHUB_PRODUCTION_BACKUPS || secrets.SUPABASE_ACCESS_TOKEN }}
+      PRICING_OWNER_EMAIL: tberridge86@gmail.com
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/test-prepare-personal-pricing.mjs
+      - name: Prepare normalized production database URL
+        run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
+      - name: Verify a current physical backup and create logical recovery dumps
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/personal-pricing-backup"
+          npx --yes supabase@2.110.0 backups list --project-ref oakdbbzdqwurpjnoqhmu --output-format json > "$RUNNER_TEMP/personal-pricing-backup/physical.json"
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" --file "$RUNNER_TEMP/personal-pricing-backup/schema.sql"
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" --data-only --use-copy --file "$RUNNER_TEMP/personal-pricing-backup/data.sql"
+          node scripts/deploy/verify-backup.mjs --physical="$RUNNER_TEMP/personal-pricing-backup/physical.json" --schema="$RUNNER_TEMP/personal-pricing-backup/schema.sql" --data="$RUNNER_TEMP/personal-pricing-backup/data.sql" --require-physical
+      - name: Verify or apply the six reviewed personal-pricing migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/deploy/prepare-personal-pricing.mjs --db-url="$STACKR_SOURCE_DB_URL" --owner-email="$PRICING_OWNER_EMAIL" --apply="${{ inputs.apply_migrations }}" | tee "$RUNNER_TEMP/personal-pricing-preparation.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: personal-pricing-preparation-${{ github.run_id }}
+          path: ${{ runner.temp }}/personal-pricing-preparation.json
+          retention-days: 90
+      - name: Remove ephemeral logical backup files
+        if: always()
+        shell: bash
+        run: rm -rf "$RUNNER_TEMP/personal-pricing-backup"

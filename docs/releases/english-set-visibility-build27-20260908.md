@@ -1,0 +1,15 @@
+# Build 27 English set visibility
+
+This mobile update builds on the personal-loading release at `263986c79d5cee0b9c347b67ab7a65b7f69ac278` in `tberridge86/Stackr`. It targets the existing `owner-recognition` channel and `1.0.3-owner-recognition-v1` runtime used by TestFlight 1.0.3 (27).
+
+Prismatic Evolutions is present in the published English catalogue as `sv08.5` (`fb3cd93c-9006-42f5-b026-96a9fedcf269`), with 180 cards. The public API returns the set without a series label, as it does for most English sets. The app consequently placed these sets in the initially collapsed Other group. English provider-code families now supply display-only series fallbacks, while explicit server labels remain authoritative. Mega Evolution, Scarlet & Violet and Sword & Shield start expanded. Unknown sets remain accessible.
+
+Older English references such as `sv8pt5` also failed to resolve against the API's `sv08.5` code. Verified English aliases now support canonical card retrieval, existing binder identity recovery, binder-picker preselection and set details. Canonical resolution requires a unique matching result instead of selecting an arbitrary first row. Alias matching is restricted by language; saved ownership records and canonical UUIDs are not migrated.
+
+The live set-card response also emits 195 rows for Prismatic's 180 distinct card identities: alternate default finishes repeat 15 cards. The set-card adapter combines only repeated exact card identities within the same set, language and collector number, retaining every distinct variant and its image metadata. If the default lacks matching artwork, another existing variant with its own validated embedded image represents the card in the set grid. This restores one set-grid entry per card without inventing artwork for a finish or changing exact variant lookups.
+
+Validation: TypeScript, lint, English set visibility and identity tests, existing binder catalogue tests, and the personal-loading regressions. The identity test executes the actual adapter against controlled API responses, including wrong-language and ambiguous results. A separate read-only live API check verifies English grouping, legacy Prismatic resolution and its cards with existing art.
+
+Release verification checks the complete iOS export, production service URLs, existing scanner/teaching and personal-loading code, all 81 magazine cover hashes, and the served update ID and bundle hash. Native dependencies and the Railway, Cloudflare and Supabase deployments remain unchanged. This release requires no catalogue import, database migration or price-refresh job. The previous update group `38cd9bb7-51e9-411a-b877-95693a3b91d4` is the rollback target.
+
+Device acceptance: open Stackr online to download the update, then fully close and reopen it. Browse English sets and find Prismatic Evolutions under Scarlet & Violet; open its cards and select it when creating a binder. Check an existing English binder and confirm Japanese/Chinese sets retain their language. TestFlight remains on build 27.

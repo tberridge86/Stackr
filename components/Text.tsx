@@ -17,7 +17,7 @@ export function Text({ variant, numeric = false, style, ...props }: StackrTextPr
     <RNText
       {...props}
       allowFontScaling={props.allowFontScaling ?? true}
-      maxFontSizeMultiplier={props.maxFontSizeMultiplier ?? 1.25}
+      maxFontSizeMultiplier={props.maxFontSizeMultiplier ?? 0}
       style={[
         style,
         { color: flattenedStyle.color ?? theme.colors.text },

@@ -1,0 +1,497 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-06T06:59:55Z",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "purpose": "Read-only snapshot of existing production migration history for the narrowly scoped artwork-read preparation. This is not an assertion that all repository staging migrations have been applied. Existing manual and commerce history must be preserved unchanged.",
+  "rowCount": 122,
+  "rows": [
+    {
+      "version": "20260513170000",
+      "name": "card_fingerprint_regions"
+    },
+    {
+      "version": "20260513213000",
+      "name": "card_clip_embeddings"
+    },
+    {
+      "version": "20260516195500",
+      "name": "seller_inventory_sales"
+    },
+    {
+      "version": "20260518120000",
+      "name": "local_postcode_distance"
+    },
+    {
+      "version": "20260518124500",
+      "name": "market_price_snapshots_read_policy"
+    },
+    {
+      "version": "20260518133000",
+      "name": "trade_listing_metadata"
+    },
+    {
+      "version": "20260518142000",
+      "name": "seller_inventory_products"
+    },
+    {
+      "version": "20260518145500",
+      "name": "market_products"
+    },
+    {
+      "version": "20260518150000",
+      "name": "seed_market_products"
+    },
+    {
+      "version": "20260519102000",
+      "name": "seed_market_product_expansion"
+    },
+    {
+      "version": "20260519124500",
+      "name": "market_product_tcgcsv_prices"
+    },
+    {
+      "version": "20260521143000",
+      "name": "admin_social_content"
+    },
+    {
+      "version": "20260521152000",
+      "name": "community_news_sources"
+    },
+    {
+      "version": "20260526170000",
+      "name": "user_pokedex_cards"
+    },
+    {
+      "version": "20260526171500",
+      "name": "binder_cards_condition"
+    },
+    {
+      "version": "20260527120000",
+      "name": "explicit_data_api_grants"
+    },
+    {
+      "version": "20260527123000",
+      "name": "repair_new_user_profile_trigger"
+    },
+    {
+      "version": "20260528100000",
+      "name": "binder_default_condition"
+    },
+    {
+      "version": "20260528103000",
+      "name": "binder_master_set_enabled"
+    },
+    {
+      "version": "20260528110000",
+      "name": "user_achievements"
+    },
+    {
+      "version": "20260528113000",
+      "name": "user_coin_rewards"
+    },
+    {
+      "version": "20260528114500",
+      "name": "server_side_coin_awards"
+    },
+    {
+      "version": "20260528120500",
+      "name": "remove_android_beta_email_opt_in"
+    },
+    {
+      "version": "20260529100000",
+      "name": "binder_owner_rls"
+    },
+    {
+      "version": "20260529102000",
+      "name": "admin_binder_directory"
+    },
+    {
+      "version": "20260529103000",
+      "name": "admin_binder_directory_view"
+    },
+    {
+      "version": "20260529195500",
+      "name": "repair_user_pokedex_cards"
+    },
+    {
+      "version": "20260602120000",
+      "name": "user_card_variants_quantity"
+    },
+    {
+      "version": "20260602133000",
+      "name": "binder_card_mode"
+    },
+    {
+      "version": "20260603100000",
+      "name": "binder_card_grading"
+    },
+    {
+      "version": "20260605120000",
+      "name": "poketrace_api_cache"
+    },
+    {
+      "version": "20260605130000",
+      "name": "binder_card_owned_quantity"
+    },
+    {
+      "version": "20260605133000",
+      "name": "user_card_variants_unique_key"
+    },
+    {
+      "version": "20260605214500",
+      "name": "user_card_variants_allow_multiple_variants"
+    },
+    {
+      "version": "20260621170000",
+      "name": "rookie_accolade_rewards"
+    },
+    {
+      "version": "20260623120000",
+      "name": "binder_card_slab_metadata"
+    },
+    {
+      "version": "20260627120000",
+      "name": "inventory_movements_and_binder_schema_repair"
+    },
+    {
+      "version": "20260628100000",
+      "name": "listing_media_metadata"
+    },
+    {
+      "version": "20260628120000",
+      "name": "strong_goblin_achievement_rewards"
+    },
+    {
+      "version": "20260701195000",
+      "name": "marketplace_schema_repair"
+    },
+    {
+      "version": "20260702120000",
+      "name": "owned_card_membership_model"
+    },
+    {
+      "version": "20260707120000",
+      "name": "japanese_card_pricing_support"
+    },
+    {
+      "version": "20260707123000",
+      "name": "price_refresh_scheduler"
+    },
+    {
+      "version": "20260714120000",
+      "name": "performance_pricing_indexes"
+    },
+    {
+      "version": "20260715120000",
+      "name": "binder_language_support"
+    },
+    {
+      "version": "20260715143000",
+      "name": "minty_insight_platform"
+    },
+    {
+      "version": "20260717120000",
+      "name": "phase1_app_performance_indexes"
+    },
+    {
+      "version": "20260717143000",
+      "name": "japanese_catalogue_canonical_schema"
+    },
+    {
+      "version": "20260718120000",
+      "name": "tcgdex_catalogue_repair"
+    },
+    {
+      "version": "20260719110000",
+      "name": "fast_global_search_indexes"
+    },
+    {
+      "version": "20260719123000",
+      "name": "scan_learning_events"
+    },
+    {
+      "version": "20260719133000",
+      "name": "scan_learning_match_incorrect"
+    },
+    {
+      "version": "20260720173000",
+      "name": "secure_scan_recognition"
+    },
+    {
+      "version": "20260720184000",
+      "name": "scan_grading_jobs"
+    },
+    {
+      "version": "20260720235000",
+      "name": "scan_analytics_feedback"
+    },
+    {
+      "version": "20260721090000",
+      "name": "scanner_calibration"
+    },
+    {
+      "version": "20260721123000",
+      "name": "tcg_set_cover_images"
+    },
+    {
+      "version": "20260726103000",
+      "name": "scanner_recognition_rebuild"
+    },
+    {
+      "version": "20260726162000",
+      "name": "binder_set_branding_assets"
+    },
+    {
+      "version": "20260726210000",
+      "name": "pricing_engine_v2"
+    },
+    {
+      "version": "20260726223000",
+      "name": "scan_lab_capture_queue"
+    },
+    {
+      "version": "20260726234500",
+      "name": "recognition_feedback_loop"
+    },
+    {
+      "version": "20260727090000",
+      "name": "shadow_mode_pilot"
+    },
+    {
+      "version": "20260727212256",
+      "name": "canonical_stackr_catalogue_database"
+    },
+    {
+      "version": "20260727213835",
+      "name": "stackr_data_ingestion_reconciliation"
+    },
+    {
+      "version": "20260728060617",
+      "name": "stackr_asset_repository_delivery_pipeline"
+    },
+    {
+      "version": "20260728064400",
+      "name": "embedding_model_registry_and_index_gates"
+    },
+    {
+      "version": "20260728110000",
+      "name": "curated_corocoro_mew_promos"
+    },
+    {
+      "version": "20260728152412",
+      "name": "recognition_service_scan_diagnostics"
+    },
+    {
+      "version": "20260728171416",
+      "name": "stackr_market_pricing_service"
+    },
+    {
+      "version": "20260728173530",
+      "name": "stackr_api_gateway_controls"
+    },
+    {
+      "version": "20260728182743",
+      "name": "stackr_quality_performance_observability"
+    },
+    {
+      "version": "20260728202949",
+      "name": "stackr_application_migration_provider_retirement"
+    },
+    {
+      "version": "20260728203300",
+      "name": "stackr_release_activation_controls"
+    },
+    {
+      "version": "20260729055239",
+      "name": "critical_security_containment"
+    },
+    {
+      "version": "20260730080047",
+      "name": "reconcile_catalogue_seed_encoding_and_finish_taxonomy"
+    },
+    {
+      "version": "20260730144626",
+      "name": "harden_legacy_catalogue_operational_access"
+    },
+    {
+      "version": "20260730145958",
+      "name": "harden_function_and_storage_access"
+    },
+    {
+      "version": "20260730153923",
+      "name": "preserve_raw_source_record_history"
+    },
+    {
+      "version": "20260801090000",
+      "name": "strict_foreign_catalogue_import_safety"
+    },
+    {
+      "version": "20260801103000",
+      "name": "catalogue_image_leftover_workflow"
+    },
+    {
+      "version": "20260801120000",
+      "name": "language_catalogue_publication_snapshots"
+    },
+    {
+      "version": "20260802160643",
+      "name": "production_critical_rls_storage_containment_20260802"
+    },
+    {
+      "version": "20260805200000",
+      "name": "recognition_service_database_role"
+    },
+    {
+      "version": "20260806073146",
+      "name": "recognition_reference_asset_eligibility"
+    },
+    {
+      "version": "20260806170203",
+      "name": "optimise_catalogue_quality_report"
+    },
+    {
+      "version": "20260806170501",
+      "name": "make_catalogue_quality_report_targeted"
+    },
+    {
+      "version": "20260806171907",
+      "name": "resolve_asset_manifest_catalogue_identity"
+    },
+    {
+      "version": "20260806174020",
+      "name": "materialize_dinov2_vits14_embedding_index"
+    },
+    {
+      "version": "20260806183600",
+      "name": "index_dinov2_embedding_foreign_keys"
+    },
+    {
+      "version": "20260806212500",
+      "name": "expose_catalogue_artwork_fallbacks"
+    },
+    {
+      "version": "20260806213000",
+      "name": "backfill_catalogue_native_image_states"
+    },
+    {
+      "version": "20260807034806",
+      "name": "repair_provider_variant_identity"
+    },
+    {
+      "version": "20260807173127",
+      "name": "register_private_scan_upload"
+    },
+    {
+      "version": "20260807174127",
+      "name": "allow_recognition_read_private_scan_uploads"
+    },
+    {
+      "version": "20260807180227",
+      "name": "allow_recognition_vector_extension_usage"
+    },
+    {
+      "version": "20260807183118",
+      "name": "recognition_index_build_api"
+    },
+    {
+      "version": "20260807184200",
+      "name": "search_recognition_candidate_index"
+    },
+    {
+      "version": "20260809121525",
+      "name": "catalogue_asset_mirror_queue_index"
+    },
+    {
+      "version": "20260809123804",
+      "name": "optimize_catalogue_asset_source_reuse"
+    },
+    {
+      "version": "20260810070906",
+      "name": "optimize_published_asset_manifest_reads"
+    },
+    {
+      "version": "20260810071807",
+      "name": "add_stable_asset_manifest_cursor"
+    },
+    {
+      "version": "20260810170607",
+      "name": "optimize_raw_source_publication_reads"
+    },
+    {
+      "version": "20260811165000",
+      "name": "repair_owned_card_membership_legacy_identity"
+    },
+    {
+      "version": "20260813093320",
+      "name": "atomic_seller_inventory_batches"
+    },
+    {
+      "version": "20260813135412",
+      "name": "premium_seller_access_boundary"
+    },
+    {
+      "version": "20260827093110",
+      "name": "emergency_client_write_containment"
+    },
+    {
+      "version": "20260828093213",
+      "name": "prompt2_emergency_profile_authority_containment"
+    },
+    {
+      "version": "20260828093520",
+      "name": "prompt2_trusted_admin_claim_cutover"
+    },
+    {
+      "version": "20260828151836",
+      "name": "prompt2_trade_notification_write_containment"
+    },
+    {
+      "version": "20260902204348",
+      "name": "prepare_prompt2_trade_freeze_for_transaction_boundary"
+    },
+    {
+      "version": "20260902204349",
+      "name": "marketplace_trust_and_safety"
+    },
+    {
+      "version": "20260902204350",
+      "name": "marketplace_listing_transactions"
+    },
+    {
+      "version": "20260902204351",
+      "name": "binder_ownership_lifecycle"
+    },
+    {
+      "version": "20260902204352",
+      "name": "restrict_marketplace_transaction_trigger_execution"
+    },
+    {
+      "version": "20260902204353",
+      "name": "restrict_binder_reservation_trigger_execution"
+    },
+    {
+      "version": "20260902204354",
+      "name": "optimize_binder_marketplace_transaction_access"
+    },
+    {
+      "version": "20260902204550",
+      "name": "binder_conflict_preconditions"
+    },
+    {
+      "version": "20260902204552",
+      "name": "binder_readiness_policy_access"
+    },
+    {
+      "version": "20260902204554",
+      "name": "reconcile_prompt2_trade_freeze_with_marketplace_transactions"
+    },
+    {
+      "version": "20260902205018",
+      "name": "prepare_marketplace_trust_utf8_data_repair"
+    },
+    {
+      "version": "20260902205020",
+      "name": "repair_marketplace_trust_utf8_separator"
+    }
+  ]
+}

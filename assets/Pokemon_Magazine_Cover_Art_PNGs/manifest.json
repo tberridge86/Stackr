@@ -1,0 +1,739 @@
+{
+  "schemaVersion": 1,
+  "assetType": "magazine_issue_set_cover",
+  "source": "owner_supplied_local_files",
+  "assetCount": 81,
+  "totalBytes": 57603833,
+  "aggregateFileLedgerSha256": "3b9c023622110d1828b4eb3536cfecbf727a57e27461764fc573e571fe0b2ee7",
+  "files": [
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-04-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 713807,
+      "width": 443,
+      "height": 647,
+      "sha256": "cb75c64a977bfcdbd68dd875add82868d7a43780fd3fdecae6dffc30893aaf6f"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-05-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 627517,
+      "width": 408,
+      "height": 647,
+      "sha256": "e80c05d5e95370582eee23743985f51afd20ee79d8e5839f46acdab72e4be0bb"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-06-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 687512,
+      "width": 447,
+      "height": 647,
+      "sha256": "ac437671f53a36b32de9d0deaba4ed811719caea9f4a8ad7b2a5c757a4dd06a0"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-07-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 710966,
+      "width": 444,
+      "height": 647,
+      "sha256": "08cc761ec05ca3002ee0bad218a8e9e5856dc24169862fdb9f5ab818174d04dd"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-08-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 692921,
+      "width": 453,
+      "height": 647,
+      "sha256": "90df6942b88d6dfe9c3a8e18fddd2c9e6764510080ea93757d2e17fb3d846584"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-09-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 694038,
+      "width": 447,
+      "height": 647,
+      "sha256": "77bb9e3694937da177913e41de3ad02cada0cb93f27062a86705c959672beaf6"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-10-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 730703,
+      "width": 449,
+      "height": 647,
+      "sha256": "5b25a8178f2e99ecb0948767545158e053abbb45b2391bf688b84d32c86905fc"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-11-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 713370,
+      "width": 449,
+      "height": 647,
+      "sha256": "e84ec33681ff263d5226e7b14c6b7f78db64b322207d3a967ad3d94d573267a5"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-12-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 719425,
+      "width": 449,
+      "height": 647,
+      "sha256": "be492845dc9dc4f1b2aee6c5f24ca410dd654452626b11dc8107dcebe1325f81"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-01-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 702034,
+      "width": 454,
+      "height": 647,
+      "sha256": "55adf28f24b3627a89bf80a44dee23715a5decd39f287e3e79d27087c758ba7c"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-02-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 705948,
+      "width": 445,
+      "height": 647,
+      "sha256": "d3542d549a6e0b17858005b2d3880023bb990f6a39e73212706f1ece30ebb7b6"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-03-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 706475,
+      "width": 448,
+      "height": 647,
+      "sha256": "988cd3599d288d91093e893bc85e3c0d1fd3de77a387f112ed58ff1dce26170f"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-04-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 718305,
+      "width": 447,
+      "height": 647,
+      "sha256": "eb1e795f0f28d14239046394068cd67531f33cc3c842f003cfbcbef9557085b2"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-05-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 714934,
+      "width": 449,
+      "height": 647,
+      "sha256": "538a38280ca24f356cdc5d23290fdc96be04239e1e522de5960fd8a3b868cea6"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-06-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 690069,
+      "width": 455,
+      "height": 647,
+      "sha256": "3cce587d2e5aaabe58487558591659681f725c0289c75a44dd32036b41969387"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-07-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 720687,
+      "width": 446,
+      "height": 648,
+      "sha256": "ea72068d0365f0dd08065bb19c415cd1cf30b43a5b4dade308d5bbe64c5d6e13"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-08-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 716116,
+      "width": 446,
+      "height": 645,
+      "sha256": "a37063eced75f4d8221e11011c7f9d42772cd1586c6403641e38b670381f7896"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-09-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 684171,
+      "width": 446,
+      "height": 647,
+      "sha256": "ac316679c583d58d994c68f6e0b4c9ba62eef32badd98af31c97743f75bfd7a7"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-10-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 670444,
+      "width": 446,
+      "height": 633,
+      "sha256": "3e0a268d62a6d5514a334fb27383c7a7bdea6cb7ece568664edf4afc9d4fdb57"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-11-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 709893,
+      "width": 446,
+      "height": 637,
+      "sha256": "986afe362322f57f47926092a9d99e29dd7392acc5d5f68259ef195d33980b0e"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1997-12-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 702249,
+      "width": 446,
+      "height": 641,
+      "sha256": "d2548abd2aa2543df41f413dc89d897dea79812be86435bd7a4b61fad0461916"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-01-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 710861,
+      "width": 446,
+      "height": 643,
+      "sha256": "7f0004c9b250dd7b3f5ab4802ef71871406273e9aba758fb56886adf90328d05"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-02-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 711197,
+      "width": 446,
+      "height": 645,
+      "sha256": "760fc9049e91650b1a0ba812274c562f11a1374cb8374e6ee6674c42e89ad6d6"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-03-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 702759,
+      "width": 446,
+      "height": 652,
+      "sha256": "ee6807e5296801e1addd8a3b4a424d68f9dfe22867cdbb05f9f2409d0c8c80e7"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-04-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 698046,
+      "width": 446,
+      "height": 646,
+      "sha256": "4b563b6389df544912468eb83aa4e61f6d0d78bd271b3be41b1470eb59208840"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-05-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 716838,
+      "width": 446,
+      "height": 645,
+      "sha256": "3094f55a518482ac79cd625060d8c95fd07621a4fc6ad54aad8ea236060664b0"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-06-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 671727,
+      "width": 446,
+      "height": 640,
+      "sha256": "c21ee1b4cd60bc4619ad2c5d5fa2662b63b1a9f7a6c182ba42d66c86d8b60f92"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-07-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 704244,
+      "width": 446,
+      "height": 651,
+      "sha256": "cd7def0abb3bde56c2da4bcb7a8df6284bb420303cd8a736b59b333f8987428b"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-08-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 706659,
+      "width": 446,
+      "height": 650,
+      "sha256": "29ce0b7413f0a79ff3c97aea40a48f93c0002f0b6606bdce1010058ac20fe75a"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-09-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 691607,
+      "width": 446,
+      "height": 643,
+      "sha256": "6c5f629d8bf2a7f58b57a2d83114a704fea2067f1916d917b145329d73f0f7a9"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-10-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 730693,
+      "width": 446,
+      "height": 649,
+      "sha256": "f9d55d147eee59d424774e0ae6aa5364dc9264da945b548ade1d9f73fbe20715"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-11-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 694358,
+      "width": 446,
+      "height": 636,
+      "sha256": "8cb79a28fc396c3f9a7964facee1ffa1de1b7966b78ec92187f5904321220c3e"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1998-12-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 687135,
+      "width": 446,
+      "height": 646,
+      "sha256": "f1128b405572849c250b2467dd614c921954c385a708640777f1754ab955bff0"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-01-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 680885,
+      "width": 446,
+      "height": 651,
+      "sha256": "b24f07cf77fdb942ae20641316c6e6880a6624b7c858c7391d843c87deaf8ab0"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-02-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 688961,
+      "width": 446,
+      "height": 656,
+      "sha256": "566d82357f5f468dd8b28e7ebb798da6f5452ef075ee0b4031ef306045086ca9"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-03-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 713829,
+      "width": 446,
+      "height": 650,
+      "sha256": "12164730873f04846151609b1537ee4e39c858a8ef6ba714cd30a476477d06b1"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-04-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 705405,
+      "width": 446,
+      "height": 650,
+      "sha256": "8f5a2dca6b93109fd5317d8b43567737195356ce81668f56e7f564cd121bb8ef"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-05-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 674186,
+      "width": 446,
+      "height": 633,
+      "sha256": "e50cd4430f4f77cc1cf52aacf0cffefed28dd7ff48928eeceadaed231d26408e"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-06-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 692430,
+      "width": 446,
+      "height": 651,
+      "sha256": "c9322ed202dfe883553418bde67e044d0788ee7f4f2a9290300d5bcaa741f902"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-07-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 673688,
+      "width": 446,
+      "height": 651,
+      "sha256": "507914ee35c94c3a9c647c3915bce5bf05b2e937d44a2e53be024a5ca2fd6a11"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-08-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 685974,
+      "width": 446,
+      "height": 654,
+      "sha256": "282208ec479ef540c29d9ba756141ba7a0dcfcb49705ebd35aec344d1f64c10a"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-09-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 703526,
+      "width": 446,
+      "height": 651,
+      "sha256": "62b520408122de5054c5ec50d30b125ecc40aa66b6829c98eaab49c1597534b2"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-10-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 719770,
+      "width": 446,
+      "height": 651,
+      "sha256": "e46eb3974da8d236119bb745ac2907e60b89702603945faceed48140f170ee51"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-11-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 699828,
+      "width": 446,
+      "height": 648,
+      "sha256": "ddc3ffc774af5a434da93fb625f80f09dfe4da1acd6b6061c68633e02e1691f5"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1999-12-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 711547,
+      "width": 446,
+      "height": 657,
+      "sha256": "d53b4467aec2bc616504f31a5909ad3aa8e4c7cb3819f08d7f952a14fc4444fe"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-01-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 711605,
+      "width": 446,
+      "height": 644,
+      "sha256": "bd1a674178346fd72e17df1c40d34d49379b254ac1664b57aa82124a13d107c8"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-02-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 682632,
+      "width": 446,
+      "height": 649,
+      "sha256": "0ef889c1eb9d8b4ad467cfcdf50d0b03a52f81a28184901e6b3f4de8ab853785"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-03-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 683508,
+      "width": 446,
+      "height": 646,
+      "sha256": "0e4f14e72ccd9af2056d42fbf44abbcf07cf8b4b186a0f4c8cc4bbe84e8079eb"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-04-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 674277,
+      "width": 446,
+      "height": 642,
+      "sha256": "9e3c68458efd24166d77d7f5cc09db0c60ef40c16c8efb6a6e5ddea9ebbaf0ee"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-05-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 695387,
+      "width": 446,
+      "height": 642,
+      "sha256": "05f043cf24b25ccf89d38f7f8c481ab5c8195333dd4ae7c25e71cd65c1715e76"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-06-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 678652,
+      "width": 446,
+      "height": 643,
+      "sha256": "3c7a7dc50250a38373cf7e2d77ee1f59b06c0666444bea9851ef796e7620f6f1"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-07-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 700391,
+      "width": 446,
+      "height": 647,
+      "sha256": "761284fee0bee8ee5e0d0bc957f73efbfde45d1129701b8c4b5e84923323f5ac"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-08-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 698657,
+      "width": 446,
+      "height": 653,
+      "sha256": "f73eae269d5bad3e4daf7950761201757d18fcd997d1335acc15d8f57bc0e204"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-09-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 699051,
+      "width": 446,
+      "height": 641,
+      "sha256": "7eae178b08d445cf3629d16f45de2e1429caa0edb9713c66184480bedecd94d9"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-10-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 712692,
+      "width": 446,
+      "height": 649,
+      "sha256": "1f6b944b0755eee49a23ea5bcba6b082be61a97b581ac8e7ca6cf216b5c124a8"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-11-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 700007,
+      "width": 446,
+      "height": 653,
+      "sha256": "9f17fda976da6ac00a7d252dfaf85f3c7db7ff91b0d980b2216dcfcefe7bfd07"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2000-12-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 679953,
+      "width": 446,
+      "height": 648,
+      "sha256": "a2f58dc50f215f46f89c3cadaf9cac1083febc47fce345b70c3932042413bc5b"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-01-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 688285,
+      "width": 446,
+      "height": 648,
+      "sha256": "dea403d689a36d1aa86dcaf64914854d82f30be670cd23aeae6d4ac1d14c6da5"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-02-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 711058,
+      "width": 446,
+      "height": 646,
+      "sha256": "0810168728fee9fd128563daf997445aa60b47941ad8fa30d1e06c5ac918a25c"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-03-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 692955,
+      "width": 446,
+      "height": 657,
+      "sha256": "2a1858d14b34a39639b2d920f270a874fa2254cc2434b6d4116633732bb44c0f"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-04-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 712728,
+      "width": 446,
+      "height": 644,
+      "sha256": "3e1cda4558cdd902bc872db14214dbfce3c265645aca59541a1a186665bb702c"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-05-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 701382,
+      "width": 446,
+      "height": 649,
+      "sha256": "6fcff9215343e6090142f600439187559328870130c0bc70bac26a98e1a7d4f7"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-06-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 700129,
+      "width": 446,
+      "height": 648,
+      "sha256": "f157a93e5d897f130bed9ad3b9a58c4ce87c0766410b93992bd8f92f29782bf7"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-07-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 709813,
+      "width": 446,
+      "height": 644,
+      "sha256": "15513dd72405d3dcb348e2bfb1e91f6731ecf29e365919c1c051ec7f9afca733"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-08-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 672582,
+      "width": 446,
+      "height": 641,
+      "sha256": "d7ea8a9d6bfda2fb6f45e32c3d1d9433ff70705ec4bfaa7128a38ba4c2f268ec"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-09-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 695483,
+      "width": 446,
+      "height": 640,
+      "sha256": "c0169a6b62a3328496d18057fdba2aee703f0dcaf913f6f8abaab96ed47c5e47"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-10-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 697755,
+      "width": 446,
+      "height": 640,
+      "sha256": "ccafba52f6832e2a3c45c794ee02cfd4cf216db9eff543333791aeaf8f0d356d"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-11-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 707971,
+      "width": 446,
+      "height": 645,
+      "sha256": "cf23c82fbab71307ef9cea8f8563fdae175ee877aa347b44a33195b2aef52d21"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-12-CoroCoro-Comic.png",
+      "publication": "CoroCoro Comic",
+      "language": "ja",
+      "bytes": 686931,
+      "width": 446,
+      "height": 644,
+      "sha256": "8debf1e3c5ce535ad1ea615600dcfa019faf9381034852f96c1e1d4470949f71"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Ichiban/2021-06-CoroCoro-Ichiban.png",
+      "publication": "CoroCoro Ichiban",
+      "language": "ja",
+      "bytes": 278195,
+      "width": 289,
+      "height": 363,
+      "sha256": "c97b49ab37688d9fcbaebf96fa128250d4c801ab6488b0c2b6527a1f71213640"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan Japan/2021-Issue-73-Pokemon-Fan-Japan.png",
+      "publication": "Pokemon Fan Japan",
+      "language": "ja",
+      "bytes": 257813,
+      "width": 289,
+      "height": 363,
+      "sha256": "ed7937d9ffe1812e5e9d7c4c9bb0e4c83ab01619424e1141d1da463c1d16341d"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-01.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 862009,
+      "width": 578,
+      "height": 900,
+      "sha256": "930654fbe6589827c3015a8f12f9fc6b1b55225949562a826f06eae1a2087013"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-02.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 910960,
+      "width": 576,
+      "height": 900,
+      "sha256": "2312b5944f64fb9542821d5511c5cdfda3dd71687d905b98ea303130dc010567"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-03.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 852587,
+      "width": 572,
+      "height": 900,
+      "sha256": "21f68449e638234a9ce738737f4685acf30cec09e9279d916e897795ab65c724"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-04.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 847478,
+      "width": 576,
+      "height": 900,
+      "sha256": "0385e2df31094cea08e78dd82b435b95f03a661904262dc8ee13bfa313524486"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-05.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 927386,
+      "width": 575,
+      "height": 900,
+      "sha256": "152c5606ba2983c92e17e09e61a6077819c204c2230ac0a338518b730b46b111"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-06.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 711615,
+      "width": 580,
+      "height": 900,
+      "sha256": "e6811c39a334cb78cd68c6fd94cf9e95babde5bc436dd3a812d82d32b35ef0e3"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-07.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 952258,
+      "width": 571,
+      "height": 900,
+      "sha256": "aed52d3f4fa2438cec663cc7e41aa29a83548fadb88f1820216f06552045b23c"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-08.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 967404,
+      "width": 621,
+      "height": 900,
+      "sha256": "f651cffde06dd1b30ff1ddf4901133410f3497f9e1b925c7ecfc785e9ce109b6"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-09.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 985400,
+      "width": 576,
+      "height": 900,
+      "sha256": "e6ea77633221d63e154db243bbfb54ce1158ae1e2c8ffb468ca86a2213154499"
+    },
+    {
+      "path": "assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-10.png",
+      "publication": "Pokemon Fan US",
+      "language": "en",
+      "bytes": 849107,
+      "width": 568,
+      "height": 900,
+      "sha256": "fe7857ee91e2d86d88e1fda9403a8cc951afc1e013d05034e9d6e25efd885fa2"
+    }
+  ]
+}

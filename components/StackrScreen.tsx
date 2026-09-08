@@ -30,17 +30,19 @@ export function StackrScreen({
   variant = 'tab',
   style,
   contentStyle,
+  safeAreaEdges,
 }: {
   children: React.ReactNode;
   variant?: StackrScreenVariant;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
+  safeAreaEdges?: SafeEdge[];
 }) {
   const { theme } = useTheme();
 
   return (
     <SafeAreaView
-      edges={SCREEN_EDGES[variant]}
+      edges={safeAreaEdges ?? SCREEN_EDGES[variant]}
       style={[styles.screen, { backgroundColor: theme.colors.bg }, style]}
     >
       <View style={[styles.content, contentStyle]}>{children}</View>

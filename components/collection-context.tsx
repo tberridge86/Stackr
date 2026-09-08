@@ -8,6 +8,8 @@ import React, {
 } from 'react';
 import { createBinder, deleteBinder, fetchBinders } from '../lib/binders';
 import { normalizePokemonCardLanguage, type PokemonCardLanguage } from '../lib/pokemonTcg';
+import { isCurrentAccountRequest } from '../lib/accountRequestGuard';
+import { useAuth } from './auth-context';
 
 type CollectionContextType = {
   trackedSetIds: string[];
@@ -24,36 +26,85 @@ function getTrackedSetKey(setId: string, language?: PokemonCardLanguage | string
 }
 
 export function CollectionProvider({ children }: { children: React.ReactNode }) {
-  const [trackedSetIds, setTrackedSetIds] = useState<string[]>([]);
-  const [loadingTrackedSets, setLoadingTrackedSets] = useState(true);
+  const { user, loading: authLoading } = useAuth();
+  const accountId = user?.id ?? null;
+  const currentAccountId = React.useRef(accountId);
+  const previousAccountId = React.useRef(accountId);
+  const accountGeneration = React.useRef(0);
+  const requestSequence = React.useRef(0);
+  if (previousAccountId.current !== accountId) {
+    previousAccountId.current = accountId;
+    accountGeneration.current += 1;
+  }
+  currentAccountId.current = accountId;
+  const [trackedSetState, setTrackedSetState] = useState({
+    accountId: null as string | null,
+    trackedSetIds: [] as string[],
+    loading: true,
+  });
+  const belongsToCurrentAccount = trackedSetState.accountId === accountId;
+  const trackedSetIds = useMemo(
+    () => (!authLoading && belongsToCurrentAccount ? trackedSetState.trackedSetIds : []),
+    [authLoading, belongsToCurrentAccount, trackedSetState.trackedSetIds],
+  );
+  const loadingTrackedSets = authLoading || !belongsToCurrentAccount || trackedSetState.loading;
 
   const refreshTrackedSets = useCallback(async () => {
+    const expectedAccountId = accountId;
+    const requestId = ++requestSequence.current;
+    const request = { accountGeneration: accountGeneration.current, requestId };
+    if (currentAccountId.current !== expectedAccountId) return;
+    if (!expectedAccountId) {
+      setTrackedSetState({ accountId: null, trackedSetIds: [], loading: false });
+      return;
+    }
+
     try {
-      setLoadingTrackedSets(true);
+      setTrackedSetState((previous) => ({
+        accountId: expectedAccountId,
+        trackedSetIds: previous.accountId === expectedAccountId ? previous.trackedSetIds : [],
+        loading: true,
+      }));
 
       const binders = await fetchBinders();
+      if (
+        currentAccountId.current !== expectedAccountId
+        || !isCurrentAccountRequest(
+          { accountGeneration: accountGeneration.current, requestId: requestSequence.current },
+          request,
+        )
+      ) return;
 
       const officialSetIds = binders
         .filter((binder) => binder.type === 'official' && binder.source_set_id)
         .map((binder) => getTrackedSetKey(binder.source_set_id as string, binder.language));
 
-      setTrackedSetIds(officialSetIds);
+      setTrackedSetState({ accountId: expectedAccountId, trackedSetIds: officialSetIds, loading: false });
     } catch (error) {
       console.log('Failed to load tracked sets from binders', error);
-      setTrackedSetIds([]);
-    } finally {
-      setLoadingTrackedSets(false);
+      if (
+        currentAccountId.current === expectedAccountId
+        && isCurrentAccountRequest(
+          { accountGeneration: accountGeneration.current, requestId: requestSequence.current },
+          request,
+        )
+      ) {
+        setTrackedSetState({ accountId: expectedAccountId, trackedSetIds: [], loading: false });
+      }
     }
-  }, []);
+  }, [accountId]);
 
   useEffect(() => {
-    refreshTrackedSets();
-  }, [refreshTrackedSets]);
+    if (!authLoading) void refreshTrackedSets();
+  }, [authLoading, refreshTrackedSets]);
 
   const toggleTrackedSet = useCallback(
     async (setId: string, requestedLanguage?: PokemonCardLanguage | string | null) => {
+      const expectedAccountId = accountId;
+      if (!expectedAccountId || currentAccountId.current !== expectedAccountId) return;
       const language = normalizePokemonCardLanguage(requestedLanguage);
       const binders = await fetchBinders();
+      if (currentAccountId.current !== expectedAccountId) return;
 
       const existingBinder = binders.find(
         (binder) =>
@@ -64,6 +115,7 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
 
       if (existingBinder) {
         await deleteBinder(existingBinder.id);
+        if (currentAccountId.current !== expectedAccountId) return;
         await refreshTrackedSets();
         return;
       }
@@ -71,6 +123,7 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
       const { fetchAllSets } = await import('../lib/pokemonTcg');
       const sets = await fetchAllSets({ language });
       const selectedSet = sets.find((set) => set.id === setId);
+      if (currentAccountId.current !== expectedAccountId) return;
 
       await createBinder({
         name: selectedSet?.name ?? setId,
@@ -80,9 +133,10 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
         language,
       });
 
+      if (currentAccountId.current !== expectedAccountId) return;
       await refreshTrackedSets();
     },
-    [refreshTrackedSets]
+    [accountId, refreshTrackedSets]
   );
 
   const value = useMemo(

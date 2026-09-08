@@ -10,10 +10,17 @@ import { useTheme } from '../../components/theme-context';
 import { useAuth } from '../../components/auth-context';
 import {
   deleteOwnerCapture, getOwnerRecognitionAccess, identifyOwnerCard, listOwnerCaptures,
-  saveOwnerCapture, type OwnerRecognitionAccess,
+  saveOwnerCapture, uploadOwnerCapture, type OwnerRecognitionAccess,
 } from '../../lib/ownerRecognition';
-import { OWNER_PRIVATE_RECOGNITION_ENABLED, type OwnerRecognitionResult } from '../../lib/ownerRecognitionCore';
+import { OWNER_PRIVATE_RECOGNITION_ENABLED, type OwnerRecognitionResult, type OwnerTeachingIdentity } from '../../lib/ownerRecognitionCore';
 import { prepareOwnerRecognitionPhoto } from '../../lib/ownerRecognitionPhoto';
+import { listOwnerTeachingSets, loadOwnerTeachingCard, searchOwnerTeachingCards } from '../../lib/ownerTeachingCatalogue';
+import {
+  OWNER_TEACHING_LANGUAGES, ownerTeachingIdentityFromCard, ownerTeachingVariantLabel,
+  type OwnerTeachingCardChoice, type OwnerTeachingLanguage,
+} from '../../lib/ownerTeachingCore';
+import type { StackrCard, StackrCardVariant, StackrSet } from '../../lib/stackrApiV1';
+import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
 
 export default function OwnerRecognitionScreen() {
   const { theme } = useTheme();
@@ -27,7 +34,20 @@ export default function OwnerRecognitionScreen() {
   const [physicalCardId, setPhysicalCardId] = useState('');
   const [captures, setCaptures] = useState<Awaited<ReturnType<typeof listOwnerCaptures>>>([]);
   const generation = useRef(0);
+  const teachingGeneration = useRef(0);
   const currentPhoto = useRef<string | null>(null);
+  const [teachingOpen, setTeachingOpen] = useState(false);
+  const [teachingLanguage, setTeachingLanguage] = useState<OwnerTeachingLanguage | null>(null);
+  const [teachingSetQuery, setTeachingSetQuery] = useState('');
+  const [teachingSets, setTeachingSets] = useState<StackrSet[]>([]);
+  const [teachingSet, setTeachingSet] = useState<StackrSet | null>(null);
+  const [teachingNumber, setTeachingNumber] = useState('');
+  const [teachingCards, setTeachingCards] = useState<OwnerTeachingCardChoice[]>([]);
+  const [teachingCard, setTeachingCard] = useState<StackrCard | null>(null);
+  const [teachingVariants, setTeachingVariants] = useState<StackrCardVariant[]>([]);
+  const [teachingCatalogueVersion, setTeachingCatalogueVersion] = useState<string | null>(null);
+  const [teachingVariantId, setTeachingVariantId] = useState<string | null>(null);
+  const [teachingBusy, setTeachingBusy] = useState(false);
   const releasePhoto = useCallback(async () => {
     const uri = currentPhoto.current;
     currentPhoto.current = null;
@@ -39,6 +59,9 @@ export default function OwnerRecognitionScreen() {
   const checkAccess = useCallback(async () => {
     const turn = ++generation.current;
     setAccess(null); setResult(null); setImageUri(null); setCaptures([]); setSelected(null);
+    teachingGeneration.current += 1;
+    setTeachingOpen(false); setTeachingLanguage(null); setTeachingSets([]); setTeachingSet(null); setTeachingCards([]);
+    setTeachingCard(null); setTeachingVariants([]); setTeachingVariantId(null); setTeachingBusy(false);
     setBusy(false);
     await releasePhoto();
     if (!OWNER_PRIVATE_RECOGNITION_ENABLED) { setMessage('Private recognition is not included in this build.'); return; }
@@ -97,19 +120,138 @@ export default function OwnerRecognitionScreen() {
     }
   }
 
-  async function saveCapture() {
+  function clearTeachingBelow(level: 'language' | 'set' | 'card') {
+    teachingGeneration.current += 1;
+    if (level === 'language') {
+      setTeachingSetQuery(''); setTeachingSets([]); setTeachingSet(null);
+    }
+    if (level === 'language' || level === 'set') {
+      setTeachingNumber(''); setTeachingCards([]);
+    }
+    setTeachingCard(null); setTeachingVariants([]); setTeachingCatalogueVersion(null); setTeachingVariantId(null);
+  }
+
+  async function chooseTeachingLanguage(language: OwnerTeachingLanguage) {
+    if (!access || !result) return;
+    clearTeachingBelow('language');
+    setTeachingLanguage(language);
+    const turn = ++teachingGeneration.current;
+    const scanTurn = generation.current;
+    const ownerId = access.ownerId;
+    setTeachingBusy(true);
+    try {
+      const sets = await listOwnerTeachingSets(language);
+      if (turn !== teachingGeneration.current || scanTurn !== generation.current || access.ownerId !== ownerId) return;
+      setTeachingSets(sets);
+      setMessage('Choose the printed set. Changing it clears the card and finish choices.');
+    } catch (error) {
+      if (turn === teachingGeneration.current) setMessage(error instanceof Error ? error.message : 'Could not load catalogue sets.');
+    } finally { if (turn === teachingGeneration.current) setTeachingBusy(false); }
+  }
+
+  async function findTeachingSets() {
+    if (!teachingLanguage || !access) return;
+    const turn = ++teachingGeneration.current;
+    const scanTurn = generation.current;
+    const ownerId = access.ownerId;
+    setTeachingBusy(true);
+    try {
+      const sets = await listOwnerTeachingSets(teachingLanguage, teachingSetQuery);
+      if (turn !== teachingGeneration.current || scanTurn !== generation.current || access.ownerId !== ownerId) return;
+      setTeachingSets(sets);
+    } catch (error) {
+      if (turn === teachingGeneration.current) setMessage(error instanceof Error ? error.message : 'Could not find catalogue sets.');
+    } finally { if (turn === teachingGeneration.current) setTeachingBusy(false); }
+  }
+
+  function chooseTeachingSet(set: StackrSet) {
+    clearTeachingBelow('set');
+    setTeachingSet(set);
+    setTeachingSetQuery(set.setCode ?? getPreferredSetDisplayName({ id: set.setId, language: set.languageCode,
+      localName: set.nativeName, englishDisplayName: set.englishDisplayName }));
+  }
+
+  async function findTeachingCards() {
+    if (!teachingLanguage || !teachingSet || !access) return;
+    const number = teachingNumber.trim();
+    if (!number) { setMessage('Enter the printed collector number first.'); return; }
+    clearTeachingBelow('card');
+    const turn = ++teachingGeneration.current;
+    const scanTurn = generation.current;
+    const ownerId = access.ownerId;
+    setTeachingBusy(true);
+    try {
+      const cards = await searchOwnerTeachingCards({ language: teachingLanguage, setId: teachingSet.setId, collectorNumber: number });
+      if (turn !== teachingGeneration.current || scanTurn !== generation.current || access.ownerId !== ownerId) return;
+      setTeachingCards(cards);
+      setMessage(cards.length ? 'Choose the canonical card, then its actual finish.' : 'No exact card number was found in that set. Check language, set, and printed number.');
+    } catch (error) {
+      if (turn === teachingGeneration.current) setMessage(error instanceof Error ? error.message : 'Could not find that card.');
+    } finally { if (turn === teachingGeneration.current) setTeachingBusy(false); }
+  }
+
+  async function chooseTeachingCard(choice: OwnerTeachingCardChoice) {
+    if (!access) return;
+    const turn = ++teachingGeneration.current;
+    const scanTurn = generation.current;
+    const ownerId = access.ownerId;
+    setTeachingBusy(true); setTeachingCard(null); setTeachingVariants([]); setTeachingVariantId(null);
+    try {
+      const loaded = await loadOwnerTeachingCard(choice.cardId);
+      if (turn !== teachingGeneration.current || scanTurn !== generation.current || access.ownerId !== ownerId) return;
+      setTeachingCard(loaded.card); setTeachingVariants(loaded.variants); setTeachingCatalogueVersion(loaded.catalogueVersion);
+      setMessage('Choose the card finish exactly as printed. This label will be queued for review.');
+    } catch (error) {
+      if (turn === teachingGeneration.current) setMessage(error instanceof Error ? error.message : 'Could not load card variants.');
+    } finally { if (turn === teachingGeneration.current) setTeachingBusy(false); }
+  }
+
+  function correctedTeachingIdentity(): OwnerTeachingIdentity | null {
+    if (!teachingCard || !teachingVariantId) return null;
+    const variant = teachingVariants.find((candidate) => candidate.variantId === teachingVariantId);
+    return variant ? ownerTeachingIdentityFromCard(teachingCard, variant, teachingCatalogueVersion) : null;
+  }
+
+  async function saveCapture(localOnly: boolean) {
     if (!access || !result || !imageUri || busy) return;
+    const correctedIdentity = correctedTeachingIdentity();
+    if (!localOnly && !correctedIdentity) { setMessage('Choose language, set, card number, card, and finish before saving for teaching.'); return; }
     const turn = generation.current;
+    let savedCapture: Awaited<ReturnType<typeof saveOwnerCapture>> | null = null;
     setBusy(true);
     try {
-      await saveOwnerCapture({ ownerId: access.ownerId, imageUri, physicalCardId, result, selectedVariantId: selected });
+      savedCapture = await saveOwnerCapture({
+        ownerId: access.ownerId, imageUri, physicalCardId, result, selectedVariantId: selected,
+        correctedIdentity, trainingUseApproved: false,
+      });
       if (turn !== generation.current) return;
+      if (!localOnly) {
+        setMessage('Backing up your cropped photo and correction to your private review queue…');
+        await uploadOwnerCapture(access.ownerId, savedCapture.id);
+        if (turn !== generation.current) return;
+      }
       const saved = await listOwnerCaptures(access.ownerId);
       if (turn !== generation.current) return;
       setCaptures(saved);
-      setMessage('Saved privately on this device. Nothing added to your collection or sent for training.');
+      setMessage(localOnly
+        ? correctedIdentity ? 'Saved with its corrected label on this device. Nothing was sent for training or review.' : 'Saved privately on this device. Nothing was sent for training or review.'
+        : 'Saved and backed up to your private review queue. It is not used for training until reviewed.');
       setResult(null); setImageUri(null); await releasePhoto();
-    } catch (error) { if (turn === generation.current) setMessage(error instanceof Error ? error.message : 'Capture could not be saved.'); }
+    } catch (error) {
+      if (turn !== generation.current) return;
+      if (savedCapture) {
+        // The device record is already complete. Clear the active crop so a
+        // second press cannot create another example; surface the saved row's
+        // retry action instead.
+        const saved = await listOwnerCaptures(access.ownerId).catch(() => null);
+        if (turn !== generation.current) return;
+        if (saved) setCaptures(saved);
+        setResult(null); setImageUri(null); await releasePhoto();
+        setMessage('Saved on this device, but private review upload failed. Use Retry private review upload below; this example is not used for training.');
+      } else {
+        setMessage(error instanceof Error ? error.message : 'Capture could not be saved.');
+      }
+    }
     finally { if (turn === generation.current) setBusy(false); }
   }
 
@@ -137,22 +279,72 @@ export default function OwnerRecognitionScreen() {
       {access && <Text style={{ color: theme.colors.textSoft, marginTop: 8 }}>Fill the frame with the card face, keep it flat and avoid glare. Scores below are cosine similarities, not probabilities.</Text>}
       {imageUri && <Image source={{ uri: imageUri }} style={{ height: 260, marginTop: 16, borderRadius: 12 }} resizeMode="contain" />}
       {result?.candidates.map((candidate) => <View key={candidate.variantId}>
-        {button(`${selected === candidate.variantId ? '✓ ' : ''}${candidate.nativeName || candidate.name} · ${candidate.collectorNumber} · ${candidate.language}\n${candidate.setCode || candidate.setId} · ${candidate.variantCode || 'variant unspecified'} · similarity ${candidate.similarity.toFixed(3)}`,
+        {button(`${selected === candidate.variantId ? '✓ ' : ''}${getPreferredCardDisplayName({ language: candidate.language, localName: candidate.nativeName, englishDisplayName: candidate.name, collectorNumber: candidate.collectorNumber })} · ${candidate.collectorNumber} · ${candidate.language}\n${candidate.setCode || candidate.setId} · ${candidate.variantCode || 'variant unspecified'} · similarity ${candidate.similarity.toFixed(3)}`,
           () => setSelected(candidate.variantId), busy)}
       </View>)}
       {result && <View style={{ marginTop: 18 }}>
         {button('None is correct / save as unresolved', () => setSelected(null), busy)}
-        <Text style={{ color: theme.colors.textSoft, marginTop: 16 }}>Optional: save this photo and your reviewed label into your private, on-device dataset. Use the same physical-card label for every photo of that same card. Unresolved photos are not ground truth.</Text>
+        {button(teachingOpen ? 'Close teaching correction' : 'Teach / correct this card', () => {
+          teachingGeneration.current += 1;
+          setTeachingOpen((open) => !open);
+          if (!teachingOpen) {
+            const candidate = result.candidates.find((item) => item.variantId === selected);
+            const language = candidate?.language as OwnerTeachingLanguage | undefined;
+            if (language && OWNER_TEACHING_LANGUAGES.some((item) => item.code === language)) {
+              void chooseTeachingLanguage(language);
+            } else {
+              setMessage('Choose language, then set, printed card number, and actual finish.');
+            }
+          }
+        }, busy)}
+        {teachingOpen && <View style={{ marginTop: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 12 }}>
+          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Corrected catalogue label</Text>
+          <Text style={{ color: theme.colors.textSoft, marginTop: 6 }}>This can be a card outside the five model suggestions. Each earlier choice clears dependent choices to prevent a mixed identity.</Text>
+          <Text style={{ color: theme.colors.text, fontWeight: '800', marginTop: 14 }}>1. Printed language</Text>
+          {OWNER_TEACHING_LANGUAGES.map((language) => button(`${teachingLanguage === language.code ? '✓ ' : ''}${language.label}`,
+            () => void chooseTeachingLanguage(language.code), busy || teachingBusy))}
+          {teachingLanguage && <>
+            <Text style={{ color: theme.colors.text, fontWeight: '800', marginTop: 14 }}>2. Printed set</Text>
+            <TextInput value={teachingSetQuery} onChangeText={(value) => { setTeachingSetQuery(value); setTeachingSet(null); clearTeachingBelow('set'); }}
+              maxLength={100} placeholder="Set name or code" placeholderTextColor={theme.colors.textSoft}
+              style={{ color: theme.colors.text, borderColor: theme.colors.border, borderWidth: 1, padding: 14, borderRadius: 12, marginTop: 10 }} />
+            {button('Find set', () => void findTeachingSets(), busy || teachingBusy)}
+            {teachingSets.slice(0, 12).map((set) => <View key={set.setId}>{button(`${teachingSet?.setId === set.setId ? '✓ ' : ''}${set.setCode ?? set.setId} · ${getPreferredSetDisplayName({ id: set.setId, setCode: set.setCode, language: set.languageCode, localName: set.nativeName, englishDisplayName: set.englishDisplayName })}`,
+              () => chooseTeachingSet(set), busy || teachingBusy)}</View>)}
+          </>}
+          {teachingSet && <>
+            <Text style={{ color: theme.colors.text, fontWeight: '800', marginTop: 14 }}>3. Printed collector number</Text>
+            <TextInput value={teachingNumber} onChangeText={(value) => { setTeachingNumber(value); clearTeachingBelow('card'); }}
+              maxLength={40} placeholder="e.g. 157 or TG12" placeholderTextColor={theme.colors.textSoft}
+              style={{ color: theme.colors.text, borderColor: theme.colors.border, borderWidth: 1, padding: 14, borderRadius: 12, marginTop: 10 }} />
+            {button('Find exact card', () => void findTeachingCards(), busy || teachingBusy)}
+            {teachingCards.map((card) => <View key={card.cardId}>{button(`${card.name} · ${card.collectorNumber} · ${card.setCode}`,
+              () => void chooseTeachingCard(card), busy || teachingBusy)}</View>)}
+          </>}
+          {teachingCard && <>
+            <Text style={{ color: theme.colors.text, fontWeight: '800', marginTop: 14 }}>4. Actual finish</Text>
+            {teachingVariants.map((variant) => <View key={variant.variantId}>{button(`${teachingVariantId === variant.variantId ? '✓ ' : ''}${ownerTeachingVariantLabel(variant)}`,
+              () => setTeachingVariantId(variant.variantId), busy || teachingBusy)}</View>)}
+          </>}
+        </View>}
+        <Text style={{ color: theme.colors.textSoft, marginTop: 16 }}>Use the same physical-card label for every photo of that card. Save on device keeps it only here. Save for teaching uploads this cropped photo and your correction to your private dataset for review; it does not retrain the model automatically.</Text>
         <TextInput value={physicalCardId} onChangeText={setPhysicalCardId} maxLength={120}
           placeholder="Physical-card label, e.g. my-pikachu-001" placeholderTextColor={theme.colors.textSoft}
           style={{ color: theme.colors.text, borderColor: theme.colors.border, borderWidth: 1, padding: 14, borderRadius: 12, marginTop: 12 }} />
-        {button(selected ? 'Save my confirmed capture' : 'Save unresolved capture', () => void saveCapture(), busy || !physicalCardId.trim())}
+        {button(selected ? 'Save confirmed capture on device' : 'Save unresolved capture on device', () => void saveCapture(true), busy || !physicalCardId.trim())}
+        {button('Save for teaching and upload for review', () => void saveCapture(false), busy || !physicalCardId.trim() || !correctedTeachingIdentity())}
       </View>}
       {user?.id && OWNER_PRIVATE_RECOGNITION_ENABLED && <View style={{ marginTop: 24 }}>
         <Text style={{ color: theme.colors.text, fontWeight: '800' }}>My device dataset · {captures.length} captures</Text>
         <Text style={{ color: theme.colors.textSoft, marginVertical: 8 }}>Saved only on this device under your account. Deleting the app may remove it. These captures are not automatically used for model training.</Text>
         {captures.map((capture) => <View key={capture.id}>
-          <Text style={{ color: theme.colors.text, marginTop: 12 }}>{capture.physicalCardId} · {capture.reviewStatus}</Text>
+          <Text style={{ color: theme.colors.text, marginTop: 12 }}>{capture.physicalCardId} · {capture.reviewStatus}{capture.uploadStatus ? ` · ${capture.uploadStatus}` : ' · local'}</Text>
+          {capture.correctedIdentity && capture.uploadStatus !== 'uploaded' && button('Retry private review upload', () => {
+            const turn = generation.current;
+            void uploadOwnerCapture(user.id, capture.id).then(() => listOwnerCaptures(user.id))
+              .then((next) => { if (turn === generation.current) { setCaptures(next); setMessage('Private review upload complete.'); } })
+              .catch((error) => { if (turn === generation.current) setMessage(error instanceof Error ? error.message : 'Could not upload this capture. Try again.'); });
+          }, busy)}
           {button('Delete this capture', () => Alert.alert('Delete private capture?', 'The saved photograph and label will be permanently removed from this device.', [
             { text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => {
               const turn = generation.current;

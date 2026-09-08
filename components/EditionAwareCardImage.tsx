@@ -10,6 +10,7 @@ import {
 import { PRICE_API_URL } from '../lib/config';
 import {
   getEditionVariantImageUrl,
+  getEditionAwareImageUrl,
   getPublicScrydexCardImageUrl,
   type EditionImageSize,
 } from '../lib/editionImages';
@@ -80,7 +81,12 @@ function EditionAwareCardImageBase({
     () => getPublicScrydexCardImageUrl(cardId, editionHint, sourceSize),
     [cardId, editionHint, sourceSize]
   );
-  const resolvedDisplayUri = rawVariantUri ?? scrydexUnlimitedUri ?? remoteVariantUri ?? uri ?? null;
+  const resolvedDisplayUri = getEditionAwareImageUrl({
+    rawVariantUri,
+    remoteVariantUri,
+    suppliedUri: uri,
+    scrydexUnlimitedUri,
+  });
   const hasSourceVariant = Boolean(rawVariantUri || scrydexUnlimitedUri || remoteVariantUri);
   const needsVisualPatch = Boolean(editionHint && !hasSourceVariant && editionHint !== 'unlimited');
   const contentFit = resizeMode === 'cover' ? 'cover' : resizeMode === 'stretch' ? 'fill' : 'contain';

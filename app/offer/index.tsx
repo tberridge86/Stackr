@@ -32,6 +32,13 @@ import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/sc
 import { stackrBrand } from '../../lib/stackrBrand';
 import { StackrCenterModal } from '../../components/StackrModalSystem';
 import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
+import {
+  CARD_ONLY_RELEASE_NOTICE,
+  TRADE_PROBLEM_NOTICE,
+  getCardOnlyOfferWarning,
+  getOfferConfirmCopy,
+  type OfferConfirmAction,
+} from '../../lib/tradeOfferReview';
 
 // ===============================
 // CONSTANTS
@@ -49,8 +56,6 @@ type CardPreview = {
   estimated_value?: number | null;
 };
 
-type OfferConfirmAction = 'accept' | 'decline' | 'withdraw' | 'dispute';
-
 const money = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
     ? `£${value.toFixed(2)}`
@@ -58,40 +63,6 @@ const money = (value: number | null | undefined) =>
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
-
-function getOfferConfirmCopy(action: OfferConfirmAction | null) {
-  if (!action) return null;
-  if (action === 'accept') {
-    return {
-      title: 'Accept trade?',
-      body: 'This records the card-only agreement and updates the offer status.',
-      actionLabel: 'Accept Trade',
-      destructive: false,
-    };
-  }
-  if (action === 'decline') {
-    return {
-      title: 'Decline offer?',
-      body: 'This closes the pending offer and lets the other collector know.',
-      actionLabel: 'Decline',
-      destructive: true,
-    };
-  }
-  if (action === 'withdraw') {
-    return {
-      title: 'Withdraw offer?',
-      body: 'This cancels your pending offer before it is accepted.',
-      actionLabel: 'Withdraw',
-      destructive: true,
-    };
-  }
-  return {
-    title: 'Raise dispute?',
-    body: 'This flags a problem with the card-only agreement and keeps the negotiation record open.',
-    actionLabel: 'Raise Dispute',
-    destructive: true,
-  };
-}
 
 // ===============================
 // HELPERS
@@ -115,7 +86,7 @@ const getEventLabel = (eventType: string): string => {
     accepted: 'Offer accepted',
     declined: 'Offer declined',
     cancelled: 'Offer cancelled',
-    disputed: 'Dispute raised',
+    disputed: 'Problem flagged',
   };
   return labels[eventType] ?? 'Update';
 };
@@ -125,7 +96,7 @@ const OFFER_STATUS_LABEL: Record<string, string> = {
   accepted: 'ACCEPTED',
   declined: 'DECLINED',
   cancelled: 'CANCELLED',
-  disputed: 'DISPUTED',
+  disputed: 'PROBLEM FLAGGED',
   unavailable: 'UNAVAILABLE',
 };
 
@@ -137,7 +108,6 @@ export default function OfferDetailScreen() {
   const { theme } = useTheme();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const { id } = useLocalSearchParams<{ id: string }>();
-  const scrollRef = useRef<ScrollView>(null);
   const offerId = String(id);
   const [offer, setOffer] = useState<TradeOffer | null>(null);
   const [offerCards, setOfferCards] = useState<TradeOfferCard[]>([]);
@@ -205,6 +175,7 @@ export default function OfferDetailScreen() {
 
   const mySentCards = offerCards.filter((c) => c.owner_id === currentUserId);
   const theirSentCards = offerCards.filter((c) => c.owner_id !== currentUserId);
+  const oneSidedWarning = isParticipant ? getCardOnlyOfferWarning(mySentCards, theirSentCards) : null;
 
   const myCardsValue = useMemo(
     () => mySentCards.reduce((total, card) => {
@@ -246,7 +217,7 @@ export default function OfferDetailScreen() {
         ? `You are sending about ${money(absoluteTradeDifference)} more.`
         : `They are sending about ${money(absoluteTradeDifference)} more.`;
   const fairnessColor = tradeFairnessState === 'balanced' ? theme.colors.primary : '#F59E0B';
-  const confirmCopy = getOfferConfirmCopy(confirmAction);
+  const confirmCopy = getOfferConfirmCopy(confirmAction, oneSidedWarning);
 
   // ===============================
   // LOAD
@@ -320,11 +291,6 @@ export default function OfferDetailScreen() {
       setCardPreviews(previewMap);
       if (toastName) showToast(`Offer sent to ${toastName}`, userId, generation);
 
-      setTimeout(() => {
-        if (isCurrentIdentity(userId, generation)) {
-          scrollRef.current?.scrollToEnd({ animated: true });
-        }
-      }, 150);
     } catch (error: any) {
       if (!isCurrentIdentity(userId, generation)) return;
       console.log('Failed to load negotiation', error);
@@ -413,11 +379,6 @@ export default function OfferDetailScreen() {
             if (prev.some((item) => item.id === event.id)) return prev;
             return [...prev, event];
           });
-          setTimeout(() => {
-            if (isCurrentIdentity(userId, generation)) {
-              scrollRef.current?.scrollToEnd({ animated: true });
-            }
-          }, 100);
         }
       )
       .on(
@@ -534,7 +495,7 @@ export default function OfferDetailScreen() {
       await load(userId, generation);
     } catch (error: any) {
       if (!isCurrentIdentity(userId, generation)) return;
-      Alert.alert('Could not raise dispute', error?.message ?? 'Something went wrong.');
+      Alert.alert('Could not flag problem', error?.message ?? 'Something went wrong.');
     } finally {
       if (isCurrentIdentity(userId, generation)) setSending(false);
     }
@@ -714,12 +675,10 @@ export default function OfferDetailScreen() {
         </View>
 
         <ScrollView
-          ref={scrollRef}
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 220 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
           {offer && (
             <View style={styles.reviewHeroCard}>
@@ -787,15 +746,20 @@ export default function OfferDetailScreen() {
                     ]}
                   />
                 </View>
-                <Text style={[styles.fairnessStatus, tradeFairnessState !== 'balanced' && styles.fairnessStatusWarn]}>
-                  {fairnessStatus}
+                <Text style={[styles.fairnessStatus, (oneSidedWarning || tradeFairnessState !== 'balanced') && styles.fairnessStatusWarn]}>
+                  {oneSidedWarning ? 'Check the card exchange' : fairnessStatus}
                 </Text>
-                <Text style={styles.fairnessCopy}>{fairnessCopy}</Text>
+                <Text accessibilityRole={oneSidedWarning ? 'alert' : undefined} style={styles.fairnessCopy}>
+                  {oneSidedWarning ?? fairnessCopy}
+                </Text>
               </View>
 
               {isReceiver && isPending && (
                 <View style={styles.reviewActionRow}>
                   <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Accept trade"
+                    accessibilityState={{ disabled: sending, busy: sending }}
                     onPress={handleAcceptOffer}
                     disabled={sending}
                     style={[styles.primaryWideButton, styles.reviewActionButton, sending && styles.disabled]}
@@ -803,6 +767,9 @@ export default function OfferDetailScreen() {
                     <Text style={styles.primaryWideButtonText}>Accept Trade</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Decline offer"
+                    accessibilityState={{ disabled: sending }}
                     onPress={handleDeclineOffer}
                     disabled={sending}
                     style={[styles.secondaryWideButton, styles.reviewActionButton, sending && styles.disabled]}
@@ -814,6 +781,9 @@ export default function OfferDetailScreen() {
 
               {isSender && isPending && (
                 <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Withdraw offer"
+                  accessibilityState={{ disabled: sending }}
                   onPress={handleWithdrawOffer}
                   disabled={sending}
                   style={[styles.secondaryWideButton, sending && styles.disabled]}
@@ -852,19 +822,22 @@ export default function OfferDetailScreen() {
 
           {isParticipant && isAccepted && (
             <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Flag a problem"
+              accessibilityState={{ disabled: sending }}
               onPress={handleRaiseDispute}
               disabled={sending}
               style={[styles.secondaryWideButton, { marginHorizontal: 12 }, sending && styles.disabled]}
             >
-              <Text style={styles.secondaryWideButtonText}>Raise Dispute</Text>
+              <Text style={styles.secondaryWideButtonText}>Flag a problem</Text>
             </TouchableOpacity>
           )}
 
           {isDisputed && (
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Dispute open</Text>
+              <Text style={styles.cardTitle}>Problem flagged</Text>
               <Text style={styles.trustText}>
-                The card-only agreement is flagged for beta review.
+                {TRADE_PROBLEM_NOTICE}
               </Text>
             </View>
           )}
@@ -873,8 +846,7 @@ export default function OfferDetailScreen() {
           <View style={styles.trustCard}>
             <Text style={styles.trustTitle}>Trading on Stackr</Text>
             <Text style={styles.trustText}>
-              Acceptance records a card-only agreement. Payments, shipping and free-form
-              messages are unavailable in this beta.
+              {CARD_ONLY_RELEASE_NOTICE}
             </Text>
           </View>
 
@@ -945,6 +917,9 @@ export default function OfferDetailScreen() {
             </View>
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 2 }}>
               <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+                accessibilityState={{ disabled: sending }}
                 disabled={sending}
                 onPress={() => setConfirmAction(null)}
                 activeOpacity={0.82}
@@ -964,6 +939,9 @@ export default function OfferDetailScreen() {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={confirmCopy.actionLabel}
+                accessibilityState={{ disabled: sending, busy: sending }}
                 disabled={sending}
                 onPress={runConfirmedOfferAction}
                 activeOpacity={0.82}
@@ -1338,6 +1316,8 @@ function makeStyles(theme: any) {
     marginTop: 0,
   },
   primaryWideButton: {
+    minHeight: 44,
+    minWidth: 44,
     backgroundColor: theme.colors.primary,
     borderRadius: 16,
     paddingVertical: 14,
@@ -1350,6 +1330,8 @@ function makeStyles(theme: any) {
     fontWeight: '900' as const,
   },
   secondaryWideButton: {
+    minHeight: 44,
+    minWidth: 44,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     paddingVertical: 14,

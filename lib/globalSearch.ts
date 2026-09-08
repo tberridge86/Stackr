@@ -37,6 +37,8 @@ export type GlobalSearchResponse = {
   groups: Partial<Record<GlobalSearchCategory, GlobalSearchResult[]>>;
 };
 
+const GLOBAL_CARD_SEARCH_LANGUAGES = ['en', 'ja', 'zh-cn', 'zh-tw'] as const;
+
 const joinSubtitle = (parts: Array<string | number | null | undefined>) =>
   parts.filter((part) => part !== null && part !== undefined && String(part).length > 0).join(' - ');
 
@@ -53,25 +55,17 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
   const primaryQuery = expandedQueries[0] ?? normalisedQuery;
 
   const [cards, setsResult, bindersResult, usersResult, listingsResult] = await Promise.allSettled([
-    Promise.all([
+    Promise.allSettled(GLOBAL_CARD_SEARCH_LANGUAGES.map((language) => (
       searchLocalPokemonCards<any>(primaryQuery, {
-        language: 'en',
+        language,
         limit,
         select: 'id, name, language, set_id, image_small, image_large, raw_data, number',
-      }),
-      searchLocalPokemonCards<any>(primaryQuery, {
-        language: 'ja',
-        limit,
-        select: 'id, name, language, set_id, image_small, image_large, raw_data, number',
-      }),
-      searchLocalPokemonCards<any>(primaryQuery, {
-        language: 'zh-tw',
-        limit,
-        select: 'id, name, language, set_id, image_small, image_large, raw_data, number',
-      }),
-    ]).then(([englishCards, japaneseCards, chineseCards]) => {
+      })
+    ))).then((languageResults) => {
       const seen = new Set<string>();
-      return [...englishCards, ...japaneseCards, ...chineseCards].filter((card) => {
+      return languageResults.flatMap((result) => (
+        result.status === 'fulfilled' ? result.value : []
+      )).filter((card) => {
         if (!card?.id || seen.has(card.id)) return false;
         seen.add(card.id);
         return true;

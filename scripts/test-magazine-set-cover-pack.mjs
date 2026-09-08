@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { auditMagazineSetCoverPack } from './audit-magazine-set-cover-pack.mjs';
+
+const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
+const manifest = readJson('assets/Pokemon_Magazine_Cover_Art_PNGs/manifest.json');
+const review = readJson('catalogue/rights-reviews/magazine-set-cover-pack-owner-directed.2026-09-06.json');
+const sha256 = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
+assert.deepEqual(auditMagazineSetCoverPack(), manifest, 'exact original cover bytes, dimensions and population must match the ledger');
+assert.equal(manifest.assetCount, 81);
+assert.equal(manifest.totalBytes, 57603833);
+assert.equal(review.scope.aggregateFileLedgerSha256, manifest.aggregateFileLedgerSha256);
+assert.equal(review.scope.assetCount, manifest.assetCount);
+assert.equal(review.bindings.operatingBoundarySha256, sha256(review.bindings.operatingBoundaryPath));
+assert.equal(review.bindings.standingOwnerAttestationSha256, sha256(review.bindings.standingOwnerAttestationPath));
+assert.equal(review.activationAuthorized, true);
+assert.equal(review.sourceRightsIndependentlyVerified, false);
+assert.equal(review.canonicalDatabaseWriteAuthorized, false);
+assert.equal(review.productionDeploymentAuthorizedByThisRecord, false);
+assert.equal(review.runtimeControls.noPersistenceOfBundledRuntimeUri, true);
+assert.ok(review.scope.excludedUses.includes('card_face_replacement'));
+assert.ok(review.scope.excludedUses.includes('seller_item_photograph'));
+console.log('All 81 supplied magazine-cover files and the bounded owner-directed review match.');

@@ -1,4 +1,6 @@
 import { useRouter } from 'expo-router';
+import * as Updates from 'expo-updates';
+import Constants from 'expo-constants';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -63,7 +65,39 @@ export default function SettingsScreen() {
   const { theme } = useTheme();
   const { hydrated, premiumSellerAccess } = useAppMode();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const showSellerSettings = hydrated && premiumSellerAccess.allowed;
+
+  const checkForUpdate = useCallback(async () => {
+    if (checkingUpdate || !Updates.isEnabled) return;
+    setCheckingUpdate(true);
+    setUpdateMessage('Checking for an app update…');
+    try {
+      const check = await Updates.checkForUpdateAsync();
+      if (!check.isAvailable && !check.isRollBackToEmbedded) {
+        setUpdateMessage('You have the latest available app update.');
+        return;
+      }
+      setUpdateMessage('Downloading the app update…');
+      const downloaded = await Updates.fetchUpdateAsync();
+      if (!downloaded.isNew && !downloaded.isRollBackToEmbedded) {
+        setUpdateMessage('No newer update was downloaded. Please try again later.');
+        return;
+      }
+      setUpdateMessage('Update downloaded. Restart Stackr to apply it.');
+      Alert.alert('Update ready', 'Restart Stackr to use the downloaded update.', [
+        { text: 'Later', style: 'cancel' },
+        { text: 'Restart now', onPress: () => {
+          void Updates.reloadAsync().catch(() => setUpdateMessage('Please close and reopen Stackr to apply the update.'));
+        } },
+      ]);
+    } catch {
+      setUpdateMessage('Could not check for an update. Check your connection and try again.');
+    } finally {
+      setCheckingUpdate(false);
+    }
+  }, [checkingUpdate]);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -133,6 +167,26 @@ export default function SettingsScreen() {
                 : 'Account, marketplace and privacy controls are kept in one place.'}
             </Text>
           </View>
+        </View>
+
+        <View style={{ padding: 16, marginBottom: 14, backgroundColor: theme.colors.card, borderRadius: 16 }}>
+          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>App update</Text>
+          <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
+            Stackr {Constants.nativeAppVersion ?? Constants.expoConfig?.version ?? 'development'}
+            {Constants.nativeBuildVersion ? ` (${Constants.nativeBuildVersion})` : ''}
+          </Text>
+          <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
+            {Updates.createdAt ? `Running update: ${Updates.createdAt.toLocaleString()}` : 'Development preview'}
+            {Updates.isEmbeddedLaunch ? ' · Included with this build' : ''}
+          </Text>
+          {Updates.updateId && <Text selectable style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 11 }}>
+            Support reference: {Updates.updateId}
+          </Text>}
+          {Updates.isEnabled && <TouchableOpacity accessibilityRole="button" disabled={checkingUpdate}
+            onPress={checkForUpdate} style={{ paddingVertical: 12 }}>
+            <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{checkingUpdate ? 'Checking…' : 'Check for updates'}</Text>
+          </TouchableOpacity>}
+          {updateMessage && <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft }}>{updateMessage}</Text>}
         </View>
 
         {settingsSections.filter((section) => !section.sellerOnly || showSellerSettings).map((section) => (

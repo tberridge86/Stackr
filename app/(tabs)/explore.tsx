@@ -14,17 +14,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchAllSets, getPokemonSetLogoUrl, getPokemonSetVisualUrl, normalizePokemonCardLanguage, type PokemonSet } from '../../lib/pokemonTcg';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { StackrBackdrop, StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrPageTitle } from '../../components/StackrScreen';
 import { supabase } from '../../lib/supabase';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
+import { DEFAULT_EXPANDED_ENGLISH_SERIES, groupPokemonSetsBySeries as groupSetsBySeries } from '../../lib/pokemonSetSeries';
 import {
   getPokemonLanguageDescriptor,
-  POKEMON_LANGUAGE_DESCRIPTORS,
+  POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
   PokemonLanguageFlagIcon,
-  type PokemonLanguageBadgeCode,
+  type PokemonCatalogueLanguageCode,
 } from '../../components/PokemonLanguageBadge';
 import {
   getEnglishSetDisplaySupplement,
@@ -44,56 +45,16 @@ const cardShadow = {
   elevation: 3,
 };
 
-const SERIES_ORDER = [
-  'Scarlet & Violet',
-  'Sword & Shield',
-  'Sun & Moon',
-  'XY',
-  'Black & White',
-  'HeartGold & SoulSilver',
-  'Platinum',
-  'Diamond & Pearl',
-  'EX',
-  'e-Card',
-  'Neo',
-  'Gym',
-  'Base',
-  'Other',
-];
-
 // ===============================
 // HELPERS
 // ===============================
 
-function groupSetsBySeries(sets: PokemonSet[]): { series: string; sets: PokemonSet[] }[] {
-  const map: Record<string, PokemonSet[]> = {};
-
-  for (const set of sets) {
-    const series = set.series ?? 'Other';
-    if (!map[series]) map[series] = [];
-    map[series].push(set);
-  }
-
-  // Sort by preferred series order
-  return SERIES_ORDER
-    .filter((s) => map[s])
-    .map((s) => ({ series: s, sets: map[s] }))
-    .concat(
-      Object.keys(map)
-        .filter((s) => !SERIES_ORDER.includes(s))
-        .map((s) => ({ series: s, sets: map[s] }))
-    );
-}
-
-type DiscoverSetLanguage = Extract<PokemonLanguageBadgeCode, 'en' | 'ja' | 'zh-cn' | 'zh-tw'>;
+type DiscoverSetLanguage = PokemonCatalogueLanguageCode;
 type DiscoverLanguageFilter = 'all' | DiscoverSetLanguage;
 
-const LANGUAGE_FILTERS: { key: DiscoverLanguageFilter; label: string; language?: DiscoverSetLanguage }[] = [
+const LANGUAGE_FILTERS: readonly { key: DiscoverLanguageFilter; label: string; language?: DiscoverSetLanguage }[] = [
   { key: 'all', label: 'All' },
-  { key: 'en', label: POKEMON_LANGUAGE_DESCRIPTORS.en.label, language: 'en' },
-  { key: 'ja', label: POKEMON_LANGUAGE_DESCRIPTORS.ja.label, language: 'ja' },
-  { key: 'zh-cn', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-cn'].label, language: 'zh-cn' },
-  { key: 'zh-tw', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-tw'].label, language: 'zh-tw' },
+  ...POKEMON_CATALOGUE_LANGUAGE_OPTIONS.map(({ key, label }) => ({ key, label, language: key })),
 ];
 
 function getSeriesKey(language: DiscoverSetLanguage, series: string) {
@@ -258,7 +219,7 @@ function SetCard({
   const englishSupplement = rawEnglishSupplement && englishValue
     ? { ...rawEnglishSupplement, value: englishValue }
     : null;
-  const logoSource = getJapaneseSetLogoSourceForSet({
+  const logoSource = getLocalSetArtworkSourceForSet({
     id: item.id,
     language: item.language,
     setCode: item.externalIds?.setCode,
@@ -403,7 +364,7 @@ export default function ExploreScreen() {
   const [languageFilter, setLanguageFilter] = useState<DiscoverLanguageFilter>('all');
   const [existingBindersBySet, setExistingBindersBySet] = useState<Record<string, ExistingBinderSummary>>({});
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(
-    new Set([getSeriesKey('en', 'Scarlet & Violet'), getSeriesKey('en', 'Sword & Shield')])
+    new Set(DEFAULT_EXPANDED_ENGLISH_SERIES.map((series) => getSeriesKey('en', series)))
   );
   const [japaneseSetsExpanded, setJapaneseSetsExpanded] = useState(false);
   const [simplifiedChineseSetsExpanded, setSimplifiedChineseSetsExpanded] = useState(false);
@@ -420,9 +381,9 @@ export default function ExploreScreen() {
 
       const [englishData, japaneseData, simplifiedChineseData, traditionalChineseData, existingBinders] = await Promise.all([
         fetchAllSets({ language: 'en' }),
-        fetchAllSets({ language: 'ja' }),
-        fetchAllSets({ language: 'zh-cn' }),
-        fetchAllSets({ language: 'zh-tw' }),
+        fetchAllSets({ language: 'ja', preferCanonicalApi: true }),
+        fetchAllSets({ language: 'zh-cn', preferCanonicalApi: true }),
+        fetchAllSets({ language: 'zh-tw', preferCanonicalApi: true }),
         fetchExistingSetBinders(),
       ]);
       setEnglishSets(englishData);

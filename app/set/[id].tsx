@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
@@ -16,8 +16,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { fetchAllSets, fetchCardsForSet, getKnownPokemonSetTotal, getPokemonSetVisualUrl, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { fetchAllSets, fetchCardsForSet, fetchPokemonSetForDetail, getKnownPokemonSetTotal, getPokemonSetVisualUrl, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
+import { getPokemonSetLanguageFromPrefixedId, stripPokemonSetLanguagePrefix } from '../../lib/pokemonSetIdentity';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
+import { matchesEnglishSetReference } from '../../lib/englishSetIdentity';
 import { supabase } from '../../lib/supabase';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrBackButton } from '../../components/StackrBackButton';
@@ -29,6 +31,8 @@ import { getIncrementalListWindow } from '../../lib/performance';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { getPreferredCardDisplayName } from '../../lib/pokemonDisplayNames';
 import { isSetVariantQuantitySchemaUnavailable } from '../../lib/setVariantRemoval';
+import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
+import { useAuth } from '../../components/auth-context';
 
 type FilterType = 'all' | 'owned' | 'missing';
 type SortType = 'number' | 'name' | 'rarity';
@@ -52,12 +56,14 @@ const getVariantKey = (cardId: string, setId: string, variant: string) => `${set
 
 function getRouteSetLanguage(setId?: string | null) {
   const raw = String(setId ?? '').trim().toLowerCase();
-  if (/^(zh-tw|zh_tw|zhtw|zh):/i.test(raw)) return 'zh-tw';
-  return raw.startsWith('ja:') || raw.startsWith('jp:') ? 'ja' : 'en';
+  const prefixed = getPokemonSetLanguageFromPrefixedId(raw);
+  if (prefixed) return prefixed;
+  // Canonical IDs do not encode language. Read the exact set before its cards.
+  return /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(raw) ? null : 'en';
 }
 
 function stripRouteSetLanguage(setId?: string | null) {
-  return String(setId ?? '').trim().replace(/^(ja|jp|en|zh-tw|zh_tw|zhtw|zh):/i, '');
+  return stripPokemonSetLanguagePrefix(setId);
 }
 
 function isSameRouteSetId(candidate?: string | null, target?: string | null) {
@@ -140,6 +146,8 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
 };
 
 function getVariants(card: PokemonCard, explicitSetId?: string): string[] {
+  const catalogue = getCatalogueVariantKeys(card);
+  if (catalogue) return catalogue;
   const setId = (explicitSetId ?? card.set?.id ?? '').toLowerCase();
 
   // 1. Check for hardcoded set overrides (e.g. Ascended Heroes 3-variant logic)
@@ -164,7 +172,7 @@ function getVariants(card: PokemonCard, explicitSetId?: string): string[] {
 }
 
 function shortVariant(key: string): string {
-  return VARIANT_LABELS[key] ?? key.slice(0, 4);
+  return VARIANT_LABELS[key] ?? catalogueVariantLabel(key);
 }
 
 function formatMoney(value?: number | null, currency?: string | null) {
@@ -323,7 +331,7 @@ function getRarityFilterFromText(value?: string | null, allowRawFallback = true)
     return { key: matched.key, label: matched.label, rank: matched.rank };
   }
 
-  if (!allowRawFallback) return null;
+  if (!allowRawFallback || /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/u.test(text)) return null;
 
   return {
     key: `raw:${normalized}`,
@@ -470,6 +478,7 @@ const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity, o
       }}>
         <StackrImage
           uri={card.images?.small ?? null}
+          fullUri={card.images?.large ?? null}
           style={StyleSheet.absoluteFill}
           contentFit="contain"
           rounded={10}
@@ -624,12 +633,18 @@ CardItem.displayName = 'CardItem';
 
 export default function SetDetailScreen() {
   const { theme } = useTheme();
+  const { user: authenticatedUser } = useAuth();
+  const authUserId = authenticatedUser?.id ?? null;
+  const authUserIdRef = useRef(authUserId);
+  authUserIdRef.current = authUserId;
   const { id } = useLocalSearchParams<{ id: string }>();
   const setId = Array.isArray(id) ? id[0] : id;
 
   const [setInfo, setSetInfo] = useState<PokemonSet | null>(null);
   const [cards, setCards] = useState<PokemonCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ownershipReady, setOwnershipReady] = useState(false);
+  const loadRequestRef = useRef(0);
   const [setLogoFailed, setSetLogoFailed] = useState(false);
   const [variantQuantities, setVariantQuantities] = useState<Map<string, number>>(new Map());
   const [userId, setUserId] = useState<string | null>(null);
@@ -649,18 +664,34 @@ export default function SetDetailScreen() {
 
   const loadSetData = useCallback(async () => {
     if (!setId) return;
+    const request = ++loadRequestRef.current;
+    const isCurrent = () => loadRequestRef.current === request && authUserIdRef.current === authUserId;
     try {
       setLoading(true);
+      setOwnershipReady(false);
+      setUserId(null);
+      setVariantQuantities(new Map());
       const language = getRouteSetLanguage(setId);
-      const [allSets, fetchedCards] = await Promise.all([
-        fetchAllSets({ language }),
-        fetchCardsForSet(setId, { language }),
-      ]);
-      const currentSet = allSets.find((s) => s.id === setId || isSameRouteSetId(s.id, setId)) ?? null;
+      let currentSet = await fetchPokemonSetForDetail(setId, { language }).catch(() => null);
+      if (!currentSet) {
+        const allSets = await fetchAllSets({ language: language ?? 'all', includeAssets: false });
+        currentSet = allSets.find((s) => s.id === setId || isSameRouteSetId(s.id, setId)
+          || (language === 'en' && matchesEnglishSetReference(s, setId))) ?? null;
+      }
+      if (!currentSet) throw new Error('Set details are temporarily unavailable.');
+      const fetchedCards = await fetchCardsForSet(currentSet.id, { language: currentSet.language ?? language });
+      if (!isCurrent()) return;
       setSetInfo(currentSet);
       setCards(fetchedCards);
+      setLoading(false);
+
+      // Paint the cards first. Only this set's marks are requested in the background.
+      void fetchPokemonSetForDetail(currentSet.id, { language: currentSet.language, includeAssets: true })
+        .then((enriched) => { if (enriched && isCurrent()) setSetInfo(enriched); })
+        .catch(() => undefined);
 
       const { data: { user } } = await supabase.auth.getUser();
+      if (!isCurrent() || (user?.id ?? null) !== authUserId) return;
       if (user) {
         setUserId(user.id);
         let { data: variantRows, error: variantError } = await supabase
@@ -680,6 +711,7 @@ export default function SetDetailScreen() {
         }
 
         if (variantError) throw variantError;
+        if (!isCurrent()) return;
 
         setVariantQuantities(new Map(
           (variantRows ?? []).map((row: any) => [
@@ -688,14 +720,18 @@ export default function SetDetailScreen() {
           ])
         ));
       }
+      if (isCurrent()) setOwnershipReady(true);
     } catch (e) {
       console.log('Failed to load set data', e);
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
-  }, [setId]);
+  }, [setId, authUserId]);
 
-  useEffect(() => { loadSetData(); }, [loadSetData]);
+  useEffect(() => {
+    void loadSetData();
+    return () => { loadRequestRef.current += 1; };
+  }, [loadSetData]);
 
   useEffect(() => {
     setSetLogoFailed(false);
@@ -706,13 +742,17 @@ export default function SetDetailScreen() {
   // ===============================
 
   const openQuantityModal = useCallback((card: PokemonCard, variant: string) => {
+    if (!ownershipReady) {
+      Alert.alert('Collection is still loading', 'Your cards are ready to browse. Please wait for your saved quantities before editing.');
+      return;
+    }
     const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
     setQuantityTarget({ card, variant });
     setQuantityDraft(String(Math.max(1, currentQuantity || 1)));
-  }, [setId, variantQuantities]);
+  }, [setId, variantQuantities, ownershipReady]);
 
   const handleSetVariantQuantity = useCallback(async (cardId: string, variant: string, nextQuantity: number) => {
-    if (!userId) return;
+    if (!userId || userId !== authUserIdRef.current || !ownershipReady) return;
     const key = getVariantKey(cardId, setId ?? '', variant);
     const previousQuantity = variantQuantities.get(key) ?? 0;
     const targetCard = cards.find((card) => card.id === cardId);
@@ -790,9 +830,10 @@ export default function SetDetailScreen() {
       );
       throw error;
     }
-  }, [cards, userId, setId, variantQuantities]);
+  }, [cards, userId, setId, variantQuantities, ownershipReady]);
 
   const handleQuickAddVariant = useCallback(async (card: PokemonCard, variant: string) => {
+    if (!variant) return;
     const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
     try {
       await handleSetVariantQuantity(card.id, variant, currentQuantity + 1);
@@ -965,7 +1006,7 @@ export default function SetDetailScreen() {
     ? Math.min(100, (ownedCardCount / setTotalNumber) * 100)
     : 0;
   const setTotalLabel = setTotalNumber > 0 ? `${setTotalNumber} cards` : 'total unknown';
-  const setLogoSource = getJapaneseSetLogoSourceForSet({
+  const setLogoSource = getLocalSetArtworkSourceForSet({
     id: setInfo?.id ?? setId,
     language: setInfo?.language ?? getRouteSetLanguage(setId),
     setCode: setInfo?.externalIds?.setCode,
@@ -1387,6 +1428,7 @@ export default function SetDetailScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
               <StackrImage
                 uri={quantityTarget?.card.images?.small ?? null}
+                fullUri={quantityTarget?.card.images?.large ?? null}
                 style={{ width: 58, height: 80, borderRadius: 8, backgroundColor: theme.colors.surface }}
                 contentFit="contain"
                 rounded={8}

@@ -25,7 +25,7 @@ import { StackrCardActionIcon } from './StackrScreen';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from './RaritySymbol';
 import { stackrIcons } from '../lib/stackrIcons';
 import { getHomeActivityDisplayTitle, getHomeCardDisplayName, getHomeCardSetDisplayName, getHomeCardLanguageLabel } from '../lib/homeDisplayLabels';
-import { getJapaneseSetLogoSourceForSet } from '../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../lib/localSetArtwork';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
 import { numericTextStyle, stackrFonts, tabularNumberStyle, typeScale } from '../lib/typography';
 import { getCustomBinderNameArt } from '../lib/customBinderNameArt';
@@ -560,7 +560,7 @@ export function ContinueBinderCard({
   const hasBinder = Boolean(!isLoading && !error && binder);
   const [setLogoFailed, setSetLogoFailed] = React.useState(false);
   const setLogoSource = binder?.type === 'official'
-    ? getJapaneseSetLogoSourceForSet({
+    ? getLocalSetArtworkSourceForSet({
       id: binder.sourceSetId,
       language: binder.sourceSetLanguage,
       name: binder.name,
@@ -843,7 +843,11 @@ export function ContinueBinderCard({
 
 function DuplicateResultCard({ item }: { item: HomeDuplicateItem }) {
   const { theme } = useTheme();
-  const setLogoSource = item.setId ? getJapaneseSetLogoSourceForSet({ id: item.setId }) : null;
+  const setLogoSource = item.setId ? getLocalSetArtworkSourceForSet({
+    id: item.setId,
+    language: item.language,
+    name: item.setName,
+  }) : null;
   const setLogoUrl = item.setId && !setLogoSource ? getPokemonSetLogoUrl(item.setId) : undefined;
   const reveal = React.useRef(new Animated.Value(0)).current;
   const translateY = reveal.interpolate({

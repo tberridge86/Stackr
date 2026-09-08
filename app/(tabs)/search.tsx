@@ -32,9 +32,10 @@ import {
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { ScrollToEndButton } from '../../components/ScrollToEndButton';
 import {
-  POKEMON_LANGUAGE_DESCRIPTORS,
+  getPokemonLanguageDescriptor,
+  POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
   PokemonLanguageFlagIcon,
-  type PokemonLanguageBadgeCode,
+  type PokemonCatalogueLanguageCode,
 } from '../../components/PokemonLanguageBadge';
 import { useTheme } from '../../components/theme-context';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
@@ -53,7 +54,8 @@ import {
   normalizePokemonCardLanguage,
   type PokemonSet,
 } from '../../lib/pokemonTcg';
-import { getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
+import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { searchMarketProducts, productLookupLabel, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
 import { expandSearchQuery, normaliseSearchText } from '../../lib/searchNormalisation';
 import {
@@ -81,7 +83,7 @@ import { sanitizeMarketplaceListingPresentationFields } from '../../lib/marketpl
 type SearchCategory = 'all' | 'cards' | 'sets' | 'sealed' | 'graded' | 'collectors' | ListingCategoryKey;
 type SearchSortKey = 'relevance' | 'priceAsc' | 'priceDesc' | 'rarity' | 'set' | 'gradeDesc' | 'newest';
 type SearchPriceBucket = 'all' | 'under10' | '10to50' | '50to100' | '100plus';
-type SearchLanguageFilter = 'all' | 'en' | 'ja' | 'zh-cn' | 'zh-tw';
+type SearchLanguageFilter = 'all' | PokemonCatalogueLanguageCode;
 
 type CardResult = {
   id: string;
@@ -204,12 +206,13 @@ const SEARCH_PRICE_BUCKETS: { key: SearchPriceBucket; label: string }[] = [
   { key: '100plus', label: '£100+' },
 ];
 
-const SEARCH_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string; flagLanguage?: PokemonLanguageBadgeCode }[] = [
+const SEARCH_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string; flagLanguage?: PokemonCatalogueLanguageCode }[] = [
   { key: 'all', label: 'Any language' },
-  { key: 'en', label: POKEMON_LANGUAGE_DESCRIPTORS.en.label, flagLanguage: 'en' },
-  { key: 'ja', label: POKEMON_LANGUAGE_DESCRIPTORS.ja.label, flagLanguage: 'ja' },
-  { key: 'zh-cn', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-cn'].label, flagLanguage: 'zh-cn' },
-  { key: 'zh-tw', label: POKEMON_LANGUAGE_DESCRIPTORS['zh-tw'].label, flagLanguage: 'zh-tw' },
+  ...POKEMON_CATALOGUE_LANGUAGE_OPTIONS.map((option) => ({
+    key: option.key,
+    label: option.label,
+    flagLanguage: option.key,
+  })),
 ];
 
 const SEARCH_GRADER_FILTERS = ['PSA', 'BGS', 'CGC', 'TAG', 'ACE'];
@@ -312,10 +315,7 @@ function normaliseFilterValue(value: string | number | null | undefined) {
 
 function normaliseLanguageCode(value: string | null | undefined) {
   const normalised = normaliseFilterValue(value);
-  if (normalised === 'ja' || normalised === 'jp' || normalised === 'japanese') return 'ja';
-  if (normalised === 'zh tw' || normalised === 'zh' || normalised === 'zhtw' || normalised === 'chinese' || normalised === 'traditional chinese' || normalised === 'tc' || normalised === 'tw' || normalised === 'taiwan') return 'zh-tw';
-  if (normalised === 'en' || normalised === 'english') return 'en';
-  return normalised;
+  return getPokemonLanguageDescriptor(value)?.code ?? normalised;
 }
 
 function getRarityRank(rarity: string | null | undefined) {
@@ -413,20 +413,38 @@ function mapCardResults(
   listingStats = emptyListingStatsMap(),
   ownedMap = new Map<string, number>()
 ): CardResult[] {
-  return cards.map((card: any) => ({
-    id: card.id,
-    name: card.name ?? card.id,
-    setId: getCardSetId(card),
-    setName: getCardSetName(card),
-    language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
-    number: card.number ?? card.raw_data?.number ?? null,
-    rarity: card.rarity ?? card.raw_data?.rarity ?? null,
-    imageUri: card.image_small ?? card.image_large ?? card.raw_data?.images?.small ?? null,
-    estimatedValue: getBestCardValue(card),
-    listingCount: listingStats.get(card.id)?.count ?? 0,
-    ownedQuantity: ownedMap.get(card.id) ?? 0,
-    raw: card,
-  }));
+  return cards.map((card: any) => {
+    const raw = card.raw_data ?? {};
+    const language = card.language ?? raw.language ?? raw.set?.language ?? null;
+    const number = card.number ?? raw.number ?? raw.collector_number ?? null;
+    const setId = getCardSetId(card);
+    return {
+      id: card.id,
+      name: getPreferredCardDisplayName({
+        id: card.id,
+        sourceId: raw.tcgdex_id ?? raw.source_id ?? card.id,
+        setId,
+        collectorNumber: number,
+        language,
+        region: card.region ?? raw.region ?? null,
+        localName: raw.local_name ?? (language !== 'en' ? raw.name ?? card.name ?? null : null),
+        englishDisplayName: raw.english_display_name ?? raw.englishDisplayName ?? card.english_display_name ?? null,
+        canonicalName: card.name,
+        fallbackName: card.id,
+        raw,
+      }),
+      setId,
+      setName: getCardSetName(card),
+      language,
+      number,
+      rarity: card.rarity ?? raw.rarity ?? null,
+      imageUri: card.image_small ?? card.image_large ?? raw.images?.small ?? null,
+      estimatedValue: getBestCardValue(card),
+      listingCount: listingStats.get(card.id)?.count ?? 0,
+      ownedQuantity: ownedMap.get(card.id) ?? 0,
+      raw: card,
+    };
+  });
 }
 
 function mapSetRow(row: any): SetResult {
@@ -1422,6 +1440,16 @@ export default function GlobalSearchScreen() {
               imageUri={card.imageUri}
               setName={card.setName}
               setLogoUri={getPokemonSetLogoUrl(card.setId)}
+              setLogoSource={getLocalSetArtworkSourceForSet({
+                id: card.setId,
+                language: card.language,
+                name: card.setName,
+                localName: card.raw?.raw_data?.set?.local_name ?? card.raw?.raw_data?.set?.name,
+                englishDisplayName: card.raw?.raw_data?.set?.english_display_name ?? card.raw?.raw_data?.set?.englishDisplayName,
+                setCode: card.raw?.raw_data?.set?.set_code ?? card.raw?.external_ids?.setCode,
+                sourceId: card.raw?.raw_data?.set?.tcgdex_id ?? card.raw?.external_ids?.tcgdex,
+                externalIds: card.raw?.external_ids,
+              })}
               number={card.number}
               rarity={card.rarity}
               estimatedValue={card.estimatedValue}
@@ -1450,6 +1478,16 @@ export default function GlobalSearchScreen() {
               name={set.name}
               logoUri={enforceSetVisualRuntimePolicy(set.images?.logo) ?? null}
               artworkUri={enforceSetVisualRuntimePolicy(getPokemonSetVisualUrl(set) ?? set.images?.symbol ?? getPokemonSetSymbolUrl(set.id, set.language))}
+              artworkSource={getLocalSetArtworkSourceForSet({
+                id: set.id,
+                language: set.language,
+                name: set.name,
+                localName: set.localName,
+                englishDisplayName: set.englishDisplayName,
+                setCode: set.externalIds?.setCode,
+                sourceId: set.externalIds?.tcgdex ?? set.externalIds?.pokedata,
+                externalIds: set.externalIds,
+              })}
               series={set.series}
               year={set.releaseDate ? new Date(set.releaseDate).getFullYear() : null}
               total={Number(set.printedTotal ?? set.total ?? 0) > 0 ? Number(set.printedTotal ?? set.total) : null}

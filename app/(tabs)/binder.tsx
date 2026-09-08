@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -31,6 +31,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   fetchBinders,
+  invalidateBinderCaches,
   deleteBinder,
   BinderRecord,
 } from '../../lib/binders';
@@ -56,12 +57,13 @@ import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
 } from '../../lib/pokemonSetIdentity';
-import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
+import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrActionButton } from '../../components/StackrActionButton';
 import { StackrButtonPattern } from '../../components/StackrEmboss';
 import { StackrImage } from '../../components/StackrImage';
 import { useProfile } from '../../components/profile-context';
+import { useAuth } from '../../components/auth-context';
 import { numericTextStyle, typeScale } from '../../lib/typography';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
@@ -190,7 +192,7 @@ const getBinderLogoUrl = (item: BinderRecord): string | null => {
 };
 
 const getBinderLogoSource = (item: BinderRecord): ImageSourcePropType | null => {
-  return getJapaneseSetLogoSourceForSet({
+  return getLocalSetArtworkSourceForSet({
     id: item.source_set_id,
     language: item.language,
     name: item.source_set_display_name ?? item.name,
@@ -867,6 +869,7 @@ const getVariants = (card: any, explicitSetId?: string | null): string[] => {
 export default function BinderLibraryScreen() {
   const { theme } = useTheme();
   const { profile } = useProfile();
+  const { user: accountUser } = useAuth();
   const { width } = useWindowDimensions();
   const COLUMNS = width >= 900 ? 5 : width >= 600 ? 3 : 2;
   const binderCardWidth = (width - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
@@ -882,6 +885,20 @@ export default function BinderLibraryScreen() {
   const [sortOpen, setSortOpen] = useState(false);
   const [reorderMode, setReorderMode] = useState(false);
   const loadedOnceRef = useRef(false);
+  const loadRequestRef = useRef(0);
+  const accountIdRef = useRef<string | null>(accountUser?.id ?? null);
+  accountIdRef.current = accountUser?.id ?? null;
+
+  useEffect(() => {
+    loadRequestRef.current += 1;
+    loadedOnceRef.current = false;
+    setBinders([]);
+    setCounts({});
+    setMasterSets({});
+    setValues({});
+    setCustomNameArtKeys({});
+    setLoading(Boolean(accountUser?.id));
+  }, [accountUser?.id]);
 
   // ===============================
   // SCAN (scaffolded — coming soon)
@@ -907,7 +924,7 @@ export default function BinderLibraryScreen() {
   }, []);
 
   const fetchBinderOverviewSnapshot = useCallback(async (): Promise<BinderLibraryOverviewSnapshot> => {
-    const data = await fetchBinders();
+    const data = await fetchBinders({ enrich: false });
     const customArtEntries = await Promise.all(
       data
         .filter((binder) => binder.type === 'custom')
@@ -1205,14 +1222,15 @@ export default function BinderLibraryScreen() {
   const loadBinderSummaries = useCallback(async (
     data: BinderRecord[],
     currentUserId?: string | null,
-    forceRefresh = false
+    forceRefresh = false,
+    isCurrent: () => boolean = () => true,
   ) => {
     const summarySignature = getBinderLibrarySignature(data);
     const queryKey = stackrQueryKeys.binderLibrarySummaries(currentUserId, summarySignature);
 
     if (!forceRefresh) {
       const cached = stackrQueryClient.getQueryData<BinderLibrarySummarySnapshot>(queryKey);
-      if (cached) {
+      if (cached && isCurrent()) {
         applyBinderSummarySnapshot(cached);
       }
     }
@@ -1222,18 +1240,26 @@ export default function BinderLibraryScreen() {
       queryFn: () => fetchBinderSummarySnapshot(data, currentUserId),
       staleTime: forceRefresh ? 0 : stackrQueryTiming.hotPathStaleMs,
     });
-    applyBinderSummarySnapshot(snapshot);
+    if (isCurrent()) applyBinderSummarySnapshot(snapshot);
   }, [applyBinderSummarySnapshot, fetchBinderSummarySnapshot]);
 
   const load = useCallback(async (forceRefresh = false) => {
     const shouldForceRefresh = forceRefresh === true;
+    const requestId = ++loadRequestRef.current;
+    const accountId = accountUser?.id ?? null;
+    const isCurrent = () => loadRequestRef.current === requestId && accountIdRef.current === accountId;
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      const user = session?.user;
+      if (!isCurrent() || (user?.id ?? null) !== accountId) return;
       const queryKey = stackrQueryKeys.binderLibrary(user?.id ?? null);
 
       if (shouldForceRefresh) {
+        invalidateBinderCaches();
         await stackrQueryClient.invalidateQueries({ queryKey: stackrQueryKeys.binderLibraryRoot });
       }
+      if (!isCurrent()) return;
 
       const cached = shouldForceRefresh
         ? null
@@ -1243,7 +1269,7 @@ export default function BinderLibraryScreen() {
         applyBinderOverviewSnapshot(cached);
         loadedOnceRef.current = true;
         setLoading(false);
-        loadBinderSummaries(cached.binders, user?.id ?? null).catch((summaryError) => {
+        loadBinderSummaries(cached.binders, user?.id ?? null, false, isCurrent).catch((summaryError) => {
           console.log('Failed to load cached binder summaries', summaryError);
         });
       } else if (!loadedOnceRef.current) {
@@ -1256,22 +1282,32 @@ export default function BinderLibraryScreen() {
         staleTime: shouldForceRefresh ? 0 : stackrQueryTiming.hotPathStaleMs,
       });
 
+      if (!isCurrent()) return;
       applyBinderOverviewSnapshot(snapshot);
       loadedOnceRef.current = true;
       setLoading(false);
 
-      loadBinderSummaries(snapshot.binders, user?.id ?? null, shouldForceRefresh).catch((summaryError) => {
+      // Saved names and covers are usable immediately; catalogue branding and
+      // valuation must not hold the entire library behind a loading screen.
+      void fetchBinders().then(async (enrichedBinders) => {
+        if (!isCurrent()) return;
+        const enriched = { ...snapshot, binders: enrichedBinders };
+        stackrQueryClient.setQueryData(queryKey, enriched);
+        applyBinderOverviewSnapshot(enriched);
+        await loadBinderSummaries(enrichedBinders, user?.id ?? null, shouldForceRefresh, isCurrent);
+      }).catch((summaryError) => {
         console.log('Failed to load binder summaries', summaryError);
       });
     } catch (error) {
       console.log('Failed to load binders', error);
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
-  }, [applyBinderOverviewSnapshot, fetchBinderOverviewSnapshot, loadBinderSummaries]);
+  }, [accountUser?.id, applyBinderOverviewSnapshot, fetchBinderOverviewSnapshot, loadBinderSummaries]);
 
   useFocusEffect(
     useCallback(() => {
       load();
+      return () => { loadRequestRef.current += 1; };
     }, [load])
   );
 

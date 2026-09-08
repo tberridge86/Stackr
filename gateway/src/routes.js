@@ -74,6 +74,13 @@ export const ROUTES = [
     idempotent: true, forwardUserJwt: true, query: query(),
   },
   {
+    id: 'card_provider_price_refresh',
+    pattern: new RegExp(`^/v1/cards/${UUID}/provider-price-refresh$`),
+    methods: ['POST'], auth: 'user', target: 'backend', pricing: true, cache: 'none', rate: 'priceRefresh',
+    maxBodyBytes: 1024, timeoutMs: 15_000, idempotent: true,
+    forwardUserJwt: true, query: query(),
+  },
+  {
     id: 'market_price_refresh', pattern: /^\/v1\/market\/price-refresh$/,
     methods: ['POST'], auth: 'user', target: 'backend', pricing: true, cache: 'none', rate: 'priceRefresh',
     body: 'priceRefreshBatch', maxBodyBytes: 16 * 1024, timeoutMs: 12_000,
