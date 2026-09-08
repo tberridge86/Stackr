@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -25,6 +25,7 @@ import { useAchievements } from '../../components/achievement-context';
 import { useProfile } from '../../components/profile-context';
 import { useTheme } from '../../components/theme-context';
 import { ACHIEVEMENTS, type AchievementDefinition, type AchievementUnlock } from '../../lib/achievements';
+import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { getCollectionSummary } from '../../lib/collectionSummary';
 import { sanitizeGate0Notification } from '../../lib/gate0CommerceCopy';
 import { readCreateListingDraftSummary } from '../../lib/listingDrafts';
@@ -1212,6 +1213,9 @@ export default function ProfileScreen() {
   const [identityPhotoUri, setIdentityPhotoUri] = useState<string | null>(null);
   const [savingIdentity, setSavingIdentity] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const statsAccountRef = useRef<string | null>(null);
+  const statsAccountGenerationRef = useRef(0);
+  const statsRequestRef = useRef(0);
 
   const profileTeam = useMemo(() => getProfileTeam(profile?.pokemon_type) ?? STACKR_PROFILE_TEAMS[0], [profile?.pokemon_type]);
   const stackrAvatar = useMemo(() => getProfileAvatar(profile?.avatar_preset) ?? null, [profile?.avatar_preset]);
@@ -1382,7 +1386,10 @@ export default function ProfileScreen() {
     setUnreadCount(snapshot.unreadCount);
   }, []);
 
-  const fetchProfileStatsSnapshot = useCallback(async (userId: string): Promise<ProfileStatsSnapshot> => {
+  const fetchProfileStatsSnapshot = useCallback(async (
+    userId: string,
+    forceRefresh: boolean,
+  ): Promise<ProfileStatsSnapshot> => {
     const [
       collectionSummary,
       tradesResult,
@@ -1392,19 +1399,25 @@ export default function ProfileScreen() {
       salesResult,
       draftSummary,
     ] = await Promise.all([
-      getCollectionSummary({ forceRefresh: true, staleWhileRefresh: true }),
-      supabase.from('trade_offers').select('status').or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
+      getCollectionSummary({ forceRefresh, staleWhileRefresh: !forceRefresh }),
+      supabase
+        .from('trade_offers')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'completed')
+        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
       supabase.from('notifications').select('id, type, title, message').eq('user_id', userId).eq('read', false),
-      supabase.from('user_card_flags').select('id, listing_status', { count: 'exact' }).eq('user_id', userId),
+      supabase
+        .from('user_card_flags')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .or('listing_status.is.null,listing_status.eq.active'),
       supabase.from('seller_inventory_items').select('quantity').eq('user_id', userId),
       supabase.from('seller_sale_transactions').select('id', { count: 'exact', head: true }).eq('user_id', userId),
       readCreateListingDraftSummary(userId).catch(() => null),
     ]);
 
-    const completedTrades = (tradesResult.data ?? []).filter((trade: any) => trade.status === 'completed').length;
-    const activeListings = listingsResult.error
-      ? null
-      : (listingsResult.data ?? []).filter((row: any) => row.listing_status == null || row.listing_status === 'active').length;
+    const completedTrades = tradesResult.error ? 0 : tradesResult.count ?? 0;
+    const activeListings = listingsResult.error ? null : listingsResult.count ?? 0;
     const inventoryQuantity = inventoryResult.error
       ? null
       : (inventoryResult.data ?? []).reduce((sum: number, row: any) => sum + Number(row.quantity ?? 0), 0);
@@ -1432,27 +1445,59 @@ export default function ProfileScreen() {
 
   const loadStats = useCallback(async (forceRefresh = false) => {
     const shouldForceRefresh = forceRefresh === true;
+    const accountGeneration = statsAccountGenerationRef.current;
+    const requestId = ++statsRequestRef.current;
+    const isCurrentRequest = () => isCurrentAccountRequest(
+      { accountGeneration: statsAccountGenerationRef.current, requestId: statsRequestRef.current },
+      { accountGeneration, requestId },
+    );
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!isCurrentRequest()) return;
       if (!user) return;
+      if (statsAccountRef.current && statsAccountRef.current !== user.id) return;
+      statsAccountRef.current = user.id;
 
       const queryKey = stackrQueryKeys.profileStats(user.id);
 
       if (!shouldForceRefresh) {
         const cached = stackrQueryClient.getQueryData<ProfileStatsSnapshot>(queryKey);
-        if (cached) applyProfileStatsSnapshot(cached);
+        if (cached && statsAccountRef.current === user.id && isCurrentRequest()) {
+          applyProfileStatsSnapshot(cached);
+        }
       }
 
       const snapshot = await stackrQueryClient.fetchQuery({
         queryKey,
-        queryFn: () => fetchProfileStatsSnapshot(user.id),
+        queryFn: () => fetchProfileStatsSnapshot(user.id, shouldForceRefresh),
         staleTime: shouldForceRefresh ? 0 : stackrQueryTiming.profileStatsStaleMs,
       });
-      applyProfileStatsSnapshot(snapshot);
+      if (statsAccountRef.current === user.id && isCurrentRequest()) {
+        applyProfileStatsSnapshot(snapshot);
+      }
     } catch (error) {
       console.log('Failed to load profile stats', error);
     }
   }, [applyProfileStatsSnapshot, fetchProfileStatsSnapshot]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextAccountId = session?.user.id ?? null;
+      if (statsAccountRef.current === nextAccountId) return;
+
+      statsAccountRef.current = nextAccountId;
+      statsAccountGenerationRef.current += 1;
+      statsRequestRef.current += 1;
+      setStats(initialStats);
+      setUnreadCount(0);
+
+      if (nextAccountId) {
+        void loadStats();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [loadStats]);
 
   useFocusEffect(
     useCallback(() => {

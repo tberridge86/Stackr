@@ -1,0 +1,13 @@
+# Build 27 personal data loading update
+
+This mobile-only change starts from production source `e3c9b00cb668671c5ac74e1c3f05934b1de9240f` in `tberridge86/Stackr`. It targets the existing `owner-recognition` channel and `1.0.3-owner-recognition-v1` runtime used by TestFlight 1.0.3 (27).
+
+Opening Profile previously rebuilt every binder catalogue and attached card prices before calculating personal totals. The summary now reads paginated saved ownership records, shares binder reads with the library, and limits concurrent metadata reads. It preserves variant quantities, raw/graded units, binder edition pricing, cross-binder deduplication and same-set completion. Normal visits reuse fresh totals or show a saved result while refreshing; explicit refresh waits for fresh data. Failed refreshes retain successful cached data.
+
+The binder library renders saved names and covers before optional catalogue branding and valuation. Binder detail displays its core cards before supplementary showcase/ownership requests finish. Ownership controls remain disabled until those reads succeed; failures offer retry guidance. Account changes and newer requests invalidate old responses. Shared request-cache invalidation cannot remove a newer in-flight request.
+
+Validation includes `npm run typecheck`, `npm run lint`, changed-file lint, `npm run test:personal-loading`, and `npm run test:binder-catalogue`. The personal-loading tests execute the real collection module with deferred dependencies, testing pagination, quantities, edition values, stale cache reads, failed refreshes and multiple callers during an account switch or invalidation. A read-only production run of the compiled collection summary matched independently checked ownership totals and returned its cached result immediately. These desktop timings are not an iPhone performance benchmark.
+
+The existing Railway backend, Cloudflare gateway, Supabase data and artwork, scanner/teaching features, native dependencies and all 81 magazine covers are retained. No database migration, catalogue mutation or price-refresh job is required. Export and verify the complete iOS bundle against the owner production profile before publishing; verify the served update ID, runtime, bundle hash and cover hashes afterward. The prior owner update group is `52f41098-a1dd-4572-b9b5-96bb536f66c3` for rollback.
+
+Device acceptance: launch build 27 online to download the update, then fully close and reopen Stackr. Check Profile, the binder library and an individual binder; verify saved quantities, art, ownership controls and pull-to-refresh. The build number remains 27 because this is an app-content update.

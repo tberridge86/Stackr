@@ -481,13 +481,15 @@ async function attachSetBrandingToBinders(binders: BinderRecord[]): Promise<Bind
   });
 }
 
-export async function fetchBinders(): Promise<BinderRecord[]> {
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+export async function fetchBinders(options: { enrich?: boolean } = {}): Promise<BinderRecord[]> {
+  // Local identity chooses the private cache; database RLS still authorizes each read.
+  const { data: { session }, error: userError } = await supabase.auth.getSession();
+  const user = session?.user;
 
   if (userError) throw userError;
   if (!user) return [];
 
-  return getCachedOrFetch(`binders:${user.id}`, BINDERS_CACHE_TTL_MS, async () => {
+  const saved = await getCachedOrFetch(`binders:${user.id}:saved`, BINDERS_CACHE_TTL_MS, async () => {
     const { data, error } = await supabase
       .from('binders')
       .select('*')
@@ -497,10 +499,11 @@ export async function fetchBinders(): Promise<BinderRecord[]> {
 
     if (error) throw error;
 
-    return attachSetBrandingToBinders(
-      ((data ?? []) as BinderRecord[]).filter((binder) => binder.user_id === user.id)
-    );
+    return ((data ?? []) as BinderRecord[]).filter((binder) => binder.user_id === user.id);
   });
+  if (options.enrich === false) return saved;
+  return getCachedOrFetch(`binders:${user.id}:enriched`, BINDERS_CACHE_TTL_MS,
+    () => attachSetBrandingToBinders(saved));
 }
 
 export async function fetchBinderById(

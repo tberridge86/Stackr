@@ -31,7 +31,7 @@ export async function getCachedOrFetch<T>(
       return value;
     })
     .finally(() => {
-      inflightRequests.delete(key);
+      if (inflightRequests.get(key) === request) inflightRequests.delete(key);
     });
 
   inflightRequests.set(key, request);
