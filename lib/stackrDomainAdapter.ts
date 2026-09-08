@@ -16,9 +16,12 @@ import {
 import { supabase } from './supabase';
 import { enforceTcgdexRuntimeImagePolicy } from './tcgdexControlledCardReference';
 import {
+  getPokemonSetLanguageFromPrefixedId,
   normalizePokemonSetReferenceForLookup,
   stripPokemonSetLanguagePrefix,
 } from './pokemonSetIdentity';
+import { getEnglishSetReferenceAliases, matchesEnglishSetReference } from './englishSetIdentity';
+import { getPokemonSetDisplaySeries } from './pokemonSetSeries';
 import {
   firstNonEmptyCatalogueRows,
   preferNonEmptyCatalogueRows,
@@ -470,7 +473,11 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
   return {
     id: set.setId,
     name,
-    series: set.seriesNativeName ?? set.seriesEnglishDisplayName ?? 'Other',
+    series: getPokemonSetDisplaySeries({
+      series: set.seriesNativeName ?? set.seriesEnglishDisplayName,
+      language: set.languageCode,
+      setCode: set.setCode,
+    }),
     printedTotal: Number(set.printedTotal ?? 0),
     total: Number(set.total ?? set.printedTotal ?? 0),
     releaseDate: set.releaseDate ?? '',
@@ -738,24 +745,38 @@ async function resolveCanonicalStackrSetId(
 ) {
   const value = String(reference ?? '').trim();
   if (!value) return null;
+  const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(value);
   const unprefixedValue = normalizePokemonSetReferenceForLookup(value);
   if (UUID_PATTERN.test(unprefixedValue)) return unprefixedValue;
-  const response = await client.sets(
-    {
-      language: toStackrApiLanguage(language) ?? undefined,
-      setCode: unprefixedValue,
-      limit: 25,
-    },
-    { signal },
-  );
-  const normalized = unprefixedValue.toLowerCase();
-  const exact = response.data.sets.find((set) => (
-    set.setCode?.toLowerCase() === normalized
-    || set.setId.toLowerCase() === normalized
-    || set.nativeName?.toLowerCase() === normalized
-    || set.englishDisplayName?.toLowerCase() === normalized
-  ));
-  return (exact ?? response.data.sets[0])?.setId ?? null;
+  const apiLanguage = toStackrApiLanguage(language);
+  // The caller's language can be absent on older references. When supplied,
+  // it must not override a contradictory persisted language prefix.
+  if (prefixedLanguage && apiLanguage && prefixedLanguage !== apiLanguage) return null;
+  const references = apiLanguage === 'en'
+    ? getEnglishSetReferenceAliases(unprefixedValue, 'en')
+    : [unprefixedValue];
+  const exactMatches = new Map<string, StackrSet>();
+
+  for (const setCode of references) {
+    const response = await client.sets(
+      { language: apiLanguage ?? undefined, setCode, limit: 25 },
+      { signal },
+    );
+    for (const set of response.data.sets) {
+      const hasRequestedLanguage = !apiLanguage || toLegacyLanguage(set.languageCode) === toLegacyLanguage(apiLanguage);
+      const exact = hasRequestedLanguage && (apiLanguage === 'en'
+        ? matchesEnglishSetReference({
+          id: set.setId,
+          language: set.languageCode,
+          setCode: set.setCode,
+        }, unprefixedValue)
+        : set.setCode?.toLowerCase() === unprefixedValue.toLowerCase()
+          || set.setId.toLowerCase() === unprefixedValue.toLowerCase());
+      if (exact) exactMatches.set(set.setId, set);
+    }
+  }
+
+  return exactMatches.size === 1 ? [...exactMatches.keys()][0] : null;
 }
 
 export function resolveStackrSetId(

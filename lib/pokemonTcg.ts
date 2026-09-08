@@ -29,6 +29,7 @@ import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
 } from './pokemonSetIdentity';
+import { getEnglishSetReferenceAliases } from './englishSetIdentity';
 import { cacheNonEmptyCatalogueRows, readNonEmptyCatalogueRows } from './resilientCatalogueRead';
 import {
   fetchForeignPokemonCard,
@@ -350,7 +351,15 @@ export function getPokemonSetIdLookupCandidates(setId: string, language: Pokemon
   const upperNormalizedStripped = normalizedStripped.toUpperCase();
 
   if (language === 'en') {
-    return uniqueNonEmpty([raw, stripped, normalizedStripped]);
+    const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(raw);
+    // A non-English prefix is a persisted identity hint, never a signal to
+    // reinterpret the stripped code using English legacy aliases.
+    if (prefixedLanguage && prefixedLanguage !== 'en') return uniqueNonEmpty([raw]);
+    return uniqueNonEmpty([
+      ...getEnglishSetReferenceAliases(raw, 'en'),
+      ...getEnglishSetReferenceAliases(stripped, 'en'),
+      ...getEnglishSetReferenceAliases(normalizedStripped, 'en'),
+    ]);
   }
 
   return uniqueNonEmpty([

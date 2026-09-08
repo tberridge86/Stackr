@@ -3,6 +3,7 @@ import {
   getPokemonSetLanguageFromPrefixedId,
   normalizePokemonSetReferenceForLookup,
 } from './pokemonSetIdentity';
+import { matchesEnglishSetReference } from './englishSetIdentity';
 
 /**
  * The minimum set data needed to recover an older binder that predates the
@@ -147,7 +148,10 @@ export function resolveBinderSetIdentity(input: ResolveBinderSetIdentityInput): 
   const sourceReference = normalizeText(unprefixedSourceSetId);
   const candidates = uniqueCandidates(input.candidates ?? []);
   const matchingReference = sourceReference
-    ? candidates.filter((candidate) => candidateReferences(candidate).includes(sourceReference))
+    ? candidates.filter((candidate) => (
+      candidateReferences(candidate).includes(sourceReference)
+      || (normalizeLanguage(candidate.language) === 'en' && matchesEnglishSetReference(candidate, unprefixedSourceSetId))
+    ))
     : [];
   const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(rawSourceSetId);
   const explicitLanguage = normalizeLanguage(input.language);

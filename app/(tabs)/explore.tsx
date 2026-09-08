@@ -20,6 +20,7 @@ import { StackrPageTitle } from '../../components/StackrScreen';
 import { supabase } from '../../lib/supabase';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
+import { DEFAULT_EXPANDED_ENGLISH_SERIES, groupPokemonSetsBySeries as groupSetsBySeries } from '../../lib/pokemonSetSeries';
 import {
   getPokemonLanguageDescriptor,
   POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
@@ -44,46 +45,9 @@ const cardShadow = {
   elevation: 3,
 };
 
-const SERIES_ORDER = [
-  'Scarlet & Violet',
-  'Sword & Shield',
-  'Sun & Moon',
-  'XY',
-  'Black & White',
-  'HeartGold & SoulSilver',
-  'Platinum',
-  'Diamond & Pearl',
-  'EX',
-  'e-Card',
-  'Neo',
-  'Gym',
-  'Base',
-  'Other',
-];
-
 // ===============================
 // HELPERS
 // ===============================
-
-function groupSetsBySeries(sets: PokemonSet[]): { series: string; sets: PokemonSet[] }[] {
-  const map: Record<string, PokemonSet[]> = {};
-
-  for (const set of sets) {
-    const series = set.series ?? 'Other';
-    if (!map[series]) map[series] = [];
-    map[series].push(set);
-  }
-
-  // Sort by preferred series order
-  return SERIES_ORDER
-    .filter((s) => map[s])
-    .map((s) => ({ series: s, sets: map[s] }))
-    .concat(
-      Object.keys(map)
-        .filter((s) => !SERIES_ORDER.includes(s))
-        .map((s) => ({ series: s, sets: map[s] }))
-    );
-}
 
 type DiscoverSetLanguage = PokemonCatalogueLanguageCode;
 type DiscoverLanguageFilter = 'all' | DiscoverSetLanguage;
@@ -400,7 +364,7 @@ export default function ExploreScreen() {
   const [languageFilter, setLanguageFilter] = useState<DiscoverLanguageFilter>('all');
   const [existingBindersBySet, setExistingBindersBySet] = useState<Record<string, ExistingBinderSummary>>({});
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(
-    new Set([getSeriesKey('en', 'Scarlet & Violet'), getSeriesKey('en', 'Sword & Shield')])
+    new Set(DEFAULT_EXPANDED_ENGLISH_SERIES.map((series) => getSeriesKey('en', series)))
   );
   const [japaneseSetsExpanded, setJapaneseSetsExpanded] = useState(false);
   const [simplifiedChineseSetsExpanded, setSimplifiedChineseSetsExpanded] = useState(false);
