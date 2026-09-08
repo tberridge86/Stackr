@@ -7,6 +7,7 @@ import { getEnglishSetReferenceAliases, matchesEnglishSetReference } from '../li
 import { resolveBinderSetIdentity } from '../lib/binderSetIdentity';
 import * as pokemonSetIdentity from '../lib/pokemonSetIdentity';
 import * as pokemonSetSeries from '../lib/pokemonSetSeries';
+import * as pokemonDisplayNames from '../lib/pokemonDisplayNames';
 
 const PRISMATIC_ID = 'fb3cd93c-9006-42f5-b026-96a9fedcf269';
 const prismatic = {
@@ -56,7 +57,7 @@ async function main() {
     './englishSetIdentity': { getEnglishSetReferenceAliases, matchesEnglishSetReference },
     './pokemonSetSeries': pokemonSetSeries,
     './pokemonSetIdentity': pokemonSetIdentity,
-    './pokemonDisplayNames': { getEnglishSetDisplayName: ({ englishDisplayName }: any) => englishDisplayName, getLocalSetName: ({ localName, fallbackName }: any) => localName ?? fallbackName },
+    './pokemonDisplayNames': pokemonDisplayNames,
     './foreignCardPresentation': { buildForeignCardPresentation: () => ({ name: 'Card', setName: 'Prismatic Evolutions', englishDisplayName: 'Card', englishSetDisplayName: 'Prismatic Evolutions', translationStatus: 'not_required', isForeign: false, withheldNativeDetails: false, details: {} }) },
     './supabase': { supabase: {} },
     './tcgdexControlledCardReference': { enforceTcgdexRuntimeImagePolicy: (value: unknown) => value },
@@ -100,6 +101,32 @@ async function main() {
   assert.equal(await exports.resolveStackrSetId('sv8pt5', 'en', ambiguousClient), null, 'two exact canonical matches must remain unresolved rather than selecting the first row');
   const cards = await exports.fetchStackrCardsForSet('sv8pt5', 'en', client);
   assert.equal(cards.length, 180, 'the legacy Prismatic reference resolves through the canonical 180-card set path');
+
+  for (const languageCode of ['en', 'ja', 'zh-cn', 'zh-tw', 'ko']) {
+    let manifestReads = 0;
+    const exactSetClient = {
+      set: async (id: string) => {
+        assert.equal(id, PRISMATIC_ID);
+        return { data: { set: { ...prismatic, languageCode } } };
+      },
+      assetManifest: async (query: any) => {
+        manifestReads += 1;
+        assert.equal(query.setId, PRISMATIC_ID, 'enrichment must never read the global asset library');
+        assert.ok(['set_logo', 'set_symbol', 'set_cover', 'set_artwork'].includes(query.assetType));
+        return { data: { assets: [] }, meta: {} };
+      },
+    };
+    assert.equal((await exports.fetchStackrSet(PRISMATIC_ID, null, {}, exactSetClient)).language, languageCode,
+      'an unprefixed UUID must use its actual catalogue language');
+    assert.equal(manifestReads, 0, 'facts must resolve without optional artwork');
+    await exports.fetchStackrSet(PRISMATIC_ID, languageCode, { includeAssets: true }, exactSetClient);
+    assert.equal(manifestReads, 4);
+    if (languageCode !== 'en') assert.equal(await exports.fetchStackrSet(PRISMATIC_ID, 'en', {}, exactSetClient), null,
+      'explicit language disagreement must not silently switch printings');
+  }
+  assert.equal(pokemonSetIdentity.getPokemonSetLanguageFromPrefixedId('zh-cn:CSV1C'), 'zh-cn');
+  assert.equal(pokemonSetIdentity.getPokemonSetLanguageFromPrefixedId('zh-tw:SV2a'), 'zh-tw');
+  assert.equal(pokemonSetIdentity.getPokemonSetLanguageFromPrefixedId('ko:SV2a'), 'ko');
 
   const imageAsset = {
     assetId: 'reverse-art', assetType: 'card_image', game: 'pokemon', setId: PRISMATIC_ID, cardId: 'duplicate-card', variantId: 'reverse',

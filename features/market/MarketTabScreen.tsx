@@ -75,6 +75,7 @@ import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
 import { marketIcons } from '../../lib/marketIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { getPokemonSetLogoUrl } from '../../lib/pokemonTcg';
+import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { supabase } from '../../lib/supabase';
 import { TRADE_STATUS_LABELS, normaliseTradeStatus } from '../../lib/transactionStates';
@@ -778,22 +779,49 @@ export default function TheMarketTab() {
     }).then((cards) => {
       if (!active) return;
       setCatalogueCardSuggestions((cards ?? []).map((card: any) => {
-        const setId = card.set_id ?? card.raw_data?.set?.id ?? null;
-        const setName = card.raw_data?.set?.name ?? setId;
+        const raw = card.raw_data ?? {};
+        const setRaw = raw.set ?? {};
+        const language = card.language ?? raw.language ?? setRaw.language ?? null;
+        const setId = card.set_id ?? setRaw.id ?? null;
+        const setName = getPreferredSetDisplayName({
+          id: setId,
+          sourceId: setRaw.tcgdex_id ?? setRaw.source_id ?? setId,
+          setCode: setRaw.set_code ?? card.external_ids?.setCode ?? null,
+          language,
+          region: raw.region ?? setRaw.region ?? null,
+          localName: setRaw.local_name ?? setRaw.name ?? null,
+          englishDisplayName: setRaw.english_display_name ?? setRaw.englishDisplayName ?? null,
+          canonicalName: setRaw.name ?? null,
+          fallbackName: setId,
+          raw: setRaw,
+        });
+        const label = getPreferredCardDisplayName({
+          id: card.id,
+          sourceId: raw.tcgdex_id ?? raw.source_id ?? card.id,
+          setId,
+          collectorNumber: card.number ?? raw.number ?? null,
+          language,
+          region: raw.region ?? null,
+          localName: raw.local_name ?? (language !== 'en' ? raw.name ?? card.name ?? null : null),
+          englishDisplayName: raw.english_display_name ?? raw.englishDisplayName ?? card.english_display_name ?? null,
+          canonicalName: card.name,
+          fallbackName: card.id,
+          raw,
+        });
         return {
           key: `catalogue-card:${card.id}`,
-          label: card.name ?? card.id,
+          label,
           subtitle: [card.number ? `#${card.number}` : null, setName].filter(Boolean).join(' - '),
-          imageUri: card.image_small ?? card.image_large ?? card.raw_data?.images?.small ?? null,
+          imageUri: card.image_small ?? card.image_large ?? raw.images?.small ?? null,
           setLogoUrl: setId ? getPokemonSetLogoUrl(setId) : null,
           setArtworkSource: getLocalSetArtworkSourceForSet({
             id: setId,
-            language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
+            language,
             name: setName,
-            localName: card.raw_data?.set?.local_name ?? card.raw_data?.set?.name ?? null,
-            englishDisplayName: card.raw_data?.set?.english_display_name ?? card.raw_data?.set?.englishDisplayName ?? null,
-            setCode: card.raw_data?.set?.set_code ?? card.external_ids?.setCode ?? null,
-            sourceId: card.raw_data?.set?.tcgdex_id ?? card.external_ids?.tcgdex ?? null,
+            localName: setRaw.local_name ?? setRaw.name ?? null,
+            englishDisplayName: setRaw.english_display_name ?? setRaw.englishDisplayName ?? null,
+            setCode: setRaw.set_code ?? card.external_ids?.setCode ?? null,
+            sourceId: setRaw.tcgdex_id ?? card.external_ids?.tcgdex ?? null,
             externalIds: card.external_ids,
           }),
           sourceLabel: 'Catalogue card',

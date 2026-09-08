@@ -15,13 +15,13 @@ import { searchTcgdexCards } from '../backend/lib/tcgdex.js';
 const japanese = { language: 'ja', setCode: 'SGG', localName: 'ハイクラスデッキ「ゲンガーVMAX」' };
 const chinese = { language: 'zh-cn', setCode: 'CS5.5C', localName: '暗影夺辉' };
 
-assert.equal(getPreferredSetDisplayName({ ...japanese, englishDisplayName: 'Manual English' }), japanese.localName);
-assert.equal(getPreferredSetDisplayName(japanese), japanese.localName);
+assert.equal(getPreferredSetDisplayName({ ...japanese, englishDisplayName: 'Manual English' }), 'Manual English');
+assert.equal(getPreferredSetDisplayName(japanese), 'High-Class Deck Gengar VMAX');
 assert.equal(getBackendSetName(japanese), japanese.localName);
-assert.equal(getPreferredSetDisplayName(chinese), chinese.localName);
+assert.equal(getPreferredSetDisplayName(chinese), 'Shadow Seizes the Light');
 assert.equal(
   getPreferredCardDisplayName({ language: 'ja', localName: 'フシギバナex', englishDisplayName: 'Venusaur ex' }),
-  'フシギバナex',
+  'Venusaur ex',
 );
 
 const manual = getEnglishSetDisplaySupplement({ ...japanese, englishDisplayName: 'Manual English' });
@@ -102,8 +102,13 @@ async function assertNativePrimaryRuntimeAdapters() {
   const searchAdapterSource = readFileSync('lib/pokemonTcgSearch.ts', 'utf8');
   assert.match(searchAdapterSource, /name: cleanText\(localName \?\? card\.name \?\? englishName\)/);
   const addCardsSource = readFileSync('app/binder/add-cards.tsx', 'utf8');
-  assert.match(addCardsSource, /getCardPrimaryName[\s\S]*cleanCardText\(item\.localName\)[\s\S]*cleanCardText\(item\.englishName\)/);
-  assert.match(addCardsSource, /getSetPrimaryName[\s\S]*cleanCardText\(item\.set\?\.localName\)[\s\S]*cleanCardText\(item\.set\?\.englishName\)/);
+  assert.match(addCardsSource, /getCardPrimaryName[\s\S]*getPreferredCardDisplayName\([\s\S]*localName: item\.localName,[\s\S]*englishDisplayName: item\.englishName/);
+  assert.match(addCardsSource, /getSetPrimaryName[\s\S]*getPreferredSetDisplayName\([\s\S]*localName: item\.set\?\.localName,[\s\S]*englishDisplayName: item\.set\?\.englishName/);
+  assert.doesNotMatch(addCardsSource, /getCardSupportingName|getSetSupportingName/);
+
+  assert.match(binderDetailSource, /function getBinderSetDisplayName[\s\S]*getPreferredSetDisplayName/);
+  assert.match(binderDetailSource, /<SlabStickerLabel[\s\S]*setName=\{setName\}/);
+  assert.match(binderDetailSource, /<StackrCardIdentity[\s\S]*setName=\{getBinderSetDisplayName\(selectedCard, selectedCard\.set_id\)\}/);
 
   const backendCatalogueSource = readFileSync('backend/lib/tcgdexCatalogue.js', 'utf8');
   assert.match(backendCatalogueSource, /const displayName = localName \?\? englishDisplayName/);
@@ -125,5 +130,5 @@ async function assertNativePrimaryRuntimeAdapters() {
 }
 
 void assertNativePrimaryRuntimeAdapters().then(() => {
-  console.log('Native-language primary display and English supplemental precedence passed.');
+  console.log('English metadata display, translation fallbacks and original-language identity preservation passed.');
 });

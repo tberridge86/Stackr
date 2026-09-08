@@ -43,7 +43,7 @@ import {
   PokemonLanguageBadge,
   PokemonLanguageFlagIcon,
 } from '../../components/PokemonLanguageBadge';
-import { getEnglishSetDisplaySupplement, getEnglishSupplementalName } from '../../lib/pokemonDisplayNames';
+import { getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
 import {
   CUSTOM_BINDER_NAME_ART,
   getCustomBinderNameArt,
@@ -199,12 +199,12 @@ function getSetLanguageLabel(language?: PokemonCardLanguage | string | null) {
   return getPokemonLanguageDescriptor(normalized)?.label ?? 'English';
 }
 
-function getBinderSetEnglishName(
+function getBinderSetDisplayName(
   set: PokemonSet | null | undefined,
   fallbackLanguage?: PokemonCardLanguage | string | null,
 ) {
   if (!set) return null;
-  const supplement = getEnglishSetDisplaySupplement({
+  return getPreferredSetDisplayName({
     id: set.id,
     sourceId: set.externalIds?.tcgdex ?? set.externalIds?.pokedata ?? null,
     setCode: set.externalIds?.setCode ?? set.id,
@@ -215,11 +215,6 @@ function getBinderSetEnglishName(
     fallbackName: set.id,
     raw: set,
   });
-  const value = getEnglishSupplementalName(set.localName ?? set.name, supplement?.value);
-  if (value) return value;
-  return normalizePokemonCardLanguage(set.language ?? fallbackLanguage) === 'en'
-    ? set.englishDisplayName ?? set.name
-    : set.englishDisplayName ?? null;
 }
 
 function normalizeSetListText(value?: string | null) {
@@ -422,7 +417,7 @@ export default function NewBinderScreen() {
   const setsRequestIdRef = useRef(0);
 
   const isBaseEra = selectedSet && setLanguage === 'en' ? BASE_ERA_SET_IDS.includes(selectedSet.id) : false;
-  const selectedSetEnglishName = getBinderSetEnglishName(selectedSet, setLanguage);
+  const selectedSetDisplayName = getBinderSetDisplayName(selectedSet, setLanguage);
 
   const selectedCover = BINDER_COVERS.find((c) => c.key === coverKey) ?? null;
 
@@ -1096,13 +1091,8 @@ export default function NewBinderScreen() {
                   <SetLogoThumb set={selectedSet} language={setLanguage} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: theme.colors.text, fontWeight: '900' }} numberOfLines={2}>
-                      {selectedSet.localName ?? selectedSet.name}
+                      {selectedSetDisplayName}
                     </Text>
-                    {selectedSetEnglishName && normalizeSetListText(selectedSetEnglishName) !== normalizeSetListText(selectedSet.localName ?? selectedSet.name) ? (
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginTop: 2 }} numberOfLines={2}>
-                        English: {selectedSetEnglishName}
-                      </Text>
-                    ) : null}
                     <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }} numberOfLines={1}>
                       {getSetLanguageLabel(setLanguage)} · {selectedSet.series} · {selectedSet.total} cards
                     </Text>
@@ -1169,12 +1159,7 @@ export default function NewBinderScreen() {
                           </Text>
                         </View>
                       ) : filteredSets.map((item) => {
-                        const englishSetName = getBinderSetEnglishName(item, setLanguage);
-                        const nativeSetName = item.localName ?? item.name;
-                        const showEnglishSupplement = Boolean(
-                          englishSetName
-                          && normalizeSetListText(englishSetName) !== normalizeSetListText(nativeSetName),
-                        );
+                        const setDisplayName = getBinderSetDisplayName(item, setLanguage);
                         return (
                         <TouchableOpacity
                           key={`${item.language ?? setLanguage}:${item.id}`}
@@ -1196,13 +1181,8 @@ export default function NewBinderScreen() {
                           />
                           <View style={{ flex: 1 }}>
                             <Text style={{ color: theme.colors.text, fontWeight: '900' }} numberOfLines={2}>
-                              {nativeSetName}
+                              {setDisplayName}
                             </Text>
-                            {showEnglishSupplement ? (
-                              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginTop: 2 }} numberOfLines={2}>
-                                English: {englishSetName}
-                              </Text>
-                            ) : null}
                             <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }} numberOfLines={1}>
                               {item.series} · {item.total} cards
                             </Text>

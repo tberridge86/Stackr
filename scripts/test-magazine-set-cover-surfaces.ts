@@ -45,7 +45,8 @@ assert.match(market, /setArtworkSource: getLocalSetArtworkSourceForSet\(/,
   'market catalogue suggestions must resolve bundled set art from complete available set identity');
 assert.match(market, /item\.setArtworkSource \? \(\s*<Image source=\{item\.setArtworkSource\}/,
   'market catalogue suggestion actions must visibly retain the set-art badge beside, never instead of, the card image');
-assert.match(market, /imageUri: card\.image_small \?\? card\.image_large \?\? card\.raw_data\?\.images\?\.small \?\? null/,
+assert.match(market, /const raw = card\.raw_data \?\? \{\}/);
+assert.match(market, /imageUri: card\.image_small \?\? card\.image_large \?\? raw\.images\?\.small \?\? null/,
   'market card imagery must remain sourced from the card, never the magazine cover');
 
 console.log('Magazine set-cover presentation surfaces use local set art without replacing card or seller imagery.');

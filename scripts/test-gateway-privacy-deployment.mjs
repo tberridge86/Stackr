@@ -16,8 +16,12 @@ assert.match(workflow, /STACKR_BACKEND_URL: https:\/\/pocketvault-production\.up
 assert.match(workflow, /STACKR_SUPABASE_URL: https:\/\/oakdbbzdqwurpjnoqhmu\.supabase\.co/);
 assert.match(workflow, /test "\$EXPECTED_MAIN_SHA" = "\$GITHUB_SHA"/);
 assert.doesNotMatch(workflow, /test "\$EXPECTED_MAIN_SHA" = '[0-9a-f]{40}'/);
-assert.match(workflow, /test "\$PREVIOUS_GATEWAY_VERSION_ID" = 'ab809fc2-d0da-484f-a5b7-908f76013c1d'/);
-assert.match(workflow, /test "\$PREVIOUS_GATEWAY_DEPLOYMENT_ID" = '5105e13b-2b9c-4e3f-a2e0-392c2694cb37'/);
+assert.doesNotMatch(workflow, /test "\$PREVIOUS_GATEWAY_(?:VERSION_ID|DEPLOYMENT_ID|TAG)" = '/);
+const releaseInputs = parse(workflow).on.workflow_dispatch.inputs;
+for (const name of ['previous_gateway_version_id', 'previous_gateway_deployment_id', 'previous_gateway_tag']) {
+  assert.equal(releaseInputs[name].required, true);
+  assert.equal(releaseInputs[name].default, undefined, 'Every release must supply its reviewed current rollback target.');
+}
 assert.match(workflow, /--keep-vars/);
 assert.match(workflow, /--var "SUPABASE_PUBLISHABLE_KEY:\$publishable_key"/);
 assert.match(workflow, /--name stackr-api-gateway/);

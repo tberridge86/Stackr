@@ -6,6 +6,7 @@ import {
   resolveStackrSetId,
 } from './stackrDomainAdapter';
 import { stackrApiClient } from './stackrApiV1';
+import { supabase } from './supabase';
 
 const TCGCSV_BASE_URL = 'https://tcgcsv.com';
 
@@ -110,6 +111,7 @@ export type PokeTraceCardPriceResult = {
 
 export type PokeTraceCardPriceInput = {
   identifier: string;
+  forceRefresh?: boolean;
   tcgPlayerId?: string | number | null;
   setName?: string | null;
   number?: string | null;
@@ -411,22 +413,27 @@ export async function fetchPokeTraceCardPrice(
   input: PokeTraceCardPriceInput
 ): Promise<PokeTraceCardPriceResult | null> {
   if (!input.identifier?.trim()) return null;
-  const cacheKey = getPokeTracePriceCacheKey(input);
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user?.id) return null;
+  const cacheKey = `${session.user.id}:${getPokeTracePriceCacheKey(input)}`;
   const cached = pokeTracePriceCache.get(cacheKey);
-  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  if (!input.forceRefresh && cached && cached.expiresAt > Date.now()) return cached.value;
 
   const inflight = pokeTracePriceInflight.get(cacheKey);
-  if (inflight) return inflight;
+  if (!input.forceRefresh && inflight) return inflight;
 
-  const request = (async () => {
-    const setId = input.setName?.trim()
+  let request!: Promise<PokeTraceCardPriceResult | null>;
+  request = (async () => {
+    const canonicalReference = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.identifier.trim())
+      ? input.identifier.trim() : null;
+    const setId = !canonicalReference && input.setName?.trim()
       ? await resolveStackrSetId(input.setName, input.language).catch(() => null)
       : null;
-    const reference = input.tcgPlayerId != null && String(input.tcgPlayerId).trim()
+    const reference = canonicalReference ?? (input.tcgPlayerId != null && String(input.tcgPlayerId).trim()
       ? String(input.tcgPlayerId).trim()
       : input.number?.trim() && input.setName?.trim()
         ? `${input.setName.trim()} ${input.number.trim()}`
-        : input.identifier.trim();
+        : input.identifier.trim());
     const result = await fetchStackrPrice(reference, {
       language: input.language,
       setId,
@@ -436,7 +443,7 @@ export async function fetchPokeTraceCardPrice(
       grade: input.grade ?? input.gradeLabel,
     }).catch(() => null);
     if (!result) {
-      pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_ERROR_CACHE_TTL_MS, value: null });
+      if (pokeTracePriceInflight.get(cacheKey) === request) pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_ERROR_CACHE_TTL_MS, value: null });
       return null;
     }
     const price = result.price;
@@ -485,7 +492,7 @@ export async function fetchPokeTraceCardPrice(
         totalSaleCount: price.sample.sold,
       },
     };
-    pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_PRICE_CACHE_TTL_MS, value });
+    if (pokeTracePriceInflight.get(cacheKey) === request) pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_PRICE_CACHE_TTL_MS, value });
     return value;
   })();
 
@@ -493,7 +500,7 @@ export async function fetchPokeTraceCardPrice(
   try {
     return await request;
   } finally {
-    pokeTracePriceInflight.delete(cacheKey);
+    if (pokeTracePriceInflight.get(cacheKey) === request) pokeTracePriceInflight.delete(cacheKey);
   }
 }
 

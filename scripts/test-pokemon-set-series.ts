@@ -20,6 +20,8 @@ assert.equal(getPokemonSetDisplaySeries({ language: 'en', setCode: 'unknown' }),
 assert.equal(getPokemonSetDisplaySeries({ language: 'en', setCode: '2024sv' }), 'Other', 'promotional year codes are not expansion-series codes');
 assert.equal(getPokemonSetDisplaySeries({ language: 'en', setCode: 'sv08.5', series: 'Reviewed series' }), 'Reviewed series');
 assert.equal(getPokemonSetDisplaySeries({ language: 'en', setCode: 'base6' }), 'Other');
+assert.equal(getPokemonSetDisplaySeries({ language: 'ja', setCode: 'M5', series: 'メガ' }), 'Other', 'native series labels do not leak into English metadata');
+assert.equal(getPokemonSetDisplaySeries({ language: 'ja', setCode: 'M5', series: 'Mega Evolution' }), 'Mega Evolution');
 
 const prismatic = { id: 'prismatic', series: getPokemonSetDisplaySeries({ language: 'en', setCode: 'sv08.5' }) };
 const groups = groupPokemonSetsBySeries([

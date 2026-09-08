@@ -20,6 +20,7 @@ import { searchPokemonCards, type PokemonSearchCard } from '../../lib/pokemonTcg
 import { normalizePokemonCardLanguage, type PokemonCardLanguage } from '../../lib/pokemonTcg';
 import { getDisplaySetName } from '../../lib/setDisplay';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
+import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
 
 // ===============================
 // CONSTANTS
@@ -38,42 +39,26 @@ const cardShadow = {
   elevation: 3,
 };
 
-const cleanCardText = (value: unknown) => {
-  const text = String(value ?? '').trim();
-  return text.length ? text : null;
-};
+const getCardPrimaryName = (item: PokemonSearchCard) => getPreferredCardDisplayName({
+  id: item.id,
+  setId: item.set?.id ?? null,
+  collectorNumber: item.number ?? null,
+  language: item.language,
+  localName: item.localName,
+  englishDisplayName: item.englishName,
+  fallbackName: item.name ?? item.id,
+  raw: (item as any).raw_data,
+});
 
-const containsCjkText = (value: unknown) => /[\u3040-\u30ff\u3400-\u9fff]/.test(String(value ?? ''));
-
-const getCardPrimaryName = (item: PokemonSearchCard) =>
-  cleanCardText(item.localName)
-  ?? cleanCardText(item.name)
-  ?? cleanCardText(item.englishName)
-  ?? 'Unknown card';
-
-const getCardSupportingName = (item: PokemonSearchCard, primaryName: string) => {
-  const englishName = cleanCardText(item.englishName);
-  const localName = cleanCardText(item.localName);
-  if (containsCjkText(primaryName) && englishName && englishName !== primaryName) return englishName;
-  if (localName && localName !== primaryName && containsCjkText(localName)) return localName;
-  return null;
-};
-
-const getSetPrimaryName = (item: PokemonSearchCard, fallbackName: string | null) =>
-  cleanCardText(item.set?.localName)
-  ?? cleanCardText(item.set?.name)
-  ?? cleanCardText(fallbackName)
-  ?? cleanCardText(item.set?.englishName)
-  ?? cleanCardText(item.set?.id)
-  ?? 'Unknown set';
-
-const getSetSupportingName = (item: PokemonSearchCard, primaryName: string) => {
-  const englishName = cleanCardText(item.set?.englishName);
-  const localName = cleanCardText(item.set?.localName);
-  if (containsCjkText(primaryName) && englishName && englishName !== primaryName) return englishName;
-  if (localName && localName !== primaryName && containsCjkText(localName)) return localName;
-  return null;
-};
+const getSetPrimaryName = (item: PokemonSearchCard, fallbackName: string | null) => getPreferredSetDisplayName({
+  id: item.set?.id ?? null,
+  language: item.language,
+  localName: item.set?.localName,
+  englishDisplayName: item.set?.englishName,
+  canonicalName: item.set?.name,
+  fallbackName: fallbackName ?? item.set?.id ?? 'Unknown set',
+  raw: (item as any).raw_data?.set,
+});
 
 // ===============================
 // MAIN COMPONENT
@@ -274,9 +259,7 @@ export default function AddCardsToBinderScreen() {
       rawData: (item as any).raw_data,
     });
     const displayName = getCardPrimaryName(item);
-    const supportingName = getCardSupportingName(item, displayName);
     const displaySetName = getSetPrimaryName(item, setName);
-    const supportingSetName = getSetSupportingName(item, displaySetName);
     const setLine = [
       displaySetName,
       item.number ? `#${item.number}` : null,
@@ -339,19 +322,9 @@ export default function AddCardsToBinderScreen() {
           <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }} numberOfLines={1}>
             {displayName}
           </Text>
-          {supportingName ? (
-            <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 12, fontWeight: '700' }} numberOfLines={1}>
-              {supportingName}
-            </Text>
-          ) : null}
           <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 13 }} numberOfLines={1}>
             {setLine}
           </Text>
-          {supportingSetName ? (
-            <Text style={{ color: theme.colors.textSoft, marginTop: 1, fontSize: 11 }} numberOfLines={1}>
-              {supportingSetName}
-            </Text>
-          ) : null}
         </View>
 
         {/* Checkbox */}

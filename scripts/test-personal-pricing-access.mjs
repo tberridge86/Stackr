@@ -32,6 +32,7 @@ const pricingService = {
   marketOpportunities: async () => read({ opportunities: [], pagination: {} }),
   requestSnapshotRefresh: async (_id, _input, userId) => read({ status: 'queued', requestedBy: userId }),
   requestSnapshotRefreshBatch: async (_ids, _input, userId) => read({ summary: { queued: 1 }, requestedBy: userId }),
+  refreshExactProviderEstimate: async () => read({ status: 'legacy_cached_market_estimate', estimates: { central: 1 } }),
 };
 const app = express();
 app.use(express.json());
@@ -66,14 +67,15 @@ try {
     assert.match(accepted.headers.get('vary'), /Authorization/i);
     await accepted.arrayBuffer();
   }
-  for (const path of [`/v1/cards/${owner}/price-refresh`, '/v1/market/price-refresh']) {
+  for (const path of [`/v1/cards/${owner}/price-refresh`, `/v1/cards/${owner}/provider-price-refresh`, '/v1/market/price-refresh']) {
     const before = evidenceReads;
     const denied = await fetch(base + path, { method: 'POST', headers: { Authorization: 'Bearer other', 'Content-Type': 'application/json' }, body: '{}' });
     assert.equal(denied.status, 403); assert.equal(evidenceReads, before); await denied.arrayBuffer();
     const authBefore = authReads;
     const accepted = await fetch(base + path, { method: 'POST', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' }, body: '{}' });
-    assert.equal(accepted.status, 202);
-    assert.equal((await accepted.json()).data.requestedBy, owner);
+    assert.equal(accepted.status, path.includes('provider-price-refresh') ? 200 : 202);
+    const body = await accepted.json();
+    if (!path.includes('provider-price-refresh')) assert.equal(body.data.requestedBy, owner);
     assert.equal(authReads, authBefore + 1, 'Verify once, and reuse only the server-verified identity');
   }
   const before = authReads;

@@ -36,8 +36,9 @@ function run() {
   }
 
   const binderPickerSource = source('app/binder/new.tsx');
-  assert.match(binderPickerSource, /const nativeSetName = item\.localName \?\? item\.name/);
-  assert.match(binderPickerSource, /English: \{englishSetName\}/);
+  assert.match(binderPickerSource, /const setDisplayName = getBinderSetDisplayName\(item, setLanguage\)/);
+  assert.match(binderPickerSource, /\{setDisplayName\}/);
+  assert.match(binderPickerSource, /getPreferredSetDisplayName/);
   assert.match(binderPickerSource, /POKEMON_CATALOGUE_LANGUAGE_OPTIONS/);
 
   for (const file of [
@@ -51,7 +52,7 @@ function run() {
   assert.match(marketSource, /language: value/);
   assert.match(marketSource, /language=\{chip\.language\}/);
 
-  console.log('shared language flags and native-first binder labels passed');
+  console.log('Shared language flags and English binder labels passed');
 }
 
 run();

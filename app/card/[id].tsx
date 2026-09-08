@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -22,17 +22,18 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTrade } from '../../components/trade-context';
 import { useAppMode } from '../../components/app-mode-context';
+import { useAuth } from '../../components/auth-context';
 import { deleteMarketplaceListing } from '../../lib/marketplace';
 import { stackrIcons } from '../../lib/stackrIcons';
 import {
   getCachedCardSync,
-  getCachedCardsForSet,
-  getCachedSets,
 } from '../../lib/pokemonTcgCache';
 import { fetchCardById } from '../../lib/pokemonTcg';
 import { getDisplaySetLogoUrl } from '../../lib/setDisplay';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { fetchPokeTraceCardPrice } from '../../lib/pricing';
+import { refreshPersonalProviderEstimate } from '../../lib/personalPriceRefresh';
+import { StackrApiV1Error } from '../../lib/stackrApiV1';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { buildForeignCardPresentation } from '../../lib/foreignCardPresentation';
 
@@ -110,6 +111,8 @@ type LatestSnapshotPrice = {
 
 export default function CardDetailScreen() {
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   const { premiumSellerAccess } = useAppMode();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -118,9 +121,12 @@ export default function CardDetailScreen() {
   const params = useLocalSearchParams<{ id?: string; setId?: string; editionHint?: string }>();
   const cardId = typeof params.id === 'string' ? params.id : '';
   const paramSetId = typeof params.setId === 'string' ? params.setId : '';
+  const priceContextRef = useRef('');
+  const priceRequestRef = useRef(0);
   const editionHint = params.editionHint === '1st_edition' || params.editionHint === 'unlimited' || params.editionHint === 'shadowless'
     ? params.editionHint
     : null;
+  priceContextRef.current = `${userId}:${cardId}:${editionHint}`;
   const editionLabel =
     editionHint === '1st_edition'
       ? '1st Edition'
@@ -146,6 +152,7 @@ export default function CardDetailScreen() {
   const [ebayPrice, setEbayPrice] = useState<EbayPriceResult | null>(null);
   const [ebayLoading, setEbayLoading] = useState(false);
   const [ebayError, setEbayError] = useState(false);
+  const [priceRefreshNotice, setPriceRefreshNotice] = useState<string | null>(null);
 
   const [latestSnapshotPrice, setLatestSnapshotPrice] = useState<LatestSnapshotPrice | null>(null);
 
@@ -165,30 +172,9 @@ export default function CardDetailScreen() {
         if (paramSetId && cardId) {
           found = getCachedCardSync(paramSetId, cardId);
 
-          if (!found) {
-            const cards = await getCachedCardsForSet(paramSetId);
-            found = cards.find((c) => c.id === cardId) ?? null;
-          }
         }
 
-        if (!found) {
-          const sets = await getCachedSets();
-
-          for (const set of sets) {
-            let cached = getCachedCardSync(set.id, cardId);
-
-            if (!cached) {
-              const cards = await getCachedCardsForSet(set.id);
-              cached = cards.find((c) => c.id === cardId) ?? null;
-            }
-
-            if (cached) {
-              found = cached;
-              break;
-            }
-          }
-        }
-
+        // A direct card route must never download every set to locate one ID.
         if (!found && cardId) {
           found = await fetchCardById(cardId);
         }
@@ -219,18 +205,28 @@ export default function CardDetailScreen() {
   // FETCH STACKR MARKET PRICE
   // ===============================
 
-  const fetchEbay = useCallback(async (cardData: PokemonCard) => {
+  const fetchEbay = useCallback(async (cardData: PokemonCard, forceRefresh = false) => {
+    const context = priceContextRef.current;
+    const request = ++priceRequestRef.current;
+    const isCurrent = () => priceContextRef.current === context && priceRequestRef.current === request;
+    if (!userId) return;
+    if (editionHint) {
+      setPriceRefreshNotice('Use the edition-specific pricing panel below. The normal-card market range is unavailable for an edition selection.');
+      return;
+    }
     try {
       setEbayLoading(true);
       setEbayError(false);
 
       const pokeTrace = await fetchPokeTraceCardPrice({
         identifier: cardData.id,
+        forceRefresh,
         setName: cardData.set?.name ?? null,
         number: cardData.number ?? null,
         language: cardData.language ?? (cardData as any).raw_data?.language ?? null,
         market: 'US',
       });
+      if (!isCurrent()) return;
 
       if (pokeTrace?.stackr_central != null) {
         setEbayPrice({
@@ -251,17 +247,60 @@ export default function CardDetailScreen() {
       setLatestSnapshotPrice(null);
     } catch (err) {
       console.error('Stackr market price fetch failed:', err);
-      setEbayError(true);
+      if (isCurrent()) setEbayError(true);
     } finally {
-      setEbayLoading(false);
+      if (isCurrent()) setEbayLoading(false);
     }
-  }, []);
+  }, [userId, editionHint]);
+
+  const refreshProviderPrice = useCallback(async (cardData: PokemonCard) => {
+    const variantId = cardData.raw_data?.stackr?.defaultVariantId;
+    if (!userId || !variantId || editionHint) {
+      setPriceRefreshNotice('Provider refresh needs an exact supported normal card. Edition-specific refresh is not available yet.');
+      return;
+    }
+    const context = priceContextRef.current;
+    const request = ++priceRequestRef.current;
+    const isCurrent = () => priceContextRef.current === context && priceRequestRef.current === request;
+    setEbayLoading(true);
+    setEbayError(false);
+    setPriceRefreshNotice(null);
+    try {
+      const quote = await refreshPersonalProviderEstimate(variantId);
+      if (!isCurrent()) return;
+      if (quote.variantId !== variantId || quote.currency !== 'GBP' || quote.quoteScope !== 'exact_variant') {
+        throw new Error('The provider response did not match this card.');
+      }
+      setEbayPrice({ low: quote.estimates.low, average: quote.estimates.central, high: quote.estimates.high, count: quote.sample.sold });
+      setLatestSnapshotPrice({ tcg_low: quote.estimates.low, tcg_mid: quote.estimates.central, cardmarket_trend: null });
+      setPriceRefreshNotice(quote.freshness === 'fresh'
+        ? 'Provider checked. Normal finish, raw near-mint estimate in GBP; this is not a verified sale.'
+        : 'Provider checked, but its latest normal-card estimate is dated. This is not a verified sale.');
+    } catch (error) {
+      if (!isCurrent()) return;
+      const status = error instanceof StackrApiV1Error ? error.status : null;
+      setPriceRefreshNotice(status === 429
+        ? 'This card was refreshed recently. Please wait a few minutes before trying again.'
+        : status === 404 || status === 422
+          ? 'The provider has no verified quote for this exact language and finish yet.'
+          : status === 401 || status === 403
+            ? 'Provider refresh is available to the signed-in owner account.'
+            : 'The provider could not be reached. Any previous estimate remains shown; please try again.');
+    } finally {
+      if (isCurrent()) setEbayLoading(false);
+    }
+  }, [userId, editionHint]);
 
   // Auto-fetch the provider-neutral Stackr estimate once the card is loaded.
   useEffect(() => {
+    setEbayPrice(null);
+    setLatestSnapshotPrice(null);
+    setEbayLoading(false);
+    setPriceRefreshNotice(null);
     if (card) {
-      fetchEbay(card);
+      void fetchEbay(card);
     }
+    return () => { priceRequestRef.current += 1; };
   }, [card, fetchEbay]);
 
   // ===============================
@@ -493,7 +532,7 @@ export default function CardDetailScreen() {
           <Text style={styles.translationStatusText}>
             {presentation.languageLabel} card image · {
               presentation.englishDisplayName
-                ? 'English identification supplement available'
+                ? 'English display'
                 : 'English title translation pending'
             }
           </Text>
@@ -509,7 +548,7 @@ export default function CardDetailScreen() {
           ) : null}
           {presentation.withheldNativeDetails ? (
             <Text style={styles.translationPendingText}>
-              English rules and attack text are not verified yet, so native prose is not presented as English.
+              English rules and attack translations are not available yet.
             </Text>
           ) : null}
         </View>
@@ -547,12 +586,12 @@ export default function CardDetailScreen() {
         <View style={styles.sectionTitleRow}>
           <Text style={styles.sectionTitle}>Market Guide</Text>
           <TouchableOpacity
-            onPress={() => fetchEbay(card)}
-            disabled={ebayLoading}
+            onPress={() => refreshProviderPrice(card)}
+            disabled={ebayLoading || !userId}
             style={styles.refreshButton}
           >
             <Text style={styles.refreshButtonText}>
-              {ebayLoading ? 'Fetching...' : 'Refresh'}
+              {ebayLoading ? 'Fetching...' : 'Refresh provider'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -567,6 +606,7 @@ export default function CardDetailScreen() {
 
           {/* eBay market lookup */}
           <Text style={styles.priceSourceLabel}>Stackr market range (GBP)</Text>
+          {priceRefreshNotice ? <Text style={styles.pricingEmptyCopy}>{priceRefreshNotice}</Text> : null}
 
           {ebayLoading ? (
             <View style={styles.ebayLoadingRow}>
@@ -586,7 +626,7 @@ export default function CardDetailScreen() {
             <View style={styles.pricingEmptyState}>
               <Text style={styles.pricingEmptyTitle}>No supported market estimate yet</Text>
               <Text style={styles.pricingEmptyCopy}>
-                Refresh market data or use the other pricing sources as a guide.
+                Provider refresh currently supports verified normal finishes. Other finishes need their own matching price evidence.
               </Text>
             </View>
           ) : (
@@ -904,7 +944,7 @@ export default function CardDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Artist</Text>
           <View style={styles.infoCard}>
-            <Text style={styles.infoLine}>{card.artist}</Text>
+            <Text style={styles.infoLine}>{presentation.details.artist ?? 'Artist translation pending'}</Text>
           </View>
         </View>
       )}

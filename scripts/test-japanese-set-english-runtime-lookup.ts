@@ -99,7 +99,7 @@ assert.equal(getBackendEnglishSetDisplayName({ language: 'ja', setCode: 'M3' }),
 
 const nativeName = 'ハイクラスデッキ「ゲンガーVMAX」';
 const supplementInput = { language: 'ja', setCode: 'SGG', localName: nativeName };
-assert.equal(getPreferredSetDisplayName(supplementInput), nativeName);
+assert.equal(getPreferredSetDisplayName(supplementInput), 'High-Class Deck Gengar VMAX');
 assert.deepEqual(getBackendEnglishSetDisplaySupplement(supplementInput), getClientEnglishSetDisplaySupplement(supplementInput));
 assert.deepEqual(getClientEnglishSetDisplaySupplement(supplementInput), {
   value: 'High-Class Deck Gengar VMAX',

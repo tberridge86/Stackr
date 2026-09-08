@@ -16,9 +16,10 @@ function baseUrl(value, allowHttp) {
   return parsed;
 }
 
-async function requestJson(fetchImpl, base, path, timeoutMs) {
+async function requestJson(fetchImpl, base, path, timeoutMs, method = 'GET') {
   const response = await fetchImpl(new URL(path, base), {
     headers: { Accept: 'application/json' },
+    method,
     signal: AbortSignal.timeout(timeoutMs),
   });
   return { response, body: await response.json().catch(() => null) };
@@ -59,12 +60,13 @@ export async function runGatewayPrivacySmoke({ gatewayUrl, variantId, fetchImpl 
     const { response, body } = await requestJson(fetchImpl, base, path, timeoutMs);
     checks.push(assertHealth(response, body, name, expectedDataStatus));
   }
-  for (const [name, path] of [
+  for (const [name, path, method] of [
     ['anonymous_exact_price', `/v1/cards/${encodeURIComponent(variantId)}/price?productType=raw_card&currency=GBP&condition=near_mint`],
     ['anonymous_price_history', `/v1/cards/${encodeURIComponent(variantId)}/price-history?productType=raw_card&currency=GBP&condition=near_mint&limit=1`],
     ['anonymous_market_movers', '/v1/market/movers?productType=raw_card&currency=GBP&limit=1'],
+    ['anonymous_provider_refresh', `/v1/cards/${encodeURIComponent(variantId)}/provider-price-refresh`, 'POST'],
   ]) {
-    const { response, body } = await requestJson(fetchImpl, base, path, timeoutMs);
+    const { response, body } = await requestJson(fetchImpl, base, path, timeoutMs, method);
     checks.push(assertPrivateAnonymousPricing(response, body, name));
   }
   return { ok: true, checks };

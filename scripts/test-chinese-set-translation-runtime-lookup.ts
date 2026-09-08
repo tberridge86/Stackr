@@ -58,7 +58,7 @@ for (const [name, draft] of [['simplified', simplifiedDraft], ['traditional', tr
   assert.ok(client, `${name} exact draft is active as a runtime-only supplement`);
   assert.equal(getClientAuthoritativeName(draft), null, `${name} draft must not become english_display_name`);
   assert.equal(getBackendAuthoritativeName(draft), null, `${name} backend draft must not become english_display_name`);
-  assert.equal(getPreferredSetDisplayName(draft), draft.localName, `${name} native name stays primary`);
+  assert.equal(getPreferredSetDisplayName(draft), client.value, `${name} uses the approved English runtime supplement`);
 }
 
 for (const [draft, expected] of [
@@ -74,7 +74,7 @@ for (const [draft, expected] of [
   assert.deepEqual(getBackendDraft(draft), getClientDraft(draft));
   assert.equal(getClientAuthoritativeName(draft), null);
   assert.equal(getBackendAuthoritativeName(draft), null);
-  assert.equal(getPreferredSetDisplayName(draft), draft.localName);
+  assert.equal(getPreferredSetDisplayName(draft), expected);
 }
 
 for (const input of [

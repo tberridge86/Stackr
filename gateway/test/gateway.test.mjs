@@ -134,6 +134,24 @@ test('personal pricing is owner-only, verified before cache access, and private'
   assert.equal(deniedRefresh.status, 403, 'the owner boundary applies to price refresh writes too');
   assert.equal(downstream, 2);
 
+  const providerRefresh = () => request(`/v1/cards/${USER_ID}/provider-price-refresh`, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer owner-token', 'Content-Type': 'application/json',
+      'X-Stackr-Device-Id': DEVICE_ID, 'Idempotency-Key': 'owner-provider-refresh:0001',
+    },
+    body: '{}',
+  });
+  const providerBefore = downstream;
+  const providerFirst = await handleRequest(providerRefresh(), personalEnv, context(), ownerRefreshDeps);
+  const providerReplay = await handleRequest(providerRefresh(), personalEnv, context(), ownerRefreshDeps);
+  assert.equal(providerFirst.status, 200);
+  assert.equal(providerReplay.status, 200);
+  assert.equal(providerReplay.headers.get('x-idempotency-replayed'), 'true');
+  assert.equal(providerReplay.headers.get('cache-control'), 'private, no-store');
+  assert.match(providerReplay.headers.get('vary') ?? '', /Authorization/);
+  assert.equal(downstream, providerBefore + 1, 'the exact provider refresh is private and idempotent at the gateway');
+
   const invalidMode = await handleRequest(request(`/v1/market/movers`), environment({
     STACKR_PRICING_ACCESS_MODE: 'team',
     STACKR_PRICING_OWNER_USER_ID: USER_ID,

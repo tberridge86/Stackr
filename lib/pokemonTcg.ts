@@ -21,6 +21,7 @@ import {
   fetchStackrCard,
   fetchStackrCardsForSet,
   fetchStackrSets,
+  fetchStackrSet,
   searchStackrCards,
   type StackrLegacyCard,
   type StackrLegacySet,
@@ -142,6 +143,7 @@ type PokemonSetLanguageFilter = PokemonCardLanguage | 'all';
 type FetchAllSetsOptions = {
   language?: PokemonSetLanguageFilter | string | null;
   preferCanonicalApi?: boolean;
+  includeAssets?: boolean;
 };
 type FetchCardsForSetOptions = {
   language?: PokemonCardLanguage | string | null;
@@ -1898,7 +1900,7 @@ export async function fetchPokemonTcgApiCardsByQuery(
 export async function fetchAllSets(options: FetchAllSetsOptions = {}): Promise<PokemonSet[]> {
   const language = normalizeSetLanguageFilter(options.language);
   const readLane = options.preferCanonicalApi ? 'canonical-api' : 'default';
-  const cacheKey = `sets:${language}:${readLane}`;
+  const cacheKey = `sets:${language}:${readLane}:${options.includeAssets === false ? 'facts' : 'assets'}`;
   const cachedSets = readNonEmptyCatalogueRows(allSetsCache, cacheKey);
   if (cachedSets) {
     return cachedSets;
@@ -1911,8 +1913,8 @@ export async function fetchAllSets(options: FetchAllSetsOptions = {}): Promise<P
 
   const request = (async () => {
     const loadSets = options.preferCanonicalApi ? fetchPreferredStackrSets : fetchStackrSets;
-    const sets = (await loadSets(language === 'all' ? null : language)).map(fromStackrSet);
-    prefetchPokemonSetLogos(sets.map((set) => set.id), language === 'all' ? undefined : language);
+    const sets = (await loadSets(language === 'all' ? null : language, undefined, { includeAssets: options.includeAssets })).map(fromStackrSet);
+    if (options.includeAssets !== false) prefetchPokemonSetLogos(sets.map((set) => set.id), language === 'all' ? undefined : language);
     cacheNonEmptyCatalogueRows(allSetsCache, cacheKey, sets, Date.now() + POKEMON_SET_CACHE_TTL_MS);
     return sets;
   })();
@@ -1923,6 +1925,14 @@ export async function fetchAllSets(options: FetchAllSetsOptions = {}): Promise<P
   } finally {
     allSetsInflight.delete(cacheKey);
   }
+}
+
+export async function fetchPokemonSetForDetail(
+  setId: string,
+  options: { language?: string | null; includeAssets?: boolean } = {},
+): Promise<PokemonSet | null> {
+  const set = await fetchStackrSet(setId, options.language, options);
+  return set ? fromStackrSet(set) : null;
 }
 
 export async function fetchCardsForSet(setId: string, options: FetchCardsForSetOptions = {}): Promise<PokemonCard[]> {

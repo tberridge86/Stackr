@@ -54,7 +54,9 @@ Current full-platform status is **NO-GO**: migration alignment and storage backu
 
 The workflow binds the supplied reviewed `main` SHA to the selected run and the currently attested production Worker version, tag, and 100-percent deployment. It requires the exact successful Platform CI result, verifies the existing origin/admin secret names before upload, uses Wrangler `--keep-vars` to retain remote variables, preserves existing secrets, and keeps the checked-in Durable Object binding. It supplies only the production backend origin, production Supabase URL, trimmed publishable key, and reviewed personal-pricing owner binding. Uploading a version does not change traffic; a separate version deployment activates it. A failed health, readiness, or anonymous-pricing privacy check restores traffic to the exact attested prior version at 100 percent. It deliberately does not probe search: search is a backend rollout concern.
 
-Use it only after the owner UUID has been independently verified. The post-deploy checks require anonymous price, price-history, and movers requests to return `401 authentication_required` with `private, no-store` and `Vary: Authorization`; they do not claim an authenticated price read or activate any provider.
+Supply the current reviewed Worker version ID, version tag and deployment ID on every dispatch. There are no historical defaults: the workflow independently verifies that the supplied target is still the latest deployment at 100 percent before changing traffic. Re-read the live deployment if another release has occurred.
+
+Use it only after the owner UUID has been independently verified. The post-deploy checks require anonymous price, price-history, movers and provider-refresh requests to return `401 authentication_required` with `private, no-store` and `Vary: Authorization`; they do not claim an authenticated price read or activate any provider. When adding a backend route, release the matching backend first and this gateway second, before publishing the mobile client that uses it.
 
 ## Narrow binder artwork-read preparation
 
