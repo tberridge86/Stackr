@@ -505,7 +505,21 @@ function normalizeCanonicalSetCards(cards: StackrCard[]) {
         Boolean(primaryCardImageAsset(row, embeddedCardImageAssets(row)))
       )) ?? representative;
     }
-    return { ...representative, variants: mergeCanonicalVariants(rows) };
+    const merged = { ...representative, variants: mergeCanonicalVariants(rows) };
+    if (primaryCardImageAsset(merged, embeddedCardImageAssets(merged))) return merged;
+
+    // Some single API rows retain all finish variants but point their default
+    // at a finish with no image. Select only an already-present variant whose
+    // own embedded asset validates as primary; this changes no image ownership.
+    const illustratedVariant = merged.variants.find((variant) => (
+      Boolean(primaryCardImageAsset(
+        { ...merged, defaultVariantId: variant.variantId },
+        embeddedCardImageAssets(merged),
+      ))
+    ));
+    return illustratedVariant
+      ? { ...merged, defaultVariantId: illustratedVariant.variantId }
+      : merged;
   });
 }
 

@@ -141,6 +141,15 @@ async function main() {
     ['holo', 'normal', 'reverse'],
     'duplicate order does not lose finishes or the first valid image-bearing default',
   );
+  const singleRowWrongDefault = duplicateRow('normal', [normal, reverse]);
+  const singleRowMapped = await exports.fetchStackrCardsForSet('sv08.5', 'en', duplicateClient([singleRowWrongDefault]));
+  assert.equal(singleRowMapped.length, 1);
+  assert.equal(singleRowMapped[0].externalIds.stackrVariant, 'reverse', 'a single row may select its existing illustrated finish when its default has no asset');
+  assert.equal(singleRowMapped[0].raw_data.presentation.selected_image_variant_id, 'reverse', 'selected-image attribution stays with the real illustrated variant');
+  assert.deepEqual([...singleRowMapped[0].raw_data.stackr.variants.map((variant: any) => variant.variantId)].sort(), ['normal', 'reverse']);
+  const singleRowWithoutArt = await exports.fetchStackrCardsForSet('sv08.5', 'en', duplicateClient([duplicateRow('normal', [normal]) ]));
+  assert.equal(singleRowWithoutArt[0].externalIds.stackrVariant, 'normal', 'no-art rows retain their source default instead of inventing an illustrated finish');
+  assert.equal(singleRowWithoutArt[0].raw_data.presentation.selected_image_variant_id, null);
 
   console.log('English set identity checks passed: verified aliases, language isolation, unique canonical resolution, binder recovery, duplicate finish normalization, and Prismatic 180-card lookup.');
 }
