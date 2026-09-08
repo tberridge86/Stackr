@@ -104,7 +104,7 @@ const shouldHideShellControls = (pathname: string) =>
   pathname.startsWith('/binder/new') ||
   pathname.startsWith('/listing') ||
   pathname.startsWith('/grade') ||
-  pathname.startsWith('/scan');
+  (pathname.startsWith('/scan') && pathname !== '/scan-hub');
 
 const PersistentTabBar = memo(function PersistentTabBar() {
   const { theme } = useTheme();

@@ -459,7 +459,7 @@ export default function ProductDetailScreen() {
               {premiumSellerAccess.allowed ? (
                 <TouchableOpacity
                   style={styles.secondaryButton}
-                  onPress={() => router.push({ pathname: '/listing/new', params: { type: product.product_type, productName: product.name } } as any)}
+                  onPress={() => router.push({ pathname: '/listing/new', params: { productId: product.id, type: product.product_type, productName: product.name } } as any)}
                 >
                   <Text style={styles.secondaryButtonText}>Publish Beta Listing</Text>
                 </TouchableOpacity>

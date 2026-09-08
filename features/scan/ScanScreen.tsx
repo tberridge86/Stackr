@@ -120,7 +120,7 @@ import {
   type BinderPagePocketResult,
   type BinderPocketCandidate,
 } from '../../lib/binderPageScan';
-import { saveBinderPageScanSession, updateBinderPageScanSession } from '../../lib/binderPageScanStore';
+import { checkpointBinderPageScanSession, updateBinderPageScanSession } from '../../lib/binderPageScanStore';
 import {
   getScanIntentConfig,
   isBinderScanIntent,
@@ -1155,6 +1155,8 @@ export default function ScanScreen() {
   const [inlineManualSearchQuery, setInlineManualSearchQuery] = useState(initialQuery);
   const [inlineManualSearchResults, setInlineManualSearchResults] = useState<ScanResultCard[]>([]);
   const [inlineManualSearchLoading, setInlineManualSearchLoading] = useState(false);
+  const [inlineManualSearchError, setInlineManualSearchError] = useState<string | null>(null);
+  const [inlineManualSearchResultsQuery, setInlineManualSearchResultsQuery] = useState<string | null>(null);
   const [scannerThresholdSet, setScannerThresholdSet] = useState<ScannerThresholdSet>(DEFAULT_SCANNER_THRESHOLD_SET);
   const scannerClientContext = useMemo(() => getScannerClientContext(), []);
   const scannerFeatureFlags = useMemo(() => getScannerFeatureFlags(), []);
@@ -1876,6 +1878,8 @@ export default function ScanScreen() {
 
     if (trimmed.length < 2) {
       setInlineManualSearchResults([]);
+      setInlineManualSearchResultsQuery(null);
+      setInlineManualSearchError(null);
       setInlineManualSearchLoading(false);
       return;
     }
@@ -1889,9 +1893,11 @@ export default function ScanScreen() {
       });
       if (inlineManualSearchRequestRef.current !== requestId) return;
       setInlineManualSearchResults((rows ?? []).slice(0, MAX_RESULT_CARDS).map(toResultCard));
+      setInlineManualSearchResultsQuery(trimmed);
+      setInlineManualSearchError(null);
     } catch (error) {
       if (inlineManualSearchRequestRef.current !== requestId) return;
-      setInlineManualSearchResults([]);
+      setInlineManualSearchError('Search could not load. Your earlier matches are still available.');
       logCameraDiagnostic('inline manual search failed', {
         routeInstanceId: routeInstanceId.current,
         query: trimmed.slice(0, 80),
@@ -1907,6 +1913,8 @@ export default function ScanScreen() {
   const closeInlineManualSearch = useCallback(() => {
     setInlineManualSearchOpen(false);
     setInlineManualSearchResults([]);
+    setInlineManualSearchResultsQuery(null);
+    setInlineManualSearchError(null);
     setInlineManualSearchLoading(false);
     inlineManualSearchRequestRef.current += 1;
     if (scanMode === 'auto' && cameraReady && permissionGranted && !captureBusy && !mountError) {
@@ -1947,6 +1955,7 @@ export default function ScanScreen() {
       stopAutoScanner();
       setInlineManualSearchOpen(true);
       setInlineManualSearchQuery(lastQuery);
+      setInlineManualSearchError(null);
       setScannerState({ type: 'search' });
       return;
     }
@@ -2640,10 +2649,16 @@ export default function ScanScreen() {
       featureFlags: scannerFeatureFlags,
     });
 
+    const { data: { session: authSession } } = await supabase.auth.getSession();
+    const binderPageOwnerUserId = authSession?.user.id;
+    if (!binderPageOwnerUserId) {
+      throw new Error('Sign in before opening a binder page review.');
+    }
+
     if (shouldReplaceBinderPocket && parentBinderPageSessionId) {
       const replacement = finalPockets[0];
       if (replacement) {
-        const updatedParent = updateBinderPageScanSession(parentBinderPageSessionId, (stored) => {
+        const updatedParent = await updateBinderPageScanSession(parentBinderPageSessionId, binderPageOwnerUserId, (stored) => {
           const nextPockets = stored.pockets.map((pocket) => {
             const cleanedStatus = pocket.status === 'duplicate_candidate'
               ? getBinderPocketStatusFromCandidates(pocket.quality, pocket.candidates)
@@ -2719,8 +2734,9 @@ export default function ScanScreen() {
       }
     }
 
-    saveBinderPageScanSession({
+    await checkpointBinderPageScanSession({
       scanSessionId: routeInstanceId.current,
+      ownerUserId: binderPageOwnerUserId,
       binderId,
       layout: binderPageLayout,
       capturedAt: new Date().toISOString(),
@@ -3931,7 +3947,24 @@ export default function ScanScreen() {
                   <Ionicons name="chevron-forward" size={18} color="#DDD6FE" />
                 </TouchableOpacity>
               ))}
-              {!inlineManualSearchLoading && inlineManualSearchQuery.trim().length >= 2 && inlineManualSearchResults.length === 0 ? (
+              {inlineManualSearchError ? (
+                <View accessibilityRole="alert" style={styles.inlineManualSearchFailure}>
+                  <Text style={styles.inlineManualSearchFailureText}>{inlineManualSearchError}</Text>
+                  <TouchableOpacity
+                    onPress={() => runInlineManualSearch(inlineManualSearchQuery)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Retry manual card search"
+                    style={styles.inlineManualSearchRetry}
+                  >
+                    <Text style={styles.inlineManualSearchRetryText}>Retry</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null}
+              {!inlineManualSearchLoading
+                && !inlineManualSearchError
+                && inlineManualSearchResultsQuery === inlineManualSearchQuery.trim()
+                && inlineManualSearchQuery.trim().length >= 2
+                && inlineManualSearchResults.length === 0 ? (
                 <Text style={styles.inlineManualSearchEmpty}>
                   No local matches yet.
                 </Text>
@@ -4431,6 +4464,34 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     textAlign: 'center',
     paddingVertical: 8,
+  },
+  inlineManualSearchFailure: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(253, 186, 116, 0.6)',
+    backgroundColor: 'rgba(124, 45, 18, 0.55)',
+    padding: 10,
+    gap: 8,
+  },
+  inlineManualSearchFailureText: {
+    color: '#FFEDD5',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '800',
+  },
+  inlineManualSearchRetry: {
+    minHeight: 36,
+    alignSelf: 'flex-start',
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.14)',
+  },
+  inlineManualSearchRetryText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '900',
   },
   bottomPanel: {
     paddingHorizontal: 18,

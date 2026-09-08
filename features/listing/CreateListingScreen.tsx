@@ -119,7 +119,8 @@ import {
   type ListingPhotoSource,
   type ListingPhotoValidationMetrics,
 } from '../../lib/listingPhotoValidation';
-import { getProductPriceWithFallback, searchMarketProducts, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
+import { getMarketProductById, getProductPriceWithFallback, searchMarketProducts, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
+import { productPrefillBlocksPublication, resolveCanonicalProductPrefill, type ProductPrefillState } from '../../lib/productListingPrefill';
 import { getPokemonCardImageUrls, getPokemonCardLanguageLabel, normalizePokemonCardLanguage } from '../../lib/pokemonTcg';
 import { selectTcgdexReferencePersistenceImage } from '../../lib/tcgdexReferencePersistence';
 import { fetchPokeTraceCardPrice, getPreferredMarketPrice } from '../../lib/pricing';
@@ -782,7 +783,7 @@ async function fetchCertificationDuplicateReview(
 export default function CreateListingScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ cardId?: string; setId?: string; type?: string; productName?: string; listingAction?: string; q?: string }>();
+  const params = useLocalSearchParams<{ cardId?: string; setId?: string; productId?: string; type?: string; productName?: string; listingAction?: string; q?: string }>();
   const isFocused = useIsFocused();
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
@@ -794,6 +795,9 @@ export default function CreateListingScreen() {
   const [identificationMethod, setIdentificationMethod] = useState<IdentificationMethod | null>(null);
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<MarketProduct | null>(null);
+  const [productPrefillState, setProductPrefillState] = useState<ProductPrefillState>('idle');
+  const [productPrefillRetry, setProductPrefillRetry] = useState(0);
+  const productPrefillRequestRef = useRef(0);
   const [manualIdentity, setManualIdentity] = useState<ManualIdentity>(DEFAULT_MANUAL_IDENTITY);
   const [storedListingSubjectType, setListingSubjectType] = useState<ListingSubjectType>('raw_card');
   const [listingMode, setListingMode] = useState<ListingMode>('sell');
@@ -848,7 +852,7 @@ export default function CreateListingScreen() {
   const listingActionHandledRef = useRef<string | null>(null);
   const photoCatalogueMatchRef = useRef<string | null>(null);
   const photoCatalogueSuggestionRef = useRef(0);
-  const routeHasPrefill = Boolean(params.cardId || params.productName);
+  const routeHasPrefill = Boolean(params.cardId || params.productId || params.productName);
   const listingSubjectType = resolveListingSubjectTypeForSelection({
     requested: storedListingSubjectType,
     selectedCard: listingCardForPersistence(selectedCard),
@@ -995,6 +999,7 @@ export default function CreateListingScreen() {
     if (silverAgreementRequired && !silverLiabilityAccepted) {
       missing.push({ key: 'silver-liability', label: 'Accept the Silver agreement statement' });
     }
+    if (productPrefillBlocksPublication(productPrefillState)) missing.push({ key: 'product-prefill', label: productPrefillState === 'resolving' ? 'Checking the exact product before publishing' : 'Choose the exact product or explicitly continue with manual details' });
     return missing;
   }, [
     aiComplete,
@@ -1013,6 +1018,7 @@ export default function CreateListingScreen() {
     isGradedSlabListing,
     verificationRequirements.requiresXimilar,
     valueEntered,
+    productPrefillState,
   ]);
   const completedStages = useMemo(() => {
     const completed: ListingFlowStage[] = [];
@@ -1438,7 +1444,28 @@ export default function CreateListingScreen() {
   useEffect(() => {
     const cardId = typeof params.cardId === 'string' ? params.cardId : null;
     const productName = typeof params.productName === 'string' ? params.productName.trim() : '';
+    const productId = typeof params.productId === 'string' ? params.productId : '';
     const typeParam = isListingSubjectType(params.type) ? params.type : null;
+
+    if (productId) {
+      let cancelled = false;
+      const requestId = ++productPrefillRequestRef.current;
+      if (typeParam && !isCardSubject(typeParam)) setListingSubjectType(typeParam);
+      setProductPrefillState('resolving');
+      setStep('identify');
+      void getMarketProductById(productId).then((product) => {
+        if (cancelled || requestId !== productPrefillRequestRef.current) return;
+        if (product && resolveCanonicalProductPrefill(productId, product.id) === 'resolved') {
+          setProductPrefillState('resolved');
+          void selectProduct(product);
+          return;
+        }
+        setProductPrefillState('failed');
+      }).catch(() => {
+        if (!cancelled && requestId === productPrefillRequestRef.current) setProductPrefillState('failed');
+      });
+      return () => { cancelled = true; };
+    }
 
     if (productName && typeParam && !isCardSubject(typeParam)) {
       setManualIdentity({
@@ -1480,7 +1507,7 @@ export default function CreateListingScreen() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.cardId, params.productName, params.setId, params.type, selectedCard?.id]);
+  }, [params.cardId, params.productId, params.productName, params.setId, params.type, productPrefillRetry, selectedCard?.id]);
 
   const fetchPrices = useCallback(async (card: SelectedCard, subjectType: ListingSubjectType = listingSubjectType) => {
     setPrices({ ...DEFAULT_PRICES, loading: true });
@@ -1801,9 +1828,11 @@ export default function CreateListingScreen() {
   };
 
   const selectProduct = async (product: MarketProduct) => {
+    productPrefillRequestRef.current += 1;
     const productSubjectType = getListingSubjectTypeForProduct(product);
     const productCategoryConfig = getListingCategoryConfig(productSubjectType);
     setSelectedProduct(product);
+    setProductPrefillState('resolved');
     setSelectedCard(null);
     setListingSubjectType(productSubjectType);
     setSelectedProtectionTier(null);
@@ -3115,6 +3144,13 @@ export default function CreateListingScreen() {
   );
 
   const renderIdentify = () => {
+    const routeProductId = typeof params.productId === 'string' ? params.productId : '';
+    if (routeProductId && productPrefillState === 'resolving') return (
+      <View style={styles.stepContent}><Text style={[styles.stepTitle, { color: theme.colors.text }]}>Checking the exact product</Text><Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>Stackr is reopening the linked catalogue record before listing details can be composed.</Text><ActivityIndicator color={theme.colors.primary} style={{ marginTop: 12 }} /></View>
+    );
+    if (routeProductId && productPrefillState === 'failed') return (
+      <View style={styles.stepContent}><Text style={[styles.stepTitle, { color: theme.colors.text }]}>Product needs attention</Text><Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>The linked catalogue record could not be verified. Retry or explicitly enter manual details.</Text><TouchableOpacity onPress={() => { setProductPrefillState('resolving'); setProductPrefillRetry((value) => value + 1); }} accessibilityRole="button" style={[styles.primaryActionFull, { backgroundColor: theme.colors.primary }]}><Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>Retry product check</Text></TouchableOpacity><TouchableOpacity onPress={() => { productPrefillRequestRef.current += 1; setProductPrefillState('manual'); setIdentificationMethod('manual'); setStep('manual'); }} accessibilityRole="button" style={[styles.secondaryActionFull, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}><Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900' }}>Use manual details</Text></TouchableOpacity></View>
+    );
     if (!isCardSubject(listingSubjectType)) {
       const supportsCatalogue = canUseProductCatalogue(listingSubjectType);
       return (

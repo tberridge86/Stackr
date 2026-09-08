@@ -16,6 +16,7 @@ export default function FavoritesMarketItemsScreen() {
   const { theme } = useTheme();
   const { marketplaceListings, tradeLoading, refreshTrade } = useTrade();
   const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [savedIdsError, setSavedIdsError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState('');
   const authUserIdRef = useRef('');
   const authGenerationRef = useRef(0);
@@ -48,7 +49,8 @@ export default function FavoritesMarketItemsScreen() {
       const saved = userId ? await fetchSavedMarketListingIds(userId) : [];
       if (authUserIdRef.current !== userId || authGenerationRef.current !== generation) return;
       setSavedIds(saved);
-    } catch {
+      setSavedIdsError(null);
+    } catch (error) {
       if (
         attemptedUserId === null
         && authUserIdRef.current === startingUserId
@@ -62,7 +64,7 @@ export default function FavoritesMarketItemsScreen() {
         && authUserIdRef.current === attemptedUserId
         && authGenerationRef.current === attemptedGeneration
       ) {
-        setSavedIds([]);
+        setSavedIdsError(error instanceof Error ? error.message : 'Saved listings could not be loaded.');
       }
     }
   }, [bindIdentity]);
@@ -106,6 +108,7 @@ export default function FavoritesMarketItemsScreen() {
             </Text>
           </View>
         </View>
+        {savedIdsError ? <View style={{ paddingBottom: 10 }}><Text accessibilityRole="alert" style={{ color: '#991B1B', fontSize: 14, lineHeight: 20 }}>{savedIdsError}</Text><TouchableOpacity onPress={() => void load()} accessibilityRole="button" style={{ minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }}><Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '900' }}>Retry saved listings</Text></TouchableOpacity></View> : null}
 
         <FlatList
           data={listings}

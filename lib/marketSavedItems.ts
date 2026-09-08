@@ -1,5 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
+import { parseSavedMarketListingIds } from './marketSavedItemParser';
+
+export { parseSavedMarketListingIds } from './marketSavedItemParser';
 
 export const LEGACY_SAVED_MARKET_LISTINGS_KEY = '@stackr:market:saved-listing-ids';
 const SAVED_MARKET_LISTINGS_KEY_PREFIX = '@stackr:market:saved-listing-ids:v2';
@@ -51,12 +54,7 @@ async function readSavedMarketListingIds(userId: string): Promise<string[]> {
   await clearLegacySavedMarketListings();
   const verifiedUserId = await requireVerifiedCurrentUser(userId);
   const raw = await AsyncStorage.getItem(getSavedMarketListingsKey(verifiedUserId));
-  if (!raw) return [];
-  try {
-    return normaliseIds(JSON.parse(raw));
-  } catch {
-    return [];
-  }
+  return parseSavedMarketListingIds(raw);
 }
 
 export async function fetchSavedMarketListingIds(userId: string): Promise<string[]> {

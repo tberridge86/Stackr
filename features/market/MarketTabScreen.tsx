@@ -666,6 +666,7 @@ export default function TheMarketTab() {
   const [currentUserId, setCurrentUserId] = useState('');
   const [cardDetails, setCardDetails] = useState<Record<string, CardDetail>>({});
   const [savedListingIds, setSavedListingIds] = useState<string[]>([]);
+  const [savedListingsError, setSavedListingsError] = useState<string | null>(null);
   const [favoriteBusyIds, setFavoriteBusyIds] = useState<string[]>([]);
   const [sellerFilter, setSellerFilter] = useState<SellerFilter>(null);
   const [menuListing, setMenuListing] = useState<MarketplaceListing | null>(null);
@@ -825,9 +826,10 @@ export default function TheMarketTab() {
       const saved = await fetchSavedMarketListingIds(userId);
       if (marketAuthUserIdRef.current !== userId || marketAuthGenerationRef.current !== generation) return;
       setSavedListingIds(saved);
-    } catch {
+      setSavedListingsError(null);
+    } catch (error) {
       if (marketAuthUserIdRef.current === userId && marketAuthGenerationRef.current === generation) {
-        setSavedListingIds([]);
+        setSavedListingsError(error instanceof Error ? error.message : 'Saved listings could not be loaded.');
       }
     }
   }, []);
@@ -1725,6 +1727,8 @@ export default function TheMarketTab() {
         showShortcuts
         showMyListings={canPublishListing}
       />
+
+      {savedListingsError ? <View accessibilityRole="alert" style={{ borderRadius: 12, borderWidth: 1, borderColor: '#FCA5A5', backgroundColor: '#FEF2F2', padding: 11 }}><Text style={{ color: '#991B1B', fontSize: 14, lineHeight: 20, fontWeight: '800' }}>{savedListingsError}</Text><TouchableOpacity onPress={() => void loadSaved(currentUserId, marketAuthGenerationRef.current)} accessibilityRole="button" style={{ minHeight: 48, alignSelf: 'flex-start', justifyContent: 'center' }}><Text style={{ color: '#991B1B', fontSize: 14, fontWeight: '900' }}>Retry saved listings</Text></TouchableOpacity></View> : null}
 
       <MarketSearch
         value={search}

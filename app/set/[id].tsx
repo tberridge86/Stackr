@@ -28,6 +28,7 @@ import { createActivityPost } from '../../lib/activity';
 import { getIncrementalListWindow } from '../../lib/performance';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { getPreferredCardDisplayName } from '../../lib/pokemonDisplayNames';
+import { isSetVariantQuantitySchemaUnavailable } from '../../lib/setVariantRemoval';
 
 type FilterType = 'all' | 'owned' | 'missing';
 type SortType = 'number' | 'name' | 'rarity';
@@ -725,13 +726,14 @@ export default function SetDetailScreen() {
 
     try {
       if (nextQuantity <= 0) {
-        await supabase
+        const { error } = await supabase
           .from('user_card_variants')
           .delete()
           .eq('user_id', userId)
           .eq('card_id', cardId)
           .eq('set_id', setId)
           .eq('variant', variant);
+        if (error) throw error;
         if (previousQuantity > 0) {
           await createActivityPost({
             title: 'Removed from collection',
@@ -782,7 +784,7 @@ export default function SetDetailScreen() {
       console.log('Failed to save card quantity', error);
       Alert.alert(
         'Could not save quantity',
-        error?.message?.includes('quantity')
+        isSetVariantQuantitySchemaUnavailable(error)
           ? 'Quantity tracking needs the new database migration before it can save.'
           : 'Could not save this card quantity.'
       );
@@ -792,7 +794,11 @@ export default function SetDetailScreen() {
 
   const handleQuickAddVariant = useCallback(async (card: PokemonCard, variant: string) => {
     const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
-    await handleSetVariantQuantity(card.id, variant, currentQuantity + 1);
+    try {
+      await handleSetVariantQuantity(card.id, variant, currentQuantity + 1);
+    } catch {
+      // The optimistic rollback and accessible error were already handled above.
+    }
   }, [handleSetVariantQuantity, setId, variantQuantities]);
 
   const saveQuantityModal = useCallback(async () => {

@@ -42,6 +42,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
       <Tabs.Screen name="binder" options={{ title: 'Collection' }} />
+      <Tabs.Screen name="scan-hub" options={{ title: 'Scan', href: null }} />
       <Tabs.Screen name="market" options={{ title: 'The Market' }} />
       <Tabs.Screen name="search" options={{ title: 'Search' }} />
       <Tabs.Screen name="community/index" options={{ title: 'Community', href: null }} />
