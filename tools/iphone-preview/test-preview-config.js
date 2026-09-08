@@ -87,7 +87,7 @@ assert.equal(isPreviewExpoAlive({ killed: false, exitCode: 0 }), false);
 assert.equal(isPreviewExpoAlive(null), false);
 
 async function verifyStatusNavigationRace() {
-  const html = require('node:fs').readFileSync(require('node:path').join(__dirname, 'index.html'), 'utf8');
+  const html = require('node:fs').readFileSync(require('node:path').join(__dirname, 'index.html'), 'utf8').replace(/\r\n/g, '\n');
   const checkStatusSource = html.match(/async function checkStatus\(\) \{[\s\S]*?\n    \}\n    function load/)[0]
     .replace(/\n    function load$/, '');
   for (const changeUrl of [false, true]) {
