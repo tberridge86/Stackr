@@ -319,10 +319,10 @@ export default function AddCardsToBinderScreen() {
 
         {/* Card info */}
         <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }} numberOfLines={1}>
+          <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>
             {displayName}
           </Text>
-          <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 13 }} numberOfLines={1}>
+          <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 13 }}>
             {setLine}
           </Text>
         </View>

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackrBackButton } from '../../components/StackrBackButton';
+import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { Text } from '../../components/Text';
 import { useProfile } from '../../components/profile-context';
 import { useTheme } from '../../components/theme-context';
@@ -46,6 +47,14 @@ type IdentityFields = {
   collectorNumber: string;
   language: string;
   variant: string;
+};
+type DecisionConfirmation = {
+  decision: string;
+  label: string;
+  itemId: string;
+  identity: ReturnType<typeof fieldsToIdentity>;
+  physicalCardSessionId: string;
+  reviewerNotes: string;
 };
 
 const emptyIdentity: IdentityFields = {
@@ -135,6 +144,9 @@ export default function RecognitionFeedbackReviewScreen() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [decisionError, setDecisionError] = useState<string | null>(null);
+  const [decisionConfirmation, setDecisionConfirmation] = useState<DecisionConfirmation | null>(null);
+  const decisionInFlightRef = useRef(false);
   const [identityFields, setIdentityFields] = useState<IdentityFields>(emptyIdentity);
   const [physicalCardSessionId, setPhysicalCardSessionId] = useState('');
   const [reviewerNotes, setReviewerNotes] = useState('');
@@ -186,12 +198,14 @@ export default function RecognitionFeedbackReviewScreen() {
     setReviewerNotes(selectedItem.reviewer_notes ?? '');
   }, [selectedItem]);
 
-  async function submitDecision(decision: string) {
-    if (!selectedItem) return;
+  async function submitDecision(confirmation: DecisionConfirmation) {
+    if (decisionInFlightRef.current) return;
     try {
+      decisionInFlightRef.current = true;
       setSaving(true);
+      setDecisionError(null);
       const authorization = await authHeader();
-      const response = await fetch(`${RECOGNITION_FEEDBACK_API_URL}/review-queue/${encodeURIComponent(selectedItem.id)}`, {
+      const response = await fetch(`${RECOGNITION_FEEDBACK_API_URL}/review-queue/${encodeURIComponent(confirmation.itemId)}`, {
         method: 'PATCH',
         headers: {
           Authorization: authorization,
@@ -199,22 +213,32 @@ export default function RecognitionFeedbackReviewScreen() {
         },
         body: JSON.stringify({
           decision: {
-            decision,
-            reviewedIdentity: fieldsToIdentity(identityFields),
-            physicalCardSessionId,
-            reviewerNotes,
+            decision: confirmation.decision,
+            reviewedIdentity: confirmation.identity,
+            physicalCardSessionId: confirmation.physicalCardSessionId,
+            reviewerNotes: confirmation.reviewerNotes,
           },
         }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.error ?? 'Could not save review decision.');
-      setItems((current) => current.filter((item) => item.id !== selectedItem.id));
+      setItems((current) => current.filter((item) => item.id !== confirmation.itemId));
       setSelectedId(null);
+      setDecisionConfirmation(null);
     } catch (error: any) {
-      Alert.alert('Decision not saved', error?.message ?? 'Please try again.');
+      setDecisionError(error?.message ?? 'Decision not saved. Review the draft and retry.');
     } finally {
+      decisionInFlightRef.current = false;
       setSaving(false);
     }
+  }
+
+  function confirmDecision(decision: string, label: string) {
+    if (saving || decisionInFlightRef.current) return;
+    const identity = fieldsToIdentity(identityFields);
+    if (!selectedItem) return;
+    setDecisionError(null);
+    setDecisionConfirmation({ decision, label, itemId: selectedItem.id, identity, physicalCardSessionId, reviewerNotes });
   }
 
   return (
@@ -326,7 +350,7 @@ export default function RecognitionFeedbackReviewScreen() {
                   ].map(([decision, label]) => (
                     <TouchableOpacity
                       key={decision}
-                      onPress={() => submitDecision(decision)}
+                      onPress={() => confirmDecision(decision, label)}
                       disabled={saving}
                       accessibilityRole="button"
                       accessibilityLabel={label}
@@ -350,6 +374,7 @@ export default function RecognitionFeedbackReviewScreen() {
                     </TouchableOpacity>
                   ))}
                 </View>
+                {decisionError ? <Text accessibilityRole="alert" style={{ color: '#D14343', fontSize: 12, lineHeight: 17 }}>{decisionError}</Text> : null}
 
                 <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 16 }}>
                   Export approved examples with `npm run export:recognition-feedback-dataset`. The export creates a candidate dataset manifest only; it does not deploy a model.
@@ -359,6 +384,18 @@ export default function RecognitionFeedbackReviewScreen() {
           </>
         )}
       </ScrollView>
+      <StackrBottomSheet
+        visible={decisionConfirmation !== null}
+        title="Confirm review decision"
+        subtitle="Check the card and decision before saving."
+        onClose={() => setDecisionConfirmation(null)}
+        dismissible={!saving}
+        maxHeight="84%"
+        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 12 }}
+        footer={<View style={{ flexDirection: 'row', gap: 10 }}><TouchableOpacity accessibilityRole="button" accessibilityState={{ disabled: saving, busy: saving }} disabled={saving} onPress={() => setDecisionConfirmation(null)} style={{ flex: 1, minHeight: 48, justifyContent: 'center', alignItems: 'center' }}><Text style={{ color: theme.colors.textSoft, fontWeight: '900' }}>Cancel</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityState={{ disabled: saving, busy: saving }} disabled={saving} onPress={() => { if (decisionConfirmation) void submitDecision(decisionConfirmation); }} style={{ flex: 1, minHeight: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.primary }}><Text style={{ color: '#FFF', fontWeight: '900' }}>{saving ? 'Saving…' : decisionConfirmation?.label}</Text></TouchableOpacity></View>}
+      >
+        {decisionConfirmation ? <View style={{ gap: 8 }}><Text style={{ color: theme.colors.text, fontWeight: '900' }}>{decisionConfirmation.label}</Text><Text style={{ color: theme.colors.textSoft }}>Card: {identityTitle(decisionConfirmation.identity)}</Text><Text style={{ color: theme.colors.textSoft }}>Set: {decisionConfirmation.identity.setId ?? 'not set'}</Text><Text style={{ color: theme.colors.textSoft }}>Number: {decisionConfirmation.identity.collectorNumber ?? 'not set'}</Text><Text style={{ color: theme.colors.textSoft }}>Language: {decisionConfirmation.identity.language ?? 'not set'}</Text><Text style={{ color: theme.colors.textSoft }}>Variant: {decisionConfirmation.identity.variant ?? 'not set'}</Text><Text style={{ color: theme.colors.textSoft }}>Session: {decisionConfirmation.physicalCardSessionId.trim() || 'not set'}</Text><Text style={{ color: theme.colors.textSoft }}>Notes: {decisionConfirmation.reviewerNotes.trim() || '(none)'}</Text>{decisionError ? <Text accessibilityRole="alert" style={{ color: '#D14343', lineHeight: 18 }}>{decisionError}</Text> : null}</View> : null}
+      </StackrBottomSheet>
     </SafeAreaView>
   );
 }

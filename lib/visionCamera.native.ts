@@ -1,4 +1,5 @@
 import type { ReadonlyFrameProcessor } from 'react-native-vision-camera';
+import { Camera as VisionCamera } from 'react-native-vision-camera';
 
 export {
   Camera,
@@ -15,3 +16,7 @@ export type {
   Point,
 } from 'react-native-vision-camera';
 export type FrameProcessor = ReadonlyFrameProcessor;
+
+export function getCameraPermissionStatus() {
+  return VisionCamera.getCameraPermissionStatus();
+}

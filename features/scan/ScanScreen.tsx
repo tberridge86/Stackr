@@ -3919,7 +3919,7 @@ export default function ScanScreen() {
             <View style={styles.inlineManualSearchHeader}>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={styles.inlineManualSearchTitle}>Manual search</Text>
-                <Text style={styles.inlineManualSearchSubtitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>
+                <Text style={styles.inlineManualSearchSubtitle} numberOfLines={2}>
                   Search without restarting the camera.
                 </Text>
               </View>

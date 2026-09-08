@@ -31,7 +31,7 @@ import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { getIncrementalListWindow } from '../../lib/performance';
 import { createLatestRequestGate } from '../../lib/latestRequestGate';
-import { buildProductQuery, searchMarketProducts } from '../../lib/productSearch';
+import { buildProductQuery, refreshMarketProductPrice, searchMarketProducts } from '../../lib/productSearch';
 import type { ProductLookupType, ProductPriceResult } from '../../lib/productSearch';
 import { listingCategoryIcons } from '../../lib/listingCategoryIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
@@ -291,6 +291,9 @@ export default function MarketScreen() {
   const [searchPriceMap, setSearchPriceMap] = useState<Record<string, SearchPriceState>>({});
   const [searchEbayMap, setSearchEbayMap] = useState<Record<string, EbayDetailData>>({});
   const [watchlistLoading, setWatchlistLoading] = useState(true);
+  const [watchMutation, setWatchMutation] = useState<Record<string, boolean>>({});
+  const watchMutationRef = useRef(new Set<string>());
+  const [watchError, setWatchError] = useState<Record<string, string>>({});
 
   const translateY = useRef(new Animated.Value(0)).current;
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -604,7 +607,12 @@ export default function MarketScreen() {
       setSearching(true);
       setSearchError(null);
       const catalogResults = await searchMarketProducts(trimmed, productType, 1);
-      const catalogPrice = catalogResults[0]?.latest_price ?? null;
+      const product = catalogResults[0] ?? null;
+      const catalogPrice = product
+        ? product.latest_price?.average != null
+          ? product.latest_price
+          : await refreshMarketProductPrice(product)
+        : null;
       if (searchRequestRef.current.isCurrent(requestId)) { setProductPriceData(catalogPrice); setLastSuccessfulSearch({ query: trimmed, lookupType: productType }); }
     } catch (err) {
       if (!searchRequestRef.current.isCurrent(requestId)) return;
@@ -752,12 +760,22 @@ export default function MarketScreen() {
 
   const toggleWatchlist = useCallback(async (card: PokemonCard) => {
     if (!userId) return;
-    if (isWatching(card.id)) {
-      await supabase.from('market_watchlist').delete().eq('user_id', userId).eq('card_id', card.id);
-    } else {
-      await supabase.from('market_watchlist').insert({ user_id: userId, card_id: card.id, set_id: card.set?.id ?? null });
+    if (watchMutationRef.current.has(card.id)) return;
+    watchMutationRef.current.add(card.id);
+    setWatchMutation((current) => ({ ...current, [card.id]: true }));
+    setWatchError((current) => ({ ...current, [card.id]: '' }));
+    try {
+      const result = isWatching(card.id)
+        ? await supabase.from('market_watchlist').delete().eq('user_id', userId).eq('card_id', card.id)
+        : await supabase.from('market_watchlist').insert({ user_id: userId, card_id: card.id, set_id: card.set?.id ?? null });
+      if (result.error) throw result.error;
+      await loadWatchlist();
+    } catch (error: any) {
+      setWatchError((current) => ({ ...current, [card.id]: error?.message ?? 'Could not update this watch. Retry.' }));
+    } finally {
+      watchMutationRef.current.delete(card.id);
+      setWatchMutation((current) => ({ ...current, [card.id]: false }));
     }
-    await loadWatchlist();
   }, [userId, isWatching, loadWatchlist]);
 
   // ===============================
@@ -793,6 +811,8 @@ export default function MarketScreen() {
 
   const renderCard = useCallback(({ item }: { item: PokemonCard }) => {
     const watching = isWatching(item.id);
+    const watchBusy = Boolean(watchMutation[item.id]);
+    const watchFailure = watchError[item.id];
     const tcgMid = getBestTcgPrice(item, 'mid');
     const priceSnapshot = searchPriceMap[item.id];
     const liveEbay = searchEbayMap[item.id];
@@ -856,10 +876,13 @@ export default function MarketScreen() {
 
           <TouchableOpacity
             onPress={() => toggleWatchlist(item)}
+            disabled={watchBusy}
+            accessibilityState={{ busy: watchBusy, disabled: watchBusy }}
             style={{ marginTop: 10, alignSelf: 'flex-start', backgroundColor: watching ? theme.colors.secondary : theme.colors.surface, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: watching ? theme.colors.secondary : theme.colors.border }}
           >
-            <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 13 }}>{watching ? '✓ Watching' : '+ Watch'}</Text>
+            <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 13 }}>{watchBusy ? 'Updating…' : watching ? '✓ Watching' : '+ Watch'}</Text>
           </TouchableOpacity>
+          {watchFailure ? <Text accessibilityRole="alert" style={{ color: '#D14343', fontSize: 12, marginTop: 6 }}>{watchFailure}</Text> : null}
         </View>
       </Pressable>
     );
@@ -875,6 +898,8 @@ export default function MarketScreen() {
     theme.colors.text,
     theme.colors.textSoft,
     toggleWatchlist,
+    watchError,
+    watchMutation,
   ]);
 
   const renderWatchlistCard = useCallback(({ item }: { item: PokemonCard }) => {

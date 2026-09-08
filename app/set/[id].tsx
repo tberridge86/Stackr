@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
-  Modal,
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -33,6 +32,7 @@ import { getPreferredCardDisplayName } from '../../lib/pokemonDisplayNames';
 import { isSetVariantQuantitySchemaUnavailable } from '../../lib/setVariantRemoval';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { useAuth } from '../../components/auth-context';
+import { StackrBottomSheet } from '../../components/StackrModalSystem';
 
 type FilterType = 'all' | 'owned' | 'missing';
 type SortType = 'number' | 'name' | 'rarity';
@@ -657,6 +657,13 @@ export default function SetDetailScreen() {
   const [selectedRarity, setSelectedRarity] = useState<string>(ALL_RARITY_FILTER);
   const [sort, setSort] = useState<SortType>('number');
   const [finishSection, setFinishSection] = useState<FinishSectionKey>('pattern');
+  const clearCardFilters = useCallback(() => {
+    setSearch('');
+    setFilter('all');
+    setSelectedRarity(ALL_RARITY_FILTER);
+    setSort('number');
+    setFinishSection('pattern');
+  }, []);
 
   // ===============================
   // LOAD DATA
@@ -1400,6 +1407,9 @@ export default function SetDetailScreen() {
         ListEmptyComponent={
           <View style={{ alignItems: 'center', paddingVertical: 40 }}>
             <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>No cards match your filters.</Text>
+            <TouchableOpacity accessibilityRole="button" onPress={clearCardFilters} style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 16, marginTop: 10, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.primary }}>
+              <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>Clear filters</Text>
+            </TouchableOpacity>
           </View>
         }
         ListFooterComponent={hasMoreFilteredCards ? (
@@ -1409,22 +1419,15 @@ export default function SetDetailScreen() {
         ) : null}
       />
 
-      <Modal visible={quantityTarget !== null} animationType="slide" transparent>
-        <View style={{
-          flex: 1,
-          justifyContent: 'flex-end',
-          backgroundColor: 'rgba(15,23,42,0.35)',
-        }}>
-          <View style={{
-            backgroundColor: theme.colors.card,
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            paddingHorizontal: 20,
-            paddingTop: 18,
-            paddingBottom: 34,
-            borderTopWidth: 1,
-            borderColor: theme.colors.border,
-          }}>
+      <StackrBottomSheet
+        visible={quantityTarget !== null}
+        title="Quantity owned"
+        onClose={() => setQuantityTarget(null)}
+        dismissible={!quantitySaving}
+        maxHeight="84%"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 12 }}
+      >
+          <View>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
               <StackrImage
                 uri={quantityTarget?.card.images?.small ?? null}
@@ -1453,6 +1456,9 @@ export default function SetDetailScreen() {
 
               <TouchableOpacity
                 onPress={() => setQuantityTarget(null)}
+                accessibilityRole="button"
+                accessibilityLabel="Close quantity editor"
+                disabled={quantitySaving}
                 style={{
                   width: 36,
                   height: 36,
@@ -1472,9 +1478,10 @@ export default function SetDetailScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <TouchableOpacity
                 onPress={() => setQuantityDraft((value) => String(Math.max(1, (Number.parseInt(value, 10) || 1) - 1)))}
+                accessibilityRole="button" accessibilityLabel="Decrease quantity" disabled={quantitySaving}
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   borderRadius: 14,
                   backgroundColor: theme.colors.surface,
                   borderWidth: 1,
@@ -1488,12 +1495,17 @@ export default function SetDetailScreen() {
 
               <TextInput
                 value={quantityDraft}
-                onChangeText={(value) => setQuantityDraft(value.replace(/[^0-9]/g, '').slice(0, 2) || '1')}
+                onChangeText={(value) => {
+                  const parsed = Number.parseInt(value.replace(/[^0-9]/g, '').slice(0, 2), 10);
+                  setQuantityDraft(String(Math.max(1, Math.min(99, Number.isFinite(parsed) ? parsed : 1))));
+                }}
                 keyboardType="number-pad"
+                accessibilityLabel="Quantity owned"
+                editable={!quantitySaving}
                 selectTextOnFocus
                 style={{
                   flex: 1,
-                  minHeight: 46,
+                  minHeight: 48,
                   borderRadius: 14,
                   borderWidth: 1,
                   borderColor: theme.colors.border,
@@ -1507,9 +1519,10 @@ export default function SetDetailScreen() {
 
               <TouchableOpacity
                 onPress={() => setQuantityDraft((value) => String(Math.min(99, (Number.parseInt(value, 10) || 1) + 1)))}
+                accessibilityRole="button" accessibilityLabel="Increase quantity" disabled={quantitySaving}
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   borderRadius: 14,
                   backgroundColor: theme.colors.primary,
                   alignItems: 'center',
@@ -1548,8 +1561,7 @@ export default function SetDetailScreen() {
               </TouchableOpacity>
             )}
           </View>
-        </View>
-      </Modal>
+      </StackrBottomSheet>
     </SafeAreaView>
   );
 }

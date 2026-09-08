@@ -294,7 +294,7 @@ const profileScreen = fs.readFileSync('features/profile/ProfileScreen.tsx', 'utf
 assert.match(profileScreen, /\{premiumSellerAccess\.allowed \? \(\s*<View[^>]*>\s*<SectionHeader title="Trusted seller beta"/s);
 
 const hubScreen = fs.readFileSync('features/home/HubScreen.tsx', 'utf8');
-assert.match(hubScreen, /\{premiumSellerAccess\.allowed \? \(\s*<Modal visible=\{roleModalOpen\}/s);
+assert.match(hubScreen, /\{premiumSellerAccess\.allowed \? \(\s*<StackrBottomSheet visible=\{roleModalOpen\}/s);
 assert.doesNotMatch(hubScreen, /ordinary Market listings remain available outside|create ordinary listings/);
 assert.doesNotMatch(hubScreen, /Use purchase history/);
 assert.match(

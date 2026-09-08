@@ -20,6 +20,7 @@ import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import {
   PRODUCT_LOOKUP_OPTIONS,
   productLookupLabel,
+  getMarketProductById,
   refreshMarketProductPrice,
   searchMarketProducts,
 } from '../../lib/productSearch';
@@ -67,6 +68,7 @@ type BuilderItem = {
   ebayPrice: number | null;
   cardmarketPrice: number | null;
   ebayLoading: boolean;
+  priceError?: string | null;
 };
 
 // ===============================
@@ -125,7 +127,7 @@ const cardShadow = {
 // ===============================
 
 const money = (value: number | null | undefined): string => {
-  if (value == null || Number.isNaN(value)) return '--';
+  if (value == null || !Number.isFinite(value) || value <= 0) return '--';
   return `£${Number(value).toFixed(2)}`;
 };
 
@@ -217,14 +219,13 @@ export default function PriceBuilderScreen() {
 
       if (lookupType !== 'raw_card') {
         const products = await searchMarketProducts(text, lookupType, 30);
-        if (products[0] && products[0].latest_price?.average == null) {
+        await Promise.all(products.map(async (product, index) => {
+          if (product.latest_price?.average != null) return;
           try {
-            const price = await refreshMarketProductPrice(products[0]);
-            products[0] = { ...products[0], latest_price: price };
-          } catch (error) {
-            console.log('Product price refresh failed', error);
-          }
-        }
+            const price = await refreshMarketProductPrice(product);
+            products[index] = { ...product, latest_price: price };
+          } catch (error) { console.log('Product price refresh failed', error); }
+        }));
         setResults(products.map(productToBuilderRow));
         return;
       }
@@ -298,6 +299,9 @@ export default function PriceBuilderScreen() {
       ebayPrice: card.is_product ? card.raw_data?.productPrice?.low ?? null : null,
       cardmarketPrice: card.is_product ? card.raw_data?.productPrice?.high ?? null : null,
       ebayLoading: !card.is_product,
+      priceError: card.is_product && card.raw_data?.productPrice?.average == null
+        ? 'Estimate unavailable. Retry to keep this item.'
+        : null,
     }));
 
     setItems((prev) => [...prev, ...newItems]);
@@ -316,12 +320,12 @@ export default function PriceBuilderScreen() {
                   tcgPrice: price.central,
                   ebayPrice: price.low,
                   cardmarketPrice: price.high,
-                  ebayLoading: false,
+                  ebayLoading: false, priceError: null,
                 }
               : item
           )
         );
-      });
+      }).catch(() => setItems((prev) => prev.map((item) => item.localId === newItem.localId ? { ...item, ebayLoading: false, priceError: 'Estimate unavailable. Retry to keep this item.' } : item)));
     }
   }, [pendingSelection]);
 
@@ -348,6 +352,20 @@ export default function PriceBuilderScreen() {
       )
     );
   }, []);
+
+  const retryItemPrice = useCallback((localId: string) => {
+    const current = items.find((item) => item.localId === localId);
+    if (!current) return;
+    setItems((prev) => prev.map((item) => item.localId === localId ? { ...item, ebayLoading: true, priceError: null } : item));
+    const refresh = current.card.is_product
+      ? getMarketProductById(current.card.id).then(async (product) => {
+        if (!product) throw new Error('Product is unavailable.');
+        const price = await refreshMarketProductPrice(product);
+        return { low: price?.low ?? null, central: price?.average ?? null, high: price?.high ?? null };
+      })
+      : fetchStackrPriceRange(current.card);
+    void refresh.then((price) => setItems((prev) => prev.map((item) => item.localId === localId ? { ...item, tcgPrice: price.central, ebayPrice: price.low, cardmarketPrice: price.high, ebayLoading: false, priceError: price.central == null ? 'Estimate unavailable. Retry to keep this item.' : null } : item))).catch(() => setItems((prev) => prev.map((item) => item.localId === localId ? { ...item, ebayLoading: false, priceError: 'Estimate unavailable. Retry to keep this item.' } : item)));
+  }, [items]);
 
   const handleQuickFilter = useCallback((action: string) => {
     setActiveQuickFilter(action);
@@ -395,7 +413,7 @@ export default function PriceBuilderScreen() {
       totals.ebay > 0 ? totals.ebay : null,
       totals.cardmarket > 0 ? totals.cardmarket : null,
     ].filter((v): v is number => v != null);
-    if (!available.length) return 0;
+    if (!available.length) return null;
     return available.reduce((sum, v) => sum + v, 0) / available.length;
   }, [totals]);
 
@@ -405,7 +423,7 @@ export default function PriceBuilderScreen() {
     return Math.max(0, Math.min(100, parsed));
   }, [offerPercent]);
 
-  const offerGuideValue = bestEstimate * (offerPercentNumber / 100);
+  const offerGuideValue = bestEstimate == null ? null : bestEstimate * (offerPercentNumber / 100);
 
   // ===============================
   // RENDER SEARCH RESULT
@@ -575,6 +593,7 @@ export default function PriceBuilderScreen() {
               <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>+</Text>
             </TouchableOpacity>
           </View>
+          {item.priceError ? <View style={{ marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 6 }}><Text accessibilityRole="alert" style={{ color: '#D14343', fontSize: 11, flex: 1 }}>{item.priceError}</Text><TouchableOpacity accessibilityRole="button" onPress={() => retryItemPrice(item.localId)} style={{ minHeight: 32, justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 12 }}>Retry</Text></TouchableOpacity></View> : null}
         </View>
 
         <View style={{ alignItems: 'flex-end', gap: 5, minWidth: 82 }}>
@@ -604,6 +623,7 @@ export default function PriceBuilderScreen() {
     );
   }, [
     removeItem,
+    retryItemPrice,
     theme.colors.border,
     theme.colors.card,
     theme.colors.primary,

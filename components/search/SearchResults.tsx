@@ -42,6 +42,7 @@ export function SearchCategoryChip({
       activeOpacity={0.82}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
+      aria-selected={active}
       style={{
         minHeight: 34,
         paddingHorizontal: 10,

@@ -1,6 +1,7 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { StackrBottomSheet } from '../../../components/StackrModalSystem';
 import { useTheme } from '../../../components/theme-context';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   FlatList,
@@ -410,6 +411,7 @@ function timeAgo(dateString: string) {
 
 export default function CommunityScreen() {
   const { theme } = useTheme();
+  const params = useLocalSearchParams<{ intent?: string; returnTo?: string }>();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const { profile: myProfile } = useProfile();
   const isAdmin = myProfile?.role === 'admin';
@@ -450,6 +452,20 @@ export default function CommunityScreen() {
   const [localFeaturedEvents, setLocalFeaturedEvents] = useState<LocalFeaturedEvent[]>([]);
   const [localMeetups, setLocalMeetups] = useState<LocalMeetup[]>([]);
   const [communityNews, setCommunityNews] = useState<CommunityNewsItem[]>([]);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [newsError, setNewsError] = useState<string | null>(null);
+  const newsRequest = useRef(0);
+  const [shopActionError, setShopActionError] = useState<string | null>(null);
+  const [meetupError, setMeetupError] = useState<string | null>(null);
+  const [meetupSaving, setMeetupSaving] = useState(false);
+  const meetupSavingRef = useRef(false);
+  useEffect(() => () => { newsRequest.current += 1; }, []);
+  useEffect(() => { setShopActionError(null); }, [selectedShop]);
+  const openShopUrl = async (url: string) => {
+    setShopActionError(null);
+    try { await Linking.openURL(url); }
+    catch { setShopActionError('Could not open this action. Try again, or use the address and contact details above.'); }
+  };
   const [localLoading, setLocalLoading] = useState(false);
   const [liveLocalLoading, setLiveLocalLoading] = useState(false);
   const [meetupModalOpen, setMeetupModalOpen] = useState(false);
@@ -708,6 +724,19 @@ export default function CommunityScreen() {
     void loadCollectors();
   }, [loadCollectors]);
 
+  const closeCollectorDirectory = () => {
+    setCollectorModalOpen(false);
+    if (params.returnTo === 'friends') {
+      if (router.canGoBack()) router.back();
+      else router.replace('/friends');
+    }
+  };
+  useEffect(() => {
+    if (params.intent !== 'find-collectors') return;
+    openCollectorDirectory();
+    router.setParams({ intent: '' });
+  }, [params.intent, openCollectorDirectory]);
+
  const visiblePosts = useMemo(() => {
   const basePosts = mode === 'global'
     ? posts
@@ -848,6 +877,9 @@ export default function CommunityScreen() {
   }, [activeSocialTab, loadLocalData]);
 
   const loadCommunityNews = useCallback(async () => {
+    const request = ++newsRequest.current;
+    setNewsLoading(true);
+    setNewsError(null);
     try {
       const { data, error } = await supabase
         .from('community_news')
@@ -858,10 +890,12 @@ export default function CommunityScreen() {
         .limit(25);
 
       if (error) throw error;
-      setCommunityNews((data ?? []) as CommunityNewsItem[]);
+      if (request === newsRequest.current) setCommunityNews((data ?? []) as CommunityNewsItem[]);
     } catch (error) {
       console.log('Community news load failed', error);
-      setCommunityNews([]);
+      if (request === newsRequest.current) setNewsError('News is unavailable. Check your connection and try again.');
+    } finally {
+      if (request === newsRequest.current) setNewsLoading(false);
     }
   }, []);
 
@@ -974,18 +1008,22 @@ export default function CommunityScreen() {
   }, [activeSocialTab, localStoreSearch, searchLiveLocalPlaces]);
 
   const handleCreateLocalMeetup = () => {
+    if (meetupSavingRef.current) return;
+    setMeetupError(null);
     const parsedDate = meetupDate.trim() ? new Date(meetupDate.trim()) : null;
 
     if (!meetupTitle.trim() || !meetupLocation.trim()) {
-      Alert.alert('Add meetup details', 'Please add a title and location.');
+      setMeetupError('Please add a title and location.');
       return;
     }
 
     if (parsedDate && Number.isNaN(parsedDate.getTime())) {
-      Alert.alert('Check the date', 'Use a readable date, for example 31 May 2026 18:30.');
+      setMeetupError('Use a readable date and time, for example 31 May 2026 18:30.');
       return;
     }
 
+    meetupSavingRef.current = true;
+    setMeetupSaving(true);
     (async () => {
       try {
         const {
@@ -1022,7 +1060,10 @@ export default function CommunityScreen() {
         await loadLocalData();
         Alert.alert('Meetup created', 'Your local meet up is now visible in Local.');
       } catch (error: any) {
-        Alert.alert('Could not create meet up', error?.message ?? 'Please try again.');
+        setMeetupError(error?.message ?? 'Could not create meet up. Please try again.');
+      } finally {
+        meetupSavingRef.current = false;
+        setMeetupSaving(false);
       }
     })();
   };
@@ -1304,13 +1345,7 @@ export default function CommunityScreen() {
         })
         .sort((a, b) => (a.miles ?? 9999) - (b.miles ?? 9999))
     : localFeaturedEvents.map((event) => ({ event, miles: null as number | null }));
-  const defaultNewsItems = [
-    { icon: 'megaphone-outline' as const, title: 'Stackr beta updates', body: 'App updates posted by the Stackr team will appear here.', category: 'Latest Stackr news', external_url: null, source_name: 'Stackr' },
-    { icon: 'newspaper-outline' as const, title: 'Pokemon news hub', body: 'Major Pokemon game, market, and collecting news will appear here.', category: 'Pokemon News', external_url: null, source_name: 'Stackr' },
-    { icon: 'sparkles-outline' as const, title: 'New card set news', body: 'Upcoming set names, release dates, and TCG product news will appear here.', category: 'New card set news', external_url: null, source_name: 'Stackr' },
-  ];
-  const newsItems = communityNews.length
-    ? communityNews.map((item) => ({
+  const newsItems = communityNews.map((item) => ({
         icon: item.icon || 'newspaper-outline' as const,
         title: item.title,
         body: item.body,
@@ -1318,7 +1353,7 @@ export default function CommunityScreen() {
         external_url: item.external_url,
         source_name: item.source_name,
       }))
-    : defaultNewsItems;
+;
   const visibleNewsItems = activeCategory === 'All'
     ? newsItems
     : newsItems.filter((item) => item.category === activeCategory);
@@ -1748,6 +1783,13 @@ export default function CommunityScreen() {
 
         {activeSocialTab === 'News' && (
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.newsListContent}>
+            {newsLoading ? <Text accessibilityLiveRegion="polite" style={styles.localEmptyText}>Loading news…</Text> : null}
+            {newsError ? <View style={{ gap: 8 }}>
+              <Text accessibilityRole="alert" style={styles.localEmptyText}>{newsError}{communityNews.length ? ' Showing previously loaded news.' : ''}</Text>
+              <Pressable accessibilityRole="button" disabled={newsLoading} onPress={() => void loadCommunityNews()} style={styles.createMeetupButton}>
+                <Text style={styles.createMeetupButtonText}>Retry news</Text>
+              </Pressable>
+            </View> : null}
             {visibleNewsItems.map((item) => (
               <Pressable
                 key={`${item.category}-${item.title}`}
@@ -1768,8 +1810,8 @@ export default function CommunityScreen() {
                 {!!item.external_url && <Ionicons name="open-outline" size={17} color={theme.colors.textSoft} />}
               </Pressable>
             ))}
-            {!visibleNewsItems.length && (
-              <Text style={styles.localEmptyText}>No news in this category yet.</Text>
+            {!newsLoading && !newsError && !visibleNewsItems.length && (
+              <Text style={styles.localEmptyText}>No news has been published in this category yet.</Text>
             )}
           </ScrollView>
         )}
@@ -1947,7 +1989,7 @@ export default function CommunityScreen() {
 
       </View>
 
-      <Modal visible={collectorModalOpen} animationType="slide" transparent>
+      <Modal visible={collectorModalOpen} animationType="slide" accessibilityLabel="Find collectors" onRequestClose={() => closeCollectorDirectory()} transparent>
         <View style={styles.meetupModalBackdrop}>
           <View style={styles.collectorModalCard}>
             <View style={styles.panelHeader}>
@@ -1957,7 +1999,7 @@ export default function CommunityScreen() {
                   Browse everyone on Stackr and open a profile to add them.
                 </Text>
               </View>
-              <Pressable onPress={() => setCollectorModalOpen(false)} style={styles.modalCloseIcon}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Close Find collectors" onPress={closeCollectorDirectory} style={styles.modalCloseIcon}>
                 <Ionicons name="close" size={18} color={theme.colors.text} />
               </Pressable>
             </View>
@@ -1965,6 +2007,7 @@ export default function CommunityScreen() {
             <View style={styles.collectorSearchRow}>
               <Ionicons name="search-outline" size={18} color={theme.colors.textSoft} />
               <TextInput
+                accessibilityLabel="Search collectors by name"
                 value={collectorSearch}
                 onChangeText={setCollectorSearch}
                 placeholder="Filter collectors..."
@@ -1973,7 +2016,7 @@ export default function CommunityScreen() {
                 style={styles.collectorSearchInput}
               />
               {collectorSearch.trim().length > 0 && (
-                <Pressable onPress={() => setCollectorSearch('')} style={styles.collectorSearchClear}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Clear collector search" onPress={() => setCollectorSearch('')} style={styles.collectorSearchClear}>
                   <Ionicons name="close-circle" size={18} color={theme.colors.textSoft} />
                 </Pressable>
               )}
@@ -2006,7 +2049,8 @@ export default function CommunityScreen() {
                     <Pressable
                       onPress={() => {
                         setCollectorModalOpen(false);
-                        router.push(`/community/profile/${item.id}` as any);
+                        if (params.returnTo === 'friends') router.replace(`/community/profile/${item.id}` as any);
+                        else router.push(`/community/profile/${item.id}` as any);
                       }}
                       style={styles.userResultCard}
                     >
@@ -2040,7 +2084,7 @@ export default function CommunityScreen() {
         </View>
       </Modal>
 
-      <Modal visible={!!selectedShop} animationType="slide" transparent>
+      <Modal visible={!!selectedShop} animationType="slide" accessibilityLabel="Local shop" onRequestClose={() => setSelectedShop(null)} transparent>
         <View style={styles.meetupModalBackdrop}>
           <View style={styles.shopModalCard}>
             <View style={styles.panelHeader}>
@@ -2050,7 +2094,7 @@ export default function CommunityScreen() {
                   {getShopDistanceLabel(selectedShop, localSearchPoint) ?? 'Local card shop'}
                 </Text>
               </View>
-              <Pressable onPress={() => setSelectedShop(null)} style={styles.modalCloseIcon}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Close local shop" onPress={() => setSelectedShop(null)} style={styles.modalCloseIcon}>
                 <Ionicons name="close" size={18} color={theme.colors.text} />
               </Pressable>
             </View>
@@ -2066,10 +2110,11 @@ export default function CommunityScreen() {
               <InfoLine icon="globe-outline" label="Website" value={getShopWebsite(selectedShop) ?? 'Website not listed'} iconColor={theme.colors.primary} styles={styles} />
             </ScrollView>
 
+            {shopActionError ? <Text accessibilityRole="alert" style={styles.localEmptyText}>{shopActionError}</Text> : null}
             <View style={styles.shopActionRow}>
               {selectedShop && (
                 <Pressable
-                  onPress={() => Linking.openURL(buildDirectionsUrl(selectedShop))}
+                  accessibilityRole="button" onPress={() => void openShopUrl(buildDirectionsUrl(selectedShop))}
                   style={styles.shopActionButton}
                 >
                   <Ionicons name="navigate-outline" size={18} color="#FFFFFF" />
@@ -2079,7 +2124,7 @@ export default function CommunityScreen() {
 
               {!!getShopWebsite(selectedShop) && (
                 <Pressable
-                  onPress={() => openExternalUrl(getShopWebsite(selectedShop) as string)}
+                  onPress={() => void openShopUrl(/^https?:\/\//i.test(getShopWebsite(selectedShop)!) ? getShopWebsite(selectedShop)! : `https://${getShopWebsite(selectedShop)}`)}
                   style={styles.shopSecondaryButton}
                 >
                   <Ionicons name="globe-outline" size={18} color={theme.colors.primary} />
@@ -2089,7 +2134,7 @@ export default function CommunityScreen() {
 
               {selectedShop && isLiveLocalPlace(selectedShop) && !!selectedShop.phone && (
                 <Pressable
-                  onPress={() => Linking.openURL(`tel:${selectedShop.phone}`)}
+                  accessibilityRole="button" onPress={() => void openShopUrl(`tel:${selectedShop.phone}`)}
                   style={styles.shopSecondaryButton}
                 >
                   <Ionicons name="call-outline" size={18} color={theme.colors.primary} />
@@ -2101,7 +2146,7 @@ export default function CommunityScreen() {
         </View>
       </Modal>
 
-      <Modal visible={cardModalOpen} animationType="slide">
+      <Modal visible={cardModalOpen} animationType="slide" accessibilityLabel="Choose a card to attach" onRequestClose={() => setCardModalOpen(false)}>
         <SafeAreaView style={styles.safe}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalHeading}>Choose a card to attach</Text>
@@ -2121,7 +2166,7 @@ export default function CommunityScreen() {
                 style={styles.cardPickerSearchInput}
               />
               {cardPickerSearch.trim() ? (
-                <Pressable onPress={() => setCardPickerSearch('')} style={styles.cardPickerClearButton}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Clear card search" onPress={() => setCardPickerSearch('')} style={[styles.cardPickerClearButton, { minWidth: 48, minHeight: 48 }]}>
                   <Ionicons name="close" size={16} color={theme.colors.textSoft} />
                 </Pressable>
               ) : null}
@@ -2163,12 +2208,12 @@ export default function CommunityScreen() {
         </SafeAreaView>
       </Modal>
 
-      <Modal visible={flexPickerMode !== null} animationType="slide" transparent>
+      <Modal visible={flexPickerMode !== null} animationType="slide" accessibilityLabel="Choose a collection to share" onRequestClose={() => setFlexPickerMode(null)} transparent>
         <View style={styles.meetupModalBackdrop}>
           <View style={styles.flexPickerModalCard}>
             <View style={styles.panelHeader}>
               <View style={{ flex: 1 }} />
-              <Pressable onPress={() => setFlexPickerMode(null)} style={styles.modalCloseIcon}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Close collection picker" onPress={() => setFlexPickerMode(null)} style={styles.modalCloseIcon}>
                 <Ionicons name="close" size={22} color={theme.colors.text} />
               </Pressable>
             </View>
@@ -2177,20 +2222,10 @@ export default function CommunityScreen() {
         </View>
       </Modal>
 
-      <Modal visible={meetupModalOpen} animationType="slide" transparent>
-        <View style={styles.meetupModalBackdrop}>
-          <View style={styles.meetupModalCard}>
-            <View style={styles.panelHeader}>
-              <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={styles.modalHeading}>Create meet up</Text>
-                <Text style={styles.modalSubheading}>Add the basic details for a local collector event.</Text>
-              </View>
-              <Pressable onPress={() => setMeetupModalOpen(false)} style={styles.modalCloseIcon}>
-                <Ionicons name="close" size={22} color={theme.colors.text} />
-              </Pressable>
-            </View>
-
+      <StackrBottomSheet visible={meetupModalOpen} title="Create meet up" subtitle="This event will be visible to collectors in Local." onClose={() => setMeetupModalOpen(false)} dismissible={!meetupSaving} maxHeight="88%">
             <TextInput
+              accessibilityLabel="Meet up title"
+              editable={!meetupSaving}
               value={meetupTitle}
               onChangeText={setMeetupTitle}
               placeholder="Meet up title"
@@ -2198,6 +2233,8 @@ export default function CommunityScreen() {
               style={styles.meetupInput}
             />
             <TextInput
+              accessibilityLabel="Location or shop name"
+              editable={!meetupSaving}
               value={meetupLocation}
               onChangeText={setMeetupLocation}
               placeholder="Location or shop name"
@@ -2205,6 +2242,8 @@ export default function CommunityScreen() {
               style={styles.meetupInput}
             />
             <TextInput
+              accessibilityLabel="Postcode or town"
+              editable={!meetupSaving}
               value={meetupPostcode}
               onChangeText={setMeetupPostcode}
               placeholder="Postcode or town"
@@ -2213,6 +2252,8 @@ export default function CommunityScreen() {
               autoCapitalize="characters"
             />
             <TextInput
+              accessibilityLabel="Date and time"
+              editable={!meetupSaving}
               value={meetupDate}
               onChangeText={setMeetupDate}
               placeholder="Date and time"
@@ -2220,12 +2261,12 @@ export default function CommunityScreen() {
               style={styles.meetupInput}
             />
 
-            <Pressable onPress={handleCreateLocalMeetup} style={styles.createMeetupButton}>
-              <Text style={styles.createMeetupButtonText}>Create meet up</Text>
+            {meetupError ? <Text accessibilityRole="alert" style={styles.localEmptyText}>{meetupError}</Text> : null}
+            <Pressable accessibilityRole="button" disabled={meetupSaving} accessibilityState={{ busy: meetupSaving, disabled: meetupSaving }} onPress={handleCreateLocalMeetup} style={styles.createMeetupButton}>
+              <Text style={styles.createMeetupButtonText}>{meetupSaving ? 'Publishing…' : 'Publish meet up'}</Text>
             </Pressable>
-          </View>
-        </View>
-      </Modal>
+
+      </StackrBottomSheet>
     </SafeAreaView>
   );
 }
@@ -3202,8 +3243,8 @@ function makeStyles(theme: any) {
   },
 
   collectorSearchClear: {
-    width: 30,
-    height: 30,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -3328,8 +3369,8 @@ function makeStyles(theme: any) {
   },
 
   modalCloseIcon: {
-    width: 34,
-    height: 34,
+    width: 48,
+    height: 48,
     borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',

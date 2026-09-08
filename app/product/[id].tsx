@@ -20,6 +20,7 @@ import { normaliseSearchText } from '../../lib/searchNormalisation';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { supabase } from '../../lib/supabase';
+import { hasUsableSavedMarketProductId, parseSavedMarketProductIds } from '../../lib/savedMarketProducts';
 
 type ListingSummary = {
   total: number;
@@ -37,7 +38,7 @@ type VerifiedSavedProductIdentity = {
 };
 
 const money = (value: number | null | undefined) =>
-  typeof value === 'number' && Number.isFinite(value)
+  typeof value === 'number' && Number.isFinite(value) && value > 0
     ? `\u00A3${value.toFixed(2)}`
     : 'Unavailable';
 
@@ -56,20 +57,14 @@ async function readSavedProducts(userId: string) {
     clearLegacySavedProducts(),
     AsyncStorage.getItem(getSavedProductsKey(userId)),
   ]);
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(String) : [];
-  } catch {
-    return [];
-  }
+  return parseSavedMarketProductIds(raw);
 }
 
 async function writeSavedProducts(userId: string, productIds: string[]) {
   await clearLegacySavedProducts();
   await AsyncStorage.setItem(
     getSavedProductsKey(userId),
-    JSON.stringify(productIds.slice(0, 80)),
+    JSON.stringify([...new Set(productIds.filter(hasUsableSavedMarketProductId).map((id) => id.trim()))].slice(0, 80)),
   );
 }
 
@@ -102,12 +97,14 @@ export default function ProductDetailScreen() {
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string }>();
-  const productId = typeof params.id === 'string' ? params.id : '';
+  const productId = typeof params.id === 'string' && hasUsableSavedMarketProductId(params.id) ? params.id.trim() : '';
   const [product, setProduct] = useState<MarketProduct | null>(null);
   const [summary, setSummary] = useState<ListingSummary>({ total: 0, offers: 0, trade: 0, lowest: null });
   const [relatedSetId, setRelatedSetId] = useState<string | null>(null);
   const [relatedSet, setRelatedSet] = useState<PokemonSet | null>(null);
   const [saved, setSaved] = useState(false);
+  const [savingProduct, setSavingProduct] = useState(false);
+  const [savedProductError, setSavedProductError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savedProductIdentity, setSavedProductIdentity] = useState<VerifiedSavedProductIdentity | null>(null);
@@ -115,6 +112,8 @@ export default function ProductDetailScreen() {
   const observedSavedProductUserIdRef = useRef<string | null | undefined>(undefined);
   const savedProductIdentityRef = useRef<VerifiedSavedProductIdentity | null>(null);
   const savedProductGenerationRef = useRef(0);
+  const savingProductRef = useRef<number | null>(null);
+  const savingProductTokenRef = useRef(0);
 
   const isCurrentSavedProductIdentity = useCallback((identity: VerifiedSavedProductIdentity) => (
     savedProductMountedRef.current
@@ -131,8 +130,11 @@ export default function ProductDetailScreen() {
     observedSavedProductUserIdRef.current = userId;
     savedProductGenerationRef.current += 1;
     savedProductIdentityRef.current = null;
+    savingProductRef.current = null;
     setSavedProductIdentity(null);
     setSaved(false);
+    setSavingProduct(false);
+    setSavedProductError(null);
     void clearLegacySavedProducts().catch(() => {});
     return savedProductGenerationRef.current;
   }, []);
@@ -141,8 +143,11 @@ export default function ProductDetailScreen() {
     observedSavedProductUserIdRef.current = null;
     savedProductGenerationRef.current += 1;
     savedProductIdentityRef.current = null;
+    savingProductRef.current = null;
     setSavedProductIdentity(null);
     setSaved(false);
+    setSavingProduct(false);
+    setSavedProductError(null);
     void clearLegacySavedProducts().catch(() => {});
   }, []);
 
@@ -220,6 +225,7 @@ export default function ProductDetailScreen() {
       savedProductMountedRef.current = false;
       savedProductGenerationRef.current += 1;
       savedProductIdentityRef.current = null;
+      savingProductRef.current = null;
       subscription.unsubscribe();
     };
   }, [
@@ -307,14 +313,19 @@ export default function ProductDetailScreen() {
   }, [productId]);
 
   const toggleSaved = async () => {
-    if (!product) return;
+    if (!product || savingProductRef.current !== null) return;
     const identity = savedProductIdentityRef.current;
     if (!identity || !isCurrentSavedProductIdentity(identity)) {
       Alert.alert('Sign in needed', 'Sign in to save products to your account on this device.');
       return;
     }
 
+    let savingToken: number | null = null;
     try {
+      setSavingProduct(true);
+      savingToken = ++savingProductTokenRef.current;
+      savingProductRef.current = savingToken;
+      setSavedProductError(null);
       const verifiedIdentity = await verifySavedProductIdentity(identity.userId, identity.generation);
       if (!verifiedIdentity || !isCurrentSavedProductIdentity(verifiedIdentity)) {
         if (isCurrentSavedProductIdentity(identity)) invalidateSavedProductIdentity();
@@ -331,8 +342,12 @@ export default function ProductDetailScreen() {
       }
     } catch {
       if (isCurrentSavedProductIdentity(identity)) {
-        invalidateSavedProductIdentity();
-        Alert.alert('Could not update saved products', 'Please verify your sign-in and try again.');
+        setSavedProductError('Could not update saved products. Your saved state has not changed; retry when ready.');
+      }
+    } finally {
+      if (savingToken !== null && savingProductRef.current === savingToken) {
+        savingProductRef.current = null;
+        if (isCurrentSavedProductIdentity(identity)) setSavingProduct(false);
       }
     }
   };
@@ -389,10 +404,11 @@ export default function ProductDetailScreen() {
         <View style={styles.headerRow}>
           <StackrBackButton onPress={() => router.back()} style={{ width: 42, height: 42 }} />
           <Text style={styles.headerTitle}>Sealed Product</Text>
-          <TouchableOpacity onPress={toggleSaved} style={styles.iconButton} accessibilityLabel={saved ? 'Remove saved product' : 'Save product'}>
+          <TouchableOpacity onPress={toggleSaved} disabled={savingProduct} accessibilityState={{ busy: savingProduct, disabled: savingProduct }} style={styles.iconButton} accessibilityLabel={savingProduct ? 'Updating saved product' : saved ? 'Remove saved product' : 'Save product'}>
             <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={19} color={saved ? theme.colors.primary : theme.colors.text} />
           </TouchableOpacity>
         </View>
+        {savedProductError ? <View style={styles.infoCard}><Text accessibilityRole="alert" style={styles.bodyText}>{savedProductError}</Text><TouchableOpacity accessibilityRole="button" onPress={toggleSaved} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Retry saved product</Text></TouchableOpacity></View> : null}
 
         <View style={styles.imagePanel}>
           <StackrImage
@@ -432,11 +448,11 @@ export default function ProductDetailScreen() {
           <View style={styles.infoCard}>
             <Text style={styles.bodyText}>
               {rangeAvailable
-                ? `Recent sales range: ${money(product.latest_price?.low)} to ${money(product.latest_price?.high)}.`
-                : 'Recent sales range is not available for this product yet.'}
+                ? `Available source price range: ${money(product.latest_price?.low)} to ${money(product.latest_price?.high)}.`
+                : 'A source price range is not available for this product yet.'}
             </Text>
             <Text style={styles.mutedText}>
-              Pricing is an estimate from available sources, not a guaranteed sale price.
+              Source: {product.latest_price?.soldDataSource ?? product.source ?? 'provider catalogue'} · Update time unavailable. Pricing is an estimate, not completed-sales evidence or a guaranteed sale price.
             </Text>
           </View>
         </View>

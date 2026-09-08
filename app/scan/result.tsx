@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -409,6 +409,10 @@ function ScanResultScreen() {
   const [added, setAdded] = useState(false);
   const [chaseSaving, setChaseSaving] = useState(false);
   const [feedbackSaving, setFeedbackSaving] = useState(false);
+  const [feedbackUploadRetry, setFeedbackUploadRetry] = useState<{ record: RecognitionFeedbackRecord; message: string; retainedLocally: boolean } | null>(null);
+  const [feedbackUploadConfirmed, setFeedbackUploadConfirmed] = useState(false);
+  const [feedbackUploadRetrying, setFeedbackUploadRetrying] = useState(false);
+  const feedbackUploadInFlightRef = useRef(false);
   const [rejectedPrediction, setRejectedPrediction] = useState<TCGCard | null>(null);
   useEffect(() => {
     let disposed = false;
@@ -615,6 +619,40 @@ function ScanResultScreen() {
     });
   };
 
+  const uploadFeedbackImage = async (record: RecognitionFeedbackRecord) => {
+    if (feedbackUploadInFlightRef.current) return false;
+    feedbackUploadInFlightRef.current = true;
+    setFeedbackUploadRetrying(true);
+    let retryRecord = record;
+    let retainedLocally = false;
+    try {
+      const consented = grantRecognitionFeedbackImageConsent(record);
+      const saved = await saveRecognitionFeedbackRecord(consented);
+      retryRecord = saved.find((item) => item.localId === consented.localId) ?? consented;
+      retainedLocally = Boolean(
+        retryRecord.rectifiedImageUri?.includes(`/recognition-feedback/${retryRecord.localId}/`)
+        || retryRecord.rectifiedImageUri?.startsWith('data:image/'),
+      );
+      const uploaded = await uploadRecognitionFeedbackRecord(retryRecord);
+      if (uploaded.imageUploadStatus !== 'uploaded') {
+        throw new Error('The card crop upload was not confirmed.');
+      }
+      setFeedbackUploadRetry(null);
+      setFeedbackUploadConfirmed(true);
+      return true;
+    } catch (error: any) {
+      setFeedbackUploadRetry({
+        record: retryRecord,
+        retainedLocally,
+        message: error?.message ?? 'The image could not be uploaded right now.',
+      });
+      return false;
+    } finally {
+      feedbackUploadInFlightRef.current = false;
+      setFeedbackUploadRetrying(false);
+    }
+  };
+
   const promptImageContribution = (record: RecognitionFeedbackRecord) => {
     if (!incomingRectifiedImageUri) return;
     const explanation = explainRecognitionFeedbackImageUpload();
@@ -626,13 +664,8 @@ function ScanResultScreen() {
         {
           text: explanation.uploadLabel,
           onPress: async () => {
-            try {
-              const consented = grantRecognitionFeedbackImageConsent(record);
-              await saveRecognitionFeedbackRecord(consented);
-              await uploadRecognitionFeedbackRecord(consented);
-              Alert.alert('Thanks', 'The rectified card crop was queued for internal review.');
-            } catch (error: any) {
-              Alert.alert('Saved locally', error?.message ?? 'The image could not be uploaded right now.');
+            if (await uploadFeedbackImage(record)) {
+              Alert.alert('Thanks', 'The rectified card crop was uploaded for internal review.');
             }
           },
         },
@@ -1395,6 +1428,15 @@ function ScanResultScreen() {
               <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginBottom: 12 }}>
                 Corrections stay review-gated. Card images upload only if you opt in.
               </Text>
+              {feedbackUploadConfirmed ? <Text style={{ color: '#10B981', fontSize: 12, fontWeight: '800', marginBottom: 10 }}>Image uploaded for internal review.</Text> : null}
+              {feedbackUploadRetry ? (
+                <View style={{ marginBottom: 12, padding: 10, borderRadius: 10, backgroundColor: theme.colors.surface }}>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17 }}>{feedbackUploadRetry.retainedLocally ? 'The opted-in crop is saved only on this device until a retry succeeds.' : 'The crop could not be saved for later. Keep this screen open while you retry.'} {feedbackUploadRetry.message}</Text>
+                  <TouchableOpacity accessibilityRole="button" disabled={feedbackUploadRetrying} accessibilityState={{ busy: feedbackUploadRetrying }} onPress={() => { void uploadFeedbackImage(feedbackUploadRetry.record); }} style={{ alignSelf: 'flex-start', minHeight: 40, justifyContent: 'center', paddingHorizontal: 12, marginTop: 8, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.primary }}>
+                    <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{feedbackUploadRetrying ? 'Retrying…' : 'Retry upload'}</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null}
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 <TouchableOpacity
                   onPress={handleConfirmRecognitionFeedback}

@@ -145,7 +145,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
         || pathname.startsWith('/price-builder');
     }
     if (tab.key === 'search') {
-      return pathname.startsWith('/(tabs)/search') || pathname.startsWith('/search') || pathname.startsWith('/product') || pathname.startsWith('/card') || pathname.startsWith('/set');
+      return pathname.startsWith('/(tabs)/search') || pathname.startsWith('/search') || pathname.startsWith('/product') || pathname.startsWith('/card') || pathname.startsWith('/explore');
     }
     if (tab.key === 'dashboard') {
       return pathname === '/'
@@ -165,7 +165,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
   if (shouldHideShellControls(pathname)) return null;
 
   return (
-    <View style={{
+    <View role="tablist" accessibilityLabel="Main navigation" style={{
       position: 'absolute',
       bottom: 0, left: 0, right: 0,
       height: tabBarHeight,
@@ -209,6 +209,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
             accessibilityRole="tab"
             accessibilityLabel={tab.label}
             accessibilityState={{ selected: active }}
+            aria-selected={active}
             style={{
               flex: 1,
               minHeight: 66,

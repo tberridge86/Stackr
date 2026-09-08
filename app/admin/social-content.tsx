@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,11 +12,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { StackrBackButton } from '../../components/StackrBackButton';
+import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { useTheme } from '../../components/theme-context';
 import { useProfile } from '../../components/profile-context';
 import { supabase } from '../../lib/supabase';
 
 type ContentType = 'shop' | 'event' | 'meetup' | 'news';
+type SocialForm = ReturnType<typeof emptyForm>;
+type PublishConfirmation = { type: ContentType; form: SocialForm; preview: string };
 
 const CONTENT_TABS: { key: ContentType; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { key: 'shop', label: 'Shop', icon: 'storefront-outline' },
@@ -69,6 +71,10 @@ export default function AdminSocialContentScreen() {
   const [activeType, setActiveType] = useState<ContentType>('shop');
   const [form, setForm] = useState(emptyForm());
   const [saving, setSaving] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [publishSuccess, setPublishSuccess] = useState<string | null>(null);
+  const [publishConfirmation, setPublishConfirmation] = useState<PublishConfirmation | null>(null);
+  const publishInFlightRef = useRef(false);
 
   const isAdmin = profile?.role === 'admin';
 
@@ -78,16 +84,20 @@ export default function AdminSocialContentScreen() {
 
   const reset = () => setForm(emptyForm());
 
-  const save = async () => {
+  const save = async (confirmation: PublishConfirmation) => {
+    if (publishInFlightRef.current) return;
     if (!isAdmin) {
-      Alert.alert('Admin only', 'Your profile needs the admin role to publish social content.');
+      setPublishError('Your profile needs the admin role to publish social content.');
       return;
     }
 
     try {
+      publishInFlightRef.current = true;
       setSaving(true);
+      setPublishError(null);
+      const { type, form } = confirmation;
 
-      if (activeType === 'shop') {
+      if (type === 'shop') {
         if (!form.name.trim()) throw new Error('Add a shop name.');
 
         const { error } = await supabase.from('local_stores').insert({
@@ -102,7 +112,7 @@ export default function AdminSocialContentScreen() {
         if (error) throw error;
       }
 
-      if (activeType === 'event') {
+      if (type === 'event') {
         if (!form.title.trim()) throw new Error('Add an event title.');
 
         const { error } = await supabase.from('local_featured_events').insert({
@@ -119,7 +129,7 @@ export default function AdminSocialContentScreen() {
         if (error) throw error;
       }
 
-      if (activeType === 'meetup') {
+      if (type === 'meetup') {
         if (!form.title.trim()) throw new Error('Add a meetup title.');
         if (!form.venue.trim()) throw new Error('Add a meetup location.');
 
@@ -141,7 +151,7 @@ export default function AdminSocialContentScreen() {
         if (error) throw error;
       }
 
-      if (activeType === 'news') {
+      if (type === 'news') {
         if (!form.title.trim()) throw new Error('Add a news title.');
         if (!form.body.trim()) throw new Error('Add news body text.');
 
@@ -159,12 +169,28 @@ export default function AdminSocialContentScreen() {
       }
 
       reset();
-      Alert.alert('Published', 'Social content has been added.');
+      setPublishConfirmation(null);
+      setPublishSuccess('Social content has been published.');
     } catch (error: any) {
-      Alert.alert('Could not publish', error?.message ?? 'Please try again.');
+      setPublishError(error?.message ?? 'Could not publish. Review the draft and retry.');
     } finally {
+      publishInFlightRef.current = false;
       setSaving(false);
     }
+  };
+
+  const publicPreview = useMemo(() => {
+    const common = [`Audience: public ${activeType} feed`];
+    if (activeType === 'shop') return [...common, `Shop: ${form.name.trim() || '(missing)'}`, `Description: ${form.description.trim() || '(none)'}`, `Town: ${form.town.trim() || '(none)'}`, `Postcode: ${form.postcode.trim() || '(none)'}`, `Website: ${form.website.trim() || '(none)'}`, 'Status: published'].join('\n');
+    if (activeType === 'news') return [...common, `Title: ${form.title.trim() || '(missing)'}`, `Body: ${form.body.trim() || '(none)'}`, `Category: ${form.category.trim() || 'Latest'}`, `Icon: ${form.icon.trim() || 'newspaper-outline'}`, `Link: ${form.url.trim() || '(none)'}`, 'Status: published'].join('\n');
+    return [...common, `Title: ${form.title.trim() || '(missing)'}`, `Description: ${form.description.trim() || '(none)'}`, `Venue: ${form.venue.trim() || '(none)'}`, `Town: ${form.town.trim() || '(none)'}`, `Postcode: ${form.postcode.trim() || '(none)'}`, `Starts at: ${form.startsAt.trim() || '(none)'}`, ...(activeType === 'event' ? [`Link: ${form.url.trim() || '(none)'}`] : []), 'Status: published'].join('\n');
+  }, [activeType, form]);
+
+  const confirmPublish = () => {
+    if (saving || publishInFlightRef.current) return;
+    setPublishError(null);
+    setPublishSuccess(null);
+    setPublishConfirmation({ type: activeType, form: { ...form }, preview: publicPreview });
   };
 
   const title = activeType === 'shop'
@@ -286,7 +312,11 @@ export default function AdminSocialContentScreen() {
               </>
             )}
 
-            <Pressable onPress={save} disabled={saving} style={[styles.saveButton, saving && { opacity: 0.65 }]}>
+            <Pressable
+              onPress={confirmPublish}
+              disabled={saving}
+              style={[styles.saveButton, saving && { opacity: 0.65 }]}
+            >
               {saving ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
@@ -296,9 +326,23 @@ export default function AdminSocialContentScreen() {
                 </>
               )}
             </Pressable>
+            {publishError ? <Text accessibilityRole="alert" style={[styles.helpText, { color: '#D14343', textAlign: 'left', marginTop: 10 }]}>{publishError}</Text> : null}
+            {publishSuccess ? <Text accessibilityRole="alert" style={[styles.helpText, { color: '#10B981', textAlign: 'left', marginTop: 10 }]}>{publishSuccess}</Text> : null}
           </View>
         </ScrollView>
       )}
+      <StackrBottomSheet
+        visible={publishConfirmation !== null}
+        title="Review public content"
+        subtitle="Check how this content will appear publicly."
+        onClose={() => setPublishConfirmation(null)}
+        dismissible={!saving}
+        maxHeight="84%"
+        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 12 }}
+        footer={<View style={{ flexDirection: 'row', gap: 10 }}><Pressable accessibilityRole="button" accessibilityState={{ disabled: saving, busy: saving }} disabled={saving} onPress={() => setPublishConfirmation(null)} style={{ flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: theme.colors.textSoft, fontWeight: '900' }}>Keep editing</Text></Pressable><Pressable accessibilityRole="button" accessibilityState={{ disabled: saving, busy: saving }} disabled={saving} onPress={() => { if (publishConfirmation) void save(publishConfirmation); }} style={{ flex: 1, minHeight: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.primary }}><Text style={{ color: '#FFF', fontWeight: '900' }}>{saving ? 'Publishing…' : 'Publish'}</Text></Pressable></View>}
+      >
+        {publishConfirmation ? <View style={{ gap: 10 }}><Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 20 }}>{publishConfirmation.preview}</Text>{publishError ? <Text accessibilityRole="alert" style={{ color: '#D14343', lineHeight: 18 }}>{publishError}</Text> : null}</View> : null}
+      </StackrBottomSheet>
     </SafeAreaView>
   );
 }

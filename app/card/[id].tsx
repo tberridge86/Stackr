@@ -515,7 +515,7 @@ export default function CardDetailScreen() {
         automaticallyAdjustContentInsets={false}
       >
       <View style={styles.headerRow}>
-        <StackrBackButton onPress={() => router.back()} />
+        <StackrBackButton onPress={() => router.canGoBack() ? router.back() : router.replace('/search')} />
       </View>
 
       {/* Card Image */}

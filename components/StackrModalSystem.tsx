@@ -2,7 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
   Image,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -23,6 +25,7 @@ type StackrModalBaseProps = {
   children: React.ReactNode;
   onClose: () => void;
   dismissible?: boolean;
+  accessibilityLabel?: string;
 };
 
 export type StackrQuickAction = {
@@ -40,6 +43,7 @@ export function StackrCenterModal({
   children,
   onClose,
   dismissible = true,
+  accessibilityLabel = 'Dialog',
   maxHeight = '84%',
   contentStyle,
 }: StackrModalBaseProps & {
@@ -52,13 +56,18 @@ export function StackrCenterModal({
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType={Platform.OS === 'web' ? 'none' : 'fade'}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityViewIsModal
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={() => { if (dismissible) onClose(); }}
     >
       <View style={styles.centerBackdrop}>
         <Pressable
           style={StyleSheet.absoluteFill}
+          accessible={false}
+          focusable={false}
+          tabIndex={-1}
           disabled={!dismissible}
           onPress={dismissible ? onClose : undefined}
         />
@@ -109,18 +118,25 @@ export function StackrBottomSheet({
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const hasHeader = Boolean(title || subtitle || onClear);
+  const closeButtonRef = React.useRef<View>(null);
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType={Platform.OS === 'web' ? 'none' : 'slide'}
+      accessibilityLabel={title ?? 'Options'}
+      accessibilityViewIsModal
+      onShow={() => { if (Platform.OS === 'web') closeButtonRef.current?.focus(); }}
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={() => { if (dismissible) onClose(); }}
     >
-      <View style={styles.sheetRoot}>
+      <KeyboardAvoidingView style={styles.sheetRoot} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Pressable
           style={styles.sheetOverlay}
+          accessible={false}
+          focusable={false}
+          tabIndex={-1}
           disabled={!dismissible}
           onPress={dismissible ? onClose : undefined}
         />
@@ -142,12 +158,12 @@ export function StackrBottomSheet({
             <View style={styles.sheetHeader}>
               <View style={styles.sheetHeadingCopy}>
                 {title ? (
-                  <Text style={[styles.sheetTitle, { color: theme.colors.text }]} numberOfLines={1}>
+                  <Text accessibilityRole="header" style={[styles.sheetTitle, { color: theme.colors.text }]}>
                     {title}
                   </Text>
                 ) : null}
                 {subtitle ? (
-                  <Text style={[styles.sheetSubtitle, { color: theme.colors.textSoft }]} numberOfLines={2}>
+                  <Text style={[styles.sheetSubtitle, { color: theme.colors.textSoft }]}>
                     {subtitle}
                   </Text>
                 ) : null}
@@ -167,10 +183,13 @@ export function StackrBottomSheet({
                   </TouchableOpacity>
                 ) : null}
                 <TouchableOpacity
+                  ref={closeButtonRef}
                   onPress={onClose}
                   activeOpacity={0.76}
                   accessibilityRole="button"
-                  accessibilityLabel="Close"
+                  accessibilityLabel={title ? `Close ${title}` : 'Close options'}
+                  disabled={!dismissible}
+                  accessibilityState={{ disabled: !dismissible }}
                   style={[styles.closeButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
                 >
                   <Ionicons name="close" size={20} color={theme.colors.text} />
@@ -182,6 +201,8 @@ export function StackrBottomSheet({
           {scroll ? (
             <ScrollView
               showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
               style={styles.sheetScroll}
               contentContainerStyle={[styles.sheetScrollContent, contentContainerStyle]}
             >
@@ -193,7 +214,7 @@ export function StackrBottomSheet({
 
           {footer}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -370,7 +391,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   clearButton: {
-    minHeight: 36,
+    minHeight: 48,
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 12,
@@ -384,8 +405,8 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   closeButton: {
-    width: 36,
-    height: 36,
+    width: 48,
+    height: 48,
     borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',

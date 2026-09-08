@@ -350,7 +350,7 @@ export default function FriendsScreen() {
 
           {/* Find friends button */}
           <TouchableOpacity
-            onPress={() => router.push('/(tabs)/community' as any)}
+            accessibilityRole="button" accessibilityLabel="Find collectors" onPress={() => router.push({ pathname: '/(tabs)/community', params: { intent: 'find-collectors', returnTo: 'friends' } } as any)}
             style={{
               backgroundColor: theme.colors.primary,
               borderRadius: 12,
@@ -435,7 +435,9 @@ export default function FriendsScreen() {
                 Search for collectors in the community to add friends.
               </Text>
               <TouchableOpacity
-                onPress={() => router.push('/(tabs)/community' as any)}
+                onPress={() => router.push({ pathname: '/(tabs)/community', params: { intent: 'find-collectors', returnTo: 'friends' } } as any)}
+                accessibilityRole="button"
+                accessibilityLabel="Find collectors"
                 style={{
                   backgroundColor: theme.colors.primary,
                   borderRadius: 12,
@@ -444,7 +446,7 @@ export default function FriendsScreen() {
                 }}
               >
                 <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>
-                  Go to Community
+                  Find collectors
                 </Text>
               </TouchableOpacity>
             </View>

@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Image, ScrollView, TouchableOpacity, View, type ImageSourcePropType } from 'react-native';
+import { Image, ScrollView, TouchableOpacity, useWindowDimensions, View, type ImageSourcePropType } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { StackrBackButton } from '../components/StackrBackButton';
@@ -48,6 +48,8 @@ function getCategory(achievement: AchievementDefinition): AchievementFilter {
 export default function AchievementsScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const { width, fontScale } = useWindowDimensions();
+  const singleColumn = width < 360 || fontScale >= 1.3;
   const { unlocks } = useAchievements();
   const [filter, setFilter] = useState<AchievementFilter>('all');
   const unlockMap = useMemo(() => new Map(unlocks.map((unlock) => [unlock.id, unlock])), [unlocks]);
@@ -99,15 +101,15 @@ export default function AchievementsScreen() {
             const unlocked = unlockMap.get(achievement.id);
             const tierColour = getTierColour(achievement.tier);
             return (
-              <View key={achievement.id} style={{ width: '48%', minHeight: 148, borderRadius: 20, padding: 12, backgroundColor: unlocked ? '#FFFFFF' : 'rgba(255,255,255,0.62)', borderWidth: 1, borderColor: unlocked ? tierColour : '#E8E1FF', opacity: unlocked ? 1 : 0.66 }}>
+              <View key={achievement.id} style={{ width: singleColumn ? '100%' : '48%', minHeight: 148, borderRadius: 20, padding: 12, backgroundColor: unlocked ? '#FFFFFF' : 'rgba(255,255,255,0.62)', borderWidth: 1, borderColor: unlocked ? tierColour : '#E8E1FF', opacity: unlocked ? 1 : 0.66 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   <View style={{ width: 46, height: 46, borderRadius: 23, borderWidth: 3, borderColor: unlocked ? tierColour : '#DCD5F4', backgroundColor: unlocked ? `${tierColour}18` : '#F7F3FF', alignItems: 'center', justifyContent: 'center' }}>
                     <Image source={getIcon(achievement)} resizeMode="contain" style={{ width: 28, height: 28, opacity: unlocked ? 1 : 0.56 }} />
                   </View>
                   <Text style={{ color: unlocked ? tierColour : theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '900', textTransform: 'uppercase' }}>{achievement.tier}</Text>
                 </View>
-                <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '900', marginTop: 10 }} numberOfLines={2}>{achievement.title}</Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700', marginTop: 3 }} numberOfLines={2}>{achievement.description}</Text>
+                <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900', marginTop: 10 }}>{achievement.title}</Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 14, lineHeight: 20, fontWeight: '700', marginTop: 3 }}>{achievement.description}</Text>
                 <Text style={{ color: unlocked ? tierColour : theme.colors.textSoft, fontSize: 11.5, lineHeight: 14, fontWeight: '900', marginTop: 10 }}>
                   {unlocked ? 'Unlocked' : 'Locked'} · +{achievement.coinReward} coins
                 </Text>

@@ -1,3 +1,4 @@
+import { groupDiscoverSets as groupSetsBySeries, isDiscoverDateGroup } from '../../lib/discoverSetGroups';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
@@ -20,7 +21,7 @@ import { StackrPageTitle } from '../../components/StackrScreen';
 import { supabase } from '../../lib/supabase';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
-import { DEFAULT_EXPANDED_ENGLISH_SERIES, groupPokemonSetsBySeries as groupSetsBySeries } from '../../lib/pokemonSetSeries';
+import { DEFAULT_EXPANDED_ENGLISH_SERIES } from '../../lib/pokemonSetSeries';
 import {
   getPokemonLanguageDescriptor,
   POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
@@ -554,7 +555,7 @@ export default function ExploreScreen() {
     if (languageFilter === 'all' || languageFilter === 'en') {
       for (const group of groupedEnglishSeries) {
         items.push({ type: 'header', language: 'en', series: group.series, count: group.sets.length });
-        if (expandedSeries.has(getSeriesKey('en', group.series))) {
+        if ((isDiscoverDateGroup(group.series) || expandedSeries.has(getSeriesKey('en', group.series)))) {
           for (const set of group.sets) {
             items.push({ type: 'set', set, series: group.series });
           }
@@ -574,7 +575,7 @@ export default function ExploreScreen() {
     if (languageFilter === 'ja' || (languageFilter === 'all' && japaneseSetsExpanded)) {
       for (const group of groupedJapaneseSeries) {
         items.push({ type: 'header', language: 'ja', series: group.series, count: group.sets.length });
-        if (expandedSeries.has(getSeriesKey('ja', group.series))) {
+        if ((isDiscoverDateGroup(group.series) || expandedSeries.has(getSeriesKey('ja', group.series)))) {
           for (const set of group.sets) {
             items.push({ type: 'set', set, series: group.series });
           }
@@ -594,7 +595,7 @@ export default function ExploreScreen() {
     if (languageFilter === 'zh-cn' || (languageFilter === 'all' && simplifiedChineseSetsExpanded)) {
       for (const group of groupedSimplifiedChineseSeries) {
         items.push({ type: 'header', language: 'zh-cn', series: group.series, count: group.sets.length });
-        if (expandedSeries.has(getSeriesKey('zh-cn', group.series))) {
+        if ((isDiscoverDateGroup(group.series) || expandedSeries.has(getSeriesKey('zh-cn', group.series)))) {
           for (const set of group.sets) {
             items.push({ type: 'set', set, series: group.series });
           }
@@ -614,7 +615,7 @@ export default function ExploreScreen() {
     if (languageFilter === 'zh-tw' || (languageFilter === 'all' && traditionalChineseSetsExpanded)) {
       for (const group of groupedTraditionalChineseSeries) {
         items.push({ type: 'header', language: 'zh-tw', series: group.series, count: group.sets.length });
-        if (expandedSeries.has(getSeriesKey('zh-tw', group.series))) {
+        if ((isDiscoverDateGroup(group.series) || expandedSeries.has(getSeriesKey('zh-tw', group.series)))) {
           for (const set of group.sets) {
             items.push({ type: 'set', set, series: group.series });
           }
@@ -683,6 +684,7 @@ export default function ExploreScreen() {
           <TextInput
             value={search}
             onChangeText={setSearch}
+            accessibilityLabel="Search sets by name or series"
             placeholder="Search sets by name or series..."
             placeholderTextColor={theme.colors.textSoft}
             autoCorrect={false}
@@ -690,7 +692,7 @@ export default function ExploreScreen() {
             style={{ flex: 1, color: theme.colors.text, fontSize: 15, fontWeight: '600' }}
           />
           {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch('')}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Clear set search" style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }} onPress={() => setSearch('')}>
               <Ionicons name="close-circle" size={18} color={theme.colors.textSoft} />
             </TouchableOpacity>
           )}
@@ -859,11 +861,14 @@ export default function ExploreScreen() {
             }
 
             if (item.type === 'header') {
-              const expanded = expandedSeries.has(getSeriesKey(item.language, item.series));
+              const expanded = isDiscoverDateGroup(item.series) || expandedSeries.has(getSeriesKey(item.language, item.series));
               const copy = item.language === 'en' ? null : getLanguageHeaderCopy(item.language);
               return (
                 <TouchableOpacity
                   onPress={() => toggleSeries(item.language, item.series)}
+                  disabled={isDiscoverDateGroup(item.series)}
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded }}
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',

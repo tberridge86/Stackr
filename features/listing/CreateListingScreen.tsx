@@ -786,11 +786,16 @@ export default function CreateListingScreen() {
   const params = useLocalSearchParams<{ cardId?: string; setId?: string; productId?: string; type?: string; productName?: string; listingAction?: string; q?: string }>();
   const isFocused = useIsFocused();
   const [draftLoaded, setDraftLoaded] = useState(false);
+  const [draftRestoreError, setDraftRestoreError] = useState<string | null>(null);
+  const [draftRestoreRetry, setDraftRestoreRetry] = useState(0);
+  const [discardingUnreadableDraft, setDiscardingUnreadableDraft] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const [draftStorageKey, setDraftStorageKey] = useState<string | null>(null);
   const [draftSessionUserId, setDraftSessionUserId] = useState<string | null | undefined>(undefined);
   const draftAuthUserIdRef = useRef<string | null | undefined>(undefined);
   const draftAuthGenerationRef = useRef(0);
+  const discardUnreadableDraftOperationRef = useRef(0);
+  const discardingUnreadableDraftRef = useRef(false);
   const [step, setStep] = useState<FlowStep>('category');
   const [identificationMethod, setIdentificationMethod] = useState<IdentificationMethod | null>(null);
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
@@ -1185,6 +1190,9 @@ export default function CreateListingScreen() {
       if (!mounted || draftAuthUserIdRef.current === userId) return;
       draftAuthUserIdRef.current = userId;
       draftAuthGenerationRef.current += 1;
+      discardUnreadableDraftOperationRef.current += 1;
+      discardingUnreadableDraftRef.current = false;
+      setDiscardingUnreadableDraft(false);
       resetListingDraftState();
       setDraftSessionUserId(userId);
     };
@@ -1228,9 +1236,11 @@ export default function CreateListingScreen() {
       return !error && user?.id === expectedUserId && isCurrentDraftIdentity();
     };
     const restoreDraft = async () => {
+      let restoreFailed = false;
       try {
         if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
         setDraftLoaded(false);
+        setDraftRestoreError(null);
         setDraftStorageKey(null);
         resetListingDraftState();
         await clearLegacyCreateListingDraft();
@@ -1291,8 +1301,10 @@ export default function CreateListingScreen() {
         setAiDeclarationAccepted(draft.aiDeclarationAccepted ?? false);
       } catch (error) {
         console.log('Listing draft restore failed:', error);
+        restoreFailed = true;
+        if (isCurrentDraftIdentity()) setDraftRestoreError('Your saved listing draft could not be restored. Retry before editing, or start a new listing.');
       } finally {
-        if (isCurrentDraftIdentity()) setDraftLoaded(true);
+        if (isCurrentDraftIdentity() && !restoreFailed) setDraftLoaded(true);
       }
     };
 
@@ -1301,7 +1313,7 @@ export default function CreateListingScreen() {
       cancelled = true;
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     };
-  }, [draftSessionUserId, resetListingDraftState, routeHasPrefill]);
+  }, [draftRestoreRetry, draftSessionUserId, resetListingDraftState, routeHasPrefill]);
 
   const buildDraftState = useCallback((): DraftState => ({
     step,
@@ -1397,6 +1409,54 @@ export default function CreateListingScreen() {
       })();
     }, AUTO_SAVE_DELAY_MS);
   }, [buildDraftState, draftLoaded, draftSessionUserId, draftStorageKey, step]);
+
+  const discardUnreadableDraftAndStartNew = useCallback(async () => {
+    const expectedUserId = draftSessionUserId;
+    const expectedGeneration = draftAuthGenerationRef.current;
+    const operation = discardUnreadableDraftOperationRef.current + 1;
+    if (discardingUnreadableDraftRef.current) return;
+    discardUnreadableDraftOperationRef.current = operation;
+    discardingUnreadableDraftRef.current = true;
+    if (!expectedUserId) {
+      discardingUnreadableDraftRef.current = false;
+      setDraftRestoreError('Sign in again before starting a new listing.');
+      return;
+    }
+    const scopedDraftKey = getCreateListingDraftKey(expectedUserId);
+    const isCurrentDiscard = () => (
+      discardUnreadableDraftOperationRef.current === operation
+      && draftAuthGenerationRef.current === expectedGeneration
+      && draftAuthUserIdRef.current === expectedUserId
+    );
+    try {
+      setDiscardingUnreadableDraft(true);
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (
+        user?.id !== expectedUserId
+        || draftAuthGenerationRef.current !== expectedGeneration
+        || draftAuthUserIdRef.current !== expectedUserId
+      ) throw new Error('Your account changed while the saved draft was being cleared.');
+      await AsyncStorage.removeItem(scopedDraftKey);
+      if (!isCurrentDiscard()) return;
+      resetListingDraftState();
+      setDraftStorageKey(scopedDraftKey);
+      setDraftRestoreError(null);
+      setDraftLoaded(true);
+    } catch (error) {
+      console.log('Listing draft discard after restore failure failed:', error);
+      if (isCurrentDiscard()) {
+        setDraftLoaded(false);
+        setDraftRestoreError('The unreadable saved draft could not be removed. It has not been replaced; retry before starting a new listing.');
+      }
+    } finally {
+      if (discardUnreadableDraftOperationRef.current === operation) {
+        discardingUnreadableDraftRef.current = false;
+        setDiscardingUnreadableDraft(false);
+      }
+    }
+  }, [draftSessionUserId, resetListingDraftState]);
 
   useEffect(() => {
     setSelectedProtectionTier((current) => (
@@ -4290,6 +4350,13 @@ export default function CreateListingScreen() {
     </View>
   );
 
+  if (draftRestoreError) {
+    return <StackrScreen variant="form"><View style={{ padding: 24, gap: 14 }}>
+      <Text accessibilityRole="alert" style={{ color: theme.colors.text, fontSize: 16, lineHeight: 23 }}>{draftRestoreError}</Text>
+      <TouchableOpacity accessibilityRole="button" disabled={discardingUnreadableDraft} accessibilityState={{ busy: discardingUnreadableDraft, disabled: discardingUnreadableDraft }} style={{ minHeight: 48, justifyContent: 'center' }} onPress={() => setDraftRestoreRetry((value) => value + 1)}><Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Retry saved draft</Text></TouchableOpacity>
+      <TouchableOpacity accessibilityRole="button" disabled={discardingUnreadableDraft} accessibilityState={{ busy: discardingUnreadableDraft, disabled: discardingUnreadableDraft }} style={{ minHeight: 48, justifyContent: 'center' }} onPress={() => void discardUnreadableDraftAndStartNew()}><Text style={{ color: theme.colors.textSoft, fontWeight: '800' }}>{discardingUnreadableDraft ? 'Discarding saved draft…' : 'Discard saved draft and start new'}</Text></TouchableOpacity>
+    </View></StackrScreen>;
+  }
   if (!draftLoaded) {
     return (
       <StackrScreen variant="form">
@@ -4300,7 +4367,6 @@ export default function CreateListingScreen() {
       </StackrScreen>
     );
   }
-
   const headerRight = <DraftSavedIndicator visible={draftSaved} />;
   const hasPrimaryFooter = !(step === 'category' || step === 'entry' || step === 'identify' || step === 'success');
   const scrollBottomPadding = keyboardVisible

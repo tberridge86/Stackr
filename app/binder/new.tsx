@@ -8,7 +8,6 @@ import {
   Alert,
   Image,
   ScrollView,
-  Modal,
   type ImageSourcePropType,
 } from 'react-native';
 import { Text } from '../../components/Text';
@@ -37,6 +36,7 @@ import { StackrPageHeader, StackrScreen } from '../../components/StackrScreen';
 import { StackrBackButton } from '../../components/StackrBackButton';
 import { BinderArtwork } from '../../components/BinderArtwork';
 import { BinderModeIconBadge } from '../../components/BinderModeBadge';
+import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import {
   getPokemonLanguageDescriptor,
   POKEMON_CATALOGUE_LANGUAGE_OPTIONS,
@@ -415,6 +415,7 @@ export default function NewBinderScreen() {
   const [loadingBinder, setLoadingBinder] = useState(isEditMode);
   const [saving, setSaving] = useState(false);
   const setsRequestIdRef = useRef(0);
+  const saveInFlightRef = useRef(false);
 
   const isBaseEra = selectedSet && setLanguage === 'en' ? BASE_ERA_SET_IDS.includes(selectedSet.id) : false;
   const selectedSetDisplayName = getBinderSetDisplayName(selectedSet, setLanguage);
@@ -546,7 +547,9 @@ export default function NewBinderScreen() {
     if (type === 'official') setName('');
   };
 
-  const saveBinder = async (resolvedEdition: '1st_edition' | 'unlimited' | null) => {
+  const saveBinder = async (resolvedEdition: '1st_edition' | 'unlimited' | null): Promise<boolean> => {
+    if (saveInFlightRef.current) return false;
+    saveInFlightRef.current = true;
     try {
       setSaving(true);
 
@@ -588,7 +591,7 @@ export default function NewBinderScreen() {
         Alert.alert('Saved', 'Binder updated successfully.', [
           { text: 'OK', onPress: () => router.back() },
         ]);
-        return;
+        return true;
       }
 
       const sourceSetLogoUrl = type === 'official' ? getSetLogoUri(selectedSet, setLanguage) : null;
@@ -627,10 +630,13 @@ export default function NewBinderScreen() {
       } else {
         router.replace(`/binder/${binder.id}`);
       }
+      return true;
     } catch (err) {
       console.log('Save binder failed', err);
       Alert.alert('Error', 'Could not save binder.');
+      return false;
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
   };
@@ -1220,60 +1226,49 @@ export default function NewBinderScreen() {
       </ScrollView>
 
       {/* Edition picker modal */}
-      <Modal
+      <StackrBottomSheet
         visible={editionModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setEditionModalVisible(false)}
+        title="Which edition?"
+        subtitle="Base Set cards exist in two editions with very different values. Choose which this binder represents."
+        onClose={() => setEditionModalVisible(false)}
+        dismissible={!saving}
+        maxHeight="72%"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 12 }}
       >
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.55)',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 24,
-        }}>
-          <View style={{
-            backgroundColor: theme.colors.card,
-            borderRadius: 24,
-            padding: 24,
-            width: '100%',
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            ...cardShadow,
-          }}>
-            <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>
-              Which edition?
-            </Text>
+          <View>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 24, lineHeight: 18 }}>
-              Base Set cards exist in two editions with very different values. Choose which this binder represents.
+              Your choice is saved with the binder.
             </Text>
 
             <TouchableOpacity
-              onPress={async () => { setEditionModalVisible(false); await saveBinder('1st_edition'); }}
+              onPress={async () => { if (saveInFlightRef.current) return; if (await saveBinder('1st_edition')) setEditionModalVisible(false); }}
+              disabled={saving}
+              accessibilityState={{ disabled: saving, busy: saving }}
               style={{ backgroundColor: '#F59E0B', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginBottom: 10 }}
             >
-              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>1st Edition</Text>
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>{saving ? 'Saving…' : '1st Edition'}</Text>
               <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 3 }}>Stamp on card · higher value</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={async () => { setEditionModalVisible(false); await saveBinder('unlimited'); }}
+              onPress={async () => { if (saveInFlightRef.current) return; if (await saveBinder('unlimited')) setEditionModalVisible(false); }}
+              disabled={saving}
+              accessibilityState={{ disabled: saving, busy: saving }}
               style={{ backgroundColor: theme.colors.surface, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}
             >
-              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>Unlimited</Text>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>{saving ? 'Saving…' : 'Unlimited'}</Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }}>No stamp · standard print run</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => setEditionModalVisible(false)}
+              disabled={saving}
               style={{ alignItems: 'center', paddingVertical: 8 }}
             >
               <Text style={{ color: theme.colors.textSoft, fontWeight: '700' }}>Cancel</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
+      </StackrBottomSheet>
     </StackrScreen>
   );
 }
