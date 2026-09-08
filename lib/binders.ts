@@ -530,17 +530,19 @@ export async function fetchBinderById(
 // ===============================
 
 export async function fetchBinderCards(
-  binderId: string
+  binderId: string,
+  options: { includePrices?: boolean } = {},
 ): Promise<BinderCardRecord[]> {
   return getCachedOrFetch(
-    `binder:${binderId}:cards`,
+    `binder:${binderId}:${options.includePrices === false ? 'unpriced-cards' : 'cards'}`,
     BINDER_CARDS_CACHE_TTL_MS,
-    () => fetchBinderCardsUncached(binderId)
+    () => fetchBinderCardsUncached(binderId, options)
   );
 }
 
 async function fetchBinderCardsUncached(
-  binderId: string
+  binderId: string,
+  options: { includePrices?: boolean } = {},
 ): Promise<BinderCardRecord[]> {
   const binder = await fetchBinderById(binderId);
 
@@ -556,9 +558,14 @@ async function fetchBinderCardsUncached(
   if (userRowsError) throw userRowsError;
 
   const savedRows = (userRows ?? []) as BinderCardRecord[];
+  // Home performs one exact, ownership-aware valuation afterwards. Pricing all
+  // virtual binder slots here adds hundreds of redundant identity/price reads.
+  const withOptionalPrices = (rows: BinderCardRecord[]) => options.includePrices === false
+    ? rows
+    : attachLatestSnapshotPrices(rows, binderLanguage);
 
   if (binder.type !== 'official' || !binder.source_set_id) {
-  return attachLatestSnapshotPrices(savedRows.map((row) => ({
+  return withOptionalPrices(savedRows.map((row) => ({
     ...row,
     language: normalizePokemonCardLanguage(row.language ?? binderLanguage),
     owned_quantity: Math.max(1, Number(row.owned_quantity ?? 1)),
@@ -572,7 +579,7 @@ async function fetchBinderCardsUncached(
         large: null,
       },
     } : null),
-  })), binderLanguage);
+  })));
 }
   // Unresolved historical identities must not silently become English editions.
   if (binder.catalogue_identity_status === 'ambiguous'
@@ -687,7 +694,7 @@ async function fetchBinderCardsUncached(
     };
   });
 
-  return attachLatestSnapshotPrices(preserveUnmatchedBinderRows<BinderCardRecord>(rows, savedRows), binderLanguage);
+  return withOptionalPrices(preserveUnmatchedBinderRows<BinderCardRecord>(rows, savedRows));
 }
 
 // ===============================

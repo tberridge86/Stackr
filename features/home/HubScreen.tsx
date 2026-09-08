@@ -1303,7 +1303,7 @@ export default function HubScreen() {
         binders.map(async (binder) => {
           try {
             const [binderCards, masterSetEnabled] = await Promise.all([
-              fetchBinderCards(binder.id),
+              fetchBinderCards(binder.id, { includePrices: false }),
               isHomeMasterSetEnabled(binder.id),
             ]);
 

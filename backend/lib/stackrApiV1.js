@@ -171,6 +171,11 @@ function applyLanguageFilter(query, language) {
   return value ? query.eq('language_code', value) : query;
 }
 
+function applyNamePrintingLanguageFilter(query, language) {
+  const value = clean(language);
+  return value ? query.eq('printing_language_code', value) : query;
+}
+
 function escapeLikePattern(value) {
   return String(value ?? '').replace(/[\\%_]/g, '\\$&');
 }
@@ -896,7 +901,7 @@ async function searchNames(supabase, parsed, limit, language, types, reasonForTy
     .eq('normalized_name', parsed.normalized)
     .in('name_type', [...types])
     .limit(Math.max(limit * 4, 80));
-  namesQuery = applyLanguageFilter(namesQuery, language);
+  namesQuery = applyNamePrintingLanguageFilter(namesQuery, language);
   const names = await queryRows(namesQuery);
   if (!names.length) return [];
   const rows = [
@@ -927,7 +932,7 @@ async function searchNameWithSetCode(supabase, parsed, limit, language) {
       .eq('normalized_name', nameQuery)
       .in('name_type', [...EXACT_NAME_TYPES, ...ALIAS_NAME_TYPES])
       .limit(Math.max(limit * 4, 80));
-    namesQuery = applyLanguageFilter(namesQuery, language);
+    namesQuery = applyNamePrintingLanguageFilter(namesQuery, language);
     const names = await queryRows(namesQuery);
     const rows = [
       ...await fetchCardRowsByVariants(supabase, names.map((name) => name.variant_id)),
@@ -947,7 +952,7 @@ async function searchFuzzyName(supabase, parsed, limit, language) {
     .select('name_type,name,normalized_name,printing_id,variant_id')
     .ilike('normalized_name', `%${safe}%`)
     .limit(Math.max(limit * 6, 120));
-  namesQuery = applyLanguageFilter(namesQuery, language);
+  namesQuery = applyNamePrintingLanguageFilter(namesQuery, language);
   const names = await queryRows(namesQuery);
   if (!names.length) return [];
   const rows = [
@@ -1397,7 +1402,10 @@ export function createCatalogueV1Service(options) {
       ];
 
       for (const strategy of strategies) {
-        const results = await strategy();
+        const results = (await strategy()).filter((result) => (
+          (!language || result.languageCode === language)
+          && (!selectedSetId || result.setId === selectedSetId)
+        ));
         if (results.length) {
           const cards = results.filter((result) => result.type === 'card' && result.card).map((result) => result.card);
           const hydratedCards = await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions);
