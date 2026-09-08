@@ -470,6 +470,7 @@ const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity, o
       }}>
         <StackrImage
           uri={card.images?.small ?? null}
+          fullUri={card.images?.large ?? null}
           style={StyleSheet.absoluteFill}
           contentFit="contain"
           rounded={10}
@@ -1383,6 +1384,7 @@ export default function SetDetailScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
               <StackrImage
                 uri={quantityTarget?.card.images?.small ?? null}
+                fullUri={quantityTarget?.card.images?.large ?? null}
                 style={{ width: 58, height: 80, borderRadius: 8, backgroundColor: theme.colors.surface }}
                 contentFit="contain"
                 rounded={8}

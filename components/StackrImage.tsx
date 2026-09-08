@@ -12,6 +12,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useTheme } from './theme-context';
+import { nextStackrImageCandidate, stackrImageCandidates } from '../lib/stackrImageCandidates';
 import {
   enforceTcgdexRuntimeImagePolicy,
   isTcgdexControlledCardReferenceUrl,
@@ -59,13 +60,6 @@ function sanitizeImageSource(source?: ImageSourcePropType | null): ImageSourcePr
   return source;
 }
 
-const getBestUri = ({
-  thumbnailUri,
-  uri,
-  fullUri,
-}: Pick<StackrImageProps, 'thumbnailUri' | 'uri' | 'fullUri'>) =>
-  thumbnailUri || uri || fullUri || null;
-
 export async function prefetchStackrImages(
   urls: (string | null | undefined)[],
   limit = 18
@@ -85,6 +79,7 @@ export async function prefetchStackrImages(
       ordinary.length ? ExpoImage.prefetch(ordinary, { cachePolicy: 'memory-disk' }) : true,
       controlled.length ? ExpoImage.prefetch(controlled, { cachePolicy: 'memory' }) : true,
     ]);
+    if (!results.every(Boolean)) nextUrls.forEach((url) => prefetchedUris.delete(url));
     return results.every(Boolean);
   } catch {
     nextUrls.forEach((url) => prefetchedUris.delete(url));
@@ -126,37 +121,46 @@ function StackrImageBase({
   onError,
 }: StackrImageProps) {
   const { theme } = useTheme();
-  const [failed, setFailed] = React.useState(false);
-  const remoteUri = enforceTcgdexRuntimeImagePolicy(getBestUri({ thumbnailUri, uri, fullUri }));
+  const candidates = stackrImageCandidates([
+    sanitizeImageSource(source),
+    ...[thumbnailUri, uri, fullUri].map((value) => {
+      const allowedUri = enforceTcgdexRuntimeImagePolicy(value);
+      return allowedUri ? { uri: allowedUri } : null;
+    }),
+    sanitizeImageSource(fallbackSource),
+  ]);
+  const candidateSetKey = JSON.stringify(candidates.map((candidate) => candidate.key));
+  const activeCandidateSetRef = React.useRef(candidateSetKey);
+  activeCandidateSetRef.current = candidateSetKey;
+  const [failures, setFailures] = React.useState<{ setKey: string; keys: string[] }>({ setKey: '', keys: [] });
+  const candidate = nextStackrImageCandidate(candidates,
+    failures.setKey === candidateSetKey ? failures.keys : []);
+  const remoteUri = candidate?.uri ?? null;
   const isRemoteImage = Boolean(remoteUri);
-  const remoteSource = remoteUri
-    ? {
-        uri: remoteUri,
-        cacheKey: cacheKey ?? remoteUri,
-      }
-    : null;
-  const sanitizedSource = sanitizeImageSource(source);
-  const sanitizedFallbackSource = sanitizeImageSource(fallbackSource);
-  const resolvedSource = failed
-    ? sanitizedFallbackSource ?? sanitizedSource ?? null
-    : sanitizedSource ?? remoteSource ?? sanitizedFallbackSource ?? null;
+  const resolvedSource = candidate?.source ?? null;
+  // Renditions need distinct cache entries. A failed thumbnail must not poison
+  // a supplied full-size fallback that uses the same card-level cache key.
+  const imageSource = remoteUri && resolvedSource && typeof resolvedSource === 'object'
+    ? { ...resolvedSource, cacheKey: cacheKey ? `${cacheKey}:${remoteUri}` : remoteUri }
+    : resolvedSource;
   const backgroundColor = placeholderColor ?? theme.colors.surface;
-
-  React.useEffect(() => {
-    setFailed(false);
-  }, [remoteUri, source]);
 
   React.useEffect(() => {
     if (!prefetch || !remoteUri || prefetchedUris.has(remoteUri)) return;
     prefetchedUris.add(remoteUri);
+    let started = false;
     const task = InteractionManager.runAfterInteractions(() => {
-      ExpoImage.prefetch(remoteUri, { cachePolicy: isTcgdexControlledCardReferenceUrl(remoteUri) ? 'memory' : 'memory-disk' }).catch(() => {
+      started = true;
+      ExpoImage.prefetch(remoteUri, { cachePolicy: isTcgdexControlledCardReferenceUrl(remoteUri) ? 'memory' : 'memory-disk' }).then((loaded) => {
+        if (!loaded) prefetchedUris.delete(remoteUri);
+      }).catch(() => {
         prefetchedUris.delete(remoteUri);
       });
     });
 
     return () => {
       task.cancel?.();
+      if (!started) prefetchedUris.delete(remoteUri);
     };
   }, [prefetch, remoteUri]);
 
@@ -170,7 +174,8 @@ function StackrImageBase({
     >
       {resolvedSource ? (
         <ExpoImage
-          source={resolvedSource}
+          key={candidate?.key}
+          source={imageSource}
           style={[styles.image, imageStyle]}
           contentFit={contentFit}
           placeholder={isRemoteImage ? { blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' } : undefined}
@@ -182,7 +187,14 @@ function StackrImageBase({
           accessibilityLabel={accessibilityLabel}
           onLoad={() => onLoad?.()}
           onError={() => {
-            setFailed(true);
+            if (!candidate || activeCandidateSetRef.current !== candidateSetKey) return;
+            setFailures((previous) => ({
+              setKey: candidateSetKey,
+              keys: [...new Set([
+                ...(previous.setKey === candidateSetKey ? previous.keys : []),
+                candidate.key,
+              ])],
+            }));
             onError?.();
           }}
         />

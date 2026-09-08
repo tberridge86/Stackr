@@ -2362,6 +2362,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           ) : imageUri ? (
             <StackrImage
               uri={imageUri}
+              fullUri={getBinderCardImageUri(item, 'large')}
               style={{
                 width: '100%',
                 aspectRatio: stackrCardImageSizes.cardAspectRatio,
@@ -5244,6 +5245,5 @@ function MasterVariantIcon({
     </View>
   );
 }
-
 
 
