@@ -68,6 +68,7 @@ jobs:
       - name: Deploy reviewed backend with existing runtime bindings
         run: |
           set -euo pipefail
+          printf '%s\n' "$EXPECTED_MAIN_SHA" > backend/.stackr-source-commit
           printf '%s' "$EXPECTED_MAIN_SHA" | npx --yes @railway/cli@5.30.1 variable set SOURCE_COMMIT --stdin --skip-deploys --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_BACKEND_SERVICE_ID"
           npx --yes @railway/cli@5.30.1 up "$GITHUB_WORKSPACE/backend" --ci --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_BACKEND_SERVICE_ID"
       - name: Verify production runtime and catalogue
@@ -76,7 +77,7 @@ jobs:
           node --input-type=module <<'NODE'
           const response = await fetch(`${process.env.STACKR_BACKEND_URL}/health`, {signal: AbortSignal.timeout(15000)});
           const body = await response.json();
-          if (response.status !== 200 || body?.ok !== true || body?.runtime?.railwayEnvironment !== 'production' || body?.runtime?.supabaseProjectRef !== 'oakdbbzdqwurpjnoqhmu') throw new Error('Production runtime verification failed');
+          if (response.status !== 200 || body?.ok !== true || body?.runtime?.railwayEnvironment !== 'production' || body?.runtime?.supabaseProjectRef !== 'oakdbbzdqwurpjnoqhmu' || body?.runtime?.gitCommit !== process.env.EXPECTED_MAIN_SHA.slice(0, 12) || body?.runtime?.gitCommitSource !== 'bundled_workflow_sha') throw new Error('Production runtime/source verification failed');
           console.log(JSON.stringify(body));
           NODE
           npm run deploy:smoke -- --gateway="$STACKR_GATEWAY_URL" --backend="$STACKR_BACKEND_URL" --full-gateway --require-commerce-disabled --require-published-catalogue --required-catalogue-languages=en,ja,zh-tw,zh-cn,ko --allowed-origin=https://stackr.app > outputs/releases/backend-smoke.json

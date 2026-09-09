@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 import {
   isUuid,
+  legacyEnglishOwnerPair,
   ownedRowEligibility,
   parseOwnerPriceRefreshArguments,
   resolveOwnedProviderVariant,
@@ -55,7 +56,9 @@ async function readOwnedRows(supabase, ownerId, limit) {
 
 async function resolveOwnedCandidates(supabase, ownedRows) {
   const rowsNeedingIdentity = ownedRows.filter((row) => !ownedRowEligibility(row));
-  const externalIds = [...new Set(rowsNeedingIdentity.flatMap((row) => [row.card_id, row.set_id])
+  const externalIds = [...new Set(rowsNeedingIdentity.flatMap((row) => [
+    row.card_id, row.set_id, ...(legacyEnglishOwnerPair(row)?.setAliases ?? []),
+  ])
     .map((value) => String(value ?? '').trim()).filter(Boolean))];
   const identifierRows = externalIds.length
     ? await queryRows(supabase.schema('api').from('catalogue_external_identifiers')
@@ -71,12 +74,32 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
     .map((row) => String(row.variant_id).toLowerCase())
     .filter(isUuid),
   ])];
-  const catalogueRows = provisionalVariantIds.length
+  const directCatalogueRows = provisionalVariantIds.length
     ? await queryRows(supabase.schema('api').from('catalogue_cards')
       .select('variant_id,set_id,language_code,variant_code,finish_code')
       .in('variant_id', provisionalVariantIds)
       .limit(5000))
     : [];
+  const legacySetReferences = new Set(rowsNeedingIdentity
+    .flatMap((row) => legacyEnglishOwnerPair(row)?.setAliases ?? [])
+    .map((value) => String(value).toLowerCase()));
+  const legacySetIds = [...new Set(identifierRows
+    .filter((row) => String(row?.source_entity_type ?? '').toLowerCase() === 'set')
+    .filter((row) => String(row?.language_code ?? '').toLowerCase() === 'en')
+    .filter((row) => legacySetReferences.has(String(row?.external_id ?? '').toLowerCase()))
+    .map((row) => String(row?.set_id ?? '').toLowerCase())
+    .filter(isUuid))].slice(0, 30);
+  // Read one set at a time. Even the maximum owner run must not create thirty
+  // concurrent full-set reads against the published catalogue view.
+  const legacyCatalogueRows = [];
+  for (const setId of legacySetIds) {
+    legacyCatalogueRows.push(...await queryRows(supabase.schema('api').from('catalogue_cards')
+      .select('variant_id,set_id,language_code,collector_number,variant_code,finish_code')
+      .eq('set_id', setId)
+      .eq('language_code', 'en')
+      .limit(1000)));
+  }
+  const catalogueRows = [...directCatalogueRows, ...legacyCatalogueRows];
   return ownedRows.map((row) => resolveOwnedProviderVariant(row, identifierRows, catalogueRows));
 }
 
