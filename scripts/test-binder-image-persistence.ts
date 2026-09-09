@@ -8,10 +8,10 @@ assert.equal(selectTcgdexReferencePersistenceImage(controlled), null, 'a newly i
 assert.equal(selectTcgdexReferencePersistenceImage(controlled, existing), existing, 'an update must retain its existing stored value');
 assert.equal(selectTcgdexReferencePersistenceImage('https://catalogue.stackr.test/cards/new.webp', existing), 'https://catalogue.stackr.test/cards/new.webp');
 const scanResultSource = readFileSync('app/scan/result.tsx', 'utf8');
-assert.match(scanResultSource, /select\('image_url'\)/, 'scan binder upsert must read the existing stored image');
-assert.match(scanResultSource, /if \(existingBinderCardError\) throw existingBinderCardError/, 'scan binder upsert must fail closed when the stored image cannot be read');
-assert.match(scanResultSource, /selectTcgdexReferencePersistenceImage\([\s\S]*?selectedCard\.image_small[\s\S]*?existingBinderCard\?\.image_url/, 'scan binder upsert must preserve stored images while filtering display references');
-assert.match(scanResultSource, /persistedImageUrl[\s\S]{0,120}\? \{ image_url: persistedImageUrl \} : \{\}/, 'scan binder upsert must omit a new controlled reference');
+const collectionBatchSource = readFileSync('lib/collectionBatch.ts', 'utf8');
+assert.match(scanResultSource, /addOwnedCardBatchToBinder/, 'scan binder saves must use the verified collection batch path');
+assert.match(collectionBatchSource, /stripTcgdexReferenceBeforePersistence\(card\.imageUrl\)/, 'batch input must exclude a new controlled display reference');
+assert.match(collectionBatchSource, /preserveExistingImageUrlBeforePersistence\([\s\S]{0,180}entry\.imageUrl,[\s\S]{0,180}existing\?\.image_url/, 'batch updates must retain the stored image baseline');
 const listingSource = readFileSync('features/listing/CreateListingScreen.tsx', 'utf8');
 assert.match(listingSource, /function listingCardForPersistence[\s\S]*?existing\?\.id === card\.id[\s\S]*?selectTcgdexReferencePersistenceImage\(card\.image_small, existingCard\?\.image_small\)/, 'listing drafts must exclude new display-only references while preserving the same card\'s stored image');
 assert.match(listingSource, /selectedCard: listingCardForPersistence\(selectedCard, persistedDraftSelectedCardRef\.current\)/, 'listing draft serialization must use the preservation-aware projection');
