@@ -46,7 +46,7 @@ mock('../lib/supabase', { supabase });
 async function run() {
   const input = {
     ownerUserId: 'owner-a', sourceSessionId: 'scan-result-100:add:holo', binderId: 'binder-a',
-    cards: [{ cardId: 'card-a', setId: 'set-a', language: 'en', quantity: 1, cardName: 'Card A', imageUrl: 'https://assets.tcgdex.net/ja/sv1/001/low.webp' }],
+    cards: [{ cardId: 'card-a', setId: 'set-a', language: 'en', quantity: 1, cardName: 'Card A', imageUrl: 'https://assets.tcgdex.net/ja/sv/sv1/001/low.webp' }],
     variant: { userId: 'owner-a', cardId: 'card-a', setId: 'set-a', variant: 'holo', condition: 'Near Mint', gradeCompany: '', grade: '' },
   };
   const { saveScanCollectionVariant } = require('../lib/scanCollectionVariantSave') as typeof import('../lib/scanCollectionVariantSave');
@@ -76,7 +76,7 @@ async function run() {
   assert.equal(pending.length, 1, 'the exact unfinished operation survives a fresh module load');
   assert.equal(pending[0].variant?.variant, 'holo');
   assert.equal(pending[0].cards[0].imageUrl, null, 'the durable composite intent strips controlled TCGdex references');
-  assert.doesNotMatch(JSON.stringify([...values.values()]), /assets\\.tcgdex\\.net/, 'the composite storage bucket contains no controlled provider URL');
+  assert.equal(JSON.stringify([...values.values()]).includes('assets.tcgdex.net'), false, 'the composite storage bucket contains no controlled provider URL');
   const [resumed, concurrentResume] = await Promise.all([
     restarted.resumePendingScanCollectionVariant('owner-a', pending[0].sourceSessionId),
     restarted.resumePendingScanCollectionVariant('owner-a', pending[0].sourceSessionId),
