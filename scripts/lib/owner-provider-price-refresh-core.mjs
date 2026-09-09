@@ -12,6 +12,42 @@ function normalise(value) {
   return String(value ?? '').trim().toLowerCase();
 }
 
+function sameCollectorNumber(left, right) {
+  const normalize = (value) => String(value ?? '').trim().replace(/^0+(?=\d)/, '');
+  return Boolean(normalize(left) && normalize(right)) && normalize(left) === normalize(right);
+}
+
+function englishSetCodeAliases(value) {
+  const code = normalise(value);
+  const match = /^(sv|me)(\d{1,2})(pt5|\.5)?([a-z]*)$/.exec(code);
+  if (!match) return [];
+  const [, prefix, numeric, half = '', suffix = ''] = match;
+  const number = Number(numeric);
+  if (!Number.isInteger(number) || number < 1 || number > 99) return [];
+  return [...new Set([
+    code,
+    `${prefix}${number}${half ? 'pt5' : ''}${suffix}`,
+    `${prefix}${String(number).padStart(2, '0')}${half ? '.5' : ''}${suffix}`,
+  ])];
+}
+
+/**
+ * Legacy English app rows used `<ME code>` and `<ME code>-<collector>` together.
+ * This mirrors the verified ME alias rule in lib/englishSetIdentity. It does
+ * not reinterpret SV or arbitrary unprefixed/foreign ids as English: Japanese
+ * ME identities use their distinct `m` prefix. The resulting set must still
+ * resolve through a published English set and one exact normal variant.
+ */
+export function legacyEnglishOwnerPair(row) {
+  const setMatch = /^(me\d{1,2}(?:pt5|\.5)?[a-z]*)$/.exec(normalise(row?.set_id));
+  const cardMatch = /^(me\d{1,2}(?:pt5|\.5)?[a-z]*)-(\d+)$/.exec(normalise(row?.card_id));
+  if (!setMatch || !cardMatch) return null;
+  const setAliases = englishSetCodeAliases(setMatch[1]);
+  const cardSetAliases = englishSetCodeAliases(cardMatch[1]);
+  if (!setAliases.length || !cardSetAliases.some((value) => setAliases.includes(value))) return null;
+  return { setAliases, collectorNumber: cardMatch[2] };
+}
+
 export function parseOwnerPriceRefreshArguments(args = []) {
   let limit = 10;
   let dryRun = true;
@@ -38,11 +74,13 @@ export function ownedRowEligibility(row) {
   return null;
 }
 
-function publishedSetIds(identifierRows, savedSetId) {
+function publishedSetIds(identifierRows, savedSetId, aliases = []) {
   const setId = String(savedSetId ?? '').trim().toLowerCase();
   if (isUuid(setId)) return new Set([setId]);
+  const references = new Set([setId, ...aliases.map(normalise)]);
   return new Set((identifierRows ?? [])
-    .filter((row) => String(row?.external_id ?? '').trim().toLowerCase() === setId)
+    .filter((row) => references.has(String(row?.external_id ?? '').trim().toLowerCase()))
+    .filter((row) => normalise(row?.source_entity_type) === 'set')
     .map((row) => String(row?.set_id ?? '').trim().toLowerCase())
     .filter(isUuid));
 }
@@ -58,7 +96,8 @@ export function resolveOwnedProviderVariant(row, identifierRows, catalogueRows) 
   if (eligibility) return { ok: false, reason: eligibility };
 
   const savedCardId = String(row.card_id).trim().toLowerCase();
-  const allowedSetIds = publishedSetIds(identifierRows, row.set_id);
+  const englishPair = legacyEnglishOwnerPair(row);
+  const allowedSetIds = publishedSetIds(identifierRows, row.set_id, englishPair?.setAliases);
   if (!allowedSetIds.size) return { ok: false, reason: 'unresolved_saved_set' };
 
   const candidateIds = isUuid(savedCardId)
@@ -68,9 +107,15 @@ export function resolveOwnedProviderVariant(row, identifierRows, catalogueRows) 
       .filter((item) => normalise(item?.source_entity_type) === 'card')
       .map((item) => String(item?.variant_id ?? '').trim().toLowerCase())
       .filter(isUuid))];
-  if (!candidateIds.length) return { ok: false, reason: 'unresolved_saved_card' };
+  const directCandidates = (catalogueRows ?? []).filter((card) => candidateIds.includes(String(card?.variant_id ?? '').toLowerCase()));
+  const legacyCandidates = englishPair
+    ? (catalogueRows ?? []).filter((card) => allowedSetIds.has(String(card?.set_id ?? '').toLowerCase()))
+      .filter((card) => normalise(card?.language_code) === 'en')
+      .filter((card) => sameCollectorNumber(card?.collector_number, englishPair.collectorNumber))
+    : [];
+  if (!candidateIds.length && !legacyCandidates.length) return { ok: false, reason: 'unresolved_saved_card' };
 
-  const candidates = (catalogueRows ?? []).filter((card) => candidateIds.includes(String(card?.variant_id ?? '').toLowerCase()))
+  const candidates = [...directCandidates, ...legacyCandidates]
     .filter((card) => allowedSetIds.has(String(card?.set_id ?? '').toLowerCase()))
     .filter((card) => Boolean(String(card?.language_code ?? '').trim()))
     .filter((card) => NORMAL_CODES.has(normalise(card?.variant_code)))
