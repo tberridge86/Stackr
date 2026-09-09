@@ -36,9 +36,9 @@ const PERIODS: PokeTraceHistoryPeriod[] = ['7d', '30d', '90d'];
 const MINTY_REV2_SOURCE = require('../assets/rev2/03-ui-illustrations/mascot/Stackrrev2_mascot-cutout.png');
 
 const SOURCE_COPY: Record<SourceKey, { label: string; color: string }> = {
-  ebay: { label: 'eBay market', color: '#20C997' },
-  tcgplayer: { label: 'TCGPlayer cached', color: '#F5B941' },
-  cardmarket: { label: 'CardMarket cached', color: '#7C8CFF' },
+  ebay: { label: 'eBay market', color: '#087F73' },
+  tcgplayer: { label: 'TCGPlayer cached', color: '#FFBE35' },
+  cardmarket: { label: 'CardMarket cached', color: '#2563EB' },
 };
 
 const formatCurrency = (value: number | null | undefined) =>
@@ -176,8 +176,8 @@ function MiniMarketChart({
       <Svg width={width} height={height}>
         <Defs>
           <LinearGradient id="insightFill" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#20C997" stopOpacity="0.28" />
-            <Stop offset="1" stopColor="#20C997" stopOpacity="0.02" />
+            <Stop offset="0" stopColor="#087F73" stopOpacity="0.28" />
+            <Stop offset="1" stopColor="#087F73" stopOpacity="0.02" />
           </LinearGradient>
         </Defs>
         {[0.25, 0.5, 0.75].map((position) => (
@@ -339,7 +339,7 @@ export default function PokeTraceMarketInsights({
     const primaryCount = isGradedMode ? price?.graded_count ?? 0 : rawPrimary.count;
 
     return (
-      <View style={[styles.summaryPanel, { backgroundColor: theme.colors.primary + '10', borderColor: theme.colors.primary + '35' }]}>
+      <View style={[styles.summaryPanel, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
         <View style={styles.summaryHeader}>
           <View style={styles.insightTitleCluster}>
             <View style={styles.insightMascotBadge}>
@@ -466,7 +466,7 @@ export default function PokeTraceMarketInsights({
             </View>
             <View style={[styles.statCell, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
               <Text style={[styles.statLabel, { color: theme.colors.textSoft }]} numberOfLines={1}>Period change</Text>
-              <Text style={[styles.statValue, { color: change != null && change < 0 ? '#EF4444' : '#20C997' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>{formatPercent(change)}</Text>
+              <Text style={[styles.statValue, { color: change != null && change < 0 ? theme.colors.semantic.error : theme.colors.semantic.success }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>{formatPercent(change)}</Text>
             </View>
           </View>
 
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
   },
   unavailableText: {
-    color: '#716BA8',
+    color: '#5F6573',
     fontSize: 12.5,
     lineHeight: 18,
     fontWeight: '700',
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chartEmptyText: {
-    color: '#94A3B8',
+    color: '#5F6573',
     fontSize: 12,
     textAlign: 'center',
   },
@@ -741,7 +741,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   chartScaleText: {
-    color: '#94A3B8',
+    color: '#5F6573',
     fontSize: 10,
     fontWeight: '800',
   },

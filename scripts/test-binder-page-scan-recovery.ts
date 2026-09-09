@@ -5,6 +5,7 @@ import {
   loadBinderPageScanSession,
   loadRecoverableBinderPageScanSessions,
   markBinderPageScanSessionSaved,
+  updateBinderPageScanSession,
   setBinderPageScanStorageForTests,
 } from '../lib/binderPageScanStore';
 
@@ -52,6 +53,20 @@ assert.deepEqual(getBinderPageScanRecoverySummary(ownerA[0]), {
 assert.equal(await loadBinderPageScanSession('binder-review-owner-a', 'owner-b'), null, 'cross-owner session must stay hidden');
 await markBinderPageScanSessionSaved('binder-review-owner-a', 'owner-a');
 assert.deepEqual(await loadRecoverableBinderPageScanSessions('owner-a'), []);
+// Each queued edit must apply to the latest persisted pockets, not a stale UI render.
+await checkpointBinderPageScanSession(session('rapid-pocket-edits', 'owner-rapid'));
+await Promise.all([
+  updateBinderPageScanSession('rapid-pocket-edits', 'owner-rapid', (current) => ({
+    ...current,
+    pockets: current.pockets.map((item) => item.index === 0 ? { ...item, status: 'confirmed' } : item),
+  })),
+  updateBinderPageScanSession('rapid-pocket-edits', 'owner-rapid', (current) => ({
+    ...current,
+    pockets: current.pockets.map((item) => item.index === 1 ? { ...item, status: 'confirmed' } : item),
+  })),
+]);
+const rapidEdits = await loadBinderPageScanSession('rapid-pocket-edits', 'owner-rapid');
+assert.deepEqual(rapidEdits?.pockets.map((item) => item.status), ['confirmed', 'confirmed']);
 
 await Promise.all([0, 1, 2, 3].map((index) => checkpointBinderPageScanSession(session(`capacity-${index}`, 'owner-capacity'))));
 await assert.rejects(

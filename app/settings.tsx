@@ -41,13 +41,10 @@ const settingsSections: {
   items: string[];
   sellerOnly?: boolean;
 }[] = [
-  { title: 'General', icon: 'account', body: 'Account identity and app defaults.', items: ['Email and password', 'Authentication and sessions', 'Profile visibility', 'Account deletion'] },
-  { title: 'Appearance', icon: 'appearance', body: 'Display preferences and accessibility.', items: ['Dynamic text', 'Reduced motion', 'Camera and photo permissions'] },
-  { title: 'Notifications', icon: 'notifications', body: 'Choose the alerts Stackr can send.', items: ['The Market alerts', 'Trade and offer updates', 'Community updates', 'Price movement alerts'] },
-  { title: 'Marketplace', icon: 'market', body: 'Listing, offer and trade preferences.', items: ['The Market preferences', 'Trade preferences', 'Saved listing preferences'] },
-  { title: 'Seller', icon: 'seller', body: 'Operational settings for card inventory.', items: ['Inventory defaults', 'Scan In and Scan Out defaults', 'CSV import and export'], sellerOnly: true },
-  { title: 'Privacy', icon: 'privacy', body: 'Control visibility, data and community safety.', items: ['Binder visibility defaults', 'Blocked users', 'Data export', 'Community safety controls'] },
-  { title: 'Legal & Support', icon: 'support', body: 'Help, release notes and legal information.', items: ['Help and support', 'Report a problem', 'Legal information', 'App version'] },
+  { title: 'Account', icon: 'account', body: 'Password recovery is available from Login. Other account controls are not available in this build.', items: ['Password reset: Login → Forgot password', 'Session management: not available yet', 'Profile visibility: not available yet', 'Account deletion: not available yet'] },
+  { title: 'Permissions', icon: 'appearance', body: 'Camera and photo access are managed in your device settings.', items: ['iPhone Settings → Apps → Stackr → Camera and Photos'] },
+  { title: 'Notifications', icon: 'notifications', body: 'View in-app notifications from the bell. Alert preference controls are not available yet.', items: ['The Market alert preferences: not available yet', 'Trade and offer alert preferences: not available yet', 'Community alert preferences: not available yet', 'Price movement alert preferences: not available yet'] },
+  { title: 'Privacy', icon: 'privacy', body: 'Change visibility on each binder. Other privacy controls are not available in this build.', items: ['Binder visibility: change it in that binder', 'Blocked users: not available yet', 'Data export: not available yet', 'Community safety controls: not available yet'] },
 ];
 
 function SettingsIcon({ source }: { source: ImageSourcePropType }) {
@@ -166,8 +163,8 @@ export default function SettingsScreen() {
             </Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 3 }}>
               {showSellerSettings
-                ? 'Account, marketplace, seller inventory and privacy controls are kept in one place.'
-                : 'Account, marketplace and privacy controls are kept in one place.'}
+                ? 'Available account, marketplace and seller actions are collected here; unavailable controls are labelled clearly.'
+                : 'Available account and marketplace actions are collected here; unavailable controls are labelled clearly.'}
             </Text>
           </View>
         </View>
@@ -216,12 +213,12 @@ export default function SettingsScreen() {
             key={section.title}
             style={{
               borderRadius: 22,
-              backgroundColor: 'rgba(255,255,255,0.88)',
+              backgroundColor: theme.colors.card,
               borderWidth: 1,
-              borderColor: '#E8E1FF',
+              borderColor: theme.colors.border,
               padding: 14,
               marginBottom: 12,
-              shadowColor: '#6136F5',
+              shadowColor: theme.colors.semantic.featureSurface,
               shadowOpacity: 0.07,
               shadowRadius: 10,
               shadowOffset: { width: 0, height: 5 },
@@ -229,7 +226,7 @@ export default function SettingsScreen() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-              <View style={{ width: 48, height: 48, borderRadius: 17, backgroundColor: '#F7F3FF', borderWidth: 1, borderColor: '#E8E1FF', alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ width: 48, height: 48, borderRadius: 17, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
                 <SettingsIcon source={SETTINGS_ICONS[section.icon]} />
               </View>
               <View style={{ flex: 1 }}>

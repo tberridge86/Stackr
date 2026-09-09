@@ -149,7 +149,7 @@ export type HomeActivityItem = {
 };
 
 const cardShadow = {
-  shadowColor: '#6136F5',
+  shadowColor: '#07145F',
   shadowOpacity: 0.11,
   shadowRadius: 18,
   shadowOffset: { width: 0, height: 8 },
@@ -163,7 +163,7 @@ const tradeTierAssets = {
   silver: require('../assets/rev2/10-market-trade/protection-tiers/silver.png') as ImageSourcePropType,
   gold: require('../assets/rev2/10-market-trade/protection-tiers/gold.png') as ImageSourcePropType,
 };
-const HOME_HERO_DEEP = '#5226D9';
+const HOME_HERO_DEEP = '#07145F';
 const HOME_HERO_PRIMARY = '#6938F5';
 const HOME_HERO_MID = '#7C3CFF';
 const HOME_HERO_LIFT = '#8B55FF';
@@ -234,7 +234,7 @@ const formatRelativeTime = (value: string) => {
 };
 
 const activityVisuals: Record<HomeActivityType, { icon: IconName; color: string; label: string; imageIcon?: ImageSourcePropType }> = {
-  added: { icon: 'add', color: '#10B981', label: 'Added' },
+  added: { icon: 'add', color: '#087F73', label: 'Added' },
   removed: { icon: 'remove', color: REMOVED_ACTIVITY_COLOR, label: 'Removed' },
   duplicate: { icon: 'copy', color: '#6F45FF', label: 'Duplicate' },
   favorite: { icon: 'sparkles', color: HOME_HERO_PRIMARY, label: 'Chase', imageIcon: stackrIcons.chase },
@@ -1299,7 +1299,7 @@ export function ChaseOrMissingSection({
                 activeOpacity={0.84}
                 style={[
                   isChase ? styles.chasePreviewCard : styles.previewCard,
-                  { borderColor: theme.colors.border, backgroundColor: isChase ? '#F1ECFF' : theme.colors.surface },
+                  { borderColor: theme.colors.border, backgroundColor: isChase ? theme.colors.semantic.selectedState : theme.colors.surface },
                 ]}
               >
                 <View style={[isChase ? styles.chasePreviewImage : styles.previewImage, styles.previewImageFrame, { backgroundColor: theme.colors.surface }]}>
@@ -1731,7 +1731,7 @@ export function RecentActivitySection({
                     </Text>
                   </View>
                   {item.valueChange != null ? (
-                    <Text style={[styles.activityValue, { color: item.isPositive === false ? REMOVED_ACTIVITY_COLOR : '#10B981' }]}>
+                    <Text style={[styles.activityValue, { color: item.isPositive === false ? REMOVED_ACTIVITY_COLOR : theme.colors.semantic.success }]}>
                       {item.valueChange > 0 ? '+' : ''}{formatMoney(item.valueChange)}
                     </Text>
                   ) : (
@@ -2867,7 +2867,7 @@ const styles = StyleSheet.create({
   },
   duplicateSummaryMeta: {
     ...typeScale.micro,
-    color: '#716BA8',
+    color: '#5F6573',
     fontSize: 10,
     lineHeight: 12,
     fontWeight: '800',
@@ -2956,7 +2956,7 @@ const styles = StyleSheet.create({
   },
   valueBadgeLabel: {
     ...typeScale.micro,
-    color: '#716BA8',
+    color: '#5F6573',
     fontSize: 9.5,
     lineHeight: 12,
     fontWeight: '900',
@@ -3424,7 +3424,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F7F3FF',
+    backgroundColor: '#F0EFF3',
   },
   chaseCarouselMeta: {
     ...typeScale.caption,
@@ -3565,7 +3565,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F7F3FF',
+    backgroundColor: '#F0EFF3',
   },
   chaseInsightGhostActionText: {
     ...typeScale.buttonSecondary,

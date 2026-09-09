@@ -263,10 +263,9 @@ export default function BinderPageScanResultScreen() {
       throw new Error('Finish or cancel the card correction before changing another pocket.');
     }
     if (!scanSessionId || !session) throw new Error('This binder page review is no longer available.');
-    const next = updater(pockets);
     const persisted = await updateBinderPageScanSession(scanSessionId, session.ownerUserId, (stored) => ({
       ...stored,
-      pockets: next,
+      pockets: updater(stored.pockets),
     }));
     if (!persisted) throw new Error('This binder page review is no longer available.');
     setSession(persisted);
@@ -497,13 +496,14 @@ export default function BinderPageScanResultScreen() {
         slotOrder: (destinationPage - 1) * 25 + pocket.index,
       })).filter((card) => Boolean(card.setId));
       if (!cards.length) throw new Error('Confirmed pockets are missing a set identity. Correct those pockets before saving.');
+      const sourceSessionId = scanSessionId ?? session.scanSessionId;
       const requestKey = createCollectionBatchRequestKey({
-        sourceSessionId: scanSessionId ?? session.scanSessionId,
+        sourceSessionId,
         binderId,
         cards,
       });
       const intent = await persistVerifiedCollectionBatchRecoveryIntent({
-        sourceSessionId: requestKey,
+        sourceSessionId,
         binderId,
         cards,
         requestKey,

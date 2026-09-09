@@ -4,6 +4,7 @@ import {
   canonicalCollectionBatchValue,
   buildCollectionBatchRecoveryIntent,
   createCollectionBatchRequestCoordinator,
+  createCollectionBatchRequestKey as createRawCollectionBatchRequestKey,
   CollectionBatchReconciliationRequiredError,
   decideCollectionBatchJournalRecovery,
   isCollectionBatchReconciliationRequired,
@@ -20,7 +21,6 @@ import {
 } from './tcgdexControlledCardReference';
 
 export {
-  createCollectionBatchRequestKey,
   CollectionBatchReconciliationRequiredError,
   isCollectionBatchReconciliationRequired,
 } from './collectionBatchIdempotency';
@@ -39,6 +39,22 @@ export type CollectionBatchCard = {
   slotOrder?: number | null;
 };
 
+/** Remove provider-only TCGdex references before hashing, journalling, or persistence. */
+export function sanitizeCollectionBatchCards(cards: readonly CollectionBatchCard[]) {
+  return cards.map((card) => ({
+    ...card,
+    imageUrl: stripTcgdexReferenceBeforePersistence(card.imageUrl),
+  }));
+}
+
+/** The request identity must use the same sanitized card payload as persistence. */
+export function createCollectionBatchRequestKey(input: {
+  sourceSessionId: string;
+  binderId: string;
+  cards: readonly CollectionBatchCard[];
+}) {
+  return createRawCollectionBatchRequestKey({ ...input, cards: sanitizeCollectionBatchCards(input.cards) });
+}
 export type CollectionBatchEntry = CollectionBatchCard & {
   language: PokemonCardLanguage;
   quantity: number;
@@ -465,10 +481,7 @@ export async function persistVerifiedCollectionBatchRecoveryIntent(input: {
 }): Promise<CollectionBatchRecoveryIntent> {
   const intent = buildCollectionBatchRecoveryIntent({
     ...input,
-    cards: input.cards.map((card) => ({
-      ...card,
-      imageUrl: stripTcgdexReferenceBeforePersistence(card.imageUrl),
-    })),
+    cards: sanitizeCollectionBatchCards(input.cards),
   });
   const storageKey = collectionBatchRecoveryStorageKey(intent.sourceSessionId);
   const serialized = canonicalCollectionBatchValue(intent);

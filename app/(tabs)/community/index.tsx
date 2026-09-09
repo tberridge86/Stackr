@@ -21,6 +21,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AVATAR_PRESETS } from '../../../lib/avatars';
 import { BinderArtwork } from '../../../components/BinderArtwork';
+import {
+  canShareBinderInCommunity,
+  PRIVATE_BINDER_SHARE_MESSAGE,
+  publicCommunityShareBinders,
+} from '../../../lib/communityBinderSharing';
 import { supabase } from '../../../lib/supabase';
 import { getMyFriends } from '../../../lib/friends';
 import { useProfile } from '../../../components/profile-context';
@@ -778,6 +783,11 @@ export default function CommunityScreen() {
       return;
     }
 
+    if (selectedBinder && !canShareBinderInCommunity(selectedBinder)) {
+      Alert.alert('Make binder public first', PRIVATE_BINDER_SHARE_MESSAGE);
+      return;
+    }
+
     try {
       setPosting(true);
 
@@ -789,16 +799,6 @@ export default function CommunityScreen() {
       if (userError) throw userError;
       if (!user) throw new Error('You must be signed in.');
 
-      if (selectedBinder && !selectedBinder.is_public) {
-        const { error: visibilityError } = await supabase
-          .from('binders')
-          .update({ is_public: true })
-          .eq('id', selectedBinder.id)
-          .eq('user_id', user.id);
-
-        if (visibilityError) throw visibilityError;
-      }
-
       const activeChannel = getActiveChannel(activeSocialTab, activeCategory);
       const postType = getComposerPostType(activeSocialTab, activeChannel, Boolean(selectedCard), Boolean(selectedBinder));
 
@@ -806,7 +806,10 @@ export default function CommunityScreen() {
         user_id: user.id,
         post_type: postType,
         body: trimmedBody || null,
-        binder_id: selectedBinder?.id ?? selectedCard?.binder_id ?? null,
+        // A card can be discussed without publishing the private binder it
+        // came from. Only an already-public binder selected explicitly above
+        // is attached to a community post.
+        binder_id: selectedBinder?.id ?? null,
         card_id: selectedCard?.card_id ?? null,
         set_id: selectedCard?.set_id ?? null,
       });
@@ -1421,11 +1424,13 @@ export default function CommunityScreen() {
 
   const renderFlexPickerContent = () => {
     if (flexPickerMode === 'binder') {
+      const publicBinders = publicCommunityShareBinders(binderOptions);
+      const hiddenPrivateCount = binderOptions.length - publicBinders.length;
       return (
         <>
           <Text style={styles.modalHeading}>Share a binder</Text>
-          <Text style={styles.modalSubheading}>Choose a binder to post as a read-only flex.</Text>
-          {binderOptions.map((binder) => (
+          <Text style={styles.modalSubheading}>Choose a public binder to post as a read-only flex.</Text>
+          {publicBinders.map((binder) => (
             <Pressable key={binder.id} onPress={() => chooseBinderFlex(binder)} style={styles.flexPickerRow}>
               {renderBinderCover(binder, styles.flexPickerCover)}
               <View style={{ flex: 1 }}>
@@ -1435,7 +1440,8 @@ export default function CommunityScreen() {
               <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
             </Pressable>
           ))}
-          {!binderOptions.length && <Text style={styles.emptyText}>No binders found yet.</Text>}
+          {hiddenPrivateCount > 0 && <Text style={styles.emptyText}>Private binders stay private. Change visibility in Binder settings before sharing one.</Text>}
+          {!publicBinders.length && <Text style={styles.emptyText}>{binderOptions.length ? PRIVATE_BINDER_SHARE_MESSAGE : 'No binders found yet.'}</Text>}
         </>
       );
     }

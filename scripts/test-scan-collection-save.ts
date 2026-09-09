@@ -20,10 +20,6 @@ mock('../lib/binders', {
   invalidateBinderCaches: () => undefined,
 });
 mock('../lib/pokemonTcg', { normalizePokemonCardLanguage: (value: unknown) => String(value ?? 'en').toLowerCase() });
-mock('../lib/tcgdexControlledCardReference', {
-  stripTcgdexReferenceBeforePersistence: (value: unknown) => value,
-  preserveExistingImageUrlBeforePersistence: (next: unknown, existing: unknown) => existing ?? next ?? null,
-});
 
 const supabase = {
   auth: { getUser: async () => ({ data: { user: { id: 'owner-a' } }, error: null }) },
@@ -52,7 +48,7 @@ const supabase = {
 };
 mock('../lib/supabase', { supabase });
 
-const { addOwnedCardBatchToBinder, createCollectionBatchRequestKey } = require('../lib/collectionBatch') as typeof import('../lib/collectionBatch');
+const { addOwnedCardBatchToBinder, clearCollectionBatchRecoveryIntent, createCollectionBatchRequestKey, persistVerifiedCollectionBatchRecoveryIntent, sanitizeCollectionBatchCards } = require('../lib/collectionBatch') as typeof import('../lib/collectionBatch');
 
 async function run() {
   rows.set(key({ binder_id: 'binder-a', set_id: 'set-a', card_id: 'existing', language: 'en' }), {
@@ -84,6 +80,40 @@ async function run() {
   assert.equal(existing.owned_quantity, 4, 'a new physical copy is a distinct operation');
   assert.match(existing.notes, /Keep this note/);
   assert.match(existing.notes, /New scan pocket/);
+  // Scan routes must preserve the source session identity when persisting an
+  // intent; the request key remains the idempotency key for the subsequent save.
+  const recoverySourceSessionId = 'scan-result-a:add:holo';
+  const tcgdexReferenceUrl = 'https://assets.tcgdex.net/ja/sv/sv1/001/low.webp';
+  const authorisedAssetUrl = 'https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/catalogue/card.webp';
+  assert.equal(sanitizeCollectionBatchCards([{ cardId: 'asset-card', setId: 'set-asset', imageUrl: authorisedAssetUrl }])[0].imageUrl, authorisedAssetUrl, 'approved Supabase assets remain eligible for persistence');
+  const recoveryCards = [{ cardId: 'recovery-card', setId: 'set-c', language: 'en', quantity: 1, notes: 'Verified scan', imageUrl: tcgdexReferenceUrl }];
+  const recoveryRequestKey = createCollectionBatchRequestKey({
+    sourceSessionId: recoverySourceSessionId,
+    binderId: 'binder-a',
+    cards: recoveryCards,
+  });
+  const intent = await persistVerifiedCollectionBatchRecoveryIntent({
+    sourceSessionId: recoverySourceSessionId,
+    binderId: 'binder-a',
+    cards: recoveryCards,
+    requestKey: recoveryRequestKey,
+  });
+  assert.equal(intent.sourceSessionId, recoverySourceSessionId);
+  assert.equal(intent.requestKey, recoveryRequestKey);
+  assert.equal(intent.cards[0].imageUrl, null, 'controlled TCGdex references are removed before the recovery intent is hashed');
+  assert.equal(JSON.stringify([...values.values()]).includes('assets.tcgdex.net'), false, 'controlled references never enter local recovery storage');
+  const recoverySaved = await restarted.addOwnedCardBatchToBinder(intent.binderId, [...intent.cards], { requestKey: intent.requestKey });
+  assert.equal(recoverySaved.replayed, false);
+  const persistedIntent = await persistVerifiedCollectionBatchRecoveryIntent({
+    sourceSessionId: recoverySourceSessionId,
+    binderId: 'binder-a',
+    cards: recoveryCards,
+    requestKey: recoveryRequestKey,
+  });
+  const recoveryRetry = await restarted.addOwnedCardBatchToBinder(persistedIntent.binderId, [...persistedIntent.cards], { requestKey: persistedIntent.requestKey });
+  assert.equal(recoveryRetry.replayed, true, 'retrying a saved recovery intent must not add another copy');
+  assert.equal(rows.get(key({ binder_id: 'binder-a', set_id: 'set-c', card_id: 'recovery-card' })).owned_quantity, 1);
+  await clearCollectionBatchRecoveryIntent(recoverySourceSessionId);
   console.log('Scan collection save: duplicate pockets, mixed cards, notes, quantities and replay checks passed');
 }
 void run().catch((error) => { console.error(error); process.exitCode = 1; });

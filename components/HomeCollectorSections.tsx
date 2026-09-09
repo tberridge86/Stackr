@@ -117,8 +117,8 @@ export function HomeCollectionHero({
         style={[
           styles.heroCard,
           {
-            backgroundColor: theme.colors.card,
-            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.semantic.featureSurface,
+            borderColor: theme.colors.semantic.featureSurface,
           },
         ]}
       >
@@ -128,7 +128,7 @@ export function HomeCollectionHero({
             {
               backgroundColor: binder.color
                 ? `${binder.color}18`
-                : `${PURPLE}12`,
+                : theme.colors.semantic.selectedState,
             },
           ]}
         >
@@ -158,13 +158,13 @@ export function HomeCollectionHero({
         </View>
         <View style={styles.heroCopy}>
           <Text
-            style={[styles.kicker, { color: theme.colors.textSoft }]}
+            style={[styles.kicker, { color: theme.colors.secondary }]}
             numberOfLines={1}
           >
             {binder.type === "official" ? "CONTINUE COLLECTING" : "YOUR BINDER"}
           </Text>
           <Text
-            style={[styles.binderName, { color: theme.colors.text }]}
+            style={[styles.binderName, { color: theme.colors.semantic.featureText }]}
             numberOfLines={2}
           >
             {binder.name}
@@ -182,37 +182,37 @@ export function HomeCollectionHero({
               }}
             >
               <Text
-                style={[styles.progressLabel, { color: theme.colors.textSoft }]}
+                style={[styles.progressLabel, { color: `${theme.colors.semantic.featureText}CC` }]}
               >
                 {completion.basis}
               </Text>
               <Text
-                style={[styles.progressDetail, { color: theme.colors.text }]}
+                style={[styles.progressDetail, { color: theme.colors.semantic.featureText }]}
               >
                 {completion.detail}
               </Text>
               {goalCopy ? (
-                <Text style={[styles.goalCopy, { color: theme.colors.textSoft }]}>
+                <Text style={[styles.goalCopy, { color: `${theme.colors.semantic.featureText}CC` }]}>
                   {goalCopy}
                 </Text>
               ) : null}
               <View
                 style={[
                   styles.progressTrack,
-                  { backgroundColor: theme.colors.surface },
+                  { backgroundColor: `${theme.colors.semantic.featureText}33` },
                 ]}
               >
                 <View
                   style={[
                     styles.progressFill,
-                    { width: `${completion.percent}%` },
+                    { width: `${completion.percent}%`, backgroundColor: theme.colors.secondary },
                   ]}
                 />
               </View>
             </View>
           ) : (
             <Text
-              style={[styles.collectionCount, { color: theme.colors.textSoft }]}
+              style={[styles.collectionCount, { color: `${theme.colors.semantic.featureText}CC` }]}
             >
               {binder.owned} card{binder.owned === 1 ? "" : "s"} in this binder
             </Text>
@@ -221,7 +221,7 @@ export function HomeCollectionHero({
         <Ionicons
           name="chevron-forward"
           size={19}
-          color={theme.colors.textSoft}
+          color={theme.colors.semantic.featureText}
         />
       </TouchableOpacity>
       {cardSection ? (
@@ -272,7 +272,7 @@ function CollectionCardTile({
       <StackrImage
         uri={card.imageUrl}
         contentFit="contain"
-        style={styles.cardArt}
+        style={[styles.cardArt, { backgroundColor: theme.colors.surface }]}
         showFallbackIcon
       />
       <Text
@@ -307,7 +307,7 @@ function EmptyCollection({
         },
       ]}
     >
-      <View style={[styles.emptyIcon, { backgroundColor: `${PURPLE}12` }]}>
+      <View style={[styles.emptyIcon, { backgroundColor: theme.colors.semantic.selectedState }]}>
         <Image
           source={stackrIcons.binders}
           style={styles.brandIcon}
@@ -331,7 +331,7 @@ function EmptyCollection({
           activeOpacity={0.84}
           accessibilityRole="button"
           accessibilityLabel="Start a binder"
-          style={styles.primaryAction}
+          style={[styles.primaryAction, { backgroundColor: theme.colors.primary }]}
         >
           <Text style={styles.primaryActionText}>Start binder</Text>
         </TouchableOpacity>
@@ -354,7 +354,7 @@ function LoadingCollection() {
       accessibilityRole="progressbar"
       accessibilityLabel="Loading your collection"
     >
-      <ActivityIndicator color={PURPLE} />
+      <ActivityIndicator color={theme.colors.primary} />
       <View style={styles.loadingCopy}>
         <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>
           Loading your collection
@@ -381,7 +381,7 @@ function ErrorRecovery({
         },
       ]}
     >
-      <Ionicons name="cloud-offline-outline" size={23} color={PURPLE} />
+      <Ionicons name="cloud-offline-outline" size={23} color={theme.colors.primary} />
       <View style={styles.errorCopy}>
         <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>
           Collection unavailable
@@ -397,7 +397,7 @@ function ErrorRecovery({
         accessibilityLabel="Retry loading collection"
         style={styles.retryButton}
       >
-        <Text style={styles.retryText}>Retry</Text>
+        <Text style={[styles.retryText, { color: theme.colors.primary }]}>Retry</Text>
       </TouchableOpacity>
     </View>
   );
@@ -435,7 +435,7 @@ function InlineRecovery({
         accessibilityLabel="Retry loading collection"
         style={styles.retryButton}
       >
-        <Text style={styles.retryText}>Retry</Text>
+        <Text style={[styles.retryText, { color: theme.colors.primary }]}>Retry</Text>
       </TouchableOpacity>
     </View>
   );
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
     padding: 7,
     gap: 3,
   },
-  cardArt: { height: 88, borderRadius: 9, backgroundColor: "#F7F3FF" },
+  cardArt: { height: 88, borderRadius: 9, backgroundColor: "#F0EFF3" },
   cardName: { fontSize: 12, lineHeight: 16, fontWeight: "800" },
   cardMeta: { fontSize: 10, lineHeight: 13, fontWeight: "700" },
   emptyCard: {

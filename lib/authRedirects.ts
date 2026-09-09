@@ -6,6 +6,7 @@ export type AuthLinkParams = {
   access_token?: AuthParamValue;
   code?: AuthParamValue;
   error?: AuthParamValue;
+  error_code?: AuthParamValue;
   error_description?: AuthParamValue;
   refresh_token?: AuthParamValue;
   type?: AuthParamValue;
@@ -34,6 +35,7 @@ export function mergeAuthLinkParams(
     access_token: routeParams.access_token ?? urlParams.access_token,
     code: routeParams.code ?? urlParams.code,
     error: routeParams.error ?? urlParams.error,
+    error_code: routeParams.error_code ?? urlParams.error_code,
     error_description: routeParams.error_description ?? urlParams.error_description,
     refresh_token: routeParams.refresh_token ?? urlParams.refresh_token,
     type: routeParams.type ?? urlParams.type,

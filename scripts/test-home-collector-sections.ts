@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import Module from 'node:module';
 import { resolve } from 'node:path';
 import { transformSync } from 'esbuild';
+import { lightTheme, stackrGradients } from '../lib/theme';
 
 type Element = {
   type: string | ((props: Record<string, unknown>) => unknown);
@@ -42,8 +43,8 @@ const mocks: Record<string, unknown> = {
   '../lib/providerSetMarkRuntimePolicy': { enforceSetVisualRuntimePolicy: (value: string) => value },
   '../lib/customBinderNameArt': { getCustomBinderNameArt: () => null },
   '../lib/typography': { numericTextStyle: {}, tabularNumberStyle: {}, stackrFonts: {}, typeScale: {} },
-  '../lib/theme': { stackrGradients: {} },
-  './theme-context': { useTheme: () => ({ theme: { colors: { card: '#fff', border: '#ddd', text: '#111', textSoft: '#666', surface: '#f7f3ff' } } }) },
+  '../lib/theme': { stackrGradients },
+  './theme-context': { useTheme: () => ({ theme: lightTheme }) },
   '../lib/stackrIcons': { stackrIcons: { binders: 1, scanCard: 2 } },
 };
 

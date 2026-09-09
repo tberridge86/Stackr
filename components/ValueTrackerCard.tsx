@@ -277,7 +277,7 @@ export function ValueTrackerCard({
   onMintyInsightFeedback,
   onMintySettingsPress,
 }: ValueTrackerCardProps & ValueTrackerActionProps) {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const isCompactLayout = compact || screenWidth < 360;
   const [chartPanelWidth, setChartPanelWidth] = useState(0);
@@ -297,8 +297,16 @@ export function ValueTrackerCard({
   const signalDirection = getChangeDirection(displayChange, displayPercent);
   const signalWord = signalDirection > 0 ? 'up or holding steady' : signalDirection < 0 ? 'down a little' : 'mostly steady';
   const changeIcon = signalDirection > 0 ? 'arrow-up' : signalDirection < 0 ? 'arrow-down' : 'remove';
-  const changeColor = '#6938F5';
-  const changeBackground = '#F7F3FF';
+  const changeColor = signalDirection > 0
+    ? theme.colors.semantic.success
+    : signalDirection < 0
+      ? theme.colors.semantic.error
+      : theme.colors.primary;
+  const changeBackground = signalDirection > 0
+    ? theme.colors.semantic.positiveSurface
+    : signalDirection < 0
+      ? `${theme.colors.semantic.error}12`
+      : theme.colors.semantic.selectedState;
   const hasValue = totalValue != null && Number.isFinite(totalValue);
   const hasTrackedCards = (ownedCount ?? 0) > 0;
   const isEmpty = !isLoading && !hasTrackedCards && pricingState !== 'unavailable';
@@ -327,7 +335,7 @@ export function ValueTrackerCard({
     inputRange: [0, 1],
     outputRange: [6, 0],
   });
-  const chartStroke = '#6938F5';
+  const chartStroke = changeColor;
   const accessibilityChange = `${formatSignedCurrency(displayChange, currency)}, ${formatSignedPercent(displayPercent)} over ${changePeriodLabel}`;
   const interactive = Boolean(onPress) && !isLoading && !isEmpty;
   const hasTrendSignal = displayTrend.length >= 2;
@@ -449,7 +457,7 @@ export function ValueTrackerCard({
             <SkeletonBar width="56%" height={30} />
           </View>
           <View style={styles.vaultLoadingChart}>
-            <ActivityIndicator color="#6938F5" />
+            <ActivityIndicator color={theme.colors.primary} />
           </View>
         </View>
       );
@@ -459,7 +467,7 @@ export function ValueTrackerCard({
       return (
         <View style={styles.vaultMessageContent}>
           <View style={styles.vaultMessageIcon}>
-            <Ionicons name="cloud-offline-outline" size={22} color="#6938F5" />
+            <Ionicons name="cloud-offline-outline" size={22} color={theme.colors.primary} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[styles.vaultMessageTitle, { color: theme.colors.text }]}>Value unavailable right now</Text>
@@ -481,7 +489,7 @@ export function ValueTrackerCard({
       return (
         <View style={styles.vaultMessageContent}>
           <View style={styles.vaultMessageIcon}>
-            <Ionicons name="scan-outline" size={22} color="#6938F5" />
+            <Ionicons name="scan-outline" size={22} color={theme.colors.primary} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[styles.vaultMessageTitle, { color: theme.colors.text }]}>Start tracking your collection</Text>
@@ -503,7 +511,7 @@ export function ValueTrackerCard({
       return (
         <View style={styles.vaultMessageContent}>
           <View style={styles.vaultMessageIcon}>
-            <Ionicons name="analytics-outline" size={22} color="#6938F5" />
+            <Ionicons name="analytics-outline" size={22} color={theme.colors.primary} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[styles.vaultMessageTitle, { color: theme.colors.text }]}>No stored market estimate yet</Text>
@@ -558,7 +566,7 @@ export function ValueTrackerCard({
               </Text>
             </View>
           ) : (
-            <View style={[styles.vaultChangeBadge, isCompactLayout && styles.vaultChangeBadgeCompact, { backgroundColor: changeBackground }]}>
+            <View style={[styles.vaultChangeBadge, isCompactLayout && styles.vaultChangeBadgeCompact, { backgroundColor: changeBackground, borderColor: `${changeColor}30` }]}>
               <ValueMovement
                 icon={changeIcon}
                 amount={`${formatSignedCurrency(displayChange, currency)} ${changePeriodLabel}`}
@@ -614,7 +622,7 @@ export function ValueTrackerCard({
           </View>
         ) : (
           <View style={[styles.vaultHistoryBuilding, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <Ionicons name="pulse-outline" size={15} color="#6938F5" />
+            <Ionicons name="pulse-outline" size={15} color={theme.colors.primary} />
             <Text style={[styles.vaultHistoryBuildingText, { color: theme.colors.textSoft }]}>History building</Text>
           </View>
         )}
@@ -648,7 +656,7 @@ export function ValueTrackerCard({
             styles.vaultCard,
             compact && styles.vaultCardCompact,
             {
-              backgroundColor: isDark ? theme.colors.card : '#FFFFFF',
+              backgroundColor: theme.colors.card,
               borderColor: theme.colors.border,
             },
           ]}
@@ -698,9 +706,9 @@ export function ValueTrackerCard({
                 style={styles.vaultRefreshAction}
               >
                 {refreshing ? (
-                  <ActivityIndicator size="small" color="#6938F5" />
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
                 ) : (
-                  <Ionicons name="refresh" size={17} color="#6938F5" />
+                  <Ionicons name="refresh" size={17} color={theme.colors.primary} />
                 )}
               </TouchableOpacity>
             ) : null}
@@ -709,7 +717,7 @@ export function ValueTrackerCard({
                 <Text variant="buttonSecondary" style={styles.vaultTopActionText}>
                   History
                 </Text>
-                <Ionicons name="arrow-forward" size={14} color="#6938F5" />
+                <Ionicons name="arrow-forward" size={14} color={theme.colors.primary} />
               </View>
             ) : null}
           </View>
@@ -1096,7 +1104,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 72,
     borderRadius: 18,
-    backgroundColor: '#F7F3FF',
+    backgroundColor: '#F0EFF3',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1110,7 +1118,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 16,
-    backgroundColor: '#F1ECFF',
+    backgroundColor: '#E7F4F1',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1176,7 +1184,6 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#E8E1FF',
     paddingHorizontal: 10,
     paddingVertical: 6,
     marginTop: 6,
