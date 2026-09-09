@@ -1,0 +1,90 @@
+name: Repair Approved Alpha Set Logos
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type REPAIR APPROVED ALPHA SET LOGOS to permit production writes
+        required: true
+        type: string
+      expected_main_sha:
+        description: Exact 40-character main SHA to run
+        required: true
+        type: string
+      expected_scanned:
+        description: Exact current published JPEG/WebP candidate count
+        required: true
+        default: '141'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-production-approved-alpha-logo-repair
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'REPAIR APPROVED ALPHA SET LOGOS'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      SUPABASE_URL: https://oakdbbzdqwurpjnoqhmu.supabase.co
+      SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      EXPECTED_SCANNED: ${{ inputs.expected_scanned }}
+      RECEIPT: outputs/releases/catalogue-alpha-logo-repair-receipt.json
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+      - name: Prove exact production scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$EXPECTED_SCANNED" =~ ^[1-9][0-9]{0,2}$ ]]
+          test -n "$SUPABASE_PRODUCTION_SECRET_KEY"
+      - name: Install and validate image preservation
+        run: |
+          set -euo pipefail
+          npm ci
+          npm ci --prefix backend
+          node scripts/test-asset-pipeline.mjs
+          node scripts/test-approved-alpha-logo-repair.mjs
+      - name: Repair only alpha-bearing approved English logo sources
+        run: |
+          set -euo pipefail
+          node scripts/deploy/repair-approved-alpha-set-logos.mjs \
+            --target=production \
+            --execute \
+            --confirmation='REPAIR APPROVED ALPHA SET LOGOS' \
+            --expected-scanned="$EXPECTED_SCANNED" \
+            --receipt="$RECEIPT"
+      - name: Generate current per-set public-asset-link evidence
+        if: always()
+        run: |
+          set -euo pipefail
+          node scripts/deploy/audit-production-current-asset-links.mjs
+      - name: Publish repair evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-approved-alpha-logo-repair-${{ github.run_id }}
+          path: |
+            outputs/releases/catalogue-alpha-logo-repair-receipt.json
+            outputs/releases/catalogue-public-set-link-completeness-20260909.csv
+            outputs/releases/catalogue-public-set-link-completeness-20260909.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9

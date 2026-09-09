@@ -39,6 +39,10 @@ export type ValueTrackerCardProps = {
   pricingState?: CollectionPricingState;
   pricingCoverageLabel?: string | null;
   pricingWarning?: string | null;
+  /** Explains which owned cards and persisted evidence produced the chart. */
+  trendCoverageLabel?: string | null;
+  trendProvenanceLabel?: string | null;
+  trendIsSubset?: boolean;
   mintyInsight?: MintyInsight | null;
   mintyInsightUpdating?: boolean;
   mintyInsightError?: string | null;
@@ -256,6 +260,9 @@ export function ValueTrackerCard({
   pricingState,
   pricingCoverageLabel,
   pricingWarning,
+  trendCoverageLabel,
+  trendProvenanceLabel,
+  trendIsSubset = false,
   mintyInsight,
   mintyInsightUpdating = false,
   mintyInsightError = null,
@@ -326,7 +333,7 @@ export function ValueTrackerCard({
   const hasTrendSignal = displayTrend.length >= 2;
   const showTrendPanel = hasValue && hasTrendSignal && !isLoading;
   const trackedFallbackCopy = hasTrendSignal
-    ? `Your tracked collection is ${signalWord}. I will focus on the cards you own, the cards you want, and binder gaps before broader market noise.`
+    ? `${trendIsSubset ? 'The priced portion of your collection' : 'Your tracked collection'} is ${signalWord}. ${trendCoverageLabel ?? ''} ${trendProvenanceLabel ? `Based on ${trendProvenanceLabel.toLowerCase()}.` : ''}`.trim()
     : 'Your cards are tracked, but there are not yet two comparable stored valuation snapshots. I will not infer movement until the history is real.';
   const fallbackInsight: MintyInsight = {
     id: 'collection-market-fallback',
@@ -355,7 +362,7 @@ export function ValueTrackerCard({
     confidence_score: Math.abs(displayPercent) < 1 ? 32 : 56,
     personalisation_reason: ownedCount && ownedCount > 0
       ? hasTrendSignal
-        ? `Based on ${ownedCount} owned card${ownedCount === 1 ? '' : 's'} and current value movement.`
+        ? `${trendCoverageLabel ?? `Based on ${ownedCount} owned card${ownedCount === 1 ? '' : 's'}.`} ${trendProvenanceLabel ?? 'Comparable stored price history'}.`
         : `Based on ${ownedCount} owned card${ownedCount === 1 ? '' : 's'}; movement is withheld until comparable history exists.`
       : 'No collection behaviour has been linked yet.',
     related_user_goal: 'watching_market',
@@ -538,6 +545,11 @@ export function ValueTrackerCard({
           <Text style={[styles.vaultKnownValueLabel, { color: theme.colors.textSoft }]}>
             {pricingState === 'partial' ? 'Known subtotal' : 'Stored market estimate'}
           </Text>
+          {showTrendPanel && trendProvenanceLabel ? (
+            <Text style={[styles.vaultSourceText, { color: theme.colors.textSoft, marginTop: 4 }]}>
+              {trendProvenanceLabel}{trendIsSubset ? ' · subset of your collection' : ''}
+            </Text>
+          ) : null}
           {showTrendPanel ? (compact ? (
             <View style={styles.vaultCompactMovement}>
               <Ionicons name={changeIcon} size={14} color={changeColor} />
@@ -559,6 +571,11 @@ export function ValueTrackerCard({
           {pricingWarning ? (
             <Text style={[styles.vaultPricingWarning, { color: theme.colors.textSoft }]} numberOfLines={2}>
               {pricingWarning}
+            </Text>
+          ) : null}
+          {showTrendPanel && trendCoverageLabel ? (
+            <Text style={[styles.vaultPricingWarning, { color: theme.colors.textSoft }]} numberOfLines={2}>
+              {trendCoverageLabel}
             </Text>
           ) : null}
         </View>
@@ -616,7 +633,7 @@ export function ValueTrackerCard({
         onPress: interactive ? onPress : undefined,
         accessibilityRole: interactive ? 'button' : undefined,
         accessibilityLabel: hasValue
-          ? `Known collection value ${formatCurrency(totalValue ?? 0, currency)}.${showTrendPanel ? ` ${accessibilityChange}.` : ' Price history is building.'}`
+          ? `Known collection value ${formatCurrency(totalValue ?? 0, currency)}.${showTrendPanel ? ` ${trendProvenanceLabel ?? 'Stored price'}: ${accessibilityChange}.${trendCoverageLabel ? ` ${trendCoverageLabel}` : ''}` : ' Price history is building.'}`
           : undefined,
       };
 

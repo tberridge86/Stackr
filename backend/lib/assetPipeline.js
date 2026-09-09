@@ -57,13 +57,28 @@ export async function perceptualHashForImage(buffer) {
 }
 
 async function normalisedImage(buffer, mimeType) {
-  const format = mimeType === 'image/png' ? 'png' : 'jpeg';
+  // JPEG cannot retain alpha. Set marks are often supplied as transparent WebP
+  // files, so keeping the source WebP avoids baking its transparent canvas into
+  // an opaque black rectangle during ingestion.
+  const sourceMetadata = await sharp(buffer).metadata();
+  const format = mimeType === 'image/png'
+    ? 'png'
+    : sourceMetadata.hasAlpha
+      ? 'webp'
+      : 'jpeg';
   const image = sharp(buffer).rotate();
   if (format === 'png') {
     return {
       mimeType: 'image/png',
       extension: 'png',
       buffer: await image.png({ compressionLevel: 9 }).toBuffer(),
+    };
+  }
+  if (format === 'webp') {
+    return {
+      mimeType: 'image/webp',
+      extension: 'webp',
+      buffer: await image.webp({ quality: 92 }).toBuffer(),
     };
   }
   return {

@@ -21,6 +21,7 @@ import {
 } from '../../lib/ownerTeachingCore';
 import type { StackrCard, StackrCardVariant, StackrSet } from '../../lib/stackrApiV1';
 import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
+import { stackrHaptics } from '../../lib/haptics';
 
 export default function OwnerRecognitionScreen() {
   const { theme } = useTheme();
@@ -99,6 +100,8 @@ export default function OwnerRecognitionScreen() {
       if (photo.canceled) return;
       const asset = photo.assets[0];
       originalUri = asset.uri;
+      if (turn !== generation.current) return;
+      void stackrHaptics.scannerCaptureLocked();
       setMessage('Finding card edges and correcting perspective…');
       const resized = await prepareOwnerRecognitionPhoto(asset);
       if (turn !== generation.current) {
@@ -109,9 +112,13 @@ export default function OwnerRecognitionScreen() {
       const identified = await identifyOwnerCard(resized.uri, access.ownerId);
       if (turn !== generation.current) return;
       setResult(identified);
+      void stackrHaptics.scannerAmbiguous();
       setMessage(`Review required · ${(identified.timings.totalMs / 1000).toFixed(1)}s model processing`);
     } catch (error) {
-      if (turn === generation.current) setMessage(error instanceof Error ? error.message : 'Recognition failed. No match was accepted.');
+      if (turn === generation.current) {
+        void stackrHaptics.scannerFailed();
+        setMessage(error instanceof Error ? error.message : 'Recognition failed. No match was accepted.');
+      }
     } finally {
       if (originalUri && FileSystem.cacheDirectory && originalUri.startsWith(FileSystem.cacheDirectory)) {
         await FileSystem.deleteAsync(originalUri, { idempotent: true }).catch(() => {});
@@ -135,6 +142,7 @@ export default function OwnerRecognitionScreen() {
     if (!access || !result) return;
     clearTeachingBelow('language');
     setTeachingLanguage(language);
+    void stackrHaptics.selection();
     const turn = ++teachingGeneration.current;
     const scanTurn = generation.current;
     const ownerId = access.ownerId;
@@ -167,6 +175,7 @@ export default function OwnerRecognitionScreen() {
   function chooseTeachingSet(set: StackrSet) {
     clearTeachingBelow('set');
     setTeachingSet(set);
+    void stackrHaptics.selection();
     setTeachingSetQuery(set.setCode ?? getPreferredSetDisplayName({ id: set.setId, language: set.languageCode,
       localName: set.nativeName, englishDisplayName: set.englishDisplayName }));
   }
@@ -200,6 +209,7 @@ export default function OwnerRecognitionScreen() {
       const loaded = await loadOwnerTeachingCard(choice.cardId);
       if (turn !== teachingGeneration.current || scanTurn !== generation.current || access.ownerId !== ownerId) return;
       setTeachingCard(loaded.card); setTeachingVariants(loaded.variants); setTeachingCatalogueVersion(loaded.catalogueVersion);
+      void stackrHaptics.selection();
       setMessage('Choose the card finish exactly as printed. This label will be queued for review.');
     } catch (error) {
       if (turn === teachingGeneration.current) setMessage(error instanceof Error ? error.message : 'Could not load card variants.');
@@ -236,6 +246,7 @@ export default function OwnerRecognitionScreen() {
       setMessage(localOnly
         ? correctedIdentity ? 'Saved with its corrected label on this device. Nothing was sent for training or review.' : 'Saved privately on this device. Nothing was sent for training or review.'
         : 'Saved and backed up to your private review queue. It is not used for training until reviewed.');
+      void stackrHaptics.captureSaved();
       setResult(null); setImageUri(null); await releasePhoto();
     } catch (error) {
       if (turn !== generation.current) return;
@@ -280,10 +291,10 @@ export default function OwnerRecognitionScreen() {
       {imageUri && <Image source={{ uri: imageUri }} style={{ height: 260, marginTop: 16, borderRadius: 12 }} resizeMode="contain" />}
       {result?.candidates.map((candidate) => <View key={candidate.variantId}>
         {button(`${selected === candidate.variantId ? '✓ ' : ''}${getPreferredCardDisplayName({ language: candidate.language, localName: candidate.nativeName, englishDisplayName: candidate.name, collectorNumber: candidate.collectorNumber })} · ${candidate.collectorNumber} · ${candidate.language}\n${candidate.setCode || candidate.setId} · ${candidate.variantCode || 'variant unspecified'} · similarity ${candidate.similarity.toFixed(3)}`,
-          () => setSelected(candidate.variantId), busy)}
+          () => { setSelected(candidate.variantId); void stackrHaptics.selection(); }, busy)}
       </View>)}
       {result && <View style={{ marginTop: 18 }}>
-        {button('None is correct / save as unresolved', () => setSelected(null), busy)}
+        {button('None is correct / save as unresolved', () => { setSelected(null); void stackrHaptics.selection(); }, busy)}
         {button(teachingOpen ? 'Close teaching correction' : 'Teach / correct this card', () => {
           teachingGeneration.current += 1;
           setTeachingOpen((open) => !open);
@@ -324,7 +335,7 @@ export default function OwnerRecognitionScreen() {
           {teachingCard && <>
             <Text style={{ color: theme.colors.text, fontWeight: '800', marginTop: 14 }}>4. Actual finish</Text>
             {teachingVariants.map((variant) => <View key={variant.variantId}>{button(`${teachingVariantId === variant.variantId ? '✓ ' : ''}${ownerTeachingVariantLabel(variant)}`,
-              () => setTeachingVariantId(variant.variantId), busy || teachingBusy)}</View>)}
+              () => { setTeachingVariantId(variant.variantId); void stackrHaptics.selection(); }, busy || teachingBusy)}</View>)}
           </>}
         </View>}
         <Text style={{ color: theme.colors.textSoft, marginTop: 16 }}>Use the same physical-card label for every photo of that card. Save on device keeps it only here. Save for teaching uploads this cropped photo and your correction to your private dataset for review; it does not retrain the model automatically.</Text>

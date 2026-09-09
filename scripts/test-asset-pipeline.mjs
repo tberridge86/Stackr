@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+const requireBackend = createRequire(new URL('../backend/package.json', import.meta.url));
+const sharp = requireBackend('sharp');
 import {
   buildApprovedCatalogueAsset,
   createPrivateScanSignedUpload,
@@ -97,6 +100,20 @@ async function assertApprovedAssetProcessing() {
       assert.equal(derivative.cacheControl, IMMUTABLE_CACHE_CONTROL);
       assert.ok(derivative.storageKey.includes(derivative.contentSha256), 'derivative path must include derivative content hash');
     }
+
+    const transparentWebp = await sharp({
+      create: { width: 2, height: 2, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    }).webp().toBuffer();
+    const transparentAsset = await buildApprovedCatalogueAsset({
+      storage,
+      assetType: 'set_logo',
+      permissionStatus: 'approved',
+      mimeType: 'image/webp',
+      buffer: transparentWebp,
+    });
+    assert.equal(transparentAsset.mime_type, 'image/webp', 'alpha-bearing WebP originals must not be flattened to JPEG');
+    assert.match(transparentAsset.storage_key, /\/original\.webp$/, 'alpha-bearing WebP originals must retain a WebP storage key');
+    assert.equal((await sharp(readFileSync(join(rootDir, STACKR_ASSET_BUCKETS.publicCatalogue, transparentAsset.storage_key))).metadata()).hasAlpha, true, 'stored original must retain alpha');
 
     const duplicate = await buildApprovedCatalogueAsset({
       storage,
