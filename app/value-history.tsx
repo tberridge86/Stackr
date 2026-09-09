@@ -51,6 +51,7 @@ type Mover = {
   quantity?: number;
   impact?: number;
   snapshotAt?: string | null;
+  previousSnapshotAt?: string | null;
 };
 type OwnedCardUnit = {
   key: string;
@@ -94,6 +95,13 @@ const formatSignedMoney = (value: number) =>
   `${value >= 0 ? '+' : '-'}${formatMoney(Math.abs(value))}`;
 
 const formatPercent = (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+
+const formatSnapshotDate = (value?: string | null) => {
+  if (!value) return 'Date unavailable';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return 'Date unavailable';
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+};
 
 
 const toDayKey = (value: Date | string) => {
@@ -164,6 +172,7 @@ function buildMoverFromSnapshots(
     quantity,
     impact: change * quantity,
     snapshotAt: latest?.snapshot_at ?? null,
+    previousSnapshotAt: previous?.snapshot_at ?? null,
   };
 }
 
@@ -511,11 +520,16 @@ function MoverCard({
   personal?: boolean;
 }) {
   const { theme } = useTheme();
+  const { width, fontScale } = useWindowDimensions();
+  const useStackedMetrics = width < 480 || fontScale >= 1.25;
   const positive = direction === 'up';
   const color = positive ? '#10B981' : '#EF4444';
   const displayedChange = getMoverMoneyValue(item, personal);
   const primaryValue = displayMode === 'money' ? formatSignedMoney(displayedChange) : formatPercent(item.percentChange);
   const secondaryValue = displayMode === 'money' ? formatPercent(item.percentChange) : formatSignedMoney(displayedChange);
+  const movementLabel = personal ? 'Collection impact' : 'Market movement';
+  const primaryLabel = displayMode === 'money' ? movementLabel : '% movement';
+  const secondaryLabel = displayMode === 'money' ? '% change' : movementLabel;
   const currentValue = formatMoney(item.latestPrice);
   const inferredSetId = item.setId ?? (item.cardId.includes('-') ? item.cardId.split('-')[0] : null);
   const setLogoUrl = useMemo(
@@ -569,40 +583,42 @@ function MoverCard({
             </View>
           ) : null}
           {ownershipText ? (
-            <Text style={[styles.moverOwnedPill, { color, backgroundColor: `${color}10` }]} numberOfLines={1}>
+            <Text style={[styles.moverOwnedPill, { color, backgroundColor: `${color}10` }]}>
               {ownershipText}
             </Text>
           ) : null}
         </View>
         <Text
           style={[styles.moverTitle, { color: theme.colors.text }]}
-          numberOfLines={2}
-          adjustsFontSizeToFit
-          minimumFontScale={0.82}
         >
           {item.name}
         </Text>
         {setLogoUrl ? (
           <Image source={{ uri: setLogoUrl }} style={styles.moverSetLogo} resizeMode="contain" />
         ) : (
-          <Text style={[styles.moverSetFallback, { color: theme.colors.textSoft }]} numberOfLines={1}>
+          <Text style={[styles.moverSetFallback, { color: theme.colors.textSoft }]}>
             {item.setName ?? 'Pokemon TCG'}
           </Text>
         )}
-      </View>
-
-      <View style={styles.moverValueStack}>
-        <Text style={[styles.moverPrice, { color: theme.colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>
-          {currentValue}
+        <Text style={[styles.moverComparisonBasis, { color: theme.colors.textSoft }]}>
+          Stored estimate comparison: {formatMoney(item.previousPrice)} ({formatSnapshotDate(item.previousSnapshotAt)}) → {formatMoney(item.latestPrice)} ({formatSnapshotDate(item.snapshotAt)})
         </Text>
-        <Text style={[styles.moverDelta, { color }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>
-          {primaryValue}
-        </Text>
-        <View style={styles.moverPercentRow}>
-          <Ionicons name={positive ? 'arrow-up' : 'arrow-down'} size={10} color={color} />
-          <Text style={[styles.moverPercent, { color }]} numberOfLines={1}>
-            {secondaryValue}
-          </Text>
+        <View style={[styles.moverValueGrid, useStackedMetrics ? styles.moverValueGridStacked : null]}>
+          <View style={[styles.moverValueMetric, useStackedMetrics ? styles.moverValueMetricStacked : null]}>
+            <Text style={[styles.moverValueLabel, { color: theme.colors.textSoft }]}>Current estimate</Text>
+            <Text style={[styles.moverPrice, { color: theme.colors.text }]}>{currentValue}</Text>
+          </View>
+          <View style={[styles.moverValueMetric, useStackedMetrics ? styles.moverValueMetricStacked : null]}>
+            <Text style={[styles.moverValueLabel, { color: theme.colors.textSoft }]}>{primaryLabel}</Text>
+            <Text style={[styles.moverDelta, { color }]}>{primaryValue}</Text>
+          </View>
+          <View style={[styles.moverValueMetric, useStackedMetrics ? styles.moverValueMetricStacked : null]}>
+            <Text style={[styles.moverValueLabel, { color: theme.colors.textSoft }]}>{secondaryLabel}</Text>
+            <View style={styles.moverPercentRow}>
+              <Ionicons name={positive ? 'arrow-up' : 'arrow-down'} size={10} color={color} />
+              <Text style={[styles.moverPercent, { color }]}>{secondaryValue}</Text>
+            </View>
+          </View>
         </View>
       </View>
       <Ionicons name="chevron-forward" size={17} color={theme.colors.textSoft} />
@@ -1384,12 +1400,13 @@ const styles = StyleSheet.create({
   },
   rankPill: {
     minWidth: 42,
-    height: 20,
+    minHeight: 20,
     borderRadius: 10,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 7,
+    paddingVertical: 3,
   },
   rankText: {
     ...typeScale.caption,
@@ -1401,14 +1418,12 @@ const styles = StyleSheet.create({
   moverOwnedPill: {
     ...typeScale.micro,
     ...tabularNumberStyle,
-    maxWidth: 82,
     borderRadius: 999,
     paddingHorizontal: 7,
     paddingVertical: 3,
     fontSize: 9,
     lineHeight: 11,
     fontWeight: '800',
-    overflow: 'hidden',
   },
   cardImageFrame: {
     width: 64,
@@ -1430,9 +1445,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   moverTitleRow: {
-    minHeight: 20,
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
     gap: 6,
     marginBottom: 4,
   },
@@ -1458,24 +1473,49 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginTop: 4,
   },
-  moverValueStack: {
-    width: 82,
-    minHeight: 56,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    gap: 2,
+  moverComparisonBasis: {
+    ...typeScale.caption,
+    fontSize: 10,
+    lineHeight: 14,
+    marginTop: 6,
+  },
+  moverValueGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  moverValueGridStacked: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+  moverValueMetric: {
+    flexGrow: 1,
+    flexBasis: 76,
+    minWidth: 72,
+  },
+  moverValueMetricStacked: {
+    flexGrow: 0,
+    flexBasis: 'auto',
+    minWidth: 0,
+    width: '100%',
+  },
+  moverValueLabel: {
+    ...typeScale.caption,
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: '800',
+    marginBottom: 2,
   },
   moverDelta: {
     ...typeScale.numericStrong,
     ...tabularNumberStyle,
-    flexShrink: 1,
     fontSize: 14,
     lineHeight: 18,
   },
   moverPrice: {
     ...typeScale.numericStrong,
     ...tabularNumberStyle,
-    flexShrink: 1,
     fontSize: 17,
     lineHeight: 21,
     marginTop: 0,
@@ -1484,6 +1524,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
+    minHeight: 18,
   },
   moverPercent: {
     ...typeScale.caption,

@@ -69,13 +69,11 @@ function configureNativeTypographyDefaults() {
 // ===============================
 
 const {
-  homeFrame: HOME_TAB_FRAME_SIZE,
   secondaryFrame: SECONDARY_TAB_FRAME_SIZE,
   homeIcon: HOME_TAB_ICON_SIZE,
   secondaryIcon: SECONDARY_TAB_ICON_SIZE,
   marketCommunityIcon: MARKET_COMMUNITY_TAB_ICON_SIZE,
   bindersVaultIcon: BINDERS_VAULT_TAB_ICON_SIZE,
-  centerScanFrame: CENTER_SCAN_FRAME_SIZE,
   centerScanIcon: CENTER_SCAN_ICON_SIZE,
   footerSearchIcon: FOOTER_SEARCH_ICON_SIZE,
   barHeightIos: TAB_BAR_HEIGHT_IOS,
@@ -84,7 +82,6 @@ const {
   paddingBottomAndroid: TAB_BAR_PADDING_BOTTOM_ANDROID,
   activeGlowExtra: ACTIVE_GLOW_EXTRA,
   activeGlowCoreExtra: ACTIVE_GLOW_CORE_EXTRA,
-  scanRaise: SCAN_TAB_RAISE,
   tabRaise: STANDARD_TAB_RAISE,
 } = stackrTabBarSizes;
 
@@ -186,7 +183,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
         const active = isActive(tab);
         const isHome = tab.key === 'home';
         const isScan = tab.key === 'scan';
-        const frameSize = isScan ? CENTER_SCAN_FRAME_SIZE : isHome ? HOME_TAB_FRAME_SIZE : SECONDARY_TAB_FRAME_SIZE;
+        const frameSize = SECONDARY_TAB_FRAME_SIZE;
         const iconSize = isScan
           ? CENTER_SCAN_ICON_SIZE
           : isHome
@@ -228,17 +225,8 @@ const PersistentTabBar = memo(function PersistentTabBar() {
               borderRadius: frameSize / 2,
               alignItems: 'center',
               justifyContent: 'center',
-              marginTop: isScan ? -SCAN_TAB_RAISE : -STANDARD_TAB_RAISE,
-              backgroundColor: isScan
-                ? theme.colors.primary
-                : 'transparent',
-              borderWidth: isScan ? 1 : 0,
-              borderColor: isScan ? theme.colors.primary + '45' : 'transparent',
-              shadowColor: isScan ? theme.colors.primary : 'transparent',
-              shadowOpacity: isScan ? 0.24 : 0,
-              shadowRadius: isScan ? 11 : 7,
-              shadowOffset: { width: 0, height: isScan ? 4 : 2 },
-              elevation: isScan ? 5 : 0,
+              marginTop: -STANDARD_TAB_RAISE,
+              backgroundColor: 'transparent',
             }}>
               {active ? (
                 <>
@@ -254,7 +242,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
                       shadowOpacity: theme.dark ? 0.22 : 0.16,
                       shadowRadius: 11,
                       shadowOffset: { width: 0, height: 2 },
-                      elevation: isScan ? 0 : 2,
+                      elevation: 2,
                     }}
                   />
                   <View
@@ -274,7 +262,6 @@ const PersistentTabBar = memo(function PersistentTabBar() {
                   source={icon}
                   frameSize={frameSize}
                   artworkSize={cardArtworkSize}
-                  imageStyle={{ opacity: isScan ? 0.98 : 1 }}
                 />
               ) : (
                 <Image
@@ -288,9 +275,9 @@ const PersistentTabBar = memo(function PersistentTabBar() {
               )}
             </View>
             <Text style={{
-              ...(isScan ? typeScale.caption : isHome ? typeScale.caption : typeScale.micro),
-              fontWeight: isScan || isHome ? '800' : '600',
-              color: active || isScan ? theme.colors.primary : theme.colors.textSoft,
+              ...typeScale.micro,
+              fontWeight: active ? '800' : '600',
+              color: active ? theme.colors.primary : theme.colors.textSoft,
               marginTop: 0,
               textAlign: 'center',
               width: '100%',
@@ -362,9 +349,9 @@ function AppNavigation() {
                   <Stack.Screen name="offer/new" options={{ title: '' }} />
                   <Stack.Screen name="offer/index" options={{ title: '' }} />
                   <Stack.Screen name="offer/[id]" options={{ title: '' }} />
-                  <Stack.Screen name="offers" options={{ title: '' }} />
+                  <Stack.Screen name="offers" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="orders" options={{ headerShown: false, title: '' }} />
-                  <Stack.Screen name="watchlist" options={{ title: '' }} />
+                  <Stack.Screen name="watchlist" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="value-history" options={{ title: 'Value History' }} />
                   <Stack.Screen name="listing/new" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="listing/[id]" options={legacyRedirectScreenOptions} />

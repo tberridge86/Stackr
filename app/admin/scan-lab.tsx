@@ -16,6 +16,7 @@ import {
 import { useIsFocused } from '@react-navigation/native';
 import { StackrBackButton } from '../../components/StackrBackButton';
 import { StackrButton, StackrChip } from '../../components/StackrControls';
+import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { StackrPageTitle, StackrScreen } from '../../components/StackrScreen';
 import { StackrLoadingState, StackrPermissionState, StackrStateBlock } from '../../components/StackrStates';
 import { Text } from '../../components/Text';
@@ -31,7 +32,6 @@ import {
   SCAN_LAB_HOLDER_STATES,
   SCAN_LAB_LIGHTING_CATEGORIES,
   SCAN_LAB_SLEEVE_STATES,
-  applyScanLabReviewDecision,
   normaliseScanLabIdentity,
   shouldDeleteScanLabBackendCapture,
   validateScanLabCaptureForUpload,
@@ -40,6 +40,7 @@ import {
   type ScanLabCardSide,
   type ScanLabHolderState,
   type ScanLabLightingCategory,
+  type ScanLabReviewDecision,
   type ScanLabSleeveState,
 } from '../../lib/scanLabCore';
 import {
@@ -52,6 +53,10 @@ import {
   updateScanLabCapture,
   uploadScanLabCapture,
 } from '../../lib/scanLab';
+import {
+  applyPinnedScanLabReviewDecision,
+  findSavedScanLabReviewDecision,
+} from '../../lib/scanLabReviewDecision';
 
 const CARD_ASPECT_RATIO = 0.716;
 
@@ -114,6 +119,15 @@ type IdentityFields = {
   variant: string;
 };
 
+type ReviewStatus = Extract<ScanLabReviewDecision['status'], 'confirmed' | 'corrected' | 'unresolved' | 'wrong_variant' | 'poor_capture'>;
+
+type PendingReviewDecision = {
+  captureId: string;
+  captureLabel: string;
+  decision: ScanLabReviewDecision;
+  identityLabel: string | null;
+};
+
 function identityToFields(identity?: ScanLabCardIdentity | null): IdentityFields {
   return {
     stackrCardId: identity?.stackrCardId ?? '',
@@ -122,6 +136,18 @@ function identityToFields(identity?: ScanLabCardIdentity | null): IdentityFields
     language: identity?.language ?? 'en',
     variant: identity?.variant ?? '',
   };
+}
+
+function captureLabel(record: ScanLabCaptureRecord) {
+  const identity = record.userConfirmedIdentity ?? record.expectedIdentity;
+  const name = identity.cardName ?? identity.stackrCardId ?? 'Unlabelled capture';
+  return `${name} — ${record.localId} · ${record.capturedAt} · ${labelFor(record.cardSide)}`;
+}
+
+function identityLabel(identity: ScanLabCardIdentity) {
+  const parts = [identity.cardName, identity.stackrCardId, identity.setId, identity.language, identity.variant]
+    .filter((part): part is string => Boolean(part));
+  return parts.length ? parts.join(' · ') : null;
 }
 
 function Field({
@@ -261,7 +287,11 @@ export default function AdminScanLabScreen() {
   const [consentToUploadImages, setConsentToUploadImages] = useState(false);
   const [capturing, setCapturing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [reviewSaving, setReviewSaving] = useState(false);
+  const [pendingReviewDecision, setPendingReviewDecision] = useState<PendingReviewDecision | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const reviewSavingRef = useRef(false);
   const acceptedCornersRef = useRef<CardFrameAnalyserCorners | null>(null);
   const scanIdRef = useRef(`scanlab-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
@@ -467,24 +497,53 @@ export default function AdminScanLabScreen() {
     refreshSelectedQueue(records, selectedRecord.localId);
   }, [refreshSelectedQueue, selectedRecord]);
 
-  const applyDecision = useCallback(async (
-    status: 'confirmed' | 'corrected' | 'unresolved' | 'wrong_variant' | 'poor_capture'
-  ) => {
-    if (!selectedRecord) return;
+  const requestReviewDecision = useCallback((status: ReviewStatus) => {
+    if (!selectedRecord || reviewSavingRef.current) return;
     const identity = identityFromFields(confirmedFields);
-    const next = status === 'unresolved'
-      ? applyScanLabReviewDecision(selectedRecord, { status: 'unresolved' })
+    const decision: ScanLabReviewDecision = status === 'unresolved'
+      ? { status: 'unresolved' }
       : status === 'confirmed'
-        ? applyScanLabReviewDecision(selectedRecord, { status: 'confirmed', identity })
+        ? { status: 'confirmed', identity }
         : status === 'corrected'
-          ? applyScanLabReviewDecision(selectedRecord, { status: 'corrected', identity })
+          ? { status: 'corrected', identity }
           : status === 'wrong_variant'
-            ? applyScanLabReviewDecision(selectedRecord, { status: 'wrong_variant', identity })
-            : applyScanLabReviewDecision(selectedRecord, { status: 'poor_capture', identity });
-    const records = await updateScanLabCapture(selectedRecord.localId, next);
-    refreshSelectedQueue(records, selectedRecord.localId);
-    setMessage(`Marked capture as ${labelFor(status).toLowerCase()}.`);
-  }, [confirmedFields, refreshSelectedQueue, selectedRecord]);
+            ? { status: 'wrong_variant', identity }
+            : { status: 'poor_capture', identity };
+    setPendingReviewDecision({
+      captureId: selectedRecord.localId,
+      captureLabel: captureLabel(selectedRecord),
+      decision,
+      identityLabel: status === 'unresolved' ? null : identityLabel(identity),
+    });
+    setReviewError(null);
+  }, [confirmedFields, selectedRecord]);
+
+  const confirmReviewDecision = useCallback(async () => {
+    if (!pendingReviewDecision || reviewSavingRef.current) return;
+
+    reviewSavingRef.current = true;
+    setReviewSaving(true);
+    setReviewError(null);
+    try {
+      const records = await updateScanLabCapture(
+        pendingReviewDecision.captureId,
+        (current) => applyPinnedScanLabReviewDecision(current, pendingReviewDecision)
+      );
+      const saved = findSavedScanLabReviewDecision(records, pendingReviewDecision);
+      if (!saved) {
+        throw new Error('The reviewed capture was not found with the requested decision after saving. Select it again and retry.');
+      }
+      refreshSelectedQueue(records, saved.localId);
+      setMessage(`Marked ${pendingReviewDecision.captureLabel} as ${labelFor(pendingReviewDecision.decision.status).toLowerCase()}.`);
+      setPendingReviewDecision(null);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      setReviewError(reason);
+    } finally {
+      reviewSavingRef.current = false;
+      setReviewSaving(false);
+    }
+  }, [pendingReviewDecision, refreshSelectedQueue]);
 
   const toggleSelectedConsent = useCallback(async () => {
     if (!selectedRecord) return;
@@ -723,11 +782,11 @@ export default function AdminScanLabScreen() {
               <Field label="Confirmed variant" value={confirmedFields.variant} onChangeText={(value) => setConfirmedField('variant', value)} />
             </View>
             <View style={styles.reviewActions}>
-              <StackrButton label="Confirm" icon="checkmark-circle-outline" variant="secondary" onPress={() => applyDecision('confirmed')} />
-              <StackrButton label="Correct" icon="create-outline" variant="secondary" onPress={() => applyDecision('corrected')} />
-              <StackrButton label="Unresolved" icon="help-circle-outline" variant="secondary" onPress={() => applyDecision('unresolved')} />
-              <StackrButton label="Wrong variant" icon="git-compare-outline" variant="secondary" onPress={() => applyDecision('wrong_variant')} />
-              <StackrButton label="Poor capture" icon="warning-outline" variant="secondary" onPress={() => applyDecision('poor_capture')} />
+              <StackrButton label="Confirm" icon="checkmark-circle-outline" variant="secondary" disabled={reviewSaving} onPress={() => requestReviewDecision('confirmed')} />
+              <StackrButton label="Correct" icon="create-outline" variant="secondary" disabled={reviewSaving} onPress={() => requestReviewDecision('corrected')} />
+              <StackrButton label="Unresolved" icon="help-circle-outline" variant="secondary" disabled={reviewSaving} onPress={() => requestReviewDecision('unresolved')} />
+              <StackrButton label="Wrong variant" icon="git-compare-outline" variant="secondary" disabled={reviewSaving} onPress={() => requestReviewDecision('wrong_variant')} />
+              <StackrButton label="Poor capture" icon="warning-outline" variant="secondary" disabled={reviewSaving} onPress={() => requestReviewDecision('poor_capture')} />
             </View>
 
             <TouchableOpacity
@@ -777,6 +836,56 @@ export default function AdminScanLabScreen() {
           </View>
         ) : null}
       </ScrollView>
+      <StackrBottomSheet
+        visible={pendingReviewDecision != null}
+        title="Confirm review decision"
+        subtitle="Review the selected capture before saving."
+        onClose={() => { if (!reviewSaving) { setPendingReviewDecision(null); setReviewError(null); } }}
+        dismissible={!reviewSaving}
+        maxHeight="78%"
+        contentContainerStyle={styles.reviewConfirmation}
+        footer={
+          <View style={styles.confirmationActions}>
+            <StackrButton
+              label="Cancel"
+              variant="utility"
+              disabled={reviewSaving}
+              onPress={() => { setPendingReviewDecision(null); setReviewError(null); }}
+              style={styles.confirmationButton}
+            />
+            <StackrButton
+              label={pendingReviewDecision ? `Mark ${labelFor(pendingReviewDecision.decision.status)}` : 'Save decision'}
+              variant="primary"
+              loading={reviewSaving}
+              disabled={reviewSaving}
+              onPress={confirmReviewDecision}
+              style={styles.confirmationButton}
+            />
+          </View>
+        }
+      >
+        {pendingReviewDecision ? (
+          <>
+            <Text style={[styles.confirmationBody, { color: theme.colors.textSoft }]}>
+              Mark {pendingReviewDecision.captureLabel} as {labelFor(pendingReviewDecision.decision.status).toLowerCase()}?
+            </Text>
+            <View style={[styles.confirmationDetail, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+              <Text style={[styles.confirmationDetailLabel, { color: theme.colors.textSoft }]}>RESULTING IDENTITY</Text>
+              <Text style={[styles.confirmationDetailValue, { color: theme.colors.text }]}>
+                {pendingReviewDecision.identityLabel ?? 'No card identity will be recorded.'}
+              </Text>
+            </View>
+            <Text style={[styles.confirmationBody, { color: theme.colors.textSoft }]}>
+              This saves the review decision for the selected local capture. You can cancel to revise the fields first.
+            </Text>
+            {reviewError ? (
+              <View style={[styles.confirmationError, { backgroundColor: `${theme.colors.semantic.error}12`, borderColor: theme.colors.semantic.error }]}>
+                <Text style={[styles.errorText, { color: theme.colors.semantic.error }]}>Could not save: {reviewError}</Text>
+              </View>
+            ) : null}
+          </>
+        ) : null}
+      </StackrBottomSheet>
     </StackrScreen>
   );
 }
@@ -991,5 +1100,42 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '800',
+  },
+  reviewConfirmation: {
+    gap: 14,
+  },
+  confirmationBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '700',
+  },
+  confirmationDetail: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    gap: 4,
+  },
+  confirmationDetailLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '900',
+  },
+  confirmationDetailValue: {
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: '900',
+  },
+  confirmationActions: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingTop: 12,
+  },
+  confirmationButton: {
+    flex: 1,
+  },
+  confirmationError: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
   },
 });

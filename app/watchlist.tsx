@@ -7,6 +7,7 @@ import { Text } from '../components/Text';
 import { MarketEmptyState, MarketListingCard } from '../components/market/MarketComponents';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { StackrBackButton } from '../components/StackrBackButton';
+import { StackrBottomSheet } from '../components/StackrModalSystem';
 import { useTheme } from '../components/theme-context';
 import { useTrade } from '../components/trade-context';
 import { fetchSavedMarketListingIds, toggleSavedMarketListing } from '../lib/marketSavedItems';
@@ -17,6 +18,13 @@ import { createSavedProductLoadGate, parseSavedMarketProductIds } from '../lib/s
 
 const SAVED_PRODUCTS_KEY_PREFIX = '@stackr:search:saved-products:v2:user';
 const savedProductsKey = (userId: string) => `${SAVED_PRODUCTS_KEY_PREFIX}:${encodeURIComponent(userId.trim())}`;
+
+function isMissingAuthSessionError(error: unknown) {
+  if (!error || typeof error !== 'object') return false;
+  const namedError = error as { name?: unknown; message?: unknown };
+  return namedError.name === 'AuthSessionMissingError'
+    || /auth session missing|session missing/i.test(String(namedError.message ?? ''));
+}
 
 export default function FavoritesMarketItemsScreen() {
   const { theme } = useTheme();
@@ -30,6 +38,9 @@ export default function FavoritesMarketItemsScreen() {
   const [savedProductsLoading, setSavedProductsLoading] = useState(true);
   const [removingSavedProduct, setRemovingSavedProduct] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
+  const [storageInfoOpen, setStorageInfoOpen] = useState(false);
+  const [signedOut, setSignedOut] = useState(false);
+  const [authLoadError, setAuthLoadError] = useState<string | null>(null);
   const authUserIdRef = useRef('');
   const authGenerationRef = useRef(0);
   const savedProductsLoadGateRef = useRef(createSavedProductLoadGate());
@@ -37,7 +48,15 @@ export default function FavoritesMarketItemsScreen() {
   const removalTokenRef = useRef(0);
 
   const bindIdentity = useCallback((userId: string) => {
-    if (authUserIdRef.current === userId) return authGenerationRef.current;
+    const identityChanged = authUserIdRef.current !== userId;
+    setSignedOut(!userId);
+    if (!identityChanged) {
+      if (!userId) {
+        setSavedListingsLoading(false);
+        setSavedProductsLoading(false);
+      }
+      return authGenerationRef.current;
+    }
     authUserIdRef.current = userId;
     authGenerationRef.current += 1;
     savedProductsLoadGateRef.current.invalidate();
@@ -48,6 +67,7 @@ export default function FavoritesMarketItemsScreen() {
     setSavedProducts([]);
     setUnresolvedProductIds([]);
     setSavedProductsError(null);
+    setAuthLoadError(null);
     setSavedListingsLoading(Boolean(userId));
     setSavedProductsLoading(Boolean(userId));
     setRemovingSavedProduct(false);
@@ -70,6 +90,7 @@ export default function FavoritesMarketItemsScreen() {
       ) return;
       const userId = user?.id ?? '';
       const generation = bindIdentity(userId);
+      setAuthLoadError(null);
       const request = savedProductsLoadGateRef.current.start();
       attemptedUserId = userId;
       attemptedGeneration = generation;
@@ -119,7 +140,13 @@ export default function FavoritesMarketItemsScreen() {
         && authGenerationRef.current === startingGeneration
         && savedProductsLoadGateRef.current.isCurrent(initialRequest)
       ) {
-        bindIdentity('');
+        if (isMissingAuthSessionError(error)) {
+          bindIdentity('');
+        } else {
+          setAuthLoadError(error instanceof Error ? error.message : 'Your saved items could not be checked.');
+          setSavedListingsLoading(false);
+          setSavedProductsLoading(false);
+        }
         return;
       }
       if (
@@ -194,14 +221,42 @@ export default function FavoritesMarketItemsScreen() {
           <StackrBackButton onPress={() => router.back()} />
           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 30, fontWeight: '900' }}>Saved market items</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, fontWeight: '700', marginTop: 2 }}>
-              Saved listings and products for your Stackr account on this device.
-            </Text>
+            <TouchableOpacity
+              onPress={() => setStorageInfoOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Device-only bookmarks. Learn about moving devices"
+              style={{ minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }}
+            >
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, lineHeight: 18, fontWeight: '700' }}>
+                Saved on this device. Not synced.
+              </Text>
+              <Text style={{ color: theme.colors.primary, fontSize: 12.5, lineHeight: 18, fontWeight: '800', textDecorationLine: 'underline' }}>
+                Moving devices?
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
         {savedIdsError ? <View style={{ paddingBottom: 10 }}><Text accessibilityRole="alert" style={{ color: '#991B1B', fontSize: 14, lineHeight: 20 }}>{savedIdsError}</Text><TouchableOpacity onPress={() => void load()} accessibilityRole="button" style={{ minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }}><Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '900' }}>Retry saved listings</Text></TouchableOpacity></View> : null}
         {savedProductsError ? <View style={{ paddingBottom: 10 }}><Text accessibilityRole="alert" style={{ color: '#991B1B', fontSize: 14 }}>{savedProductsError}</Text><TouchableOpacity onPress={() => void load()} accessibilityRole="button" style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Retry saved products</Text></TouchableOpacity></View> : null}
 
+        {signedOut ? (
+          <View style={{ flex: 1, justifyContent: 'center', paddingBottom: 60 }}>
+            <MarketEmptyState
+              imageIcon={stackrIcons.favorite}
+              title="Sign in to see saved items"
+              body="Saved Market listings and products are kept separately for each signed-in account on this device."
+              actionLabel="Sign in"
+              onAction={() => router.push('/(auth)/login' as any)}
+            />
+          </View>
+        ) : authLoadError ? (
+          <View style={{ flex: 1, justifyContent: 'center', paddingBottom: 60, gap: 12 }}>
+            <Text accessibilityRole="alert" style={{ color: '#991B1B', textAlign: 'center', fontSize: 14, lineHeight: 20 }}>{authLoadError}</Text>
+            <TouchableOpacity onPress={() => void load()} accessibilityRole="button" style={{ alignSelf: 'center', minHeight: 48, justifyContent: 'center' }}>
+              <Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Try again</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
         <FlatList
           data={listings}
           keyExtractor={(item) => item.id}
@@ -266,7 +321,19 @@ export default function FavoritesMarketItemsScreen() {
           }
           ListHeaderComponent={(savedProductsLoading || savedProducts.length || unresolvedProductIds.length) ? <View style={{ gap: 8, marginBottom: 18 }}><Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>Saved products</Text>{savedProductsLoading ? <Text style={{ color: theme.colors.textSoft }}>Loading saved products…</Text> : null}{savedProducts.map((product) => <View key={product.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 12, padding: 12, backgroundColor: theme.colors.card }}><TouchableOpacity accessibilityRole="button" onPress={() => router.push({ pathname: '/product/[id]', params: { id: product.id } } as any)} style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>{product.name}</Text><Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>{product.set_name ?? 'Saved product'}</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={`Remove ${product.name} from saved products`} accessibilityState={{ busy: removingSavedProduct, disabled: removingSavedProduct }} disabled={removingSavedProduct} onPress={() => void removeSavedProduct(product.id)} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900' }}>{removingSavedProduct ? 'Removing…' : 'Remove'}</Text></TouchableOpacity></View>)}{unresolvedProductIds.map((id) => <View key={id} style={{ padding: 12, borderRadius: 12, backgroundColor: theme.colors.card }}><Text style={{ color: theme.colors.textSoft }}>Saved product {id} is currently unavailable.</Text><TouchableOpacity accessibilityRole="button" accessibilityState={{ busy: removingSavedProduct, disabled: removingSavedProduct }} disabled={removingSavedProduct} onPress={() => void removeSavedProduct(id)} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900' }}>{removingSavedProduct ? 'Removing…' : 'Remove unavailable product'}</Text></TouchableOpacity></View>)}</View> : null}
         />
+        )}
       </View>
+      <StackrBottomSheet visible={storageInfoOpen} title="Saved on this device" onClose={() => setStorageInfoOpen(false)}>
+        <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 22 }}>
+          Saved listings and products are bookmarks kept on this device for your signed-in account. Stackr does not back up or sync these bookmarks to other devices.
+        </Text>
+        <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 22 }}>
+          Before changing phones, note the items you want to keep and save them again on the new phone. Signing in alone does not restore them. Removing the app or clearing its data can erase these bookmarks.
+        </Text>
+        <Text style={{ color: theme.colors.textSoft, fontSize: 14, lineHeight: 20 }}>
+          Your collection and price watchlists are separate from these Market bookmarks.
+        </Text>
+      </StackrBottomSheet>
     </SafeAreaView>
   );
 }
