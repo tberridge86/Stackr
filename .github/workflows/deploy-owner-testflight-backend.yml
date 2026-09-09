@@ -1,0 +1,93 @@
+name: Deploy Owner TestFlight Backend
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_main_sha:
+        description: Reviewed main commit to deploy
+        type: string
+        required: true
+      confirmation:
+        description: Type DEPLOY OWNER TESTFLIGHT BACKEND
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-production-backend-hardening
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY OWNER TESTFLIGHT BACKEND'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: production
+    env:
+      EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      STACKR_BACKEND_URL: https://pocketvault-production.up.railway.app
+      STACKR_GATEWAY_URL: https://api.stackrtcg.com
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Verify reviewed source and existing production target
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          git merge-base --is-ancestor f37841c9920308d11a3a8fc81a86af71f5caf36b "$EXPECTED_MAIN_SHA"
+          test "$RAILWAY_PROJECT_ID" = 'd205637b-5376-41aa-9169-1015ba88fec3'
+          test "$RAILWAY_ENVIRONMENT_ID" = 'b4304736-cac8-4ca9-92a7-93f7f6499c2f'
+          test "$RAILWAY_BACKEND_SERVICE_ID" = '299d7ad4-5ed8-4301-b609-ef99274078d0'
+          test -n "$RAILWAY_API_TOKEN"
+      - name: Validate backend and retained production restrictions
+        run: |
+          set -euo pipefail
+          npm ci
+          npm ci --prefix backend
+          npm run typecheck:backend
+          npm test --prefix backend
+          node scripts/test-asset-pipeline.mjs
+          npm run test:commerce-release-lock
+      - name: Record previous deployment
+        run: |
+          mkdir -p outputs/releases
+          npx --yes @railway/cli@5.30.1 deployment list --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_BACKEND_SERVICE_ID" --limit 1 --json > outputs/releases/backend-before.json
+      - name: Deploy reviewed backend with existing runtime bindings
+        run: |
+          set -euo pipefail
+          printf '%s' "$EXPECTED_MAIN_SHA" | npx --yes @railway/cli@5.30.1 variable set SOURCE_COMMIT --stdin --skip-deploys --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_BACKEND_SERVICE_ID"
+          npx --yes @railway/cli@5.30.1 up "$GITHUB_WORKSPACE/backend" --ci --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_BACKEND_SERVICE_ID"
+      - name: Verify production runtime and catalogue
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const response = await fetch(`${process.env.STACKR_BACKEND_URL}/health`, {signal: AbortSignal.timeout(15000)});
+          const body = await response.json();
+          if (response.status !== 200 || body?.ok !== true || body?.runtime?.railwayEnvironment !== 'production' || body?.runtime?.supabaseProjectRef !== 'oakdbbzdqwurpjnoqhmu') throw new Error('Production runtime verification failed');
+          console.log(JSON.stringify(body));
+          NODE
+          npm run deploy:smoke -- --gateway="$STACKR_GATEWAY_URL" --backend="$STACKR_BACKEND_URL" --full-gateway --require-commerce-disabled --require-published-catalogue --required-catalogue-languages=en,ja,zh-tw,zh-cn,ko --allowed-origin=https://stackr.app > outputs/releases/backend-smoke.json
+      - name: Record resulting deployment
+        if: always()
+        run: |
+          mkdir -p outputs/releases
+          npx --yes @railway/cli@5.30.1 deployment list --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_BACKEND_SERVICE_ID" --limit 1 --json > outputs/releases/backend-after.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: owner-testflight-backend-${{ github.run_id }}
+          path: outputs/releases/backend-*.json
+          retention-days: 30
