@@ -623,6 +623,121 @@ function providerQuoteIsValid(quote, alias, metadata) {
   return Number.isFinite(updatedAt) && updatedAt <= Date.now() + 5 * 60_000;
 }
 
+function utcDayBounds(isoTimestamp) {
+  const timestamp = new Date(isoTimestamp);
+  const start = new Date(Date.UTC(timestamp.getUTCFullYear(), timestamp.getUTCMonth(), timestamp.getUTCDate()));
+  return { start: start.toISOString(), end: new Date(start.getTime() + 86_400_000).toISOString() };
+}
+
+function exactProviderSnapshotMatches(row, snapshot) {
+  const identity = row?.pricing_identity_json ?? {};
+  const expectedIdentity = snapshot.pricing_identity_json ?? {};
+  return row?.user_id == null
+    && row?.card_id === snapshot.card_id
+    && row?.set_id === snapshot.set_id
+    && row?.language === snapshot.language
+    && row?.canonical_identity_key === snapshot.canonical_identity_key
+    && identity.canonicalVariantId === expectedIdentity.canonicalVariantId
+    && identity.productType === 'raw_card'
+    && (identity.rawCondition ?? identity.condition) === RAW_NEAR_MINT
+    && row?.primary_source === 'tcgdex'
+    && row?.price_type === 'market_estimate'
+    && row?.proven_last_sold === false
+    && row?.methodology_version == null
+    && sameProviderIdentifier(row?.tcgdex_card_id, snapshot.tcgdex_card_id)
+    && Number.isFinite(Number(row?.tcgdex_price))
+    && Number(row.tcgdex_price) > 0;
+}
+
+function snapshotTimestamp(row) {
+  const timestamp = Date.parse(row?.snapshot_at ?? row?.calculated_at ?? '');
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function providerQuoteTimestamp(row) {
+  const timestamp = Date.parse(row?.tcgdex_price_updated_at ?? '');
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function existingQuoteIsAtLeastAsFresh(existing, incoming) {
+  const existingProviderTime = providerQuoteTimestamp(existing);
+  const incomingProviderTime = providerQuoteTimestamp(incoming);
+  if (existingProviderTime != null && incomingProviderTime != null) return existingProviderTime >= incomingProviderTime;
+  const existingSnapshotTime = snapshotTimestamp(existing);
+  const incomingSnapshotTime = snapshotTimestamp(incoming);
+  return existingSnapshotTime != null && incomingSnapshotTime != null && existingSnapshotTime >= incomingSnapshotTime;
+}
+
+async function readSameUtcDayExactSnapshots(supabase, snapshot) {
+  const { start, end } = utcDayBounds(snapshot.snapshot_at);
+  const { data, error } = await supabase
+    .from('market_price_snapshots')
+    .select('id,user_id,card_id,set_id,language,canonical_identity_key,pricing_identity_json,tcg_low,tcg_mid,cardmarket_trend,tcgdex_card_id,tcgdex_price,tcgdex_price_updated_at,price_source,primary_source,price_type,proven_last_sold,methodology_version,calculated_at,snapshot_at,stale_after,is_stale')
+    .eq('card_id', snapshot.card_id)
+    .eq('set_id', snapshot.set_id)
+    .is('user_id', null)
+    .gte('snapshot_at', start)
+    .lt('snapshot_at', end)
+    .order('snapshot_at', { ascending: false })
+    .limit(4);
+  if (error) throw error;
+  return data ?? [];
+}
+
+async function replaceSameDayExactProviderSnapshot(supabase, existing, snapshot) {
+  let query = supabase.from('market_price_snapshots')
+    .update(snapshot)
+    .eq('id', existing.id)
+    .is('user_id', null)
+    .eq('card_id', existing.card_id)
+    .eq('set_id', existing.set_id)
+    .eq('language', existing.language)
+    .eq('canonical_identity_key', existing.canonical_identity_key)
+    .eq('primary_source', 'tcgdex')
+    .eq('price_type', 'market_estimate')
+    .eq('proven_last_sold', false)
+    .is('methodology_version', null)
+    .eq('tcgdex_card_id', existing.tcgdex_card_id)
+    .eq('is_stale', Boolean(existing.is_stale))
+    .eq('snapshot_at', existing.snapshot_at);
+  query = existing.calculated_at == null
+    ? query.is('calculated_at', null)
+    : query.eq('calculated_at', existing.calculated_at);
+  query = existing.tcgdex_price_updated_at == null
+    ? query.is('tcgdex_price_updated_at', null)
+    : query.eq('tcgdex_price_updated_at', existing.tcgdex_price_updated_at);
+  const { data, error } = await query
+    .select('id,user_id,card_id,set_id,language,canonical_identity_key,pricing_identity_json,tcg_low,tcg_mid,cardmarket_trend,tcgdex_card_id,tcgdex_price,tcgdex_price_updated_at,price_source,primary_source,price_type,proven_last_sold,methodology_version,calculated_at,snapshot_at,stale_after,is_stale')
+    .maybeSingle();
+  if (error) throw error;
+  return data ?? null;
+}
+
+async function insertExactProviderSnapshot(supabase, snapshot) {
+  const { error } = await supabase.from('market_price_snapshots').insert(snapshot);
+  if (!error) return snapshot;
+  if (error.code !== '23505') throw error;
+
+  const existingRows = await readSameUtcDayExactSnapshots(supabase, snapshot);
+  const existing = existingRows.find((row) => exactProviderSnapshotMatches(row, snapshot));
+  // The unique day index may have been occupied by a sold/V2 or different
+  // physical identity. Never overwrite it just to make a provider refresh fit.
+  if (!existing) {
+    throw new ApiError(409, 'exact_provider_daily_snapshot_conflict', 'A different snapshot already occupies this card’s UTC-day record.');
+  }
+  if (existingQuoteIsAtLeastAsFresh(existing, snapshot)) return existing;
+
+  const updated = await replaceSameDayExactProviderSnapshot(supabase, existing, snapshot);
+  if (updated && exactProviderSnapshotMatches(updated, snapshot)) return updated;
+
+  // A concurrent refresh won the optimistic timestamp guard. Re-read rather
+  // than retrying an update that might replace the newer verified quote.
+  const racedRows = await readSameUtcDayExactSnapshots(supabase, snapshot);
+  const raced = racedRows.find((row) => exactProviderSnapshotMatches(row, snapshot));
+  if (raced && existingQuoteIsAtLeastAsFresh(raced, snapshot)) return raced;
+  throw new ApiError(409, 'exact_provider_daily_snapshot_conflict', 'The daily exact snapshot changed concurrently and could not be safely reused.');
+}
+
 async function providerQuoteWithinTimeout(providerFetch, request) {
   let timeout;
   try {
@@ -668,9 +783,8 @@ async function refreshExactLegacyProviderEstimate(supabase, variantId, input, pr
     price_source: quote.priceSource ?? 'tcgdex', primary_source: 'tcgdex', price_type: 'market_estimate', proven_last_sold: false,
     calculated_at: snapshotAt, snapshot_at: snapshotAt, stale_after: staleAfter, is_stale: Date.parse(staleAfter) <= Date.now(), source_payload: quote.raw ?? null,
   };
-  const { error } = await supabase.from('market_price_snapshots').insert(snapshot);
-  if (error) throw error;
-  return legacySnapshotEstimate(snapshot, variantId, 'exact_variant');
+  const persisted = await insertExactProviderSnapshot(supabase, snapshot);
+  return legacySnapshotEstimate(persisted, variantId, 'exact_variant');
 }
 
 async function refreshPersonalProviderEstimate(supabase, variantId, input, providerFetch) {
