@@ -1,16 +1,21 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
+import { withStartupTimeout } from '../lib/startup';
 
 type AuthContextType = {
   user: any;
   loading: boolean;
+  error: string | null;
+  refreshAuth: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  error: null,
+  refreshAuth: async () => {},
 });
 
 let notificationHandlerConfigured = false;
@@ -100,35 +105,48 @@ async function clearStoredSupabaseSession() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const requestSequence = useRef(0);
+
+  const refreshAuth = useCallback(async () => {
+    const requestId = ++requestSequence.current;
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: authError } = await withStartupTimeout(supabase.auth.getUser());
+      if (requestId !== requestSequence.current) return;
+      if (authError) throw authError;
+
+      const currentUser = data.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        void registerPushToken(currentUser.id);
+      }
+    } catch (authError) {
+      if (requestId !== requestSequence.current) return;
+      if (isStaleAuthError(authError)) {
+        await clearStoredSupabaseSession();
+        if (requestId !== requestSequence.current) return;
+        setUser(null);
+      } else {
+        setError('We could not check your account. Check your connection and try again.');
+      }
+    } finally {
+      if (requestId === requestSequence.current) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (error) throw error;
-
-        const currentUser = data.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          void registerPushToken(currentUser.id);
-        }
-      } catch (error) {
-        if (isStaleAuthError(error)) {
-          await clearStoredSupabaseSession();
-          setUser(null);
-        } else {
-          console.log('Failed to load auth user:', error);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUser();
-
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        // A restored local session does not supersede the server check. Later
+        // sign-in/out events do, so a delayed result cannot undo them.
+        if (event !== 'INITIAL_SESSION') {
+          requestSequence.current += 1;
+          setLoading(false);
+          setError(null);
+        }
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
@@ -137,14 +155,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     );
+    void refreshAuth();
 
     return () => {
+      requestSequence.current += 1;
       listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [refreshAuth]);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, error, refreshAuth }}>
       {children}
     </AuthContext.Provider>
   );
