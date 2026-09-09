@@ -27,9 +27,11 @@ on:
   schedule:
     # Exact, user-requested canonical work only: bounded to 30 queue rows.
     - cron: '*/5 * * * *'
-    # Existing printing-level priority queue and market-listing cadence.
+    # User-requested printing-level queue work remains responsive.
     - cron: '*/30 * * * *'
-    - cron: '17 */2 * * *'
+    # Background provider sweeps run at most every six hours.
+    - cron: '2 */6 * * *'
+    - cron: '17 */6 * * *'
     - cron: '32 */6 * * *'
     - cron: '47 */12 * * *'
     # Full-universe refresh remains intentionally disabled.
@@ -126,8 +128,8 @@ jobs:
           echo "PokeTrace evidence was blocked or failed; exact-variant requests remain pending and are not completed by printing-level fallbacks." >&2
           exit 1
 
-      # The legacy worker remains printing-level only and retains its old
-      # cadence. It never competes with the 5-minute exact-evidence worker.
+      # The legacy worker remains printing-level only. Bulk refresh cadence
+      # is independent from requested queue work.
       - name: Run queued printing-level refreshes
         if: github.event_name == 'schedule' && github.event.schedule == '*/30 * * * *'
         run: npm run price-refresh:queued
@@ -137,11 +139,11 @@ jobs:
         run: npm run price-refresh -- --lane=${{ github.event.inputs.lane }} --force
 
       - name: Run market listing refresh
-        if: github.event_name == 'schedule' && github.event.schedule == '*/30 * * * *'
+        if: github.event_name == 'schedule' && github.event.schedule == '2 */6 * * *'
         run: npm run price-refresh:market-listings
 
       - name: Run chase/watchlist refresh
-        if: github.event_name == 'schedule' && github.event.schedule == '17 */2 * * *'
+        if: github.event_name == 'schedule' && github.event.schedule == '17 */6 * * *'
         run: npm run price-refresh:chase
 
       - name: Run high-value refresh

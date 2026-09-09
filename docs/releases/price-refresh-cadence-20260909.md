@@ -1,0 +1,13 @@
+# Price refresh cadence — 9 September 2026
+
+The owner requested automatic price retrieval every few hours, with manual refresh available sooner. The release client delegates automatic provider work to the existing production worker instead of creating more provider requests whenever Home opens.
+
+- Home reads stored prices immediately on focus, then checks stored snapshots every three minutes while focused so completed manual requests can appear. These reads do not contact pricing providers. The former 15-minute provider enqueue and per-launch timer are removed; provider updates follow the six-hour server schedule.
+- The Home refresh button and pull-to-refresh keep the existing exact raw-card GBP queue, capped at 100 cards in batches of 12. Feedback states that these are queued requests, not completed price retrievals. The five-minute queue worker remains responsive; a large request can take multiple runs.
+- The individual-card refresh still requests a supported provider price directly. Its five-minute duplicate/cooldown protection and exact language/finish matching remain intact.
+- Production Railway automatic owner refresh changes from daily 03:00 UTC to every six hours, with its existing 30-card maximum. The manual queue retains its five-minute schedule and 12-row maximum. Deployment watch paths cover worker/backend/dependency files so ordinary screen, asset and documentation changes do not restart the workers.
+- Existing GitHub market-listing and chase provider sweeps are reduced to six-hour schedules and six-hour default freshness windows. High-value remains six-hour and owned remains twelve-hour. Queue consumers retain their existing cadence. No dormant provider or publication gate is enabled.
+
+The automatic owner worker still has bounded coverage, not a complete collection sweep. Unavailable providers, unsupported finishes/grades and unresolved identities remain unavailable; stored values keep their real provenance and timestamps. The new Home behavior requires the next native release; an installed older client can still enqueue its previous automatic requests.
+
+Validation covers the actual Home read/manual paths, existing Home release tests, workflow lane scheduling, TypeScript and lint. Deployment receipts in the release outputs record the verified Railway configuration separately from the pending native build. Haptics, startup and palette repairs remain in the release source; physical-device verification is pending.
