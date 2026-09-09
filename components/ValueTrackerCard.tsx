@@ -566,7 +566,7 @@ export function ValueTrackerCard({
               </Text>
             </View>
           ) : (
-            <View style={[styles.vaultChangeBadge, isCompactLayout && styles.vaultChangeBadgeCompact, { backgroundColor: changeBackground }]}>
+            <View style={[styles.vaultChangeBadge, isCompactLayout && styles.vaultChangeBadgeCompact, { backgroundColor: changeBackground, borderColor: `${changeColor}30` }]}>
               <ValueMovement
                 icon={changeIcon}
                 amount={`${formatSignedCurrency(displayChange, currency)} ${changePeriodLabel}`}
@@ -1184,7 +1184,6 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#E8E1FF',
     paddingHorizontal: 10,
     paddingVertical: 6,
     marginTop: 6,

@@ -6,6 +6,8 @@ const values = new Map<string, string>();
 const binderRows = new Map<string, any>();
 const variantRows = new Map<string, number>();
 let failVariantInsert = true;
+let activeUserId = 'owner-a';
+let failStorageWrite = false;
 const mock = (request: string, exports: unknown) => {
   const filename = require.resolve(request);
   require.cache[filename] = { id: filename, filename, loaded: true, exports } as any;
@@ -15,14 +17,14 @@ const variantKey = (row: Record<string, unknown>) => [row.user_id, row.card_id, 
 
 mock('@react-native-async-storage/async-storage', {
   getItem: async (name: string) => values.get(name) ?? null,
-  setItem: async (name: string, value: string) => { values.set(name, value); },
+  setItem: async (name: string, value: string) => { if (failStorageWrite) throw new Error('simulated storage failure'); values.set(name, value); },
   removeItem: async (name: string) => { values.delete(name); },
 });
 mock('../lib/binders', { fetchBinderById: async () => ({ id: 'binder-a', user_id: 'owner-a', language: 'en', default_condition: 'Near Mint' }), invalidateBinderCaches: () => undefined });
 mock('../lib/pokemonTcg', { normalizePokemonCardLanguage: (value: unknown) => String(value ?? 'en').toLowerCase() });
 mock('../lib/tcgdexControlledCardReference', { stripTcgdexReferenceBeforePersistence: (value: unknown) => value, preserveExistingImageUrlBeforePersistence: (next: unknown, existing: unknown) => existing ?? next ?? null });
 const supabase = {
-  auth: { getUser: async () => ({ data: { user: { id: 'owner-a' } }, error: null }) },
+  auth: { getUser: async () => ({ data: { user: activeUserId ? { id: activeUserId } : null }, error: null }) },
   from: (table: string) => {
     if (table === 'binder_cards') return {
       select: () => ({ eq: async (_column: string, binderId: string) => ({ data: [...binderRows.values()].filter((row) => row.binder_id === binderId), error: null }) }),
@@ -44,11 +46,21 @@ mock('../lib/supabase', { supabase });
 
 async function run() {
   const input = {
-    sourceSessionId: 'scan-result-100:add:holo', binderId: 'binder-a',
+    ownerUserId: 'owner-a', sourceSessionId: 'scan-result-100:add:holo', binderId: 'binder-a',
     cards: [{ cardId: 'card-a', setId: 'set-a', language: 'en', quantity: 1, cardName: 'Card A' }],
     variant: { userId: 'owner-a', cardId: 'card-a', setId: 'set-a', variant: 'holo', condition: 'Near Mint', gradeCompany: '', grade: '' },
   };
   const { saveScanCollectionVariant } = require('../lib/scanCollectionVariantSave') as typeof import('../lib/scanCollectionVariantSave');
+  await assert.rejects(() => saveScanCollectionVariant({
+    ...input,
+    sourceSessionId: 'scan-result-100:add:mismatch',
+    variant: { ...input.variant, cardId: 'other-card' },
+  }), /does not match its card/);
+  assert.equal(binderRows.size, 0, 'a mismatched finish is rejected before the binder write');
+  failStorageWrite = true;
+  await assert.rejects(() => saveScanCollectionVariant({ ...input, sourceSessionId: 'scan-result-100:add:storage' }), /simulated storage failure/);
+  failStorageWrite = false;
+  assert.equal(binderRows.size, 0, 'a recovery storage failure is rejected before the binder write');
   await assert.rejects(() => saveScanCollectionVariant(input), /simulated interruption/);
   assert.equal(binderRows.size, 1, 'the binder copy commits before the interrupted variant write');
   assert.equal(variantRows.size, 0);
@@ -58,10 +70,23 @@ async function run() {
   delete require.cache[require.resolve('../lib/scanVariantOwnership')];
   delete require.cache[require.resolve('../lib/scanCollectionVariantSave')];
   const restarted = require('../lib/scanCollectionVariantSave') as typeof import('../lib/scanCollectionVariantSave');
-  const resumed = await restarted.saveScanCollectionVariant(input);
+  activeUserId = 'owner-b';
+  await assert.rejects(() => restarted.listPendingScanCollectionVariants('owner-a'), /another account/);
+  activeUserId = 'owner-a';
+  const pending = await restarted.listPendingScanCollectionVariants('owner-a');
+  assert.equal(pending.length, 1, 'the exact unfinished operation survives a fresh module load');
+  assert.equal(pending[0].variant?.variant, 'holo');
+  const [resumed, concurrentResume] = await Promise.all([
+    restarted.resumePendingScanCollectionVariant('owner-a', pending[0].sourceSessionId),
+    restarted.resumePendingScanCollectionVariant('owner-a', pending[0].sourceSessionId),
+  ]);
   assert.equal(resumed.batch.replayed, true, 'a restarted composite save replays its successful binder batch');
+  assert.equal(concurrentResume.batch.replayed, true, 'concurrent resume joins the same recovery operation');
   assert.equal(binderRows.size, 1, 'the replay must not add another binder copy');
   assert.equal(variantRows.get('owner-a:card-a:set-a:holo:Near Mint::'), 1, 'the exact selected finish resumes after restart');
-  console.log('Scan composite save restart: binder replay and exact variant recovery passed');
+  assert.deepEqual(await restarted.listPendingScanCollectionVariants('owner-a'), [], 'the durable operation clears only after both writes succeed');
+  values.set('stackr:scan-composite-save:v1:owner:owner-a', '{bad json');
+  await assert.rejects(() => restarted.listPendingScanCollectionVariants('owner-a'), /could not be verified/);
+  console.log('Scan composite save restart: owner-bound persistence, replay, exact variant recovery, and concurrency passed');
 }
 void run().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -8,31 +8,35 @@ import { Text } from '../../components/Text';
 import { useTheme } from '../../components/theme-context';
 import { loadManualCollectionDraft, type ManualCollectionDraft } from '../../lib/manualCollectionDraft';
 import { loadRecoverableBinderPageScanSessions, getBinderPageScanRecoverySummary, type BinderPageScanSession } from '../../lib/binderPageScanStore';
+import { listPendingScanCollectionVariants, resumePendingScanCollectionVariant, type ScanCollectionVariantSaveInput } from '../../lib/scanCollectionVariantSave';
 import { supabase } from '../../lib/supabase';
 
 export default function ScanWorkspace() {
   const { theme } = useTheme();
   const [draft, setDraft] = useState<ManualCollectionDraft | null>(null);
   const [scans, setScans] = useState<BinderPageScanSession[]>([]);
+  const [pendingSaves, setPendingSaves] = useState<ScanCollectionVariantSaveInput[]>([]);
+  const [resumingSourceSessionId, setResumingSourceSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [signIn, setSignIn] = useState(false);
   const requestRef = useRef(0);
   const load = useCallback(async () => {
     const request = ++requestRef.current;
-    setLoading(true); setError(null); setDraft(null); setScans([]); setSignIn(false);
+    setLoading(true); setError(null); setDraft(null); setScans([]); setPendingSaves([]); setSignIn(false);
     try {
       const { data, error: authError } = await supabase.auth.getUser();
       if (request !== requestRef.current) return;
       if (authError && authError.name !== 'AuthSessionMissingError') throw authError;
       if (!data.user) { setSignIn(true); return; }
-      const [manual, batches] = await Promise.allSettled([
-        loadManualCollectionDraft(data.user.id), loadRecoverableBinderPageScanSessions(data.user.id),
+      const [manual, batches, composite] = await Promise.allSettled([
+        loadManualCollectionDraft(data.user.id), loadRecoverableBinderPageScanSessions(data.user.id), listPendingScanCollectionVariants(data.user.id),
       ]);
       if (request !== requestRef.current) return;
       if (manual.status === 'fulfilled') setDraft(manual.value?.state === 'saved' ? null : manual.value);
       if (batches.status === 'fulfilled') setScans(batches.value);
-      if (manual.status === 'rejected' || batches.status === 'rejected') setError('Some saved work could not be checked. Retry before starting another collection add.');
+      if (composite.status === 'fulfilled') setPendingSaves(composite.value);
+      if (manual.status === 'rejected' || batches.status === 'rejected' || composite.status === 'rejected') setError('Some saved work could not be checked. Retry before starting another collection add.');
     } catch { if (request === requestRef.current) setError('Saved work could not be loaded. Check your connection and try again.'); }
     finally { if (request === requestRef.current) setLoading(false); }
   }, []);
@@ -49,6 +53,23 @@ export default function ScanWorkspace() {
         <Text style={{ color: theme.colors.textSoft }}>{draft.card.cardName ?? draft.card.cardId} · {draft.quantity} {draft.quantity === 1 ? 'copy' : 'copies'}</Text>
         <StackrButton label="Resume review" onPress={() => router.push({ pathname: '/collection/add-card', params: { draftId: draft.id } } as any)} />
       </View> : null}
+      {pendingSaves.map((pending) => <View key={pending.sourceSessionId} style={panel}>
+        <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '800' }}>Finish saving scanned card</Text>
+        <Text style={{ color: theme.colors.textSoft }}>{pending.cards[0]?.cardName ?? pending.cards[0]?.cardId ?? 'Scanned card'}{pending.variant ? ` · ${pending.variant.variant}` : ''}</Text>
+        <StackrButton label={resumingSourceSessionId === pending.sourceSessionId ? 'Finishing save…' : 'Resume save'} disabled={resumingSourceSessionId !== null} onPress={() => {
+          void (async () => {
+            try {
+              setResumingSourceSessionId(pending.sourceSessionId);
+              const { data } = await supabase.auth.getUser();
+              if (!data.user) throw new Error('Sign in to resume this saved scan.');
+              await resumePendingScanCollectionVariant(data.user.id, pending.sourceSessionId);
+              await load();
+            } catch (resumeError) {
+              setError(resumeError instanceof Error ? resumeError.message : 'Saved scan could not be resumed. Try again.');
+            } finally { setResumingSourceSessionId(null); }
+          })();
+        }} />
+      </View>)}
       {scans.map((session) => {
         const summary = getBinderPageScanRecoverySummary(session);
         return <View key={session.scanSessionId} style={panel}>

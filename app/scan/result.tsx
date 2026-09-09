@@ -826,6 +826,7 @@ function ScanResultScreen() {
         && normalizePokemonCardLanguage(row.language ?? selectedBinder?.language ?? 'en') === selectedLanguage
       ));
       await saveScanCollectionVariant({
+        ownerUserId: user.id,
         sourceSessionId,
         binderId: selectedBinderId,
         cards,

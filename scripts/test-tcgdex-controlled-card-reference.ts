@@ -569,8 +569,11 @@ for (const persistencePath of ['lib/inventory.ts']) {
 }
 const scanResultSource = readFileSync('app/scan/result.tsx', 'utf8');
 const collectionBatchSource = readFileSync('lib/collectionBatch.ts', 'utf8');
-assert.match(scanResultSource, /addOwnedCardBatchToBinder/);
-assert.match(scanResultSource, /addOwnedCardBatchToBinder[\s\S]{0,500}\.from\('binder_cards'\)[\s\S]{0,160}select\('condition'\)/);
+const compositeSaveSource = readFileSync('lib/scanCollectionVariantSave.ts', 'utf8');
+assert.match(scanResultSource, /await saveScanCollectionVariant\(/);
+assert.match(compositeSaveSource, /await addOwnedCardBatchToBinder\(/, 'Composite scan saves must retain the shared controlled-image persistence boundary.');
+assert.match(scanResultSource, /select\('set_id, language, condition'\)/);
+assert.match(scanResultSource, /condition: existingCard\?\.condition \|\| selectedBinder\?\.default_condition \|\| 'Near Mint'/);
 assert.match(collectionBatchSource, /stripTcgdexReferenceBeforePersistence\(card\.imageUrl\)/);
 assert.match(collectionBatchSource, /preserveExistingImageUrlBeforePersistence\([\s\S]{0,180}entry\.imageUrl,[\s\S]{0,180}existing\?\.image_url/);
 assert.doesNotMatch(collectionBatchSource, /assets\\\.tcgdex\\\.net[\s\S]{0,180}low\\\.webp/);
