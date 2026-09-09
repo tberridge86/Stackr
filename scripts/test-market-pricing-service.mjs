@@ -339,13 +339,16 @@ async function assertInvalidServiceInput() {
   );
 }
 
-function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, approvedTcgdexAliases = [] }) {
+function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, approvedTcgdexAliases = [], insertErrors = [], onSnapshotUpdate = null }) {
   const limits = [];
   const inserted = [];
+  const updates = [];
   const rpcCalls = [];
   const rangeCalls = [];
   const equalities = [];
   const catalogueCards = Array.isArray(metadata) ? metadata : [metadata];
+  const snapshotRows = [...snapshots];
+  const pendingInsertErrors = [...insertErrors];
   function query(schemaName, tableName) {
     let rows = schemaName === 'api' && tableName === 'catalogue_cards'
       ? catalogueCards
@@ -354,11 +357,11 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
         : schemaName === 'api' && tableName === 'approved_tcgdex_variant_aliases'
           ? approvedTcgdexAliases.map((row) => ({ external_id: row.external_id }))
           : schemaName === 'api' && tableName === 'market_price_snapshot_history'
-                ? snapshots
+                ? snapshotRows
                 : schemaName === 'api' && tableName === 'market_price_estimates'
                   ? estimates
                   : tableName === 'market_price_snapshots'
-                    ? snapshots
+                    ? snapshotRows
                     : tableName === 'price_refresh_queue'
                       ? queueRows
                       : [];
@@ -384,6 +387,14 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
         rows = rows.filter((row) => values.includes(row[column]));
         return builder;
       },
+      gte(column, value) {
+        rows = rows.filter((row) => String(row[column] ?? '') >= String(value));
+        return builder;
+      },
+      lt(column, value) {
+        rows = rows.filter((row) => String(row[column] ?? '') < String(value));
+        return builder;
+      },
       or() { return builder; },
       order(column, options = {}) {
         rows = [...rows].sort((left, right) => {
@@ -405,12 +416,24 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
       },
       insert(value) {
         inserted.push(value);
+        if (tableName === 'market_price_snapshots' && !pendingInsertErrors.length) snapshotRows.push(value);
         rows = [{ requested_at: '2026-09-05T00:00:00.000Z', run_after: '2026-09-05T00:00:00.000Z' }];
+        return builder;
+      },
+      update(value) {
+        updates.push(value);
+        if (tableName === 'market_price_snapshots') {
+          const replacement = onSnapshotUpdate?.({ value, rows, snapshotRows }) ?? rows.map((row) => Object.assign(row, value));
+          rows = Array.isArray(replacement) ? replacement : replacement ? [replacement] : [];
+        }
         return builder;
       },
       maybeSingle() { single = true; return builder; },
       then(resolve, reject) {
-        return Promise.resolve({ data: single ? (rows[0] ?? null) : rows, error: null }).then(resolve, reject);
+        const error = tableName === 'market_price_snapshots' && inserted.length && pendingInsertErrors.length
+          ? pendingInsertErrors.shift()
+          : null;
+        return Promise.resolve({ data: single ? (rows[0] ?? null) : rows, error }).then(resolve, reject);
       },
     };
     return builder;
@@ -418,6 +441,7 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
   return {
     limits,
     inserted,
+    updates,
     rpcCalls,
     rangeCalls,
     equalities,
@@ -969,6 +993,101 @@ async function assertExactOwnerProviderRefresh() {
   assert.equal(normal.sourceCurrency, 'USD', 'the quote retains its original provider currency alongside its configured GBP conversion');
 }
 
+async function assertExactProviderDailySnapshotConflictHandling() {
+  const setId = '11111111-1111-4111-8111-111111111111';
+  const source = { id: '44444444-4444-4444-8444-444444444444', code: 'tcgdex', active: true, licence_status: 'approved', deprecated_at: null };
+  const version = { id: '33333333-3333-4333-8333-333333333333', status: 'published', language_code: 'en', deprecated_at: null, superseded_by_version_id: null };
+  const now = new Date();
+  const fixture = (variantId) => {
+    const metadata = {
+      variant_id: variantId, printing_id: '66666666-6666-4666-8666-666666666666', language_code: 'en',
+      set_id: setId, set_code: 'base-set', set_english_display_name: 'Base Set', collector_number: '4/102',
+      card_english_display_name: 'Charizard', rarity_code: 'Holo Rare', variant_code: 'normal', finish_code: 'normal',
+    };
+    const identity = buildCanonicalIdentity({
+      id: variantId, language: 'en', set_id: setId, number: '4/102', name: 'Charizard', rarity: 'Holo Rare',
+    }, {
+      canonicalVariantId: variantId, canonicalPrintingId: metadata.printing_id, productType: 'raw_card', language: 'en',
+      setId, cardNumber: '4/102', variant: 'normal', finish: 'normal', condition: 'raw_near_mint',
+    });
+    const snapshot = (overrides = {}) => ({
+      id: '88888888-8888-4888-8888-888888888888', user_id: null, card_id: variantId, set_id: setId, language: 'en',
+      canonical_identity_key: identity.identityKey, pricing_identity_json: { ...identity, canonicalVariantId: variantId, canonical_variant_id: variantId },
+      tcgdex_card_id: 'base3-4', tcgdex_price: 11, price_source: 'tcgdex_market', primary_source: 'tcgdex', price_type: 'market_estimate', proven_last_sold: false,
+      tcgdex_price_updated_at: new Date(now.getTime() + 60_000).toISOString(), methodology_version: null,
+      calculated_at: new Date(now.getTime() + 60_000).toISOString(), snapshot_at: new Date(now.getTime() + 60_000).toISOString(), stale_after: new Date(now.getTime() + 7 * 60 * 60_000).toISOString(), is_stale: false,
+      ...overrides,
+    });
+    const provider = async () => ({ providerCardId: 'base3-4', language: 'en', number: '4/102', price: 12.5, priceSource: 'tcgdex_market', pricingUpdatedAt: now.toISOString(), raw: { id: 'base3-4' } });
+    const aliases = [{ catalogue_version_id: version.id, source_id: source.id, source_entity_type: 'card', external_id: 'base3-4:normal', language_code: 'en', variant_id: variantId }];
+    return { metadata, snapshot, provider, aliases };
+  };
+  const input = { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' };
+
+  const repeatId = '10101010-1010-4010-8010-101010101010';
+  const repeat = fixture(repeatId);
+  const repeatDb = createSnapshotSupabase({ metadata: repeat.metadata, snapshots: [repeat.snapshot()], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: repeat.aliases });
+  const repeatResult = await createMarketPricingService({ supabase: repeatDb, fetchTcgdexNormalCardPrice: repeat.provider }).refreshExactProviderEstimate(repeatId, input);
+  assert.equal(repeatResult.estimates.central, 11, 'a same-day newer exact provider snapshot is reused instead of raising a duplicate-key error');
+  assert.equal(repeatDb.updates.length, 0, 'a newer same-day quote is never overwritten');
+
+  const unsafeId = '20202020-2020-4020-8020-202020202020';
+  const unsafe = fixture(unsafeId);
+  const unsafeDb = createSnapshotSupabase({ metadata: unsafe.metadata, snapshots: [unsafe.snapshot({ canonical_identity_key: 'other-identity', pricing_identity_json: { canonicalVariantId: unsafeId, productType: 'raw_card', condition: 'raw_near_mint' } })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: unsafe.aliases });
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: unsafeDb, fetchTcgdexNormalCardPrice: unsafe.provider }).refreshExactProviderEstimate(unsafeId, input),
+    (error) => error.code === 'exact_provider_daily_snapshot_conflict',
+    'a same-day row with another canonical identity must never be overwritten',
+  );
+
+  const wrongProviderId = '21212121-2121-4121-8121-212121212121';
+  const wrongProvider = fixture(wrongProviderId);
+  const wrongProviderDb = createSnapshotSupabase({ metadata: wrongProvider.metadata, snapshots: [wrongProvider.snapshot({ tcgdex_card_id: 'different-provider-card' })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: wrongProvider.aliases });
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: wrongProviderDb, fetchTcgdexNormalCardPrice: wrongProvider.provider }).refreshExactProviderEstimate(wrongProviderId, input),
+    (error) => error.code === 'exact_provider_daily_snapshot_conflict',
+    'a same-day row from another provider card must never be reused or overwritten',
+  );
+
+  const v2Id = '23232323-2323-4232-8232-232323232323';
+  const v2 = fixture(v2Id);
+  const v2Db = createSnapshotSupabase({ metadata: v2.metadata, snapshots: [v2.snapshot({ methodology_version: 'pricing-v2.0.0' })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: v2.aliases });
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: v2Db, fetchTcgdexNormalCardPrice: v2.provider }).refreshExactProviderEstimate(v2Id, input),
+    (error) => error.code === 'exact_provider_daily_snapshot_conflict',
+    'a canonical V2 snapshot must never be reused or overwritten by the legacy provider refresh',
+  );
+
+  const olderProviderId = '22222222-2222-4222-8222-222222222222';
+  const olderProvider = fixture(olderProviderId);
+  const olderProviderDb = createSnapshotSupabase({ metadata: olderProvider.metadata, snapshots: [olderProvider.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: new Date(now.getTime() + 60_000).toISOString(), calculated_at: new Date(now.getTime() + 60_000).toISOString() })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: olderProvider.aliases });
+  const olderProviderResult = await createMarketPricingService({ supabase: olderProviderDb, fetchTcgdexNormalCardPrice: olderProvider.provider }).refreshExactProviderEstimate(olderProviderId, input);
+  assert.equal(olderProviderResult.estimates.central, 12.5, 'a later retrieval with an older provider timestamp cannot displace a fresher incoming provider quote');
+  assert.equal(olderProviderDb.updates.length, 1);
+
+  const racedId = '30303030-3030-4030-8030-303030303030';
+  const raced = fixture(racedId);
+  const racedDb = createSnapshotSupabase({
+    metadata: raced.metadata, snapshots: [raced.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), calculated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: new Date(now.getTime() - 60_000).toISOString() })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: raced.aliases,
+    onSnapshotUpdate: ({ value, snapshotRows }) => {
+      Object.assign(snapshotRows[0], { ...value, tcgdex_price: 13, tcgdex_price_updated_at: new Date(now.getTime() + 120_000).toISOString(), calculated_at: new Date(now.getTime() + 120_000).toISOString(), snapshot_at: new Date(now.getTime() + 120_000).toISOString() });
+      return [];
+    },
+  });
+  const racedResult = await createMarketPricingService({ supabase: racedDb, fetchTcgdexNormalCardPrice: raced.provider }).refreshExactProviderEstimate(racedId, input);
+  assert.equal(racedResult.estimates.central, 13, 'a concurrent newer same-identity quote is reused after the optimistic update loses');
+
+  const boundaryId = '40404040-4040-4040-8040-404040404040';
+  const boundary = fixture(boundaryId);
+  const previousUtcDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - 1).toISOString();
+  const boundaryDb = createSnapshotSupabase({ metadata: boundary.metadata, snapshots: [boundary.snapshot({ snapshot_at: previousUtcDay, calculated_at: previousUtcDay })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: boundary.aliases });
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: boundaryDb, fetchTcgdexNormalCardPrice: boundary.provider }).refreshExactProviderEstimate(boundaryId, input),
+    (error) => error.code === 'exact_provider_daily_snapshot_conflict',
+    'a duplicate collision with no same-UTC-day safe row fails closed rather than crossing the UTC boundary',
+  );
+}
+
 async function assertNormalProviderFetchAbortsAndClearsInflight() {
   const originalFetch = globalThis.fetch;
   let calls = 0;
@@ -1013,6 +1132,7 @@ await assertManualRefreshIdentityAndGate();
 await assertIdentityAwareDenseRangeHistory();
 await assertPagedRangeHistoryKeepsBaseline();
 await assertExactOwnerProviderRefresh();
+await assertExactProviderDailySnapshotConflictHandling();
 await assertNormalProviderFetchAbortsAndClearsInflight();
 
 console.log('Market pricing service tests passed.');
