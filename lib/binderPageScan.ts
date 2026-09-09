@@ -35,6 +35,7 @@ export type BinderPocketQuality = {
 export type BinderPocketCandidate = {
   id: string;
   name: string;
+  language?: string | null;
   number?: string | null;
   set_id?: string | null;
   set_name?: string | null;

@@ -14,13 +14,15 @@ import {
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { getAuthCallbackRedirectUrl, getPasswordResetRedirectUrl } from '../../lib/authRedirects';
 import { stackrLogoSizes } from '../../lib/stackrSizing';
 
 export default function LoginScreen() {
   const { theme } = useTheme();
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
+  const recoveryMode = mode === 'reset';
   const { height } = useWindowDimensions();
   const compact = height < 760;
   const styles = React.useMemo(() => makeStyles(theme, compact), [theme, compact]);
@@ -155,22 +157,23 @@ export default function LoginScreen() {
             />
           </View>
           <View style={styles.container}>
+            {recoveryMode ? <Text accessibilityRole="header" style={styles.title}>Reset password</Text> : null}
              <Text style={styles.subtitle}>
-              Track your cards, value your collection, and trade with other
-              collectors.
+              {recoveryMode ? 'Enter your email to request a new password reset link.' : 'Track your cards, value your collection, and trade with other collectors.'}
             </Text>
 
-            <View style={styles.infoBox}>
+            {!recoveryMode ? <View style={styles.infoBox}>
               <Text style={styles.infoTitle}>New to Stackr?</Text>
               <Text style={styles.infoText}>
                 Enter your email and create a password, then tap Create account.
                 You’ll choose your Collector Name next, which will appear on your
                 profile.
               </Text>
-            </View>
+            </View> : null}
 
             <TextInput
               placeholder="Email"
+              accessibilityLabel="Email"
               placeholderTextColor={theme.colors.textSoft}
               autoCapitalize="none"
               keyboardType="email-address"
@@ -179,53 +182,67 @@ export default function LoginScreen() {
               style={styles.input}
             />
 
-            <TextInput
+            {!recoveryMode ? <TextInput
               placeholder="Password"
+              accessibilityLabel="Password"
               placeholderTextColor={theme.colors.textSoft}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               style={styles.input}
-            />
+            /> : null}
 
             <Pressable
               style={styles.forgotButton}
               onPress={handleForgotPassword}
+              accessibilityRole="button"
+              accessibilityLabel={recoveryMode ? 'Send reset email' : 'Forgot password?'}
               disabled={loading || resetLoading}
             >
               {resetLoading ? (
                 <ActivityIndicator color={theme.colors.primary} />
               ) : (
-                <Text style={styles.forgotText}>Forgot password?</Text>
+                <Text style={styles.forgotText}>{recoveryMode ? 'Send reset email' : 'Forgot password?'}</Text>
               )}
             </Pressable>
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
             {message ? <Text style={styles.message}>{message}</Text> : null}
 
-            <Pressable
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loadingAction === 'login' ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.buttonText}>Login</Text>
-              )}
-            </Pressable>
+            {!recoveryMode ? <>
+              <Pressable
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                {loadingAction === 'login' ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Login</Text>
+                )}
+              </Pressable>
 
-            <Pressable
-              style={[styles.secondaryButton, loading && styles.buttonDisabled]}
-              onPress={handleSignup}
-              disabled={loading}
-            >
-              {loadingAction === 'signup' ? (
-                <ActivityIndicator color={theme.colors.primary} />
-              ) : (
-                <Text style={styles.secondaryText}>Create account</Text>
-              )}
-            </Pressable>
+              <Pressable
+                style={[styles.secondaryButton, loading && styles.buttonDisabled]}
+                onPress={handleSignup}
+                disabled={loading}
+              >
+                {loadingAction === 'signup' ? (
+                  <ActivityIndicator color={theme.colors.primary} />
+                ) : (
+                  <Text style={styles.secondaryText}>Create account</Text>
+                )}
+              </Pressable>
+            </> : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Back to sign in"
+                onPress={() => router.replace('/(auth)/login')}
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryText}>Back to sign in</Text>
+              </Pressable>
+            )}
           </View>
         </ScrollView>
       </SafeAreaView>

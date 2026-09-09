@@ -369,10 +369,10 @@ function AppNavigation() {
                   <Stack.Screen name="scan/result" options={{ title: '' }} />
                   <Stack.Screen name="scan/binder-page-result" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="scan/rectification-diagnostics" options={{ headerShown: false, title: '' }} />
-                  <Stack.Screen name="prices/index" options={{ title: '' }} />
+                  <Stack.Screen name="prices/index" options={{ headerShown: false, title: 'Latest Prices' }} />
                   <Stack.Screen name="community/profile/[userId]" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="community/index" options={legacyRedirectScreenOptions} />
-                  <Stack.Screen name="price-builder/index" options={{ title: '' }} />
+                  <Stack.Screen name="price-builder/index" options={{ headerShown: false, title: 'Price Builder' }} />
                   <Stack.Screen name="user/[id]" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="pokemon/[id]" options={{ title: '' }} />
                   <Stack.Screen name="trade/index" options={legacyRedirectScreenOptions} />
@@ -386,7 +386,8 @@ function AppNavigation() {
                   <Stack.Screen name="auth/callback" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="auth/reset-password" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="notifications" options={{ title: '' }} />
-                  <Stack.Screen name="settings" options={{ title: '' }} />
+                  <Stack.Screen name="settings" options={{ headerShown: false, title: 'Settings' }} />
+                  <Stack.Screen name="friends/index" options={{ headerShown: false, title: 'Friends' }} />
                   <Stack.Screen name="admin/japanese-catalogue" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="admin/scanner-analytics" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="admin/quality-observability" options={{ headerShown: false, title: '' }} />

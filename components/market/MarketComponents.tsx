@@ -1104,9 +1104,12 @@ export function MarketEmptyState({
       {actionLabel && onAction ? (
         <TouchableOpacity
           onPress={onAction}
+          accessibilityRole="button"
+          accessibilityLabel={actionLabel}
           activeOpacity={0.84}
           style={{
-            minHeight: 40,
+            minHeight: 44,
+            paddingVertical: 10,
             borderRadius: 13,
             paddingHorizontal: 16,
             backgroundColor: theme.colors.primary,
