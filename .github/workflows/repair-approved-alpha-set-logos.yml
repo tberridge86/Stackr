@@ -33,6 +33,7 @@ jobs:
     env:
       SUPABASE_URL: https://oakdbbzdqwurpjnoqhmu.supabase.co
       SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
       EXPECTED_SCANNED: ${{ inputs.expected_scanned }}
       RECEIPT: outputs/releases/catalogue-alpha-logo-repair-receipt.json
@@ -55,6 +56,7 @@ jobs:
           [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$EXPECTED_SCANNED" =~ ^[1-9][0-9]{0,2}$ ]]
           test -n "$SUPABASE_PRODUCTION_SECRET_KEY"
+          test -n "$SUPABASE_DB_URL"
       - name: Install and validate image preservation
         run: |
           set -euo pipefail
