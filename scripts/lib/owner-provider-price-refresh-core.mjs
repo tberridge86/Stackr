@@ -51,9 +51,13 @@ export function legacyEnglishOwnerPair(row) {
 export function parseOwnerPriceRefreshArguments(args = []) {
   let limit = 10;
   let dryRun = true;
+  let includeQueue = false;
+  let queueOnly = false;
   for (const argument of args) {
     if (argument === '--apply') dryRun = false;
     if (argument === '--dry-run') dryRun = true;
+    if (argument === '--include-queue') includeQueue = true;
+    if (argument === '--queue-only') queueOnly = true;
     if (argument.startsWith('--limit=')) {
       const value = Number(argument.slice('--limit='.length));
       if (!Number.isInteger(value) || value < 1 || value > OWNER_PRICE_REFRESH_MAX_LIMIT) {
@@ -62,7 +66,43 @@ export function parseOwnerPriceRefreshArguments(args = []) {
       limit = value;
     }
   }
-  return { limit, dryRun };
+  if (queueOnly && !includeQueue) throw new Error('--queue-only requires --include-queue.');
+  return { limit, dryRun, includeQueue, queueOnly };
+}
+
+function queueMetadata(row) {
+  return row?.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+    ? row.metadata
+    : {};
+}
+
+/**
+ * The old Pricing V2 runner must not be revived. This accepts only the exact
+ * Home request shape and verifies every physical identity field against the
+ * published catalogue row before an exact provider request can be made.
+ */
+export function resolveOwnerExactQueueItem(row, catalogueRows, expectedOwnerId = null) {
+  const metadata = queueMetadata(row);
+  const variantId = String(metadata.canonicalVariantId ?? '').trim().toLowerCase();
+  if (String(row?.reason ?? '') !== 'manual_snapshot_refresh'
+    || String(metadata.refreshPipeline ?? '') !== 'pricing_v2_exact'
+    || (expectedOwnerId && normalise(row?.requested_by) !== normalise(expectedOwnerId))
+    || !isUuid(variantId)) return { ok: false, reason: 'unsupported_queue_identity' };
+  if (String(metadata.productType ?? '') !== 'raw_card'
+    || !['raw_near_mint', 'near_mint', 'nm'].includes(normalise(metadata.rawCondition ?? metadata.condition))
+    || normalise(metadata.currency) !== 'gbp'
+    || (metadata.language && normalise(metadata.language) !== normalise(row?.language))) return { ok: false, reason: 'unsupported_queue_scope' };
+  const matches = (catalogueRows ?? []).filter((card) => String(card?.variant_id ?? '').toLowerCase() === variantId)
+    .filter((card) => String(card?.printing_id ?? '') === String(row?.card_id ?? ''))
+    .filter((card) => String(card?.printing_id ?? '') === String(metadata.canonicalPrintingId ?? ''))
+    .filter((card) => normalise(card?.language_code) === normalise(row?.language))
+    .filter((card) => String(card?.set_id ?? '') === String(row?.set_id ?? ''))
+    .filter((card) => NORMAL_CODES.has(normalise(card?.variant_code)))
+    .filter((card) => NORMAL_FINISH_CODES.has(normalise(card?.finish_code)))
+    .filter((card) => !metadata.variantCode || normalise(card?.variant_code) === normalise(metadata.variantCode))
+    .filter((card) => !metadata.finishCode || normalise(card?.finish_code) === normalise(metadata.finishCode));
+  if (matches.length !== 1) return { ok: false, reason: 'unsupported_queue_identity' };
+  return { ok: true, variantId };
 }
 
 export function ownedRowEligibility(row) {

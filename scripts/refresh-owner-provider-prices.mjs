@@ -8,6 +8,7 @@ import {
   legacyEnglishOwnerPair,
   ownedRowEligibility,
   parseOwnerPriceRefreshArguments,
+  resolveOwnerExactQueueItem,
   resolveOwnedProviderVariant,
   summariseOwnerPriceRefresh,
 } from './lib/owner-provider-price-refresh-core.mjs';
@@ -16,6 +17,8 @@ const require = createRequire(import.meta.url);
 const { createMarketPricingService } = require('../backend/lib/marketPricing/service.js');
 const PRODUCTION_PROJECT_REF = 'oakdbbzdqwurpjnoqhmu';
 const OWNED_SCAN_MULTIPLIER = 10;
+const QUEUE_MAX_ATTEMPTS = 5;
+const UNAVAILABLE_PROVIDER_CODES = new Set(['unresolved_provider_identity', 'ambiguous_provider_identity', 'exact_provider_quote_unavailable']);
 
 function requireEnv(name) {
   const value = String(process.env[name] ?? '').trim();
@@ -103,28 +106,162 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
   return ownedRows.map((row) => resolveOwnedProviderVariant(row, identifierRows, catalogueRows));
 }
 
-export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate, ownerId, limit, dryRun }) {
-  const ownedRows = await readOwnedRows(supabase, ownerId, limit);
-  const resolved = await resolveOwnedCandidates(supabase, ownedRows);
+async function readOwnerQueue(supabase, ownerId, limit) {
+  return queryRows(supabase.from('price_refresh_queue')
+    .select('id,card_id,set_id,language,reason,requested_by,requested_at,run_after,processed_at,attempts,last_error,metadata')
+    .eq('requested_by', ownerId)
+    .eq('reason', 'manual_snapshot_refresh')
+    .eq('metadata->>refreshPipeline', 'pricing_v2_exact')
+    .is('processed_at', null)
+    .lte('run_after', new Date().toISOString())
+    .order('priority', { ascending: false })
+    .order('requested_at', { ascending: true })
+    .limit(limit));
+}
+
+async function resolveOwnerQueue(supabase, queueRows, ownerId) {
+  const ids = [...new Set(queueRows
+    .map((row) => String(row?.metadata?.canonicalVariantId ?? '').toLowerCase())
+    .filter(isUuid))];
+  const catalogueRows = ids.length
+    ? await queryRows(supabase.schema('api').from('catalogue_cards')
+      .select('variant_id,printing_id,language_code,set_id,variant_code,finish_code')
+      .in('variant_id', ids)
+      .limit(100))
+    : [];
+  return queueRows.map((row) => ({ row, ...resolveOwnerExactQueueItem(row, catalogueRows, ownerId) }));
+}
+
+function retryAfter(attempts) {
+  return new Date(Date.now() + Math.min(60, 2 ** Number(attempts ?? 0)) * 60_000).toISOString();
+}
+
+async function claimQueueItem(supabase, item) {
+  const leaseUntil = new Date(Date.now() + 5 * 60_000).toISOString();
+  const { data, error } = await supabase.from('price_refresh_queue')
+    .update({ run_after: leaseUntil, last_error: null })
+    .eq('id', item.row.id)
+    .eq('requested_by', item.row.requested_by)
+    .is('processed_at', null)
+    .eq('run_after', item.row.run_after)
+    .lte('run_after', new Date().toISOString())
+    .select('id')
+    .maybeSingle();
+  if (error) throw error;
+  return data ? leaseUntil : null;
+}
+
+async function completeQueueItem(supabase, item, leaseUntil) {
+  const { error } = await supabase.from('price_refresh_queue')
+    .update({ processed_at: new Date().toISOString(), attempts: Number(item.row.attempts ?? 0) + 1, last_error: null })
+    .eq('id', item.row.id)
+    .eq('requested_by', item.row.requested_by)
+    .is('processed_at', null)
+    .eq('run_after', leaseUntil);
+  if (error) throw error;
+}
+
+function safeQueueErrorCode(error) {
+  const code = String(error?.code ?? '');
+  return UNAVAILABLE_PROVIDER_CODES.has(code) ? code : 'exact_provider_refresh_failed';
+}
+
+async function retryQueueItem(supabase, item, leaseUntil, errorCode) {
+  const attempts = Number(item.row.attempts ?? 0) + 1;
+  const exhausted = attempts >= QUEUE_MAX_ATTEMPTS;
+  const patch = exhausted
+    ? { processed_at: new Date().toISOString(), attempts, last_error: 'exact_provider_retry_exhausted' }
+    : { attempts, last_error: errorCode, run_after: retryAfter(item.row.attempts) };
+  const { error } = await supabase.from('price_refresh_queue')
+    .update(patch)
+    .eq('id', item.row.id)
+    .eq('requested_by', item.row.requested_by)
+    .is('processed_at', null)
+    .eq('run_after', leaseUntil);
+  if (error) throw error;
+  return exhausted;
+}
+
+async function terminalQueueItem(supabase, item) {
+  const { error } = await supabase.from('price_refresh_queue')
+    .update({ processed_at: new Date().toISOString(), attempts: Number(item.row.attempts ?? 0) + 1, last_error: 'unsupported_exact_queue_identity' })
+    .eq('id', item.row.id)
+    .eq('requested_by', item.row.requested_by)
+    .is('processed_at', null)
+    .eq('run_after', item.row.run_after)
+    .lte('run_after', new Date().toISOString());
+  if (error) throw error;
+}
+
+async function refreshExact(refreshExactProviderEstimate, variantId) {
+  return refreshExactProviderEstimate(variantId, {
+    productType: 'raw_card', condition: 'near_mint', currency: 'GBP',
+  });
+}
+
+export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate, ownerId, limit, dryRun, includeQueue = false, queueOnly = false }) {
+  const queueRows = includeQueue ? await readOwnerQueue(supabase, ownerId, limit) : [];
+  const resolvedQueue = includeQueue ? await resolveOwnerQueue(supabase, queueRows, ownerId) : [];
+  const validQueue = resolvedQueue.filter((item) => item.ok);
+  const invalidQueue = resolvedQueue.filter((item) => !item.ok);
+  const ownedRows = queueOnly ? [] : await readOwnedRows(supabase, ownerId, limit);
+  const resolved = queueOnly ? [] : await resolveOwnedCandidates(supabase, ownedRows);
   // The same owned identity can appear through multiple binder rows. One
   // exact provider snapshot is sufficient for that canonical variant.
-  const selected = [...new Map(resolved.filter((result) => result.ok)
-    .map((result) => [result.variantId, result])).values()].slice(0, limit);
-  const summary = { ...summariseOwnerPriceRefresh(resolved), selected: selected.length, refreshed: 0, unavailable: 0, failed: 0, dryRun };
+  const queueSelected = [...new Map(validQueue.map((item) => [item.variantId, item])).values()].slice(0, limit);
+  const queueVariantIds = new Set(queueSelected.map((item) => item.variantId));
+  const ownedSelected = [...new Map(resolved.filter((result) => result.ok)
+    .filter((result) => !queueVariantIds.has(result.variantId))
+    .map((result) => [result.variantId, result])).values()].slice(0, Math.max(0, limit - queueSelected.length));
+  const summary = {
+    ...summariseOwnerPriceRefresh(resolved),
+    queueScanned: queueRows.length,
+    queueEligible: validQueue.length,
+    queueUnsupported: invalidQueue.length,
+    queueTerminal: 0,
+    queueClaimLost: 0,
+    queueCompleted: 0,
+    queueRetried: 0,
+    selected: queueSelected.length + ownedSelected.length,
+    refreshed: 0, unavailable: 0, failed: 0, dryRun,
+  };
+  if (!dryRun) {
+    for (const item of invalidQueue) {
+      await terminalQueueItem(supabase, item);
+      summary.queueTerminal += 1;
+    }
+  }
   if (dryRun) return summary;
 
-  for (const item of selected) {
+  for (const item of queueSelected) {
+    const leaseUntil = await claimQueueItem(supabase, item);
+    if (!leaseUntil) {
+      summary.queueClaimLost += 1;
+      continue;
+    }
     try {
-      await refreshExactProviderEstimate(item.variantId, {
-        productType: 'raw_card', condition: 'near_mint', currency: 'GBP',
-      });
+      await refreshExact(refreshExactProviderEstimate, item.variantId);
       summary.refreshed += 1;
+      await completeQueueItem(supabase, item, leaseUntil);
+      summary.queueCompleted += 1;
     } catch (error) {
       // The exact service deliberately rejects missing/ambiguous aliases and
       // unavailable current quotes. Keep the scheduled run bounded and report
       // those as unavailable without substituting another provider or finish.
-      const code = String(error?.code ?? '');
-      if (['unresolved_provider_identity', 'ambiguous_provider_identity', 'exact_provider_quote_unavailable'].includes(code)) summary.unavailable += 1;
+      const code = safeQueueErrorCode(error);
+      if (UNAVAILABLE_PROVIDER_CODES.has(code)) summary.unavailable += 1;
+      else summary.failed += 1;
+      if (await retryQueueItem(supabase, item, leaseUntil, code)) summary.queueTerminal += 1;
+      else summary.queueRetried += 1;
+    }
+  }
+  for (const item of ownedSelected) {
+    try {
+      await refreshExact(refreshExactProviderEstimate, item.variantId);
+      summary.refreshed += 1;
+    } catch (error) {
+      const code = safeQueueErrorCode(error);
+      if (UNAVAILABLE_PROVIDER_CODES.has(code)) summary.unavailable += 1;
       else summary.failed += 1;
     }
   }
@@ -132,7 +269,7 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
 }
 
 async function main() {
-  const { limit, dryRun } = parseOwnerPriceRefreshArguments(process.argv.slice(2));
+  const { limit, dryRun, includeQueue, queueOnly } = parseOwnerPriceRefreshArguments(process.argv.slice(2));
   const { target, ownerId } = ownerRefreshConfiguration();
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || requireEnv('SUPABASE_SECRET_KEY');
   const supabase = createClient(target.url, serviceKey);
@@ -143,6 +280,8 @@ async function main() {
     ownerId,
     limit,
     dryRun,
+    includeQueue,
+    queueOnly,
   });
   console.log(JSON.stringify({ worker: 'owner-provider-price-refresh', ...summary }, null, 2));
   if (summary.failed) process.exitCode = 1;

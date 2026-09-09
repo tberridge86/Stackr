@@ -4,6 +4,7 @@ import {
   ownedRowEligibility,
   legacyEnglishOwnerPair,
   parseOwnerPriceRefreshArguments,
+  resolveOwnerExactQueueItem,
   resolveOwnedProviderVariant,
 } from './lib/owner-provider-price-refresh-core.mjs';
 import { runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
@@ -17,8 +18,10 @@ const identifiers = [
 ];
 const catalogue = [{ variant_id: variant, set_id: set, language_code: 'en', variant_code: 'normal', finish_code: 'normal' }];
 
-assert.deepEqual(parseOwnerPriceRefreshArguments([]), { limit: 10, dryRun: true });
-assert.deepEqual(parseOwnerPriceRefreshArguments(['--limit=2', '--apply']), { limit: 2, dryRun: false });
+assert.deepEqual(parseOwnerPriceRefreshArguments([]), { limit: 10, dryRun: true, includeQueue: false, queueOnly: false });
+assert.deepEqual(parseOwnerPriceRefreshArguments(['--limit=2', '--apply']), { limit: 2, dryRun: false, includeQueue: false, queueOnly: false });
+assert.deepEqual(parseOwnerPriceRefreshArguments(['--include-queue', '--queue-only']), { limit: 10, dryRun: true, includeQueue: true, queueOnly: true });
+assert.throws(() => parseOwnerPriceRefreshArguments(['--queue-only']), /requires --include-queue/);
 assert.throws(() => parseOwnerPriceRefreshArguments([`--limit=${OWNER_PRICE_REFRESH_MAX_LIMIT + 1}`]), /1 to 30/);
 assert.equal(ownedRowEligibility({ ...owned, condition: 'Lightly Played' }), 'not_raw_near_mint');
 assert.equal(ownedRowEligibility({ ...owned, grade: '10' }), 'graded_card');
@@ -65,5 +68,66 @@ const legacySupabase = {
 };
 const legacyDry = await runOwnerProviderRefresh({ supabase: legacySupabase, refreshExactProviderEstimate: async () => { throw new Error('dry run must not refresh'); }, ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 3, dryRun: true });
 assert.equal(legacyDry.selected, 1, 'the deterministic me3/me3-10 pair reaches its exact English normal variant');
+
+const queuePrinting = '55555555-5555-4555-8555-555555555555';
+const queueRow = {
+  id: '66666666-6666-4666-8666-666666666666', card_id: queuePrinting, set_id: set, language: 'en',
+  reason: 'manual_snapshot_refresh', requested_by: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', run_after: '2026-09-09T00:00:00.000Z', attempts: 0,
+  metadata: { refreshPipeline: 'pricing_v2_exact', canonicalVariantId: variant, canonicalPrintingId: queuePrinting, productType: 'raw_card', rawCondition: 'raw_near_mint', currency: 'GBP', variantCode: 'normal', finishCode: 'normal' },
+};
+const queueCatalogue = [{ ...catalogue[0], printing_id: queuePrinting }];
+assert.deepEqual(resolveOwnerExactQueueItem(queueRow, queueCatalogue), { ok: true, variantId: variant });
+assert.equal(resolveOwnerExactQueueItem(queueRow, queueCatalogue, 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb').reason, 'unsupported_queue_identity', 'a queue row from another owner is never eligible');
+assert.equal(resolveOwnerExactQueueItem({ ...queueRow, metadata: { ...queueRow.metadata, finishCode: 'reverse_holo' } }, queueCatalogue).reason, 'unsupported_queue_identity');
+assert.equal(resolveOwnerExactQueueItem({ ...queueRow, metadata: { ...queueRow.metadata, currency: 'USD' } }, queueCatalogue).reason, 'unsupported_queue_scope');
+assert.equal(resolveOwnerExactQueueItem({ ...queueRow, metadata: { ...queueRow.metadata, language: 'ja' } }, queueCatalogue).reason, 'unsupported_queue_scope');
+
+function queueHarness({ claim = true, row = queueRow, ownedRows = [] } = {}) {
+  const seen = [];
+  const patches = [];
+  const chain = (kind) => {
+    const value = {
+      select() { return value; }, eq(...args) { seen.push(args); return value; }, gt() { return value; }, is() { return value; }, lte() { return value; }, order() { return value; }, limit() { return value; }, in() { return value; },
+      update(patch) { patches.push(patch); return value; },
+      maybeSingle() { return Promise.resolve({ data: claim ? { id: row.id } : null, error: null }); },
+      then(resolve) { return Promise.resolve({ data: kind === 'queue' ? [row] : kind === 'owned' ? ownedRows : kind === 'identifiers' ? identifiers : [...catalogue, ...queueCatalogue], error: null }).then(resolve); },
+    };
+    return value;
+  };
+  return {
+    seen,
+    patches,
+    supabase: {
+      from(name) { return chain(name === 'user_card_variants' ? 'owned' : 'queue'); },
+      schema() { return { from(name) { return chain(name === 'catalogue_external_identifiers' ? 'identifiers' : 'catalogue'); } }; },
+    },
+  };
+}
+const queued = queueHarness();
+let queueCalls = 0;
+const queueApplied = await runOwnerProviderRefresh({ supabase: queued.supabase, refreshExactProviderEstimate: async (id) => { queueCalls += 1; assert.equal(id, variant); }, ownerId: queueRow.requested_by, limit: 3, dryRun: false, includeQueue: true, queueOnly: true });
+assert.equal(queueApplied.queueCompleted, 1);
+assert.equal(queueCalls, 1);
+assert(queued.seen.some((args) => args[0] === 'requested_by' && args[1] === queueRow.requested_by), 'queue reads and writes are scoped to the owner');
+assert(queued.seen.some((args) => args[0] === 'run_after' && args[1] === queueRow.run_after), 'the queue claim is guarded by the originally-read due timestamp');
+const queueAndOwned = queueHarness({ ownedRows: [owned] });
+let combinedCalls = 0;
+const combined = await runOwnerProviderRefresh({ supabase: queueAndOwned.supabase, refreshExactProviderEstimate: async () => { combinedCalls += 1; }, ownerId: queueRow.requested_by, limit: 3, dryRun: false, includeQueue: true });
+assert.equal(combined.selected, 1, 'a queued and owned copy of the same canonical variant uses one provider refresh');
+assert.equal(combinedCalls, 1);
+const raced = queueHarness({ claim: false });
+const claimRace = await runOwnerProviderRefresh({ supabase: raced.supabase, refreshExactProviderEstimate: async () => { throw new Error('lost claim must not refresh'); }, ownerId: queueRow.requested_by, limit: 3, dryRun: false, includeQueue: true, queueOnly: true });
+assert.equal(claimRace.queueClaimLost, 1, 'an optimistic claim race must not duplicate a provider request');
+const failed = queueHarness();
+const retry = await runOwnerProviderRefresh({ supabase: failed.supabase, refreshExactProviderEstimate: async () => { const error = new Error('provider down'); error.code = 'provider_unavailable_secret_text'; throw error; }, ownerId: queueRow.requested_by, limit: 3, dryRun: false, includeQueue: true, queueOnly: true });
+assert.equal(retry.queueRetried, 1, 'provider failures are retried with the bounded queue backoff');
+assert.equal(failed.patches.at(-1).last_error, 'exact_provider_refresh_failed', 'arbitrary provider errors must not be written to the queue');
+const unsupported = queueHarness({ row: { ...queueRow, metadata: { ...queueRow.metadata, finishCode: 'reverse_holo' } } });
+const terminal = await runOwnerProviderRefresh({ supabase: unsupported.supabase, refreshExactProviderEstimate: async () => { throw new Error('unsupported queue identity must not refresh'); }, ownerId: queueRow.requested_by, limit: 3, dryRun: false, includeQueue: true, queueOnly: true });
+assert.equal(terminal.queueTerminal, 1, 'unsupported exact identities are terminally marked instead of retried');
+const exhaustedHarness = queueHarness({ row: { ...queueRow, attempts: 4 } });
+const exhausted = await runOwnerProviderRefresh({ supabase: exhaustedHarness.supabase, refreshExactProviderEstimate: async () => { throw new Error('provider unavailable'); }, ownerId: queueRow.requested_by, limit: 3, dryRun: false, includeQueue: true, queueOnly: true });
+assert.equal(exhausted.queueTerminal, 1, 'the fifth failed attempt is terminal rather than retrying forever');
+assert.equal(exhaustedHarness.patches.at(-1).last_error, 'exact_provider_retry_exhausted');
 
 console.log('Owner provider price refresh tests passed.');
