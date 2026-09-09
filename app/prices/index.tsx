@@ -303,11 +303,16 @@ export default function MarketScreen() {
   const translateY = useRef(new Animated.Value(0)).current;
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchRequestRef = useRef(createLatestRequestGate());
+  const livePriceRequestRef = useRef(createLatestRequestGate());
   const priceListRef = useRef<FlatList<PokemonCard>>(null);
 
   useEffect(() => {
+    const searchGate = searchRequestRef.current;
+    const livePriceGate = livePriceRequestRef.current;
     return () => {
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      searchGate.start();
+      livePriceGate.start();
     };
   }, []);
 
@@ -440,6 +445,8 @@ export default function MarketScreen() {
   }, [lookupType, rawCondition]);
 
   const loadLiveEbayForSearchResults = useCallback(async (cards: PokemonCard[]) => {
+    const requestId = livePriceRequestRef.current.start();
+    setSearchEbayMap({});
     const visibleCards = cards.slice(0, 12);
     if (!visibleCards.length) {
       setSearchEbayMap({});
@@ -456,7 +463,7 @@ export default function MarketScreen() {
       }
     }));
 
-    setSearchEbayMap(nextMap);
+    if (livePriceRequestRef.current.isCurrent(requestId)) setSearchEbayMap(nextMap);
   }, [fetchLiveEbayForCard]);
 
   const loadWatchlist = useCallback(async () => {
@@ -601,8 +608,14 @@ export default function MarketScreen() {
   }, [loadSearchResultPrices, lookupType]);
 
   useEffect(() => {
-    if (!isCardLookup(lookupType) || !searchResults.length) return;
-    loadLiveEbayForSearchResults(searchResults);
+    const livePriceGate = livePriceRequestRef.current;
+    if (!isCardLookup(lookupType) || !searchResults.length) {
+      livePriceGate.start();
+      setSearchEbayMap({});
+      return;
+    }
+    void loadLiveEbayForSearchResults(searchResults);
+    return () => { livePriceGate.start(); };
   }, [grade, gradingCompany, loadLiveEbayForSearchResults, lookupType, rawCondition, searchResults]);
 
   const searchProductPrice = useCallback(async (searchQuery: string, productType: ProductLookupType) => {
@@ -658,6 +671,8 @@ export default function MarketScreen() {
   }, [lookupType, searchCards, searchProductPrice]);
 
   const handleSearchChange = useCallback((text: string) => {
+    searchRequestRef.current.start();
+    livePriceRequestRef.current.start();
     setQuery(text);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     if (text.trim().length < 2) {

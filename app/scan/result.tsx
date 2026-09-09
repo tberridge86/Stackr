@@ -27,16 +27,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, router, Stack, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
-import { fetchBinders } from '../../lib/binders';
-import {
-  addOwnedCardBatchToBinder,
-  createCollectionBatchRequestKey,
-  persistVerifiedCollectionBatchRecoveryIntent,
-} from '../../lib/collectionBatch';
-import { addScannedVariantCopy } from '../../lib/scanVariantOwnership';
+import { fetchBinderById, fetchBinders } from '../../lib/binders';
+import { saveScanCollectionVariant } from '../../lib/scanCollectionVariantSave';
 import { fetchStackrPrice } from '../../lib/stackrDomainAdapter';
 import { hydrateScanCardRowsWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
-import { attachLiveTcgdexCardReferences } from '../../lib/pokemonTcg';
+import { attachLiveTcgdexCardReferences, normalizePokemonCardLanguage } from '../../lib/pokemonTcg';
 import { getScanAttemptDiagnostics } from '../../lib/scanDiagnostics';
 import { logScanLearningEvent } from '../../lib/scanLearning';
 import { getScannerClientContext } from '../../lib/scannerClientContext';
@@ -817,41 +812,33 @@ function ScanResultScreen() {
         setName: selectedCard.set_name,
         language: selectedCard.language ?? selectedCard.raw_data?.language ?? null,
       }];
-      const requestKey = createCollectionBatchRequestKey({
-        sourceSessionId: `${scanSessionId}:add:${selectedTcgVariant?.key ?? 'default'}`,
-        binderId: selectedBinderId,
-        cards,
-      });
+      const sourceSessionId = `${scanSessionId}:add:${selectedTcgVariant?.key ?? 'default'}`;
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) throw new Error('Sign in before adding this card to your binder.');
-      const intent = await persistVerifiedCollectionBatchRecoveryIntent({
-        sourceSessionId: requestKey,
+      const selectedBinder = await fetchBinderById(selectedBinderId);
+      const selectedLanguage = normalizePokemonCardLanguage(selectedCard.language ?? selectedCard.raw_data?.language ?? selectedBinder?.language ?? 'en');
+      const { data: sameCardRows, error: sameCardRowsError } = await supabase.from('binder_cards')
+        .select('set_id, language, condition').eq('binder_id', selectedBinderId).eq('card_id', selectedCard.id);
+      if (sameCardRowsError) throw sameCardRowsError;
+      const existingCard = sameCardRows?.find((row) => (
+        row.set_id === selectedCard.set_id
+        && normalizePokemonCardLanguage(row.language ?? selectedBinder?.language ?? 'en') === selectedLanguage
+      ));
+      await saveScanCollectionVariant({
+        sourceSessionId,
         binderId: selectedBinderId,
         cards,
-        requestKey,
-      });
-      await addOwnedCardBatchToBinder(intent.binderId, [...intent.cards], { requestKey: intent.requestKey });
-
-      if (selectedTcgVariant?.key) {
-        const { data: { user: currentUser }, error: currentUserError } = await supabase.auth.getUser();
-        if (currentUserError) throw currentUserError;
-        if (currentUser?.id !== user.id) throw new Error('Your account changed while this card was being saved. Reopen the scan before trying again.');
-        const { data: savedCard, error: savedCardError } = await supabase.from('binder_cards')
-          .select('condition').eq('binder_id', intent.binderId).eq('card_id', selectedCard.id).single();
-        if (savedCardError) throw savedCardError;
-        await addScannedVariantCopy({
-          requestKey,
+        variant: selectedTcgVariant?.key ? {
           userId: user.id,
           cardId: selectedCard.id,
           setId: selectedCard.set_id,
           variant: selectedTcgVariant.key,
-          condition: savedCard.condition || 'Near Mint',
+          condition: existingCard?.condition || selectedBinder?.default_condition || 'Near Mint',
           gradeCompany: '',
           grade: '',
-        });
-      }
-
+        } : null,
+      });
       const databaseSaveMs = Date.now() - databaseStartedAt;
       setAdded(true);
       await logResultFeedback('added_to_binder', selectedCard, undefined, {

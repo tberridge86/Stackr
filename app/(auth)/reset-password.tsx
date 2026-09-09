@@ -6,6 +6,11 @@ import * as Linking from 'expo-linking';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../components/theme-context';
 import { firstAuthParam, getAuthParamsFromUrl, mergeAuthLinkParams } from '../../lib/authRedirects';
+import {
+  clearCallbackVerifiedRecoverySession,
+  getPasswordResetScreenState,
+  hasCallbackVerifiedRecoverySession,
+} from '../../lib/passwordResetRecovery';
 import { Text } from '../../components/Text';
 
 export default function ResetPasswordScreen() {
@@ -15,55 +20,85 @@ export default function ResetPasswordScreen() {
     access_token?: string;
     code?: string;
     refresh_token?: string;
+    error?: string;
+    error_code?: string;
+    error_description?: string;
   }>();
   const url = Linking.useURL();
   const params = mergeAuthLinkParams(routeParams, getAuthParamsFromUrl(url));
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [checkingLink, setCheckingLink] = useState(true);
+  const [recoverySessionReady, setRecoverySessionReady] = useState(false);
+  const [recoveryUserId, setRecoveryUserId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    let active = true;
     const prepareSession = async () => {
       try {
         setCheckingLink(true);
         setError('');
+        setRecoverySessionReady(false);
+        setRecoveryUserId(null);
+
+        const linkError = firstAuthParam(params.error_description) || firstAuthParam(params.error) || firstAuthParam(params.error_code);
+        if (linkError) throw new Error(linkError);
 
         const code = firstAuthParam(params.code);
         const accessToken = firstAuthParam(params.access_token);
         const refreshToken = firstAuthParam(params.refresh_token);
-
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (!active) return;
           if (exchangeError) throw exchangeError;
         } else if (accessToken && refreshToken) {
           const { error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
+          if (!active) return;
           if (sessionError) throw sessionError;
         }
 
         const { data, error: sessionReadError } = await supabase.auth.getSession();
+        if (!active) return;
         if (sessionReadError) throw sessionReadError;
         if (!data.session) {
+          clearCallbackVerifiedRecoverySession();
           setError('This reset link is missing or has expired. Please request a new password reset email.');
+          return;
         }
+        const callbackVerified = hasCallbackVerifiedRecoverySession(data.session.user.id);
+        if (!code && !(accessToken && refreshToken) && !callbackVerified) {
+          setError('This reset link is missing or has expired. Please request a new password reset email.');
+          return;
+        }
+        setRecoveryUserId(data.session.user.id);
+        setRecoverySessionReady(true);
       } catch (err: any) {
-        setError(err?.message || 'Could not open the password reset link.');
+        if (!active) return;
+        clearCallbackVerifiedRecoverySession();
+        if (active) setError(err?.message || 'Could not open the password reset link.');
       } finally {
-        setCheckingLink(false);
+        if (active) setCheckingLink(false);
       }
     };
 
-    prepareSession();
-  }, [params.access_token, params.code, params.refresh_token]);
+    void prepareSession();
+    return () => { active = false; };
+  }, [params.access_token, params.code, params.refresh_token, params.error, params.error_code, params.error_description]);
 
   const handleSavePassword = async () => {
     setError('');
     setMessage('');
+
+    if (!recoverySessionReady) {
+      setError('This reset link is missing or has expired. Request a new password reset email.');
+      return;
+    }
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters.');
@@ -77,6 +112,13 @@ export default function ResetPasswordScreen() {
 
     try {
       setSaving(true);
+      const { data: currentSession, error: currentSessionError } = await supabase.auth.getSession();
+      if (currentSessionError) throw currentSessionError;
+      if (!recoveryUserId || currentSession.session?.user.id !== recoveryUserId) {
+        clearCallbackVerifiedRecoverySession();
+        setRecoverySessionReady(false);
+        throw new Error('Your session changed. Please request a new password reset link.');
+      }
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) {
         setError(updateError.message);
@@ -85,6 +127,7 @@ export default function ResetPasswordScreen() {
 
       setMessage('Password updated. You can now log in with your new password.');
       await supabase.auth.signOut();
+      clearCallbackVerifiedRecoverySession();
       setTimeout(() => router.replace('/(auth)/login'), 800);
     } catch (err: any) {
       setError(err?.message || 'Could not update password.');
@@ -92,6 +135,8 @@ export default function ResetPasswordScreen() {
       setSaving(false);
     }
   };
+
+  const screenState = getPasswordResetScreenState({ checkingLink, recoverySessionReady });
 
   return (
     <KeyboardAvoidingView
@@ -109,12 +154,12 @@ export default function ResetPasswordScreen() {
             <Text style={styles.title}>Reset password</Text>
             <Text style={styles.subtitle}>Choose a new password for your Stackr account.</Text>
 
-            {checkingLink ? (
+            {screenState === 'checking' ? (
               <View style={styles.loadingBox}>
                 <ActivityIndicator color={theme.colors.primary} />
                 <Text style={styles.loadingText}>Checking reset link...</Text>
               </View>
-            ) : (
+            ) : screenState === 'update_password' ? (
               <>
                 <TextInput
                   placeholder="New password"
@@ -149,7 +194,32 @@ export default function ResetPasswordScreen() {
                   )}
                 </Pressable>
 
-                <Pressable style={styles.secondaryButton} onPress={() => router.replace('/(auth)/login')}>
+                <Pressable style={styles.secondaryButton} onPress={() => {
+                  clearCallbackVerifiedRecoverySession();
+                  router.replace('/(auth)/login');
+                }}>
+                  <Text style={styles.secondaryText}>Back to login</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Text accessibilityRole="alert" style={styles.error}>
+                  {error || 'This reset link is no longer valid.'}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  style={styles.button}
+                  onPress={() => {
+                    clearCallbackVerifiedRecoverySession();
+                    router.replace({ pathname: '/(auth)/login', params: { mode: 'reset' } });
+                  }}
+                >
+                  <Text style={styles.buttonText}>Request a new reset link</Text>
+                </Pressable>
+                <Pressable style={styles.secondaryButton} onPress={() => {
+                  clearCallbackVerifiedRecoverySession();
+                  router.replace('/(auth)/login');
+                }}>
                   <Text style={styles.secondaryText}>Back to login</Text>
                 </Pressable>
               </>

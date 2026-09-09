@@ -7,6 +7,7 @@ import { StackrButton } from '../../components/StackrControls';
 import { useTheme } from '../../components/theme-context';
 import { supabase } from '../../lib/supabase';
 import { firstAuthParam, getAuthParamsFromUrl, mergeAuthLinkParams } from '../../lib/authRedirects';
+import { clearCallbackVerifiedRecoverySession, markCallbackVerifiedRecoverySession } from '../../lib/passwordResetRecovery';
 
 export default function AuthCallbackScreen() {
   const { theme } = useTheme();
@@ -31,6 +32,7 @@ export default function AuthCallbackScreen() {
         const authErrorDescription = firstAuthParam(params.error_description);
 
         if (authError || authErrorDescription) {
+          clearCallbackVerifiedRecoverySession();
           setErrorMessage(authErrorDescription || authError || 'The sign-in link could not be verified.');
           return;
         }
@@ -40,10 +42,15 @@ export default function AuthCallbackScreen() {
         const refreshToken = firstAuthParam(params.refresh_token);
         const type = firstAuthParam(params.type);
 
+        if (type === 'recovery' && !code && !(accessToken && refreshToken)) {
+          throw new Error('This reset link is missing or has expired.');
+        }
+
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (!active) return;
           if (error) {
+            clearCallbackVerifiedRecoverySession();
             setErrorMessage(error.message);
             return;
           }
@@ -54,23 +61,27 @@ export default function AuthCallbackScreen() {
           });
           if (!active) return;
           if (error) {
+            clearCallbackVerifiedRecoverySession();
             setErrorMessage(error.message);
             return;
           }
-        } else {
-          const { data, error } = await supabase.auth.getSession();
-          if (!active) return;
-          if (error) throw error;
-          if (!data.session) throw new Error('This email link is missing or has expired.');
         }
 
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        if (!active) return;
+        if (sessionError) throw sessionError;
+        if (!data.session) throw new Error('This email link is missing or has expired.');
+
         if (type === 'recovery') {
+          markCallbackVerifiedRecoverySession(data.session.user.id);
           router.replace('/(auth)/reset-password');
           return;
         }
 
+        clearCallbackVerifiedRecoverySession();
         router.replace('/');
       } catch (error: any) {
+        clearCallbackVerifiedRecoverySession();
         if (active) setErrorMessage(error?.message || 'The email link could not be verified. Please try signing in again.');
       }
     };

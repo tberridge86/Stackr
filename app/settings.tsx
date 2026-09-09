@@ -41,12 +41,12 @@ const settingsSections: {
   items: string[];
   sellerOnly?: boolean;
 }[] = [
-  { title: 'General', icon: 'account', body: 'Account identity and app defaults.', items: ['Email and password', 'Authentication and sessions', 'Profile visibility', 'Account deletion'] },
+  { title: 'Account', icon: 'account', body: 'Password recovery is available from Login. Other account controls are not available in this build.', items: ['Password reset: Login → Forgot password', 'Session management: not available yet', 'Profile visibility: not available yet', 'Account deletion: not available yet'] },
   { title: 'Appearance', icon: 'appearance', body: 'Display preferences and accessibility.', items: ['Dynamic text', 'Reduced motion', 'Camera and photo permissions'] },
-  { title: 'Notifications', icon: 'notifications', body: 'Choose the alerts Stackr can send.', items: ['The Market alerts', 'Trade and offer updates', 'Community updates', 'Price movement alerts'] },
+  { title: 'Notifications', icon: 'notifications', body: 'View in-app notifications from the bell. Alert preference controls are not available yet.', items: ['The Market alert preferences: not available yet', 'Trade and offer alert preferences: not available yet', 'Community alert preferences: not available yet', 'Price movement alert preferences: not available yet'] },
   { title: 'Marketplace', icon: 'market', body: 'Listing, offer and trade preferences.', items: ['The Market preferences', 'Trade preferences', 'Saved listing preferences'] },
   { title: 'Seller', icon: 'seller', body: 'Operational settings for card inventory.', items: ['Inventory defaults', 'Scan In and Scan Out defaults', 'CSV import and export'], sellerOnly: true },
-  { title: 'Privacy', icon: 'privacy', body: 'Control visibility, data and community safety.', items: ['Binder visibility defaults', 'Blocked users', 'Data export', 'Community safety controls'] },
+  { title: 'Privacy', icon: 'privacy', body: 'Change visibility on each binder. Other privacy controls are not available in this build.', items: ['Binder visibility: change it in that binder', 'Blocked users: not available yet', 'Data export: not available yet', 'Community safety controls: not available yet'] },
   { title: 'Legal & Support', icon: 'support', body: 'Help, release notes and legal information.', items: ['Help and support', 'Report a problem', 'Legal information', 'App version'] },
 ];
 
@@ -166,8 +166,8 @@ export default function SettingsScreen() {
             </Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 3 }}>
               {showSellerSettings
-                ? 'Account, marketplace, seller inventory and privacy controls are kept in one place.'
-                : 'Account, marketplace and privacy controls are kept in one place.'}
+                ? 'Available account, marketplace and seller actions are collected here; unavailable controls are labelled clearly.'
+                : 'Available account and marketplace actions are collected here; unavailable controls are labelled clearly.'}
             </Text>
           </View>
         </View>

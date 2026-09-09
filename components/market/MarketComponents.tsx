@@ -1031,7 +1031,7 @@ export function MarketValueSummary({
           {money(estimatedValue) ?? '--'}
         </Text>
         {difference != null ? (
-          <Text style={{ color: difference <= 0 ? '#047857' : '#B45309', fontSize: 12, fontWeight: '900', flexShrink: 0 }} numberOfLines={1}>
+          <Text style={{ color: difference <= 0 ? theme.colors.semantic.marketRise : '#B45309', fontSize: 12, fontWeight: '900', flexShrink: 0 }} numberOfLines={1}>
             {difference <= 0 ? 'Below estimate' : 'Above estimate'}
           </Text>
         ) : null}

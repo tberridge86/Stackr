@@ -1,21 +1,24 @@
 export type Theme = typeof lightTheme;
 
 export const stackrSemanticColors = {
-  appBackground: '#FFFFFF',
-  surface: '#F7F3FF',
+  appBackground: '#F6F5F8',
+  surface: '#F0EFF3',
   elevatedSurface: '#FFFFFF',
   textPrimary: '#07145F',
-  textSecondary: '#36306F',
-  textMuted: '#716BA8',
-  border: '#E8E1FF',
+  textSecondary: '#42495A',
+  textMuted: '#5F6573',
+  border: '#E2E3E9',
   brand: '#6938F5',
   primaryAction: '#6938F5',
   selectedState: '#EEE7FF',
-  success: '#16A34A',
+  positiveSurface: '#E7F4F1',
+  featureSurface: '#07145F',
+  featureText: '#FFFFFF',
+  success: '#087F73',
   warning: '#F59E0B',
   error: '#DC2626',
   information: '#2563EB',
-  marketRise: '#15803D',
+  marketRise: '#087F73',
   marketFall: '#B91C1C',
   sellerIn: '#6938F5',
   sellerOut: '#F97316',
@@ -51,7 +54,7 @@ export const stackrShadows = {
     elevation: 3,
   },
   elevated: {
-    shadowColor: '#6136F5',
+    shadowColor: '#07145F',
     shadowOpacity: 0.14,
     shadowRadius: 22,
     shadowOffset: { width: 0, height: 10 },
@@ -60,7 +63,7 @@ export const stackrShadows = {
 } as const;
 
 export const stackrGradients = {
-  actionLight: ['#FFFFFF', '#F9F6FF', '#F1ECFF'] as const,
+  actionLight: ['#FFFFFF', '#F6F5F8', '#F0EFF3'] as const,
   actionDark: ['#2B145C', '#4F22D8', '#6938F5'] as const,
   actionPrimary: ['#8B55FF', '#6938F5', '#5226D9'] as const,
 } as const;
@@ -68,17 +71,16 @@ export const stackrGradients = {
 export const lightTheme = {
   dark: false,
   colors: {
-    bg: '#FFFFFF',
+    bg: '#F6F5F8',
     card: '#FFFFFF',
-    // Purple-tinted surface for inputs, inner panels, chips
-    surface: '#F7F3FF',
+    // Neutral surface for inputs, inner panels, and chips. Purple remains
+    // reserved for actions and deliberately selected states.
+    surface: '#F0EFF3',
     primary: '#6938F5',
     secondary: '#FFBE35',
     text: '#07145F',
-    // Purple-tinted soft text
-    textSoft: '#716BA8',
-    // Purple-tinted borders
-    border: '#E8E1FF',
+    textSoft: '#5F6573',
+    border: '#E2E3E9',
     semantic: stackrSemanticColors,
   },
   radii: stackrRadii,

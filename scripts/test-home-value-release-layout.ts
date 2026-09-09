@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import Module from 'node:module';
 import { resolve } from 'node:path';
 import { transformSync } from 'esbuild';
+import { lightTheme } from '../lib/theme';
 
 type Element = { type: string | ((props: Record<string, unknown>) => unknown); props: Record<string, unknown> };
 const host = (type: string) => type;
@@ -19,7 +20,7 @@ const mocks: Record<string, unknown> = {
   'react-native': { ActivityIndicator: host('ActivityIndicator'), Image: host('Image'), Modal: host('Modal'), Pressable: host('Pressable'), ScrollView: host('ScrollView'), TouchableOpacity: host('TouchableOpacity'), View: host('View'), StyleSheet: { create: <T,>(value: T) => value, absoluteFill: {} }, Animated: { Value: AnimatedValue, spring: () => ({ start() {} }) }, useWindowDimensions: () => ({ width: 393 }) },
   'react-native-svg': { __esModule: true, default: host('Svg'), Defs: host('Defs'), LinearGradient: host('LinearGradient'), Path: host('Path'), Stop: host('Stop') },
   '@expo/vector-icons': { Ionicons: host('Ionicons') }, './Text': { Text: host('Text') },
-  './theme-context': { useTheme: () => ({ isDark: false, theme: { colors: { card: '#fff', border: '#ddd', text: '#111', textSoft: '#666', surface: '#f7f3ff', primary: '#6938F5' } } }) },
+  './theme-context': { useTheme: () => ({ isDark: false, theme: lightTheme }) },
   '../lib/typography': { numericTextStyle: {}, tabularNumberStyle: {}, typeScale: { caption: {}, support: {}, heroValue: {}, micro: {}, cardTitle: {} } },
   '../lib/valueTrackerChartLayout': { VALUE_TRACKER_CHART_HEIGHT: 96, getValueTrackerChartWidth: (panelWidth: number, screenWidth: number) => Math.max(1, (panelWidth || screenWidth - 48) - 20) },
 };

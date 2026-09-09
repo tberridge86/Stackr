@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +19,7 @@ import { StackrBackButton } from '../../components/StackrBackButton';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import { createLatestRequestGate } from '../../lib/latestRequestGate';
 import {
   PRODUCT_LOOKUP_OPTIONS,
   productLookupLabel,
@@ -196,21 +197,30 @@ export default function PriceBuilderScreen() {
   const [offerPercent, setOfferPercent] = useState('85');
   const pendingCount = Object.keys(pendingSelection).length;
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchRequestRef = useRef(createLatestRequestGate());
+
+  useEffect(() => () => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchRequestRef.current.start();
+  }, []);
 
   // ===============================
   // SEARCH
   // ===============================
 
-  const runSearch = useCallback(async (text: string) => {
+  const runSearch = useCallback(async (text: string, activeLookupType: LookupType = lookupType) => {
+    const requestId = searchRequestRef.current.start();
     if (text.trim().length < 2) {
       setResults([]);
+      setSearching(false);
       return;
     }
     try {
       setSearching(true);
 
-      if (lookupType !== 'raw_card') {
-        const products = await searchMarketProducts(text, lookupType, 30);
+      if (activeLookupType !== 'raw_card') {
+        const products = await searchMarketProducts(text, activeLookupType, 30);
+        if (!searchRequestRef.current.isCurrent(requestId)) return;
         await Promise.all(products.map(async (product, index) => {
           if (product.latest_price?.average != null) return;
           try {
@@ -218,7 +228,7 @@ export default function PriceBuilderScreen() {
             products[index] = { ...product, latest_price: price };
           } catch (error) { console.log('Product price refresh failed', error); }
         }));
-        setResults(products.map(productToBuilderRow));
+        if (searchRequestRef.current.isCurrent(requestId)) setResults(products.map(productToBuilderRow));
         return;
       }
 
@@ -228,20 +238,23 @@ export default function PriceBuilderScreen() {
         select: 'id, name, language, set_id, image_small, image_large, raw_data',
       });
 
-      setResults(cards);
+      if (searchRequestRef.current.isCurrent(requestId)) setResults(cards);
     } catch (error) {
+      if (!searchRequestRef.current.isCurrent(requestId)) return;
       console.log('Search failed', error);
       Alert.alert('Search failed', 'Could not search cards.');
     } finally {
-      setSearching(false);
+      if (searchRequestRef.current.isCurrent(requestId)) setSearching(false);
     }
   }, [lookupType]);
 
   const handleQueryChange = useCallback((text: string) => {
+    searchRequestRef.current.start();
     setQuery(text);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     if (text.trim().length < 2) {
       setResults([]);
+      setSearching(false);
       return;
     }
     searchTimerRef.current = setTimeout(() => runSearch(text), 350);
@@ -297,6 +310,9 @@ export default function PriceBuilderScreen() {
     }));
 
     setItems((prev) => [...prev, ...newItems]);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchRequestRef.current.start();
+    setSearching(false);
     setPendingSelection({});
     setQuery('');
     setResults([]);
@@ -673,11 +689,13 @@ export default function PriceBuilderScreen() {
                 <TouchableOpacity
                   key={option.key}
                   onPress={() => {
+                    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+                    searchRequestRef.current.start();
                     setLookupType(option.key);
                     setResults([]);
                     setPendingSelection({});
                     if (query.trim().length >= 2) {
-                      setTimeout(() => runSearch(query), 0);
+                      void runSearch(query, option.key);
                     }
                   }}
                   style={{
