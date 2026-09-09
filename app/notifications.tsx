@@ -14,6 +14,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { StackrScreenHeader } from '../components/StackrScreenHeader';
+import { StackrButton } from '../components/StackrControls';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { stackrTabContentPadding } from '../lib/stackrSizing';
 import {
@@ -127,7 +128,9 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [markingAll, setMarkingAll] = useState(false);
   const [activeTab, setActiveTab] = useState<ActivityTab>('all');
-  const authUserIdRef = useRef('');
+  const [signedOut, setSignedOut] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const authUserIdRef = useRef<string | null>(null);
   const authGenerationRef = useRef(0);
   const authEventEpochRef = useRef(0);
 
@@ -143,6 +146,8 @@ export default function NotificationsScreen() {
     setMarkingAll(false);
     setRefreshing(false);
     setActiveTab('all');
+    setSignedOut(!userId);
+    setLoadError(null);
     setLoading(Boolean(userId));
     return authGenerationRef.current;
   }, []);
@@ -166,6 +171,7 @@ export default function NotificationsScreen() {
   ) => {
     if (!userId || !isCurrentIdentity(userId, generation)) return;
     try {
+      setLoadError(null);
       if (isRefresh) {
         setRefreshing(true);
       } else {
@@ -188,7 +194,7 @@ export default function NotificationsScreen() {
     } catch (error) {
       if (!isCurrentIdentity(userId, generation)) return;
       console.log('Failed to load notifications', error);
-      setNotifications([]);
+      setLoadError('Notifications could not be loaded. Please try again.');
     } finally {
       if (isCurrentIdentity(userId, generation)) {
         setLoading(false);
@@ -196,6 +202,25 @@ export default function NotificationsScreen() {
       }
     }
   }, [isCurrentIdentity]);
+
+  const resolveAccount = useCallback(async (isActive: () => boolean = () => true) => {
+    const epoch = authEventEpochRef.current;
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (!isActive() || epoch !== authEventEpochRef.current) return;
+      if (error && error.name !== 'AuthSessionMissingError') throw error;
+      setLoadError(null);
+      const userId = data.user?.id ?? '';
+      const generation = bindIdentity(userId);
+      if (userId) await loadNotifications(userId, generation);
+      else setLoading(false);
+    } catch {
+      if (!isActive() || epoch !== authEventEpochRef.current) return;
+      bindIdentity('');
+      setLoadError('Your account could not be checked. Please try again.');
+      setLoading(false);
+    }
+  }, [bindIdentity, loadNotifications]);
 
   useEffect(() => {
     let mounted = true;
@@ -211,39 +236,23 @@ export default function NotificationsScreen() {
       activate(session?.user?.id ?? '');
     });
 
-    const initialEpoch = authEventEpochRef.current;
-    void supabase.auth.getUser().then(({ data, error }) => {
-      if (!mounted || initialEpoch !== authEventEpochRef.current) return;
-      if (error) {
-        console.log('Notification account lookup failed', error);
-        activate('');
-        return;
-      }
-      activate(data.user?.id ?? '');
-    });
+    void resolveAccount(() => mounted);
 
     return () => {
       mounted = false;
       authGenerationRef.current += 1;
       subscription.unsubscribe();
     };
-  }, [bindIdentity, loadNotifications]);
+  }, [bindIdentity, loadNotifications, resolveAccount]);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      const eventEpoch = authEventEpochRef.current;
-      void supabase.auth.getUser().then(({ data, error }) => {
-        if (!active || eventEpoch !== authEventEpochRef.current) return;
-        if (error) return;
-        const userId = data.user?.id ?? '';
-        const generation = bindIdentity(userId);
-        if (userId) void loadNotifications(userId, generation);
-      });
+      void resolveAccount(() => active);
       return () => {
         active = false;
       };
-    }, [bindIdentity, loadNotifications])
+    }, [resolveAccount])
   );
 
   // ===============================
@@ -643,6 +652,25 @@ export default function NotificationsScreen() {
   // MAIN RENDER
   // ===============================
 
+  if (signedOut || (loadError && notifications.length === 0)) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <StackrBackdrop />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 14 }}>
+          <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', textAlign: 'center' }}>
+            {loadError ? 'Notifications unavailable' : 'Sign in to see notifications'}
+          </Text>
+          <Text accessibilityRole={loadError ? 'alert' : undefined} style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
+            {loadError ?? 'Your activity and collector updates will appear here when you sign in.'}
+          </Text>
+          {loadError ? <StackrButton label="Retry" variant="primary" onPress={() => void resolveAccount()} /> : null}
+          {signedOut ? <StackrButton label="Sign in" variant={loadError ? 'secondary' : 'primary'} onPress={() => router.push('/(auth)/login')} /> : null}
+          <StackrButton label="Go back" onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
       <StackrBackdrop />
@@ -651,7 +679,13 @@ export default function NotificationsScreen() {
           data={filteredNotifications}
           keyExtractor={(item) => item.id}
           renderItem={renderNotification}
-          ListHeaderComponent={renderActivityHeader}
+          ListHeaderComponent={<>
+            {renderActivityHeader()}
+            {loadError ? <View style={{ gap: 8, marginBottom: 12 }}>
+              <Text accessibilityRole="alert" style={{ color: theme.colors.textSoft }}>{loadError} Showing your previous updates.</Text>
+              <StackrButton label="Retry" onPress={() => void resolveAccount()} />
+            </View> : null}
+          </>}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingBottom: stackrTabContentPadding.standard,

@@ -10,12 +10,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { StackrCardPlaceholder } from '../../components/StackrCardPlaceholder';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
+import { StackrBackButton } from '../../components/StackrBackButton';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import {
   PRODUCT_LOOKUP_OPTIONS,
@@ -105,15 +107,6 @@ const LOOKUP_OPTIONS: { key: LookupType; label: string; icon: keyof typeof Ionic
   })),
 ];
 
-const BUILDER_QUICK_FILTERS = [
-  { icon: 'time-outline' as const, label: 'Recent', action: 'recent' },
-  { icon: 'shield-checkmark-outline' as const, label: 'PSA 10', action: 'psa' },
-  { icon: 'diamond-outline' as const, label: 'Raw', action: 'raw' },
-  { icon: 'archive-outline' as const, label: 'Sealed', action: 'sealed' },
-  { icon: 'sparkles-outline' as const, label: 'Near Mint', action: 'nm' },
-  { icon: 'pricetag-outline' as const, label: 'Under £50', action: 'under50' },
-] as const;
-
 const cardShadow = {
   shadowColor: '#000',
   shadowOpacity: 0.05,
@@ -201,7 +194,6 @@ export default function PriceBuilderScreen() {
   const [items, setItems] = useState<BuilderItem[]>([]);
   const [pendingSelection, setPendingSelection] = useState<Record<string, CardRow>>({});
   const [offerPercent, setOfferPercent] = useState('85');
-  const [activeQuickFilter, setActiveQuickFilter] = useState<string>('recent');
   const pendingCount = Object.keys(pendingSelection).length;
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -367,29 +359,6 @@ export default function PriceBuilderScreen() {
     void refresh.then((price) => setItems((prev) => prev.map((item) => item.localId === localId ? { ...item, tcgPrice: price.central, ebayPrice: price.low, cardmarketPrice: price.high, ebayLoading: false, priceError: price.central == null ? 'Estimate unavailable. Retry to keep this item.' : null } : item))).catch(() => setItems((prev) => prev.map((item) => item.localId === localId ? { ...item, ebayLoading: false, priceError: 'Estimate unavailable. Retry to keep this item.' } : item)));
   }, [items]);
 
-  const handleQuickFilter = useCallback((action: string) => {
-    setActiveQuickFilter(action);
-    if (action === 'nm') {
-      setItems((prev) => prev.map((item) => ({ ...item, condition: 'Near Mint' })));
-      return;
-    }
-    if (action === 'raw') {
-      setLookupType('raw_card');
-      setQuery('raw');
-      runSearch('raw');
-      return;
-    }
-    if (action === 'sealed') {
-      setLookupType('booster_bundle');
-      setQuery('booster');
-      return;
-    }
-    if (action === 'psa') {
-      setQuery('psa');
-      runSearch('psa');
-    }
-  }, [runSearch]);
-
   // ===============================
   // TOTALS
   // ===============================
@@ -504,74 +473,82 @@ export default function PriceBuilderScreen() {
 
     return (
       <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
+        gap: 8,
         backgroundColor: theme.colors.card,
         borderRadius: 12,
         padding: 6,
         borderWidth: 1,
         borderColor: theme.colors.border,
-        gap: 7,
         ...cardShadow,
       }}>
-        <StackrCardPlaceholder
-          uri={item.card.image_small ?? item.card.image_large}
-          width={36}
-          height={50}
-          borderRadius={7}
-        />
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 7 }}>
+          <StackrCardPlaceholder
+            uri={item.card.image_small ?? item.card.image_large}
+            width={36}
+            height={50}
+            borderRadius={7}
+          />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+              {item.card.name}
+            </Text>
+            <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 1 }}>
+              {item.card.raw_data?.set?.name ?? item.card.set_id ?? 'Unknown set'}
+              {item.card.is_product && item.card.product_price_count != null ? ` · ${item.card.product_price_count} comps` : ''}
+            </Text>
 
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
-            {item.card.name}
-          </Text>
-          <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 1 }}>
-            {item.card.raw_data?.set?.name ?? item.card.set_id ?? 'Unknown set'}
-            {item.card.is_product && item.card.product_price_count != null ? ` · ${item.card.product_price_count} comps` : ''}
-          </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 4, paddingVertical: 4 }}
+            >
+              {itemConditions.map((condition) => {
+                const active = item.condition === condition;
+                return (
+                  <TouchableOpacity
+                    key={condition}
+                    onPress={() => updateCondition(item.localId, condition)}
+                    style={{
+                      borderRadius: 999,
+                      paddingHorizontal: 7,
+                      paddingVertical: 3,
+                      backgroundColor: active ? theme.colors.primary + '12' : theme.colors.surface,
+                      borderWidth: 1,
+                      borderColor: active ? theme.colors.primary : theme.colors.border,
+                    }}
+                  >
+                    <Text style={{
+                      color: active ? theme.colors.primary : theme.colors.textSoft,
+                      fontWeight: '900',
+                      fontSize: 12,
+                    }}>
+                      {condition}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 4, paddingVertical: 4 }}
-          >
-            {itemConditions.map((condition) => {
-              const active = item.condition === condition;
-              return (
-                <TouchableOpacity
-                  key={condition}
-                  onPress={() => updateCondition(item.localId, condition)}
-                  style={{
-                    borderRadius: 999,
-                    paddingHorizontal: 7,
-                    paddingVertical: 3,
-                    backgroundColor: active ? theme.colors.primary + '12' : theme.colors.surface,
-                    borderWidth: 1,
-                    borderColor: active ? theme.colors.primary : theme.colors.border,
-                  }}
-                >
-                  <Text style={{
-                    color: active ? theme.colors.primary : theme.colors.textSoft,
-                    fontWeight: '900',
-                    fontSize: 12,
-                  }}>
-                    {condition}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+        {item.priceError ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Text accessibilityRole="alert" style={{ color: '#D14343', fontSize: 11, flex: 1 }}>{item.priceError}</Text><TouchableOpacity accessibilityRole="button" onPress={() => retryItemPrice(item.localId)} style={{ minHeight: 32, justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 12 }}>Retry</Text></TouchableOpacity></View> : null}
 
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
             <TouchableOpacity
               onPress={() => updateQuantity(item.localId, -1)}
+              disabled={item.quantity <= 1}
+              accessibilityRole="button"
+              accessibilityLabel={`Decrease ${item.card.name} quantity`}
+              accessibilityState={{ disabled: item.quantity <= 1 }}
               style={{
-                width: 22,
-                height: 22,
-                borderRadius: 8,
+                width: 44,
+                height: 44,
+                borderRadius: 12,
                 backgroundColor: theme.colors.surface,
                 alignItems: 'center',
                 justifyContent: 'center',
+                opacity: item.quantity <= 1 ? 0.45 : 1,
               }}
             >
               <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>-</Text>
@@ -581,10 +558,12 @@ export default function PriceBuilderScreen() {
             </Text>
             <TouchableOpacity
               onPress={() => updateQuantity(item.localId, 1)}
+              accessibilityRole="button"
+              accessibilityLabel={`Increase ${item.card.name} quantity`}
               style={{
-                width: 22,
-                height: 22,
-                borderRadius: 8,
+                width: 44,
+                height: 44,
+                borderRadius: 12,
                 backgroundColor: theme.colors.surface,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -593,31 +572,31 @@ export default function PriceBuilderScreen() {
               <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>+</Text>
             </TouchableOpacity>
           </View>
-          {item.priceError ? <View style={{ marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 6 }}><Text accessibilityRole="alert" style={{ color: '#D14343', fontSize: 11, flex: 1 }}>{item.priceError}</Text><TouchableOpacity accessibilityRole="button" onPress={() => retryItemPrice(item.localId)} style={{ minHeight: 32, justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 12 }}>Retry</Text></TouchableOpacity></View> : null}
-        </View>
-
-        <View style={{ alignItems: 'flex-end', gap: 5, minWidth: 82 }}>
-          <View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
+            <View style={{ minWidth: 82 }}>
             <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900', textAlign: 'right' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.68}>
               {money(estimate != null ? estimate * item.quantity : null)}
             </Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '800', textAlign: 'right' }}>
               est.
             </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => removeItem(item.localId)}
+              accessibilityRole="button"
+              accessibilityLabel={`Remove ${item.card.name} from bundle`}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                backgroundColor: theme.colors.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Ionicons name="trash-outline" size={15} color={theme.colors.textSoft} />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={() => removeItem(item.localId)}
-            style={{
-              width: 26,
-              height: 26,
-              borderRadius: 10,
-              backgroundColor: theme.colors.surface,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Ionicons name="trash-outline" size={15} color={theme.colors.textSoft} />
-          </TouchableOpacity>
         </View>
       </View>
     );
@@ -639,7 +618,7 @@ export default function PriceBuilderScreen() {
   // ===============================
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
       <StackrBackdrop />
       <FeatureTipGate
         tipKey="price-builder-screen-v1"
@@ -661,17 +640,20 @@ export default function PriceBuilderScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingTop: 2,
+            paddingTop: 8,
             paddingBottom: insets.bottom + 156,
           }}
         >
-          <View style={{ paddingHorizontal: 16, paddingBottom: 6 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 22, lineHeight: 27, fontWeight: '900' }}>
-              Price Builder
-            </Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 1 }}>
-              Build bundle totals fast
-            </Text>
+          <View style={{ paddingHorizontal: 16, paddingBottom: 6, flexDirection: 'row', alignItems: 'center' }}>
+            <StackrBackButton onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')} />
+            <View style={{ flex: 1, minWidth: 0, marginLeft: 4 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 22, lineHeight: 27, fontWeight: '900' }}>
+                Price Builder
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 1 }}>
+                Build bundle totals fast
+              </Text>
+            </View>
           </View>
 
         {/* Search */}
@@ -801,49 +783,6 @@ export default function PriceBuilderScreen() {
             </>
           )}
         </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 6, paddingHorizontal: 16, paddingBottom: 6 }}
-        >
-          {BUILDER_QUICK_FILTERS.map((item) => {
-            const active = activeQuickFilter === item.action;
-            return (
-              <TouchableOpacity
-                key={item.action}
-                onPress={() => handleQuickFilter(item.action)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  borderRadius: 999,
-                  paddingHorizontal: 9,
-                  paddingVertical: 6,
-                  backgroundColor: active ? theme.colors.primary + '12' : theme.colors.card,
-                  borderWidth: 1,
-                  borderColor: active ? theme.colors.primary : theme.colors.border,
-                }}
-              >
-                <Ionicons
-                  name={item.icon}
-                  size={16}
-                  color={active ? theme.colors.primary : theme.colors.textSoft}
-                />
-                <Text
-                  style={{
-                    color: active ? theme.colors.primary : theme.colors.textSoft,
-                    fontWeight: '900',
-                    fontSize: 11,
-                    lineHeight: 14,
-                  }}
-                >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
 
         {items.length > 0 && (
           <View style={{
@@ -1058,6 +997,6 @@ export default function PriceBuilderScreen() {
 
         </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 }

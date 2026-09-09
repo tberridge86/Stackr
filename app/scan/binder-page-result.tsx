@@ -7,6 +7,7 @@ import {
   Image,
   ScrollView,
   StyleSheet,
+  TextInput,
   TouchableOpacity,
   View,
   useWindowDimensions,
@@ -22,6 +23,11 @@ import {
   updateBinderPageScanSession,
 } from '../../lib/binderPageScanStore';
 import { fetchBinders, invalidateBinderCaches, type BinderRecord } from '../../lib/binders';
+import {
+  addOwnedCardBatchToBinder,
+  createCollectionBatchRequestKey,
+  persistVerifiedCollectionBatchRecoveryIntent,
+} from '../../lib/collectionBatch';
 import { logScanLearningEvent } from '../../lib/scanLearning';
 import { getScannerClientContext } from '../../lib/scannerClientContext';
 import {
@@ -29,6 +35,7 @@ import {
   getScannerFeatureFlags,
 } from '../../lib/scannerAnalytics';
 import { supabase } from '../../lib/supabase';
+import { fetchPokemonTcgApiCardsByQuery } from '../../lib/pokemonTcg';
 
 const STATUS_LABELS: Record<BinderPocketStatus, string> = {
   confirmed: 'Confirmed',
@@ -110,6 +117,14 @@ export default function BinderPageScanResultScreen() {
   const sessionLoadRequestRef = useRef(0);
   const bindersLoadRequestRef = useRef(0);
   const [selectedPocketIndex, setSelectedPocketIndex] = useState<number | null>(null);
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [correctionQuery, setCorrectionQuery] = useState('');
+  const [correctionResults, setCorrectionResults] = useState<BinderPagePocketResult['candidates']>([]);
+  const [correctionLoading, setCorrectionLoading] = useState(false);
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
+  const [correctionPocketIndex, setCorrectionPocketIndex] = useState<number | null>(null);
+  const correctionRequestRef = useRef(0);
+  const correctionApplyInFlightRef = useRef(false);
   const scannerClientContext = useMemo(() => getScannerClientContext(), []);
   const scannerFeatureFlags = useMemo(() => getScannerFeatureFlags(), []);
 
@@ -165,8 +180,16 @@ export default function BinderPageScanResultScreen() {
       .finally(() => {
         if (active && requestId === bindersLoadRequestRef.current) setBindersLoading(false);
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+      if (bindersLoadRequestRef.current === requestId) bindersLoadRequestRef.current += 1;
+    };
   }, [bindersReloadToken]);
+
+  useEffect(() => () => {
+    correctionRequestRef.current += 1;
+    correctionApplyInFlightRef.current = false;
+  }, []);
 
   const selectedPocket = selectedPocketIndex == null ? null : pockets[selectedPocketIndex] ?? null;
   const selectedCandidate = selectedPocket ? getSelectedCandidate(selectedPocket) : null;
@@ -232,7 +255,13 @@ export default function BinderPageScanResultScreen() {
     });
   };
 
-  const updatePockets = async (updater: (current: BinderPagePocketResult[]) => BinderPagePocketResult[]) => {
+  const updatePockets = async (
+    updater: (current: BinderPagePocketResult[]) => BinderPagePocketResult[],
+    allowCorrectionApply = false,
+  ) => {
+    if (!allowCorrectionApply && (correctionOpen || correctionApplyInFlightRef.current)) {
+      throw new Error('Finish or cancel the card correction before changing another pocket.');
+    }
     if (!scanSessionId || !session) throw new Error('This binder page review is no longer available.');
     const next = updater(pockets);
     const persisted = await updateBinderPageScanSession(scanSessionId, session.ownerUserId, (stored) => ({
@@ -244,9 +273,9 @@ export default function BinderPageScanResultScreen() {
     setPockets(persisted.pockets);
   };
 
-  const updatePocket = (index: number, patch: Partial<BinderPagePocketResult>) => updatePockets((current) => current.map((pocket) => (
+  const updatePocket = (index: number, patch: Partial<BinderPagePocketResult>, allowCorrectionApply = false) => updatePockets((current) => current.map((pocket) => (
     pocket.index === index ? { ...pocket, ...patch } : pocket
-  )));
+  )), allowCorrectionApply);
 
   const cycleCandidate = async (direction: 1 | -1) => {
     if (!selectedPocket || selectedPocket.candidates.length < 2) return;
@@ -258,6 +287,89 @@ export default function BinderPageScanResultScreen() {
       status: 'possible_match',
       source: 'manual',
     });
+  };
+
+  const openCorrection = () => {
+    if (!selectedPocket) return;
+    correctionRequestRef.current += 1;
+    setCorrectionLoading(false);
+    setCorrectionQuery(selectedCandidate?.name ?? '');
+    setCorrectionResults([]);
+    setCorrectionError(null);
+    setCorrectionPocketIndex(selectedPocket.index);
+    setCorrectionOpen(true);
+  };
+
+  const closeCorrection = () => {
+    if (correctionApplyInFlightRef.current) return;
+    correctionRequestRef.current += 1;
+    setCorrectionOpen(false);
+    setCorrectionPocketIndex(null);
+    setCorrectionQuery('');
+    setCorrectionResults([]);
+    setCorrectionError(null);
+    setCorrectionLoading(false);
+  };
+
+  const updateCorrectionQuery = (value: string) => {
+    correctionRequestRef.current += 1;
+    setCorrectionQuery(value);
+    setCorrectionResults([]);
+    setCorrectionError(null);
+    setCorrectionLoading(false);
+  };
+
+  const searchCorrectionCandidates = async () => {
+    if (correctionApplyInFlightRef.current) return;
+    const query = correctionQuery.trim();
+    if (query.length < 2) {
+      setCorrectionError('Enter at least two characters to search the catalogue.');
+      return;
+    }
+    const requestId = ++correctionRequestRef.current;
+    setCorrectionLoading(true);
+    setCorrectionError(null);
+    try {
+      const cards = await fetchPokemonTcgApiCardsByQuery(query, { limit: 12 });
+      if (requestId !== correctionRequestRef.current) return;
+      setCorrectionResults(cards.map((card) => ({
+        id: card.id,
+        name: card.name,
+        language: card.language ?? null,
+        number: card.number ?? null,
+        set_id: card.set?.id ?? null,
+        set_name: card.set?.name ?? null,
+        image_small: card.images?.small ?? null,
+        image_large: card.images?.large ?? null,
+        confidence: null,
+      })).filter((card) => Boolean(card.set_id)));
+    } catch (error) {
+      if (requestId !== correctionRequestRef.current) return;
+      setCorrectionError(error instanceof Error ? error.message : 'Catalogue search could not be completed.');
+    } finally {
+      if (requestId === correctionRequestRef.current) setCorrectionLoading(false);
+    }
+  };
+
+  const selectCorrectionCandidate = async (candidate: BinderPagePocketResult['candidates'][number]) => {
+    if (correctionApplyInFlightRef.current) return;
+    if (!selectedPocket || correctionPocketIndex === null || selectedPocket.index !== correctionPocketIndex) {
+      throw new Error('Choose the pocket again before applying this correction.');
+    }
+    correctionApplyInFlightRef.current = true;
+    try {
+      await updatePocket(correctionPocketIndex, {
+        candidates: [candidate],
+        selectedCandidateIndex: 0,
+        status: 'possible_match',
+        source: 'manual',
+        notes: [...selectedPocket.notes, 'manual-correction'],
+      }, true);
+      correctionApplyInFlightRef.current = false;
+      closeCorrection();
+    } finally {
+      correctionApplyInFlightRef.current = false;
+    }
   };
 
   const confirmSelectedPocket = async () => {
@@ -303,6 +415,10 @@ export default function BinderPageScanResultScreen() {
 
   const rescanSelectedPocket = () => {
     if (!selectedPocket) return;
+    if (correctionOpen || correctionApplyInFlightRef.current) {
+      Alert.alert('Finish the correction first', 'Finish or cancel the card correction before rescanning this pocket.');
+      return;
+    }
     if (scanSessionId) {
       void logScanLearningEvent({
         scanSessionId,
@@ -339,6 +455,10 @@ export default function BinderPageScanResultScreen() {
   };
 
   const saveConfirmed = async () => {
+    if (correctionOpen || correctionApplyInFlightRef.current) {
+      Alert.alert('Finish the correction first', 'Finish or cancel the card correction before saving this review.');
+      return;
+    }
     if (bindersLoading || bindersError || !selectedBinder) {
       Alert.alert('Binder list unavailable', 'Retry loading your binders before saving this review.');
       return;
@@ -364,88 +484,32 @@ export default function BinderPageScanResultScreen() {
         throw new Error('Sign in with the account that started this binder page review before saving.');
       }
       const databaseStartedAt = Date.now();
-      const { data: existingRows, error: existingError } = await supabase
-        .from('binder_cards')
-        .select('card_id, set_id')
-        .eq('binder_id', binderId);
-      if (existingError) throw existingError;
-
-      const existingKeys = new Set((existingRows ?? []).map((row: any) => `${row.set_id}:${row.card_id}`));
-      const newEntries = confirmed.filter(({ candidate }) => !existingKeys.has(`${candidate.set_id}:${candidate.id}`));
-
-      if (!newEntries.length) {
-        if (scanSessionId) {
-          await logScanLearningEvent({
-            scanSessionId,
-            eventType: 'duplicate_prevented',
-            scanMode: 'manual',
-            routeContext: {
-              screen: 'binder-page-result',
-              intent: 'binder_page',
-              binderId,
-              layout: gridLayout,
-              confirmedCount: confirmed.length,
-              skippedDuplicateCount: confirmed.length,
-              statuses: countPocketStatuses(pockets),
-              analytics: buildBinderPageAnalytics(Date.now() - databaseStartedAt, {
-                duplicatePrevention: true,
-              }),
-            },
-            candidates: buildPocketLearningCandidates(pockets),
-            outcome: 'all_confirmed_cards_already_saved',
-          });
-        }
-        if (scanSessionId) await markBinderPageScanSessionSaved(scanSessionId, session.ownerUserId);
-        Alert.alert('Already in binder', 'All confirmed cards already exist in this binder.');
-        return;
-      }
-
-      const rows = newEntries.map(({ pocket, candidate }) => ({
-        binder_id: binderId,
-        card_id: candidate.id,
-        set_id: candidate.set_id,
-        owned: true,
-        owned_quantity: 1,
+      const cards = confirmed.map(({ pocket, candidate }) => ({
+        cardId: candidate.id,
+        setId: candidate.set_id ?? '',
+        language: candidate.language ?? null,
+        quantity: 1,
+        cardName: candidate.name,
+        cardNumber: candidate.number ?? null,
+        imageUrl: candidate.image_small ?? candidate.image_large ?? null,
+        setName: candidate.set_name ?? null,
         notes: `Binder page ${destinationPage}, pocket ${pocket.row + 1}-${pocket.column + 1}`,
-        card_name: candidate.name,
-        card_number: candidate.number ?? null,
-        image_url: candidate.image_small ?? candidate.image_large ?? null,
-        set_name: candidate.set_name ?? null,
-        slot_order: (destinationPage - 1) * 25 + pocket.index,
-      }));
-
-      const { error } = await supabase
-        .from('binder_cards')
-        .upsert(rows, {
-          onConflict: 'binder_id,card_id',
-          ignoreDuplicates: false,
-        });
-      if (error) throw error;
-
+        slotOrder: (destinationPage - 1) * 25 + pocket.index,
+      })).filter((card) => Boolean(card.setId));
+      if (!cards.length) throw new Error('Confirmed pockets are missing a set identity. Correct those pockets before saving.');
+      const requestKey = createCollectionBatchRequestKey({
+        sourceSessionId: scanSessionId ?? session.scanSessionId,
+        binderId,
+        cards,
+      });
+      const intent = await persistVerifiedCollectionBatchRecoveryIntent({
+        sourceSessionId: requestKey,
+        binderId,
+        cards,
+        requestKey,
+      });
+      const saved = await addOwnedCardBatchToBinder(intent.binderId, [...intent.cards], { requestKey: intent.requestKey });
       const databaseSaveMs = Date.now() - databaseStartedAt;
-      const duplicateCount = confirmed.length - newEntries.length;
-      if (scanSessionId && duplicateCount > 0) {
-        await logScanLearningEvent({
-          scanSessionId,
-          eventType: 'duplicate_prevented',
-          scanMode: 'manual',
-          routeContext: {
-            screen: 'binder-page-result',
-            intent: 'binder_page',
-            binderId,
-            layout: gridLayout,
-            confirmedCount: confirmed.length,
-            savedCount: rows.length,
-            skippedDuplicateCount: duplicateCount,
-            statuses: countPocketStatuses(pockets),
-            analytics: buildBinderPageAnalytics(databaseSaveMs, {
-              duplicatePrevention: true,
-            }),
-          },
-          candidates: buildPocketLearningCandidates(pockets),
-          outcome: 'some_confirmed_cards_already_saved',
-        });
-      }
 
       if (scanSessionId) {
         await logScanLearningEvent({
@@ -458,12 +522,11 @@ export default function BinderPageScanResultScreen() {
             binderId,
             layout: gridLayout,
             confirmedCount: confirmed.length,
-            savedCount: rows.length,
-            skippedDuplicateCount: duplicateCount,
+            savedCount: saved.copiesAdded,
+            distinctCardCount: saved.distinctCards,
+            replayed: saved.replayed,
             statuses: countPocketStatuses(pockets),
-            analytics: buildBinderPageAnalytics(databaseSaveMs, {
-              duplicatePrevention: duplicateCount > 0,
-            }),
+            analytics: buildBinderPageAnalytics(databaseSaveMs, { duplicatePrevention: saved.replayed }),
           },
           candidates: buildPocketLearningCandidates(pockets),
           outcome: 'binder_page_saved',
@@ -478,7 +541,7 @@ export default function BinderPageScanResultScreen() {
           console.log('Binder page review completion checkpoint failed:', recoveryError);
         }
       }
-      Alert.alert('Binder updated', `${rows.length} confirmed card${rows.length === 1 ? '' : 's'} saved.`, [
+      Alert.alert('Binder updated', `${saved.copiesAdded} confirmed ${saved.copiesAdded === 1 ? 'copy' : 'copies'} saved.`, [
         {
           text: 'View binder',
           onPress: () => router.replace({
@@ -606,7 +669,7 @@ export default function BinderPageScanResultScreen() {
             return (
               <TouchableOpacity
                 key={pocket.index}
-                onPress={() => setSelectedPocketIndex(pocket.index)}
+                onPress={() => { if (!correctionOpen) setSelectedPocketIndex(pocket.index); }}
                 activeOpacity={0.82}
                 style={[
                   styles.pocketCard,
@@ -664,23 +727,54 @@ export default function BinderPageScanResultScreen() {
                 </View>
               </View>
             ) : null}
+            {correctionOpen ? (
+              <View style={[styles.correctionPanel, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}>
+                <Text style={[styles.correctionTitle, { color: theme.colors.text }]}>Correct pocket {selectedPocket.row + 1}-{selectedPocket.column + 1}</Text>
+                <Text style={[styles.correctionHint, { color: theme.colors.textSoft }]}>Search the catalogue, choose the right card, then confirm this pocket.</Text>
+                <TextInput
+                  value={correctionQuery}
+                  onChangeText={updateCorrectionQuery}
+                  placeholder="Card name or number"
+                  placeholderTextColor={theme.colors.textSoft}
+                  style={[styles.correctionInput, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}
+                  returnKeyType="search"
+                  onSubmitEditing={() => { void searchCorrectionCandidates(); }}
+                />
+                {correctionError ? <Text accessibilityRole="alert" style={[styles.correctionHint, { color: '#EF4444' }]}>{correctionError}</Text> : null}
+                <View style={styles.candidateSwitchRow}>
+                  <TouchableOpacity accessibilityRole="button" onPress={() => { void searchCorrectionCandidates(); }} disabled={correctionLoading || correctionApplyInFlightRef.current} style={[styles.smallButton, { borderColor: theme.colors.primary }]}>
+                    {correctionLoading ? <ActivityIndicator size="small" color={theme.colors.primary} /> : <Text style={[styles.smallButtonText, { color: theme.colors.primary }]}>Search cards</Text>}
+                  </TouchableOpacity>
+                  <TouchableOpacity accessibilityRole="button" onPress={closeCorrection} disabled={correctionApplyInFlightRef.current} style={[styles.smallButton, { borderColor: theme.colors.border }]}>
+                    <Text style={[styles.smallButtonText, { color: theme.colors.text }]}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+                {correctionResults.map((candidate) => (
+                  <TouchableOpacity key={`${candidate.set_id}:${candidate.id}`} accessibilityRole="button" disabled={correctionApplyInFlightRef.current} onPress={() => { void selectCorrectionCandidate(candidate).catch((error) => setCorrectionError(error instanceof Error ? error.message : 'Could not apply this correction.')); }} style={[styles.correctionResult, { borderColor: theme.colors.border }]}>
+                    <Text style={[styles.smallButtonText, { color: theme.colors.text }]} numberOfLines={1}>{candidate.name}</Text>
+                    <Text style={[styles.correctionHint, { color: theme.colors.textSoft }]} numberOfLines={1}>{[candidate.set_name, candidate.number ? `#${candidate.number}` : null].filter(Boolean).join(' · ')}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : null}
             <View style={styles.actionRow}>
-              <TouchableOpacity onPress={() => { void confirmSelectedPocket().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} disabled={!selectedCandidate} style={[styles.actionButton, !selectedCandidate && styles.disabled, { backgroundColor: theme.colors.primary }]}>
+              <TouchableOpacity onPress={() => { void confirmSelectedPocket().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} disabled={!selectedCandidate || correctionOpen} style={[styles.actionButton, (!selectedCandidate || correctionOpen) && styles.disabled, { backgroundColor: theme.colors.primary }]}>
                 <Text style={styles.actionButtonText}>Confirm pocket</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => { void markSelectedEmpty().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} style={[styles.actionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
+              <TouchableOpacity onPress={() => { void markSelectedEmpty().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} disabled={correctionOpen} style={[styles.actionButton, correctionOpen && styles.disabled, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
                 <Text style={[styles.actionButtonText, { color: theme.colors.text }]}>Mark empty</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.actionRow}>
-              <TouchableOpacity onPress={rescanSelectedPocket} style={[styles.actionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
+              <TouchableOpacity onPress={rescanSelectedPocket} disabled={correctionOpen} style={[styles.actionButton, correctionOpen && styles.disabled, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
                 <Text style={[styles.actionButtonText, { color: theme.colors.primary }]}>Rescan pocket</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => router.replace({ pathname: '/(tabs)/search', params: selectedCandidate?.name ? { q: selectedCandidate.name } : undefined } as any)}
-                style={[styles.actionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}
+                onPress={openCorrection}
+                disabled={correctionOpen}
+                style={[styles.actionButton, correctionOpen && styles.disabled, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}
               >
-                <Text style={[styles.actionButtonText, { color: theme.colors.primary }]}>Tap to correct</Text>
+                <Text style={[styles.actionButtonText, { color: theme.colors.primary }]}>Correct match</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -688,9 +782,9 @@ export default function BinderPageScanResultScreen() {
 
         <TouchableOpacity
           onPress={saveConfirmed}
-          disabled={saving || !destinationReady}
-          accessibilityState={{ busy: saving, disabled: saving || !destinationReady }}
-          style={[styles.saveButton, { backgroundColor: theme.colors.primary, opacity: saving || !destinationReady ? 0.65 : 1 }]}
+          disabled={saving || !destinationReady || correctionOpen}
+          accessibilityState={{ busy: saving, disabled: saving || !destinationReady || correctionOpen }}
+          style={[styles.saveButton, { backgroundColor: theme.colors.primary, opacity: saving || !destinationReady || correctionOpen ? 0.65 : 1 }]}
         >
           {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.saveButtonText}>Confirm all high-confidence matches</Text>}
         </TouchableOpacity>
@@ -899,6 +993,32 @@ const styles = StyleSheet.create({
   smallButtonText: {
     fontSize: 12,
     fontWeight: '900',
+  },
+  correctionPanel: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+  },
+  correctionTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  correctionHint: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  correctionInput: {
+    minHeight: 44,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    fontSize: 14,
+  },
+  correctionResult: {
+    borderTopWidth: 1,
+    paddingTop: 8,
+    gap: 2,
   },
   actionRow: {
     flexDirection: 'row',

@@ -1,4 +1,6 @@
 import { getSearchFacetScope, isSearchSortSupported } from '../../lib/searchFacetScope';
+import { getSearchFailureSummary, retainFailedSearchGroups } from '../../lib/searchRecovery';
+import { StackrButton } from '../../components/StackrControls';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -484,7 +486,7 @@ async function searchSetsQuick(primary: string, terms: string[]) {
   const safePrimary = primary.trim();
   if (safePrimary.length < 2) return [];
 
-  const mappedSets = await fetchAllSets({ language: 'all' }).catch(() => []);
+  const mappedSets = await fetchAllSets({ language: 'all' });
   return mappedSets
     .map((set) => ({ set, score: rankSet(set, terms) }))
     .filter((entry) => entry.score > 0)
@@ -677,7 +679,7 @@ export default function GlobalSearchScreen() {
     setSearchSort((sort) => isSearchSortSupported(category, sort) ? sort : 'relevance');
   }, [category]);
   const [results, setResults] = useState<SearchResults>(EMPTY_RESULTS);
-  const [, setErrors] = useState<SearchErrorState>({});
+  const [errors, setErrors] = useState<SearchErrorState>({});
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -689,6 +691,8 @@ export default function GlobalSearchScreen() {
   const [focusedResultLimit, setFocusedResultLimit] = useState(searchResultWindow.initialCount);
   const searchListRef = useRef<FlatList<number>>(null);
   const requestRef = useRef(0);
+  const previousSearchRef = useRef<{ key: string; results: SearchResults } | null>(null);
+  const [searchIdentityEpoch, setSearchIdentityEpoch] = useState(0);
   const lastParamSignatureRef = useRef('');
   const recentSearchMountedRef = useRef(true);
   const observedRecentSearchUserIdRef = useRef<string | null | undefined>(undefined);
@@ -710,6 +714,16 @@ export default function GlobalSearchScreen() {
     observedRecentSearchUserIdRef.current = userId;
     recentSearchGenerationRef.current += 1;
     recentSearchIdentityRef.current = null;
+    // Card rows carry account-specific ownership quantities. Never retain those
+    // across a sign-in, sign-out, or account switch while the active query reloads.
+    previousSearchRef.current = null;
+    requestRef.current += 1;
+    setResults(EMPTY_RESULTS);
+    setErrors({});
+    setSuggestion(null);
+    setLoading(false);
+    setRefreshing(false);
+    setSearchIdentityEpoch((epoch) => epoch + 1);
     setRecentSearches([]);
     void clearLegacyRecentSearches().catch(() => {});
     return recentSearchGenerationRef.current;
@@ -719,6 +733,14 @@ export default function GlobalSearchScreen() {
     observedRecentSearchUserIdRef.current = null;
     recentSearchGenerationRef.current += 1;
     recentSearchIdentityRef.current = null;
+    previousSearchRef.current = null;
+    requestRef.current += 1;
+    setResults(EMPTY_RESULTS);
+    setErrors({});
+    setSuggestion(null);
+    setLoading(false);
+    setRefreshing(false);
+    setSearchIdentityEpoch((epoch) => epoch + 1);
     setRecentSearches([]);
     void clearLegacyRecentSearches().catch(() => {});
   }, []);
@@ -893,6 +915,7 @@ export default function GlobalSearchScreen() {
     const requestId = ++requestRef.current;
 
     if (trimmed.length < 2) {
+      previousSearchRef.current = null;
       setResults(EMPTY_RESULTS);
       setErrors({});
       setSuggestion(null);
@@ -901,6 +924,9 @@ export default function GlobalSearchScreen() {
       return;
     }
 
+    const searchKey = JSON.stringify([trimmed, category, selectedLanguage, searchIdentityEpoch]);
+    const previous = previousSearchRef.current?.key === searchKey ? previousSearchRef.current.results : null;
+    if (!previous) setResults(EMPTY_RESULTS);
     setLoading(!force);
     setRefreshing(force);
     setErrors({});
@@ -930,7 +956,7 @@ export default function GlobalSearchScreen() {
     });
     const setsPromise = searchSetsQuick(primary, normalisedTerms);
     const productsPromise = shouldSearchProducts
-      ? searchMarketProducts(trimmed, catalogueProductTypeFilter, catalogueProductTypeFilter || productTypeMatchesIntent(trimmed) ? 24 : 10)
+      ? searchMarketProducts(trimmed, catalogueProductTypeFilter, catalogueProductTypeFilter || productTypeMatchesIntent(trimmed) ? 24 : 10, { throwOnError: true })
       : Promise.resolve([]);
     const profilesPromise: Promise<any> = Promise.resolve(supabase
       .from('profile_public_directory')
@@ -995,7 +1021,7 @@ export default function GlobalSearchScreen() {
         name: sanitizeGate0CommerceCopy(profile.collector_name ?? null, 'Collector') ?? 'Collector',
         avatarUrl: profile.avatar_url ?? null,
       }));
-    } else if (isRejected(profilesFirst)) {
+    } else if (isRejected(profilesFirst) || (isFulfilled(profilesFirst) && profilesFirst.value.error)) {
       firstErrors.collectors = 'Collector results could not be loaded.';
     }
 
@@ -1007,8 +1033,9 @@ export default function GlobalSearchScreen() {
       firstResults.listings = listingRows
         .filter((listing: any) => !(listing.pricing_mode === 'graded' || listing.grade_company || listing.grade))
         .map(mapListingResult);
-    } else if (isRejected(listingsFirst)) {
+    } else if (isRejected(listingsFirst) || (isFulfilled(listingsFirst) && listingsFirst.value.error)) {
       firstErrors.listings = 'Market listings could not be loaded.';
+      firstErrors.graded = 'Graded listings could not be loaded.';
     }
 
     const firstPhaseStillLoading = [
@@ -1020,10 +1047,17 @@ export default function GlobalSearchScreen() {
       listingsFirst,
     ].some((result) => result.status === 'pending');
 
-    setResults(firstResults);
+    // Keep same-query results while their source is still pending or has failed.
+    const firstRetain = { ...firstErrors };
+    if (cardsFirst.status === 'pending') firstRetain.cards = 'pending';
+    if (setsFirst.status === 'pending') firstRetain.sets = 'pending';
+    if (productsFirst.status === 'pending') firstRetain.sealed = 'pending';
+    if (profilesFirst.status === 'pending') firstRetain.collectors = 'pending';
+    if (listingsFirst.status === 'pending') { firstRetain.listings = 'pending'; firstRetain.graded = 'pending'; }
+    setResults(retainFailedSearchGroups(firstResults, firstRetain, previous));
     setErrors(firstErrors);
     setLoading(firstPhaseStillLoading);
-    setRefreshing(false);
+    setRefreshing(force && firstPhaseStillLoading);
 
     console.log('Search first results rendered', {
       query: trimmed,
@@ -1094,9 +1128,12 @@ export default function GlobalSearchScreen() {
         .map(mapListingResult);
     } else {
       nextErrors.listings = 'Market listings could not be loaded.';
+      nextErrors.graded = 'Graded listings could not be loaded.';
     }
 
-    setResults(next);
+    const recovered = retainFailedSearchGroups(next, nextErrors, previous);
+    previousSearchRef.current = { key: searchKey, results: recovered };
+    setResults(recovered);
     setErrors(nextErrors);
     setLoading(false);
     setRefreshing(false);
@@ -1112,10 +1149,14 @@ export default function GlobalSearchScreen() {
         ownedRows.forEach((row) => {
           ownedMap.set(row.card_id, (ownedMap.get(row.card_id) ?? 0) + Math.max(1, Number(row.quantity ?? 1) || 1));
         });
-        setResults((current) => ({
-          ...current,
-          cards: mapCardResults(cardsForHydration, listingStats, ownedMap),
-        }));
+        setResults((current) => {
+          const hydrated = {
+            ...current,
+            cards: mapCardResults(cardsForHydration, listingStats, ownedMap),
+          };
+          previousSearchRef.current = { key: searchKey, results: hydrated };
+          return hydrated;
+        });
       }).catch(() => {});
     }
 
@@ -1136,7 +1177,7 @@ export default function GlobalSearchScreen() {
         }));
       }).catch(() => {});
     }
-  }, [category, selectedLanguage]);
+  }, [category, searchIdentityEpoch, selectedLanguage]);
 
   const saveCardToShowcase = useCallback(async (
     slot: ProfileShowcaseSlot,
@@ -1337,14 +1378,17 @@ export default function GlobalSearchScreen() {
   }, [category, debouncedQuery]);
 
   const hasQuery = debouncedQuery.trim().length >= 2;
-  const resultCount = Object.values(results).reduce((total, group) => total + group.length, 0);
-  const visibleResultCount = Object.values(visibleResults).reduce((total, group) => total + group.length, 0);
+  const resultCount = filteredGroups.reduce((total, group) => total + results[group].length, 0);
+  const visibleResultCount = filteredGroups.reduce((total, group) => total + visibleResults[group].length, 0);
+  const failureSummary = getSearchFailureSummary(errors, filteredGroups);
   const currentSearchSortLabel = SEARCH_SORT_OPTIONS.find((option) => option.key === searchSort)?.label ?? 'Recommended';
   const searchResultSummary = loading
     ? (visibleResultCount > 0
         ? `${visibleResultCount} result${visibleResultCount === 1 ? '' : 's'} so far`
         : 'Searching...')
-    : `${visibleResultCount} result${visibleResultCount === 1 ? '' : 's'}${resultCount !== visibleResultCount ? ` from ${resultCount}` : ''}`;
+    : failureSummary.failedGroups.length && visibleResultCount === 0
+      ? 'Results unavailable'
+      : `${visibleResultCount} result${visibleResultCount === 1 ? '' : 's'}${resultCount !== visibleResultCount ? ` from ${resultCount}` : ''}`;
   const isFocusedSearchGroup = useCallback((group: keyof SearchResults) => {
     if (group === 'cards') return isRawCardCategory(category);
     if (group === 'sets') return category === 'sets';
@@ -1414,6 +1458,17 @@ export default function GlobalSearchScreen() {
     }
 
     if (visibleResultCount === 0) {
+      if (failureSummary.failedGroups.length) {
+        return <View accessibilityRole="alert">
+          <SearchEmpty
+            icon="cloud-offline-outline"
+            title={failureSummary.allFailed ? 'Search unavailable' : 'Some results are unavailable'}
+            body={`${failureSummary.message} Check your connection and try again.`}
+            actionLabel={refreshing ? 'Retrying...' : 'Retry search'}
+            onAction={refreshing ? undefined : () => void runSearch(debouncedQuery, true)}
+          />
+        </View>;
+      }
       return (
         <SearchEmpty
           icon={searchIcons.search}
@@ -1428,6 +1483,12 @@ export default function GlobalSearchScreen() {
 
     return (
       <View>
+        {failureSummary.failedGroups.length ? <View style={{ gap: 8, marginBottom: 14 }}>
+          <Text accessibilityRole="alert" style={{ color: theme.colors.textSoft, lineHeight: 20 }}>
+            {failureSummary.message} Available or previously loaded results are shown below.
+          </Text>
+          <StackrButton label="Retry search" loading={refreshing} onPress={() => void runSearch(debouncedQuery, true)} />
+        </View> : null}
         {loading ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12, paddingHorizontal: 2 }}>
             <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -2061,7 +2122,7 @@ function SearchEmpty({
         {body}
       </Text>
       {actionLabel && onAction ? (
-        <TouchableOpacity onPress={onAction} style={{ minHeight: 40, borderRadius: 13, backgroundColor: theme.colors.primary, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={actionLabel} onPress={onAction} style={{ minHeight: 44, borderRadius: 13, backgroundColor: theme.colors.primary, paddingHorizontal: 16, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
           <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }}>{actionLabel}</Text>
         </TouchableOpacity>
       ) : null}

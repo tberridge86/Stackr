@@ -361,6 +361,8 @@ export default function ExploreScreen() {
   const [traditionalChineseSets, setTraditionalChineseSets] = useState<PokemonSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [hasLoadedCatalogue, setHasLoadedCatalogue] = useState(false);
   const [search, setSearch] = useState('');
   const [languageFilter, setLanguageFilter] = useState<DiscoverLanguageFilter>('all');
   const [existingBindersBySet, setExistingBindersBySet] = useState<Record<string, ExistingBinderSummary>>({});
@@ -392,8 +394,11 @@ export default function ExploreScreen() {
       setSimplifiedChineseSets(simplifiedChineseData);
       setTraditionalChineseSets(traditionalChineseData);
       setExistingBindersBySet(existingBinders);
+      setHasLoadedCatalogue(true);
+      setLoadError(null);
     } catch (error) {
       console.log('Failed to load sets', error);
+      setLoadError('Sets are unavailable right now. Check your connection and try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -655,6 +660,31 @@ export default function ExploreScreen() {
     );
   }
 
+  if (loadError && !hasLoadedCatalogue) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+        <StackrBackdrop />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <Ionicons name="cloud-offline-outline" size={32} color={theme.colors.textSoft} />
+          <Text accessibilityRole="alert" style={{ color: theme.colors.text, fontWeight: '900', fontSize: 17, marginTop: 14, textAlign: 'center' }}>
+            Couldn’t load sets
+          </Text>
+          <Text style={{ color: theme.colors.textSoft, marginTop: 8, textAlign: 'center' }}>
+            {loadError}
+          </Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading sets"
+            onPress={() => load()}
+            style={{ minHeight: 48, marginTop: 18, paddingHorizontal: 18, borderRadius: 12, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
       <StackrBackdrop />
@@ -667,6 +697,20 @@ export default function ExploreScreen() {
         <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 14 }}>
           Filter English, Japanese, Simplified Chinese or Traditional Chinese sets · {englishSets.length + japaneseSets.length + simplifiedChineseSets.length + traditionalChineseSets.length} sets available
         </Text>
+
+        {loadError ? (
+          <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingLeft: 12, marginBottom: 12 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, flex: 1 }}>{loadError}</Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading sets"
+              onPress={() => load(true)}
+              style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 12 }}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
 
         {/* Search */}
         <View style={{

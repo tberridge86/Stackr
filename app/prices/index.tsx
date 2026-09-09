@@ -24,6 +24,8 @@ import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { SLAB_GRADE_SHORTCUTS, SLAB_GRADING_COMPANIES, getSlabAccent } from '../../components/SlabStickerLabel';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrCardActionIcon } from '../../components/StackrScreen';
+import { StackrBackButton } from '../../components/StackrBackButton';
+import { formatEvidenceStatus, formatMarketEvidence } from '../../lib/marketEvidence';
 import { ScrollToEndButton } from '../../components/ScrollToEndButton';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 
@@ -99,8 +101,11 @@ type EbayDetailData = {
   average?: number | null;
   high?: number | null;
   count?: number | null;
+  soldCount?: number | null;
   query?: string;
   soldDataSource?: string;
+  evidenceStatus?: string | null;
+  primarySource?: string | null;
 } | null;
 
 type LookupType =
@@ -426,8 +431,11 @@ export default function MarketScreen() {
       average: data.estimates.central,
       high: data.estimates.high,
       count: data.sample.total,
+      soldCount: data.sample.sold,
       query: card.id,
       soldDataSource: 'stackr-api',
+      evidenceStatus: data.status,
+      primarySource: data.primarySource ?? null,
     };
   }, [lookupType, rawCondition]);
 
@@ -688,8 +696,11 @@ export default function MarketScreen() {
         average: stackrResult.price.estimates.central,
         high: stackrResult.price.estimates.high,
         count: stackrResult.price.sample.total,
+        soldCount: stackrResult.price.sample.sold,
         query: card.id,
         soldDataSource: 'stackr-api',
+        evidenceStatus: stackrResult.price.status,
+        primarySource: stackrResult.price.primarySource ?? null,
       });
       return;
 
@@ -863,14 +874,14 @@ export default function MarketScreen() {
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>eBay sold</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>Market estimate</Text>
             <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>
               {liveEbay === undefined ? 'Checking...' : formatCurrency(liveEbay?.average ?? priceSnapshot?.ebayAverage)}
             </Text>
           </View>
           {(liveEbay?.count ?? priceSnapshot?.ebayCount) != null && (liveEbay?.count ?? priceSnapshot?.ebayCount ?? 0) > 0 ? (
             <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 4 }}>
-              Based on {liveEbay?.count ?? priceSnapshot?.ebayCount} sold listing{(liveEbay?.count ?? priceSnapshot?.ebayCount) !== 1 ? 's' : ''}
+              {liveEbay ? formatMarketEvidence(liveEbay) : `Based on ${priceSnapshot?.ebayCount} market observation${priceSnapshot?.ebayCount === 1 ? '' : 's'}`}
             </Text>
           ) : null}
 
@@ -1002,7 +1013,7 @@ export default function MarketScreen() {
   // ===============================
 
   return (
-    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
       <StackrBackdrop />
       <FlatList
         ref={priceListRef}
@@ -1022,10 +1033,15 @@ export default function MarketScreen() {
         }
         ListHeaderComponent={
           <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8 }}>
-            <Text style={{ fontSize: 22, lineHeight: 27, fontWeight: '900', color: theme.colors.text }}>Latest Prices</Text>
-            <Text style={{ marginTop: 1, fontSize: 12, fontWeight: '700', lineHeight: 16, color: theme.colors.textSoft, marginBottom: 10 }}>
-              Search raw cards, graded slabs, sealed products, and accessories.
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <StackrBackButton onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')} />
+              <View style={{ flex: 1, minWidth: 0, marginLeft: 4 }}>
+                <Text style={{ fontSize: 22, lineHeight: 27, fontWeight: '900', color: theme.colors.text }}>Latest Prices</Text>
+                <Text style={{ marginTop: 1, fontSize: 12, fontWeight: '700', lineHeight: 16, color: theme.colors.textSoft }}>
+                  Search raw cards, graded slabs, sealed products, and accessories.
+                </Text>
+              </View>
+            </View>
 
             <TouchableOpacity
               onPress={() => setLookupMenuOpen((open) => !open)}
@@ -1328,18 +1344,18 @@ export default function MarketScreen() {
 
                       {lookupType !== 'graded_slab' && (
                         <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
-                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                             <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '800' }}>
-                              Live sold comps
+                              Market estimate
                             </Text>
-                            <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.7 }}>
-                              eBay sold - GBP - {rawCondition}
+                            <Text style={{ flexShrink: 1, color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.7 }}>
+                              STACKR · {formatEvidenceStatus(detailEbayData?.evidenceStatus).toUpperCase()} · GBP - {rawCondition}
                             </Text>
                             {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
                           </View>
 
                           {detailPriceLoading ? (
-                            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching live eBay sold prices...</Text>
+                            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching market estimate...</Text>
                           ) : (
                             <>
                               <PriceRow label="Low" value={formatCurrency(detailEbayData?.low)} />
@@ -1347,7 +1363,7 @@ export default function MarketScreen() {
                               <PriceRow label="High" value={formatCurrency(detailEbayData?.high)} />
                               {detailEbayData?.count != null && (
                                 <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
-                                  Based on {detailEbayData.count} sold listing{detailEbayData.count !== 1 ? 's' : ''}
+                                  {formatMarketEvidence(detailEbayData)}
                                 </Text>
                               )}
                             </>

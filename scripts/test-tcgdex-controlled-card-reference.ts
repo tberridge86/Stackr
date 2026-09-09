@@ -560,10 +560,7 @@ assert.match(
 assert.match(listingSource, /const stockImageUrl = selectTcgdexReferencePersistenceImage/);
 assert.doesNotMatch(listingSource, /card\.imageBase[\s\S]{0,100}\/(?:low|high)\.webp/);
 
-for (const persistencePath of [
-  'app/scan/result.tsx',
-  'lib/inventory.ts',
-]) {
+for (const persistencePath of ['lib/inventory.ts']) {
   assert.match(
     readFileSync(persistencePath, 'utf8'),
     /selectTcgdexReferencePersistenceImage/,
@@ -571,7 +568,12 @@ for (const persistencePath of [
   );
 }
 const scanResultSource = readFileSync('app/scan/result.tsx', 'utf8');
-assert.match(scanResultSource, /persistedImageUrl[\s\S]{0,500}\? \{ image_url: persistedImageUrl \} : \{\}/);
+const collectionBatchSource = readFileSync('lib/collectionBatch.ts', 'utf8');
+assert.match(scanResultSource, /addOwnedCardBatchToBinder/);
+assert.match(scanResultSource, /addOwnedCardBatchToBinder[\s\S]{0,500}\.from\('binder_cards'\)[\s\S]{0,160}select\('condition'\)/);
+assert.match(collectionBatchSource, /stripTcgdexReferenceBeforePersistence\(card\.imageUrl\)/);
+assert.match(collectionBatchSource, /preserveExistingImageUrlBeforePersistence\([\s\S]{0,180}entry\.imageUrl,[\s\S]{0,180}existing\?\.image_url/);
+assert.doesNotMatch(collectionBatchSource, /assets\\\.tcgdex\\\.net[\s\S]{0,180}low\\\.webp/);
 const inventorySource = readFileSync('lib/inventory.ts', 'utf8');
 assert.match(inventorySource, /function inventorySnapshotForPersistence/);
 assert.match(inventorySource, /function inventoryMovementForPersistence/);

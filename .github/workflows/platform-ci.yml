@@ -54,6 +54,7 @@ jobs:
       - run: npm run test:ux-p1
       - run: npm run test:ux-p2
       - run: npm run test:ux-p3
+      - run: npm run test:ux-audit-fixes
       - run: npm run test:poketrace-benchmark
       - run: npm run test:seller-stock-out-routing
       - run: npm run test:premium-seller-access

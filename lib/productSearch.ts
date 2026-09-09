@@ -883,7 +883,7 @@ export async function searchMarketProducts(
   text: string,
   type?: ProductLookupType,
   limit = 20,
-  options: { language?: string | null } = {}
+  options: { language?: string | null; throwOnError?: boolean } = {}
 ): Promise<MarketProduct[]> {
   const trimmed = normaliseText(text);
   if (trimmed.length < 2) return [];
@@ -901,6 +901,7 @@ export async function searchMarketProducts(
   const { data, error } = await query;
   if (error) {
     console.log('Market product search failed', error);
+    if (options.throwOnError) throw error;
     return [];
   }
 

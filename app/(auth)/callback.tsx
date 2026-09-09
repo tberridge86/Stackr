@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { Text } from '../../components/Text';
+import { StackrButton } from '../../components/StackrControls';
 import { useTheme } from '../../components/theme-context';
 import { supabase } from '../../lib/supabase';
 import { firstAuthParam, getAuthParamsFromUrl, mergeAuthLinkParams } from '../../lib/authRedirects';
@@ -22,48 +23,60 @@ export default function AuthCallbackScreen() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    let active = true;
     const checkSession = async () => {
-      const authError = firstAuthParam(params.error);
-      const authErrorDescription = firstAuthParam(params.error_description);
+      setErrorMessage('');
+      try {
+        const authError = firstAuthParam(params.error);
+        const authErrorDescription = firstAuthParam(params.error_description);
 
-      if (authError || authErrorDescription) {
-        setErrorMessage(authErrorDescription || authError || 'The sign-in link could not be verified.');
-        return;
-      }
-
-      const code = firstAuthParam(params.code);
-      const accessToken = firstAuthParam(params.access_token);
-      const refreshToken = firstAuthParam(params.refresh_token);
-      const type = firstAuthParam(params.type);
-
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          setErrorMessage(error.message);
+        if (authError || authErrorDescription) {
+          setErrorMessage(authErrorDescription || authError || 'The sign-in link could not be verified.');
           return;
         }
-      } else if (accessToken && refreshToken) {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-        if (error) {
-          setErrorMessage(error.message);
+
+        const code = firstAuthParam(params.code);
+        const accessToken = firstAuthParam(params.access_token);
+        const refreshToken = firstAuthParam(params.refresh_token);
+        const type = firstAuthParam(params.type);
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (!active) return;
+          if (error) {
+            setErrorMessage(error.message);
+            return;
+          }
+        } else if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (!active) return;
+          if (error) {
+            setErrorMessage(error.message);
+            return;
+          }
+        } else {
+          const { data, error } = await supabase.auth.getSession();
+          if (!active) return;
+          if (error) throw error;
+          if (!data.session) throw new Error('This email link is missing or has expired.');
+        }
+
+        if (type === 'recovery') {
+          router.replace('/(auth)/reset-password');
           return;
         }
-      } else {
-        await supabase.auth.getSession();
-      }
 
-      if (type === 'recovery') {
-        router.replace('/(auth)/reset-password');
-        return;
+        router.replace('/');
+      } catch (error: any) {
+        if (active) setErrorMessage(error?.message || 'The email link could not be verified. Please try signing in again.');
       }
-
-      router.replace('/');
     };
 
-    checkSession();
+    void checkSession();
+    return () => { active = false; };
   }, [params.access_token, params.code, params.error, params.error_description, params.refresh_token, params.type]);
 
   return (
@@ -80,9 +93,13 @@ export default function AuthCallbackScreen() {
           <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', textAlign: 'center' }}>
             Email link could not be completed
           </Text>
-          <Text style={{ color: theme.colors.textSoft, marginTop: 8, textAlign: 'center', paddingHorizontal: 24 }}>
+          <Text accessibilityRole="alert" style={{ color: theme.colors.textSoft, marginTop: 8, textAlign: 'center', paddingHorizontal: 24 }}>
             {errorMessage}
           </Text>
+          <View style={{ gap: 10, marginTop: 24, paddingHorizontal: 24, width: '100%', maxWidth: 420 }}>
+            <StackrButton label="Sign in" variant="primary" onPress={() => router.replace('/(auth)/login')} />
+            <StackrButton label="Request a new reset link" onPress={() => router.replace({ pathname: '/(auth)/login', params: { mode: 'reset' } })} />
+          </View>
         </>
       ) : (
         <>

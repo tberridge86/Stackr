@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Text } from '../../../components/Text';
 import { StackrBackButton } from '../../../components/StackrBackButton';
+import { StackrButton } from '../../../components/StackrControls';
 import { StackrBackdrop } from '../../../components/StackrBackdrop';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -126,6 +127,8 @@ export default function PublicCollectorProfileScreen() {
   const [favoriteCard, setFavoriteCard] = useState<CardPreview | null>(null);
   const [chaseCard, setChaseCard] = useState<CardPreview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const loadRequestRef = useRef(0);
   const [friendActionBusy, setFriendActionBusy] = useState(false);
   const friendMutationRef = useRef(false);
 
@@ -140,6 +143,19 @@ export default function PublicCollectorProfileScreen() {
   // ===============================
 
   const loadProfile = useCallback(async () => {
+    const request = ++loadRequestRef.current;
+    setLoadError(null);
+    setProfile(null);
+    setBinders([]);
+    setPosts([]);
+    setCards({});
+    setOwnedCount(0);
+    setShowcaseCount(0);
+    setTraderRating(null);
+    setFriendshipId(null);
+    setFriendStatus('none');
+    setFavoriteCard(null);
+    setChaseCard(null);
     if (!binderId) {
       setLoading(false);
       return;
@@ -149,6 +165,7 @@ export default function PublicCollectorProfileScreen() {
       setLoading(true);
 
       const { data: { user } } = await supabase.auth.getUser();
+      if (request !== loadRequestRef.current) return;
       setCurrentUserId(user?.id ?? null);
 
       // Load all data in parallel
@@ -194,6 +211,11 @@ export default function PublicCollectorProfileScreen() {
         user ? getFriendStatus(binderId) : Promise.resolve(null),
       ]);
 
+      if (request !== loadRequestRef.current) return;
+      const queryError = [profileResult, binderResult, showcaseResult, postResult, ratingResult]
+        .find((result) => result.error)?.error;
+      if (queryError) throw queryError;
+
       // Profile
       const rawProfile = profileResult.data as Profile | null;
       const nextProfile = rawProfile
@@ -215,11 +237,13 @@ export default function PublicCollectorProfileScreen() {
       // Owned card count across public binders
       if (nextBinders.length > 0) {
         const binderIds = nextBinders.map((b) => b.id);
-        const { count } = await supabase
+        const { count, error: countError } = await supabase
           .from('binder_cards')
           .select('id', { count: 'exact', head: true })
           .in('binder_id', binderIds)
           .eq('owned', true);
+        if (request !== loadRequestRef.current) return;
+        if (countError) throw countError;
         setOwnedCount(count ?? 0);
       }
 
@@ -267,6 +291,7 @@ export default function PublicCollectorProfileScreen() {
 
       if (allCardIds.length > 0) {
         const rows = await fetchStackrCardRows(allCardIds);
+        if (request !== loadRequestRef.current) return;
         const cardMap = Object.fromEntries(allCardIds.flatMap((id) => {
           const card = rows.get(id);
           return card ? [[id, card]] : [];
@@ -281,14 +306,17 @@ export default function PublicCollectorProfileScreen() {
         }
       }
     } catch (error) {
+      if (request !== loadRequestRef.current) return;
       console.log('Public profile load failed', error);
+      setLoadError('This collector could not be loaded. Check your connection and try again.');
     } finally {
-      setLoading(false);
+      if (request === loadRequestRef.current) setLoading(false);
     }
   }, [binderId]);
 
   useEffect(() => {
-    loadProfile();
+    void loadProfile();
+    return () => { loadRequestRef.current += 1; };
   }, [loadProfile]);
 
   // ===============================
@@ -430,6 +458,20 @@ export default function PublicCollectorProfileScreen() {
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
             Loading collector...
           </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <StackrBackdrop />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20, gap: 14 }}>
+          <Text accessibilityRole="header" style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>Collector unavailable</Text>
+          <Text accessibilityRole="alert" style={{ color: theme.colors.textSoft, textAlign: 'center' }}>{loadError}</Text>
+          <StackrButton label="Retry" variant="primary" onPress={() => void loadProfile()} />
+          <StackrButton label="Go back" onPress={() => router.back()} />
         </View>
       </SafeAreaView>
     );

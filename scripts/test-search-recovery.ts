@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { getSearchFailureSummary, retainFailedSearchGroups, type SearchLoadErrors, type SearchResultGroup } from '../lib/searchRecovery';
+
+const groups: SearchResultGroup[] = ['cards', 'sets', 'sealed', 'graded', 'listings', 'collectors'];
+const empty = () => ({cards: [] as string[], sets: [] as string[], sealed: [] as string[], graded: [] as string[], listings: [] as string[], collectors: [] as string[]});
+const failed = Object.fromEntries(groups.map(group=>[group,'offline'])) as SearchLoadErrors;
+assert.equal(getSearchFailureSummary(failed,groups).allFailed,true, 'A total outage must not be described as an ordinary empty search.');
+assert.equal(getSearchFailureSummary({},groups).message,'', 'A successful empty search must not display a failure.');
+assert.equal(getSearchFailureSummary({listings:'offline'},['cards']).message,'', 'Unrelated sources must not show errors in a focused category.');
+assert.deepEqual(getSearchFailureSummary({cards:'offline'},['cards','listings']).failedGroups,['cards']);
+assert.equal(getSearchFailureSummary({cards:'offline'},['cards','listings']).allFailed,false);
+const previous={...empty(),cards:['card-a'],collectors:['collector-a']};
+const next={...empty(),collectors:['collector-b']};
+const merged=retainFailedSearchGroups(next,{cards:'offline'},previous);
+assert.deepEqual(merged.cards,['card-a'],'A failed refresh keeps prior results for the same query.');
+assert.deepEqual(merged.collectors,['collector-b'],'A working source replaces old results independently.');
+assert.deepEqual(retainFailedSearchGroups(empty(),{},previous).cards,[],'A successful empty refresh removes stale results.');
+assert.deepEqual(retainFailedSearchGroups(empty(),failed,null).cards,[],'A different query cannot inherit old results.');
+assert.deepEqual(next.cards,[],'Merging must not mutate the source response.');
+console.log('Search failure, partial success and retained-result checks passed.');

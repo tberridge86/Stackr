@@ -28,8 +28,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, router, Stack, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { fetchBinders } from '../../lib/binders';
+import {
+  addOwnedCardBatchToBinder,
+  createCollectionBatchRequestKey,
+  persistVerifiedCollectionBatchRecoveryIntent,
+} from '../../lib/collectionBatch';
+import { addScannedVariantCopy } from '../../lib/scanVariantOwnership';
 import { fetchStackrPrice } from '../../lib/stackrDomainAdapter';
-import { selectTcgdexReferencePersistenceImage } from '../../lib/tcgdexReferencePersistence';
 import { hydrateScanCardRowsWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 import { attachLiveTcgdexCardReferences } from '../../lib/pokemonTcg';
 import { getScanAttemptDiagnostics } from '../../lib/scanDiagnostics';
@@ -102,50 +107,15 @@ const EDITION_LABELS: Record<NonNullable<TCGCard['editionHint']>, string> = {
 type TcgPriceVariant = {
   key: string;
   label: string;
-  priceUsd: number;
+  priceUsd: number | null;
   editionHint?: ScanEditionHint | null;
 };
-
-const TCG_VARIANT_LABELS: Record<string, string> = {
-  normal: 'Normal',
-  holofoil: 'Holo',
-  reverseHolofoil: 'Reverse Holo',
-  unlimited: 'Unlimited',
-  unlimitedHolofoil: 'Unlimited Holo',
-  '1stEditionNormal': '1st Edition Normal',
-  '1stEditionHolofoil': '1st Edition Holo',
-};
-
-function getTcgVariantLabel(key: string) {
-  return TCG_VARIANT_LABELS[key] ?? key.replace(/([A-Z])/g, ' $1').replace(/^./, (char) => char.toUpperCase());
-}
 
 function getEditionHintForVariantKey(key?: string | null): ScanEditionHint | null {
   if (!key) return null;
   if (key.startsWith('1stEdition')) return '1st_edition';
   if (key.startsWith('unlimited')) return 'unlimited';
   return null;
-}
-
-function getPriceValueFromVariant(value: any) {
-  const price = value?.market ?? value?.mid ?? value?.low;
-  return typeof price === 'number' && Number.isFinite(price) ? price : null;
-}
-
-function buildTcgVariantOptions(card: any): TcgPriceVariant[] {
-  const prices = card?.tcgplayer?.prices ?? {};
-  return Object.entries(prices)
-    .map(([key, value]) => {
-      const priceUsd = getPriceValueFromVariant(value);
-      if (priceUsd == null) return null;
-      return {
-        key,
-        label: getTcgVariantLabel(key),
-        priceUsd,
-        editionHint: getEditionHintForVariantKey(key),
-      };
-    })
-    .filter(Boolean) as TcgPriceVariant[];
 }
 
 function getMatchConfidence(card?: TCGCard | null) {
@@ -368,7 +338,8 @@ function ScanResultScreen() {
   });
   const scanIntentConfig = getScanIntentConfig(scanIntent);
   const isListingMode = isListingScanIntent(scanIntent) || incomingMode === 'listing' || incomingFlow === 'listing';
-  const scanSessionId = typeof params.scanSessionId === 'string' ? params.scanSessionId : `scan-result-${Date.now()}`;
+  const generatedScanSessionIdRef = useRef(`scan-result-${Date.now()}`);
+  const scanSessionId = typeof params.scanSessionId === 'string' ? params.scanSessionId : generatedScanSessionIdRef.current;
   const scanDiagnostics = useMemo(() => getScanAttemptDiagnostics(scanSessionId), [scanSessionId]);
   const scannerClientContext = useMemo(() => getScannerClientContext(), []);
   const scannerFeatureFlags = useMemo(() => getScannerFeatureFlags(), []);
@@ -394,6 +365,9 @@ function ScanResultScreen() {
   );
   const [binders, setBinders] = useState<BinderOption[]>([]);
   const [selectedBinderId, setSelectedBinderId] = useState<string | null>(null);
+  const [bindersLoading, setBindersLoading] = useState(false);
+  const [bindersError, setBindersError] = useState<string | null>(null);
+  const [bindersReloadToken, setBindersReloadToken] = useState(0);
   const [ebayPrice, setEbayPrice] = useState<{
     low: number | null;
     average: number | null;
@@ -413,6 +387,8 @@ function ScanResultScreen() {
   const [feedbackUploadConfirmed, setFeedbackUploadConfirmed] = useState(false);
   const [feedbackUploadRetrying, setFeedbackUploadRetrying] = useState(false);
   const feedbackUploadInFlightRef = useRef(false);
+  const priceRequestRef = useRef(0);
+  const bindersRequestRef = useRef(0);
   const [rejectedPrediction, setRejectedPrediction] = useState<TCGCard | null>(null);
   useEffect(() => {
     let disposed = false;
@@ -711,12 +687,19 @@ function ScanResultScreen() {
 
   useEffect(() => {
     if (isListingMode) {
+      bindersRequestRef.current += 1;
       setBinders([]);
       setSelectedBinderId(null);
+      setBindersLoading(false);
+      setBindersError(null);
       return;
     }
 
+    const requestId = ++bindersRequestRef.current;
+    setBindersLoading(true);
+    setBindersError(null);
     fetchBinders().then((data) => {
+      if (requestId !== bindersRequestRef.current) return;
       setBinders(
         data.map((b) => ({
           id: b.id,
@@ -728,16 +711,38 @@ function ScanResultScreen() {
       if (incomingBinderId && data.some((binder) => binder.id === incomingBinderId)) {
         setSelectedBinderId(incomingBinderId);
       }
+    }).catch((error) => {
+      if (requestId !== bindersRequestRef.current) return;
+      setBinders([]);
+      setBindersError(error instanceof Error ? error.message : 'Binders could not be loaded.');
+    }).finally(() => {
+      if (requestId === bindersRequestRef.current) setBindersLoading(false);
     });
-  }, [incomingBinderId, isListingMode]);
+    return () => {
+      if (bindersRequestRef.current === requestId) bindersRequestRef.current += 1;
+    };
+  }, [bindersReloadToken, incomingBinderId, isListingMode]);
 
   useEffect(() => {
+    priceRequestRef.current += 1;
     setSelectedVariantKey(null);
     setTcgVariants([]);
+    setEbayPrice(null);
+    setTcgPrice(null);
+    setTcgPriceSource(null);
   }, [selectedCard?.id]);
 
   useEffect(() => {
-    if (!selectedCard) return;
+    if (!selectedCard) {
+      priceRequestRef.current += 1;
+      setEbayPrice(null);
+      setTcgPrice(null);
+      setTcgPriceSource(null);
+      setEbayLoading(false);
+      setTcgLoading(false);
+      return undefined;
+    }
+    const requestId = ++priceRequestRef.current;
 
     const run = async () => {
       try {
@@ -751,23 +756,28 @@ function ScanResultScreen() {
           productType: 'raw_card',
           currency: 'GBP',
         });
+        if (requestId !== priceRequestRef.current) return;
         if (!result) return;
         const { price, resolved } = result;
-        setEbayPrice({
-          low: price.estimates.low,
-          average: price.estimates.central,
-          high: price.estimates.high,
-        });
-        setTcgPrice(price.estimates.central);
-        setTcgPriceSource(`Stackr market - ${price.status.replace(/_/g, ' ')}`);
-
         const variants = resolved.card.variants.map((variant) => ({
           key: variant.variantCode,
           label: variant.variantLabel ?? variant.variantCode,
-          priceUsd: price.estimates.central ?? 0,
+          // cardPrice is resolved for one exact variant. Do not imply its
+          // estimate applies to the other finish chips.
+          priceUsd: variant.variantId === resolved.variantId ? price.estimates.central : null,
           editionHint: getEditionHintForVariantKey(variant.variantCode),
         }));
         setTcgVariants(variants);
+
+        const resolvedVariantKey = resolved.card.variants.find((variant) => variant.variantId === resolved.variantId)?.variantCode ?? null;
+        const selectedVariantMatchesResponse = !selectedVariantKey || selectedVariantKey === resolvedVariantKey;
+        setEbayPrice(selectedVariantMatchesResponse ? {
+          low: price.estimates.low,
+          average: price.estimates.central,
+          high: price.estimates.high,
+        } : null);
+        setTcgPrice(selectedVariantMatchesResponse ? price.estimates.central : null);
+        setTcgPriceSource(selectedVariantMatchesResponse ? `Stackr market - ${price.status.replace(/_/g, ' ')}` : null);
 
         const nextVariantKey = selectedVariantKey && variants.some((variant) => variant.key === selectedVariantKey)
           ? selectedVariantKey
@@ -775,17 +785,20 @@ function ScanResultScreen() {
             ?? pickDefaultVariantKey(variants, selectedCard.editionHint);
         if (nextVariantKey !== selectedVariantKey) setSelectedVariantKey(nextVariantKey);
       } catch (error) {
+        if (requestId !== priceRequestRef.current) return;
         console.log('Stackr market lookup failed:', error);
         setEbayPrice(null);
         setTcgPrice(null);
         setTcgPriceSource(null);
       } finally {
+        if (requestId !== priceRequestRef.current) return;
         setEbayLoading(false);
         setTcgLoading(false);
       }
     };
 
-    run();
+    void run();
+    return () => { priceRequestRef.current += 1; };
   }, [selectedCard, selectedTcgVariant?.label, selectedTcgVariant?.editionHint, selectedVariantKey]);
 
   const handleAddToBinder = async () => {
@@ -794,57 +807,49 @@ function ScanResultScreen() {
     try {
       setAdding(true);
       const databaseStartedAt = Date.now();
-      const { data: existingBinderCard, error: existingBinderCardError } = await supabase
-        .from('binder_cards')
-        .select('image_url')
-        .eq('binder_id', selectedBinderId)
-        .eq('card_id', selectedCard.id)
-        .maybeSingle();
-      if (existingBinderCardError) throw existingBinderCardError;
-      const persistedImageUrl = selectTcgdexReferencePersistenceImage(
-        selectedCard.image_small,
-        existingBinderCard?.image_url ?? null,
-      );
-
-        const { error } = await supabase
-          .from('binder_cards')
-          .upsert(
-          {
-            binder_id: selectedBinderId,
-            card_id: selectedCard.id,
-            set_id: selectedCard.set_id,
-            owned: true,
-            notes: '',
-            card_name: selectedCard.name,
-            card_number: selectedCard.number,
-            ...(persistedImageUrl ? { image_url: persistedImageUrl } : {}),
-            set_name: selectedCard.set_name,
-          },
-          {
-            onConflict: 'binder_id,card_id',
-            ignoreDuplicates: false,
-          }
-        );
-
-      if (error) throw error;
+      const cards = [{
+        cardId: selectedCard.id,
+        setId: selectedCard.set_id,
+        quantity: 1,
+        cardName: selectedCard.name,
+        cardNumber: selectedCard.number,
+        imageUrl: selectedCard.image_small,
+        setName: selectedCard.set_name,
+        language: selectedCard.language ?? selectedCard.raw_data?.language ?? null,
+      }];
+      const requestKey = createCollectionBatchRequestKey({
+        sourceSessionId: `${scanSessionId}:add:${selectedTcgVariant?.key ?? 'default'}`,
+        binderId: selectedBinderId,
+        cards,
+      });
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('Sign in before adding this card to your binder.');
+      const intent = await persistVerifiedCollectionBatchRecoveryIntent({
+        sourceSessionId: requestKey,
+        binderId: selectedBinderId,
+        cards,
+        requestKey,
+      });
+      await addOwnedCardBatchToBinder(intent.binderId, [...intent.cards], { requestKey: intent.requestKey });
 
       if (selectedTcgVariant?.key) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { error: variantError } = await supabase
-            .from('user_card_variants')
-            .upsert(
-              {
-                user_id: user.id,
-                card_id: selectedCard.id,
-                set_id: selectedCard.set_id,
-                variant: selectedTcgVariant.key,
-                quantity: 1,
-              },
-              { onConflict: 'user_id,card_id,set_id,variant', ignoreDuplicates: true }
-            );
-          if (variantError) throw variantError;
-        }
+        const { data: { user: currentUser }, error: currentUserError } = await supabase.auth.getUser();
+        if (currentUserError) throw currentUserError;
+        if (currentUser?.id !== user.id) throw new Error('Your account changed while this card was being saved. Reopen the scan before trying again.');
+        const { data: savedCard, error: savedCardError } = await supabase.from('binder_cards')
+          .select('condition').eq('binder_id', intent.binderId).eq('card_id', selectedCard.id).single();
+        if (savedCardError) throw savedCardError;
+        await addScannedVariantCopy({
+          requestKey,
+          userId: user.id,
+          cardId: selectedCard.id,
+          setId: selectedCard.set_id,
+          variant: selectedTcgVariant.key,
+          condition: savedCard.condition || 'Near Mint',
+          gradeCompany: '',
+          grade: '',
+        });
       }
 
       const databaseSaveMs = Date.now() - databaseStartedAt;
@@ -1643,7 +1648,7 @@ function ScanResultScreen() {
                           {variant.label}
                         </Text>
                         <Text style={{ color: selected ? 'rgba(255,255,255,0.8)' : theme.colors.textSoft, fontWeight: '800', fontSize: 10, marginTop: 2, textAlign: 'center' }}>
-                          {formatTcgGbp(variant.priceUsd)}
+                          {variant.priceUsd == null ? 'No variant estimate' : formatTcgGbp(variant.priceUsd)}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -1734,10 +1739,24 @@ function ScanResultScreen() {
                   Add to Binder
                 </Text>
 
-                {binders.length === 0 ? (
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-                    No binders found. Create a binder first.
-                  </Text>
+                {bindersLoading ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Loading binders…</Text>
+                  </View>
+                ) : binders.length === 0 ? (
+                  <View style={{ gap: 8 }}>
+                    <Text accessibilityRole={bindersError ? 'alert' : undefined} style={{ color: theme.colors.textSoft, fontSize: 13 }}>
+                      {bindersError ?? 'No binders found. Create a binder first.'}
+                    </Text>
+                    {bindersError ? (
+                      <TouchableOpacity accessibilityRole="button" onPress={() => {
+                        setBindersReloadToken((value) => value + 1);
+                      }} style={{ minHeight: 44, alignSelf: 'flex-start', justifyContent: 'center' }}>
+                        <Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Retry binders</Text>
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
                 ) : (
                   <>
                     <ScrollView

@@ -1202,7 +1202,9 @@ export default function CommunityScreen() {
       {isAdmin && (
         <Pressable
           onPress={() => handleAdminDeletePost(item.id)}
-          style={{ padding: 6 }}
+          accessibilityRole="button"
+          accessibilityLabel={`Delete post${profile?.collector_name ? ` by ${profile.collector_name}` : ''}`}
+          style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
         >
           <Ionicons name="trash-outline" size={16} color="#EF4444" />
         </Pressable>
