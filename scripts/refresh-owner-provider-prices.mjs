@@ -19,6 +19,17 @@ const PRODUCTION_PROJECT_REF = 'oakdbbzdqwurpjnoqhmu';
 const OWNED_SCAN_MULTIPLIER = 10;
 const QUEUE_MAX_ATTEMPTS = 5;
 const UNAVAILABLE_PROVIDER_CODES = new Set(['unresolved_provider_identity', 'ambiguous_provider_identity', 'exact_provider_quote_unavailable']);
+// These are stable, non-sensitive ApiError codes emitted by the exact provider
+// service. All other provider errors deliberately collapse to the generic code
+// before they reach the operational receipt.
+const SAFE_REFRESH_ERROR_CODES = new Set([
+  ...UNAVAILABLE_PROVIDER_CODES,
+  'exact_provider_refresh_failed',
+  'provider_refresh_timeout',
+  'unsupported_refresh_scope',
+  'provider_identity_truncated',
+  'provider_refresh_cooldown',
+]);
 
 function requireEnv(name) {
   const value = String(process.env[name] ?? '').trim();
@@ -163,7 +174,15 @@ async function completeQueueItem(supabase, item, leaseUntil) {
 
 function safeQueueErrorCode(error) {
   const code = String(error?.code ?? '');
-  return UNAVAILABLE_PROVIDER_CODES.has(code) ? code : 'exact_provider_refresh_failed';
+  return SAFE_REFRESH_ERROR_CODES.has(code) ? code : 'exact_provider_refresh_failed';
+}
+
+function recordFailureDiagnostic(summary, variantId, error, source) {
+  const id = String(variantId ?? '').toLowerCase();
+  if (!isUuid(id)) return;
+  // This receipt is an owner-only operational summary. Never include an error
+  // message, provider response, queue payload, credentials or card name.
+  summary.failureDiagnostics.push({ variantId: id, code: safeQueueErrorCode(error), source });
 }
 
 async function retryQueueItem(supabase, item, leaseUntil, errorCode) {
@@ -213,6 +232,13 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
   const ownedSelected = [...new Map(resolved.filter((result) => result.ok)
     .filter((result) => !queueVariantIds.has(result.variantId))
     .map((result) => [result.variantId, result])).values()].slice(0, Math.max(0, limit - queueSelected.length));
+  // Keep only canonical public UUIDs. This is enough to reconcile a bounded
+  // refresh against later snapshots without exposing binder rows or provider
+  // identity details.
+  const selectedVariantIds = [...queueSelected, ...ownedSelected]
+    .map((item) => String(item.variantId ?? '').toLowerCase())
+    .filter(isUuid)
+    .slice(0, limit);
   const summary = {
     ...summariseOwnerPriceRefresh(resolved),
     queueScanned: queueRows.length,
@@ -223,7 +249,9 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
     queueCompleted: 0,
     queueRetried: 0,
     selected: queueSelected.length + ownedSelected.length,
+    selectedVariantIds,
     refreshed: 0, unavailable: 0, failed: 0, dryRun,
+    failureDiagnostics: [],
   };
   if (!dryRun) {
     for (const item of invalidQueue) {
@@ -251,6 +279,7 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
       const code = safeQueueErrorCode(error);
       if (UNAVAILABLE_PROVIDER_CODES.has(code)) summary.unavailable += 1;
       else summary.failed += 1;
+      recordFailureDiagnostic(summary, item.variantId, error, 'queue');
       if (await retryQueueItem(supabase, item, leaseUntil, code)) summary.queueTerminal += 1;
       else summary.queueRetried += 1;
     }
@@ -263,6 +292,7 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
       const code = safeQueueErrorCode(error);
       if (UNAVAILABLE_PROVIDER_CODES.has(code)) summary.unavailable += 1;
       else summary.failed += 1;
+      recordFailureDiagnostic(summary, item.variantId, error, 'owned');
     }
   }
   return summary;
