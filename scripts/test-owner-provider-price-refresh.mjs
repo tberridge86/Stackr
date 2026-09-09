@@ -54,10 +54,25 @@ const supabase = {
 let calls = 0;
 const dry = await runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate: async () => { calls += 1; }, ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 2, dryRun: true });
 assert.equal(dry.selected, 1, 'duplicate saved identities must use one provider refresh');
+assert.deepEqual(dry.selectedVariantIds, [variant], 'the dry-run receipt records only the bounded canonical selection');
 assert.equal(calls, 0, 'dry run must never invoke provider refresh');
 const applied = await runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate: async (id, input) => { calls += 1; assert.equal(id, variant); assert.deepEqual(input, { productType: 'raw_card', condition: 'near_mint', currency: 'GBP' }); }, ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 2, dryRun: false });
 assert.equal(applied.refreshed, 1);
 assert.equal(calls, 1);
+
+const ownedFailure = await runOwnerProviderRefresh({
+  supabase,
+  refreshExactProviderEstimate: async () => { const error = new Error('provider response must not enter receipt'); error.code = 'unexpected_secret_provider_code'; throw error; },
+  ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 2, dryRun: false,
+});
+assert.deepEqual(ownedFailure.failureDiagnostics, [{ variantId: variant, code: 'exact_provider_refresh_failed', source: 'owned' }], 'owner failures expose only canonical variant ID and allowlisted code');
+
+const timeoutFailure = await runOwnerProviderRefresh({
+  supabase,
+  refreshExactProviderEstimate: async () => { const error = new Error('raw provider response must not enter receipt'); error.code = 'provider_refresh_timeout'; throw error; },
+  ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 2, dryRun: false,
+});
+assert.deepEqual(timeoutFailure.failureDiagnostics, [{ variantId: variant, code: 'provider_refresh_timeout', source: 'owned' }], 'the stable timeout code remains distinguishable without recording provider text');
 
 const legacyOwned = { ...owned, card_id: 'me3-10', set_id: 'me3' };
 const legacyIdentifiers = [{ source_entity_type: 'set', external_id: 'me03', language_code: 'en', set_id: englishLegacySet, variant_id: null }];
