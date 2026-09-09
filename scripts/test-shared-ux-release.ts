@@ -143,16 +143,67 @@ assert.equal(nativeInput.defaultProps.maxFontSizeMultiplier, 0);
 assert.equal(nativeText.defaultProps.accessibilityLabel, 'preserved');
 assert.equal(nativeInput.defaultProps.autoCorrect, false);
 
-const root = rootFunction('RootLayout', {
-  React: react, useFonts: () => [true, null], useEffect: () => {},
-  Inter_400Regular: 'regular', Inter_500Medium: 'medium', Inter_600SemiBold: 'semibold',
-  Inter_700Bold: 'bold', Inter_800ExtraBold: 'extraBold',
-  ThemeProvider: 'ThemeProvider', StackrSafeAreaBoundary: 'StackrSafeAreaBoundary',
-  StackrQueryProvider: 'StackrQueryProvider', AppShell: 'AppShell',
-})();
-assert.equal(root.type, 'ThemeProvider');
-assert.equal(root.props.children.type, 'StackrSafeAreaBoundary');
-assert.equal(root.props.children.props.children.type, 'StackrQueryProvider');
-assert.equal(root.props.children.props.children.props.children.type, 'AppShell');
+function renderRoot(fontsLoaded: boolean, fontError: unknown) {
+  let fontWaitExpired = false;
+  const scheduledTimers: Array<{ delay: number; callback: () => void }> = [];
+  let hideCalls = 0;
+  let typographyCalls = 0;
+  const root = rootFunction('RootLayout', {
+    React: react,
+    useFonts: () => [fontsLoaded, fontError],
+    useState: (initial: boolean) => [fontWaitExpired ?? initial, (next: boolean | ((previous: boolean) => boolean)) => {
+      fontWaitExpired = typeof next === 'function' ? next(fontWaitExpired) : next;
+    }],
+    useEffect: (effect: () => unknown) => { effect(); },
+    setTimeout: (callback: () => void, delay: number) => {
+      scheduledTimers.push({ callback, delay });
+      return scheduledTimers.length;
+    },
+    clearTimeout: () => {},
+    configureNativeTypographyDefaults: () => { typographyCalls += 1; },
+    SplashScreen: { hideAsync: () => { hideCalls += 1; return Promise.resolve(); } },
+    FONT_LOAD_TIMEOUT_MS: 5_000,
+    lightTheme: { colors: { bg: '#F6F5F8' } },
+    View: 'View', StackrLoadingScreen: 'StackrLoadingScreen',
+    Inter_400Regular: 'regular', Inter_500Medium: 'medium', Inter_600SemiBold: 'semibold',
+    Inter_700Bold: 'bold', Inter_800ExtraBold: 'extraBold',
+    ThemeProvider: 'ThemeProvider', StackrSafeAreaBoundary: 'StackrSafeAreaBoundary',
+    StackrQueryProvider: 'StackrQueryProvider', AppShell: 'AppShell',
+  });
+  return {
+    render: () => root(),
+    scheduledTimers,
+    getHideCalls: () => hideCalls,
+    getTypographyCalls: () => typographyCalls,
+  };
+}
 
-console.log('Shared UX release checks passed: scaling, inset ownership, 393/430 previews, landscape, native pass-through, root integration.');
+const pendingFonts = renderRoot(false, null);
+let root = pendingFonts.render();
+assert.equal(root.type, 'ThemeProvider');
+assert.equal(root.props.children.type, 'View');
+assert.equal(root.props.children.props.children.type, 'StackrLoadingScreen', 'Pending fonts mount the real Stackr loading screen.');
+assert.equal(pendingFonts.scheduledTimers.length, 1, 'Pending fonts schedule one bounded fallback.');
+assert.equal(pendingFonts.scheduledTimers[0].delay, 5_000, 'The font fallback uses the reviewed five-second limit.');
+assert.equal(pendingFonts.getHideCalls(), 0, 'The native splash remains visible until a React layout occurs.');
+root.props.children.props.onLayout();
+assert.equal(pendingFonts.getHideCalls(), 1, 'The first rendered layout hides the native splash.');
+
+pendingFonts.scheduledTimers[0].callback();
+root = pendingFonts.render();
+assert.equal(root.props.children.props.children.type, 'StackrSafeAreaBoundary', 'The app shell renders after the font fallback expires.');
+assert.equal(root.props.children.props.children.props.children.type, 'StackrQueryProvider');
+assert.equal(root.props.children.props.children.props.children.props.children.type, 'AppShell');
+
+const loadedFonts = renderRoot(true, null);
+root = loadedFonts.render();
+assert.equal(root.props.children.props.children.type, 'StackrSafeAreaBoundary', 'Loaded fonts render the app shell without a timer.');
+assert.equal(loadedFonts.scheduledTimers.length, 0);
+assert.equal(loadedFonts.getTypographyCalls(), 1, 'Loaded fonts configure the native typography defaults.');
+
+const failedFonts = renderRoot(false, new Error('font unavailable'));
+root = failedFonts.render();
+assert.equal(root.props.children.props.children.type, 'StackrSafeAreaBoundary', 'A font load error must not trap startup on the loader.');
+assert.equal(failedFonts.scheduledTimers.length, 0);
+
+console.log('Shared UX release checks passed: scaling, inset ownership, 393/430 previews, landscape, native pass-through, root startup lifecycle.');
