@@ -41,14 +41,14 @@ const LANE_CONFIG: Record<RefreshLane, LaneConfig> = {
   'market-listings': {
     lane: 'market-listings',
     label: 'Market listings',
-    freshnessHours: Number(process.env.MARKET_LISTINGS_PRICE_FRESHNESS_HOURS || 0.75),
+    freshnessHours: Number(process.env.MARKET_LISTINGS_PRICE_FRESHNESS_HOURS || 6),
     defaultLimit: Number(process.env.MARKET_LISTINGS_PRICE_REFRESH_LIMIT || 120),
     sources: ['tcgdex', 'ebay'],
   },
   chase: {
     lane: 'chase',
     label: 'Chase/watchlist cards',
-    freshnessHours: Number(process.env.CHASE_PRICE_FRESHNESS_HOURS || 2),
+    freshnessHours: Number(process.env.CHASE_PRICE_FRESHNESS_HOURS || 6),
     defaultLimit: Number(process.env.CHASE_PRICE_REFRESH_LIMIT || 180),
     sources: ['tcgdex', 'ebay'],
   },

@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import ts from 'typescript';
 import {
   buildVerifiedHomeSnapshotTrend,
   selectComparableHomeSnapshotEntries,
@@ -112,6 +114,109 @@ assert.deepEqual(
   ),
   [25, 30],
   'a portfolio only resumes once every tracked variant has valid current-regime coverage',
+);
+
+const homeSourceText = await readFile(new URL('../features/home/HubScreen.tsx', import.meta.url), 'utf8');
+const homeSource = ts.createSourceFile('HubScreen.tsx', homeSourceText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+
+const visit = (node, predicate) => {
+  if (predicate(node)) return node;
+  let found;
+  ts.forEachChild(node, (child) => {
+    if (!found) found = visit(child, predicate);
+  });
+  return found;
+};
+
+const variableInitializer = (name) => {
+  const declaration = visit(homeSource, (node) => (
+    ts.isVariableDeclaration(node)
+    && ts.isIdentifier(node.name)
+    && node.name.text === name
+  ));
+  assert.ok(declaration?.initializer, `${name} must remain a declared callback or configuration value`);
+  return declaration.initializer;
+};
+
+const asCallback = (expression, name) => {
+  const callback = ts.isCallExpression(expression) && expression.expression.getText(homeSource) === 'useCallback'
+    ? expression.arguments[0]
+    : expression;
+  assert.ok(callback && ts.isArrowFunction(callback), `${name} must remain an executable callback`);
+  return callback;
+};
+
+const pollCallback = asCallback(variableInitializer('pollLivePrices'), 'pollLivePrices');
+const pollCallTargets = [];
+const collectCalls = (node, targets) => {
+  if (ts.isCallExpression(node)) targets.push(node.expression.getText(homeSource));
+  ts.forEachChild(node, (child) => collectCalls(child, targets));
+};
+collectCalls(pollCallback.body, pollCallTargets);
+assert.ok(
+  pollCallTargets.includes('loadCollectionValueRef.current'),
+  'the Home poll must still re-read stored collection prices',
+);
+assert.ok(
+  !pollCallTargets.some((target) => target.includes('requestMarketPriceRefresh') || target.includes('enqueueAutomaticProviderRefresh')),
+  'the Home poll must not enqueue provider refreshes',
+);
+
+const homeFocusEffect = visit(homeSource, (node) => (
+  ts.isCallExpression(node)
+  && node.expression.getText(homeSource) === 'useFocusEffect'
+));
+assert.ok(homeFocusEffect, 'Home must retain its focus lifecycle');
+const focusCallback = homeFocusEffect.arguments[0];
+assert.ok(
+  focusCallback
+  && ts.isCallExpression(focusCallback)
+  && focusCallback.expression.getText(homeSource) === 'useCallback',
+  'Home focus lifecycle must use its callback wrapper',
+);
+const focusBody = asCallback(focusCallback.arguments[0], 'Home focus lifecycle').body;
+const intervalCall = visit(focusBody, (node) => (
+  ts.isCallExpression(node) && node.expression.getText(homeSource) === 'setInterval'
+));
+assert.ok(intervalCall, 'Home must retain a stored-price polling timer');
+assert.equal(
+  intervalCall.arguments[1]?.getText(homeSource),
+  'HOME_STORED_PRICE_POLL_MS',
+  'Home polling must use the stored-price cadence',
+);
+assert.equal(
+  variableInitializer('HOME_STORED_PRICE_POLL_MS').getText(homeSource),
+  '3 * 60 * 1000',
+  'Home stored-price polling must keep queued results visible promptly',
+);
+const focusCallTargets = [];
+collectCalls(focusBody, focusCallTargets);
+assert.ok(
+  focusCallTargets.includes('pollLivePrices'),
+  'Home focus must immediately read cached/stored prices through the poll callback',
+);
+
+const manualRefresh = asCallback(variableInitializer('refreshLivePrices'), 'refreshLivePrices');
+const manualCallTargets = [];
+collectCalls(manualRefresh.body, manualCallTargets);
+assert.ok(
+  manualCallTargets.includes('stackrApiClient.requestMarketPriceRefresh'),
+  'the explicit Home refresh action must remain connected to the provider queue',
+);
+const valueTracker = visit(homeSource, (node) => (
+  ts.isJsxSelfClosingElement(node) && node.tagName.getText(homeSource) === 'ValueTrackerCard'
+));
+assert.ok(valueTracker, 'Home must render the collection value tracker');
+const onRefresh = valueTracker.attributes.properties.find((attribute) => (
+  ts.isJsxAttribute(attribute) && attribute.name.text === 'onRefresh'
+));
+assert.ok(
+  onRefresh
+  && ts.isJsxAttribute(onRefresh)
+  && onRefresh.initializer
+  && ts.isJsxExpression(onRefresh.initializer)
+  && onRefresh.initializer.expression?.getText(homeSource) === 'refreshLivePrices',
+  'the value tracker refresh control must remain connected to the manual queue callback',
 );
 
 console.log('home live price refresh tests passed');

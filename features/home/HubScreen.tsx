@@ -83,7 +83,6 @@ import {
   buildVerifiedHomeSnapshotTrend,
   selectComparableHomeSnapshotEntries,
   supportsHomeSnapshotScope,
-  takeRotatingStringBatch,
 } from '../../lib/homePriceRefreshCore';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 
@@ -172,9 +171,10 @@ const EMPTY_COLLECTION_PRICING: CollectionPricingSummary = {
   state: 'empty',
 };
 const MAX_COLLECTION_VALUE_READS = 4_000;
-const HOME_LIVE_PRICE_POLL_MS = 3 * 60 * 1000;
-const HOME_AUTOMATIC_PRICE_REFRESH_MS = 15 * 60 * 1000;
-const HOME_AUTOMATIC_PRICE_REFRESH_LIMIT = 12;
+// The production refresh worker is the sole authority for provider pulls.
+// Home re-reads only stored snapshots, so manually queued results appear
+// promptly without opening the app causing another provider request.
+const HOME_STORED_PRICE_POLL_MS = 3 * 60 * 1000;
 const HOME_MANUAL_PRICE_REFRESH_LIMIT = 100;
 const HOME_PRICE_REFRESH_BATCH_SIZE = 12;
 
@@ -803,10 +803,7 @@ export default function HubScreen() {
   const hasSuccessfulCollectionPricingRef = useRef(false);
   const collectionValueReadsRef = useRef<CollectionValueRead[]>([]);
   const refreshableVariantIdsRef = useRef<string[]>([]);
-  const providerRefreshCursorRef = useRef(0);
-  const providerRefreshSignatureRef = useRef<string | null>(null);
-  const providerRefreshEnqueueInFlightRef = useRef(false);
-  const automaticProviderRefreshAtRef = useRef(0);
+  const manualProviderRefreshInFlightRef = useRef(false);
   const livePricePollInFlightRef = useRef(false);
   const cachedHomeSnapshotUserIdRef = useRef<string | null>(null);
   const homeSessionUserIdRef = useRef<string | null>(null);
@@ -1449,10 +1446,6 @@ export default function HubScreen() {
         )),
       )].sort();
       refreshableVariantIdsRef.current = refreshableVariantIds;
-      if (providerRefreshSignatureRef.current !== identitySignature) {
-        providerRefreshSignatureRef.current = identitySignature;
-        providerRefreshCursorRef.current = 0;
-      }
 
       let nextChartData: number[] = [];
       let nextTrendCoverageLabel: string | null = null;
@@ -1651,34 +1644,8 @@ export default function HubScreen() {
     loadCollectionValueRef.current = loadCollectionValue;
   }, [loadCollectionValue]);
 
-  const enqueueAutomaticProviderRefresh = useCallback(async () => {
-    const now = Date.now();
-    if (
-      providerRefreshEnqueueInFlightRef.current
-      || now - automaticProviderRefreshAtRef.current < HOME_AUTOMATIC_PRICE_REFRESH_MS
-    ) return;
-    const batch = takeRotatingStringBatch(
-      refreshableVariantIdsRef.current,
-      providerRefreshCursorRef.current,
-      HOME_AUTOMATIC_PRICE_REFRESH_LIMIT,
-    );
-    if (!batch.items.length) return;
-
-    providerRefreshEnqueueInFlightRef.current = true;
-    automaticProviderRefreshAtRef.current = now;
-    providerRefreshCursorRef.current = batch.nextCursor;
-    try {
-      // This only enqueues provider work. Current UI values continue to be stored snapshots.
-      await stackrApiClient.requestMarketPriceRefresh(batch.items, { productType: 'raw_card', currency: 'GBP' });
-    } catch (error) {
-      console.log('Home automatic price refresh could not be queued', error);
-    } finally {
-      providerRefreshEnqueueInFlightRef.current = false;
-    }
-  }, []);
-
   const refreshLivePrices = useCallback(async () => {
-    if (providerRefreshEnqueueInFlightRef.current) {
+    if (manualProviderRefreshInFlightRef.current) {
       Alert.alert('Live price refresh in progress', 'A provider refresh request is already being queued. Stored prices have not been changed yet.');
       return;
     }
@@ -1691,7 +1658,7 @@ export default function HubScreen() {
       return;
     }
 
-    providerRefreshEnqueueInFlightRef.current = true;
+    manualProviderRefreshInFlightRef.current = true;
     setRefreshing(true);
     const summary = { queued: 0, alreadyQueued: 0, cooldown: 0 };
     try {
@@ -1707,19 +1674,19 @@ export default function HubScreen() {
       }
       await loadCollectionValueRef.current();
       const detail = summary.queued
-        ? `${summary.queued} ${summary.queued === 1 ? 'refresh was' : 'refreshes were'} queued for background processing. Stored prices stay visible until the provider writes a new snapshot.`
+        ? `${summary.queued} ${summary.queued === 1 ? 'card refresh was' : 'card refreshes were'} queued. Your stored prices will update after background processing completes.`
         : summary.alreadyQueued
-          ? `${summary.alreadyQueued} ${summary.alreadyQueued === 1 ? 'card is' : 'cards are'} already queued. Stored prices stay visible until a new snapshot is written.`
+          ? `${summary.alreadyQueued} ${summary.alreadyQueued === 1 ? 'card is' : 'cards are'} already queued. Your stored prices will update after background processing completes.`
           : `${summary.cooldown} ${summary.cooldown === 1 ? 'card is' : 'cards are'} in the provider cooldown. No price was changed.`;
       Alert.alert(summary.queued ? 'Live price refresh queued' : 'Live price refresh checked', detail);
     } catch (error) {
       console.log('Home manual price refresh could not be queued', error);
       const pending = summary.queued + summary.alreadyQueued;
       Alert.alert('Live price refresh interrupted', pending
-        ? `${pending} card refreshes are confirmed queued or already pending. The remaining requests could not be confirmed. Stored prices remain visible while processing continues.`
+        ? `${pending} card refreshes are queued or already pending. The remaining requests could not be confirmed; stored prices update after background processing completes.`
         : 'The refresh request could not be confirmed. Stored prices remain visible; retrying is safe and will not duplicate pending requests.');
     } finally {
-      providerRefreshEnqueueInFlightRef.current = false;
+      manualProviderRefreshInFlightRef.current = false;
       setRefreshing(false);
     }
   }, []);
@@ -1729,11 +1696,10 @@ export default function HubScreen() {
     livePricePollInFlightRef.current = true;
     try {
       await loadCollectionValueRef.current();
-      await enqueueAutomaticProviderRefresh();
     } finally {
       livePricePollInFlightRef.current = false;
     }
-  }, [enqueueAutomaticProviderRefresh]);
+  }, []);
 
   const loadChaseCards = useCallback(async () => {
     const requestId = ++homeChaseRequestRef.current;
@@ -2059,9 +2025,6 @@ export default function HubScreen() {
       hasSuccessfulCollectionPricingRef.current = false;
       collectionValueReadsRef.current = [];
       refreshableVariantIdsRef.current = [];
-      providerRefreshCursorRef.current = 0;
-      providerRefreshSignatureRef.current = null;
-      automaticProviderRefreshAtRef.current = 0;
       mintyMarketSignatureRef.current = null;
 
       setCollectionTotal(null);
@@ -2129,7 +2092,7 @@ export default function HubScreen() {
     let secondaryTimer: ReturnType<typeof setTimeout> | null = null;
     const livePriceTimer = setInterval(() => {
       void pollLivePrices();
-    }, HOME_LIVE_PRICE_POLL_MS);
+    }, HOME_STORED_PRICE_POLL_MS);
 
     void (async () => {
       await applyCachedHomeCollection();

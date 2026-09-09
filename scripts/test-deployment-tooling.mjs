@@ -665,6 +665,23 @@ const productionBackendHardeningApproval = JSON.parse(
 );
 const productionMonitorWorkflow = readFileSync('.github/workflows/production-api-monitor.yml', 'utf8');
 const priceRefreshWorkflow = readFileSync('.github/workflows/price-refresh.yml', 'utf8');
+// Scheduled provider sweeps must not reuse the frequent queue-consumer clocks.
+const priceSchedules = [...priceRefreshWorkflow.matchAll(/- cron: '([^']+)'/g)].map((match) => match[1]);
+assert.deepEqual(priceSchedules, [
+  '*/5 * * * *', '*/30 * * * *', '2 */6 * * *',
+  '17 */6 * * *', '32 */6 * * *', '47 */12 * * *',
+]);
+for (const [lane, schedule] of [
+  ['queued', '*/30 * * * *'],
+  ['market-listings', '2 */6 * * *'],
+  ['chase', '17 */6 * * *'],
+  ['high-value', '32 */6 * * *'],
+  ['owned', '47 */12 * * *'],
+]) {
+  const step = priceRefreshWorkflow.split(/\r?\n      - name:/)
+    .find((block) => block.includes(`run: npm run price-refresh:${lane}`));
+  assert.ok(step?.includes(`github.event.schedule == '${schedule}'`), `${lane} must use its own scheduled cadence`);
+}
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
