@@ -7,6 +7,7 @@
     "build:web": "expo export --platform web --output-dir dist",
     "typecheck": "tsc --noEmit",
     "test:startup-loading": "node --import tsx scripts/test-startup-loading.ts && node --import tsx scripts/test-profile-load-state.ts",
+    "test:card-haptics": "node --import tsx scripts/test-card-haptics.ts && node --import tsx scripts/test-haptics.ts",
     "test:ux-p2": "node --import tsx scripts/test-ux-p2.ts && node --import tsx scripts/test-ux-p2-market.ts && node --import tsx scripts/test-scan-legacy-route.ts",
     "test:ux-p3": "node --import tsx scripts/test-scan-lab-review-decision.ts",
     "test:ux-audit-fixes": "node --import tsx scripts/test-search-recovery.ts && node --import tsx scripts/test-scan-variant-ownership.ts && node --import tsx scripts/test-scan-variant-adapter.ts && node --import tsx scripts/test-scan-collection-save.ts && node --import tsx scripts/test-market-evidence.ts && node --import tsx scripts/test-scan-composite-save.ts && node --import tsx scripts/test-community-binder-sharing.ts && node --import tsx scripts/test-price-request-races.ts && node --import tsx scripts/test-password-reset-recovery.ts",

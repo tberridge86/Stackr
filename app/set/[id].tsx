@@ -1,4 +1,5 @@
 import { useTheme } from '../../components/theme-context';
+import { stackrHaptics } from '../../lib/haptics';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -458,7 +459,10 @@ const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity, o
         </View>
 
         <TouchableOpacity
-          onPress={() => router.push(`/card/${card.id}?setId=${setId}`)}
+          onPress={() => {
+            void stackrHaptics.cardPreview();
+            router.push(`/card/${card.id}?setId=${setId}`);
+          }}
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
         >
           <Ionicons name="arrow-up-circle-outline" size={18} color={theme.colors.textSoft} />
@@ -754,6 +758,7 @@ export default function SetDetailScreen() {
       return;
     }
     const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
+    void stackrHaptics.selection();
     setQuantityTarget({ card, variant });
     setQuantityDraft(String(Math.max(1, currentQuantity || 1)));
   }, [setId, variantQuantities, ownershipReady]);
@@ -841,6 +846,7 @@ export default function SetDetailScreen() {
 
   const handleQuickAddVariant = useCallback(async (card: PokemonCard, variant: string) => {
     if (!variant) return;
+    void stackrHaptics.selection();
     const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
     try {
       await handleSetVariantQuantity(card.id, variant, currentQuantity + 1);

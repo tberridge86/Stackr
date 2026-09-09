@@ -1,4 +1,5 @@
 import { useTheme } from '../../components/theme-context';
+import { stackrHaptics } from '../../lib/haptics';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -558,6 +559,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
   const rotation = col === 0 ? '0deg' : col === 2 ? '0deg' : '0deg';
 
   const handleOptions = () => {
+    void stackrHaptics.selection();
     setOptionsOpen(true);
   };
 

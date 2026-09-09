@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { stackrHaptics } from '../../lib/haptics';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
@@ -2715,6 +2716,7 @@ export default function InventoryScreen() {
                     return;
                   }
                   if (lookupType === 'raw_card') {
+                    void stackrHaptics.selection();
                     toggleDraftCard(item);
                     return;
                   }
@@ -2722,6 +2724,7 @@ export default function InventoryScreen() {
                 };
                 const handleResultLongPress = () => {
                   if (lookupType !== 'raw_card') return;
+                  void stackrHaptics.cardPreview();
                   inventoryResultLongPressRef.current = item.id;
                   openResultDetails();
                   setTimeout(() => {

@@ -1,4 +1,5 @@
 import { useTheme } from '../../components/theme-context';
+import { stackrHaptics } from '../../lib/haptics';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -267,11 +268,17 @@ export default function AddCardsToBinderScreen() {
 
     return (
       <TouchableOpacity
-        onPress={() => toggleCard(item)}
-        onLongPress={() => router.push({
-          pathname: '/card/[id]',
-          params: { id: item.id, setId: item.set?.id ?? '' },
-        })}
+        onPress={() => {
+          void stackrHaptics.selection();
+          toggleCard(item);
+        }}
+        onLongPress={() => {
+          void stackrHaptics.cardPreview();
+          router.push({
+            pathname: '/card/[id]',
+            params: { id: item.id, setId: item.set?.id ?? '' },
+          });
+        }}
         delayLongPress={320}
         accessibilityRole="button"
         accessibilityLabel={`${displayName}. Tap to select for binder. Hold for details.`}
