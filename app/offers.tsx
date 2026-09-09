@@ -100,7 +100,13 @@ export default function OffersScreen() {
   ), []);
 
   const bindIdentity = useCallback((userId: string) => {
-    if (authUserIdRef.current === userId) return authGenerationRef.current;
+    if (authUserIdRef.current === userId) {
+      // The initial anonymous identity is also an established auth result.
+      // Resolve its loading state instead of waiting for a data request that
+      // must never run without a verified user ID.
+      if (!userId) setLoading(false);
+      return authGenerationRef.current;
+    }
     authUserIdRef.current = userId;
     authGenerationRef.current += 1;
     setOffers([]);
@@ -181,15 +187,21 @@ export default function OffersScreen() {
     });
 
     const initialEpoch = authEventEpoch;
-    void supabase.auth.getUser().then(({ data, error }) => {
-      if (!mounted || initialEpoch !== authEventEpoch) return;
-      if (error) {
+    void supabase.auth.getUser()
+      .then(({ data, error }) => {
+        if (!mounted || initialEpoch !== authEventEpoch) return;
+        if (error) {
+          console.log('Offer account lookup failed', error);
+          activate('');
+          return;
+        }
+        activate(data.user?.id ?? '');
+      })
+      .catch((error) => {
+        if (!mounted || initialEpoch !== authEventEpoch) return;
         console.log('Offer account lookup failed', error);
         activate('');
-        return;
-      }
-      activate(data.user?.id ?? '');
-    });
+      });
 
     return () => {
       mounted = false;
@@ -520,7 +532,7 @@ export default function OffersScreen() {
         </View>
 
         {/* Segments */}
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+        {currentUserId ? <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
           {(
             [
               { key: 'received', label: 'Received', count: receivedOffers.length },
@@ -533,6 +545,9 @@ export default function OffersScreen() {
               <Pressable
                 key={key}
                 onPress={() => setSegment(key)}
+                accessibilityRole="tab"
+                accessibilityLabel={`${label}, ${count} offers`}
+                accessibilityState={{ selected: active }}
                 style={{
                   flex: 1,
                   backgroundColor: active ? theme.colors.primary + '12' : theme.colors.card,
@@ -570,7 +585,7 @@ export default function OffersScreen() {
               </Pressable>
             );
           })}
-        </View>
+        </View> : null}
 
         {/* List */}
         {loading ? (
@@ -579,6 +594,39 @@ export default function OffersScreen() {
             <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
               Loading offers...
             </Text>
+          </View>
+        ) : !currentUserId ? (
+          <View style={{
+            backgroundColor: theme.colors.card,
+            borderRadius: 16,
+            padding: 24,
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+          }}>
+            <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginBottom: 6 }}>
+              Sign in to see offers
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontSize: 13, lineHeight: 19 }}>
+              Your incoming, outgoing and past card-only offers are private to your account.
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push('/(auth)/login' as any)}
+              accessibilityRole="button"
+              accessibilityLabel="Sign in to view offers"
+              activeOpacity={0.82}
+              style={{
+                minHeight: 44,
+                marginTop: 16,
+                paddingHorizontal: 18,
+                borderRadius: 12,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.colors.primary,
+              }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 14 }}>Sign in</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <FlatList
