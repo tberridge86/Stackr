@@ -1673,7 +1673,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     setDetailFullImageUri(null);
     setSelectedCard(latestCard);
     setDetailVisible(true);
-    void stackrHaptics.selection();
+    void stackrHaptics.cardPreview();
     fetchModalEbayPrice(latestCard);
 
     // Upgrade only with the canonical variant ID already attached to this row.
@@ -1855,6 +1855,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   };
 
   const handleCardLongPress = (item: BinderCardWithDetails) => {
+    void stackrHaptics.cardPreview();
     setQuickActionCard(item);
   };
 
@@ -4023,10 +4024,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                   Alert.alert('Already added', 'This card is already in this binder.');
                   return;
                 }
+                void stackrHaptics.selection();
                 void handleAddCardToCustomBinder(item, { closeAfterAdd: false });
               };
               const handleSearchResultLongPress = () => {
                 addResultLongPressRef.current = item.card_id;
+                void stackrHaptics.cardPreview();
                 openSearchResultDetail();
                 setTimeout(() => {
                   if (addResultLongPressRef.current === item.card_id) {

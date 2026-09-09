@@ -16,6 +16,7 @@ import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../RaritySymbol';
 import { searchIcons, type SearchIconName } from '../../lib/searchIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
+import { stackrHaptics } from '../../lib/haptics';
 
 const money = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
@@ -188,7 +189,10 @@ export function SearchCardRailItem({
   const estimate = money(estimatedValue);
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => {
+        void stackrHaptics.cardPreview();
+        onPress();
+      }}
       activeOpacity={0.84}
       accessibilityRole="button"
       accessibilityLabel={`Open card ${name}${setName ? ` from ${setName}` : ''}`}
@@ -478,7 +482,10 @@ export function SearchCardResult({
   const { theme } = useTheme();
   return (
     <SearchResultShell
-      onPress={onPress}
+      onPress={() => {
+        void stackrHaptics.cardPreview();
+        onPress();
+      }}
       accessibilityLabel={`Open card ${name}${setName ? ` from ${setName}` : ''}`}
       leading={
         <View style={{ width: 58, height: 80, borderRadius: 9, overflow: 'hidden', backgroundColor: theme.colors.surface }}>

@@ -10,6 +10,7 @@ import { Platform } from 'react-native';
  */
 export type StackrHapticEvent =
   | 'selection'
+  | 'card_preview'
   | 'scanner_frame_ready'
   | 'scanner_capture_locked'
   | 'scanner_exact_match'
@@ -26,6 +27,7 @@ export type StackrHapticEvent =
 
 const cooldowns: Partial<Record<StackrHapticEvent, number>> = {
   selection: 80,
+  card_preview: 120,
   scanner_frame_ready: 650,
   scanner_capture_locked: 450,
   scanner_exact_match: 650,
@@ -93,6 +95,9 @@ export async function haptic(event: StackrHapticEvent) {
       case 'selection':
         await Haptics.selectionAsync();
         return;
+      case 'card_preview':
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        return;
       case 'scanner_frame_ready':
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         return;
@@ -129,6 +134,7 @@ export async function haptic(event: StackrHapticEvent) {
 
 export const stackrHaptics = {
   selection: () => haptic('selection'),
+  cardPreview: () => haptic('card_preview'),
   scannerFrameReady: () => haptic('scanner_frame_ready'),
   scannerCaptureLocked: () => haptic('scanner_capture_locked'),
   scannerExactMatch: () => haptic('scanner_exact_match'),

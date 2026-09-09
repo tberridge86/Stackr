@@ -240,7 +240,7 @@ export default function PokemonDetailScreen() {
         delayLongPress={360}
         onLongPress={() => {
           longPressedCardId.current = item.id;
-          void stackrHaptics.selection();
+          void stackrHaptics.cardPreview();
           router.push({
             pathname: '/card/[id]',
             params: { id: item.id, setId: item.set_id ?? undefined },
@@ -251,6 +251,7 @@ export default function PokemonDetailScreen() {
             longPressedCardId.current = null;
             return;
           }
+          void stackrHaptics.selection();
           toggleCardOwned(item);
         }}
         style={({ pressed }) => [
