@@ -4,6 +4,7 @@ import {
   clearCollectionBatchRecoveryIntent,
   createCollectionBatchRequestKey,
   persistVerifiedCollectionBatchRecoveryIntent,
+  sanitizeCollectionBatchCards,
   type CollectionBatchCard,
 } from './collectionBatch';
 import { addScannedVariantCopy } from './scanVariantOwnership';
@@ -68,7 +69,7 @@ function validateIntent(value: unknown, ownerUserId: string): SavedScanCollectio
     ownerUserId,
     sourceSessionId,
     binderId,
-    cards: Object.freeze([...raw.cards]),
+    cards: Object.freeze(sanitizeCollectionBatchCards(raw.cards)),
     variant: raw.variant ? Object.freeze({ ...(raw.variant as Omit<ScannedVariantInput, 'requestKey'>) }) : null,
   });
 }
