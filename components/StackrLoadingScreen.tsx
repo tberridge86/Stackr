@@ -9,6 +9,7 @@ import { typeScale } from '../lib/typography';
 type StackrLoadingScreenProps = {
   message?: string;
   compact?: boolean;
+  busy?: boolean;
 };
 
 const BRAND_ICON = require('../assets/rev2/01-brand/logos/logo.png');
@@ -21,6 +22,7 @@ const DOUBLE_STAR = require('../assets/rev2/01-brand/logos/doublestar.png');
 export function StackrLoadingScreen({
   message = 'Opening your vault',
   compact = false,
+  busy = true,
 }: StackrLoadingScreenProps) {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
@@ -38,11 +40,20 @@ export function StackrLoadingScreen({
   }, []);
 
   useEffect(() => {
+    if (reduceMotion || !busy) {
+      reveal.setValue(1);
+      twinkle.setValue(0);
+      float.setValue(0);
+      blobFloat.setValue(0);
+      sweep.setValue(0.5);
+      return;
+    }
     Animated.spring(reveal, {
       toValue: 1,
       tension: reduceMotion ? 80 : 58,
       friction: reduceMotion ? 12 : 8,
       useNativeDriver: true,
+      isInteraction: false,
     }).start();
 
     const sweepLoop = Animated.loop(
@@ -51,18 +62,9 @@ export function StackrLoadingScreen({
         duration: 1650,
         easing: Easing.inOut(Easing.cubic),
         useNativeDriver: true,
+        isInteraction: false,
       })
     );
-
-    if (reduceMotion) {
-      Animated.timing(sweep, {
-        toValue: 1,
-        duration: 650,
-        easing: Easing.inOut(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-      return () => sweep.stopAnimation();
-    }
 
     const twinkleLoop = Animated.loop(
       Animated.sequence([
@@ -71,12 +73,14 @@ export function StackrLoadingScreen({
           duration: 980,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
+          isInteraction: false,
         }),
         Animated.timing(twinkle, {
           toValue: 0,
           duration: 980,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
+          isInteraction: false,
         }),
       ])
     );
@@ -88,12 +92,14 @@ export function StackrLoadingScreen({
           duration: 1550,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
+          isInteraction: false,
         }),
         Animated.timing(float, {
           toValue: 0,
           duration: 1350,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
+          isInteraction: false,
         }),
       ])
     );
@@ -105,12 +111,14 @@ export function StackrLoadingScreen({
           duration: 4200,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
+          isInteraction: false,
         }),
         Animated.timing(blobFloat, {
           toValue: 0,
           duration: 4200,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
+          isInteraction: false,
         }),
       ])
     );
@@ -121,12 +129,13 @@ export function StackrLoadingScreen({
     blobLoop.start();
 
     return () => {
+      reveal.stopAnimation();
       sweepLoop.stop();
       twinkleLoop.stop();
       floatLoop.stop();
       blobLoop.stop();
     };
-  }, [blobFloat, float, reduceMotion, reveal, sweep, twinkle]);
+  }, [blobFloat, busy, float, reduceMotion, reveal, sweep, twinkle]);
 
   const logoScale = reveal.interpolate({
     inputRange: [0, 1],
@@ -164,7 +173,7 @@ export function StackrLoadingScreen({
   return (
     <View style={[styles.container, compact && styles.compactContainer, { backgroundColor: theme.colors.bg }]}>
       <LinearGradient
-        colors={theme.dark ? ['#17112A', '#24143D', '#0F172A'] : ['#FFFFFF', '#F6F2FF', '#FFFFFF']}
+        colors={theme.dark ? ['#17112A', '#24143D', '#0F172A'] : ['#FFFFFF', theme.colors.bg, '#FFFFFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}
@@ -179,7 +188,7 @@ export function StackrLoadingScreen({
               {
                 width: width * 0.86,
                 height: width * 0.86,
-                opacity: theme.dark ? 0.1 : 0.22,
+                opacity: theme.dark ? 0.1 : 0.12,
                 transform: [{ translateY: Animated.multiply(blobShift, -0.65) }],
               },
             ]}
@@ -192,7 +201,7 @@ export function StackrLoadingScreen({
               {
                 width: width * 0.96,
                 height: width * 0.96,
-                opacity: theme.dark ? 0.2 : 0.82,
+                opacity: theme.dark ? 0.2 : 0.18,
                 transform: [{ translateY: blobShift }],
               },
             ]}
@@ -205,7 +214,7 @@ export function StackrLoadingScreen({
               {
                 width: width * 0.9,
                 height: width * 0.9,
-                opacity: theme.dark ? 0.18 : 0.9,
+                opacity: theme.dark ? 0.18 : 0.12,
                 transform: [{ translateY: Animated.multiply(blobShift, 0.72) }],
               },
             ]}
@@ -259,7 +268,7 @@ export function StackrLoadingScreen({
             style={[
               styles.sloganLeading,
               {
-                color: theme.dark ? '#FFFFFF' : '#061844',
+                color: theme.colors.text,
               },
             ]}
             numberOfLines={1}
@@ -281,7 +290,7 @@ export function StackrLoadingScreen({
           resizeMode="contain"
         />
 
-        <View style={styles.track}>
+        <View accessibilityRole="progressbar" accessibilityLabel={message} accessibilityState={{ busy }} style={styles.track}>
           <Animated.View
             style={[
               styles.trackSweep,
@@ -358,7 +367,7 @@ const styles = StyleSheet.create({
     width: 13,
     height: 13,
     borderRadius: 7,
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#FFBE35',
   },
   logoStack: {
     alignItems: 'center',
@@ -383,7 +392,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 38,
     marginTop: 12,
-    shadowColor: '#F59E0B',
+    shadowColor: '#FFBE35',
     shadowOpacity: 0.3,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 0 },
@@ -393,15 +402,15 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 999,
     marginTop: 20,
-    backgroundColor: 'rgba(139,92,246,0.14)',
+    backgroundColor: 'rgba(105,56,245,0.14)',
     overflow: 'hidden',
   },
   trackSweep: {
     width: 72,
     height: '100%',
     borderRadius: 999,
-    backgroundColor: '#8B5CF6',
-    shadowColor: '#F6C453',
+    backgroundColor: '#6938F5',
+    shadowColor: '#FFBE35',
     shadowOpacity: 0.9,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 0 },

@@ -35,6 +35,9 @@ import { StackrCardActionIcon } from '../components/StackrScreen';
 import { stackrTabBarSizes } from '../lib/stackrSizing';
 import { installRuntimeFetchDiagnostics } from '../lib/runtimeFetchDiagnostics';
 import { stackrHaptics } from '../lib/haptics';
+import { StackrLoadingScreen } from '../components/StackrLoadingScreen';
+import { FONT_LOAD_TIMEOUT_MS } from '../lib/startup';
+import { lightTheme } from '../lib/theme';
 
 installRuntimeFetchDiagnostics();
 void SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -439,6 +442,7 @@ function AppShell() {
 // ===============================
 
 export default function RootLayout() {
+  const [fontWaitExpired, setFontWaitExpired] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -448,34 +452,31 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (!fontsLoaded && !fontError) return;
-    configureNativeTypographyDefaults();
-    const timeout = setTimeout(() => {
-      void SplashScreen.hideAsync().catch(() => {});
-    }, 80);
-
+    if (fontsLoaded || fontError) return;
+    const timeout = setTimeout(() => setFontWaitExpired(true), FONT_LOAD_TIMEOUT_MS);
     return () => clearTimeout(timeout);
   }, [fontError, fontsLoaded]);
 
-  if (!fontsLoaded && !fontError) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-        <Image
-          source={require('../assets/rev2/01-brand/app/splash-ultra-hd.png')}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
-        />
-      </View>
-    );
-  }
+  useEffect(() => {
+    if (fontsLoaded) configureNativeTypographyDefaults();
+  }, [fontsLoaded]);
 
   return (
     <ThemeProvider>
-      <StackrSafeAreaBoundary>
-        <StackrQueryProvider>
-          <AppShell />
-        </StackrQueryProvider>
-      </StackrSafeAreaBoundary>
+      <View
+        style={{ flex: 1, backgroundColor: lightTheme.colors.bg }}
+        onLayout={() => { void SplashScreen.hideAsync().catch(() => {}); }}
+      >
+        {!fontsLoaded && !fontError && !fontWaitExpired ? (
+          <StackrLoadingScreen message="Opening Stackr" />
+        ) : (
+          <StackrSafeAreaBoundary>
+            <StackrQueryProvider>
+              <AppShell />
+            </StackrQueryProvider>
+          </StackrSafeAreaBoundary>
+        )}
+      </View>
     </ThemeProvider>
   );
 }

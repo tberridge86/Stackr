@@ -61,6 +61,7 @@ jobs:
       - run: npm run test:commerce-release-lock
       - run: npm run test:ux-service-release
       - run: npm run test:personal-loading
+      - run: npm run test:startup-loading
       - run: npm run test:integration-repair
       - run: npm run test:mobile-runtime-config
       - run: npm run test:iphone-preview

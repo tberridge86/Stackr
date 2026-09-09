@@ -1,57 +1,50 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
-import { Image, StyleSheet, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../components/auth-context';
 import { useProfile } from '../components/profile-context';
-
-const MIN_SPLASH_MS = 120;
+import { StackrLoadingScreen } from '../components/StackrLoadingScreen';
+import { Text } from '../components/Text';
+import { useTheme } from '../components/theme-context';
+import { resolveStartupDestination } from '../lib/startup';
 
 export default function Index() {
-  const { user, loading: authLoading } = useAuth();
-  const { profile, loading: profileLoading } = useProfile();
+  const { user, loading: authLoading, error: authError, refreshAuth } = useAuth();
+  const { profile, loading: profileLoading, error: profileError, refreshProfile } = useProfile();
+  const { theme } = useTheme();
   const router = useRouter();
 
   const navigatedRef = useRef(false);
-  const [splashReady, setSplashReady] = useState(false);
-  const authReady = !authLoading && !profileLoading;
+  const destination = resolveStartupDestination({
+    authLoading, authError, user, profileLoading, profileError, collectorName: profile?.collector_name,
+  });
+  const error = authError || (!authLoading && user ? profileError : null);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setSplashReady(true), MIN_SPLASH_MS);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  useEffect(() => {
-    if (!authReady || !splashReady || navigatedRef.current) return;
+    if (!destination || navigatedRef.current) return;
     navigatedRef.current = true;
-
-    if (!user) {
-      router.replace('/(auth)/login');
-    } else if (!profile?.collector_name) {
-      router.replace('/profile/setup');
-    } else {
-      router.replace('/(tabs)');
-    }
-  }, [authReady, profile?.collector_name, router, splashReady, user]);
+    router.replace(destination);
+  }, [destination, router]);
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../assets/rev2/01-brand/app/splash.png')}
-        style={styles.logo}
-        resizeMode="cover"
+    <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <StackrLoadingScreen
+        busy={!error}
+        message={error ? 'Opening paused' : authLoading ? 'Checking your account' : 'Opening your vault'}
       />
+      {error ? (
+        <SafeAreaView edges={['bottom']} style={{ padding: 24, gap: 16 }}>
+          <Text accessibilityRole="alert" style={{ textAlign: 'center' }}>{error}</Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            onPress={() => { void (authError ? refreshAuth() : refreshProfile()); }}
+            style={{ backgroundColor: theme.colors.primary, borderRadius: 16, padding: 16, alignItems: 'center' }}
+          >
+            <Text style={{ color: '#FFFFFF', fontWeight: '700' }}>Try again</Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      ) : null}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  logo: {
-    ...StyleSheet.absoluteFillObject,
-    width: '100%',
-    height: '100%',
-  },
-});

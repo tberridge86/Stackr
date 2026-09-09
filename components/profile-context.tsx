@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import { supabase } from '../lib/supabase';
 import { beginProfileLoad, finishProfileLoad, type ProfileLoadState } from '../lib/profileLoadState';
 import { useAuth } from './auth-context';
+import { withStartupTimeout } from '../lib/startup';
 
 export type Profile = {
   id: string;
@@ -64,11 +65,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     setState((previous) => beginProfileLoad(previous, accountId, requestId));
     if (!accountId) return;
     try {
-      const { data, error: loadError } = await supabase
+      const { data, error: loadError } = await withStartupTimeout(supabase
         .from('profiles')
         .select('*')
         .eq('id', accountId)
-        .maybeSingle();
+        .maybeSingle());
       setState((previous) => finishProfileLoad(previous, { accountId, requestId, data: data as Profile | null, error: loadError }));
     } catch (loadError) {
       setState((previous) => finishProfileLoad(previous, { accountId, requestId, data: null, error: loadError }));
