@@ -1,0 +1,131 @@
+name: Build Frozen Stackr Owner iOS Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-owner-ios-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      FROZEN_SOURCE_SHA: 5bed24775b561d9b7733b9c243ad5fb986f3d118
+    steps:
+      - name: Check out frozen reviewed source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 5bed24775b561d9b7733b9c243ad5fb986f3d118
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Attest frozen source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$FROZEN_SOURCE_SHA"
+          test -z "$(git status --porcelain)"
+          test -n "$EXPO_TOKEN"
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify owner release configuration
+        run: node scripts/verify-owner-recognition-build.mjs
+
+      - name: Start iOS build without submission
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$FROZEN_SOURCE_SHA"
+          test -z "$(git status --porcelain)"
+          node <<'NODE'
+          const fs = require('node:fs');
+          const { spawnSync, execFileSync } = require('node:child_process');
+          const eas = require('./eas.json');
+          const app = require('./app.json').expo;
+          const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+          const expected = process.env.FROZEN_SOURCE_SHA;
+          const owner = eas.build['production-owner'];
+          const expectedRuntime = `${app.version}-owner-recognition-v1`;
+          if (!/^[0-9a-f]{40}$/u.test(expected ?? '') || source !== expected) {
+            throw new Error('The checked-out source does not match the frozen owner release revision.');
+          }
+          const env = {
+            ...process.env,
+            ...eas.build.production.env,
+            ...owner.env,
+            EXPO_NO_DOTENV: '1',
+            CI: '1',
+          };
+          const rawPath = `${process.env.RUNNER_TEMP}/eas-owner-ios-build.json`;
+          const errorPath = `${process.env.RUNNER_TEMP}/eas-owner-ios-build.stderr`;
+          const raw = fs.openSync(rawPath, 'w');
+          const error = fs.openSync(errorPath, 'w');
+          const result = spawnSync('npx', [
+            '--yes', 'eas-cli@23.2.0', 'build', '--platform', 'ios',
+            '--profile', 'production-owner', '--non-interactive', '--no-wait', '--json',
+          ], { env, stdio: ['ignore', raw, error] });
+          fs.closeSync(raw);
+          fs.closeSync(error);
+          if (result.status !== 0) {
+            const redact = (value) => String(value)
+              .replace(/https?:\/\/\S+/gu, '[url redacted]')
+              .replace(/(token|authorization|signature|credential|key)\s*[:=]\s*\S+/giu, '$1=[redacted]');
+            const detail = fs.readFileSync(errorPath, 'utf8').split(/\r?\n/u)
+              .filter((line) => /\b(error|failed|failure|denied|unauthorized)\b/iu.test(line))
+              .slice(-8).map(redact).join('\n');
+            if (detail) console.error(detail);
+            throw new Error('EAS did not accept the frozen iOS build request.');
+          }
+          const parsed = JSON.parse(fs.readFileSync(rawPath, 'utf8'));
+          const rows = Array.isArray(parsed) ? parsed : [parsed];
+          if (rows.length !== 1) throw new Error('EAS must return exactly one native build.');
+          const row = rows[0] ?? {};
+          if (typeof row.id !== 'string' || row.gitCommitHash !== source || row.appVersion !== app.version
+            || row.buildProfile !== 'production-owner' || row.updateChannel?.name !== owner.channel
+            || row.runtime?.version !== expectedRuntime) {
+            throw new Error('EAS build receipt does not match the frozen owner release identity.');
+          }
+          const receipt = {
+            source,
+            profile: 'production-owner',
+            channel: owner.channel,
+            runtimeVersion: expectedRuntime,
+            build: {
+              id: row.id,
+              status: typeof row.status === 'string' ? row.status : null,
+              appVersion: row.appVersion,
+              appBuildVersion: typeof row.appBuildVersion === 'string' ? row.appBuildVersion : null,
+              gitCommitHash: row.gitCommitHash,
+              channel: row.updateChannel.name,
+              runtimeVersion: row.runtime.version,
+            },
+          };
+          fs.mkdirSync('outputs/releases', { recursive: true });
+          fs.writeFileSync('outputs/releases/frozen-owner-ios-build-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
+          console.log(JSON.stringify(receipt));
+          NODE
+
+      - name: Upload non-secret native build receipt
+        if: success()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: frozen-owner-ios-build-receipt-${{ github.run_id }}-${{ github.run_attempt }}
+          path: outputs/releases/frozen-owner-ios-build-receipt.json
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 9
