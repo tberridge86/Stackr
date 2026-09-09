@@ -15,6 +15,7 @@ export type StackrHapticEvent =
   | 'scanner_exact_match'
   | 'scanner_ambiguous'
   | 'scanner_failed'
+  | 'capture_saved'
   | 'card_added'
   | 'duplicate_prevented'
   | 'binder_milestone'
@@ -42,6 +43,18 @@ export function setStackrHapticsEnabled(next: boolean) {
 
 export function getStackrHapticsEnabled() {
   return enabled;
+}
+
+/** A resolved native call confirms dispatch, not that the user felt feedback. */
+export async function testStackrHaptics(): Promise<'requested' | 'disabled' | 'unsupported' | 'unavailable'> {
+  if (Platform.OS === 'web') return 'unsupported';
+  if (!enabled) return 'disabled';
+  try {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    return 'requested';
+  } catch {
+    return 'unavailable';
+  }
 }
 
 function shouldPlay(event: StackrHapticEvent) {
@@ -104,6 +117,7 @@ export async function haptic(event: StackrHapticEvent) {
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
         return;
       case 'binder_milestone':
+      case 'capture_saved':
       case 'listing_completed':
       case 'sale_completed':
       case 'trade_completed':
@@ -120,6 +134,7 @@ export const stackrHaptics = {
   scannerExactMatch: () => haptic('scanner_exact_match'),
   scannerAmbiguous: () => haptic('scanner_ambiguous'),
   scannerFailed: () => haptic('scanner_failed'),
+  captureSaved: () => haptic('capture_saved'),
   cardAdded: () => haptic('card_added'),
   duplicatePrevented: () => haptic('duplicate_prevented'),
   binderMilestone: () => haptic('binder_milestone'),

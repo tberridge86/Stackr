@@ -73,6 +73,7 @@ import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackr
 import { loadCollectionPrices, type CollectionPriceResult } from '../../lib/collectionPricingApi';
 import {
   getCollectionPriceCoverageLabel,
+  getComparableCollectionValueReads,
   summariseCollectionPricing,
   type CollectionValueRead,
   type CollectionPricingSummary,
@@ -80,9 +81,9 @@ import {
 import { stackrApiClient } from '../../lib/stackrApiV1';
 import {
   buildVerifiedHomeSnapshotTrend,
+  selectComparableHomeSnapshotEntries,
   supportsHomeSnapshotScope,
   takeRotatingStringBatch,
-  type HomeSnapshotTrendEntry,
 } from '../../lib/homePriceRefreshCore';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 
@@ -754,6 +755,9 @@ export default function HubScreen() {
   // Chart
   const [chartRange, setChartRange] = useState<ChartRange>('7D');
   const [chartData, setChartData] = useState<number[]>([]);
+  const [trendCoverageLabel, setTrendCoverageLabel] = useState<string | null>(null);
+  const [trendProvenanceLabel, setTrendProvenanceLabel] = useState<string | null>(null);
+  const [trendIsSubset, setTrendIsSubset] = useState(false);
 
   // Collection value
   const [collectionTotal, setCollectionTotal] = useState<number | null>(null);
@@ -1177,6 +1181,9 @@ export default function HubScreen() {
           setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
           setMissingCards([]);
           setChartData([]);
+          setTrendCoverageLabel(null);
+          setTrendProvenanceLabel(null);
+          setTrendIsSubset(false);
           setMintyDataRefreshedAt(null);
         }
         return false;
@@ -1196,6 +1203,9 @@ export default function HubScreen() {
         setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
         setMissingCards([]);
         setChartData([]);
+        setTrendCoverageLabel(null);
+        setTrendProvenanceLabel(null);
+        setTrendIsSubset(false);
         collectionValueReadsRef.current = [];
         setMintyDataRefreshedAt(null);
         setChaseCards([]);
@@ -1247,6 +1257,9 @@ export default function HubScreen() {
         ? snapshot.collectionValueReads.slice(-MAX_COLLECTION_VALUE_READS)
         : [];
       setChartData([]);
+      setTrendCoverageLabel(null);
+      setTrendProvenanceLabel(null);
+      setTrendIsSubset(false);
       hasLoadedCollectionValueRef.current = true;
       hasSuccessfulCollectionPricingRef.current = snapshot.collectionTotal != null;
       setCollectionValueLoading(false);
@@ -1422,21 +1435,14 @@ export default function HubScreen() {
       if (!isCurrentRequest()) return;
       const nextPricingSummary = pricingSummaryForResults(priceResults);
       const identitySignature = collectionIdentitySignature(priceResults);
-      const rawSnapshotEntries: HomeSnapshotTrendEntry[] = [];
-      let canReadSnapshotHistory = priceResults.length === ownedUnits.length;
-      for (const [index, unit] of ownedUnits.entries()) {
-        const price = priceResults[index];
-        if (
-          !supportsHomeSnapshotScope(unit.productType, unit.condition)
-          || !price?.variantId
-          || price.central == null
-          || price.status === 'unavailable'
-        ) {
-          canReadSnapshotHistory = false;
-          continue;
-        }
-        rawSnapshotEntries.push({ variantId: price.variantId, quantity: unit.quantity });
-      }
+      const snapshotScope = selectComparableHomeSnapshotEntries(ownedUnits.map((unit, index) => ({
+        productType: unit.productType,
+        condition: unit.condition,
+        variantId: priceResults[index]?.variantId,
+        central: priceResults[index]?.central,
+        status: priceResults[index]?.status,
+        quantity: unit.quantity,
+      })));
       const refreshableVariantIds = [...new Set(
         priceResults.flatMap((price, index) => (
           supportsHomeSnapshotScope(ownedUnits[index]?.productType, ownedUnits[index]?.condition) && price.variantId ? [price.variantId] : []
@@ -1449,21 +1455,24 @@ export default function HubScreen() {
       }
 
       let nextChartData: number[] = [];
-      if (canReadSnapshotHistory && rawSnapshotEntries.length === ownedUnits.length && refreshableVariantIds.length) {
+      let nextTrendCoverageLabel: string | null = null;
+      let nextTrendProvenanceLabel: string | null = null;
+      let nextTrendIsSubset = false;
+      if (snapshotScope.entries.length && snapshotScope.variantIds.length) {
         const rangeDays = chartRange === '7D' ? 7 : 30;
         const nowMs = Date.now();
         try {
           const responses = await Promise.all(
-            Array.from({ length: Math.ceil(refreshableVariantIds.length / 24) }, (_, index) => (
+            Array.from({ length: Math.ceil(snapshotScope.variantIds.length / 24) }, (_, index) => (
               stackrApiClient.marketPriceSnapshots({
-                variantIds: refreshableVariantIds.slice(index * 24, (index + 1) * 24),
+                variantIds: snapshotScope.variantIds.slice(index * 24, (index + 1) * 24),
                 rangeDays,
               })
             )),
           );
           if (!await confirmCurrentRequest()) return;
           nextChartData = buildVerifiedHomeSnapshotTrend(
-            rawSnapshotEntries,
+            snapshotScope.entries,
             responses.flatMap((response) => response.data.snapshots),
             {
               rangeStartMs: nowMs - rangeDays * 24 * 60 * 60 * 1000,
@@ -1471,12 +1480,46 @@ export default function HubScreen() {
               bucketMs: chartRange === '7D' ? 30 * 60 * 1000 : 24 * 60 * 60 * 1000,
             },
           );
+          if (nextChartData.length >= 2) {
+            nextTrendIsSubset = snapshotScope.eligibleUnits < ownedUnitCount;
+            nextTrendCoverageLabel = nextTrendIsSubset
+              ? `Trend covers ${snapshotScope.eligibleUnits} of ${ownedUnitCount} cards with comparable stored prices.`
+              : `Trend covers all ${ownedUnitCount} cards with comparable stored prices.`;
+            nextTrendProvenanceLabel = 'Provider snapshot trend';
+          }
         } catch (historyError) {
           console.log('Home stored price history unavailable', historyError);
         }
       }
-      // A chart point must represent a persisted provider snapshot, never an app read.
-      const nextValueReads: CollectionValueRead[] = [];
+      const currentValueRead: CollectionValueRead | null = nextPricingSummary.total != null
+        ? {
+          capturedAt: new Date().toISOString(),
+          total: nextPricingSummary.total,
+          totalUnits: nextPricingSummary.totalUnits,
+          pricedUnits: nextPricingSummary.pricedUnits,
+          identitySignature,
+        }
+        : null;
+      const nextValueReads = currentValueRead
+        ? [...collectionValueReadsRef.current, currentValueRead].slice(-MAX_COLLECTION_VALUE_READS)
+        : collectionValueReadsRef.current;
+      // Saved owner reads are a truthful fallback only when the same collection
+      // identity and priced coverage were recorded at least twice. Provider
+      // snapshot history remains preferred whenever it is available.
+      if (!nextChartData.length && currentValueRead) {
+        nextChartData = getComparableCollectionValueReads(
+          nextValueReads,
+          currentValueRead,
+          chartRange === '7D' ? 7 : 30,
+        );
+        if (nextChartData.length >= 2) {
+          nextTrendIsSubset = nextPricingSummary.pricedUnits < nextPricingSummary.totalUnits;
+          nextTrendCoverageLabel = nextTrendIsSubset
+            ? `Saved collection reads cover prices for ${nextPricingSummary.pricedUnits} of ${nextPricingSummary.totalUnits} cards.`
+            : `Saved collection reads cover all ${nextPricingSummary.totalUnits} cards.`;
+          nextTrendProvenanceLabel = 'Saved collection-read trend';
+        }
+      }
       const chartChange = nextChartData.length >= 2
         ? nextChartData[nextChartData.length - 1] - nextChartData[0]
         : 0;
@@ -1516,6 +1559,9 @@ export default function HubScreen() {
       setCollectionChangeAmount(chartChange);
       setCollectionChangePercent(chartChangePercent);
       setChartData(nextChartData);
+      setTrendCoverageLabel(nextTrendCoverageLabel);
+      setTrendProvenanceLabel(nextTrendProvenanceLabel);
+      setTrendIsSubset(nextTrendIsSubset);
       collectionValueReadsRef.current = nextValueReads;
       setMintyDataRefreshedAt(refreshedAt);
       setCollectionValueError(null);
@@ -1563,6 +1609,9 @@ export default function HubScreen() {
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
         setChartData([]);
+        setTrendCoverageLabel(null);
+        setTrendProvenanceLabel(null);
+        setTrendIsSubset(false);
         if (!collectorDataLoaded) {
           setActiveBinder(null);
           setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
@@ -1590,6 +1639,9 @@ export default function HubScreen() {
     if (nextRange === chartRange) return;
     homeCollectionRequestRef.current += 1;
     setChartData([]);
+    setTrendCoverageLabel(null);
+    setTrendProvenanceLabel(null);
+    setTrendIsSubset(false);
     setCollectionChangeAmount(0);
     setCollectionChangePercent(0);
     setChartRange(nextRange);
@@ -2022,6 +2074,9 @@ export default function HubScreen() {
       setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
       setMissingCards([]);
       setChartData([]);
+      setTrendCoverageLabel(null);
+      setTrendProvenanceLabel(null);
+      setTrendIsSubset(false);
       setMintyDataRefreshedAt(null);
       setUnreadCount(0);
       setRecentListings([]);
@@ -2419,7 +2474,10 @@ export default function HubScreen() {
             pricingState={collectionPricingSummary.state}
             pricingCoverageLabel={getCollectionPriceCoverageLabel(collectionPricingSummary)}
             pricingWarning={collectionPricingWarning}
-            mintyInsight={chartData.length >= 2 ? mintyInsight : null}
+            trendCoverageLabel={trendCoverageLabel}
+            trendProvenanceLabel={trendProvenanceLabel}
+            trendIsSubset={trendIsSubset}
+            mintyInsight={chartData.length >= 2 && !trendIsSubset ? mintyInsight : null}
             mintyInsightUpdating={mintyInsightRefreshing}
             mintyInsightError={mintyInsightError}
             isLoading={collectionValueLoading}

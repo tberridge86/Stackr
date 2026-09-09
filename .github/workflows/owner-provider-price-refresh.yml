@@ -1,0 +1,98 @@
+name: Owner Provider Price Refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_main_sha:
+        description: Reviewed main commit to run
+        type: string
+        required: true
+      apply:
+        description: Write new exact TCGdex snapshots after reviewing a dry run
+        required: true
+        default: false
+        type: boolean
+      limit:
+        description: Maximum canonical variants to refresh (1-30)
+        required: true
+        default: '3'
+        type: string
+      owner_user_id:
+        description: Owner auth UUID whose saved raw Near Mint normal cards may be considered
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-owner-provider-price-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL || 'https://oakdbbzdqwurpjnoqhmu.supabase.co' }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      STACKR_EXPECTED_SUPABASE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+      STACKR_OWNER_PRICE_REFRESH_ENABLED: 'true'
+      STACKR_OWNER_PRICE_REFRESH_USER_ID: ${{ inputs.owner_user_id }}
+      REFRESH_LIMIT: ${{ inputs.limit }}
+      REFRESH_APPLY: ${{ inputs.apply }}
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify bounded production request
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          test "$STACKR_EXPECTED_SUPABASE_PROJECT_REF" = 'oakdbbzdqwurpjnoqhmu'
+          test "$SUPABASE_URL" = 'https://oakdbbzdqwurpjnoqhmu.supabase.co'
+          [[ "$STACKR_OWNER_PRICE_REFRESH_USER_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$ ]]
+          [[ "$REFRESH_LIMIT" =~ ^([1-9]|[12][0-9]|30)$ ]]
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - name: Install worker dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+
+      - name: Run bounded owner refresh
+        id: refresh
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/owner-provider-price-refresh"
+          args=("--limit=$REFRESH_LIMIT" '--dry-run')
+          if [ "$REFRESH_APPLY" = 'true' ]; then args=("--limit=$REFRESH_LIMIT" '--apply'); fi
+          node scripts/refresh-owner-provider-prices.mjs "${args[@]}" \
+            | tee "$RUNNER_TEMP/owner-provider-price-refresh/summary.json"
+          status=${PIPESTATUS[0]}
+          printf 'mode=%s\nlimit=%s\nstatus=%s\nrollback=Disable STACKR_OWNER_PRICE_REFRESH_ENABLED or do not dispatch again; this worker only appends exact provider snapshots and never changes catalogue, ownership, queues, or provider flags.\n' \
+            "$REFRESH_APPLY" "$REFRESH_LIMIT" "$status" \
+            > "$RUNNER_TEMP/owner-provider-price-refresh/run-metadata.txt"
+          exit "$status"
+
+      - name: Upload bounded refresh receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: owner-provider-price-refresh-${{ github.run_id }}
+          path: ${{ runner.temp }}/owner-provider-price-refresh
+          if-no-files-found: warn
+          retention-days: 30

@@ -6,12 +6,14 @@ async function source(path: string) {
 }
 
 async function main() {
-  const [haptics, scanLearning, liveAnalyser, mainScanner, scanResult] = await Promise.all([
+  const [haptics, scanLearning, liveAnalyser, mainScanner, scanResult, ownerScanner, settings] = await Promise.all([
     source('lib/haptics.ts'),
     source('lib/scanLearning.ts'),
     source('lib/useLiveCardFrameAnalyser.ts'),
     source('features/scan/ScanScreen.tsx'),
     source('app/scan/result.tsx'),
+    source('app/scan/owner.tsx'),
+    source('app/settings.tsx'),
   ]);
 
   assert.match(haptics, /Platform\.OS === 'web'/, 'web must remain a no-op');
@@ -25,6 +27,13 @@ async function main() {
   );
 
   assert.match(scanLearning, /candidate_selected[\s\S]*?return 'selection'/);
+  assert.match(ownerScanner, /if \(photo.canceled\) return;[\s\S]*?stackrHaptics.scannerCaptureLocked\(\)/,
+    'owner capture feedback must follow camera dismissal and exclude cancellation');
+  assert.match(ownerScanner, /setResult\(identified\);\s*void stackrHaptics.scannerAmbiguous\(\)/,
+    'owner suggestions require review, never an automatic exact-match haptic');
+  assert.match(ownerScanner, /stackrHaptics.captureSaved\(\)/, 'saved teaching captures need completion feedback');
+  assert.match(settings, /Test haptic feedback/, 'a device feedback check must be reachable outside the camera');
+  assert.match(haptics, /return 'requested'/, 'native dispatch must not claim physical-device success');
   assert.match(scanLearning, /added_to_binder[\s\S]*?return 'card_added'/);
   assert.match(scanLearning, /duplicate_prevented[\s\S]*?return 'duplicate_prevented'/);
   assert.match(scanLearning, /match_incorrect[\s\S]*?none_correct[\s\S]*?return 'scanner_ambiguous'/);

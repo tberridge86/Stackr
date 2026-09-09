@@ -16,6 +16,47 @@ export type HomeSnapshotTrendEntry = {
   quantity: number;
 };
 
+export type HomeSnapshotCandidate = {
+  productType: string;
+  condition: string | null | undefined;
+  variantId: string | null | undefined;
+  central: number | null | undefined;
+  status: string | null | undefined;
+  quantity: number | null | undefined;
+};
+
+/**
+ * Picks the owned units that can be represented by the current price-history
+ * contract. Unsupported finishes and unavailable quotes stay out of the trend
+ * instead of blanking useful history for the eligible cards.
+ */
+export function selectComparableHomeSnapshotEntries(candidates: readonly HomeSnapshotCandidate[]) {
+  const entries: HomeSnapshotTrendEntry[] = [];
+  let eligibleUnits = 0;
+  for (const candidate of candidates) {
+    const quantity = Number(candidate.quantity);
+    const central = Number(candidate.central);
+    const variantId = String(candidate.variantId ?? '').trim();
+    if (
+      !supportsHomeSnapshotScope(candidate.productType, candidate.condition)
+      || !variantId
+      || !Number.isFinite(quantity)
+      || quantity <= 0
+      || !Number.isFinite(central)
+      || central <= 0
+      || String(candidate.status ?? '').trim().toLowerCase() === 'unavailable'
+    ) continue;
+    const wholeQuantity = Math.floor(quantity);
+    entries.push({ variantId, quantity: wholeQuantity });
+    eligibleUnits += wholeQuantity;
+  }
+  return {
+    entries,
+    variantIds: [...new Set(entries.map((entry) => entry.variantId))].sort(),
+    eligibleUnits,
+  };
+}
+
 export type HomeSnapshotTrendObservation = {
   variantId: string;
   snapshotAt: string | null;

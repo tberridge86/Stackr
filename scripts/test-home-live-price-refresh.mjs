@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   buildVerifiedHomeSnapshotTrend,
+  selectComparableHomeSnapshotEntries,
   supportsHomeSnapshotScope,
   takeRotatingStringBatch,
 } from '../lib/homePriceRefreshCore.ts';
@@ -16,6 +17,15 @@ assert.equal(firstBatch.nextCursor, 2);
 const secondBatch = takeRotatingStringBatch(['variant-b', 'variant-a', 'variant-c'], firstBatch.nextCursor, 2);
 assert.deepEqual(secondBatch.items, ['variant-c']);
 assert.equal(secondBatch.nextCursor, 0);
+
+const eligibleSubset = selectComparableHomeSnapshotEntries([
+  { productType: 'raw_card', condition: 'Near Mint', variantId: 'variant-a', central: 10, status: 'available', quantity: 2 },
+  { productType: 'graded_card', condition: 'Near Mint', variantId: 'variant-b', central: 100, status: 'available', quantity: 1 },
+  { productType: 'raw_card', condition: 'Near Mint', variantId: 'variant-c', central: null, status: 'unavailable', quantity: 1 },
+]);
+assert.deepEqual(eligibleSubset.entries, [{ variantId: 'variant-a', quantity: 2 }]);
+assert.deepEqual(eligibleSubset.variantIds, ['variant-a']);
+assert.equal(eligibleSubset.eligibleUnits, 2, 'Unsupported or unavailable cards must not blank an eligible stored-price subset.');
 
 const trend = buildVerifiedHomeSnapshotTrend(
   [

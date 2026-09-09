@@ -31,9 +31,10 @@ for (const retained of [
   'totalValue={collectionTotal}', 'pricingState={collectionPricingSummary.state}',
   'pricingWarning={collectionPricingWarning}', 'onTrendRangeChange={handleChartRangeChange}',
   'onRefresh={refreshLivePrices}', 'refreshing={refreshing}',
-  'mintyInsight={chartData.length >= 2 ? mintyInsight : null}',
+  'trendCoverageLabel={trendCoverageLabel}', 'trendProvenanceLabel={trendProvenanceLabel}',
+  'trendIsSubset={trendIsSubset}', 'mintyInsight={chartData.length >= 2 && !trendIsSubset ? mintyInsight : null}',
 ]) assert.ok(render.includes(retained), `Missing pricing interface: ${retained}`);
-for (const retained of ['loadCollectionPrices', 'buildVerifiedHomeSnapshotTrend', 'requestMarketPriceRefresh', 'homeSessionUserIdRef', 'isGate0CommerceActivity']) {
+for (const retained of ['loadCollectionPrices', 'buildVerifiedHomeSnapshotTrend', 'selectComparableHomeSnapshotEntries', 'getComparableCollectionValueReads', 'requestMarketPriceRefresh', 'homeSessionUserIdRef', 'isGate0CommerceActivity']) {
   assert.ok(hub.includes(retained), `Lost release safeguard: ${retained}`);
 }
 assert.ok(hub.includes("collectionPricingSummary.state === 'fresh'"));

@@ -20,6 +20,7 @@ import { useAppMode } from '../components/app-mode-context';
 import { useTheme } from '../components/theme-context';
 import { supabase } from '../lib/supabase';
 import { OWNER_PRIVATE_RECOGNITION_ENABLED } from '../lib/ownerRecognitionCore';
+import { testStackrHaptics } from '../lib/haptics';
 
 const SETTINGS_ICONS = {
   account: require('../assets/rev2/03-ui-illustrations/hero-icons/profile.png'),
@@ -67,6 +68,8 @@ export default function SettingsScreen() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [testingHaptics, setTestingHaptics] = useState(false);
+  const [hapticMessage, setHapticMessage] = useState<string | null>(null);
   const showSellerSettings = hydrated && premiumSellerAccess.allowed;
 
   const checkForUpdate = useCallback(async () => {
@@ -187,6 +190,25 @@ export default function SettingsScreen() {
             <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{checkingUpdate ? 'Checking…' : 'Check for updates'}</Text>
           </TouchableOpacity>}
           {updateMessage && <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft }}>{updateMessage}</Text>}
+        </View>
+
+        <View style={{ padding: 16, marginBottom: 14, backgroundColor: theme.colors.card, borderRadius: 16 }}>
+          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Touch feedback</Text>
+          <TouchableOpacity accessibilityRole="button" disabled={testingHaptics}
+            onPress={async () => {
+              setTestingHaptics(true);
+              try {
+                const result = await testStackrHaptics();
+                setHapticMessage(result === 'requested'
+                  ? 'A short vibration was requested. If you felt nothing on iPhone, check System Haptics and turn off Low Power Mode, then try again.'
+                  : result === 'unsupported' ? 'Try touch feedback in the iPhone app.'
+                  : result === 'disabled' ? 'Touch feedback is currently turned off in Stackr.'
+                  : 'Touch feedback is unavailable in this installation. Include the app version and support reference above when reporting it.');
+              } finally { setTestingHaptics(false); }
+            }} style={{ paddingVertical: 12 }}>
+            <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{testingHaptics ? 'Testing…' : 'Test haptic feedback'}</Text>
+          </TouchableOpacity>
+          {hapticMessage && <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft }}>{hapticMessage}</Text>}
         </View>
 
         {settingsSections.filter((section) => !section.sellerOnly || showSellerSettings).map((section) => (
