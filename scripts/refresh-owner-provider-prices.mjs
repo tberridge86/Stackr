@@ -29,6 +29,7 @@ const SAFE_REFRESH_ERROR_CODES = new Set([
   'unsupported_refresh_scope',
   'provider_identity_truncated',
   'provider_refresh_cooldown',
+  'exact_provider_daily_snapshot_conflict',
 ]);
 
 function requireEnv(name) {
