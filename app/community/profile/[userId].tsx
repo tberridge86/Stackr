@@ -1,5 +1,5 @@
 import { useTheme } from '../../../components/theme-context';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -127,6 +127,7 @@ export default function PublicCollectorProfileScreen() {
   const [chaseCard, setChaseCard] = useState<CardPreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [friendActionBusy, setFriendActionBusy] = useState(false);
+  const friendMutationRef = useRef(false);
 
   const avatar = useMemo(() => {
     return AVATAR_PRESETS.find((a) => a.key === profile?.avatar_preset) ?? null;
@@ -294,61 +295,37 @@ export default function PublicCollectorProfileScreen() {
   // FRIEND ACTIONS
   // ===============================
 
-  const handleFriendAction = async () => {
-    if (!binderId || isOwnProfile) return;
+  const runFriendMutation = async (operation: () => Promise<void>) => {
+    if (friendMutationRef.current) return;
+    friendMutationRef.current = true;
+    setFriendActionBusy(true);
+    try { await operation(); }
+    catch (error: any) { Alert.alert('Could not update friendship', error?.message ?? 'Please try again.'); }
+    finally { friendMutationRef.current = false; setFriendActionBusy(false); }
+  };
 
-    try {
-      setFriendActionBusy(true);
-
+  const handleFriendAction = () => {
+    if (!binderId || isOwnProfile || friendMutationRef.current) return;
+    if ((friendStatus === 'accepted' || friendStatus === 'pending_sent') && friendshipId) {
+      const remove = friendStatus === 'accepted';
+      Alert.alert(remove ? 'Remove friend' : 'Withdraw request',
+        remove ? 'Remove ' + (profile?.collector_name ?? 'this collector') + ' from your friends?' : 'Withdraw your request to ' + (profile?.collector_name ?? 'this collector') + '?',
+        [{ text: 'Cancel', style: 'cancel' }, { text: remove ? 'Remove' : 'Withdraw', style: 'destructive', onPress: () => void runFriendMutation(async () => {
+          await removeFriend(friendshipId);
+          setFriendStatus('none'); setFriendshipId(null);
+        }) }]);
+      return;
+    }
+    void runFriendMutation(async () => {
       if (friendStatus === 'none') {
         const result = await sendFriendRequest(binderId);
-        setFriendshipId(result.id);
-        setFriendStatus('pending_sent');
-        Alert.alert('Request sent', 'Friend request sent!');
+        setFriendshipId(result.id); setFriendStatus('pending_sent');
+        Alert.alert('Request sent', 'Friend request sent.');
       } else if (friendStatus === 'pending_received' && friendshipId) {
-        await acceptFriendRequest(friendshipId);
-        setFriendStatus('accepted');
-        Alert.alert('Friends!', 'You are now friends.');
-      } else if (friendStatus === 'accepted' && friendshipId) {
-        Alert.alert(
-          'Remove friend',
-          'Are you sure you want to remove this friend?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Remove',
-              style: 'destructive',
-              onPress: async () => {
-                await removeFriend(friendshipId);
-                setFriendStatus('none');
-                setFriendshipId(null);
-              },
-            },
-          ]
-        );
-      } else if (friendStatus === 'pending_sent' && friendshipId) {
-        Alert.alert(
-          'Withdraw request',
-          'Cancel your friend request?',
-          [
-            { text: 'Keep', style: 'cancel' },
-            {
-              text: 'Withdraw',
-              style: 'destructive',
-              onPress: async () => {
-                await removeFriend(friendshipId);
-                setFriendStatus('none');
-                setFriendshipId(null);
-              },
-            },
-          ]
-        );
+        await acceptFriendRequest(friendshipId); setFriendStatus('accepted');
+        Alert.alert('Friends', 'You are now friends.');
       }
-    } catch (error: any) {
-      Alert.alert('Error', error?.message ?? 'Something went wrong.');
-    } finally {
-      setFriendActionBusy(false);
-    }
+    });
   };
 
   const friendButtonLabel = () => {
@@ -525,7 +502,7 @@ export default function PublicCollectorProfileScreen() {
                 )}
               </View>
 
-              <Text style={{ color: theme.colors.text, fontSize: 21, lineHeight: 26, fontWeight: '900' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>
+              <Text style={{ color: theme.colors.text, fontSize: 21, lineHeight: 26, fontWeight: '900', textAlign: 'center' }}>
                 {profile.collector_name ?? 'Collector'}
               </Text>
 
@@ -585,6 +562,10 @@ export default function PublicCollectorProfileScreen() {
                   <TouchableOpacity
                     onPress={handleFriendAction}
                     disabled={friendActionBusy}
+                    accessibilityRole="button"
+                    accessibilityLabel={friendActionBusy ? 'Updating friendship' : friendButtonLabel()}
+                    accessibilityState={{ busy: friendActionBusy, disabled: friendActionBusy }}
+                    aria-busy={friendActionBusy}
                     style={[{
                       flex: 1,
                       borderRadius: 14,
@@ -594,7 +575,7 @@ export default function PublicCollectorProfileScreen() {
                     }, friendButtonStyle()]}
                   >
                     <Text style={{ color: friendButtonTextColor(), fontWeight: '900', fontSize: 13 }}>
-                      {friendActionBusy ? '...' : friendButtonLabel()}
+                      {friendActionBusy ? 'Updating…' : friendButtonLabel()}
                     </Text>
                   </TouchableOpacity>
 

@@ -6,6 +6,8 @@
     "start": "expo start",
     "build:web": "expo export --platform web --output-dir dist",
     "typecheck": "tsc --noEmit",
+    "test:ux-p2": "node --import tsx scripts/test-ux-p2.ts && node --import tsx scripts/test-ux-p2-market.ts && node --import tsx scripts/test-scan-legacy-route.ts",
+    "test:ux-p1": "node --import tsx scripts/test-testflight-p1.ts && node --import tsx scripts/test-manual-collection-review.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-binder-page-scan-recovery.ts && node --import tsx scripts/test-set-variant-removal.ts",
     "test:personal-loading": "node --import tsx scripts/test-binder-library-loading.ts && node --import tsx scripts/test-request-cache.ts && node --import tsx scripts/test-collection-summary-performance.ts && node --import tsx scripts/test-account-request-guard.ts && node --import tsx scripts/test-profile-load-state.ts && node --import tsx scripts/test-binder-unpriced-loading.ts && node --import tsx scripts/test-stackr-image-candidates.ts && node scripts/test-search-printing-language.mjs",
     "test:ux-service-release": "node --import tsx scripts/test-shared-ux-release.ts && node --import tsx scripts/test-profile-load-state.ts && node --import tsx scripts/test-card-search-intent.mjs && node --import tsx scripts/test-offer-review-release.ts && node --import tsx scripts/test-trade-service-release.ts",
     "typecheck:backend": "tsc --noEmit -p backend/tsconfig.json",

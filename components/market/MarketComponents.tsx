@@ -138,9 +138,6 @@ export function MarketHeader({
           >
             The Ma<Text style={{ color: theme.colors.primary, fontSize: 31, lineHeight: 36, fontWeight: '900' }}>rket</Text>
           </Text>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, lineHeight: 16, fontWeight: '800', marginTop: -1 }}>
-            Browse listings and make card-only offers with collectors.
-          </Text>
         </View>
         <TouchableOpacity
           onPress={onProfile}

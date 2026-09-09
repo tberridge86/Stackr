@@ -1,3 +1,4 @@
+import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { useTheme } from '../../components/theme-context';
 import React, {
   useCallback,
@@ -12,8 +13,6 @@ import {
   Alert,
   Image,
   Linking,
-  Modal,
-  Pressable,
   RefreshControl,
   ScrollView,
   TextInput,
@@ -182,14 +181,6 @@ const HOME_PRICE_REFRESH_BATCH_SIZE = 12;
 // CONSTANTS
 // ===============================
 
-
-const cardShadow = {
-  shadowColor: '#000',
-  shadowOpacity: 0.05,
-  shadowRadius: 10,
-  shadowOffset: { width: 0, height: 4 },
-  elevation: 3,
-};
 
 const HUB_TIP_STORAGE_KEY = 'stackr:feature-tip-dismissed:hub-overview-v1';
 const HOME_MASTER_SET_STORAGE_PREFIX = 'stackr:binder-master-set:';
@@ -829,8 +820,13 @@ export default function HubScreen() {
   // SUBMIT BUG REPORT
   // ===============================
 
+  const utilitySubmittingRef = useRef({ bug: false, feedback: false });
+  const [bugSendError, setBugSendError] = useState<string | null>(null);
+  const [feedbackSendError, setFeedbackSendError] = useState<string | null>(null);
   const submitBugReport = async () => {
-    if (!bugText.trim()) return;
+    if (!bugText.trim() || utilitySubmittingRef.current.bug) return;
+    utilitySubmittingRef.current.bug = true;
+    setBugSendError(null);
     setBugSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -838,17 +834,19 @@ export default function HubScreen() {
         ? await supabase.from('profiles').select('collector_name').eq('id', user.id).maybeSingle()
         : { data: null };
       const collectorName = profile?.collector_name ?? user?.email ?? 'Anonymous';
-      await fetch(`${PRICE_API_URL}/api/discord/bug-report`, {
+      const response = await fetch(`${PRICE_API_URL}/api/discord/bug-report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ report: bugText.trim(), collectorName }),
       });
+      if (!response.ok) throw new Error('Could not send bug report.');
       setBugText('');
       setBugModalOpen(false);
       Alert.alert('Thanks!', 'Your bug report has been sent to the team.');
     } catch {
-      Alert.alert('Error', 'Could not send bug report. Please try again.');
+      setBugSendError('Could not send bug report. Your text is still here; try sending again.');
     } finally {
+      utilitySubmittingRef.current.bug = false;
       setBugSubmitting(false);
     }
   };
@@ -858,7 +856,9 @@ export default function HubScreen() {
   // ===============================
 
   const submitFeedback = async () => {
-    if (!feedbackText.trim()) return;
+    if (!feedbackText.trim() || utilitySubmittingRef.current.feedback) return;
+    utilitySubmittingRef.current.feedback = true;
+    setFeedbackSendError(null);
     setFeedbackSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -866,17 +866,19 @@ export default function HubScreen() {
         ? await supabase.from('profiles').select('collector_name').eq('id', user.id).maybeSingle()
         : { data: null };
       const collectorName = profile?.collector_name ?? user?.email ?? 'Anonymous';
-      await fetch(`${PRICE_API_URL}/api/discord/feedback`, {
+      const response = await fetch(`${PRICE_API_URL}/api/discord/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedback: feedbackText.trim(), collectorName }),
       });
+      if (!response.ok) throw new Error('Could not send feedback.');
       setFeedbackText('');
       setFeedbackModalOpen(false);
       Alert.alert('Thanks!', 'Your feedback has been sent to the team.');
     } catch {
-      Alert.alert('Error', 'Could not send feedback. Please try again.');
+      setFeedbackSendError('Could not send feedback. Your text is still here; try sending again.');
     } finally {
+      utilitySubmittingRef.current.feedback = false;
       setFeedbackSubmitting(false);
     }
   };
@@ -2534,29 +2536,7 @@ export default function HubScreen() {
         onClose={closeHubTip}
       />
 
-      <Modal visible={mintySettingsOpen} transparent animationType="slide">
-        <View style={{ flex: 1, backgroundColor: 'rgba(8,10,20,0.46)', justifyContent: 'flex-end' }}>
-          <Pressable style={{ flex: 1 }} onPress={() => setMintySettingsOpen(false)} />
-          <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 20, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
-              <View style={{ width: 42, height: 42, borderRadius: 16, backgroundColor: `${theme.colors.primary}14`, alignItems: 'center', justifyContent: 'center' }}>
-                <Ionicons name="sparkles-outline" size={22} color={theme.colors.primary} />
-              </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={{ color: theme.colors.text, fontSize: 20, lineHeight: 24, fontWeight: '900' }}>Minty personalisation</Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 4 }}>
-                  Choose what Minty can look at. Your feedback helps shape the next advice.
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setMintySettingsOpen(false)}
-                activeOpacity={0.76}
-                style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}
-              >
-                <Ionicons name="close" size={19} color={theme.colors.textSoft} />
-              </TouchableOpacity>
-            </View>
-
+      <StackrBottomSheet visible={mintySettingsOpen} title="Minty personalisation" onClose={() => setMintySettingsOpen(false)} maxHeight="88%">
             <View style={{ borderRadius: 18, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingHorizontal: 14, marginTop: 8 }}>
               {renderMintySettingRow('personalisedInsights', 'Personalised advice', 'Use your collection goals to pick the most useful Minty tips.')}
               <View style={{ height: 1, backgroundColor: theme.colors.border }} />
@@ -2578,21 +2558,12 @@ export default function HubScreen() {
             >
               <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>Reset Minty preferences</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+
+      </StackrBottomSheet>
 
       {premiumSellerAccess.allowed ? (
-      <Modal visible={roleModalOpen} transparent animationType="fade">
-        <View style={{ flex: 1, backgroundColor: 'rgba(8,10,20,0.48)', justifyContent: 'center', padding: 20 }}>
-          <View style={{ backgroundColor: theme.colors.card, borderRadius: 24, padding: 18, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
-            <TouchableOpacity
-              onPress={async () => { await setMode('collector'); setRoleModalOpen(false); }}
-              style={{ position: 'absolute', top: 12, right: 12, width: 34, height: 34, borderRadius: 17, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', zIndex: 2 }}
-              activeOpacity={0.75}
-            >
-              <Ionicons name="close" size={20} color={theme.colors.textSoft} />
-            </TouchableOpacity>
+      <StackrBottomSheet visible={roleModalOpen} title="Premium Seller Mode" onClose={() => setRoleModalOpen(false)} maxHeight="88%">
+
 
             <View style={{ alignItems: 'center', marginBottom: 14 }}>
               <View style={{ width: 164, height: 122, marginBottom: 8, alignItems: 'center', justifyContent: 'flex-end' }}>
@@ -2686,17 +2657,11 @@ export default function HubScreen() {
             >
               <Text style={{ color: theme.colors.primary, fontSize: 15, fontWeight: '900' }}>Maybe later</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+
+      </StackrBottomSheet>
       ) : null}
       {/* HAMBURGER MENU */}
-      <Modal visible={menuOpen} transparent animationType="fade">
-        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setMenuOpen(false)}>
-          <Pressable
-            style={{ position: 'absolute', top: 80, right: 16, backgroundColor: theme.colors.card, borderRadius: 20, padding: 8, borderWidth: 1, borderColor: theme.colors.border, minWidth: 220, ...cardShadow }}
-            onPress={() => {}}
-          >
+      <StackrBottomSheet visible={menuOpen} title="Account" onClose={() => setMenuOpen(false)} maxHeight="88%">
             <TouchableOpacity onPress={() => { setMenuOpen(false); router.push('/profile'); }} style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }} activeOpacity={0.7}>
               <StackrProfileAvatar
                 avatarUrl={myProfile?.avatar_url}
@@ -2728,17 +2693,15 @@ export default function HubScreen() {
               <Ionicons name="chatbubble-ellipses-outline" size={22} color={theme.colors.primary} />
               <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>Send Feedback</Text>
             </TouchableOpacity>
-          </Pressable>
-        </Pressable>
-      </Modal>
+
+      </StackrBottomSheet>
 
       {/* BUG REPORT MODAL */}
-      <Modal visible={bugModalOpen} transparent animationType="slide">
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
-          <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.colors.border }}>
-            <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>Report a Bug</Text>
+      <StackrBottomSheet visible={bugModalOpen} title="Report a Bug" onClose={() => setBugModalOpen(false)} dismissible={!bugSubmitting} maxHeight="88%">
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>Describe what happened and we&apos;ll look into it.</Text>
             <TextInput
+              accessibilityLabel="Bug description"
+              editable={!bugSubmitting}
               value={bugText}
               onChangeText={setBugText}
               placeholder="e.g. The scan screen crashes when I..."
@@ -2746,23 +2709,22 @@ export default function HubScreen() {
               multiline
               style={{ backgroundColor: theme.colors.surface, borderRadius: 14, padding: 14, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border, minHeight: 120, textAlignVertical: 'top', marginBottom: 16 }}
             />
-            <TouchableOpacity onPress={submitBugReport} disabled={bugSubmitting || !bugText.trim()} style={{ backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: bugSubmitting || !bugText.trim() ? 0.5 : 1 }}>
+            {bugSendError ? <Text accessibilityRole="alert" style={{ color: theme.colors.semantic.error, fontSize: 14, lineHeight: 20 }}>{bugSendError}</Text> : null}
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Send bug report" accessibilityState={{ busy: bugSubmitting, disabled: bugSubmitting || !bugText.trim() }} onPress={submitBugReport} disabled={bugSubmitting || !bugText.trim()} style={{ backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: bugSubmitting || !bugText.trim() ? 0.5 : 1 }}>
               <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>{bugSubmitting ? 'Sending...' : 'Send Bug Report'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => { setBugModalOpen(false); setBugText(''); }} style={{ alignItems: 'center', paddingVertical: 10 }}>
+            <TouchableOpacity accessibilityRole="button" disabled={bugSubmitting} onPress={() => setBugModalOpen(false)} style={{ alignItems: 'center', paddingVertical: 10 }}>
               <Text style={{ color: theme.colors.textSoft, fontWeight: '700' }}>Cancel</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+
+      </StackrBottomSheet>
 
       {/* FEEDBACK MODAL */}
-      <Modal visible={feedbackModalOpen} transparent animationType="slide">
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
-          <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.colors.border }}>
-            <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>Send Feedback</Text>
+      <StackrBottomSheet visible={feedbackModalOpen} title="Send Feedback" onClose={() => setFeedbackModalOpen(false)} dismissible={!feedbackSubmitting} maxHeight="88%">
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>Ideas, suggestions, or anything else - we&apos;d love to hear it.</Text>
             <TextInput
+              accessibilityLabel="Feedback"
+              editable={!feedbackSubmitting}
               value={feedbackText}
               onChangeText={setFeedbackText}
               placeholder="e.g. It would be great if I could..."
@@ -2770,15 +2732,15 @@ export default function HubScreen() {
               multiline
               style={{ backgroundColor: theme.colors.surface, borderRadius: 14, padding: 14, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border, minHeight: 120, textAlignVertical: 'top', marginBottom: 16 }}
             />
-            <TouchableOpacity onPress={submitFeedback} disabled={feedbackSubmitting || !feedbackText.trim()} style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: feedbackSubmitting || !feedbackText.trim() ? 0.5 : 1 }}>
+            {feedbackSendError ? <Text accessibilityRole="alert" style={{ color: theme.colors.semantic.error, fontSize: 14, lineHeight: 20 }}>{feedbackSendError}</Text> : null}
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Send feedback" accessibilityState={{ busy: feedbackSubmitting, disabled: feedbackSubmitting || !feedbackText.trim() }} onPress={submitFeedback} disabled={feedbackSubmitting || !feedbackText.trim()} style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: feedbackSubmitting || !feedbackText.trim() ? 0.5 : 1 }}>
               <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>{feedbackSubmitting ? 'Sending...' : 'Send Feedback'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => { setFeedbackModalOpen(false); setFeedbackText(''); }} style={{ alignItems: 'center', paddingVertical: 10 }}>
+            <TouchableOpacity accessibilityRole="button" disabled={feedbackSubmitting} onPress={() => setFeedbackModalOpen(false)} style={{ alignItems: 'center', paddingVertical: 10 }}>
               <Text style={{ color: theme.colors.textSoft, fontWeight: '700' }}>Cancel</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+
+      </StackrBottomSheet>
     </SafeAreaView>
   );
 }

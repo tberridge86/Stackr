@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   Alert,
   Image,
+  Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -13,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useIsFocused } from '@react-navigation/native';
 import { router, Stack } from 'expo-router';
-import { Camera, useCameraPermission } from '../../lib/visionCamera';
+import { Camera, getCameraPermissionStatus, useCameraPermission } from '../../lib/visionCamera';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { StackrBackButton } from '../../components/StackrBackButton';
@@ -153,6 +156,35 @@ export default function CardGraderScreen() {
     compress: 0.86,
   });
   const { hasPermission, requestPermission } = useCameraPermission();
+  const [cameraRequestDenied, setCameraRequestDenied] = useState(false);
+  const [cameraPermissionGranted, setCameraPermissionGranted] = useState(Boolean(hasPermission));
+  const [cameraPermissionStatusKnown, setCameraPermissionStatusKnown] = useState(false);
+  const refreshCameraPermissionStatus = useCallback(() => {
+    if (Platform.OS === 'web') return;
+    try {
+      const status = getCameraPermissionStatus();
+      setCameraPermissionStatusKnown(true);
+      setCameraPermissionGranted(status === 'granted');
+      setCameraRequestDenied(status === 'denied' || status === 'restricted');
+    } catch {
+      // The native bridge can be unavailable during startup; the hook remains the fallback.
+    }
+  }, []);
+  useEffect(() => {
+    refreshCameraPermissionStatus();
+    const subscription = AppState.addEventListener('change', (state) => { if (state === 'active') refreshCameraPermissionStatus(); });
+    return () => subscription.remove();
+  }, [refreshCameraPermissionStatus]);
+  const requestGradeCameraPermission = useCallback(async () => {
+    try {
+      const granted = await requestPermission();
+      setCameraPermissionStatusKnown(true);
+      setCameraPermissionGranted(granted);
+      setCameraRequestDenied(!granted);
+    } catch {
+      setCameraRequestDenied(true);
+    }
+  }, [requestPermission]);
 
   useEffect(() => () => {
     mountedRef.current = false;
@@ -507,16 +539,25 @@ export default function CardGraderScreen() {
     );
   }
 
-  if (!hasPermission) {
+  const permissionGranted = Platform.OS === 'web'
+    ? hasPermission
+    : cameraPermissionStatusKnown ? cameraPermissionGranted : hasPermission;
+
+  if (!permissionGranted) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <Stack.Screen options={{ headerShown: false }} />
         <Text style={{ color: '#fff', textAlign: 'center', marginBottom: 16 }}>
           Camera access is needed to grade a card.
         </Text>
-        <TouchableOpacity onPress={requestPermission} style={{ backgroundColor: theme.colors.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10 }}>
+        <TouchableOpacity onPress={() => { void requestGradeCameraPermission(); }} accessibilityRole="button" style={{ backgroundColor: theme.colors.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10 }}>
           <Text style={{ color: '#fff', fontWeight: '700' }}>Allow Camera</Text>
         </TouchableOpacity>
+        {Platform.OS !== 'web' && cameraRequestDenied ? (
+          <TouchableOpacity onPress={() => { void Linking.openSettings().catch(() => Alert.alert('Settings unavailable', 'Open this app’s settings to allow camera access.')); }} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center', marginTop: 10, paddingHorizontal: 20 }}>
+            <Text style={{ color: '#fff', fontWeight: '700' }}>Open Settings</Text>
+          </TouchableOpacity>
+        ) : null}
       </SafeAreaView>
     );
   }

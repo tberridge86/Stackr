@@ -46,6 +46,11 @@ export function useCameraPermission() {
   };
 }
 
+/** Web has no VisionCamera native permission bridge. */
+export function getCameraPermissionStatus() {
+  return null;
+}
+
 export function useFrameProcessor(
   frameProcessor: (frame: Frame) => void,
   _dependencies?: DependencyList

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +16,11 @@ import { StackrBackButton } from '../../components/StackrBackButton';
 import { Text } from '../../components/Text';
 import { useTheme } from '../../components/theme-context';
 import type { BinderPagePocketResult, BinderPocketStatus } from '../../lib/binderPageScan';
-import { getBinderPageScanSession, updateBinderPageScanSession } from '../../lib/binderPageScanStore';
+import {
+  loadBinderPageScanSession,
+  markBinderPageScanSessionSaved,
+  updateBinderPageScanSession,
+} from '../../lib/binderPageScanStore';
 import { fetchBinders, invalidateBinderCaches, type BinderRecord } from '../../lib/binders';
 import { logScanLearningEvent } from '../../lib/scanLearning';
 import { getScannerClientContext } from '../../lib/scannerClientContext';
@@ -88,28 +92,81 @@ export default function BinderPageScanResultScreen() {
   const params = useLocalSearchParams<{ scanSessionId?: string; binderId?: string; layout?: string }>();
   const { width: viewportWidth } = useWindowDimensions();
   const scanSessionId = typeof params.scanSessionId === 'string' ? params.scanSessionId : null;
-  const session = useMemo(() => getBinderPageScanSession(scanSessionId), [scanSessionId]);
-  const [pockets, setPockets] = useState<BinderPagePocketResult[]>(session?.pockets ?? []);
+  const [session, setSession] = useState<Awaited<ReturnType<typeof loadBinderPageScanSession>>>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+  const [sessionReloadToken, setSessionReloadToken] = useState(0);
+  const [pockets, setPockets] = useState<BinderPagePocketResult[]>([]);
   const [binders, setBinders] = useState<BinderRecord[]>([]);
+  const [bindersLoading, setBindersLoading] = useState(true);
+  const [bindersError, setBindersError] = useState<string | null>(null);
+  const [bindersReloadToken, setBindersReloadToken] = useState(0);
   const [selectedBinderId, setSelectedBinderId] = useState<string | null>(
-    typeof params.binderId === 'string' ? params.binderId : session?.binderId ?? null
+    typeof params.binderId === 'string' ? params.binderId : null
   );
   const [destinationPage, setDestinationPage] = useState(1);
   const [saving, setSaving] = useState(false);
+  const saveInFlightRef = useRef(false);
+  const sessionLoadRequestRef = useRef(0);
+  const bindersLoadRequestRef = useRef(0);
   const [selectedPocketIndex, setSelectedPocketIndex] = useState<number | null>(null);
   const scannerClientContext = useMemo(() => getScannerClientContext(), []);
   const scannerFeatureFlags = useMemo(() => getScannerFeatureFlags(), []);
 
   useEffect(() => {
+    let active = true;
+    const requestId = ++sessionLoadRequestRef.current;
+    const hydrate = async () => {
+      setSessionLoading(true);
+      setSessionError(null);
+      try {
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        const ownerUserId = authSession?.user.id;
+        if (!ownerUserId) throw new Error('Sign in to resume this binder page review.');
+        const restored = await loadBinderPageScanSession(scanSessionId, ownerUserId);
+        if (!restored) throw new Error('This binder page review is no longer available.');
+        if (!active || requestId !== sessionLoadRequestRef.current) return;
+        setSession(restored);
+        setPockets(restored.pockets);
+        if (typeof params.binderId !== 'string' && restored.binderId) setSelectedBinderId(restored.binderId);
+      } catch (error) {
+        if (!active || requestId !== sessionLoadRequestRef.current) return;
+        setSession(null);
+        setPockets([]);
+        setSessionError(error instanceof Error ? error.message : 'Could not load this binder page review. Try again.');
+      } finally {
+        if (active && requestId === sessionLoadRequestRef.current) setSessionLoading(false);
+      }
+    };
+    void hydrate();
+    return () => { active = false; };
+  }, [params.binderId, scanSessionId, sessionReloadToken]);
+
+  useEffect(() => {
+    let active = true;
+    const requestId = ++bindersLoadRequestRef.current;
+    setBindersLoading(true);
+    setBindersError(null);
     fetchBinders()
       .then((rows) => {
+        if (!active || requestId !== bindersLoadRequestRef.current) return;
         setBinders(rows);
-        if (!selectedBinderId && rows[0]?.id) setSelectedBinderId(rows[0].id);
+        if (!rows.length) {
+          setBindersError('No binders are available. Create a binder before saving this review.');
+        }
+        setSelectedBinderId((current) => (
+          current && rows.some((binder) => binder.id === current) ? current : rows[0]?.id ?? null
+        ));
       })
       .catch((error) => {
         console.log('Binder page result binders failed:', error);
+        if (active && requestId === bindersLoadRequestRef.current) setBindersError('Your binders could not load. Retry before saving this review.');
+      })
+      .finally(() => {
+        if (active && requestId === bindersLoadRequestRef.current) setBindersLoading(false);
       });
-  }, [selectedBinderId]);
+    return () => { active = false; };
+  }, [bindersReloadToken]);
 
   const selectedPocket = selectedPocketIndex == null ? null : pockets[selectedPocketIndex] ?? null;
   const selectedCandidate = selectedPocket ? getSelectedCandidate(selectedPocket) : null;
@@ -125,6 +182,8 @@ export default function BinderPageScanResultScreen() {
     && pocket.status !== 'possible_match'
     && pocket.status !== 'empty'
   )).length;
+  const selectedBinder = binders.find((binder) => binder.id === selectedBinderId) ?? null;
+  const destinationReady = !bindersLoading && !bindersError && selectedBinder !== null;
 
   const buildBinderPageAnalytics = (
     databaseSaveMs: number | null = null,
@@ -173,40 +232,37 @@ export default function BinderPageScanResultScreen() {
     });
   };
 
-  const updatePockets = (updater: (current: BinderPagePocketResult[]) => BinderPagePocketResult[]) => {
-    setPockets((current) => {
-      const next = updater(current);
-      if (scanSessionId) {
-        updateBinderPageScanSession(scanSessionId, (stored) => ({
-          ...stored,
-          pockets: next,
-        }));
-      }
-      return next;
-    });
+  const updatePockets = async (updater: (current: BinderPagePocketResult[]) => BinderPagePocketResult[]) => {
+    if (!scanSessionId || !session) throw new Error('This binder page review is no longer available.');
+    const next = updater(pockets);
+    const persisted = await updateBinderPageScanSession(scanSessionId, session.ownerUserId, (stored) => ({
+      ...stored,
+      pockets: next,
+    }));
+    if (!persisted) throw new Error('This binder page review is no longer available.');
+    setSession(persisted);
+    setPockets(persisted.pockets);
   };
 
-  const updatePocket = (index: number, patch: Partial<BinderPagePocketResult>) => {
-    updatePockets((current) => current.map((pocket) => (
-      pocket.index === index ? { ...pocket, ...patch } : pocket
-    )));
-  };
+  const updatePocket = (index: number, patch: Partial<BinderPagePocketResult>) => updatePockets((current) => current.map((pocket) => (
+    pocket.index === index ? { ...pocket, ...patch } : pocket
+  )));
 
-  const cycleCandidate = (direction: 1 | -1) => {
+  const cycleCandidate = async (direction: 1 | -1) => {
     if (!selectedPocket || selectedPocket.candidates.length < 2) return;
     const nextIndex = (
       selectedPocket.selectedCandidateIndex + direction + selectedPocket.candidates.length
     ) % selectedPocket.candidates.length;
-    updatePocket(selectedPocket.index, {
+    await updatePocket(selectedPocket.index, {
       selectedCandidateIndex: nextIndex,
       status: 'possible_match',
       source: 'manual',
     });
   };
 
-  const confirmSelectedPocket = () => {
+  const confirmSelectedPocket = async () => {
     if (!selectedPocket || !selectedCandidate) return;
-    updatePocket(selectedPocket.index, {
+    await updatePocket(selectedPocket.index, {
       status: 'confirmed',
       source: selectedPocket.source === 'none' ? 'manual' : selectedPocket.source,
     });
@@ -234,9 +290,9 @@ export default function BinderPageScanResultScreen() {
     }
   };
 
-  const markSelectedEmpty = () => {
+  const markSelectedEmpty = async () => {
     if (!selectedPocket) return;
-    updatePocket(selectedPocket.index, {
+    await updatePocket(selectedPocket.index, {
       status: 'empty',
       selectedCandidateIndex: 0,
       candidates: [],
@@ -283,10 +339,11 @@ export default function BinderPageScanResultScreen() {
   };
 
   const saveConfirmed = async () => {
-    if (!selectedBinderId) {
-      Alert.alert('Choose a binder', 'Select the destination binder before saving the page.');
+    if (bindersLoading || bindersError || !selectedBinder) {
+      Alert.alert('Binder list unavailable', 'Retry loading your binders before saving this review.');
       return;
     }
+    const binderId = selectedBinder.id;
 
     const confirmed = pockets
       .filter((pocket) => pocket.status === 'confirmed')
@@ -298,13 +355,19 @@ export default function BinderPageScanResultScreen() {
       return;
     }
 
+    if (saveInFlightRef.current) return;
+    saveInFlightRef.current = true;
     setSaving(true);
     try {
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      if (!session || !authSession?.user.id || authSession.user.id !== session.ownerUserId) {
+        throw new Error('Sign in with the account that started this binder page review before saving.');
+      }
       const databaseStartedAt = Date.now();
       const { data: existingRows, error: existingError } = await supabase
         .from('binder_cards')
         .select('card_id, set_id')
-        .eq('binder_id', selectedBinderId);
+        .eq('binder_id', binderId);
       if (existingError) throw existingError;
 
       const existingKeys = new Set((existingRows ?? []).map((row: any) => `${row.set_id}:${row.card_id}`));
@@ -319,7 +382,7 @@ export default function BinderPageScanResultScreen() {
             routeContext: {
               screen: 'binder-page-result',
               intent: 'binder_page',
-              binderId: selectedBinderId,
+              binderId,
               layout: gridLayout,
               confirmedCount: confirmed.length,
               skippedDuplicateCount: confirmed.length,
@@ -332,12 +395,13 @@ export default function BinderPageScanResultScreen() {
             outcome: 'all_confirmed_cards_already_saved',
           });
         }
+        if (scanSessionId) await markBinderPageScanSessionSaved(scanSessionId, session.ownerUserId);
         Alert.alert('Already in binder', 'All confirmed cards already exist in this binder.');
         return;
       }
 
       const rows = newEntries.map(({ pocket, candidate }) => ({
-        binder_id: selectedBinderId,
+        binder_id: binderId,
         card_id: candidate.id,
         set_id: candidate.set_id,
         owned: true,
@@ -368,7 +432,7 @@ export default function BinderPageScanResultScreen() {
           routeContext: {
             screen: 'binder-page-result',
             intent: 'binder_page',
-            binderId: selectedBinderId,
+            binderId,
             layout: gridLayout,
             confirmedCount: confirmed.length,
             savedCount: rows.length,
@@ -391,7 +455,7 @@ export default function BinderPageScanResultScreen() {
           routeContext: {
             screen: 'binder-page-result',
             intent: 'binder_page',
-            binderId: selectedBinderId,
+            binderId,
             layout: gridLayout,
             confirmedCount: confirmed.length,
             savedCount: rows.length,
@@ -406,13 +470,20 @@ export default function BinderPageScanResultScreen() {
         });
       }
 
-      invalidateBinderCaches(selectedBinderId);
+      invalidateBinderCaches(binderId);
+      if (scanSessionId && session) {
+        try {
+          await markBinderPageScanSessionSaved(scanSessionId, session.ownerUserId);
+        } catch (recoveryError) {
+          console.log('Binder page review completion checkpoint failed:', recoveryError);
+        }
+      }
       Alert.alert('Binder updated', `${rows.length} confirmed card${rows.length === 1 ? '' : 's'} saved.`, [
         {
           text: 'View binder',
           onPress: () => router.replace({
             pathname: '/binder/[id]',
-            params: { id: selectedBinderId },
+            params: { id: binderId },
           } as any),
         },
       ]);
@@ -425,7 +496,7 @@ export default function BinderPageScanResultScreen() {
           routeContext: {
             screen: 'binder-page-result',
             intent: 'binder_page',
-            binderId: selectedBinderId,
+            binderId,
             layout: gridLayout,
             statuses: countPocketStatuses(pockets),
             analytics: buildBinderPageAnalytics(null, { errorCategory: 'database' }),
@@ -437,11 +508,12 @@ export default function BinderPageScanResultScreen() {
       }
       Alert.alert('Could not save page', error?.message ?? 'Please try again.');
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
   };
 
-  if (!session) {
+  if (sessionLoading || !session) {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.bg }]}>
         <Stack.Screen options={{ headerShown: false }} />
@@ -449,7 +521,14 @@ export default function BinderPageScanResultScreen() {
           <StackrBackButton onPress={() => router.back()} />
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: theme.colors.text }]}>Binder page</Text>
-            <Text style={[styles.subtitle, { color: theme.colors.textSoft }]}>This scan session is no longer available.</Text>
+            {sessionLoading ? <ActivityIndicator color={theme.colors.primary} style={{ marginTop: 12, alignSelf: 'flex-start' }} /> : (
+              <>
+                <Text style={[styles.subtitle, { color: theme.colors.textSoft }]}>{sessionError ?? 'This scan session is no longer available.'}</Text>
+                <TouchableOpacity accessibilityRole="button" onPress={() => setSessionReloadToken((value) => value + 1)} style={[styles.retryButton, { borderColor: theme.colors.primary }]}>
+                  <Text style={[styles.retryButtonText, { color: theme.colors.primary }]}>Retry review</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </SafeAreaView>
@@ -479,8 +558,16 @@ export default function BinderPageScanResultScreen() {
           <View style={styles.destinationRow}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.fieldLabel, { color: theme.colors.textSoft }]}>Destination binder</Text>
+              {bindersError ? (
+                <View style={styles.destinationError}>
+                  <Text accessibilityRole="alert" style={[styles.destinationErrorText, { color: theme.colors.textSoft }]}>{bindersError}</Text>
+                  <TouchableOpacity accessibilityRole="button" onPress={() => setBindersReloadToken((value) => value + 1)} style={[styles.destinationRetry, { borderColor: theme.colors.primary }]}>
+                    <Text style={[styles.destinationRetryText, { color: theme.colors.primary }]}>Retry binders</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 6 }}>
-                {binders.map((binder) => {
+                {bindersLoading ? <ActivityIndicator color={theme.colors.primary} /> : binders.map((binder) => {
                   const active = selectedBinderId === binder.id;
                   return (
                     <TouchableOpacity
@@ -566,10 +653,10 @@ export default function BinderPageScanResultScreen() {
                   </Text>
                   {selectedPocket.candidates.length > 1 ? (
                     <View style={styles.candidateSwitchRow}>
-                      <TouchableOpacity onPress={() => cycleCandidate(-1)} style={[styles.smallButton, { borderColor: theme.colors.border }]}>
+                      <TouchableOpacity onPress={() => { void cycleCandidate(-1).catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} style={[styles.smallButton, { borderColor: theme.colors.border }]}>
                         <Text style={[styles.smallButtonText, { color: theme.colors.primary }]}>Prev</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => cycleCandidate(1)} style={[styles.smallButton, { borderColor: theme.colors.border }]}>
+                      <TouchableOpacity onPress={() => { void cycleCandidate(1).catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} style={[styles.smallButton, { borderColor: theme.colors.border }]}>
                         <Text style={[styles.smallButtonText, { color: theme.colors.primary }]}>Next</Text>
                       </TouchableOpacity>
                     </View>
@@ -578,10 +665,10 @@ export default function BinderPageScanResultScreen() {
               </View>
             ) : null}
             <View style={styles.actionRow}>
-              <TouchableOpacity onPress={confirmSelectedPocket} disabled={!selectedCandidate} style={[styles.actionButton, !selectedCandidate && styles.disabled, { backgroundColor: theme.colors.primary }]}>
+              <TouchableOpacity onPress={() => { void confirmSelectedPocket().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} disabled={!selectedCandidate} style={[styles.actionButton, !selectedCandidate && styles.disabled, { backgroundColor: theme.colors.primary }]}>
                 <Text style={styles.actionButtonText}>Confirm pocket</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={markSelectedEmpty} style={[styles.actionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
+              <TouchableOpacity onPress={() => { void markSelectedEmpty().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} style={[styles.actionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
                 <Text style={[styles.actionButtonText, { color: theme.colors.text }]}>Mark empty</Text>
               </TouchableOpacity>
             </View>
@@ -601,8 +688,9 @@ export default function BinderPageScanResultScreen() {
 
         <TouchableOpacity
           onPress={saveConfirmed}
-          disabled={saving}
-          style={[styles.saveButton, { backgroundColor: theme.colors.primary, opacity: saving ? 0.65 : 1 }]}
+          disabled={saving || !destinationReady}
+          accessibilityState={{ busy: saving, disabled: saving || !destinationReady }}
+          style={[styles.saveButton, { backgroundColor: theme.colors.primary, opacity: saving || !destinationReady ? 0.65 : 1 }]}
         >
           {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.saveButtonText}>Confirm all high-confidence matches</Text>}
         </TouchableOpacity>
@@ -782,6 +870,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginTop: 8,
+  },
+  destinationError: { marginTop: 8, gap: 8 },
+  destinationErrorText: { fontSize: 13, lineHeight: 18 },
+  destinationRetry: { alignSelf: 'flex-start', minHeight: 48, paddingHorizontal: 12, justifyContent: 'center', borderWidth: 1, borderRadius: 10 },
+  destinationRetryText: { fontSize: 13, fontWeight: '800' },
+  retryButton: {
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    marginTop: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderRadius: 12,
+    justifyContent: 'center',
+  },
+  retryButtonText: {
+    fontSize: 14,
+    fontWeight: '800',
   },
   smallButton: {
     minHeight: 32,

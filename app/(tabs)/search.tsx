@@ -1,3 +1,4 @@
+import { getSearchFacetScope, isSearchSortSupported } from '../../lib/searchFacetScope';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -656,6 +657,7 @@ export default function GlobalSearchScreen() {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [category, setCategory] = useState<SearchCategory>(initialCategory);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filterTypeExpanded, setFilterTypeExpanded] = useState(false);
   const [searchSort, setSearchSort] = useState<SearchSortKey>('relevance');
   const [selectedRarities, setSelectedRarities] = useState<string[]>([]);
   const [selectedSetFilter, setSelectedSetFilter] = useState<string | null>(null);
@@ -663,6 +665,17 @@ export default function GlobalSearchScreen() {
   const [selectedGrader, setSelectedGrader] = useState<string | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
   const [selectedPriceBucket, setSelectedPriceBucket] = useState<SearchPriceBucket>('all');
+  const facetScope = getSearchFacetScope(category);
+  // Changing result type clears facets that cannot apply to that type.
+  useEffect(() => {
+    const scope = getSearchFacetScope(category);
+    if (!scope.rarity) setSelectedRarities([]);
+    if (!scope.set) setSelectedSetFilter(null);
+    if (!scope.language) setSelectedLanguage('all');
+    if (!scope.price) setSelectedPriceBucket('all');
+    if (!scope.grading) { setSelectedGrader(null); setSelectedGrade(null); }
+    setSearchSort((sort) => isSearchSortSupported(category, sort) ? sort : 'relevance');
+  }, [category]);
   const [results, setResults] = useState<SearchResults>(EMPTY_RESULTS);
   const [, setErrors] = useState<SearchErrorState>({});
   const [loading, setLoading] = useState(false);
@@ -1766,7 +1779,7 @@ export default function GlobalSearchScreen() {
                 </View>
               ) : null}
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 7, paddingRight: 8 }}>
+              <ScrollView role="tablist" accessibilityLabel="Search result type" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 7, paddingRight: 8 }}>
                 {CATEGORIES.map((item) => (
                   <SearchCategoryChip
                     key={item.key}
@@ -1820,9 +1833,46 @@ export default function GlobalSearchScreen() {
         onClose={() => setFiltersOpen(false)}
         onClear={clearSearchFilters}
       >
+        <SearchFilterGroup title="Product/type">
+          <TouchableOpacity accessibilityRole="button" accessibilityState={{ expanded: filterTypeExpanded }} aria-expanded={filterTypeExpanded} onPress={() => setFilterTypeExpanded((value) => !value)} style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>{CATEGORIES.find((item) => item.key === category)?.label ?? category}</Text>
+            <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{filterTypeExpanded ? 'Done' : 'Change type'}</Text>
+          </TouchableOpacity>
+          {filterTypeExpanded ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {CATEGORIES.map((item) => (
+              <SearchFilterOption
+                key={item.key}
+                label={item.label}
+                imageIcon={item.imageIcon}
+                icon={item.imageIcon ? undefined : item.icon}
+                active={category === item.key}
+                onPress={() => { setCategory(item.key); setFilterTypeExpanded(false); }}
+              />
+            ))}
+          </View>
+          ) : null}
+        </SearchFilterGroup>
+
+        {facetScope.language ? (
+        <SearchFilterGroup title="Language">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {SEARCH_LANGUAGE_FILTERS.map((language) => (
+              <SearchFilterOption
+                key={language.key}
+                label={language.label}
+                leading={language.flagLanguage ? <PokemonLanguageFlagIcon language={language.flagLanguage} size={16} decorative /> : undefined}
+                active={selectedLanguage === language.key}
+                onPress={() => setSelectedLanguage(language.key)}
+              />
+            ))}
+          </View>
+        </SearchFilterGroup>
+        ) : null}
+
         <SearchFilterGroup title="Sort">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {SEARCH_SORT_OPTIONS.map((option) => (
+            {SEARCH_SORT_OPTIONS.filter((option) => isSearchSortSupported(category, option.key)).map((option) => (
               <SearchFilterOption
                 key={option.key}
                 label={option.label}
@@ -1833,21 +1883,22 @@ export default function GlobalSearchScreen() {
           </View>
         </SearchFilterGroup>
 
-        <SearchFilterGroup title="Product/type">
+        {facetScope.price ? (
+        <SearchFilterGroup title="Price">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {CATEGORIES.filter((item) => item.key !== 'collectors').map((item) => (
+            {SEARCH_PRICE_BUCKETS.map((bucket) => (
               <SearchFilterOption
-                key={item.key}
-                label={item.label}
-                imageIcon={item.imageIcon}
-                icon={item.imageIcon ? undefined : item.icon}
-                active={category === item.key}
-                onPress={() => setCategory(item.key)}
+                key={bucket.key}
+                label={bucket.label}
+                active={selectedPriceBucket === bucket.key}
+                onPress={() => setSelectedPriceBucket(bucket.key)}
               />
             ))}
           </View>
         </SearchFilterGroup>
+        ) : null}
 
+        {facetScope.rarity ? (
         <SearchFilterGroup title="Rarity">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {availableRarityFilters.map((rarity) => (
@@ -1860,7 +1911,9 @@ export default function GlobalSearchScreen() {
             ))}
           </View>
         </SearchFilterGroup>
+        ) : null}
 
+        {facetScope.set ? (
         <SearchFilterGroup title="Set">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             <SearchFilterOption
@@ -1878,34 +1931,9 @@ export default function GlobalSearchScreen() {
             ))}
           </View>
         </SearchFilterGroup>
+        ) : null}
 
-        <SearchFilterGroup title="Language">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {SEARCH_LANGUAGE_FILTERS.map((language) => (
-              <SearchFilterOption
-                key={language.key}
-                label={language.label}
-                leading={language.flagLanguage ? <PokemonLanguageFlagIcon language={language.flagLanguage} size={16} decorative /> : undefined}
-                active={selectedLanguage === language.key}
-                onPress={() => setSelectedLanguage(language.key)}
-              />
-            ))}
-          </View>
-        </SearchFilterGroup>
-
-        <SearchFilterGroup title="Price">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {SEARCH_PRICE_BUCKETS.map((bucket) => (
-              <SearchFilterOption
-                key={bucket.key}
-                label={bucket.label}
-                active={selectedPriceBucket === bucket.key}
-                onPress={() => setSelectedPriceBucket(bucket.key)}
-              />
-            ))}
-          </View>
-        </SearchFilterGroup>
-
+        {facetScope.grading ? (
         <SearchFilterGroup title="Grader">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             <SearchFilterOption label="Any grader" active={!selectedGrader} onPress={() => setSelectedGrader(null)} />
@@ -1919,7 +1947,9 @@ export default function GlobalSearchScreen() {
             ))}
           </View>
         </SearchFilterGroup>
+        ) : null}
 
+        {facetScope.grading ? (
         <SearchFilterGroup title="Grade">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             <SearchFilterOption label="Any grade" active={!selectedGrade} onPress={() => setSelectedGrade(null)} />
@@ -1933,6 +1963,10 @@ export default function GlobalSearchScreen() {
             ))}
           </View>
         </SearchFilterGroup>
+        ) : null}
+        <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft, lineHeight: 20 }}>
+          {category === 'all' ? 'Item filters limit which result types can match. Choose a type to see only relevant filters.' : 'Only filters for this result type are shown. Incompatible filters are cleared when you change type.'}
+        </Text>
       </SearchFilterSheet>
       <ScrollToEndButton
         visible={showSearchEndButton}
@@ -2065,6 +2099,7 @@ function SearchFilterSheet({
   onClose: () => void;
   onClear: () => void;
 }) {
+  const { theme } = useTheme();
   const subtitle = activeFilterCount > 0
     ? `${activeFilterCount} active`
     : 'Refine cards, sets, slabs, listings, and collectors.';
@@ -2076,7 +2111,12 @@ function SearchFilterSheet({
       subtitle={subtitle}
       onClose={onClose}
       onClear={onClear}
-      maxHeight="74%"
+      maxHeight="86%"
+      footer={
+        <TouchableOpacity accessibilityRole="button" onPress={onClose} style={{ minHeight: 48, padding: 12, borderRadius: 14, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: '#FFFFFF', fontWeight: '800' }}>Show results</Text>
+        </TouchableOpacity>
+      }
       contentContainerStyle={{ gap: 12, paddingBottom: 4 }}
     >
       {children}
@@ -2116,8 +2156,9 @@ function SearchFilterOption({
       activeOpacity={0.82}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
+      aria-pressed={active}
       style={{
-        minHeight: 34,
+        minHeight: 48,
         maxWidth: 226,
         borderRadius: 999,
         borderWidth: 1,
@@ -2138,8 +2179,6 @@ function SearchFilterOption({
         <Ionicons name="checkmark-circle" size={14} color={theme.colors.primary} />
       ) : null)}
       <Text
-        numberOfLines={1}
-        ellipsizeMode="tail"
         style={{
           flexShrink: 1,
           color: active ? theme.colors.primary : theme.colors.text,

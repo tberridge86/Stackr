@@ -30,7 +30,8 @@ import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/Rarit
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { getIncrementalListWindow } from '../../lib/performance';
-import { buildProductQuery, searchMarketProducts } from '../../lib/productSearch';
+import { createLatestRequestGate } from '../../lib/latestRequestGate';
+import { buildProductQuery, refreshMarketProductPrice, searchMarketProducts } from '../../lib/productSearch';
 import type { ProductLookupType, ProductPriceResult } from '../../lib/productSearch';
 import { listingCategoryIcons } from '../../lib/listingCategoryIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
@@ -263,6 +264,8 @@ export default function MarketScreen() {
   const [lookupType, setLookupType] = useState<LookupType>('raw_card');
   const [lookupMenuOpen, setLookupMenuOpen] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [lastSuccessfulSearch, setLastSuccessfulSearch] = useState<{ query: string; lookupType: LookupType | ProductLookupType } | null>(null);
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
   const priceResultWindow = useMemo(
     () => getIncrementalListWindow(1, { initialRows: 12, pageRows: 10, minInitial: 12, minPage: 10 }),
@@ -288,9 +291,13 @@ export default function MarketScreen() {
   const [searchPriceMap, setSearchPriceMap] = useState<Record<string, SearchPriceState>>({});
   const [searchEbayMap, setSearchEbayMap] = useState<Record<string, EbayDetailData>>({});
   const [watchlistLoading, setWatchlistLoading] = useState(true);
+  const [watchMutation, setWatchMutation] = useState<Record<string, boolean>>({});
+  const watchMutationRef = useRef(new Set<string>());
+  const [watchError, setWatchError] = useState<Record<string, string>>({});
 
   const translateY = useRef(new Animated.Value(0)).current;
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchRequestRef = useRef(createLatestRequestGate());
   const priceListRef = useRef<FlatList<PokemonCard>>(null);
 
   useEffect(() => {
@@ -378,8 +385,9 @@ export default function MarketScreen() {
     setWatchlistPriceMap(nextMap);
   }, []);
 
-  const loadSearchResultPrices = useCallback(async (cardIds: string[]) => {
+  const loadSearchResultPrices = useCallback(async (cardIds: string[], isCurrent: () => boolean = () => true) => {
     if (!cardIds.length) {
+      if (!isCurrent()) return;
       setSearchPriceMap({});
       setSearchEbayMap({});
       return;
@@ -405,7 +413,7 @@ export default function MarketScreen() {
       };
     }
 
-    setSearchPriceMap(nextMap);
+    if (isCurrent()) setSearchPriceMap(nextMap);
   }, []);
 
   const fetchLiveEbayForCard = useCallback(async (card: PokemonCard): Promise<EbayDetailData> => {
@@ -486,12 +494,14 @@ export default function MarketScreen() {
 
   useFocusEffect(useCallback(() => { loadWatchlist(); }, [loadWatchlist]));
 
-  const searchCards = useCallback(async (searchQuery: string, skipSetFilter = false) => {
+  const searchCards = useCallback(async (searchQuery: string, skipSetFilter = false, activeLookupType: LookupType = lookupType) => {
+  const requestId = searchRequestRef.current.start();
   const trimmed = searchQuery.trim();
-  if (!trimmed) { setSearchResults([]); setSearchPriceMap({}); setSearchEbayMap({}); return; }
+  if (!trimmed) { setSearchResults([]); setSearchPriceMap({}); setSearchEbayMap({}); setSearchError(null); setSearching(false); return; }
 
   try {
     setSearching(true);
+    setSearchError(null);
     const smartResults = await searchLocalPokemonCards<any>(trimmed, {
       language: 'all',
       limit: 120,
@@ -499,8 +509,10 @@ export default function MarketScreen() {
       skipSetDetection: skipSetFilter,
     });
     const cards = smartResults.map(mapCard);
+    if (!searchRequestRef.current.isCurrent(requestId)) return;
     setSearchResults(cards);
-    await loadSearchResultPrices(cards.map((card) => card.id));
+    setLastSuccessfulSearch({ query: trimmed, lookupType: activeLookupType });
+    await loadSearchResultPrices(cards.map((card) => card.id), () => searchRequestRef.current.isCurrent(requestId));
     // Legacy direct-table fallback is unreachable and retained only until rollback gates pass.
     if (false) {
     const words = trimmed.split(/\s+/).filter(Boolean);
@@ -566,18 +578,19 @@ export default function MarketScreen() {
       if (error) throw error;
 
       const fallbackCards = (data ?? []).map(mapCard);
+      if (!searchRequestRef.current.isCurrent(requestId)) return;
       setSearchResults(fallbackCards);
-      await loadSearchResultPrices(fallbackCards.map((card) => card.id));
+      setLastSuccessfulSearch({ query: trimmed, lookupType: activeLookupType });
+      await loadSearchResultPrices(fallbackCards.map((card) => card.id), () => searchRequestRef.current.isCurrent(requestId));
     }
     } catch (err) {
+      if (!searchRequestRef.current.isCurrent(requestId)) return;
       console.log('Search error:', err);
-      setSearchResults([]);
-      setSearchPriceMap({});
-      setSearchEbayMap({});
+      setSearchError(err instanceof Error ? err.message : 'Price search could not be completed.');
     } finally {
-      setSearching(false);
+      if (searchRequestRef.current.isCurrent(requestId)) setSearching(false);
     }
-  }, [loadSearchResultPrices]);
+  }, [loadSearchResultPrices, lookupType]);
 
   useEffect(() => {
     if (!isCardLookup(lookupType) || !searchResults.length) return;
@@ -585,24 +598,28 @@ export default function MarketScreen() {
   }, [grade, gradingCompany, loadLiveEbayForSearchResults, lookupType, rawCondition, searchResults]);
 
   const searchProductPrice = useCallback(async (searchQuery: string, productType: ProductLookupType) => {
+    const requestId = searchRequestRef.current.start();
     const trimmed = searchQuery.trim();
-    if (!trimmed) { setProductPriceData(null); return; }
+    if (!trimmed) { setProductPriceData(null); setSearchError(null); setProductPriceLoading(false); setSearching(false); return; }
 
     try {
       setProductPriceLoading(true);
       setSearching(true);
-      setSearchResults([]);
-      setSearchPriceMap({});
-      setSearchEbayMap({});
+      setSearchError(null);
       const catalogResults = await searchMarketProducts(trimmed, productType, 1);
-      const catalogPrice = catalogResults[0]?.latest_price ?? null;
-      setProductPriceData(catalogPrice);
+      const product = catalogResults[0] ?? null;
+      const catalogPrice = product
+        ? product.latest_price?.average != null
+          ? product.latest_price
+          : await refreshMarketProductPrice(product)
+        : null;
+      if (searchRequestRef.current.isCurrent(requestId)) { setProductPriceData(catalogPrice); setLastSuccessfulSearch({ query: trimmed, lookupType: productType }); }
     } catch (err) {
+      if (!searchRequestRef.current.isCurrent(requestId)) return;
       console.log('Product price search error:', err);
-      setProductPriceData(null);
+      setSearchError(err instanceof Error ? err.message : 'Product price search could not be completed.');
     } finally {
-      setProductPriceLoading(false);
-      setSearching(false);
+      if (searchRequestRef.current.isCurrent(requestId)) { setProductPriceLoading(false); setSearching(false); }
     }
   }, []);
 
@@ -613,16 +630,20 @@ export default function MarketScreen() {
   ) => {
     const trimmed = searchQuery.trim();
     if (trimmed.length < 2) {
+      searchRequestRef.current.start();
       setSearchResults([]);
       setSearchPriceMap({});
       setSearchEbayMap({});
       setProductPriceData(null);
+      setSearchError(null);
+      setSearching(false);
+      setProductPriceLoading(false);
       return;
     }
 
     if (isCardLookup(activeLookupType)) {
       setProductPriceData(null);
-      await searchCards(searchQuery, skipSetFilter);
+      await searchCards(searchQuery, skipSetFilter, activeLookupType);
     } else {
       await searchProductPrice(searchQuery, activeLookupType);
     }
@@ -632,9 +653,14 @@ export default function MarketScreen() {
     setQuery(text);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     if (text.trim().length < 2) {
+      searchRequestRef.current.start();
       setSearchResults([]);
+      setSearchPriceMap({});
       setSearchEbayMap({});
       setProductPriceData(null);
+      setSearchError(null);
+      setSearching(false);
+      setProductPriceLoading(false);
       return;
     }
 
@@ -734,12 +760,22 @@ export default function MarketScreen() {
 
   const toggleWatchlist = useCallback(async (card: PokemonCard) => {
     if (!userId) return;
-    if (isWatching(card.id)) {
-      await supabase.from('market_watchlist').delete().eq('user_id', userId).eq('card_id', card.id);
-    } else {
-      await supabase.from('market_watchlist').insert({ user_id: userId, card_id: card.id, set_id: card.set?.id ?? null });
+    if (watchMutationRef.current.has(card.id)) return;
+    watchMutationRef.current.add(card.id);
+    setWatchMutation((current) => ({ ...current, [card.id]: true }));
+    setWatchError((current) => ({ ...current, [card.id]: '' }));
+    try {
+      const result = isWatching(card.id)
+        ? await supabase.from('market_watchlist').delete().eq('user_id', userId).eq('card_id', card.id)
+        : await supabase.from('market_watchlist').insert({ user_id: userId, card_id: card.id, set_id: card.set?.id ?? null });
+      if (result.error) throw result.error;
+      await loadWatchlist();
+    } catch (error: any) {
+      setWatchError((current) => ({ ...current, [card.id]: error?.message ?? 'Could not update this watch. Retry.' }));
+    } finally {
+      watchMutationRef.current.delete(card.id);
+      setWatchMutation((current) => ({ ...current, [card.id]: false }));
     }
-    await loadWatchlist();
   }, [userId, isWatching, loadWatchlist]);
 
   // ===============================
@@ -775,6 +811,8 @@ export default function MarketScreen() {
 
   const renderCard = useCallback(({ item }: { item: PokemonCard }) => {
     const watching = isWatching(item.id);
+    const watchBusy = Boolean(watchMutation[item.id]);
+    const watchFailure = watchError[item.id];
     const tcgMid = getBestTcgPrice(item, 'mid');
     const priceSnapshot = searchPriceMap[item.id];
     const liveEbay = searchEbayMap[item.id];
@@ -838,10 +876,13 @@ export default function MarketScreen() {
 
           <TouchableOpacity
             onPress={() => toggleWatchlist(item)}
+            disabled={watchBusy}
+            accessibilityState={{ busy: watchBusy, disabled: watchBusy }}
             style={{ marginTop: 10, alignSelf: 'flex-start', backgroundColor: watching ? theme.colors.secondary : theme.colors.surface, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: watching ? theme.colors.secondary : theme.colors.border }}
           >
-            <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 13 }}>{watching ? '✓ Watching' : '+ Watch'}</Text>
+            <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 13 }}>{watchBusy ? 'Updating…' : watching ? '✓ Watching' : '+ Watch'}</Text>
           </TouchableOpacity>
+          {watchFailure ? <Text accessibilityRole="alert" style={{ color: '#D14343', fontSize: 12, marginTop: 6 }}>{watchFailure}</Text> : null}
         </View>
       </Pressable>
     );
@@ -857,6 +898,8 @@ export default function MarketScreen() {
     theme.colors.text,
     theme.colors.textSoft,
     toggleWatchlist,
+    watchError,
+    watchMutation,
   ]);
 
   const renderWatchlistCard = useCallback(({ item }: { item: PokemonCard }) => {
@@ -1085,11 +1128,12 @@ export default function MarketScreen() {
 
             {!isCardLookup(lookupType) && (
               <ProductPricePanel
-                title={query.trim() ? buildProductQuery(query, lookupType) : LOOKUP_OPTIONS.find((option) => option.key === lookupType)?.label ?? 'Product price'}
+                title={lastSuccessfulSearch?.lookupType === lookupType ? buildProductQuery(lastSuccessfulSearch.query, lookupType) : query.trim() ? buildProductQuery(query, lookupType) : LOOKUP_OPTIONS.find((option) => option.key === lookupType)?.label ?? 'Product price'}
                 data={productPriceData}
                 loading={productPriceLoading}
               />
             )}
+            {searchError ? <View style={{ marginTop: 8, padding: 12, borderRadius: 12, backgroundColor: '#FEF2F2' }}><Text accessibilityRole="alert" style={{ color: '#991B1B', fontSize: 14, lineHeight: 20 }}>{searchError}</Text>{lastSuccessfulSearch?.lookupType === lookupType ? <Text style={{ color: theme.colors.textSoft, fontSize: 14, lineHeight: 20, marginTop: 4 }}>Showing the last successful result for “{lastSuccessfulSearch.query}”.</Text> : null}<TouchableOpacity accessibilityRole="button" onPress={() => void runLookupSearch(query, false, lookupType)} style={{ minHeight: 48, alignSelf: 'flex-start', justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Try again</Text></TouchableOpacity></View> : null}
 
             {isCardLookup(lookupType) && (
               <>
@@ -1130,7 +1174,7 @@ export default function MarketScreen() {
           </View>
         }
         ListEmptyComponent={
-          !searching && isCardLookup(lookupType) ? (
+          !searching && !searchError && isCardLookup(lookupType) ? (
             <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 12, marginHorizontal: 16, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
               <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 17, fontSize: 12 }}>
                 Search to view prices and add cards to your watchlist.

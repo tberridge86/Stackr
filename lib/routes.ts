@@ -4,6 +4,7 @@ export const ROUTES = {
   home: '/(tabs)' as Href,
   collection: '/(tabs)/binder' as Href,
   scan: '/scan' as Href,
+  scanWorkspace: '/(tabs)/scan-hub' as Href,
   scanCollection: { pathname: '/scan', params: { mode: 'market' } } as Href,
   scanBinder: '/scan' as Href,
   scanSellerIn: { pathname: '/scan', params: { mode: 'inventory', flow: 'stock_in' } } as Href,
@@ -55,7 +56,7 @@ export type SellerTabKey = 'dashboard' | 'inventory' | 'scan' | 'listings';
 export const COLLECTOR_TABS: Array<{ key: CollectorTabKey; label: string; route: Href }> = [
   { key: 'home', label: 'Home', route: ROUTES.home },
   { key: 'collection', label: 'Collection', route: ROUTES.collection },
-  { key: 'scan', label: 'Scan', route: ROUTES.scan },
+  { key: 'scan', label: 'Scan', route: ROUTES.scanWorkspace },
   { key: 'market', label: 'The Market', route: ROUTES.market },
   { key: 'search', label: 'Search', route: ROUTES.search },
 ];

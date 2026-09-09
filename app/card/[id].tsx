@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
+import { StackrButton } from '../../components/StackrControls';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import PricingV2Summary from '../../components/PricingV2Summary';
@@ -28,7 +29,9 @@ import { stackrIcons } from '../../lib/stackrIcons';
 import {
   getCachedCardSync,
 } from '../../lib/pokemonTcgCache';
-import { fetchCardById } from '../../lib/pokemonTcg';
+import { fetchCardById, normalizePokemonCardLanguage } from '../../lib/pokemonTcg';
+import { supabase } from '../../lib/supabase';
+import { createManualCollectionDraft } from '../../lib/manualCollectionDraft';
 import { getDisplaySetLogoUrl } from '../../lib/setDisplay';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { fetchPokeTraceCardPrice } from '../../lib/pricing';
@@ -147,6 +150,28 @@ export default function CardDetailScreen() {
   const [card, setCard] = useState<PokemonCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [listingBusy, setListingBusy] = useState(false);
+  const [collectionBusy, setCollectionBusy] = useState(false);
+  const [collectionError, setCollectionError] = useState<string | null>(null);
+  const [collectionSignIn, setCollectionSignIn] = useState(false);
+  const collectionInFlight = useRef(false);
+  const openCollectionReview = async () => {
+    if (!card || collectionInFlight.current) return;
+    collectionInFlight.current = true; setCollectionBusy(true); setCollectionError(null); setCollectionSignIn(false);
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (!data.user) { setCollectionSignIn(true); throw new Error('Sign in to add cards to your collection.'); }
+      const draft = await createManualCollectionDraft(data.user.id, {
+        cardId: card.id, setId: card.set?.id ?? paramSetId, language: normalizePokemonCardLanguage(card.language),
+        cardName: card.name, cardNumber: card.number, setName: card.set?.name, imageUrl: card.images?.large ?? card.images?.small,
+      });
+      router.push({ pathname: '/collection/add-card', params: { draftId: draft.id } } as any);
+    } catch (failure: any) {
+      if (failure?.name === 'AuthSessionMissingError') { setCollectionSignIn(true); setCollectionError('Sign in to add cards to your collection.'); }
+      else setCollectionError(failure?.message ?? 'Could not open collection review. Please try again.');
+    }
+    finally { collectionInFlight.current = false; setCollectionBusy(false); }
+  };
 
   // Provider-neutral Stackr market state. Legacy names are retained locally to avoid UI churn.
   const [ebayPrice, setEbayPrice] = useState<EbayPriceResult | null>(null);
@@ -490,7 +515,7 @@ export default function CardDetailScreen() {
         automaticallyAdjustContentInsets={false}
       >
       <View style={styles.headerRow}>
-        <StackrBackButton onPress={() => router.back()} />
+        <StackrBackButton onPress={() => router.canGoBack() ? router.back() : router.replace('/search')} />
       </View>
 
       {/* Card Image */}
@@ -526,6 +551,12 @@ export default function CardDetailScreen() {
         size="hero"
         style={{ marginBottom: 10 }}
       />
+
+      <StackrButton label="Add to collection" icon="albums-outline" variant="primary" loading={collectionBusy} disabled={collectionBusy} onPress={() => { void openCollectionReview(); }} style={{ marginBottom: 12 }} />
+      {collectionError ? <View style={{ marginBottom: 12, gap: 8 }}>
+        <Text accessibilityRole="alert" style={{ color: theme.colors.text, lineHeight: 20 }}>{collectionError}</Text>
+        <StackrButton label={collectionSignIn ? 'Sign in' : 'Open saved reviews'} onPress={() => router.push((collectionSignIn ? '/(auth)/login' : '/(tabs)/scan-hub') as any)} />
+      </View> : null}
 
       {presentation.isForeign ? (
         <View style={styles.translationPanel}>

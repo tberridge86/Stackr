@@ -119,7 +119,8 @@ import {
   type ListingPhotoSource,
   type ListingPhotoValidationMetrics,
 } from '../../lib/listingPhotoValidation';
-import { getProductPriceWithFallback, searchMarketProducts, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
+import { getMarketProductById, getProductPriceWithFallback, searchMarketProducts, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
+import { productPrefillBlocksPublication, resolveCanonicalProductPrefill, type ProductPrefillState } from '../../lib/productListingPrefill';
 import { getPokemonCardImageUrls, getPokemonCardLanguageLabel, normalizePokemonCardLanguage } from '../../lib/pokemonTcg';
 import { selectTcgdexReferencePersistenceImage } from '../../lib/tcgdexReferencePersistence';
 import { fetchPokeTraceCardPrice, getPreferredMarketPrice } from '../../lib/pricing';
@@ -782,18 +783,26 @@ async function fetchCertificationDuplicateReview(
 export default function CreateListingScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ cardId?: string; setId?: string; type?: string; productName?: string; listingAction?: string; q?: string }>();
+  const params = useLocalSearchParams<{ cardId?: string; setId?: string; productId?: string; type?: string; productName?: string; listingAction?: string; q?: string }>();
   const isFocused = useIsFocused();
   const [draftLoaded, setDraftLoaded] = useState(false);
+  const [draftRestoreError, setDraftRestoreError] = useState<string | null>(null);
+  const [draftRestoreRetry, setDraftRestoreRetry] = useState(0);
+  const [discardingUnreadableDraft, setDiscardingUnreadableDraft] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const [draftStorageKey, setDraftStorageKey] = useState<string | null>(null);
   const [draftSessionUserId, setDraftSessionUserId] = useState<string | null | undefined>(undefined);
   const draftAuthUserIdRef = useRef<string | null | undefined>(undefined);
   const draftAuthGenerationRef = useRef(0);
+  const discardUnreadableDraftOperationRef = useRef(0);
+  const discardingUnreadableDraftRef = useRef(false);
   const [step, setStep] = useState<FlowStep>('category');
   const [identificationMethod, setIdentificationMethod] = useState<IdentificationMethod | null>(null);
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<MarketProduct | null>(null);
+  const [productPrefillState, setProductPrefillState] = useState<ProductPrefillState>('idle');
+  const [productPrefillRetry, setProductPrefillRetry] = useState(0);
+  const productPrefillRequestRef = useRef(0);
   const [manualIdentity, setManualIdentity] = useState<ManualIdentity>(DEFAULT_MANUAL_IDENTITY);
   const [storedListingSubjectType, setListingSubjectType] = useState<ListingSubjectType>('raw_card');
   const [listingMode, setListingMode] = useState<ListingMode>('sell');
@@ -848,7 +857,7 @@ export default function CreateListingScreen() {
   const listingActionHandledRef = useRef<string | null>(null);
   const photoCatalogueMatchRef = useRef<string | null>(null);
   const photoCatalogueSuggestionRef = useRef(0);
-  const routeHasPrefill = Boolean(params.cardId || params.productName);
+  const routeHasPrefill = Boolean(params.cardId || params.productId || params.productName);
   const listingSubjectType = resolveListingSubjectTypeForSelection({
     requested: storedListingSubjectType,
     selectedCard: listingCardForPersistence(selectedCard),
@@ -995,6 +1004,7 @@ export default function CreateListingScreen() {
     if (silverAgreementRequired && !silverLiabilityAccepted) {
       missing.push({ key: 'silver-liability', label: 'Accept the Silver agreement statement' });
     }
+    if (productPrefillBlocksPublication(productPrefillState)) missing.push({ key: 'product-prefill', label: productPrefillState === 'resolving' ? 'Checking the exact product before publishing' : 'Choose the exact product or explicitly continue with manual details' });
     return missing;
   }, [
     aiComplete,
@@ -1013,6 +1023,7 @@ export default function CreateListingScreen() {
     isGradedSlabListing,
     verificationRequirements.requiresXimilar,
     valueEntered,
+    productPrefillState,
   ]);
   const completedStages = useMemo(() => {
     const completed: ListingFlowStage[] = [];
@@ -1179,6 +1190,9 @@ export default function CreateListingScreen() {
       if (!mounted || draftAuthUserIdRef.current === userId) return;
       draftAuthUserIdRef.current = userId;
       draftAuthGenerationRef.current += 1;
+      discardUnreadableDraftOperationRef.current += 1;
+      discardingUnreadableDraftRef.current = false;
+      setDiscardingUnreadableDraft(false);
       resetListingDraftState();
       setDraftSessionUserId(userId);
     };
@@ -1222,9 +1236,11 @@ export default function CreateListingScreen() {
       return !error && user?.id === expectedUserId && isCurrentDraftIdentity();
     };
     const restoreDraft = async () => {
+      let restoreFailed = false;
       try {
         if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
         setDraftLoaded(false);
+        setDraftRestoreError(null);
         setDraftStorageKey(null);
         resetListingDraftState();
         await clearLegacyCreateListingDraft();
@@ -1285,8 +1301,10 @@ export default function CreateListingScreen() {
         setAiDeclarationAccepted(draft.aiDeclarationAccepted ?? false);
       } catch (error) {
         console.log('Listing draft restore failed:', error);
+        restoreFailed = true;
+        if (isCurrentDraftIdentity()) setDraftRestoreError('Your saved listing draft could not be restored. Retry before editing, or start a new listing.');
       } finally {
-        if (isCurrentDraftIdentity()) setDraftLoaded(true);
+        if (isCurrentDraftIdentity() && !restoreFailed) setDraftLoaded(true);
       }
     };
 
@@ -1295,7 +1313,7 @@ export default function CreateListingScreen() {
       cancelled = true;
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     };
-  }, [draftSessionUserId, resetListingDraftState, routeHasPrefill]);
+  }, [draftRestoreRetry, draftSessionUserId, resetListingDraftState, routeHasPrefill]);
 
   const buildDraftState = useCallback((): DraftState => ({
     step,
@@ -1392,6 +1410,54 @@ export default function CreateListingScreen() {
     }, AUTO_SAVE_DELAY_MS);
   }, [buildDraftState, draftLoaded, draftSessionUserId, draftStorageKey, step]);
 
+  const discardUnreadableDraftAndStartNew = useCallback(async () => {
+    const expectedUserId = draftSessionUserId;
+    const expectedGeneration = draftAuthGenerationRef.current;
+    const operation = discardUnreadableDraftOperationRef.current + 1;
+    if (discardingUnreadableDraftRef.current) return;
+    discardUnreadableDraftOperationRef.current = operation;
+    discardingUnreadableDraftRef.current = true;
+    if (!expectedUserId) {
+      discardingUnreadableDraftRef.current = false;
+      setDraftRestoreError('Sign in again before starting a new listing.');
+      return;
+    }
+    const scopedDraftKey = getCreateListingDraftKey(expectedUserId);
+    const isCurrentDiscard = () => (
+      discardUnreadableDraftOperationRef.current === operation
+      && draftAuthGenerationRef.current === expectedGeneration
+      && draftAuthUserIdRef.current === expectedUserId
+    );
+    try {
+      setDiscardingUnreadableDraft(true);
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (
+        user?.id !== expectedUserId
+        || draftAuthGenerationRef.current !== expectedGeneration
+        || draftAuthUserIdRef.current !== expectedUserId
+      ) throw new Error('Your account changed while the saved draft was being cleared.');
+      await AsyncStorage.removeItem(scopedDraftKey);
+      if (!isCurrentDiscard()) return;
+      resetListingDraftState();
+      setDraftStorageKey(scopedDraftKey);
+      setDraftRestoreError(null);
+      setDraftLoaded(true);
+    } catch (error) {
+      console.log('Listing draft discard after restore failure failed:', error);
+      if (isCurrentDiscard()) {
+        setDraftLoaded(false);
+        setDraftRestoreError('The unreadable saved draft could not be removed. It has not been replaced; retry before starting a new listing.');
+      }
+    } finally {
+      if (discardUnreadableDraftOperationRef.current === operation) {
+        discardingUnreadableDraftRef.current = false;
+        setDiscardingUnreadableDraft(false);
+      }
+    }
+  }, [draftSessionUserId, resetListingDraftState]);
+
   useEffect(() => {
     setSelectedProtectionTier((current) => (
       current && (!usesProtectionTier || !allowedProtectionTiers.includes(current)) ? null : current
@@ -1438,7 +1504,28 @@ export default function CreateListingScreen() {
   useEffect(() => {
     const cardId = typeof params.cardId === 'string' ? params.cardId : null;
     const productName = typeof params.productName === 'string' ? params.productName.trim() : '';
+    const productId = typeof params.productId === 'string' ? params.productId : '';
     const typeParam = isListingSubjectType(params.type) ? params.type : null;
+
+    if (productId) {
+      let cancelled = false;
+      const requestId = ++productPrefillRequestRef.current;
+      if (typeParam && !isCardSubject(typeParam)) setListingSubjectType(typeParam);
+      setProductPrefillState('resolving');
+      setStep('identify');
+      void getMarketProductById(productId).then((product) => {
+        if (cancelled || requestId !== productPrefillRequestRef.current) return;
+        if (product && resolveCanonicalProductPrefill(productId, product.id) === 'resolved') {
+          setProductPrefillState('resolved');
+          void selectProduct(product);
+          return;
+        }
+        setProductPrefillState('failed');
+      }).catch(() => {
+        if (!cancelled && requestId === productPrefillRequestRef.current) setProductPrefillState('failed');
+      });
+      return () => { cancelled = true; };
+    }
 
     if (productName && typeParam && !isCardSubject(typeParam)) {
       setManualIdentity({
@@ -1480,7 +1567,7 @@ export default function CreateListingScreen() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.cardId, params.productName, params.setId, params.type, selectedCard?.id]);
+  }, [params.cardId, params.productId, params.productName, params.setId, params.type, productPrefillRetry, selectedCard?.id]);
 
   const fetchPrices = useCallback(async (card: SelectedCard, subjectType: ListingSubjectType = listingSubjectType) => {
     setPrices({ ...DEFAULT_PRICES, loading: true });
@@ -1801,9 +1888,11 @@ export default function CreateListingScreen() {
   };
 
   const selectProduct = async (product: MarketProduct) => {
+    productPrefillRequestRef.current += 1;
     const productSubjectType = getListingSubjectTypeForProduct(product);
     const productCategoryConfig = getListingCategoryConfig(productSubjectType);
     setSelectedProduct(product);
+    setProductPrefillState('resolved');
     setSelectedCard(null);
     setListingSubjectType(productSubjectType);
     setSelectedProtectionTier(null);
@@ -3115,6 +3204,13 @@ export default function CreateListingScreen() {
   );
 
   const renderIdentify = () => {
+    const routeProductId = typeof params.productId === 'string' ? params.productId : '';
+    if (routeProductId && productPrefillState === 'resolving') return (
+      <View style={styles.stepContent}><Text style={[styles.stepTitle, { color: theme.colors.text }]}>Checking the exact product</Text><Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>Stackr is reopening the linked catalogue record before listing details can be composed.</Text><ActivityIndicator color={theme.colors.primary} style={{ marginTop: 12 }} /></View>
+    );
+    if (routeProductId && productPrefillState === 'failed') return (
+      <View style={styles.stepContent}><Text style={[styles.stepTitle, { color: theme.colors.text }]}>Product needs attention</Text><Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>The linked catalogue record could not be verified. Retry or explicitly enter manual details.</Text><TouchableOpacity onPress={() => { setProductPrefillState('resolving'); setProductPrefillRetry((value) => value + 1); }} accessibilityRole="button" style={[styles.primaryActionFull, { backgroundColor: theme.colors.primary }]}><Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>Retry product check</Text></TouchableOpacity><TouchableOpacity onPress={() => { productPrefillRequestRef.current += 1; setProductPrefillState('manual'); setIdentificationMethod('manual'); setStep('manual'); }} accessibilityRole="button" style={[styles.secondaryActionFull, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}><Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900' }}>Use manual details</Text></TouchableOpacity></View>
+    );
     if (!isCardSubject(listingSubjectType)) {
       const supportsCatalogue = canUseProductCatalogue(listingSubjectType);
       return (
@@ -4254,6 +4350,13 @@ export default function CreateListingScreen() {
     </View>
   );
 
+  if (draftRestoreError) {
+    return <StackrScreen variant="form"><View style={{ padding: 24, gap: 14 }}>
+      <Text accessibilityRole="alert" style={{ color: theme.colors.text, fontSize: 16, lineHeight: 23 }}>{draftRestoreError}</Text>
+      <TouchableOpacity accessibilityRole="button" disabled={discardingUnreadableDraft} accessibilityState={{ busy: discardingUnreadableDraft, disabled: discardingUnreadableDraft }} style={{ minHeight: 48, justifyContent: 'center' }} onPress={() => setDraftRestoreRetry((value) => value + 1)}><Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Retry saved draft</Text></TouchableOpacity>
+      <TouchableOpacity accessibilityRole="button" disabled={discardingUnreadableDraft} accessibilityState={{ busy: discardingUnreadableDraft, disabled: discardingUnreadableDraft }} style={{ minHeight: 48, justifyContent: 'center' }} onPress={() => void discardUnreadableDraftAndStartNew()}><Text style={{ color: theme.colors.textSoft, fontWeight: '800' }}>{discardingUnreadableDraft ? 'Discarding saved draft…' : 'Discard saved draft and start new'}</Text></TouchableOpacity>
+    </View></StackrScreen>;
+  }
   if (!draftLoaded) {
     return (
       <StackrScreen variant="form">
@@ -4264,7 +4367,6 @@ export default function CreateListingScreen() {
       </StackrScreen>
     );
   }
-
   const headerRight = <DraftSavedIndicator visible={draftSaved} />;
   const hasPrimaryFooter = !(step === 'category' || step === 'entry' || step === 'identify' || step === 'success');
   const scrollBottomPadding = keyboardVisible

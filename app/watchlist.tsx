@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, RefreshControl, View } from 'react-native';
+import { FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../components/Text';
 import { MarketEmptyState, MarketListingCard } from '../components/market/MarketComponents';
@@ -11,25 +12,50 @@ import { useTrade } from '../components/trade-context';
 import { fetchSavedMarketListingIds, toggleSavedMarketListing } from '../lib/marketSavedItems';
 import { stackrIcons } from '../lib/stackrIcons';
 import { supabase } from '../lib/supabase';
+import { getMarketProductById, type MarketProduct } from '../lib/productSearch';
+import { createSavedProductLoadGate, parseSavedMarketProductIds } from '../lib/savedMarketProducts';
+
+const SAVED_PRODUCTS_KEY_PREFIX = '@stackr:search:saved-products:v2:user';
+const savedProductsKey = (userId: string) => `${SAVED_PRODUCTS_KEY_PREFIX}:${encodeURIComponent(userId.trim())}`;
 
 export default function FavoritesMarketItemsScreen() {
   const { theme } = useTheme();
   const { marketplaceListings, tradeLoading, refreshTrade } = useTrade();
   const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [savedIdsError, setSavedIdsError] = useState<string | null>(null);
+  const [savedProducts, setSavedProducts] = useState<MarketProduct[]>([]);
+  const [unresolvedProductIds, setUnresolvedProductIds] = useState<string[]>([]);
+  const [savedProductsError, setSavedProductsError] = useState<string | null>(null);
+  const [savedListingsLoading, setSavedListingsLoading] = useState(true);
+  const [savedProductsLoading, setSavedProductsLoading] = useState(true);
+  const [removingSavedProduct, setRemovingSavedProduct] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
   const authUserIdRef = useRef('');
   const authGenerationRef = useRef(0);
+  const savedProductsLoadGateRef = useRef(createSavedProductLoadGate());
+  const activeRemovalTokenRef = useRef<number | null>(null);
+  const removalTokenRef = useRef(0);
 
   const bindIdentity = useCallback((userId: string) => {
     if (authUserIdRef.current === userId) return authGenerationRef.current;
     authUserIdRef.current = userId;
     authGenerationRef.current += 1;
+    savedProductsLoadGateRef.current.invalidate();
+    activeRemovalTokenRef.current = null;
     setCurrentUserId(userId);
     setSavedIds([]);
+    setSavedIdsError(null);
+    setSavedProducts([]);
+    setUnresolvedProductIds([]);
+    setSavedProductsError(null);
+    setSavedListingsLoading(Boolean(userId));
+    setSavedProductsLoading(Boolean(userId));
+    setRemovingSavedProduct(false);
     return authGenerationRef.current;
   }, []);
 
   const load = useCallback(async (expectedUserId?: string, expectedGeneration?: number) => {
+    const initialRequest = savedProductsLoadGateRef.current.start();
     const startingUserId = authUserIdRef.current;
     const startingGeneration = authGenerationRef.current;
     let attemptedUserId: string | null = null;
@@ -37,22 +63,61 @@ export default function FavoritesMarketItemsScreen() {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) throw error;
+      if (
+        !savedProductsLoadGateRef.current.isCurrent(initialRequest)
+        || authUserIdRef.current !== startingUserId
+        || authGenerationRef.current !== startingGeneration
+      ) return;
       const userId = user?.id ?? '';
       const generation = bindIdentity(userId);
+      const request = savedProductsLoadGateRef.current.start();
       attemptedUserId = userId;
       attemptedGeneration = generation;
       if (
         expectedUserId !== undefined
         && (expectedUserId !== userId || expectedGeneration !== generation)
       ) return;
-      const saved = userId ? await fetchSavedMarketListingIds(userId) : [];
-      if (authUserIdRef.current !== userId || authGenerationRef.current !== generation) return;
-      setSavedIds(saved);
-    } catch {
+      const isCurrentLoad = () => (
+        savedProductsLoadGateRef.current.isCurrent(request)
+        && authUserIdRef.current === userId
+        && authGenerationRef.current === generation
+      );
+      if (!userId) {
+        if (!isCurrentLoad()) return;
+        setSavedIds([]); setSavedProducts([]); setUnresolvedProductIds([]);
+        setSavedListingsLoading(false); setSavedProductsLoading(false);
+        return;
+      }
+      setSavedListingsLoading(true);
+      setSavedProductsLoading(true);
+      await Promise.all([
+        fetchSavedMarketListingIds(userId).then((saved) => {
+          if (!isCurrentLoad()) return;
+          setSavedIds(saved); setSavedIdsError(null);
+        }).catch((error) => {
+          if (isCurrentLoad()) setSavedIdsError(error instanceof Error ? error.message : 'Saved listings could not be loaded.');
+        }).finally(() => {
+          if (isCurrentLoad()) setSavedListingsLoading(false);
+        }),
+        AsyncStorage.getItem(savedProductsKey(userId)).then(async (raw) => {
+          const ids = parseSavedMarketProductIds(raw);
+          const resolved = await Promise.all(ids.map((id) => getMarketProductById(id)));
+          if (!isCurrentLoad()) return;
+          setSavedProducts(resolved.filter(Boolean) as MarketProduct[]);
+          setUnresolvedProductIds(ids.filter((_, index) => !resolved[index]));
+          setSavedProductsError(null);
+        }).catch((error) => {
+          if (isCurrentLoad()) setSavedProductsError(error instanceof Error ? error.message : 'Saved products could not be loaded.');
+        }).finally(() => {
+          if (isCurrentLoad()) setSavedProductsLoading(false);
+        }),
+      ]);
+    } catch (error) {
       if (
         attemptedUserId === null
         && authUserIdRef.current === startingUserId
         && authGenerationRef.current === startingGeneration
+        && savedProductsLoadGateRef.current.isCurrent(initialRequest)
       ) {
         bindIdentity('');
         return;
@@ -61,8 +126,12 @@ export default function FavoritesMarketItemsScreen() {
         attemptedUserId !== null
         && authUserIdRef.current === attemptedUserId
         && authGenerationRef.current === attemptedGeneration
+        && savedProductsLoadGateRef.current.isCurrent(initialRequest)
       ) {
-        setSavedIds([]);
+        setSavedIdsError(error instanceof Error ? error.message : 'Saved listings could not be loaded.');
+        setSavedProductsError(error instanceof Error ? error.message : 'Saved products could not be loaded.');
+        setSavedListingsLoading(false);
+        setSavedProductsLoading(false);
       }
     }
   }, [bindIdentity]);
@@ -92,6 +161,30 @@ export default function FavoritesMarketItemsScreen() {
       .map((id) => marketplaceListings.find((listing) => listing.id === id))
       .filter(Boolean) as typeof marketplaceListings;
   }, [marketplaceListings, savedIds]);
+  const removeSavedProduct = useCallback(async (productId: string) => {
+    if (!currentUserId || activeRemovalTokenRef.current !== null) return;
+    const removalToken = ++removalTokenRef.current;
+    activeRemovalTokenRef.current = removalToken;
+    savedProductsLoadGateRef.current.invalidate();
+    const expectedGeneration = authGenerationRef.current;
+    setRemovingSavedProduct(true);
+    try {
+      const raw = await AsyncStorage.getItem(savedProductsKey(currentUserId));
+      const ids = parseSavedMarketProductIds(raw);
+      if (authUserIdRef.current !== currentUserId || authGenerationRef.current !== expectedGeneration) return;
+      await AsyncStorage.setItem(savedProductsKey(currentUserId), JSON.stringify(ids.filter((id) => id !== productId)));
+      if (authUserIdRef.current === currentUserId && authGenerationRef.current === expectedGeneration) await load(currentUserId, expectedGeneration);
+    } catch (error) {
+      if (authUserIdRef.current === currentUserId && authGenerationRef.current === expectedGeneration) {
+        setSavedProductsError(error instanceof Error ? error.message : 'Saved product could not be removed.');
+      }
+    } finally {
+      if (activeRemovalTokenRef.current === removalToken) {
+        activeRemovalTokenRef.current = null;
+        setRemovingSavedProduct(false);
+      }
+    }
+  }, [currentUserId, load]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['top', 'left', 'right']}>
@@ -100,12 +193,14 @@ export default function FavoritesMarketItemsScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 }}>
           <StackrBackButton onPress={() => router.back()} />
           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 30, fontWeight: '900' }}>Favorited Listings</Text>
+            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 30, fontWeight: '900' }}>Saved market items</Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, fontWeight: '700', marginTop: 2 }}>
-              Market listings saved for your Stackr account on this device.
+              Saved listings and products for your Stackr account on this device.
             </Text>
           </View>
         </View>
+        {savedIdsError ? <View style={{ paddingBottom: 10 }}><Text accessibilityRole="alert" style={{ color: '#991B1B', fontSize: 14, lineHeight: 20 }}>{savedIdsError}</Text><TouchableOpacity onPress={() => void load()} accessibilityRole="button" style={{ minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }}><Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '900' }}>Retry saved listings</Text></TouchableOpacity></View> : null}
+        {savedProductsError ? <View style={{ paddingBottom: 10 }}><Text accessibilityRole="alert" style={{ color: '#991B1B', fontSize: 14 }}>{savedProductsError}</Text><TouchableOpacity onPress={() => void load()} accessibilityRole="button" style={{ minHeight: 48, justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Retry saved products</Text></TouchableOpacity></View> : null}
 
         <FlatList
           data={listings}
@@ -153,16 +248,23 @@ export default function FavoritesMarketItemsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 140, flexGrow: listings.length === 0 ? 1 : 0 }}
           ListEmptyComponent={
-            <View style={{ flex: 1, justifyContent: 'center', paddingBottom: 60 }}>
-              <MarketEmptyState
-                imageIcon={stackrIcons.favorite}
-                title="No favorited listings yet"
-                body="Favorite a specific Market listing to return to it later. Chase cards and price watchlists stay separate."
-                actionLabel="Browse The Market"
-                onAction={() => router.replace('/(tabs)/market' as any)}
-              />
-            </View>
+            savedListingsLoading ? (
+              <View style={{ flex: 1, justifyContent: 'center', paddingBottom: 60 }}>
+                <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>Loading saved listings…</Text>
+              </View>
+            ) : savedIdsError ? null : (
+              <View style={{ flex: 1, justifyContent: 'center', paddingBottom: 60 }}>
+                <MarketEmptyState
+                  imageIcon={stackrIcons.favorite}
+                  title="No saved listings yet"
+                  body="Save a specific Market listing to return to it later. Chase cards and price watchlists stay separate."
+                  actionLabel="Browse The Market"
+                  onAction={() => router.replace('/(tabs)/market' as any)}
+                />
+              </View>
+            )
           }
+          ListHeaderComponent={(savedProductsLoading || savedProducts.length || unresolvedProductIds.length) ? <View style={{ gap: 8, marginBottom: 18 }}><Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>Saved products</Text>{savedProductsLoading ? <Text style={{ color: theme.colors.textSoft }}>Loading saved products…</Text> : null}{savedProducts.map((product) => <View key={product.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 12, padding: 12, backgroundColor: theme.colors.card }}><TouchableOpacity accessibilityRole="button" onPress={() => router.push({ pathname: '/product/[id]', params: { id: product.id } } as any)} style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>{product.name}</Text><Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>{product.set_name ?? 'Saved product'}</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={`Remove ${product.name} from saved products`} accessibilityState={{ busy: removingSavedProduct, disabled: removingSavedProduct }} disabled={removingSavedProduct} onPress={() => void removeSavedProduct(product.id)} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900' }}>{removingSavedProduct ? 'Removing…' : 'Remove'}</Text></TouchableOpacity></View>)}{unresolvedProductIds.map((id) => <View key={id} style={{ padding: 12, borderRadius: 12, backgroundColor: theme.colors.card }}><Text style={{ color: theme.colors.textSoft }}>Saved product {id} is currently unavailable.</Text><TouchableOpacity accessibilityRole="button" accessibilityState={{ busy: removingSavedProduct, disabled: removingSavedProduct }} disabled={removingSavedProduct} onPress={() => void removeSavedProduct(id)} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ color: theme.colors.primary, fontWeight: '900' }}>{removingSavedProduct ? 'Removing…' : 'Remove unavailable product'}</Text></TouchableOpacity></View>)}</View> : null}
         />
       </View>
     </SafeAreaView>
