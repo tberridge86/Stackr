@@ -1,0 +1,39 @@
+name: Materialize Verified PokeData Art (82)
+on:
+  workflow_dispatch:
+    inputs:
+      expected_main_sha: { required: true, type: string }
+      apply: { required: true, default: false, type: boolean }
+      confirmation: { required: false, type: string }
+permissions: { contents: read }
+concurrency: { group: stackr-production-pokedata-materialization-20260910, cancel-in-progress: false }
+jobs:
+  materialize:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
+      STACKR_POKEDATA_GAP_APPLY: ${{ inputs.apply }}
+      STACKR_POKEDATA_GAP_CONFIRMATION: ${{ inputs.confirmation }}
+      STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      STACKR_POKEDATA_GAP_EVIDENCE_PATH: ${{ runner.temp }}/pokedata-gap-art-20260910/evidence.json
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: { node-version: 22, cache: npm }
+      - run: |
+          set -euo pipefail; test "$GITHUB_SHA" = "$STACKR_EXPECTED_MAIN_SHA"; [[ "$STACKR_EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          if [ "$STACKR_POKEDATA_GAP_APPLY" = true ]; then test "$STACKR_POKEDATA_GAP_CONFIRMATION" = 'MATERIALIZE 82 VERIFIED POKEDATA ART'; else test -z "$STACKR_POKEDATA_GAP_CONFIRMATION"; fi
+      - run: npm ci
+      - run: npm ci --prefix backend
+      - run: node scripts/materialize-pokedata-gap-art-20260910.mjs
+      - if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-pokedata-materialization-${{ github.run_id }}
+          path: ${{ runner.temp }}/pokedata-gap-art-20260910/evidence.json
+          if-no-files-found: warn
+          retention-days: 90
