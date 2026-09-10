@@ -6,7 +6,7 @@ import { recordAchievementEvent } from './achievements';
 import { getCachedOrFetch, invalidateRequestCache } from './requestCache';
 import { bumpCollectionSummaryVersion } from './collectionSummaryInvalidation';
 import { getPreferredSetDisplayName } from './pokemonDisplayNames';
-import { fetchPreferredStackrSets, fetchStackrPriceSnapshots } from './stackrDomainAdapter';
+import { fetchPreferredStackrSets, fetchStackrPriceSnapshots, fetchStackrSet } from './stackrDomainAdapter';
 import { resolveBinderSetIdentity } from './binderSetIdentity';
 import { findSavedBinderCardMatch, normalizeBinderCollectorNumber } from './binderCardIdentity';
 import { positiveCatalogueCount, preserveUnmatchedBinderRows } from './binderCataloguePresentation';
@@ -67,6 +67,7 @@ export type BinderRecord = {
 export type BinderCardRecord = {
   /** Read-time status only; unmatched saved cards remain available for review. */
   catalogue_match_status?: 'catalogue' | 'saved-only';
+  catalogue_incomplete?: boolean;
   card?: any | null;
   id: string;
   binder_id: string;
@@ -421,7 +422,14 @@ async function attachSetBrandingToBinders(binders: BinderRecord[], includeAssets
 
   if (!sourceSetIds.length) return binders;
 
-  const catalogueSets = await getCachedOrFetch(`binder:catalogue-sets:${includeAssets ? 'assets' : 'facts'}`, 5 * 60 * 1000, async () => {
+  const single = binders.length === 1 && binders[0].language ? binders[0] : null;
+  const catalogueSets = single
+    ? await getCachedOrFetch(`binder:catalogue-set:${single.language}:${single.source_set_id}:${includeAssets ? 'assets' : 'facts'}`, 5 * 60 * 1000, async () => {
+      const set = await fetchStackrSet(single.source_set_id!, single.language, { includeAssets });
+      if (!set) throw new Error('Binder catalogue metadata is temporarily unavailable.');
+      return [set];
+    }).catch(() => [])
+    : await getCachedOrFetch(`binder:catalogue-sets:${includeAssets ? 'assets' : 'facts'}`, 5 * 60 * 1000, async () => {
     const sets = await fetchPreferredStackrSets(null, undefined, { includeAssets });
     // Empty/error metadata reads must be retryable, not cached for five minutes.
     if (!sets.length) throw new Error('Binder catalogue metadata is temporarily unavailable.');
@@ -534,16 +542,21 @@ export async function fetchBinderCards(
   binderId: string,
   options: { includePrices?: boolean } = {},
 ): Promise<BinderCardRecord[]> {
+  let catalogueComplete = true;
   return getCachedOrFetch(
     `binder:${binderId}:${options.includePrices === false ? 'unpriced-cards' : 'cards'}`,
     BINDER_CARDS_CACHE_TTL_MS,
-    () => fetchBinderCardsUncached(binderId, options)
+    () => fetchBinderCardsUncached(binderId, {
+      ...options,
+      onCatalogueUnavailable: () => { catalogueComplete = false; },
+    }),
+    { shouldCache: () => catalogueComplete },
   );
 }
 
 async function fetchBinderCardsUncached(
   binderId: string,
-  options: { includePrices?: boolean } = {},
+  options: { includePrices?: boolean; onCatalogueUnavailable?: () => void } = {},
 ): Promise<BinderCardRecord[]> {
   // Identity and ownership reads must not wait for every set's visual manifest.
   const binder = await fetchBinderById(binderId, { includeAssets: false });
@@ -586,13 +599,25 @@ async function fetchBinderCardsUncached(
   // Unresolved historical identities must not silently become English editions.
   if (binder.catalogue_identity_status === 'ambiguous'
     || (binder.catalogue_identity_status === 'unresolved' && !binder.language)) {
+    options.onCatalogueUnavailable?.();
     return preserveUnmatchedBinderRows([], savedRows);
   }
   const setCards = await fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id, {
     language: binderLanguage,
-    preferCanonicalApi: binderLanguage !== 'en',
+    preferCanonicalApi: true,
+    minimumCardCount: positiveCatalogueCount(binder.catalogue_set_total)
+      ?? positiveCatalogueCount(binder.catalogue_set_printed_total),
   }).catch(() => []);
-  if (!setCards.length) return preserveUnmatchedBinderRows([], savedRows);
+  const expectedCardCount = positiveCatalogueCount(binder.catalogue_set_total)
+    ?? positiveCatalogueCount(binder.catalogue_set_printed_total);
+  const returnedCardCount = new Set(setCards.map((card) => String(card.id ?? '').trim()).filter(Boolean)).size;
+  const catalogueIncomplete = expectedCardCount != null && returnedCardCount < expectedCardCount;
+  if (!setCards.length || catalogueIncomplete) {
+    // Keep the owner's saved cards visible, but retry the full set next time.
+    // A transient or partial catalogue read must not turn Evolving Skies into 3 cards.
+    options.onCatalogueUnavailable?.();
+    if (!setCards.length) return preserveUnmatchedBinderRows([], savedRows);
+  }
 
   const catalogueCollectorCounts = new Map<string, number>();
   for (const card of setCards) {
@@ -631,12 +656,15 @@ async function fetchBinderCardsUncached(
       return {
         ...existing,
         catalogue_match_status: 'catalogue' as const,
+        catalogue_incomplete: catalogueIncomplete,
         language: binderLanguage,
         owned_quantity: Math.max(1, Number(existing.owned_quantity ?? 1)),
         slot_order: existing.slot_order ?? index,
         card_name: existing.card_name ?? card.name ?? null,
         card_number: existing.card_number ?? card.number ?? null,
-        image_url: card.images?.small ?? existing.image_url ?? null,
+        // Keep this matched row's captured image available for a load-time
+        // fallback. The catalogue rendition remains preferred in card.images.
+        image_url: existing.image_url ?? card.images?.small ?? null,
         set_name: existing.set_name ?? setName,
         card: {
           id: card.id,
@@ -657,6 +685,7 @@ async function fetchBinderCardsUncached(
 
     return {
       catalogue_match_status: 'catalogue' as const,
+      catalogue_incomplete: catalogueIncomplete,
       id: makeVirtualBinderCardId(binderId, setId, card.id),
       binder_id: binderId,
       card_id: card.id,

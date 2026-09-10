@@ -1,19 +1,20 @@
 export type Theme = typeof lightTheme;
 
 export const stackrSemanticColors = {
-  appBackground: '#F6F5F8',
-  surface: '#F0EFF3',
+  appBackground: '#FAF9FC',
+  surface: '#F2EFF7',
   elevatedSurface: '#FFFFFF',
-  textPrimary: '#07145F',
-  textSecondary: '#42495A',
-  textMuted: '#5F6573',
-  border: '#E2E3E9',
+  textPrimary: '#433650',
+  textSecondary: '#5A5065',
+  textMuted: '#696373',
+  border: '#E4DEED',
   brand: '#6938F5',
   primaryAction: '#6938F5',
   selectedState: '#EEE7FF',
   positiveSurface: '#E7F4F1',
-  featureSurface: '#07145F',
-  featureText: '#FFFFFF',
+  featureSurface: '#F0EAFC',
+  featureBorder: '#DACDF0',
+  featureText: '#4B346B',
   success: '#087F73',
   warning: '#F59E0B',
   error: '#DC2626',
@@ -47,14 +48,14 @@ export const stackrSpacing = {
 
 export const stackrShadows = {
   card: {
-    shadowColor: '#1B2A4B',
+    shadowColor: '#6B528B',
     shadowOpacity: 0.08,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
     elevation: 3,
   },
   elevated: {
-    shadowColor: '#07145F',
+    shadowColor: '#6B528B',
     shadowOpacity: 0.14,
     shadowRadius: 22,
     shadowOffset: { width: 0, height: 10 },
@@ -63,7 +64,7 @@ export const stackrShadows = {
 } as const;
 
 export const stackrGradients = {
-  actionLight: ['#FFFFFF', '#F6F5F8', '#F0EFF3'] as const,
+  actionLight: ['#FFFFFF', '#FAF9FC', '#F2EFF7'] as const,
   actionDark: ['#2B145C', '#4F22D8', '#6938F5'] as const,
   actionPrimary: ['#8B55FF', '#6938F5', '#5226D9'] as const,
 } as const;
@@ -71,16 +72,16 @@ export const stackrGradients = {
 export const lightTheme = {
   dark: false,
   colors: {
-    bg: '#F6F5F8',
+    bg: '#FAF9FC',
     card: '#FFFFFF',
-    // Neutral surface for inputs, inner panels, and chips. Purple remains
-    // reserved for actions and deliberately selected states.
-    surface: '#F0EFF3',
+    // A light lilac surface keeps the screen bright; saturated purple carries
+    // actions and selection rather than large dark panels.
+    surface: '#F2EFF7',
     primary: '#6938F5',
     secondary: '#FFBE35',
-    text: '#07145F',
-    textSoft: '#5F6573',
-    border: '#E2E3E9',
+    text: '#433650',
+    textSoft: '#696373',
+    border: '#E4DEED',
     semantic: stackrSemanticColors,
   },
   radii: stackrRadii,

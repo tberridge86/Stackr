@@ -1,0 +1,697 @@
+language_code,set_code,set_id,english_display_name,native_name,printed_total,total,restored_shared_artwork_variants
+en,2011bw,0a2d5c3e-9da1-4af5-acc6-584485d8777e,McDonald's Collection 2011,McDonald's Collection 2011,12,12,0
+en,2012bw,56e5b9e8-80b4-4e23-ad0c-5f86afc6759c,McDonald's Collection 2012,McDonald's Collection 2012,12,12,0
+en,2014xy,19f359e2-c29f-498f-8bf6-fc19c122a361,McDonald's Collection 2014,McDonald's Collection 2014,12,12,0
+en,2015xy,f7706a1b-61bc-4ff9-900c-5841034a5be6,McDonald's Collection 2015,McDonald's Collection 2015,12,12,0
+en,2016xy,9722bbd8-e6d1-49ac-b080-ff9be30589bc,McDonald's Collection 2016,McDonald's Collection 2016,12,12,0
+en,2017sm,d1eb29f2-3d49-447e-8f98-e3994b661350,McDonald's Collection 2017,McDonald's Collection 2017,12,12,0
+en,2018sm,c770d934-a953-4923-a411-4a17b422bb96,McDonald's Collection 2018,McDonald's Collection 2018,12,12,0
+en,2019sm,0ca6f0b6-6971-4342-8d0b-9c9a44e195e3,McDonald's Collection 2019,McDonald's Collection 2019,12,12,0
+en,2021swsh,e41708b6-e58e-4e98-970e-0bb97f4fd03e,McDonald's Collection 2021,McDonald's Collection 2021,25,25,0
+en,2022swsh,172317e0-1eb4-42a7-8624-532af705da6c,McDonald's Collection 2022,McDonald's Collection 2022,15,15,0
+en,2023sv,fc4d1c92-a354-42c1-b4d0-031e4ff6cccc,McDonald's Collection 2023,McDonald's Collection 2023,15,15,0
+en,2024sv,824ba136-9796-464c-8869-b5e495014940,McDonald's Collection 2024,McDonald's Collection 2024,15,15,0
+en,A1,ab0614ce-3998-47d1-8f23-8b94291c0a01,Genetic Apex,Genetic Apex,226,286,0
+en,A1a,031dada1-c3f5-46b4-bea0-e1298313d3fd,Mythical Island,Mythical Island,68,86,0
+en,A2,eefed2f2-de7e-4793-91a6-638ffc5c827b,Space-Time Smackdown,Space-Time Smackdown,140,207,0
+en,A2a,07c7e672-44f6-49a6-91e1-188946e63cf4,Triumphant Light,Triumphant Light,75,96,0
+en,A2b,028e6f0e-6622-4f04-8197-619e862f3a36,Shining Revelry,Shining Revelry,72,111,0
+en,A3,85b2a4da-abc0-4912-a4ac-99a9b6dc57f1,Celestial Guardians,Celestial Guardians,155,239,0
+en,A3a,0fa8d92e-35d1-480c-a2b6-b058e89ba64a,Extradimensional Crisis,Extradimensional Crisis,69,103,0
+en,A3b,9a7c9793-1021-44af-a04d-0405d26b8239,Eevee Grove,Eevee Grove,69,107,0
+en,A4,7710e7b2-b877-46bb-9438-57f4ab99a1f1,Wisdom of Sea and Sky,Wisdom of Sea and Sky,161,241,0
+en,A4a,9307a663-1764-4ff0-8f86-ff22280f7b49,Secluded Springs,Secluded Springs,71,105,0
+en,B1,47b17175-557f-4d97-ac58-2fb65f698ea6,Mega Rising,Mega Rising,226,331,0
+en,B1a,a3dba415-055a-463f-be5c-1c9fc8c5f387,Crimson Blaze,Crimson Blaze,69,103,0
+en,B2,66542fcc-a805-41d3-9390-f51faf82f570,Fantastical Parade,Fantastical Parade,155,234,0
+en,B2a,1fe886d0-2ac6-40b4-a220-fab4538285bf,Paldean Wonders,Paldean Wonders,93,131,0
+en,base1,97e3aeb6-2645-4c3a-9fd4-10d95a181b6e,Base Set,Base Set,102,102,59
+en,base2,739d2f18-1dd0-45dc-ba58-2195d5760ed5,Jungle,Jungle,64,64,36
+en,base3,85f8c1fc-874d-4b7a-892b-2137adc6647b,Fossil,Fossil,62,62,24
+en,base4,ffdf2db0-7ff9-426f-95f4-ba4165be9824,Base Set 2,Base Set 2,130,130,0
+en,base5,87281266-72bb-4ece-8a82-2d9838fec89f,Team Rocket,Team Rocket,82,83,45
+en,basep,ce2eea9a-f1c5-4a8e-8ff2-e782fbd89927,Wizards Black Star Promos,Wizards Black Star Promos,53,53,0
+en,bog,2fa71113-d1fe-4498-a69f-581cfdfc2f9e,Best of game,Best of game,9,9,0
+en,bw1,20459d78-825a-4dfa-b7ae-c0c97b8994f6,Black & White,Black & White,114,115,0
+en,bw10,07fafdb9-7130-41c5-a076-301d8ca5070e,Plasma Blast,Plasma Blast,101,105,0
+en,bw11,276f194e-1d23-4d12-a13a-4ebf211588bd,Legendary Treasures,Legendary Treasures,113,140,0
+en,bw2,68e39d0d-c5de-4326-ae1b-51042e556edd,Emerging Powers,Emerging Powers,98,98,0
+en,bw3,3b49aa99-9b03-4b32-bce4-1fb67f167345,Noble Victories,Noble Victories,101,102,0
+en,bw4,383cab7b-dbc3-4d4d-96e3-d07f4f1b6744,Next Destinies,Next Destinies,99,103,0
+en,bw5,62bc12c6-68e4-49a9-86b4-14db3025510f,Dark Explorers,Dark Explorers,108,111,0
+en,bw6,ec087b67-2763-4b92-a34f-4183bc25649e,Dragons Exalted,Dragons Exalted,124,128,0
+en,bw7,e0849e8a-ee89-4443-9ab9-639d31db4e85,Boundaries Crossed,Boundaries Crossed,149,153,0
+en,bw8,42e19a74-eaac-4889-92bd-085e35f708ef,Plasma Storm,Plasma Storm,135,138,0
+en,bw9,b78899e7-ea1a-442b-85af-041bd9609377,Plasma Freeze,Plasma Freeze,116,122,0
+en,bwp,ba16466a-a048-4563-acf2-5507fa211b96,BW Black Star Promos,BW Black Star Promos,101,101,0
+en,cel25,d8804c74-d99d-4bea-a0ba-9c7a94caa4e2,Celebrations,Celebrations,25,25,0
+en,cel25cc,1005554b-9bfc-495b-b50e-561193bec4f8,Celebrations Classic Collection,Celebrations Classic Collection,25,25,0
+en,col1,969c83b1-1004-4af8-8ef8-d724656bdc35,Call of Legends,Call of Legends,95,106,51
+en,dc1,8fd3d411-bc40-44f6-a5e0-b69d45b57326,Double Crisis,Double Crisis,34,34,0
+en,det1,e7ecfeee-b142-47e3-ad78-6fad8841a0e0,Detective Pikachu,Detective Pikachu,18,18,0
+en,dp1,8ebfab70-e7bb-48d8-98e7-dd8b948d12e8,Diamond & Pearl,Diamond & Pearl,130,130,69
+en,dp2,986caaf1-1f2b-4525-ae93-4d455cfee8c5,Mysterious Treasures,Mysterious Treasures,123,124,72
+en,dp3,a9b641af-03cb-4a40-8b15-8a3b6ad01e48,Secret Wonders,Secret Wonders,132,132,57
+en,dp4,d05cc70e-4db4-45cb-a831-1b74780b9772,Great Encounters,Great Encounters,106,106,56
+en,dp5,a0dc1218-59f9-45f7-841b-9e93ccfc3aea,Majestic Dawn,Majestic Dawn,100,100,52
+en,dp6,3f0f07ff-6f30-4034-98db-02bf9182ab78,Legends Awakened,Legends Awakened,146,146,78
+en,dp7,4b1e9001-6612-42bc-94ac-427b346006ee,Stormfront,Stormfront,100,106,47
+en,dpp,145e94b6-56f3-4f63-bfc6-473a472b661d,DP Black Star Promos,DP Black Star Promos,56,56,1
+en,dv1,f0ca524e-701d-4ff4-b9cf-ea9eec7eec58,Dragon Vault,Dragon Vault,20,21,0
+en,ecard1,7cdfd12a-41e8-4311-aa5b-b2b7cd58e398,Expedition Base Set,Expedition Base Set,165,165,86
+en,ecard2,2cd06c25-7efb-442d-b1ff-8f00979d5fe4,Aquapolis,Aquapolis,147,186,67
+en,ecard3,c7e3d5ac-17b4-494e-b6af-53b6eeb75919,Skyridge,Skyridge,144,182,72
+en,ex1,64aef6f8-1d6a-4279-9d48-b6540462f892,Ruby & Sapphire,Ruby & Sapphire,109,109,56
+en,ex10,e29e51ac-ff0a-493a-9065-7e6705c6b044,Unseen Forces,Unseen Forces,115,117,57
+en,ex11,99249942-0d40-4681-89ef-ed4575e16313,Delta Species,Delta Species,113,114,2
+en,ex12,bf4f4e5f-7f84-4c74-aba4-7a72e11a17b2,Legend Maker,Legend Maker,92,93,0
+en,ex13,eadfaa16-b109-40b9-bdc9-e39bd7a81172,Holon Phantoms,Holon Phantoms,110,111,0
+en,ex14,17936dba-7b9a-4737-90a9-a0464d7a4919,Crystal Guardians,Crystal Guardians,100,100,2
+en,ex15,22af0c58-645c-42b6-a7d8-3e77e6b1e032,Dragon Frontiers,Dragon Frontiers,101,101,0
+en,ex16,9703f44c-e45a-4bfb-952c-4e747357bd4e,Power Keepers,Power Keepers,108,108,3
+en,ex2,a13f0885-b15c-4ad1-94b5-9902581273cb,Sandstorm,Sandstorm,100,100,53
+en,ex3,30914b3d-b822-4a86-98a7-64f043e4c3bf,Dragon,Dragon,97,100,51
+en,ex4,5ec7db1f-74f3-4ad0-8e80-24a1712c1730,Team Magma vs Team Aqua,Team Magma vs Team Aqua,95,97,42
+en,ex5,d6412e14-45a5-48ed-81e0-70e09c56b9a3,Hidden Legends,Hidden Legends,101,102,54
+en,ex5.5,71bc9b69-e786-4972-b126-d1f7bbc1311f,Poké Card Creator Pack,Poké Card Creator Pack,5,5,0
+en,ex6,1f4123e5-329b-4d39-9d85-7a079593fbcf,FireRed & LeafGreen,FireRed & LeafGreen,112,116,51
+en,ex7,b80b1e71-5fdf-4c7b-b08e-2970af16c6f6,Team Rocket Returns,Team Rocket Returns,109,111,50
+en,ex8,3ef9a5ac-ff56-41e3-9c03-008368a5d58b,Deoxys,Deoxys,107,108,3
+en,ex9,3c2cf854-99c6-4986-ae3f-92d7b64ca691,Emerald,Emerald,106,107,54
+en,exu,8a187377-e1e3-4dc5-b3ef-4ab8ab58805f,Unseen Forces Unown Collection,Unseen Forces Unown Collection,28,28,0
+en,fut2020,106ceeb1-5af7-4d5d-99ba-d37af82193e8,Pokémon Futsal 2020,Pokémon Futsal 2020,5,5,0
+en,g1,63a759b9-e68f-481c-89ca-b77635a3f120,Generations,Generations,83,117,0
+en,gym1,0f4ffa8e-12e1-4d3f-907c-74186a29bf1b,Gym Heroes,Gym Heroes,132,132,64
+en,gym2,f43aed17-4a1d-49b7-9f98-fbf3f0e44c8d,Gym Challenge,Gym Challenge,132,132,65
+en,hgss1,15cacaa9-5700-4067-b731-ca2bc452d5b7,HeartGold SoulSilver,HeartGold SoulSilver,123,124,63
+en,hgss2,3be0e25e-8dbf-4edd-a75c-aae48dd673a8,Unleashed,Unleashed,95,96,38
+en,hgss3,d48bebfe-e9a9-4b0c-adc9-cec8e109d93c,Undaunted,Undaunted,90,91,41
+en,hgss4,623e0960-fbbf-4803-af40-960f3e0bbf9d,Triumphant,Triumphant,102,103,57
+en,hgssp,5de74297-bb54-4c56-8b1a-701f89e41bc4,HGSS Black Star Promos,HGSS Black Star Promos,25,25,0
+en,lc,1f92f73d-c7ed-4f1b-b0cd-896ce13d2fab,Legendary Collection,Legendary Collection,110,110,53
+en,me01,42d59aab-eccf-413f-8c19-d88f63664057,Mega Evolution,Mega Evolution,132,188,71
+en,me02,977bf107-e10c-4d93-a7a4-3d7b775c5003,Phantasmal Flames,Phantasmal Flames,94,130,50
+en,me02.5,ddc668c0-316e-4dab-8c51-625167508fd6,Ascended Heroes,Ascended Heroes,217,295,98
+en,me03,a6a2829a-c5e6-444f-8d92-d6e0de9fdf64,Perfect Order,Perfect Order,88,124,43
+en,me04,816ff627-a585-4953-99c4-a15c9b0b80e5,Chaos Rising,Chaos Rising,86,122,46
+en,me05,d6d58c17-5923-496e-94ef-5819f34ae10c,Pitch Black,Pitch Black,84,120,33
+en,mee,6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061,Mega Evolution Energy,Mega Evolution Energy,8,8,0
+en,mep,36c13b17-0e5f-42aa-a7c9-9ff7acd71e01,MEP Black Star Promos,MEP Black Star Promos,0,89,0
+en,mfb,460a0854-bfcb-48b9-8531-6f0565a8dd6c,My First Battle,My First Battle,48,34,0
+en,miscp,eca6d92c-f625-4ec1-bcd4-f77c31faa237,Miscellaneous Promos,Miscellaneous Promos,1,1,0
+en,neo1,d9a2e898-8c13-4ec3-a57e-7e27e33dec08,Neo Genesis,Neo Genesis,111,111,51
+en,neo2,0f227cc4-90c0-4e1b-b91f-811b3d13630d,Neo Discovery,Neo Discovery,75,75,39
+en,neo3,6594ca6d-beb9-4b02-91c4-c2f1d5765712,Neo Revelation,Neo Revelation,64,66,35
+en,neo4,76866762-6684-44e1-bd7d-11a741f408d2,Neo Destiny,Neo Destiny,105,113,47
+en,np,e6a38c42-178e-4875-8090-fe559404207f,Nintendo Black Star Promos,Nintendo Black Star Promos,40,40,4
+en,P-A,06abb851-f530-4fc2-b672-2cdccfce77ba,Promos-A,Promos-A,0,100,0
+en,PBL,2f77da8e-8199-4634-b30d-385565560731,Pitch Black,Pitch Black,84,120,0
+en,pl1,772c70cd-95c5-4912-9468-3b5a3043f2cf,Platinum,Platinum,127,133,62
+en,pl2,7c7f44f6-750c-4035-8b59-55f6bc45e26d,Rising Rivals,Rising Rivals,111,120,54
+en,pl3,3e60ee1c-a63d-4473-8315-da90535f25cb,Supreme Victors,Supreme Victors,147,153,71
+en,pl4,9b581912-773f-4599-a94f-ab01fe9e0f4d,Arceus,Arceus,99,111,49
+en,pop1,9ce6fbec-2f97-440d-bf13-4c6de2e4c174,POP Series 1,POP Series 1,17,17,5
+en,pop2,698426c9-3d79-4cdd-8bf7-d33c50be9b39,POP Series 2,POP Series 2,17,17,2
+en,pop3,72847a6b-b6c1-4cbd-a0ec-d364297c9d4e,POP Series 3,POP Series 3,17,17,5
+en,pop4,455ffff6-bd35-42a1-be69-082e9fafc01f,POP Series 4,POP Series 4,17,17,5
+en,pop5,c0e878e4-e882-4736-a3fd-aba9efe393e4,POP Series 5,POP Series 5,17,17,4
+en,pop6,6f5ccfcc-bd4f-439e-aa9a-654afdbfc6f6,POP Series 6,POP Series 6,17,17,3
+en,pop7,bdf571e3-4ca9-40dc-87bd-e6c1952915bf,POP Series 7,POP Series 7,17,17,5
+en,pop8,68fb188b-deb9-46ff-88a9-db0d1f5d34f6,POP Series 8,POP Series 8,17,17,8
+en,pop9,fd0c8655-1296-4913-8d91-74783836cd59,POP Series 9,POP Series 9,17,17,3
+en,ru1,a05be832-81a3-4f39-9fb2-0be6c0c73727,Pokémon Rumble,Pokémon Rumble,16,16,0
+en,si1,3a75eae6-7d72-4227-bf44-4068c80e01fd,Southern Islands,Southern Islands,18,18,0
+en,sm1,ad42d9fa-77e8-4ea4-a591-0591acd4e853,Sun & Moon,Sun & Moon,149,172,0
+en,sm10,f77f15b5-a8c7-42be-8f28-297180da8ae3,Unbroken Bonds,Unbroken Bonds,214,234,0
+en,sm11,899893bc-ede1-4d5a-bb04-54bccf247110,Unified Minds,Unified Minds,236,258,0
+en,sm115,60749dc8-20cb-428f-a410-35e1200cea03,Hidden Fates,Hidden Fates,68,69,0
+en,sm12,b3e4c7e0-f614-4b04-929a-b8c1cfc8609e,Cosmic Eclipse,Cosmic Eclipse,236,271,0
+en,sm2,84d8a262-794d-45ee-9d65-ba8528ed1f76,Guardians Rising,Guardians Rising,145,169,0
+en,sm3,0fe827db-b417-4ff2-8506-536546338e74,Burning Shadows,Burning Shadows,147,169,62
+en,sm3.5,944a1f4e-a7cd-4ff1-a8ec-cc8f35d3c6d0,Shining Legends,Shining Legends,73,78,0
+en,sm4,cc5b8c70-db14-4fa9-af42-4c43a1bedbd0,Crimson Invasion,Crimson Invasion,111,125,0
+en,sm5,eb6b35a6-91b3-4ff8-b739-a89f072646ef,Ultra Prism,Ultra Prism,156,173,0
+en,sm6,d1bbf0dd-20e9-47f9-927f-7e7a7a555642,Forbidden Light,Forbidden Light,131,146,0
+en,sm7,01f1a9bb-9eda-4137-a544-c065bb920545,Celestial Storm,Celestial Storm,168,183,0
+en,sm7.5,702e4fd6-5396-43b5-a98f-a736e7dcd48c,Dragon Majesty,Dragon Majesty,70,78,0
+en,sm8,d237001c-03b2-424f-8855-6c459ef57b43,Lost Thunder,Lost Thunder,214,236,0
+en,sm9,67484037-191a-4fd6-bf2e-8e2dbf46e36b,Team Up,Team Up,181,196,0
+en,sma,fde121ce-e43c-4851-ac6c-8b151d7d0ab8,Hidden Fates Shiny Vault,Hidden Fates Shiny Vault,94,94,0
+en,smp,c5bc0f58-c30c-4115-acc9-3a6d64420cda,SM Black Star Promos,SM Black Star Promos,248,248,0
+en,sp,79232cb7-c397-48b2-adc7-9af9a8fc382d,Sample,Sample,10,10,0
+en,sv01,23addc10-7c42-4f3d-aa94-21a2a6ec6011,Scarlet & Violet,Scarlet & Violet,198,258,100
+en,sv02,33342e0c-da19-4d33-a5c3-df0ede2260f4,Paldea Evolved,Paldea Evolved,193,279,98
+en,sv03,8a4ba2ca-76e9-4f70-b0b4-7074bffe8c75,Obsidian Flames,Obsidian Flames,197,230,93
+en,sv03.5,f2d0385c-1aae-44a9-b301-bf13da9a131e,151,151,165,207,81
+en,sv04,5b81a847-50b5-410c-b6a2-c2a50bff76b6,Paradox Rift,Paradox Rift,182,266,83
+en,sv04.5,47e83522-7615-40cf-b62a-ffa3c0ad55a6,Paldean Fates,Paldean Fates,91,245,48
+en,sv05,d6df9ecd-74e4-434b-b28c-570fee69a9b9,Temporal Forces,Temporal Forces,162,218,96
+en,sv06,fab8637c-da98-4be7-969e-3f558e71871f,Twilight Masquerade,Twilight Masquerade,167,226,81
+en,sv06.5,10cc2b5d-b4e5-4c68-841b-b02b7cc4f06e,Shrouded Fable,Shrouded Fable,64,99,33
+en,sv07,2a6febb5-52ca-485d-885d-7d0adc094540,Stellar Crown,Stellar Crown,142,175,74
+en,sv08,6203fef9-a8e6-4b20-b80a-68447b2166fc,Surging Sparks,Surging Sparks,191,252,80
+en,sv08.5,fb3cd93c-9006-42f5-b026-96a9fedcf269,Prismatic Evolutions,Prismatic Evolutions,131,180,56
+en,sv09,4f3046f3-9ab7-4068-a7df-dbe2b08c263c,Journey Together,Journey Together,159,190,89
+en,sv10,8794c18f-e977-4e4a-965e-a0cb712435be,Destined Rivals,Destined Rivals,182,244,88
+en,sv10.5b,ba4fbfd1-901d-4a00-b27f-a30eb8946bb2,Black Bolt,Black Bolt,86,172,45
+en,sv10.5w,e7196d4a-f97d-466a-853c-87c58d6456cd,White Flare,White Flare,86,173,47
+en,sve,dba20c6b-1ded-41d5-b44e-ad70bbf94ac8,Scarlet & Violet Energy,Scarlet & Violet Energy,24,24,0
+en,svp,6700cb91-6deb-45ab-935a-0f262b32dd59,SVP Black Star Promos,SVP Black Star Promos,225,226,0
+en,swsh1,b6278586-87f3-46cd-8860-85df64612cfc,Sword & Shield,Sword & Shield,202,216,88
+en,swsh10,819d7be8-9fa9-4f20-975c-9328a7ffbd9c,Astral Radiance,Astral Radiance,189,216,64
+en,swsh10.5,ffec8524-253a-4e66-884c-7e647a15d40d,Pokémon GO,Pokémon GO,78,88,29
+en,swsh10tg,f29d8d09-3abb-4527-9eec-bf138f50dd38,Astral Radiance Trainer Gallery,Astral Radiance Trainer Gallery,30,30,0
+en,swsh11,d91046d7-be79-4824-960a-4a0979f023a0,Lost Origin,Lost Origin,196,217,76
+en,swsh11tg,e6de4739-e58c-460b-851e-856234d8c3a4,Lost Origin Trainer Gallery,Lost Origin Trainer Gallery,30,30,0
+en,swsh12,09351915-b132-4be6-b98e-aa773aac65ad,Silver Tempest,Silver Tempest,195,215,75
+en,swsh12.5,42096fc0-51f2-4805-a114-e6f2811a0c49,Crown Zenith,Crown Zenith,159,160,60
+en,swsh12.5gg,8bb033f3-6059-4f5f-a021-c363241092a1,Crown Zenith Galarian Gallery,Crown Zenith Galarian Gallery,70,70,0
+en,swsh12tg,422dfa7c-c4a6-4aa8-8c07-6633df0c1ab9,Silver Tempest Trainer Gallery,Silver Tempest Trainer Gallery,30,30,0
+en,swsh2,564ce799-f9bc-43a1-a70a-bd6d5b0dfe76,Rebel Clash,Rebel Clash,192,209,70
+en,swsh3,fef7d309-9879-4639-9e4c-8d80122f0f3a,Darkness Ablaze,Darkness Ablaze,189,201,63
+en,swsh3.5,317430c1-52e0-420f-a17e-2efbcc43dec6,Champion's Path,Champion's Path,73,80,34
+en,swsh4,c40a79a9-69f9-482b-aa3b-0867059eb66d,Vivid Voltage,Vivid Voltage,185,203,80
+en,swsh4.5,1b9afc9d-bce8-4cff-819a-884ddf2f8f76,Shining Fates,Shining Fates,72,73,22
+en,swsh4.5sv,3d504918-a4a4-4ec6-9ba5-f51d676832e5,Shining Fates Shiny Vault,Shining Fates Shiny Vault,122,122,0
+en,swsh5,04dc5049-cf3a-4e5e-ad1e-85c077d03cce,Battle Styles,Battle Styles,163,183,58
+en,swsh6,2fd9b10d-505e-44af-9ec6-b01e7da63c1f,Chilling Reign,Chilling Reign,198,233,65
+en,swsh7,5534149f-25ec-4195-b873-7dfbe40e5aac,Evolving Skies,Evolving Skies,203,237,67
+en,swsh8,6032d5e3-a6c5-41a5-a2f2-0edb343e092b,Fusion Strike,Fusion Strike,264,284,117
+en,swsh9,c70da69d-57d8-4ea3-9952-b27882fef91e,Brilliant Stars,Brilliant Stars,172,186,63
+en,swsh9tg,5e30dc45-bf56-46f4-85b4-292542f86ecf,Brilliant Stars Trainer Gallery,Brilliant Stars Trainer Gallery,30,30,0
+en,swshp,ef15c432-0542-4fee-ba25-b4719b9d4f84,SWSH Black Star Promos,SWSH Black Star Promos,307,307,0
+en,tk-bw-e,846c1403-d1e7-4927-870e-45ae52a1fa77,BW trainer Kit (Excadrill),BW trainer Kit (Excadrill),30,30,0
+en,tk-bw-z,7d416292-8ac3-40a0-8696-d3988e68876c,BW trainer Kit (Zoroark),BW trainer Kit (Zoroark),30,30,0
+en,tk-dp-l,a3fd1c44-2c71-4f48-b441-899ba8e9ca3a,DP trainer Kit (Lucario),DP trainer Kit (Lucario),11,11,0
+en,tk-dp-m,d1175fa3-0667-4bdd-80ca-3434b25d8d1f,DP trainer Kit (Manaphy),DP trainer Kit (Manaphy),12,12,0
+en,tk-ex-latia,50f7253b-18da-43d4-b5d2-8b9ddc4310f9,EX trainer Kit (Latias),EX trainer Kit (Latias),10,10,0
+en,tk-ex-latio,0b2ab635-45ad-4874-8cca-d1a642e5322a,EX trainer Kit (Latios),EX trainer Kit (Latios),10,10,0
+en,tk-ex-m,83bbe73a-6837-4501-9335-deb89c3132c9,EX trainer Kit 2 (Minun),EX trainer Kit 2 (Minun),12,12,0
+en,tk-ex-p,d2383af6-d45c-4ca4-8fd6-da6920baf56f,EX trainer Kit 2 (Plusle),EX trainer Kit 2 (Plusle),12,12,0
+en,tk-hs-g,2639902b-8106-4b20-8494-4ddfb42d5ecb,HS trainer Kit (Gyarados),HS trainer Kit (Gyarados),30,30,0
+en,tk-hs-r,89a62c7e-a41c-4502-8f66-ffcf344c763e,HS trainer Kit (Raichu),HS trainer Kit (Raichu),30,30,0
+en,tk-sm-l,e9d92d46-a669-424a-a8b0-090ff19e8fd4,SM trainer Kit (Lycanroc),SM trainer Kit (Lycanroc),30,18,0
+en,tk-sm-r,6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7,SM trainer Kit (Alolan Raichu),SM trainer Kit (Alolan Raichu),30,30,0
+en,tk-xy-b,12cede6a-64b0-4fe1-9450-d70056d82cb5,XY trainer Kit (Bisharp),XY trainer Kit (Bisharp),30,30,0
+en,tk-xy-latia,dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e,XY trainer Kit (Latias),XY trainer Kit (Latias),30,30,0
+en,tk-xy-latio,fffca854-8bf1-4f89-9a38-ea2b0a47f055,XY trainer Kit (Latios),XY trainer Kit (Latios),30,30,0
+en,tk-xy-n,9b3f2e2d-f527-49d7-84ec-ede2f6a54f90,XY trainer Kit (Noivern),XY trainer Kit (Noivern),30,30,0
+en,tk-xy-p,2611a280-4fe7-4cd2-9728-fad2d5537150,XY trainer Kit (Pikachu Libre),XY trainer Kit (Pikachu Libre),30,30,0
+en,tk-xy-su,f96f987b-5997-4089-ab84-34879d0428dc,XY trainer Kit (Suicune),XY trainer Kit (Suicune),30,30,0
+en,tk-xy-sy,459b58d7-001d-4653-9e26-5e0f164a710f,XY trainer Kit (Sylveon),XY trainer Kit (Sylveon),30,30,0
+en,tk-xy-w,75c049f3-031f-4819-99cf-a02c6fe9c5bb,XY trainer Kit (Wigglytuff),XY trainer Kit (Wigglytuff),30,30,0
+en,wp,013aaf61-7b4f-4f79-b96f-285b53de2d41,W Promotional,W Promotional,7,7,0
+en,xy0,f5e20b43-349e-466d-a0d3-d9b8950c4281,Kalos Starter Set,Kalos Starter Set,39,39,0
+en,xy1,5d30fc31-1040-4140-8c02-ea1dcdb57955,XY,XY,146,146,0
+en,xy10,e40d96fe-ebdb-4c92-9259-6d5086d079bb,Fates Collide,Fates Collide,124,129,0
+en,xy11,06f60708-8672-47d5-8dd2-4fa63b425efe,Steam Siege,Steam Siege,114,116,0
+en,xy12,be4122a9-7944-449b-af87-f53b14217fd7,Evolutions,Evolutions,108,113,0
+en,xy2,cbfa835f-4cc7-466f-8945-91e25831a94e,Flashfire,Flashfire,106,110,0
+en,xy3,2924aa8a-c471-4c3a-a98a-031ae26a8e1d,Furious Fists,Furious Fists,111,114,0
+en,xy4,f382341d-5f76-40fe-8fe7-42e798790dc2,Phantom Forces,Phantom Forces,119,124,0
+en,xy5,d309b26d-8418-4d8c-a8e1-4c028fe859cc,Primal Clash,Primal Clash,160,164,0
+en,xy6,7bb54d57-5eef-43b5-a632-ad4242cb2784,Roaring Skies,Roaring Skies,108,112,0
+en,xy7,fedab5a7-4bc0-4a45-8423-3d3054cece6e,Ancient Origins,Ancient Origins,98,101,0
+en,xy8,85bda8bb-6ecf-444d-858b-1c2946a0427b,BREAKthrough,BREAKthrough,162,165,0
+en,xy9,2ba4eb07-8ffa-4e73-b9f3-78f8bd53d9e9,BREAKpoint,BREAKpoint,122,126,0
+en,xya,b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7,Yellow A Alternate,Yellow A Alternate,6,6,0
+en,xyp,603fd3a2-e829-4ca3-bb6d-3c235cde5373,XY Black Star Promos,XY Black Star Promos,211,216,0
+ja,ADV1,13ff8457-ce34-492d-b8a0-292fd59be9a7,拡張パック,拡張パック,55,55,0
+ja,ADV2,e75e6a35-beb5-4ced-a2c9-d146f471a3fd,砂漠のきせき,砂漠のきせき,53,53,0
+ja,ADV3,3ff19dd1-048a-49b1-ad15-6a07c7351a46,天空の覇者,天空の覇者,54,54,0
+ja,ADV4,ab5b47d9-7548-4f9f-96fe-30a12f041d78,強化拡張パックex1マグマVSアクア ふたつの野望,強化拡張パックex1マグマVSアクア ふたつの野望,80,80,0
+ja,ADV5,2e6d5f2e-8528-439f-9506-e4c84df8f2dd,とかれた封印,とかれた封印,83,83,0
+ja,CP1,309571d8-e64b-4859-87b1-692b7e1e8083,マグマ団VSアクア団 ダブルクライシス,マグマ団VSアクア団 ダブルクライシス,34,34,0
+ja,CP2,92c2515d-e527-4909-8ecd-27b5bef5a4b6,伝説キラコレクション,伝説キラコレクション,27,27,0
+ja,CP3,d9394254-48b4-4f36-8636-a9f358dd0742,ポケキュンコレクション,ポケキュンコレクション,32,32,0
+ja,CP4,5e580651-2147-468d-840b-765882875199,Premium Champion Pack EX × M × BREAK,プレミアムチャンピオンパック EX×M×BREAK,131,140,0
+ja,CP5,e7f6c5dd-06a9-4b7b-a906-dab5dc4db302,冷酷の反逆者,冷酷の反逆者,36,36,0
+ja,CP6,68366d94-f72c-4025-b7e9-4b7fb8ad8071,20th Anniversary,ポケットモンスターカードゲーム 拡張パック 20th Anniversary,87,103,0
+ja,E1,2d5f077d-14bb-4fb5-b565-1f4e10c078c9,基本拡張パック,基本拡張パック,128,128,0
+ja,E2,c6c46c29-2f36-4586-b18f-af1269e684d2,地図にない町,地図にない町,92,92,0
+ja,E3,82510bd3-e42d-40ca-b7a1-a4a384ab42fa,海からの風,海からの風,87,90,0
+ja,E4,0ec33578-645f-4711-a3fe-8ea66090781e,裂けた大地,裂けた大地,88,91,0
+ja,E5,af405f2b-1a20-4234-a6f1-ad71711eb116,神秘なる山,神秘なる山,88,91,0
+ja,L1a,fa59f8a0-dac4-4de7-aad9-2c6efead8ed6,ハートゴールドコレクション,ハートゴールドコレクション,70,70,0
+ja,L1b,e8e16a23-fc7a-4ec8-abfe-b74448fa5f27,ソウルシルバーコレクション,ソウルシルバーコレクション,70,70,0
+ja,L2,5801c250-0aca-4282-bfce-28ecbe3b5ee0,よみがえる伝説,よみがえる伝説,70,70,0
+ja,L3,2f857613-7720-426d-be33-d2b71d6304e2,頂上大激突,頂上大激突,70,70,0
+ja,LL,7dbeff79-cfb7-4ac8-8a4f-d7c73a523349,強化パック ロストリンク,強化パック ロストリンク,40,40,0
+ja,M-P,f13ab591-e706-4f7c-b4c6-8fed5526ea87,メガ プロモカード,メガ プロモカード,0,83,0
+ja,M1L,a05ee14c-d4fb-4598-8470-e677e3c06f22,メガブレイブ,メガブレイブ,63,92,0
+ja,M1S,b94f87ff-5d32-436a-87e4-50149151dba0,メガシンフォニア,メガシンフォニア,63,92,0
+ja,M2,8822dd6b-6f88-4ea6-9c59-0f766b63fc2b,インフェルノX,インフェルノX,80,116,0
+ja,M2a,53abf462-8a8c-4f05-8e75-57726a38ce9e,MEGAドリームex,MEGAドリームex,193,250,0
+ja,M3,4be18668-d39a-44a8-831c-98e250f10538,ムニキスゼロ,ムニキスゼロ,80,117,0
+ja,M4,c263caec-8234-4348-9ade-34d25ad4e6e7,ニンジャスピナー,ニンジャスピナー,83,120,0
+ja,M5,91be8fc7-b2ed-4169-b41e-0d374e4d466a,アビスアイ,アビスアイ,81,118,0
+ja,MC,40cb9e83-3e60-4966-8d2d-4edb02bf1ac7,スタートデッキ100 バトルコレクション,スタートデッキ100 バトルコレクション,742,774,0
+ja,neo1,769fa22e-e603-41a8-b62b-920a4abc660b,金、銀、新世界へ...,金、銀、新世界へ...,96,96,0
+ja,neo2,e60f305b-5ad6-4964-b6c6-636788481ca5,遺跡をこえて...,遺跡をこえて...,56,57,0
+ja,neo3,a15481a7-410b-4a98-8695-3bba0db9d226,めざめる伝説,めざめる伝説,57,57,0
+ja,neo4,cdaacf04-0a7c-452d-acb0-e02ca3907106,闇、そして光へ...,闇、そして光へ...,113,113,0
+ja,PCG1,8063eabc-362a-4f15-a4ec-4ed73824252d,伝説の飛翔,伝説の飛翔,82,82,0
+ja,PCG10,81c25448-8d94-4736-a1c6-608597bc9622,World Champions Pack,ワールドチャンピオンズパック,108,108,0
+ja,PCG2,9fa08d47-d2cd-4829-85b6-819692a6850a,蒼空の激突,蒼空の激突,82,82,0
+ja,PCG3,12f2bb10-ec15-4783-bc9b-c946546a1abc,ロケット団の逆襲,ロケット団の逆襲,84,85,0
+ja,PCG4,af6617ed-ed99-445f-8869-5a330740efc2,金の空、銀の海,金の空、銀の海,106,106,0
+ja,PCG5,f8cb8c30-41dc-42a3-977a-23baba96fa69,まぼろしの森,まぼろしの森,86,86,0
+ja,PCG6,8fdf462f-ca9c-47e7-a92d-1936b082a12d,ホロンの研究塔,ホロンの研究塔,86,86,0
+ja,PCG7,421a8323-4094-4c7f-8622-fb6af390becc,ホロンの幻影,ホロンの幻影,52,52,0
+ja,PCG8,d832f428-8d51-4ac0-a3cf-a5d38bddb88d,きせきの結晶,きせきの結晶,75,75,0
+ja,PCG9,b5ef438a-ddcb-4093-8c9b-572639565af5,さいはての攻防,さいはての攻防,68,68,0
+ja,PMCG1,46c7cd20-9ca5-4128-a244-9a04f9a4c9f7,拡張パック,拡張パック,102,102,0
+ja,PMCG2,241c45d9-b649-4243-8c3d-4524b4e9c74c,ポケモンジャングル,ポケモンジャングル,48,48,0
+ja,PMCG3,b53b7df1-df06-44dd-a931-b287efc9aec6,化石の秘密,化石の秘密,48,48,0
+ja,PMCG4,e00ac7f7-8690-407d-a011-5bc5ced0ffca,ロケット団,ロケット団,65,65,0
+ja,PMCG5,c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f,リーダーズスタジアム,リーダーズスタジアム,96,96,0
+ja,PMCG6,b6e7c253-6790-49e5-8d54-34e6eb288e68,闇からの挑戦,闇からの挑戦,98,98,0
+ja,S10a,74fbb8bf-90ae-449f-9caa-725890af4617,ダークファンタズマ,ダークファンタズマ,71,99,48
+ja,S10b,baeee2c6-c600-422d-a4b2-6d84ac4baaba,Pokémon GO,Pokémon GO,71,71,0
+ja,S10D,50fc7442-25ac-4bfc-851b-7e7bf9b30c2d,Time Gazer,タイムゲイザー,67,88,0
+ja,S10P,50caa26f-e963-4122-a83b-3399c3eea056,スペースジャグラー,スペースジャグラー,67,88,0
+ja,S11,18813c1f-2394-468e-91d4-7a81cf6fb201,ロストアビス,ロストアビス,100,127,0
+ja,S11a,1d7afdcf-03bc-4e5e-a213-4b0439924ee9,白熱のアルカナ,白熱のアルカナ,68,94,46
+ja,S12,7f99a1ea-2a6b-4cdc-8ac5-c484716d164b,パラダイムトリガー,パラダイムトリガー,98,125,0
+ja,S12a,d6a23ad9-7d3d-482c-a477-304584a335e3,VSTARユニバース,VSTARユニバース,172,258,42
+ja,S1a,41462e36-155b-40f1-92ee-29a94b4cb353,VMAX Rising,VMAXライジング,70,78,0
+ja,S1H,914a4e3c-d77c-4ac6-8b88-e38cd276d282,Shield,シールド,60,68,0
+ja,S1W,5287277e-bcbe-4f21-b2d3-c7187bc752dc,Sword,ソード,60,68,0
+ja,S2,50370e02-5cc9-44ce-95bd-44743d477934,Rebellion Crash,反逆クラッシュ,96,106,0
+ja,S2a,d64f8486-fa52-4f0d-be4d-be6dc27d1671,Explosive Walker,爆炎ウォーカー,70,78,0
+ja,S3,fa32c0cb-7818-4123-ab6e-9f6cfe2a9950,Infinity Zone,ムゲンゾーン,100,110,0
+ja,S3a,36df02c6-0228-48fc-bb24-b1d73952cc94,Legendary Heartbeat,伝説の鼓動,76,85,0
+ja,S4,bc55a6dd-e9c1-4413-a5a7-a4c1d2a37a90,Amazing Volt Tackle,仰天のボルテッカー,100,111,0
+ja,S4a,9bd12a10-0bc3-4f75-ba74-d62c50293184,Shiny Star V,シャイニースターV,190,326,0
+ja,S5a,84bcceee-6caf-4ca9-b3d9-883b42773dfc,Matchless Fighters,双璧のファイター,70,84,0
+ja,S5I,b4f065d4-9b38-4489-a055-cc6cc310784f,一撃マスター,一撃マスター,70,91,0
+ja,S5R,d770730a-ab9c-4e53-acfa-aff8cbec8c0b,Rapid Strike Master,連撃マスター,70,81,0
+ja,S6a,5659e6b4-48db-4a4c-8883-e26b64f2c41f,Eevee Heroes,イーブイヒーローズ,69,87,0
+ja,S6H,60d3fc64-7e36-473b-ae5c-b071c5aa6c98,白銀のランス,白銀のランス,70,95,0
+ja,S6K,bbb71d0a-367a-466e-970f-2f841fea6e98,漆黒のガイスト,漆黒のガイスト,70,95,0
+ja,S7D,ff823ecc-020f-4804-9194-3671ce9a1a81,摩天パーフェクト,摩天パーフェクト,67,90,0
+ja,S7R,60a21d2e-cfa7-4103-ba7c-8e35f1b42070,Blue Sky Stream,蒼空ストリーム,67,79,0
+ja,S8,5cbd3a81-6b24-4039-8559-eed8eac7877c,フュージョンアーツ,フュージョンアーツ,100,129,0
+ja,S8a,8d718087-7c8e-4894-a938-2cd2a3210d2c,25th アニバーサリーコレクション,25th アニバーサリーコレクション,28,28,0
+ja,S8b,41f64718-acd1-4c40-8a40-5c67daac2cb8,VMAXクライマックス,VMAXクライマックス,184,285,0
+ja,S9,43d798d9-3dbe-4997-a6eb-ed65af962403,スターバース,スターバース,100,127,0
+ja,S9a,52d75bb6-e7a0-42a5-a847-923254ac906c,バトルリージョン,バトルリージョン,67,93,18
+ja,SM0,24d8e1a3-0706-4be3-87e2-b2224f680eb9,ピカチュウと新しい仲間たち,ピカチュウと新しい仲間たち,4,4,0
+ja,SM1+,151b0439-551d-49d6-bd35-32c4d3a2de4f,サン＆ムーン,サン＆ムーン,51,68,0
+ja,SM10,520d745d-3f2d-4921-8ecd-4e4ff695493a,ダブルブレイズ,ダブルブレイズ,95,116,0
+ja,SM10a,d9378aeb-aa81-4cbe-b790-c8432b66aeb5,ジージーエンド,ジージーエンド,54,69,0
+ja,SM10b,2e159940-3f5c-4ec9-8805-c53219263641,スカイレジェンド,スカイレジェンド,56,69,0
+ja,SM11,d0dbab35-0a77-4dcf-a464-88bb0950bdc8,ミラクルツイン,ミラクルツイン,94,115,0
+ja,SM11a,54c662ed-8c6b-428c-b07d-1bb58e74f5a0,リミックスバウト,リミックスバウト,64,80,0
+ja,SM11b,5249f6c6-8418-41fe-8283-af5948b26c63,ドリームリーグ,ドリームリーグ,49,75,0
+ja,SM12,80ffb692-f29d-450a-95eb-a3ddd60257b8,オルタージェネシス,オルタージェネシス,95,117,0
+ja,SM12a,fe68fe5a-4e40-477a-8bcc-0fa35ef392ef,TAG TEAM GX タッグオールスターズ,TAG TEAM GX タッグオールスターズ,173,226,0
+ja,SM1M,61ec9fe1-faa4-4d6b-a532-e8a44354a55e,コレクションムーン,コレクションムーン,60,73,0
+ja,SM1S,eab5aeee-9eb0-4bbb-bac3-96f2da23b491,コレクションサン,コレクションサン,60,73,0
+ja,SM2+,b5e09d26-0559-4d51-b6fb-09268a860a7e,新たなる試練の向こう,新たなる試練の向こう,49,65,0
+ja,SM2K,90d3234a-9c0c-4ccc-9f39-6584223e269b,キミを待つ島々,キミを待つ島々,50,61,0
+ja,SM2L,adc01317-eecf-4615-abaa-d6f6cd37bfb7,アローラの月光,アローラの月光,50,62,0
+ja,SM3+,efeba6f7-0d4f-48ed-a6c9-e090bf0b4eda,ひかる伝説,ひかる伝説,72,82,0
+ja,SM3H,7c4efad5-3391-4462-b911-f821c1f263dd,闘う虹を見たか,闘う虹を見たか,51,64,0
+ja,SM3N,1201d6b1-fa7e-45ac-bc22-5b2ca0f9f3bc,光を喰らう闇,光を喰らう闇,51,64,0
+ja,SM4+,366d4855-590a-4d45-b2d4-836d06b43452,GX Battle Boost,GXバトルブースト,114,125,0
+ja,SM4A,e67e975c-a112-4a8a-816d-8233cc779ee2,超次元の暴獣,超次元の暴獣,50,61,0
+ja,SM4S,499d5b99-a6e2-47d5-ae7a-43c530430955,覚醒の勇者,覚醒の勇者,50,62,0
+ja,SM5+,759e4007-8afe-41e1-9a61-68adb0a05c00,ウルトラフォース,ウルトラフォース,50,63,0
+ja,SM5M,f5e90e91-1366-4e6e-bd42-02cf0ed84790,ウルトラムーン,ウルトラムーン,66,78,0
+ja,SM5S,b322af01-58cc-4e5a-8a82-b7ff829cb9c0,ウルトラサン,ウルトラサン,66,78,0
+ja,SM6,04fe9fe1-7206-4215-b9ab-ccea25916593,禁断の光,禁断の光,94,110,0
+ja,SM6a,29fb4725-1b4c-4f62-9737-0730fdcdadea,ドラゴンストーム,ドラゴンストーム,53,66,0
+ja,SM6b,c7d02c37-c9b3-4d8b-ac5c-59adfe01424d,チャンピオンロード,チャンピオンロード,66,86,0
+ja,SM7,71a1e194-2c3d-46d0-9584-25987bde2841,裂空のカリスマ,裂空のカリスマ,96,112,0
+ja,SM7a,728a72e3-7bf2-4436-8ea1-92b54a8d38f6,迅雷スパーク,迅雷スパーク,50,73,0
+ja,SM7b,f34565be-80cb-47cb-914b-b4c20984cf79,フェアリーライズ,フェアリーライズ,50,63,0
+ja,SM8,3e80bfaf-77fd-4f5d-82ec-4e407a74d722,超爆インパクト,超爆インパクト,95,111,0
+ja,SM8a,3466c5e7-e660-4467-a756-44f4d5f7a853,ダークオーダー,ダークオーダー,52,65,0
+ja,SM8b,eb72605f-506f-4ab5-87f7-1aafeb95a278,GXウルトラシャイニー,GXウルトラシャイニー,150,250,0
+ja,SM9,428cd43a-548e-4482-a81f-0d06b2869835,タッグボルト,タッグボルト,95,118,0
+ja,SM9a,05f31b7b-957f-4b0d-a321-29ca7edde5d4,ナイトユニゾン,ナイトユニゾン,55,70,0
+ja,SM9b,30e027c6-8973-4b8a-93b8-682251f39f28,フルメタルウォール,フルメタルウォール,54,69,0
+ja,SMP2,59ec63a0-5a2a-452b-a03c-90d9264b90da,名探偵ピカチュウ,名探偵ピカチュウ,24,24,0
+ja,SV-P,c20234cb-c629-4383-b107-c49b38b682ae,スカーレット&バイオレット プロモカード,スカーレット&バイオレット プロモカード,0,288,0
+ja,SV10,db4076ae-7ab9-408d-988c-34aa33b7b906,ロケット団の栄光,ロケット団の栄光,98,132,0
+ja,SV11B,9f85e389-ab18-4448-948c-fdc067aa188b,ブラックボルト,ブラックボルト,174,174,0
+ja,SV11W,316ec693-c6dc-408c-aaca-2b57afdb9249,ホワイトフレア,ホワイトフレア,86,174,0
+ja,SV1a,ca01c7f7-c1b0-4a4a-8aa0-e2c0f617d306,トリプレットビート,トリプレットビート,73,103,0
+ja,SV1S,cf6f4a09-69a3-4497-9c40-beb1221063ea,スカーレットex,スカーレットex,78,108,0
+ja,SV1V,fffb3282-3442-41e4-b4a2-9be06199186f,バイオレットex,バイオレットex,78,108,0
+ja,SV2a,e42556b8-3e82-44bb-8c52-c06b893ee4a3,ポケモンカード151,ポケモンカード151,165,210,85
+ja,SV2D,44906e0e-477b-4417-a71d-5330528d3d82,クレイバースト,クレイバースト,71,99,0
+ja,SV2P,a6a65a33-74fa-48d5-bdc0-38d6eaa08ef3,スノーハザード,スノーハザード,71,99,0
+ja,SV3,d1ce7f2b-1f52-452e-9d90-0155bbfdb6e6,黒炎の支配者,黒炎の支配者,108,141,0
+ja,SV3a,92afb596-5060-44b4-a53a-12d815e94f52,レイジングサーフ,レイジングサーフ,62,92,0
+ja,SV4a,9e539009-b72c-43e2-8f25-f183aa4bc4b7,レイジングサーフ,レイジングサーフ,190,320,51
+ja,SV4K,be25b6d3-a750-48a3-b8af-804ddc355452,古代の咆哮,古代の咆哮,66,95,0
+ja,SV4M,344551fb-6b1b-418a-8b59-680096d4c9bf,未来の一閃,未来の一閃,66,95,0
+ja,SV5a,5f94a6e3-99a2-4eba-b6c7-c689dd509da8,クリムゾンヘイズ,クリムゾンヘイズ,66,96,0
+ja,SV5K,688851ac-3d75-4431-a008-664294279341,ワイルドフォース,ワイルドフォース,71,100,0
+ja,SV5M,987716a9-9030-4dc8-89c2-db2bdf1a409d,サイバージャッジ,サイバージャッジ,71,100,0
+ja,SV6,5b61106a-7ae7-4ee6-90cc-c101fb8738b8,変幻の仮面,変幻の仮面,101,133,0
+ja,SV6a,6e698306-d093-44e9-8673-cc513e36bd8d,ナイトワンダラー,ナイトワンダラー,64,94,0
+ja,SV7,f09d1e6a-c76e-4a2d-bb45-971e54983c2d,ステラミラクル,ステラミラクル,102,135,0
+ja,SV7a,98a82354-b058-4bda-ad66-359a7bd7c36f,楽園ドラゴーナ,楽園ドラゴーナ,64,94,0
+ja,SV8,5f0817f3-5386-4a29-9391-0529c5fcb98b,超電ブレイカー,超電ブレイカー,106,138,0
+ja,SV8a,a7459948-3544-4122-8fec-7fc6aecfd2e5,テラスタルフェスex,テラスタルフェスex,187,237,76
+ja,SV9,a65593d7-236b-4891-9c88-670650f4faaf,バトルパートナーズ,バトルパートナーズ,100,132,0
+ja,SV9a,ff9ddb2d-d5c3-4c2c-bc48-89e68ea03d96,熱風のアリーナ,熱風のアリーナ,63,92,0
+ja,SVK,a82cacd4-f799-422c-a6c6-5812f52b5471,デッキビルドBOX ステラミラクル,デッキビルドBOX ステラミラクル,44,44,0
+ja,SVLN,a02f91da-e478-40a7-8dfe-7885964ad626,スターターセット テラスタイプ：ステラ ニンフィアex,スターターセット テラスタイプ：ステラ ニンフィアex,22,22,0
+ja,SVLS,c6605513-7a0b-455f-843d-d171570aa516,スターターセット テラスタイプ：ステラ ソウブレイズex,スターターセット テラスタイプ：ステラ ソウブレイズex,22,22,0
+ja,VS1,f1b5f7cb-2472-496b-8587-1ceab0233632,ポケモンカード★VS,ポケモンカード★VS,141,143,0
+ja,web1,cdb922a5-eaec-4696-ae6f-3ad4d263c66b,ポケモンカード★web,ポケモンカード★web,48,48,0
+ja,XY10,f2f1d254-4bf3-474f-8ac1-5302b66caadf,めざめる超王,めざめる超王,78,78,0
+ja,XY11a,25233d9e-6a9e-459e-83fd-cb2a27353955,爆熱の闘士,爆熱の闘士,54,54,0
+ja,XY11b,9eaba296-0320-44ac-a684-004b5493703b,冷酷の反逆者,冷酷の反逆者,54,54,0
+ja,XY1a,80507fc7-d1db-433d-9374-4efa9ee190b4,コレクションX,コレクションX,60,60,0
+ja,XY1b,3ee8597c-8aef-4c8c-84a7-07b9870cb35c,コレクションY,コレクションY,60,60,0
+ja,XY2,08b708f9-3971-4219-926d-4f7accbecaf1,Wild Blaze,ワイルドブレイズ,80,87,0
+ja,XY3,38994222-f21c-45b7-9546-8033947af026,Rising Fist,ライジングフィスト,96,103,0
+ja,XY4,4456ff35-8059-4c89-bf32-72ee17974c9f,Phantom Gate,ファントムゲート,88,95,0
+ja,XY5a,29935849-0eac-4671-b4d0-8bdee32d6cb4,ガイアボルケーノ,ガイアボルケーノ,70,70,0
+ja,XY5b,a930e0e2-ed87-4a87-89ef-493b529eee93,タイダルストーム,タイダルストーム,70,70,0
+ja,XY6,1b5bed18-c3ec-4a9f-a022-caf94a6199f8,エメラルドブレイク,エメラルドブレイク,78,78,0
+ja,XY7,ae0e96bd-371a-44ca-8090-e773a4f10d5e,Bandit Ring,バンデットリング,81,95,0
+ja,XY8a,13ef05bd-d69c-4a8f-aa8d-67b7d3cded50,青い衝撃,青い衝撃,59,59,0
+ja,XY8b,dbd76042-7f79-4dae-bbf4-5a096bc58e12,赤い閃光,赤い閃光,59,59,0
+ja,XY9,9cacae59-fc63-4335-ade1-d5f81373c247,破天の怒り,破天の怒り,80,80,0
+ko,CS1.5,824c16e0-785e-4b97-9e8a-cba03559476b,트리플렛비트,트리플렛비트,101,101,0
+ko,CS1a,51fad859-b981-4c38-ad87-370659c8faf5,트리플렛비트,트리플렛비트,101,101,0
+ko,CS1b,2f335317-ee79-4ae7-b33e-d6d17a634baf,트리플렛비트,트리플렛비트,101,101,0
+ko,CS2.5,4148fa3b-2239-4edb-aec2-2e2fe11c00d4,트리플렛비트,트리플렛비트,101,101,0
+ko,CS2a,3adac987-39bd-466f-b122-055ced8eeb58,트리플렛비트,트리플렛비트,101,101,0
+ko,CS2b,380509f7-de5d-4499-9ce1-55d9ef1dbdf4,트리플렛비트,트리플렛비트,101,101,0
+ko,CS3.5,207820d0-04d1-47f7-83fe-902f3c0e754e,트리플렛비트,트리플렛비트,101,101,0
+ko,CS3a,e27df9a1-105a-40fe-81d1-a787cb54dcee,트리플렛비트,트리플렛비트,101,101,0
+ko,CS3b,2ac44b59-465a-4013-afca-2ab82aff3f56,트리플렛비트,트리플렛비트,101,101,0
+ko,CS3D,fcc94533-20bd-46ad-a468-83a3b87d810a,트리플렛비트,트리플렛비트,101,101,0
+ko,CS4,e7bd765f-15a3-47db-b758-6dc7ae557526,트리플렛비트,트리플렛비트,101,101,0
+ko,CS4a,e8d3d1ad-3e3c-47c8-9b89-4e4fb0a996fd,트리플렛비트,트리플렛비트,101,101,0
+ko,CS4b,9a22c71c-877c-4c2a-9957-2b6f5feda3ab,트리플렛비트,트리플렛비트,101,101,0
+ko,CS4Da,11b60b31-65e2-4b84-a16e-73d17019bd44,트리플렛비트,트리플렛비트,101,101,0
+ko,CSA,43263a49-d474-4ada-abe9-2cb849d40408,트리플렛비트,트리플렛비트,101,101,0
+ko,S10a,b203a46e-3d1d-4fcb-8e84-bd4c89974c49,다크판타스마,다크판타스마,71,71,0
+ko,S10b,1481d746-5dec-4f87-93a9-3e9a5ef5ae07,Pokémon GO,Pokémon GO,71,71,0
+ko,S10D,bd671caa-35d6-4416-8fc2-9945779e7210,타임게이저,타임게이저,67,67,0
+ko,S10P,4d1b6985-6e32-4977-9041-f06e867ba4b1,스페이스저글러,스페이스저글러,67,67,0
+ko,S11,9af84642-1702-4c14-a462-8b94a4efe9af,트리플렛비트,트리플렛비트,100,100,0
+ko,S11a,9ef396fd-31be-40e5-bfc2-aac7e04a703a,백열의 아르카나,백열의 아르카나,68,68,0
+ko,S12,9a5afd46-8e83-4e19-b3fe-cd74057786dc,패러다임트리거,패러다임트리거,98,98,0
+ko,S12a,3574ac4e-f899-4816-9711-c27f6b11db49,VSTAR 유니버스,VSTAR 유니버스,172,172,0
+ko,S1a,cef768f8-bc60-4f46-9914-ff34c4a113a9,VMAX라이징,VMAX라이징,70,70,0
+ko,S1H,950cfa44-d3f0-4ba3-a04b-c4ad8ac2ce25,실드,실드,60,60,0
+ko,S1W,bfade21e-4987-46e3-ad07-d27715115a67,소드,소드,60,60,0
+ko,S2,2ba54962-a791-46d4-be7e-041d6722efe9,반역크래시,반역크래시,96,96,0
+ko,S2a,a5486ad2-c914-493e-af31-0391e7dc2136,폭염워커,폭염워커,70,70,0
+ko,S3,f94a3632-5483-47a9-bc1a-b8b3a3912c00,무한존,무한존,100,100,0
+ko,S3a,dbb4fb71-e13c-4586-8bb8-3a72f049108e,전설의 고동,전설의 고동,76,76,0
+ko,S4,b24a84ef-9cf9-4fe1-99a5-b6908d4558d8,앙천의 볼트태클,앙천의 볼트태클,100,100,0
+ko,S4a,8a26ec9f-444b-4e0f-a4ad-ac2f6383a64b,샤이니스타V,샤이니스타V,190,190,0
+ko,S5a,52cc521a-6493-44c6-820b-77a705c9024c,쌍벽의 파이터,쌍벽의 파이터,70,70,0
+ko,S5I,c561fc4e-246e-423c-b8a7-fc2ea508ba2c,일격마스터,일격마스터,70,70,0
+ko,S5R,880492b5-1c21-4ddb-a105-e791aff11130,연격마스터,연격마스터,70,70,0
+ko,S6a,a2205adf-ee26-400a-88a5-3c027af4cc8f,이브이 히어로즈,이브이 히어로즈,69,69,0
+ko,S6H,09f8ea2b-1b82-43a8-849a-0eaba70bf916,백은의 랜스,백은의 랜스,70,70,0
+ko,S6K,e0fa8f14-6ac4-437b-8591-2cafc25b43d6,칠흑의 가이스트,칠흑의 가이스트,70,70,0
+ko,S7D,d788062e-5b00-4707-8510-2a0036e81e99,마천퍼펙트,마천퍼펙트,67,67,0
+ko,S7R,7cc1dd36-879d-4d58-95c2-22ded590c845,창공의스트림,창공의스트림,67,67,0
+ko,S8,abbba736-ff55-4feb-bc30-737ad431e169,퓨전아츠,퓨전아츠,100,100,0
+ko,S8a,fc3050ab-f999-48fe-ad93-6ab87d75d3df,25th Anniversary,25th Anniversary,28,28,0
+ko,S8b,b2cd67dc-4698-4437-9709-0811944fa47b,VMAX 클라이맥스,VMAX 클라이맥스,184,184,0
+ko,S9,0242ed49-1d30-425b-9d98-a35a33d21c6e,스타버스,스타버스,100,100,0
+ko,S9a,2433b9c4-cc30-47c5-a49b-3e1c935dbbb1,배틀리전,배틀리전,67,67,0
+ko,SM1+,870022b7-3cb7-4323-9782-95e8221dff52,썬&문,썬&문,51,51,0
+ko,SM10,4301389c-89ce-4369-9503-cf30f4d1af97,더블블레이즈,더블블레이즈,95,95,0
+ko,SM10a,039a28a5-7177-4956-82ed-1acf35f5f90c,GG엔드,GG엔드,54,54,0
+ko,SM10b,b5b40ab4-78d4-4bad-8498-7e5315212c04,스카이레전드,스카이레전드,56,56,0
+ko,SM11,406f074f-e862-463f-b5f8-d347519b0646,미라클트윈,미라클트윈,94,94,0
+ko,SM11a,6879b78f-868d-4704-975a-d6cf003a95de,리믹스바우트,리믹스바우트,64,64,0
+ko,SM11b,e4e2966a-99de-4177-a7f4-5df815030380,드림리그,드림리그,49,49,0
+ko,SM12,0214e128-4015-4481-802b-6518f59c1dce,얼터제네시스,얼터제네시스,95,95,0
+ko,SM12a,1c05a0bc-8015-4441-aaac-388fd922990f,TAG TEAM GX 태그올스타즈,TAG TEAM GX 태그올스타즈,173,173,0
+ko,SM1M,3104be92-81f2-4176-ac6a-d265a9c10cad,문 컬렉션,문 컬렉션,60,60,0
+ko,SM1S,3793753b-1191-448a-a54d-b852a32dd8ee,썬 컬렉션,썬 컬렉션,60,60,0
+ko,SM2K,71a38dca-57f9-409b-90f7-d9f3a7d42c77,알로라의 햇빛,알로라의 햇빛,50,50,0
+ko,SM2L,745fc871-dc1b-4619-ab21-a14f04a3a689,알로라의 달빛,알로라의 달빛,50,50,0
+ko,SM3+,956f3586-9517-46af-9b4a-4bd3cce1872f,빛나는 전설,빛나는 전설,72,72,0
+ko,SM3H,06ae8028-7991-4a95-9d95-54bf1c141cdb,어둠을 밝힌 무지개,어둠을 밝힌 무지개,51,51,0
+ko,SM3N,ea76d814-7316-4c9f-9a56-8c510277a47e,빛을 삼킨 어둠,빛을 삼킨 어둠,51,51,0
+ko,SM4+,60268ff9-b797-4fc9-8c1f-62600566443d,GX 배틀부스트,GX 배틀부스트,114,114,0
+ko,SM4A,d0b52275-614f-47dc-951b-3244706eead2,초차원의 침략자,초차원의 침략자,50,50,0
+ko,SM4S,e803b437-dd48-4239-8b93-ac7de3365b27,각성의 용사,각성의 용사,50,50,0
+ko,SM5+,2c60bbc5-eb49-4527-96bc-2839a2a92774,울트라포스,울트라포스,50,50,0
+ko,SM5M,eb6696b5-5cef-4bdc-8a07-9dc96d7cbf36,울트라문,울트라문,66,66,0
+ko,SM5S,5da257fa-1619-4ba6-9de0-f6c4fa18acfc,울트라썬,울트라썬,66,66,0
+ko,SM6,d962c8b9-fe7d-4361-9d9d-7f918f025735,금단의 빛,금단의 빛,94,94,0
+ko,SM6a,ca8ec10e-d2f4-4de9-b119-fe7171bc65d5,드래곤스톰,드래곤스톰,53,53,0
+ko,SM6b,51e42180-9c84-48c2-9621-f912e81be776,챔피언로드,챔피언로드,66,66,0
+ko,SM7,e2f0b2c0-7357-417c-883c-862f56adcaed,창공의 카리스마,창공의 카리스마,96,96,0
+ko,SM7a,9afc1531-5b71-4ba9-a251-ce80d6299260,플라스마 스파크,플라스마 스파크,50,50,0
+ko,SM7b,33ff2c7d-5b5b-4609-91e4-d000dd05ef3d,페어리라이즈,페어리라이즈,50,50,0
+ko,SM8,51e10f4f-45f5-4c9c-989e-be537647958e,버스트임팩트,버스트임팩트,95,95,0
+ko,SM8a,1c35aed1-7364-4ee6-95f2-d8b7a91f9e02,다크오더,다크오더,52,52,0
+ko,SM8b,d6361174-5aca-44be-ae7a-9a8bc4dc43ec,GX 울트라샤이니 ULTIMATE,GX 울트라샤이니 ULTIMATE,150,150,0
+ko,SM9,b3cf9be2-5b81-47c1-9c41-da49f5b1ddfe,태그볼트,태그볼트,95,95,0
+ko,SM9a,d5ac7e5c-4c98-44fa-8ba4-18fa93b46f70,나이트유니슨,나이트유니슨,55,55,0
+ko,SM9b,fca3c7cf-9b70-4ff0-b2d7-5b11354660e9,풀메탈월,풀메탈월,54,54,0
+ko,SMP2,fd4f7b61-286b-4e26-a402-b948224bcde1,명탐정 피카츄,명탐정 피카츄,24,24,0
+ko,sn10a,df0058c3-3cef-4b9f-b522-85e86df4054e,GG엔드,GG엔드,54,54,0
+ko,sn11,62c5a12f-1555-43b2-af96-48522b46e1de,미라클트윈,미라클트윈,94,94,0
+ko,SV1a,e2ab9cea-967c-4b9a-bdaa-c40e747f0744,트리플렛비트,트리플렛비트,73,73,0
+ko,SV1S,618285b8-fdc7-42e1-afa0-a7cb4ca2b344,스칼렛ex,스칼렛ex,78,78,0
+ko,SV1V,88a53bf2-6a62-45ba-ad75-e43b6f696c3f,바이올렛ex,바이올렛ex,78,78,0
+ko,SV2a,c5c680dc-6c74-47a0-a0b1-c3bfdad05628,포켓몬 카드 151,포켓몬 카드 151,165,165,0
+ko,SV2D,89931a3e-7397-446e-8eec-3fc413f48c22,클레이버스트,클레이버스트,71,71,0
+ko,SV2P,78f4d427-f1a8-43b3-bb26-15f1bc4e2181,스노해저드,스노해저드,71,71,0
+ko,SV3,f9aa55b4-95ab-4f19-bb60-47bf65ced81c,흑염의 지배자,흑염의 지배자,108,108,0
+ko,SV3a,84ce3bbc-b8f3-4b9b-9553-b071ebac52eb,레이징서프,레이징서프,62,62,0
+ko,SV4a,01612af8-b359-46c0-a026-f085be73d33f,샤이니트레저 ex,샤이니트레저 ex,190,190,0
+ko,SV4K,568720ec-7790-49f6-9a35-23bb61b8afbc,고대의 포효,고대의 포효,66,95,0
+ko,SV4M,7f9d7a5f-a647-484b-831c-218f8da1f150,미래의 일섬,미래의 일섬,66,95,0
+ko,SV5a,8979004d-b658-40f9-b359-567eedde1aca,크림슨헤이즈,크림슨헤이즈,66,66,0
+ko,SV5K,d8501b4f-52ed-4ae9-995b-ec1fb9220217,와일드포스,와일드포스,71,71,0
+ko,SV5M,f0f6e2f4-0149-43dd-b911-1e2d02d198a2,사이버저지,사이버저지,71,71,0
+ko,SV6,d71a741c-669f-47cb-b57e-f0e443d7b1c6,변환의 가면,변환의 가면,101,101,0
+zh-cn,151c,8e3da79a-1d8d-40ae-9f09-0150728cfbd6,"Collect 151 Surprise, Hope, Journey, & Gathering",收集啦151 旅,151,192,0
+zh-cn,cbb1c,6fddd811-836e-4304-8d28-f36caef0d044,Gem Pack Vol 1,宝石包 Vol. 1,115,115,0
+zh-cn,cbb2c,8a18b285-dbf1-4acb-8374-e693849d80e1,Gem Pack Vol 2,宝石包 Vol.2,15,140,0
+zh-cn,cbb3c,06ae8d84-49e1-4363-a97b-1f22ee392ed7,Gem Pack Vol 3,宝石包 Vol.3,7,136,0
+zh-cn,cbb4c,ceddde89-0705-4372-95f2-88c20b89fddd,Gem Pack Vol 4,宝石包 第四弹,7,196,0
+zh-cn,cbb5c,67ae722c-a017-4446-a14e-50d70df1f98d,Gem Pack Vol 5,宝石包 第五弹,7,196,0
+zh-cn,cs0lc,11f1bc35-2d54-4829-b26a-41184d498eb7,Pikachu & Eevee Card Display Pendant Gift Box,皮在伊起 流沙卡牌展示挂件礼盒,,4,0
+zh-cn,cs1.5c,8fa6e9bb-57f0-41d9-a4dd-611af3e1daf8,Dynamax Tactics,极巨攻防,55,96,0
+zh-cn,cs1ac,e98642e8-97ac-4a08-b013-c0b13b70a269,Dynamax Clash - Set A,极巨争锋 雷,135,217,0
+zh-cn,cs1bc,01859240-c3d3-4074-832f-782f61c4fcb6,Dynamax Clash - Set B,极巨争锋 焰,136,199,0
+zh-cn,cs1dc,e4149c4d-77fd-4d78-9ce5-1ffb33e7bc35,Dynamax Clash V Starter Deck,起始卡组 极巨争锋V,,222,0
+zh-cn,cs2.1c,d9a6c0f3-c742-4f60-baee-5cabb823f8d6,Meowth Little Tricks,专题包 喵喵小妙招,,10,0
+zh-cn,cs2.5c,ad94757c-4ad8-43a2-848b-3ac6dd4ca89d,Brilliant Counterattack,璀璨反击,59,79,0
+zh-cn,cs2ac,96cbe78b-6461-4875-a678-c2fc65b0d756,Vivid Portrayals - Set A,浓墨重彩 黎,115,143,0
+zh-cn,cs2bc,7e37b0c3-bae5-4591-89c8-815b6cb4b80d,Vivid Portrayals - Set B,浓墨重彩 靛,115,143,0
+zh-cn,cs2dac,76972e45-2535-4507-8cba-a826c32b534e,Family Pokémon Trading Card Game,宝可梦卡牌 家庭组合,,53,0
+zh-cn,cs3.5c,c651409a-2274-445d-99b0-d1b8e325cbca,Scorching Skies,怒炎灼天,66,90,0
+zh-cn,cs3ac,42e798dd-f171-4f0b-916e-2386fd2a353f,Primordial Arts - Set A,洪荒演武 茂,125,184,0
+zh-cn,cs3bc,f9223984-d0cf-445e-9d9f-7d447855a904,Primordial Arts - Set B,洪荒演武 激,122,179,0
+zh-cn,cs3dc,096afff5-a4ff-4084-b7be-ecf150e13b25,Primordial Arts V Starter Deck,起始卡组 洪荒演武V,,183,0
+zh-cn,cs4.1c,6428b9a9-e611-4b0f-a632-1293575ddeb4,Brilliant Energy Promo Pack 1,专题包 辉耀能量 第一弹,,23,0
+zh-cn,cs4.5c,cd9dbc9a-2f9b-46af-b94a-faaeeb026395,Final Flame Dance,终末炎舞,63,83,0
+zh-cn,cs4ac,210bbf2d-5f63-4e1b-8af0-a2e093c53746,Nine Colors Gathering - Set A,九彩汇聚 朋,132,184,0
+zh-cn,cs4bc,7846702c-18c4-4d74-9ac1-2932017fa467,Nine Colors Gathering - Set B,九彩汇聚 源,132,177,0
+zh-cn,cs4dac,c9cdce5f-5238-4671-a1d4-af181a97dd47,Start Deck 100,起始卡组100,,433,0
+zh-cn,cs5.1c,4f077845-6aa7-49bc-b33f-3d0dffea2e5b,Brilliant Energy Promo Pack 2,专题包 辉耀能量 第二弹,,23,0
+zh-cn,cs5.5c,44f0abf2-b693-4d4f-8587-18106f976a3d,Shadow of Glory,强化包 暗影夺辉,66,89,0
+zh-cn,cs5ac,92ffa013-edb7-4c49-8ed1-c50f0162d41d,Brave Stars - Set A,勇魅群星 魅,127,176,0
+zh-cn,cs5bc,a952240f-194f-45a1-bd38-e8f5827c1200,Brave Stars - Set B,勇魅群星 勇,128,178,0
+zh-cn,cs5dc,f872bb02-eb6b-4245-a13a-b5d72b36c5d9,Brave Stars V Starter Deck,勇魅群星 V起始卡组,,163,0
+zh-cn,cs6.1c,dd8bdb77-b40e-4a67-b615-ba9284dea9ae,Brilliant Energy Promo Pack 3,专题包 辉耀能量,4,24,0
+zh-cn,cs6.5c,69be023a-df58-4cf2-913e-101d846b968e,Victory Star Guide,强化包 胜象星引,72,96,0
+zh-cn,cs6ac,786678a0-e593-4205-b391-b392f1e71592,Shadow of the Blue Sea - Set A,碧海暗影 啸,131,169,0
+zh-cn,cs6bc,3c74abe8-5236-4c84-ae5b-5a5f367b63d4,Shadow of the Blue Sea - Set B,碧海暗影 逐,131,172,0
+zh-cn,csac,e17e245d-1319-4a45-b877-7e640c11d846,Dynamax Clash Deck Building Box,极巨争锋 卡组构筑礼盒,,24,0
+zh-cn,csbc,05ab7538-6845-40b7-acf4-202c136fd45c,Primordial Arts Overgrow Deck Building Box,卡组构筑礼盒 洪荒演武 茂,,19,0
+zh-cn,cscc,c55158ae-82db-46a7-826a-992af778d93b,Primordial Arts Torrent Deck Building Box,卡组构筑礼盒 洪荒演武 激,,19,0
+zh-cn,csdc,fdd7df11-b6ab-4dcd-8d0a-d5b71e6244e1,Poké Ball Gift Box: Legendary Pikachu Celebration,精灵球礼盒/超级球礼盒：皮卡丘传奇庆典,,25,0
+zh-cn,csec,d4992032-6cfd-4880-a091-bf324fea99e5,Quadrilateral Connection Box Sets,四方联结系列礼盒,,20,0
+zh-cn,csfc,6d4d2b68-c267-4213-b250-624ace7bfe61,Dragon Resurgence,龙之再临系列礼盒,,26,0
+zh-cn,csgc,1081f162-6db6-4d8f-b8fb-04c1a8361c0d,Pokémon Card Display Sets,宝可梦卡牌展示套礼盒,,8,0
+zh-cn,cshc,7ef923a6-e6d5-41c0-9472-707d89937384,Eevee Advanced Gift Box,伊布进阶礼盒,,9,0
+zh-cn,csic,bf94a3be-2ed7-483d-9391-b2adbbb9b2e5,Trainer Collection Gift Box,训练家收藏礼盒,,8,0
+zh-cn,csjc,0bc91688-24d3-40b2-9a3a-e7fb1460fc0c,Poké Ball Gift Box: Art Illustration Celebration Scene,精灵球/高级球礼盒：宝可梦艺术插画庆典 景,,16,0
+zh-cn,csm1.5c,06c44056-4885-486e-a343-d7069742a403,Battle Elite,强化包 对战精英,60,88,0
+zh-cn,csm1ac,465f5ed6-b32e-4cf0-a890-c39bc812ca48,Storming Emergence - Set A,横空出世 赫,151,211,0
+zh-cn,csm1bc,64e14d7e-e9f0-49d1-9e43-f79eafc02f53,Storming Emergence - Set B,横空出世 苍,151,204,0
+zh-cn,csm1cc,195b9d09-dd64-4e41-9b7d-0c9fb7f2062c,Storming Emergence - Set C,横空出世 泽,151,212,0
+zh-cn,csm1dc,d246467e-39b6-4b52-8b8e-abaef9094fb6,Storming Emergence GX Starter Deck,起始卡组 横空出世GX,,336,0
+zh-cn,csm2.1c,b27c4d1f-312a-4311-b577-eb9fc37995b4,Golden Energy,辉金能量礼盒&辉金能量进阶礼盒,,54,0
+zh-cn,csm2.5c,7b9800e5-fbfd-4842-b4a0-998e53981f5c,Striking Competition,炫奇争胜,61,99,0
+zh-cn,csm2ac,1e70ad98-8533-4fd0-8d02-15dda333cce9,Shining Synergy - Set A,交相辉映 沐,150,194,0
+zh-cn,csm2bc,1c9493a2-e579-4007-89f2-c72fdc66a2d9,Shining Synergy - Set B,交相辉映 魁,150,193,0
+zh-cn,csm2cc,a31177e5-6f44-4236-8d84-b8afaecd825f,Shining Synergy - Set C,交相辉映 唤,150,192,0
+zh-cn,csm2dc,78341b8d-8fbc-4749-8619-ee7a3bdc2131,Shining Synergy GX Starter Deck,起始卡组 交相辉映GX,,357,0
+zh-cn,csmac,4e169dea-565f-4907-8c20-2216340c2bc2,Arceus & Dialga & Palkia GX Premium Deck Building Box,阿尔宙斯&帝牙卢卡&帕路奇亚GX 卡组构筑进阶礼盒,,19,0
+zh-cn,csmc,c9bda9ba-797d-4d75-b0ec-8d464bf63c40,Pokémon Card Display Sets Volume 2,宝可梦卡牌展示套礼盒,,13,0
+zh-cn,csmjc,3be50647-3dba-4fe3-9bb8-25e8961a2e54,Shining Pokémon Poké Ball Box,精灵球礼盒：闪耀宝可梦,,15,0
+zh-cn,csmlc,b33bbbb0-4f9d-4f97-b7e0-1c0b9b4157d5,Lillie's Support Box,莉莉艾的声援专属礼盒,,5,0
+zh-cn,csmpac,9b80c866-941f-4227-abe6-ad899d80385c,Battle Party Set Grass Deck,对战派对组合 草,,23,0
+zh-cn,csmpbc,a44ec336-0fa0-4ce7-9119-2b63de94502d,Battle Party Set Fire Deck,对战派对组合 火,,25,0
+zh-cn,csmpcc,d1f16ec3-c0fa-47e6-b009-e4fb54c5513c,Battle Party Set Water Deck,对战派对组合 水,,25,0
+zh-cn,csmpdc,845257d4-8a5c-45fe-abf1-d3cafe9b3870,Battle Party Set Lightning Deck,对战派对组合 雷,,21,0
+zh-cn,csmpec,8c72b622-60a3-41ba-81e6-62fa80633115,Battle Party Set Psychic Deck,对战派对组合 超,,21,0
+zh-cn,csmpfc,674efd9a-66f2-485b-84d6-12c0e7c1d0a6,Battle Party Set Fighting Deck,对战派对组合 斗,,24,0
+zh-cn,csmpgc,c940e022-a605-4095-b952-fa0ae9c72f62,Battle Party Set Darkness Deck,对战派对组合 恶,,24,0
+zh-cn,csmphc,155e2445-23af-4ef1-ada0-3fff4e1826fb,Battle Party Set Metal Deck,对战派对组合 钢,,24,0
+zh-cn,csmpic,7bf1e1c6-2caf-46cc-8a0f-ba85abec5ed2,Battle Party Set Reward Pack,对战派对组合 奖赏包,24,48,0
+zh-cn,csmpjc,78a6da15-7f1f-4ca0-a601-123707f9ac33,Grass Modification Pack,改造包 对战派对组合 草,,10,0
+zh-cn,csmpkc,f291fcb1-03e7-4ad1-9027-4b492b4806c7,Fire Modification Pack,改造包 对战派对组合 火,,10,0
+zh-cn,csmplc,1e244b4e-2546-4d6a-a058-8e7fb979e981,Water Modification Pack,改造包 对战派对组合 水,,10,0
+zh-cn,csmpmc,6b49650a-7b67-4c93-baac-972aaae8ec94,Lightning Modification Pack,改造包 对战派对组合 雷,,10,0
+zh-cn,csmpnc,545fe94a-7a9e-441f-8e3e-ead33c928e3c,Psychic Modification Pack,改造包 对战派对组合 超,,10,0
+zh-cn,csmpoc,8e292ab7-96fb-492e-bb8a-7c38e51c03ba,Fighting Modification Pack,改造包 对战派对组合 斗,,10,0
+zh-cn,csmppc,69bb970f-bc4e-48ef-8504-dc3d0bc85b4b,Darkness Modification Pack,改造包 对战派对组合 恶,,10,0
+zh-cn,csmpqc,209e7f92-04a7-4ee1-b1a2-d6ac82c19ad6,Metal Modification Pack,改造包 对战派对组合 钢,,10,0
+zh-cn,csmyc,de3e8a03-f37b-4420-b6f8-212da298237a,Eevee-GX Box Sets,伊布GX套装礼盒,,8,0
+zh-cn,csnc,2cf67879-2158-4a72-b4d0-1195d3ecbb8e,Brave Stars Deck Building Gift Box,勇魅群星 卡组构筑礼盒,,24,0
+zh-cn,csoc,160d0c8e-9994-4b98-a965-991eec99bcfa,Mew Advanced Deck Building Gift Box,汇流卡组构筑进阶礼盒,,19,0
+zh-cn,csuc,834a78bc-6492-41d7-8bcc-31c212d5f06d,Pokémon Card Display Sets Volume 3,宝可梦展示套礼盒,,13,0
+zh-cn,csv10c,8f5e256e-b756-4a9c-8aa4-80cb8fe6f5fe,Chasing Glory Together,补充包 共逐荣光,,287,0
+zh-cn,csv1c,31225f01-ead5-4e8d-83f8-c06978e706da,Eternal Birth,亘古开来,127,167,0
+zh-cn,csv2c,dc879690-6576-4cde-99ed-1eb74096b96c,Miracle Journey,奇迹启程,128,163,0
+zh-cn,csv3c,1170881a-cba2-4979-acc8-e705d80b9894,Fearless Terastal,无畏太晶,130,165,0
+zh-cn,csv4c,0a6e8d07-bd4b-4d06-abdc-a6f27e88eb1b,Bonus Round,嘉奖回合,129,165,0
+zh-cn,csv5c,9cc48fa9-3a36-4069-b58a-3f29854cca74,Dark Crystal Blaze,黑晶炽诚,129,164,0
+zh-cn,csv6c,b921de8d-c127-44c4-825b-bac5dd7e5661,Arcane Truth,真实玄虚,128,163,0
+zh-cn,csv7c,1f37ca26-f79b-47b6-9ba8-87f6c14b03fa,Blade Awakened,利刃猛醒,204,259,0
+zh-cn,csv8c,488ef846-c6f3-42e6-8fc1-7bf2928b2bcf,Sparkling Fantasy,璀璨诡幻,207,264,0
+zh-cn,csv9.5c,034890ae-726c-44ec-bae9-b3e7d1ffdf45,Terastal Gathering,太晶盛聚,208,259,0
+zh-cn,csv9c,2034da87-a87d-40e9-a8f2-85ca06fb8b5f,Stellar Crystal,星彩晶璃,208,266,0
+zh-cn,csve1c,50e63f27-28bd-455a-8e4d-659eb7c3e16a,Battle Party: Shared Dream,对战派对 共梦,,178,0
+zh-cn,csve1pc,8b3f9c5d-1bc9-4493-abe4-8623a4675c99,Battle Party: Shared Dream — King Reward Pack,对战派对 共梦 奖赏包,,24,0
+zh-cn,csve2c,d9a5eeb3-023e-4c7c-ac83-8f77e831a108,Battle Party: Shining Dream,对战派对 耀梦,,208,0
+zh-cn,csve2pc,244324e6-618e-4d94-9fb4-d71dbda8f936,Battle Party: Shining Dream — King Reward Pack,对战派对 耀梦 奖赏包,,24,0
+zh-cn,csvh1ac,367aed91-064f-4d2c-8b25-197abcdf9abc,Happy Set 1: Modification Pack,嗨皮组合 皮卡丘&皮皮&草苗龟&索财灵 改造包,,23,0
+zh-cn,csvh1c,34f311f1-6804-4a0d-9e60-eae3fd8bb8d6,Happy Set 1: Pikachu & Clefairy & Turtwig & Gimmighoul,嗨皮组合 皮卡丘&皮皮&草苗龟&索财灵,,59,0
+zh-cn,csvh1pc,bcceb460-d10c-42a9-a8d6-cd6dabac00f0,Happy Set 1: Reward Pack,嗨皮组合 皮卡丘&皮皮&草苗龟&索财灵 奖赏包,,6,0
+zh-cn,csvh2ac,68cb60a6-248c-4ba2-a242-53a7688fc889,Happy Set 2: Modification Pack,嗨皮组合 路卡利欧&甲贺忍蛙&藏玛然特&獒教父 改造包,,23,0
+zh-cn,csvh2c,b73c026f-df9a-412e-8e61-c9811b5fe3cc,Happy Set 2: Lucario & Greninja & Zamazenta & Mabosstiff,嗨皮卡组 路卡利欧&甲贺忍蛙&藏玛然特&獒教父,,58,0
+zh-cn,csvh2pc,da0814f6-494c-4a62-9efe-b091aff06be8,Happy Set 2: Reward Pack,嗨皮组合 路卡利欧&甲贺忍蛙&藏玛然特&獒教父 奖赏包,,6,0
+zh-cn,csvh3ac,edada0ac-f7df-46af-aec1-f7a68b5b2562,Happy Set 3: Modification Pack,嗨皮组合 七夕青鸟&拉帝欧斯&烈焰猴&一家鼠 改造包,,23,0
+zh-cn,csvh3c,9a87cc5f-0594-458c-a50e-78dc1b345a49,Happy Set 3: Altaria & Latios & Infernape & Maushold,嗨皮卡组 七夕青鸟&拉帝欧斯&烈焰猴&一家鼠,,64,0
+zh-cn,csvh3pc,a2dff7dc-cac7-4681-a05d-88e4934e4248,Happy Set 3: Reward Pack,嗨皮组合 七夕青鸟&拉帝欧斯&烈焰猴&一家鼠 奖赏包,,6,0
+zh-cn,csvh4ac,36e2e20a-4ce2-45ed-a3bd-d81628db8dcb,Happy Set 4: Modification Pack,嗨皮组合 狙射树枭&美录梅塔&故勒顿&密勒顿 改造包,,23,0
+zh-cn,csvh4c,f0f9b873-3f53-4c4a-857a-218d9ccc5dd9,Happy Set 4: Decidueye & Melmetal & Koraidon & Miraidon,嗨皮卡组 狙射树枭&美录梅塔&故勒顿&密勒顿,,59,0
+zh-cn,csvh4ec,a9ecf12d-cb58-490d-b556-657a8ab9ab78,Happy Set 4: Happy Pack,嗨皮组合 狙射树枭&美录梅塔&故勒顿&密勒顿 嗨皮包,,49,0
+zh-cn,csvh4pc,1fdf1a67-0e6d-436b-90de-020f0703be92,Happy Set 4: Reward Pack,嗨皮组合 狙射树枭&美录梅塔&故勒顿&密勒顿 奖赏包,,6,0
+zh-cn,csvh5ac,35768e31-7f45-4d15-9867-a4839652a56a,Happy Set 5: Modification Pack,嗨皮组合 快龙&超梦&喷火驼&来悲粗茶 改造包,,23,0
+zh-cn,csvh5c,3e93b7a1-30af-4f0d-b200-4ef8f38915b0,Happy Set 5: Dragonite & Mewtwo & Camerupt & Sinistcha,嗨皮组合 快龙&超梦&喷火驼&来悲粗茶,,58,0
+zh-cn,csvh5ec,40c0389f-795c-417c-b01f-9a945566f03a,Happy Set 5: Happy Pack,嗨皮组合 快龙&超梦&喷火驼&来悲粗茶 嗨皮包,,49,0
+zh-cn,csvh5pc,9194070f-a9f7-40ba-a1e8-baa41a539a9b,Happy Set 5: Reward Pack,嗨皮组合 快龙&超梦&喷火驼&来悲粗茶 奖赏包,,6,0
+zh-cn,csvl1c,3738516b-cd62-4541-aa2b-2cbfcb4197ce,Departure Special Pack,启程专题包,,133,0
+zh-cn,csvl2c,b00d2f30-2ef5-4a8c-9263-d2b337a053be,Travel Theme Pack,游历专题包,,139,0
+zh-cn,csvm1ac,04e73e20-0b3f-4df0-bbe0-d422928d5f0e,Master Strategy Deck Building Set: Charizard ex,大师战略卡组构筑套装 喷火龙ex,,33,0
+zh-cn,csvm1bc,81ff5c5b-1c4a-43df-bec7-8b438c1cae3f,Master Strategy Deck Building Set: Gardevoir ex,大师战略卡组构筑套装 沙奈朵ex,,33,0
+zh-cn,csvm1cc,be3c372e-cd14-49e8-82d7-42d89f99b261,Master Strategy Deck Building Set: Miraidon ex,大师战略卡组构筑套装 密勒顿ex,,28,0
+zh-cn,csvm2ac,69b0ac5a-e2d0-4591-853b-b6ffe2069965,Master Strategy Deck Building Set: Raging Bolt ex,大师战略卡组构筑套装 猛雷鼓ex,,31,0
+zh-cn,csvm2bc,3053c95d-5736-4a76-8498-6d713d2e5f42,Master Strategy Deck Building Set: Dragapult ex,大师战略卡组构筑套装 多龙巴鲁托ex,,34,0
+zh-cn,csvm2cc,745bb9d2-a1ec-40a7-9e42-5e4d12f31cf5,Master Strategy Deck Building Set: Gholdengo ex,大师战略卡组构筑套装 赛富豪ex,,32,0
+zh-cn,csvnc,5ee47c31-74b5-4648-9326-468a939e455d,Kitakami Theme Pack,北上乡专题包（5张装）,,44,0
+zh-cn,csvsc,0c923759-c6cc-4b69-b205-eda5a97d3629,Battle Academy,对战学院,,66,0
+zh-cn,csxc,9e19da56-f7be-4a0b-b385-be5bc6749535,Giratina VSTAR Advanced Deck Building Gift Box,骑拉帝纳VSTAR卡组构筑进阶礼盒,,20,0
+zh-cn,csyc,79e8ac11-286a-4d4a-a006-d5d78a61c232,Poké Ball Gift Box: Art Illustration Celebration Gathering,精灵球/等级球礼盒：宝可梦艺术插画庆典 聚,,16,0
+zh-cn,cszc,92e3a042-cb87-4db8-938e-3eab4bee6901,Variety Treasure Box Collection,收藏周边礼盒 百变宝盒,,68,0
+zh-cn,promo-30th-p,b6d885e6-40de-4e3d-808d-fc2294af8ad4,30th Anniversary Promos,特典卡·30周年,,18,0
+zh-cn,promo-s-p,3858072b-8d5d-42d3-9c5c-4557c8ec6ddb,Sword & Shield Promos,特典卡·剑&盾,,220,0
+zh-cn,promo-sm-p,4aa930fc-35fa-4e68-a34b-624fc70fb2cb,Sun & Moon Promos,特典卡·太阳&月亮,,50,0
+zh-cn,promo-sv-p,9724f830-eb52-423f-a8ce-2feb4c2e91f1,Scarlet & Violet Promos,特典卡·朱&紫,,353,0
+zh-cn,SV10,1dbfe92e-8914-49b2-974c-47683cf51d4d,Destined Rivals,火箭隊的榮耀,98,98,0
+zh-cn,SV7,a7ec23e4-2ab3-4dcd-931d-e71f2aee4906,星晶奇跡,星晶奇跡,102,132,0
+zh-cn,SV7a,4719ccc9-35c0-406a-b2c2-989af15d77b0,樂園騰龍,樂園騰龍,64,64,0
+zh-cn,SV8,66d9e865-7d40-4b2e-8ef0-ae24fca87673,超電突圍,超電突圍,106,106,0
+zh-cn,SV8a,a16f8d4c-d648-4bee-a219-9abc2aae49a6,太晶慶典ex,太晶慶典ex,187,237,0
+zh-cn,SV9,b67bee5b-da76-4575-a263-ab9cb69d4d7b,對戰搭檔,對戰搭檔,100,100,0
+zh-cn,SV9a,2060f3b9-08e9-4182-8138-58bdaf2203ff,熱風競技場,熱風競技場,63,92,0
+zh-tw,S10a,9a71e2aa-241a-4895-9224-959e6983c4a3,黑暗亡靈,黑暗亡靈,71,71,0
+zh-tw,S10b,ff1e5d11-3043-4137-a0a2-bc2b2da43d9e,Pokémon GO,Pokémon GO,71,79,0
+zh-tw,S10D,fd0c18a1-c4c3-451d-a43f-4593cd07804e,時間觀察者,時間觀察者,67,67,0
+zh-tw,S10P,71a109c6-2c3a-4e6d-ae1b-4cdce9441c8c,空間魔術師,空間魔術師,67,67,0
+zh-tw,S11,a7f84e96-a008-47f0-8b41-a05de3f23618,三連音爆,三連音爆,100,100,0
+zh-tw,S11a,545b8020-25d6-4e10-b380-1856f905956f,白熱奧祕,白熱奧祕,68,68,0
+zh-tw,S12,eb834c9a-e8b3-474b-8ddb-6f57bf58d3d2,思維激盪,思維激盪,98,114,0
+zh-tw,S12a,eed3fcbd-fd4c-4b7f-9b75-a68e15d61476,天地萬物VSTAR,天地萬物VSTAR,172,250,0
+zh-tw,S4,ec980234-74f1-4b88-bafa-a8c84ab36d38,Amazing Volt Tackle,驚天伏特攻擊,100,100,0
+zh-tw,S4a,e6feffca-611b-479c-bfb2-43b80374458f,Shiny Star V,閃色明星V,190,190,0
+zh-tw,S5a,8ee58e69-05d9-4aca-94be-9b1099f0aa3f,雙璧戰士,雙璧戰士,70,70,0
+zh-tw,S5I,384319e0-5887-4575-933c-5d05848e8e1f,一撃大師,一撃大師,70,70,0
+zh-tw,S5R,fa4fe313-ee43-4824-91bd-b3a6c16aaf7c,連撃大師,連撃大師,70,70,0
+zh-tw,S6a,b4dbdf8f-b0ec-4185-8e74-0c3b2b0e7648,伊布英雄,伊布英雄,69,69,0
+zh-tw,S6H,631ac177-7fbc-4a0f-9ec5-85660f4009cd,銀白戰槍,銀白戰槍,70,70,0
+zh-tw,S6K,565ca9b6-c3b7-4398-a96a-d0dfd1bc1886,漆黑幽魂,漆黑幽魂,70,70,0
+zh-tw,S7D,4a00009f-25a3-4dce-83dd-7bc6b757c046,摩天巔峰,摩天巔峰,67,67,0
+zh-tw,S7R,dfc21eb0-e33a-4cc8-b368-82e5bafa71da,蒼空烈流,蒼空烈流,67,67,0
+zh-tw,S8,87c0562d-f7e7-4395-8a2a-a17705341951,匯流藝術,匯流藝術,100,100,0
+zh-tw,S8a,52d0226c-123a-4b62-bcc4-0433b5afb56f,25週年收藏款,25週年收藏款,28,33,0
+zh-tw,S8b,7201a603-407b-491c-b118-467f6549e400,VMAX Climax,VMAX絕群壓軸,184,184,2
+zh-tw,S9,ec704d48-6e26-4489-9063-4eb4f5924233,星星誕生,星星誕生,100,100,0
+zh-tw,S9a,834c9416-bd5e-4a1d-9170-d8e4ba817d20,對戰地區,對戰地區,67,67,5
+zh-tw,SC1a,9ebab1ca-0ebf-429c-83ed-9fe6735f9832,劍&盾 SET A,劍&盾 SET A,154,172,0
+zh-tw,SC1b,205ab185-9052-4965-b9f0-20fe44b7b61f,劍&盾 SET B,劍&盾 SET B,153,171,0
+zh-tw,SC1D,4b4beb82-d593-4c0b-850f-3197e7dd0ac5,劍&盾,劍&盾,164,164,0
+zh-tw,SC2a,8c05228d-e60d-46c6-888b-c13d4b51660d,無極力量 SET A,無極力量 SET A,145,145,0
+zh-tw,SC2b,f3b1c12f-8002-41e4-b682-9109c6628a71,無極力量 SET B,無極力量 SET B,144,144,0
+zh-tw,SC2D,d14fde0e-c786-41d0-93ef-6dc69cef94d0,無極力量,無極力量,157,157,0
+zh-tw,SCA,41251d8a-6a1c-4f91-8e84-22e2fe7737fd,搭檔,搭檔,135,135,0
+zh-tw,SCB,5578c7d0-f386-4945-b651-65dd2f3ee2d3,挑戰,挑戰,156,156,0
+zh-tw,SCC,c816b27f-f145-413b-b971-3f7b1542f24c,Evolution,進化,172,171,0
+zh-tw,SCD,70184f97-2d37-457a-8ae4-21a4b40d270c,強大,強大,159,159,0
+zh-tw,SDL,86911534-c30a-4701-9443-2eb4916d2fe8,噴火龍,噴火龍,21,21,0
+zh-tw,SDM,1ff38683-60fc-448a-9e8e-f6096dd8608b,超夢,超夢,22,22,0
+zh-tw,SDP,8f6936bf-5b7c-4072-9331-e85f423ade80,皮卡丘,皮卡丘,22,22,0
+zh-tw,SH,929a6c13-5b43-4aba-b887-1f86cc94ce31,寶可夢卡牌家庭組合,寶可夢卡牌家庭組合,38,59,0
+zh-tw,SI,749e4fbd-3eda-46e3-8a89-c6244595e6a2,初階牌組100,初階牌組100,414,422,0
+zh-tw,SJ,6c446b0c-155d-4926-b0ee-5369f6ac44d3,藏瑪然特VS無極汰那,藏瑪然特VS無極汰那,28,30,0
+zh-tw,SK,1217161f-69bf-4176-acce-93f23e475d04,頂級訓練家收藏箱 VSTAR,頂級訓練家收藏箱 VSTAR,30,30,0
+zh-tw,SLD,99d2cff9-6664-4b0f-8e9a-f9c9ed4fd563,起始組合VSTAR 達克萊伊,起始組合VSTAR 達克萊伊,20,21,0
+zh-tw,SLL,c1a9f285-94bb-40a6-acef-547a5a0b0fb0,起始組合VSTAR 路卡利歐,起始組合VSTAR 路卡利歐,21,22,0
+zh-tw,SN,9932f014-e867-49a3-8597-424386f59ba5,初階牌組100 特別版,初階牌組100 特別版,24,25,0
+zh-tw,SP5,104c8230-fefa-450c-8b97-0773154d456b,強大,強大,0,4,0
+zh-tw,SP6,b29d2b28-f5a2-474a-9173-0d29fb5aeb55,VSTAR特別組合,VSTAR特別組合,6,6,0
+zh-tw,SPD,2d2c36be-9511-4b30-9979-ad6af1a4f9ee,VSTAR&VMAX 高級牌組 代歐奇希斯,VSTAR&VMAX 高級牌組 代歐奇希斯,20,20,0
+zh-tw,SPZ,0dc7982d-2a45-4984-b930-0d4e688d4fa9,VSTAR&VMAX 高級牌組 捷拉奧拉,VSTAR&VMAX 高級牌組 捷拉奧拉,20,20,0
+zh-tw,SV-P,25b5a960-6481-497d-86b8-b0845a504501,特典卡 朱&紫,特典卡 朱&紫,0,94,0
+zh-tw,SV10,4f84057b-edcf-4523-967c-5997ae696987,Destined Rivals,火箭隊的榮耀,98,98,0
+zh-tw,SV1a,f3d6f626-76dc-40f6-b20c-f37f76de7a69,三連音爆,三連音爆,73,73,0
+zh-tw,SV1S,92afdf21-b16e-4e85-b54f-5f0603cbf6fa,朱ex,朱ex,78,78,0
+zh-tw,SV1V,496f02eb-5cda-4b1b-a5cf-e46816c6f834,紫ex,紫ex,78,78,0
+zh-tw,SV2a,3c0c1ae1-7d62-4384-97f1-734ff9460162,寶可夢卡牌151,寶可夢卡牌151,165,207,9
+zh-tw,SV2D,8ea4465e-f94f-4cb8-af60-8b7e954400b9,碟旋暴擊,碟旋暴擊,71,71,0
+zh-tw,SV2P,0c790038-ee1a-411f-bd9c-fed9238c1c42,冰雪險境,冰雪險境,71,71,0
+zh-tw,SV3,0dbaa91f-c0c6-497d-8ef0-fc4370c5ed8a,黯焰支配者,黯焰支配者,108,138,0
+zh-tw,SV3a,16b683e4-6270-4625-9fae-b2478a08c659,激狂駭浪,激狂駭浪,62,89,0
+zh-tw,SV4a,34f73eff-5db3-4617-bd57-73421edebb86,閃色寶藏ex,閃色寶藏ex,190,314,11
+zh-tw,SV4K,15442620-179d-4442-a040-d9fa0060c7e4,古代咆哮,古代咆哮,66,66,0
+zh-tw,SV4M,2abc3c6e-7715-4f79-900f-a2c567e4e1c9,未來閃光,未來閃光,66,66,0
+zh-tw,SV5a,8dc60098-a384-4259-88b9-d2efa74b5a1d,緋紅薄霧,緋紅薄霧,66,66,0
+zh-tw,SV5K,2cc9e59f-b9d6-42db-9426-d5d18faab0c9,Wild Force,狂野之力,71,100,0
+zh-tw,SV5M,6979a86e-8439-443d-b8b3-b9e2ebfb0bd3,異度審判,異度審判,71,97,0
+zh-tw,SV6,b933f0ba-40ac-4846-80ee-74c4a2b1cf71,變幻假面,變幻假面,101,130,0
+zh-tw,SV6a,adcb6f6c-95f3-4a55-b9e5-464ed79a1ac3,黑夜漫遊者,黑夜漫遊者,64,64,0
+zh-tw,SV7,bf50694e-8be5-4fa4-a77e-6fdb73ec17ac,星晶奇跡,星晶奇跡,102,132,0
+zh-tw,SV7a,e044ea13-4498-4aa8-b46c-71bcc203bc89,樂園騰龍,樂園騰龍,64,64,0
+zh-tw,SV8,05597373-2080-4842-bb67-c314e884f856,超電突圍,超電突圍,106,106,0
+zh-tw,SV8a,d53eee17-75b8-48a8-bde5-50ac129a3558,太晶慶典ex,太晶慶典ex,187,237,69
+zh-tw,SV9,cd44897f-ea2e-4f63-b662-e4ddce1ac7e7,對戰搭檔,對戰搭檔,100,100,0
+zh-tw,SV9a,664d717f-745d-4178-ae4f-5863ae558a2f,熱風競技場,熱風競技場,63,92,0
+zh-tw,SVAL,bb1ba963-5030-4f3f-8f06-dee6c668fb05,起始組合ex 呆火鱷&電龍 ex,起始組合ex 呆火鱷&電龍 ex,21,23,0
+zh-tw,SVAM,005e4850-7601-4765-b538-290882ded6d8,起始組合ex 新葉喵&路卡利歐 ex,起始組合ex 新葉喵&路卡利歐 ex,23,25,0
+zh-tw,SVAW,2f9aa179-e91b-4643-84d6-968944833c66,起始組合ex 潤水鴨&謎擬Ｑ ex,起始組合ex 潤水鴨&謎擬Ｑ ex,23,25,0
+zh-tw,SVB,88d9f4ce-d66f-46c6-9c98-cadcdbe617ff,頂級訓練家收藏箱ex,頂級訓練家收藏箱ex,28,36,0
+zh-tw,SVC,0c39417c-7e51-4c2e-83a4-e7180ff18ed1,皮卡丘特別組合,皮卡丘特別組合,21,22,0
+zh-tw,SVD,aeacc226-2669-41be-87af-adb0792b6a26,ex初階牌組,ex初階牌組,139,147,0
+zh-tw,SVEL,471359a2-3314-463e-aea4-d5c302663333,骨紋巨聲鱷ex,骨紋巨聲鱷ex,20,21,0
+zh-tw,SVEM,afefc691-41e8-4ac7-97d8-776ded533215,超夢ex,超夢ex,20,21,0
+zh-tw,SVF,319b65a2-a424-4273-bfff-6c18965ab00a,黯焰支配者,黯焰支配者,38,46,0
+zh-tw,SVHK,c1728b7e-684e-445f-a12b-4f7b2dcc8fba,未來密勒頓ex,未來密勒頓ex,22,24,0
+zh-tw,SVHM,d72c9fe3-b3d5-4a4d-9fcc-eb7cca2a88bc,閃色寶藏ex,閃色寶藏ex,22,24,0
+zh-tw,SVP1,34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd,ex特別組合,ex特別組合,7,7,0

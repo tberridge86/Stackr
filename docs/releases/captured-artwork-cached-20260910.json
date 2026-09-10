@@ -1,0 +1,59 @@
+{
+  "generatedAt": "2026-09-10T17:32:20.126Z",
+  "results": [
+    {
+      "language": "en",
+      "attempt": 1,
+      "status": 200,
+      "ms": 830,
+      "cache": "HIT",
+      "imagePresent": true,
+      "finish": "normal"
+    },
+    {
+      "language": "en",
+      "attempt": 2,
+      "status": 200,
+      "ms": 124,
+      "cache": "HIT",
+      "imagePresent": true,
+      "finish": "normal"
+    },
+    {
+      "language": "ja",
+      "attempt": 1,
+      "status": 200,
+      "ms": 187,
+      "cache": "HIT",
+      "imagePresent": true,
+      "finish": "reverse_holo"
+    },
+    {
+      "language": "ja",
+      "attempt": 2,
+      "status": 200,
+      "ms": 130,
+      "cache": "HIT",
+      "imagePresent": true,
+      "finish": "reverse_holo"
+    },
+    {
+      "language": "zh-tw",
+      "attempt": 1,
+      "status": 200,
+      "ms": 215,
+      "cache": "HIT",
+      "imagePresent": true,
+      "finish": "reverse_holo"
+    },
+    {
+      "language": "zh-tw",
+      "attempt": 2,
+      "status": 200,
+      "ms": 126,
+      "cache": "HIT",
+      "imagePresent": true,
+      "finish": "reverse_holo"
+    }
+  ]
+}

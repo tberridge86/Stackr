@@ -574,7 +574,7 @@ async function fetchStackrAssetsForPrinting(
   printingId: string,
 ) {
   return allPages<StackrCatalogueAsset>(async (cursor) => {
-    const response = await client.assetManifest({ printingId, cursor, limit: 250 });
+    const response = await client.assetManifest({ printingId, assetType: 'card_image', cursor, limit: 250 });
     return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
   });
 }
@@ -972,14 +972,14 @@ async function fetchLegacyStackrCardsForSet(
   return [...byId.values()];
 }
 
-async function fetchCanonicalStackrCardsForSet(
+async function fetchCanonicalSetCardFacts(
   reference: string,
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
   signal?: AbortSignal,
 ) {
   const setId = await resolveCanonicalStackrSetId(reference, language, client, signal);
-  if (!setId) return [];
+  if (!setId) return { setId: null, cards: [] as StackrCard[] };
   const responseCards = await allPages<StackrCard>(async (cursor, pageSignal) => {
     const response = await client.setCards(
       setId,
@@ -993,6 +993,15 @@ async function fetchCanonicalStackrCardsForSet(
     return { rows: response.data.cards, nextCursor: response.meta.pagination?.nextCursor ?? null };
   }, signal);
   const cards = normalizeCanonicalSetCards(responseCards);
+  return { setId, cards };
+}
+
+async function enrichCanonicalSetCards(
+  { setId, cards }: { setId: string | null; cards: StackrCard[] },
+  client: StackrApiClient,
+  signal?: AbortSignal,
+) {
+  if (!setId || !cards.length) return [];
   const needsManifestFallback = cards.some((card) => (
     !primaryCardImageAsset(card, embeddedCardImageAssets(card))
   ));
@@ -1026,6 +1035,16 @@ async function fetchCanonicalStackrCardsForSet(
   });
 }
 
+async function fetchCanonicalStackrCardsForSet(
+  reference: string,
+  language?: string | null,
+  client: StackrApiClient = stackrApiClient,
+  signal?: AbortSignal,
+) {
+  const facts = await fetchCanonicalSetCardFacts(reference, language, client, signal);
+  return enrichCanonicalSetCards(facts, client, signal);
+}
+
 export function fetchStackrCardsForSet(
   reference: string,
   language?: string | null,
@@ -1050,17 +1069,34 @@ export function fetchPreferredStackrCardsForReferences(
   client: StackrApiClient = stackrApiClient,
 ) {
   const candidates = [...new Set(references.map((value) => String(value ?? '').trim()).filter(Boolean))];
+  const preferred: {
+    facts: Awaited<ReturnType<typeof fetchCanonicalSetCardFacts>> | null;
+    rows: StackrLegacyCard[] | null;
+  } = { facts: null, rows: null };
   return preferNonEmptyCatalogueRows(
     (signal) => firstNonEmptyCatalogueRows(
       candidates,
-      (candidate) => fetchCanonicalStackrCardsForSet(candidate, language, client, signal),
+      async (candidate) => {
+        const facts = await fetchCanonicalSetCardFacts(candidate, language, client, signal);
+        throwIfOptionalCatalogueReadAborted(signal);
+        preferred.facts = facts;
+        preferred.rows = facts.cards.map((card) => stackrCardToLegacyCard(card));
+        return preferred.rows;
+      },
     ),
     () => firstNonEmptyCatalogueRows(
       candidates,
       (candidate) => fetchLegacyStackrCardsForSet(candidate, language),
     ),
     { preferredTimeoutMs: PREFERRED_CATALOGUE_READ_TIMEOUT_MS },
-  );
+  ).then((rows) => {
+    // The preferred deadline governs the card facts only. Optional artwork and
+    // set details must not abort cards (and embedded images) already returned.
+    // Compare the returned array so a late preferred read cannot enrich or
+    // replace the selected legacy result.
+    if (rows !== preferred.rows || !preferred.facts) return rows;
+    return enrichCanonicalSetCards(preferred.facts, client);
+  });
 }
 
 function cardResult(results: StackrSearchResult[]) {

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   OWNER_PRICE_REFRESH_MAX_LIMIT,
   ownedRowEligibility,
@@ -8,6 +9,14 @@ import {
   resolveOwnedProviderVariant,
 } from './lib/owner-provider-price-refresh-core.mjs';
 import { runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
+
+const workflow = readFileSync('.github/workflows/owner-provider-price-refresh.yml', 'utf8');
+assert.match(workflow, /schedule:\s*\n(?:[^\n]*\n)*?\s+- cron: '\*\/10 \* \* \* \*'/, 'the exact Home queue must have a bounded scheduled consumer');
+assert.match(workflow, /STACKR_OWNER_PRICE_REFRESH_SCHEDULED_ENABLED == 'true'/, 'scheduled provider work must remain explicitly disabled until the protected production variable is enabled');
+assert.match(workflow, /STACKR_OWNER_PRICE_REFRESH_USER_ID: \$\{\{ github\.event_name == 'schedule' && vars\.STACKR_OWNER_PRICE_REFRESH_USER_ID \|\| inputs\.owner_user_id \}\}/, 'scheduled queue reads must stay scoped to the configured pricing owner');
+assert.match(workflow, /REFRESH_LIMIT: \$\{\{ github\.event_name == 'schedule' && '3' \|\| inputs\.limit \}\}/, 'scheduled queue work must remain a small bounded slice');
+assert.match(workflow, /REFRESH_INCLUDE_QUEUE: \$\{\{ github\.event_name == 'schedule' && 'true' \|\| inputs\.include_queue \}\}/, 'scheduled work must consume only explicit queue entries');
+assert.match(workflow, /REFRESH_QUEUE_ONLY: \$\{\{ github\.event_name == 'schedule' && 'true' \|\| inputs\.queue_only \}\}/, 'scheduled work must never sweep owned cards');
 
 const variant = '11111111-1111-4111-8111-111111111111';
 const set = '22222222-2222-4222-8222-222222222222';

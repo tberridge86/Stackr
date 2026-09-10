@@ -1,7 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
-import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -99,6 +99,8 @@ import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrS
 import { stackrIcons } from '../../lib/stackrIcons';
 import { createActivityPost } from '../../lib/activity';
 import { stackrHaptics } from '../../lib/haptics';
+import { InteractiveCardPreview } from '../../components/InteractiveCardPreview';
+import { isFoilPreview } from '../../lib/cardPreviewMotion';
 import type { ScanEditionHint } from '../../types/scan';
 
 // ===============================
@@ -439,6 +441,18 @@ const getVariantQuantityFromMap = (
 const formatCurrency = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return '--';
   return `£${value.toFixed(2)}`;
+};
+
+const formatCachedBinderPrice = (value: number | null | undefined, condition: string): string => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'Unavailable';
+  return formatCurrency(getEstimatedValue(value, condition));
+};
+
+const formatCachedBinderPriceTimestamp = (value: string | null | undefined): string => {
+  if (!value) return 'Cached pricing timestamp unavailable';
+  const timestamp = new Date(value);
+  if (Number.isNaN(timestamp.getTime())) return 'Cached pricing timestamp unavailable';
+  return `Updated ${timestamp.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 };
 
 const getPreferredBinderCardPrice = (card: BinderCardWithDetails, variant?: string | null, edition?: string | null): number => {
@@ -1382,7 +1396,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     binder.catalogue_identity_status === 'ambiguous'
     || binder.catalogue_identity_status === 'unresolved'
     || !cards.length
-    || cards.some((card) => card.catalogue_match_status === 'saved-only')
+    || cards.some((card) => card.catalogue_match_status === 'saved-only' || card.catalogue_incomplete)
   );
   const totalKnown = binder?.type !== 'official' || officialCatalogueTotal > 0;
   const totalCount = totalKnown
@@ -2396,6 +2410,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     isActive,
   }: RenderItemParams<BinderCardWithDetails>) => {
     const imageUri = getBinderCardImageUri(item);
+    const savedImageUri = getBinderSavedCardImageUri(item);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const isGradedBinder = binder?.card_mode === 'graded';
     const ownedQuantity = getOwnedQuantity(item);
@@ -2420,6 +2435,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               <GradedSlabCard
                 item={item}
                 imageUri={imageUri}
+                fallbackImageUri={savedImageUri}
                 editionHint={imageEditionHint}
                 size="showcase"
                 opacity={item.owned ? 1 : 0.35}
@@ -2429,6 +2445,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             <StackrImage
               uri={imageUri}
               fullUri={getBinderCardImageUri(item, 'large')}
+              fallbackSource={savedImageUri ? { uri: savedImageUri } : undefined}
               style={{
                 width: '100%',
                 aspectRatio: stackrCardImageSizes.cardAspectRatio,
@@ -2637,6 +2654,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
   const renderCard = ({ item }: { item: BinderCardWithDetails }) => {
     const imageUri = getBinderCardImageUri(item);
+    const savedImageUri = getBinderSavedCardImageUri(item);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const cardName = getBinderCardDisplayName(item, item.card_id);
     const forTrade = isForTrade(item.card_id, item.set_id);
@@ -2718,12 +2736,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             <GradedSlabCard
               item={item}
               imageUri={imageUri}
+              fallbackImageUri={savedImageUri}
               editionHint={imageEditionHint}
               size="grid"
             />
           ) : imageUri ? (
             <EditionAwareCardImage
               uri={imageUri}
+              fallbackUri={savedImageUri}
               cardId={item.card_id}
               rawData={item.card}
               editionHint={imageEditionHint}
@@ -3069,6 +3089,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
   const modalCard = selectedCard?.card;
   const storedModalImageUri = selectedCard ? getBinderCardImageUri(selectedCard, 'large') : null;
+  const savedModalImageUri = selectedCard ? getBinderSavedCardImageUri(selectedCard) : null;
   const modalImageUri = detailFullImageUri ?? storedModalImageUri;
 
   const boxStyle = {
@@ -3117,7 +3138,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     })
     : null;
   const officialSetLogoUrl = binder.type === 'official' && !officialSetLogoSource
-    ? enforceSetVisualRuntimePolicy(binder.source_set_logo_url ?? binder.source_set_symbol_url ?? getPokemonSetLogoUrl(binder.source_set_id ?? binder.cover_key, binder.language))
+    ? enforceSetVisualRuntimePolicy(binder.source_set_cover_url ?? binder.source_set_logo_url ?? binder.source_set_symbol_url ?? getPokemonSetLogoUrl(binder.source_set_id ?? binder.cover_key, binder.language))
     : undefined;
   const officialSetArtworkUrl = binder.type === 'official'
     ? officialSetLogoUrl
@@ -4454,18 +4475,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         onHandlerStateChange={onPinchHandlerStateChange}
                       >
                         <Animated.View style={{ flex: 1, transform: [{ scale: imageScale }] }}>
+                          <InteractiveCardPreview active={detailVisible} foil={binder.card_mode !== 'graded' && isFoilPreview(modalCard?.raw_data, getBinderCanonicalVariantId(selectedCard))}>
                           {binder.card_mode === 'graded' ? (
                             <GradedSlabCard
                               item={selectedCard}
                               imageUri={modalImageUri}
-                              fallbackImageUri={detailFullImageUri ? storedModalImageUri : undefined}
+                              fallbackImageUri={savedModalImageUri ?? (detailFullImageUri ? storedModalImageUri : undefined)}
                               editionHint={getBinderEditionHint(binder.edition)}
                               size="modal"
                             />
                           ) : (
                             <EditionAwareCardImage
                               uri={modalImageUri ?? undefined}
-                              fallbackUri={detailFullImageUri ? storedModalImageUri : undefined}
+                              fallbackUri={savedModalImageUri ?? (detailFullImageUri ? storedModalImageUri : undefined)}
                               cardId={selectedCard.card_id}
                               rawData={modalCard}
                               editionHint={getBinderEditionHint(binder.edition)}
@@ -4527,6 +4549,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               </View>
                             );
                           })()}
+                          </InteractiveCardPreview>
                         </Animated.View>
                       </PinchGestureHandler>
 
@@ -4779,24 +4802,27 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                             Stored daily marketplace values. Use these when live sold data is thin or unavailable.
                           </Text>
 
-                          <Row label="Cached eBay" value={formatCurrency(getEstimatedValue(selectedCard?.ebay_price ?? 0, selectedCard.condition || 'Near Mint'))} />
+                          <Row
+                            label="Cached eBay"
+                            value={formatCachedBinderPrice(selectedCard?.ebay_price, selectedCard.condition || 'Near Mint')}
+                          />
                           <Row
                             label="Cached TCGPlayer"
-                            value={formatCurrency(
-                              getEstimatedValue(
-                                getBinderTcgPrice(selectedCard?.card, binder?.edition) ??
-                                  modalTcgFallbackPrice?.market ??
-                                  modalTcgFallbackPrice?.mid ??
-                                  modalTcgFallbackPrice?.low ??
-                                  0,
-                                selectedCard.condition || 'Near Mint'
-                              )
+                            value={formatCachedBinderPrice(
+                              getBinderTcgPrice(selectedCard?.card, binder?.edition) ??
+                                modalTcgFallbackPrice?.market ??
+                                modalTcgFallbackPrice?.mid ??
+                                modalTcgFallbackPrice?.low,
+                              selectedCard.condition || 'Near Mint'
                             )}
                           />
-                          <Row label="Cached CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
+                          <Row
+                            label="Cached CardMarket"
+                            value={formatCachedBinderPrice(getCardmarketPrice(selectedCard), selectedCard.condition || 'Near Mint')}
+                          />
 
                           <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>
-                            Updated daily when price refresh runs
+                            {formatCachedBinderPriceTimestamp(selectedCard?.last_price_update)}
                           </Text>
                         </>
                       )}

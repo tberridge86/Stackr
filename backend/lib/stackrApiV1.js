@@ -795,9 +795,33 @@ async function fetchSetIdsByCode(supabase, setCode, language) {
     .limit(25);
   query = applyLanguageFilter(query, language);
   const rows = await queryRows(query);
-  return rows
+  const exactIds = rows
     .filter((row) => normalizeSearchText(row.set_code) === normalizeSearchText(setCode))
     .map((row) => row.set_id);
+  if (exactIds.length || (language && language !== 'en')) return exactIds;
+
+  // Legacy English provider IDs omit the leading zero retained by the
+  // canonical Mega Evolution catalogue. Never apply these aliases abroad.
+  const englishAliases = {
+    me1: 'me01', me2: 'me02', me2pt5: 'me02.5',
+    me3: 'me03', me4: 'me04', me5: 'me05',
+  };
+  const alias = englishAliases[String(setCode).toLowerCase()];
+  if (!alias) return [];
+  const aliasRows = await queryRows(table(supabase, 'api', 'catalogue_sets')
+    .select('set_id,set_code,language_code')
+    .eq('set_code', alias)
+    .eq('language_code', 'en')
+    .limit(25));
+  return aliasRows.map((row) => row.set_id);
+}
+
+async function searchProviderCardReference(supabase, parsed, limit, language) {
+  const match = parsed.raw.match(/^([a-z][a-z0-9._-]{1,19})-([a-z]{0,4}\d+[a-z]?(?:\/\d+)?)$/i);
+  if (!match) return [];
+  return searchSetCodeCollector(supabase, {
+    ...parsed, setCode: match[1], setCollectorNumber: match[2],
+  }, limit, language);
 }
 
 function sortCardsForDisplay(rows) {
@@ -873,9 +897,23 @@ async function searchSetCodeCollector(supabase, parsed, limit, language) {
     .map((row) => toSearchResult(row, 'exact_set_code_collector_number', { matchedSetCode: parsed.setCode }));
 }
 
-async function searchCollectorNumber(supabase, parsed, limit, language, selectedSetId) {
+async function searchCollectorNumber(supabase, parsed, limit, language, selectedSetId, useIndexedCollectors = false) {
   const collector = parsed.collectorNumber;
   if (!collector) return [];
+  if (useIndexedCollectors) {
+    let identitiesQuery = table(supabase, 'api', 'catalogue_card_collectors')
+      .select('printing_id,variant_id')
+      .eq(collector.includes('/') ? 'normalized_collector_number' : 'normalized_collector_base', collector)
+      .limit(Math.max(limit * 4, 80));
+    identitiesQuery = applyLanguageFilter(identitiesQuery, language);
+    if (selectedSetId) identitiesQuery = identitiesQuery.eq('set_id', selectedSetId);
+    const identities = await queryRows(identitiesQuery);
+    const rows = await fetchCardRowsForIdentities(supabase, identities);
+    return dedupeByVariant(rows)
+      .filter((row) => collectorMatches(row.collector_number, collector))
+      .slice(0, limit)
+      .map((row) => toSearchResult(row, selectedSetId ? 'exact_collector_number_in_set' : 'exact_collector_number'));
+  }
   let exactQuery = table(supabase, 'api', 'catalogue_cards')
     .select('*')
     .eq('collector_number', parsed.setCollectorNumber ?? parsed.raw)
@@ -1342,6 +1380,43 @@ export function createCatalogueV1Service(options) {
     async assetManifest(input = {}) {
       const limit = parseLimit(input.limit, 250, 1000);
       const cursor = parseCursor(input.cursor);
+      if (cursor && (!isUuid(cursor.catalogueVersionId) || !isUuid(cursor.assetRowId))) {
+        throw new ApiError(400, 'invalid_cursor', 'cursor is not a valid Stackr asset manifest cursor.');
+      }
+      // The printing predicate on the full manifest expands inherited
+      // identities across the catalogue. Card fallback requests can use the
+      // existing bounded RPC without changing the generic manifest contract.
+      if (assetUrlOptions.assetIdentityRpc && input.assetType === 'card_image'
+        && isUuid(input.printingId) && !clean(input.setId) && !clean(input.variantId)) {
+        const rows = [];
+        let after = cursor;
+        while (rows.length <= limit) {
+          const pageSize = Math.min(1000, limit + 1 - rows.length);
+          const batch = await queryRows(assetSupabase.schema('api').rpc(
+            'card_image_manifest_for_identities', {
+              p_variant_ids: [], p_printing_ids: [clean(input.printingId)],
+              p_after_version_id: after?.catalogueVersionId ?? null,
+              p_after_asset_id: after?.assetRowId ?? null,
+              p_limit: pageSize,
+            },
+          ));
+          rows.push(...batch);
+          if (batch.length < pageSize || rows.length > limit) break;
+          const next = manifestCursorFromRow(batch.at(-1));
+          if (after && compareManifestCursor(next, after) <= 0) {
+            throw new Error('Card-image manifest identity RPC returned a non-advancing keyset cursor.');
+          }
+          after = next;
+        }
+        const page = rows.slice(0, limit);
+        return {
+          assets: page.map((row) => toCatalogueAsset(row, assetUrlOptions)),
+          pagination: {
+            limit,
+            nextCursor: rows.length > limit ? encodeCursor(manifestCursorFromRow(page.at(-1))) : null,
+          },
+        };
+      }
       let query = table(assetSupabase, 'api', 'asset_manifest')
         .select('*')
         .order('catalogue_version_id', { ascending: true })
@@ -1396,11 +1471,14 @@ export function createCatalogueV1Service(options) {
         () => searchCanonicalId(searchSupabase, parsed, limit),
         () => searchSetCodeCollector(searchSupabase, parsed, limit, language),
         () => searchExternalId(searchSupabase, parsed, limit, language),
+        // Keep exact provider/finish identities ahead of inferred set-number
+        // references such as the legacy English ID "me2-125".
+        () => searchProviderCardReference(searchSupabase, parsed, limit, language),
         // A set code containing digits is also a possible collector token.
         // Resolve the exact name/set pair before attempting a catalogue-wide
         // collector fallback for queries such as "Pinsir sv08.5".
         () => searchNameWithSetCode(searchSupabase, parsed, limit, language),
-        () => searchCollectorNumber(searchSupabase, parsed, limit, language, selectedSetId),
+        () => searchCollectorNumber(searchSupabase, parsed, limit, language, selectedSetId, options.collectorIdentityLookup === true),
         () => searchNames(searchSupabase, parsed, limit, language, EXACT_NAME_TYPES, () => 'exact_name'),
         () => searchNames(searchSupabase, parsed, limit, language, ALIAS_NAME_TYPES, (type) => type === 'alias' ? 'exact_alias' : 'exact_translated_name'),
         () => searchFuzzyName(searchSupabase, parsed, limit, language),

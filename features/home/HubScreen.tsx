@@ -432,7 +432,37 @@ type HomeOwnedPricingUnit = {
 type HomePricingDefaults = Pick<HomeBinderCard,
   '__binderId' | '__binderCardMode' | '__binderDefaultCondition' | '__binderDefaultGradeCompany' | '__binderDefaultGrade'>;
 
+type PendingHomePriceRefresh = Map<string, number>;
+
+const HOME_MANUAL_PRICE_REFRESH_FOLLOW_UP_MS = 35 * 60 * 1000;
+
 const homeCardKey = (setId?: string | null, cardId?: string | null) => `${setId ?? ''}:${cardId ?? ''}`;
+
+const reconcileManualPriceRefreshes = (
+  pending: PendingHomePriceRefresh,
+  priceResults: CollectionPriceResult[],
+  now = Date.now(),
+) => {
+  const nextPending = new Map(pending);
+  let reflected = 0;
+  for (const result of priceResults) {
+    const queuedAt = result.variantId ? nextPending.get(result.variantId) : undefined;
+    const calculatedAt = Date.parse(result.calculatedAt ?? '');
+    if (queuedAt == null || result.central == null || !Number.isFinite(calculatedAt) || calculatedAt <= queuedAt) continue;
+    nextPending.delete(result.variantId!);
+    reflected += 1;
+  }
+  const timedOut = [...nextPending.entries()]
+    .filter(([, queuedAt]) => now - queuedAt >= HOME_MANUAL_PRICE_REFRESH_FOLLOW_UP_MS)
+    .map(([variantId]) => variantId);
+  for (const variantId of timedOut) nextPending.delete(variantId);
+  const messages = [
+    reflected ? `${reflected} queued ${reflected === 1 ? 'price is' : 'prices are'} now reflected in your stored collection value.` : null,
+    nextPending.size ? `Checking ${nextPending.size} queued ${nextPending.size === 1 ? 'price' : 'prices'} against stored estimates while Home stays open.` : null,
+    timedOut.length ? `No newer stored price appeared for ${timedOut.length} queued ${timedOut.length === 1 ? 'card' : 'cards'} within 35 minutes; it may still be queued or lack an exact provider quote.` : null,
+  ].filter(Boolean);
+  return { nextPending, warning: messages.join(' ') || null };
+};
 
 const buildHomeOwnedPricingUnits = (
   allCards: HomeBinderCard[],
@@ -804,6 +834,8 @@ export default function HubScreen() {
   const collectionValueReadsRef = useRef<CollectionValueRead[]>([]);
   const refreshableVariantIdsRef = useRef<string[]>([]);
   const manualProviderRefreshInFlightRef = useRef(false);
+  const pendingManualPriceRefreshesRef = useRef<PendingHomePriceRefresh>(new Map());
+  const manualPriceRefreshUserIdRef = useRef<string | null>(null);
   const livePricePollInFlightRef = useRef(false);
   const cachedHomeSnapshotUserIdRef = useRef<string | null>(null);
   const homeSessionUserIdRef = useRef<string | null>(null);
@@ -1301,12 +1333,18 @@ export default function HubScreen() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) {
+        pendingManualPriceRefreshesRef.current.clear();
+        manualPriceRefreshUserIdRef.current = null;
         await applyCachedHomeCollection();
         setCollectionValueLoading(false);
         return;
       }
 
       const trustedUserId = user.id;
+      if (manualPriceRefreshUserIdRef.current && manualPriceRefreshUserIdRef.current !== trustedUserId) {
+        pendingManualPriceRefreshesRef.current.clear();
+      }
+      manualPriceRefreshUserIdRef.current = trustedUserId;
       homeSessionUserIdRef.current = trustedUserId;
       const isCurrentRequest = () => (
         homeCollectionRequestRef.current === requestId
@@ -1541,6 +1579,8 @@ export default function HubScreen() {
           : nextPricingSummary.state === 'stale'
             ? 'Stored prices are stale. Refresh will retry without replacing them with £0.'
             : null;
+      const refreshFollowUp = reconcileManualPriceRefreshes(pendingManualPriceRefreshesRef.current, priceResults);
+      pendingManualPriceRefreshesRef.current = refreshFollowUp.nextPending;
       const refreshedAt = nextPricingSummary.latestCalculatedAt;
 
       setActiveBinder(nextPricedActiveBinder);
@@ -1548,7 +1588,7 @@ export default function HubScreen() {
       setMissingCards(nextMissingCards);
       setCollectionTotal(nextPricingSummary.total);
       setCollectionPricingSummary(nextPricingSummary);
-      setCollectionPricingWarning(pricingWarning);
+      setCollectionPricingWarning(refreshFollowUp.warning ?? pricingWarning);
       setCollectionChangeAmount(chartChange);
       setCollectionChangePercent(chartChangePercent);
       setChartData(nextChartData);
@@ -1671,8 +1711,17 @@ export default function HubScreen() {
         summary.queued += response.data.summary.queued;
         summary.alreadyQueued += response.data.summary.already_queued;
         summary.cooldown += response.data.summary.cooldown;
+        for (const item of response.data.items) {
+          if (!item.providerRefreshPending) continue;
+          const queuedAt = Date.parse(item.queuedAt);
+          pendingManualPriceRefreshesRef.current.set(item.variantId, Number.isFinite(queuedAt) ? queuedAt : Date.now());
+        }
       }
       await loadCollectionValueRef.current();
+      const pendingCount = pendingManualPriceRefreshesRef.current.size;
+      if (pendingCount) {
+        setCollectionPricingWarning(`Checking ${pendingCount} queued ${pendingCount === 1 ? 'price' : 'prices'} against stored estimates while Home stays open.`);
+      }
       const detail = summary.queued
         ? `${summary.queued} ${summary.queued === 1 ? 'card refresh was' : 'card refreshes were'} queued. Your stored prices will update after background processing completes.`
         : summary.alreadyQueued

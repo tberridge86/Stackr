@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createCatalogueV1Service } from '../backend/lib/stackrApiV1.js';
+import { createCatalogueV1Service, normalizeCollectorNumber } from '../backend/lib/stackrApiV1.js';
 
 const enSet = '11111111-1111-4111-8111-111111111111';
 const cnSet = '22222222-2222-4222-8222-222222222222';
@@ -91,6 +91,37 @@ const db = { schema: () => ({ from: (table) => {
 } }) };
 const service = createCatalogueV1Service({ supabase: db });
 
+// The installed client can retain compact provider IDs while the published
+// English Mega Evolution catalogue uses padded set codes.
+const megaSet = '55555555-5555-4555-8555-555555555555';
+const megaCharizard = {
+  ...makeCard('en', 950), set_id: megaSet, set_code: 'me02',
+  collector_number: '125', card_native_name: 'Mega Charizard X ex',
+  card_english_display_name: 'Mega Charizard X ex', variant_code: 'holo', finish_code: 'holo',
+};
+cards.push(megaCharizard);
+sources.catalogue_sets.push({
+  set_id: megaSet, set_code: 'me02', language_code: 'en', game_code: 'pokemon',
+  native_name: 'Phantasmal Flames', english_display_name: 'Phantasmal Flames',
+});
+for (const q of ['me2-125', 'me02-125', 'me2 125', 'me02 125']) {
+  cardQueryShapes.length = 0;
+  const result = await service.search({ q, language: 'en', limit: 10 });
+  assert.deepEqual(result.results.map((row) => row.variantId), [megaCharizard.variant_id]);
+  assert.ok(cardQueryShapes.every(({ clauses }) => clauses.some(({ key }) => key === 'set_id')),
+    'A provider set-number lookup must resolve without a catalogue-wide collector scan.');
+}
+assert.equal((await service.search({ q: 'me2-125', language: 'ja' })).results.length, 0,
+  'English provider aliases must not silently return an English card for a Japanese search.');
+sources.catalogue_external_identifiers.push({
+  source_entity_type: 'variant', external_id: 'me2-125', language_code: 'en', set_id: enSet,
+  printing_id: scopedPrinting, variant_id: scopedNormal.variant_id, confidence: 1,
+});
+assert.deepEqual((await service.search({ q: 'me2-125', language: 'en' })).results
+  .filter((row) => row.type === 'card').map((row) => row.variantId), [scopedNormal.variant_id],
+  'An exact provider identity must take precedence over an inferred provider set-number alias.');
+sources.catalogue_external_identifiers.pop();
+
 const en = await service.search({ q: 'Charmander', language: 'en', limit: 2 });
 assert.equal(en.results.length, 1);
 assert.ok(en.results.every((row) => row.languageCode === 'en'));
@@ -165,5 +196,18 @@ assert.equal(mixed.reads.filter((read) => read.key === 'printing_id').length, 1,
 const mixedChinese = await runAndReadCards({ q: 'Mixed Identity', language: 'zh-cn', limit: 10 });
 assert.equal(mixedChinese.cardResults.length, 0, 'Name identity hydration must preserve requested printing language.');
 assert.equal(mixedChinese.reads.length, 0);
+
+sources.catalogue_card_collectors = cards.map((card) => ({
+  ...card,
+  normalized_collector_number: normalizeCollectorNumber(card.collector_number),
+  normalized_collector_base: normalizeCollectorNumber(card.collector_number).split('/')[0],
+}));
+const indexedService = createCatalogueV1Service({ supabase: db, collectorIdentityLookup: true });
+cardQueryShapes.length = 0;
+const padded = await indexedService.search({ q: '000125', language: 'en', setId: megaSet });
+assert.deepEqual(padded.results.map((result) => result.variantId), [megaCharizard.variant_id]);
+assert.ok(cardQueryShapes.every(({ clauses }) => clauses.some(({ key }) => key === 'variant_id')),
+  'Tolerant collector queries must select matching identities before hydrating card rows.');
+assert.equal((await indexedService.search({ q: '000125', language: 'ja', setId: megaSet })).results.length, 0);
 
 console.log('Search selects card language before limiting, preserves translated lookup, constrains UUID matches, and keeps variant identities from expanding to sibling finishes.');

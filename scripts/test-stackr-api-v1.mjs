@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import './test-printing-asset-manifest.mjs';
 import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
@@ -269,7 +270,7 @@ async function assertAssetManifestServerClientIsolation() {
   const defaultService = route.slice(defaultServiceStart, defaultServiceEnd);
   assert.match(
     defaultService.replace(/\/\/[^\r\n]*/g, ''),
-    /createCatalogueV1Service\(\{\s*supabase: getCatalogueSupabase\(\),\s*searchSupabase: getSearchSupabase\(\),\s*assetSupabase: getAssetSupabase\(\),\s*assetIdentityRpc: true,\s*\}\)/,
+    /createCatalogueV1Service\(\{\s*supabase: getCatalogueSupabase\(\),\s*searchSupabase: getSearchSupabase\(\),\s*assetSupabase: getAssetSupabase\(\),\s*assetIdentityRpc: true,\s*collectorIdentityLookup: true,\s*\}\)/,
     'server-key clients must be scoped to searchSupabase and assetSupabase only',
   );
   assert.doesNotMatch(

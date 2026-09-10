@@ -1,0 +1,121 @@
+{
+  "generatedAt": "2026-09-10T17:33:06.390Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "requestId": "captured-artwork-restore-20260910-34794a13e68b",
+  "status": "deployed_and_public_api_verified",
+  "evidenceDigest": "34794a13e68b519ec28d6638a55600986db396c11672cfbcaaa5ae034ce723db",
+  "postVerification": [
+    {
+      "language_code": "en",
+      "repaired": 4809,
+      "sets": 93,
+      "correct_artwork_links": 4809,
+      "unchanged_identity": 4809,
+      "first_applied_at": "2026-09-10 17:27:27.867806+00",
+      "last_applied_at": "2026-09-10 17:29:31.72733+00"
+    },
+    {
+      "language_code": "ja",
+      "repaired": 366,
+      "sets": 7,
+      "correct_artwork_links": 366,
+      "unchanged_identity": 366,
+      "first_applied_at": "2026-09-10 17:27:27.867806+00",
+      "last_applied_at": "2026-09-10 17:29:31.72733+00"
+    },
+    {
+      "language_code": "zh-tw",
+      "repaired": 96,
+      "sets": 5,
+      "correct_artwork_links": 96,
+      "unchanged_identity": 96,
+      "first_applied_at": "2026-09-10 17:27:27.867806+00",
+      "last_applied_at": "2026-09-10 17:29:31.72733+00"
+    }
+  ],
+  "partitions": [
+    {
+      "partition": "0",
+      "restored": 55,
+      "success": true
+    },
+    {
+      "partition": "1",
+      "restored": 81,
+      "success": true
+    },
+    {
+      "partition": "2",
+      "restored": 148,
+      "success": true
+    },
+    {
+      "partition": "3",
+      "restored": 168,
+      "success": true
+    },
+    {
+      "partition": "4",
+      "restored": 211,
+      "success": true
+    },
+    {
+      "partition": "5",
+      "restored": 257,
+      "success": true
+    },
+    {
+      "partition": "6",
+      "restored": 287,
+      "success": true
+    },
+    {
+      "partition": "7",
+      "restored": 350,
+      "success": true
+    },
+    {
+      "partition": "8",
+      "restored": 381,
+      "success": true
+    },
+    {
+      "partition": "9",
+      "restored": 324,
+      "success": true
+    },
+    {
+      "partition": "a",
+      "restored": 373,
+      "success": true
+    },
+    {
+      "partition": "b",
+      "restored": 414,
+      "success": true
+    },
+    {
+      "partition": "c",
+      "restored": 517,
+      "success": true
+    },
+    {
+      "partition": "d",
+      "restored": 538,
+      "success": true
+    },
+    {
+      "partition": "e",
+      "restored": 587,
+      "success": true
+    },
+    {
+      "partition": "f",
+      "restored": 580,
+      "success": true
+    }
+  ],
+  "changes": "card_variants native_image_status and same_artwork_as_variant_id only; each target has exact captured-byte equality, same current published printing/set/language, approved public storage original and all three renditions",
+  "initialFullTransaction": "Exceeded 90s statement timeout and fully rolled back; audit count verified zero before 16 smaller transactions",
+  "deviceVerification": "pending"
+}

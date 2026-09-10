@@ -694,16 +694,12 @@ export function MarketListingCard({
       accessibilityLabel={`Open listing for ${item.title}`}
       style={{
         flex: 1,
-        backgroundColor: 'rgba(255,255,255,0.9)',
-        borderRadius: 12,
+        backgroundColor: theme.colors.card,
+        borderRadius: 18,
         borderWidth: 1,
         borderColor: theme.colors.border,
         padding: compact ? 7 : 8,
-        shadowColor: '#1B2A4B',
-        shadowOpacity: 0.04,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 3 },
-        elevation: 1,
+        ...theme.shadows.card,
       }}
     >
       <View>
@@ -792,7 +788,9 @@ export function MarketListingCard({
               </Text>
             ) : null}
           </View>
-          <ListingMetaPill icon={variant.icon} label={transaction.badge} />
+          {!compact || compactPrimary !== transaction.badge ? (
+            <ListingMetaPill icon={variant.icon} label={transaction.badge} />
+          ) : null}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: compact ? 2 : 1, minHeight: 17 }}>
           <Text style={{ flex: 1, minWidth: 0, color: theme.colors.textSoft, fontSize: compact ? 10.2 : 10.7, lineHeight: 14, fontWeight: '900' }} numberOfLines={1}>

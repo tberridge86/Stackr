@@ -1,0 +1,115 @@
+{
+  "observedAt": "2026-09-10T16:47:10.422Z",
+  "scope": "Public API only; initial/repeated requests, cache coldness unknown; not device timing",
+  "results": [
+    {
+      "query": "me2-125",
+      "attempt": 1,
+      "status": 200,
+      "ms": 3917,
+      "cache": "DYNAMIC",
+      "requestId": "2492f76a-e590-4d4d-9c3d-9c3fd88b4208",
+      "count": 0,
+      "expectedIdentityPresent": false,
+      "results": []
+    },
+    {
+      "query": "me2-125",
+      "attempt": 2,
+      "status": 200,
+      "ms": 135,
+      "cache": "HIT",
+      "requestId": "2492f76a-e590-4d4d-9c3d-9c3fd88b4208",
+      "count": 0,
+      "expectedIdentityPresent": false,
+      "results": []
+    },
+    {
+      "query": "SV2a 157",
+      "attempt": 1,
+      "status": 200,
+      "ms": 151,
+      "cache": "HIT",
+      "requestId": "f72b38fc-6808-4e92-b5bb-352cce91f465",
+      "count": 2,
+      "expectedIdentityPresent": true,
+      "results": [
+        {
+          "cardId": "ba65f365-abcb-40dd-9486-ba24014f33d5",
+          "variantId": "53bca9cb-46c8-42bc-beed-267409740edd",
+          "language": "ja",
+          "set": "SV2a",
+          "number": "157",
+          "name": "Protective Goggles",
+          "imageCount": 1
+        },
+        {
+          "cardId": "ba65f365-abcb-40dd-9486-ba24014f33d5",
+          "variantId": "c40bb2bf-39b1-4091-b4b5-188ecc335cf0",
+          "language": "ja",
+          "set": "SV2a",
+          "number": "157",
+          "name": "Protective Goggles",
+          "imageCount": 0
+        }
+      ]
+    },
+    {
+      "query": "SV2a 157",
+      "attempt": 2,
+      "status": 200,
+      "ms": 106,
+      "cache": "HIT",
+      "requestId": "f72b38fc-6808-4e92-b5bb-352cce91f465",
+      "count": 2,
+      "expectedIdentityPresent": true,
+      "results": [
+        {
+          "cardId": "ba65f365-abcb-40dd-9486-ba24014f33d5",
+          "variantId": "53bca9cb-46c8-42bc-beed-267409740edd",
+          "language": "ja",
+          "set": "SV2a",
+          "number": "157",
+          "name": "Protective Goggles",
+          "imageCount": 1
+        },
+        {
+          "cardId": "ba65f365-abcb-40dd-9486-ba24014f33d5",
+          "variantId": "c40bb2bf-39b1-4091-b4b5-188ecc335cf0",
+          "language": "ja",
+          "set": "SV2a",
+          "number": "157",
+          "name": "Protective Goggles",
+          "imageCount": 0
+        }
+      ]
+    }
+  ],
+  "canonicalControl": {
+    "observedAt": "2026-09-10T16:51:28.09Z",
+    "query": "me02 125",
+    "status": 200,
+    "ms": 1971,
+    "cache": "DYNAMIC",
+    "requestId": "e54f7bab-3936-4cfb-941a-98398de4ca26",
+    "results": [
+      {
+        "cardId": "ea85151c-070e-486f-9a86-a878f1981ba5",
+        "variantId": "f61faa13-2e45-44ec-acee-9edc1d97a985",
+        "language": "en",
+        "set": "me02",
+        "number": "125",
+        "name": "Mega Charizard X ex"
+      }
+    ]
+  },
+  "preliminaryProbe": {
+    "source": "Desktop tool transcript preceding the persisted diagnostic cohort",
+    "responseGeneratedAt": "2026-09-10T16:46:11.850Z",
+    "query": "me2-125",
+    "status": 504,
+    "ms": 9636,
+    "error": "downstream_timeout",
+    "requestId": "d3359411-8b96-4fa2-9a87-23c136e61b24"
+  }
+}

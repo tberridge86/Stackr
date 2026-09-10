@@ -224,14 +224,14 @@ async function main() {
   const assets = await adapter.fetchAssets({ language: 'ja', cursor: { offset: 1 }, limit: 1 });
   const validAssets = assets.filter((asset) => adapter.validateRecord(asset).ok);
   const quarantinedAssets = assets.filter((asset) => !adapter.validateRecord(asset).ok);
-  assert.equal(validAssets.length, 3, 'valid unique normal, holo, and Poké Ball variants should remain');
+  assert.equal(validAssets.length, 3, 'valid unique unlabelled, holo, and Poké Ball records should remain');
   assert.equal(quarantinedAssets.length, 2, 'every candidate in an ambiguous identity group must be quarantined');
   assert.equal(
     quarantinedAssets.every((asset) => adapter.validateRecord(asset).issues.some((issue) => issue.code === 'ambiguous_duplicate_group')),
     true,
   );
   assert.deepEqual(validAssets.map((asset) => asset.providerRecordId), [
-    'card:2001:normal:image',
+    'card:2001:unclassified:image',
     'card:2002:holo:image',
     'card:2005:poke_ball:image',
   ]);
@@ -354,6 +354,16 @@ async function main() {
       baseName: 'Pikachu',
       evidence: 'reverse_holofoil_suffix',
     },
+  );
+  assert.deepEqual(
+    pokedataJapaneseImageAdapterInternals.parsePokeDataFinish('Unlabelled Japanese card'),
+    {
+      variantCode: 'unclassified',
+      finishCode: 'unclassified',
+      baseName: 'Unlabelled Japanese card',
+      evidence: 'no_finish_suffix_unclassified',
+    },
+    'an absent provider finish label must not be represented as normal',
   );
   assert.deepEqual(POKEDATA_JAPANESE_FROZEN_SET_CODE_OVERRIDES, { '3858': 'M5' });
   assert.deepEqual(resolvePokeDataJapaneseSetCode('3858', null), {

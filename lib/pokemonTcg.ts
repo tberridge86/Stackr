@@ -149,12 +149,15 @@ type FetchAllSetsOptions = {
 type FetchCardsForSetOptions = {
   language?: PokemonCardLanguage | string | null;
   preferCanonicalApi?: boolean;
+  /** A caller with a known set total must not retain a partial card response. */
+  minimumCardCount?: number | null;
 };
 
 let allSetsCache = new Map<string, { expiresAt: number; value: PokemonSet[] }>();
 let allSetsInflight = new Map<string, Promise<PokemonSet[]>>();
 const cardsForSetCache = new Map<string, { expiresAt: number; value: PokemonCard[] }>();
 const cardsForSetInflight = new Map<string, Promise<PokemonCard[]>>();
+const cardsForSetInflightMinimums = new Map<string, number>();
 
 /** Reload metadata and approved runtime image references after an explicit retry. */
 export function invalidatePokemonCatalogueCardCaches() {
@@ -1938,17 +1941,24 @@ export async function fetchPokemonSetForDetail(
 }
 
 export async function fetchCardsForSet(setId: string, options: FetchCardsForSetOptions = {}): Promise<PokemonCard[]> {
+  const requestedMinimum = Math.max(0, Math.floor(Number(options.minimumCardCount ?? 0) || 0));
+  const hasRequiredCards = (cards: PokemonCard[], minimum = requestedMinimum) => (
+    minimum === 0 || new Set(cards.map((card) => String(card.id ?? '').trim()).filter(Boolean)).size >= minimum
+  );
   const language = inferPokemonSetLanguage(setId, options.language);
   const setIdCandidates = getPokemonSetIdLookupCandidates(setId, language);
   const readLane = options.preferCanonicalApi ? 'canonical-api' : 'default';
   const cacheKey = `${readLane}:${language}:${setIdCandidates.join('|')}`;
   const cached = readNonEmptyCatalogueRows(cardsForSetCache, cacheKey);
-  if (cached) return cached;
+  if (cached && hasRequiredCards(cached)) return cached;
+  if (cached) cardsForSetCache.delete(cacheKey);
 
   const inflight = cardsForSetInflight.get(cacheKey);
   if (inflight) {
+    cardsForSetInflightMinimums.set(cacheKey, Math.max(cardsForSetInflightMinimums.get(cacheKey) ?? 0, requestedMinimum));
     return inflight;
   }
+  cardsForSetInflightMinimums.set(cacheKey, requestedMinimum);
 
   const request = (async () => {
     let sourceCards: StackrLegacyCard[] = [];
@@ -1974,7 +1984,10 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
       1,
     );
 
-    cacheNonEmptyCatalogueRows(cardsForSetCache, cacheKey, cards, Date.now() + POKEMON_SET_CARDS_CACHE_TTL_MS);
+    const requiredMinimum = cardsForSetInflightMinimums.get(cacheKey) ?? 0;
+    if (hasRequiredCards(cards, requiredMinimum)) {
+      cacheNonEmptyCatalogueRows(cardsForSetCache, cacheKey, cards, Date.now() + POKEMON_SET_CARDS_CACHE_TTL_MS);
+    }
     return cards;
   })();
 
@@ -1983,6 +1996,7 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
     return await request;
   } finally {
     cardsForSetInflight.delete(cacheKey);
+    cardsForSetInflightMinimums.delete(cacheKey);
   }
 }
 
