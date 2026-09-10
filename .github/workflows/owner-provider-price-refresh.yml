@@ -49,7 +49,11 @@ jobs:
     if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.STACKR_OWNER_PRICE_REFRESH_SCHEDULED_ENABLED == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: production
+    # Interactive runs retain the protected production review. The scheduled
+    # lane has no deployment work: it is main-only, queue-only and bounded to
+    # three exact owner requests, so it uses the existing unprotected
+    # ingestion environment and the repository-scoped service credential.
+    environment: ${{ github.event_name == 'schedule' && 'ingestion' || 'production' }}
     env:
       EXPECTED_MAIN_SHA: ${{ github.event_name == 'schedule' && github.sha || inputs.expected_main_sha }}
       SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL || 'https://oakdbbzdqwurpjnoqhmu.supabase.co' }}
