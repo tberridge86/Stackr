@@ -80,6 +80,7 @@ jobs:
       - run: npm run test:scan-quality
       - run: npm run test:local-ocr-card-matcher
       - run: npm run test:binder-page-scan
+      - run: node --import tsx scripts/test-binder-page-save-confirmation.ts
       - run: npm run test:binder-catalogue
       - run: npm run test:english-set-visibility
       - run: node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-tcgdex-boundary-compatibility.ts

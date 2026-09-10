@@ -114,6 +114,13 @@ export default function BinderPageScanResultScreen() {
   const [destinationPage, setDestinationPage] = useState(1);
   const [saving, setSaving] = useState(false);
   const saveInFlightRef = useRef(false);
+  const sessionRef = useRef<Awaited<ReturnType<typeof loadBinderPageScanSession>>>(null);
+  const pocketsRef = useRef<BinderPagePocketResult[]>([]);
+  // Review edits are durable before rendering. Saving waits for this barrier so
+  // a just-confirmed pocket cannot be omitted from the collection intent.
+  const pendingPocketMutationRef = useRef<Promise<void>>(Promise.resolve());
+  const pocketMutationSequenceRef = useRef(0);
+  const pocketMutationFailuresRef = useRef<{ sequence: number; error: Error }[]>([]);
   const sessionLoadRequestRef = useRef(0);
   const bindersLoadRequestRef = useRef(0);
   const [selectedPocketIndex, setSelectedPocketIndex] = useState<number | null>(null);
@@ -131,6 +138,13 @@ export default function BinderPageScanResultScreen() {
   useEffect(() => {
     let active = true;
     const requestId = ++sessionLoadRequestRef.current;
+    sessionRef.current = null;
+    pocketsRef.current = [];
+    pendingPocketMutationRef.current = Promise.resolve();
+    pocketMutationSequenceRef.current = 0;
+    pocketMutationFailuresRef.current = [];
+    setSession(null);
+    setPockets([]);
     const hydrate = async () => {
       setSessionLoading(true);
       setSessionError(null);
@@ -141,11 +155,15 @@ export default function BinderPageScanResultScreen() {
         const restored = await loadBinderPageScanSession(scanSessionId, ownerUserId);
         if (!restored) throw new Error('This binder page review is no longer available.');
         if (!active || requestId !== sessionLoadRequestRef.current) return;
+        sessionRef.current = restored;
+        pocketsRef.current = restored.pockets;
         setSession(restored);
         setPockets(restored.pockets);
         if (typeof params.binderId !== 'string' && restored.binderId) setSelectedBinderId(restored.binderId);
       } catch (error) {
         if (!active || requestId !== sessionLoadRequestRef.current) return;
+        sessionRef.current = null;
+        pocketsRef.current = [];
         setSession(null);
         setPockets([]);
         setSessionError(error instanceof Error ? error.message : 'Could not load this binder page review. Try again.');
@@ -259,17 +277,48 @@ export default function BinderPageScanResultScreen() {
     updater: (current: BinderPagePocketResult[]) => BinderPagePocketResult[],
     allowCorrectionApply = false,
   ) => {
+    if (saveInFlightRef.current) {
+      throw new Error('Saving confirmed cards. Wait for this save to finish before changing the review.');
+    }
     if (!allowCorrectionApply && (correctionOpen || correctionApplyInFlightRef.current)) {
       throw new Error('Finish or cancel the card correction before changing another pocket.');
     }
-    if (!scanSessionId || !session) throw new Error('This binder page review is no longer available.');
-    const persisted = await updateBinderPageScanSession(scanSessionId, session.ownerUserId, (stored) => ({
-      ...stored,
-      pockets: updater(stored.pockets),
-    }));
-    if (!persisted) throw new Error('This binder page review is no longer available.');
-    setSession(persisted);
-    setPockets(persisted.pockets);
+    const currentSession = sessionRef.current;
+    if (!scanSessionId || !currentSession || currentSession.scanSessionId !== scanSessionId) {
+      throw new Error('This binder page review is no longer available.');
+    }
+    const sessionRequestId = sessionLoadRequestRef.current;
+    const mutationSequence = ++pocketMutationSequenceRef.current;
+    const mutation = pendingPocketMutationRef.current.then(async () => {
+      const persisted = await updateBinderPageScanSession(scanSessionId, currentSession.ownerUserId, (stored) => ({
+        ...stored,
+        pockets: updater(stored.pockets),
+      }));
+      if (!persisted) throw new Error('This binder page review is no longer available.');
+      if (sessionRequestId !== sessionLoadRequestRef.current) return;
+      // The retry is now represented by durable storage, so stale write
+      // failures no longer need to prevent saving that recovered review.
+      if (!saveInFlightRef.current) {
+        pocketMutationFailuresRef.current = pocketMutationFailuresRef.current.filter((failure) => failure.sequence > mutationSequence);
+      }
+      sessionRef.current = persisted;
+      pocketsRef.current = persisted.pockets;
+      setSession(persisted);
+      setPockets(persisted.pockets);
+    });
+    // Later edits continue after a rejected write, but Save records that failure
+    // and refuses to create an intent until the review has been retried.
+    pendingPocketMutationRef.current = mutation.then(
+      () => undefined,
+      (error) => {
+        if (sessionRequestId !== sessionLoadRequestRef.current) return;
+        pocketMutationFailuresRef.current.push({
+          sequence: mutationSequence,
+          error: error instanceof Error ? error : new Error('Could not save binder page review.'),
+        });
+      },
+    );
+    return mutation;
   };
 
   const updatePocket = (index: number, patch: Partial<BinderPagePocketResult>, allowCorrectionApply = false) => updatePockets((current) => current.map((pocket) => (
@@ -289,6 +338,7 @@ export default function BinderPageScanResultScreen() {
   };
 
   const openCorrection = () => {
+    if (saveInFlightRef.current) return;
     if (!selectedPocket) return;
     correctionRequestRef.current += 1;
     setCorrectionLoading(false);
@@ -414,6 +464,10 @@ export default function BinderPageScanResultScreen() {
 
   const rescanSelectedPocket = () => {
     if (!selectedPocket) return;
+    if (saveInFlightRef.current) {
+      Alert.alert('Saving confirmed cards', 'Wait for this save to finish before rescanning a pocket.');
+      return;
+    }
     if (correctionOpen || correctionApplyInFlightRef.current) {
       Alert.alert('Finish the correction first', 'Finish or cancel the card correction before rescanning this pocket.');
       return;
@@ -463,23 +517,32 @@ export default function BinderPageScanResultScreen() {
       return;
     }
     const binderId = selectedBinder.id;
-
-    const confirmed = pockets
-      .filter((pocket) => pocket.status === 'confirmed')
-      .map((pocket) => ({ pocket, candidate: getSelectedCandidate(pocket) }))
-      .filter((entry): entry is { pocket: BinderPagePocketResult; candidate: NonNullable<ReturnType<typeof getSelectedCandidate>> } => Boolean(entry.candidate));
-
-    if (!confirmed.length) {
-      Alert.alert('No confirmed pockets', 'Confirm at least one pocket before saving.');
-      return;
-    }
-
+    const page = destinationPage;
+    const saveMutationSequence = pocketMutationSequenceRef.current;
     if (saveInFlightRef.current) return;
     saveInFlightRef.current = true;
     setSaving(true);
     try {
+      // Finish every edit that began before Save was pressed, then create the
+      // collection intent from that verified persisted review rather than a
+      // render that may still be one interaction behind.
+      await pendingPocketMutationRef.current;
+      const pendingFailure = pocketMutationFailuresRef.current.find((failure) => failure.sequence <= saveMutationSequence);
+      if (pendingFailure) throw pendingFailure.error;
+      const currentSession = sessionRef.current;
+      const persistedPockets = pocketsRef.current;
+      const confirmed = persistedPockets
+        .filter((pocket) => pocket.status === 'confirmed')
+        .map((pocket) => ({ pocket, candidate: getSelectedCandidate(pocket) }))
+        .filter((entry): entry is { pocket: BinderPagePocketResult; candidate: NonNullable<ReturnType<typeof getSelectedCandidate>> } => Boolean(entry.candidate));
+      if (!confirmed.length) throw new Error('Confirm at least one pocket before saving.');
       const { data: { session: authSession } } = await supabase.auth.getSession();
-      if (!session || !authSession?.user.id || authSession.user.id !== session.ownerUserId) {
+      if (
+        !currentSession
+        || currentSession.scanSessionId !== scanSessionId
+        || !authSession?.user.id
+        || authSession.user.id !== currentSession.ownerUserId
+      ) {
         throw new Error('Sign in with the account that started this binder page review before saving.');
       }
       const databaseStartedAt = Date.now();
@@ -492,11 +555,11 @@ export default function BinderPageScanResultScreen() {
         cardNumber: candidate.number ?? null,
         imageUrl: candidate.image_small ?? candidate.image_large ?? null,
         setName: candidate.set_name ?? null,
-        notes: `Binder page ${destinationPage}, pocket ${pocket.row + 1}-${pocket.column + 1}`,
-        slotOrder: (destinationPage - 1) * 25 + pocket.index,
+        notes: `Binder page ${page}, pocket ${pocket.row + 1}-${pocket.column + 1}`,
+        slotOrder: (page - 1) * 25 + pocket.index,
       })).filter((card) => Boolean(card.setId));
       if (!cards.length) throw new Error('Confirmed pockets are missing a set identity. Correct those pockets before saving.');
-      const sourceSessionId = scanSessionId ?? session.scanSessionId;
+      const sourceSessionId = scanSessionId ?? currentSession.scanSessionId;
       const requestKey = createCollectionBatchRequestKey({
         sourceSessionId,
         binderId,
@@ -525,18 +588,18 @@ export default function BinderPageScanResultScreen() {
             savedCount: saved.copiesAdded,
             distinctCardCount: saved.distinctCards,
             replayed: saved.replayed,
-            statuses: countPocketStatuses(pockets),
+            statuses: countPocketStatuses(persistedPockets),
             analytics: buildBinderPageAnalytics(databaseSaveMs, { duplicatePrevention: saved.replayed }),
           },
-          candidates: buildPocketLearningCandidates(pockets),
+          candidates: buildPocketLearningCandidates(persistedPockets),
           outcome: 'binder_page_saved',
         });
       }
 
       invalidateBinderCaches(binderId);
-      if (scanSessionId && session) {
+      if (scanSessionId && currentSession) {
         try {
-          await markBinderPageScanSessionSaved(scanSessionId, session.ownerUserId);
+          await markBinderPageScanSessionSaved(scanSessionId, currentSession.ownerUserId);
         } catch (recoveryError) {
           console.log('Binder page review completion checkpoint failed:', recoveryError);
         }
@@ -561,10 +624,10 @@ export default function BinderPageScanResultScreen() {
             intent: 'binder_page',
             binderId,
             layout: gridLayout,
-            statuses: countPocketStatuses(pockets),
+            statuses: countPocketStatuses(pocketsRef.current),
             analytics: buildBinderPageAnalytics(null, { errorCategory: 'database' }),
           },
-          candidates: buildPocketLearningCandidates(pockets),
+          candidates: buildPocketLearningCandidates(pocketsRef.current),
           outcome: 'save_failed',
           notes: error?.message ?? 'Could not save binder page.',
         });
@@ -576,12 +639,20 @@ export default function BinderPageScanResultScreen() {
     }
   };
 
+  const leaveReview = () => {
+    if (saveInFlightRef.current) {
+      Alert.alert('Saving confirmed cards', 'Wait for this save to finish before leaving this review.');
+      return;
+    }
+    router.back();
+  };
+
   if (sessionLoading || !session) {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.bg }]}>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.header}>
-          <StackrBackButton onPress={() => router.back()} />
+          <StackrBackButton onPress={leaveReview} />
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: theme.colors.text }]}>Binder page</Text>
             {sessionLoading ? <ActivityIndicator color={theme.colors.primary} style={{ marginTop: 12, alignSelf: 'flex-start' }} /> : (
@@ -603,7 +674,7 @@ export default function BinderPageScanResultScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <StackrBackButton onPress={() => router.back()} />
+          <StackrBackButton onPress={leaveReview} />
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: theme.colors.text }]}>Binder page scan</Text>
             <Text style={[styles.subtitle, { color: theme.colors.textSoft }]}>
@@ -636,6 +707,7 @@ export default function BinderPageScanResultScreen() {
                     <TouchableOpacity
                       key={binder.id}
                       onPress={() => setSelectedBinderId(binder.id)}
+                      disabled={saving}
                       style={[styles.pill, { borderColor: active ? theme.colors.primary : theme.colors.border, backgroundColor: active ? `${theme.colors.primary}18` : theme.colors.surface }]}
                     >
                       <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontSize: 12, fontWeight: '900' }} numberOfLines={1}>
@@ -649,11 +721,11 @@ export default function BinderPageScanResultScreen() {
             <View style={styles.pageStepper}>
               <Text style={[styles.fieldLabel, { color: theme.colors.textSoft }]}>Page</Text>
               <View style={styles.stepperButtons}>
-                <TouchableOpacity onPress={() => setDestinationPage((page) => Math.max(1, page - 1))} style={[styles.stepperButton, { borderColor: theme.colors.border }]}>
+                <TouchableOpacity disabled={saving} onPress={() => setDestinationPage((page) => Math.max(1, page - 1))} style={[styles.stepperButton, { borderColor: theme.colors.border }]}>
                   <Ionicons name="remove" size={16} color={theme.colors.primary} />
                 </TouchableOpacity>
                 <Text style={[styles.pageNumber, { color: theme.colors.text }]}>{destinationPage}</Text>
-                <TouchableOpacity onPress={() => setDestinationPage((page) => Math.min(999, page + 1))} style={[styles.stepperButton, { borderColor: theme.colors.border }]}>
+                <TouchableOpacity disabled={saving} onPress={() => setDestinationPage((page) => Math.min(999, page + 1))} style={[styles.stepperButton, { borderColor: theme.colors.border }]}>
                   <Ionicons name="add" size={16} color={theme.colors.primary} />
                 </TouchableOpacity>
               </View>
@@ -669,7 +741,8 @@ export default function BinderPageScanResultScreen() {
             return (
               <TouchableOpacity
                 key={pocket.index}
-                onPress={() => { if (!correctionOpen) setSelectedPocketIndex(pocket.index); }}
+                onPress={() => { if (!saving && !correctionOpen) setSelectedPocketIndex(pocket.index); }}
+                disabled={saving}
                 activeOpacity={0.82}
                 style={[
                   styles.pocketCard,
@@ -716,10 +789,10 @@ export default function BinderPageScanResultScreen() {
                   </Text>
                   {selectedPocket.candidates.length > 1 ? (
                     <View style={styles.candidateSwitchRow}>
-                      <TouchableOpacity onPress={() => { void cycleCandidate(-1).catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} style={[styles.smallButton, { borderColor: theme.colors.border }]}>
+                      <TouchableOpacity disabled={saving} onPress={() => { void cycleCandidate(-1).catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} style={[styles.smallButton, { borderColor: theme.colors.border }]}>
                         <Text style={[styles.smallButtonText, { color: theme.colors.primary }]}>Prev</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => { void cycleCandidate(1).catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} style={[styles.smallButton, { borderColor: theme.colors.border }]}>
+                      <TouchableOpacity disabled={saving} onPress={() => { void cycleCandidate(1).catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} style={[styles.smallButton, { borderColor: theme.colors.border }]}>
                         <Text style={[styles.smallButtonText, { color: theme.colors.primary }]}>Next</Text>
                       </TouchableOpacity>
                     </View>
@@ -758,21 +831,21 @@ export default function BinderPageScanResultScreen() {
               </View>
             ) : null}
             <View style={styles.actionRow}>
-              <TouchableOpacity onPress={() => { void confirmSelectedPocket().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} disabled={!selectedCandidate || correctionOpen} style={[styles.actionButton, (!selectedCandidate || correctionOpen) && styles.disabled, { backgroundColor: theme.colors.primary }]}>
+              <TouchableOpacity onPress={() => { void confirmSelectedPocket().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} disabled={saving || !selectedCandidate || correctionOpen} style={[styles.actionButton, (saving || !selectedCandidate || correctionOpen) && styles.disabled, { backgroundColor: theme.colors.primary }]}>
                 <Text style={styles.actionButtonText}>Confirm pocket</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => { void markSelectedEmpty().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} disabled={correctionOpen} style={[styles.actionButton, correctionOpen && styles.disabled, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
+              <TouchableOpacity onPress={() => { void markSelectedEmpty().catch((error) => Alert.alert('Could not save review', error instanceof Error ? error.message : 'Please try again.')); }} disabled={saving || correctionOpen} style={[styles.actionButton, (saving || correctionOpen) && styles.disabled, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
                 <Text style={[styles.actionButtonText, { color: theme.colors.text }]}>Mark empty</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.actionRow}>
-              <TouchableOpacity onPress={rescanSelectedPocket} disabled={correctionOpen} style={[styles.actionButton, correctionOpen && styles.disabled, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
+              <TouchableOpacity onPress={rescanSelectedPocket} disabled={saving || correctionOpen} style={[styles.actionButton, (saving || correctionOpen) && styles.disabled, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
                 <Text style={[styles.actionButtonText, { color: theme.colors.primary }]}>Rescan pocket</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={openCorrection}
-                disabled={correctionOpen}
-                style={[styles.actionButton, correctionOpen && styles.disabled, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}
+                disabled={saving || correctionOpen}
+                style={[styles.actionButton, (saving || correctionOpen) && styles.disabled, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}
               >
                 <Text style={[styles.actionButtonText, { color: theme.colors.primary }]}>Correct match</Text>
               </TouchableOpacity>
@@ -786,7 +859,7 @@ export default function BinderPageScanResultScreen() {
           accessibilityState={{ busy: saving, disabled: saving || !destinationReady || correctionOpen }}
           style={[styles.saveButton, { backgroundColor: theme.colors.primary, opacity: saving || !destinationReady || correctionOpen ? 0.65 : 1 }]}
         >
-          {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.saveButtonText}>Confirm all high-confidence matches</Text>}
+          {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.saveButtonText}>Save confirmed cards</Text>}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
