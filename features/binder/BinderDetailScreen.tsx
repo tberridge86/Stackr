@@ -1396,7 +1396,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     binder.catalogue_identity_status === 'ambiguous'
     || binder.catalogue_identity_status === 'unresolved'
     || !cards.length
-    || cards.some((card) => card.catalogue_match_status === 'saved-only')
+    || cards.some((card) => card.catalogue_match_status === 'saved-only' || card.catalogue_incomplete)
   );
   const totalKnown = binder?.type !== 'official' || officialCatalogueTotal > 0;
   const totalCount = totalKnown

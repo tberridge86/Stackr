@@ -67,6 +67,7 @@ export type BinderRecord = {
 export type BinderCardRecord = {
   /** Read-time status only; unmatched saved cards remain available for review. */
   catalogue_match_status?: 'catalogue' | 'saved-only';
+  catalogue_incomplete?: boolean;
   card?: any | null;
   id: string;
   binder_id: string;
@@ -604,12 +605,18 @@ async function fetchBinderCardsUncached(
   const setCards = await fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id, {
     language: binderLanguage,
     preferCanonicalApi: true,
+    minimumCardCount: positiveCatalogueCount(binder.catalogue_set_total)
+      ?? positiveCatalogueCount(binder.catalogue_set_printed_total),
   }).catch(() => []);
-  if (!setCards.length) {
+  const expectedCardCount = positiveCatalogueCount(binder.catalogue_set_total)
+    ?? positiveCatalogueCount(binder.catalogue_set_printed_total);
+  const returnedCardCount = new Set(setCards.map((card) => String(card.id ?? '').trim()).filter(Boolean)).size;
+  const catalogueIncomplete = expectedCardCount != null && returnedCardCount < expectedCardCount;
+  if (!setCards.length || catalogueIncomplete) {
     // Keep the owner's saved cards visible, but retry the full set next time.
-    // A transient catalogue timeout must not turn Evolving Skies into 3 cards.
+    // A transient or partial catalogue read must not turn Evolving Skies into 3 cards.
     options.onCatalogueUnavailable?.();
-    return preserveUnmatchedBinderRows([], savedRows);
+    if (!setCards.length) return preserveUnmatchedBinderRows([], savedRows);
   }
 
   const catalogueCollectorCounts = new Map<string, number>();
@@ -649,6 +656,7 @@ async function fetchBinderCardsUncached(
       return {
         ...existing,
         catalogue_match_status: 'catalogue' as const,
+        catalogue_incomplete: catalogueIncomplete,
         language: binderLanguage,
         owned_quantity: Math.max(1, Number(existing.owned_quantity ?? 1)),
         slot_order: existing.slot_order ?? index,
@@ -677,6 +685,7 @@ async function fetchBinderCardsUncached(
 
     return {
       catalogue_match_status: 'catalogue' as const,
+      catalogue_incomplete: catalogueIncomplete,
       id: makeVirtualBinderCardId(binderId, setId, card.id),
       binder_id: binderId,
       card_id: card.id,

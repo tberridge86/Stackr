@@ -25,7 +25,8 @@ async function main() {
     './supabase': { supabase }, './requestCache': cache,
     './pokemonTcg': { normalizePokemonCardLanguage: () => 'en', fetchCardsForSet: async (id: string, options: any) => {
       assert.equal(id, set.id); assert.equal(options.preferCanonicalApi, true);
-      if (++cardReads === 1) throw new Error('Transient catalogue timeout');
+      assert.equal(options.minimumCardCount, 237);
+      if (++cardReads === 1) return Array.from({ length: 3 }, (_, n) => ({ id: `swsh7-${n + 1}`, number: String(n + 1), name: `Partial ${n + 1}` }));
       return Array.from({ length: 237 }, (_, n) => ({ id: `swsh7-${n + 1}`, number: String(n + 1), name: `Card ${n + 1}` }));
     } },
     './stackrDomainAdapter': { fetchStackrSet: async (id: string, lang: string, options: any) => {
@@ -41,13 +42,16 @@ async function main() {
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports: any = {};
   vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console });
-  assert.equal((await exports.fetchBinderCards('binder', { includePrices: false })).length, 3);
+  const partial = await exports.fetchBinderCards('binder', { includePrices: false });
+  assert.equal(partial.length, 3);
+  assert.equal(partial[0].card.name, 'Partial 1', 'real partial catalogue rows stay visible');
+  assert.equal(partial[0].catalogue_incomplete, true, 'the screen can explain the incomplete result');
   const recovered = await exports.fetchBinderCards('binder', { includePrices: false });
   assert.equal(recovered.length, 237);
   assert.equal(recovered.filter((row: any) => row.owned).length, 1, 'virtual catalogue cards must remain unowned');
   assert.equal(recovered[0].owned_quantity, 2);
   assert.equal((await exports.fetchBinderCards('binder', { includePrices: false })).length, 237);
   assert.equal(cardReads, 2); assert.equal(setReads, 1);
-  console.log('Evolving Skies retries a partial saved-only fallback, restores 237 slots, preserves ownership and caches recovery.');
+  console.log('Evolving Skies retries an undersized three-card response, restores 237 slots, preserves ownership and caches recovery.');
 }
 void main();
