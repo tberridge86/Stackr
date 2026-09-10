@@ -11,6 +11,8 @@
 
 The [per-set restoration ledger](captured-artwork-restored-sets-20260910.csv) includes all **696 currently published sets**, including Simplified Chinese and Korean sets with zero changes in this repair. Zero restored variants means this repair did not change that set; it does not mean all its artwork is complete.
 
+The fresh [696-set artwork coverage report](captured-artwork-coverage-20260910.csv), with [definitions and full identities](captured-artwork-coverage-20260910.json), counts 75,752 published variants: 51,289 have direct public variant images, 10,277 have explicit shared images in their current language publication, and 14,186 have neither. These are variant-level link counts, not unique cards or a pixel test of every image. Printing-only assets and cross-language references are excluded; the missing count must not be presented as the number of blank cards on screen.
+
 ## What caused these gaps
 
 The ingestion pipeline had retained approved capture records with a `duplicate_content` marker when their bytes matched an image already stored. Some associated variants were still marked `available`, but had neither a public image of their own nor an explicit link to that stored image. The API correctly refused to substitute arbitrary sibling finishes.
@@ -26,6 +28,8 @@ Existing Supabase project `oakdbbzdqwurpjnoqhmu` remains authoritative: catalogu
 The [deployment receipt](captured-artwork-recovery-receipt-20260910.json) records the pinned scope, all 16 successful batches and post-write counts. The first full transaction exceeded its time limit and rolled back completely; the zero audit count was confirmed before the smaller batches started. Production completed at **17:29:31 UTC**.
 
 Public API checks cover English normal, Japanese reverse-holo and Traditional Chinese reverse-holo examples. Before repair all three returned no image; afterwards all returned the explicit image and retained their exact finish and language. Twelve original/derivative downloads decoded successfully and matched their recorded hashes. These samples have 600 × 825 originals/detail images, 240 × 330 grid images and 96 × 132 search thumbnails.
+
+The [before](captured-artwork-before-20260910.json), [after](captured-artwork-after-20260910.json), and [cached request](captured-artwork-cached-20260910.json) receipts retain the measured results.
 
 Observed initial post-repair card requests took **2,698 / 825 / 756 ms**. Later cached requests took **830 then 124 ms (English), 187 then 130 ms (Japanese), and 215 then 126 ms (Traditional Chinese)**. These are workspace measurements, not iPhone timings or a catalogue-wide latency guarantee.
 
