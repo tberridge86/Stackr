@@ -120,7 +120,11 @@ export default function BinderPageScanResultScreen() {
   // a just-confirmed pocket cannot be omitted from the collection intent.
   const pendingPocketMutationRef = useRef<Promise<void>>(Promise.resolve());
   const pocketMutationSequenceRef = useRef(0);
-  const pocketMutationFailuresRef = useRef<{ sequence: number; error: Error }[]>([]);
+  const pocketMutationFailuresRef = useRef<{
+    sequence: number;
+    error: Error;
+    affectedPocketIndices: number[];
+  }[]>([]);
   const sessionLoadRequestRef = useRef(0);
   const bindersLoadRequestRef = useRef(0);
   const [selectedPocketIndex, setSelectedPocketIndex] = useState<number | null>(null);
@@ -289,17 +293,29 @@ export default function BinderPageScanResultScreen() {
     }
     const sessionRequestId = sessionLoadRequestRef.current;
     const mutationSequence = ++pocketMutationSequenceRef.current;
+    let affectedPocketIndices: number[] = [];
     const mutation = pendingPocketMutationRef.current.then(async () => {
-      const persisted = await updateBinderPageScanSession(scanSessionId, currentSession.ownerUserId, (stored) => ({
-        ...stored,
-        pockets: updater(stored.pockets),
-      }));
+      const persisted = await updateBinderPageScanSession(scanSessionId, currentSession.ownerUserId, (stored) => {
+        const nextPockets = updater(stored.pockets);
+        const previousByIndex = new Map(stored.pockets.map((pocket) => [pocket.index, pocket]));
+        affectedPocketIndices = nextPockets
+          .filter((pocket) => JSON.stringify(previousByIndex.get(pocket.index)) !== JSON.stringify(pocket))
+          .map((pocket) => pocket.index);
+        return {
+          ...stored,
+          pockets: nextPockets,
+        };
+      });
       if (!persisted) throw new Error('This binder page review is no longer available.');
       if (sessionRequestId !== sessionLoadRequestRef.current) return;
-      // The retry is now represented by durable storage, so stale write
-      // failures no longer need to prevent saving that recovered review.
-      if (!saveInFlightRef.current) {
-        pocketMutationFailuresRef.current = pocketMutationFailuresRef.current.filter((failure) => failure.sequence > mutationSequence);
+      // Only a durable retry of the same affected pocket can resolve its
+      // earlier failure; another pocket must never make that failure invisible.
+      if (!saveInFlightRef.current && affectedPocketIndices.length > 0) {
+        const affectedIndices = new Set(affectedPocketIndices);
+        pocketMutationFailuresRef.current = pocketMutationFailuresRef.current.filter((failure) => (
+          failure.affectedPocketIndices.length === 0
+          || !failure.affectedPocketIndices.every((index) => affectedIndices.has(index))
+        ));
       }
       sessionRef.current = persisted;
       pocketsRef.current = persisted.pockets;
@@ -315,6 +331,7 @@ export default function BinderPageScanResultScreen() {
         pocketMutationFailuresRef.current.push({
           sequence: mutationSequence,
           error: error instanceof Error ? error : new Error('Could not save binder page review.'),
+          affectedPocketIndices,
         });
       },
     );

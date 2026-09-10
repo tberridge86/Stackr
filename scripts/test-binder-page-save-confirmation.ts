@@ -195,6 +195,17 @@ async function run() {
   assert.equal((await store.loadBinderPageScanSession(failedSession.scanSessionId, 'owner-a'))?.reviewState, 'reviewing');
 
   await failingActual.updatePockets((current) => current.map((pocket) => (
+    pocket.index === 0 ? { ...pocket, notes: [...pocket.notes, 'reviewed while B failed'] } : pocket
+  )));
+  await failingActual.saveConfirmed();
+  assert.deepEqual(
+    failedSubmitted,
+    [],
+    'A durable edit to A must not dismiss B\'s failed confirmation or create an A-only collection intent.',
+  );
+  assert.equal((await store.loadBinderPageScanSession(failedSession.scanSessionId, 'owner-a'))?.reviewState, 'reviewing');
+
+  await failingActual.updatePockets((current) => current.map((pocket) => (
     pocket.index === 1 ? { ...pocket, status: 'confirmed' } : pocket
   )));
   await failingActual.saveConfirmed();
