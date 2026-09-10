@@ -199,7 +199,7 @@ async function run() {
   )));
   await failingActual.saveConfirmed();
   assert.deepEqual(
-    failedSubmitted.map((cards) => cards.map((card) => card.cardId)),
+    (failedSubmitted as any[][]).map((cards) => cards.map((card) => card.cardId)),
     [['a', 'b']],
     'A successful retry must clear the rejected edit latch and save the durable review.',
   );
