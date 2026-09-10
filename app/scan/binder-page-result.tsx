@@ -279,6 +279,7 @@ export default function BinderPageScanResultScreen() {
 
   const updatePockets = async (
     updater: (current: BinderPagePocketResult[]) => BinderPagePocketResult[],
+    targetPocketIndices: number[],
     allowCorrectionApply = false,
   ) => {
     if (saveInFlightRef.current) {
@@ -293,23 +294,17 @@ export default function BinderPageScanResultScreen() {
     }
     const sessionRequestId = sessionLoadRequestRef.current;
     const mutationSequence = ++pocketMutationSequenceRef.current;
-    let affectedPocketIndices: number[] = [];
+    const affectedPocketIndices = Array.from(new Set(targetPocketIndices));
     const mutation = pendingPocketMutationRef.current.then(async () => {
-      const persisted = await updateBinderPageScanSession(scanSessionId, currentSession.ownerUserId, (stored) => {
-        const nextPockets = updater(stored.pockets);
-        const previousByIndex = new Map(stored.pockets.map((pocket) => [pocket.index, pocket]));
-        affectedPocketIndices = nextPockets
-          .filter((pocket) => JSON.stringify(previousByIndex.get(pocket.index)) !== JSON.stringify(pocket))
-          .map((pocket) => pocket.index);
-        return {
-          ...stored,
-          pockets: nextPockets,
-        };
-      });
+      const persisted = await updateBinderPageScanSession(scanSessionId, currentSession.ownerUserId, (stored) => ({
+        ...stored,
+        pockets: updater(stored.pockets),
+      }));
       if (!persisted) throw new Error('This binder page review is no longer available.');
       if (sessionRequestId !== sessionLoadRequestRef.current) return;
-      // Only a durable retry of the same affected pocket can resolve its
-      // earlier failure; another pocket must never make that failure invisible.
+      // The intended pocket is captured before storage runs. This lets an
+      // idempotent retry repair either a read or index-write failure, while an
+      // unrelated pocket can never make that failure invisible.
       if (!saveInFlightRef.current && affectedPocketIndices.length > 0) {
         const affectedIndices = new Set(affectedPocketIndices);
         pocketMutationFailuresRef.current = pocketMutationFailuresRef.current.filter((failure) => (
@@ -340,7 +335,7 @@ export default function BinderPageScanResultScreen() {
 
   const updatePocket = (index: number, patch: Partial<BinderPagePocketResult>, allowCorrectionApply = false) => updatePockets((current) => current.map((pocket) => (
     pocket.index === index ? { ...pocket, ...patch } : pocket
-  )), allowCorrectionApply);
+  )), [index], allowCorrectionApply);
 
   const cycleCandidate = async (direction: 1 | -1) => {
     if (!selectedPocket || selectedPocket.candidates.length < 2) return;

@@ -9,6 +9,8 @@ const ts: typeof import('typescript') = require('typescript');
 const storageValues = new Map<string, string>();
 let delayFirstSessionWrite = true;
 let rejectNextSessionWrite = false;
+let rejectNextSessionRead = false;
+let rejectNextOwnerWrite = false;
 
 function mock(name: string, exports: unknown) {
   const filename = require.resolve(name);
@@ -16,8 +18,18 @@ function mock(name: string, exports: unknown) {
 }
 
 mock('@react-native-async-storage/async-storage', {
-  getItem: async (key: string) => storageValues.get(key) ?? null,
+  getItem: async (key: string) => {
+    if (rejectNextSessionRead && key.includes(':session:')) {
+      rejectNextSessionRead = false;
+      throw new Error('review storage read rejected');
+    }
+    return storageValues.get(key) ?? null;
+  },
   setItem: async (key: string, value: string) => {
+    if (rejectNextOwnerWrite && key.includes(':owner:')) {
+      rejectNextOwnerWrite = false;
+      throw new Error('review owner index rejected');
+    }
     if (rejectNextSessionWrite && key.includes(':session:')) {
       rejectNextSessionWrite = false;
       throw new Error('review storage rejected this write');
@@ -60,7 +72,7 @@ const factoryJs = ts.transpileModule(factorySource, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
 }).outputText;
 const factory = new Function(`${factoryJs}; return factory;`)() as (deps: any) => {
-  updatePockets: (updater: (pockets: any[]) => any[]) => Promise<void>;
+  updatePockets: (updater: (pockets: any[]) => any[], targetPocketIndices: number[]) => Promise<void>;
   saveConfirmed: () => Promise<void>;
 };
 
@@ -139,10 +151,10 @@ async function run() {
 
   const confirmB = actual.updatePockets((current) => current.map((pocket) => (
     pocket.index === 1 ? { ...pocket, status: 'confirmed' } : pocket
-  )));
+  )), [1]);
   await new Promise((resolve) => setTimeout(resolve, 1));
   const save = actual.saveConfirmed();
-  const midSaveEdit = actual.updatePockets((current) => current.map((pocket) => ({ ...pocket, status: 'empty' })))
+  const midSaveEdit = actual.updatePockets((current) => current.map((pocket) => ({ ...pocket, status: 'empty' })), [0, 1])
     .then(() => ({ error: null }), (error) => ({ error }));
   await Promise.all([confirmB, save]);
 
@@ -175,7 +187,7 @@ async function run() {
   });
   const rejectedConfirmation = failingActual.updatePockets((current) => current.map((pocket) => (
     pocket.index === 1 ? { ...pocket, status: 'confirmed' } : pocket
-  )));
+  )), [1]);
   const failedSave = failingActual.saveConfirmed();
   await assert.rejects(rejectedConfirmation, /review storage rejected this write/);
   await failedSave;
@@ -196,7 +208,7 @@ async function run() {
 
   await failingActual.updatePockets((current) => current.map((pocket) => (
     pocket.index === 0 ? { ...pocket, notes: [...pocket.notes, 'reviewed while B failed'] } : pocket
-  )));
+  )), [0]);
   await failingActual.saveConfirmed();
   assert.deepEqual(
     failedSubmitted,
@@ -207,7 +219,7 @@ async function run() {
 
   await failingActual.updatePockets((current) => current.map((pocket) => (
     pocket.index === 1 ? { ...pocket, status: 'confirmed' } : pocket
-  )));
+  )), [1]);
   await failingActual.saveConfirmed();
   assert.deepEqual(
     (failedSubmitted as any[][]).map((cards) => cards.map((card) => card.cardId)),
@@ -218,6 +230,39 @@ async function run() {
     (await store.loadBinderPageScanSession(failedSession.scanSessionId, 'owner-a'))?.reviewState,
     'saved',
   );
+
+  for (const failureMode of ['read', 'owner-index'] as const) {
+    store.setBinderPageScanStorageForTests(null);
+    storageValues.clear();
+    delayFirstSessionWrite = false;
+    rejectNextSessionRead = false;
+    rejectNextOwnerWrite = false;
+    const retrySession = { ...session, scanSessionId: `binder-page-${failureMode}-retry` };
+    await store.checkpointBinderPageScanSession(retrySession);
+    const retrySubmitted: any[][] = [];
+    const { actual: retryActual } = createHandlerHarness({
+      currentSession: retrySession,
+      submit: async (cards) => { retrySubmitted.push(cards); },
+    });
+    rejectNextSessionRead = failureMode === 'read';
+    rejectNextOwnerWrite = failureMode === 'owner-index';
+    const confirmB = () => retryActual.updatePockets((current) => current.map((pocket) => (
+      pocket.index === 1 ? { ...pocket, status: 'confirmed' } : pocket
+    )), [1]);
+    await assert.rejects(confirmB(), /review (storage read|owner index) rejected/);
+    await confirmB();
+    assert.equal(
+      (await store.loadBinderPageScanSession(retrySession.scanSessionId, 'owner-a'))?.pockets[1].status,
+      'confirmed',
+      `${failureMode} failure must be repaired by an idempotent B retry.`,
+    );
+    await retryActual.saveConfirmed();
+    assert.deepEqual(
+      retrySubmitted.map((cards) => cards.map((card) => card.cardId)),
+      [['a', 'b']],
+      `${failureMode} failure must not leave a stale latch after B is durably retried.`,
+    );
+  }
 
   store.setBinderPageScanStorageForTests(null);
   storageValues.clear();
