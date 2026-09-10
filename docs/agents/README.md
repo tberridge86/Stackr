@@ -18,6 +18,11 @@ that this revision is installed on a phone.
 
 ## Execution and coordination
 
+Read the [build 34 desktop handoff](../releases/owner-testflight-34-handoff-20260910.md)
+and its linked evidence before acting on the initial audits below. Build 34's
+signed source and TestFlight availability are now evidenced; installed-device
+acceptance remains pending. PR #168 is a separate, unshipped candidate.
+
 The release task responds to Stackr pull-request lifecycle events. Pricing,
 performance, backend and catalogue tasks run daily in staggered London-time
 windows. These are scheduled or event-triggered task runs, not continuously
