@@ -2004,7 +2004,7 @@ export default function TheMarketTab() {
   const renderListing = ({ item }: { item: MarketplaceListing }) => {
     const card = mapListingCard(item);
     return (
-      <View style={{ width: marketCardWidth, flex: marketColumnCount === 1 ? 1 : 0, marginBottom: 12 }}>
+      <View style={{ width: marketCardWidth, flexGrow: 0, flexShrink: 0, marginBottom: 12 }}>
         <MarketListingCard
           item={card}
           compact={marketColumnCount > 1}

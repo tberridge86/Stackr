@@ -788,7 +788,9 @@ export function MarketListingCard({
               </Text>
             ) : null}
           </View>
-          <ListingMetaPill icon={variant.icon} label={transaction.badge} />
+          {!compact || compactPrimary !== transaction.badge ? (
+            <ListingMetaPill icon={variant.icon} label={transaction.badge} />
+          ) : null}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: compact ? 2 : 1, minHeight: 17 }}>
           <Text style={{ flex: 1, minWidth: 0, color: theme.colors.textSoft, fontSize: compact ? 10.2 : 10.7, lineHeight: 14, fontWeight: '900' }} numberOfLines={1}>
