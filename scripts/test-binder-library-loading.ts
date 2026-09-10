@@ -36,7 +36,10 @@ async function main() {
   const dependencies: Record<string, unknown> = {
     './supabase': { supabase },
     './requestCache': requestCache,
-    './stackrDomainAdapter': { fetchPreferredStackrSets: () => { catalogueReads += 1; return catalogue; } },
+    './stackrDomainAdapter': {
+      fetchPreferredStackrSets: () => { catalogueReads += 1; return catalogue; },
+      fetchStackrSet: () => { catalogueReads += 1; return catalogue.then(rows => rows[0] ?? null); },
+    },
     './pokemonSetIdentity': { stripPokemonSetLanguagePrefix: (value: string) => value },
     './binderSetIdentity': { resolveBinderSetIdentity: () => ({ status: 'unresolved', language: 'en' }) },
     './binderCataloguePresentation': { positiveCatalogueCount: () => null },

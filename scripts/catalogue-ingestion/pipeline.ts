@@ -2810,6 +2810,24 @@ export function chooseExistingVariantForCardImage(
   if (exactCanonical.length > 0) {
     return { status: 'conflicted' as const, reason: 'exact_variant_finish_mismatch' as const };
   }
+  // Some approved image-only providers expose an exact Japanese set and
+  // collector number but do not label the finish. That evidence must never
+  // change the catalogue finish. It is safe only for a printing with one
+  // active variant, where the image can be attached to that already-defined
+  // identity without choosing between finishes.
+  if (requestedVariantCode === 'unclassified' && requestedFinish === 'unclassified') {
+    if (variants.length === 1) {
+      return {
+        status: 'matched' as const,
+        variantId: variants[0].id,
+        reason: 'card_image_attached_to_existing_sole_variant_with_unlabelled_provider_finish',
+      };
+    }
+    return {
+      status: 'conflicted' as const,
+      reason: variants.length === 0 ? 'existing_variant_missing' as const : 'ambiguous_existing_variants' as const,
+    };
+  }
   if (requestedVariantCode !== 'normal') {
     return {
       status: 'conflicted' as const,

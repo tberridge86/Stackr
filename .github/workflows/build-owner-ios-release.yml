@@ -1,7 +1,12 @@
-name: Build Frozen Stackr Owner iOS Release
+name: Build Reviewed Stackr Owner iOS Release
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_main_sha:
+        description: Exact reviewed main commit to bundle in the native build
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -18,12 +23,12 @@ jobs:
     environment: production
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      FROZEN_SOURCE_SHA: 5bed24775b561d9b7733b9c243ad5fb986f3d118
+      FROZEN_SOURCE_SHA: ${{ inputs.expected_main_sha }}
     steps:
       - name: Check out frozen reviewed source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: 5bed24775b561d9b7733b9c243ad5fb986f3d118
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Set up Node
@@ -36,6 +41,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          [[ "$FROZEN_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$GITHUB_SHA" = "$FROZEN_SOURCE_SHA"
           test "$(git rev-parse HEAD)" = "$FROZEN_SOURCE_SHA"
           test -z "$(git status --porcelain)"
           test -n "$EXPO_TOKEN"

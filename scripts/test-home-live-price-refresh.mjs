@@ -203,6 +203,12 @@ assert.ok(
   manualCallTargets.includes('stackrApiClient.requestMarketPriceRefresh'),
   'the explicit Home refresh action must remain connected to the provider queue',
 );
+assert.ok(
+  manualCallTargets.includes('loadCollectionValueRef.current'),
+  'the explicit Home refresh action must immediately re-read stored prices after queuing',
+);
+assert.match(homeSourceText, /pendingManualPriceRefreshesRef/, 'Home must retain queued exact refreshes only for its focused stored-price follow-up.');
+assert.match(homeSourceText, /reconcileManualPriceRefreshes/, 'Home must clear a queued notice only after a newer stored price is observed.');
 const valueTracker = visit(homeSource, (node) => (
   ts.isJsxSelfClosingElement(node) && node.tagName.getText(homeSource) === 'ValueTrackerCard'
 ));

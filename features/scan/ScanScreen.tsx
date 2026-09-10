@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Buffer } from 'buffer';
 import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
@@ -1098,6 +1099,7 @@ function expandPhotoCrop(
 }
 
 export default function ScanScreen() {
+  const isFocused = useIsFocused();
   const { theme } = useTheme();
   const pathname = usePathname();
   const params = useLocalSearchParams<ScanRouteParams>();
@@ -1270,7 +1272,7 @@ export default function ScanScreen() {
 
   const permissionStatus = permission?.status ?? 'loading';
   const permissionGranted = Boolean(permission?.granted);
-  const shouldRenderCamera = permissionGranted;
+  const shouldRenderCamera = permissionGranted && isFocused;
   const captureBusy = scannerState === 'CAPTURING'
     || scannerState === 'CAPTURED'
     || scannerState === 'IDENTIFYING'
@@ -1852,7 +1854,7 @@ export default function ScanScreen() {
         return;
       }
 
-      if (!wasActive && isActive && permissionGranted && cameraReady && !mountError && !navigatingAwayRef.current) {
+      if (!wasActive && isActive && isFocused && permissionGranted && cameraReady && !mountError && !navigatingAwayRef.current) {
         setScannerState({ type: 'search' });
         setScanMessage(scanMode === 'auto'
           ? 'Centre one card. Keep other cards in the dim area.'
@@ -1862,7 +1864,16 @@ export default function ScanScreen() {
     });
 
     return () => subscription.remove();
-  }, [cameraReady, mountError, permissionGranted, scanMode, setScannerState, stopAutoScanner]);
+  }, [cameraReady, isFocused, mountError, permissionGranted, scanMode, setScannerState, stopAutoScanner]);
+
+  useEffect(() => {
+    navigatingAwayRef.current = !isFocused;
+    if (!isFocused) {
+      stopAutoScanner();
+      setCameraReady(false);
+      setScannerState({ type: 'camera_paused' });
+    }
+  }, [isFocused, setScannerState, stopAutoScanner]);
 
   const closeScanner = useCallback(() => {
     logScannerLifecycleEvent('cancellation', 'closed_scanner', { source: 'close-button' });
@@ -3434,6 +3445,7 @@ export default function ScanScreen() {
       || !permissionGranted
       || !cameraReady
       || !appActive
+      || !isFocused
       || captureBusy
       || captureInFlightRef.current
       || navigatingAwayRef.current
@@ -3612,6 +3624,7 @@ export default function ScanScreen() {
   }, [
     cameraReady,
     appActive,
+    isFocused,
     autoCaptureReadyFrames,
     autoCaptureThresholds.highConfidenceSingleFrameScore,
     autoScanCooldownMs,
@@ -3644,12 +3657,12 @@ export default function ScanScreen() {
           ? 'No worries. Centre the right card and scan again.'
           : 'Manual mode. Centre one card in the window, then tap scan.'
         );
-        if (appActive && cameraReady && permissionGranted && !mountError) setScannerState({ type: 'search' });
+        if (appActive && isFocused && cameraReady && permissionGranted && !mountError) setScannerState({ type: 'search' });
       }
       return;
     }
 
-    if (!appActive) return;
+    if (!appActive || !isFocused) return;
 
     if (!permissionGranted) return;
 
@@ -3686,6 +3699,7 @@ export default function ScanScreen() {
     };
   }, [
     appActive,
+    isFocused,
     cameraReady,
     captureBusy,
     mountError,

@@ -99,6 +99,8 @@ import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrS
 import { stackrIcons } from '../../lib/stackrIcons';
 import { createActivityPost } from '../../lib/activity';
 import { stackrHaptics } from '../../lib/haptics';
+import { InteractiveCardPreview } from '../../components/InteractiveCardPreview';
+import { isFoilPreview } from '../../lib/cardPreviewMotion';
 import type { ScanEditionHint } from '../../types/scan';
 
 // ===============================
@@ -439,6 +441,18 @@ const getVariantQuantityFromMap = (
 const formatCurrency = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return '--';
   return `£${value.toFixed(2)}`;
+};
+
+const formatCachedBinderPrice = (value: number | null | undefined, condition: string): string => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'Unavailable';
+  return formatCurrency(getEstimatedValue(value, condition));
+};
+
+const formatCachedBinderPriceTimestamp = (value: string | null | undefined): string => {
+  if (!value) return 'Cached pricing timestamp unavailable';
+  const timestamp = new Date(value);
+  if (Number.isNaN(timestamp.getTime())) return 'Cached pricing timestamp unavailable';
+  return `Updated ${timestamp.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 };
 
 const getPreferredBinderCardPrice = (card: BinderCardWithDetails, variant?: string | null, edition?: string | null): number => {
@@ -3124,7 +3138,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     })
     : null;
   const officialSetLogoUrl = binder.type === 'official' && !officialSetLogoSource
-    ? enforceSetVisualRuntimePolicy(binder.source_set_logo_url ?? binder.source_set_symbol_url ?? getPokemonSetLogoUrl(binder.source_set_id ?? binder.cover_key, binder.language))
+    ? enforceSetVisualRuntimePolicy(binder.source_set_cover_url ?? binder.source_set_logo_url ?? binder.source_set_symbol_url ?? getPokemonSetLogoUrl(binder.source_set_id ?? binder.cover_key, binder.language))
     : undefined;
   const officialSetArtworkUrl = binder.type === 'official'
     ? officialSetLogoUrl
@@ -4461,6 +4475,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         onHandlerStateChange={onPinchHandlerStateChange}
                       >
                         <Animated.View style={{ flex: 1, transform: [{ scale: imageScale }] }}>
+                          <InteractiveCardPreview active={detailVisible} foil={binder.card_mode !== 'graded' && isFoilPreview(modalCard?.raw_data, getBinderCanonicalVariantId(selectedCard))}>
                           {binder.card_mode === 'graded' ? (
                             <GradedSlabCard
                               item={selectedCard}
@@ -4534,6 +4549,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               </View>
                             );
                           })()}
+                          </InteractiveCardPreview>
                         </Animated.View>
                       </PinchGestureHandler>
 
@@ -4786,24 +4802,27 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                             Stored daily marketplace values. Use these when live sold data is thin or unavailable.
                           </Text>
 
-                          <Row label="Cached eBay" value={formatCurrency(getEstimatedValue(selectedCard?.ebay_price ?? 0, selectedCard.condition || 'Near Mint'))} />
+                          <Row
+                            label="Cached eBay"
+                            value={formatCachedBinderPrice(selectedCard?.ebay_price, selectedCard.condition || 'Near Mint')}
+                          />
                           <Row
                             label="Cached TCGPlayer"
-                            value={formatCurrency(
-                              getEstimatedValue(
-                                getBinderTcgPrice(selectedCard?.card, binder?.edition) ??
-                                  modalTcgFallbackPrice?.market ??
-                                  modalTcgFallbackPrice?.mid ??
-                                  modalTcgFallbackPrice?.low ??
-                                  0,
-                                selectedCard.condition || 'Near Mint'
-                              )
+                            value={formatCachedBinderPrice(
+                              getBinderTcgPrice(selectedCard?.card, binder?.edition) ??
+                                modalTcgFallbackPrice?.market ??
+                                modalTcgFallbackPrice?.mid ??
+                                modalTcgFallbackPrice?.low,
+                              selectedCard.condition || 'Near Mint'
                             )}
                           />
-                          <Row label="Cached CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
+                          <Row
+                            label="Cached CardMarket"
+                            value={formatCachedBinderPrice(getCardmarketPrice(selectedCard), selectedCard.condition || 'Near Mint')}
+                          />
 
                           <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>
-                            Updated daily when price refresh runs
+                            {formatCachedBinderPriceTimestamp(selectedCard?.last_price_update)}
                           </Text>
                         </>
                       )}

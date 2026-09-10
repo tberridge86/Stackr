@@ -24,6 +24,7 @@ type StackrModalBaseProps = {
   visible: boolean;
   children: React.ReactNode;
   onClose: () => void;
+  onDismiss?: () => void;
   dismissible?: boolean;
   accessibilityLabel?: string;
 };
@@ -96,6 +97,7 @@ export function StackrBottomSheet({
   subtitle,
   children,
   onClose,
+  onDismiss,
   onClear,
   clearLabel = 'Clear all',
   dismissible = true,
@@ -126,6 +128,7 @@ export function StackrBottomSheet({
       transparent
       animationType={Platform.OS === 'web' ? 'none' : 'slide'}
       accessibilityLabel={title ?? 'Options'}
+      onDismiss={onDismiss}
       accessibilityViewIsModal
       onShow={() => { if (Platform.OS === 'web') closeButtonRef.current?.focus(); }}
       statusBarTranslucent
@@ -233,13 +236,24 @@ export function StackrQuickActionSheet({
   onClose: () => void;
 }) {
   const { theme } = useTheme();
+  const pendingAction = React.useRef<(() => void) | null>(null);
+  const flushAction = React.useCallback(() => {
+    const action = pendingAction.current;
+    pendingAction.current = null;
+    action?.();
+  }, []);
+  React.useEffect(() => {
+    // iOS must finish dismissing the sheet before another native modal opens.
+    if (visible || Platform.OS === 'ios') return;
+    const timer = setTimeout(flushAction, Platform.OS === 'web' ? 0 : 350);
+    return () => clearTimeout(timer);
+  }, [visible, flushAction]);
+  React.useEffect(() => () => { pendingAction.current = null; }, []);
 
   const pressAction = (action: StackrQuickAction) => {
-    if (action.disabled) return;
+    if (action.disabled || pendingAction.current) return;
+    pendingAction.current = action.onPress ?? null;
     onClose();
-    if (action.onPress) {
-      setTimeout(() => action.onPress?.(), 90);
-    }
   };
 
   return (
@@ -248,6 +262,7 @@ export function StackrQuickActionSheet({
       title={title}
       subtitle={subtitle}
       onClose={onClose}
+      onDismiss={flushAction}
       scroll={false}
       maxHeight="64%"
       contentContainerStyle={styles.quickActions}

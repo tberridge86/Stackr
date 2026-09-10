@@ -243,10 +243,13 @@ function parsePokeDataFinish(value: unknown): PokeDataFinish | null {
   }
   if (/\b(?:pattern|reverse|holofoil|non[-\s]?holo|stamp(?:ed)?)\b/iu.test(name)) return null;
   return {
-    variantCode: 'normal',
-    finishCode: 'normal',
+    // PokeData omits the finish suffix for some Japanese entries. Do not
+    // reinterpret that absence as a normal finish: the ingestion pipeline can
+    // attach this artwork only where the canonical printing has one variant.
+    variantCode: 'unclassified',
+    finishCode: 'unclassified',
     baseName: name,
-    evidence: 'no_finish_suffix',
+    evidence: 'no_finish_suffix_unclassified',
   };
 }
 

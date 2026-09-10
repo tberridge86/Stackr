@@ -8,7 +8,10 @@ const parsed = ts.createSourceFile('HubScreen.tsx', source, ts.ScriptTarget.Late
 const names = new Set([
   'HomeOwnedPricingUnit',
   'HomePricingDefaults',
+  'PendingHomePriceRefresh',
+  'HOME_MANUAL_PRICE_REFRESH_FOLLOW_UP_MS',
   'homeCardKey',
+  'reconcileManualPriceRefreshes',
   'buildHomeOwnedPricingUnits',
   'pricingInputForHomeUnit',
 ]);
@@ -25,19 +28,20 @@ const helperSource = statements.map((statement) => statement.getText(parsed)).jo
 const compiled = ts.transpileModule([
   'const getOwnedQuantity = (card: any) => Math.max(1, Number(card.quantity ?? 1));',
   helperSource,
-  'module.exports = { buildHomeOwnedPricingUnits, pricingInputForHomeUnit };',
+  'module.exports = { buildHomeOwnedPricingUnits, pricingInputForHomeUnit, reconcileManualPriceRefreshes };',
 ].join('\n'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 type HomePricingHelpers = {
   buildHomeOwnedPricingUnits: (cards: any[], ownedRows: any[], binders?: any[]) => any[];
   pricingInputForHomeUnit: (unit: any) => any;
+  reconcileManualPriceRefreshes: (pending: Map<string, number>, priceResults: any[], now?: number) => { nextPending: Map<string, number>; warning: string | null };
 };
 
 // Evaluate the extracted production helpers with the smallest possible runtime stub.
 const moduleBox = { exports: {} as HomePricingHelpers };
 vm.runInNewContext(compiled, { module: moduleBox, exports: moduleBox.exports });
-const { buildHomeOwnedPricingUnits, pricingInputForHomeUnit } = moduleBox.exports;
+const { buildHomeOwnedPricingUnits, pricingInputForHomeUnit, reconcileManualPriceRefreshes } = moduleBox.exports;
 
 const sharedCard = {
   set_id: 'set-a', card_id: 'card-a', api_card_id: 'canonical-card-a', api_set_id: 'canonical-set-a',
@@ -87,5 +91,27 @@ assert.equal(ambiguous[0].identityExact, false, 'Mixed language and grading defa
 assert.equal(ambiguous[0].language, null);
 assert.equal(ambiguous[0].condition, null);
 assert.deepEqual(Array.from(pricingInputForHomeUnit(ambiguous[0]).references), []);
+
+const queuedAt = Date.parse('2026-09-10T12:00:00.000Z');
+const oldQuote = reconcileManualPriceRefreshes(new Map([['variant-a', queuedAt]]), [{
+  variantId: 'variant-a', central: 12, calculatedAt: '2026-09-10T11:59:59.000Z',
+}], queuedAt + 60_000);
+assert.equal(oldQuote.nextPending.size, 1, 'An older stored quote must not be presented as completion of a queued refresh.');
+assert.match(oldQuote.warning ?? '', /Checking 1 queued price/, 'Pending refreshes keep a clear stored-price follow-up notice.');
+
+const sameQuote = reconcileManualPriceRefreshes(new Map([['variant-a', queuedAt]]), [{
+  variantId: 'variant-a', central: 12, calculatedAt: '2026-09-10T12:00:00.000Z',
+}], queuedAt + 60_000);
+assert.equal(sameQuote.nextPending.size, 1, 'A quote at the queue timestamp cannot prove the queued work completed later.');
+
+const refreshedQuote = reconcileManualPriceRefreshes(new Map([['variant-a', queuedAt]]), [{
+  variantId: 'variant-a', central: 12, calculatedAt: '2026-09-10T12:01:00.000Z',
+}], queuedAt + 60_000);
+assert.equal(refreshedQuote.nextPending.size, 0);
+assert.match(refreshedQuote.warning ?? '', /now reflected/, 'Only a newer stored exact quote completes the Home follow-up.');
+
+const noResult = reconcileManualPriceRefreshes(new Map([['variant-a', queuedAt]]), [], queuedAt + 35 * 60 * 1000);
+assert.equal(noResult.nextPending.size, 0, 'The focused Home follow-up remains bounded when no exact quote appears.');
+assert.match(noResult.warning ?? '', /may still be queued or lack an exact provider quote/, 'No result remains explicitly uncertain rather than being reported as a failed or refreshed price.');
 
 console.log('Home owned pricing units retain canonical ownership, defaults and ambiguity safeguards.');

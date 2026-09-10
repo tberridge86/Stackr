@@ -14,6 +14,8 @@ import { Text } from '../../components/Text';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import { StackrButton } from '../../components/StackrControls';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
+import { InteractiveCardPreview } from '../../components/InteractiveCardPreview';
+import { isFoilPreview } from '../../lib/cardPreviewMotion';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import PricingV2Summary from '../../components/PricingV2Summary';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
@@ -522,6 +524,7 @@ export default function CardDetailScreen() {
       <View style={styles.heroCard}>
         <View style={[styles.heroImageFrame, { height: heroImageHeight }]}>
           {card.images?.large || card.images?.small ? (
+            <InteractiveCardPreview foil={isFoilPreview(card.raw_data)}>
             <EditionAwareCardImage
               uri={card.images?.large || card.images?.small}
               cardId={card.id}
@@ -531,6 +534,7 @@ export default function CardDetailScreen() {
               style={styles.cardImage}
               resizeMode="contain"
             />
+            </InteractiveCardPreview>
           ) : (
             <View style={styles.imageFallback}>
               <Text style={styles.imageFallbackText}>No image</Text>

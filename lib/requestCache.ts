@@ -10,7 +10,8 @@ let cacheVersion = 0;
 export async function getCachedOrFetch<T>(
   key: string,
   ttlMs: number,
-  fetcher: () => Promise<T>
+  fetcher: () => Promise<T>,
+  options: { shouldCache?: (value: T) => boolean } = {},
 ): Promise<T> {
   const now = Date.now();
   const cached = memoryCache.get(key) as CacheEntry<T> | undefined;
@@ -22,7 +23,7 @@ export async function getCachedOrFetch<T>(
   const requestVersion = cacheVersion;
   const request = fetcher()
     .then((value) => {
-      if (requestVersion === cacheVersion) {
+      if (requestVersion === cacheVersion && (options.shouldCache?.(value) ?? true)) {
         memoryCache.set(key, {
           value,
           expiresAt: Date.now() + ttlMs,

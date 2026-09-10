@@ -1,6 +1,11 @@
 name: Owner Provider Price Refresh
 
 on:
+  schedule:
+    # Consume only explicit Home requests. This is deliberately not an owned
+    # collection sweep: the worker can run only after the protected repository
+    # variable is enabled and processes a small oldest-first queue slice.
+    - cron: '*/10 * * * *'
   workflow_dispatch:
     inputs:
       expected_main_sha:
@@ -41,21 +46,23 @@ concurrency:
 
 jobs:
   refresh:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.STACKR_OWNER_PRICE_REFRESH_SCHEDULED_ENABLED == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production
     env:
-      EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      EXPECTED_MAIN_SHA: ${{ github.event_name == 'schedule' && github.sha || inputs.expected_main_sha }}
       SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL || 'https://oakdbbzdqwurpjnoqhmu.supabase.co' }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
       STACKR_EXPECTED_SUPABASE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
       STACKR_OWNER_PRICE_REFRESH_ENABLED: 'true'
-      STACKR_OWNER_PRICE_REFRESH_USER_ID: ${{ inputs.owner_user_id }}
-      REFRESH_LIMIT: ${{ inputs.limit }}
-      REFRESH_APPLY: ${{ inputs.apply }}
-      REFRESH_INCLUDE_QUEUE: ${{ inputs.include_queue }}
-      REFRESH_QUEUE_ONLY: ${{ inputs.queue_only }}
+      STACKR_OWNER_PRICE_REFRESH_USER_ID: ${{ github.event_name == 'schedule' && vars.STACKR_OWNER_PRICE_REFRESH_USER_ID || inputs.owner_user_id }}
+      # Scheduled runs are queue-only and oldest-first. A manual dispatch
+      # retains its reviewed input controls, including dry-run by default.
+      REFRESH_LIMIT: ${{ github.event_name == 'schedule' && '3' || inputs.limit }}
+      REFRESH_APPLY: ${{ github.event_name == 'schedule' && 'true' || inputs.apply }}
+      REFRESH_INCLUDE_QUEUE: ${{ github.event_name == 'schedule' && 'true' || inputs.include_queue }}
+      REFRESH_QUEUE_ONLY: ${{ github.event_name == 'schedule' && 'true' || inputs.queue_only }}
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262

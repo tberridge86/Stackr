@@ -52,6 +52,9 @@ app-example
 # local/generated artifacts
 tmp/
 .tmp/
+.tmp-shared-dependencies/
+outputs/
+reports/
 .tmp_video_frames/
 .expo-start*.log
 .expo-start*.err

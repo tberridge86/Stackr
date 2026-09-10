@@ -570,6 +570,25 @@ function assertJapaneseAssetOnlyVariantSelection() {
     'conflicted',
     'official normal artwork must not be attached to a holo-only or special variant',
   );
+  assert.deepEqual(
+    chooseExistingVariantForCardImage([
+      { id: 'sole-holo', canonical_key: 'legacy-holo', is_default: true, variant_code: 'holo', finish_code: 'holo' },
+    ], 'missing-unclassified', 'unclassified', 'unclassified'),
+    {
+      status: 'matched',
+      variantId: 'sole-holo',
+      reason: 'card_image_attached_to_existing_sole_variant_with_unlabelled_provider_finish',
+    },
+    'an unlabelled provider image may attach only when the exact printing has one existing variant',
+  );
+  assert.equal(
+    chooseExistingVariantForCardImage([
+      { id: 'normal', canonical_key: 'legacy-normal', is_default: true, variant_code: 'normal', finish_code: 'normal' },
+      { id: 'holo', canonical_key: 'legacy-holo', is_default: false, variant_code: 'holo', finish_code: 'holo' },
+    ], 'missing-unclassified', 'unclassified', 'unclassified').status,
+    'conflicted',
+    'an unlabelled provider image must not choose between multiple canonical finishes',
+  );
   assert.match(catalogueIngest, /assetsOnly: hasFlag\('assetsOnly'\)/);
 }
 
