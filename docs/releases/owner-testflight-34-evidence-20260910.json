@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-10T16:40:06.8224572Z",
+  "repository": "tberridge86/Stackr",
+  "sourceCommit": "6f439fd9bcf31dc69adbf55e4ebe6c4785e77b1e",
+  "provenance": "Desktop release evidence preserved from outputs/releases in the isolated build 34 workspace. This handoff did not rerun remote observations. Exact observation times are retained only where the original receipt records them; otherwise evidenceDate is day-level attribution.",
+  "deviceAcceptance": "pending",
+  "separateOtaPublished": false,
+  "receipts": [
+    {
+      "file": "native34-apple-status-20260910.json",
+      "sha256": "3864c99dc6bf155711c093ce0ecb92d2aaa5b29aad8b56c80f29bbf468f35159",
+      "evidenceDate": "2026-09-10",
+      "data": {
+        "mode": "read_only",
+        "app": {
+          "id": "6772118450"
+        },
+        "build": {
+          "id": "14226732-fa9d-4e58-baf6-6191e0d272e9",
+          "version": "1.0.3",
+          "number": "34",
+          "processingState": "VALID",
+          "expired": false,
+          "externalState": "IN_BETA_TESTING",
+          "attachedToExternalGroup": true
+        },
+        "group": {
+          "name": "Stackr Beta Testers",
+          "isInternalGroup": false,
+          "verifiedIphone15ProTesterIsMember": true
+        },
+        "betaReview": {
+          "state": "APPROVED",
+          "canSubmitManually": false,
+          "automaticSubmission": false
+        },
+        "eligibleToAssign": true,
+        "testNotesMatch": true
+      },
+      "redaction": "Group ID, group size, email-membership diagnostic and tester-assignment diagnostic excluded from public handoff. sha256 identifies the unmodified local original."
+    },
+    {
+      "file": "native34-ipa-verification-20260910.json",
+      "sha256": "fdbc073d19dfc72f8fed8646f0bbd5e963751732dd42715d5e5bec16c2c9d512",
+      "evidenceDate": "2026-09-10",
+      "data": {
+        "ipaSha256": "956f334966aa4b7a3969c0f29d4d79ab3bfebae677b064431dcca0a25c1a1ffc",
+        "version": "1.0.3",
+        "build": "34",
+        "bundleIdentifier": "com.tommo86.Stackr",
+        "nativePlatform": {
+          "DTSDKName": "iphoneos26.0",
+          "DTXcode": "2600",
+          "DTPlatformVersion": "26.0",
+          "MinimumOSVersion": "15.5",
+          "UIRequiredDeviceCapabilities": [
+            "arm64"
+          ]
+        },
+        "updates": {
+          "EXUpdatesURL": "https://u.expo.dev/22048198-a309-41d2-a2bf-aa354c76be3a",
+          "EXUpdatesRuntimeVersion": "1.0.3-owner-recognition-v1",
+          "EXUpdatesRequestHeaders": {
+            "expo-channel-name": "owner-recognition"
+          },
+          "EXUpdatesEnabled": true,
+          "EXUpdatesCheckOnLaunch": "ALWAYS"
+        },
+        "embeddedManifests": [
+          {
+            "path": "Payload/Stackr.app/EXUpdates.bundle/app.manifest",
+            "id": "c9f3c6b9-90e0-486f-8440-7538cef197b5",
+            "createdAt": null,
+            "commitTime": 1789023260310,
+            "runtimeVersion": null,
+            "assetCount": 549,
+            "environment": null,
+            "apiBaseUrl": null,
+            "runtimeKeys": []
+          }
+        ],
+        "nativeHapticsSymbolsPresent": true,
+        "productionConfiguration": {
+          "schemaVersion": 1,
+          "appVariant": "production",
+          "environment": "production",
+          "supabaseUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
+          "priceApiUrl": "https://pocketvault-production.up.railway.app",
+          "stackrApiUrl": "https://api.stackrtcg.com"
+        },
+        "bundledClientChecks": {
+          "Test haptic feedback": true,
+          "Saved collection-read trend": true,
+          "Provider snapshot trend": true,
+          "ownerTeaching": true,
+          "stackr:scan-variant-ownership:v1:": true,
+          "Primary source:": true,
+          "Market estimate": true,
+          "stackr:scan-composite-save:v1:owner:": true,
+          "Finish saving scanned card": true,
+          "#F6F5F8": true,
+          "#07145F": true,
+          "#087F73": true,
+          "#FFBE35": true,
+          "Opening paused": true,
+          "Checking your account": true,
+          "card_preview": true,
+          "Your stored prices will update after background processing completes.": true,
+          "Save confirmed cards": true,
+          "We could not check your account. Check your connection and try again.": true
+        },
+        "bundledClientSha256": "33268400f1668dae4899c379f664f774b79cf0ab7e159d4d940f7716b4a75410",
+        "magazineCoverCount": 81,
+        "magazineCoverMissingFiles": [],
+        "magazineCoverByteMismatches": []
+      }
+    },
+    {
+      "file": "native34-submission-receipt-20260910.json",
+      "sha256": "6021b42feabef76f7404248249064cdc533e850b78a9918b63dfb0f9099a2174",
+      "evidenceDate": "2026-09-10",
+      "data": {
+        "id": "8e726e6c-af0d-4c70-a732-78ed7562843b",
+        "status": "FINISHED",
+        "platform": "IOS",
+        "createdAt": "2026-09-10T07:01:16.247Z",
+        "completedAt": "2026-09-10T07:01:36.255Z",
+        "buildId": "12b4d3c0-ff53-44f4-b1cb-ad698e3cdb77",
+        "build": "34",
+        "appId": "6772118450",
+        "error": null
+      }
+    },
+    {
+      "file": "binder-save-final-ci-20260910.json",
+      "sha256": "605714bd1ca135970b23a0529f04890ad6893af63475d85a45fbd6150f328bf3",
+      "evidenceDate": "2026-09-10",
+      "data": {
+        "reviewedSource": "3c5ae985dd340d73a9ab3b8eeb1a932de900a966",
+        "mergeSource": "6f439fd9bcf31dc69adbf55e4ebe6c4785e77b1e",
+        "runId": 34445205132,
+        "jobs": [
+          {
+            "id": 102768398902,
+            "name": "recognition-container",
+            "conclusion": "success"
+          },
+          {
+            "id": 102768399165,
+            "name": "database-migration-tests",
+            "conclusion": "success"
+          },
+          {
+            "id": 102768399214,
+            "name": "openapi-and-generated-client",
+            "conclusion": "success"
+          },
+          {
+            "id": 102768399242,
+            "name": "benchmark-smoke-tests",
+            "conclusion": "success"
+          },
+          {
+            "id": 102768399256,
+            "name": "lint-type-unit",
+            "conclusion": "success"
+          },
+          {
+            "id": 102768399306,
+            "name": "dependency-and-secret-scan",
+            "conclusion": "success"
+          },
+          {
+            "id": 102768399368,
+            "name": "integration-tests",
+            "conclusion": "success"
+          },
+          {
+            "id": 102768399951,
+            "name": "release-candidate-gate",
+            "conclusion": "skipped"
+          }
+        ]
+      }
+    },
+    {
+      "file": "price-scheduled-run-verification-20260910.json",
+      "sha256": "20301b8d8a84254fdc38b0e03d647e2dbb828a45c9144e34ca58a65727af7dd3",
+      "evidenceDate": "2026-09-10",
+      "data": {
+        "recordedAt": "2026-09-10T05:59:42.965Z",
+        "deploymentId": "2ffa9698-7033-4b3f-bc98-c91748bb68ab",
+        "status": "SUCCESS",
+        "observedRun": {
+          "startedAt": "2026-09-10T00:01:28.215957040Z",
+          "completedAt": "2026-09-10T00:02:06.678309437Z",
+          "eligible": 84,
+          "refreshed": 30,
+          "failed": 0,
+          "dryRun": false
+        },
+        "schedule": "0 */6 * * *",
+        "scope": "Existing owner-only bounded exact-provider refresh. Limits and exact identity rules unchanged.",
+        "verification": "Observed scheduled production execution in active worker logs; no manual refresh was triggered by this verification."
+      }
+    }
+  ],
+  "coverage": {
+    "file": "catalogue-current-public-coverage-20260909.csv",
+    "sha256": "20aa7a55b6f4d347fb1e4d88715162e2bbaebf498c35a91f8f4dc504f360c207",
+    "evidenceDate": "2026-09-09",
+    "scope": "696 published canonical sets; metadata/linkage/storage/HTTP evidence, not pixel or device validation",
+    "originalSourceSha256": "20aa7a55b6f4d347fb1e4d88715162e2bbaebf498c35a91f8f4dc504f360c207",
+    "normalization": "UTF-8 CSV with LF line endings for Git portability; all rows and values preserved."
+  }
+}
