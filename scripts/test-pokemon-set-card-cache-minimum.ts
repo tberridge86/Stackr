@@ -13,7 +13,7 @@ function deferred<T>(): Deferred<T> {
 
 async function main() {
   let reads = 0;
-  let firstRead: Deferred<any[]> | null = null;
+  const firstRead = deferred<any[]>();
   const threeCards = Array.from({ length: 3 }, (_, index) => ({ id: `partial-${index + 1}`, number: String(index + 1), name: `Partial ${index + 1}` }));
   const fullSet = Array.from({ length: 237 }, (_, index) => ({ id: `card-${index + 1}`, number: String(index + 1), name: `Card ${index + 1}` }));
   const dependencies: Record<string, unknown> = {
@@ -32,7 +32,6 @@ async function main() {
       fetchPreferredStackrCardsForReferences: async () => {
         reads += 1;
         if (reads === 1) {
-          firstRead = deferred<any[]>();
           return firstRead.promise;
         }
         return fullSet;
@@ -62,7 +61,7 @@ async function main() {
   // never retained as the set cache.
   const weak = fetchCardsForSet('swsh7', { language: 'en', preferCanonicalApi: true });
   const strong = fetchCardsForSet('swsh7', { language: 'en', preferCanonicalApi: true, minimumCardCount: 237 });
-  assert(firstRead, 'the weak read must begin before the stronger caller joins');
+  assert.equal(reads, 1, 'the weak read must begin before the stronger caller joins');
   firstRead.resolve(threeCards);
   assert.equal((await weak).length, 3);
   assert.equal((await strong).length, 3, 'real partial rows remain available to BinderDetail');
