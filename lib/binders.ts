@@ -636,7 +636,9 @@ async function fetchBinderCardsUncached(
         slot_order: existing.slot_order ?? index,
         card_name: existing.card_name ?? card.name ?? null,
         card_number: existing.card_number ?? card.number ?? null,
-        image_url: card.images?.small ?? existing.image_url ?? null,
+        // Keep this matched row's captured image available for a load-time
+        // fallback. The catalogue rendition remains preferred in card.images.
+        image_url: existing.image_url ?? card.images?.small ?? null,
         set_name: existing.set_name ?? setName,
         card: {
           id: card.id,

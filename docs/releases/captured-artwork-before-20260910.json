@@ -1,0 +1,136 @@
+{
+  "generatedAt": "2026-09-10T17:22:37.031Z",
+  "phase": "before",
+  "requestId": "captured-artwork-restore-20260910-34794a13e68b",
+  "results": [
+    {
+      "language": "en",
+      "variantId": "00021ece-533f-4306-9333-4afb1b01718d",
+      "finish": "normal",
+      "nativeImageStatus": "available",
+      "imageVariantId": "00021ece-533f-4306-9333-4afb1b01718d",
+      "image": null,
+      "apiElapsedMs": 2167,
+      "images": [
+        {
+          "role": "original",
+          "width": 600,
+          "height": 825,
+          "bytes": 145678,
+          "sha256": "ad9ea1ba3217f20ce943d8be9c65ecb2774319b02290a3d9fb1c6f6bc93573fc",
+          "elapsedMs": 1518
+        },
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "bytes": 18394,
+          "sha256": "60d5d37c4f0d8819d8e0560aa646cfc0d2d190fbd43a30e445a1712a17f3528c",
+          "elapsedMs": 1316
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "bytes": 3596,
+          "sha256": "17a69df629f4e6a4e90d075069880074dc952c3fab573e91808c4829d43a0b73",
+          "elapsedMs": 1311
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "bytes": 94726,
+          "sha256": "f9ee9d92558a1fffa597ecf792781b83ccb6e67c03908cdfe1321ed29f2e6a41",
+          "elapsedMs": 1530
+        }
+      ]
+    },
+    {
+      "language": "ja",
+      "variantId": "005437d6-291e-445d-9b2b-55d6495453a9",
+      "finish": "reverse_holo",
+      "nativeImageStatus": "available",
+      "imageVariantId": "005437d6-291e-445d-9b2b-55d6495453a9",
+      "image": null,
+      "apiElapsedMs": 629,
+      "images": [
+        {
+          "role": "original",
+          "width": 600,
+          "height": 825,
+          "bytes": 157603,
+          "sha256": "abe82917371c156f55e5f8918b75241913bdab48a06899fc79672799cb672d72",
+          "elapsedMs": 717
+        },
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "bytes": 21280,
+          "sha256": "349961cd09ca8c0c4713d8dcfff23264aeeaf8b5c16829647cdf09e80f79d661",
+          "elapsedMs": 564
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "bytes": 3926,
+          "sha256": "4feb035ffbb7c6fe02a62f6142e35e5ec39072f28bfea5c36397a635e2418e9e",
+          "elapsedMs": 400
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "bytes": 103076,
+          "sha256": "f3c1dc837d79a8b5eeccbd4e5f23499eae36033938c0e7bc7df7bf96820b6b31",
+          "elapsedMs": 874
+        }
+      ]
+    },
+    {
+      "language": "zh-tw",
+      "variantId": "003d0144-829b-42a9-812f-14c3b94c0341",
+      "finish": "reverse_holo",
+      "nativeImageStatus": "available",
+      "imageVariantId": "003d0144-829b-42a9-812f-14c3b94c0341",
+      "image": null,
+      "apiElapsedMs": 586,
+      "images": [
+        {
+          "role": "original",
+          "width": 600,
+          "height": 825,
+          "bytes": 216764,
+          "sha256": "bd179bc88d0edbc4c6a1340cf3ad0f5318d7aecfe94389358525c4833b475f72",
+          "elapsedMs": 862
+        },
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "bytes": 27270,
+          "sha256": "fc1bae64e030bd05b5c8557545e30bca4c34c941580f9d4a63eb57b953ce959c",
+          "elapsedMs": 557
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "bytes": 4690,
+          "sha256": "0f3dbc43fbdc2676919ff5c6434f987b80d078c5a7b661816a7cf1973ffea67e",
+          "elapsedMs": 327
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "bytes": 173948,
+          "sha256": "46d5f28d03f9886d505744a5a328b3b68b765b39ce2c3dddce29c49c385336df",
+          "elapsedMs": 856
+        }
+      ]
+    }
+  ]
+}

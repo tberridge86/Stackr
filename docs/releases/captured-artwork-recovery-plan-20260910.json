@@ -1,0 +1,209 @@
+{
+  "generatedAt": "2026-09-10T17:21:01.693Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "requestId": "captured-artwork-restore-20260910-34794a13e68b",
+  "status": "verified_plan_not_applied",
+  "sets": 105,
+  "digest": "34794a13e68b519ec28d6638a55600986db396c11672cfbcaaa5ae034ce723db",
+  "samples": [
+    {
+      "width": 600,
+      "height": 825,
+      "set_id": "ddc668c0-316e-4dab-8c51-625167508fd6",
+      "variant_id": "00021ece-533f-4306-9333-4afb1b01718d",
+      "finish_code": "normal",
+      "printing_id": "120b0541-d505-48c3-8a44-ad37c2075154",
+      "storage_key": "public/card_image/ad/9e/ad9ea1ba3217f20ce943d8be9c65ecb2774319b02290a3d9fb1c6f6bc93573fc/original.jpg",
+      "duplicate_id": "704a8cd7-081a-4917-8396-b14e5d0f33ac",
+      "variant_code": "normal",
+      "canonical_key": "pokemon:en:ddc668c0-316e-4dab-8c51-625167508fd6:041:normal",
+      "language_code": "en",
+      "content_sha256": "ad9ea1ba3217f20ce943d8be9c65ecb2774319b02290a3d9fb1c6f6bc93573fc",
+      "storage_bucket": "stackr-catalogue-public",
+      "derivative_list": [
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "byteSize": 18394,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/60/d5/60d5d37c4f0d8819d8e0560aa646cfc0d2d190fbd43a30e445a1712a17f3528c/card-grid.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "60d5d37c4f0d8819d8e0560aa646cfc0d2d190fbd43a30e445a1712a17f3528c",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "byteSize": 3596,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/17/a6/17a69df629f4e6a4e90d075069880074dc952c3fab573e91808c4829d43a0b73/search-result.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "17a69df629f4e6a4e90d075069880074dc952c3fab573e91808c4829d43a0b73",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "byteSize": 94726,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/f9/ee/f9ee9d92558a1fffa597ecf792781b83ccb6e67c03908cdfe1321ed29f2e6a41/detail-page.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "f9ee9d92558a1fffa597ecf792781b83ccb6e67c03908cdfe1321ed29f2e6a41",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        }
+      ],
+      "target_asset_id": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+      "collector_number": "041",
+      "target_updated_at": "2026-08-12T18:14:40.182+00:00",
+      "target_variant_id": "c7533e4d-e321-49c1-af78-ec243af9ad4b",
+      "variant_updated_at": "2026-08-20T13:29:00.179+00:00",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "duplicate_updated_at": "2026-08-21T07:06:05.128+00:00"
+    },
+    {
+      "width": 600,
+      "height": 825,
+      "set_id": "e42556b8-3e82-44bb-8c52-c06b893ee4a3",
+      "variant_id": "005437d6-291e-445d-9b2b-55d6495453a9",
+      "finish_code": "reverse_holo",
+      "printing_id": "9651517e-eccd-4f3d-9aae-47ef5867f982",
+      "storage_key": "public/card_image/ab/e8/abe82917371c156f55e5f8918b75241913bdab48a06899fc79672799cb672d72/original.jpg",
+      "duplicate_id": "a0d2aa3f-dfb6-4174-86ee-4146c9b5e4fa",
+      "variant_code": "reverse_holo",
+      "canonical_key": "pokemon:ja:e42556b8-3e82-44bb-8c52-c06b893ee4a3:077:reverse_holo",
+      "language_code": "ja",
+      "content_sha256": "abe82917371c156f55e5f8918b75241913bdab48a06899fc79672799cb672d72",
+      "storage_bucket": "stackr-catalogue-public",
+      "derivative_list": [
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "byteSize": 21280,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/34/99/349961cd09ca8c0c4713d8dcfff23264aeeaf8b5c16829647cdf09e80f79d661/card-grid.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "349961cd09ca8c0c4713d8dcfff23264aeeaf8b5c16829647cdf09e80f79d661",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "byteSize": 3926,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/4f/eb/4feb035ffbb7c6fe02a62f6142e35e5ec39072f28bfea5c36397a635e2418e9e/search-result.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "4feb035ffbb7c6fe02a62f6142e35e5ec39072f28bfea5c36397a635e2418e9e",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "byteSize": 103076,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/f3/c1/f3c1dc837d79a8b5eeccbd4e5f23499eae36033938c0e7bc7df7bf96820b6b31/detail-page.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "f3c1dc837d79a8b5eeccbd4e5f23499eae36033938c0e7bc7df7bf96820b6b31",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        }
+      ],
+      "target_asset_id": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+      "collector_number": "077",
+      "target_updated_at": "2026-08-12T18:14:40.182+00:00",
+      "target_variant_id": "cfb57e38-baa2-46a9-841f-7e8c27ef68ac",
+      "variant_updated_at": "2026-08-20T13:29:00.179+00:00",
+      "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+      "duplicate_updated_at": "2026-08-21T07:06:07.433+00:00"
+    },
+    {
+      "width": 600,
+      "height": 825,
+      "set_id": "d53eee17-75b8-48a8-bde5-50ac129a3558",
+      "variant_id": "003d0144-829b-42a9-812f-14c3b94c0341",
+      "finish_code": "reverse_holo",
+      "printing_id": "7dfd952d-31d7-45cf-8adf-0dfa12a2b33c",
+      "storage_key": "public/card_image/bd/17/bd179bc88d0edbc4c6a1340cf3ad0f5318d7aecfe94389358525c4833b475f72/original.jpg",
+      "duplicate_id": "f7c00fc0-692f-4445-a889-05d5d9e60a8f",
+      "variant_code": "reverse_holo",
+      "canonical_key": "pokemon:zh-tw:d53eee17-75b8-48a8-bde5-50ac129a3558:087:reverse_holo",
+      "language_code": "zh-tw",
+      "content_sha256": "bd179bc88d0edbc4c6a1340cf3ad0f5318d7aecfe94389358525c4833b475f72",
+      "storage_bucket": "stackr-catalogue-public",
+      "derivative_list": [
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "byteSize": 27270,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/fc/1b/fc1bae64e030bd05b5c8557545e30bca4c34c941580f9d4a63eb57b953ce959c/card-grid.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "fc1bae64e030bd05b5c8557545e30bca4c34c941580f9d4a63eb57b953ce959c",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "byteSize": 4690,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/0f/3d/0f3dbc43fbdc2676919ff5c6434f987b80d078c5a7b661816a7cf1973ffea67e/search-result.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "0f3dbc43fbdc2676919ff5c6434f987b80d078c5a7b661816a7cf1973ffea67e",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "byteSize": 173948,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/46/d5/46d5f28d03f9886d505744a5a328b3b68b765b39ce2c3dddce29c49c385336df/detail-page.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "46d5f28d03f9886d505744a5a328b3b68b765b39ce2c3dddce29c49c385336df",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        }
+      ],
+      "target_asset_id": "b752738a-d697-490e-ac81-e539152099df",
+      "collector_number": "087",
+      "target_updated_at": "2026-08-12T18:14:40.182+00:00",
+      "target_variant_id": "a65fb996-40e7-44b7-b26e-f264adc8cd30",
+      "variant_updated_at": "2026-08-20T13:29:00.179+00:00",
+      "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "duplicate_updated_at": "2026-08-21T07:06:12.711+00:00"
+    }
+  ],
+  "variants": 5271,
+  "languages": [
+    {
+      "sets": 93,
+      "variants": 4809,
+      "language_code": "en"
+    },
+    {
+      "sets": 7,
+      "variants": 366,
+      "language_code": "ja"
+    },
+    {
+      "sets": 5,
+      "variants": 96,
+      "language_code": "zh-tw"
+    }
+  ],
+  "printings": 5170
+}

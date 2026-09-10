@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal, preserveUnmatchedBinderRows } from '../lib/binderCataloguePresentation';
+import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal, preserveUnmatchedBinderRows } from '../lib/binderCataloguePresentation';
+import { nextStackrImageCandidate, stackrImageCandidates } from '../lib/stackrImageCandidates';
 
 const saved = {
   image_url: 'https://catalogue.stackr.test/ja/S12a/001.webp',
@@ -17,6 +18,21 @@ assert.equal(getBinderCardImageUri({
   } },
 }, 'large'), 'https://catalogue.stackr.test/en/SVX/001-detail.webp',
   'detail display must prefer the same card’s supplied full-size image');
+const matchedSavedRow = {
+  image_url: 'https://catalogue.stackr.test/en/ME2/004-captured.webp',
+  card: { images: { small: 'https://catalogue.stackr.test/en/ME2/004-canonical.webp', large: null } },
+};
+assert.equal(getBinderCardImageUri(matchedSavedRow), matchedSavedRow.card.images.small,
+  'the canonical rendition remains preferred for the exactly matched binder row');
+assert.equal(getBinderSavedCardImageUri(matchedSavedRow), matchedSavedRow.image_url,
+  'the exactly matched row keeps its captured rendition as a distinct fallback');
+const imageFallbackCandidates = stackrImageCandidates([
+  { uri: getBinderCardImageUri(matchedSavedRow)! },
+  { uri: getBinderSavedCardImageUri(matchedSavedRow)! },
+]);
+const failedCanonical = nextStackrImageCandidate(imageFallbackCandidates, []);
+assert.deepEqual(nextStackrImageCandidate(imageFallbackCandidates, [failedCanonical!.key])?.source, { uri: matchedSavedRow.image_url },
+  'a failed canonical rendition retries only the same matched row’s captured image');
 assert.equal(JSON.stringify(saved), before, 'display resolution must preserve saved quantities and image fields');
 assert.equal(getBinderCardImageUri({
   ...saved,

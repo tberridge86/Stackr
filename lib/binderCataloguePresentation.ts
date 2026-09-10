@@ -20,6 +20,11 @@ export function getBinderCardImageUri(row: BinderCardDisplay, size: 'small' | 'l
   return null;
 }
 
+/** A matched binder record may retain a captured image while catalogue art is preferred. */
+export function getBinderSavedCardImageUri(row: BinderCardDisplay) {
+  return enforceTcgdexRuntimeImagePolicy(row.image_url);
+}
+
 /** A saved finish is more specific than a catalogue row's default variant. */
 export function getBinderCanonicalVariantId(row: {
   card?: {

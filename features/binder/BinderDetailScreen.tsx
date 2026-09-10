@@ -1,7 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
-import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -2396,6 +2396,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     isActive,
   }: RenderItemParams<BinderCardWithDetails>) => {
     const imageUri = getBinderCardImageUri(item);
+    const savedImageUri = getBinderSavedCardImageUri(item);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const isGradedBinder = binder?.card_mode === 'graded';
     const ownedQuantity = getOwnedQuantity(item);
@@ -2420,6 +2421,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               <GradedSlabCard
                 item={item}
                 imageUri={imageUri}
+                fallbackImageUri={savedImageUri}
                 editionHint={imageEditionHint}
                 size="showcase"
                 opacity={item.owned ? 1 : 0.35}
@@ -2429,6 +2431,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             <StackrImage
               uri={imageUri}
               fullUri={getBinderCardImageUri(item, 'large')}
+              fallbackSource={savedImageUri ? { uri: savedImageUri } : undefined}
               style={{
                 width: '100%',
                 aspectRatio: stackrCardImageSizes.cardAspectRatio,
@@ -2637,6 +2640,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
   const renderCard = ({ item }: { item: BinderCardWithDetails }) => {
     const imageUri = getBinderCardImageUri(item);
+    const savedImageUri = getBinderSavedCardImageUri(item);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const cardName = getBinderCardDisplayName(item, item.card_id);
     const forTrade = isForTrade(item.card_id, item.set_id);
@@ -2718,12 +2722,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             <GradedSlabCard
               item={item}
               imageUri={imageUri}
+              fallbackImageUri={savedImageUri}
               editionHint={imageEditionHint}
               size="grid"
             />
           ) : imageUri ? (
             <EditionAwareCardImage
               uri={imageUri}
+              fallbackUri={savedImageUri}
               cardId={item.card_id}
               rawData={item.card}
               editionHint={imageEditionHint}
@@ -3069,6 +3075,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
   const modalCard = selectedCard?.card;
   const storedModalImageUri = selectedCard ? getBinderCardImageUri(selectedCard, 'large') : null;
+  const savedModalImageUri = selectedCard ? getBinderSavedCardImageUri(selectedCard) : null;
   const modalImageUri = detailFullImageUri ?? storedModalImageUri;
 
   const boxStyle = {
@@ -4458,14 +4465,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                             <GradedSlabCard
                               item={selectedCard}
                               imageUri={modalImageUri}
-                              fallbackImageUri={detailFullImageUri ? storedModalImageUri : undefined}
+                              fallbackImageUri={savedModalImageUri ?? (detailFullImageUri ? storedModalImageUri : undefined)}
                               editionHint={getBinderEditionHint(binder.edition)}
                               size="modal"
                             />
                           ) : (
                             <EditionAwareCardImage
                               uri={modalImageUri ?? undefined}
-                              fallbackUri={detailFullImageUri ? storedModalImageUri : undefined}
+                              fallbackUri={savedModalImageUri ?? (detailFullImageUri ? storedModalImageUri : undefined)}
                               cardId={selectedCard.card_id}
                               rawData={modalCard}
                               editionHint={getBinderEditionHint(binder.edition)}
