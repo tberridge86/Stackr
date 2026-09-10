@@ -130,6 +130,9 @@ function defaultService() {
     // Prepared separately by the protected additive artwork-read workflow.
     // Keep client credentials out of this service-role-only lookup.
     assetIdentityRpc: true,
+    // Already applied in production; the recovered migrations preserve the
+    // same service-only lookup when staging or a fresh database is prepared.
+    collectorIdentityLookup: true,
   });
 }
 

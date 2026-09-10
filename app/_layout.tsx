@@ -8,7 +8,7 @@ import { CollectionProvider } from '../components/collection-context';
 import { AchievementProvider } from '../components/achievement-context';
 import { AppModeProvider, useAppMode } from '../components/app-mode-context';
 import { ThemeProvider, useTheme } from '../components/theme-context';
-import { Image, InteractionManager, KeyboardAvoidingView, Platform, Text as NativeText, TextInput as NativeTextInput, TouchableOpacity, View } from 'react-native';
+import { InteractionManager, KeyboardAvoidingView, Platform, Text as NativeText, TextInput as NativeTextInput, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StripeAppProvider } from '../components/StripeAppProvider';
@@ -28,10 +28,9 @@ import { StackrPopupProvider } from '../components/StackrPopupProvider';
 import { StackrQueryProvider } from '../components/StackrQueryProvider';
 import { StackrSafeAreaBoundary } from '../components/StackrSafeAreaBoundary';
 import { StackrBackdrop } from '../components/StackrBackdrop';
-import { stackrIcons } from '../lib/stackrIcons';
+import { StackrNavigationIcon, type StackrNavigationIconName } from '../components/StackrNavigationIcon';
 import { stackrFonts, typeScale } from '../lib/typography';
 import { COLLECTOR_TABS, SELLER_TABS } from '../lib/routes';
-import { StackrCardActionIcon } from '../components/StackrScreen';
 import { stackrTabBarSizes } from '../lib/stackrSizing';
 import { installRuntimeFetchDiagnostics } from '../lib/runtimeFetchDiagnostics';
 import { stackrHaptics } from '../lib/haptics';
@@ -73,12 +72,6 @@ function configureNativeTypographyDefaults() {
 
 const {
   secondaryFrame: SECONDARY_TAB_FRAME_SIZE,
-  homeIcon: HOME_TAB_ICON_SIZE,
-  secondaryIcon: SECONDARY_TAB_ICON_SIZE,
-  marketCommunityIcon: MARKET_COMMUNITY_TAB_ICON_SIZE,
-  bindersVaultIcon: BINDERS_VAULT_TAB_ICON_SIZE,
-  centerScanIcon: CENTER_SCAN_ICON_SIZE,
-  footerSearchIcon: FOOTER_SEARCH_ICON_SIZE,
   barHeightIos: TAB_BAR_HEIGHT_IOS,
   barHeightAndroid: TAB_BAR_HEIGHT_ANDROID,
   paddingBottomIos: TAB_BAR_PADDING_BOTTOM_IOS,
@@ -88,15 +81,9 @@ const {
   tabRaise: STANDARD_TAB_RAISE,
 } = stackrTabBarSizes;
 
-const TAB_ICONS: Record<string, any> = {
-  home: stackrIcons.hub,
-  collection: stackrIcons.binders,
-  scan: stackrIcons.scanCard,
-  market: stackrIcons.marketplace,
-  search: stackrIcons.searchCard,
-  dashboard: stackrIcons.hub,
-  inventory: stackrIcons.stock,
-  listings: stackrIcons.sellerMode,
+const TAB_ICONS: Record<string, StackrNavigationIconName> = {
+  home: 'home', collection: 'collection', scan: 'scan', market: 'market',
+  search: 'search', dashboard: 'home', inventory: 'inventory', listings: 'listings',
 };
 
 const shouldHideShellControls = (pathname: string) =>
@@ -184,21 +171,8 @@ const PersistentTabBar = memo(function PersistentTabBar() {
     }}>
       {tabs.map((tab) => {
         const active = isActive(tab);
-        const isHome = tab.key === 'home';
-        const isScan = tab.key === 'scan';
         const frameSize = SECONDARY_TAB_FRAME_SIZE;
-        const iconSize = isScan
-          ? CENTER_SCAN_ICON_SIZE
-          : isHome
-          ? HOME_TAB_ICON_SIZE
-          : tab.key === 'market' || tab.key === 'search' || tab.key === 'listings'
-            ? MARKET_COMMUNITY_TAB_ICON_SIZE
-            : tab.key === 'collection' || tab.key === 'inventory' || tab.key === 'dashboard'
-              ? BINDERS_VAULT_TAB_ICON_SIZE
-              : SECONDARY_TAB_ICON_SIZE;
-        const icon = TAB_ICONS[tab.key] ?? stackrIcons.hub;
-        const usesCardArtworkIcon = tab.key === 'scan' || tab.key === 'search';
-        const cardArtworkSize = tab.key === 'scan' ? CENTER_SCAN_ICON_SIZE : FOOTER_SEARCH_ICON_SIZE;
+        const icon = TAB_ICONS[tab.key] ?? 'home';
         const activeGlowColor = theme.dark ? 'rgba(180,150,255,0.22)' : 'rgba(190,168,255,0.34)';
         const activeGlowCoreColor = theme.dark ? 'rgba(165,132,255,0.18)' : 'rgba(211,198,255,0.42)';
         const glowFrameSize = frameSize + ACTIVE_GLOW_EXTRA;
@@ -260,22 +234,10 @@ const PersistentTabBar = memo(function PersistentTabBar() {
                   />
                 </>
               ) : null}
-              {usesCardArtworkIcon ? (
-                <StackrCardActionIcon
-                  source={icon}
-                  frameSize={frameSize}
-                  artworkSize={cardArtworkSize}
-                />
-              ) : (
-                <Image
-                  source={icon}
-                  resizeMode="contain"
-                  style={{
-                    width: iconSize,
-                    height: iconSize,
-                  }}
-                />
-              )}
+              <StackrNavigationIcon
+                name={icon}
+                color={active ? theme.colors.primary : theme.colors.textSoft}
+              />
             </View>
             <Text style={{
               ...typeScale.micro,

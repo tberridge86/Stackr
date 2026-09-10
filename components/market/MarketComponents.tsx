@@ -694,16 +694,12 @@ export function MarketListingCard({
       accessibilityLabel={`Open listing for ${item.title}`}
       style={{
         flex: 1,
-        backgroundColor: 'rgba(255,255,255,0.9)',
-        borderRadius: 12,
+        backgroundColor: theme.colors.card,
+        borderRadius: 18,
         borderWidth: 1,
         borderColor: theme.colors.border,
         padding: compact ? 7 : 8,
-        shadowColor: '#1B2A4B',
-        shadowOpacity: 0.04,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 3 },
-        elevation: 1,
+        ...theme.shadows.card,
       }}
     >
       <View>

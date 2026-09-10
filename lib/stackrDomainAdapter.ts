@@ -574,7 +574,7 @@ async function fetchStackrAssetsForPrinting(
   printingId: string,
 ) {
   return allPages<StackrCatalogueAsset>(async (cursor) => {
-    const response = await client.assetManifest({ printingId, cursor, limit: 250 });
+    const response = await client.assetManifest({ printingId, assetType: 'card_image', cursor, limit: 250 });
     return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
   });
 }
