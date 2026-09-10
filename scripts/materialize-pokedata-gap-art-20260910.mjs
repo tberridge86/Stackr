@@ -22,8 +22,8 @@ if(!clean(process.env.SUPABASE_DB_URL))throw Error('production_database_url_requ
 const db=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SECRET_KEY,{auth:{persistSession:false}}), storage=new SupabaseObjectStorageAdapter(db);
 const pg=new Client({connectionString:process.env.SUPABASE_DB_URL,ssl:{rejectUnauthorized:false}}); await pg.connect();
 const qid=x=>'"'+String(x).replaceAll('"','""')+'"';
-const writeRow=async (table,patch,where,tail=[])=>{const e=Object.entries(patch), p=e.map(([,v])=>v);const sets=e.map(([k],i)=>`${qid(k)}=${i+1}`).join(',');const w=where.map(([k],i)=>`${qid(k)}=${e.length+i+1}`).join(' and ');return pg.query(`update ${table} set ${sets} where ${w} returning id`,[...p,...where.map(([,v])=>v),...tail]);};
-const insertRow=async (table,patch)=>{const e=Object.entries(patch);return pg.query(`insert into ${table} (${e.map(([k])=>qid(k)).join(',')}) values (${e.map((_,i)=>'
+const writeRow=async (table,patch,where)=>{const e=Object.entries(patch), p=e.map(([,v])=>v);const sets=e.map(([k],i)=>qid(k)+'=$'+(i+1)).join(',');const w=where.map(([k],i)=>qid(k)+'=$'+(e.length+i+1)).join(' and ');return pg.query('update '+table+' set '+sets+' where '+w+' returning id',[...p,...where.map(([,v])=>v)]);};
+const insertRow=async (table,patch)=>{const e=Object.entries(patch);return pg.query('insert into '+table+' ('+e.map(([k])=>qid(k)).join(',')+') values ('+e.map((_,i)=>'$'+(i+1)).join(',')+') returning id',e.map(([,v])=>v));};
 const receipt={contract:m.contract,target:'production',apply,startedAt:new Date().toISOString(),items:[],rollback:{preApplyAssets:[],insertedObjectKeys:[]}};
 try {
  const ids=m.candidates.map(x=>x.variantId);
