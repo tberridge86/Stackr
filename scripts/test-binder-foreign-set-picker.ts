@@ -180,7 +180,8 @@ async function main() {
   const binderSource = readFileSync('lib/binders.ts', 'utf8');
   assert.match(
     binderSource,
-    /fetchCardsForSet\(binder\.catalogue_set_id \?\? binder\.source_set_id, \{\s*language: binderLanguage,\s*preferCanonicalApi: binderLanguage !== 'en',/,
+    /fetchCardsForSet\(binder\.catalogue_set_id \?\? binder\.source_set_id, \{\s*language: binderLanguage,\s*preferCanonicalApi: true,/,
+    'official binders must use canonical catalogue reads for every language while retaining the exact binder language',
   );
   assert.match(binderSource, /`zh-cn:\$\{stripped\}`/);
 
