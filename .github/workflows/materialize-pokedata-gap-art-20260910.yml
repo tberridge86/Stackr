@@ -16,6 +16,7 @@ jobs:
     env:
       SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       STACKR_POKEDATA_GAP_APPLY: ${{ inputs.apply }}
       STACKR_POKEDATA_GAP_CONFIRMATION: ${{ inputs.confirmation }}
       STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
