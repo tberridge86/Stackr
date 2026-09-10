@@ -1,0 +1,36 @@
+{
+  "audit": {
+    "historical_legacy_image_references": 2294,
+    "matched_to_current_manifest_eligible_asset": 2294,
+    "sources": [
+      {
+        "active": true,
+        "code": "pokedata_japanese",
+        "eligible_asset_records": 129,
+        "storage_providers": [
+          "external_reference"
+        ]
+      },
+      {
+        "active": true,
+        "code": "pokemon_card_jp_official",
+        "eligible_asset_records": 3908,
+        "storage_providers": [
+          "external_reference"
+        ]
+      },
+      {
+        "active": true,
+        "code": "tcgdex",
+        "eligible_asset_records": 3882,
+        "storage_providers": [
+          "supabase_storage"
+        ]
+      }
+    ],
+    "unmatched_examples": null
+  },
+  "observedDate": "2026-09-10",
+  "readOnlyQuery": "with eligible as materialized (select distinct a.id,a.source_id,a.original_source_url,a.storage_provider from catalog.catalogue_version_assets va join catalog.catalogue_versions cv on cv.id=va.catalogue_version_id join catalog.assets a on a.id=va.asset_id where va.language_code='ja' and a.asset_type='card_image' and cv.status='published' and cv.deprecated_at is null and a.asset_visibility='public_catalogue' and a.publicly_servable and a.permission_status='approved' and a.rights_status='approved' and a.retention_status='active' and a.deleted_at is null and a.storage_provider <> 'unavailable'), legacy as (select distinct regexp_replace(coalesce(nullif(image_large_url,''),nullif(image_small_url,'')), '/(high|low)\\.(webp|png|jpg)$', '') as image_base from public.tcg_cards where language='ja' and coalesce(nullif(image_large_url,''),nullif(image_small_url,'')) is not null), current_bases as (select distinct regexp_replace(original_source_url, '/(high|low)\\.(webp|png|jpg)$', '') as image_base from eligible), sources as (select s.code,s.active,count(*) as eligible_asset_records,array_agg(distinct e.storage_provider) as storage_providers from eligible e join ingest.sources s on s.id=e.source_id group by s.code,s.active) select jsonb_build_object('sources',(select jsonb_agg(to_jsonb(s)) from sources s),'historical_legacy_image_references',(select count(*) from legacy),'matched_to_current_manifest_eligible_asset',(select count(*) from legacy l join current_bases c using(image_base)),'unmatched_examples',(select jsonb_agg(image_base) from (select l.image_base from legacy l left join current_bases c using(image_base) where c.image_base is null limit 5) x)) as audit;",
+  "scope": "Japanese image-source continuity; asset and pointer counts are not unique-card or device-load coverage"
+}

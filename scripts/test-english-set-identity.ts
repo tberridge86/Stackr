@@ -8,6 +8,8 @@ import { resolveBinderSetIdentity } from '../lib/binderSetIdentity';
 import * as pokemonSetIdentity from '../lib/pokemonSetIdentity';
 import * as pokemonSetSeries from '../lib/pokemonSetSeries';
 import * as pokemonDisplayNames from '../lib/pokemonDisplayNames';
+import * as resilientCatalogueRead from '../lib/resilientCatalogueRead';
+import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment';
 
 const PRISMATIC_ID = 'fb3cd93c-9006-42f5-b026-96a9fedcf269';
 const prismatic = {
@@ -68,6 +70,72 @@ async function main() {
   let clock = 1_000_000;
   const TestDate = class extends Date { static now() { return clock; } };
   vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController, setTimeout, clearTimeout, Date: TestDate });
+
+  // Exercise the real preferred-read and enrichment deadlines at a shorter
+  // test scale. A slow optional set response used to cancel successful card
+  // facts and discard their already-delivered Japanese images.
+  let legacyReads = 0;
+  const imageReadDependencies = {
+    ...dependencies,
+    './supabase': { supabase: { from() { legacyReads += 1; throw new Error('Unexpected legacy read'); } } },
+    './resilientCatalogueRead': {
+      ...resilientCatalogueRead,
+      preferNonEmptyCatalogueRows: (read: any, fallback: any) => resilientCatalogueRead.preferNonEmptyCatalogueRows(read, fallback, { preferredTimeoutMs: 20 }),
+    },
+    './optionalCatalogueEnrichment': {
+      ...optionalCatalogueEnrichment,
+      readOptionalCatalogueEnrichment: (read: any, signal: AbortSignal) => optionalCatalogueEnrichment.readOptionalCatalogueEnrichment(read, signal, 50),
+    },
+  };
+  const imageReads: any = {};
+  vm.runInNewContext(compiled, { exports: imageReads, require: (name: string) => imageReadDependencies[name as keyof typeof imageReadDependencies] ?? {}, console, AbortController, setTimeout, clearTimeout });
+  const sourceUris = [
+    'https://catalogue.stackr.test/stored-japanese-card.webp',
+    'https://www.pokemon-card.com/assets/images/card_images/large/SM8a/035449_T_KUCHINASHI.jpg',
+    'https://pokemoncardimages.pokedata.io/images/Nihil+Zero/022.webp',
+  ];
+  const sourceCards = sourceUris.map((uri, index) => ({
+    cardId: `ja-printing-${index}`, catalogueVersionId: null, languageCode: 'ja',
+    defaultVariantId: `ja-variant-${index}`, set: { ...prismatic, languageCode: 'ja', setCode: 'S12a' },
+    collectorNumber: { value: String(index + 1) }, names: { native: '日本語カード', englishDisplay: null },
+    rarity: {}, variants: [{ variantId: `ja-variant-${index}`, variantCode: 'normal', image: {
+      assetId: `approved-image-${index}`, assetType: 'card_image', cardId: `ja-printing-${index}`,
+      variantId: `ja-variant-${index}`, deliveryUrl: uri, derivatives: [], permissionStatus: 'approved',
+    } }],
+  }));
+  let factsSignal: AbortSignal | undefined;
+  const slowMetadataClient = {
+    setCards: async (_id: string, query: any, init: { signal: AbortSignal }) => {
+      assert.equal(query.language, 'ja');
+      factsSignal = init.signal;
+      return { data: { cards: sourceCards }, meta: {} };
+    },
+    set: async () => new Promise(() => undefined),
+    assetManifest: async () => { throw new Error('Embedded images do not need manifest enrichment'); },
+  };
+  const recoveredImages = await imageReads.fetchPreferredStackrCardsForReferences([PRISMATIC_ID], 'ja', slowMetadataClient);
+  assert.deepEqual(Array.from(recoveredImages, (card: any) => card.images.small), sourceUris,
+    'stored, official Japanese and PokeData images survive a stalled optional set read');
+  assert.equal(legacyReads, 0, 'optional metadata must not switch a successful canonical card read to legacy');
+  assert.equal(factsSignal?.aborted, false, 'the preferred deadline ends once the card facts have arrived');
+  assert.ok(recoveredImages.every((card: any) => card.language === 'ja'));
+
+  const withGap = sourceCards.map((card, index) => index === 2
+    ? { ...card, variants: [{ ...card.variants[0], image: null }] }
+    : card);
+  const enrichedImages = await imageReads.fetchPreferredStackrCardsForReferences([PRISMATIC_ID], 'ja', {
+    ...slowMetadataClient,
+    setCards: async () => ({ data: { cards: withGap }, meta: {} }),
+    assetManifest: async (query: { setId: string }, init: { signal: AbortSignal }) => {
+      assert.equal(query.setId, PRISMATIC_ID);
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      assert.equal(init.signal.aborted, false);
+      return { data: { assets: [sourceCards[2].variants[0].image] }, meta: {} };
+    },
+  });
+  assert.deepEqual(Array.from(enrichedImages, (card: any) => card.images.small), sourceUris,
+    'optional artwork may finish after the preferred facts deadline without losing the selected cards');
+  assert.equal(legacyReads, 0);
 
   const setCalls: string[] = [];
   const cardRows = Array.from({ length: 180 }, (_, index) => ({

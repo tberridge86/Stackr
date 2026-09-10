@@ -149,7 +149,7 @@ export type HomeActivityItem = {
 };
 
 const cardShadow = {
-  shadowColor: '#302938',
+  shadowColor: '#6B528B',
   shadowOpacity: 0.11,
   shadowRadius: 18,
   shadowOffset: { width: 0, height: 8 },
@@ -163,7 +163,7 @@ const tradeTierAssets = {
   silver: require('../assets/rev2/10-market-trade/protection-tiers/silver.png') as ImageSourcePropType,
   gold: require('../assets/rev2/10-market-trade/protection-tiers/gold.png') as ImageSourcePropType,
 };
-const HOME_HERO_DEEP = '#302938';
+const HOME_HERO_DEEP = '#6B528B';
 const HOME_HERO_PRIMARY = '#6938F5';
 const HOME_HERO_MID = '#7C3CFF';
 const HOME_HERO_LIFT = '#8B55FF';
@@ -2262,7 +2262,7 @@ const styles = StyleSheet.create({
     height: 9,
     borderRadius: 999,
     backgroundColor: 'rgba(27,42,75,0.15)',
-    shadowColor: '#25222D',
+    shadowColor: '#6B528B',
     shadowOpacity: 0.16,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
@@ -2860,7 +2860,7 @@ const styles = StyleSheet.create({
   },
   duplicateSummaryTitle: {
     ...typeScale.cardTitle,
-    color: '#302938',
+    color: '#433650',
     fontSize: 18,
     lineHeight: 22,
     fontWeight: '900',
@@ -3254,7 +3254,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingTop: 8,
     overflow: 'hidden',
-    shadowColor: '#302938',
+    shadowColor: '#6B528B',
     shadowOpacity: 0.18,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: -8 },

@@ -24,7 +24,7 @@ export function StackrBackdrop({
     return (
       <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill}>
         <LinearGradient
-          colors={isDark ? ['#140B2D', '#241150', '#302938'] : ['#F6F5F8', '#FFFFFF', '#F0EFF3']}
+          colors={isDark ? ['#140B2D', '#241150', '#302938'] : ['#FAF9FC', '#FFFFFF', '#F2EFF7']}
           start={{ x: 0.08, y: 0 }}
           end={{ x: 0.92, y: 1 }}
           style={[StyleSheet.absoluteFillObject, opacity === undefined ? null : { opacity }]}
@@ -41,7 +41,7 @@ export function StackrBackdrop({
         {
           top: -PAGE_BACKDROP_BLEED,
           bottom: -PAGE_BACKDROP_BLEED,
-          backgroundColor: isDark ? '#302938' : '#F6F5F8',
+          backgroundColor: isDark ? '#302938' : '#FAF9FC',
         },
       ]}
     >

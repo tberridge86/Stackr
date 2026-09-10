@@ -118,7 +118,7 @@ export function HomeCollectionHero({
           styles.heroCard,
           {
             backgroundColor: theme.colors.semantic.featureSurface,
-            borderColor: theme.colors.semantic.featureSurface,
+            borderColor: theme.colors.semantic.featureBorder,
           },
         ]}
       >
@@ -158,7 +158,7 @@ export function HomeCollectionHero({
         </View>
         <View style={styles.heroCopy}>
           <Text
-            style={[styles.kicker, { color: theme.colors.secondary }]}
+            style={[styles.kicker, { color: theme.colors.primary }]}
             numberOfLines={1}
           >
             {binder.type === "official" ? "CONTINUE COLLECTING" : "YOUR BINDER"}
@@ -205,7 +205,7 @@ export function HomeCollectionHero({
                 <View
                   style={[
                     styles.progressFill,
-                    { width: `${completion.percent}%`, backgroundColor: theme.colors.secondary },
+                    { width: `${completion.percent}%`, backgroundColor: theme.colors.primary },
                   ]}
                 />
               </View>
