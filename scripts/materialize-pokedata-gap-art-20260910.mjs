@@ -43,7 +43,7 @@ try {
    item.status='materialized';item.assetId=written.id;item.derivativeKeys=built.derivative_list.map(x=>x.storageKey);save({...receipt,phase:'item_materialized'});
  }
  receipt.completedAt=new Date().toISOString();save({...receipt,phase:apply?'applied':'dry_run'});console.log(JSON.stringify({ok:true,apply,items:receipt.items.length,materialized:receipt.items.filter(x=>x.status==='materialized').length}));
-}catch(e){receipt.failedAt=new Date().toISOString();receipt.error=e instanceof Error?e.message:String(e);save({...receipt,phase:'failed'});throw e}finally{await pg.end()}finally{await pg.end()}
+}catch(e){receipt.failedAt=new Date().toISOString();receipt.error=e instanceof Error?e.message:String(e);save({...receipt,phase:'failed'});throw e}finally{await pg.end()}
 +(i+1)).join(',')}) returning id`,e.map(([,v])=>v));};
 const receipt={contract:m.contract,target:'production',apply,startedAt:new Date().toISOString(),items:[],rollback:{preApplyAssets:[],insertedObjectKeys:[]}};
 try {
