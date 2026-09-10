@@ -20,7 +20,7 @@ if(apply&&process.env.STACKR_POKEDATA_GAP_CONFIRMATION!=='MATERIALIZE 82 VERIFIE
 const db=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SECRET_KEY,{auth:{persistSession:false}}), storage=new SupabaseObjectStorageAdapter(db);
 const receipt={contract:m.contract,target:'production',apply,startedAt:new Date().toISOString(),items:[],rollback:{preApplyAssets:[],insertedObjectKeys:[]}};
 try {
- const {data:source,error:se}=await db.schema('ingest').from('sources').select('id,code,licence_status,active,deprecated_at').eq('code','pokedata_japanese').maybeSingle(); if(se||!source?.id||source.licence_status!=='approved'||!source.active||source.deprecated_at)throw Error('approved_production_source_missing');
+ const {data:source,error:se}=await db.schema('ingest').from('sources').select('id,code,licence_status,active,deprecated_at').eq('code','pokedata_japanese').maybeSingle(); if(se||!source?.id||source.code!=='pokedata_japanese'||source.licence_status!=='approved'||source.active!==true||source.deprecated_at)throw Error(pproved_production_source_missing:);
  const ids=m.candidates.map(x=>x.variantId);
  const {data:version,error:ve}=await db.schema('catalog').from('catalogue_versions').select('id,status,language_code,deprecated_at').eq('id',VERSION).maybeSingle();if(ve||version?.status!=='published'||version.language_code!=='ja'||version.deprecated_at)throw Error('published_version_not_current');
  const {data:members,error:me}=await db.schema('catalog').from('catalogue_version_variants').select('set_id,printing_id,variant_id,card_variants!inner(language_code,variant_code,finish_code,game_code)').eq('catalogue_version_id',VERSION).in('variant_id',ids); if(me||members?.length!==82)throw Error('production_membership_missing');
@@ -38,3 +38,4 @@ try {
  }
  receipt.completedAt=new Date().toISOString();save({...receipt,phase:apply?'applied':'dry_run'});console.log(JSON.stringify({ok:true,apply,items:receipt.items.length,materialized:receipt.items.filter(x=>x.status==='materialized').length}));
 }catch(e){receipt.failedAt=new Date().toISOString();receipt.error=e instanceof Error?e.message:String(e);save({...receipt,phase:'failed'});throw e}
+
