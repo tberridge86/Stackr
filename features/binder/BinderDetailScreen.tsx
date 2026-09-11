@@ -1,3 +1,5 @@
+import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
+import { attachBinderCatalogueArtwork, attachBinderSetArtwork } from '../../lib/binders';
 import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
@@ -888,6 +890,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const activeAccountIdRef = useRef<string | null>(null);
   const accountGenerationRef = useRef(0);
   const loadRequestRef = useRef(0);
+  const artworkRequestRef = useRef<AbortController | null>(null);
   const isOwner = Boolean(userId && binder?.user_id === userId);
   const isReadOnly = routeReadOnly || (Boolean(binder) && (!isOwner || !ownershipReady));
 
@@ -1012,6 +1015,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     if (!binderId) return;
     const accountGeneration = accountGenerationRef.current;
     const requestId = ++loadRequestRef.current;
+    artworkRequestRef.current?.abort();
+    const artworkRequest = new AbortController();
+    artworkRequestRef.current = artworkRequest;
     const isCurrentRequest = () => isCurrentAccountRequest(
       { accountGeneration: accountGenerationRef.current, requestId: loadRequestRef.current },
       { accountGeneration, requestId },
@@ -1037,7 +1043,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
       const binderData = await measureAsync(
         'binder.fetchBinderById',
-        () => fetchBinderById(binderId),
+        () => fetchBinderById(binderId, { includeAssets: false }),
         { binderId }
       );
       if (!isCurrentRequest()) return;
@@ -1059,7 +1065,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           : Promise.resolve(null),
         measureAsync(
           'binder.fetchBinderCards',
-          () => fetchBinderCards(binderId, { includePrices: false }),
+          () => fetchBinderCards(binderId, { includePrices: false, includeAssets: false }),
           { binderId }
         ),
       ]);
@@ -1072,6 +1078,23 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       // make an older, unresolved binder look empty.
       setCards(binderCards);
       setLoading(false);
+
+      void attachBinderCatalogueArtwork(binderCards, artworkRequest.signal).then((enriched) => {
+        if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
+        setCards((current) => isCurrentRequest() && !artworkRequest.signal.aborted ? mergeBinderArtwork(current, enriched) : current);
+        setSelectedCard((current) => current && isCurrentRequest() && !artworkRequest.signal.aborted ? mergeBinderArtwork([current], enriched)[0] : current);
+      }).catch((error) => {
+        if (isCurrentRequest() && !artworkRequest.signal.aborted) console.log('Binder artwork unavailable:', error);
+      });
+      void attachBinderSetArtwork(binderData).then((enriched) => {
+        if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
+        setBinder((current) => current?.id === enriched.id && isCurrentRequest() ? {
+          ...current,
+          source_set_logo_url: enriched.source_set_logo_url ?? current.source_set_logo_url,
+          source_set_symbol_url: enriched.source_set_symbol_url ?? current.source_set_symbol_url,
+          source_set_cover_url: enriched.source_set_cover_url ?? current.source_set_cover_url,
+        } : current);
+      }).catch(() => undefined);
 
       // Pricing is supplemental to the immediately usable catalogue/ownership
       // view. Merge it later so a slow snapshot lookup cannot hold the binder.
@@ -1223,6 +1246,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       activeAccountIdRef.current = nextAccountId;
       accountGenerationRef.current += 1;
       loadRequestRef.current += 1;
+      artworkRequestRef.current?.abort();
       setUserId(nextAccountId);
       setBinder(null);
       setCustomNameArtKey(null);
@@ -1247,6 +1271,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       load();
       return () => {
         loadRequestRef.current += 1;
+        artworkRequestRef.current?.abort();
       };
     }, [load])
   );

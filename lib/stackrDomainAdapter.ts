@@ -1,3 +1,5 @@
+import { createSetFactsReader, loadCompleteSetPages } from './stackrSetRetrieval';
+import { getPersistentStackrSetFactsStore } from './stackrCatalogueCache';
 import {
   StackrApiClient,
   stackrApiClient,
@@ -34,6 +36,19 @@ import {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PREFERRED_CATALOGUE_READ_TIMEOUT_MS = 7000;
+type SetCardReadOptions = { includeAssets?: boolean; minimumCardCount?: number | null };
+const setFactsReaders = new WeakMap<StackrApiClient, ReturnType<typeof createSetFactsReader>>();
+// Read-time enrichment handles are weakly held and never serialized into binder records.
+const canonicalArtworkFacts = new WeakMap<object, StackrCard>();
+function setFactsReader(client: StackrApiClient) {
+  let reader = setFactsReaders.get(client);
+  if (!reader) {
+    reader = createSetFactsReader({ store: () => client.catalogueCacheNamespace
+      ? getPersistentStackrSetFactsStore() : Promise.resolve(null) });
+    setFactsReaders.set(client, reader);
+  }
+  return reader;
+}
 const STACKR_CARD_RESOLUTION_TTL_MS = 45000;
 const MAX_STACKR_CARD_RESOLUTION_ENTRIES = 256;
 type StackrCardResolutionEntry = {
@@ -140,6 +155,7 @@ function stackrCardResolutionKey(reference: string, options: { language?: string
 
 /** Clears success and in-flight card-resolution work for one API client. */
 export function clearStackrCatalogueCaches(client: StackrApiClient = stackrApiClient) {
+  setFactsReaders.get(client)?.invalidate(client.catalogueCacheNamespace ?? 'ephemeral-client');
   const cache = stackrCardResolutionCache(client);
   cache.generation += 1;
   cache.entries.clear();
@@ -670,7 +686,7 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
   });
   const smallImage = derivativeUrl(primary, ['card-grid', 'grid', 'search', 'small', 'thumb']);
   const largeImage = derivativeUrl(primary, ['detail', 'large']);
-  return {
+  const mapped: StackrLegacyCard = {
     id: card.cardId,
     name: presentation.name,
     number: card.collectorNumber.value,
@@ -736,6 +752,8 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
       },
     },
   };
+  canonicalArtworkFacts.set(mapped.raw_data, card);
+  return mapped;
 }
 
 async function allPages<T>(
@@ -977,9 +995,27 @@ async function fetchCanonicalSetCardFacts(
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
   signal?: AbortSignal,
+  options: SetCardReadOptions = {},
 ) {
   const setId = await resolveCanonicalStackrSetId(reference, language, client, signal);
   if (!setId) return { setId: null, cards: [] as StackrCard[] };
+  if (options.includeAssets === false) {
+    const prefixLanguage = toStackrApiLanguage(getPokemonSetLanguageFromPrefixedId(reference));
+    let apiLanguage = toStackrApiLanguage(language) ?? prefixLanguage;
+    if (prefixLanguage && apiLanguage && prefixLanguage !== apiLanguage) throw new Error('Conflicting catalogue language');
+    let expectedCount = Number(options.minimumCardCount ?? 0);
+    if (!apiLanguage || !Number.isSafeInteger(expectedCount) || expectedCount < 1) {
+      const set = (await client.set(setId, { signal })).data.set;
+      if (apiLanguage && apiLanguage !== set.languageCode) throw new Error('Conflicting catalogue language');
+      apiLanguage = set.languageCode;
+      expectedCount = Number(set.total ?? set.printedTotal ?? 0);
+    }
+    const key = { namespace: client.catalogueCacheNamespace ?? 'ephemeral-client', setId, language: apiLanguage!, expectedCount };
+    return setFactsReader(client).read(key, (requestSignal) => loadCompleteSetPages(key, async (cursor, pageSignal) => {
+      const response = await client.setCards(setId, { language: apiLanguage!, cursor, limit: 500, includeAssets: false }, { signal: pageSignal });
+      return { cards: response.data.cards, nextCursor: response.meta.pagination?.nextCursor ?? null };
+    }, normalizeCanonicalSetCards, requestSignal), signal);
+  }
   const responseCards = await allPages<StackrCard>(async (cursor, pageSignal) => {
     const response = await client.setCards(
       setId,
@@ -1049,7 +1085,10 @@ export function fetchStackrCardsForSet(
   reference: string,
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
+  options: SetCardReadOptions = {},
 ) {
+  if (options.includeAssets === false) return fetchCanonicalSetCardFacts(reference, language, client, undefined, options)
+    .then((facts) => facts.cards.map((card) => stackrCardToLegacyCard(card)));
   return shouldUseStackrApi(client)
     ? fetchCanonicalStackrCardsForSet(reference, language, client)
     : fetchLegacyStackrCardsForSet(reference, language);
@@ -1067,7 +1106,12 @@ export function fetchPreferredStackrCardsForReferences(
   references: string[],
   language?: string | null,
   client: StackrApiClient = stackrApiClient,
+  options: SetCardReadOptions = {},
 ) {
+  if (options.includeAssets === false) return firstNonEmptyCatalogueRows(references, async (reference) => {
+    const facts = await fetchCanonicalSetCardFacts(reference, language, client, undefined, options);
+    return facts.cards.map((card) => stackrCardToLegacyCard(card));
+  });
   const candidates = [...new Set(references.map((value) => String(value ?? '').trim()).filter(Boolean))];
   const preferred: {
     facts: Awaited<ReturnType<typeof fetchCanonicalSetCardFacts>> | null;
@@ -1461,4 +1505,27 @@ export async function fetchStackrPrice(
     grade: clean(options.grade) ?? undefined,
   });
   return { resolved, price: response.data };
+}
+
+
+/** Reuse facts already returned to the binder; only the existing approved image/set resolution runs here. */
+export async function enrichStackrCardArtworkFromFacts(
+  cards: Array<{ raw_data?: any }>,
+  signal?: AbortSignal,
+  client: StackrApiClient = stackrApiClient,
+): Promise<StackrLegacyCard[]> {
+  const groups = new Map<string, StackrCard[]>();
+  for (const card of cards) {
+    const fact = card.raw_data && canonicalArtworkFacts.get(card.raw_data);
+    if (!fact) continue;
+    const key = JSON.stringify([fact.set.setId, fact.languageCode, fact.catalogueVersionId]);
+    const rows = groups.get(key) ?? [];
+    rows.push(fact); groups.set(key, rows);
+  }
+  const enriched: StackrLegacyCard[] = [];
+  for (const facts of groups.values()) {
+    throwIfOptionalCatalogueReadAborted(signal);
+    enriched.push(...await enrichCanonicalSetCards({ setId: facts[0].set.setId, cards: facts }, client, signal));
+  }
+  return enriched;
 }

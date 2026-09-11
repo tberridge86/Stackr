@@ -1,5 +1,7 @@
 import { supabase } from './supabase';
-import { fetchCardsForSet, normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
+import { attachLiveTcgdexCardReferences, fetchCardsForSet, normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
+import { enrichStackrCardArtworkFromFacts } from './stackrDomainAdapter';
+import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';
 import { createActivityPost } from './activity';
 import { PRICE_API_URL, USD_TO_GBP } from './config';
 import { recordAchievementEvent } from './achievements';
@@ -540,11 +542,11 @@ export async function fetchBinderById(
 
 export async function fetchBinderCards(
   binderId: string,
-  options: { includePrices?: boolean } = {},
+  options: { includePrices?: boolean; includeAssets?: boolean } = {},
 ): Promise<BinderCardRecord[]> {
   let catalogueComplete = true;
   return getCachedOrFetch(
-    `binder:${binderId}:${options.includePrices === false ? 'unpriced-cards' : 'cards'}`,
+    `binder:${binderId}:${options.includePrices === false ? 'unpriced-cards' : 'cards'}:${options.includeAssets === false ? 'facts' : 'assets'}`,
     BINDER_CARDS_CACHE_TTL_MS,
     () => fetchBinderCardsUncached(binderId, {
       ...options,
@@ -556,7 +558,7 @@ export async function fetchBinderCards(
 
 async function fetchBinderCardsUncached(
   binderId: string,
-  options: { includePrices?: boolean; onCatalogueUnavailable?: () => void } = {},
+  options: { includePrices?: boolean; includeAssets?: boolean; onCatalogueUnavailable?: () => void } = {},
 ): Promise<BinderCardRecord[]> {
   // Identity and ownership reads must not wait for every set's visual manifest.
   const binder = await fetchBinderById(binderId, { includeAssets: false });
@@ -605,6 +607,7 @@ async function fetchBinderCardsUncached(
   const setCards = await fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id, {
     language: binderLanguage,
     preferCanonicalApi: true,
+    includeAssets: options.includeAssets,
     minimumCardCount: positiveCatalogueCount(binder.catalogue_set_total)
       ?? positiveCatalogueCount(binder.catalogue_set_printed_total),
   }).catch(() => []);
@@ -1490,4 +1493,26 @@ export async function deleteBinder(binderId: string): Promise<void> {
 
   if (error) throw error;
   invalidateBinderCaches(binderId);
+}
+
+
+export async function attachBinderSetArtwork(binder: BinderRecord): Promise<BinderRecord> {
+  return (await attachSetBrandingToBinders([binder], true))[0] ?? binder;
+}
+
+export async function attachBinderCatalogueArtwork(rows: BinderCardRecord[], signal?: AbortSignal): Promise<BinderCardRecord[]> {
+  const eligible = rows.filter((row) => row.catalogue_match_status === 'catalogue' && row.card?.raw_data?.stackr?.canonical);
+  if (!eligible.length) return rows;
+  const enriched = await enrichStackrCardArtworkFromFacts(eligible.map((row) => row.card), signal);
+  // Preserve the already-established foreign-source fallback, but never await it for first paint.
+  const references = await readOptionalCatalogueEnrichment(() => attachLiveTcgdexCardReferences(enriched, 1), signal);
+  const byId = new Map((references ?? enriched).map((card) => [JSON.stringify([card.id, card.language, card.raw_data?.stackr && (card.raw_data.stackr as any).defaultVariantId]), card]));
+  return rows.map((row) => {
+    const identity = row.card?.raw_data?.stackr;
+    const display = identity && byId.get(JSON.stringify([identity.cardId, row.language, identity.defaultVariantId]));
+    if (!display) return row;
+    const card = { ...row.card, images: display.images };
+    if (hasTcgdexRuntimeImageOverlay(display, 'images')) defineTcgdexRuntimeImageOverlay(card, 'images', display.images, display.images.small);
+    return { ...row, card };
+  });
 }
