@@ -5,7 +5,7 @@ on:
     branches:
       - asset/pokemon-tc-set-logo-sheet-20260911
     paths:
-      - tools/build_tc_set_logo_sheet_20260911.py.gz
+      - tools/build_tc_set_logo_sheet_20260911.py.gz.b64.part*
       - .github/workflows/build-pokemon-tc-set-logo-sheet-20260911.yml
   workflow_dispatch:
 
@@ -30,8 +30,13 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install requests pillow reportlab beautifulsoup4
 
-      - name: Expand build script
-        run: gzip -dc tools/build_tc_set_logo_sheet_20260911.py.gz > tools/build_tc_set_logo_sheet_20260911.py
+      - name: Reconstruct and verify build script
+        run: |
+          cat tools/build_tc_set_logo_sheet_20260911.py.gz.b64.part* \
+            | base64 --decode \
+            | gzip --decompress \
+            > tools/build_tc_set_logo_sheet_20260911.py
+          python -m py_compile tools/build_tc_set_logo_sheet_20260911.py
 
       - name: Build Traditional Chinese logo sheet and import bundle
         run: python tools/build_tc_set_logo_sheet_20260911.py
