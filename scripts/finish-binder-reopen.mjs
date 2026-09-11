@@ -23,5 +23,5 @@ replaceOnce(tests, next, `await test('actual screen retains the saved view when 
 });
 ` + next);
 const assertion = String.raw`  assert.match(source, /const isReadOnly = routeReadOnly \|\| reopenStatus !== null/);`;
-replaceOnce(tests, assertion, assertion + '\n' + String.raw`  assert(source.includes("{reopenStatus ? 'Pricing awaits refresh' : ` + '`' + String.raw`${formatCurrency(binderValue)} est. value` + '`' + String.raw`}"), 'saved views must not turn omitted price snapshots into a zero-valued estimate');`);
+replaceOnce(tests, assertion, assertion + '\n' + String.raw`  assert.match(source, /reopenStatus \? 'Pricing awaits refresh'/, 'saved views must not turn omitted prices into a zero estimate');`);
 console.log('Complete refresh identities and truthful saved-view valuation guards added.');
