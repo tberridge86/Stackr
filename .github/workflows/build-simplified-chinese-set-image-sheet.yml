@@ -1,22 +1,22 @@
-name: Build Simplified Chinese set image sheet
+name: Build Simplified Chinese set image sheet fast
 
 on:
   push:
     branches:
-      - "artifacts/simplified-chinese-set-logos-20260911"
+      - "artifacts/simplified-chinese-set-images-fast-20260911"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: simplified-chinese-set-image-sheet-${{ github.ref }}
+  group: simplified-chinese-set-image-sheet-fast-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -32,9 +32,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install requests pillow reportlab pypdf beautifulsoup4
 
-      - name: Bound candidate downloads
+      - name: Use top official candidate only
         working-directory: artifact-jobs/simplified-chinese-set-logos
-        run: sed -i 's/candidates\[:10\]/candidates[:4]/' retrieve_set_images.py
+        run: sed -i 's/candidates\[:10\]/candidates[:1]/' retrieve_set_images.py
 
       - name: Retrieve official images and build six-per-page PDF
         working-directory: artifact-jobs/simplified-chinese-set-logos
@@ -55,7 +55,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: simplified-chinese-set-images
+          name: simplified-chinese-set-images-fast
           path: artifact-jobs/simplified-chinese-set-logos/output/
           if-no-files-found: error
           retention-days: 14
