@@ -32,6 +32,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install requests pillow reportlab pypdf beautifulsoup4
 
+      - name: Bound candidate downloads
+        working-directory: artifact-jobs/simplified-chinese-set-logos
+        run: sed -i 's/candidates\[:10\]/candidates[:4]/' retrieve_set_images.py
+
       - name: Retrieve official images and build six-per-page PDF
         working-directory: artifact-jobs/simplified-chinese-set-logos
         run: python retrieve_set_images.py
