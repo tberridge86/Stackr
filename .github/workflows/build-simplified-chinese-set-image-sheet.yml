@@ -1,16 +1,16 @@
-name: Build Simplified Chinese set image sheet fast
+name: Build enhanced Simplified Chinese set image sheet
 
 on:
   push:
     branches:
-      - "artifacts/simplified-chinese-set-images-fast-20260911"
+      - "artifacts/simplified-chinese-set-images-enhanced-20260911"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: simplified-chinese-set-image-sheet-fast-${{ github.ref }}
+  group: simplified-chinese-set-image-sheet-enhanced-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -38,16 +38,16 @@ jobs:
           sed -i 's/candidates\[:10\]/candidates[:1]/' retrieve_set_images.py
           sed -i 's/max_dim = 2400/max_dim = 900/' retrieve_set_images.py
 
-      - name: Retrieve official images and build six-per-page PDF
+      - name: Retrieve verified official images and build PDF
         working-directory: artifact-jobs/simplified-chinese-set-logos
-        run: python fast_build.py
+        run: python enhanced_build.py
 
       - name: Add result summary
         if: always()
         working-directory: artifact-jobs/simplified-chinese-set-logos
         run: |
           if [ -f output/summary.json ]; then
-            echo '## Simplified Chinese set image retrieval' >> "$GITHUB_STEP_SUMMARY"
+            echo '## Enhanced Simplified Chinese set image retrieval' >> "$GITHUB_STEP_SUMMARY"
             echo '```json' >> "$GITHUB_STEP_SUMMARY"
             cat output/summary.json >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
@@ -57,7 +57,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: simplified-chinese-set-images-compact
+          name: simplified-chinese-set-images-enhanced
           path: |
             artifact-jobs/simplified-chinese-set-logos/output/*.pdf
             artifact-jobs/simplified-chinese-set-logos/output/*.zip
