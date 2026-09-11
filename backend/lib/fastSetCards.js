@@ -31,10 +31,45 @@ function assetOptions() {
   };
 }
 
+function shouldIncludeAssets(value) {
+  if (value == null || value === '') return true;
+  if (value === false || value === 0) return false;
+  const normalized = String(value).trim().toLowerCase();
+  return !['false', '0', 'no', 'off'].includes(normalized);
+}
+
+function paginationFromRows(bundleRows, rawRows, limit) {
+  const last = rawRows.at(-1);
+  return {
+    limit,
+    nextCursor: bundleRows.length > limit && last?.variant_id
+      ? encodeCursor({ variant_id: last.variant_id })
+      : null,
+  };
+}
+
+async function fetchFactRows(supabase, setId, language, afterVariantId, limit) {
+  const { data, error } = await supabase.schema('api').rpc('catalogue_set_card_fact_rows', {
+    p_set_id: setId,
+    p_language_code: language,
+    p_after_variant_id: afterVariantId,
+    p_limit: limit,
+  });
+  if (error) throw error;
+
+  const bundleRows = Array.isArray(data) ? data : [];
+  const pageRows = bundleRows.slice(0, limit);
+  const rawRows = pageRows.map((entry) => entry?.card_row).filter(Boolean);
+  return {
+    cards: groupCardRows(sortCardsForDisplay(rawRows)),
+    pagination: paginationFromRows(bundleRows, rawRows, limit),
+  };
+}
+
 /**
- * Fetches one published set page and its preferred card artwork in one PostgREST RPC.
- * This is deliberately limited to the hot set/binder path; the ordinary catalogue
- * service remains the compatibility fallback.
+ * Fetches one published set page through a single PostgREST RPC.
+ * Binder first paint can request facts only (includeAssets=false), while existing
+ * consumers retain the preferred-artwork response by default.
  */
 export async function fetchFastSetCards(supabase, setId, input = {}) {
   if (!isUuid(setId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
@@ -47,6 +82,10 @@ export async function fetchFastSetCards(supabase, setId, input = {}) {
   const afterVariantId = clean(cursor?.variant_id);
   if (afterVariantId && !isUuid(afterVariantId)) {
     throw new ApiError(400, 'invalid_cursor', 'cursor is not a valid Stackr pagination cursor.');
+  }
+
+  if (!shouldIncludeAssets(input.includeAssets)) {
+    return fetchFactRows(supabase, setId, language, afterVariantId, limit);
   }
 
   const { data, error } = await supabase.schema('api').rpc('catalogue_set_card_rows', {
@@ -77,14 +116,8 @@ export async function fetchFastSetCards(supabase, setId, input = {}) {
     }),
   }));
 
-  const last = rawRows.at(-1);
   return {
     cards,
-    pagination: {
-      limit,
-      nextCursor: bundleRows.length > limit && last?.variant_id
-        ? encodeCursor({ variant_id: last.variant_id })
-        : null,
-    },
+    pagination: paginationFromRows(bundleRows, rawRows, limit),
   };
 }
