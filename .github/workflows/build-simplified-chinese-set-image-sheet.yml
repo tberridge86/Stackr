@@ -1,0 +1,58 @@
+name: Build Simplified Chinese set image sheet
+
+on:
+  push:
+    branches:
+      - "artifacts/simplified-chinese-set-logos-20260911"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: simplified-chinese-set-image-sheet-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install requests pillow reportlab pypdf cairosvg
+
+      - name: Retrieve images and build six-per-page PDF
+        working-directory: artifact-jobs/simplified-chinese-set-logos
+        run: python retrieve_set_images.py
+
+      - name: Add result summary
+        if: always()
+        working-directory: artifact-jobs/simplified-chinese-set-logos
+        run: |
+          if [ -f output/summary.json ]; then
+            echo '## Simplified Chinese set image retrieval' >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat output/summary.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload PDF, PNG ZIP and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simplified-chinese-set-images
+          path: artifact-jobs/simplified-chinese-set-logos/output/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
