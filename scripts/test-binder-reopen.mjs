@@ -145,6 +145,13 @@ await test('actual screen keeps last complete catalogue rather than replacing it
   h.auth.resolve({ data: { user: { id: scope.accountId } } }); h.record.resolve(binder); await tick(); h.network.resolve(cards(117)); await pending;
   assert.equal(h.state.cards.length, 124); assert.equal(h.state.status.state, 'incomplete'); assert.equal(h.saves, 0); assert.equal(h.state.ownershipReady, false);
 });
+await test('actual screen retains the saved view when a full-count refresh has a wrong-language identity', async () => {
+  const h = screenHarness(); const pending = h.load(); h.disk.resolve(snapshot()); await tick();
+  h.auth.resolve({ data: { user: { id: scope.accountId } } }); h.record.resolve(binder); await tick();
+  const wrong = cards(); wrong[0].language = 'ja'; h.network.resolve(wrong); await pending;
+  assert.equal(h.state.cards.length, 124); assert.equal(h.state.cards[0].language, 'en');
+  assert.equal(h.state.status.state, 'incomplete'); assert.equal(h.saves, 0); assert.equal(h.state.ownershipReady, false);
+});
 await test('actual screen replaces saved data only after a complete refresh and never lets late disk results win', async () => {
   const h = screenHarness(); const pending = h.load(); h.auth.resolve({ data: { user: { id: scope.accountId } } }); h.record.resolve(binder); await tick();
   const updated = cards(); updated[0].owned_quantity = 7; h.network.resolve(updated); await pending; h.disk.resolve(snapshot()); await tick();
@@ -157,6 +164,7 @@ await test('native viewability callback and committed ownership hook are wired s
   assert.match(source, /onViewableItemsChanged=\{onBinderViewableItemsChanged\}/);
   assert.match(source, /ownershipReady && !isReadOnly\) retrievalTraceRef\.current\?\.editable/);
   assert.match(source, /const isReadOnly = routeReadOnly \|\| reopenStatus !== null/);
+  assert.match(source, /reopenStatus \? 'Pricing awaits refresh'/, 'saved views must not turn omitted prices into a zero estimate');
 });
 console.log(`${count} reopen, failed-refresh, isolation and measurement tests passed. Not physical-device latency proof.`);
 fs.mkdirSync('reports', { recursive: true }); fs.writeFileSync('reports/binder-reopen-tests.json', JSON.stringify({ tests: count, passed: count, scope: 'Source and persisted-cache regression; no native-device latency measurement', observedAt: new Date().toISOString() }, null, 2));

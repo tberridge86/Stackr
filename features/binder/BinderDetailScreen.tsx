@@ -1135,7 +1135,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         ...snapshotScope, schema: 1, savedAt, binder: binderData, cards: binderCards,
       }, snapshotScope, binderId, savedAt);
       const expected = binderData.catalogue_set_total ?? binderData.catalogue_set_printed_total;
-      const incompleteRefresh = binderData.type === 'official' && (binderCards.some((card) => card.catalogue_incomplete)
+      const incompleteRefresh = binderData.type === 'official' && ((binderData.user_id === user?.id && !completeOwnerView)
+        || binderCards.some((card) => card.catalogue_incomplete)
         || (typeof expected === 'number' && expected > 0 && new Set(binderCards.filter((card) => card.catalogue_match_status === 'catalogue').map((card) => card.card?.id)).size < expected));
       if (incompleteRefresh) {
         refreshState = 'incomplete';
@@ -3524,7 +3525,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
               <Text style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }} numberOfLines={1}>
-                {formatCurrency(binderValue)} est. value
+                {reopenStatus ? 'Pricing awaits refresh' : `${formatCurrency(binderValue)} est. value`}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
               <Text style={{ color: theme.colors.primary, fontSize: 10.5, lineHeight: 13, fontWeight: '900' }} numberOfLines={1}>
