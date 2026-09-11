@@ -1,0 +1,85 @@
+name: Audit unresolved Simplified Chinese products in parallel
+
+on:
+  push:
+    branches:
+      - artifacts/sc-set-image-retry-20260911
+    paths:
+      - artifact-jobs/simplified-chinese-set-logos/official_candidate_single.py
+      - .github/workflows/audit-sc-product-candidates-parallel.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        include:
+          - id: '20828'
+            title: 'Master decks 2026'
+            url: 'https://www.pokemon.cn/tcg/product/20828.html'
+            codes: 'csvm2ac,csvm2bc,csvm2cc'
+          - id: '19759'
+            title: 'Master decks 2025'
+            url: 'https://www.pokemon.cn/tcg/product/19759.html'
+            codes: 'csvm1ac,csvm1bc,csvm1cc'
+          - id: '15831'
+            title: 'Brave Stars products'
+            url: 'https://www.pokemon.cn/tcg/product/15831.html'
+            codes: 'cs5dc,csnc'
+          - id: '15872'
+            title: 'Starter deck 100'
+            url: 'https://www.pokemon.cn/tcg/product/15872.html'
+            codes: 'cs4dac'
+          - id: '16282'
+            title: 'Battle Party combinations'
+            url: 'https://www.pokemon.cn/tcg/product/16282.html'
+            codes: 'csmpjc,csmpkc,csmplc,csmpmc,csmpnc,csmpoc,csmppc,csmpqc,csmpac,csmpbc,csmpcc,csmpdc,csmpec,csmpfc,csmpgc,csmphc,csmpic'
+          - id: '16070'
+            title: 'Sword Shield starter decks'
+            url: 'https://www.pokemon.cn/tcg/product/16070.html'
+            codes: 'cs3dc'
+          - id: '21608'
+            title: '30th anniversary promo series'
+            url: 'https://www.pokemon.cn/tcg/product/21608.html'
+            codes: 'promo-30th-p'
+          - id: '15585'
+            title: 'Scarlet Violet launch promos'
+            url: 'https://www.pokemon.cn/tcg/product/15585.html'
+            codes: 'promo-sv-p'
+          - id: '16268'
+            title: 'Sword Shield promo series'
+            url: 'https://www.pokemon.cn/tcg/product/16268.html'
+            codes: 'promo-s-p'
+          - id: '16368'
+            title: 'Sun Moon launch promos'
+            url: 'https://www.pokemon.cn/tcg/product/16368.html'
+            codes: 'promo-sm-p'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install requests pillow reportlab beautifulsoup4
+      - name: Audit ${{ matrix.id }}
+        working-directory: artifact-jobs/simplified-chinese-set-logos
+        env:
+          ARTICLE_ID: ${{ matrix.id }}
+          ARTICLE_TITLE: ${{ matrix.title }}
+          ARTICLE_URL: ${{ matrix.url }}
+          TARGET_CODES: ${{ matrix.codes }}
+        run: python official_candidate_single.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sc-product-candidates-${{ matrix.id }}
+          path: artifact-jobs/simplified-chinese-set-logos/single-candidate-audits/${{ matrix.id }}/
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 8
