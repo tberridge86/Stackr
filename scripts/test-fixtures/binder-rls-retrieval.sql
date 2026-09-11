@@ -51,10 +51,10 @@ insert into public.binder_cards values
 create function public.assert_binder_owner_access() returns void language plpgsql as $test$
 declare affected integer;
 begin
-  if (select array_agg(id order by id)::text from binders) <> '{00000000-0000-4000-8000-000000000001,00000000-0000-4000-8000-000000000002}' then
+  if (select array_agg(id order by id)::text from binders) is distinct from '{00000000-0000-4000-8000-000000000001,00000000-0000-4000-8000-000000000002}' then
     raise exception 'owner/private/public binder visibility changed';
   end if;
-  if (select array_agg(id order by id)::text from binder_cards) <> '{00000000-0000-4000-8000-000000000011,00000000-0000-4000-8000-000000000012}' then
+  if (select array_agg(id order by id)::text from binder_cards) is distinct from '{00000000-0000-4000-8000-000000000011,00000000-0000-4000-8000-000000000012}' then
     raise exception 'owner/private/public card visibility changed';
   end if;
   update binders set is_public = false where id = '00000000-0000-4000-8000-000000000001';
@@ -99,10 +99,10 @@ $test$;
 create function public.assert_binder_anonymous_access() returns void language plpgsql as $test$
 declare affected integer;
 begin
-  if (select array_agg(id order by id)::text from binders) <> '{00000000-0000-4000-8000-000000000002}' then
+  if (select array_agg(id order by id)::text from binders) is distinct from '{00000000-0000-4000-8000-000000000002}' then
     raise exception 'anonymous binder visibility changed';
   end if;
-  if (select array_agg(id order by id)::text from binder_cards) <> '{00000000-0000-4000-8000-000000000012}' then
+  if (select array_agg(id order by id)::text from binder_cards) is distinct from '{00000000-0000-4000-8000-000000000012}' then
     raise exception 'anonymous card visibility changed';
   end if;
   update binders set is_public = is_public;
