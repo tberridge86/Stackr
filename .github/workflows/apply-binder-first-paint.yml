@@ -10,16 +10,6 @@ on:
       - scripts/test-binder-*
       - scripts/test-retrieval-*
       - scripts/test-stackr-set-*
-  pull_request:
-    paths:
-      - .github/workflows/apply-binder-first-paint.yml
-      - lib/binderCardIdentity.ts
-      - lib/stackrSetRetrieval.ts
-      - lib/binders.ts
-      - features/binder/**
-      - scripts/test-binder-*
-      - scripts/test-retrieval-*
-      - scripts/test-stackr-set-*
 
 permissions:
   contents: read
@@ -32,16 +22,13 @@ jobs:
   candidate-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # ONE_SHOT_BEGIN
     permissions:
       contents: write
-    # ONE_SHOT_END
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           persist-credentials: true
-      # ONE_SHOT_BEGIN
       - name: Apply the exact locally tested candidate diff
         run: |
           test "$GITHUB_REF" = 'refs/heads/perf/binder-first-paint'
@@ -50,7 +37,6 @@ jobs:
           test "$(git hash-object lib/binderCardIdentity.ts)" = '7298c35ce5accc6105fbb5f478052118e8609d10'
           git apply --check scripts/retrieval-followup.patch
           git apply scripts/retrieval-followup.patch
-      # ONE_SHOT_END
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -64,26 +50,16 @@ jobs:
           node --import tsx scripts/test-binder-first-paint.mjs
           node --import tsx scripts/test-retrieval-parallel.mjs
           git diff --check
-      # ONE_SHOT_BEGIN
-      - name: Commit tested source and remove one-shot machinery
+      - name: Commit only the tested source and remove superseded patch scripts
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          path = Path('.github/workflows/apply-binder-first-paint.yml')
-          text = path.read_text()
-          text, removed = re.subn(r'(?ms)^ *# ONE_SHOT_BEGIN\n.*?^ *# ONE_SHOT_END\n', '', text)
-          assert removed == 3, removed
-          path.write_text(text.replace('persist-credentials: true', 'persist-credentials: false'))
-          PY
           git rm -- scripts/retrieval-followup.patch scripts/apply-binder-first-paint.mjs
-          git add lib/binderCardIdentity.ts lib/binders.ts features/binder/BinderDetailScreen.tsx .github/workflows/apply-binder-first-paint.yml
+          git add lib/binderCardIdentity.ts lib/binders.ts features/binder/BinderDetailScreen.tsx
           git diff --cached --check
+          git diff --exit-code -- .github
           git config user.name 'stackr-performance-bot'
           git config user.email 'stackr-performance-bot@users.noreply.github.com'
           git commit -m 'Overlap authorised binder reads and index saved-card matching'
           git push origin HEAD:perf/binder-first-paint
-      # ONE_SHOT_END
       - name: Record tested source identity
         run: |
           mkdir -p reports
@@ -97,31 +73,5 @@ jobs:
             reports/binder-retrieval-regression.json
             reports/retrieval-source-sha.txt
             reports/retrieval-source-hashes.txt
-          if-no-files-found: warn
-          retention-days: 14
-
-  canary-api-evidence:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          persist-credentials: false
-          sparse-checkout: scripts/benchmark-set-retrieval.mjs
-          sparse-checkout-cone-mode: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Record raw API completeness and every warm sample
-        env:
-          STACKR_PERF_BASE_URL: https://stackr-api-perf-canary-production.up.railway.app
-        run: node scripts/benchmark-set-retrieval.mjs
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: set-retrieval-evidence
-          path: reports/set-retrieval-evidence.json
           if-no-files-found: warn
           retention-days: 14
