@@ -127,16 +127,16 @@ export function MarketHeader({
 }) {
   const { theme } = useTheme();
   return (
-    <View style={{ gap: 9 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+    <View style={{ gap: 6 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text
-            style={{ color: theme.colors.text, fontSize: 31, lineHeight: 36, fontWeight: '900' }}
+            style={{ color: theme.colors.text, fontSize: 28, lineHeight: 33, fontWeight: '900' }}
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.86}
           >
-            The Ma<Text style={{ color: theme.colors.primary, fontSize: 31, lineHeight: 36, fontWeight: '900' }}>rket</Text>
+            The Ma<Text style={{ color: theme.colors.primary, fontSize: 28, lineHeight: 33, fontWeight: '900' }}>rket</Text>
           </Text>
         </View>
         <TouchableOpacity

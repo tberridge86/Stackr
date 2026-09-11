@@ -33,6 +33,7 @@ const known = groupDiscoverSets([
 ]);
 assert.deepEqual(known.map((group) => group.series), ['Scarlet & Violet', 'Sword & Shield', DISCOVER_OTHER_GROUP]);
 assert.equal(known.flatMap((group) => group.sets).length, 3);
+assert.equal(groupDiscoverSets([{ id: 'same', language: 'ja' }, { id: 'same', language: 'ja' }]).flatMap((group) => group.sets).length, 1, 'Exact duplicate set rows must not render twice.');
 assert.equal(groupDiscoverSets([{ id: 'sv08.5', language: 'ja' }])[0].series, DISCOVER_DATE_GROUP, 'English code patterns must not invent series for another language.');
 assert.deepEqual(groupDiscoverSets([]), []);
 console.log('P2 filter scope and chronological catalogue fallback checks passed.');

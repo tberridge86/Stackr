@@ -1471,6 +1471,9 @@ const JAPANESE_SET_LOGO_ALIASES: Record<string, string> = {
   "spromo": "swshpromos",
   "svp": "svp",
   "svpromo": "svp",
+  // Stellar starter-set extensions reuse the parent's captured set mark.
+  "svln": "sv7",
+  "svls": "sv7",
   "swordshieldpromos": "swshpromos",
   "xyp": "xypromos",
   "xypromo": "xypromos",

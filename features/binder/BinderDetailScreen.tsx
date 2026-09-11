@@ -58,6 +58,7 @@ import {
   addCardsToBinder,
   fetchBinderById,
   fetchBinderCards,
+  attachLatestSnapshotPrices,
   invalidateBinderCaches,
   updateBinderCardOwned,
   updateBinderCardCondition,
@@ -1058,7 +1059,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           : Promise.resolve(null),
         measureAsync(
           'binder.fetchBinderCards',
-          () => fetchBinderCards(binderId),
+          () => fetchBinderCards(binderId, { includePrices: false }),
           { binderId }
         ),
       ]);
@@ -1071,6 +1072,33 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       // make an older, unresolved binder look empty.
       setCards(binderCards);
       setLoading(false);
+
+      // Pricing is supplemental to the immediately usable catalogue/ownership
+      // view. Merge it later so a slow snapshot lookup cannot hold the binder.
+      void attachLatestSnapshotPrices(binderCards, binderData.language)
+        .then((pricedCards) => {
+          if (!isCurrentRequest()) return;
+          const pricesByCardAndSet = new Map(
+            pricedCards.map((card) => [`${card.set_id}\u0000${card.card_id}`, card])
+          );
+          setCards((currentCards) => {
+            if (!isCurrentRequest()) return currentCards;
+            return currentCards.map((card) => {
+              const pricedCard = pricesByCardAndSet.get(`${card.set_id}\u0000${card.card_id}`);
+              if (!pricedCard) return card;
+              return {
+                ...card,
+                ebay_price: pricedCard.ebay_price,
+                tcg_price: pricedCard.tcg_price,
+                cardmarket_price: pricedCard.cardmarket_price,
+                last_price_update: pricedCard.last_price_update,
+              };
+            });
+          });
+        })
+        .catch((error) => {
+          if (isCurrentRequest()) console.log('Failed to attach binder prices', error);
+        });
 
       if (!user) {
         setCards(binderCards);
@@ -1129,7 +1157,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         const nextGlobalOwnedKeys = new Set(
           (ownedRows ?? []).map((row) => `${row.set_id}:${row.card_id}`)
         );
-        setCards(binderCards.map((card) => ({
+        setCards((currentCards) => currentCards.map((card) => ({
           ...card,
           owned: card.owned || nextGlobalOwnedKeys.has(`${card.set_id}:${card.card_id}`),
         })));
@@ -3243,7 +3271,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             </View>
 
         {/* Header */}
-        <View style={{ gap: 8, marginBottom: 10 }}>
+        <View style={{ gap: 6, marginBottom: 8 }}>
           <View style={{
             backgroundColor: theme.colors.card,
             borderRadius: 18,
@@ -3260,7 +3288,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <View style={{
                 width: 62,
-                minHeight: 70,
+                minHeight: 58,
                 borderRadius: 15,
                 backgroundColor: theme.colors.surface,
                 borderWidth: 1,
@@ -3280,9 +3308,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                   fallbackColor={binder.color}
                   progress={showsCompletion ? progressPercent : 0}
                   width={60}
-                  stageHeight={66}
+                  stageHeight={54}
                   artworkWidth={47}
-                  artworkHeight={53}
+                  artworkHeight={44}
                   progressWidth={42}
                   progressHeight={4}
                   showProgressBar={showsCompletion}
@@ -3306,7 +3334,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                     contentFit="contain"
                     priority="high"
                     showFallbackIcon={false}
-                    style={{ width: '100%', height: 64, marginBottom: 1, alignSelf: 'flex-start', backgroundColor: 'transparent' }}
+                    style={{ width: '100%', height: 48, marginBottom: 1, alignSelf: 'flex-start', backgroundColor: 'transparent' }}
                   />
                 ) : customNameArt ? (
                   <Image
@@ -3353,7 +3381,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             </View>
 
             <View style={{
-              marginTop: 8,
+              marginTop: 6,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
@@ -3374,9 +3402,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               </Text>
             </View>
 
-            <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', marginTop: 2, textAlign: 'center' }}>
-              {heroHelperText}
-            </Text>
+            {catalogueReadIncomplete || totalNeedsSync ? (
+              <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', marginTop: 2, textAlign: 'center' }}>
+                {heroHelperText}
+              </Text>
+            ) : null}
             {showsCompletion ? (
               <Pressable
                 accessibilityRole="button"
