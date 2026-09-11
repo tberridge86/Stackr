@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 import time
-from pathlib import Path
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -17,6 +16,7 @@ ARTICLE_URL = os.environ["ARTICLE_URL"]
 TARGET_CODES = os.environ["TARGET_CODES"]
 
 out_root = audit.ROOT / "single-candidate-audits" / ARTICLE_ID
+out_root.mkdir(parents=True, exist_ok=True)
 audit.OUT = out_root
 audit.IMG = out_root / "images"
 audit.ARTICLES = {
@@ -39,6 +39,7 @@ audit.S.mount("http://", adapter)
 
 _original_get = audit.get
 
+
 def resilient_get(url: str, referer: str = ""):
     last = None
     for attempt in range(3):
@@ -49,6 +50,7 @@ def resilient_get(url: str, referer: str = ""):
             time.sleep(1.5 * (attempt + 1))
     assert last is not None
     raise last
+
 
 audit.get = resilient_get
 
