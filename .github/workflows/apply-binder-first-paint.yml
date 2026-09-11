@@ -2,77 +2,94 @@ name: Validate binder local-first retrieval
 
 on:
   push:
-    branches:
-      - perf/binder-first-paint
+    branches: [perf/binder-first-paint]
     paths:
       - .github/workflows/apply-binder-first-paint.yml
+      - lib/**
+      - features/binder/**
+      - scripts/test-binder-*
+      - scripts/test-stackr-set-*
+  pull_request:
+    paths:
+      - .github/workflows/apply-binder-first-paint.yml
+      - lib/stackrSetRetrieval.ts
+      - lib/binders.ts
+      - features/binder/**
+      - scripts/test-binder-*
+      - scripts/test-stackr-set-*
 
 permissions:
   contents: read
 
 concurrency:
-  group: binder-first-paint-candidate
+  group: binder-first-paint-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  patch-and-test:
+  candidate-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    permissions:
-      contents: write
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
-      - name: Apply guarded source edits
-        run: |
-          node scripts/apply-binder-first-paint.mjs
-          node --input-type=module -e 'import fs from "node:fs"; for (const path of ["lib/binders.ts", "lib/stackrCatalogueCache.ts", "lib/stackrDomainAdapter.ts"]) fs.writeFileSync(path, fs.readFileSync(path, "utf8").trimEnd() + "\n");'
-      - name: Install dependencies
-        run: npm ci
-      - name: Validate focused binder paths
+      - run: npm ci
+      - name: Validate committed retrieval source
         run: |
           npm run typecheck
           npm run test:binder-catalogue
           npm run test:personal-loading
           node --import tsx scripts/test-binder-first-paint.mjs
-          git diff --check
-      - name: Commit validated source only to isolated candidate branch
+          git diff --exit-code
+      - name: Package reproducible source and test tooling
         run: |
-          test "$GITHUB_REF" = 'refs/heads/perf/binder-first-paint'
-          if git diff --quiet; then
-            echo 'Source already present; validation completed without a new commit.'
-            exit 0
-          fi
-          git config user.name 'stackr-performance-bot'
-          git config user.email 'stackr-performance-bot@users.noreply.github.com'
-          git add lib/stackrApiV1.ts lib/stackrDomainAdapter.ts lib/pokemonTcg.ts lib/binders.ts lib/stackrCatalogueCache.ts features/binder/BinderDetailScreen.tsx
-          git commit -m 'Render complete cached binder facts before optional artwork'
-          git push origin HEAD:perf/binder-first-paint
+          python3 - <<'PY'
+          import pathlib, subprocess, tarfile
+          roots = {'lib', 'features', 'components', 'hooks', 'providers', 'constants', 'types', 'scripts', 'app', 'backend', 'docs'}
+          suffixes = {'.ts', '.tsx', '.js', '.mjs', '.cjs', '.json', '.md'}
+          with tarfile.open('retrieval-source.tar.gz', 'w:gz') as archive:
+              for name in subprocess.check_output(['git', 'ls-files'], text=True).splitlines():
+                  path = pathlib.Path(name)
+                  if path.suffix in suffixes and (path.parts[0] in roots or len(path.parts) == 1):
+                      archive.add(path, arcname=name)
+              for name in ['typescript', 'tsx', 'esbuild', '@esbuild/linux-x64', 'get-tsconfig', 'resolve-pkg-maps']:
+                  path = pathlib.Path('node_modules') / name
+                  if path.exists(): archive.add(path, arcname=str(path))
+          PY
+          git rev-parse HEAD > retrieval-source-sha.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retrieval-source-${{ github.sha }}
+          path: |
+            retrieval-source.tar.gz
+            retrieval-source-sha.txt
+          retention-days: 3
 
   canary-api-evidence:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          persist-credentials: false
           sparse-checkout: scripts/benchmark-set-retrieval.mjs
           sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Check complete raw JSON counts and every warm latency sample
+          node-version: 22
+      - name: Record raw API completeness and every warm sample
         env:
           STACKR_PERF_BASE_URL: https://stackr-api-perf-canary-production.up.railway.app
         run: node scripts/benchmark-set-retrieval.mjs
-      - name: Retain acceptance evidence including failures
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
           name: set-retrieval-evidence
           path: reports/set-retrieval-evidence.json
