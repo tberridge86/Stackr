@@ -29,3 +29,5 @@ jobs:
           path: artifacts/ptcg-logo-index-api/
           if-no-files-found: error
           retention-days: 7
+
+# Trigger after workflow registration.
