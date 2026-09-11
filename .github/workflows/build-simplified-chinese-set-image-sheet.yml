@@ -38,7 +38,7 @@ jobs:
 
       - name: Retrieve official images and build six-per-page PDF
         working-directory: artifact-jobs/simplified-chinese-set-logos
-        run: python retrieve_set_images.py
+        run: python fast_build.py
 
       - name: Add result summary
         if: always()
