@@ -1,4 +1,4 @@
-name: Apply binder first-paint patch
+name: Validate binder local-first retrieval
 
 on:
   push:
@@ -8,44 +8,71 @@ on:
       - .github/workflows/apply-binder-first-paint.yml
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: binder-first-paint-candidate
+  cancel-in-progress: false
 
 jobs:
   patch-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
       - name: Apply guarded source edits
         run: node scripts/apply-binder-first-paint.mjs
-
       - name: Install dependencies
         run: npm ci
-
       - name: Validate focused binder paths
         run: |
           npm run typecheck
           npm run test:binder-catalogue
           npm run test:personal-loading
-          node --import tsx scripts/test-binder-first-paint.ts
+          node --import tsx scripts/test-binder-first-paint.mjs
           git diff --check
-
-      - name: Commit validated patch
+      - name: Commit validated source only to isolated candidate branch
         run: |
+          test "$GITHUB_REF" = 'refs/heads/perf/binder-first-paint'
           if git diff --quiet; then
-            echo 'No patch produced' >&2
-            exit 1
+            echo 'Source already present; validation completed without a new commit.'
+            exit 0
           fi
           git config user.name 'stackr-performance-bot'
           git config user.email 'stackr-performance-bot@users.noreply.github.com'
-          git add lib/stackrApiV1.ts lib/stackrDomainAdapter.ts lib/pokemonTcg.ts lib/binders.ts features/binder/BinderDetailScreen.tsx scripts/test-binder-first-paint.ts
-          git commit -m 'Render binder facts before artwork enrichment'
+          git add lib/stackrApiV1.ts lib/stackrDomainAdapter.ts lib/pokemonTcg.ts lib/binders.ts lib/stackrCatalogueCache.ts features/binder/BinderDetailScreen.tsx
+          git commit -m 'Render complete cached binder facts before optional artwork'
           git push origin HEAD:perf/binder-first-paint
+
+  canary-api-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: scripts/benchmark-set-retrieval.mjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check complete raw JSON counts and every warm latency sample
+        env:
+          STACKR_PERF_BASE_URL: https://stackr-api-perf-canary-production.up.railway.app
+        run: node scripts/benchmark-set-retrieval.mjs
+      - name: Retain acceptance evidence including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: set-retrieval-evidence
+          path: reports/set-retrieval-evidence.json
+          if-no-files-found: warn
+          retention-days: 14
