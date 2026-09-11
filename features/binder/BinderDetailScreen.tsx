@@ -1035,18 +1035,21 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       setOwnedVariants(new Map());
       setVariantManagedCards(new Set());
 
-      const { data: { user } } = await supabase.auth.getUser();
+      // Both requests retain their existing server checks. Overlap their
+      // latency, but do not render or load cards until both have completed and
+      // the active-account/public-binder checks below have passed.
+      const [{ data: { user } }, binderData] = await Promise.all([
+        supabase.auth.getUser(),
+        measureAsync(
+          'binder.fetchBinderById',
+          () => fetchBinderById(binderId, { includeAssets: false }),
+          { binderId }
+        ),
+      ]);
       if (!isCurrentRequest()) return;
       if (activeAccountIdRef.current && activeAccountIdRef.current !== user?.id) return;
       activeAccountIdRef.current = user?.id ?? null;
       setUserId(user?.id ?? null);
-
-      const binderData = await measureAsync(
-        'binder.fetchBinderById',
-        () => fetchBinderById(binderId, { includeAssets: false }),
-        { binderId }
-      );
-      if (!isCurrentRequest()) return;
 
       if (!binderData || (binderData.user_id !== user?.id && !binderData.is_public)) {
         setBinder(null);
