@@ -1,0 +1,73 @@
+name: Diagnose Pokemon Logo Sources
+
+on:
+  push:
+    branches:
+      - asset/pokemon-tc-set-logo-sheet-20260911
+    paths:
+      - .github/workflows/diagnose-pokemon-logo-sources.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Query official pages and Bulbagarden file search
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, re, urllib.parse, urllib.request
+          from html.parser import HTMLParser
+
+          UA={"User-Agent":"Stackr-logo-audit/1.0"}
+          codes=["S11","S10P","S10D","S9A","S8B","S8","S7D","S6H","S5I","S4A","S4","SI","SPD","SVA"]
+          names={"S11":"Lost Abyss","S10P":"Space Juggler","S10D":"Time Gazer","S9A":"Battle Region","S8B":"VMAX Climax","S8":"Fusion Arts","S7D":"Skyscraping Perfection","S6H":"Silver Lance","S5I":"Single Strike Master","S4A":"Shiny Star V","S4":"Amazing Volt Tackle","SI":"Start Deck 100","SPD":"Deoxys VSTAR VMAX","SVA":"Starter Set ex"}
+
+          class Parser(HTMLParser):
+              def __init__(self): super().__init__(); self.urls=[]
+              def handle_starttag(self, tag, attrs):
+                  d=dict(attrs)
+                  for k in ("src","href","data-src","data-lazy-src"):
+                      if d.get(k): self.urls.append(d[k])
+                  if d.get("style"):
+                      self.urls += re.findall(r"url\(['\"]?([^)'\"]+)", d["style"])
+
+          def get(url):
+              req=urllib.request.Request(url,headers=UA)
+              with urllib.request.urlopen(req,timeout=20) as r: return r.read(), r.geturl(), r.headers.get_content_type()
+
+          for code in codes:
+              print("\n=====",code,names[code],"=====")
+              patterns=[f"https://www.pokemon-card.com/ex/{code.lower()}/"]
+              if code in {"S10P","S10D"}: patterns.append("https://www.pokemon-card.com/ex/s10/")
+              if code in {"S7D"}: patterns.append("https://www.pokemon-card.com/ex/s7/")
+              if code in {"S6H"}: patterns.append("https://www.pokemon-card.com/ex/s6/")
+              if code in {"S5I"}: patterns.append("https://www.pokemon-card.com/ex/s5/")
+              for page in dict.fromkeys(patterns):
+                  try:
+                      raw,final,ctype=get(page); text=raw.decode("utf-8","ignore")
+                      p=Parser(); p.feed(text)
+                      candidates=[]
+                      for u in p.urls:
+                          a=urllib.parse.urljoin(final,u)
+                          low=a.lower()
+                          if any(x in low for x in ("logo","ttl","title","head","mv")) and not any(x in low for x in ("logo_pc","logo_sp","pokemon-card-logo")):
+                              candidates.append(a)
+                      print("OFFICIAL",page,"=>",final,"STATUS OK","CANDIDATES",*list(dict.fromkeys(candidates))[:30],sep="\n  ")
+                  except Exception as e: print("OFFICIAL FAIL",page,repr(e))
+
+              for term in (f"{code} logo", f"{names[code]} logo"):
+                  params={"action":"query","generator":"search","gsrsearch":term,"gsrnamespace":"6","gsrlimit":"20","prop":"imageinfo","iiprop":"url|size|mime","format":"json","formatversion":"2","origin":"*"}
+                  url="https://archives.bulbagarden.net/w/api.php?"+urllib.parse.urlencode(params)
+                  try:
+                      raw,_,_=get(url); data=json.loads(raw)
+                      print("BULBA QUERY",term)
+                      for p in data.get("query",{}).get("pages",[]):
+                          ii=(p.get("imageinfo") or [{}])[0]
+                          print("  ",p.get("title"),ii.get("width"),ii.get("height"),ii.get("url"))
+                  except Exception as e: print("BULBA FAIL",term,repr(e))
+          PY
