@@ -3,40 +3,83 @@
 
 from __future__ import annotations
 
+import re
+from urllib.parse import urljoin
+
+import requests
+
 import build_set_logo_sheet_20260911 as base
 
 
-DIRECT_LOGOS: dict[str, tuple[str, str]] = {
-    "B2a": (
-        "https://s3.amazonaws.com/media.pokemon-zone.com/news/original_images/Paldean-wonders-logo.png",
-        "Paldean Wonders pack logo published with the B2a release page",
-    ),
-    "2024sv": (
-        "https://pokesymbols.com/images/tcg/sets/logos/mcdonalds-collection-dragon-discovery-2024.png",
-        "McDonald's Collection 2024 Dragon Discovery logo",
-    ),
-    "mfb": (
-        "https://archives.bulbagarden.net/wiki/Special:Redirect/file/My_First_Battle_logo.png",
-        "My First Battle product logo",
-    ),
-    "2023sv": (
-        "https://pokesymbols.com/images/tcg/sets/logos/mcdonalds-collection-2023.png",
-        "McDonald's Collection 2023 logo",
-    ),
-    "ex5.5": (
-        "https://archives.bulbagarden.net/wiki/Special:Redirect/file/PCCP_set_logo.png",
-        "Poké Card Creator Pack set logo",
-    ),
+DIRECT_LOGOS: dict[str, list[tuple[str, str]]] = {
+    "B2a": [
+        (
+            "https://s3.amazonaws.com/media.pokemon-zone.com/news/original_images/Paldean-wonders-logo.png",
+            "Paldean Wonders pack logo published with the B2a release page",
+        )
+    ],
+    "2024sv": [
+        (
+            "https://pokesymbols.com/images/tcg/sets/logos/mcdonalds-collection-dragon-discovery-2024.png",
+            "McDonald's Collection 2024 Dragon Discovery logo",
+        )
+    ],
+    "mfb": [
+        (
+            "https://archives.bulbagarden.net/media/upload/1/1d/My_First_Battle_logo.png",
+            "My First Battle product logo",
+        )
+    ],
+    "ex5.5": [
+        (
+            "https://archives.bulbagarden.net/media/upload/d/d7/PCCP_set_logo.png",
+            "Poké Card Creator Pack set logo",
+        )
+    ],
 }
 
 _original_catalogue_candidates = base.catalogue_candidates
 _original_parent_candidates = base.parent_candidates
 
 
+def _mcdonalds_2023_candidates():
+    """Read the logo path from Pokemon Symbols, then retain bounded guesses."""
+    page = "https://pokesymbols.com/tcg/sets/mc-donalds-collection-2023"
+    seen: set[str] = set()
+    try:
+        response = requests.get(
+            page,
+            timeout=30,
+            headers={"User-Agent": "Stackr-set-logo-sheet/1.0"},
+        )
+        response.raise_for_status()
+        html = response.text.replace("\\/", "/")
+        for value in re.findall(r"(?:https?:)?//[^\"'<> ]+/images/tcg/sets/logos/[^\"'<> ]+|/images/tcg/sets/logos/[^\"'<> ]+", html):
+            url = urljoin(page, value)
+            if url not in seen:
+                seen.add(url)
+                yield url, "McDonald's Collection 2023 logo read from the set page"
+    except Exception:
+        pass
+
+    guesses = [
+        "https://pokesymbols.com/images/tcg/sets/logos/mcdonalds-match-battle-2023.png",
+        "https://pokesymbols.com/images/tcg/sets/logos/mcdonalds-collection-match-battle-2023.png",
+        "https://pokesymbols.com/images/tcg/sets/logos/mcdonalds-collection-2023-logo.png",
+        "https://pokesymbols.com/images/tcg/sets/logos/mcdonalds-collection-2023.png",
+    ]
+    for url in guesses:
+        if url not in seen:
+            seen.add(url)
+            yield url, "McDonald's Collection 2023 logo"
+
+
 def catalogue_candidates(code: str, name: str, data: base.SourceData):
-    direct = DIRECT_LOGOS.get(code)
-    if direct:
-        yield "direct", direct[0], direct[1]
+    for url, note in DIRECT_LOGOS.get(code, []):
+        yield "direct", url, note
+    if code == "2023sv":
+        for url, note in _mcdonalds_2023_candidates():
+            yield "direct", url, note
     yield from _original_catalogue_candidates(code, name, data)
 
 
