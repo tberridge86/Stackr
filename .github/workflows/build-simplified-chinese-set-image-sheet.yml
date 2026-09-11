@@ -32,9 +32,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install requests pillow reportlab pypdf beautifulsoup4
 
-      - name: Use top official candidate only
+      - name: Configure compact output
         working-directory: artifact-jobs/simplified-chinese-set-logos
-        run: sed -i 's/candidates\[:10\]/candidates[:1]/' retrieve_set_images.py
+        run: |
+          sed -i 's/candidates\[:10\]/candidates[:1]/' retrieve_set_images.py
+          sed -i 's/max_dim = 2400/max_dim = 900/' retrieve_set_images.py
 
       - name: Retrieve official images and build six-per-page PDF
         working-directory: artifact-jobs/simplified-chinese-set-logos
@@ -51,12 +53,17 @@ jobs:
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Upload PDF, PNG ZIP and reports
+      - name: Upload compact PDF, image ZIP and reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: simplified-chinese-set-images-fast
-          path: artifact-jobs/simplified-chinese-set-logos/output/
+          name: simplified-chinese-set-images-compact
+          path: |
+            artifact-jobs/simplified-chinese-set-logos/output/*.pdf
+            artifact-jobs/simplified-chinese-set-logos/output/*.zip
+            artifact-jobs/simplified-chinese-set-logos/output/*.csv
+            artifact-jobs/simplified-chinese-set-logos/output/*.txt
+            artifact-jobs/simplified-chinese-set-logos/output/*.json
           if-no-files-found: error
           retention-days: 14
-          compression-level: 6
+          compression-level: 9
