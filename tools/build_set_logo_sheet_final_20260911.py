@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
+import html as html_lib
 import re
-from urllib.parse import urljoin
+from html.parser import HTMLParser
+from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
 import requests
 
@@ -26,9 +28,13 @@ DIRECT_LOGOS: dict[str, list[tuple[str, str]]] = {
     ],
     "mfb": [
         (
+            "https://raw.githubusercontent.com/Axelerate18/pokemon-masterlist-generator/337a5da55d43ea1e927dfc51c867b1683cf1670b/public/icons/My_First_Battle_Logo.png",
+            "My First Battle product logo mirrored in an open-source Pokémon master-list project",
+        ),
+        (
             "https://archives.bulbagarden.net/media/upload/1/1d/My_First_Battle_logo.png",
             "My First Battle product logo",
-        )
+        ),
     ],
     "ex5.5": [
         (
@@ -40,6 +46,66 @@ DIRECT_LOGOS: dict[str, list[tuple[str, str]]] = {
 
 _original_catalogue_candidates = base.catalogue_candidates
 _original_parent_candidates = base.parent_candidates
+
+
+class _ImageTagParser(HTMLParser):
+    def __init__(self, page_url: str, required_alt_terms: tuple[str, ...]) -> None:
+        super().__init__(convert_charrefs=True)
+        self.page_url = page_url
+        self.required_alt_terms = tuple(term.lower() for term in required_alt_terms)
+        self.urls: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() not in {"img", "source"}:
+            return
+        values = {key.lower(): (value or "") for key, value in attrs}
+        descriptor = " ".join(
+            [values.get("alt", ""), values.get("aria-label", ""), values.get("title", "")]
+        ).lower()
+        if self.required_alt_terms and not all(term in descriptor for term in self.required_alt_terms):
+            return
+        for key in ("src", "data-src", "data-lazy-src", "srcset", "data-srcset"):
+            raw = html_lib.unescape(values.get(key, "")).replace("\\/", "/").strip()
+            if not raw:
+                continue
+            candidates = [part.strip().split()[0] for part in raw.split(",") if part.strip()]
+            for candidate in candidates:
+                self._add(candidate)
+
+    def _add(self, candidate: str) -> None:
+        absolute = urljoin(self.page_url, candidate)
+        parsed = urlparse(absolute)
+        query = parse_qs(parsed.query)
+        wrapped = query.get("url", [])
+        for value in wrapped:
+            direct = urljoin(self.page_url, unquote(value))
+            if direct not in self.urls:
+                self.urls.append(direct)
+        if absolute not in self.urls:
+            self.urls.append(absolute)
+
+
+def _logo_candidates_from_page(
+    page: str,
+    required_alt_terms: tuple[str, ...],
+    note: str,
+):
+    try:
+        response = requests.get(
+            page,
+            timeout=40,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/152 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            },
+        )
+        response.raise_for_status()
+        parser = _ImageTagParser(page, required_alt_terms)
+        parser.feed(response.text)
+        for url in parser.urls:
+            yield url, note
+    except Exception as exc:
+        print(f"WARNING: unable to inspect {page}: {exc}")
 
 
 def _mcdonalds_2023_candidates():
@@ -74,12 +140,34 @@ def _mcdonalds_2023_candidates():
             yield url, "McDonald's Collection 2023 logo"
 
 
+def _creator_pack_candidates():
+    seen: set[str] = set()
+    pages = [
+        (
+            "https://www.tcgreliq.com/sets/poke-card-creator-pack/overview",
+            ("creator", "logo"),
+            "Poké Card Creator Pack set logo read from TCG Reliq",
+        ),
+        (
+            "https://tcgscreener.com/pokemon/poke-card-creator-pack",
+            ("creator", "logo"),
+            "Poké Card Creator Pack set logo read from TCGscreener",
+        ),
+    ]
+    for page, terms, note in pages:
+        for url, candidate_note in _logo_candidates_from_page(page, terms, note):
+            if url not in seen:
+                seen.add(url)
+                yield url, candidate_note
+
+
 def catalogue_candidates(code: str, name: str, data: base.SourceData):
     for url, note in DIRECT_LOGOS.get(code, []):
         yield "direct", url, note
     if code == "2023sv":
-        for url, note in _mcdonalds_2023_candidates():
-            yield "direct", url, note
+        yield from (("direct", url, note) for url, note in _mcdonalds_2023_candidates())
+    if code == "ex5.5":
+        yield from (("direct", url, note) for url, note in _creator_pack_candidates())
     yield from _original_catalogue_candidates(code, name, data)
 
 
