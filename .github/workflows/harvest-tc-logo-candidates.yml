@@ -29,3 +29,5 @@ jobs:
           path: artifacts/tc-logo-candidate-harvest/
           if-no-files-found: error
           retention-days: 7
+
+# Trigger after workflow registration on this branch.
