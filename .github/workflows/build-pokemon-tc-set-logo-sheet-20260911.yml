@@ -50,3 +50,4 @@ jobs:
           retention-days: 14
 
 # Separate branch so the English set-logo build remains untouched.
+# Repaired transfer verified from five deterministic base64 chunks.
