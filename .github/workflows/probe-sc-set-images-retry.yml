@@ -1,0 +1,44 @@
+name: Probe Simplified Chinese set image sources
+
+on:
+  push:
+    branches:
+      - artifacts/sc-set-image-retry-20260911
+    paths:
+      - .github/workflows/probe-sc-set-images-retry.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe predictable Grokachu set image paths
+        shell: bash
+        run: |
+          set -u
+          for code in csv10c csv95c 'csv9.5c' csvh5ac csmpjc csm1bc promo-sv-p promosvp cs4bc; do
+            url="https://grokachu.fr/media/tcg/${code}/images/sets/${code}.webp"
+            status=$(curl -L -sS -o /tmp/probe.bin -w '%{http_code}' "$url" || true)
+            bytes=$(wc -c </tmp/probe.bin 2>/dev/null || echo 0)
+            type=$(file -b /tmp/probe.bin 2>/dev/null || true)
+            echo "$code | $status | $bytes | $type | $url"
+          done
+
+      - name: Probe Grokachu collection index and sitemap
+        shell: bash
+        run: |
+          set -u
+          for url in \
+            https://grokachu.fr/en/collections \
+            https://grokachu.fr/sitemap.xml \
+            https://grokachu.fr/sitemap_products_1.xml \
+            https://grokachu.fr/sitemap_pages_1.xml; do
+            status=$(curl -L -sS -o /tmp/page.html -w '%{http_code}' "$url" || true)
+            bytes=$(wc -c </tmp/page.html 2>/dev/null || echo 0)
+            echo "$status | $bytes | $url"
+            head -c 200 /tmp/page.html | tr '\n' ' '; echo
+          done
