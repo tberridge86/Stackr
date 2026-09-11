@@ -49,17 +49,21 @@ function paginationFromRows(bundleRows, rawRows, limit) {
 }
 
 async function fetchFactRows(supabase, setId, language, afterVariantId, limit) {
-  const { data, error } = await supabase.schema('api').rpc('catalogue_set_card_fact_rows', {
-    p_set_id: setId,
-    p_language_code: language,
-    p_after_variant_id: afterVariantId,
-    p_limit: limit,
-  });
+  let query = supabase
+    .schema('api')
+    .from('catalogue_cards')
+    .select('*')
+    .eq('set_id', setId)
+    .order('variant_id', { ascending: true })
+    .limit(limit + 1);
+  if (language) query = query.eq('language_code', language);
+  if (afterVariantId) query = query.gt('variant_id', afterVariantId);
+
+  const { data, error } = await query;
   if (error) throw error;
 
   const bundleRows = Array.isArray(data) ? data : [];
-  const pageRows = bundleRows.slice(0, limit);
-  const rawRows = pageRows.map((entry) => entry?.card_row).filter(Boolean);
+  const rawRows = bundleRows.slice(0, limit);
   return {
     cards: groupCardRows(sortCardsForDisplay(rawRows)),
     pagination: paginationFromRows(bundleRows, rawRows, limit),
@@ -67,7 +71,7 @@ async function fetchFactRows(supabase, setId, language, afterVariantId, limit) {
 }
 
 /**
- * Fetches one published set page through a single PostgREST RPC.
+ * Fetches one published set page through a single PostgREST request.
  * Binder first paint can request facts only (includeAssets=false), while existing
  * consumers retain the preferred-artwork response by default.
  */
