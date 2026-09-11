@@ -705,12 +705,12 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
       const rawImages = (card.raw_data as any)?.images ?? null;
       const officialImages = getPokemonCardImageUrls(cardId, card.set_id, card.number);
       const imageUrl =
-        officialImages.small ??
-        officialImages.large ??
         card.image_small ??
         card.image_large ??
         rawImages?.small ??
         rawImages?.large ??
+        officialImages.small ??
+        officialImages.large ??
         null;
 
       if (imageUrl) activityImageByCardId.set(cardId, imageUrl);
@@ -1105,8 +1105,8 @@ export default function HubScreen() {
           const cardIds = [...new Set(flagData.map((f) => f.card_id))];
           const previews = await fetchHomeDisplayCardRows(cardIds);
           const previewMap: Record<string, any> = {};
-          previews.forEach((card: any) => {
-            previewMap[card.id] = {
+          previews.forEach((card: any, reference) => {
+            previewMap[reference] = {
               card_id: card.id,
               name: card.name,
               image_url: card.image_small ?? card.image_large ?? null,
@@ -1151,8 +1151,8 @@ export default function HubScreen() {
             const cardIds = [...new Set(strictMatches.map((listing) => listing.card_id))];
             const previews = await fetchHomeDisplayCardRows(cardIds);
             const previewMap: Record<string, any> = {};
-            previews.forEach((card: any) => {
-              previewMap[card.id] = {
+            previews.forEach((card: any, reference) => {
+              previewMap[reference] = {
                 card_id: card.id,
                 name: card.name,
                 image_url: card.image_small ?? card.image_large ?? null,
@@ -1824,12 +1824,12 @@ export default function HubScreen() {
         const officialImages = getPokemonCardImageUrls(row.card_id, setId, cardNumber);
         const rawImages = (officialCard?.raw_data as any)?.images ?? null;
         const officialImage =
-          officialImages.small ??
-          officialImages.large ??
           officialCard?.image_small ??
           officialCard?.image_large ??
           rawImages?.small ??
           rawImages?.large ??
+          officialImages.small ??
+          officialImages.large ??
           null;
         return {
           cardId: row.card_id,

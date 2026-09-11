@@ -2114,6 +2114,7 @@ export default function TheMarketTab() {
         accessibilityLabel="Create Listing"
         style={{
           position: 'absolute',
+          zIndex: 20,
           right: 18,
           bottom: 94 + Math.min(insets.bottom, 16),
           width: createCtaCollapsed ? 48 : undefined,
@@ -2134,7 +2135,7 @@ export default function TheMarketTab() {
           shadowOpacity: 0.09,
           shadowRadius: 10,
           shadowOffset: { width: 0, height: 5 },
-          elevation: 2,
+          elevation: 10,
         }}
       >
         <View

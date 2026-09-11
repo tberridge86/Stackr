@@ -1150,7 +1150,7 @@ export async function resolveStackrCard(
   };
 }
 
-async function resolveCachedStackrCard(
+export async function resolveCachedStackrCard(
   reference: string,
   options: { language?: string | null; setId?: string | null },
   client: StackrApiClient,

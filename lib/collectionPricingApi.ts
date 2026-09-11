@@ -33,6 +33,9 @@ export type CollectionPriceResult = {
 };
 
 type CollectionPriceClient = Pick<StackrApiClient, 'cardPrice'>;
+// Catalogue identity is public and already has bounded, invalidatable caching.
+// Keep this dedicated client stable across reads; never cache an owner's quotes here.
+let collectionPriceClient: Promise<StackrApiClient> | undefined;
 type CollectionPriceResolver = (
   reference: string,
   options: { language?: string | null; setId?: string | null },
@@ -235,8 +238,9 @@ export async function loadCollectionPrices(
   inputs: CollectionPriceInput[],
   options: CollectionPriceLoaderOptions = {},
 ): Promise<CollectionPriceResult[]> {
-  const client = options.client ?? new (await import('./stackrApiV1')).StackrApiClient();
-  const resolve = options.resolver ?? (await import('./stackrDomainAdapter')).resolveStackrCard;
+  const client = options.client ?? await (collectionPriceClient ??= import('./stackrApiV1')
+    .then(({ StackrApiClient }) => new StackrApiClient()));
+  const resolve = options.resolver ?? (await import('./stackrDomainAdapter')).resolveCachedStackrCard;
   // Sharing is scoped to this load: never retain authenticated prices across accounts.
   const resolutions = new Map<string, ReturnType<CollectionPriceResolver>>();
   const resolver: CollectionPriceResolver = (reference, constraints, activeClient) => {

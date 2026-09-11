@@ -312,7 +312,7 @@ async function fetchLatestSnapshotPricesForCards(
   return byLanguageAndCard;
 }
 
-async function attachLatestSnapshotPrices<T extends BinderCardRecord>(
+export async function attachLatestSnapshotPrices<T extends BinderCardRecord>(
   rows: T[],
   fallbackLanguage: PokemonCardLanguage | string | null = 'en'
 ): Promise<T[]> {
