@@ -150,6 +150,15 @@ function screenHarness() {
   const state = { loading: null, cards: [], ownershipReady: false };
   const never = () => new Promise(() => {});
   const context = { exports: {}, console, AbortController, binderId: 'binder',
+    retrievalTraceRef: { current: null },
+    beginBinderRetrieval: () => ({ cancel() {}, model() {} }),
+    binderReopenCache: { lease: () => 0, save: () => false, invalidate: () => {} },
+    binderReopenScope: (accountId) => ({ namespace: 'fixture', accountId }),
+    readBinderReopenPreview: async () => null,
+    retainBinderPreviewDuringRefresh: (work) => work(),
+    isCompleteBinderSnapshot: () => false,
+    isBinderAccessDenied: () => false,
+    setReopenStatus: () => {}, setSelectedCard: () => {},
     accountGenerationRef: { current: 0 }, loadRequestRef: { current: 0 }, artworkRequestRef: { current: null }, activeAccountIdRef: { current: null },
     isCurrentAccountRequest: (a, b) => a.accountGeneration === b.accountGeneration && a.requestId === b.requestId,
     supabase: { auth: { getUser: () => { calls.auth++; return auth.promise; } }, from: () => { const q = { select: () => q, eq: () => q, in: () => q, order: () => q, then: () => never() }; return q; } },

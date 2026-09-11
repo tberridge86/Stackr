@@ -1,3 +1,5 @@
+import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
+import { isCompleteBinderSnapshot, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
 import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
 import { attachBinderCatalogueArtwork, attachBinderSetArtwork } from '../../lib/binders';
 import { useTheme } from '../../components/theme-context';
@@ -6,7 +8,7 @@ import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimeP
 import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -97,7 +99,7 @@ import {
   getPreferredCardDisplayName,
   getPreferredSetDisplayName,
 } from '../../lib/pokemonDisplayNames';
-import { getIncrementalListWindow, measureAsync, stackrListPerformance } from '../../lib/performance';
+import { beginBinderRetrieval, getIncrementalListWindow, measureAsync, stackrListPerformance } from '../../lib/performance';
 import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { createActivityPost } from '../../lib/activity';
@@ -831,6 +833,12 @@ export default function BinderDetailScreen() {
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const [cards, setCards] = useState<BinderCardWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reopenStatus, setReopenStatus] = useState<{ savedAt: number; state: 'refreshing' | 'offline' | 'incomplete' } | null>(null);
+  const retrievalTraceRef = useRef<ReturnType<typeof beginBinderRetrieval> | null>(null);
+  const onBinderViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: { item: BinderCardWithDetails; isViewable: boolean }[] }) => {
+    retrievalTraceRef.current?.visible(viewableItems.filter((item) => item.isViewable).map((item) => item.item));
+  }).current;
+  const binderViewabilityConfig = useRef({ itemVisiblePercentThreshold: 50, minimumViewTime: 0 }).current;
   const gridWindow = useMemo(() => getIncrementalListWindow(numColumns), [numColumns]);
   const addSearchWindow = useMemo(
     () => getIncrementalListWindow(1, { initialRows: 18, pageRows: 14, minInitial: 18, minPage: 14 }),
@@ -892,7 +900,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const loadRequestRef = useRef(0);
   const artworkRequestRef = useRef<AbortController | null>(null);
   const isOwner = Boolean(userId && binder?.user_id === userId);
-  const isReadOnly = routeReadOnly || (Boolean(binder) && (!isOwner || !ownershipReady));
+  const isReadOnly = routeReadOnly || reopenStatus !== null || (Boolean(binder) && (!isOwner || !ownershipReady));
+
+  useLayoutEffect(() => { retrievalTraceRef.current?.committedRows(cards); }, [cards]);
+  useEffect(() => { if (ownershipReady && !isReadOnly) retrievalTraceRef.current?.editable(); }, [ownershipReady, isReadOnly]);
 
   useEffect(() => {
     if (selectedCard) setDetailGradeText(selectedCard.grade ?? '10');
@@ -1013,6 +1024,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
   const load = useCallback(async (forceRefresh = false) => {
     if (!binderId) return;
+    retrievalTraceRef.current?.cancel();
+    const retrievalTrace = beginBinderRetrieval();
+    retrievalTraceRef.current = retrievalTrace;
+    const reopenLease = binderReopenCache.lease();
+    const previewState = { snapshot: null as BinderReopenSnapshot | null };
+    let previewAllowed = true;
+    let refreshState: 'refreshing' | 'offline' | 'incomplete' = 'refreshing';
     const accountGeneration = accountGenerationRef.current;
     const requestId = ++loadRequestRef.current;
     artworkRequestRef.current?.abort();
@@ -1024,13 +1042,34 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     );
 
     if (forceRefresh) {
-      invalidateBinderCaches(binderId);
-      invalidatePokemonCatalogueCardCaches();
+      retainBinderPreviewDuringRefresh(() => {
+        invalidateBinderCaches(binderId);
+        invalidatePokemonCatalogueCardCaches();
+      });
     }
 
     try {
       setLoading(true);
       setOwnershipReady(false);
+      setBinder(null);
+      setCards([]);
+      setReopenStatus(null);
+      // Do not await optional disk I/O, session refresh or snapshot parsing on the network path.
+      void readBinderReopenPreview(binderId).then((saved) => {
+        if (!saved || !previewAllowed || !isCurrentRequest()
+          || (activeAccountIdRef.current && activeAccountIdRef.current !== saved.accountId)) return;
+        previewState.snapshot = saved;
+        setBinder(saved.binder);
+        setUserId(saved.accountId);
+        setIsPublic(Boolean(saved.binder.is_public));
+        setCustomNameArtKey(null);
+        retrievalTrace.model(saved.cards, 'local-preview');
+        setCards(saved.cards);
+        setSelectedCard(null);
+        setOwnershipReady(false);
+        setReopenStatus({ savedAt: saved.savedAt, state: refreshState });
+        setLoading(false);
+      }).catch(() => undefined);
       setShowcaseRows([]);
       setOwnedVariants(new Map());
       setVariantManagedCards(new Set());
@@ -1039,7 +1078,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       // latency, but do not render or load cards until both have completed and
       // the active-account/public-binder checks below have passed.
       const [{ data: { user } }, binderData] = await Promise.all([
-        supabase.auth.getUser(),
+        supabase.auth.getUser().then((result) => {
+          if (result.error) throw result.error;
+          return result;
+        }),
         measureAsync(
           'binder.fetchBinderById',
           () => fetchBinderById(binderId, { includeAssets: false }),
@@ -1047,11 +1089,24 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         ),
       ]);
       if (!isCurrentRequest()) return;
+      if (previewState.snapshot && previewState.snapshot.accountId !== user?.id) {
+        previewAllowed = false;
+        previewState.snapshot = null;
+        binderReopenCache.invalidate();
+        setBinder(null);
+        setCards([]);
+        setSelectedCard(null);
+        setReopenStatus(null);
+      }
       if (activeAccountIdRef.current && activeAccountIdRef.current !== user?.id) return;
       activeAccountIdRef.current = user?.id ?? null;
       setUserId(user?.id ?? null);
 
       if (!binderData || (binderData.user_id !== user?.id && !binderData.is_public)) {
+        previewAllowed = false;
+        binderReopenCache.invalidate();
+        setReopenStatus(null);
+        setSelectedCard(null);
         setBinder(null);
         setCustomNameArtKey(null);
         setCards([]);
@@ -1059,7 +1114,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         return;
       }
 
-      setBinder(binderData);
+      if (!previewState.snapshot) setBinder(binderData);
       setIsPublic(Boolean(binderData?.is_public));
 
       const [customNameArtKey, binderCards] = await Promise.all([
@@ -1074,11 +1129,32 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       ]);
       if (!isCurrentRequest()) return;
 
+      const snapshotScope = user ? binderReopenScope(user.id) : null;
+      const savedAt = Date.now();
+      const completeOwnerView = snapshotScope && isCompleteBinderSnapshot({
+        ...snapshotScope, schema: 1, savedAt, binder: binderData, cards: binderCards,
+      }, snapshotScope, binderId, savedAt);
+      const expected = binderData.catalogue_set_total ?? binderData.catalogue_set_printed_total;
+      const incompleteRefresh = binderData.type === 'official' && (binderCards.some((card) => card.catalogue_incomplete)
+        || (typeof expected === 'number' && expected > 0 && new Set(binderCards.filter((card) => card.catalogue_match_status === 'catalogue').map((card) => card.card?.id)).size < expected));
+      if (incompleteRefresh) {
+        refreshState = 'incomplete';
+        if (previewState.snapshot) {
+          setReopenStatus({ savedAt: previewState.snapshot.savedAt, state: 'incomplete' });
+          return; // A partial refresh cannot erase a complete saved view or enable editing.
+        }
+      } else {
+        previewAllowed = false;
+        setReopenStatus(null);
+      }
+      if (completeOwnerView && snapshotScope) binderReopenCache.save(snapshotScope, binderData, binderCards, reopenLease, savedAt);
+      setBinder(binderData);
       setCustomNameArtKey(customNameArtKey);
 
       // Saved rows are already presentation-safe fallbacks. Render them before
       // optional ownership/showcase reads so a later enrichment failure cannot
       // make an older, unresolved binder look empty.
+      retrievalTrace.model(binderCards, 'network', typeof expected === 'number' && expected > 0 && !incompleteRefresh);
       setCards(binderCards);
       setLoading(false);
 
@@ -1219,7 +1295,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         setVariantManagedCards(new Set(
           typedVariantRows.map((row) => getVariantCardKey(row.card_id, row.set_id ?? ''))
         ));
-        setOwnershipReady(true);
+        setOwnershipReady(!incompleteRefresh);
       })().catch((error) => {
         if (isCurrentRequest()) {
           console.log('Failed to load binder ownership', error);
@@ -1233,8 +1309,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       });
     } catch (error) {
       if (isCurrentRequest()) {
-        console.log('Failed to load binder', error);
-        Alert.alert('Error', 'Could not load this binder.');
+        refreshState = 'offline';
+        if (isBinderAccessDenied(error)) {
+          previewAllowed = false;
+          binderReopenCache.invalidate();
+          setBinder(null);
+          setCards([]);
+          setSelectedCard(null);
+          setReopenStatus(null);
+        } else if (previewState.snapshot) {
+          setReopenStatus({ savedAt: previewState.snapshot.savedAt, state: 'offline' });
+        } else {
+          Alert.alert('Error', 'Could not refresh this binder. Any available saved view will remain read-only.');
+        }
       }
     } finally {
       if (isCurrentRequest()) setLoading(false);
@@ -1250,6 +1337,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       accountGenerationRef.current += 1;
       loadRequestRef.current += 1;
       artworkRequestRef.current?.abort();
+      retrievalTraceRef.current?.cancel();
+      setReopenStatus(null);
+      setSelectedCard(null);
+      setDetailVisible(false);
       setUserId(nextAccountId);
       setBinder(null);
       setCustomNameArtKey(null);
@@ -1275,6 +1366,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       return () => {
         loadRequestRef.current += 1;
         artworkRequestRef.current?.abort();
+        retrievalTraceRef.current?.cancel();
       };
     }, [load])
   );
@@ -3277,6 +3369,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       <FlatList
         ref={binderListRef}
         data={visibleCards}
+        onViewableItemsChanged={onBinderViewableItemsChanged}
+        viewabilityConfig={binderViewabilityConfig}
         keyExtractor={(item) => item.id}
         renderItem={renderCard}
         key={numColumns}
@@ -3298,6 +3392,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               <StackrBackButton onPress={goBackToBinderLibrary} style={{ width: 34, height: 32 }} />
             </View>
 
+        {reopenStatus ? (
+          <View accessibilityRole="summary" style={{ marginBottom: 8, padding: 10, borderRadius: 12, backgroundColor: theme.colors.surface }}>
+            <Text testID="binder-reopen-status" style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+              {reopenStatus.state === 'refreshing' ? 'Saved view • checking for updates' : reopenStatus.state === 'incomplete' ? 'Refresh incomplete • showing your last complete saved view' : 'Refresh unavailable • showing your saved view'}
+              {'\n'}Saved {new Date(reopenStatus.savedAt).toLocaleString('en-GB')}. Changes remain disabled until ownership is checked.
+            </Text>
+          </View>
+        ) : null}
         {/* Header */}
         <View style={{ gap: 6, marginBottom: 8 }}>
           <View style={{

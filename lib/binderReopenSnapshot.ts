@@ -23,7 +23,12 @@ const key = (scope: BinderReopenScope, binderId: string) => JSON.stringify([scop
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 function pick<T extends object>(value: T, keys: readonly string[]): Partial<T> {
   const result: Record<string, unknown> = {};
-  for (const name of keys) if (Object.prototype.propertyIsEnumerable.call(value, name)) result[name] = (value as any)[name];
+  for (const name of keys) {
+    if (!Object.prototype.propertyIsEnumerable.call(value, name)) continue;
+    const field = (value as any)[name];
+    if (field == null || ['string', 'number', 'boolean'].includes(typeof field)) result[name] = field;
+    else if (Array.isArray(field) && field.every((item) => typeof item === 'string')) result[name] = [...field];
+  }
   return result as Partial<T>;
 }
 
