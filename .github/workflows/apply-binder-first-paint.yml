@@ -10,6 +10,27 @@ on:
       - scripts/test-binder-*
       - scripts/test-retrieval-*
       - scripts/test-stackr-set-*
+  pull_request:
+    paths:
+      - .github/workflows/apply-binder-first-paint.yml
+      - lib/binderCardIdentity.ts
+      - lib/stackrSetRetrieval.ts
+      - lib/stackrCatalogueCache.ts
+      - lib/stackrDomainAdapter.ts
+      - lib/pokemonTcg.ts
+      - lib/stackrApiV1.ts
+      - lib/binders.ts
+      - features/binder/**
+      - scripts/test-binder-*
+      - scripts/test-retrieval-*
+      - scripts/test-stackr-set-*
+  workflow_dispatch:
+    inputs:
+      benchmark_canary:
+        description: Run the bounded 22-request public canary diagnostic (not phone or production acceptance)
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -22,44 +43,24 @@ jobs:
   candidate-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-          persist-credentials: true
-      - name: Apply the exact locally tested candidate diff
-        run: |
-          test "$GITHUB_REF" = 'refs/heads/perf/binder-first-paint'
-          test "$(git hash-object features/binder/BinderDetailScreen.tsx)" = '20b8a48064e660890bd220ff95ae76bb5f8eddfd'
-          test "$(git hash-object lib/binders.ts)" = '6b11153bfa79b934e540bafb11be6e854870ad24'
-          test "$(git hash-object lib/binderCardIdentity.ts)" = '7298c35ce5accc6105fbb5f478052118e8609d10'
-          git apply --check scripts/retrieval-followup.patch
-          git apply scripts/retrieval-followup.patch
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Validate retrieval source and actual loader behaviour
+      - name: Validate the exact committed source
         run: |
           npm run typecheck
           npm run test:binder-catalogue
           npm run test:personal-loading
           node --import tsx scripts/test-binder-first-paint.mjs
           node --import tsx scripts/test-retrieval-parallel.mjs
-          git diff --check
-      - name: Commit only the tested source and remove superseded patch scripts
-        run: |
-          git rm -- scripts/retrieval-followup.patch scripts/apply-binder-first-paint.mjs
-          git add lib/binderCardIdentity.ts lib/binders.ts features/binder/BinderDetailScreen.tsx
-          git diff --cached --check
-          git diff --exit-code -- .github
-          git config user.name 'stackr-performance-bot'
-          git config user.email 'stackr-performance-bot@users.noreply.github.com'
-          git commit -m 'Overlap authorised binder reads and index saved-card matching'
-          git push origin HEAD:perf/binder-first-paint
+          git diff --exit-code
       - name: Record tested source identity
         run: |
           mkdir -p reports
@@ -73,5 +74,31 @@ jobs:
             reports/binder-retrieval-regression.json
             reports/retrieval-source-sha.txt
             reports/retrieval-source-hashes.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+  canary-api-evidence:
+    if: github.event_name == 'workflow_dispatch' && inputs.benchmark_canary
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: scripts/benchmark-set-retrieval.mjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Record raw API completeness and every warm sample
+        env:
+          STACKR_PERF_BASE_URL: https://stackr-api-perf-canary-production.up.railway.app
+        run: node scripts/benchmark-set-retrieval.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: set-retrieval-evidence
+          path: reports/set-retrieval-evidence.json
           if-no-files-found: warn
           retention-days: 14
