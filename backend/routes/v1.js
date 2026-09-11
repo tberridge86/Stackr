@@ -11,6 +11,7 @@ import {
   STACKR_API_V1,
   createCatalogueV1Service,
 } from '../lib/stackrApiV1.js';
+import { fetchFastSetCards } from '../lib/fastSetCards.js';
 import {
   MARKET_CACHE_CONTROL,
   MARKET_HISTORY_CACHE_CONTROL,
@@ -134,6 +135,21 @@ function defaultService() {
     // same service-only lookup when staging or a fresh database is prepared.
     collectorIdentityLookup: true,
   });
+}
+
+async function defaultSetCards(setId, query) {
+  try {
+    return await fetchFastSetCards(getAssetSupabase(), setId, query);
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    console.warn(JSON.stringify({
+      level: 'warn',
+      event: 'stackr_fast_set_cards_fallback',
+      set_id: setId,
+      error: errorForLog(error),
+    }));
+    return defaultService().setCards(setId, query);
+  }
 }
 
 function defaultPricingService() {
@@ -262,6 +278,11 @@ export function createV1Router(options = {}) {
   const getService = options.getService ?? (() => options.service ?? defaultService());
   const getPricingService = options.getPricingService ?? (() => options.pricingService ?? defaultPricingService());
   const getAuthenticatedUserId = options.getAuthenticatedUserId ?? authenticatedUserId;
+  const getSetCards = options.getSetCards ?? ((setId, query) => (
+    options.service || options.getService
+      ? getService().setCards(setId, query)
+      : defaultSetCards(setId, query)
+  ));
 
   router.use((req, res, next) => {
     req.stackrRequestId = requestIdFrom(req);
@@ -328,7 +349,7 @@ export function createV1Router(options = {}) {
   }));
 
   router.get('/sets/:setId/cards', asyncRoute(async (req, res) => {
-    const cards = await getService().setCards(req.params.setId, req.query);
+    const cards = await getSetCards(req.params.setId, req.query);
     sendEnvelope(req, res, { cards: cards.cards }, {
       pagination: cards.pagination,
     });
