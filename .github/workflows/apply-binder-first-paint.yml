@@ -14,6 +14,10 @@ on:
     paths:
       - .github/workflows/apply-binder-first-paint.yml
       - lib/binderCardIdentity.ts
+      - lib/binderReopenSnapshot.ts
+      - lib/binderReopenRuntime.ts
+      - lib/performance.ts
+      - lib/requestCache.ts
       - lib/stackrSetRetrieval.ts
       - lib/stackrCatalogueCache.ts
       - lib/stackrDomainAdapter.ts
@@ -60,18 +64,20 @@ jobs:
           npm run test:personal-loading
           node --import tsx scripts/test-binder-first-paint.mjs
           node --import tsx scripts/test-retrieval-parallel.mjs
+          node --import tsx scripts/test-binder-reopen.mjs
           git diff --exit-code
       - name: Record tested source identity
         run: |
           mkdir -p reports
           git rev-parse HEAD > reports/retrieval-source-sha.txt
-          sha256sum lib/binderCardIdentity.ts lib/binders.ts features/binder/BinderDetailScreen.tsx > reports/retrieval-source-hashes.txt
+          sha256sum lib/binderCardIdentity.ts lib/binders.ts lib/binderReopenSnapshot.ts lib/binderReopenRuntime.ts lib/requestCache.ts lib/performance.ts features/binder/BinderDetailScreen.tsx > reports/retrieval-source-hashes.txt
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: binder-retrieval-regression
           path: |
             reports/binder-retrieval-regression.json
+            reports/binder-reopen-tests.json
             reports/retrieval-source-sha.txt
             reports/retrieval-source-hashes.txt
           if-no-files-found: warn
