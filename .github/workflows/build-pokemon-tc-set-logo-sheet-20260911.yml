@@ -43,3 +43,5 @@ jobs:
           path: artifacts/pokemon-tc-set-logo-sheet-20260911/
           if-no-files-found: error
           retention-days: 14
+
+# Separate branch so the English set-logo build remains untouched.
