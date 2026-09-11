@@ -1,0 +1,40 @@
+name: Build requested set logo pack
+
+on:
+  push:
+    branches:
+      - artifact/set-logos-20260911
+    paths:
+      - .github/scripts/build_requested_set_logos.py
+      - .github/workflows/build-requested-set-logos.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out isolated artifact branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install image dependency
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Build logo pack
+        run: python .github/scripts/build_requested_set_logos.py
+
+      - name: Upload finished pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokemon-set-logos-20260911
+          path: build/set-logo-pack/
+          if-no-files-found: error
+          retention-days: 3
