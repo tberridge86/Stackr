@@ -29,7 +29,9 @@ jobs:
           node-version: 20
           cache: npm
       - name: Apply guarded source edits
-        run: node scripts/apply-binder-first-paint.mjs
+        run: |
+          node scripts/apply-binder-first-paint.mjs
+          node --input-type=module -e 'import fs from "node:fs"; for (const path of ["lib/binders.ts", "lib/stackrCatalogueCache.ts", "lib/stackrDomainAdapter.ts"]) fs.writeFileSync(path, fs.readFileSync(path, "utf8").trimEnd() + "\n");'
       - name: Install dependencies
         run: npm ci
       - name: Validate focused binder paths
