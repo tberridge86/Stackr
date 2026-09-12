@@ -1,0 +1,43 @@
+name: Build official-only Traditional Chinese logo sheets
+
+on:
+  push:
+    branches:
+      - artifact/traditional-chinese-logos-a4-v2
+    paths:
+      - .github/scripts/build_official_only_tc_logos.py
+      - .github/workflows/build-official-only-tc-logos.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out isolated artifact branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+          python -m pip install --disable-pip-version-check requests pillow
+
+      - name: Build official-only sheets
+        run: python .github/scripts/build_official_only_tc_logos.py
+
+      - name: Upload finished pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-only-traditional-chinese-set-logos
+          path: build/official-only-tc-logos/
+          if-no-files-found: error
+          retention-days: 3
