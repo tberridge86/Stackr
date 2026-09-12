@@ -60,6 +60,25 @@ await test('public snapshot whitelists out ownership, credentials, prices and im
   for (const privateValue of ['private', 'secret', 'owned', 'user_id', 'deliveryUrl', '"price"']) assert(!serialized.includes(privateValue));
 });
 
+await test('missing or malformed versions cannot enter memory, disk or paginated catalogue results', async () => {
+  for (const version of [null, undefined, '', 'not-a-version', 42]) {
+    const invalid = makeCards(124); invalid[0].catalogueVersionId = version;
+    assert.throws(() => validateCompleteSet(invalid, key()), /version/i);
+    const store = memoryStore();
+    const reader = createSetFactsReader({ store: async () => store });
+    await assert.rejects(reader.read(key(), async () => invalid), /version/i);
+    await reader.flush(); assert.equal(store.writes, 0);
+    const corrupt = createSetFactsReader({ store: async () => ({ ...store,
+      read: async () => ({ ...key(), schema: 1, fetchedAt: Date.now(), cards: invalid }),
+    }) });
+    assert.equal((await corrupt.read(key(), async () => makeCards(124))).source, 'network');
+    await assert.rejects(loadCompleteSetPages(key(), async () => ({ cards: invalid, nextCursor: null }),
+      () => makeCards(124)), /version/i, 'normalization must not hide unversioned source rows');
+  }
+  const unversioned = makeCards(124).map((card) => ({ ...card, catalogueVersionId: null }));
+  assert.throws(() => validateCompleteSet(unversioned, key()), /version/i);
+});
+
 await test('one network read for 20 callers; fresh disk and memory need no additional network', async () => {
   const store = memoryStore(); let reads = 0;
   const reader = createSetFactsReader({ store: async () => store });

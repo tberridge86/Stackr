@@ -715,6 +715,7 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
     raw_data: {
       stackr: {
         cardId: card.cardId,
+        catalogueVersionId: card.catalogueVersionId,
         defaultVariantId: card.defaultVariantId,
         variants: card.variants,
         canonical: true,

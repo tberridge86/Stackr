@@ -56,7 +56,10 @@ export function validateCompleteSet(cards: StackrCard[], key: SetFactsKey): void
       || !Array.isArray(card.variants) || !card.variants.length
       || !card.variants.some((v) => v.variantId === card.defaultVariantId)) throw new Error('Invalid or mixed catalogue identity');
     cardIds.add(card.cardId);
-    if (card.catalogueVersionId) versions.add(card.catalogueVersionId);
+    if (typeof card.catalogueVersionId !== 'string' || !UUID.test(card.catalogueVersionId)) {
+      throw new Error('Catalogue version is missing or malformed');
+    }
+    versions.add(card.catalogueVersionId.toLowerCase());
     for (const variant of card.variants) {
       if (!UUID.test(variant.variantId) || variants.has(variant.variantId) || !variant.canonicalId || !variant.variantCode) throw new Error('Invalid or duplicate catalogue variant');
       variants.add(variant.variantId);
@@ -80,7 +83,12 @@ export async function loadCompleteSetPages(
     check(signal);
     const result = await load(cursor, signal);
     check(signal);
-    for (const card of result.cards) if (card.catalogueVersionId) versions.add(card.catalogueVersionId);
+    for (const card of result.cards) {
+      if (typeof card.catalogueVersionId !== 'string' || !UUID.test(card.catalogueVersionId)) {
+        throw new Error('Catalogue version is missing or malformed during pagination');
+      }
+      versions.add(card.catalogueVersionId.toLowerCase());
+    }
     if (versions.size > 1) throw new Error('Catalogue version changed during pagination');
     rows.push(...result.cards);
     if (rows.length > 16000) throw new Error('Catalogue response exceeded bounded retrieval budget');

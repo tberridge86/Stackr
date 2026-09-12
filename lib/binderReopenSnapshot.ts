@@ -61,7 +61,7 @@ export function snapshotBinderView(scope: BinderReopenScope, binder: BinderRecor
         card.raw_data = {
           ...pick(raw, ['local_name', 'english_display_name', 'language', 'number', 'localId', 'supertype', 'subtypes', 'artist']),
           stackr: {
-            ...pick(canonical, ['cardId', 'defaultVariantId', 'canonical']),
+            ...pick(canonical, ['cardId', 'catalogueVersionId', 'defaultVariantId', 'canonical']),
             variants: Array.isArray(canonical.variants) ? canonical.variants.map((variant: any) => ({
               ...pick(variant, ['variantId', 'canonicalId', 'variantCode', 'variantLabel', 'finishCode', 'finishLabel', 'artworkKey', 'imageVariantId', 'sameArtworkAsVariantId', 'updatedAt']),
               image: null,
@@ -88,6 +88,7 @@ export function isCompleteBinderSnapshot(value: unknown, scope: BinderReopenScop
     if (!Number.isSafeInteger(count) || !count || count < 1 || count > 2000) return false;
     const rows = new Set<string>();
     const identities = new Set<string>();
+    const versions = new Set<string>();
     for (const row of s.cards) {
       if (!row.id || rows.has(row.id) || row.binder_id !== binderId || row.catalogue_incomplete
         || typeof row.owned !== 'boolean' || !Number.isFinite(row.owned_quantity) || row.owned_quantity < 1) return false;
@@ -97,11 +98,13 @@ export function isCompleteBinderSnapshot(value: unknown, scope: BinderReopenScop
       const identity = c?.raw_data?.stackr;
       if (!UUID.test(c?.id ?? '') || identities.has(c.id) || c.set?.id !== s.binder.catalogue_set_id
         || row.language !== s.binder.language || !c.name || !c.number || identity?.canonical !== true
+        || typeof identity.catalogueVersionId !== 'string' || !UUID.test(identity.catalogueVersionId)
         || identity.cardId !== c.id || !UUID.test(identity.defaultVariantId ?? '') || !Array.isArray(identity.variants)
         || !identity.variants.some((v: any) => v.variantId === identity.defaultVariantId)) return false;
       identities.add(c.id);
+      versions.add(identity.catalogueVersionId.toLowerCase());
     }
-    return identities.size === count;
+    return identities.size === count && versions.size === 1;
   } catch { return false; }
 }
 

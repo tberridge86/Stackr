@@ -14,6 +14,29 @@ import { createGatewayOriginAuth } from '../../backend/lib/gatewayOriginAuth.js'
 const USER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const DEVICE_ID = 'device:test:00000001';
 
+test('set-card facts flag reaches the origin and cannot collide with artwork cache entries', async () => {
+  const env = environment(); const cache = new MemoryCache(); let forwarded = 0;
+  const fetchImpl = async (url) => {
+    forwarded++;
+    const mode = new URL(url).searchParams.get('includeAssets') ?? 'default';
+    return Response.json({ data: { mode, cards: [{ cardId: USER_ID }] } });
+  };
+  for (const mode of ['false', 'true', 'default', 'false', 'true', 'default']) {
+    const ctx = context();
+    const query = mode === 'default' ? '' : `&includeAssets=${mode}`;
+    const response = await handleRequest(request(`/v1/sets/${USER_ID}/cards?language=zh-tw&limit=500${query}`), env, ctx, { cache, fetchImpl });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).data.mode, mode);
+    await Promise.all(ctx.promises);
+  }
+  assert.equal(forwarded, 3, 'each representation is fetched once then independently cached');
+  for (const value of ['', '0', 'off', 'yes', 'FALSE', 'false&includeAssets=true']) {
+    const response = await handleRequest(request(`/v1/sets/${USER_ID}/cards?includeAssets=${value}`), env, context(), { cache, fetchImpl });
+    assert.equal(response.status, 400, `reject ambiguous includeAssets=${value}`);
+  }
+  assert.equal(forwarded, 3, 'invalid flags must not reach the origin');
+});
+
 test('price snapshots accept bounded canonical IDs and reject invalid ranges before forwarding', async () => {
   const second = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   let forwarded = 0;

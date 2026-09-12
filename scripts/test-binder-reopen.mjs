@@ -15,7 +15,7 @@ function cards(count = 124) {
     catalogue_match_status: 'catalogue', catalogue_incomplete: false, language: 'en', owned: i === 0, owned_quantity: i === 0 ? 4 : 1,
     condition: 'Near Mint', notes: 'saved note', slot_order: i, grade: null, image_url: null,
     card: { id: uuid(i + 1), name: `Card ${i + 1}`, number: String(i + 1), language: 'en', set: { id: binder.catalogue_set_id, name: 'Fixture' }, images: {},
-      raw_data: { stackr: { canonical: true, cardId: uuid(i + 1), defaultVariantId: uuid(1000 + i), variants: [{ variantId: uuid(1000 + i), canonicalId: `fixture:${i}`, variantCode: 'normal', image: null }] } } },
+      raw_data: { stackr: { canonical: true, cardId: uuid(i + 1), catalogueVersionId: uuid(9004), defaultVariantId: uuid(1000 + i), variants: [{ variantId: uuid(1000 + i), canonicalId: `fixture:${i}`, variantCode: 'normal', image: null }] } } },
   }));
 }
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
@@ -43,6 +43,23 @@ await test('expired network TTL does not erase a last-complete snapshot; hard re
   const cache = createBinderReopenCache({ store: async () => store, now: () => now }); cache.save(scope, binder, cards(), cache.lease()); await cache.flush();
   now += 6 * 60 * 1000; assert.equal((await cache.read(scope, binder.id)).cards.length, 124);
   now = 1000 + BINDER_REOPEN_MAX_AGE_MS; assert.equal(await cache.read(scope, binder.id), null);
+});
+await test('unversioned or mixed-version refreshes retain the complete saved owner view', async () => {
+  const store = storeHarness();
+  const cache = createBinderReopenCache({ store: async () => store, now: () => 1000 });
+  assert(cache.save(scope, binder, cards(), cache.lease())); await cache.flush();
+  for (const value of [null, undefined, '', 'invalid', uuid(5555)]) {
+    const changed = cards(); changed[0].card.raw_data.stackr.catalogueVersionId = value;
+    assert.equal(cache.save(scope, binder, changed, cache.lease()), false);
+  }
+  const saved = await cache.read(scope, binder.id);
+  assert.equal(saved.cards.length, 124);
+  assert.equal(saved.cards[0].owned_quantity, 4);
+  assert.equal(saved.cards[0].card.raw_data.stackr.catalogueVersionId, uuid(9004));
+  const corrupt = copy(saved); delete corrupt.cards[0].card.raw_data.stackr.catalogueVersionId;
+  const cold = createBinderReopenCache({ store: async () => ({ ...store, read: async () => corrupt }), now: () => 1000 });
+  assert.equal(await cold.read(scope, binder.id), null);
+  await cache.flush(); assert.equal(store.writes, 1);
 });
 await test('partial, corrupt, wrong-owner, wrong-language and wrong-set refreshes never replace complete data', async () => {
   const store = storeHarness(); const cache = createBinderReopenCache({ store: async () => store, now: () => 1000 });
