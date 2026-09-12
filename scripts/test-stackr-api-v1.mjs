@@ -21,6 +21,14 @@ const variantId = '33333333-3333-4333-8333-333333333333';
 const sharedArtworkVariantId = '99999999-9999-4999-8999-999999999999';
 const manifestEtag = '"stackr-v1-test-manifest"';
 
+assert.equal(normalizeSearchText('Pokémon'), 'pokemon', 'Latin accents must remain search-insensitive');
+assert.equal(normalizeSearchText('ピカチュウ'), 'ピカチュウ', 'Japanese dakuten must survive normalization');
+assert.equal(
+  normalizeSearchText('ヒ\u309aカチュウ'),
+  'ピカチュウ',
+  'decomposed Japanese handakuten must recompose without changing identity',
+);
+
 {
   const reference = {
     sourceCardId: 'abcdefab-cdef-4abc-8def-abcdefabcdef',

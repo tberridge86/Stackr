@@ -30,7 +30,11 @@ export function normalizeSearchText(value = '') {
   return String(value ?? '')
     .normalize('NFKC')
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    // Fold Latin accents without discarding combining marks that carry meaning
+    // in other scripts. In particular, stripping every mark turns Japanese
+    // ピカチュウ into ヒカチュウ and makes the canonical database lookup miss.
+    .replace(/(\p{Script=Latin})[\u0300-\u036f]+/gu, '$1')
+    .normalize('NFKC')
     .toLowerCase()
     .replace(/pok\u00e9mon/g, 'pokemon')
     .replace(/[\u2019\u2018`\u00b4]/g, "'")
