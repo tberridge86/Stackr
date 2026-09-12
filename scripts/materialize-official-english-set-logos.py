@@ -4,6 +4,8 @@
 The manifest is the authority. Downloads are accepted only when the decoded RGBA
 pixels, dimensions and deterministic PNG encoding match the reviewed hashes.
 This prevents upstream substitutions and keeps shared marks stored exactly once.
+The offline ``--check`` path intentionally uses only the Python standard library
+so it can run inside the normal Node-focused platform CI job.
 """
 
 from __future__ import annotations
@@ -16,9 +18,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import requests
-from PIL import Image
-
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "data" / "catalogue" / "official-english-set-logos.json"
 REMOVED_DUPLICATE_CODES = {"pbl"}
@@ -29,13 +28,16 @@ def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def pixel_sha256(image: Image.Image) -> str:
+def pixel_sha256(image: Any) -> str:
     rgba = image.convert("RGBA")
     payload = rgba.width.to_bytes(4, "big") + rgba.height.to_bytes(4, "big") + rgba.tobytes()
     return sha256_bytes(payload)
 
 
-def normalize_image(content: bytes) -> Image.Image:
+def normalize_image(content: bytes) -> Any:
+    # Pillow is needed only when intentionally materializing from the network.
+    from PIL import Image
+
     with Image.open(io.BytesIO(content)) as opened:
         opened.load()
         image = opened.convert("RGBA")
@@ -103,20 +105,28 @@ def load_manifest() -> list[dict[str, Any]]:
     return rows
 
 
-def encode_png(image: Image.Image) -> bytes:
+def encode_png(image: Any) -> bytes:
     buffer = io.BytesIO()
     image.save(buffer, format="PNG", optimize=True)
     return buffer.getvalue()
 
 
-def materialize(rows: list[dict[str, Any]], *, check: bool) -> None:
+def build_network_session() -> Any:
+    # Requests is also optional for the offline verifier.
+    import requests
+
     session = requests.Session()
     session.headers.update({
         "User-Agent": "Stackr-official-English-set-logo-materializer/1.0",
         "Accept": "image/avif,image/webp,image/png,image/*,*/*;q=0.8",
     })
+    return session
 
+
+def materialize(rows: list[dict[str, Any]], *, check: bool) -> None:
+    session = None if check else build_network_session()
     failures: list[str] = []
+
     for row in rows:
         canonical = row["canonical_asset_id"]
         destination = ROOT / row["image_file"]
@@ -138,6 +148,7 @@ def materialize(rows: list[dict[str, Any]], *, check: bool) -> None:
             continue
 
         try:
+            assert session is not None
             response = session.get(row["retrieval_source_url"], timeout=60)
             response.raise_for_status()
             image = normalize_image(response.content)
@@ -162,7 +173,7 @@ def materialize(rows: list[dict[str, Any]], *, check: bool) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--check", action="store_true", help="Validate committed assets without network access")
+    parser.add_argument("--check", action="store_true", help="Validate committed assets without network access or third-party Python packages")
     args = parser.parse_args()
     rows = load_manifest()
     materialize(rows, check=args.check)
