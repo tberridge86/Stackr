@@ -1,3 +1,4 @@
+import { StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 import { Ionicons } from '@expo/vector-icons';
 import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -260,6 +261,7 @@ function SkeletonLine({ width, height = 12 }: { width: number | `${number}%`; he
 
 function EmptyMessage({
   icon,
+  navigationIcon,
   imageIcon,
   imageIconSize,
   title,
@@ -267,7 +269,8 @@ function EmptyMessage({
   actionLabel,
   onAction,
 }: {
-  icon: IconName;
+  icon?: IconName;
+  navigationIcon?: StackrNavigationIconName;
   imageIcon?: ImageSourcePropType;
   imageIconSize?: number;
   title: string;
@@ -291,14 +294,15 @@ function EmptyMessage({
             frameSize={imageIconSize ? imageIconSize + 10 : 42}
             artworkSize={imageIconSize ?? 32}
           />
-        ) : (
+        ) : navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={24} color={theme.colors.primary} /> : icon ? (
           <Ionicons name={icon} size={24} color={HOME_HERO_PRIMARY} />
-        )}
+        ) : null}
       </View>
       <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>{title}</Text>
       <Text style={[styles.emptyCopy, { color: theme.colors.textSoft }]}>{subtitle}</Text>
       {actionLabel && onAction ? (
-        <TouchableOpacity onPress={onAction} activeOpacity={0.82} style={[styles.inlineButton, { backgroundColor: HOME_HERO_PRIMARY }]}>
+        <TouchableOpacity onPress={onAction} accessibilityRole="button" accessibilityLabel={actionLabel} activeOpacity={0.82} style={[styles.inlineButton, { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: HOME_HERO_PRIMARY }]}>
+          {navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={22} color="#FFFFFF" /> : null}
           <Text style={styles.inlineButtonText}>{actionLabel}</Text>
         </TouchableOpacity>
       ) : null}
@@ -828,7 +832,7 @@ export function ContinueBinderCard({
           </>
         ) : (
           <EmptyMessage
-            icon="albums-outline"
+            navigationIcon="collection"
             title="Start your first binder"
             subtitle="Track a set, scan cards and watch your progress grow."
             actionLabel="Create Binder"
