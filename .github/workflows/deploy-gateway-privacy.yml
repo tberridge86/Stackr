@@ -25,8 +25,8 @@ on:
         required: true
         type: string
       previous_gateway_tag:
-        description: Current production Worker version tag
-        required: true
+        description: Current production Worker version tag; leave empty only when the current exact version is untagged
+        required: false
         type: string
       previous_gateway_deployment_id:
         description: Current 100 percent production Worker deployment ID
@@ -82,7 +82,9 @@ jobs:
           [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$OWNER_USER_ID" = '93dd2d61-367b-47d3-a28b-b2d2456fe75f'
           [[ "$PREVIOUS_GATEWAY_VERSION_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
-          [[ "$PREVIOUS_GATEWAY_TAG" =~ ^(production|gateway-privacy)-[0-9a-f]{40}$ ]]
+          if [ -n "$PREVIOUS_GATEWAY_TAG" ]; then
+            [[ "$PREVIOUS_GATEWAY_TAG" =~ ^(production|gateway-privacy)-[0-9a-f]{40}$ ]]
+          fi
           [[ "$PREVIOUS_GATEWAY_DEPLOYMENT_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
           [[ "$PRICING_SMOKE_VARIANT_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
           test -n "$CLOUDFLARE_API_TOKEN"
@@ -124,7 +126,9 @@ jobs:
           const deployments = JSON.parse(fs.readFileSync(`${root}/deployments-before.json`, 'utf8'));
           const secrets = JSON.parse(fs.readFileSync(`${root}/secrets-before.json`, 'utf8'));
           const version = versions.find((item) => item?.id === process.env.PREVIOUS_GATEWAY_VERSION_ID);
-          if (!version || version?.annotations?.['workers/tag'] !== process.env.PREVIOUS_GATEWAY_TAG) throw new Error('previous_gateway_version_or_tag_not_attested');
+          const requestedTag = process.env.PREVIOUS_GATEWAY_TAG ?? '';
+          const actualTag = version?.annotations?.['workers/tag'] ?? '';
+          if (!version || (requestedTag ? actualTag !== requestedTag : actualTag !== '')) throw new Error('previous_gateway_version_or_tag_not_attested');
           const deployment = deployments.toSorted((a, b) => Date.parse(b.created_on) - Date.parse(a.created_on))[0];
           if (deployment?.id !== process.env.PREVIOUS_GATEWAY_DEPLOYMENT_ID || deployment?.versions?.length !== 1 || deployment.versions[0]?.version_id !== process.env.PREVIOUS_GATEWAY_VERSION_ID || deployment.versions[0]?.percentage !== 100) throw new Error('current_gateway_deployment_not_exactly_100_percent_previous_version');
           const names = new Set(secrets.map((secret) => secret?.name));

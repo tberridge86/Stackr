@@ -18,10 +18,12 @@ assert.match(workflow, /test "\$EXPECTED_MAIN_SHA" = "\$GITHUB_SHA"/);
 assert.doesNotMatch(workflow, /test "\$EXPECTED_MAIN_SHA" = '[0-9a-f]{40}'/);
 assert.doesNotMatch(workflow, /test "\$PREVIOUS_GATEWAY_(?:VERSION_ID|DEPLOYMENT_ID|TAG)" = '/);
 const releaseInputs = parse(workflow).on.workflow_dispatch.inputs;
-for (const name of ['previous_gateway_version_id', 'previous_gateway_deployment_id', 'previous_gateway_tag']) {
+for (const name of ['previous_gateway_version_id', 'previous_gateway_deployment_id']) {
   assert.equal(releaseInputs[name].required, true);
   assert.equal(releaseInputs[name].default, undefined, 'Every release must supply its reviewed current rollback target.');
 }
+assert.equal(releaseInputs.previous_gateway_tag.required, false);
+assert.equal(releaseInputs.previous_gateway_tag.default, undefined, 'An untagged current Worker must be explicitly represented by an empty tag.');
 assert.match(workflow, /--keep-vars/);
 assert.match(workflow, /--var "SUPABASE_PUBLISHABLE_KEY:\$publishable_key"/);
 assert.match(workflow, /--name stackr-api-gateway/);
@@ -53,21 +55,26 @@ const versionId = 'ab809fc2-d0da-484f-a5b7-908f76013c1d';
 const deploymentId = '5105e13b-2b9c-4e3f-a2e0-392c2694cb37';
 const tag = 'production-9113bfffc0ae4f0ce841645040a1959d77c0861c';
 const previous = {id:deploymentId,created_on:'2026-08-13T09:06:34Z',versions:[{version_id:versionId,percentage:100}]};
-function attest(deployments, secretNames = ['BACKEND_ORIGIN_KEY','BACKEND_ADMIN_KEY']) {
+function attest(deployments, {requestedVersionId = versionId, requestedTag = tag, versionTag = tag, secretNames = ['BACKEND_ORIGIN_KEY','BACKEND_ADMIN_KEY']} = {}) {
   const files = {
-    'versions-before.json': [{id:versionId,annotations:{'workers/tag':tag}}],
+    'versions-before.json': [{id:versionId,annotations:versionTag ? {'workers/tag':versionTag} : {}}],
     'deployments-before.json': deployments,
     'secrets-before.json': secretNames.map((name)=>({name})),
   };
   runInNewContext(code, {
     require:()=>({readFileSync:(path)=>JSON.stringify(files[path.split('/').at(-1)])}),
-    process:{env:{RUNNER_TEMP:'/tmp',PREVIOUS_GATEWAY_VERSION_ID:versionId,PREVIOUS_GATEWAY_DEPLOYMENT_ID:deploymentId,PREVIOUS_GATEWAY_TAG:tag}},
+    process:{env:{RUNNER_TEMP:'/tmp',PREVIOUS_GATEWAY_VERSION_ID:requestedVersionId,PREVIOUS_GATEWAY_DEPLOYMENT_ID:deploymentId,PREVIOUS_GATEWAY_TAG:requestedTag}},
   });
 }
 attest([previous]);
+attest([previous], {requestedTag:'', versionTag:''});
+assert.throws(()=>attest([previous], {requestedTag:'', versionTag:tag}),/previous_gateway_version_or_tag_not_attested/);
+assert.throws(()=>attest([previous], {requestedTag:tag, versionTag:''}),/previous_gateway_version_or_tag_not_attested/);
+assert.throws(()=>attest([previous], {requestedTag:tag, versionTag:'gateway-privacy-c35667bfcd54bf8b497a01973643618584a799e1'}),/previous_gateway_version_or_tag_not_attested/);
+assert.throws(()=>attest([previous], {requestedVersionId:'c35667bf-cd54-4b8b-8971-3643618584a7'}),/previous_gateway_version_or_tag_not_attested/);
 assert.throws(()=>attest([previous,{...previous,id:'newer-deployment',created_on:'2026-09-07T18:00:00Z'}]),/current_gateway_deployment_not_exactly/);
 assert.throws(()=>attest([{...previous,versions:[{version_id:versionId,percentage:50}]}]),/current_gateway_deployment_not_exactly/);
-assert.throws(()=>attest([previous],['BACKEND_ADMIN_KEY']),/required_preserved_gateway_secret_missing/);
+assert.throws(()=>attest([previous],{secretNames:['BACKEND_ADMIN_KEY']}),/required_preserved_gateway_secret_missing/);
 for (const step of steps.filter((step)=>step.run?.includes('| tee'))) {
   assert.match(step.run,/set -euo pipefail/,`${step.name} must propagate failed probes`);
 }
