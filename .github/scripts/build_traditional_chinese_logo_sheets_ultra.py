@@ -22,22 +22,49 @@ spec.loader.exec_module(builder)
 # SVP1's historical numeric URL has moved; let the live official Taiwan catalogue provide it.
 builder.URL_OVERRIDES.pop("SVP1", None)
 
-# These are distinct official Taiwan V Starter Deck products, not generic parent-set fallbacks.
+# These are distinct official Taiwan products, not generic parent-set fallbacks.
 builder.PARENT_FALLBACKS.pop("SC2D", None)
 builder.PARENT_FALLBACKS.pop("SC1D", None)
 
-# The 25th Anniversary expansion lives on the official regional anniversary microsite,
-# outside the standard asia.pokemon-card.com/tw catalogue domain.
+# The 25th Anniversary expansion lives on the official regional anniversary microsite.
 builder.URL_OVERRIDES["S8a"] = "https://card25th.portal-pokemon.com/tw/card/s8a/"
 S8A_OFFICIAL_IMAGES = [
     "https://card25th.portal-pokemon.com/assets/img/card/s8a/tw/img_mv.png",
     "https://card25th.portal-pokemon.com/assets/img/card/s8a/tw/img_pack.png",
 ]
 
+# These older official Taiwan pages often expose a generic social preview before their real
+# Traditional Chinese product artwork. Pin the actual banner/package asset so it cannot be
+# replaced by a generic Pokemon wordmark or an individual card scan.
+EXPLICIT_OFFICIAL_IMAGES: dict[str, list[str]] = {
+    "SDL": ["https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2022/10/TW_news_starter_after.png"],
+    "SDM": ["https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2022/10/TW_news_starter_after.png"],
+    "SDP": ["https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2022/10/TW_news_starter_after.png"],
+    "S8": ["https://asia.pokemon-card.com/tw/archive/special/card/s8/img/banner-img.png"],
+    "SCD": ["https://asia.pokemon-card.com/tw/archive/special/card/scd/img/banner-img.png"],
+    "S7D": ["https://asia.pokemon-card.com/tw/archive/special/card/s7/img/banner-img.png"],
+    "S7R": ["https://asia.pokemon-card.com/tw/archive/special/card/s7/img/banner-img.png"],
+    "SH": ["https://asia.pokemon-card.com/tw/archive/special/card/family_game/img/product-img-1.png"],
+    "S6a": ["https://asia.pokemon-card.com/tw/archive/special/card/s6a/images/banner-img_0507_sp.jpg"],
+    "SCC": ["https://asia.pokemon-card.com/tw/archive/special/card/scc/img/banner-img.png"],
+    "S6H": ["https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2021/09/73-thumb-240x240-16019.jpg"],
+    "S6K": ["https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2021/09/72-thumb-240x240-16019.jpg"],
+    "S5a": ["https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2021/09/71-thumb-240x240-16019.jpg"],
+    "S5I": ["https://asia.pokemon-card.com/tw/archive/special/card/s5/img/banner-img.png"],
+    "S5R": ["https://asia.pokemon-card.com/tw/archive/special/card/s5/img/banner-img.png"],
+    "SCB": ["https://asia.pokemon-card.com/tw/archive/special/card/scb/images/banner-img.jpg"],
+    "S4a": ["https://asia.pokemon-card.com/tw/archive/special/card/s4a/img/banner-img.png"],
+    "SCA": ["https://asia.pokemon-card.com/tw/archive/special/card/sca/img/banner-img.png"],
+    "SC2a": ["https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/07/thumb_setA-thumb-650x488-14937.png"],
+    "SC2b": ["https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/07/thumb_setB-thumb-650x488-14935.png"],
+    "SC2D": ["https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/07/thumb_deck-thumb-650x488-14938.png"],
+    "SC1a": ["https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/06/dddae742ba1840663de5b1b3457019cb9b336358-thumb-650x488-14550.png"],
+    "SC1b": ["https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/06/c5f87626cb140e6e2dec49dd0f19f7d578d6512b-thumb-650x488-14544.png"],
+    "SC1D": ["https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/06/333e4237e6b9a9615ef8ac59a521cbbc24914d8c-thumb-650x488-14556.png"],
+}
+
 
 def verified_official_name(item) -> str:
-    # The supplied list is already Traditional Chinese except for the explicitly audited
-    # corrections below. Avoid one remote API request per row in the release build.
     return builder.OFFICIAL_NAME_OVERRIDES.get(item.code, item.supplied_name)
 
 
@@ -152,6 +179,26 @@ def fast_open_remote_image(url: str) -> Image.Image:
 
 
 def ultra_choose_asset(item, display_name: str, page_url: str, product_images):
+    if item.code in EXPLICIT_OFFICIAL_IMAGES:
+        errors: list[str] = []
+        for url in EXPLICIT_OFFICIAL_IMAGES[item.code]:
+            try:
+                image = fast_open_remote_image(url)
+                print(f"PINNED {item.code}: {image.size} {url}")
+                return builder.trim_image(image), url, "explicit-official-taiwan-product-artwork", [
+                    {
+                        "code": item.code,
+                        "url": url,
+                        "context": "explicit-official-taiwan-product-artwork",
+                        "width": str(image.width),
+                        "height": str(image.height),
+                        "score": "PINNED",
+                    }
+                ]
+            except Exception as exc:  # noqa: BLE001
+                errors.append(f"{url}: {exc}")
+        raise RuntimeError(f"Pinned official Taiwan artwork failed for {item.code}: {' | '.join(errors)}")
+
     supplied_images = list(product_images)
     if item.code == "S8a":
         supplied_images = S8A_OFFICIAL_IMAGES + supplied_images
