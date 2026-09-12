@@ -57,15 +57,26 @@ const fixture = {
     rightsBlocked: 9,
   },
   providerReports: { pikaqianCoverageRows: 10 },
-  byLanguage: [{
-    language: 'ja',
-    sets: 2,
-    expectedCards: 100,
-    storedCardRecords: 90,
-    exactNativeImages: 75,
-    missingExactNativeImages: 25,
-    conflicts: 1,
-  }],
+  byLanguage: [
+    {
+      language: 'ja',
+      sets: 2,
+      expectedCards: 100,
+      storedCardRecords: 90,
+      exactNativeImages: 75,
+      missingExactNativeImages: 25,
+      conflicts: 1,
+    },
+    {
+      language: 'ko',
+      sets: 0,
+      expectedCards: 0,
+      storedCardRecords: 0,
+      exactNativeImages: 0,
+      missingExactNativeImages: 0,
+      conflicts: 0,
+    },
+  ],
   cardImageInventory: {
     totals: {
       assets: 100,
@@ -95,6 +106,7 @@ const markdown = renderCatalogueGapSummary(fixture);
 assert.match(markdown, /Group A — exact approved image candidate \| 12/);
 assert.match(markdown, /Stored images missing one or more required derivatives \| 20/);
 assert.match(markdown, /\| ja \| 2 \| 90% \| 75% \| 25 \| 1 \|/);
+assert.match(markdown, /\| ko \| 0 \| not measured \| not measured \| 0 \| 0 \|/);
 assert.match(markdown, /\| tcgdex \| supabase_storage \| none \| 100 \| 80 \| 70 \| 61 \| 62 \| 63 \| 60 \|/);
 assert.match(markdown, /PikaQian coverage rows: \*\*10\*\*/);
 

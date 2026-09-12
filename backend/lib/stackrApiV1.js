@@ -30,7 +30,11 @@ export function normalizeSearchText(value = '') {
   return String(value ?? '')
     .normalize('NFKC')
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    // Fold Latin accents, then recompose other scripts before whitelisting.
+    // Without recomposition Japanese ピ remains ヒ + U+309A, which does not
+    // exactly match the composed canonical database value.
+    .replace(/(\p{Script=Latin})[\u0300-\u036f]+/gu, '$1')
+    .normalize('NFKC')
     .toLowerCase()
     .replace(/pok\u00e9mon/g, 'pokemon')
     .replace(/[\u2019\u2018`\u00b4]/g, "'")

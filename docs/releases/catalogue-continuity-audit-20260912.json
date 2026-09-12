@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "observedAtUtc": {
+    "productionDatabase": "2026-09-12T14:08:15.532981Z",
+    "stagingDatabase": "2026-09-12T14:08:14.842938Z",
+    "productionApiProbe": "2026-09-12T14:03:00Z"
+  },
+  "source": {
+    "repository": "tberridge86/Stackr",
+    "baseRevision": "10e1f4c64735102136e0d4c9d730e1f8ee829ea5",
+    "branch": "agent/catalogue/full-coverage-baseline"
+  },
+  "artifacts": {
+    "setPopulationCsv": "docs/releases/catalogue-current-set-population-20260912.csv",
+    "setPopulationRows": 696,
+    "setPopulationSha256": "260b0b31f65d48570e55a0205a091989a293e65bcfc5de1dba191345e9fc2c96"
+  },
+  "environments": {
+    "production": {
+      "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+      "apiOrigin": "https://api.stackrtcg.com",
+      "sets": 217,
+      "setsWithCards": 215,
+      "printings": 23666,
+      "variants": 33168,
+      "usableNativeImages": 31211,
+      "usableNativeImagePercent": 94.1,
+      "setLogos": 141,
+      "setSymbols": 159,
+      "activeSealedProducts": 0
+    },
+    "productionJapanese": {
+      "sets": 163,
+      "setsWithCards": 115,
+      "printings": 12619,
+      "variants": 13771,
+      "usableNativeImages": 8620,
+      "usableNativeImagePercent": 62.595,
+      "missingUsableNativeImages": 5151,
+      "setLogos": 97,
+      "setSymbols": 2,
+      "activeSealedProducts": 0
+    },
+    "productionSimplifiedChinese": {
+      "sets": 136,
+      "setsWithCards": 136,
+      "printings": 12956,
+      "variants": 20408,
+      "usableNativeImages": 19431,
+      "usableNativeImagePercent": 95.213,
+      "missingUsableNativeImages": 977,
+      "setLogos": 0,
+      "setSymbols": 0,
+      "activeSealedProducts": 0
+    },
+    "productionTraditionalChinese": {
+      "sets": 83,
+      "setsWithCards": 83,
+      "printings": 7436,
+      "variants": 8166,
+      "usableNativeImages": 2382,
+      "usableNativeImagePercent": 29.17,
+      "missingUsableNativeImages": 5784,
+      "setLogos": 0,
+      "setSymbols": 0,
+      "activeSealedProducts": 0
+    },
+    "productionKorean": {
+      "sets": 97,
+      "setsWithCards": 3,
+      "printings": 239,
+      "variants": 239,
+      "usableNativeImages": 0,
+      "usableNativeImagePercent": 0,
+      "missingUsableNativeImages": 239,
+      "setLogos": 0,
+      "setSymbols": 0,
+      "activeSealedProducts": 0
+    },
+    "staging": {
+      "sets": 696,
+      "setsWithCards": 552,
+      "printings": 56916,
+      "variants": 74672,
+      "notes": [
+        "Japanese English display names are 0/163 sets and 0/12619 printings.",
+        "Simplified Chinese English display names are 88/136 sets and 12079/12956 printings.",
+        "Korean English display names are 2/97 sets and 0/239 printings.",
+        "Staging and production have different active variant membership despite matching published version keys."
+      ]
+    }
+  },
+  "productionApiEvidence": {
+    "path": "/v1/search?q=%E3%83%94%E3%82%AB%E3%83%81%E3%83%A5%E3%82%A6&language=ja&limit=5",
+    "httpStatus": 200,
+    "elapsedMs": 12566.727,
+    "normalizedQuery": "ピカチュウ",
+    "resultCount": 0,
+    "databaseExpectedNativeName": "ピカチュウ",
+    "databaseExpectedPrintings": 33,
+    "databaseExpectedVariants": 36
+  },
+  "fixEvidence": {
+    "candidateNormalizedQuery": "ピカチュウ",
+    "decomposedCandidateNormalizedQuery": "ピカチュウ",
+    "latinAccentControl": "pokemon",
+    "apiIntegrationTests": "pass",
+    "catalogueGapReportTests": "pass",
+    "typecheck": "pass",
+    "targetedLint": "pass",
+    "fullLint": "0 errors, 9 pre-existing warnings; max-warnings=0 therefore nonzero exit"
+  },
+  "limits": {
+    "databaseCensus": "Complete active API-view aggregation, not a 500-row sample.",
+    "setPopulationCsv": "All 696 production active sets, including 144 sets with zero active published variants.",
+    "apiProbe": "One bounded production request, not a latency benchmark.",
+    "deviceValidation": "unmeasured",
+    "productionModified": false,
+    "deploymentStarted": false
+  }
+}

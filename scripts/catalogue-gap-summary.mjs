@@ -11,7 +11,7 @@ function number(value) {
 }
 
 function percent(complete, total) {
-  if (number(total) <= 0) return '100.00%';
+  if (number(total) <= 0) return 'not measured';
   return `${Math.round((number(complete) / number(total)) * 10_000) / 100}%`;
 }
 
