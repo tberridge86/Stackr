@@ -16,8 +16,22 @@ spec.loader.exec_module(builder)
 
 # These products are present in the official Taiwan catalogue. Let the exact catalogue
 # link win rather than relying on historical numeric URLs that can differ by region.
-for _code in ("SVP1", "S8a", "SCC", "SCA", "SCB", "SCD", "SP5", "SI"):
+for _code in ("SVP1", "SCC", "SCA", "SCB", "SCD", "SP5", "SI"):
     builder.URL_OVERRIDES.pop(_code, None)
+
+# The 25th Anniversary expansion lives on the official regional anniversary microsite,
+# outside the standard asia.pokemon-card.com/tw catalogue domain.
+builder.URL_OVERRIDES["S8a"] = "https://card25th.portal-pokemon.com/tw/card/s8a/"
+
+
+def is_card_image(text: str, image) -> bool:
+    lower = text.casefold()
+    portrait = image.height > image.width * 1.15
+    filename = Path(lower.split("?", 1)[0]).name
+    numbered_card = bool(re.search(r"(?:rr|sr|sar|ar|ur|hr|r|u|c)[_-]?\d{2,4}", filename))
+    numbered_tail = bool(re.search(r"[_-]\d{3,4}(?:[_-]|\.)", filename))
+    card_word = any(token in lower for token in ("/card/", "card_", "card-", "cards/", "pokemon_"))
+    return portrait and (numbered_card or numbered_tail or card_word)
 
 
 def prescore(item, url: str, context: str) -> float:
@@ -40,13 +54,39 @@ def prescore(item, url: str, context: str) -> float:
         if keyword in text:
             score += float(value)
     if "product-index" in context:
-        score += 420.0
+        score += 650.0
     if "meta:og:image" in context:
-        score += 360.0
+        score += 420.0
     if "wp-content/uploads" in text:
         score += 60.0
+    if any(token in text for token in ("product_thumbnail", "product-thumbnail", "package", "pkg", "setimg", "set_img", "box", "hero", "mainvisual", "main_visual", "banner")):
+        score += 480.0
+    if "marker" in text:
+        score -= 1100.0
+    if re.search(r"(?:rr|sr|sar|ar|ur|hr)[_-]?\d{2,4}", text):
+        score -= 1000.0
     if any(token in text for token in ("card_", "card-", "/cards/", "point_", "point-", "character", "pokemon_")):
-        score -= 300.0
+        score -= 500.0
+    return score
+
+
+def adjusted_score(item, display_name: str, url: str, context: str, image) -> float:
+    score = builder.candidate_score(item, display_name, url, context, image)
+    text = f"{url} {context}".casefold()
+    if image.width < 300 or image.height < 130:
+        score -= 1200.0
+    if "marker" in text:
+        score -= 1200.0
+    if is_card_image(text, image):
+        score -= 1150.0
+    if "product-index" in context:
+        score += 600.0
+    if "meta:og:image" in context:
+        score += 300.0
+    if any(token in text for token in ("product_thumbnail", "product-thumbnail", "package", "pkg", "setimg", "set_img", "box", "hero", "mainvisual", "main_visual", "banner")):
+        score += 450.0
+    if any(token in text for token in ("logo", "title", "ttl", "headline")):
+        score += 350.0
     return score
 
 
@@ -57,16 +97,16 @@ def ultra_choose_asset(item, display_name: str, page_url: str, product_images):
         key=lambda row: row[0],
         reverse=True,
     )
-    candidates = [(url, context) for score, url, context in ranked if score > -500][:6]
+    candidates = [(url, context) for score, url, context in ranked if score > -500][:10]
     if not candidates:
-        candidates = [(url, context) for _, url, context in ranked[:6]]
+        candidates = [(url, context) for _, url, context in ranked[:10]]
 
     scored = []
     audit = []
     for url, context in candidates:
         try:
             image = builder.open_remote_image(url)
-            score = builder.candidate_score(item, display_name, url, context, image)
+            score = adjusted_score(item, display_name, url, context, image)
             audit.append({
                 "code": item.code,
                 "url": url,
