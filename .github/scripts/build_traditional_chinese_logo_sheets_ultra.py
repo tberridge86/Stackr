@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import re
 import sys
+import time
 from pathlib import Path
+from urllib.parse import urlparse
+
+from PIL import Image
 
 
 SOURCE = Path(__file__).with_name("build_traditional_chinese_logo_sheets.py")
@@ -104,6 +109,33 @@ def adjusted_score(item, display_name: str, url: str, context: str, image) -> fl
     return score
 
 
+def fast_open_remote_image(url: str) -> Image.Image:
+    key = hashlib.sha256(url.encode("utf-8")).hexdigest()[:24]
+    suffix = Path(urlparse(url).path).suffix.lower()
+    if suffix not in {".png", ".jpg", ".jpeg", ".webp"}:
+        suffix = ".img"
+    cache = builder.CACHE_DIR / f"{key}{suffix}"
+    if not cache.exists():
+        last_error: Exception | None = None
+        for attempt in range(2):
+            try:
+                response = builder.SESSION.get(url, timeout=14)
+                response.raise_for_status()
+                if len(response.content) < 400:
+                    raise ValueError("image response too small")
+                cache.write_bytes(response.content)
+                break
+            except Exception as exc:  # noqa: BLE001
+                last_error = exc
+                if attempt == 0:
+                    time.sleep(0.7)
+        else:
+            raise RuntimeError(f"Image unavailable: {last_error}")
+    image = Image.open(cache)
+    image.load()
+    return image.convert("RGBA")
+
+
 def ultra_choose_asset(item, display_name: str, page_url: str, product_images):
     supplied_images = list(product_images)
     if item.code == "S8a":
@@ -114,15 +146,15 @@ def ultra_choose_asset(item, display_name: str, page_url: str, product_images):
         key=lambda row: row[0],
         reverse=True,
     )
-    candidates = [(url, context) for score, url, context in ranked if score > -500][:10]
+    candidates = [(url, context) for score, url, context in ranked if score > -500][:7]
     if not candidates:
-        candidates = [(url, context) for _, url, context in ranked[:10]]
+        candidates = [(url, context) for _, url, context in ranked[:7]]
 
     scored = []
     audit = []
     for url, context in candidates:
         try:
-            image = builder.open_remote_image(url)
+            image = fast_open_remote_image(url)
             score = adjusted_score(item, display_name, url, context, image)
             audit.append({
                 "code": item.code,
@@ -150,5 +182,6 @@ def ultra_choose_asset(item, display_name: str, page_url: str, product_images):
     return builder.trim_image(image), url, context, audit
 
 
+builder.open_remote_image = fast_open_remote_image
 builder.choose_asset = ultra_choose_asset
 builder.main()
