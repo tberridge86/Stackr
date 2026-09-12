@@ -1,0 +1,39 @@
+name: Export Stackr Source for Logo Integration
+
+on:
+  push:
+    branches:
+      - asset/integrate-official-set-logos-20260912
+    paths:
+      - .github/workflows/export-stackr-source-for-logo-integration.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Package source
+        run: |
+          tar \
+            --exclude=.git \
+            --exclude=node_modules \
+            --exclude=.expo \
+            --exclude=dist \
+            --exclude=build \
+            --exclude=coverage \
+            -czf /tmp/stackr-source.tar.gz .
+
+      - name: Upload source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: stackr-source-${{ github.run_id }}
+          path: /tmp/stackr-source.tar.gz
+          if-no-files-found: error
+          retention-days: 2
