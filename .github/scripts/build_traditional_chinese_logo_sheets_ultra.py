@@ -14,6 +14,11 @@ builder = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = builder
 spec.loader.exec_module(builder)
 
+# These products are present in the official Taiwan catalogue. Let the exact catalogue
+# link win rather than relying on historical numeric URLs that can differ by region.
+for _code in ("SVP1", "S8a", "SCC", "SCA", "SCB", "SCD", "SP5", "SI"):
+    builder.URL_OVERRIDES.pop(_code, None)
+
 
 def prescore(item, url: str, context: str) -> float:
     text = f"{url} {context}".casefold()
