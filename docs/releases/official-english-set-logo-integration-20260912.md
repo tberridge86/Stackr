@@ -29,16 +29,36 @@ The Japanese resolver now treats `bwp`, `dpp`, `smp`, `sp`, `svp` and `xyp` as l
 - The materializer refuses substitutions, duplicates, non-English entries, non-HTTPS sources, a second Pitch Black identity or `PBL`.
 - Runtime tests prove all aliases, language gating, shared-asset deduplication, static bundling and collision behavior.
 
+## Test receipts
+
+### Guarded materialisation and source verification
+
+- GitHub Actions run: `34702189958`
+- Verified runtime commit: `4bc9ad1c6e01c4c7b35037121a6bf9e17a5216c1`
+- Passed:
+  - exact materialisation of all 15 reviewed binaries;
+  - manifest and binary hash validation;
+  - 47 alias and single Pitch Black identity assertions;
+  - English/Japanese collision regression suite;
+  - `tsc --noEmit`.
+
+### Latest-main reconciliation
+
+- GitHub Actions run: `34702307256`
+- Reconciled branch head: `92104efd2a93d9ba94ec39aaeaf88b87dd76a1ab`
+- Merged and tested against `main` at `4c0be1ae7ac77b46debd241cf106f4834fe5ffb5`.
+- Repeated the official-logo tests, Japanese collision tests, full TypeScript checking and diff hygiene successfully.
+
 ## Delivery state
 
 | State | Status | Evidence |
 | --- | --- | --- |
-| Implemented | yes | catalogue specialist branch |
-| Source tested | pending until CI receipt is attached | `npm run test:official-english-set-logos`; Japanese collision test; typecheck |
-| Merged | no | release owner handoff required |
+| Implemented | yes | canonical resolver, manifest, materializer, 15 bundled assets and collision guard |
+| Source tested | yes | GitHub Actions runs `34702189958` and `34702307256` |
+| Merged | no | PR and release-owner merge still required |
 | Deployed | no | no OTA/native/backend deployment in this catalogue change |
 | Installed-device verified | no | requires the affected build/update on a phone |
 
 ## Rollback
 
-Revert the integration commit. The existing remote/API artwork and Japanese fallback paths remain otherwise unchanged; no database rollback is required.
+Revert the integration merge. The existing remote/API artwork and Japanese fallback paths remain otherwise unchanged; no database rollback is required.
