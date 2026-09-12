@@ -24,7 +24,7 @@ The production EAS configuration uses `https://api.stackrtcg.com`. `StackrApiCli
 
 The current production database contains **33 active Japanese printings / 36 variants** whose native name and stored normalized name are exactly `ピカチュウ`. The false empty result is therefore an API normalization defect, not a missing catalogue identity.
 
-`normalizeSearchText()` decomposed every query and removed every combining mark. That folds Latin accents, but it also removes Japanese dakuten and handakuten before the API compares the query to the stored canonical normalized name. The source fix now removes combining accents only when they follow a Latin character, then recomposes the string. Controls show `Pokémon` still becomes `pokemon`, while composed and decomposed spellings of `ピカチュウ` both become exactly `ピカチュウ`.
+`normalizeSearchText()` decomposed every query to fold Latin accents but did not recompose it. Japanese dakuten and handakuten remain decomposed combining characters, so the resulting query no longer exactly matches the composed canonical database name. The source fix now removes combining accents only when they follow a Latin character, then recomposes the string. Controls show `Pokémon` still becomes `pokemon`, while composed and decomposed spellings of `ピカチュウ` both become exactly `ピカチュウ`.
 
 The existing fixture search normalized both its query and fixture name with the same defective helper, so it could pass while the production database lookup failed. Explicit cross-boundary normalization assertions now protect the stored Japanese identity.
 

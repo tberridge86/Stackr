@@ -30,9 +30,9 @@ export function normalizeSearchText(value = '') {
   return String(value ?? '')
     .normalize('NFKC')
     .normalize('NFD')
-    // Fold Latin accents without discarding combining marks that carry meaning
-    // in other scripts. In particular, stripping every mark turns Japanese
-    // ピカチュウ into ヒカチュウ and makes the canonical database lookup miss.
+    // Fold Latin accents, then recompose other scripts before whitelisting.
+    // Without recomposition Japanese ピ remains ヒ + U+309A, which does not
+    // exactly match the composed canonical database value.
     .replace(/(\p{Script=Latin})[\u0300-\u036f]+/gu, '$1')
     .normalize('NFKC')
     .toLowerCase()
