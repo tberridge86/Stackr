@@ -1,0 +1,54 @@
+name: Chinese set-art integration
+on:
+  push:
+    branches: [agent/catalogue/chinese-set-art-integration-20260912]
+    paths: [.github/workflows/chinese-set-art-integration.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            lib
+            components
+            backend/lib
+            catalogue
+            scripts
+            app
+            docs/agents
+            docs/releases
+            constants
+            config
+            data
+            assets/rev2/11-japanese-set-logo/manifest.json
+          sparse-checkout-cone-mode: false
+      - name: Export bounded tracked source for focused implementation
+        run: |
+          python - <<'PY'
+          import json,pathlib,subprocess,zipfile
+          out=pathlib.Path('integration-inspection');out.mkdir()
+          tracked=subprocess.check_output(['git','ls-files'],text=True).splitlines()
+          selected=[]
+          allowed={'.ts','.tsx','.js','.mjs','.cjs','.json','.md','.yml','.yaml'}
+          with zipfile.ZipFile(out/'source.zip','w',zipfile.ZIP_DEFLATED) as z:
+            for name in tracked:
+              p=pathlib.Path(name)
+              if not p.is_file() or p.suffix not in allowed or p.stat().st_size>3000000:continue
+              if any(part.startswith('.') for part in p.parts) or any(s in name.lower() for s in ['credentials','secrets','.env','service-account']):continue
+              z.write(p,name);selected.append(name)
+          logo_paths=[n for n in tracked if any(k in n.lower() for k in ['setlogo','set-logo','set_logo','setart','set-art','chinese'])]
+          (out/'paths.json').write_text(json.dumps({'revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'exported_files':len(selected),'logo_paths':logo_paths},indent=2))
+          print(json.dumps(logo_paths,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chinese-set-art-source-inspection
+          path: integration-inspection/
+          retention-days: 7
+          if-no-files-found: error
