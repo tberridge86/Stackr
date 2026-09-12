@@ -1,0 +1,31 @@
+name: Probe direct Bulbagarden logo images
+
+on:
+  push:
+    branches:
+      - artifact/traditional-chinese-logos-a4-v2
+    paths:
+      - .github/scripts/probe_bulbagarden_direct.py
+      - .github/workflows/probe-bulbagarden-direct.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check requests
+      - run: python .github/scripts/probe_bulbagarden_direct.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bulbagarden-direct-probe
+          path: build/bulbagarden-direct-probe/
+          if-no-files-found: error
+          retention-days: 3
