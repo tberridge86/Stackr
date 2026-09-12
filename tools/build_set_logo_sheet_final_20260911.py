@@ -9,26 +9,32 @@ from pathlib import Path
 import build_set_logo_sheet_20260911 as base
 
 
-AXELERATE = (
+AXELERATE_ROOT = (
     "https://raw.githubusercontent.com/Axelerate18/"
-    "pokemon-masterlist-generator/337a5da55d43ea1e927dfc51c867b1683cf1670b/"
-    "public/icons"
+    "pokemon-masterlist-generator/337a5da55d43ea1e927dfc51c867b1683cf1670b"
+)
+AXELERATE_ICONS = f"{AXELERATE_ROOT}/public/icons"
+FRANKKIENL_ROOT = (
+    "https://raw.githubusercontent.com/frankkienl/PokeTCG_helper/"
+    "10d22ae2fe6aa750f77e9e216d4910c2f3e782cf"
 )
 
-# Explicit English wordmarks resolved through the Bulbagarden MediaWiki API.
-BULBA_ENGLISH = {
-    "B2a": "B2a Set Logo EN.png",
-    "B1a": "B1a Set Logo EN.png",
-    "A3b": "A3b Set Logo EN.png",
-    "A3a": "A3a Set Logo EN.png",
-    "exu": "EX10 Logo EN.png",
-}
-
-# English catalogue/product artwork. These were selected specifically to
-# replace the French manual assets used by the first pass.
+# Explicitly English artwork. The first version of this pack accepted a
+# curated source that contained French/European logos. Those candidates are
+# blocked below and replaced here with English catalogue assets.
 ENGLISH_URLS = {
+    "B2a": "https://s3.amazonaws.com/media.pokemon-zone.com/news/original_images/Paldean-wonders-logo.png",
+    "B1a": "https://s3.amazonaws.com/media.pokemon-zone.com/news/original_images/Pokemon_TCG_Pocket_Crimson_Blaze_Logo_EN.png",
+    "A3b": (
+        f"{FRANKKIENL_ROOT}/composeApp/src/commonMain/composeResources/files/"
+        "expansions/A3b/expansion_symbols/A3b_Set_Logo_EN.png"
+    ),
+    "A3a": (
+        f"{FRANKKIENL_ROOT}/expansions/A3a/expansion_symbols/"
+        "A3a_Set_Logo_EN.png"
+    ),
     "2024sv": "https://pokesymbols.com/images/tcg/sets/logos/mcdonalds-collection-dragon-discovery-2024.png",
-    "mfb": f"{AXELERATE}/My_First_Battle_Logo.png",
+    "mfb": f"{AXELERATE_ICONS}/My_First_Battle_Logo.png",
     "2023sv": "https://pokesymbols.com/images/tcg/sets/logos/mcdonald_s-match-battle-2023.avif",
     "svp": "https://images.pokemontcg.io/svp/logo.png",
     "2022swsh": "https://images.pokemontcg.io/mcd22/logo.png",
@@ -43,16 +49,15 @@ ENGLISH_URLS = {
     "2012bw": "https://images.pokemontcg.io/mcd12/logo.png",
     "2011bw": "https://images.pokemontcg.io/mcd11/logo.png",
     "ex5.5": "https://images.scrydex.com/pokemon/wb1-logo/logo",
+    "exu": "https://images.pokemontcg.io/ex10/logo.png",
 }
 
-# These products do not consistently have an English expansion wordmark.
-# Use their official language-neutral symbol/stamp rather than a French logo.
-NEUTRAL_BULBA = {
-    "mep": "SetSymbolMEP Black Star Promos.png",
-    "wp": "Gold W.png",
-}
+# Some promotional and Trainer Kit groupings have no separate English
+# expansion wordmark. Use the official language-neutral stamp/half-deck mark
+# instead of a French product title.
 NEUTRAL_URLS = {
-    "xya": "https://images.pokemontcg.io/xya/symbol.png",
+    "mep": f"{AXELERATE_ROOT}/public/set-symbols/mep.png",
+    "wp": "https://raw.githubusercontent.com/liesdjillali/pokecole-questions/main/images/manual_set_logos/wp.png",
 }
 TRAINER_SYMBOLS = {
     "tk-sm-l": "Lycanroc_Half_Deck.png",
@@ -77,63 +82,25 @@ TRAINER_SYMBOLS = {
     "tk-ex-latio": "Latios_EX_Half_Deck.png",
 }
 
+EXPECTED_UNRESOLVED = {"xya", "sp", "miscp"}
 _original_catalogue_candidates = base.catalogue_candidates
 _original_parent_candidates = base.parent_candidates
-_original_download_logo = base.download_logo
-
-
-def _bulba_url(session, filename: str) -> tuple[str | None, str]:
-    """Resolve a named Bulbagarden file without relying on redirect guessing."""
-    try:
-        response = session.get(
-            "https://archives.bulbagarden.net/w/api.php",
-            params={
-                "action": "query",
-                "format": "json",
-                "formatversion": "2",
-                "prop": "imageinfo",
-                "iiprop": "url",
-                "titles": f"File:{filename}",
-            },
-            timeout=45,
-        )
-        response.raise_for_status()
-        for page in response.json().get("query", {}).get("pages", []):
-            info = page.get("imageinfo") or []
-            if info and info[0].get("url"):
-                return str(info[0]["url"]), ""
-        return None, f"Bulbagarden file not found: {filename}"
-    except Exception as exc:
-        return None, f"Bulbagarden API error: {exc}"
-
-
-def download_logo(session, url: str, destination: Path) -> tuple[bool, str]:
-    if not url.startswith("bulba-file:"):
-        return _original_download_logo(session, url, destination)
-    resolved, error = _bulba_url(session, url.removeprefix("bulba-file:"))
-    if not resolved:
-        return False, error
-    return _original_download_logo(session, resolved, destination)
 
 
 def catalogue_candidates(code: str, name: str, data: base.SourceData):
-    if code in BULBA_ENGLISH:
-        yield "english", f"bulba-file:{BULBA_ENGLISH[code]}", f"Official English {name} logo"
     if code in ENGLISH_URLS:
-        yield "english", ENGLISH_URLS[code], f"English {name} logo"
-    if code in NEUTRAL_BULBA:
-        yield "neutral", f"bulba-file:{NEUTRAL_BULBA[code]}", f"Official language-neutral {name} symbol"
+        yield "english", ENGLISH_URLS[code], f"Verified English {name} logo"
     if code in NEUTRAL_URLS:
         yield "neutral", NEUTRAL_URLS[code], f"Official language-neutral {name} symbol"
     if code in TRAINER_SYMBOLS:
         yield (
             "neutral",
-            f"{AXELERATE}/{TRAINER_SYMBOLS[code]}",
-            "Official language-neutral Trainer Kit half-deck symbol; French wordmark removed",
+            f"{AXELERATE_ICONS}/{TRAINER_SYMBOLS[code]}",
+            "Official language-neutral Trainer Kit half-deck mark; European wordmark removed",
         )
 
-    # Keep TCGdex and PokémonTCG English-catalogue candidates, but reject every
-    # manual candidate because that mixed French/European artwork into the pack.
+    # Keep normal English catalogue candidates, but reject the mixed-language
+    # curated directory that caused the original error.
     for source, url, note in _original_catalogue_candidates(code, name, data):
         combined = f"{source} {url} {note}".lower()
         if source == "manual" or "manual_set_logos" in combined or "-fr" in combined:
@@ -155,27 +122,55 @@ def run() -> int:
     result = base.main()
     root = Path(__file__).resolve().parents[1]
     output = root / "artifacts" / "pokemon-set-logo-sheet-20260911"
-    manifest = json.loads((output / "pokemon-set-logo-manifest.json").read_text(encoding="utf-8"))
+    manifest_path = output / "pokemon-set-logo-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-    offenders = []
+    offenders: list[str] = []
     for row in manifest:
+        if row.get("status") == "unresolved":
+            continue
+        code = str(row.get("code", "?"))
         text = " ".join(str(row.get(k, "")) for k in ("source", "source_url", "note")).lower()
-        if "manual_set_logos" in text or "curated manual" in text or "-fr" in text:
-            offenders.append(str(row.get("code", "?")))
+        # WP is an explicit exception: the file is the language-neutral gold-W
+        # stamp, despite residing in the old curated directory.
+        if code != "wp" and (
+            "manual_set_logos" in text
+            or "curated manual" in text
+            or "-fr" in text
+            or "french" in text
+        ):
+            offenders.append(code)
     if offenders:
-        raise RuntimeError("English-only audit failed: " + ", ".join(offenders))
+        raise RuntimeError("English-only audit found mixed-language assets: " + ", ".join(offenders))
 
-    unresolved = [str(row["code"]) for row in manifest if row.get("status") == "unresolved"]
-    neutral = [str(row["code"]) for row in manifest if row.get("source") == "Official language-neutral symbol"]
+    unresolved = {str(row["code"]) for row in manifest if row.get("status") == "unresolved"}
+    if unresolved != EXPECTED_UNRESOLVED:
+        raise RuntimeError(
+            "Unexpected unresolved identities. Expected "
+            f"{sorted(EXPECTED_UNRESOLVED)}, found {sorted(unresolved)}"
+        )
+
+    neutral = [
+        str(row["code"])
+        for row in manifest
+        if row.get("source") == "Official language-neutral symbol"
+    ]
     lines = [
         "English-only Pokémon set-logo audit",
         "===================================",
-        "French and other European-language manual fallbacks: BLOCKED",
+        "French and other European-language wordmark fallbacks: BLOCKED",
         f"Requested entries: {len(manifest)}",
-        f"Language-neutral symbols used: {len(neutral)} ({', '.join(neutral)})",
-        f"Unresolved: {len(unresolved)} ({', '.join(unresolved) if unresolved else 'none'})",
+        f"Language-neutral official marks used: {len(neutral)} ({', '.join(neutral)})",
+        "Intentionally unresolved: xya, sp, miscp",
+        "- xya is an alternate-printing catalogue grouping with no verified standalone English set logo.",
+        "- sp is a Sample-stamp grouping, not a conventional expansion logo.",
+        "- miscp is a miscellaneous promotional grouping, not one consistent expansion identity.",
+        "Identity handling: PBL remains an alias of canonical me05 (Pitch Black).",
     ]
     (output / "ENGLISH_ONLY_AUDIT.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    # Rebuild after writing the audit so the import ZIP contains it.
+    base.build_zip(output, output / "pokemon-set-logo-import-bundle.zip")
     return result
 
 
@@ -183,7 +178,6 @@ base.SOURCE_LABELS["english"] = "Verified English logo"
 base.SOURCE_LABELS["neutral"] = "Official language-neutral symbol"
 base.catalogue_candidates = catalogue_candidates
 base.parent_candidates = parent_candidates
-base.download_logo = download_logo
 
 
 if __name__ == "__main__":
