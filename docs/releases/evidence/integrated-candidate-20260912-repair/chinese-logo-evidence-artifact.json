@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "stackr-artifact-collation-v1",
+  "observedAt": "2026-09-12T16:11:42.157Z",
+  "github": {
+    "repository": "tberridge86/Stackr",
+    "runId": 34702564636,
+    "artifactId": 10299784767,
+    "name": "chinese-logo-evidence",
+    "head": "c199924f08f0393a315435d9f760601e975584c2"
+  },
+  "archive": {
+    "bytes": 8527265,
+    "sha256": "e0d9ae9a2cc786b19927676f34cf7ced29b0ccbc1c3f66ab58a2d14242146de8",
+    "matchesObservedGithubDigest": true
+  },
+  "traditionalChineseGroups": 83,
+  "traditionalChineseEntries": 0,
+  "simplifiedChineseReferences": [
+    {
+      "code": "csv10c",
+      "file": "images/csv10c_a72ac76d9368.png",
+      "pageUrl": "https://www.pokemon.cn/tcg/product/20012.html",
+      "kind": "publisher_reference_not_logo",
+      "reviewStatus": "pending",
+      "width": 2016,
+      "height": 1210,
+      "sha256": "a72ac76d93681bda621a7f6f5f05bc33a1d97c573e596e3d7f486c38be91cd48"
+    },
+    {
+      "code": "csv9.5c",
+      "file": "images/csv9.5c_fcaaf61234f3.png",
+      "pageUrl": "https://www.pokemon.cn/tcg/product/21997.html",
+      "kind": "publisher_reference_not_logo",
+      "reviewStatus": "pending",
+      "width": 2016,
+      "height": 1210,
+      "sha256": "fcaaf61234f3c5a25e448d9906907ed3d2e86306bb23ec7d14a19b8247111716"
+    },
+    {
+      "code": "csv9c",
+      "file": "images/csv9c_3217f51d711a.png",
+      "pageUrl": "https://www.pokemon.cn/tcg/product/21383.html",
+      "kind": "publisher_reference_not_logo",
+      "reviewStatus": "pending",
+      "width": 2016,
+      "height": 1210,
+      "sha256": "3217f51d711af939bac9f7778a70dc621bcac066fa02e980462cc8e93a9f5e78"
+    },
+    {
+      "code": "csv8c",
+      "file": "images/csv8c_6c5894401014.png",
+      "pageUrl": "https://www.pokemon.cn/tcg/product/20627.html",
+      "kind": "publisher_reference_not_logo",
+      "reviewStatus": "pending",
+      "width": 2016,
+      "height": 1669,
+      "sha256": "6c58944010147965baa5ddabb36db662a1e0eb40283e98fdc8ee90d2e13da14f"
+    },
+    {
+      "code": "csv7c",
+      "file": "images/csv7c_0668348979dd.png",
+      "pageUrl": "https://www.pokemon.cn/tcg/product/19812.html",
+      "kind": "publisher_reference_not_logo",
+      "reviewStatus": "pending",
+      "width": 2016,
+      "height": 2488,
+      "sha256": "0668348979ddd19cb89de92e4768d29b1430c03281ad8a1b7507bca75bd15abe"
+    }
+  ],
+  "approvedLogoAssets": 0,
+  "conclusion": "Five pending publisher references; no logo assets and no additional 69-logo pack. No runtime import or publication performed."
+}

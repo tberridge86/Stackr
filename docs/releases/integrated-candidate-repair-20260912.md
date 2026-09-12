@@ -1,7 +1,7 @@
 # Stackr integrated candidate: release-blocker repairs
 
-Recorded 12 September 2026, 16:01 UTC. Source candidate:
-`0a1df253e8849a6dfb6bc59a5d6e516dc0e70956`, on local branch
+Updated 12 September 2026, 16:11 UTC. Source candidate:
+`f0f1405831e12224a0a8df7e6ccfd4747f01a923`, on local branch
 `codex/stackr-integrated-candidate-20260912` in
 `D:/Stackr-integrated-candidate-20260912`.
 
@@ -23,6 +23,7 @@ of main `4c0be1a` and PRs #184, #187 and #180. Subsequent work is additive:
 | `eb087909f80de1845f46a755d36100891c5b0d80` | Gateway accepts and validates `includeAssets=false`, `true`, or omission; facts-only, enriched and default responses keep separate cache identities. Missing, malformed or mixed catalogue versions are rejected before normalization and on disk; adapters retain version provenance. |
 | `1403ed09e464830f9bcb9310bd92af84075c44e8` | Backgrounding, route blur, close, unmount or a newer capture invalidates pending scanner work. Late awaited stages cannot navigate or overwrite a newer scan. The async regression exercises the same awaited-stage helper used by recognition. |
 | `0a1df253e8849a6dfb6bc59a5d6e516dc0e70956` | Selectively restores PR #188's six historical SQL files, original evidence and byte-verification test; preserves current package scripts. No database statement was executed. |
+| `f0f1405831e12224a0a8df7e6ccfd4747f01a923` | Fixes a reproduced Chinese/Japanese shared-code collision: an explicit foreign language cannot receive a Japanese logo, including through fallback language or a conflicting legacy prefix. Japanese locale/script tags and language-omitted legacy lookups remain supported. |
 
 The retrieval defects were reproduced before repair: the gateway regression
 returned 400 instead of 200, and missing catalogue versions passed validation.
@@ -46,7 +47,9 @@ before restoring line endings; no existing SQL blob or hash expectation changed.
 Windows, Node `v24.15.0`, existing root/gateway dependency junctions. This is not
 fresh Linux/Node 22 CI. The app source built and tested at `1403ed0`; the following
 source-recovery commit changes migration history, line-ending policy and the
-database test command only, so it does not change the exported app runtime.
+database test command only. The subsequent `f0f1405` language-guard change passed
+TypeScript, app lint, scoped lint and the expanded resolver regression; the full
+web export remains evidence for the earlier `1403ed0` app checkpoint.
 
 | Check | Observed result |
 | --- | --- |
@@ -68,6 +71,13 @@ database test command only, so it does not change the exported app runtime.
 The English asset check first encountered the Windows Python launcher alias.
 Using the already-bundled Python runtime on the command's PATH resolved it; the
 full package script then passed. No asset was downloaded or altered by that check.
+
+The language-guard regression first reproduced `zh-tw` resolving to the bundled
+Japanese `s8b.png`; it now passes six explicit foreign language labels, eleven
+Japanese aliases/locales, legacy lookups and the actual shared artwork resolver.
+Independent English asset, Japanese coverage and native-language checks also
+passed. Scoped lint retains two pre-existing array-style warnings. No Chinese
+logo was substituted to make the foreign-language test pass.
 
 PR #188's failed `benchmark-smoke-tests` job was traced to a later deployment
 test's stale `staging history + 25` assertion (105 + 25 = 130), not the benchmark
@@ -119,10 +129,27 @@ preserves exact provenance and counts. The ZIP and extracted sources remain at
 `outputs/source-artifacts/traditional-chinese-actions-run-34701847752-artifact-10299719637`.
 Nothing from this pending pack was imported into runtime assets or published.
 
+A second existing archive, `chinese-logo-evidence` artifact `10299784767` from run
+`34702564636`, was subsequently preserved and verified. Its 8,527,265 bytes match
+GitHub's SHA-256 `e0d9ae9a2cc786b19927676f34cf7ced29b0ccbc1c3f66ab58a2d14242146de8`.
+It contains five Simplified Chinese images explicitly labelled
+`publisher_reference_not_logo` and `pending`; all five file hashes match. Its
+Traditional Chinese evidence has 83 empty groups. It adds zero approved logos.
+The [derived artifact receipt](evidence/integrated-candidate-20260912-repair/chinese-logo-evidence-artifact.json)
+records the source pages and image identities without temporary media query tokens.
+The separately claimed final 69-logo chat download is still unverified: it was
+not available through task attachments, and the browser requires a ChatGPT login.
+
 Existing approved TCGdex low-resolution, exact-identity, memory-only live card
 references can fill some display gaps; they do not authorize bulk mirroring or
 change the stored census. No permission override or new recognition model was
 enabled to claim coverage.
+
+A read-only trace confirmed that eligible controlled card references can reach
+both set-detail and binder rendering through the current deferred enrichment and
+overlay-preserving merge. No overlay-loss defect was found. The two-second binder
+enrichment bound and capped detail fallbacks remain limits; this source review
+does not prove current provider coverage or on-device artwork completion.
 
 ## Release boundary
 

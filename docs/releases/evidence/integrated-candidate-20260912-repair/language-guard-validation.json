@@ -1,0 +1,40 @@
+{
+  "source": "f0f1405831e12224a0a8df7e6ccfd4747f01a923",
+  "observedAt": "2026-09-12T16:12:23.184Z",
+  "results": {
+    "reproducedBeforeFix": true,
+    "resolverRegression": "pass",
+    "typecheck": "pass",
+    "appLint": {
+      "errors": 0,
+      "warnings": 12
+    },
+    "scopedLint": {
+      "errors": 0,
+      "warnings": 2
+    },
+    "webExport": "Prior 1403ed0 checkpoint; not rebuilt for this change"
+  },
+  "logs": [
+    {
+      "name": "chinese-logo-language-red.log",
+      "bytes": 1290,
+      "sha256": "dd29c29d429e3f99aa5419194bc0ea559112f728fe2710660d4f50365b26f01a"
+    },
+    {
+      "name": "chinese-logo-language-green.log",
+      "bytes": 162,
+      "sha256": "c67572138ce50e24fbb0f0cbc1d4cbdf5c3326ad30a65a2882ec3759ef677d3f"
+    },
+    {
+      "name": "typecheck-language-guard.log",
+      "bytes": 75,
+      "sha256": "3997dcf33c70a25f4db6befa22896f1b63b2838d4eba602d1802f55ec69c7458"
+    },
+    {
+      "name": "lint-language-guard.log",
+      "bytes": 2010,
+      "sha256": "e2b081bcca205f56fa25d34f5d4d2e9ecf6016f5d520d60bd2ac1b187f9c551a"
+    }
+  ]
+}
