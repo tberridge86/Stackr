@@ -1,4 +1,4 @@
-name: Build Simplified Chinese set image sheet
+name: Audit Simplified Chinese set logos
 on:
   push:
     branches:
@@ -8,72 +8,67 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  actions: read
 jobs:
-  recover:
+  retrieve:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
-      - name: Recover compact manifest
-        uses: actions/download-artifact@v4
-        with:
-          name: simplified-chinese-compact-recovery
-          run-id: 34675677316
-          github-token: ${{ github.token }}
-          path: previous
-      - name: Install image tools
-        run: python -m pip install pillow requests beautifulsoup4
-      - name: Retrieve product candidates and normalized set art
+      - name: Install bounded asset retrieval tools
+        run: python -m pip install requests pillow beautifulsoup4
+      - name: Retrieve standalone logo candidates and provenance
         run: |
           python - <<'PY'
-          import csv, io, json, re
+          import hashlib,io,json,re
           from pathlib import Path
+          from urllib.parse import quote,urljoin
           from concurrent.futures import ThreadPoolExecutor
-          from urllib.parse import urljoin
-          from bs4 import BeautifulSoup
-          from PIL import Image,ImageOps
           import requests
-          out=Path('enrichment');out.mkdir(); rows=list(csv.DictReader(open('previous/retrieval_report.csv',encoding='utf-8-sig')))
-          targets=[20828,19759,19640,15625,15885,15806,15840,15831,15882,15955,15928,15951,16282,16031,16070,16139,16348,16363,16365,15584,15688,15977,16368,22630,21022,15447,15514,15585,15683,15824]
-          def article(aid):
-              url=f'https://www.pokemon.cn/tcg/product/{aid}.html'; results=[]
+          from bs4 import BeautifulSoup
+          from PIL import Image
+          out=Path('logo-candidates');out.mkdir()
+          base='https://archives.bulbagarden.net'
+          headers={'User-Agent':'Mozilla/5.0 (compatible; personal-logo-audit/1.0)'}
+          def get(u):
+              r=requests.get(u,headers=headers,timeout=18);r.raise_for_status();return r
+          cats=['Simplified Chinese TCG logos','Simplified Chinese Scarlet & Violet Series logos','Simplified Chinese Sword & Shield Series logos','TCG Sun & Moon set logos','TCG Sword & Shield set logos']
+          names=set()
+          for cat in cats:
+              u=base+'/wiki/Category:'+quote(cat.replace(' ','_'),safe='')
               try:
-                  r=requests.get(url,timeout=25);r.raise_for_status();s=BeautifulSoup(r.content,'html.parser')
-                  (out/f'article_{aid}.txt').write_text(s.get_text(' ',strip=True),encoding='utf-8')
-                  (out/f'article_{aid}.html').write_text(r.text,encoding='utf-8')
-                  seen=set()
-                  for img in s.find_all('img'):
-                      u=next((img.get(k) for k in ['data-src','data-original','src'] if img.get(k) and not img.get(k).startswith('data:')),'')
-                      u=urljoin(url,u)
-                      if '/wp-content/uploads/' not in u or u in seen: continue
-                      seen.add(u)
-                      if len(seen)>70: break
-                      prev=img.find_previous(['p','h2','h3','h4']);nxt=img.find_next(['p','h2','h3','h4'])
-                      results.append({'article_id':aid,'article_url':url,'ordinal':len(seen),'url':u,'context':((prev.get_text(' ',strip=True) if prev else '')+' | '+(nxt.get_text(' ',strip=True) if nxt else ''))[:600]})
-              except Exception as e: print('article error',aid,type(e).__name__)
-              return results
-          with ThreadPoolExecutor(max_workers=6) as pool: batches=list(pool.map(article,targets))
-          candidates=[c for b in batches for c in b]
-          for r in rows:
-              code=r['requested_code']
-              if '.' in code:
-                  candidates.append({'code':code,'url':f"https://grokachu.fr/media/tcg/{code.replace('.','-')}/images/sets/{code}.webp",'article_id':'catalogue','ordinal':code})
-          def download(c):
+                  r=get(u);s=BeautifulSoup(r.content,'html.parser')
+                  (out/('category_'+re.sub('[^A-Za-z0-9]','_',cat)+'.html')).write_text(r.text)
+                  for a in s.select('.gallerytext a, .gallerybox a, .mw-category a'):
+                      title=a.get('title','')
+                      if title.startswith('File:') and 'logo' in title.lower():
+                          fn=title[5:]
+                          if re.match(r'(CSV|CSM|CS\d|CBB)',fn):names.add(fn)
+              except Exception as e:print('category',cat,type(e).__name__,flush=True)
+          for code in ['CSV1','CSV2','CSV3','CSV4','CSV5','CSV6','CSV7','CSV8','CSV9','CSV9.5','CSV10','CS1','CS1.5','CS2','CS2.5','CS3','CS3.5','CS4','CS4.5','CS5','CS5.5','CS6','CS6.5','CSM1','CSM1.5','CSM2','CSM2.5']:
+              names.add(code+' Logo SC.png')
+          names.update(['CSM1 Logo A SC.png','CSM1 Logo B SC.png','CSM2 Logo A SC.png','CSM2 Logo B SC.png','CBB1 Logo.png','CBB2 Logo.png','CBB3 Logo.png','CBB4 Logo.png','CBB5 Logo.png','CSVH3 Happy Deck logo.png','CSVH3 Happy Set logo.png','CSVM logo.png','CSVL1 Logo SC.png','CSVL2 Logo SC.png','151C Logo SC.png'])
+          def download(fn):
+              filename=fn.replace(' ','_');h=hashlib.md5(filename.encode()).hexdigest()
+              u=f'{base}/media/upload/{h[0]}/{h[:2]}/{quote(filename)}'
+              rec={'filename':filename,'description_url':base+'/wiki/File:'+quote(filename),'image_url':u,'status':'unverified_candidate'}
               try:
-                  r=requests.get(c['url'],timeout=18);r.raise_for_status();im=ImageOps.exif_transpose(Image.open(io.BytesIO(r.content))).convert('RGBA');im.thumbnail((1100,1100),Image.Resampling.LANCZOS)
-                  bg=Image.new('RGB',im.size,'white');bg.paste(im,mask=im.getchannel('A'))
-                  fn=f"{c['article_id']}_{c['ordinal']}.jpg";bg.save(out/fn,quality=91,optimize=True)
-                  c.update(status='retrieved',local_file=fn,width=im.width,height=im.height)
-              except Exception as e:c.update(status='missing',error=type(e).__name__)
-              return c
-          with ThreadPoolExecutor(max_workers=10) as pool: result=list(pool.map(download,candidates))
-          (out/'candidate_manifest.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
-          print('Downloaded',sum(c['status']=='retrieved' for c in result),'of',len(result))
+                  r=get(u);im=Image.open(io.BytesIO(r.content));im.load()
+                  if im.format!='PNG' or min(im.size)<10:raise ValueError('not usable PNG')
+                  (out/filename).write_bytes(r.content)
+                  rec.update(downloaded=True,width=im.width,height=im.height,mode=im.mode,sha256=hashlib.sha256(r.content).hexdigest())
+                  try:
+                      d=get(rec['description_url']);(out/(filename+'.html')).write_text(d.text)
+                      soup=BeautifulSoup(d.content,'html.parser');rec['description_text']=soup.get_text(' ',strip=True)[:16000]
+                  except Exception as e:rec['description_error']=type(e).__name__
+              except Exception as e:rec.update(downloaded=False,error=type(e).__name__)
+              print(filename,rec['downloaded'],flush=True);return rec
+          with ThreadPoolExecutor(max_workers=6) as pool:result=list(pool.map(download,sorted(names)[:100]))
+          (out/'candidate_manifest.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
+          print('PNG candidates retrieved',sum(x['downloaded'] for x in result),'/',len(result),flush=True)
           PY
-      - name: Upload product candidates
+      - name: Upload logo candidates only
         uses: actions/upload-artifact@v4
         with:
-          name: simplified-chinese-product-candidates
-          path: enrichment/
+          name: simplified-chinese-standalone-logo-candidates
+          path: logo-candidates/
           if-no-files-found: error
           retention-days: 14
