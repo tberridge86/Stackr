@@ -1,0 +1,6 @@
+{
+  "tests": 17,
+  "passed": 17,
+  "scope": "Source, account isolation and file-backed Node SQLite; no physical-device timing",
+  "observedAt": "2026-09-12T15:34:52.172Z"
+}
