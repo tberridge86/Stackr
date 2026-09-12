@@ -1,52 +1,63 @@
 name: Audit Simplified Chinese set logos
 on:
   push:
-    branches:
-      - artifacts/simplified-chinese-set-logos-20260911
-    paths:
-      - .github/workflows/build-simplified-chinese-set-image-sheet.yml
+    branches: [artifacts/simplified-chinese-set-logos-20260911]
+    paths: [.github/workflows/build-simplified-chinese-set-image-sheet.yml]
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   retrieve:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
       - name: Install tools
-        run: python -m pip install requests pillow
-      - name: Retrieve logo files
+        run: python -m pip install requests pillow beautifulsoup4
+      - name: Retrieve independently hosted named logo candidates
         run: |
           python - <<'PY'
-          import hashlib,io,json
+          import io,json,re,hashlib
           from pathlib import Path
-          from urllib.parse import quote
+          from urllib.parse import urljoin,urlparse,parse_qs
           from concurrent.futures import ThreadPoolExecutor
           import requests
+          from bs4 import BeautifulSoup
           from PIL import Image
-          out=Path('logos');out.mkdir()
-          names=[c+' Logo SC.png' for c in ['CSV1','CSV2','CSV3','CSV4','CSV5','CSV6','CSV7','CSV8','CSV9','CSV9.5','CSV10','CS1','CS1.5','CS2','CS2.5','CS3','CS3.5','CS4','CS4.5','CS5','CS5.5','CS6','CS6.5','CSM1.5','CSM2','CSM2.5']]
-          names+=['CSM1 Logo A SC.png','CSM1 Logo B SC.png','CSM2 Logo A SC.png','CSM2 Logo B SC.png','CBB1 Logo.png','CBB2 Logo.png','CBB3 Logo.png','CBB4 Logo.png','CBB5 Logo.png','CSVH3 Happy Deck logo.png','CSVH3 Happy Set logo.png','CSVM logo.png']
-          def run(name):
-              f=name.replace(' ','_');h=hashlib.md5(f.encode()).hexdigest();base='https://archives.bulbagarden.net/media/upload/'+h[0]+'/'+h[:2]+'/'+quote(f)
-              urls=[base,'https://archives.bulbagarden.net/media/upload/thumb/'+h[0]+'/'+h[:2]+'/'+quote(f)+'/600px-'+quote(f),'https://bulbapedia.bulbagarden.net/wiki/Special:FilePath/'+quote(f)]
-              rec={'filename':f,'status':'not_retrieved','attempts':[]}
-              for u in urls:
-                  try:
-                      r=requests.get(u,headers={'User-Agent':'Mozilla/5.0','Referer':'https://bulbapedia.bulbagarden.net/'},timeout=10)
-                      rec['attempts'].append({'url':u,'status':r.status_code,'type':r.headers.get('content-type'),'preview':r.text[:120] if not r.headers.get('content-type','').startswith('image/') else ''})
-                      if r.status_code!=200:continue
-                      im=Image.open(io.BytesIO(r.content));im.load()
-                      if im.format!='PNG':continue
-                      (out/f).write_bytes(r.content);rec.update(status='candidate_only',url=r.url,width=im.width,height=im.height,sha256=hashlib.sha256(r.content).hexdigest());break
-                  except Exception as e:rec['attempts'].append({'error':str(e)[:200]})
-              return rec
-          with ThreadPoolExecutor(max_workers=5) as p:rows=list(p.map(run,names))
-          (out/'audit.json').write_text(json.dumps(rows,indent=2));print(json.dumps(rows[:2],indent=2));print('retrieved',sum(x['status']=='candidate_only' for x in rows))
+          out=Path('assets');out.mkdir()
+          H={'User-Agent':'Mozilla/5.0'}
+          def get(u):
+              r=requests.get(u,headers=H,timeout=15);r.raise_for_status();return r
+          pages={'https://mtcg.pl/pokemon-cn/chasing-glory-together'}
+          for u in ['https://mtcg.pl/pokemon-cn','https://mtcg.pl/pokemon-cn/chasing-glory-together']:
+              try:
+                  r=get(u);s=BeautifulSoup(r.content,'html.parser')
+                  (out/('index_'+hashlib.sha1(u.encode()).hexdigest()[:8]+'.html')).write_text(r.text)
+                  for a in s.find_all('a',href=True):
+                      v=urljoin(u,a['href'])
+                      if re.match(r'^https://mtcg.pl/pokemon-cn/[a-z0-9-]+$',v):pages.add(v)
+              except Exception as e: print(u,str(e)[:180],flush=True)
+          def page(u):
+              result=[];slug=u.rsplit('/',1)[-1]
+              try:
+                  r=get(u);s=BeautifulSoup(r.content,'html.parser');(out/(slug+'.html')).write_text(r.text)
+                  for i,tag in enumerate(s.find_all('img')):
+                      alt=str(tag.get('alt',''));src=tag.get('src','') or tag.get('data-src','')
+                      if 'logo' not in alt.lower() or not src:continue
+                      v=urljoin(u,src)
+                      if 'mtcg' in alt.lower() and 'logo' in alt.lower():continue
+                      try:
+                          b=get(v).content;im=Image.open(io.BytesIO(b));im.load()
+                          fn=f'{slug}_{i}.png';im.save(out/fn)
+                          result.append({'page_url':u,'image_url':v,'alt':alt,'file':fn,'width':im.width,'height':im.height,'mode':im.mode})
+                      except Exception as e:result.append({'page_url':u,'image_url':v,'alt':alt,'error':str(e)[:160]})
+              except Exception as e:result.append({'page_url':u,'error':str(e)[:160]})
+              return result
+          with ThreadPoolExecutor(max_workers=5) as p:rows=[r for b in p.map(page,sorted(pages)[:75]) for r in b]
+          (out/'manifest.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2));print('pages',len(pages),'images',sum('file' in x for x in rows),flush=True)
           PY
-      - name: Upload bounded audit
+      - name: Upload candidates and evidence
         uses: actions/upload-artifact@v4
         with:
-          name: simplified-chinese-logo-access-audit
-          path: logos/
+          name: simplified-chinese-independent-logo-candidates
+          path: assets/
           retention-days: 14
