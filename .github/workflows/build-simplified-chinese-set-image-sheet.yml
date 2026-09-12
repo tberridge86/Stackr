@@ -11,64 +11,42 @@ permissions:
 jobs:
   retrieve:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 5
     steps:
-      - name: Install bounded asset retrieval tools
-        run: python -m pip install requests pillow beautifulsoup4
-      - name: Retrieve standalone logo candidates and provenance
+      - name: Install tools
+        run: python -m pip install requests pillow
+      - name: Retrieve logo files
         run: |
           python - <<'PY'
-          import hashlib,io,json,re
+          import hashlib,io,json
           from pathlib import Path
-          from urllib.parse import quote,urljoin
+          from urllib.parse import quote
           from concurrent.futures import ThreadPoolExecutor
           import requests
-          from bs4 import BeautifulSoup
           from PIL import Image
-          out=Path('logo-candidates');out.mkdir()
-          base='https://archives.bulbagarden.net'
-          headers={'User-Agent':'Mozilla/5.0 (compatible; personal-logo-audit/1.0)'}
-          def get(u):
-              r=requests.get(u,headers=headers,timeout=18);r.raise_for_status();return r
-          cats=['Simplified Chinese TCG logos','Simplified Chinese Scarlet & Violet Series logos','Simplified Chinese Sword & Shield Series logos','TCG Sun & Moon set logos','TCG Sword & Shield set logos']
-          names=set()
-          for cat in cats:
-              u=base+'/wiki/Category:'+quote(cat.replace(' ','_'),safe='')
-              try:
-                  r=get(u);s=BeautifulSoup(r.content,'html.parser')
-                  (out/('category_'+re.sub('[^A-Za-z0-9]','_',cat)+'.html')).write_text(r.text)
-                  for a in s.select('.gallerytext a, .gallerybox a, .mw-category a'):
-                      title=a.get('title','')
-                      if title.startswith('File:') and 'logo' in title.lower():
-                          fn=title[5:]
-                          if re.match(r'(CSV|CSM|CS\d|CBB)',fn):names.add(fn)
-              except Exception as e:print('category',cat,type(e).__name__,flush=True)
-          for code in ['CSV1','CSV2','CSV3','CSV4','CSV5','CSV6','CSV7','CSV8','CSV9','CSV9.5','CSV10','CS1','CS1.5','CS2','CS2.5','CS3','CS3.5','CS4','CS4.5','CS5','CS5.5','CS6','CS6.5','CSM1','CSM1.5','CSM2','CSM2.5']:
-              names.add(code+' Logo SC.png')
-          names.update(['CSM1 Logo A SC.png','CSM1 Logo B SC.png','CSM2 Logo A SC.png','CSM2 Logo B SC.png','CBB1 Logo.png','CBB2 Logo.png','CBB3 Logo.png','CBB4 Logo.png','CBB5 Logo.png','CSVH3 Happy Deck logo.png','CSVH3 Happy Set logo.png','CSVM logo.png','CSVL1 Logo SC.png','CSVL2 Logo SC.png','151C Logo SC.png'])
-          def download(fn):
-              filename=fn.replace(' ','_');h=hashlib.md5(filename.encode()).hexdigest()
-              u=f'{base}/media/upload/{h[0]}/{h[:2]}/{quote(filename)}'
-              rec={'filename':filename,'description_url':base+'/wiki/File:'+quote(filename),'image_url':u,'status':'unverified_candidate'}
-              try:
-                  r=get(u);im=Image.open(io.BytesIO(r.content));im.load()
-                  if im.format!='PNG' or min(im.size)<10:raise ValueError('not usable PNG')
-                  (out/filename).write_bytes(r.content)
-                  rec.update(downloaded=True,width=im.width,height=im.height,mode=im.mode,sha256=hashlib.sha256(r.content).hexdigest())
+          out=Path('logos');out.mkdir()
+          names=[c+' Logo SC.png' for c in ['CSV1','CSV2','CSV3','CSV4','CSV5','CSV6','CSV7','CSV8','CSV9','CSV9.5','CSV10','CS1','CS1.5','CS2','CS2.5','CS3','CS3.5','CS4','CS4.5','CS5','CS5.5','CS6','CS6.5','CSM1.5','CSM2','CSM2.5']]
+          names+=['CSM1 Logo A SC.png','CSM1 Logo B SC.png','CSM2 Logo A SC.png','CSM2 Logo B SC.png','CBB1 Logo.png','CBB2 Logo.png','CBB3 Logo.png','CBB4 Logo.png','CBB5 Logo.png','CSVH3 Happy Deck logo.png','CSVH3 Happy Set logo.png','CSVM logo.png']
+          def run(name):
+              f=name.replace(' ','_');h=hashlib.md5(f.encode()).hexdigest();base='https://archives.bulbagarden.net/media/upload/'+h[0]+'/'+h[:2]+'/'+quote(f)
+              urls=[base,'https://archives.bulbagarden.net/media/upload/thumb/'+h[0]+'/'+h[:2]+'/'+quote(f)+'/600px-'+quote(f),'https://bulbapedia.bulbagarden.net/wiki/Special:FilePath/'+quote(f)]
+              rec={'filename':f,'status':'not_retrieved','attempts':[]}
+              for u in urls:
                   try:
-                      d=get(rec['description_url']);(out/(filename+'.html')).write_text(d.text)
-                      soup=BeautifulSoup(d.content,'html.parser');rec['description_text']=soup.get_text(' ',strip=True)[:16000]
-                  except Exception as e:rec['description_error']=type(e).__name__
-              except Exception as e:rec.update(downloaded=False,error=type(e).__name__)
-              print(filename,rec['downloaded'],flush=True);return rec
-          with ThreadPoolExecutor(max_workers=6) as pool:result=list(pool.map(download,sorted(names)[:100]))
-          (out/'candidate_manifest.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
-          print('PNG candidates retrieved',sum(x['downloaded'] for x in result),'/',len(result),flush=True)
+                      r=requests.get(u,headers={'User-Agent':'Mozilla/5.0','Referer':'https://bulbapedia.bulbagarden.net/'},timeout=10)
+                      rec['attempts'].append({'url':u,'status':r.status_code,'type':r.headers.get('content-type'),'preview':r.text[:120] if not r.headers.get('content-type','').startswith('image/') else ''})
+                      if r.status_code!=200:continue
+                      im=Image.open(io.BytesIO(r.content));im.load()
+                      if im.format!='PNG':continue
+                      (out/f).write_bytes(r.content);rec.update(status='candidate_only',url=r.url,width=im.width,height=im.height,sha256=hashlib.sha256(r.content).hexdigest());break
+                  except Exception as e:rec['attempts'].append({'error':str(e)[:200]})
+              return rec
+          with ThreadPoolExecutor(max_workers=5) as p:rows=list(p.map(run,names))
+          (out/'audit.json').write_text(json.dumps(rows,indent=2));print(json.dumps(rows[:2],indent=2));print('retrieved',sum(x['status']=='candidate_only' for x in rows))
           PY
-      - name: Upload logo candidates only
+      - name: Upload bounded audit
         uses: actions/upload-artifact@v4
         with:
-          name: simplified-chinese-standalone-logo-candidates
-          path: logo-candidates/
-          if-no-files-found: error
+          name: simplified-chinese-logo-access-audit
+          path: logos/
           retention-days: 14
