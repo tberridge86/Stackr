@@ -20,6 +20,14 @@ builder.URL_OVERRIDES.pop("SVP1", None)
 # The 25th Anniversary expansion lives on the official regional anniversary microsite,
 # outside the standard asia.pokemon-card.com/tw catalogue domain.
 builder.URL_OVERRIDES["S8a"] = "https://card25th.portal-pokemon.com/tw/card/s8a/"
+S8A_OFFICIAL_IMAGES = [
+    "https://card25th.portal-pokemon.com/assets/img/card/s8a/tw/img_mv.png",
+    "https://card25th.portal-pokemon.com/assets/img/card/s8a/tw/img_pack.png",
+]
+
+
+def is_s8a_official_asset(item, text: str) -> bool:
+    return item.code == "S8a" and "card25th.portal-pokemon.com/assets/img/card/s8a/tw/" in text.casefold()
 
 
 def is_card_image(text: str, image) -> bool:
@@ -34,7 +42,7 @@ def is_card_image(text: str, image) -> bool:
 
 def prescore(item, url: str, context: str) -> float:
     text = f"{url} {context}".casefold()
-    if any(bad in text for bad in builder.COMMON_BAD):
+    if any(bad in text for bad in builder.COMMON_BAD) and not is_s8a_official_asset(item, text):
         return -10000.0
     compact = re.sub(r"[^a-z0-9]", "", text)
     code = item.code.casefold()
@@ -57,8 +65,10 @@ def prescore(item, url: str, context: str) -> float:
         score += 420.0
     if "wp-content/uploads" in text:
         score += 60.0
-    if any(token in text for token in ("product_thumbnail", "product-thumbnail", "package", "pkg", "setimg", "set_img", "box", "hero", "mainvisual", "main_visual", "banner")):
+    if any(token in text for token in ("product_thumbnail", "product-thumbnail", "package", "pkg", "setimg", "set_img", "box", "hero", "mainvisual", "main_visual", "banner", "img_mv")):
         score += 480.0
+    if is_s8a_official_asset(item, text):
+        score += 900.0
     if "marker" in text:
         score -= 1100.0
     if re.search(r"(?:rr|sr|sar|ar|ur|hr)[_-]?\d{2,4}", text):
@@ -75,21 +85,26 @@ def adjusted_score(item, display_name: str, url: str, context: str, image) -> fl
         score -= 1200.0
     if "marker" in text:
         score -= 1200.0
-    if is_card_image(text, image):
+    if is_card_image(text, image) and not is_s8a_official_asset(item, text):
         score -= 1150.0
     if "product-index" in context:
         score += 600.0
     if "meta:og:image" in context:
         score += 300.0
-    if any(token in text for token in ("product_thumbnail", "product-thumbnail", "package", "pkg", "setimg", "set_img", "box", "hero", "mainvisual", "main_visual", "banner")):
+    if any(token in text for token in ("product_thumbnail", "product-thumbnail", "package", "pkg", "setimg", "set_img", "box", "hero", "mainvisual", "main_visual", "banner", "img_mv")):
         score += 450.0
     if any(token in text for token in ("logo", "title", "ttl", "headline")):
         score += 350.0
+    if is_s8a_official_asset(item, text):
+        score += 1000.0
     return score
 
 
 def ultra_choose_asset(item, display_name: str, page_url: str, product_images):
-    raw = builder.collect_image_candidates(page_url, product_images)
+    supplied_images = list(product_images)
+    if item.code == "S8a":
+        supplied_images = S8A_OFFICIAL_IMAGES + supplied_images
+    raw = builder.collect_image_candidates(page_url, supplied_images)
     ranked = sorted(
         ((prescore(item, url, context), url, context) for url, context in raw),
         key=lambda row: row[0],
