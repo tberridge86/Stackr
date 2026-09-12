@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import sys
-import time
 from pathlib import Path
 
 import requests
@@ -17,22 +16,13 @@ spec.loader.exec_module(builder)
 
 
 def fast_get(url: str, *, timeout: int = 35) -> requests.Response | None:
-    """Retry transient failures, but never retry a definite client-side miss."""
-    last_error: Exception | None = None
-    for attempt in range(2):
-        try:
-            response = builder.SESSION.get(url, timeout=timeout, allow_redirects=True)
-            if response.status_code == 200:
-                return response
-            if 400 <= response.status_code < 500:
-                return None
-        except Exception as exc:  # noqa: BLE001
-            last_error = exc
-            print('GET error', url, exc, flush=True)
-        if attempt == 0:
-            time.sleep(0.75)
-    if last_error:
-        print('GET abandoned', url, last_error, flush=True)
+    """Use one bounded request; a missing archive path is a fallback decision, not a retry loop."""
+    try:
+        response = builder.SESSION.get(url, timeout=min(timeout, 14), allow_redirects=True)
+        if response.status_code == 200:
+            return response
+    except Exception as exc:  # noqa: BLE001
+        print('GET skipped', url, exc, flush=True)
     return None
 
 
@@ -56,7 +46,7 @@ def pre_score(url: str, alt: str, code: str) -> int:
         return 1_050
     if any(token in normalized for token in ('hero-visual', 'hero-head', 'main-visual', 'main-kv', 'kv-main')):
         return 900
-    if any(token in normalized for token in ('top-banner', 'top-banner', 'banner-img')):
+    if any(token in normalized for token in ('top-banner', 'banner-img')):
         return 820
     if any(token in normalized for token in ('product-image-1', '-pkg', 'package', 'pack', 'thumb-set', '650x488')):
         return 650
@@ -72,8 +62,11 @@ def fast_resolve_official(code: str, name: str):
         if image:
             return image, known, 'official_chinese_package'
 
+    special = builder.special_pages(code)
+    # The slash and index.html forms are normally the same page; do not scan both.
+    pages = [special[0], special[2], *builder.old_pages(code)]
     best = None
-    for page_url in builder.special_pages(code) + builder.old_pages(code):
+    for page_url in pages:
         response = fast_get(page_url)
         if not response or len(response.content) < 1_200:
             continue
@@ -85,9 +78,8 @@ def fast_resolve_official(code: str, name: str):
                 ranked.append((score, url, alt))
         ranked.sort(reverse=True)
 
-        # A product page can contain hundreds of card images. Only inspect the strongest
-        # logo/title/package candidates, never the full card gallery.
-        for _, url, alt in ranked[:6]:
+        # Never walk a full card gallery. Inspect only the strongest title/package candidates.
+        for _, url, alt in ranked[:5]:
             image = builder.read_image(url)
             if not image:
                 continue
