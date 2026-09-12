@@ -1,6 +1,8 @@
 import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
 import { isCompleteBinderSnapshot, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
 import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
+import { loadProgressiveBinderPrices } from '../../lib/binderPricing';
+import { createVisibleBinderPriceReader, type VisibleBinderPriceReader, type VisiblePriceFailure } from '../../lib/binderVisiblePrices';
 import { attachBinderCatalogueArtwork, attachBinderSetArtwork } from '../../lib/binders';
 import { StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { useTheme } from '../../components/theme-context';
@@ -63,7 +65,6 @@ import {
   addCardsToBinder,
   fetchBinderById,
   fetchBinderCards,
-  attachLatestSnapshotPrices,
   invalidateBinderCaches,
   updateBinderCardOwned,
   updateBinderCardCondition,
@@ -836,8 +837,13 @@ export default function BinderDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [reopenStatus, setReopenStatus] = useState<{ savedAt: number; state: 'refreshing' | 'offline' | 'incomplete' } | null>(null);
   const retrievalTraceRef = useRef<ReturnType<typeof beginBinderRetrieval> | null>(null);
+  const visiblePriceReaderRef = useRef<VisibleBinderPriceReader | null>(null);
+  const visiblePriceIdsRef = useRef<string[]>([]);
   const onBinderViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: { item: BinderCardWithDetails; isViewable: boolean }[] }) => {
-    retrievalTraceRef.current?.visible(viewableItems.filter((item) => item.isViewable).map((item) => item.item));
+    const visible = viewableItems.filter((item) => item.isViewable).map((item) => item.item);
+    retrievalTraceRef.current?.visible(visible);
+    visiblePriceIdsRef.current = visible.map((item) => item.id);
+    visiblePriceReaderRef.current?.request(visiblePriceIdsRef.current);
   }).current;
   const binderViewabilityConfig = useRef({ itemVisiblePercentThreshold: 50, minimumViewTime: 0 }).current;
   const gridWindow = useMemo(() => getIncrementalListWindow(numColumns), [numColumns]);
@@ -1054,6 +1060,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     let refreshState: 'refreshing' | 'offline' | 'incomplete' = 'refreshing';
     const accountGeneration = accountGenerationRef.current;
     const requestId = ++loadRequestRef.current;
+    visiblePriceReaderRef.current?.dispose();
+    visiblePriceReaderRef.current = null;
+    visiblePriceIdsRef.current = [];
     artworkRequestRef.current?.abort();
     const artworkRequest = new AbortController();
     artworkRequestRef.current = artworkRequest;
@@ -1169,7 +1178,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         previewAllowed = false;
         setReopenStatus(null);
       }
-      if (completeOwnerView && snapshotScope) binderReopenCache.save(snapshotScope, binderData, binderCards, reopenLease, savedAt);
+      const displayCards = previewState.snapshot ? mergeBinderArtwork(binderCards, previewState.snapshot.cards) : binderCards;
+      if (completeOwnerView && snapshotScope) binderReopenCache.save(snapshotScope, binderData, displayCards, reopenLease, savedAt);
       setBinder(binderData);
       setCustomNameArtKey(customNameArtKey);
 
@@ -1177,13 +1187,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       // optional ownership/showcase reads so a later enrichment failure cannot
       // make an older, unresolved binder look empty.
       retrievalTrace.model(binderCards, 'network', typeof expected === 'number' && expected > 0 && !incompleteRefresh);
-      setCards(binderCards);
+      setCards(displayCards);
       setLoading(false);
 
-      void attachBinderCatalogueArtwork(binderCards, artworkRequest.signal).then((enriched) => {
+      const applyArtwork = (enriched: BinderCardRecord[]) => {
         if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
         setCards((current) => isCurrentRequest() && !artworkRequest.signal.aborted ? mergeBinderArtwork(current, enriched) : current);
         setSelectedCard((current) => current && isCurrentRequest() && !artworkRequest.signal.aborted ? mergeBinderArtwork([current], enriched)[0] : current);
+      };
+      void attachBinderCatalogueArtwork(binderCards, artworkRequest.signal, applyArtwork).then((enriched) => {
+        applyArtwork(enriched);
+        if (completeOwnerView && snapshotScope && isCurrentRequest() && !artworkRequest.signal.aborted) {
+          binderReopenCache.save(snapshotScope, binderData, mergeBinderArtwork(displayCards, enriched), reopenLease, savedAt);
+        }
       }).catch((error) => {
         if (isCurrentRequest() && !artworkRequest.signal.aborted) console.log('Binder artwork unavailable:', error);
       });
@@ -1199,16 +1215,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
       // Pricing is supplemental to the immediately usable catalogue/ownership
       // view. Merge it later so a slow snapshot lookup cannot hold the binder.
-      void attachLatestSnapshotPrices(binderCards, binderData.language)
-        .then((pricedCards) => {
-          if (!isCurrentRequest()) return;
-          const pricesByCardAndSet = new Map(
-            pricedCards.map((card) => [`${card.set_id}\u0000${card.card_id}`, card])
-          );
+      const applyPrices = (pricedCards: BinderCardRecord[]) => {
+          if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
+          const pricesByRow = new Map(pricedCards.map((card) => [card.id, card]));
           setCards((currentCards) => {
-            if (!isCurrentRequest()) return currentCards;
+            if (!isCurrentRequest() || artworkRequest.signal.aborted) return currentCards;
             return currentCards.map((card) => {
-              const pricedCard = pricesByCardAndSet.get(`${card.set_id}\u0000${card.card_id}`);
+              const pricedCard = pricesByRow.get(card.id);
               if (!pricedCard) return card;
               return {
                 ...card,
@@ -1219,13 +1232,30 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               };
             });
           });
-        })
-        .catch((error) => {
+      };
+      const priceReader = createVisibleBinderPriceReader(binderCards, {
+        loader: async (visibleRows) => {
+          if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
+          let failure: VisiblePriceFailure = null;
+          const priced = await loadProgressiveBinderPrices(visibleRows, {
+            language: binderData.language, cardMode: binderData.card_mode,
+            defaultCondition: binderData.default_condition,
+            defaultGradeCompany: binderData.default_grade_company, defaultGrade: binderData.default_grade,
+          }, {
+            isCurrent: () => isCurrentRequest() && !artworkRequest.signal.aborted,
+            onProgress: applyPrices, onInterrupted: (interruption) => { failure = interruption; },
+          });
+          applyPrices(priced);
+          return { failure };
+        },
+        onError: (error) => {
           if (isCurrentRequest()) console.log('Failed to attach binder prices', error);
-        });
+        },
+      });
+      visiblePriceReaderRef.current = priceReader;
+      priceReader.request(visiblePriceIdsRef.current.length ? visiblePriceIdsRef.current : binderCards.slice(0, 12).map((card) => card.id));
 
       if (!user) {
-        setCards(binderCards);
         setOwnedVariants(new Map());
         setVariantManagedCards(new Set());
         setOwnershipReady(true);
@@ -1359,6 +1389,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       accountGenerationRef.current += 1;
       loadRequestRef.current += 1;
       artworkRequestRef.current?.abort();
+      visiblePriceReaderRef.current?.dispose();
       retrievalTraceRef.current?.cancel();
       setReopenStatus(null);
       setSelectedCard(null);
@@ -1388,6 +1419,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       return () => {
         loadRequestRef.current += 1;
         artworkRequestRef.current?.abort();
+        visiblePriceReaderRef.current?.dispose();
         retrievalTraceRef.current?.cancel();
       };
     }, [load])
@@ -4520,7 +4552,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                       maxHeight: screenHeight * 0.62,
                       alignSelf: 'center',
                       borderRadius: 20,
-                      overflow: 'hidden',
+                      overflow: 'visible',
                     }}>
                       <PinchGestureHandler
                         onGestureEvent={onPinchGestureEvent}

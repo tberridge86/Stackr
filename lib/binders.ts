@@ -1507,19 +1507,26 @@ export async function attachBinderSetArtwork(binder: BinderRecord): Promise<Bind
   return (await attachSetBrandingToBinders([binder], true))[0] ?? binder;
 }
 
-export async function attachBinderCatalogueArtwork(rows: BinderCardRecord[], signal?: AbortSignal): Promise<BinderCardRecord[]> {
+export async function attachBinderCatalogueArtwork(
+  rows: BinderCardRecord[], signal?: AbortSignal, onProgress?: (rows: BinderCardRecord[]) => void,
+): Promise<BinderCardRecord[]> {
   const eligible = rows.filter((row) => row.catalogue_match_status === 'catalogue' && row.card?.raw_data?.stackr?.canonical);
   if (!eligible.length) return rows;
-  const enriched = await enrichStackrCardArtworkFromFacts(eligible.map((row) => row.card), signal);
+  const merge = (displayCards: Awaited<ReturnType<typeof enrichStackrCardArtworkFromFacts>>) => {
+    const byId = new Map(displayCards.map((card) => [JSON.stringify([card.id, card.language, card.raw_data?.stackr && (card.raw_data.stackr as any).defaultVariantId]), card]));
+    return rows.map((row) => {
+      const identity = row.card?.raw_data?.stackr;
+      const display = identity && byId.get(JSON.stringify([identity.cardId, row.language, identity.defaultVariantId]));
+      if (!display || (!display.images.small && !display.images.large)) return row;
+      const card = { ...row.card, images: display.images };
+      if (hasTcgdexRuntimeImageOverlay(display, 'images')) defineTcgdexRuntimeImageOverlay(card, 'images', display.images, display.images.small);
+      return { ...row, card };
+    });
+  };
+  const enriched = await enrichStackrCardArtworkFromFacts(eligible.map((row) => row.card), signal, undefined,
+    (progress) => onProgress?.(merge(progress)));
+  onProgress?.(merge(enriched));
   // Preserve the already-established foreign-source fallback, but never await it for first paint.
   const references = await readOptionalCatalogueEnrichment(() => attachLiveTcgdexCardReferences(enriched, 1), signal);
-  const byId = new Map((references ?? enriched).map((card) => [JSON.stringify([card.id, card.language, card.raw_data?.stackr && (card.raw_data.stackr as any).defaultVariantId]), card]));
-  return rows.map((row) => {
-    const identity = row.card?.raw_data?.stackr;
-    const display = identity && byId.get(JSON.stringify([identity.cardId, row.language, identity.defaultVariantId]));
-    if (!display) return row;
-    const card = { ...row.card, images: display.images };
-    if (hasTcgdexRuntimeImageOverlay(display, 'images')) defineTcgdexRuntimeImageOverlay(card, 'images', display.images, display.images.small);
-    return { ...row, card };
-  });
+  return merge(references ?? enriched);
 }

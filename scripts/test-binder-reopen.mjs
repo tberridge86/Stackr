@@ -5,6 +5,7 @@ import ts from 'typescript';
 import { createBinderReopenCache, snapshotBinderView, isCompleteBinderSnapshot, BINDER_REOPEN_MAX_AGE_MS } from '../lib/binderReopenSnapshot.ts';
 import { beginBinderRetrieval, getBinderRetrievalObservations } from '../lib/performance.ts';
 import * as requestCache from '../lib/requestCache.ts';
+import { mergeBinderArtwork } from '../lib/stackrSetRetrieval.ts';
 
 const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const scope = { namespace: 'https://fixture.invalid/api', accountId: uuid(9001) };
@@ -127,6 +128,9 @@ function screenHarness() {
   const state = { binder: null, cards: [], loading: null, ownershipReady: false, status: null }; let saves = 0, invalidations = 0;
   const never = () => new Promise(() => {});
   const runtime = { exports: {}, console, AbortController, binderId: binder.id, Date,
+    visiblePriceReaderRef: { current: null }, visiblePriceIdsRef: { current: [] },
+    createVisibleBinderPriceReader: () => ({ request: () => {}, dispose: () => {} }),
+    mergeBinderArtwork,
     accountGenerationRef: { current: 0 }, loadRequestRef: { current: 0 }, artworkRequestRef: { current: null }, activeAccountIdRef: { current: scope.accountId }, retrievalTraceRef: { current: null },
     beginBinderRetrieval, isCompleteBinderSnapshot, binderReopenScope: () => scope, readBinderReopenPreview: () => disk.promise,
     binderReopenCache: { lease: () => 0, save: () => { saves++; }, invalidate: () => { invalidations++; } },

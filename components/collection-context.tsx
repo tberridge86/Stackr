@@ -66,7 +66,7 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
         loading: true,
       }));
 
-      const binders = await fetchBinders();
+      const binders = await fetchBinders({ enrich: false });
       if (
         currentAccountId.current !== expectedAccountId
         || !isCurrentAccountRequest(
@@ -103,7 +103,7 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
       const expectedAccountId = accountId;
       if (!expectedAccountId || currentAccountId.current !== expectedAccountId) return;
       const language = normalizePokemonCardLanguage(requestedLanguage);
-      const binders = await fetchBinders();
+      const binders = await fetchBinders({ enrich: false });
       if (currentAccountId.current !== expectedAccountId) return;
 
       const existingBinder = binders.find(

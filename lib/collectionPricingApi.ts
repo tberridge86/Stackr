@@ -16,7 +16,24 @@ export type CollectionPriceInput = {
   condition?: string | null;
   grader?: string | null;
   grade?: string | null;
+  /**
+   * Canonical facts carried by an already-resolved catalogue row. They are
+   * structurally verified before use so display aliases never bypass identity
+   * resolution.
+   */
+  trustedResolution?: CollectionPriceResolution | null;
 };
+
+export type CollectionPriceResolution = {
+  canonical: true;
+  cardId: string;
+  setId?: string | null;
+  language?: string | null;
+  defaultVariantId: string;
+  variants: { variantId: string; variantCode: string | null }[];
+};
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type CollectionPriceRequestFailure = {
   kind: 'authentication_required' | 'access_denied' | 'rate_limited' | 'service_error' | 'network_error';
@@ -62,6 +79,8 @@ export type CollectionPriceLoaderOptions = {
   isCurrent?: () => boolean;
   /** Pending entries remain unavailable, so the UI can display an honest partial subtotal. */
   onProgress?: (results: CollectionPriceResult[], completed: number) => void;
+  /** Reports a systemic interruption once so a viewport scheduler can back off. */
+  onInterrupted?: (failure: CollectionPriceRequestFailure) => void;
 };
 
 const RAW_CONDITIONS: Record<string, string> = {
@@ -133,6 +152,30 @@ function unavailable(input: CollectionPriceInput, details: Partial<CollectionPri
   };
 }
 
+function trustedResolution(input: CollectionPriceInput): StackrResolvedCard | null {
+  const trusted = input.trustedResolution;
+  if (!trusted) return null;
+  const cardId = String(trusted.cardId ?? '').trim();
+  const defaultVariantId = String(trusted.defaultVariantId ?? '').trim();
+  const references = new Set(input.references.map((value) => String(value ?? '').trim()).filter(Boolean));
+  if (trusted.canonical !== true || !UUID.test(cardId) || !UUID.test(defaultVariantId) || !references.has(cardId)) return null;
+  const requestedSetId = String(input.setId ?? '').trim();
+  const trustedSetId = String(trusted.setId ?? '').trim();
+  if (!UUID.test(requestedSetId) || !UUID.test(trustedSetId) || requestedSetId !== trustedSetId) return null;
+  const requestedLanguage = String(input.language ?? '').trim().toLowerCase();
+  const trustedLanguage = String(trusted.language ?? '').trim().toLowerCase();
+  if (!requestedLanguage || !trustedLanguage || requestedLanguage !== trustedLanguage) return null;
+  const variants = Array.isArray(trusted.variants) ? trusted.variants
+    .map((variant) => ({ variantId: String(variant?.variantId ?? '').trim(), variantCode: String(variant?.variantCode ?? '').trim() || null }))
+    .filter((variant) => UUID.test(variant.variantId)) : [];
+  if (!variants.length || !variants.some((variant) => variant.variantId === defaultVariantId)) return null;
+  return {
+    card: { cardId, variants } as StackrResolvedCard['card'],
+    variantId: defaultVariantId,
+    matchedBy: 'canonical_uuid',
+  };
+}
+
 type ReadInterruption = Omit<CollectionPriceRequestFailure, 'deferred'>;
 
 function readInterruption(error: unknown): ReadInterruption | null {
@@ -196,15 +239,20 @@ async function loadOne(
   onReadFailure?: (error: unknown) => void,
 ): Promise<CollectionPriceResult> {
   let resolution: Awaited<ReturnType<typeof resolveAnyReference>>;
-  try {
-    resolution = await resolveAnyReference(input, resolver, client);
-  } catch (error) {
-    onReadFailure?.(error);
-    const failure = readInterruption(error);
-    return unavailable(input, failure ? interruptionDetails(failure) : {
-      unavailableReason: 'Card resolution failed.',
-      requestError: error instanceof Error ? error.message : String(error),
-    });
+  const trusted = trustedResolution(input);
+  if (trusted) {
+    resolution = { reference: trusted.card.cardId, resolved: trusted, requestError: null };
+  } else {
+    try {
+      resolution = await resolveAnyReference(input, resolver, client);
+    } catch (error) {
+      onReadFailure?.(error);
+      const failure = readInterruption(error);
+      return unavailable(input, failure ? interruptionDetails(failure) : {
+        unavailableReason: 'Card resolution failed.',
+        requestError: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
   const { reference, resolved, requestError: resolveError } = resolution;
   if (isCurrent && !isCurrent()) return unavailable(input, { unavailableReason: 'Stored price read superseded.' });
@@ -341,6 +389,7 @@ export async function loadCollectionPrices(
   };
 
   await Promise.all(Array.from({ length: Math.min(concurrency, inputs.length) }, worker));
+  if (batch.failure) options.onInterrupted?.({ ...batch.failure, deferred: false });
   if (batch.failure && nextIndex < inputs.length && (options.isCurrent?.() ?? true)) {
     for (let index = nextIndex; index < inputs.length; index += 1) {
       results[index] = unavailable(inputs[index], interruptionDetails(batch.failure, true));

@@ -526,6 +526,48 @@ async function assertLabelledLegacySnapshotFallback() {
   assert.equal(price.sourceBreakdown[0].sourceType, 'legacy_cached_market_snapshot');
   assert.equal(price.lastSoldEvidence, undefined, 'legacy estimates must not fabricate a last-sold record');
 
+  const exactSnapshotDb = createSnapshotSupabase({
+    metadata,
+    snapshots: [
+      snapshot({ card_id: variantId, tcgdex_price: 999, primary_source: 'unlabelled_import', snapshot_at: '2099-09-12T12:00:00.000Z' }),
+      snapshot({ card_id: variantId, tcgdex_price: 125.5, stale_after: '2026-09-01T00:00:00.000Z' }),
+    ],
+    externalIdentifiers: [{
+      source_entity_type: 'card', external_id: 'must-not-be-read:normal', language_code: 'ja', variant_id: variantId,
+    }],
+  });
+  const exactSnapshotPrice = await createMarketPricingService({ supabase: exactSnapshotDb })
+    .price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  assert.equal(exactSnapshotPrice.estimates.central, 125.5,
+    'an exact canonical legacy snapshot must be selected from a bounded ordered result without provider-alias resolution');
+  assert.equal(exactSnapshotPrice.quoteScope, 'exact_variant');
+  assert.equal(exactSnapshotPrice.primarySource, 'tcgdex', 'the direct path must retain the labelled TCGdex source requirement');
+  assert.equal(exactSnapshotPrice.freshness, 'stale', 'the direct path must retain stale/freshness reporting');
+  assert.equal(exactSnapshotDb.equalities.some((entry) => entry.tableName === 'catalogue_external_identifiers'), false,
+    'exact canonical snapshots must avoid the expensive aliases view');
+
+  const canonicalEstimateDb = createSnapshotSupabase({
+    metadata,
+    snapshots: [snapshot({ card_id: variantId, tcgdex_price: 999 })],
+    estimates: [{
+      variant_id: variantId,
+      product_kind: 'raw_card',
+      display_currency_code: 'GBP',
+      condition_code: 'raw_near_mint',
+      evidence_status: 'recent_sold_value',
+      central_estimate: 321,
+      low_estimate: 300,
+      high_estimate: 350,
+      calculated_at: new Date().toISOString(),
+    }],
+  });
+  const canonicalEstimate = await createMarketPricingService({ supabase: canonicalEstimateDb })
+    .price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+  assert.equal(canonicalEstimate.estimates.central, 321,
+    'a completed canonical estimate must remain ahead of a legacy provider snapshot');
+  assert.equal(canonicalEstimateDb.equalities.some((entry) => entry.tableName === 'catalogue_cards'), false,
+    'canonical evidence must not pay for legacy catalogue resolution');
+
   const history = await service.snapshotHistory([variantId], { currency: 'GBP', rangeDays: 30 });
   assert.equal(history.snapshots.length, 3, 'only exact, labelled legacy or canonical estimate rows may appear');
   const canonicalPoint = history.snapshots.find((item) => item.primarySource === 'poketrace_sold');

@@ -1,4 +1,5 @@
 import { createSetFactsReader, loadCompleteSetPages } from './stackrSetRetrieval';
+import { readPreferredSetArtwork } from './stackrPreferredSetArtwork';
 import { getPersistentStackrSetFactsStore } from './stackrCatalogueCache';
 import {
   StackrApiClient,
@@ -40,6 +41,17 @@ type SetCardReadOptions = { includeAssets?: boolean; minimumCardCount?: number |
 const setFactsReaders = new WeakMap<StackrApiClient, ReturnType<typeof createSetFactsReader>>();
 // Read-time enrichment handles are weakly held and never serialized into binder records.
 const canonicalArtworkFacts = new WeakMap<object, StackrCard>();
+const resolvedSetMetadata = new WeakMap<StackrApiClient, Map<string, { set: StackrSet; expiresAt: number }>>();
+function rememberedSet(client: StackrApiClient, setId: string): StackrSet | null {
+  const entry = resolvedSetMetadata.get(client)?.get(setId);
+  return entry && entry.expiresAt > Date.now() ? entry.set : null;
+}
+function rememberSet(client: StackrApiClient, set: StackrSet) {
+  let entries = resolvedSetMetadata.get(client);
+  if (!entries) { entries = new Map(); resolvedSetMetadata.set(client, entries); }
+  if (entries.size >= 64) entries.delete(entries.keys().next().value!);
+  entries.set(set.setId, { set, expiresAt: Date.now() + 60_000 });
+}
 function setFactsReader(client: StackrApiClient) {
   let reader = setFactsReaders.get(client);
   if (!reader) {
@@ -851,10 +863,10 @@ export async function fetchStackrSet(
   if (prefixLanguage && language && toStackrApiLanguage(language) !== prefixLanguage) return null;
   const setId = await resolveCanonicalStackrSetId(reference, language, client);
   if (!setId) return null;
-  const response = await client.set(setId);
-  const set = response.data.set;
+  const set = rememberedSet(client, setId) ?? (await client.set(setId)).data.set;
   const requestedLanguage = toStackrApiLanguage(language) ?? getPokemonSetLanguageFromPrefixedId(reference);
   if (requestedLanguage && toLegacyLanguage(set.languageCode) !== requestedLanguage) return null;
+  rememberSet(client, set);
   const facts = stackrSetToLegacySet(set);
   if (!options.includeAssets) return facts;
   const results = await Promise.all(['set_logo', 'set_symbol', 'set_cover', 'set_artwork'].map((assetType) =>
@@ -934,11 +946,11 @@ async function resolveCanonicalStackrSetId(
     : [unprefixedValue];
   const exactMatches = new Map<string, StackrSet>();
 
-  for (const setCode of references) {
-    const response = await client.sets(
+  const responses = await Promise.all(references.map((setCode) => client.sets(
       { language: apiLanguage ?? undefined, setCode, limit: 25 },
       { signal },
-    );
+  )));
+  for (const response of responses) {
     for (const set of response.data.sets) {
       const hasRequestedLanguage = !apiLanguage || toLegacyLanguage(set.languageCode) === toLegacyLanguage(apiLanguage);
       const exact = hasRequestedLanguage && (apiLanguage === 'en'
@@ -953,7 +965,10 @@ async function resolveCanonicalStackrSetId(
     }
   }
 
-  return exactMatches.size === 1 ? [...exactMatches.keys()][0] : null;
+  if (exactMatches.size !== 1) return null;
+  const set = [...exactMatches.values()][0];
+  rememberSet(client, set);
+  return set.setId;
 }
 
 export function resolveStackrSetId(
@@ -1514,6 +1529,7 @@ export async function enrichStackrCardArtworkFromFacts(
   cards: Array<{ raw_data?: any }>,
   signal?: AbortSignal,
   client: StackrApiClient = stackrApiClient,
+  onProgress?: (cards: StackrLegacyCard[]) => void,
 ): Promise<StackrLegacyCard[]> {
   const groups = new Map<string, StackrCard[]>();
   for (const card of cards) {
@@ -1526,7 +1542,13 @@ export async function enrichStackrCardArtworkFromFacts(
   const enriched: StackrLegacyCard[] = [];
   for (const facts of groups.values()) {
     throwIfOptionalCatalogueReadAborted(signal);
-    enriched.push(...await enrichCanonicalSetCards({ setId: facts[0].set.setId, cards: facts }, client, signal));
+    const preferred = await readPreferredSetArtwork(facts, client, signal, (progress) => {
+      onProgress?.([...enriched, ...progress.map((card) => stackrCardToLegacyCard(card))]);
+    });
+    // Keep the existing manifest fallback for genuinely missing preferred images.
+    // Completed pages have already reached the screen before this optional work.
+    enriched.push(...await enrichCanonicalSetCards({ setId: facts[0].set.setId, cards: preferred }, client, signal));
+    onProgress?.(enriched);
   }
   return enriched;
 }
