@@ -17,6 +17,10 @@ spec.loader.exec_module(builder)
 # SVP1's historical numeric URL has moved; let the live official Taiwan catalogue provide it.
 builder.URL_OVERRIDES.pop("SVP1", None)
 
+# These are distinct official Taiwan V Starter Deck products, not generic parent-set fallbacks.
+builder.PARENT_FALLBACKS.pop("SC2D", None)
+builder.PARENT_FALLBACKS.pop("SC1D", None)
+
 # The 25th Anniversary expansion lives on the official regional anniversary microsite,
 # outside the standard asia.pokemon-card.com/tw catalogue domain.
 builder.URL_OVERRIDES["S8a"] = "https://card25th.portal-pokemon.com/tw/card/s8a/"
