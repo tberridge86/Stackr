@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 
 const option = (name) => process.argv.find((value) => value.startsWith(`${name}=`))?.slice(name.length + 1);
 export function attestGatewayDoIdentity(version, { expectedId, expectedNamespace }) {
+  assert.match(expectedId ?? '', /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i, 'gateway_do_expected_version_id_invalid');
+  assert.match(expectedNamespace ?? '', /^[0-9a-f]{32}$/i, 'gateway_do_expected_namespace_invalid');
   assert.equal(version?.id, expectedId, 'gateway_do_version_id_mismatch');
   const bindings = version?.resources?.bindings ?? version?.bindings ?? [];
   const durable = bindings.filter((binding) => binding?.type === 'durable_object_namespace');

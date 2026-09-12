@@ -9,15 +9,6 @@ export const EXPECTED_CLI_SHA256 = 'dadbd16d62d6b104d8f711ff91d6b5bf08b58cf01986
 const original = `              {\n                name: binding.name,\n                class_name: binding.class_name,\n                script_name: binding.script_name,\n                environment: binding.environment\n              }`;
 const replacement = `              {\n                name: binding.name,\n                class_name: binding.class_name,\n                ...binding.script_name === void 0 ? {} : { script_name: binding.script_name },\n                ...binding.environment === void 0 ? {} : { environment: binding.environment }\n              }`;
 
-export function mapDurableObjectBinding(binding) {
-  return {
-    name: binding.name,
-    class_name: binding.class_name,
-    ...(binding.script_name === undefined ? {} : { script_name: binding.script_name }),
-    ...(binding.environment === undefined ? {} : { environment: binding.environment }),
-  };
-}
-
 export function patchWranglerCli({ packagePath = 'gateway/node_modules/wrangler/package.json', cliPath = 'gateway/node_modules/wrangler/wrangler-dist/cli.js' } = {}) {
   const pkg = JSON.parse(readFileSync(packagePath, 'utf8'));
   assert.equal(pkg.version, WRANGLER_VERSION, `unsupported_wrangler_version:${pkg.version}`);
