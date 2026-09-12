@@ -126,8 +126,18 @@ assert.match(
 );
 assert.match(
   runtimeProjection,
-  /fetchPreferredStackrSets\(null, undefined, \{ includeAssets: true \}\)/,
-  'historical binders must request already approved catalogue set assets, not metadata alone',
+  /attachSetBrandingToBinders\(binders: BinderRecord\[\], includeAssets = true\)/,
+  'ordinary binder branding must still request already approved set assets by default',
+);
+assert.match(
+  runtimeProjection,
+  /fetchPreferredStackrSets\(null, undefined, \{ includeAssets \}\)/,
+  'bulk binder branding must respect the separate facts and artwork phases',
+);
+assert.match(
+  binderSource,
+  /export async function attachBinderSetArtwork\(binder: BinderRecord\)[\s\S]*?attachSetBrandingToBinders\(\[binder\], true\)/,
+  'deferred binder branding must explicitly fetch artwork after the facts-first paint',
 );
 
 const binderListSource = readFileSync('app/(tabs)/binder.tsx', 'utf8');
@@ -140,8 +150,8 @@ assert.match(
 const binderDetailSource = readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
 assert.match(
   binderDetailSource,
-  /enforceSetVisualRuntimePolicy\(\s*binder\.source_set_logo_url\s*\?\? binder\.source_set_symbol_url\s*\?\? getPokemonSetLogoUrl/s,
-  'binder-detail artwork must gate both stored and provider logo candidates at runtime',
+  /enforceSetVisualRuntimePolicy\(\s*binder\.source_set_cover_url\s*\?\? binder\.source_set_logo_url\s*\?\? binder\.source_set_symbol_url\s*\?\? getPokemonSetLogoUrl/s,
+  'binder-detail artwork must gate the preferred stored cover and both stored and provider logo candidates',
 );
 
 const homeCommandCenterSource = readFileSync('components/HomeCommandCenter.tsx', 'utf8');

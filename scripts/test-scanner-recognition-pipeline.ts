@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {
+  awaitScannerCaptureStage,
   buildScannerTimingLadder,
+  canContinueScannerCapture,
   decideScannerConfirmation,
   NO_TRADING_CARD_DETECTED_MESSAGE,
   rankScannerCandidates,
@@ -146,4 +148,50 @@ const timings = buildScannerTimingLadder({
 assert.equal(timings.time_to_first_candidate_ms, 620);
 assert.equal(timings.time_to_final_result_ms, 900);
 
-console.log('scanner recognition pipeline checks passed');
+const activeCapture = {
+  attemptId: 7,
+  currentAttemptId: 7,
+  appActive: true,
+  routeFocused: true,
+  navigatingAway: false,
+};
+assert.equal(canContinueScannerCapture(activeCapture), true);
+assert.equal(canContinueScannerCapture({ ...activeCapture, appActive: false }), false);
+assert.equal(canContinueScannerCapture({ ...activeCapture, routeFocused: false }), false);
+assert.equal(canContinueScannerCapture({ ...activeCapture, navigatingAway: true }), false);
+assert.equal(canContinueScannerCapture({ ...activeCapture, currentAttemptId: 8 }), false);
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
+  });
+  return { promise, resolve };
+}
+
+async function runAsyncCaptureLifecycleRegression() {
+  const delayedRecognition = deferred<{ cardId: string }>();
+  const backgroundedCapture = { ...activeCapture };
+  let navigationCalls = 0;
+  const staleCompletion = awaitScannerCaptureStage(
+    delayedRecognition.promise,
+    () => canContinueScannerCapture(backgroundedCapture),
+  ).then((result) => {
+    if (result.active) navigationCalls += 1;
+  });
+  backgroundedCapture.appActive = false;
+  delayedRecognition.resolve({ cardId: 'stale-card' });
+  await staleCompletion;
+  assert.equal(navigationCalls, 0, 'a recognition response that resolves after backgrounding must not navigate');
+
+  const activeResult = await awaitScannerCaptureStage(
+    Promise.resolve({ cardId: 'active-card' }),
+    () => canContinueScannerCapture(activeCapture),
+  );
+  assert.equal(activeResult.active, true);
+  if (activeResult.active) navigationCalls += 1;
+  assert.equal(navigationCalls, 1, 'an active recognition response must retain its terminal navigation path');
+  console.log('scanner recognition pipeline checks passed');
+}
+
+void runAsyncCaptureLifecycleRegression();

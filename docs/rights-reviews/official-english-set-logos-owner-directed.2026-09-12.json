@@ -1,0 +1,35 @@
+{
+  "reviewId": "official-english-set-logos-owner-directed-2026-09-12",
+  "recordedAt": "2026-09-12",
+  "scope": "Fifteen reviewed Pokémon set-logo graphics used only for in-app set identification and navigation.",
+  "decision": "owner_approved_controlled_display",
+  "activationAuthorized": true,
+  "authorizationBasis": "The Stackr owner explicitly directed integration of the reviewed canonical logo pack in the active work session after requiring official artwork only and removal of the duplicate Pitch Black identity.",
+  "externalLicenceConfirmed": false,
+  "officialArtworkIdentityVerified": true,
+  "thirdPartyEndorsementClaimed": false,
+  "residualRiskAcceptedByOwner": true,
+  "controls": {
+    "standaloneDownloadRoute": false,
+    "cataloguePersistenceMutation": false,
+    "commercialProductPhotographyUse": false,
+    "displayScope": "in_app_set_identification",
+    "exactHashManifest": "data/catalogue/official-english-set-logos.json",
+    "runtimeResolver": "lib/englishSetLogos.ts",
+    "materializationGuard": "scripts/materialize-official-english-set-logos.py"
+  },
+  "identityDecisions": {
+    "pitchBlackCanonicalId": "me5",
+    "acceptedProviderAliases": ["me5", "me05"],
+    "removedDuplicateIds": ["PBL"],
+    "sharedArtworkStoredOnce": [
+      "mcdonalds-pokemon-generic",
+      "pop-series-shared"
+    ]
+  },
+  "limitations": [
+    "This record documents the owner's controlled-use direction; it does not claim a licence or endorsement from The Pokémon Company, Nintendo, Creatures, Game Freak, McDonald's, POP or any source mirror.",
+    "Five catalogue groupings remain without a reviewed standalone English logo: sve, xya, bog, sp and miscp.",
+    "Trainer Kit and promotional symbols are intentionally excluded from this official-logo cohort."
+  ]
+}

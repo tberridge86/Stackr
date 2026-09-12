@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
+import {
+  BENCHMARK_IDENTITIES,
+  validatePublicApiBenchmarkResponse,
+} from './public-api-benchmark-contract.mjs';
 
 function argument(name, fallback = null) {
   const prefix = `--${name}=`;
@@ -37,6 +41,7 @@ async function timedRequest(url, timeoutMs) {
       ok: response.ok && (body?.error == null),
       status: response.status,
       durationMs,
+      body,
     };
   } finally {
     clearTimeout(timer);
@@ -67,7 +72,7 @@ const scenarios = [
   },
   {
     id: 'assets',
-    path: '/v1/assets/manifest?limit=20',
+    path: `/v1/assets/manifest?assetType=card_image&variantId=${BENCHMARK_IDENTITIES.asset.variantId}&limit=20`,
     thresholdMs: boundedInteger('assets-p95-ms', 300, 50, 5_000),
   },
 ];
@@ -78,14 +83,18 @@ for (const scenario of scenarios) {
   for (let index = 0; index < warmups; index += 1) {
     const warmup = await timedRequest(url, timeoutMs);
     if (!warmup.ok) throw new Error(`${scenario.id}_warmup_failed_with_${warmup.status}`);
+    validatePublicApiBenchmarkResponse(scenario.id, warmup.body);
   }
 
   const durations = [];
   const statuses = new Set();
+  const usefulCounts = [];
   for (let index = 0; index < samples; index += 1) {
     const sample = await timedRequest(url, timeoutMs);
     statuses.add(sample.status);
     if (!sample.ok) throw new Error(`${scenario.id}_sample_failed_with_${sample.status}`);
+    const validation = validatePublicApiBenchmarkResponse(scenario.id, sample.body);
+    usefulCounts.push(validation.usefulCount);
     durations.push(sample.durationMs);
   }
 
@@ -96,6 +105,9 @@ for (const scenario of scenarios) {
     path: scenario.path,
     samples,
     statuses: [...statuses].sort(),
+    expectedIdentityVerified: true,
+    usefulCountMinimum: Math.min(...usefulCounts),
+    usefulCountMaximum: Math.max(...usefulCounts),
     thresholdP95Ms: scenario.thresholdMs,
     p50Ms: Number(p50Ms.toFixed(2)),
     p95Ms: Number(p95Ms.toFixed(2)),

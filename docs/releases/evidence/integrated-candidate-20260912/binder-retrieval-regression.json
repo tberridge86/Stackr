@@ -1,0 +1,36 @@
+{
+  "scope": "Deterministic source regression and Node CPU diagnostic; NOT phone latency or live API proof",
+  "observedAt": "2026-09-12T15:34:48.262Z",
+  "node": "v24.15.0",
+  "passedCases": 12,
+  "tests": [
+    "ownership and catalogue start together only after binder access succeeds",
+    "denied binder access starts neither ownership nor catalogue",
+    "ownership denial fails promptly even while public catalogue is stalled",
+    "custom binder does not fetch an unrelated catalogue",
+    "ambiguous binder does not fetch an unrelated catalogue",
+    "failed catalogue retains saved rows and does not poison the next read",
+    "indexed matcher preserves exact-ID precedence, ambiguity, aliases and consumption",
+    "indexed matcher equals the reference for 4096 mixed requests across all supported cache languages",
+    "actual screen overlaps authentication and binder lookup, then renders before optional requests settle",
+    "actual screen retains private-binder denial after overlapping reads",
+    "actual screen discards an old account result before card loading",
+    "actual screen discards a navigation result that arrives after cancellation"
+  ],
+  "work": [
+    {
+      "cards": 252,
+      "referenceEligibilityReads": 31878,
+      "indexedEligibilityReads": 252,
+      "referenceMs": 16.428,
+      "indexedMs": 0.597
+    },
+    {
+      "cards": 1000,
+      "referenceEligibilityReads": 500500,
+      "indexedEligibilityReads": 1000,
+      "referenceMs": 230.559,
+      "indexedMs": 2.544
+    }
+  ]
+}

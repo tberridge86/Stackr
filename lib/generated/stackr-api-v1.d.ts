@@ -1357,6 +1357,8 @@ export interface operations {
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
                 limit?: components["parameters"]["Limit"];
+                /** @description Set false to return card identities before optional artwork enrichment. Omitted or true retains artwork delivery. */
+                includeAssets?: boolean;
             };
             header?: never;
             path: {

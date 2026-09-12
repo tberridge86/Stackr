@@ -1,10 +1,15 @@
+import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
+import { isCompleteBinderSnapshot, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
+import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
+import { attachBinderCatalogueArtwork, attachBinderSetArtwork } from '../../lib/binders';
+import { StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -95,7 +100,7 @@ import {
   getPreferredCardDisplayName,
   getPreferredSetDisplayName,
 } from '../../lib/pokemonDisplayNames';
-import { getIncrementalListWindow, measureAsync, stackrListPerformance } from '../../lib/performance';
+import { beginBinderRetrieval, getIncrementalListWindow, measureAsync, stackrListPerformance } from '../../lib/performance';
 import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { createActivityPost } from '../../lib/activity';
@@ -829,6 +834,12 @@ export default function BinderDetailScreen() {
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const [cards, setCards] = useState<BinderCardWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reopenStatus, setReopenStatus] = useState<{ savedAt: number; state: 'refreshing' | 'offline' | 'incomplete' } | null>(null);
+  const retrievalTraceRef = useRef<ReturnType<typeof beginBinderRetrieval> | null>(null);
+  const onBinderViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: { item: BinderCardWithDetails; isViewable: boolean }[] }) => {
+    retrievalTraceRef.current?.visible(viewableItems.filter((item) => item.isViewable).map((item) => item.item));
+  }).current;
+  const binderViewabilityConfig = useRef({ itemVisiblePercentThreshold: 50, minimumViewTime: 0 }).current;
   const gridWindow = useMemo(() => getIncrementalListWindow(numColumns), [numColumns]);
   const addSearchWindow = useMemo(
     () => getIncrementalListWindow(1, { initialRows: 18, pageRows: 14, minInitial: 18, minPage: 14 }),
@@ -888,8 +899,32 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const activeAccountIdRef = useRef<string | null>(null);
   const accountGenerationRef = useRef(0);
   const loadRequestRef = useRef(0);
+  const artworkRequestRef = useRef<AbortController | null>(null);
   const isOwner = Boolean(userId && binder?.user_id === userId);
-  const isReadOnly = routeReadOnly || (Boolean(binder) && (!isOwner || !ownershipReady));
+  const isReadOnly = routeReadOnly || reopenStatus !== null || (Boolean(binder) && (!isOwner || !ownershipReady));
+
+  useLayoutEffect(() => { retrievalTraceRef.current?.committedRows(cards); }, [cards]);
+  useEffect(() => { if (ownershipReady && !isReadOnly) retrievalTraceRef.current?.editable(); }, [ownershipReady, isReadOnly]);
+
+  // Match the existing QuickActionSheet dismissal protocol before opening a second modal.
+  const pendingBinderOptionAction = useRef<(() => void) | null>(null);
+  const flushBinderOptionAction = useCallback(() => {
+    const action = pendingBinderOptionAction.current;
+    pendingBinderOptionAction.current = null;
+    action?.();
+  }, []);
+  const runAfterBinderOptionsClose = (action: () => void) => {
+    if (pendingBinderOptionAction.current) return;
+    if (!sortDropdownOpen) { action(); return; }
+    pendingBinderOptionAction.current = action;
+    setSortDropdownOpen(false);
+  };
+  useEffect(() => {
+    if (sortDropdownOpen || Platform.OS === 'ios') return;
+    const timer = setTimeout(flushBinderOptionAction, Platform.OS === 'web' ? 0 : 350);
+    return () => clearTimeout(timer);
+  }, [sortDropdownOpen, flushBinderOptionAction]);
+  useEffect(() => () => { pendingBinderOptionAction.current = null; }, [binderId, userId, isReadOnly]);
 
   useEffect(() => {
     if (selectedCard) setDetailGradeText(selectedCard.grade ?? '10');
@@ -1010,39 +1045,89 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
   const load = useCallback(async (forceRefresh = false) => {
     if (!binderId) return;
+    retrievalTraceRef.current?.cancel();
+    const retrievalTrace = beginBinderRetrieval();
+    retrievalTraceRef.current = retrievalTrace;
+    const reopenLease = binderReopenCache.lease();
+    const previewState = { snapshot: null as BinderReopenSnapshot | null };
+    let previewAllowed = true;
+    let refreshState: 'refreshing' | 'offline' | 'incomplete' = 'refreshing';
     const accountGeneration = accountGenerationRef.current;
     const requestId = ++loadRequestRef.current;
+    artworkRequestRef.current?.abort();
+    const artworkRequest = new AbortController();
+    artworkRequestRef.current = artworkRequest;
     const isCurrentRequest = () => isCurrentAccountRequest(
       { accountGeneration: accountGenerationRef.current, requestId: loadRequestRef.current },
       { accountGeneration, requestId },
     );
 
     if (forceRefresh) {
-      invalidateBinderCaches(binderId);
-      invalidatePokemonCatalogueCardCaches();
+      retainBinderPreviewDuringRefresh(() => {
+        invalidateBinderCaches(binderId);
+        invalidatePokemonCatalogueCardCaches();
+      });
     }
 
     try {
       setLoading(true);
       setOwnershipReady(false);
+      setBinder(null);
+      setCards([]);
+      setReopenStatus(null);
+      // Do not await optional disk I/O, session refresh or snapshot parsing on the network path.
+      void readBinderReopenPreview(binderId).then((saved) => {
+        if (!saved || !previewAllowed || !isCurrentRequest()
+          || (activeAccountIdRef.current && activeAccountIdRef.current !== saved.accountId)) return;
+        previewState.snapshot = saved;
+        setBinder(saved.binder);
+        setUserId(saved.accountId);
+        setIsPublic(Boolean(saved.binder.is_public));
+        setCustomNameArtKey(null);
+        retrievalTrace.model(saved.cards, 'local-preview');
+        setCards(saved.cards);
+        setSelectedCard(null);
+        setOwnershipReady(false);
+        setReopenStatus({ savedAt: saved.savedAt, state: refreshState });
+        setLoading(false);
+      }).catch(() => undefined);
       setShowcaseRows([]);
       setOwnedVariants(new Map());
       setVariantManagedCards(new Set());
 
-      const { data: { user } } = await supabase.auth.getUser();
+      // Both requests retain their existing server checks. Overlap their
+      // latency, but do not render or load cards until both have completed and
+      // the active-account/public-binder checks below have passed.
+      const [{ data: { user } }, binderData] = await Promise.all([
+        supabase.auth.getUser().then((result) => {
+          if (result.error) throw result.error;
+          return result;
+        }),
+        measureAsync(
+          'binder.fetchBinderById',
+          () => fetchBinderById(binderId, { includeAssets: false }),
+          { binderId }
+        ),
+      ]);
       if (!isCurrentRequest()) return;
+      if (previewState.snapshot && previewState.snapshot.accountId !== user?.id) {
+        previewAllowed = false;
+        previewState.snapshot = null;
+        binderReopenCache.invalidate();
+        setBinder(null);
+        setCards([]);
+        setSelectedCard(null);
+        setReopenStatus(null);
+      }
       if (activeAccountIdRef.current && activeAccountIdRef.current !== user?.id) return;
       activeAccountIdRef.current = user?.id ?? null;
       setUserId(user?.id ?? null);
 
-      const binderData = await measureAsync(
-        'binder.fetchBinderById',
-        () => fetchBinderById(binderId),
-        { binderId }
-      );
-      if (!isCurrentRequest()) return;
-
       if (!binderData || (binderData.user_id !== user?.id && !binderData.is_public)) {
+        previewAllowed = false;
+        binderReopenCache.invalidate();
+        setReopenStatus(null);
+        setSelectedCard(null);
         setBinder(null);
         setCustomNameArtKey(null);
         setCards([]);
@@ -1050,7 +1135,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         return;
       }
 
-      setBinder(binderData);
+      if (!previewState.snapshot) setBinder(binderData);
       setIsPublic(Boolean(binderData?.is_public));
 
       const [customNameArtKey, binderCards] = await Promise.all([
@@ -1059,19 +1144,58 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           : Promise.resolve(null),
         measureAsync(
           'binder.fetchBinderCards',
-          () => fetchBinderCards(binderId, { includePrices: false }),
+          () => fetchBinderCards(binderId, { includePrices: false, includeAssets: false }),
           { binderId }
         ),
       ]);
       if (!isCurrentRequest()) return;
 
+      const snapshotScope = user ? binderReopenScope(user.id) : null;
+      const savedAt = Date.now();
+      const completeOwnerView = snapshotScope && isCompleteBinderSnapshot({
+        ...snapshotScope, schema: 1, savedAt, binder: binderData, cards: binderCards,
+      }, snapshotScope, binderId, savedAt);
+      const expected = binderData.catalogue_set_total ?? binderData.catalogue_set_printed_total;
+      const incompleteRefresh = binderData.type === 'official' && ((binderData.user_id === user?.id && !completeOwnerView)
+        || binderCards.some((card) => card.catalogue_incomplete)
+        || (typeof expected === 'number' && expected > 0 && new Set(binderCards.filter((card) => card.catalogue_match_status === 'catalogue').map((card) => card.card?.id)).size < expected));
+      if (incompleteRefresh) {
+        refreshState = 'incomplete';
+        if (previewState.snapshot) {
+          setReopenStatus({ savedAt: previewState.snapshot.savedAt, state: 'incomplete' });
+          return; // A partial refresh cannot erase a complete saved view or enable editing.
+        }
+      } else {
+        previewAllowed = false;
+        setReopenStatus(null);
+      }
+      if (completeOwnerView && snapshotScope) binderReopenCache.save(snapshotScope, binderData, binderCards, reopenLease, savedAt);
+      setBinder(binderData);
       setCustomNameArtKey(customNameArtKey);
 
       // Saved rows are already presentation-safe fallbacks. Render them before
       // optional ownership/showcase reads so a later enrichment failure cannot
       // make an older, unresolved binder look empty.
+      retrievalTrace.model(binderCards, 'network', typeof expected === 'number' && expected > 0 && !incompleteRefresh);
       setCards(binderCards);
       setLoading(false);
+
+      void attachBinderCatalogueArtwork(binderCards, artworkRequest.signal).then((enriched) => {
+        if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
+        setCards((current) => isCurrentRequest() && !artworkRequest.signal.aborted ? mergeBinderArtwork(current, enriched) : current);
+        setSelectedCard((current) => current && isCurrentRequest() && !artworkRequest.signal.aborted ? mergeBinderArtwork([current], enriched)[0] : current);
+      }).catch((error) => {
+        if (isCurrentRequest() && !artworkRequest.signal.aborted) console.log('Binder artwork unavailable:', error);
+      });
+      void attachBinderSetArtwork(binderData).then((enriched) => {
+        if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
+        setBinder((current) => current?.id === enriched.id && isCurrentRequest() ? {
+          ...current,
+          source_set_logo_url: enriched.source_set_logo_url ?? current.source_set_logo_url,
+          source_set_symbol_url: enriched.source_set_symbol_url ?? current.source_set_symbol_url,
+          source_set_cover_url: enriched.source_set_cover_url ?? current.source_set_cover_url,
+        } : current);
+      }).catch(() => undefined);
 
       // Pricing is supplemental to the immediately usable catalogue/ownership
       // view. Merge it later so a slow snapshot lookup cannot hold the binder.
@@ -1193,7 +1317,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         setVariantManagedCards(new Set(
           typedVariantRows.map((row) => getVariantCardKey(row.card_id, row.set_id ?? ''))
         ));
-        setOwnershipReady(true);
+        setOwnershipReady(!incompleteRefresh);
       })().catch((error) => {
         if (isCurrentRequest()) {
           console.log('Failed to load binder ownership', error);
@@ -1207,8 +1331,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       });
     } catch (error) {
       if (isCurrentRequest()) {
-        console.log('Failed to load binder', error);
-        Alert.alert('Error', 'Could not load this binder.');
+        refreshState = 'offline';
+        if (isBinderAccessDenied(error)) {
+          previewAllowed = false;
+          binderReopenCache.invalidate();
+          setBinder(null);
+          setCards([]);
+          setSelectedCard(null);
+          setReopenStatus(null);
+        } else if (previewState.snapshot) {
+          setReopenStatus({ savedAt: previewState.snapshot.savedAt, state: 'offline' });
+        } else {
+          Alert.alert('Error', 'Could not refresh this binder. Any available saved view will remain read-only.');
+        }
       }
     } finally {
       if (isCurrentRequest()) setLoading(false);
@@ -1223,6 +1358,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       activeAccountIdRef.current = nextAccountId;
       accountGenerationRef.current += 1;
       loadRequestRef.current += 1;
+      artworkRequestRef.current?.abort();
+      retrievalTraceRef.current?.cancel();
+      setReopenStatus(null);
+      setSelectedCard(null);
+      setDetailVisible(false);
       setUserId(nextAccountId);
       setBinder(null);
       setCustomNameArtKey(null);
@@ -1247,6 +1387,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       load();
       return () => {
         loadRequestRef.current += 1;
+        artworkRequestRef.current?.abort();
+        retrievalTraceRef.current?.cancel();
       };
     }, [load])
   );
@@ -2445,8 +2587,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
     return (
       <TouchableOpacity
-        onPress={() => openCardDetail(item)}
-        onLongPress={() => handleCardLongPress(item)}
+        onPress={() => runAfterBinderOptionsClose(() => openCardDetail(item))}
+        onLongPress={() => runAfterBinderOptionsClose(() => handleCardLongPress(item))}
         activeOpacity={0.9}
         style={{ width: 120, marginRight: 14, opacity: isActive ? 0.75 : 1 }}
       >
@@ -3247,8 +3389,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       />
       <StackrBackdrop />
       <FlatList
+        testID="binder-card-grid"
         ref={binderListRef}
         data={visibleCards}
+        onViewableItemsChanged={onBinderViewableItemsChanged}
+        viewabilityConfig={binderViewabilityConfig}
         keyExtractor={(item) => item.id}
         renderItem={renderCard}
         key={numColumns}
@@ -3270,6 +3415,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               <StackrBackButton onPress={goBackToBinderLibrary} style={{ width: 34, height: 32 }} />
             </View>
 
+        {reopenStatus ? (
+          <View accessibilityRole="summary" style={{ marginBottom: 8, padding: 10, borderRadius: 12, backgroundColor: theme.colors.surface }}>
+            <Text testID="binder-reopen-status" style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+              {reopenStatus.state === 'refreshing' ? 'Saved view • checking for updates' : reopenStatus.state === 'incomplete' ? 'Refresh incomplete • showing your last complete saved view' : 'Refresh unavailable • showing your saved view'}
+              {'\n'}Saved {new Date(reopenStatus.savedAt).toLocaleString('en-GB')}. Changes remain disabled until ownership is checked.
+            </Text>
+          </View>
+        ) : null}
         {/* Header */}
         <View style={{ gap: 6, marginBottom: 8 }}>
           <View style={{
@@ -3394,7 +3547,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
               <Text style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }} numberOfLines={1}>
-                {formatCurrency(binderValue)} est. value
+                {reopenStatus ? 'Pricing awaits refresh' : `${formatCurrency(binderValue)} est. value`}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
               <Text style={{ color: theme.colors.primary, fontSize: 10.5, lineHeight: 13, fontWeight: '900' }} numberOfLines={1}>
@@ -3407,12 +3560,61 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 {heroHelperText}
               </Text>
             ) : null}
+
+          </View>
+
+          {isReadOnly && (
+            <View style={{
+              backgroundColor: theme.colors.surface,
+              borderRadius: 14,
+              paddingVertical: 11,
+              paddingHorizontal: 14,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}>
+              <Ionicons name="eye-outline" size={17} color={theme.colors.textSoft} />
+              <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', flex: 1 }}>
+                Viewing another collector&apos;s binder - read only
+              </Text>
+            </View>
+          )}
+
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 13 }}>{cards.length} entries · {currentSortLabel}</Text>
+          <TouchableOpacity onPress={() => setSortDropdownOpen(true)} accessibilityRole="button" accessibilityLabel="Binder options and sort" style={{ minHeight: 44, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="options-outline" size={20} color={theme.colors.primary} />
+            <Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '700' }}>Options</Text>
+          </TouchableOpacity>
+        </View>
+
+          </View>
+        }
+        ListFooterComponent={hasMoreCardsToRender ? (
+          <View style={{ height: 24, justifyContent: 'center' }}>
+            <ActivityIndicator color={theme.colors.primary} size="small" />
+          </View>
+        ) : null}
+      />
+      <StackrBottomSheet visible={sortDropdownOpen} title="Binder options" onClose={() => setSortDropdownOpen(false)} onDismiss={flushBinderOptionAction} maxHeight="86%" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+        <StackrBrowseFilterGroup
+          title="Order cards"
+          choices={sortOptions.map((option) => ({ key: option.value, label: option.label }))}
+          selected={sortMode}
+          onSelect={(key) => setSortMode(key as SortMode)}
+        />
+        <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 8 }}>
+          Missing: {totalNeedsSync ? 'unknown' : missingCount} · Duplicates: {duplicateCount} · Chase: {chaseCount}
+        </Text>
             {showsCompletion ? (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Refresh binder catalogue"
                 onPress={() => void load(true)}
-                style={{ alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8 }}
+                style={{ alignSelf: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 8 }}
               >
                 <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '800' }}>Refresh catalogue</Text>
               </Pressable>
@@ -3427,7 +3629,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                       imageIcon={stackrIcons.scanCard}
                       variant="scan"
                       size="compact"
-                      onPress={handleScanCard}
+                      onPress={() => runAfterBinderOptionsClose(handleScanCard)}
                       accessibilityLabel="Scan to Binder"
                       showArrow={false}
                       style={{ flex: 1.12, minHeight: 48, borderRadius: 15 }}
@@ -3457,7 +3659,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         imageIcon={stackrIcons.scanCard}
                         variant="scan"
                         size="compact"
-                        onPress={handleScanCard}
+                        onPress={() => runAfterBinderOptionsClose(handleScanCard)}
                         accessibilityLabel="Scan to Binder"
                         showArrow={false}
                         style={{ flex: 1.12, minHeight: 48, borderRadius: 15 }}
@@ -3498,11 +3700,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
             {!isReadOnly && binder.type === 'custom' ? (
               <TouchableOpacity
-                onPress={() => setShowAddModal(true)}
+                onPress={() => runAfterBinderOptionsClose(() => setShowAddModal(true))}
                 activeOpacity={0.82}
                 style={{
                   marginTop: 8,
-                  minHeight: 36,
+                  minHeight: 44,
                   borderRadius: 13,
                   borderWidth: 1,
                   borderColor: theme.colors.border,
@@ -3516,188 +3718,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }}>Add Manually</Text>
               </TouchableOpacity>
             ) : null}
-          </View>
-
-          {!isReadOnly && (
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity
-                onPress={() => setSortMode('missing')}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  backgroundColor: sortMode === 'missing' ? theme.colors.primary + '12' : theme.colors.card,
-                  borderRadius: 999,
-                  paddingVertical: 9,
-                  paddingHorizontal: 10,
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: sortMode === 'missing' ? theme.colors.primary : theme.colors.border,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ color: sortMode === 'missing' ? theme.colors.primary : theme.colors.text, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>
-                  Missing {totalNeedsSync ? '--' : missingCount}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setSortMode('owned')}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  backgroundColor: sortMode === 'owned' ? theme.colors.primary + '12' : theme.colors.card,
-                  borderRadius: 999,
-                  paddingVertical: 9,
-                  paddingHorizontal: 10,
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: sortMode === 'owned' ? theme.colors.primary : theme.colors.border,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ color: sortMode === 'owned' ? theme.colors.primary : theme.colors.text, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>
-                  Duplicates {duplicateCount}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setShowcaseCollapsed((prev) => ({ ...prev, chase: !prev.chase }))}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  backgroundColor: !showcaseCollapsed.chase && chaseCount > 0 ? theme.colors.primary + '12' : theme.colors.card,
-                  borderRadius: 999,
-                  paddingVertical: 9,
-                  paddingHorizontal: 10,
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: !showcaseCollapsed.chase && chaseCount > 0 ? theme.colors.primary : theme.colors.border,
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ color: !showcaseCollapsed.chase && chaseCount > 0 ? theme.colors.primary : theme.colors.text, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>
-                  Chase {chaseCount}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {isReadOnly && (
-            <View style={{
-              backgroundColor: theme.colors.surface,
-              borderRadius: 14,
-              paddingVertical: 11,
-              paddingHorizontal: 14,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-            }}>
-              <Ionicons name="eye-outline" size={17} color={theme.colors.textSoft} />
-              <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', flex: 1 }}>
-                Viewing another collector&apos;s binder - read only
-              </Text>
-            </View>
-          )}
-
-          <View>
-            {renderShowcaseStrip('chase', 'Chase Cards')}
-          </View>
-        </View>
-
-        {/* Sort dropdown */}
-        <View style={{ marginBottom: 14, zIndex: 50, elevation: 20 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 20, lineHeight: 25, fontWeight: '900', flex: 1 }} numberOfLines={1}>
-              {sortMode === 'owned' ? 'Owned Cards' : sortMode === 'missing' ? 'Missing Cards' : 'Binder Cards'}
-            </Text>
-
-            <TouchableOpacity
-              onPress={() => setSortDropdownOpen((prev) => !prev)}
-              style={{
-                backgroundColor: theme.colors.card,
-                borderRadius: 999,
-                minHeight: 44,
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <Ionicons name="swap-vertical-outline" size={16} color={theme.colors.primary} />
-              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>Sort: {currentSortLabel}</Text>
-              <Ionicons
-                name={sortDropdownOpen ? 'chevron-up' : 'chevron-down'}
-                size={16}
-                color={theme.colors.textSoft}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {sortDropdownOpen && (
-            <View style={{
-              alignSelf: 'flex-end',
-              width: Math.min(230, width - 40),
-              backgroundColor: theme.dark ? theme.colors.card : '#FFFFFF',
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              overflow: 'hidden',
-              marginTop: 8,
-              shadowColor: '#1B2A4B',
-              shadowOpacity: 0.16,
-              shadowRadius: 18,
-              shadowOffset: { width: 0, height: 8 },
-              elevation: 20,
-              zIndex: 80,
-            }}>
-              {sortOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  onPress={() => { setSortMode(option.value); setSortDropdownOpen(false); }}
-                  style={{
-                    minHeight: 44,
-                    justifyContent: 'center',
-                    paddingVertical: 10,
-                    paddingHorizontal: 14,
-                    backgroundColor: sortMode === option.value ? theme.colors.primary + '12' : theme.dark ? theme.colors.card : '#FFFFFF',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}
-                >
-                  <Ionicons
-                    name={sortMode === option.value ? 'checkmark-circle' : 'ellipse-outline'}
-                    size={17}
-                    color={sortMode === option.value ? theme.colors.primary : theme.colors.textSoft}
-                  />
-                  <Text style={{ color: sortMode === option.value ? theme.colors.primary : theme.colors.text, fontWeight: '900', flex: 1 }}>
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
-          </View>
-        }
-        ListFooterComponent={hasMoreCardsToRender ? (
-          <View style={{ height: 24, justifyContent: 'center' }}>
-            <ActivityIndicator color={theme.colors.primary} size="small" />
-          </View>
-        ) : null}
-      />
+        {renderShowcaseStrip('chase', 'Chase Cards')}
+      </StackrBottomSheet>
       <ScrollToEndButton
         visible={showBinderEndButton}
         onPress={scrollBinderToEnd}

@@ -179,6 +179,13 @@ paths:
         - $ref: "#/components/parameters/Language"
         - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/Limit"
+        - name: includeAssets
+          in: query
+          required: false
+          description: Set false to return card identities before optional artwork enrichment. Omitted or true retains artwork delivery.
+          schema:
+            type: boolean
+            default: true
       responses:
         "200":
           description: Cursor-paginated cards in a canonical set.

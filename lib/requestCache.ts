@@ -6,6 +6,11 @@ type CacheEntry<T> = {
 const memoryCache = new Map<string, CacheEntry<unknown>>();
 const inflightRequests = new Map<string, Promise<unknown>>();
 let cacheVersion = 0;
+const invalidationListeners = new Set<(prefix?: string) => void>();
+export function subscribeRequestCacheInvalidation(listener: (prefix?: string) => void) {
+  invalidationListeners.add(listener);
+  return () => invalidationListeners.delete(listener);
+}
 
 export async function getCachedOrFetch<T>(
   key: string,
@@ -41,6 +46,9 @@ export async function getCachedOrFetch<T>(
 
 export function invalidateRequestCache(prefix?: string) {
   cacheVersion += 1;
+  for (const listener of invalidationListeners) {
+    try { listener(prefix); } catch { /* Optional view caches cannot break invalidation. */ }
+  }
 
   if (!prefix) {
     memoryCache.clear();

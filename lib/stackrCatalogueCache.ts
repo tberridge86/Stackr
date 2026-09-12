@@ -1,3 +1,4 @@
+import type { SetFactsKey, SetFactsSnapshot, SetFactsStore } from './stackrSetRetrieval';
 import type {
   StackrApiClient,
   StackrApiLanguageCode,
@@ -607,4 +608,35 @@ export function stackrCachedCardToIdentifiedCard(card: StackrCachedCardIdentity)
       reasons: ['exact_cached_identity'],
     },
   };
+}
+
+
+// Per-set public snapshots share the existing catalogue database, but never load
+// the scanner's whole-database JSON snapshot or advance its delta cursor.
+let setFactsStorePromise: Promise<SetFactsStore | null> | null = null;
+export function getPersistentStackrSetFactsStore(): Promise<SetFactsStore | null> {
+  if (!setFactsStorePromise) setFactsStorePromise = (async () => {
+    const sqlite = getOptionalExpoSqlite();
+    if (!sqlite?.openDatabaseAsync) return null;
+    const db = await sqlite.openDatabaseAsync('stackr_catalogue_cache.db');
+    await db.execAsync('CREATE TABLE IF NOT EXISTS stackr_set_facts_v1 (namespace TEXT NOT NULL, set_id TEXT NOT NULL, language TEXT NOT NULL, fetched_at INTEGER NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(namespace, set_id, language))');
+    return {
+      async read(key: SetFactsKey) {
+        const row = await db.getFirstAsync('SELECT payload FROM stackr_set_facts_v1 WHERE namespace = ? AND set_id = ? AND language = ?', [key.namespace, key.setId, key.language]);
+        if (!row || row.payload.length * 2 > 2 * 1024 * 1024) return null;
+        try { return JSON.parse(row.payload); } catch { return null; }
+      },
+      async write(snapshot: SetFactsSnapshot) {
+        const payload = JSON.stringify(snapshot);
+        if (payload.length * 2 > 2 * 1024 * 1024) return;
+        // The mobile SDK's exclusive transaction keeps unrelated scanner writes outside this transaction.
+        await db.withExclusiveTransactionAsync(async (tx: any) => {
+          await tx.runAsync('INSERT OR REPLACE INTO stackr_set_facts_v1(namespace, set_id, language, fetched_at, payload) VALUES (?, ?, ?, ?, ?)', [snapshot.namespace, snapshot.setId, snapshot.language, snapshot.fetchedAt, payload]);
+          await tx.runAsync('DELETE FROM stackr_set_facts_v1 WHERE rowid IN (SELECT rowid FROM (SELECT rowid, ROW_NUMBER() OVER (ORDER BY fetched_at DESC, rowid DESC) AS position, SUM(LENGTH(CAST(payload AS BLOB))) OVER (ORDER BY fetched_at DESC, rowid DESC ROWS UNBOUNDED PRECEDING) AS total_bytes FROM stackr_set_facts_v1) WHERE position > 24 OR total_bytes > 8388608)');
+        });
+      },
+      async clear(namespace: string) { await db.runAsync('DELETE FROM stackr_set_facts_v1 WHERE namespace = ?', [namespace]); },
+    } satisfies SetFactsStore;
+  })().catch(() => null);
+  return setFactsStorePromise;
 }

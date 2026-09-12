@@ -110,6 +110,62 @@ export function findSavedBinderCardMatch<T extends SavedBinderCardIdentityRow>(
   return uniqueRow(eligibleRows.filter((row) => normalizeBinderCollectorNumber(rowCollectorNumber(row)) === collector));
 }
 
+/**
+ * Build the same language/alias-safe lookup once per binder read. Consuming a
+ * match removes every row with that saved-row ID, exactly like the former
+ * consumed-ID filter. Duplicate exact IDs remain ambiguous, not first-wins.
+ */
+export function createSavedBinderCardMatcher<T extends SavedBinderCardIdentityRow & { id: string }>(
+  input: Pick<FindSavedBinderCardMatchInput<T>, 'savedRows' | 'language' | 'setReferences'>,
+) {
+  const language = knownLanguage(input.language);
+  const references = new Set(input.setReferences.map(normalizedSetReference).filter(Boolean));
+  const entries: { row: T; exact: string; collector: string | null }[] = [];
+  const exact = new Map<string, Set<number>>();
+  const collectors = new Map<string, Set<number>>();
+  const savedIds = new Map<string, number[]>();
+  const add = (index: Map<string, Set<number>>, key: string | null, position: number) => {
+    if (!key) return;
+    const bucket = index.get(key) ?? new Set<number>();
+    bucket.add(position);
+    index.set(key, bucket);
+  };
+  for (const row of input.savedRows) {
+    if (!language || !references.has(normalizedSetReference(row.set_id))
+      || rowLanguage(row, language) !== language) continue;
+    const entry = { row, exact: normalizedExactCardId(row.card_id), collector: normalizeBinderCollectorNumber(rowCollectorNumber(row)) };
+    const position = entries.length;
+    entries.push(entry);
+    add(exact, entry.exact, position);
+    add(collectors, entry.collector, position);
+    const positions = savedIds.get(row.id) ?? [];
+    positions.push(position);
+    savedIds.set(row.id, positions);
+  }
+  const take = (bucket: Set<number> | undefined): T | null => {
+    if (!bucket || bucket.size !== 1) return null;
+    const position = bucket.values().next().value;
+    if (position == null) return null;
+    const row = entries[position].row;
+    for (const consumed of savedIds.get(row.id) ?? []) {
+      const entry = entries[consumed];
+      exact.get(entry.exact)?.delete(consumed);
+      if (entry.collector) collectors.get(entry.collector)?.delete(consumed);
+    }
+    savedIds.delete(row.id);
+    return row;
+  };
+  return {
+    takeMatch(card: Pick<FindSavedBinderCardMatchInput<T>, 'cardId' | 'collectorNumber' | 'allowCollectorMatch'>): T | null {
+      const cardId = normalizedExactCardId(card.cardId);
+      const bucket = cardId ? exact.get(cardId) : undefined;
+      if (bucket?.size) return take(bucket);
+      const collector = normalizeBinderCollectorNumber(card.collectorNumber);
+      return card.allowCollectorMatch && collector ? take(collectors.get(collector)) : null;
+    },
+  };
+}
+
 export const binderCardIdentityInternals = {
   normalizeBinderCollectorNumber,
   normalizedCollectorNumber: normalizeBinderCollectorNumber,

@@ -20,11 +20,11 @@ assert.equal(getHomeCardDisplayName({ name: 'Dracaufeu', ...getHomeCardDisplayMe
 assert.equal(getHomeCardDisplayName({ name: 'Pikachu', ...getHomeCardDisplayMetadata({ id: 'en-test', name: 'Pikachu', language: 'en' }) }), 'Pikachu');
 
 const hub = readFileSync('features/home/HubScreen.tsx', 'utf8');
-const render = hub.slice(hub.indexOf('{/* VALUE TRACKER */}'));
+const render = hub.slice(hub.indexOf('{/* TOP BAR */}'));
 assert.equal((render.match(/<ValueTrackerCard\b/g) ?? []).length, 1);
-assert.ok(render.indexOf('<ValueTrackerCard') < render.indexOf('Find your next card'));
 assert.ok(render.indexOf('Find your next card') < render.indexOf('<HomeCollectionHero'));
-assert.ok(render.indexOf('<HomeCollectionHero') < render.indexOf('<HomeOpportunitiesSection'));
+assert.ok(render.indexOf('<HomeCollectionHero') < render.indexOf('<ValueTrackerCard'), 'Collection content precedes optional price details');
+assert.ok(render.indexOf('<ValueTrackerCard') < render.indexOf('<HomeOpportunitiesSection'));
 assert.ok(render.slice(render.indexOf('<HomeCollectionHero'), render.indexOf('<HomeOpportunitiesSection')).includes('onRetry={loadCollectionValue}'), 'Binder recovery must reload collection, not unrelated marketplace data');
 assert.ok(render.includes('compact'));
 for (const retained of [

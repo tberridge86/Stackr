@@ -1,5 +1,7 @@
 import { supabase } from './supabase';
-import { fetchCardsForSet, normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
+import { attachLiveTcgdexCardReferences, fetchCardsForSet, normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
+import { enrichStackrCardArtworkFromFacts } from './stackrDomainAdapter';
+import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';
 import { createActivityPost } from './activity';
 import { PRICE_API_URL, USD_TO_GBP } from './config';
 import { recordAchievementEvent } from './achievements';
@@ -8,7 +10,7 @@ import { bumpCollectionSummaryVersion } from './collectionSummaryInvalidation';
 import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 import { fetchPreferredStackrSets, fetchStackrPriceSnapshots, fetchStackrSet } from './stackrDomainAdapter';
 import { resolveBinderSetIdentity } from './binderSetIdentity';
-import { findSavedBinderCardMatch, normalizeBinderCollectorNumber } from './binderCardIdentity';
+import { createSavedBinderCardMatcher, normalizeBinderCollectorNumber } from './binderCardIdentity';
 import { positiveCatalogueCount, preserveUnmatchedBinderRows } from './binderCataloguePresentation';
 import { enforceSetVisualRuntimePolicy } from './providerSetMarkRuntimePolicy';
 import {
@@ -540,11 +542,11 @@ export async function fetchBinderById(
 
 export async function fetchBinderCards(
   binderId: string,
-  options: { includePrices?: boolean } = {},
+  options: { includePrices?: boolean; includeAssets?: boolean } = {},
 ): Promise<BinderCardRecord[]> {
   let catalogueComplete = true;
   return getCachedOrFetch(
-    `binder:${binderId}:${options.includePrices === false ? 'unpriced-cards' : 'cards'}`,
+    `binder:${binderId}:${options.includePrices === false ? 'unpriced-cards' : 'cards'}:${options.includeAssets === false ? 'facts' : 'assets'}`,
     BINDER_CARDS_CACHE_TTL_MS,
     () => fetchBinderCardsUncached(binderId, {
       ...options,
@@ -556,7 +558,7 @@ export async function fetchBinderCards(
 
 async function fetchBinderCardsUncached(
   binderId: string,
-  options: { includePrices?: boolean; onCatalogueUnavailable?: () => void } = {},
+  options: { includePrices?: boolean; includeAssets?: boolean; onCatalogueUnavailable?: () => void } = {},
 ): Promise<BinderCardRecord[]> {
   // Identity and ownership reads must not wait for every set's visual manifest.
   const binder = await fetchBinderById(binderId, { includeAssets: false });
@@ -564,15 +566,30 @@ async function fetchBinderCardsUncached(
   if (!binder) return [];
   const binderLanguage = inferBinderLanguage(binder.language, binder.source_set_id);
 
-  const { data: userRows, error: userRowsError } = await supabase
-    .from('binder_cards')
-    .select('*')
-    .eq('binder_id', binderId)
-    .order('slot_order', { ascending: true });
-
-  if (userRowsError) throw userRowsError;
-
-  const savedRows = (userRows ?? []) as BinderCardRecord[];
+  const officialCatalogue = binder.type === 'official' && Boolean(binder.source_set_id);
+  const ambiguousCatalogue = binder.catalogue_identity_status === 'ambiguous'
+    || (binder.catalogue_identity_status === 'unresolved' && !binder.language);
+  // Once the binder read has passed RLS, ownership and public facts are
+  // independent. Start both now; no card rows render before ownership returns.
+  const savedRowsPromise = (async () => {
+    const { data, error } = await supabase
+      .from('binder_cards')
+      .select('*')
+      .eq('binder_id', binderId)
+      .order('slot_order', { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as BinderCardRecord[];
+  })();
+  const setCardsPromise = officialCatalogue && !ambiguousCatalogue
+    ? fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id as string, {
+        language: binderLanguage,
+        preferCanonicalApi: true,
+        includeAssets: options.includeAssets,
+        minimumCardCount: positiveCatalogueCount(binder.catalogue_set_total)
+          ?? positiveCatalogueCount(binder.catalogue_set_printed_total),
+      }).catch(() => [])
+    : Promise.resolve([]);
+  const [savedRows, setCards] = await Promise.all([savedRowsPromise, setCardsPromise]);
   // Home performs one exact, ownership-aware valuation afterwards. Pricing all
   // virtual binder slots here adds hundreds of redundant identity/price reads.
   const withOptionalPrices = (rows: BinderCardRecord[]) => options.includePrices === false
@@ -597,17 +614,10 @@ async function fetchBinderCardsUncached(
   })));
 }
   // Unresolved historical identities must not silently become English editions.
-  if (binder.catalogue_identity_status === 'ambiguous'
-    || (binder.catalogue_identity_status === 'unresolved' && !binder.language)) {
+  if (ambiguousCatalogue) {
     options.onCatalogueUnavailable?.();
     return preserveUnmatchedBinderRows([], savedRows);
   }
-  const setCards = await fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id, {
-    language: binderLanguage,
-    preferCanonicalApi: true,
-    minimumCardCount: positiveCatalogueCount(binder.catalogue_set_total)
-      ?? positiveCatalogueCount(binder.catalogue_set_printed_total),
-  }).catch(() => []);
   const expectedCardCount = positiveCatalogueCount(binder.catalogue_set_total)
     ?? positiveCatalogueCount(binder.catalogue_set_printed_total);
   const returnedCardCount = new Set(setCards.map((card) => String(card.id ?? '').trim()).filter(Boolean)).size;
@@ -624,20 +634,20 @@ async function fetchBinderCardsUncached(
     const collector = normalizeBinderCollectorNumber(card.number);
     if (collector) catalogueCollectorCounts.set(collector, (catalogueCollectorCounts.get(collector) ?? 0) + 1);
   }
-  const consumedSavedRows = new Set<string>();
+  const savedCardMatcher = createSavedBinderCardMatcher({
+    savedRows,
+    language: binderLanguage,
+    setReferences: binder.catalogue_set_references ?? [binder.source_set_id as string],
+  });
 
   const rows = setCards.map((card, index) => {
     const setId = binder.source_set_id as string;
     const collector = normalizeBinderCollectorNumber(card.number);
-    const existing = findSavedBinderCardMatch({
-      savedRows: savedRows.filter((row) => !consumedSavedRows.has(row.id)),
+    const existing = savedCardMatcher.takeMatch({
       cardId: card.id,
       collectorNumber: card.number,
-      language: binderLanguage,
-      setReferences: binder.catalogue_set_references ?? [setId],
       allowCollectorMatch: Boolean(collector && catalogueCollectorCounts.get(collector) === 1),
     });
-    if (existing) consumedSavedRows.add(existing.id);
     const defaultCondition = binder.default_condition || 'Near Mint';
     const setName = getPreferredSetDisplayName({
       id: setId,
@@ -1490,4 +1500,26 @@ export async function deleteBinder(binderId: string): Promise<void> {
 
   if (error) throw error;
   invalidateBinderCaches(binderId);
+}
+
+
+export async function attachBinderSetArtwork(binder: BinderRecord): Promise<BinderRecord> {
+  return (await attachSetBrandingToBinders([binder], true))[0] ?? binder;
+}
+
+export async function attachBinderCatalogueArtwork(rows: BinderCardRecord[], signal?: AbortSignal): Promise<BinderCardRecord[]> {
+  const eligible = rows.filter((row) => row.catalogue_match_status === 'catalogue' && row.card?.raw_data?.stackr?.canonical);
+  if (!eligible.length) return rows;
+  const enriched = await enrichStackrCardArtworkFromFacts(eligible.map((row) => row.card), signal);
+  // Preserve the already-established foreign-source fallback, but never await it for first paint.
+  const references = await readOptionalCatalogueEnrichment(() => attachLiveTcgdexCardReferences(enriched, 1), signal);
+  const byId = new Map((references ?? enriched).map((card) => [JSON.stringify([card.id, card.language, card.raw_data?.stackr && (card.raw_data.stackr as any).defaultVariantId]), card]));
+  return rows.map((row) => {
+    const identity = row.card?.raw_data?.stackr;
+    const display = identity && byId.get(JSON.stringify([identity.cardId, row.language, identity.defaultVariantId]));
+    if (!display) return row;
+    const card = { ...row.card, images: display.images };
+    if (hasTcgdexRuntimeImageOverlay(display, 'images')) defineTcgdexRuntimeImageOverlay(card, 'images', display.images, display.images.small);
+    return { ...row, card };
+  });
 }

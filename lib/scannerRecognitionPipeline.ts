@@ -93,6 +93,35 @@ export type ScannerPipelineTimings = {
   time_to_final_result_ms: number | null;
 };
 
+export type ScannerCaptureContinuation = {
+  attemptId: number;
+  currentAttemptId: number;
+  appActive: boolean;
+  routeFocused: boolean;
+  navigatingAway: boolean;
+};
+
+/** Keeps late OCR and recognition responses from taking over a newer route. */
+export function canContinueScannerCapture(input: ScannerCaptureContinuation) {
+  return input.attemptId === input.currentAttemptId
+    && input.appActive
+    && input.routeFocused
+    && !input.navigatingAway;
+}
+
+export type ScannerCaptureStageResult<T> =
+  | { active: true; value: T }
+  | { active: false; value: null };
+
+/** Awaits one capture stage and discards its result if the scan became stale. */
+export async function awaitScannerCaptureStage<T>(
+  stage: Promise<T>,
+  canContinue: () => boolean,
+): Promise<ScannerCaptureStageResult<T>> {
+  const value = await stage;
+  return canContinue() ? { active: true, value } : { active: false, value: null };
+}
+
 const EMPTY_EVIDENCE: NormalizedScannerCandidateEvidence = {
   providerScore: 0,
   setSymbol: 0,

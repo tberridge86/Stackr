@@ -1,0 +1,424 @@
+[
+  {
+    "sequence": 1,
+    "canonical_asset_id": "me5",
+    "title": "Pitch Black",
+    "asset_type": "official_logo",
+    "codes": [
+      "me5",
+      "me05"
+    ],
+    "names": [
+      "Pitch Black"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/me05.png",
+    "sha256": "6f405884e2906de595f5cdfe4b1e404dc745b575c14e69279813003478ed75fb",
+    "retrieval_source_url": "https://assets.tcgdex.net/en/me/me05/logo.png",
+    "verification_reference_url": "https://www.pokemon.com/uk/news/the-pokemon-tcg-mega-evolution-pitch-black-expansion-is-available-now",
+    "note": "Single canonical Stackr identity me5; provider/set-code alias me05 resolves to this asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 724,
+    "height": 200,
+    "pixel_sha256": "8e723be2a0760da0a663c1ca91a19801bba5b249f13260f41e5729fdf0e461cd"
+  },
+  {
+    "sequence": 2,
+    "canonical_asset_id": "B2a",
+    "title": "Paldean Wonders",
+    "asset_type": "official_logo",
+    "codes": [
+      "B2a"
+    ],
+    "names": [
+      "Paldean Wonders"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/B2a.png",
+    "sha256": "fa11833a43fa03938a5e4a00ac269c29f7731d19b224bca392218cf5ecaf37ed",
+    "retrieval_source_url": "https://s3.amazonaws.com/media.pokemon-zone.com/news/original_images/Paldean-wonders-logo.png",
+    "verification_reference_url": "https://archives.bulbagarden.net/wiki/File:B2a_Set_Logo_EN.png",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 599,
+    "height": 272,
+    "pixel_sha256": "78c158940a60a610fb33fb19b64511aa6848912a128fd80c26a851671f6a0c16"
+  },
+  {
+    "sequence": 3,
+    "canonical_asset_id": "B1a",
+    "title": "Crimson Blaze",
+    "asset_type": "official_logo",
+    "codes": [
+      "B1a"
+    ],
+    "names": [
+      "Crimson Blaze"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/B1a.png",
+    "sha256": "28e3acea1e3e0e8000d464f205596b1ff439932e690b19a8b0fc573c5a3017b8",
+    "retrieval_source_url": "https://s3.amazonaws.com/media.pokemon-zone.com/news/original_images/Pokemon_TCG_Pocket_Crimson_Blaze_Logo_EN.png",
+    "verification_reference_url": "https://archives.bulbagarden.net/wiki/File:B1a_Set_Logo_EN.png",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 932,
+    "height": 174,
+    "pixel_sha256": "8badadf6e4322cc24c40b768a53d36fe7b8ee5d5e8e16e853fee33f3d2086c65"
+  },
+  {
+    "sequence": 4,
+    "canonical_asset_id": "A3b",
+    "title": "Eevee Grove",
+    "asset_type": "official_logo",
+    "codes": [
+      "A3b"
+    ],
+    "names": [
+      "Eevee Grove"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/A3b.png",
+    "sha256": "3b1a381c3d01bedac2110e646930bee9a8f26569e41e93672160bfaa3d309ba9",
+    "retrieval_source_url": "https://raw.githubusercontent.com/frankkienl/PokeTCG_helper/10d22ae2fe6aa750f77e9e216d4910c2f3e782cf/composeApp/src/commonMain/composeResources/files/expansions/A3b/expansion_symbols/A3b_Set_Logo_EN.png",
+    "verification_reference_url": "https://archives.bulbagarden.net/wiki/File:A3b_Set_Logo_EN.png",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 836,
+    "height": 148,
+    "pixel_sha256": "44ae554bd201e59a3bec49ac57020cc4a0cb7b51d1c86b5cbff6ea68eac96477"
+  },
+  {
+    "sequence": 5,
+    "canonical_asset_id": "A3a",
+    "title": "Extradimensional Crisis",
+    "asset_type": "official_logo",
+    "codes": [
+      "A3a"
+    ],
+    "names": [
+      "Extradimensional Crisis"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/A3a.png",
+    "sha256": "44b5e94d73a58ca3365c634e8d5e930e9d57b06dca745f07b6cabda72306c0f4",
+    "retrieval_source_url": "https://raw.githubusercontent.com/frankkienl/PokeTCG_helper/10d22ae2fe6aa750f77e9e216d4910c2f3e782cf/expansions/A3a/expansion_symbols/A3a_Set_Logo_EN.png",
+    "verification_reference_url": "https://archives.bulbagarden.net/wiki/File:A3a_Set_Logo_EN.png",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 927,
+    "height": 268,
+    "pixel_sha256": "309ed490222e02409e28c479477bfd3a993ba1d476e3bca9c726dbab5d5c35a6"
+  },
+  {
+    "sequence": 6,
+    "canonical_asset_id": "2024sv",
+    "title": "McDonald's Collection 2024",
+    "asset_type": "official_logo",
+    "codes": [
+      "2024sv",
+      "mcd24"
+    ],
+    "names": [
+      "McDonald's Collection 2024"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/2024sv.png",
+    "sha256": "39d9971a80323884b3dfcc9d69832ea7a870eb659abadea332635fbd71f52bd8",
+    "retrieval_source_url": "https://pokesymbols.com/images/tcg/sets/logos/mcdonalds-collection-dragon-discovery-2024.png",
+    "verification_reference_url": "",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 501,
+    "height": 196,
+    "pixel_sha256": "e794487db5bbc1b1cf7a11fd3c76da81c5a938fdf7f22fd1d51ec326214c3a5a"
+  },
+  {
+    "sequence": 7,
+    "canonical_asset_id": "sv05",
+    "title": "Temporal Forces",
+    "asset_type": "official_logo",
+    "codes": [
+      "sv05",
+      "sv5"
+    ],
+    "names": [
+      "Temporal Forces"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/sv05.png",
+    "sha256": "3a7005057a5b71a7e12b97be99bc0cdc1df371162d7b49c4c6da95bcc7929777",
+    "retrieval_source_url": "https://images.pokemontcg.io/sv5/logo.png",
+    "verification_reference_url": "https://www.pokemon.com/uk/pokemon-tcg/scarlet-violet-temporal-forces",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 575,
+    "height": 228,
+    "pixel_sha256": "97956b83e2dab8a6c82834c0d15824d951985d45d797dc28694904bef6dda388"
+  },
+  {
+    "sequence": 8,
+    "canonical_asset_id": "mfb",
+    "title": "My First Battle",
+    "asset_type": "official_logo",
+    "codes": [
+      "mfb"
+    ],
+    "names": [
+      "My First Battle"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/mfb.png",
+    "sha256": "3337b1572cf50cee1ce2c207cf4105370f60156426655cf5d40858a9c5fa8e00",
+    "retrieval_source_url": "https://raw.githubusercontent.com/Axelerate18/pokemon-masterlist-generator/337a5da55d43ea1e927dfc51c867b1683cf1670b/public/icons/My_First_Battle_Logo.png",
+    "verification_reference_url": "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/my-first-battle",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 254,
+    "height": 105,
+    "pixel_sha256": "c0df54045e987a8a1f7904a8a274a8bbeef694b27ba5f4740d33fee936e2c8ce"
+  },
+  {
+    "sequence": 9,
+    "canonical_asset_id": "2023sv",
+    "title": "McDonald's Collection 2023",
+    "asset_type": "official_logo",
+    "codes": [
+      "2023sv",
+      "mcd23"
+    ],
+    "names": [
+      "McDonald's Collection 2023"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/2023sv.png",
+    "sha256": "17e0e722f830e5d21bf10c5f11e1827c39bb0d6aa709415ec48db26868942a1b",
+    "retrieval_source_url": "https://pokesymbols.com/images/tcg/sets/logos/mcdonald_s-match-battle-2023.avif",
+    "verification_reference_url": "",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 510,
+    "height": 169,
+    "pixel_sha256": "2793f331dd0bf8779c6fa8497c2cfd6ec789a0544085ea0b69836d9e1f8a7a4a"
+  },
+  {
+    "sequence": 10,
+    "canonical_asset_id": "2022swsh",
+    "title": "McDonald's Collection 2022",
+    "asset_type": "official_logo",
+    "codes": [
+      "2022swsh",
+      "mcd22"
+    ],
+    "names": [
+      "McDonald's Collection 2022"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/2022swsh.png",
+    "sha256": "a49b17303f84ca29027b56f7ba7b162325067f6bdc103bd9a680de50e22261a3",
+    "retrieval_source_url": "https://images.pokemontcg.io/mcd22/logo.png",
+    "verification_reference_url": "https://www.pokemon.com/uk/pokemon-news/mcdonald-s-and-pokemon-introduce-happy-meal-pokemon-tcg-match-battle",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 1138,
+    "height": 390,
+    "pixel_sha256": "740fb898bb96b8de2067c4154f605f16c76ed987ff9e34c55d136265f59d6430"
+  },
+  {
+    "sequence": 11,
+    "canonical_asset_id": "mcdonalds-pokemon-generic",
+    "title": "McDonald's / Pokémon shared mark",
+    "asset_type": "official_shared_logo",
+    "codes": [
+      "2021swsh",
+      "mcd21",
+      "2019sm",
+      "mcd19",
+      "2018sm",
+      "mcd18",
+      "2017sm",
+      "mcd17",
+      "2016xy",
+      "mcd16",
+      "2015xy",
+      "mcd15",
+      "2014xy",
+      "mcd14",
+      "2012bw",
+      "mcd12",
+      "2011bw",
+      "mcd11"
+    ],
+    "names": [
+      "McDonald's Collection 2021",
+      "McDonald's Collection 2019",
+      "McDonald's Collection 2018",
+      "McDonald's Collection 2017",
+      "McDonald's Collection 2016",
+      "McDonald's Collection 2015",
+      "McDonald's Collection 2014",
+      "McDonald's Collection 2012",
+      "McDonald's Collection 2011"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/mcdonalds-pokemon-generic.png",
+    "sha256": "006c624de4e06438ccaf1121e79c4dcc0dd4c74fccbf58b237f1fa08c4c14269",
+    "retrieval_source_url": "https://images.pokemontcg.io/mcd21/logo.png",
+    "verification_reference_url": "https://www.pokemon.com/uk/pokemon-news/mcdonald-s-and-pokemon-introduce-happy-meal-pokemon-tcg-match-battle",
+    "note": "One official shared mark is intentionally mapped to multiple catalogue codes.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 1033,
+    "height": 1011,
+    "pixel_sha256": "c08697ce0cec99c01c45db599e27670f15263a5424b931789d9b10fc73f35cbe"
+  },
+  {
+    "sequence": 12,
+    "canonical_asset_id": "sm7.5",
+    "title": "Dragon Majesty",
+    "asset_type": "official_logo",
+    "codes": [
+      "sm7.5",
+      "sm75"
+    ],
+    "names": [
+      "Dragon Majesty"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/sm7.5.png",
+    "sha256": "e5afc0f0cff986f403a3a2d3ef20fa344700478096c4340ab1f0da18aeea2ccc",
+    "retrieval_source_url": "https://images.pokemontcg.io/sm75/logo.png",
+    "verification_reference_url": "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/dragon-majesty-elite-trainer-box",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 566,
+    "height": 294,
+    "pixel_sha256": "cec4107129828ce72a87588f9a670b51f0a9e9e5a1dc8397ac5c5a9c9514a3aa"
+  },
+  {
+    "sequence": 13,
+    "canonical_asset_id": "sm3.5",
+    "title": "Shining Legends",
+    "asset_type": "official_logo",
+    "codes": [
+      "sm3.5",
+      "sm35"
+    ],
+    "names": [
+      "Shining Legends"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/sm3.5.png",
+    "sha256": "4705c9446f6a53b04ffe10c2daae3e3e1f1c071c8181d5505504169d4a3be404",
+    "retrieval_source_url": "https://images.pokemontcg.io/sm35/logo.png",
+    "verification_reference_url": "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/shining-legends-pin-collection-marshadow",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 577,
+    "height": 225,
+    "pixel_sha256": "02dd3c985ca670bab63e9784f2f76930ee47949e774d92a06afbd4e57f247ff3"
+  },
+  {
+    "sequence": 14,
+    "canonical_asset_id": "pop-series-shared",
+    "title": "POP Series shared logo",
+    "asset_type": "official_shared_logo",
+    "codes": [
+      "pop9",
+      "pop7",
+      "pop6",
+      "pop5",
+      "pop4",
+      "pop3",
+      "pop2",
+      "pop1"
+    ],
+    "names": [
+      "POP Series 9",
+      "POP Series 7",
+      "POP Series 6",
+      "POP Series 5",
+      "POP Series 4",
+      "POP Series 3",
+      "POP Series 2",
+      "POP Series 1"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/pop-series-shared.png",
+    "sha256": "4db2c0d6281160e77e74a3e3d0321fd7c183bf093010727b3e7bc10c572c4bb7",
+    "retrieval_source_url": "https://assets.tcgdex.net/en/pop/pop9/logo.png",
+    "verification_reference_url": "https://archives.bulbagarden.net/wiki/File:POP_logo.png",
+    "note": "One official shared mark is intentionally mapped to multiple catalogue codes.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 300,
+    "height": 367,
+    "pixel_sha256": "6ce7d4e8621fda7facc16f46cac8493aa83c309ddf742a20a101638bc324ed21"
+  },
+  {
+    "sequence": 15,
+    "canonical_asset_id": "ex5.5",
+    "title": "Poké Card Creator Pack",
+    "asset_type": "official_logo",
+    "codes": [
+      "ex5.5",
+      "wb1"
+    ],
+    "names": [
+      "Poké Card Creator Pack"
+    ],
+    "image_file": "assets/rev2/12-english-set-logo/logos/ex5.5.png",
+    "sha256": "4f9a5b3d753f632eb218059c341dc3501b24115f727b7893560838c247a3e271",
+    "retrieval_source_url": "https://images.scrydex.com/pokemon/wb1-logo/logo",
+    "verification_reference_url": "https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9_Card_Creator_Pack_(TCG)",
+    "note": "One canonical official logo asset.",
+    "language": "en",
+    "display_scope": "in_app_set_identification",
+    "official_artwork_verified": true,
+    "rights_status": "owner_approved_controlled_display",
+    "retrieved_at": "2026-09-12",
+    "width": 193,
+    "height": 138,
+    "pixel_sha256": "6987f1ce6d9d71b29e710911bb51e16f80febe7f87cd590667f07292eadc3eee"
+  }
+]

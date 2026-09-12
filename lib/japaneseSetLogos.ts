@@ -1479,7 +1479,7 @@ const JAPANESE_SET_LOGO_ALIASES: Record<string, string> = {
   "xypromo": "xypromos",
 };
 
-const AMBIGUOUS_ENGLISH_SET_LOGO_KEYS = new Set<string>(["neo1", "neo2", "neo3", "neo4", "xy2", "xy3", "xy4", "xy6", "xy7", "xy9", "xy10", "sm6", "sm7", "sm8", "sm9", "sm10", "sm11", "sm12", "sv3", "sv6", "sv7", "sv8", "sv9", "sv10"]);
+const AMBIGUOUS_ENGLISH_SET_LOGO_KEYS = new Set<string>(["bwp", "bwpromos", "dpp", "dppromos", "smp", "smpromos", "sp", "swshpromos", "svp", "xyp", "xypromos", "neo1", "neo2", "neo3", "neo4", "xy2", "xy3", "xy4", "xy6", "xy7", "xy9", "xy10", "sm6", "sm7", "sm8", "sm9", "sm10", "sm11", "sm12", "sv3", "sv6", "sv7", "sv8", "sv9", "sv10"]);
 const JAPANESE_LANGUAGE_ALIASES = new Set(['ja', 'jp', 'jpn', 'japanese', 'japan']);
 
 function clean(value?: string | null) {
@@ -1521,10 +1521,18 @@ function stripSetLanguagePrefix(value?: string | null) {
   return clean(value).replace(/^(ja|jp):/i, '');
 }
 
-function isExplicitJapaneseLookup(setId?: string | null, language?: string | null) {
+function isJapaneseLanguage(language?: string | null) {
   const normalizedLanguage = clean(language).toLowerCase();
+  return JAPANESE_LANGUAGE_ALIASES.has(normalizedLanguage) || /^ja[-_]/.test(normalizedLanguage);
+}
+
+function isExplicitJapaneseLookup(setId?: string | null, language?: string | null) {
   const rawSetId = clean(setId).toLowerCase();
-  return JAPANESE_LANGUAGE_ALIASES.has(normalizedLanguage) || /^(ja|jp):/i.test(rawSetId);
+  return isJapaneseLanguage(language) || /^(ja|jp):/i.test(rawSetId);
+}
+
+function isExplicitNonJapaneseLanguage(language?: string | null) {
+  return clean(language).length > 0 && !isJapaneseLanguage(language);
 }
 
 function uniqueClean(values: Array<string | number | null | undefined>) {
@@ -1566,6 +1574,7 @@ function getSetLookupNames(input?: JapaneseSetLogoLookupInput | null) {
 }
 
 export function getJapaneseSetLogoMatch(setId?: string | null, language?: string | null): JapaneseSetLogoMatch | null {
+  if (isExplicitNonJapaneseLanguage(language)) return null;
   const explicitJapanese = isExplicitJapaneseLookup(setId, language);
   for (const candidate of getLogoLookupCandidates(setId)) {
     const match = JAPANESE_SET_LOGOS_BY_KEY[candidate];
@@ -1582,6 +1591,7 @@ export function getJapaneseSetLogoMatchForSet(
   if (!input) return null;
   const primaryId = input.id ?? input.setId ?? input.sourceId ?? input.setCode ?? null;
   const language = input.language ?? fallbackLanguage ?? null;
+  if (isExplicitNonJapaneseLanguage(language)) return null;
   const explicitJapanese = isExplicitJapaneseLookup(primaryId == null ? null : String(primaryId), language);
 
   for (const candidate of getNormalizedLogoKeys(getSetLookupIds(input))) {

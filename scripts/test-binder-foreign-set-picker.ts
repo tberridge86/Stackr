@@ -161,7 +161,11 @@ async function main() {
   assert.match(invalidateCardCachesBody, /clearStackrCatalogueCaches\(\);/);
   assert.match(invalidateCardCachesBody, /invalidateForeignPokemonSetReferenceCache\(\);/);
   const binderDetailSource = readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
-  assert.match(binderDetailSource, /if \(forceRefresh\) \{\s*invalidateBinderCaches\(binderId\);\s*invalidatePokemonCatalogueCardCaches\(\);/);
+  assert.match(
+    binderDetailSource,
+    /if \(forceRefresh\) \{\s*retainBinderPreviewDuringRefresh\(\(\) => \{\s*invalidateBinderCaches\(binderId\);\s*invalidatePokemonCatalogueCardCaches\(\);\s*\}\);\s*\}/,
+    'a forced refresh must invalidate binder and catalogue caches without clearing the retained preview',
+  );
 
   const pickerSource = readFileSync('app/binder/new.tsx', 'utf8');
   assert.match(pickerSource, /POKEMON_CATALOGUE_LANGUAGE_OPTIONS/);
@@ -180,7 +184,7 @@ async function main() {
   const binderSource = readFileSync('lib/binders.ts', 'utf8');
   assert.match(
     binderSource,
-    /fetchCardsForSet\(binder\.catalogue_set_id \?\? binder\.source_set_id, \{\s*language: binderLanguage,\s*preferCanonicalApi: true,/,
+    /fetchCardsForSet\(binder\.catalogue_set_id \?\? binder\.source_set_id(?: as string)?, \{\s*language: binderLanguage,\s*preferCanonicalApi: true,/,
     'official binders must use canonical catalogue reads for every language while retaining the exact binder language',
   );
   assert.match(binderSource, /`zh-cn:\$\{stripped\}`/);

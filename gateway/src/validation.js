@@ -46,6 +46,9 @@ function validateQueryValue(name, value) {
   if (name === 'language' && !LANGUAGE_CODES.has(value)) {
     bad('invalid_language', 'language is not supported.');
   }
+  if (name === 'includeAssets' && !['true', 'false'].includes(value)) {
+    bad('invalid_include_assets', 'includeAssets must be true or false.');
+  }
   if (name === 'currency' && !/^[A-Z]{3}$/.test(value)) {
     bad('invalid_currency', 'currency must be a three-letter uppercase code.');
   }

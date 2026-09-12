@@ -11,3 +11,7 @@
 /backend/lib/generated/*.generated.mjs text eol=lf
 /scripts/build-chinese-set-translation-draft-review-pack.ts text eol=lf
 /reports/catalogue/provider-resolution/2026-08-14/** -text
+
+# Migration ledgers and security fixtures hash the canonical SQL bytes.
+/supabase/migrations/*.sql text eol=lf
+/supabase/staging-migrations/overrides/*.sql text eol=lf

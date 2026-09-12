@@ -889,9 +889,12 @@ export class StackrApiClient {
     return this.request<{ set: StackrSet }>(`/sets/${encodeURIComponent(setId)}`, undefined, init);
   }
 
+  // STACKR_IDENTITIES_FIRST_V2
+  get catalogueCacheNamespace() { return this.baseUrl; }
+
   setCards(
     setId: string,
-    query: { language?: StackrApiLanguageCode; cursor?: string | null; limit?: number } = {},
+    query: { language?: StackrApiLanguageCode; cursor?: string | null; limit?: number; includeAssets?: boolean } = {},
     init: RequestInit = {},
   ) {
     return this.request<{ cards: StackrCard[] }>(`/sets/${encodeURIComponent(setId)}/cards`, query, init);

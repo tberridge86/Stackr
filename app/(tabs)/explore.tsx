@@ -1,14 +1,14 @@
+import { StackrBrowseToolbar, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
+import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { groupDiscoverSets as groupSetsBySeries, isDiscoverDateGroup } from '../../lib/discoverSetGroups';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
-  TextInput,
   TouchableOpacity,
   FlatList,
   Image,
   ActivityIndicator,
   RefreshControl,
-  ScrollView,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,8 +16,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchAllSets, getPokemonSetLogoUrl, getPokemonSetVisualUrl, normalizePokemonCardLanguage, type PokemonSet } from '../../lib/pokemonTcg';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
-import { StackrBackdrop, StackrHeroBackdrop } from '../../components/StackrBackdrop';
-import { StackrPageTitle } from '../../components/StackrScreen';
+import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { supabase } from '../../lib/supabase';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
@@ -329,6 +328,8 @@ function SetCard({
             accessibilityRole="button"
             accessibilityLabel={`Create binder for ${item.name}`}
             style={{
+              minHeight: 44,
+              justifyContent: 'center',
               backgroundColor: theme.colors.primary + '18',
               borderRadius: 8,
               paddingHorizontal: 8,
@@ -337,9 +338,10 @@ function SetCard({
               borderColor: theme.colors.primary + '40',
             }}
           >
-            <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
-              + Binder
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <StackrNavigationIcon name="collection" color={theme.colors.primary} size={20} />
+              <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Binder</Text>
+            </View>
           </TouchableOpacity>
         )}
 
@@ -363,6 +365,7 @@ export default function ExploreScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [hasLoadedCatalogue, setHasLoadedCatalogue] = useState(false);
+  const [browseFiltersVisible, setBrowseFiltersVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [languageFilter, setLanguageFilter] = useState<DiscoverLanguageFilter>('all');
   const [existingBindersBySet, setExistingBindersBySet] = useState<Record<string, ExistingBinderSummary>>({});
@@ -690,14 +693,7 @@ export default function ExploreScreen() {
       <StackrBackdrop />
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}>
 
-        <View style={{ position: 'relative', borderRadius: 24, padding: 12, marginBottom: 12, overflow: 'hidden', backgroundColor: `${theme.colors.card}CC`, borderWidth: 1, borderColor: theme.colors.border }}>
-          <StackrHeroBackdrop opacity={0.24} />
-        {/* Header */}
-        <StackrPageTitle title="Discover Sets" accentText="Sets" style={{ marginBottom: 4 }} />
-        <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 14 }}>
-          Filter English, Japanese, Simplified Chinese or Traditional Chinese sets · {englishSets.length + japaneseSets.length + simplifiedChineseSets.length + traditionalChineseSets.length} sets available
-        </Text>
-
+        <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: 24, fontWeight: '800', marginBottom: 8 }}>Discover Sets</Text>
         {loadError ? (
           <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingLeft: 12, marginBottom: 12 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, flex: 1 }}>{loadError}</Text>
@@ -712,129 +708,24 @@ export default function ExploreScreen() {
           </View>
         ) : null}
 
-        {/* Search */}
-        <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: theme.colors.card,
-          borderRadius: 14,
-          paddingHorizontal: 14,
-          paddingVertical: 12,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          gap: 10,
-        }}>
-          <Ionicons name="search" size={16} color={theme.colors.textSoft} />
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            accessibilityLabel="Search sets by name or series"
-            placeholder="Search sets by name or series..."
-            placeholderTextColor={theme.colors.textSoft}
-            autoCorrect={false}
-            autoCapitalize="words"
-            style={{ flex: 1, color: theme.colors.text, fontSize: 15, fontWeight: '600' }}
-          />
-          {search.length > 0 && (
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Clear set search" style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }} onPress={() => setSearch('')}>
-              <Ionicons name="close-circle" size={18} color={theme.colors.textSoft} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 7, marginTop: 10, paddingRight: 8 }}>
-          {LANGUAGE_FILTERS.map((option) => {
-            const active = languageFilter === option.key;
-            const count = option.key === 'all'
-              ? searchedEnglishSets.length + searchedJapaneseSets.length + searchedSimplifiedChineseSets.length + searchedTraditionalChineseSets.length
-              : option.key === 'en'
-                ? searchedEnglishSets.length
-                : option.key === 'ja'
-                  ? searchedJapaneseSets.length
-                  : option.key === 'zh-cn'
-                    ? searchedSimplifiedChineseSets.length
-                    : searchedTraditionalChineseSets.length;
-
-            return (
-              <TouchableOpacity
-                key={option.key}
-                onPress={() => {
-                  selectLanguageFilter(option.key);
-                }}
-                activeOpacity={0.78}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                accessibilityLabel={`Show ${option.label} sets`}
-                style={{
-                  minHeight: 44,
-                  borderRadius: 999,
-                  borderWidth: 1,
-                  borderColor: active ? theme.colors.primary : theme.colors.border,
-                  backgroundColor: active ? theme.colors.primary + '14' : theme.colors.card,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: 8,
-                  paddingVertical: 6,
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  {option.language ? (
-                    <PokemonLanguageFlagIcon language={option.language} size={15} decorative />
-                  ) : (
-                    <Ionicons name="apps-outline" size={14} color={active ? theme.colors.primary : theme.colors.textSoft} />
-                  )}
-                  <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontSize: 12, lineHeight: 15, fontWeight: '900' }} numberOfLines={1}>
-                    {option.label}
-                  </Text>
-                </View>
-                <Text numeric style={{ color: theme.colors.textSoft, fontSize: 9.5, lineHeight: 12, fontWeight: '800', marginTop: 1 }}>
-                  {count}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {/* Expand / collapse all — only when not searching */}
-        </View>
-
-        {!isSearching && (
-          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-            <TouchableOpacity
-              onPress={expandAll}
-              style={{
-                backgroundColor: theme.colors.card,
-                borderRadius: 10,
-                paddingHorizontal: 12, paddingVertical: 7,
-                borderWidth: 1, borderColor: theme.colors.border,
-              }}
-            >
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                Expand all
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={collapseAll}
-              style={{
-                backgroundColor: theme.colors.card,
-                borderRadius: 10,
-                paddingHorizontal: 12, paddingVertical: 7,
-                borderWidth: 1, borderColor: theme.colors.border,
-              }}
-            >
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                Collapse all
-              </Text>
-            </TouchableOpacity>
-
-            <View style={{ flex: 1 }} />
-
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, alignSelf: 'center' }}>
-              {filteredSets.length} sets
-            </Text>
-          </View>
-        )}
+        <StackrBrowseToolbar
+          horizontalInset={0}
+          search={search}
+          onSearchChange={setSearch}
+          placeholder="Search sets by name or series"
+          onOpenFilters={() => setBrowseFiltersVisible(true)}
+          activeFilterCount={Number(languageFilter !== 'all')}
+          resultLabel={`${filteredSets.length} sets · ${LANGUAGE_FILTERS.find((item) => item.key === languageFilter)?.label ?? 'All languages'}`}
+        />
+        <StackrBrowseFilterSheet visible={browseFiltersVisible} onClose={() => setBrowseFiltersVisible(false)} onClear={() => selectLanguageFilter('all')}>
+          <StackrBrowseFilterGroup title="Language" choices={[...LANGUAGE_FILTERS]} selected={languageFilter} onSelect={(key) => selectLanguageFilter(key as DiscoverLanguageFilter)} />
+          {!isSearching ? (
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity accessibilityRole="button" onPress={() => { expandAll(); setBrowseFiltersVisible(false); }} style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 12 }}><Text style={{ color: theme.colors.primary }}>Expand all</Text></TouchableOpacity>
+              <TouchableOpacity accessibilityRole="button" onPress={() => { collapseAll(); setBrowseFiltersVisible(false); }} style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 12 }}><Text style={{ color: theme.colors.primary }}>Collapse all</Text></TouchableOpacity>
+            </View>
+          ) : null}
+        </StackrBrowseFilterSheet>
 
         {/* Set list */}
         <FlatList

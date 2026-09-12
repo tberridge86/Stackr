@@ -1,3 +1,4 @@
+import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -1206,6 +1207,9 @@ export default function NewBinderScreen() {
           {/* Save button */}
           <TouchableOpacity
             onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel={isEditMode ? 'Save binder changes' : 'Create binder'}
+            accessibilityState={{ disabled: saving }}
             disabled={saving}
             style={{
               backgroundColor: theme.colors.primary,
@@ -1215,6 +1219,7 @@ export default function NewBinderScreen() {
               gap: 8, opacity: saving ? 0.6 : 1,
             }}
           >
+            {!saving && !isEditMode ? <StackrNavigationIcon name="collection" color="#FFFFFF" size={22} /> : null}
             {saving ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
