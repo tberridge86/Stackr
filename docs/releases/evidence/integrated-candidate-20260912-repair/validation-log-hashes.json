@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "stackr-local-validation-log-manifest-v1",
+  "recordedAt": "2026-09-12T16:02:32.912Z",
+  "candidateSource": "0a1df253e8849a6dfb6bc59a5d6e516dc0e70956",
+  "appRuntimeSource": "1403ed09e464830f9bcb9310bd92af84075c44e8",
+  "logRoot": "outputs/integration-validation-20260912",
+  "scope": "Local logs only; not deployed service, fresh CI, phone or production acceptance",
+  "logs": [
+    {
+      "filename": "typecheck-repair.log",
+      "bytes": 75,
+      "sha256": "3997dcf33c70a25f4db6befa22896f1b63b2838d4eba602d1802f55ec69c7458"
+    },
+    {
+      "filename": "lint-repair.log",
+      "bytes": 2010,
+      "sha256": "e2b081bcca205f56fa25d34f5d4d2e9ecf6016f5d520d60bd2ac1b187f9c551a"
+    },
+    {
+      "filename": "facts-repair.log",
+      "bytes": 1142,
+      "sha256": "af4c65ade532dc002e859451a97b1e3ab4a1fea711ddf3d1f0da53f3bfad7092"
+    },
+    {
+      "filename": "gateway-repair.log",
+      "bytes": 25965,
+      "sha256": "ef4e3a5a0735a5d1157395a6586a787ef01289e02e0c3ddbfd7e7c9e33756741"
+    },
+    {
+      "filename": "reopen-repair.log",
+      "bytes": 1938,
+      "sha256": "3140dba7813faec072ed262dba01c7f5f9adee644731eea6e29cb3ce207020cc"
+    },
+    {
+      "filename": "contract-repair.log",
+      "bytes": 289,
+      "sha256": "b3f45eca754fde1140f2f4b5315501b6880f07b2591aaf611ab1ec0de0ce69cd"
+    },
+    {
+      "filename": "version-red.log",
+      "bytes": 1006,
+      "sha256": "15bf225718de5a0c94406b9dac8a855f0cc8611340919d82a2120ddc6745777f"
+    },
+    {
+      "filename": "gateway-facts-red.log",
+      "bytes": 1215,
+      "sha256": "ee2e083bec9ab919bafaa0ae111bd89154beece3545cfe6116396143669f46af"
+    },
+    {
+      "filename": "test-binder-catalogue.log",
+      "bytes": 888,
+      "sha256": "053449152f844023e5ac543f090a1011f947eb69029d256750ceb5e5900ed451"
+    },
+    {
+      "filename": "test-personal-loading.log",
+      "bytes": 1493,
+      "sha256": "cf4e265c7c35456af9d00f3edc844e57a37513e1df6f8d94ae28d74fd63af871"
+    },
+    {
+      "filename": "test-home-release.log",
+      "bytes": 646,
+      "sha256": "5fa14bb7f4ae6af609cd077a6efe199124426fe9d2450512e9399afa2eee4a24"
+    },
+    {
+      "filename": "test-collection-pricing-ui.log",
+      "bytes": 338,
+      "sha256": "511c77f692089380a63f97c2b4ed0c55fa82715142ce1fa29c37f12b854e7210"
+    },
+    {
+      "filename": "test-native-language-display.log",
+      "bytes": 291,
+      "sha256": "41b816d03c74888dd5ef9edf6ec9056907345a70d842b798c2eefdc1357187d3"
+    },
+    {
+      "filename": "test-japanese-set-logo-runtime-coverage.log",
+      "bytes": 267,
+      "sha256": "487032e9b863c0661e011354cb03b7d926362c3fabc930304a63a00c3b76fbe0"
+    },
+    {
+      "filename": "test-official-english-set-logos-with-runtime-python.log",
+      "bytes": 1466,
+      "sha256": "cb4b96142c6a19060840dfbf2462cfa516b6eb15980d1bd76aa1ee263cf72825"
+    },
+    {
+      "filename": "recovered-database-tests.log",
+      "bytes": 823,
+      "sha256": "def721b4b1a828f8084f3930937c3741ed29ef6d5124d9ca85a576329c6bfc0a"
+    },
+    {
+      "filename": "web-export-repair.log",
+      "bytes": 11906,
+      "sha256": "33861de76a7d6bb9e448b4560960fa9b36efed492346060a22600dcb4f92adfb"
+    }
+  ]
+}

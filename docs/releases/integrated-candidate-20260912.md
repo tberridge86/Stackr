@@ -1,5 +1,10 @@
 # Stackr combined local candidate — 12 September 2026
 
+> Historical checkpoint at `af9c5d5`. The subsequent fixes, English artwork,
+> recovered migration history and build results are recorded in
+> [the continuation receipt](integrated-candidate-repair-20260912.md).
+> Its current status supersedes the outstanding-code-fix and stopping notes below.
+
 The latest committed retrieval, browsing UI, Home pricing, Japanese search and
 existing scanner/image runtime are combined in one isolated local candidate.
 **This is a tested source candidate, not a delivered app or a complete artwork
