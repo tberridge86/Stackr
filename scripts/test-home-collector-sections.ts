@@ -185,7 +185,7 @@ assert.deepEqual(findButton(chaseSheet, 'Select Oddish, Japanese')?.props.access
 assert.ok(findButton(chaseSheet, 'View selected chase card'));
 
 const homeSource = readFileSync(resolve('features/home/HubScreen.tsx'), 'utf8');
-assert.ok(homeSource.indexOf('<ValueTrackerCard') < homeSource.indexOf('<HomeCollectionHero'), 'Value summary must precede binder content.');
+assert.ok(homeSource.indexOf('<HomeCollectionHero') < homeSource.indexOf('<ValueTrackerCard'), 'Collection content must precede optional value detail.');
 assert.equal(homeSource.match(/<ValueTrackerCard\b/g)?.length, 1, 'Home must have only one value summary.');
 
 console.log('Home collector section component regressions passed.');

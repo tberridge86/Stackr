@@ -140,3 +140,29 @@ test('all changed native source parses without errors and there is no replacemen
   for (const file of ['app/(tabs)/binder.tsx', 'app/(tabs)/explore.tsx', 'app/(tabs)/search.tsx', 'app/_layout.tsx', 'app/binder/new.tsx', 'app/set/[id].tsx', 'components/StackrBrowseControls.tsx', 'components/PremiumUI.tsx', 'components/HomeCollectorSections.tsx', 'components/HomeCommandCenter.tsx', 'features/binder/BinderDetailScreen.tsx', 'features/home/HubScreen.tsx', 'features/market/MarketTabScreen.tsx']) assert.equal(sourceFile(file).parseDiagnostics.length, 0, file);
   const nav = read('app/_layout.tsx'); assert.ok(!nav.includes('activeGlowColor')); assert.ok(nav.includes('StackrNavigationIcon')); assert.ok(nav.includes('useSafeAreaInsets'));
 });
+
+
+test('binder options defer native-modal actions, ignore duplicate taps and flush only once', () => {
+  const file = ts.createSourceFile('binder.tsx', read('features/binder/BinderDetailScreen.tsx'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const names = new Set(['pendingBinderOptionAction', 'flushBinderOptionAction', 'runAfterBinderOptionsClose']);
+  const statements = [];
+  function walk(node) {
+    if (ts.isVariableStatement(node) && node.declarationList.declarations.some((d) => names.has(d.name.getText(file)))) statements.push(node.getText(file));
+    ts.forEachChild(node, walk);
+  }
+  walk(file);
+  assert.equal(statements.length, 3);
+  const code = ts.transpileModule(`${statements.join('\n')}\nexports.flush = flushBinderOptionAction; exports.run = runAfterBinderOptionsClose;`, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
+  let closes = 0, calls = 0;
+  const context = { exports: {}, sortDropdownOpen: true, useRef: (current) => ({ current }), useCallback: (fn) => fn, setSortDropdownOpen: (value) => { assert.equal(value, false); closes++; } };
+  vm.runInNewContext(code, context);
+  context.exports.run(() => calls++);
+  context.exports.run(() => calls += 100);
+  assert.equal(closes, 1); assert.equal(calls, 0);
+  context.exports.flush(); context.exports.flush();
+  assert.equal(calls, 1);
+  context.sortDropdownOpen = false;
+  context.exports.run(() => calls++); assert.equal(calls, 2);
+  assert.ok(read('features/binder/BinderDetailScreen.tsx').includes('onDismiss={flushBinderOptionAction}'));
+  assert.ok(read('features/binder/BinderDetailScreen.tsx').includes('[binderId, userId, isReadOnly]'));
+});

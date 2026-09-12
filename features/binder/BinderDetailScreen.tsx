@@ -892,6 +892,26 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const isOwner = Boolean(userId && binder?.user_id === userId);
   const isReadOnly = routeReadOnly || (Boolean(binder) && (!isOwner || !ownershipReady));
 
+  // Match the existing QuickActionSheet dismissal protocol before opening a second modal.
+  const pendingBinderOptionAction = useRef<(() => void) | null>(null);
+  const flushBinderOptionAction = useCallback(() => {
+    const action = pendingBinderOptionAction.current;
+    pendingBinderOptionAction.current = null;
+    action?.();
+  }, []);
+  const runAfterBinderOptionsClose = (action: () => void) => {
+    if (pendingBinderOptionAction.current) return;
+    if (!sortDropdownOpen) { action(); return; }
+    pendingBinderOptionAction.current = action;
+    setSortDropdownOpen(false);
+  };
+  useEffect(() => {
+    if (sortDropdownOpen || Platform.OS === 'ios') return;
+    const timer = setTimeout(flushBinderOptionAction, Platform.OS === 'web' ? 0 : 350);
+    return () => clearTimeout(timer);
+  }, [sortDropdownOpen, flushBinderOptionAction]);
+  useEffect(() => () => { pendingBinderOptionAction.current = null; }, [binderId, userId, isReadOnly]);
+
   useEffect(() => {
     if (selectedCard) setDetailGradeText(selectedCard.grade ?? '10');
   }, [selectedCard?.id, selectedCard?.grade]);
@@ -2446,8 +2466,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
     return (
       <TouchableOpacity
-        onPress={() => openCardDetail(item)}
-        onLongPress={() => handleCardLongPress(item)}
+        onPress={() => runAfterBinderOptionsClose(() => openCardDetail(item))}
+        onLongPress={() => runAfterBinderOptionsClose(() => handleCardLongPress(item))}
         activeOpacity={0.9}
         style={{ width: 120, marginRight: 14, opacity: isActive ? 0.75 : 1 }}
       >
@@ -3448,7 +3468,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           </View>
         ) : null}
       />
-      <StackrBottomSheet visible={sortDropdownOpen} title="Binder options" onClose={() => setSortDropdownOpen(false)} maxHeight="86%" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+      <StackrBottomSheet visible={sortDropdownOpen} title="Binder options" onClose={() => setSortDropdownOpen(false)} onDismiss={flushBinderOptionAction} maxHeight="86%" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 12 }}>
         <StackrBrowseFilterGroup
           title="Order cards"
           choices={sortOptions.map((option) => ({ key: option.value, label: option.label }))}
@@ -3463,7 +3483,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 accessibilityRole="button"
                 accessibilityLabel="Refresh binder catalogue"
                 onPress={() => void load(true)}
-                style={{ alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8 }}
+                style={{ alignSelf: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 8 }}
               >
                 <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '800' }}>Refresh catalogue</Text>
               </Pressable>
@@ -3478,7 +3498,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                       imageIcon={stackrIcons.scanCard}
                       variant="scan"
                       size="compact"
-                      onPress={() => { setSortDropdownOpen(false); handleScanCard(); }}
+                      onPress={() => runAfterBinderOptionsClose(handleScanCard)}
                       accessibilityLabel="Scan to Binder"
                       showArrow={false}
                       style={{ flex: 1.12, minHeight: 48, borderRadius: 15 }}
@@ -3508,7 +3528,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         imageIcon={stackrIcons.scanCard}
                         variant="scan"
                         size="compact"
-                        onPress={() => { setSortDropdownOpen(false); handleScanCard(); }}
+                        onPress={() => runAfterBinderOptionsClose(handleScanCard)}
                         accessibilityLabel="Scan to Binder"
                         showArrow={false}
                         style={{ flex: 1.12, minHeight: 48, borderRadius: 15 }}
@@ -3549,11 +3569,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
             {!isReadOnly && binder.type === 'custom' ? (
               <TouchableOpacity
-                onPress={() => { setSortDropdownOpen(false); setShowAddModal(true); }}
+                onPress={() => runAfterBinderOptionsClose(() => setShowAddModal(true))}
                 activeOpacity={0.82}
                 style={{
                   marginTop: 8,
-                  minHeight: 36,
+                  minHeight: 44,
                   borderRadius: 13,
                   borderWidth: 1,
                   borderColor: theme.colors.border,

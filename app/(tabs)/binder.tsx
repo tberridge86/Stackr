@@ -62,7 +62,6 @@ import {
 } from '../../lib/pokemonSetIdentity';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { StackrHeroBackdrop } from '../../components/StackrBackdrop';
-import { StackrActionButton } from '../../components/StackrActionButton';
 import { StackrButtonPattern } from '../../components/StackrEmboss';
 import { StackrImage } from '../../components/StackrImage';
 import { useProfile } from '../../components/profile-context';
@@ -877,7 +876,6 @@ export default function BinderLibraryScreen() {
   const { width } = useWindowDimensions();
   const COLUMNS = width >= 900 ? 5 : width >= 600 ? 3 : 2;
   const binderCardWidth = (width - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
-  const heroTitleWidth = Math.min(238, Math.max(204, width - PADDING * 2 - 116));
 
   const [binders, setBinders] = useState<BinderRecord[]>([]);
   const [counts, setCounts] = useState<BinderCardCountMap>({});
