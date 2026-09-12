@@ -3,7 +3,7 @@ on:
   push:
     branches: [artifact/traditional-chinese-logos-a4-v2]
     paths:
-      - .github/scripts/recover_published_tc_logos_v3.py
+      - .github/scripts/recover_published_tc_logos_v4.py
       - .github/workflows/recover-published-tc-logos.yml
 permissions:
   contents: read
@@ -23,11 +23,11 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install requests==2.32.5 beautifulsoup4==4.13.5 Pillow==11.3.0 opencc-python-reimplemented==0.1.7
-      - run: python -u .github/scripts/recover_published_tc_logos_v3.py
+      - run: python -u .github/scripts/recover_published_tc_logos_v4.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: tc-published-logo-recovery-v3
-          path: build/tc-published-recovery-v3/
+          name: tc-published-logo-recovery-v4
+          path: build/tc-published-recovery-v4/
           retention-days: 3
           if-no-files-found: error
