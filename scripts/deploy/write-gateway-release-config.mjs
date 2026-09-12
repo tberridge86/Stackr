@@ -11,6 +11,8 @@ export function buildGatewayReleaseConfig(source, runtimeVars) {
   assert(production && typeof production === 'object', 'production gateway configuration is required');
   assert.deepEqual(production.routes, [{ pattern: 'api.stackrtcg.com', custom_domain: true, zone_name: 'stackrtcg.com', enabled: true, previews_enabled: false }], 'production route must preserve the live custom-domain configuration');
   assert.deepEqual(config.observability, { enabled: true, head_sampling_rate: 0.1, redact_query_string: false, logs: { enabled: true, invocation_logs: true, head_sampling_rate: 0.1 }, traces: { enabled: false, head_sampling_rate: 0.1 } }, 'tracked observability must preserve the live production settings');
+  assert.deepEqual(production.durable_objects, { bindings: [{ name: 'GATEWAY_STATE', class_name: 'GatewayState' }] }, 'production durable-object binding must preserve the live identity');
+  assert.deepEqual(config.exports, { GatewayState: { type: 'durable-object', storage: 'sqlite' } }, 'durable-object export must preserve the live storage declaration');
   const supplied = Object.keys(runtimeVars ?? {}).sort();
   assert.deepEqual(supplied, [...RUNTIME_VAR_NAMES].sort(), 'runtime bindings must be the exact reviewed set');
   for (const name of RUNTIME_VAR_NAMES) {

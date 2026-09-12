@@ -26,6 +26,8 @@ try {
   assert.deepEqual(Object.fromEntries(RUNTIME_VAR_NAMES.map((name) => [name, generated.env.production.vars[name]])), vars);
   assert.deepEqual(generated.env.production.routes, source.env.production.routes, 'CLI must preserve the tracked route');
   assert.deepEqual(generated.observability, source.observability, 'CLI must preserve tracked observability');
+  assert.deepEqual(generated.env.production.durable_objects, source.env.production.durable_objects, 'CLI must preserve the durable-object binding');
+  assert.deepEqual(generated.exports, source.exports, 'CLI must preserve the durable-object export');
   rmSync(outputPath);
   const missing = cli({ ...vars, BACKEND_ORIGIN: '' });
   assert.notEqual(missing.status, 0, 'CLI must reject a missing runtime binding');

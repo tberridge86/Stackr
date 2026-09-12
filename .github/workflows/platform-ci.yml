@@ -167,6 +167,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm ci --prefix gateway
+      - run: |
+          node scripts/deploy/patch-wrangler-do-optional-binding.mjs
+          node scripts/test-wrangler-do-optional-binding-compat.mjs
+          node scripts/test-attest-gateway-do-identity.mjs
+          node scripts/test-write-gateway-release-config.mjs
       - run: npm run check:api-contract
       - run: npm run test:stackr-api-v1
       - run: npm test --prefix gateway
