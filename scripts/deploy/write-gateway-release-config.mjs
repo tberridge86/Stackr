@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export const RUNTIME_VAR_NAMES = Object.freeze(['BACKEND_ORIGIN', 'SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY', 'STACKR_PRICING_ACCESS_MODE', 'STACKR_PRICING_OWNER_USER_ID']);
 
@@ -22,7 +23,7 @@ export function buildGatewayReleaseConfig(source, runtimeVars) {
 }
 
 function argument(name) { return process.argv.find((value) => value.startsWith(`${name}=`))?.slice(name.length + 1) ?? null; }
-if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.url).pathname)) {
+if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
   const output = argument('--output');
   assert(output, 'Supply --output=<same-directory temporary config path>.');
   const source = JSON.parse(readFileSync('gateway/wrangler.jsonc', 'utf8'));

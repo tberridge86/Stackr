@@ -109,6 +109,7 @@ jobs:
           npm run ci:secret-scan
           node scripts/test-gateway-privacy-smoke.mjs
           node scripts/test-gateway-privacy-deployment.mjs
+          node scripts/test-write-gateway-release-config.mjs
           npm run build --prefix gateway
 
       - name: Attest existing production Worker, route, and rollback target
