@@ -149,6 +149,7 @@ type FetchAllSetsOptions = {
 type FetchCardsForSetOptions = {
   language?: PokemonCardLanguage | string | null;
   preferCanonicalApi?: boolean;
+  includeAssets?: boolean;
   /** A caller with a known set total must not retain a partial card response. */
   minimumCardCount?: number | null;
 };
@@ -197,7 +198,9 @@ function rememberApprovedSetAssets(set: PokemonSet) {
 }
 
 function rememberApprovedCardAssets(card: PokemonCard) {
-  approvedCardAssets.set(card.id, card.images ?? {});
+  if (!card.images?.small && !card.images?.large) return;
+  const existing = approvedCardAssets.get(card.id);
+  approvedCardAssets.set(card.id, { small: card.images?.small ?? existing?.small, large: card.images?.large ?? existing?.large });
 }
 
 function fromStackrSet(set: StackrLegacySet): PokemonSet {
@@ -1948,8 +1951,8 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
   const language = inferPokemonSetLanguage(setId, options.language);
   const setIdCandidates = getPokemonSetIdLookupCandidates(setId, language);
   const readLane = options.preferCanonicalApi ? 'canonical-api' : 'default';
-  const cacheKey = `${readLane}:${language}:${setIdCandidates.join('|')}`;
-  const cached = readNonEmptyCatalogueRows(cardsForSetCache, cacheKey);
+  const cacheKey = `${readLane}:${language}:${setIdCandidates.join('|')}:${options.includeAssets === false ? 'facts' : 'assets'}`;
+  const cached = options.includeAssets === false ? null : readNonEmptyCatalogueRows(cardsForSetCache, cacheKey);
   if (cached && hasRequiredCards(cached)) return cached;
   if (cached) cardsForSetCache.delete(cacheKey);
 
@@ -1963,13 +1966,13 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
   const request = (async () => {
     let sourceCards: StackrLegacyCard[] = [];
     if (options.preferCanonicalApi) {
-      sourceCards = await fetchPreferredStackrCardsForReferences(setIdCandidates, language);
+      sourceCards = await fetchPreferredStackrCardsForReferences(setIdCandidates, language, undefined, { includeAssets: options.includeAssets, minimumCardCount: options.minimumCardCount });
     } else {
       let completedCandidate = false;
       let candidateError: unknown;
       for (const candidate of setIdCandidates) {
         try {
-          sourceCards = await fetchStackrCardsForSet(candidate, language);
+          sourceCards = await fetchStackrCardsForSet(candidate, language, undefined, { includeAssets: options.includeAssets, minimumCardCount: options.minimumCardCount });
           completedCandidate = true;
         } catch (error) {
           candidateError = error;
@@ -1979,13 +1982,11 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
       }
       if (!completedCandidate && candidateError) throw candidateError;
     }
-    const cards = await attachLiveTcgdexCardReferences(
-      sourceCards.map(fromStackrCard),
-      1,
-    );
+    const mappedCards = sourceCards.map(fromStackrCard);
+    const cards = options.includeAssets === false ? mappedCards : await attachLiveTcgdexCardReferences(mappedCards, 1);
 
     const requiredMinimum = cardsForSetInflightMinimums.get(cacheKey) ?? 0;
-    if (hasRequiredCards(cards, requiredMinimum)) {
+    if (options.includeAssets !== false && hasRequiredCards(cards, requiredMinimum)) {
       cacheNonEmptyCatalogueRows(cardsForSetCache, cacheKey, cards, Date.now() + POKEMON_SET_CARDS_CACHE_TTL_MS);
     }
     return cards;

@@ -1,0 +1,110 @@
+name: Validate binder local-first retrieval
+
+on:
+  push:
+    branches: [perf/binder-first-paint]
+    paths:
+      - .github/workflows/apply-binder-first-paint.yml
+      - lib/**
+      - features/binder/**
+      - scripts/test-binder-*
+      - scripts/test-retrieval-*
+      - scripts/test-stackr-set-*
+  pull_request:
+    paths:
+      - .github/workflows/apply-binder-first-paint.yml
+      - lib/binderCardIdentity.ts
+      - lib/binderReopenSnapshot.ts
+      - lib/binderReopenRuntime.ts
+      - lib/performance.ts
+      - lib/requestCache.ts
+      - lib/stackrSetRetrieval.ts
+      - lib/stackrCatalogueCache.ts
+      - lib/stackrDomainAdapter.ts
+      - lib/pokemonTcg.ts
+      - lib/stackrApiV1.ts
+      - lib/binders.ts
+      - features/binder/**
+      - scripts/test-binder-*
+      - scripts/test-retrieval-*
+      - scripts/test-stackr-set-*
+  workflow_dispatch:
+    inputs:
+      benchmark_canary:
+        description: Run the bounded 22-request public canary diagnostic (not phone or production acceptance)
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: binder-first-paint-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  candidate-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate the exact committed source
+        run: |
+          npm run typecheck
+          npm run test:binder-catalogue
+          npm run test:personal-loading
+          node --import tsx scripts/test-binder-first-paint.mjs
+          node --import tsx scripts/test-retrieval-parallel.mjs
+          node --import tsx scripts/test-binder-reopen.mjs
+          git diff --exit-code
+      - name: Record tested source identity
+        run: |
+          mkdir -p reports
+          git rev-parse HEAD > reports/retrieval-source-sha.txt
+          sha256sum lib/binderCardIdentity.ts lib/binders.ts lib/binderReopenSnapshot.ts lib/binderReopenRuntime.ts lib/requestCache.ts lib/performance.ts features/binder/BinderDetailScreen.tsx > reports/retrieval-source-hashes.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: binder-retrieval-regression
+          path: |
+            reports/binder-retrieval-regression.json
+            reports/binder-reopen-tests.json
+            reports/retrieval-source-sha.txt
+            reports/retrieval-source-hashes.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+  canary-api-evidence:
+    if: github.event_name == 'workflow_dispatch' && inputs.benchmark_canary
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: scripts/benchmark-set-retrieval.mjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Record raw API completeness and every warm sample
+        env:
+          STACKR_PERF_BASE_URL: https://stackr-api-perf-canary-production.up.railway.app
+        run: node scripts/benchmark-set-retrieval.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: set-retrieval-evidence
+          path: reports/set-retrieval-evidence.json
+          if-no-files-found: warn
+          retention-days: 14
