@@ -1,3 +1,4 @@
+import { StackrBrowseToolbar } from '../../components/StackrBrowseControls';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -32,7 +33,6 @@ import {
   MarketMode,
   MarketModeSelector,
   MarketProtectionTier,
-  MarketSearch,
   MarketSkeleton,
   MarketValueSummary,
   ProtectionDetail,
@@ -647,7 +647,6 @@ export default function TheMarketTab() {
   const [catalogueCardSuggestions, setCatalogueCardSuggestions] = useState<SearchSuggestion[]>([]);
   const [primaryFilter, setPrimaryFilter] = useState<PrimaryFilter>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>('recommended');
   const [layoutMode, setLayoutMode] = useState<MarketLayoutMode>('browse');
   const [selectedListingTypes, setSelectedListingTypes] = useState<MarketListingVariant[]>([]);
@@ -1768,16 +1767,20 @@ export default function TheMarketTab() {
 
       {savedListingsError ? <View accessibilityRole="alert" style={{ borderRadius: 12, borderWidth: 1, borderColor: '#FCA5A5', backgroundColor: '#FEF2F2', padding: 11 }}><Text style={{ color: '#991B1B', fontSize: 14, lineHeight: 20, fontWeight: '800' }}>{savedListingsError}</Text><TouchableOpacity onPress={() => void loadSaved(currentUserId, marketAuthGenerationRef.current)} accessibilityRole="button" style={{ minHeight: 48, alignSelf: 'flex-start', justifyContent: 'center' }}><Text style={{ color: '#991B1B', fontSize: 14, fontWeight: '900' }}>Retry saved listings</Text></TouchableOpacity></View> : null}
 
-      <MarketSearch
-        value={search}
-        onChangeText={setSearch}
-        onClear={() => setSearch('')}
-        suggestion={suggestion}
-        onUseSuggestion={() => {
-          if (suggestion) setSearch(suggestion);
-        }}
+      <StackrBrowseToolbar
+        horizontalInset={0}
+        search={search}
+        onSearchChange={setSearch}
+        placeholder="Search Market"
+        onOpenFilters={() => setFiltersOpen(true)}
+        activeFilterCount={activeFilterCount + Number(sortBy !== 'recommended')}
+        resultLabel={`${listingCountCopy} · ${currentSortLabel}`}
       />
-
+      {suggestion ? (
+        <TouchableOpacity onPress={() => setSearch(suggestion)} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>
+          <Text style={{ color: theme.colors.primary, fontSize: 14 }}>Search for {suggestion}</Text>
+        </TouchableOpacity>
+      ) : null}
       <MarketSearchSuggestions
         visible={Boolean(debouncedSearch.trim())}
         cards={searchSuggestions.cards}
@@ -1791,179 +1794,15 @@ export default function TheMarketTab() {
         setWorkspace('discover');
       }} />
 
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 6,
-          flexWrap: 'wrap',
-          paddingTop: 4,
-        }}
-      >
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 126, minWidth: 112, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '900' }} numberOfLines={2}>
-              {listingCountCopy}
-            </Text>
-            {activeFilterCount > 0 ? (
-              <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 15, fontWeight: '700' }}>
-                {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
-              </Text>
-            ) : null}
-          </View>
-          {workspace === 'myListings' || sellerFilter ? (
-            <TouchableOpacity
-              onPress={() => {
-                setWorkspace('discover');
-                setSellerFilter(null);
-              }}
-              activeOpacity={0.82}
-              accessibilityRole="button"
-              accessibilityLabel={sellerFilter ? 'Clear seller filter' : 'Browse all listings'}
-              style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 }}
-            >
-              <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>
-                {sellerFilter ? 'Clear' : 'Browse'}
-              </Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
+      {workspace === 'myListings' || sellerFilter ? (
         <TouchableOpacity
-          onPress={() => setFiltersOpen(true)}
-          activeOpacity={0.82}
+          onPress={() => { setWorkspace('discover'); setSellerFilter(null); }}
           accessibilityRole="button"
-          accessibilityLabel={activeFilterCount > 0 ? `Filter listings, ${activeFilterCount} active` : 'Filter listings'}
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: 24,
-            borderWidth: 1,
-            borderColor: activeFilterCount > 0 ? theme.colors.primary + '66' : theme.colors.border,
-            backgroundColor: activeFilterCount > 0 ? theme.colors.primary + '10' : 'rgba(255,255,255,0.76)',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          accessibilityLabel={sellerFilter ? 'Clear seller filter' : 'Browse all listings'}
+          style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' }}
         >
-          <Ionicons name={marketIcons.filter} size={17} color={activeFilterCount > 0 ? theme.colors.primary : theme.colors.text} />
-          {activeFilterCount > 0 ? (
-            <View
-              pointerEvents="none"
-              style={{
-                minWidth: 18,
-                height: 18,
-                borderRadius: 9,
-                backgroundColor: theme.colors.primary,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingHorizontal: 5,
-                position: 'absolute',
-                top: 1,
-                right: 1,
-              }}
-            >
-              <Text style={{ color: '#FFFFFF', fontSize: 9.5, lineHeight: 12, fontWeight: '900' }}>
-                {activeFilterCount > 9 ? '9+' : activeFilterCount}
-              </Text>
-            </View>
-          ) : null}
+          <Text style={{ color: theme.colors.primary, fontSize: 14 }}>Browse all listings</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setSortOpen(true)}
-          activeOpacity={0.82}
-          accessibilityRole="button"
-          accessibilityLabel={`Sort listings, currently ${currentSortLabel}`}
-          style={{
-            flexGrow: 1,
-            flexShrink: 1,
-            flexBasis: 144,
-            minWidth: 132,
-            minHeight: 48,
-            borderRadius: 12,
-            paddingHorizontal: 11,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            backgroundColor: 'rgba(255,255,255,0.76)',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 5,
-          }}
-        >
-          <Text style={{ flexShrink: 1, color: theme.colors.text, fontSize: 12.2, lineHeight: 15, fontWeight: '900', textAlign: 'center' }} numberOfLines={2}>
-            Sort: {currentSortLabel}
-          </Text>
-          <Ionicons name="chevron-down" size={14} color={theme.colors.primary} />
-        </TouchableOpacity>
-        {canUseThreeColumns ? (
-          <TouchableOpacity
-            onPress={() => setLayoutMode((value) => (value === 'compact' ? 'browse' : 'compact'))}
-            activeOpacity={0.82}
-            accessibilityRole="button"
-            accessibilityLabel={layoutMode === 'compact' ? 'Use browse layout' : 'Use compact discovery layout'}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              borderWidth: 1,
-              borderColor: layoutMode === 'compact' ? theme.colors.primary + '66' : theme.colors.border,
-              backgroundColor: layoutMode === 'compact' ? theme.colors.primary + '10' : 'rgba(255,255,255,0.76)',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Ionicons name="grid-outline" size={16} color={layoutMode === 'compact' ? theme.colors.primary : theme.colors.text} />
-          </TouchableOpacity>
-        ) : null}
-      </View>
-
-      {activeFilterChips.length ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 7, paddingLeft: 1, paddingRight: 12 }}>
-          {activeFilterChips.map((chip) => (
-            <TouchableOpacity
-              key={chip.key}
-              onPress={chip.onRemove}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel={`Remove ${chip.label} filter`}
-              style={{
-                minHeight: 30,
-                borderRadius: 999,
-                borderWidth: 1,
-                borderColor: theme.colors.primary + '30',
-                backgroundColor: theme.colors.primary + '0F',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 5,
-                paddingHorizontal: 9,
-              }}
-            >
-              {chip.language ? <PokemonLanguageFlagIcon language={chip.language} size={14} decorative /> : null}
-              <Text style={{ color: theme.colors.primary, fontSize: 11.2, lineHeight: 14, fontWeight: '900' }} numberOfLines={1}>
-                {chip.label}
-              </Text>
-              <Ionicons name="close" size={13} color={theme.colors.primary} />
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            onPress={clearFilters}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Clear all Market filters"
-            style={{
-              minHeight: 30,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              backgroundColor: 'rgba(255,255,255,0.78)',
-              justifyContent: 'center',
-              paddingHorizontal: 10,
-            }}
-          >
-            <Text style={{ color: theme.colors.textSoft, fontSize: 11.2, lineHeight: 14, fontWeight: '900' }}>
-              Clear all
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
       ) : null}
 
       {canPublishListing && workspace === 'myListings' ? (
@@ -2171,12 +2010,10 @@ export default function TheMarketTab() {
       ) : null}
 
       <MarketFilterSheet
-        visible={sortOpen}
-        title="Sort listings"
-        subtitle="Choose how Market listings are ordered."
-        activeFilterCount={sortBy !== 'recommended' ? 1 : 0}
-        onClose={() => setSortOpen(false)}
-        onClear={() => setSortBy('recommended')}
+        visible={filtersOpen}
+        activeFilterCount={activeFilterCount + Number(sortBy !== 'recommended')}
+        onClose={() => setFiltersOpen(false)}
+        onClear={() => { clearFilters(); setSortBy('recommended'); }}
       >
         <FilterGroup title="Sort by">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -2189,12 +2026,11 @@ export default function TheMarketTab() {
                   onPress={() => {
                     if (disabled) return;
                     setSortBy(option.key);
-                    setSortOpen(false);
                   }}
                   disabled={disabled}
                   activeOpacity={0.82}
                   style={{
-                    minHeight: 38,
+                    minHeight: 44,
                     flexBasis: width >= 390 ? '31.5%' : '48%',
                     flexGrow: 1,
                     borderRadius: 12,
@@ -2235,14 +2071,78 @@ export default function TheMarketTab() {
             })}
           </View>
         </FilterGroup>
-      </MarketFilterSheet>
+        {canUseThreeColumns ? (
+        <FilterGroup title="Layout">
+          <TouchableOpacity
+            onPress={() => setLayoutMode((value) => (value === 'compact' ? 'browse' : 'compact'))}
+            activeOpacity={0.82}
+            accessibilityRole="button"
+            accessibilityLabel={layoutMode === 'compact' ? 'Use browse layout' : 'Use compact discovery layout'}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: layoutMode === 'compact' ? theme.colors.primary + '66' : theme.colors.border,
+              backgroundColor: layoutMode === 'compact' ? theme.colors.primary + '10' : 'rgba(255,255,255,0.76)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="grid-outline" size={16} color={layoutMode === 'compact' ? theme.colors.primary : theme.colors.text} />
+          </TouchableOpacity>
+        </FilterGroup>
+        ) : null}
+      {activeFilterChips.length ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 7, paddingLeft: 1, paddingRight: 12 }}>
+          {activeFilterChips.map((chip) => (
+            <TouchableOpacity
+              key={chip.key}
+              onPress={chip.onRemove}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={`Remove ${chip.label} filter`}
+              style={{
+                minHeight: 44,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: theme.colors.primary + '30',
+                backgroundColor: theme.colors.primary + '0F',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 5,
+                paddingHorizontal: 9,
+              }}
+            >
+              {chip.language ? <PokemonLanguageFlagIcon language={chip.language} size={14} decorative /> : null}
+              <Text style={{ color: theme.colors.primary, fontSize: 11.2, lineHeight: 14, fontWeight: '900' }} numberOfLines={1}>
+                {chip.label}
+              </Text>
+              <Ionicons name="close" size={13} color={theme.colors.primary} />
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity
+            onPress={clearFilters}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Clear all Market filters"
+            style={{
+              minHeight: 44,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              backgroundColor: 'rgba(255,255,255,0.78)',
+              justifyContent: 'center',
+              paddingHorizontal: 10,
+            }}
+          >
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11.2, lineHeight: 14, fontWeight: '900' }}>
+              Clear all
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      ) : null}
 
-      <MarketFilterSheet
-        visible={filtersOpen}
-        activeFilterCount={activeFilterCount}
-        onClose={() => setFiltersOpen(false)}
-        onClear={clearFilters}
-      >
         <FilterGroup title="Category">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {MARKET_CATEGORY_FILTERS.map((filter) => (

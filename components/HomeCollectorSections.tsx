@@ -1,3 +1,4 @@
+import { StackrBinderButton } from "./StackrBrowseControls";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -326,15 +327,7 @@ function EmptyCollection({
         </Text>
       </View>
       <View style={styles.emptyActions}>
-        <TouchableOpacity
-          onPress={onCreateBinder}
-          activeOpacity={0.84}
-          accessibilityRole="button"
-          accessibilityLabel="Start a binder"
-          style={[styles.primaryAction, { backgroundColor: theme.colors.primary }]}
-        >
-          <Text style={styles.primaryActionText}>Start binder</Text>
-        </TouchableOpacity>
+        <StackrBinderButton label="Start binder" onPress={onCreateBinder} />
       </View>
     </View>
   );

@@ -1,0 +1,70 @@
+name: Card-first UI validation
+
+on:
+  pull_request:
+    paths:
+      - 'components/StackrBrowseControls.tsx'
+      - 'components/HomeCollectorSections.tsx'
+      - 'components/HomeCommandCenter.tsx'
+      - 'components/PremiumUI.tsx'
+      - 'app/_layout.tsx'
+      - 'app/(tabs)/explore.tsx'
+      - 'features/home/**'
+      - 'scripts/test-home-collector-sections.ts'
+      - 'scripts/test-home-release-integration.ts'
+      - 'app/set/**'
+      - 'app/binder/**'
+      - 'app/(tabs)/binder.tsx'
+      - 'app/(tabs)/search.tsx'
+      - 'features/binder/**'
+      - 'features/market/**'
+      - 'scripts/test-card-first-ui.cjs'
+      - 'scripts/test-card-first-followup.cjs'
+      - '.github/workflows/card-first-ui.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: card-first-ui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Package exact source for review
+        run: |
+          git rev-parse HEAD > /tmp/card-first-source-sha.txt
+          git archive --format=tar HEAD app components lib features hooks constants config data types scripts package.json package-lock.json tsconfig.json eslint.config.js > /tmp/card-first-source.tar
+          gzip /tmp/card-first-source.tar
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: card-first-source-${{ github.sha }}
+          path: |
+            /tmp/card-first-source.tar.gz
+            /tmp/card-first-source-sha.txt
+          retention-days: 7
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: node scripts/test-card-first-ui.cjs
+      - run: node scripts/test-card-first-followup.cjs
+      - run: npm run test:home-release
+      - run: npm run test:binder-catalogue
+      - run: npm run test:personal-loading
+      - name: Scoped lint
+        run: >-
+          npx eslint "app/(tabs)/binder.tsx" "app/(tabs)/explore.tsx" "app/(tabs)/search.tsx"
+          app/_layout.tsx app/binder/new.tsx "app/set/[id].tsx"
+          components/StackrBrowseControls.tsx components/PremiumUI.tsx
+          components/HomeCollectorSections.tsx components/HomeCommandCenter.tsx
+          features/binder/BinderDetailScreen.tsx features/home/HubScreen.tsx
+          features/market/MarketTabScreen.tsx
