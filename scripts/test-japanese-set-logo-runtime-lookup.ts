@@ -20,9 +20,12 @@ function compileModule(path: string, dependencies: Record<string, unknown>) {
   return moduleBox.exports;
 }
 
+const englishLogos = compileModule('lib/englishSetLogos.ts', {});
 const japaneseLogos = compileModule('lib/japaneseSetLogos.ts', {});
+const getEnglishSetLogoSourceForSet = englishLogos.getEnglishSetLogoSourceForSet as (input: Record<string, unknown>) => string | null;
 const getJapaneseSetLogoSourceForSet = japaneseLogos.getJapaneseSetLogoSourceForSet as (input: Record<string, unknown>) => string | null;
 const localArtwork = compileModule('lib/localSetArtwork.ts', {
+  './englishSetLogos': { getEnglishSetLogoSourceForSet },
   './japaneseSetLogos': { getJapaneseSetLogoSourceForSet },
   './magazineSetCovers': { getMagazineSetCoverSourceForSet: () => null },
 });
@@ -42,8 +45,20 @@ assert.equal(
   'The ambiguous SM6 key must not assign a Japanese logo to an English set.',
 );
 
+for (const promoCode of ['bwp', 'dpp', 'smp', 'sp', 'svp', 'xyp']) {
+  assert.equal(
+    getJapaneseSetLogoSourceForSet({ id: promoCode, language: 'en' }),
+    null,
+    `English promo identity ${promoCode} must not inherit a Japanese bundled mark.`,
+  );
+  assert.ok(
+    getJapaneseSetLogoSourceForSet({ id: promoCode, language: 'ja' }),
+    `Explicit Japanese promo identity ${promoCode} must retain its Japanese bundled mark.`,
+  );
+}
+
 const explore = readFileSync('app/(tabs)/explore.tsx', 'utf8');
 const search = readFileSync('app/(tabs)/search.tsx', 'utf8');
 assert.match(explore, /getLocalSetArtworkSourceForSet\(\{[\s\S]*?language: item\.language,[\s\S]*?setCode: item\.externalIds\?\.setCode/s);
 assert.match(search, /getLocalSetArtworkSourceForSet\(\{[\s\S]*?language: set\.language,[\s\S]*?setCode: set\.externalIds\?\.setCode/s);
-console.log('Japanese SM6 bundled fallback resolves on Explore/search inputs without an English-code collision.');
+console.log('Japanese bundled fallbacks resolve only for Japanese identities; English promo and expansion collisions are blocked.');
