@@ -25,14 +25,16 @@ for (const name of ['previous_gateway_version_id', 'previous_gateway_deployment_
 assert.equal(releaseInputs.previous_gateway_tag.required, false);
 assert.equal(releaseInputs.previous_gateway_tag.default, undefined, 'An untagged current Worker must be explicitly represented by an empty tag.');
 assert.match(workflow, /--keep-vars/);
-assert.match(workflow, /--var "SUPABASE_PUBLISHABLE_KEY:\$publishable_key"/);
+assert.match(workflow, /write-gateway-release-config\.mjs --output="\$release_config"/);
+assert.match(workflow, /wrangler@4\.131\.1 versions upload[^\n]+--config "\$release_config"[^\n]+--strict --keep-vars/);
+assert.doesNotMatch(workflow, /versions upload[\s\S]*?--var /);
 assert.match(workflow, /--name stackr-api-gateway/);
 assert.match(workflow, /secret list[^\n]+--format json/);
 assert.doesNotMatch(workflow, /secret list[^\n]+--json/);
 assert.doesNotMatch(workflow, /secret list[^\n]+--name/, 'secret list appends the environment to an explicit name; use the validated environment config');
 assert.match(workflow, /production_worker_name_mismatch/);
 assert.match(workflow, /BACKEND_ORIGIN_KEY', 'BACKEND_ADMIN_KEY/);
-assert.match(workflow, /STACKR_PRICING_ACCESS_MODE:personal/);
+assert.match(workflow, /STACKR_PRICING_ACCESS_MODE=personal/);
 assert.match(workflow, /versions deploy[\s\S]*"\$release_tag@100"/);
 assert.match(workflow, /versions upload[^\n]+--strict --keep-vars/);
 assert.match(workflow, /versions deploy[^\n]+--version-tag "\$release_tag@100"/);
