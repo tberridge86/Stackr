@@ -34,7 +34,7 @@ The Japanese resolver now treats `bwp`, `dpp`, `smp`, `sp`, `svp` and `xyp` as l
 ### Guarded materialisation and source verification
 
 - GitHub Actions run: `34702189958`
-- Verified runtime commit: `4bc9ad1c6e01c4c7b35037121a6bf9e17a5216c1`
+- Verified runtime commit: `4bc9ad1c5e3ab13636ba7c4354dff805e770e6e6`
 - Passed:
   - exact materialisation of all 15 reviewed binaries;
   - manifest and binary hash validation;
@@ -45,7 +45,7 @@ The Japanese resolver now treats `bwp`, `dpp`, `smp`, `sp`, `svp` and `xyp` as l
 ### Latest-main reconciliation
 
 - GitHub Actions run: `34702307256`
-- Reconciled branch head: `92104efd2a93d9ba94ec39aaeaf88b87dd76a1ab`
+- Reconciliation commit: `92104efd2a93d9ba94ec39aaeaf88b87dd76a1ab`
 - Merged and tested against `main` at `4c0be1ae7ac77b46debd241cf106f4834fe5ffb5`.
 - Repeated the official-logo tests, Japanese collision tests, full TypeScript checking and diff hygiene successfully.
 
