@@ -193,7 +193,9 @@
     "mobile:verify-runtime": "node scripts/deploy/verify-mobile-runtime-config.mjs",
     "deploy:verify-model": "node scripts/deploy/verify-model-release.mjs",
     "deploy:smoke": "node scripts/deploy/smoke.mjs",
-    "test:integration-repair": "node --import tsx scripts/test-home-saved-collection.ts && node --import tsx scripts/test-home-owned-pricing-units.ts && node --import tsx scripts/test-collection-pricing-api.ts && node --import tsx scripts/test-collection-context-account-isolation.ts && node --import tsx scripts/test-global-search-language-fanout.ts && node --import tsx scripts/test-japanese-set-logo-runtime-lookup.ts"
+    "test:integration-repair": "node --import tsx scripts/test-home-saved-collection.ts && node --import tsx scripts/test-home-owned-pricing-units.ts && node --import tsx scripts/test-collection-pricing-api.ts && node --import tsx scripts/test-collection-context-account-isolation.ts && node --import tsx scripts/test-global-search-language-fanout.ts && node --import tsx scripts/test-japanese-set-logo-runtime-lookup.ts && npm run test:official-english-set-logos",
+    "catalogue:materialize-official-english-set-logos": "python scripts/materialize-official-english-set-logos.py",
+    "test:official-english-set-logos": "python scripts/materialize-official-english-set-logos.py --check && node scripts/test-official-english-set-logo-runtime-lookup.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

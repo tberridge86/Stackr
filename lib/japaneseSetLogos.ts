@@ -1479,7 +1479,7 @@ const JAPANESE_SET_LOGO_ALIASES: Record<string, string> = {
   "xypromo": "xypromos",
 };
 
-const AMBIGUOUS_ENGLISH_SET_LOGO_KEYS = new Set<string>(["neo1", "neo2", "neo3", "neo4", "xy2", "xy3", "xy4", "xy6", "xy7", "xy9", "xy10", "sm6", "sm7", "sm8", "sm9", "sm10", "sm11", "sm12", "sv3", "sv6", "sv7", "sv8", "sv9", "sv10"]);
+const AMBIGUOUS_ENGLISH_SET_LOGO_KEYS = new Set<string>(["bwp", "bwpromos", "dpp", "dppromos", "smp", "smpromos", "sp", "swshpromos", "svp", "xyp", "xypromos", "neo1", "neo2", "neo3", "neo4", "xy2", "xy3", "xy4", "xy6", "xy7", "xy9", "xy10", "sm6", "sm7", "sm8", "sm9", "sm10", "sm11", "sm12", "sv3", "sv6", "sv7", "sv8", "sv9", "sv10"]);
 const JAPANESE_LANGUAGE_ALIASES = new Set(['ja', 'jp', 'jpn', 'japanese', 'japan']);
 
 function clean(value?: string | null) {
