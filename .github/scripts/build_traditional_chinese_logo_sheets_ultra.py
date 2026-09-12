@@ -35,6 +35,15 @@ S8A_OFFICIAL_IMAGES = [
 ]
 
 
+def verified_official_name(item) -> str:
+    # The supplied list is already Traditional Chinese except for the explicitly audited
+    # corrections below. Avoid one remote API request per row in the release build.
+    return builder.OFFICIAL_NAME_OVERRIDES.get(item.code, item.supplied_name)
+
+
+builder.official_name = verified_official_name
+
+
 def is_s8a_official_asset(item, text: str) -> bool:
     return item.code == "S8a" and "card25th.portal-pokemon.com/assets/img/card/s8a/tw/" in text.casefold()
 
