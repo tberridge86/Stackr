@@ -1,0 +1,31 @@
+name: Inventory official Traditional Chinese logo assets
+
+on:
+  push:
+    branches:
+      - artifact/traditional-chinese-logos-a4-v2
+    paths:
+      - .github/scripts/inventory_official_tc_logo_assets.py
+      - .github/workflows/inventory-official-tc-logo-assets.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check requests beautifulsoup4 pillow
+      - run: python .github/scripts/inventory_official_tc_logo_assets.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: official-tc-logo-inventory
+          path: build/official-tc-logo-inventory/
+          if-no-files-found: error
+          retention-days: 3
