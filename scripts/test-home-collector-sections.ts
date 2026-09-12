@@ -29,6 +29,8 @@ const mocks: Record<string, unknown> = {
   },
   '@expo/vector-icons': { Ionicons: element('Ionicons') },
   './BinderArtwork': { BinderArtwork: element('BinderArtwork') },
+  './StackrNavigationIcon': { StackrNavigationIcon: element('StackrNavigationIcon') },
+  './StackrBrowseControls': { StackrBinderButton: (props: { label: string; onPress: () => void }) => reactMock.createElement('TouchableOpacity', { onPress: props.onPress, accessibilityLabel: props.label }, props.label) },
   './StackrImage': { StackrImage: element('StackrImage') },
   './Text': { Text: element('Text') },
   './BinderModeBadge': { BinderModeIconBadge: element('BinderModeIconBadge') },

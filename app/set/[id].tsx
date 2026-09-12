@@ -8,11 +8,9 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  ScrollView,
   StyleSheet,
   Alert,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
@@ -23,7 +21,7 @@ import { matchesEnglishSetReference } from '../../lib/englishSetIdentity';
 import { supabase } from '../../lib/supabase';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrBackButton } from '../../components/StackrBackButton';
-import { StackrActionButton } from '../../components/StackrActionButton';
+import { StackrBinderButton, StackrBrowseToolbar, StackrBrowseSummary, StackrBrowseFilterGroup, StackrBrowseFilterSheet } from '../../components/StackrBrowseControls';
 import { StackrImage } from '../../components/StackrImage';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 import { createActivityPost } from '../../lib/activity';
@@ -396,15 +394,6 @@ function getCardRarityFilter(card: PokemonCard): Omit<RarityFilterOption, 'count
   return null;
 }
 
-function getCompactChipLabel(value: FilterType | SortType) {
-  if (value === 'all') return 'All';
-  if (value === 'owned') return 'Owned';
-  if (value === 'missing') return 'Missing';
-  if (value === 'number') return '#';
-  if (value === 'name') return 'A-Z';
-  return 'Rarity';
-}
-
 // ===============================
 // CARD ITEM
 // ===============================
@@ -656,6 +645,7 @@ export default function SetDetailScreen() {
   const [quantityDraft, setQuantityDraft] = useState('1');
   const [quantitySaving, setQuantitySaving] = useState(false);
 
+  const [browseFiltersVisible, setBrowseFiltersVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [selectedRarity, setSelectedRarity] = useState<string>(ALL_RARITY_FILTER);
@@ -1015,10 +1005,6 @@ export default function SetDetailScreen() {
   const setTotalNumber = typeof setTotalValue === 'number' && Number.isFinite(setTotalValue) && setTotalValue > 0
     ? setTotalValue
     : 0;
-  const progressPercent = setTotalNumber > 0
-    ? Math.min(100, (ownedCardCount / setTotalNumber) * 100)
-    : 0;
-  const setTotalLabel = setTotalNumber > 0 ? `${setTotalNumber} cards` : 'total unknown';
   const setLogoSource = getLocalSetArtworkSourceForSet({
     id: setInfo?.id ?? setId,
     language: setInfo?.language ?? getRouteSetLanguage(setId),
@@ -1100,295 +1086,23 @@ export default function SetDetailScreen() {
         <StackrBackButton onPress={() => router.back()} />
       </View>
 
-      {/* Progress bar — always pinned */}
-      <View style={{
-        marginHorizontal: 16,
-        marginBottom: 8,
-        borderRadius: 18,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        shadowColor: '#6136F5',
-        shadowOpacity: 0.08,
-        shadowRadius: 14,
-        shadowOffset: { width: 0, height: 6 },
-        elevation: 2,
-      }}>
-        <LinearGradient
-          colors={['rgba(255,255,255,0.98)', '#F8F4FF', '#F2ECFF']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ paddingHorizontal: 12, paddingVertical: 10 }}
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>Collection Progress</Text>
-            <Text style={{ color: theme.colors.primary, fontSize: 15, fontWeight: '900' }}>
-              {setTotalNumber > 0 ? `${ownedCardCount} / ${setTotalNumber}` : `${ownedCardCount} owned`}
-            </Text>
-          </View>
-          <View style={{ height: 5, borderRadius: 999, backgroundColor: 'rgba(105,56,245,0.10)', overflow: 'hidden' }}>
-            <LinearGradient
-              colors={['#8B55FF', '#6938F5', '#5226D9']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                height: '100%',
-                borderRadius: 999,
-                width: `${progressPercent}%` as any,
-              }}
-            />
-          </View>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, fontWeight: '800', marginTop: 5 }}>
-            {setTotalNumber > 0 ? `${progressPercent.toFixed(1)}% complete` : 'Total unknown - needs sync'}
-          </Text>
-        </LinearGradient>
-      </View>
-
-      {/* Header */}
-      <View>
-        <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-
-          <View style={{
-            borderRadius: 18,
-            overflow: 'hidden',
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            marginBottom: 8,
-            shadowColor: '#6136F5',
-            shadowOpacity: 0.07,
-            shadowRadius: 12,
-            shadowOffset: { width: 0, height: 5 },
-            elevation: 2,
-          }}>
-            <LinearGradient
-              colors={['rgba(255,255,255,0.98)', '#F9F6FF', '#F4EFFF']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 11, padding: 10 }}
-            >
-              {(setLogoSource || setLogoUrl) && !setLogoFailed ? (
-                <View style={{
-                  width: 94,
-                  height: 48,
-                  borderRadius: 13,
-                  backgroundColor: 'rgba(255,255,255,0.62)',
-                  borderWidth: 1,
-                  borderColor: 'rgba(105,56,245,0.10)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: 4,
-                }}>
-                  <StackrImage
-                    source={setLogoSource}
-                    uri={setLogoSource ? null : setLogoUrl}
-                    style={{ width: 86, height: 36 }}
-                    contentFit="contain"
-                    showFallbackIcon={false}
-                    placeholderColor="transparent"
-                    onError={() => setSetLogoFailed(true)}
-                  />
-                </View>
-              ) : null}
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={{ color: theme.colors.text, fontSize: 20, lineHeight: 24, fontWeight: '900' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.76}>{setInfo.name}</Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 2 }} numberOfLines={1}>
-                  {[setInfo.series, setTotalLabel].filter(Boolean).join(' - ')}
-                </Text>
-              </View>
-            </LinearGradient>
-          </View>
-
-          <StackrActionButton
-            title="Create Binder"
-            subtitle="Build this set in your vault"
-            icon="albums-outline"
-            variant="primary"
-            size="compact"
-            showArrow
-            onPress={() => router.push({
-              pathname: '/binder/new',
-              params: {
-                sourceSetId: setInfo?.id ?? setId,
-                type: 'official',
-                language: setInfo?.language ?? getRouteSetLanguage(setId),
-              },
-            })}
-            style={{ marginBottom: 8 }}
-          />
-
-          {/* Search */}
-          <View style={{
-            backgroundColor: 'rgba(255,255,255,0.96)',
-            borderRadius: 16,
-            paddingHorizontal: 14,
-            paddingVertical: 8,
-            marginBottom: 8,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-            shadowColor: '#6136F5',
-            shadowOpacity: 0.05,
-            shadowRadius: 10,
-            shadowOffset: { width: 0, height: 4 },
-            elevation: 1,
-          }}>
-            <Ionicons name="search" size={16} color={theme.colors.textSoft} />
-            <TextInput
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Search cards..."
-              placeholderTextColor={theme.colors.textSoft}
-              autoCorrect={false}
-              autoCapitalize="words"
-              style={{ flex: 1, color: theme.colors.text, fontSize: 15 }}
-            />
-            {search.length > 0 && (
-              <TouchableOpacity onPress={() => setSearch('')}>
-                <Ionicons name="close-circle" size={18} color={theme.colors.textSoft} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {hasCompletionistSections ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 7, paddingBottom: 6, alignItems: 'center' }}
-            >
-              {availableFinishSections.map((section) => {
-                const active = finishSection === section.key;
-                return (
-                  <TouchableOpacity
-                    key={section.key}
-                    onPress={() => setFinishSection(section.key)}
-                    style={{
-                      minHeight: 34,
-                      paddingVertical: 7,
-                      paddingHorizontal: 12,
-                      borderRadius: 999,
-                      borderWidth: 1,
-                      backgroundColor: active ? theme.colors.primary : 'rgba(255,255,255,0.94)',
-                      borderColor: active ? theme.colors.primary : theme.colors.border,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 6,
-                    }}
-                  >
-                    <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontSize: 12, fontWeight: '900' }}>
-                      {section.shortLabel}
-                    </Text>
-                    <Text style={{ color: active ? 'rgba(255,255,255,0.78)' : theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
-                      {section.count}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          ) : null}
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 7, paddingBottom: 2, alignItems: 'center' }}
-          >
-            {(['all', 'owned', 'missing'] as FilterType[]).map((item) => {
-              const active = filter === item;
-              return (
-                <TouchableOpacity
-                  key={item}
-                  onPress={() => setFilter(item)}
-                  style={{
-                    minHeight: 32,
-                    paddingVertical: 7,
-                    paddingHorizontal: 12,
-                    borderRadius: 999,
-                    borderWidth: 1,
-                    backgroundColor: active ? theme.colors.primary : 'rgba(255,255,255,0.94)',
-                    borderColor: active ? theme.colors.primary : theme.colors.border,
-                  }}
-                >
-                  <Text style={{ fontWeight: '900', fontSize: 12, color: active ? '#FFFFFF' : theme.colors.textSoft }}>
-                    {getCompactChipLabel(item)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-
-            <View style={{ width: 1, height: 22, backgroundColor: theme.colors.border, marginHorizontal: 2 }} />
-
-            {(['number', 'name', 'rarity'] as SortType[]).map((item) => {
-              const active = sort === item;
-              return (
-                <TouchableOpacity
-                  key={item}
-                  onPress={() => setSort(item)}
-                  style={{
-                    minHeight: 32,
-                    paddingVertical: 7,
-                    paddingHorizontal: item === 'number' ? 11 : 12,
-                    borderRadius: 999,
-                    borderWidth: 1,
-                    backgroundColor: active ? theme.colors.primary + '14' : 'rgba(255,255,255,0.94)',
-                    borderColor: active ? theme.colors.primary : theme.colors.border,
-                  }}
-                >
-                  <Text style={{ fontWeight: '900', fontSize: 12, color: active ? theme.colors.primary : theme.colors.textSoft }}>
-                    {getCompactChipLabel(item)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-
-          </ScrollView>
-
-          {showRarityFilters ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 7, paddingTop: 6, paddingBottom: 2, alignItems: 'center' }}
-            >
-              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900', marginRight: 1 }}>
-                Rarity
-              </Text>
-              {rarityFilterOptions.map((rarity) => {
-                const active = selectedRarity === rarity.key;
-                return (
-                  <TouchableOpacity
-                    key={rarity.key}
-                    onPress={() => setSelectedRarity(rarity.key)}
-                    style={{
-                      minHeight: 31,
-                      paddingVertical: 7,
-                      paddingHorizontal: 11,
-                      borderRadius: 999,
-                      borderWidth: 1,
-                      backgroundColor: active ? theme.colors.primary + '14' : 'rgba(255,255,255,0.94)',
-                      borderColor: active ? theme.colors.primary : theme.colors.border,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 6,
-                    }}
-                  >
-                    <Text style={{ fontWeight: '900', fontSize: 12, color: active ? theme.colors.primary : theme.colors.textSoft }}>
-                      {rarity.label}
-                    </Text>
-                    {rarity.key !== ALL_RARITY_FILTER ? (
-                      <Text style={{ fontWeight: '900', fontSize: 10.5, color: active ? theme.colors.primary : theme.colors.textSoft }}>
-                        {rarity.count}
-                      </Text>
-                    ) : null}
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          ) : null}
-        </View>
-      </View>
+      <StackrBrowseToolbar
+        search={search}
+        onSearchChange={setSearch}
+        placeholder="Search this set"
+        onOpenFilters={() => setBrowseFiltersVisible(true)}
+        activeFilterCount={Number(selectedRarity !== ALL_RARITY_FILTER) + Number(hasCompletionistSections) + Number(sort !== 'number')}
+        choices={[{ key: 'all', label: 'All' }, { key: 'owned', label: 'Owned' }, { key: 'missing', label: 'Missing' }]}
+        selected={filter}
+        onSelect={(key) => setFilter(key as FilterType)}
+        resultLabel={`${filteredCards.length} shown`}
+      />
 
       {/* Card grid */}
       <FlatList
+        testID="set-card-grid"
+        style={{ flex: 1 }}
+        keyboardShouldPersistTaps="handled"
         data={visibleFilteredCards}
         keyExtractor={(item, index) => `${setId ?? item.set?.id ?? 'set'}:${item.id}:${item.number ?? 'no-number'}:${item.rarity ?? 'rarity'}:${index}`}
         numColumns={2}
@@ -1403,12 +1117,38 @@ export default function SetDetailScreen() {
         onEndReached={hasMoreFilteredCards ? renderMoreFilteredCards : undefined}
         onEndReachedThreshold={0.8}
         ListHeaderComponent={
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>Cards</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-              {[activeFinishSection?.shortLabel, activeRarityFilter?.label, `${filteredCards.length} shown`].filter(Boolean).join(' - ')}
+          <StackrBrowseSummary
+            title={setInfo.name}
+            subtitle={[setInfo.series, `Published total: ${setTotalNumber || 'unknown'}`].filter(Boolean).join(' · ')}
+            logo={(setLogoSource || setLogoUrl) && !setLogoFailed ? (
+              <StackrImage
+                source={setLogoSource}
+                uri={setLogoSource ? null : setLogoUrl}
+                style={{ width: 70, height: 36 }}
+                contentFit="contain"
+                showFallbackIcon={false}
+                placeholderColor="transparent"
+                onError={() => setSetLogoFailed(true)}
+              />
+            ) : undefined}
+            action={
+              <StackrBinderButton onPress={() => router.push({
+                pathname: '/binder/new',
+                params: {
+                  sourceSetId: setInfo.id ?? setId,
+                  type: 'official',
+                  language: setInfo.language ?? getRouteSetLanguage(setId),
+                },
+              })} />
+            }
+          >
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
+              {ownershipReady ? `${ownedCardCount} catalogue entries owned` : 'Checking ownership…'}
             </Text>
-          </View>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+              {[activeFinishSection?.shortLabel, activeRarityFilter?.label].filter(Boolean).join(' · ')}
+            </Text>
+          </StackrBrowseSummary>
         }
         ListEmptyComponent={
           <View style={{ alignItems: 'center', paddingVertical: 40 }}>
@@ -1424,6 +1164,34 @@ export default function SetDetailScreen() {
           </View>
         ) : null}
       />
+
+      <StackrBrowseFilterSheet
+        visible={browseFiltersVisible}
+        onClose={() => setBrowseFiltersVisible(false)}
+        onClear={clearCardFilters}
+      >
+        <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>
+          Published total: {setTotalNumber || 'unknown'}. Loaded catalogue entries: {cards.length}.
+          {' '}Entries may include different printings. A completion percentage is not shown until the counting basis is verified.
+        </Text>
+        <StackrBrowseFilterGroup
+          title="Sort"
+          choices={[{ key: 'number', label: 'Number' }, { key: 'name', label: 'Name' }, { key: 'rarity', label: 'Rarity' }]}
+          selected={sort}
+          onSelect={(key) => setSort(key as SortType)}
+        />
+        {hasCompletionistSections ? (
+          <StackrBrowseFilterGroup
+            title="Finish group"
+            choices={availableFinishSections.map((section) => ({ key: section.key, label: section.label, count: section.count }))}
+            selected={finishSection}
+            onSelect={(key) => setFinishSection(key as FinishSectionKey)}
+          />
+        ) : null}
+        {showRarityFilters ? (
+          <StackrBrowseFilterGroup title="Rarity" choices={rarityFilterOptions} selected={selectedRarity} onSelect={setSelectedRarity} />
+        ) : null}
+      </StackrBrowseFilterSheet>
 
       <StackrBottomSheet
         visible={quantityTarget !== null}

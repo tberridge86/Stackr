@@ -76,9 +76,6 @@ const {
   barHeightAndroid: TAB_BAR_HEIGHT_ANDROID,
   paddingBottomIos: TAB_BAR_PADDING_BOTTOM_IOS,
   paddingBottomAndroid: TAB_BAR_PADDING_BOTTOM_ANDROID,
-  activeGlowExtra: ACTIVE_GLOW_EXTRA,
-  activeGlowCoreExtra: ACTIVE_GLOW_CORE_EXTRA,
-  tabRaise: STANDARD_TAB_RAISE,
 } = stackrTabBarSizes;
 
 const TAB_ICONS: Record<string, StackrNavigationIconName> = {
@@ -173,9 +170,6 @@ const PersistentTabBar = memo(function PersistentTabBar() {
         const active = isActive(tab);
         const frameSize = SECONDARY_TAB_FRAME_SIZE;
         const icon = TAB_ICONS[tab.key] ?? 'home';
-        const activeGlowColor = theme.dark ? 'rgba(180,150,255,0.22)' : 'rgba(190,168,255,0.34)';
-        const activeGlowCoreColor = theme.dark ? 'rgba(165,132,255,0.18)' : 'rgba(211,198,255,0.42)';
-        const glowFrameSize = frameSize + ACTIVE_GLOW_EXTRA;
         return (
           <TouchableOpacity
             key={tab.key}
@@ -202,38 +196,8 @@ const PersistentTabBar = memo(function PersistentTabBar() {
               borderRadius: frameSize / 2,
               alignItems: 'center',
               justifyContent: 'center',
-              marginTop: -STANDARD_TAB_RAISE,
-              backgroundColor: 'transparent',
+              backgroundColor: active ? theme.colors.surface : 'transparent',
             }}>
-              {active ? (
-                <>
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: 'absolute',
-                      width: glowFrameSize,
-                      height: glowFrameSize,
-                      borderRadius: glowFrameSize / 2,
-                      backgroundColor: activeGlowColor,
-                      shadowColor: '#BDA7FF',
-                      shadowOpacity: theme.dark ? 0.22 : 0.16,
-                      shadowRadius: 11,
-                      shadowOffset: { width: 0, height: 2 },
-                      elevation: 2,
-                    }}
-                  />
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: 'absolute',
-                      width: frameSize + ACTIVE_GLOW_CORE_EXTRA,
-                      height: frameSize + ACTIVE_GLOW_CORE_EXTRA,
-                      borderRadius: (frameSize + ACTIVE_GLOW_CORE_EXTRA) / 2,
-                      backgroundColor: activeGlowCoreColor,
-                    }}
-                  />
-                </>
-              ) : null}
               <StackrNavigationIcon
                 name={icon}
                 color={active ? theme.colors.primary : theme.colors.textSoft}

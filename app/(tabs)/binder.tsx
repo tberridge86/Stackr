@@ -1,3 +1,5 @@
+import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
+import { StackrBinderButton, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { useTheme } from '../../components/theme-context';
 import { stackrHaptics } from '../../lib/haptics';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -1419,216 +1421,33 @@ export default function BinderLibraryScreen() {
       />
       <View style={{ flex: 1, paddingHorizontal: PADDING, paddingTop: 8 }}>
 
-        {/* Header */}
-        <LinearGradient
-          colors={['#FFFFFF', '#F7F2FF', '#EEE5FF']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ position: 'relative', gap: 7, marginBottom: 14, borderRadius: 20, padding: 8, overflow: 'hidden', borderWidth: 1, borderColor: STACKR_BINDER_COLORS.border, ...lavenderShadow }}
-        >
-          <StackrHeroBackdrop opacity={0.20} />
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.84}
-                style={{
-                  maxWidth: heroTitleWidth,
-                  color: STACKR_BINDER_COLORS.deepNavy,
-                  fontSize: 31,
-                  lineHeight: 36,
-                  fontWeight: '900',
-                  letterSpacing: 0,
-                }}
-              >
-                Collection V<Text style={{ color: STACKR_BINDER_COLORS.primary, fontSize: 31, lineHeight: 36, fontWeight: '900', letterSpacing: 0 }}>ault</Text>
-              </Text>
-              <Text style={{ ...typeScale.support, color: STACKR_BINDER_COLORS.textSoft, marginTop: -1, fontSize: 15, lineHeight: 18, fontWeight: '800' }}>
-                {binders.length} Live Binder{binders.length !== 1 ? 's' : ''}
-              </Text>
-            </View>
-
-            <View style={{ width: 82, gap: 4, alignItems: 'stretch' }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 6 }}>
-                <TouchableOpacity
-                  onPress={() => router.push(ROUTES.profile as any)}
-                  accessibilityRole="button"
-                  accessibilityLabel="Open Profile"
-                  style={{
-                    width: 38,
-                    height: 34,
-                    borderRadius: 13,
-                    backgroundColor: '#FFFFFF',
-                    borderWidth: 1,
-                    borderColor: STACKR_BINDER_COLORS.border,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    shadowColor: '#6136F5',
-                    shadowOpacity: 0.10,
-                    shadowRadius: 10,
-                    shadowOffset: { width: 0, height: 4 },
-                  }}
-                >
-                  <StackrProfileAvatar
-                    avatarUrl={profile?.avatar_url}
-                    avatarPreset={profile?.avatar_preset}
-                    size={32}
-                    borderWidth={1}
-                    accessibilityLabel="Open Profile"
-                  />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => setReorderMode((prev) => !prev)}
-                  style={{
-                    backgroundColor: reorderMode ? `${STACKR_BINDER_COLORS.gold}26` : '#FFFFFF',
-                    width: 38,
-                    height: 34,
-                    borderRadius: 13,
-                    borderWidth: 1,
-                    borderColor: reorderMode ? `${STACKR_BINDER_COLORS.gold}80` : STACKR_BINDER_COLORS.border,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    shadowColor: '#6136F5',
-                    shadowOpacity: 0.10,
-                    shadowRadius: 10,
-                    shadowOffset: { width: 0, height: 4 },
-                  }}
-                >
-                  {reorderMode ? (
-                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78} style={{ color: STACKR_BINDER_COLORS.navy, fontWeight: '900', fontSize: 11 }}>Done</Text>
-                  ) : (
-                    <Ionicons name="grid-outline" size={20} color={STACKR_BINDER_COLORS.textSoft} />
-                  )}
-                </TouchableOpacity>
-              </View>
-
-            </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: 24, fontWeight: '800' }}>Collection</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>{binders.length} binders</Text>
           </View>
-
-          {!reorderMode && (
-            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'stretch' }}>
-              <StackrActionButton
-                title="Scan Card"
-                subtitle="Add or identify"
-                imageIcon={stackrIcons.scanCard}
-                variant="scan"
-                size="hero"
-                onPress={handleScanCard}
-                accessibilityLabel="Scan Card. Add or identify."
-                style={{ flex: 1.45, minHeight: 58 }}
-                contentStyle={{ minHeight: 58, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 8 }}
-              />
-              <StackrActionButton
-                title="New"
-                subtitle="Binder"
-                icon="add"
-                variant="secondary"
-                size="compact"
-                showArrow={false}
-                onPress={() => router.push('/binder/new')}
-                accessibilityLabel="Create new binder"
-                style={{ flex: 0.78, minHeight: 58 }}
-                contentStyle={{ minHeight: 58, paddingHorizontal: 10 }}
-              />
-            </View>
-          )}
-
-          {!reorderMode && (
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
-              {COLLECTION_VAULT_SHORTCUTS.map((item) => (
-                <CollectionVaultShortcutButton
-                  key={item.label}
-                  onPress={() => router.push(item.route)}
-                  label={item.label}
-                  imageIcon={item.imageIcon}
-                />
-              ))}
-            </View>
-          )}
-        </LinearGradient>
-
-        {!loading && !reorderMode ? (
-          <View style={{ marginBottom: 12, backgroundColor: theme.colors.bg }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={{ color: theme.colors.text, fontSize: 22, lineHeight: 27, fontWeight: '900' }} numberOfLines={1}>
-                  Binder Cards
-                </Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 17, fontWeight: '700', marginTop: 1 }} numberOfLines={1}>
-                  Official and custom binders
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                onPress={() => setSortOpen((prev) => !prev)}
-                accessibilityRole="button"
-                accessibilityLabel={`Sort binder cards. Current sort: ${currentSortLabel}`}
-                style={{
-                  minHeight: 42,
-                  borderRadius: 999,
-                  borderWidth: 1,
-                  borderColor: theme.colors.primary + '18',
-                  backgroundColor: 'rgba(255,255,255,0.92)',
-                  paddingHorizontal: 13,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 7,
-                  shadowColor: '#6136F5',
-                  shadowOpacity: 0.03,
-                  shadowRadius: 6,
-                  shadowOffset: { width: 0, height: 2 },
-                }}
-              >
-                <Text numberOfLines={1} style={{ ...typeScale.buttonPrimary, color: STACKR_BINDER_COLORS.deepNavy, fontWeight: '900', fontSize: 12.2 }}>
-                  Sort: {currentSortLabel}
-                </Text>
-                <Ionicons name={sortOpen ? 'chevron-up' : 'chevron-down'} size={16} color={STACKR_BINDER_COLORS.textSoft} />
-              </TouchableOpacity>
-            </View>
+          <TouchableOpacity onPress={() => router.push(ROUTES.profile)} accessibilityRole="button" accessibilityLabel="Open Profile" style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
+            <StackrProfileAvatar avatarUrl={profile?.avatar_url} avatarPreset={profile?.avatar_preset} size={32} borderWidth={1} accessibilityLabel="Profile" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setReorderMode((prev) => !prev)} accessibilityRole="button" accessibilityLabel={reorderMode ? 'Finish reordering binders' : 'Reorder binders'} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
+            {reorderMode ? <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>Done</Text> : <Ionicons name="grid-outline" size={22} color={theme.colors.primary} />}
+          </TouchableOpacity>
+        </View>
+        {!reorderMode ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8, alignItems: 'center', justifyContent: 'space-between' }}>
+            <StackrBinderButton label="New binder" onPress={() => router.push('/binder/new')} />
+            <TouchableOpacity onPress={handleScanCard} accessibilityRole="button" accessibilityLabel="Scan cards" style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+              <StackrNavigationIcon name="scan" color={theme.colors.primary} size={22} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setSortOpen(true)} accessibilityRole="button" accessibilityLabel={`Sort binders. ${currentSortLabel}`} style={{ minHeight: 44, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="swap-vertical-outline" size={20} color={theme.colors.primary} />
+              <Text style={{ color: theme.colors.text, fontSize: 14 }}>{currentSortLabel}</Text>
+            </TouchableOpacity>
           </View>
         ) : null}
-
-        {/* Sort dropdown */}
-        {sortOpen && !loading && !reorderMode && (
-          <View style={{
-            backgroundColor: theme.colors.card,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            marginBottom: 10,
-            overflow: 'hidden',
-          }}>
-            {SORT_OPTIONS.map((option) => (
-              <TouchableOpacity
-                key={option.key}
-                onPress={() => { setSortBy(option.key); setSortOpen(false); }}
-                style={{
-                  paddingVertical: 10,
-                  paddingHorizontal: 14,
-                  backgroundColor: sortBy === option.key ? theme.colors.primary + '12' : theme.colors.card,
-                  borderBottomWidth: 1,
-                  borderBottomColor: theme.colors.border,
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                <Text style={{
-                  color: sortBy === option.key ? theme.colors.primary : theme.colors.textSoft,
-                  fontWeight: sortBy === option.key ? '900' : '700',
-                }}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+        <StackrBrowseFilterSheet visible={sortOpen && !reorderMode} onClose={() => setSortOpen(false)}>
+          <StackrBrowseFilterGroup title="Sort binders" choices={SORT_OPTIONS} selected={sortBy} onSelect={(key) => { setSortBy(key as SortKey); setSortOpen(false); }} />
+        </StackrBrowseFilterSheet>
 
         {/* Loading */}
         {loading ? (
@@ -1749,6 +1568,14 @@ export default function BinderLibraryScreen() {
           // NORMAL MODE — 3 column grid
           // ===============================
           <FlatList
+            testID="collection-binder-grid"
+            ListHeaderComponent={
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+                {COLLECTION_VAULT_SHORTCUTS.map((item) => (
+                  <CollectionVaultShortcutButton key={item.label} onPress={() => router.push(item.route)} label={item.label} imageIcon={item.imageIcon} />
+                ))}
+              </View>
+            }
             data={sortedBinders}
             keyExtractor={(item) => item.id}
             key={COLUMNS}
@@ -1781,7 +1608,7 @@ export default function BinderLibraryScreen() {
             ListEmptyComponent={
               <View style={{ paddingTop: 34 }}>
                 <EmptyStateCard
-                  icon="albums-outline"
+                  navigationIcon="collection"
                   title="No binders yet"
                   body="Create an official set binder or a custom vault, then scan cards straight into it."
                   actionLabel="Create Binder"

@@ -6,6 +6,14 @@ on:
   pull_request:
     paths:
       - 'components/StackrBrowseControls.tsx'
+      - 'components/HomeCollectorSections.tsx'
+      - 'components/HomeCommandCenter.tsx'
+      - 'components/PremiumUI.tsx'
+      - 'app/_layout.tsx'
+      - 'app/(tabs)/explore.tsx'
+      - 'features/home/**'
+      - 'scripts/test-home-collector-sections.ts'
+      - 'scripts/test-home-release-integration.ts'
       - 'app/set/**'
       - 'app/binder/**'
       - 'app/(tabs)/binder.tsx'
@@ -48,10 +56,15 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
-      - name: Focused UI regressions
-        run: |
-          if test -f scripts/test-card-first-ui.cjs; then
-            node scripts/test-card-first-ui.cjs
-          else
-            echo 'Consumer changes and focused regressions are not yet present. This run is not UI acceptance.'
-          fi
+      - run: node scripts/test-card-first-ui.cjs
+      - run: npm run test:home-release
+      - run: npm run test:binder-catalogue
+      - run: npm run test:personal-loading
+      - name: Scoped lint
+        run: >-
+          npx eslint "app/(tabs)/binder.tsx" "app/(tabs)/explore.tsx" "app/(tabs)/search.tsx"
+          app/_layout.tsx app/binder/new.tsx "app/set/[id].tsx"
+          components/StackrBrowseControls.tsx components/PremiumUI.tsx
+          components/HomeCollectorSections.tsx components/HomeCommandCenter.tsx
+          features/binder/BinderDetailScreen.tsx features/home/HubScreen.tsx
+          features/market/MarketTabScreen.tsx

@@ -2372,7 +2372,7 @@ export default function HubScreen() {
         }
       >
         {/* TOP BAR */}
-        <View style={{ minHeight: HOME_TOKENS.touch.primaryButtonHeight, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: HOME_TOKENS.spacing.md, gap: HOME_TOKENS.spacing.xs }}>
+        <View style={{ minHeight: HOME_TOKENS.touch.primaryButtonHeight, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: HOME_TOKENS.spacing.sm, gap: HOME_TOKENS.spacing.xs }}>
           <View style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Image
                 source={stackrBrand.logoDisplay}
@@ -2469,6 +2469,39 @@ export default function HubScreen() {
           </View>
         </View>
 
+        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Search cards, sets and products"
+            onPress={() => router.push('/(tabs)/search')}
+            style={{ flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 13, borderRadius: 16, backgroundColor: theme.colors.card, borderColor: theme.colors.border, borderWidth: 1 }}
+          >
+            <Image source={stackrIcons.searchCard} style={{ width: 24, height: 24 }} resizeMode="contain" />
+            <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 14 }}>Find your next card</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Scan cards"
+            onPress={() => router.push('/scan')}
+            style={{ minHeight: 48, paddingHorizontal: 15, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: theme.colors.primary }}
+          >
+            <Image source={stackrIcons.scanCard} style={{ width: 25, height: 25 }} resizeMode="contain" />
+            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}>Scan</Text>
+          </TouchableOpacity>
+        </View>
+
+        <HomeCollectionHero
+          binder={activeBinder}
+          missingCards={missingCards}
+          chaseCards={chaseCards}
+          isLoading={collectionValueLoading && !activeBinder && !homeDataError}
+          error={homeDataError}
+          onRetry={loadCollectionValue}
+          onOpenBinder={(binderId) => router.push({ pathname: '/binder/[id]', params: { id: binderId } })}
+          onCreateBinder={() => router.push('/binder/new')}
+          onCardPress={openChaseCardDetail}
+        />
+
         {/* VALUE TRACKER */}
         {ownedCardCount > 0 || collectionValueLoading || collectionValueError ? (
         <View style={{ marginBottom: 24 }}>
@@ -2505,39 +2538,6 @@ export default function HubScreen() {
           />
         </View>
         ) : null}
-
-        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Search cards, sets and products"
-            onPress={() => router.push('/(tabs)/search')}
-            style={{ flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 13, borderRadius: 16, backgroundColor: theme.colors.card, borderColor: theme.colors.border, borderWidth: 1 }}
-          >
-            <Image source={stackrIcons.searchCard} style={{ width: 24, height: 24 }} resizeMode="contain" />
-            <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 14 }}>Find your next card</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Scan cards"
-            onPress={() => router.push('/scan')}
-            style={{ minHeight: 48, paddingHorizontal: 15, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: theme.colors.primary }}
-          >
-            <Image source={stackrIcons.scanCard} style={{ width: 25, height: 25 }} resizeMode="contain" />
-            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}>Scan</Text>
-          </TouchableOpacity>
-        </View>
-
-        <HomeCollectionHero
-          binder={activeBinder}
-          missingCards={missingCards}
-          chaseCards={chaseCards}
-          isLoading={collectionValueLoading && !activeBinder && !homeDataError}
-          error={homeDataError}
-          onRetry={loadCollectionValue}
-          onOpenBinder={(binderId) => router.push({ pathname: '/binder/[id]', params: { id: binderId } })}
-          onCreateBinder={() => router.push('/binder/new')}
-          onCardPress={openChaseCardDetail}
-        />
 
         {(duplicateSummary.count > 0 || chaseCards.length > 0 || hasHomeMovement || chaseError) ? (
         <HomeOpportunitiesSection

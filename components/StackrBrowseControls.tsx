@@ -56,6 +56,7 @@ export function StackrBrowseToolbar({
   selected,
   onSelect,
   resultLabel,
+  horizontalInset = 16,
 }: {
   search: string;
   onSearchChange: (value: string) => void;
@@ -66,11 +67,12 @@ export function StackrBrowseToolbar({
   selected?: string;
   onSelect?: (key: string) => void;
   resultLabel?: string;
+  horizontalInset?: number;
 }) {
   const { theme } = useTheme();
   const filterLabel = activeFilterCount > 0 ? `Filters · ${activeFilterCount}` : 'Filters';
   return (
-    <View testID="browse-toolbar" style={[styles.toolbar, { backgroundColor: theme.colors.bg }]}>
+    <View testID="browse-toolbar" style={[styles.toolbar, { backgroundColor: theme.colors.bg, paddingHorizontal: horizontalInset }]}>
       <View style={styles.searchRow}>
         <View style={[styles.searchField, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
           <Ionicons name="search-outline" size={19} color={theme.colors.textSoft} />

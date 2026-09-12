@@ -1,3 +1,4 @@
+import { StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -172,12 +173,14 @@ export function ProgressBadge({
 
 export function EmptyStateCard({
   icon,
+  navigationIcon,
   title,
   body,
   actionLabel,
   onAction,
 }: {
-  icon: IconName;
+  icon?: IconName;
+  navigationIcon?: StackrNavigationIconName;
   title: string;
   body: string;
   actionLabel?: string;
@@ -201,7 +204,7 @@ export function EmptyStateCard({
             marginBottom: 14,
           }}
         >
-          <Ionicons name={icon} size={27} color={theme.colors.primary} />
+          {navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={27} color={theme.colors.primary} /> : icon ? <Ionicons name={icon} size={27} color={theme.colors.primary} /> : null}
         </View>
         <Text variant="sectionTitleCompact" style={{ color: theme.colors.text, fontSize: 18, textAlign: 'center' }}>
           {title}
@@ -212,7 +215,13 @@ export function EmptyStateCard({
         {actionLabel && onAction ? (
           <TouchableOpacity
             onPress={onAction}
+            accessibilityRole="button"
+            accessibilityLabel={actionLabel}
             style={{
+              minHeight: 44,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
               marginTop: 16,
               backgroundColor: theme.colors.primary,
               borderRadius: 14,
@@ -223,6 +232,7 @@ export function EmptyStateCard({
             }}
           >
             <StackrButtonPattern tone="purple" />
+            {navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={22} color="#FFFFFF" /> : null}
             <Text variant="buttonPrimary" style={{ color: '#FFFFFF' }}>{actionLabel}</Text>
           </TouchableOpacity>
         ) : null}

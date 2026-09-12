@@ -1,3 +1,4 @@
+import { StackrBrowseToolbar } from '../../components/StackrBrowseControls';
 import { getSearchFacetScope, isSearchSortSupported } from '../../lib/searchFacetScope';
 import { getSearchFailureSummary, retainFailedSearchGroups } from '../../lib/searchRecovery';
 import { StackrButton } from '../../components/StackrControls';
@@ -20,11 +21,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
-import { StackrCardActionIcon, StackrPageHeader, StackrScreen } from '../../components/StackrScreen';
+import { StackrCardActionIcon, StackrScreen } from '../../components/StackrScreen';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import {
   RecentSearchPill,
-  SearchCategoryChip,
   SearchCardRailItem,
   SearchCollectorRailItem,
   SearchListingRailItem,
@@ -1721,100 +1721,16 @@ export default function GlobalSearchScreen() {
         renderItem={() => (
           <View>
             <View style={{ gap: 9, marginBottom: 13 }}>
-              <StackrPageHeader
-                title={showcaseConfig?.title ?? 'Search'}
-                accentText={showcaseConfig ? showcaseConfig.title.split(' ').at(-1) : 'rch'}
-                subtitle={showcaseConfig?.subtitle ?? 'Find cards, sets and sealed products.'}
-                style={{ marginBottom: -1 }}
+              <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: 24, fontWeight: '800' }}>{showcaseConfig?.title ?? 'Search'}</Text>
+              <StackrBrowseToolbar
+                horizontalInset={0}
+                search={query}
+                onSearchChange={setQuery}
+                placeholder="Search cards, sets and products"
+                onOpenFilters={() => setFiltersOpen(true)}
+                activeFilterCount={activeSearchFilterCount}
+                resultLabel={hasQuery ? `${searchResultSummary} · ${currentSearchSortLabel}` : undefined}
               />
-
-              <View
-                style={{
-                  minHeight: 46,
-                  borderRadius: 14,
-                  backgroundColor: theme.colors.card,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingHorizontal: 11,
-                  gap: 8,
-                }}
-              >
-                <StackrCardActionIcon
-                  source={stackrIcons.searchCard}
-                  frameSize={24}
-                  artworkSize={20}
-                />
-                <TextInput
-                  value={query}
-                  onChangeText={setQuery}
-                  placeholder={showcaseConfig?.placeholder ?? 'Search cards, sets or sealed products'}
-                  placeholderTextColor={theme.colors.textSoft}
-                  autoCorrect={false}
-                  spellCheck={false}
-                  autoCapitalize="words"
-                  returnKeyType="search"
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                    void rememberSearch();
-                  }}
-                  accessibilityLabel={showcaseConfig?.placeholder ?? 'Search cards, sets or sealed products'}
-                  style={{ flex: 1, color: theme.colors.text, fontSize: 14.5, fontWeight: '800', paddingVertical: 8 }}
-                />
-                {loading ? <ActivityIndicator size="small" color={theme.colors.primary} /> : null}
-                <TouchableOpacity
-                  onPress={() => setFiltersOpen(true)}
-                  activeOpacity={0.82}
-                  accessibilityRole="button"
-                  accessibilityLabel={activeSearchFilterCount > 0 ? `Open search filters, ${activeSearchFilterCount} active` : 'Open search filters'}
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 11,
-                    borderWidth: 1,
-                    borderColor: activeSearchFilterCount > 0 ? theme.colors.primary + '55' : theme.colors.border,
-                    backgroundColor: activeSearchFilterCount > 0 ? theme.colors.primary + '12' : theme.colors.surface,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Ionicons name={searchIcons.filter} size={17} color={activeSearchFilterCount > 0 ? theme.colors.primary : theme.colors.textSoft} />
-                  {activeSearchFilterCount > 0 ? (
-                    <View
-                      style={{
-                        position: 'absolute',
-                        top: -5,
-                        right: -5,
-                        minWidth: 17,
-                        height: 17,
-                        borderRadius: 9,
-                        backgroundColor: theme.colors.primary,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderWidth: 1,
-                        borderColor: theme.colors.card,
-                        paddingHorizontal: 4,
-                      }}
-                    >
-                      <Text style={{ color: '#FFFFFF', fontSize: 9, lineHeight: 11, fontWeight: '900' }}>
-                        {activeSearchFilterCount > 9 ? '9+' : activeSearchFilterCount}
-                      </Text>
-                    </View>
-                  ) : null}
-                </TouchableOpacity>
-                {query.length > 0 ? (
-                  <TouchableOpacity
-                    onPress={() => setQuery('')}
-                    accessibilityRole="button"
-                    accessibilityLabel="Clear search"
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <Ionicons name={searchIcons.clear} size={19} color={theme.colors.textSoft} />
-                  </TouchableOpacity>
-                ) : null}
-              </View>
-
               {suggestion ? (
                 <TouchableOpacity onPress={() => setQuery(suggestion)} activeOpacity={0.82} style={{ alignSelf: 'flex-start' }}>
                   <Text style={{ color: theme.colors.primary, fontSize: 11.5, lineHeight: 15, fontWeight: '900' }}>
@@ -1840,48 +1756,16 @@ export default function GlobalSearchScreen() {
                 </View>
               ) : null}
 
-              <ScrollView role="tablist" accessibilityLabel="Search result type" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 7, paddingRight: 8 }}>
-                {CATEGORIES.map((item) => (
-                  <SearchCategoryChip
-                    key={item.key}
-                    label={item.label}
-                    icon={item.icon}
-                    imageIcon={item.imageIcon}
-                    active={category === item.key}
-                    onPress={() => setCategory(item.key)}
-                  />
-                ))}
-              </ScrollView>
+              <TouchableOpacity
+                onPress={() => { setFilterTypeExpanded(true); setFiltersOpen(true); }}
+                accessibilityRole="button"
+                accessibilityLabel="Choose search result type"
+                style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+              >
+                <Text style={{ color: theme.colors.text, fontSize: 14 }}>{CATEGORIES.find((item) => item.key === category)?.label ?? 'All'} results</Text>
+                <Ionicons name="chevron-down" size={16} color={theme.colors.primary} />
+              </TouchableOpacity>
 
-              {hasQuery ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                  <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '800' }} numberOfLines={1}>
-                    {searchResultSummary}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setFiltersOpen(true)}
-                    activeOpacity={0.82}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Sort and filter search results, currently ${currentSearchSortLabel}`}
-                    style={{
-                      minHeight: 34,
-                      borderRadius: 11,
-                      paddingHorizontal: 9,
-                      borderWidth: 1,
-                      borderColor: theme.colors.border,
-                      backgroundColor: 'rgba(255,255,255,0.72)',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 5,
-                    }}
-                  >
-                    <Ionicons name={searchIcons.sort} size={14} color={theme.colors.primary} />
-                    <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900', maxWidth: 132 }}>
-                      {currentSearchSortLabel}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ) : null}
             </View>
 
             {renderContent()}

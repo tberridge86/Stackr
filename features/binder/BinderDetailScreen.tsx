@@ -1,3 +1,4 @@
+import { StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
@@ -3247,6 +3248,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       />
       <StackrBackdrop />
       <FlatList
+        testID="binder-card-grid"
         ref={binderListRef}
         data={visibleCards}
         keyExtractor={(item) => item.id}
@@ -3407,6 +3409,55 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 {heroHelperText}
               </Text>
             ) : null}
+
+          </View>
+
+          {isReadOnly && (
+            <View style={{
+              backgroundColor: theme.colors.surface,
+              borderRadius: 14,
+              paddingVertical: 11,
+              paddingHorizontal: 14,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}>
+              <Ionicons name="eye-outline" size={17} color={theme.colors.textSoft} />
+              <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', flex: 1 }}>
+                Viewing another collector&apos;s binder - read only
+              </Text>
+            </View>
+          )}
+
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 13 }}>{cards.length} entries · {currentSortLabel}</Text>
+          <TouchableOpacity onPress={() => setSortDropdownOpen(true)} accessibilityRole="button" accessibilityLabel="Binder options and sort" style={{ minHeight: 44, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="options-outline" size={20} color={theme.colors.primary} />
+            <Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '700' }}>Options</Text>
+          </TouchableOpacity>
+        </View>
+
+          </View>
+        }
+        ListFooterComponent={hasMoreCardsToRender ? (
+          <View style={{ height: 24, justifyContent: 'center' }}>
+            <ActivityIndicator color={theme.colors.primary} size="small" />
+          </View>
+        ) : null}
+      />
+      <StackrBottomSheet visible={sortDropdownOpen} title="Binder options" onClose={() => setSortDropdownOpen(false)} maxHeight="86%" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+        <StackrBrowseFilterGroup
+          title="Order cards"
+          choices={sortOptions.map((option) => ({ key: option.value, label: option.label }))}
+          selected={sortMode}
+          onSelect={(key) => setSortMode(key as SortMode)}
+        />
+        <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 8 }}>
+          Missing: {totalNeedsSync ? 'unknown' : missingCount} · Duplicates: {duplicateCount} · Chase: {chaseCount}
+        </Text>
             {showsCompletion ? (
               <Pressable
                 accessibilityRole="button"
@@ -3427,7 +3478,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                       imageIcon={stackrIcons.scanCard}
                       variant="scan"
                       size="compact"
-                      onPress={handleScanCard}
+                      onPress={() => { setSortDropdownOpen(false); handleScanCard(); }}
                       accessibilityLabel="Scan to Binder"
                       showArrow={false}
                       style={{ flex: 1.12, minHeight: 48, borderRadius: 15 }}
@@ -3457,7 +3508,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         imageIcon={stackrIcons.scanCard}
                         variant="scan"
                         size="compact"
-                        onPress={handleScanCard}
+                        onPress={() => { setSortDropdownOpen(false); handleScanCard(); }}
                         accessibilityLabel="Scan to Binder"
                         showArrow={false}
                         style={{ flex: 1.12, minHeight: 48, borderRadius: 15 }}
@@ -3498,7 +3549,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
             {!isReadOnly && binder.type === 'custom' ? (
               <TouchableOpacity
-                onPress={() => setShowAddModal(true)}
+                onPress={() => { setSortDropdownOpen(false); setShowAddModal(true); }}
                 activeOpacity={0.82}
                 style={{
                   marginTop: 8,
@@ -3516,188 +3567,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }}>Add Manually</Text>
               </TouchableOpacity>
             ) : null}
-          </View>
-
-          {!isReadOnly && (
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity
-                onPress={() => setSortMode('missing')}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  backgroundColor: sortMode === 'missing' ? theme.colors.primary + '12' : theme.colors.card,
-                  borderRadius: 999,
-                  paddingVertical: 9,
-                  paddingHorizontal: 10,
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: sortMode === 'missing' ? theme.colors.primary : theme.colors.border,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ color: sortMode === 'missing' ? theme.colors.primary : theme.colors.text, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>
-                  Missing {totalNeedsSync ? '--' : missingCount}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setSortMode('owned')}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  backgroundColor: sortMode === 'owned' ? theme.colors.primary + '12' : theme.colors.card,
-                  borderRadius: 999,
-                  paddingVertical: 9,
-                  paddingHorizontal: 10,
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: sortMode === 'owned' ? theme.colors.primary : theme.colors.border,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ color: sortMode === 'owned' ? theme.colors.primary : theme.colors.text, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>
-                  Duplicates {duplicateCount}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setShowcaseCollapsed((prev) => ({ ...prev, chase: !prev.chase }))}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  backgroundColor: !showcaseCollapsed.chase && chaseCount > 0 ? theme.colors.primary + '12' : theme.colors.card,
-                  borderRadius: 999,
-                  paddingVertical: 9,
-                  paddingHorizontal: 10,
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: !showcaseCollapsed.chase && chaseCount > 0 ? theme.colors.primary : theme.colors.border,
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ color: !showcaseCollapsed.chase && chaseCount > 0 ? theme.colors.primary : theme.colors.text, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>
-                  Chase {chaseCount}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {isReadOnly && (
-            <View style={{
-              backgroundColor: theme.colors.surface,
-              borderRadius: 14,
-              paddingVertical: 11,
-              paddingHorizontal: 14,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-            }}>
-              <Ionicons name="eye-outline" size={17} color={theme.colors.textSoft} />
-              <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', flex: 1 }}>
-                Viewing another collector&apos;s binder - read only
-              </Text>
-            </View>
-          )}
-
-          <View>
-            {renderShowcaseStrip('chase', 'Chase Cards')}
-          </View>
-        </View>
-
-        {/* Sort dropdown */}
-        <View style={{ marginBottom: 14, zIndex: 50, elevation: 20 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 20, lineHeight: 25, fontWeight: '900', flex: 1 }} numberOfLines={1}>
-              {sortMode === 'owned' ? 'Owned Cards' : sortMode === 'missing' ? 'Missing Cards' : 'Binder Cards'}
-            </Text>
-
-            <TouchableOpacity
-              onPress={() => setSortDropdownOpen((prev) => !prev)}
-              style={{
-                backgroundColor: theme.colors.card,
-                borderRadius: 999,
-                minHeight: 44,
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <Ionicons name="swap-vertical-outline" size={16} color={theme.colors.primary} />
-              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>Sort: {currentSortLabel}</Text>
-              <Ionicons
-                name={sortDropdownOpen ? 'chevron-up' : 'chevron-down'}
-                size={16}
-                color={theme.colors.textSoft}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {sortDropdownOpen && (
-            <View style={{
-              alignSelf: 'flex-end',
-              width: Math.min(230, width - 40),
-              backgroundColor: theme.dark ? theme.colors.card : '#FFFFFF',
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              overflow: 'hidden',
-              marginTop: 8,
-              shadowColor: '#1B2A4B',
-              shadowOpacity: 0.16,
-              shadowRadius: 18,
-              shadowOffset: { width: 0, height: 8 },
-              elevation: 20,
-              zIndex: 80,
-            }}>
-              {sortOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  onPress={() => { setSortMode(option.value); setSortDropdownOpen(false); }}
-                  style={{
-                    minHeight: 44,
-                    justifyContent: 'center',
-                    paddingVertical: 10,
-                    paddingHorizontal: 14,
-                    backgroundColor: sortMode === option.value ? theme.colors.primary + '12' : theme.dark ? theme.colors.card : '#FFFFFF',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}
-                >
-                  <Ionicons
-                    name={sortMode === option.value ? 'checkmark-circle' : 'ellipse-outline'}
-                    size={17}
-                    color={sortMode === option.value ? theme.colors.primary : theme.colors.textSoft}
-                  />
-                  <Text style={{ color: sortMode === option.value ? theme.colors.primary : theme.colors.text, fontWeight: '900', flex: 1 }}>
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
-          </View>
-        }
-        ListFooterComponent={hasMoreCardsToRender ? (
-          <View style={{ height: 24, justifyContent: 'center' }}>
-            <ActivityIndicator color={theme.colors.primary} size="small" />
-          </View>
-        ) : null}
-      />
+        {renderShowcaseStrip('chase', 'Chase Cards')}
+      </StackrBottomSheet>
       <ScrollToEndButton
         visible={showBinderEndButton}
         onPress={scrollBinderToEnd}
