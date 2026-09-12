@@ -41,7 +41,24 @@ def verified_official_name(item) -> str:
     return builder.OFFICIAL_NAME_OVERRIDES.get(item.code, item.supplied_name)
 
 
+def fast_get(url: str, timeout: int = 45):
+    last_error: Exception | None = None
+    for attempt in range(2):
+        try:
+            response = builder.SESSION.get(url, timeout=min(timeout, 18))
+            response.raise_for_status()
+            if "asia.pokemon-card.com/tw/" in url:
+                response.encoding = "utf-8"
+            return response
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            if attempt == 0:
+                time.sleep(0.8)
+    raise RuntimeError(f"GET failed for {url}: {last_error}")
+
+
 builder.official_name = verified_official_name
+builder.get = fast_get
 
 
 def is_s8a_official_asset(item, text: str) -> bool:
@@ -125,21 +142,10 @@ def fast_open_remote_image(url: str) -> Image.Image:
         suffix = ".img"
     cache = builder.CACHE_DIR / f"{key}{suffix}"
     if not cache.exists():
-        last_error: Exception | None = None
-        for attempt in range(2):
-            try:
-                response = builder.SESSION.get(url, timeout=14)
-                response.raise_for_status()
-                if len(response.content) < 400:
-                    raise ValueError("image response too small")
-                cache.write_bytes(response.content)
-                break
-            except Exception as exc:  # noqa: BLE001
-                last_error = exc
-                if attempt == 0:
-                    time.sleep(0.7)
-        else:
-            raise RuntimeError(f"Image unavailable: {last_error}")
+        response = fast_get(url, 14)
+        if len(response.content) < 400:
+            raise ValueError("image response too small")
+        cache.write_bytes(response.content)
     image = Image.open(cache)
     image.load()
     return image.convert("RGBA")
