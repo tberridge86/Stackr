@@ -63,3 +63,15 @@ The API was not redeployed between these probes as part of this task. These figu
 - PR #180 remains the separate gateway/RLS workstream. These changes neither apply its migration nor deploy its gateway patch. Pricing and canonical-asset work remain untouched.
 
 Next implementation focus: cache-backed authorised reopening and truthful stale/refresh handling, coupled with actual first-viewport and ownership-ready measurement. Preserve the existing stricter cached catalogue/search targets; do not change thresholds to make a release green.
+
+## 12 September: release probe false-green closed in source
+
+Source base for this increment: `0b38f610cf8f78e3a8b8d476812e512f46812170` on this existing draft workstream. Production and device delivery remain unchanged.
+
+`scripts/deploy/benchmark-public-api.mjs`, the bounded probe used by the existing production workflow, now validates useful response content on every warmup and measured sample. It rejects an empty or wrong-language set list, an empty/wrong-language search, and a search that omits the expected canonical Japanese SV2a 157 printing (`ba65f365-abcb-40dd-9486-ba24014f33d5`). The asset scenario is narrowed to the production-verified M5 004 variant (`61459941-7744-431e-99ef-2b4c5fa26bef`) and requires the exact variant, an HTTPS original and exactly one HTTPS delivery for each of `card-grid`, `search-result` and `detail-page`.
+
+The report now records the minimum/maximum useful result count and that the expected identity was verified. The new local contract suite contains 12 cases: 4 valid envelopes and 8 false-green failures covering empty, wrong-language, wrong-identity and incomplete-derivative results. TypeScript, lint (zero errors; nine pre-existing warnings) and diff checks pass. The broader deployment-tooling test is locally unmeasured because this sparse checkout deliberately omits tracked asset files that its secret-scan fixture enumerates; normal full-checkout CI remains required.
+
+A read-only production database check against Supabase project `oakdbbzdqwurpjnoqhmu` at `2026-09-12T09:58:32.171791Z` confirms the pinned search identity is still published as Japanese `SV2a` collector `157`, with normal and reverse-holo variants. It also confirms the exact M5 004 asset remains approved in `supabase_storage` with one each of the three required derivatives. This verifies current database identities, not public-route latency, downloaded bytes or app rendering.
+
+This is executable probe validation, not a fresh live latency sample or phone-render proof. One bounded public request from this runner timed out at 10 seconds before receiving any response, so no new API p50/p95 is claimed; use the existing guarded workflow/canary path for the next bounded live pass after review.
