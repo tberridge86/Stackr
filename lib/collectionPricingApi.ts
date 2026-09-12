@@ -18,6 +18,15 @@ export type CollectionPriceInput = {
   grade?: string | null;
 };
 
+export type CollectionPriceRequestFailure = {
+  kind: 'authentication_required' | 'access_denied' | 'rate_limited' | 'service_error' | 'network_error';
+  status: number | null;
+  code: string | null;
+  requestId: string | null;
+  /** True means this item was not requested after a sibling stopped the batch. */
+  deferred: boolean;
+};
+
 export type CollectionPriceResult = {
   key: string;
   quantity: number;
@@ -30,6 +39,8 @@ export type CollectionPriceResult = {
   staleAfter: string | null;
   unavailableReason: string | null;
   requestError: string | null;
+  /** Missing quotes have no request failure; transport/access failures do. */
+  requestFailure?: CollectionPriceRequestFailure;
 };
 
 type CollectionPriceClient = Pick<StackrApiClient, 'cardPrice'>;
@@ -122,6 +133,41 @@ function unavailable(input: CollectionPriceInput, details: Partial<CollectionPri
   };
 }
 
+type ReadInterruption = Omit<CollectionPriceRequestFailure, 'deferred'>;
+
+function readInterruption(error: unknown): ReadInterruption | null {
+  if (!error || typeof error !== 'object') return null;
+  const value = error as { status?: unknown; code?: unknown; requestId?: unknown; name?: unknown; message?: unknown };
+  const status = typeof value.status === 'number' && Number.isInteger(value.status) ? value.status : null;
+  const code = typeof value.code === 'string' && /^[a-z0-9_]{1,80}$/.test(value.code) ? value.code : null;
+  const requestId = typeof value.requestId === 'string' ? value.requestId : null;
+  const kind = status === 401 ? 'authentication_required'
+    : status === 403 ? 'access_denied'
+    : status === 429 ? 'rate_limited'
+    : status !== null && status >= 500 && status <= 599 ? 'service_error'
+    : value.name === 'AbortError' || value.name === 'TimeoutError'
+      || value.name === 'TypeError' && ['Network request failed', 'Failed to fetch', 'fetch failed'].includes(String(value.message))
+      ? 'network_error' : null;
+  return kind ? { kind, status, code, requestId } : null;
+}
+
+function interruptionDetails(failure: ReadInterruption, deferred = false): Partial<CollectionPriceResult> {
+  const messages: Record<ReadInterruption['kind'], string> = {
+    authentication_required: 'Sign in is required to read prices.',
+    access_denied: 'Price access was denied for this account.',
+    rate_limited: 'Price lookup is temporarily rate-limited. Retry later.',
+    service_error: 'The price service is temporarily unavailable or timed out.',
+    network_error: 'The price lookup could not connect or timed out.',
+  };
+  return {
+    unavailableReason: messages[failure.kind],
+    requestError: failure.code ?? failure.kind,
+    // A deferred item has no request of its own. Never attach a sibling's
+    // request ID as though it were proof that this card reached the API.
+    requestFailure: { ...failure, requestId: deferred ? null : failure.requestId, deferred },
+  };
+}
+
 async function resolveAnyReference(
   input: CollectionPriceInput,
   resolver: CollectionPriceResolver,
@@ -133,6 +179,9 @@ async function resolveAnyReference(
       const resolved = await resolver(reference, { language: input.language, setId: input.setId }, client);
       if (resolved) return { reference, resolved, requestError };
     } catch (error) {
+      // A different alias cannot repair quota, auth or a service outage.
+      // Preserve genuine no-match fallbacks, but propagate backpressure.
+      if (readInterruption(error)) throw error;
       requestError = error instanceof Error ? error.message : String(error);
     }
   }
@@ -144,8 +193,20 @@ async function loadOne(
   client: StackrApiClient,
   resolver: CollectionPriceResolver,
   isCurrent?: () => boolean,
+  onReadFailure?: (error: unknown) => void,
 ): Promise<CollectionPriceResult> {
-  const { reference, resolved, requestError: resolveError } = await resolveAnyReference(input, resolver, client);
+  let resolution: Awaited<ReturnType<typeof resolveAnyReference>>;
+  try {
+    resolution = await resolveAnyReference(input, resolver, client);
+  } catch (error) {
+    onReadFailure?.(error);
+    const failure = readInterruption(error);
+    return unavailable(input, failure ? interruptionDetails(failure) : {
+      unavailableReason: 'Card resolution failed.',
+      requestError: error instanceof Error ? error.message : String(error),
+    });
+  }
+  const { reference, resolved, requestError: resolveError } = resolution;
   if (isCurrent && !isCurrent()) return unavailable(input, { unavailableReason: 'Stored price read superseded.' });
   if (!resolved || !reference) {
     return unavailable(input, {
@@ -221,18 +282,22 @@ async function loadOne(
       requestError: null,
     };
   } catch (error) {
+    onReadFailure?.(error);
+    const failure = readInterruption(error);
     return unavailable(input, {
       reference,
       variantId,
       unavailableReason: 'Stackr price request failed.',
       requestError: error instanceof Error ? error.message : String(error),
+      ...(failure ? interruptionDetails(failure) : {}),
     });
   }
 }
 
 /**
  * Bounded, read-only collection price fetch. Each item is isolated so a failed
- * resolution or price request cannot discard its siblings.
+ * resolution or price request cannot discard its siblings. Systemic failures
+ * stop new work in this load; completed quotes and in-flight work are retained.
  */
 export async function loadCollectionPrices(
   inputs: CollectionPriceInput[],
@@ -242,8 +307,17 @@ export async function loadCollectionPrices(
     .then(({ StackrApiClient }) => new StackrApiClient()));
   const resolve = options.resolver ?? (await import('./stackrDomainAdapter')).resolveCachedStackrCard;
   // Sharing is scoped to this load: never retain authenticated prices across accounts.
+  const batch: { failure: ReadInterruption | null; error?: unknown } = { failure: null };
+  const onReadFailure = (error: unknown) => {
+    const failure = readInterruption(error);
+    if (failure && !batch.failure) {
+      batch.failure = failure;
+      batch.error = error;
+    }
+  };
   const resolutions = new Map<string, ReturnType<CollectionPriceResolver>>();
   const resolver: CollectionPriceResolver = (reference, constraints, activeClient) => {
+    if (batch.failure) return Promise.reject(batch.error);
     const key = JSON.stringify([reference, constraints.language ?? null, constraints.setId ?? null]);
     let pending = resolutions.get(key);
     if (!pending) {
@@ -258,14 +332,22 @@ export async function loadCollectionPrices(
   let completed = 0;
 
   const worker = async () => {
-    while (nextIndex < inputs.length && (options.isCurrent?.() ?? true)) {
+    while (!batch.failure && nextIndex < inputs.length && (options.isCurrent?.() ?? true)) {
       const index = nextIndex++;
-      results[index] = await loadOne(inputs[index], client, resolver, options.isCurrent);
+      results[index] = await loadOne(inputs[index], client, resolver, options.isCurrent, onReadFailure);
       completed += 1;
       if (options.isCurrent?.() ?? true) options.onProgress?.([...results], completed);
     }
   };
 
   await Promise.all(Array.from({ length: Math.min(concurrency, inputs.length) }, worker));
+  if (batch.failure && nextIndex < inputs.length && (options.isCurrent?.() ?? true)) {
+    for (let index = nextIndex; index < inputs.length; index += 1) {
+      results[index] = unavailable(inputs[index], interruptionDetails(batch.failure, true));
+    }
+    // completed counts attempted items, not deferred rows. Unknown values
+    // remain null; stopping a batch does not invent collection coverage.
+    options.onProgress?.([...results], completed);
+  }
   return results;
 }
