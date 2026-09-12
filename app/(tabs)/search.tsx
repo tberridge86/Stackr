@@ -1726,7 +1726,9 @@ export default function GlobalSearchScreen() {
                 horizontalInset={0}
                 search={query}
                 onSearchChange={setQuery}
-                placeholder="Search cards, sets and products"
+                onSubmitSearch={() => { void rememberSearch(); }}
+                loading={loading}
+                placeholder={showcaseConfig?.placeholder ?? 'Search cards, sets or sealed products'}
                 onOpenFilters={() => setFiltersOpen(true)}
                 activeFilterCount={activeSearchFilterCount}
                 resultLabel={hasQuery ? `${searchResultSummary} · ${currentSearchSortLabel}` : undefined}

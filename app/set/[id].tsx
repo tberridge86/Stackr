@@ -44,6 +44,7 @@ type CompletionistFinishKey =
   | 'masterBall'
   | 'stamped';
 type FinishSectionKey = 'pattern' | 'texture' | 'masterBall' | 'stamped';
+type FinishSectionFilter = FinishSectionKey | 'all';
 type RarityFilterOption = { key: string; label: string; count: number; rank: number };
 
 type QuantityTarget = {
@@ -650,13 +651,13 @@ export default function SetDetailScreen() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [selectedRarity, setSelectedRarity] = useState<string>(ALL_RARITY_FILTER);
   const [sort, setSort] = useState<SortType>('number');
-  const [finishSection, setFinishSection] = useState<FinishSectionKey>('pattern');
+  const [finishSection, setFinishSection] = useState<FinishSectionFilter>('all');
   const clearCardFilters = useCallback(() => {
     setSearch('');
     setFilter('all');
     setSelectedRarity(ALL_RARITY_FILTER);
     setSort('number');
-    setFinishSection('pattern');
+    setFinishSection('all');
   }, []);
 
   // ===============================
@@ -736,7 +737,9 @@ export default function SetDetailScreen() {
 
   useEffect(() => {
     setSetLogoFailed(false);
-  }, [setId]);
+    clearCardFilters();
+    setBrowseFiltersVisible(false);
+  }, [setId, clearCardFilters]);
 
   // ===============================
   // QUANTITY
@@ -924,9 +927,9 @@ export default function SetDetailScreen() {
   const hasCompletionistSections = availableFinishSections.length >= 2;
 
   useEffect(() => {
-    if (!hasCompletionistSections) return;
-    if (!availableFinishSections.some((section) => section.key === finishSection)) {
-      setFinishSection(availableFinishSections[0].key);
+    if (finishSection !== 'all' && (!hasCompletionistSections ||
+      !availableFinishSections.some((section) => section.key === finishSection))) {
+      setFinishSection('all');
     }
   }, [availableFinishSections, finishSection, hasCompletionistSections]);
 
@@ -955,7 +958,7 @@ export default function SetDetailScreen() {
         (filter === 'missing' && !anyOwned);
       const cardRarity = getCardRarityFilter(card);
       const matchesRarity = selectedRarity === ALL_RARITY_FILTER || cardRarity?.key === selectedRarity;
-      const matchesFinishSection = !hasCompletionistSections || getFinishSectionKey(card, completionistFamilyCounts) === finishSection;
+      const matchesFinishSection = finishSection === 'all' || !hasCompletionistSections || getFinishSectionKey(card, completionistFamilyCounts) === finishSection;
       return matchesSearch && matchesFilter && matchesRarity && matchesFinishSection;
     });
 
@@ -1062,8 +1065,8 @@ export default function SetDetailScreen() {
   const selectedVariantQuantity = quantityTarget
     ? variantQuantities.get(getVariantKey(quantityTarget.card.id, setId ?? '', quantityTarget.variant)) ?? 0
     : 0;
-  const activeFinishSection = hasCompletionistSections
-    ? availableFinishSections.find((section) => section.key === finishSection) ?? availableFinishSections[0]
+  const activeFinishSection = hasCompletionistSections && finishSection !== 'all'
+    ? availableFinishSections.find((section) => section.key === finishSection) ?? null
     : null;
   const activeRarityFilter = selectedRarity !== ALL_RARITY_FILTER
     ? rarityFilterOptions.find((option) => option.key === selectedRarity) ?? null
@@ -1091,7 +1094,7 @@ export default function SetDetailScreen() {
         onSearchChange={setSearch}
         placeholder="Search this set"
         onOpenFilters={() => setBrowseFiltersVisible(true)}
-        activeFilterCount={Number(selectedRarity !== ALL_RARITY_FILTER) + Number(hasCompletionistSections) + Number(sort !== 'number')}
+        activeFilterCount={Number(selectedRarity !== ALL_RARITY_FILTER) + Number(activeFinishSection !== null) + Number(sort !== 'number')}
         choices={[{ key: 'all', label: 'All' }, { key: 'owned', label: 'Owned' }, { key: 'missing', label: 'Missing' }]}
         selected={filter}
         onSelect={(key) => setFilter(key as FilterType)}
@@ -1145,9 +1148,11 @@ export default function SetDetailScreen() {
             <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
               {ownershipReady ? `${ownedCardCount} catalogue entries owned` : 'Checking ownership…'}
             </Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
-              {[activeFinishSection?.shortLabel, activeRarityFilter?.label].filter(Boolean).join(' · ')}
-            </Text>
+            {activeFinishSection || activeRarityFilter ? (
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+                {[activeFinishSection?.shortLabel, activeRarityFilter?.label].filter(Boolean).join(' · ')}
+              </Text>
+            ) : null}
           </StackrBrowseSummary>
         }
         ListEmptyComponent={
@@ -1183,9 +1188,9 @@ export default function SetDetailScreen() {
         {hasCompletionistSections ? (
           <StackrBrowseFilterGroup
             title="Finish group"
-            choices={availableFinishSections.map((section) => ({ key: section.key, label: section.label, count: section.count }))}
+            choices={[{ key: 'all', label: 'All finishes', count: cards.length }, ...availableFinishSections.map((section) => ({ key: section.key, label: section.label, count: section.count }))]}
             selected={finishSection}
-            onSelect={(key) => setFinishSection(key as FinishSectionKey)}
+            onSelect={(key) => setFinishSection(key as FinishSectionFilter)}
           />
         ) : null}
         {showRarityFilters ? (

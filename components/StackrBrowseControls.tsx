@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
+  ActivityIndicator,
   Keyboard,
   StyleSheet,
   TextInput,
@@ -49,6 +50,8 @@ export function StackrBinderButton({
 export function StackrBrowseToolbar({
   search,
   onSearchChange,
+  onSubmitSearch,
+  loading = false,
   placeholder = 'Search cards…',
   onOpenFilters,
   activeFilterCount = 0,
@@ -60,6 +63,8 @@ export function StackrBrowseToolbar({
 }: {
   search: string;
   onSearchChange: (value: string) => void;
+  onSubmitSearch?: () => void;
+  loading?: boolean;
   placeholder?: string;
   onOpenFilters: () => void;
   activeFilterCount?: number;
@@ -72,7 +77,7 @@ export function StackrBrowseToolbar({
   const { theme } = useTheme();
   const filterLabel = activeFilterCount > 0 ? `Filters · ${activeFilterCount}` : 'Filters';
   return (
-    <View testID="browse-toolbar" style={[styles.toolbar, { backgroundColor: theme.colors.bg, paddingHorizontal: horizontalInset }]}>
+    <View testID="browse-toolbar" accessibilityState={{ busy: loading }} style={[styles.toolbar, { backgroundColor: theme.colors.bg, paddingHorizontal: horizontalInset }]}>
       <View style={styles.searchRow}>
         <View style={[styles.searchField, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
           <Ionicons name="search-outline" size={19} color={theme.colors.textSoft} />
@@ -83,11 +88,13 @@ export function StackrBrowseToolbar({
             placeholder={placeholder}
             placeholderTextColor={theme.colors.textSoft}
             autoCorrect={false}
+            spellCheck={false}
             autoCapitalize="none"
             returnKeyType="search"
-            onSubmitEditing={() => Keyboard.dismiss()}
+            onSubmitEditing={() => { Keyboard.dismiss(); onSubmitSearch?.(); }}
             style={[styles.searchInput, { color: theme.colors.text }]}
           />
+          {loading ? <ActivityIndicator size="small" color={theme.colors.primary} accessibilityLabel="Searching" /> : null}
           {search.length > 0 ? (
             <TouchableOpacity
               onPress={() => onSearchChange('')}
