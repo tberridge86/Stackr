@@ -247,22 +247,15 @@ if (migrationReconciliation.status === 0) {
   assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
   assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 } else {
-  // The repository ledger is twenty-five additional migrations ahead of the last
-  // legacy reconciliation evidence: Premium Seller, the byte-identical
-  // emergency containment capture, Gate 0, and the unapplied staging-first
-  // catalogue natural-identity reconciliation, followed by staging's atomic
-  // exact raw-revision retention, immutable run-observation provenance,
-  // conflict-deduplication lookup index, launch conflict-report repair, and
-  // the two additive binder artwork-read and six evidence-gated
-  // personal-pricing migrations, and the three catalogue-name lookup repairs
-  // applied to staging and production on 8 September, plus the service-only
-  // exact TCGdex alias bridge prepared for the same release, followed by five
-  // collector-search migrations recovered from production's 9 September ledger. These
-  // additions do not revise the frozen staging evidence or approve deployment.
-  // Normal production workflows remain fail-closed; staging applies
-  // migrations only through scoped paths.
+  // Pending source migrations are not evidence of live application.
+  // Verify the actual repository count, preserve the frozen legacy
+  // inventory, and keep every reconciliation/deployment error intact.
+  const localMigrations = readdirSync('supabase/migrations')
+    .filter((name) => /^\d{14}_.+\.sql$/.test(name))
+    .sort();
   const reconciliation = JSON.parse(migrationReconciliation.stdout);
-  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 25);
+  assert.equal(reconciliation.localMigrationFileCount, localMigrations.length);
+  assert.ok(localMigrations.length > reconciliation.stagingMigrationHistoryCount, 'the pending repository ledger must not masquerade as aligned');
   assert.deepEqual(reconciliation.errors, [
     'local_migration_count_drift',
     'staging_migration_count_drift',
@@ -271,14 +264,11 @@ if (migrationReconciliation.status === 0) {
     'baseline_migration_history_restore_not_verified',
     'isolated_candidate_delta_replay_not_verified',
   ]);
-  const localMigrations = readdirSync('supabase/migrations')
-    .filter((name) => /^\d{14}_.+\.sql$/.test(name))
-    .sort();
-  assert.equal(localMigrations.at(-1), '20260909133639_collector_search_identity_view.sql');
+  assert.ok(localMigrations.includes('20260911075500_optimize_binder_rls_reads.sql'));
   assert.ok(localMigrations.includes('20260831202805_repair_launch_catalogue_conflict_set_resolution.sql'));
   assert.ok(localMigrations.includes('20260827093110_emergency_client_write_containment.sql'));
   assert.ok(localMigrations.includes('20260827124944_gate0_financial_route_containment.sql'));
-  assert.deepEqual(localMigrations.slice(-17), [
+  assert.deepEqual(localMigrations.filter((name) => name >= '20260903120000_deduplicate_pending_price_refreshes.sql' && name <= '20260909133639_collector_search_identity_view.sql'), [
     '20260903120000_deduplicate_pending_price_refreshes.sql',
     '20260903210000_verified_sold_provenance.sql',
     '20260904123000_poketrace_sold_evidence_provider.sql',

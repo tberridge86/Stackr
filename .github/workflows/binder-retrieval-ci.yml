@@ -1,0 +1,50 @@
+name: Binder retrieval RLS regression
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/binder-retrieval-ci.yml'
+      - 'scripts/test-fixtures/binder-rls-retrieval.sql'
+      - 'supabase/migrations/20260911075500_optimize_binder_rls_reads.sql'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/binder-retrieval-ci.yml'
+      - 'scripts/test-fixtures/binder-rls-retrieval.sql'
+      - 'supabase/migrations/20260911075500_optimize_binder_rls_reads.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  binder-rls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stackr_binder_rls_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Apply actual migration and compare allowed and denied operations
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: stackr_binder_rls_test
+        run: |
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGDATABASE" = 'stackr_binder_rls_test'
+          psql -X --set=ON_ERROR_STOP=1 --file=scripts/test-fixtures/binder-rls-retrieval.sql
