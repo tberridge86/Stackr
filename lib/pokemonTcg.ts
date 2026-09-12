@@ -316,6 +316,27 @@ const KNOWN_SET_OVERRIDES: PokemonSet[] = [
   },
 ];
 
+/**
+ * The current English catalogue exposes PBL alongside the canonical ME05
+ * Pitch Black record. They have the same language, title, release date and
+ * printed card total, but PBL has no independently approved set mark.
+ * Keep PBL reachable if the canonical record is absent; otherwise avoid
+ * presenting the duplicate in set pickers and search results built from the
+ * shared set list.
+ */
+export function filterKnownDuplicateSetRecords(sets: PokemonSet[]): PokemonSet[] {
+  const hasCanonicalPitchBlack = sets.some((set) => (
+    normalizePokemonCardLanguage(set.language) === 'en'
+    && normalizeSetId(getSetExternalCode(set)) === 'me5'
+  ));
+  if (!hasCanonicalPitchBlack) return sets;
+  return sets.filter((set) => !(
+    normalizePokemonCardLanguage(set.language) === 'en'
+    && normalizeSetId(getSetExternalCode(set)) === 'pbl'
+    && String(set.englishDisplayName ?? set.name ?? '').trim().toLowerCase() === 'pitch black'
+  ));
+}
+
 function normalizeSetId(setId?: string | null) {
   const normalized = String(setId ?? '').trim().toLowerCase();
   if (!normalized) return normalized;
@@ -1921,7 +1942,9 @@ export async function fetchAllSets(options: FetchAllSetsOptions = {}): Promise<P
 
   const request = (async () => {
     const loadSets = options.preferCanonicalApi ? fetchPreferredStackrSets : fetchStackrSets;
-    const sets = (await loadSets(language === 'all' ? null : language, undefined, { includeAssets: options.includeAssets })).map(fromStackrSet);
+    const sets = filterKnownDuplicateSetRecords(
+      (await loadSets(language === 'all' ? null : language, undefined, { includeAssets: options.includeAssets })).map(fromStackrSet),
+    );
     if (options.includeAssets !== false) prefetchPokemonSetLogos(sets.map((set) => set.id), language === 'all' ? undefined : language);
     cacheNonEmptyCatalogueRows(allSetsCache, cacheKey, sets, Date.now() + POKEMON_SET_CACHE_TTL_MS);
     return sets;

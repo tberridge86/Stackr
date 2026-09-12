@@ -226,7 +226,7 @@ export function mergeBinderArtwork<T extends { id: string; card_id: string; set_
     const cardId = raw?.cardId ?? card?.id;
     const variantId = raw?.defaultVariantId ?? card?.externalIds?.stackrVariant;
     if (!UUID.test(cardId ?? '') || !UUID.test(variantId ?? '') || !row.language) return null;
-    return JSON.stringify([row.id, row.set_id, card?.set?.id ?? row.set_id, row.language, cardId, variantId]);
+    return JSON.stringify([row.id, row.set_id, card?.set?.id ?? row.set_id, row.language, cardId, variantId, raw?.catalogueVersionId ?? null]);
   };
   const artwork = new Map<string, T>();
   for (const row of incoming) { const key = identity(row); if (key) artwork.set(key, row); }

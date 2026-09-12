@@ -559,12 +559,16 @@ async function findLegacySnapshotEstimate(supabase, variantId, input = {}) {
   if (!supportedLegacyInput(input)) return null;
   const metadata = await catalogueRefreshMetadata(supabase, variantId);
   if (!metadata?.language) return null;
-  const { cardIds } = await resolveSnapshotIdentity(supabase, variantId, metadata);
-  if (!cardIds.length) return null;
+
+  // Most current provider snapshots are now written against the canonical
+  // variant ID.  Check that narrow, exact scope before reading the aliases
+  // view or broadening to a printing-level fallback.  This preserves the
+  // exact-variant-first rule while keeping ordinary collection reads below
+  // the gateway's downstream deadline.
   const { data, error } = await supabase
     .from('market_price_snapshots')
     .select('id,card_id,language,canonical_identity_key,pricing_identity_json,market_price_gbp,low_price_gbp,high_price_gbp,tcgdex_price,tcg_mid,tcg_low,primary_source,price_source,price_type,confidence_score,confidence_label,calculated_at,snapshot_at,stale_after,is_stale')
-    .in('card_id', cardIds)
+    .eq('card_id', variantId)
     .is('user_id', null)
     .eq('language', metadata.language)
     .order('snapshot_at', { ascending: false })
@@ -573,6 +577,29 @@ async function findLegacySnapshotEstimate(supabase, variantId, input = {}) {
 
   let best = null;
   for (const row of data ?? []) {
+    const scope = snapshotVariantScope(row, variantId, metadata);
+    const estimate = scope ? legacySnapshotEstimate(row, variantId, scope) : null;
+    if (!estimate) continue;
+    if (!best || (scope === 'exact_variant' && best.quoteScope !== 'exact_variant')) best = estimate;
+  }
+  if (best?.quoteScope === 'exact_variant') return best;
+
+  // Legacy imported snapshots can be keyed by an approved provider alias or
+  // printing ID.  Keep this broader query strictly behind the exact check so
+  // it remains a fallback and never lets a sibling variant replace an exact
+  // canonical price.
+  const { cardIds } = await resolveSnapshotIdentity(supabase, variantId, metadata);
+  if (!cardIds.length) return best;
+  const aliases = await supabase
+    .from('market_price_snapshots')
+    .select('id,card_id,language,canonical_identity_key,pricing_identity_json,market_price_gbp,low_price_gbp,high_price_gbp,tcgdex_price,tcg_mid,tcg_low,primary_source,price_source,price_type,confidence_score,confidence_label,calculated_at,snapshot_at,stale_after,is_stale')
+    .in('card_id', cardIds)
+    .is('user_id', null)
+    .eq('language', metadata.language)
+    .order('snapshot_at', { ascending: false })
+    .limit(100);
+  if (aliases.error) throw aliases.error;
+  for (const row of aliases.data ?? []) {
     const scope = snapshotVariantScope(row, variantId, metadata);
     const estimate = scope ? legacySnapshotEstimate(row, variantId, scope) : null;
     if (!estimate) continue;

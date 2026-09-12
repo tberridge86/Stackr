@@ -1043,19 +1043,17 @@ function makeStyles(theme: any) {
     fontSize: 14,
   },
   heroCard: {
-    backgroundColor: theme.colors.card,
+    backgroundColor: 'transparent',
     borderRadius: 20,
     padding: 12,
     marginBottom: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
     alignItems: 'center',
   },
   heroImageFrame: {
     width: '100%',
     borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: theme.colors.surface,
+    overflow: 'visible',
+    backgroundColor: 'transparent',
   },
   cardImage: {
     width: '100%',
