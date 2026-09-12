@@ -93,6 +93,8 @@ import {
 import { saveScanAttemptDiagnostics } from '../../lib/scanDiagnostics';
 import { logScanLearningEvent } from '../../lib/scanLearning';
 import {
+  awaitScannerCaptureStage,
+  canContinueScannerCapture,
   SCANNER_RECOGNITION_PIPELINE_VERSION,
   rankScannerCandidates,
   validateScannerFrame,
@@ -1123,6 +1125,8 @@ export default function ScanScreen() {
   const appStateRef = useRef(AppState.currentState);
   const captureInFlightRef = useRef(false);
   const navigatingAwayRef = useRef(false);
+  const captureAttemptRef = useRef(0);
+  const scannerRouteFocusedRef = useRef(isFocused);
   renderCount.current += 1;
 
   const [permission, requestPermission] = useCameraPermissions();
@@ -1842,6 +1846,7 @@ export default function ScanScreen() {
       const wasActive = appStateRef.current === 'active';
       const isActive = nextState === 'active';
       appStateRef.current = nextState;
+      if (!isActive) captureAttemptRef.current += 1;
       setAppActive(isActive);
 
       if (wasActive && !isActive) {
@@ -1867,17 +1872,24 @@ export default function ScanScreen() {
   }, [cameraReady, isFocused, mountError, permissionGranted, scanMode, setScannerState, stopAutoScanner]);
 
   useEffect(() => {
+    scannerRouteFocusedRef.current = isFocused;
     navigatingAwayRef.current = !isFocused;
     if (!isFocused) {
+      captureAttemptRef.current += 1;
       stopAutoScanner();
       setCameraReady(false);
       setScannerState({ type: 'camera_paused' });
     }
   }, [isFocused, setScannerState, stopAutoScanner]);
 
+  useEffect(() => () => {
+    captureAttemptRef.current += 1;
+  }, []);
+
   const closeScanner = useCallback(() => {
     logScannerLifecycleEvent('cancellation', 'closed_scanner', { source: 'close-button' });
     navigatingAwayRef.current = true;
+    captureAttemptRef.current += 1;
     stopAutoScanner();
     scanStore.clear();
 
@@ -2561,7 +2573,8 @@ export default function ScanScreen() {
     photo: CapturedPhoto,
     capturedFrame?: CapturedFrame | null,
     captureMs?: number | null,
-    attemptStartedAt?: number | null
+    attemptStartedAt?: number | null,
+    canContinueCapture: () => boolean = () => true,
   ) => {
     const startedAt = Date.now();
     const analyticsStartedAt = attemptStartedAt ?? startedAt;
@@ -2574,6 +2587,7 @@ export default function ScanScreen() {
 
     const cropStartedAt = Date.now();
     const { pageUri, pockets } = await prepareBinderPagePocketImages(photo, capturedFrame);
+    if (!canContinueCapture()) return;
     perspectiveCropMs = Date.now() - cropStartedAt;
     const initialResults = pockets.map((pocket): BinderPagePocketResult => {
       const quality = assessBinderPocketImage(pocket.base64);
@@ -2600,6 +2614,7 @@ export default function ScanScreen() {
     const localStartedAt = Date.now();
     for (const pocket of workable) {
       const result = await identifyBinderPagePocket(pocket, false);
+      if (!canContinueCapture()) return;
       localByIndex.set(pocket.cell.index, result);
       localResults.push(result);
       processed += 1;
@@ -2623,11 +2638,13 @@ export default function ScanScreen() {
       Math.max(1, Math.min(4, Math.floor(SCAN_BINDER_PAGE_REMOTE_CONCURRENCY) || 2)),
       async (pocket) => {
         const result = await identifyBinderPagePocket(pocket, true);
+        if (!canContinueCapture()) return result;
         processed += 1;
         setBinderPageProgress({ processed: Math.min(pockets.length, processed), total: pockets.length });
         return result;
       }
     );
+    if (!canContinueCapture()) return;
     remoteRequestMs = unresolved.length ? Date.now() - remoteStartedAt : null;
 
     const remoteByIndex = new Map(remoteResults.map((result) => [result.index, result]));
@@ -2686,6 +2703,7 @@ export default function ScanScreen() {
     });
 
     const { data: { session: authSession } } = await supabase.auth.getSession();
+    if (!canContinueCapture()) return;
     const binderPageOwnerUserId = authSession?.user.id;
     if (!binderPageOwnerUserId) {
       throw new Error('Sign in before opening a binder page review.');
@@ -2721,6 +2739,7 @@ export default function ScanScreen() {
             pockets: markDuplicatePocketCandidates(nextPockets),
           };
         });
+        if (!canContinueCapture()) return;
 
         if (updatedParent) {
           await logScanLearningEvent({
@@ -2754,6 +2773,7 @@ export default function ScanScreen() {
             })),
             outcome: replacement.candidates.length ? 'candidates_returned' : 'no_match',
           });
+          if (!canContinueCapture()) return;
           setScannerState({ type: 'confirm' });
           navigatingAwayRef.current = true;
           stopAutoScanner();
@@ -2781,6 +2801,7 @@ export default function ScanScreen() {
       processingMs: Date.now() - startedAt,
       pockets: finalPockets,
     });
+    if (!canContinueCapture()) return;
 
     await logScanLearningEvent({
       scanSessionId: routeInstanceId.current,
@@ -2810,6 +2831,7 @@ export default function ScanScreen() {
       }))),
       outcome: finalPockets.some((pocket) => pocket.candidates.length) ? 'candidates_returned' : 'no_match',
     });
+    if (!canContinueCapture()) return;
 
     setScannerState({ type: 'confirm' });
     navigatingAwayRef.current = true;
@@ -2854,6 +2876,15 @@ export default function ScanScreen() {
     }
 
     captureInFlightRef.current = true;
+    const captureAttemptId = captureAttemptRef.current + 1;
+    captureAttemptRef.current = captureAttemptId;
+    const canContinueCapture = () => canContinueScannerCapture({
+      attemptId: captureAttemptId,
+      currentAttemptId: captureAttemptRef.current,
+      appActive: appStateRef.current === 'active',
+      routeFocused: scannerRouteFocusedRef.current,
+      navigatingAway: navigatingAwayRef.current,
+    });
     setScannerState({ type: 'capture_start' });
     setAcceptedPreviewUri(null);
     setScanMessage('Capturing card...');
@@ -3011,13 +3042,14 @@ export default function ScanScreen() {
         base64: false,
         exif: false,
       });
+      if (!canContinueCapture()) return;
       timings.captureMs = capturedPhoto ? 0 : Date.now() - captureStartedAt;
       photoForDiagnostics = photo;
       const capturedFrame = createScanCapturedFrame(photo);
       captureFrameForDiagnostics = capturedFrame;
 
       if (isBinderPageScan && SCAN_BINDER_PAGE_V2_ENABLED) {
-        await processBinderPageCapture(photo, capturedFrame, timings.captureMs, attemptStartedAt);
+        await processBinderPageCapture(photo, capturedFrame, timings.captureMs, attemptStartedAt, canContinueCapture);
         return;
       }
 
@@ -3025,6 +3057,7 @@ export default function ScanScreen() {
       setScannerState({ type: 'quality_check' });
       const qualityStartedAt = Date.now();
       const { quality, localisation } = await evaluateCapturedPhotoQuality(photo, capturedFrame);
+      if (!canContinueCapture()) return;
       timings.qualityMs = Date.now() - qualityStartedAt;
       qualityForDiagnostics = quality;
       const frameValidation = validateScannerFrame({ quality, localisation });
@@ -3068,6 +3101,7 @@ export default function ScanScreen() {
             ...quality.failures.map((failure) => `${failure.code}:${failure.score}`),
           ].join(', '),
         });
+        if (!canContinueCapture()) return;
         setScannerState({ type: 'search' });
         Alert.alert(
           isNoTradingCard ? 'No trading card detected' : 'Scan needs a clearer photo',
@@ -3087,6 +3121,7 @@ export default function ScanScreen() {
       setScanMessage('Preparing scan...');
       const recognitionImageStartedAt = Date.now();
       const recognitionImages = await preparePhotosForRecognition(photo, capturedFrame);
+      if (!canContinueCapture()) return;
       timings.recognitionImageMs = Date.now() - recognitionImageStartedAt;
       recognitionImageForDiagnostics = recognitionImages[0] ?? null;
       const resultRectifiedImage = recognitionImages.find((image) => image.role === 'localised-card-crop')
@@ -3106,6 +3141,7 @@ export default function ScanScreen() {
       setScanMessage('Reading card text...');
       const ocrSourceImage = getOcrSourceImage(recognitionImages);
       const targetedOcr = await runTargetedCardOcr(ocrSourceImage);
+      if (!canContinueCapture()) return;
       timings.ocrMs = Date.now() - ocrStartedAt;
       const ocrText = targetedOcr.text;
 
@@ -3120,6 +3156,7 @@ export default function ScanScreen() {
           scanImageBase64: ocrSourceImage?.base64 ?? base64Images[0] ?? null,
           strongConfidence: scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
         });
+        if (!canContinueCapture()) return;
         localOcrMatchForAnalytics = localOcrMatch;
         timings.localOcrMatchMs = Date.now() - localStartedAt;
         localOcrDiagnostics = buildLocalOcrDiagnostics(localOcrMatch, recognitionImages.length);
@@ -3128,6 +3165,7 @@ export default function ScanScreen() {
           .map(localOcrCandidateToIdentifiedCard);
         const cachedLookupStartedAt = Date.now();
         const cachedIdentified = await lookupStackrCachedIdentities(localOcrMatch);
+        if (!canContinueCapture()) return;
         timings.localCatalogueLookupMs = Date.now() - cachedLookupStartedAt;
         localIdentified = mergeIdentifiedCards(cachedIdentified, localIdentified).slice(0, MAX_RESULT_CARDS);
 
@@ -3154,7 +3192,7 @@ export default function ScanScreen() {
         try {
           setScanMessage('Matching artwork...');
           const localPrintedNumber = localOcrMatch?.signals.printedNumber;
-          const detailedResult = await identifyCardsDetailed(base64Images, binderId ?? undefined, {
+          const recognitionStage = await awaitScannerCaptureStage(identifyCardsDetailed(base64Images, binderId ?? undefined, {
             ocrText,
             language: localOcrMatch?.signals.language === 'unknown' ? null : localOcrMatch?.signals.language,
             printedNumber: localPrintedNumber?.number && localPrintedNumber.denominator
@@ -3171,7 +3209,9 @@ export default function ScanScreen() {
             itemType: scanIntentConfig.itemType,
             isSlab: scanIntent === 'graded_slab',
             rectifiedImageUri: resultRectifiedImage?.uri ?? ocrSourceImage?.uri ?? null,
-          });
+          }), canContinueCapture);
+          if (!recognitionStage.active) return;
+          const detailedResult = recognitionStage.value;
           timings.identifyMs = Date.now() - identifyStartedAt;
           identified = detailedResult.cards;
           remoteDiagnostics = detailedResult.diagnostics;
@@ -3202,6 +3242,7 @@ export default function ScanScreen() {
 
       const resolveStartedAt = Date.now();
       const cards = await resolveMatches(identified, ocrText);
+      if (!canContinueCapture()) return;
       timings.resolveMatchesMs = Date.now() - resolveStartedAt;
       cardsForDiagnostics = cards;
       const learningStartedAt = Date.now();
@@ -3284,12 +3325,14 @@ export default function ScanScreen() {
         candidates: buildLearningCandidates(cards.length ? cards : identified),
         outcome: cards.length ? 'candidates_returned' : 'no_match',
       });
+      if (!canContinueCapture()) return;
       timings.learningLogMs = Date.now() - learningStartedAt;
       const resolvedCard = cards[0] ?? identified[0] ?? null;
 
       if (isInventoryFlow) {
         saveDiagnostics('inventory_callback');
         await scanStore.triggerCallback(base64Images[0] ?? '', resolvedCard);
+        if (!canContinueCapture()) return;
         navigatingAwayRef.current = true;
         stopAutoScanner();
         router.back();
@@ -3321,6 +3364,7 @@ export default function ScanScreen() {
 
       setScanMessage(cards.length === 1 ? 'Card found.' : `${cards.length} possible matches found.`);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      if (!canContinueCapture()) return;
       saveDiagnostics('candidates_returned');
       setScannerState({ type: 'confirm' });
       navigatingAwayRef.current = true;
@@ -3342,6 +3386,7 @@ export default function ScanScreen() {
         },
       });
     } catch (error) {
+      if (!canContinueCapture()) return;
       const message = error instanceof Error ? error.message : 'Something went wrong while scanning.';
       setScanMessage('Scan failed. Try again or search manually.');
       saveDiagnostics('failed', [message]);
