@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createVisibleBinderPriceReader } from '../lib/binderVisiblePrices.ts';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { performance } from 'node:perf_hooks';
@@ -146,10 +147,12 @@ visit(screenAst); assert(callback, 'actual binder screen loader must be testable
 const compiledCallback = ts.transpileModule(`export const load = ${callback};`, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 function screenHarness() {
   const auth = deferred(); const record = deferred(); const cards = deferred();
-  const calls = { auth: 0, record: 0, cards: 0, artwork: 0, prices: 0 };
+  const calls = { auth: 0, record: 0, cards: 0, artwork: 0, prices: 0, priceRows: 0 };
   const state = { loading: null, cards: [], ownershipReady: false };
   const never = () => new Promise(() => {});
   const context = { exports: {}, console, AbortController, binderId: 'binder',
+    visiblePriceReaderRef: { current: null }, visiblePriceIdsRef: { current: [] },
+    createVisibleBinderPriceReader,
     retrievalTraceRef: { current: null },
     beginBinderRetrieval: () => ({ cancel() {}, model() {} }),
     binderReopenCache: { lease: () => 0, save: () => false, invalidate: () => {} },
@@ -166,7 +169,7 @@ function screenHarness() {
     fetchBinderById: (_id, options) => { calls.record++; assert.equal(options.includeAssets, false); return record.promise; },
     fetchBinderCards: (_id, options) => { calls.cards++; assert.equal(options.includeAssets, false); assert.equal(options.includePrices, false); return cards.promise; },
     attachBinderCatalogueArtwork: () => { calls.artwork++; return never(); }, attachBinderSetArtwork: never,
-    attachLatestSnapshotPrices: () => { calls.prices++; return never(); }, getVariantCardKey: (card, set) => `${set}:${card}`,
+    loadProgressiveBinderPrices: (rows) => { calls.prices++; calls.priceRows += rows.length; return never(); }, getVariantCardKey: (card, set) => `${set}:${card}`,
     setLoading: (v) => { state.loading = v; }, setOwnershipReady: (v) => { state.ownershipReady = v; }, setCards: (v) => { state.cards = typeof v === 'function' ? v(state.cards) : v; },
     setShowcaseRows: () => {}, setOwnedVariants: () => {}, setVariantManagedCards: () => {}, setUserId: () => {}, setBinder: () => {}, setCustomNameArtKey: () => {}, setIsPublic: () => {},
     invalidateBinderCaches: () => {}, invalidatePokemonCatalogueCardCaches: () => {}, Alert: { alert: () => {} },
@@ -183,6 +186,7 @@ await test('actual screen overlaps authentication and binder lookup, then render
   const rows = catalogue.map((card) => ({ ...card, card_id: card.id, set_id: 'sv08' })); h.cards.resolve(rows); await pending;
   assert.equal(h.state.cards.length, 252); assert.equal(h.state.loading, false);
   assert.equal(h.calls.artwork, 1); assert.equal(h.calls.prices, 1); assert.equal(h.state.ownershipReady, false, 'editing stays gated while detailed ownership is pending');
+  assert.equal(h.calls.priceRows, 12, 'the actual screen must not price all 252 slots at startup');
 });
 
 await test('actual screen retains private-binder denial after overlapping reads', async () => {
