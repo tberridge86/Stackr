@@ -1,0 +1,63 @@
+name: Export Stackr Text Source for Logo Integration
+
+on:
+  push:
+    branches:
+      - asset/integrate-official-set-logos-20260912
+    paths:
+      - .github/workflows/export-stackr-text-source-for-logo-integration.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Package tracked text source
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          roots = {
+              '.github', 'app', 'backend', 'components', 'config', 'constants',
+              'data', 'docs', 'hooks', 'lib', 'scripts', 'services', 'shared',
+              'src', 'supabase', 'tests', 'types', 'utils'
+          }
+          top_files = {
+              'AGENTS.md', 'README.md', 'THIRD_PARTY_NOTICES.md', 'TODO.md',
+              'app.config.js', 'app.json', 'babel.config.js', 'eas.json',
+              'eslint.config.js', 'jest.config.js', 'metro.config.js',
+              'package.json', 'package-lock.json', 'pnpm-lock.yaml',
+              'tsconfig.json', 'vitest.config.ts'
+          }
+          text_suffixes = {
+              '.cjs', '.css', '.csv', '.graphql', '.html', '.js', '.json',
+              '.jsx', '.md', '.mjs', '.ps1', '.py', '.sh', '.sql', '.toml',
+              '.ts', '.tsx', '.txt', '.yaml', '.yml'
+          }
+          tracked = subprocess.check_output(['git', 'ls-files'], text=True).splitlines()
+          selected = []
+          for item in tracked:
+              path = Path(item)
+              if item in top_files or (path.parts and path.parts[0] in roots and path.suffix.lower() in text_suffixes):
+                  selected.append(item)
+          Path('/tmp/stackr-text-files.txt').write_text('\n'.join(selected) + '\n')
+          print(f'Selected {len(selected)} tracked text files')
+          PY
+          tar -czf /tmp/stackr-text-source.tar.gz -T /tmp/stackr-text-files.txt
+
+      - name: Upload text source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: stackr-text-source-${{ github.run_id }}
+          path: /tmp/stackr-text-source.tar.gz
+          if-no-files-found: error
+          retention-days: 2
