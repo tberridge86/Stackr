@@ -1,0 +1,57 @@
+name: Card-first UI validation
+
+on:
+  push:
+    branches: [agent/release/card-first-browse-ui]
+  pull_request:
+    paths:
+      - 'components/StackrBrowseControls.tsx'
+      - 'app/set/**'
+      - 'app/binder/**'
+      - 'app/(tabs)/binder.tsx'
+      - 'app/(tabs)/search.tsx'
+      - 'features/binder/**'
+      - 'features/market/**'
+      - 'scripts/test-card-first-ui.cjs'
+      - '.github/workflows/card-first-ui.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: card-first-ui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Package exact source for review
+        run: |
+          git rev-parse HEAD > /tmp/card-first-source-sha.txt
+          git archive --format=tar HEAD app components lib features hooks constants config data types scripts package.json package-lock.json tsconfig.json eslint.config.js > /tmp/card-first-source.tar
+          gzip /tmp/card-first-source.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: card-first-source-${{ github.sha }}
+          path: |
+            /tmp/card-first-source.tar.gz
+            /tmp/card-first-source-sha.txt
+          retention-days: 7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - name: Focused UI regressions
+        run: |
+          if test -f scripts/test-card-first-ui.cjs; then
+            node scripts/test-card-first-ui.cjs
+          else
+            echo 'Consumer changes and focused regressions are not yet present. This run is not UI acceptance.'
+          fi
