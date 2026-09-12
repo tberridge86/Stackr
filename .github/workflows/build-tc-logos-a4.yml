@@ -6,6 +6,7 @@ on:
       - artifact/traditional-chinese-logos-a4-v2
     paths:
       - .github/scripts/build_tc_logos_a4.py
+      - .github/scripts/build_tc_logos_a4_fast.py
       - .github/workflows/build-tc-logos-a4.yml
   workflow_dispatch:
 
@@ -15,7 +16,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 30
     steps:
       - name: Check out isolated artifact branch
         uses: actions/checkout@v4
@@ -32,7 +33,7 @@ jobs:
           python -m pip install --disable-pip-version-check requests beautifulsoup4 pillow
 
       - name: Build A4 sheets
-        run: python .github/scripts/build_tc_logos_a4.py
+        run: python .github/scripts/build_tc_logos_a4_fast.py
 
       - name: Upload finished pack
         uses: actions/upload-artifact@v4
