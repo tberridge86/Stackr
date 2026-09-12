@@ -1,62 +1,74 @@
 name: Build Simplified Chinese set image sheet
-
 on:
   push:
     branches:
-      - "artifacts/simplified-chinese-set-logos-20260911"
+      - artifacts/simplified-chinese-set-logos-20260911
+    paths:
+      - .github/workflows/build-simplified-chinese-set-image-sheet.yml
   workflow_dispatch:
-
 permissions:
   contents: read
-
-concurrency:
-  group: simplified-chinese-set-image-sheet-${{ github.ref }}
-  cancel-in-progress: true
-
+  actions: read
 jobs:
-  build:
+  recover:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 15
     steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install requests pillow reportlab pypdf beautifulsoup4
-
-      - name: Bound candidate downloads
-        working-directory: artifact-jobs/simplified-chinese-set-logos
-        run: sed -i 's/candidates\[:10\]/candidates[:4]/' retrieve_set_images.py
-
-      - name: Retrieve official images and build six-per-page PDF
-        working-directory: artifact-jobs/simplified-chinese-set-logos
-        run: python fast_build.py
-
-      - name: Add result summary
-        if: always()
-        working-directory: artifact-jobs/simplified-chinese-set-logos
-        run: |
-          if [ -f output/summary.json ]; then
-            echo '## Simplified Chinese set image retrieval' >> "$GITHUB_STEP_SUMMARY"
-            echo '```json' >> "$GITHUB_STEP_SUMMARY"
-            cat output/summary.json >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      - name: Upload PDF, PNG ZIP and reports
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Download completed source retrieval
+        uses: actions/download-artifact@v4
         with:
           name: simplified-chinese-set-images
-          path: artifact-jobs/simplified-chinese-set-logos/output/
+          run-id: 34650836408
+          github-token: ${{ github.token }}
+          path: recovered
+      - name: Install image tools
+        run: python -m pip install pillow requests
+      - name: Compact existing images and retrieve named catalogue art
+        run: |
+          python - <<'PY'
+          import csv, io, json, shutil
+          from pathlib import Path
+          from concurrent.futures import ThreadPoolExecutor
+          from PIL import Image, ImageOps
+          import requests
+          src=Path('recovered'); out=Path('compact'); out.mkdir()
+          index=[]
+          for p in sorted(src.rglob('*')):
+              if not p.is_file(): continue
+              rel=p.relative_to(src)
+              if p.suffix.lower() in {'.csv','.json','.txt'}:
+                  dst=out/rel; dst.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(p,dst)
+              elif p.suffix.lower() in {'.png','.jpg','.jpeg','.webp'}:
+                  try:
+                      im=ImageOps.exif_transpose(Image.open(p)).convert('RGBA'); im.thumbnail((1600,1600),Image.Resampling.LANCZOS)
+                      bg=Image.new('RGB',im.size,'white'); bg.paste(im,mask=im.getchannel('A'))
+                      dst=(out/rel).with_suffix('.jpg'); dst.parent.mkdir(parents=True,exist_ok=True); bg.save(dst,quality=91,optimize=True)
+                      index.append({'original':str(rel),'compact':str(dst.relative_to(out)),'width':im.width,'height':im.height})
+                  except Exception as e: print('image error',rel,type(e).__name__)
+          (out/'compact_index.json').write_text(json.dumps(index,ensure_ascii=False,indent=2))
+          report=next(out.rglob('retrieval_report.csv'))
+          rows=list(csv.DictReader(report.open(encoding='utf-8-sig')))
+          dest=out/'catalogue_art'; dest.mkdir(exist_ok=True)
+          def fetch(row):
+              code=row['requested_code']; url=f'https://grokachu.fr/media/tcg/{code}/images/sets/{code}.webp'
+              item={'code':code,'url':url,'status':'missing'}
+              try:
+                  r=requests.get(url,timeout=15); r.raise_for_status()
+                  im=Image.open(io.BytesIO(r.content)).convert('RGBA'); im.thumbnail((1600,1600),Image.Resampling.LANCZOS)
+                  bg=Image.new('RGB',im.size,'white');bg.paste(im,mask=im.getchannel('A'))
+                  p=dest/f'{code}.jpg';bg.save(p,quality=93,optimize=True)
+                  item.update(status='retrieved',local_file=str(p.relative_to(out)),width=im.width,height=im.height)
+              except Exception as e: item['error']=type(e).__name__
+              return item
+          with ThreadPoolExecutor(max_workers=6) as pool: art=list(pool.map(fetch,rows))
+          (out/'catalogue_art_report.json').write_text(json.dumps(art,ensure_ascii=False,indent=2))
+          print('Existing images:',len(index),'Named catalogue art:',sum(x['status']=='retrieved' for x in art))
+          print('Compact bytes:',sum(p.stat().st_size for p in out.rglob('*') if p.is_file()))
+          PY
+      - name: Upload compact source bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: simplified-chinese-compact-recovery
+          path: compact/
           if-no-files-found: error
           retention-days: 14
-          compression-level: 6
