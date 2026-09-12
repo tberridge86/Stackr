@@ -14,9 +14,15 @@
   "observability": {
     "enabled": true,
     "head_sampling_rate": 0.1,
+    "redact_query_string": false,
     "logs": {
       "enabled": true,
-      "invocation_logs": true
+      "invocation_logs": true,
+      "head_sampling_rate": 0.1
+    },
+    "traces": {
+      "enabled": false,
+      "head_sampling_rate": 0.1
     }
   },
   "durable_objects": {
@@ -64,7 +70,10 @@
       "routes": [
         {
           "pattern": "api.stackrtcg.com",
-          "custom_domain": true
+          "custom_domain": true,
+          "zone_name": "stackrtcg.com",
+          "enabled": true,
+          "previews_enabled": false
         }
       ],
       "vars": {

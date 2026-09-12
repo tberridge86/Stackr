@@ -116,9 +116,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/stackr-gateway-privacy"
-          npx --yes wrangler@4.114.0 versions list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/versions-before.json"
-          npx --yes wrangler@4.114.0 deployments list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/deployments-before.json"
-          npx --yes wrangler@4.114.0 secret list --cwd gateway --env production --format json > "$RUNNER_TEMP/stackr-gateway-privacy/secrets-before.json"
+          npx --yes wrangler@4.131.1 versions list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/versions-before.json"
+          npx --yes wrangler@4.131.1 deployments list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/deployments-before.json"
+          npx --yes wrangler@4.131.1 secret list --cwd gateway --env production --format json > "$RUNNER_TEMP/stackr-gateway-privacy/secrets-before.json"
           PREVIOUS_GATEWAY_VERSION_ID="$PREVIOUS_GATEWAY_VERSION_ID" PREVIOUS_GATEWAY_TAG="$PREVIOUS_GATEWAY_TAG" PREVIOUS_GATEWAY_DEPLOYMENT_ID="$PREVIOUS_GATEWAY_DEPLOYMENT_ID" RUNNER_TEMP="$RUNNER_TEMP" node <<'NODE'
           const fs = require('node:fs');
           const root = `${process.env.RUNNER_TEMP}/stackr-gateway-privacy`;
@@ -139,26 +139,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          release_config="$GITHUB_WORKSPACE/gateway/.gateway-production-release-${GITHUB_RUN_ID}.json"
+          trap 'rm -f "$release_config"' EXIT
           release_tag="gateway-privacy-$GITHUB_SHA"
           publishable_key="$(node -e 'const value=String(process.env.STACKR_SUPABASE_PUBLISHABLE_KEY ?? "").trim(); if (!/^sb_publishable_[A-Za-z0-9_-]+$/.test(value)) throw new Error("production_publishable_key_invalid"); process.stdout.write(value);')"
           echo "::add-mask::$publishable_key"
-          npx --yes wrangler@4.114.0 versions upload --cwd gateway --env production --tag "$release_tag" --message "Stackr gateway privacy $GITHUB_SHA" --strict --keep-vars \
-            --name stackr-api-gateway \
-            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL" \
-            --var "SUPABASE_URL:$STACKR_SUPABASE_URL" \
-            --var "SUPABASE_PUBLISHABLE_KEY:$publishable_key" \
-            --var 'STACKR_PRICING_ACCESS_MODE:personal' \
-            --var "STACKR_PRICING_OWNER_USER_ID:$OWNER_USER_ID"
+          BACKEND_ORIGIN="$STACKR_BACKEND_URL" SUPABASE_URL="$STACKR_SUPABASE_URL" SUPABASE_PUBLISHABLE_KEY="$publishable_key" STACKR_PRICING_ACCESS_MODE=personal STACKR_PRICING_OWNER_USER_ID="$OWNER_USER_ID" \
+            node scripts/deploy/write-gateway-release-config.mjs --output="$release_config"
+          npx --yes wrangler@4.131.1 versions upload --cwd gateway --config "$release_config" --env production --tag "$release_tag" --message "Stackr gateway privacy $GITHUB_SHA" --strict --keep-vars --name stackr-api-gateway
           echo 'STACKR_GATEWAY_TRAFFIC_CHANGED=true' >> "$GITHUB_ENV"
-          npx --yes wrangler@4.114.0 versions deploy --cwd gateway --name stackr-api-gateway --env production --version-tag "$release_tag@100" --yes
+          npx --yes wrangler@4.131.1 versions deploy --cwd gateway --name stackr-api-gateway --env production --version-tag "$release_tag@100" --yes
           echo "STACKR_GATEWAY_RELEASE_TAG=$release_tag" >> "$GITHUB_ENV"
 
       - name: Attest 100 percent gateway privacy deployment
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.114.0 versions list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/versions-after.json"
-          npx --yes wrangler@4.114.0 deployments list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/deployments-after.json"
+          npx --yes wrangler@4.131.1 versions list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/versions-after.json"
+          npx --yes wrangler@4.131.1 deployments list --cwd gateway --name stackr-api-gateway --env production --json > "$RUNNER_TEMP/stackr-gateway-privacy/deployments-after.json"
           STACKR_GATEWAY_RELEASE_TAG="$STACKR_GATEWAY_RELEASE_TAG" RUNNER_TEMP="$RUNNER_TEMP" node <<'NODE'
           const fs = require('node:fs');
           const root = `${process.env.RUNNER_TEMP}/stackr-gateway-privacy`;
@@ -181,7 +179,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.114.0 versions deploy --cwd gateway --name stackr-api-gateway --env production "$PREVIOUS_GATEWAY_VERSION_ID@100" --yes | tee "$RUNNER_TEMP/stackr-gateway-privacy/rollback.json"
+          npx --yes wrangler@4.131.1 versions deploy --cwd gateway --name stackr-api-gateway --env production "$PREVIOUS_GATEWAY_VERSION_ID@100" --yes | tee "$RUNNER_TEMP/stackr-gateway-privacy/rollback.json"
 
       - name: Scan gateway release evidence for secrets
         id: scan_gateway_evidence
