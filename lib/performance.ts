@@ -72,3 +72,50 @@ export function getIncrementalListWindow(
     pageSize: Math.max(options?.minPage ?? 18, safeColumns * pageRows),
   };
 }
+
+export type BinderRetrievalObservation = {
+  sequence: number;
+  start: 'screen-load';
+  source: 'network' | 'local-preview' | null;
+  catalogueComplete: boolean;
+  cards: number;
+  modelReadyMs: number | null;
+  visibleContentMs: number | null;
+  ownershipEditableMs: number | null;
+  cancelled: boolean;
+};
+const binderRetrievalObservations: BinderRetrievalObservation[] = [];
+let binderRetrievalSequence = 0;
+/** Bounded device-local diagnostics; no account, binder, card identifiers or remote submission. */
+export function getBinderRetrievalObservations(): BinderRetrievalObservation[] {
+  return binderRetrievalObservations.map((observation) => ({ ...observation }));
+}
+export function beginBinderRetrieval(clock = () => globalThis.performance?.now?.() ?? Date.now()) {
+  const started = clock();
+  const observation: BinderRetrievalObservation = {
+    sequence: ++binderRetrievalSequence, start: 'screen-load', source: null, catalogueComplete: false, cards: 0,
+    modelReadyMs: null, visibleContentMs: null, ownershipEditableMs: null, cancelled: false,
+  };
+  binderRetrievalObservations.push(observation);
+  if (binderRetrievalObservations.length > 32) binderRetrievalObservations.shift();
+  let currentRows = new Set<unknown>();
+  const elapsed = () => Math.max(0, clock() - started);
+  return {
+    model(rows: readonly unknown[], source: 'network' | 'local-preview', complete = true) {
+      if (observation.cancelled) return;
+      currentRows = new Set(rows);
+      if (observation.modelReadyMs == null && rows.length) {
+        observation.modelReadyMs = elapsed(); observation.cards = rows.length; observation.source = source; observation.catalogueComplete = complete;
+      }
+    },
+    committedRows(rows: readonly unknown[]) { if (!observation.cancelled) currentRows = new Set(rows); },
+    visible(rows: readonly unknown[]) {
+      if (!observation.cancelled && observation.modelReadyMs != null && observation.visibleContentMs == null
+        && rows.some((row) => currentRows.has(row))) observation.visibleContentMs = elapsed();
+    },
+    editable() {
+      if (!observation.cancelled && observation.ownershipEditableMs == null) observation.ownershipEditableMs = elapsed();
+    },
+    cancel() { observation.cancelled = true; currentRows.clear(); },
+  };
+}
