@@ -14,10 +14,8 @@ builder = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = builder
 spec.loader.exec_module(builder)
 
-# These products are present in the official Taiwan catalogue. Let the exact catalogue
-# link win rather than relying on historical numeric URLs that can differ by region.
-for _code in ("SVP1", "SCC", "SCA", "SCB", "SCD", "SP5", "SI"):
-    builder.URL_OVERRIDES.pop(_code, None)
+# SVP1's historical numeric URL has moved; let the live official Taiwan catalogue provide it.
+builder.URL_OVERRIDES.pop("SVP1", None)
 
 # The 25th Anniversary expansion lives on the official regional anniversary microsite,
 # outside the standard asia.pokemon-card.com/tw catalogue domain.
