@@ -1,0 +1,587 @@
+{
+  "schemaVersion": "stackr-live-migration-ledger-reconciliation-v1.0.0",
+  "observedAtUtc": "2026-09-12T11:20:00Z",
+  "repository": {
+    "baseSha": "10e1f4c64735102136e0d4c9d730e1f8ee829ea5",
+    "migrationCountBeforeRecovery": 130,
+    "candidateMigrationCount": 136
+  },
+  "production": {
+    "projectRef": "oakdbbzdqwurpjnoqhmu",
+    "statusAtRead": "ACTIVE_HEALTHY",
+    "migrationCount": 145
+  },
+  "staging": {
+    "projectRef": "lmwfhvexfcoyeuoyrlco",
+    "statusAtRead": "ACTIVE_HEALTHY",
+    "migrationCount": 161
+  },
+  "pr168RecoveredSearchMigrations": [
+    {
+      "version": "20260909132452",
+      "name": "optimize_catalogue_search_indexes",
+      "sourceFile": "20260909132452_optimize_catalogue_search_indexes.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 888,
+      "repositoryRecordedStatementBytes": 888,
+      "liveStatementSha256": "775c7588cbc0c90e95834279d6336641e0edb57e10f2a1e4e530aa1ed20e0034",
+      "repositoryRecordedStatementSha256": "775c7588cbc0c90e95834279d6336641e0edb57e10f2a1e4e530aa1ed20e0034",
+      "exactRecordedStatementMatch": true
+    },
+    {
+      "version": "20260909133445",
+      "name": "indexed_tolerant_collector_search",
+      "sourceFile": "20260909133445_indexed_tolerant_collector_search.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 2597,
+      "repositoryRecordedStatementBytes": 2597,
+      "liveStatementSha256": "34a8d6afffb81183261d205bec7a045e4a5b452ef39d7e6658dfc673ee1f5466",
+      "repositoryRecordedStatementSha256": "34a8d6afffb81183261d205bec7a045e4a5b452ef39d7e6658dfc673ee1f5466",
+      "exactRecordedStatementMatch": true
+    },
+    {
+      "version": "20260909133512",
+      "name": "fix_indexed_tolerant_collector_search",
+      "sourceFile": "20260909133512_fix_indexed_tolerant_collector_search.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 1562,
+      "repositoryRecordedStatementBytes": 1562,
+      "liveStatementSha256": "9bf414fb6a4d2b5af51d38a830f8b762af0dea8f893e82edfc0e58bca26d3334",
+      "repositoryRecordedStatementSha256": "9bf414fb6a4d2b5af51d38a830f8b762af0dea8f893e82edfc0e58bca26d3334",
+      "exactRecordedStatementMatch": true
+    },
+    {
+      "version": "20260909133545",
+      "name": "fix_indexed_tolerant_collector_search_limit",
+      "sourceFile": "20260909133545_fix_indexed_tolerant_collector_search_limit.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 1518,
+      "repositoryRecordedStatementBytes": 1518,
+      "liveStatementSha256": "8673f70b0bce2bdb5bd9c54cfa6a1b2edfc4691c0864a4703452c9b0e987cbdc",
+      "repositoryRecordedStatementSha256": "8673f70b0bce2bdb5bd9c54cfa6a1b2edfc4691c0864a4703452c9b0e987cbdc",
+      "exactRecordedStatementMatch": true
+    },
+    {
+      "version": "20260909133639",
+      "name": "collector_search_identity_view",
+      "sourceFile": "20260909133639_collector_search_identity_view.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 905,
+      "repositoryRecordedStatementBytes": 905,
+      "liveStatementSha256": "44c7822ef3d6c72853da144de8bfc8ea38956d6d4b8af427ca43a99207e0bec0",
+      "repositoryRecordedStatementSha256": "44c7822ef3d6c72853da144de8bfc8ea38956d6d4b8af427ca43a99207e0bec0",
+      "exactRecordedStatementMatch": true
+    }
+  ],
+  "newlyRecoveredProductionMigrations": [
+    {
+      "version": "20260911075733",
+      "name": "optimize_card_image_identity_rpc",
+      "sourceFile": "20260911075733_optimize_card_image_identity_rpc.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 3593,
+      "repositoryRecordedStatementBytes": 3593,
+      "liveStatementSha256": "7fc6766df94dfec22720162fa38846edd5ffa39fc8407337ca8dfcaacebb172f",
+      "repositoryRecordedStatementSha256": "7fc6766df94dfec22720162fa38846edd5ffa39fc8407337ca8dfcaacebb172f",
+      "exactRecordedStatementMatch": true
+    },
+    {
+      "version": "20260911080138",
+      "name": "add_catalogue_set_cards_bundle_rpc",
+      "sourceFile": "20260911080138_add_catalogue_set_cards_bundle_rpc.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 2414,
+      "repositoryRecordedStatementBytes": 2414,
+      "liveStatementSha256": "267559f0d8fe437d16a20068ea74f5204b3e6a8a569b585e161826460f54fe17",
+      "repositoryRecordedStatementSha256": "267559f0d8fe437d16a20068ea74f5204b3e6a8a569b585e161826460f54fe17",
+      "exactRecordedStatementMatch": true
+    },
+    {
+      "version": "20260911080444",
+      "name": "add_fast_catalogue_set_card_rows_rpc",
+      "sourceFile": "20260911080444_add_fast_catalogue_set_card_rows_rpc.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 3318,
+      "repositoryRecordedStatementBytes": 3318,
+      "liveStatementSha256": "f4ad62182ef38bbe82380bc4364604364367d2702d9f78518fdf169741e685de",
+      "repositoryRecordedStatementSha256": "f4ad62182ef38bbe82380bc4364604364367d2702d9f78518fdf169741e685de",
+      "exactRecordedStatementMatch": true
+    },
+    {
+      "version": "20260911083308",
+      "name": "secure_fast_catalogue_set_card_rows",
+      "sourceFile": "20260911083308_secure_fast_catalogue_set_card_rows.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 581,
+      "repositoryRecordedStatementBytes": 581,
+      "liveStatementSha256": "b15f63af55fe058fb6807186435571c857013b9788a4e331ae5b68db5a659d1b",
+      "repositoryRecordedStatementSha256": "b15f63af55fe058fb6807186435571c857013b9788a4e331ae5b68db5a659d1b",
+      "exactRecordedStatementMatch": true
+    },
+    {
+      "version": "20260911104326",
+      "name": "catalogue_set_card_fact_rows",
+      "sourceFile": "20260911104326_catalogue_set_card_fact_rows.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 1100,
+      "repositoryRecordedStatementBytes": 1100,
+      "liveStatementSha256": "7c9ce5f6f331abd99cfbd9ec42bf9084e16dada6efc4faef812f5b0120c798b2",
+      "repositoryRecordedStatementSha256": "7c9ce5f6f331abd99cfbd9ec42bf9084e16dada6efc4faef812f5b0120c798b2",
+      "exactRecordedStatementMatch": true
+    },
+    {
+      "version": "20260911104546",
+      "name": "remove_unused_catalogue_set_card_fact_rows",
+      "sourceFile": "20260911104546_remove_unused_catalogue_set_card_fact_rows.sql",
+      "liveStatementCount": 1,
+      "liveStatementBytes": 84,
+      "repositoryRecordedStatementBytes": 84,
+      "liveStatementSha256": "bfa5d5bf4f4133933491008307a64eb3434a2fa166d884429a8833c55bca15cc",
+      "repositoryRecordedStatementSha256": "bfa5d5bf4f4133933491008307a64eb3434a2fa166d884429a8833c55bca15cc",
+      "exactRecordedStatementMatch": true
+    }
+  ],
+  "differences": {
+    "productionOnlyAfterRecovery": [
+      {
+        "version": "20260828093213",
+        "name": "prompt2_emergency_profile_authority_containment"
+      },
+      {
+        "version": "20260828093520",
+        "name": "prompt2_trusted_admin_claim_cutover"
+      },
+      {
+        "version": "20260828151836",
+        "name": "prompt2_trade_notification_write_containment"
+      },
+      {
+        "version": "20260902204348",
+        "name": "prepare_prompt2_trade_freeze_for_transaction_boundary"
+      },
+      {
+        "version": "20260902204349",
+        "name": "marketplace_trust_and_safety"
+      },
+      {
+        "version": "20260902204350",
+        "name": "marketplace_listing_transactions"
+      },
+      {
+        "version": "20260902204351",
+        "name": "binder_ownership_lifecycle"
+      },
+      {
+        "version": "20260902204352",
+        "name": "restrict_marketplace_transaction_trigger_execution"
+      },
+      {
+        "version": "20260902204353",
+        "name": "restrict_binder_reservation_trigger_execution"
+      },
+      {
+        "version": "20260902204354",
+        "name": "optimize_binder_marketplace_transaction_access"
+      },
+      {
+        "version": "20260902204550",
+        "name": "binder_conflict_preconditions"
+      },
+      {
+        "version": "20260902204552",
+        "name": "binder_readiness_policy_access"
+      },
+      {
+        "version": "20260902204554",
+        "name": "reconcile_prompt2_trade_freeze_with_marketplace_transactions"
+      },
+      {
+        "version": "20260902205018",
+        "name": "prepare_marketplace_trust_utf8_data_repair"
+      },
+      {
+        "version": "20260902205020",
+        "name": "repair_marketplace_trust_utf8_separator"
+      }
+    ],
+    "repositoryOnlyVsProduction": [
+      {
+        "version": "20260827124944",
+        "name": "gate0_financial_route_containment"
+      },
+      {
+        "version": "20260829170147",
+        "name": "reconcile_active_catalogue_natural_identities"
+      },
+      {
+        "version": "20260829214000",
+        "name": "retain_exact_raw_source_revisions_once"
+      },
+      {
+        "version": "20260829221000",
+        "name": "track_raw_source_record_observations"
+      },
+      {
+        "version": "20260831123000",
+        "name": "index_ingest_conflict_deduplication"
+      },
+      {
+        "version": "20260831202805",
+        "name": "repair_launch_catalogue_conflict_set_resolution"
+      }
+    ],
+    "stagingOnlyVsRepository": [
+      {
+        "version": "20260818191024",
+        "name": "add_catalogue_report_language_pagination_indexes"
+      },
+      {
+        "version": "20260820104237",
+        "name": "add_catalogue_publication_identifier_covering_index"
+      },
+      {
+        "version": "20260820215422",
+        "name": "expand_pokemon_rarity_taxonomy"
+      },
+      {
+        "version": "20260820222400",
+        "name": "backfill_catalogue_set_release_dates"
+      },
+      {
+        "version": "20260820223027",
+        "name": "backfill_chinese_catalogue_set_release_dates"
+      },
+      {
+        "version": "20260820224112",
+        "name": "backfill_exact_english_tcgdex_rarities"
+      },
+      {
+        "version": "20260820231128",
+        "name": "reuse_identical_catalogue_storage_objects"
+      },
+      {
+        "version": "20260820233514",
+        "name": "backfill_exact_english_pokemontcg_metadata"
+      },
+      {
+        "version": "20260820234322",
+        "name": "resolve_official_csm25_release_date"
+      },
+      {
+        "version": "20260821111626",
+        "name": "extend_recognition_embedding_batch_timeout"
+      },
+      {
+        "version": "20260821140706",
+        "name": "extend_recognition_candidate_search_timeout"
+      },
+      {
+        "version": "20260821150512",
+        "name": "optimize_recognition_candidate_search_hnsw_v2"
+      },
+      {
+        "version": "20260821151109",
+        "name": "optimize_recognition_candidate_search_hnsw_v3"
+      },
+      {
+        "version": "20260821155911",
+        "name": "tune_recognition_candidate_search_ef_v4"
+      },
+      {
+        "version": "20260821165027",
+        "name": "backfill_exact_english_tcgcsv_rarities"
+      },
+      {
+        "version": "20260821170443",
+        "name": "use_exact_filtered_recognition_benchmark_v6"
+      },
+      {
+        "version": "20260821212325",
+        "name": "family_accounts_and_purchase_requests"
+      },
+      {
+        "version": "20260821212418",
+        "name": "cover_family_child_parent_foreign_key"
+      },
+      {
+        "version": "20260822073501",
+        "name": "add_scoped_recognition_candidate_search"
+      },
+      {
+        "version": "20260822075102",
+        "name": "require_published_variants_in_recognition_indexes"
+      },
+      {
+        "version": "20260822075624",
+        "name": "batch_clone_published_recognition_index"
+      },
+      {
+        "version": "20260822075704",
+        "name": "fix_recognition_batch_uuid_cursor"
+      },
+      {
+        "version": "20260822075820",
+        "name": "resume_recognition_copy_from_target_cursor"
+      },
+      {
+        "version": "20260822075930",
+        "name": "increase_recognition_copy_batch_bound"
+      },
+      {
+        "version": "20260822082835",
+        "name": "require_recognition_evidence_before_activation"
+      },
+      {
+        "version": "20260822160439",
+        "name": "add_bounded_recognition_fingerprint_asset_lookup"
+      },
+      {
+        "version": "20260822161133",
+        "name": "add_paged_recognition_fingerprint_context"
+      },
+      {
+        "version": "20260822161726",
+        "name": "use_invoker_security_for_recognition_fingerprint_reads"
+      },
+      {
+        "version": "20260822161808",
+        "name": "restore_bounded_definer_fingerprint_reads"
+      },
+      {
+        "version": "20260822223752",
+        "name": "add_bounded_recognition_fingerprint_asset_lookup"
+      },
+      {
+        "version": "20260822223756",
+        "name": "add_paged_recognition_fingerprint_context"
+      },
+      {
+        "version": "20260822223800",
+        "name": "use_invoker_security_for_recognition_fingerprint_reads"
+      },
+      {
+        "version": "20260822223802",
+        "name": "restore_bounded_definer_fingerprint_reads"
+      },
+      {
+        "version": "20260822223828",
+        "name": "atomic_seller_inventory_batches"
+      },
+      {
+        "version": "20260823094456",
+        "name": "add_paged_recognition_embedding_manifest_api"
+      },
+      {
+        "version": "20260823095317",
+        "name": "add_paged_ebay_recognition_evidence_api"
+      },
+      {
+        "version": "20260823163044",
+        "name": "online_recognition_scaleup_v1"
+      },
+      {
+        "version": "20260823163657",
+        "name": "improve_online_recognition_scaleup_lookup"
+      },
+      {
+        "version": "20260823164436",
+        "name": "optimize_online_recognition_scaleup_lookup"
+      },
+      {
+        "version": "20260823165543",
+        "name": "filter_scaleup_index_membership"
+      },
+      {
+        "version": "20260824073736",
+        "name": "expose_english_card_presentation"
+      },
+      {
+        "version": "20260827093108",
+        "name": "emergency_client_write_containment"
+      },
+      {
+        "version": "20260828093921",
+        "name": "prompt2_trade_notification_write_containment"
+      },
+      {
+        "version": "20260829214736",
+        "name": "retain_exact_raw_source_revisions_once"
+      },
+      {
+        "version": "20260829220516",
+        "name": "track_raw_source_record_observations"
+      },
+      {
+        "version": "20260831123607",
+        "name": "index_ingest_conflict_deduplication"
+      },
+      {
+        "version": "20260831204414",
+        "name": "atomic_official_japanese_card_bootstrap"
+      },
+      {
+        "version": "20260831205211",
+        "name": "supersede_atomic_official_japanese_metadata_bootstrap"
+      },
+      {
+        "version": "20260831210059",
+        "name": "fix_atomic_official_japanese_metadata_bootstrap_concept_conflict"
+      },
+      {
+        "version": "20260906063153",
+        "name": "index_asset_printing_identity"
+      },
+      {
+        "version": "20260906063228",
+        "name": "expose_bounded_card_image_identity_read"
+      },
+      {
+        "version": "20260908111244",
+        "name": "catalogue_name_membership_lookup"
+      },
+      {
+        "version": "20260908111706",
+        "name": "catalogue_name_printing_language"
+      },
+      {
+        "version": "20260908113506",
+        "name": "catalogue_name_language_independent_lookup"
+      },
+      {
+        "version": "20260908194232",
+        "name": "service_only_tcgdex_variant_aliases"
+      }
+    ],
+    "repositoryOnlyVsStaging": [
+      {
+        "version": "20260813093320",
+        "name": "atomic_seller_inventory_batches"
+      },
+      {
+        "version": "20260813135412",
+        "name": "premium_seller_access_boundary"
+      },
+      {
+        "version": "20260827093110",
+        "name": "emergency_client_write_containment"
+      },
+      {
+        "version": "20260827124944",
+        "name": "gate0_financial_route_containment"
+      },
+      {
+        "version": "20260829214000",
+        "name": "retain_exact_raw_source_revisions_once"
+      },
+      {
+        "version": "20260829221000",
+        "name": "track_raw_source_record_observations"
+      },
+      {
+        "version": "20260831123000",
+        "name": "index_ingest_conflict_deduplication"
+      },
+      {
+        "version": "20260903120000",
+        "name": "deduplicate_pending_price_refreshes"
+      },
+      {
+        "version": "20260903210000",
+        "name": "verified_sold_provenance"
+      },
+      {
+        "version": "20260904123000",
+        "name": "poketrace_sold_evidence_provider"
+      },
+      {
+        "version": "20260904130000",
+        "name": "market_price_snapshot_history_buckets"
+      },
+      {
+        "version": "20260904131000",
+        "name": "exact_variant_price_refresh_queue"
+      },
+      {
+        "version": "20260906062835",
+        "name": "index_asset_printing_identity"
+      },
+      {
+        "version": "20260906062838",
+        "name": "expose_bounded_card_image_identity_read"
+      },
+      {
+        "version": "20260906063316",
+        "name": "personal_pricing_privacy_boundary"
+      },
+      {
+        "version": "20260908111410",
+        "name": "catalogue_name_membership_lookup"
+      },
+      {
+        "version": "20260908111830",
+        "name": "catalogue_name_printing_language"
+      },
+      {
+        "version": "20260908113546",
+        "name": "catalogue_name_language_independent_lookup"
+      },
+      {
+        "version": "20260908194309",
+        "name": "service_only_tcgdex_variant_aliases"
+      },
+      {
+        "version": "20260909132452",
+        "name": "optimize_catalogue_search_indexes"
+      },
+      {
+        "version": "20260909133445",
+        "name": "indexed_tolerant_collector_search"
+      },
+      {
+        "version": "20260909133512",
+        "name": "fix_indexed_tolerant_collector_search"
+      },
+      {
+        "version": "20260909133545",
+        "name": "fix_indexed_tolerant_collector_search_limit"
+      },
+      {
+        "version": "20260909133639",
+        "name": "collector_search_identity_view"
+      },
+      {
+        "version": "20260911075733",
+        "name": "optimize_card_image_identity_rpc"
+      },
+      {
+        "version": "20260911080138",
+        "name": "add_catalogue_set_cards_bundle_rpc"
+      },
+      {
+        "version": "20260911080444",
+        "name": "add_fast_catalogue_set_card_rows_rpc"
+      },
+      {
+        "version": "20260911083308",
+        "name": "secure_fast_catalogue_set_card_rows"
+      },
+      {
+        "version": "20260911104326",
+        "name": "catalogue_set_card_fact_rows"
+      },
+      {
+        "version": "20260911104546",
+        "name": "remove_unused_catalogue_set_card_fact_rows"
+      }
+    ]
+  },
+  "classification": {
+    "pr168RecoveredSearch": "5/5 exact production statement matches; 0/5 recorded in staging",
+    "newlyRecoveredProduction": "6/6 exact production statement matches; 0/6 recorded in staging",
+    "remainingProductionOnly": "applied-but-missing-from-source; statements not recovered by this focused change",
+    "repositoryOnlyVsProduction": "source-only or version-divergent; no apply action authorised by this receipt",
+    "stagingDifferences": "divergent historical ledger; no promotion or mutation performed"
+  },
+  "productionMutationPerformed": false,
+  "stagingMutationPerformed": false
+}
