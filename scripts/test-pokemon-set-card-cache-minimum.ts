@@ -19,6 +19,7 @@ async function main() {
   const dependencies: Record<string, unknown> = {
     'react-native': { Image: { prefetch: async () => true }, InteractionManager: { runAfterInteractions: (work: () => void) => work() } },
     './config': { PRICE_API_URL: null },
+    './publishedSetLogoFallbacks': { getPublishedSetLogoFallback: () => undefined },
     './pokedataJapaneseSetIdentity': { resolvePokeDataJapaneseSetCode: () => null },
     './pokemonDisplayNames': {
       getEnglishCardDisplayName: () => null, getEnglishSetDisplayName: () => null, getLocalCardName: () => null,
