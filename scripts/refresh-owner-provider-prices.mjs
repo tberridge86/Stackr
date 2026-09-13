@@ -17,6 +17,7 @@ const require = createRequire(import.meta.url);
 const { createMarketPricingService } = require('../backend/lib/marketPricing/service.js');
 const PRODUCTION_PROJECT_REF = 'oakdbbzdqwurpjnoqhmu';
 const OWNED_SCAN_MULTIPLIER = 10;
+const OWNED_SNAPSHOT_READ_MAX_ROWS = 1000;
 const QUEUE_MAX_ATTEMPTS = 5;
 const UNAVAILABLE_PROVIDER_CODES = new Set(['unresolved_provider_identity', 'ambiguous_provider_identity', 'exact_provider_quote_unavailable']);
 // These are stable, non-sensitive ApiError codes emitted by the exact provider
@@ -219,6 +220,57 @@ async function refreshExact(refreshExactProviderEstimate, variantId) {
   });
 }
 
+/**
+ * Favour identities without an exact provider snapshot, then the oldest
+ * stored snapshot. This makes each bounded run expand owner coverage before
+ * re-reading already-covered cards. UUID ordering only breaks real ties.
+ */
+export function selectOwnedCandidatesBySnapshot(candidates, snapshotsByVariant, limit) {
+  if (limit <= 0) return [];
+  const timestamp = (candidate) => {
+    const value = snapshotsByVariant.get(candidate.variantId);
+    const time = Date.parse(value?.snapshotAt ?? value?.calculatedAt ?? '');
+    return Number.isFinite(time) ? time : null;
+  };
+  return [...candidates].sort((left, right) => {
+    const leftTime = timestamp(left); const rightTime = timestamp(right);
+    if (leftTime == null && rightTime != null) return -1;
+    if (rightTime == null && leftTime != null) return 1;
+    if (leftTime != null && rightTime != null && leftTime !== rightTime) return leftTime - rightTime;
+    return left.variantId.localeCompare(right.variantId);
+  }).slice(0, limit);
+}
+
+async function readOwnedCandidateSnapshots(supabase, candidates) {
+  const variantIds = [...new Set(candidates.map((candidate) => String(candidate.variantId).toLowerCase()).filter(isUuid))];
+  if (!variantIds.length) return new Map();
+  const { data, error } = await supabase.from('market_price_snapshots')
+    .select('card_id,snapshot_at,calculated_at')
+    .in('card_id', variantIds)
+    .is('user_id', null)
+    .eq('primary_source', 'tcgdex')
+    .eq('price_type', 'market_estimate')
+    .eq('proven_last_sold', false)
+    .is('methodology_version', null)
+    .gt('tcgdex_price', 0)
+    .order('snapshot_at', { ascending: false })
+    .limit(OWNED_SNAPSHOT_READ_MAX_ROWS);
+  if (error) throw error;
+  // A PostgREST project cap can make an exact limit indistinguishable from a
+  // truncated result. Refuse the run before any provider call instead of
+  // claiming a partial set is complete or old.
+  if ((data ?? []).length >= OWNED_SNAPSHOT_READ_MAX_ROWS) {
+    throw new Error('Owned snapshot recency read reached its safe result bound.');
+  }
+  const snapshots = new Map();
+  for (const row of data ?? []) {
+    const variantId = String(row?.card_id ?? '').toLowerCase();
+    if (!isUuid(variantId) || snapshots.has(variantId)) continue;
+    snapshots.set(variantId, { snapshotAt: row.snapshot_at ?? null, calculatedAt: row.calculated_at ?? null });
+  }
+  return snapshots;
+}
+
 export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate, ownerId, limit, dryRun, includeQueue = false, queueOnly = false }) {
   const queueRows = includeQueue ? await readOwnerQueue(supabase, ownerId, limit) : [];
   const resolvedQueue = includeQueue ? await resolveOwnerQueue(supabase, queueRows, ownerId) : [];
@@ -230,9 +282,12 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
   // exact provider snapshot is sufficient for that canonical variant.
   const queueSelected = [...new Map(validQueue.map((item) => [item.variantId, item])).values()].slice(0, limit);
   const queueVariantIds = new Set(queueSelected.map((item) => item.variantId));
-  const ownedSelected = [...new Map(resolved.filter((result) => result.ok)
+  const ownedCandidates = [...new Map(resolved.filter((result) => result.ok)
     .filter((result) => !queueVariantIds.has(result.variantId))
-    .map((result) => [result.variantId, result])).values()].slice(0, Math.max(0, limit - queueSelected.length));
+    .map((result) => [result.variantId, result])).values()];
+  const ownedBudget = Math.max(0, limit - queueSelected.length);
+  const ownedSnapshots = ownedBudget ? await readOwnedCandidateSnapshots(supabase, ownedCandidates) : new Map();
+  const ownedSelected = selectOwnedCandidatesBySnapshot(ownedCandidates, ownedSnapshots, ownedBudget);
   // Keep only canonical public UUIDs. This is enough to reconcile a bounded
   // refresh against later snapshots without exposing binder rows or provider
   // identity details.

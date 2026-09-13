@@ -102,5 +102,10 @@ assert.ok(refreshButton, 'Refresh remains a queued candidate action.');
 assert.equal(refreshCalls, 2);
 (find(expanded, (item) => item.props.accessibilityLabel === 'Hide price details')?.props.onPress as (event: { stopPropagation(): void }) => void)({ stopPropagation() {} });
 assert.ok(find(render(props), (item) => item.props.accessibilityLabel === 'Show price details'));
+const cardSource = readFileSync(componentPath, 'utf8');
+assert.match(cardSource, /if \(mintyMotionReduced \|\| !showInsightRow\)/,
+  'Minty remains still when Reduce Motion is enabled or its insight is unavailable');
+assert.match(cardSource, /outputRange: \[0, -5\][\s\S]*?outputRange: \['0deg', '1\.5deg'\]/,
+  'Minty uses the approved, calm five-pixel bob and 1.5-degree turn');
 
 console.log('Home pricing release compact layout and pricing states passed.');

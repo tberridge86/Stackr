@@ -8,7 +8,7 @@ import {
   resolveOwnerExactQueueItem,
   resolveOwnedProviderVariant,
 } from './lib/owner-provider-price-refresh-core.mjs';
-import { runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
+import { selectOwnedCandidatesBySnapshot, runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
 
 const workflow = readFileSync('.github/workflows/owner-provider-price-refresh.yml', 'utf8');
 assert.match(workflow, /schedule:\s*\n(?:[^\n]*\n)*?\s+- cron: '\*\/10 \* \* \* \*'/, 'the exact Home queue must have a bounded scheduled consumer');
@@ -26,6 +26,25 @@ const identifiers = [
   { source_entity_type: 'set', external_id: 'tcgdex-set', set_id: set, variant_id: null },
 ];
 const catalogue = [{ variant_id: variant, set_id: set, language_code: 'en', variant_code: 'normal', finish_code: 'normal' }];
+
+const coverageCandidates = ['11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222', '33333333-3333-4333-8333-333333333333', '44444444-4444-4444-8444-444444444444']
+  .map((variantId) => ({ ok: true, variantId }));
+assert.deepEqual(
+  selectOwnedCandidatesBySnapshot(coverageCandidates, new Map(), 2).map((candidate) => candidate.variantId),
+  coverageCandidates.slice(0, 2).map((candidate) => candidate.variantId),
+  'the first bounded run selects missing identities in stable canonical order',
+);
+assert.deepEqual(
+  selectOwnedCandidatesBySnapshot(coverageCandidates, new Map(coverageCandidates.slice(0, 2).map((candidate) => [candidate.variantId, { snapshotAt: '2026-09-13T16:00:00.000Z' }])), 2).map((candidate) => candidate.variantId),
+  coverageCandidates.slice(2).map((candidate) => candidate.variantId),
+  'after the first two receive snapshots, the next bounded run reaches the remaining missing identities',
+);
+assert.deepEqual(
+  selectOwnedCandidatesBySnapshot(coverageCandidates, new Map(coverageCandidates.map((candidate, index) => [candidate.variantId, { snapshotAt: `2026-09-${String(10 + index).padStart(2, '0')}T00:00:00.000Z` }])), 2).map((candidate) => candidate.variantId),
+  coverageCandidates.slice(0, 2).map((candidate) => candidate.variantId),
+  'when all identities have a snapshot, the oldest exact evidence is refreshed first',
+);
+assert.deepEqual(selectOwnedCandidatesBySnapshot(coverageCandidates, new Map(), 0), [], 'a full queue leaves no owned refresh budget');
 
 assert.deepEqual(parseOwnerPriceRefreshArguments([]), { limit: 10, dryRun: true, includeQueue: false, queueOnly: false });
 assert.deepEqual(parseOwnerPriceRefreshArguments(['--limit=2', '--apply']), { limit: 2, dryRun: false, includeQueue: false, queueOnly: false });
@@ -51,7 +70,7 @@ assert.equal(resolveOwnedProviderVariant(owned, [...identifiers, { ...identifier
 
 function query(data) {
   const chain = {
-    select() { return chain; }, eq() { return chain; }, gt() { return chain; }, order() { return chain; }, limit() { return chain; }, in() { return chain; },
+    select() { return chain; }, eq() { return chain; }, gt() { return chain; }, is() { return chain; }, order() { return chain; }, limit() { return chain; }, in() { return chain; },
     then(resolve) { return Promise.resolve({ data, error: null }).then(resolve); },
   };
   return chain;
