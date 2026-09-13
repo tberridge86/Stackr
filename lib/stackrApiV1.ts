@@ -344,6 +344,10 @@ export type StackrPriceHistoryObservation = {
 export type StackrPriceSnapshotHistoryItem = {
   cardId: string;
   variantId: string;
+  printingId?: string;
+  setId?: string;
+  languageCode?: string;
+  variantCode?: string;
   calculatedAt: string | null;
   snapshotAt: string | null;
   marketCentral: number | null;
@@ -354,6 +358,12 @@ export type StackrPriceSnapshotHistoryItem = {
   primarySource?: string | null;
   priceBasis?: string;
   quoteScope: 'exact_variant' | 'printing_level';
+};
+
+export type StackrLegacyPriceSnapshot = Omit<StackrPriceSnapshotHistoryItem, 'variantId' | 'printingId' | 'setId' | 'variantCode' | 'quoteScope'> & {
+  legacySetId: string;
+  languageCode: string;
+  quoteScope: 'printing_level';
 };
 
 export type StackrPriceRefreshRequest = {
@@ -743,10 +753,26 @@ export class StackrApiClient {
     if (isLoopbackPreviewRead) {
       requestHeaders = stripStackrPreviewProxyAuthorization(requestHeaders);
     }
-    const response = await this.fetchImpl(requestUrl, {
+    let response = await this.fetchImpl(requestUrl, {
       ...init,
       headers: requestHeaders,
     });
+
+    // Some native HTTP caches expose the revalidation response without its
+    // cached body. A 304 is not an empty catalogue: repeat this read once with
+    // validators disabled, preserving cancellation and authentication.
+    const explicitlyConditional = Object.entries(initialHeaders).some(([name, value]) =>
+      ['if-none-match', 'if-modified-since'].includes(name.toLowerCase()) && Boolean(value));
+    if (response.status === 304 && requestMethod.toUpperCase() === 'GET' && !explicitlyConditional) {
+      const unconditionalHeaders = Object.fromEntries(Object.entries(requestHeaders)
+        .filter(([name]) => !['if-none-match', 'if-modified-since'].includes(name.toLowerCase())));
+      response = await this.fetchImpl(requestUrl, {
+        ...init,
+        cache: 'no-store',
+        headers: { ...unconditionalHeaders, 'If-None-Match': '', 'If-Modified-Since': '',
+          'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
+      });
+    }
 
     if (response.status === 304) {
       throw new StackrApiV1Error(304, {
@@ -983,17 +1009,42 @@ export class StackrApiClient {
     return this.request<{ query: string; normalizedQuery: string; results: StackrSearchResult[] }>('/search', query);
   }
 
-  marketPriceSnapshots(query: { variantIds: string[]; rangeDays?: 7 | 30 }) {
-    const variantIds = [...new Set(query.variantIds.map((value) => String(value).trim()).filter(Boolean))];
-    if (!variantIds.length || variantIds.length > 24) {
-      throw new Error('marketPriceSnapshots requires between 1 and 24 variant IDs.');
+  marketPriceSnapshots(query: { variantIds?: string[]; printingIds?: string[]; legacyIds?: string[];
+    legacySetId?: string; language?: string; rangeDays?: 7 | 30; latestOnly?: boolean }) {
+    const ids = (values?: string[]) => {
+      const normalized = (values ?? []).map((value) => String(value).trim());
+      if (normalized.some((value) => !value) || new Set(normalized.map((value) => value.toLowerCase())).size !== normalized.length) {
+        throw new Error('Snapshot references must be non-empty and unique.');
+      }
+      return normalized;
+    };
+    const variantIds = ids(query.variantIds);
+    const printingIds = ids(query.printingIds);
+    const legacyIds = ids(query.legacyIds);
+    const selectors = [variantIds, printingIds, legacyIds];
+    if (selectors.filter((values) => values.length).length !== 1 || selectors.some((values) => values.length > 24)) {
+      throw new Error('marketPriceSnapshots requires one group of between 1 and 24 card references.');
+    }
+    if (printingIds.length && !query.latestOnly) throw new Error('Printing snapshots require latestOnly.');
+    if (!legacyIds.length && (query.legacySetId != null || query.language != null)) {
+      throw new Error('Legacy snapshot scope requires legacyIds.');
+    }
+    if (legacyIds.length && (!query.latestOnly || !query.legacySetId || !query.language)) {
+      throw new Error('Saved card snapshots require latestOnly, legacySetId and language.');
     }
     if (query.rangeDays != null && query.rangeDays !== 7 && query.rangeDays !== 30) {
       throw new Error('marketPriceSnapshots rangeDays must be either 7 or 30.');
     }
-    return this.authenticatedGet<{ snapshots: StackrPriceSnapshotHistoryItem[]; limit: number; rangeDays?: 7 | 30; bucketMinutes?: 30 | 1440 }>('/market/price-snapshots', {
-      variantIds: variantIds.join(','),
+    if (query.latestOnly && query.rangeDays != null) throw new Error('Latest snapshots cannot request a history range.');
+    return this.authenticatedGet<{ snapshots: StackrPriceSnapshotHistoryItem[]; legacySnapshots?: StackrLegacyPriceSnapshot[];
+      limit: number; rangeDays?: 7 | 30; bucketMinutes?: 30 | 1440 }>('/market/price-snapshots', {
+      variantIds: variantIds.length ? variantIds.join(',') : undefined,
+      printingIds: printingIds.length ? printingIds.join(',') : undefined,
+      legacyIds: legacyIds.length ? legacyIds.join(',') : undefined,
+      legacySetId: legacyIds.length ? query.legacySetId : undefined,
+      language: legacyIds.length ? query.language : undefined,
       rangeDays: query.rangeDays,
+      latestOnly: query.latestOnly ? '1' : undefined,
     });
   }
 

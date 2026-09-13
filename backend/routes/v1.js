@@ -392,8 +392,15 @@ export function createV1Router(options = {}) {
   }));
 
   router.get('/market/price-snapshots', asyncRoute(async (req, res) => {
-    const variantIds = String(req.query.variantIds ?? '').split(',').map((id) => id.trim()).filter(Boolean);
-    const history = await getPricingService().snapshotHistory(variantIds, req.query);
+    // Preserve a supplied empty token for the pricing service to reject.  The
+    // route must not turn `legacyIds=a,` into a different valid request.
+    const splitIds = (value) => String(value).split(',').map((id) => id.trim());
+    const variantIds = req.query.variantIds == null ? [] : splitIds(req.query.variantIds);
+    const printingIds = req.query.printingIds == null ? undefined
+      : splitIds(req.query.printingIds);
+    const legacyIds = req.query.legacyIds == null ? undefined
+      : splitIds(req.query.legacyIds);
+    const history = await getPricingService().snapshotHistory(variantIds, { ...req.query, printingIds, legacyIds });
     sendEnvelope(req, res, history, {
       cacheControl: MARKET_HISTORY_CACHE_CONTROL,
     });

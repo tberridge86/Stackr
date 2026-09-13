@@ -608,6 +608,156 @@ async function findLegacySnapshotEstimate(supabase, variantId, input = {}) {
   return best;
 }
 
+/**
+ * Latest-only callers already have canonical variant UUIDs. Read each exact
+ * scope with a bounded per-variant query: a global ordered limit could let one
+ * noisy card hide another card's newest row. This path intentionally never
+ * falls through to aliases; it is the large-collection escape hatch.
+ */
+async function latestExactSnapshotItems(supabase, variantIds, printingIds = []) {
+  if (!variantIds.length && !printingIds.length) return new Map();
+  const catalogue = variantIds.length
+    ? table(supabase, 'api', 'catalogue_cards')
+      .select('variant_id,printing_id,language_code,set_id,set_code,set_english_display_name,set_native_name,collector_number,card_english_display_name,card_native_name,rarity_code,variant_code,finish_code')
+      .in('variant_id', variantIds)
+    : Promise.resolve({ data: [], error: null });
+  const printingCatalogue = printingIds.length
+    ? table(supabase, 'api', 'catalogue_cards')
+      .select('variant_id,printing_id,language_code,set_id,set_code,set_english_display_name,set_native_name,collector_number,card_english_display_name,card_native_name,rarity_code,variant_code,finish_code')
+      .in('printing_id', printingIds)
+    : null;
+  const [{ data: variantRows, error: variantError }, printingResult] = await Promise.all([catalogue, printingCatalogue]);
+  if (variantError) throw variantError;
+  if (printingResult?.error) throw printingResult.error;
+  const allRows = [...(variantRows ?? []), ...(printingResult?.data ?? [])];
+  const metadataFor = (row) => ({
+    name: row.card_native_name ?? row.card_english_display_name ?? null,
+    language: row.language_code ?? null,
+    setId: row.set_id ?? null,
+    setCode: row.set_code ?? null,
+    setName: row.set_native_name ?? row.set_english_display_name ?? null,
+    number: row.collector_number ?? null,
+    rarity: row.rarity_code ?? null,
+    canonicalVariantId: row.variant_id,
+    canonicalPrintingId: row.printing_id,
+    variantCode: row.variant_code ?? null,
+    finishCode: row.finish_code ?? null,
+  });
+  const metadataByVariant = new Map(allRows.map((row) => [row.variant_id, metadataFor(row)]));
+  const normalPrintingVariants = new Map();
+  for (const printingId of printingIds) {
+    const matches = allRows.filter((row) => row.printing_id === printingId
+      && ['normal', 'standard'].includes(String(row.variant_code ?? '').toLowerCase())
+      && ['normal', 'standard'].includes(String(row.finish_code ?? '').toLowerCase()));
+    if (matches.length === 1) normalPrintingVariants.set(printingId, matches[0].variant_id);
+  }
+  const requestedVariantIds = [...new Set([...variantIds, ...normalPrintingVariants.values()])];
+  const rowsByVariant = new Map();
+  for (const batch of chunks(requestedVariantIds, 6)) {
+    const rows = await Promise.all(batch.map(async (variantId) => {
+      const metadata = metadataByVariant.get(variantId);
+      if (!metadata?.language) return [variantId, []];
+      const { data, error } = await supabase.from('market_price_snapshots')
+        .select(SNAPSHOT_HISTORY_SELECT)
+        .eq('card_id', variantId)
+        .eq('language', metadata.language)
+        .is('user_id', null)
+        .order('snapshot_at', { ascending: false })
+        .limit(24);
+      if (error) throw error;
+      return [variantId, data ?? []];
+    }));
+    for (const [variantId, variantRows] of rows) rowsByVariant.set(variantId, variantRows);
+  }
+  const latest = new Map();
+  for (const variantId of requestedVariantIds) {
+    const metadata = metadataByVariant.get(variantId);
+    if (!metadata?.language) continue;
+    for (const row of rowsByVariant.get(variantId) ?? []) {
+      const scope = snapshotVariantScope(row, variantId, metadata);
+      if (scope !== 'exact_variant') continue;
+      const item = canonicalSnapshotHistoryItem(row, variantId, scope) ?? toSnapshotHistoryItem(row, variantId, scope);
+      const timestamp = Date.parse(String(row.snapshot_at ?? row.calculated_at ?? ''));
+      if (!item?.snapshotAt || !Number.isFinite(timestamp)) continue;
+      const current = latest.get(variantId);
+      const currentTimestamp = Date.parse(String(current?.snapshotAt ?? ''));
+      if (!current || !Number.isFinite(currentTimestamp) || timestamp > currentTimestamp) {
+        latest.set(variantId, {
+          ...item,
+          printingId: metadata.canonicalPrintingId,
+          setId: metadata.setId,
+          languageCode: metadata.language,
+          variantCode: metadata.variantCode,
+        });
+      }
+    }
+  }
+  return new Map([
+    ...variantIds.map((variantId) => [variantId, latest.get(variantId)]),
+    ...printingIds.map((printingId) => [printingId, latest.get(normalPrintingVariants.get(printingId))]),
+  ].filter(([, item]) => Boolean(item)));
+}
+
+function legacyBaseSnapshotScope(row) {
+  const identity = row?.pricing_identity_json;
+  if (!identity || typeof identity !== 'object') return true;
+  const productType = clean(identity.productType)?.toLowerCase();
+  const condition = clean(identity.condition)?.toLowerCase();
+  const variant = clean(identity.variantCode ?? identity.variant)?.toLowerCase();
+  const finish = clean(identity.finishCode ?? identity.finish)?.toLowerCase();
+  const edition = clean(identity.edition)?.toLowerCase();
+  return (!productType || productType === 'raw_card')
+    && (!condition || condition === 'raw_near_mint')
+    && (!variant || ['normal', 'standard'].includes(variant))
+    && (!finish || ['normal', 'standard'].includes(finish))
+    && !edition;
+}
+
+/**
+ * Saved legacy ownership has no canonical variant UUID. This deliberately
+ * returns only a source-labelled base-printing cache record scoped to the
+ * exact saved card/set/language tuple. It is never an exact finish quote.
+ */
+async function latestLegacySnapshotItems(supabase, legacyIds, legacySetId, language) {
+  const latest = new Map();
+  for (const batch of chunks(legacyIds, 6)) {
+    const results = await Promise.all(batch.map(async (legacyId) => {
+      const { data, error } = await supabase.from('market_price_snapshots')
+        .select(SNAPSHOT_HISTORY_SELECT)
+        .eq('card_id', legacyId)
+        .eq('set_id', legacySetId)
+        .eq('language', language)
+        .is('user_id', null)
+        .order('snapshot_at', { ascending: false })
+        .limit(24);
+      if (error) throw error;
+      return [legacyId, data ?? []];
+    }));
+    for (const [legacyId, rows] of results) {
+      for (const row of rows) {
+        if (!legacyBaseSnapshotScope(row)) continue;
+        const item = toSnapshotHistoryItem(row, legacyId, 'printing_level');
+        const timestamp = Date.parse(String(row.snapshot_at ?? row.calculated_at ?? ''));
+        if (!item?.snapshotAt || !Number.isFinite(timestamp)) continue;
+        const current = latest.get(legacyId);
+        const currentTimestamp = Date.parse(String(current?.snapshotAt ?? ''));
+        if (!current || !Number.isFinite(currentTimestamp) || timestamp > currentTimestamp) {
+          latest.set(legacyId, {
+            ...item,
+            // Legacy imported rows often have no safe expiry timestamp. The
+            // client must call this a cached/stale base-printing estimate.
+            freshness: 'stale',
+            legacyReference: legacyId,
+            legacySetId,
+            languageCode: language,
+          });
+        }
+      }
+    }
+  }
+  return latest;
+}
+
 function normaliseTcgdexNormalIdentifier(value) {
   const identifier = clean(value);
   if (!identifier) return null;
@@ -917,22 +1067,88 @@ export function createMarketPricingService(options) {
     },
 
     async snapshotHistory(variantIds, input = {}) {
-      const ids = parseUniqueCanonicalVariantIds(
-        variantIds,
+      const rawLegacyIds = input.legacyIds == null ? []
+        : (Array.isArray(input.legacyIds) ? input.legacyIds : String(input.legacyIds).split(','));
+      if (rawLegacyIds.some((value) => !clean(value))) {
+        throw new ApiError(400, 'invalid_legacy_ids', 'legacyIds must not contain empty references.');
+      }
+      const legacyIds = rawLegacyIds.map((value) => clean(value));
+      if (legacyIds.some((value) => !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(value))) {
+        throw new ApiError(400, 'invalid_legacy_ids', 'legacyIds contain an unsafe reference.');
+      }
+      const legacyIdentityKeys = legacyIds.map((value) => value.toLowerCase());
+      if (new Set(legacyIdentityKeys).size !== legacyIds.length) {
+        throw new ApiError(400, 'invalid_legacy_ids', 'legacyIds must be unique without regard to case.');
+      }
+      const printingIds = input.printingIds == null ? [] : parseUniqueCanonicalVariantIds(
+        input.printingIds,
         24,
-        'variantIds must contain one or more unique canonical UUIDs.',
+        'printingIds must contain one or more unique canonical UUIDs.',
       );
+      const ids = variantIds.length ? parseUniqueCanonicalVariantIds(
+        variantIds, 24, 'variantIds must contain one or more unique canonical UUIDs.',
+      ) : [];
+      const selectorCount = Number(ids.length > 0) + Number(printingIds.length > 0) + Number(legacyIds.length > 0);
+      if (selectorCount !== 1) {
+        throw new ApiError(400, 'invalid_snapshot_selector', 'Supply exactly one of variantIds, printingIds or legacyIds.');
+      }
       if (normalizeCurrency(input.currency) !== 'GBP') {
         throw new ApiError(422, 'unsupported_snapshot_currency', 'Legacy price snapshots are published only in GBP.');
       }
       const rangeDays = parseSnapshotRangeDays(input.rangeDays);
+      if (input.latestOnly != null && input.latestOnly !== true && input.latestOnly !== '1') {
+        throw new ApiError(400, 'invalid_latest_only', 'latestOnly must be 1 when supplied.');
+      }
+      const requestedLatestOnly = input.latestOnly === true || input.latestOnly === '1';
+      if (rangeDays && requestedLatestOnly) {
+        throw new ApiError(400, 'incompatible_snapshot_query', 'latestOnly cannot be combined with rangeDays.');
+      }
+      const latestOnly = requestedLatestOnly;
+      if (legacyIds.length > 24) throw new ApiError(400, 'too_many_legacy_ids', 'At most 24 legacyIds may be requested at once.');
+      const legacySetId = clean(input.legacySetId);
+      const legacyLanguage = clean(input.language)?.toLowerCase();
+      if (!legacyIds.length && (legacySetId || legacyLanguage)) {
+        throw new ApiError(400, 'legacy_scope_without_ids', 'legacySetId and language require legacyIds.');
+      }
+      if (legacyIds.length && (!latestOnly || !legacySetId || !legacyLanguage)) {
+        throw new ApiError(400, 'legacy_ids_require_scoped_latest_only', 'legacyIds require latestOnly, legacySetId and language.');
+      }
+      if (legacyIds.length && (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(legacySetId)
+        || !/^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$/.test(legacyLanguage))) {
+        throw new ApiError(400, 'invalid_legacy_scope', 'legacySetId and language must be safe scoped references.');
+      }
+      if (printingIds.length && !latestOnly) {
+        throw new ApiError(400, 'printing_ids_require_latest_only', 'printingIds require latestOnly.');
+      }
       const limit = rangeDays === 7 ? 338 : rangeDays === 30 ? 32 : parseLimit(input.limit, 72, 120);
-      const resolved = await Promise.all(ids.map(async (id) => ({
+      if (legacyIds.length) {
+        const legacySnapshots = [...(await latestLegacySnapshotItems(supabase, legacyIds, legacySetId, legacyLanguage)).values()]
+          .map((item) => ({
+            cardId: item.legacyReference,
+            legacySetId: item.legacySetId,
+            languageCode: item.languageCode,
+            marketCentral: item.marketCentral,
+            currency: item.currency,
+            calculatedAt: item.calculatedAt,
+            snapshotAt: item.snapshotAt,
+            priceType: item.priceType,
+            freshness: item.freshness,
+            staleAfter: item.staleAfter ?? null,
+            primarySource: item.primarySource ?? null,
+            priceBasis: item.priceBasis ?? 'unknown_or_mixed_normalisation',
+            quoteScope: 'printing_level',
+          }));
+        return { snapshots: [], legacySnapshots, limit: 1 };
+      }
+      const exactLatest = latestOnly ? await latestExactSnapshotItems(supabase, ids, printingIds) : new Map();
+      if (latestOnly) return { snapshots: [...exactLatest.values()], limit: 1 };
+      const unresolvedIds = ids;
+      const resolved = await Promise.all(unresolvedIds.map(async (id) => ({
         id,
         ...(await resolveSnapshotIdentity(supabase, id)),
       })));
       const cardIds = [...new Set(resolved.flatMap((entry) => entry.cardIds))];
-      if (!cardIds.length) return { snapshots: [], limit, ...(rangeDays ? { rangeDays } : {}) };
+      if (!cardIds.length) return { snapshots: [...exactLatest.values()], limit, ...(rangeDays ? { rangeDays } : {}) };
       let data;
       if (rangeDays) {
         const resultSets = await Promise.all(chunks(cardIds, 120)
@@ -951,7 +1167,7 @@ export function createMarketPricingService(options) {
       }
       const requestedAt = Date.now();
       const rangeStart = rangeDays ? requestedAt - rangeDays * 86_400_000 : null;
-      const perVariant = new Map(ids.map((id) => [id, new Map()]));
+      const perVariant = new Map(unresolvedIds.map((id) => [id, new Map()]));
       for (const entry of resolved) {
         const rows = (data ?? []).filter((row) => (
           entry.cardIds.includes(row.card_id) && row.language === entry.metadata?.language
@@ -977,9 +1193,12 @@ export function createMarketPricingService(options) {
           }
         }
       }
-      const snapshots = [...perVariant.values()].flatMap((items) => [...items.values()]
-        .sort((left, right) => Date.parse(right.snapshotAt) - Date.parse(left.snapshotAt))
-        .slice(0, rangeDays ? limit + 1 : limit));
+      const snapshots = [
+        ...exactLatest.values(),
+        ...[...perVariant.values()].flatMap((items) => [...items.values()]
+          .sort((left, right) => Date.parse(right.snapshotAt) - Date.parse(left.snapshotAt))
+          .slice(0, rangeDays ? limit + 1 : limit)),
+      ].sort((left, right) => Date.parse(right.snapshotAt) - Date.parse(left.snapshotAt));
       return {
         snapshots: snapshots.sort((left, right) => Date.parse(right.snapshotAt) - Date.parse(left.snapshotAt)),
         limit,

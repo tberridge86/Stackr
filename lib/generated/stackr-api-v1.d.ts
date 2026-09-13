@@ -979,6 +979,12 @@ export interface components {
             cardId: string;
             /** Format: uuid */
             variantId: string;
+            /** Format: uuid */
+            printingId?: string;
+            /** Format: uuid */
+            setId?: string;
+            languageCode?: components["schemas"]["LanguageCode"];
+            variantCode?: string;
             /** Format: date-time */
             calculatedAt?: string | null;
             /** Format: date-time */
@@ -1004,9 +1010,31 @@ export interface components {
              */
             quoteScope: "exact_variant" | "printing_level";
         };
+        LegacyPriceSnapshot: {
+            cardId: string;
+            legacySetId: string;
+            languageCode: components["schemas"]["LanguageCode"];
+            marketCentral?: number | null;
+            /** Format: date-time */
+            calculatedAt?: string | null;
+            /** Format: date-time */
+            snapshotAt?: string | null;
+            /** @constant */
+            currency: "GBP";
+            priceType?: components["schemas"]["MarketEvidenceStatus"];
+            /** @constant */
+            freshness: "stale";
+            /** Format: date-time */
+            staleAfter?: string | null;
+            primarySource?: string | null;
+            priceBasis?: string;
+            /** @constant */
+            quoteScope: "printing_level";
+        };
         PriceSnapshotHistoryResponse: components["schemas"]["Envelope"] & {
             data?: {
                 snapshots: components["schemas"]["PriceSnapshotHistoryItem"][];
+                legacySnapshots?: components["schemas"]["LegacyPriceSnapshot"][];
                 limit: number;
                 /**
                  * @description Present only for a rangeDays request.
@@ -1596,11 +1624,21 @@ export interface operations {
     };
     getMarketPriceSnapshots: {
         parameters: {
-            query: {
-                /** @description Comma-separated canonical variant UUIDs; maximum 24 per request. */
-                variantIds: string;
-                /** @description Uses server-side bucketing and includes a baseline immediately before the requested range. */
+            query?: {
+                /** @description Comma-separated canonical variant UUIDs; maximum 24 per request. Supply exactly one of variantIds, printingIds or legacyIds. */
+                variantIds?: string;
+                /** @description Comma-separated canonical printing UUIDs; maximum 24. Requires latestOnly. Returns a quote only for a unique normal printing variant. */
+                printingIds?: string;
+                /** @description Up to 24 saved provider card references, each at most 80 safe characters. Requires latestOnly, legacySetId and language. Returns dated printing estimates separately from exact variant quotes. */
+                legacyIds?: string;
+                /** @description Exact saved set reference for legacyIds only. */
+                legacySetId?: string;
+                /** @description Exact printing language for legacyIds only. */
+                language?: components["schemas"]["LanguageCode"];
+                /** @description Uses server-side bucketing and includes a baseline immediately before the requested range. Cannot be combined with latestOnly. */
                 rangeDays?: 7 | 30;
+                /** @description Return only the newest valid exact-variant snapshot for each requested ID, without alias or printing fallback. Cannot be combined with rangeDays. */
+                latestOnly?: 1;
             };
             header?: never;
             path?: never;

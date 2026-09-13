@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useFocusEffect } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -27,16 +27,17 @@ import { Text } from '../components/Text';
 import { useAppMode } from '../components/app-mode-context';
 import { useTheme } from '../components/theme-context';
 import {
-  fetchBinderCards,
-  fetchBinders,
   type BinderCardRecord,
   type BinderRecord,
 } from '../lib/binders';
+import { fetchHomeSavedCollection } from '../lib/homeSavedCollection';
+import { supabase } from '../lib/supabase';
 import { USD_TO_GBP } from '../lib/config';
 import { getIncrementalListWindow } from '../lib/performance';
 import { getDisplaySetName } from '../lib/setDisplay';
 import { stackrCardImageSizes, stackrTabContentPadding } from '../lib/stackrSizing';
 import { numericTextStyle } from '../lib/typography';
+import { createAccountLoadGeneration } from '../lib/accountLoadGeneration';
 
 type DuplicateListItem = {
   cardId: string;
@@ -605,6 +606,7 @@ export default function DuplicatesScreen() {
     [isGrid]
   );
   const [visibleItemCount, setVisibleItemCount] = useState(duplicateWindow.initialCount);
+  const duplicateLoadGeneration = useRef(createAccountLoadGeneration()).current;
 
   const summary = useMemo(() => ({
     duplicateCopies: items.reduce((sum, item) => sum + item.duplicateCopies, 0),
@@ -645,33 +647,53 @@ export default function DuplicatesScreen() {
   }, [duplicateWindow.pageSize, filteredItems.length]);
 
   const loadDuplicates = useCallback(async (isRefresh = false) => {
+    const isCurrentLoad = duplicateLoadGeneration.begin();
+    let requestedUserId: string | null = null;
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
       setError(null);
 
-      const binders = await fetchBinders();
-      const groups = await Promise.all(
-        binders.map(async (binder) => ({
-          binder,
-          cards: await fetchBinderCards(binder.id),
-        }))
-      );
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!isCurrentLoad()) return;
+      if (!user) {
+        setItems([]);
+        return;
+      }
+      requestedUserId = user.id;
+      // Duplicates only need saved ownership. Loading every official set here
+      // also triggers catalogue and price enrichment for virtual slots.
+      const { binders, cardsByBinder } = await fetchHomeSavedCollection(user.id);
+      const { data: { user: currentUser }, error: currentUserError } = await supabase.auth.getUser();
+      if (currentUserError) throw currentUserError;
+      if (!isCurrentLoad() || currentUser?.id !== requestedUserId) return;
+      const groups = binders.map((binder) => ({
+        binder,
+        cards: cardsByBinder.get(binder.id) ?? [],
+      }));
 
       setItems(buildDuplicates(groups));
     } catch (loadError) {
+      if (!isCurrentLoad()) return;
+      if (requestedUserId) {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!isCurrentLoad() || currentUser?.id !== requestedUserId) return;
+      }
       console.log('Failed to load duplicate list', loadError);
       setError('We couldn’t load your extra cards.');
     } finally {
+      if (!isCurrentLoad()) return;
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [duplicateLoadGeneration]);
 
   useFocusEffect(
     useCallback(() => {
-      loadDuplicates();
-    }, [loadDuplicates])
+      void loadDuplicates();
+      return () => duplicateLoadGeneration.invalidate();
+    }, [duplicateLoadGeneration, loadDuplicates])
   );
 
   const viewCard = useCallback((item: DuplicateListItem) => {

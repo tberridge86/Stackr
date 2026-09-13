@@ -1,4 +1,5 @@
-import { loadCollectionPrices, type CollectionPriceInput, type CollectionPriceLoaderOptions, type CollectionPriceResolution, type CollectionPriceResult } from './collectionPricingApi';
+import { loadCollectionPrices, loadExactCollectionSnapshotPrices, loadLegacyCollectionSnapshotPrices, type CollectionPriceInput, type CollectionPriceLoaderOptions, type CollectionPriceResolution, type CollectionPriceResult } from './collectionPricingApi';
+import type { StackrApiClient } from './stackrApiV1';
 import type { BinderCardMode, BinderCardRecord } from './binders';
 
 type BinderPriceDefaults = {
@@ -7,6 +8,7 @@ type BinderPriceDefaults = {
   defaultCondition?: string | null;
   defaultGradeCompany?: string | null;
   defaultGrade?: string | null;
+  edition?: string | null;
 };
 
 export type BinderPriceProgressOptions = Pick<CollectionPriceLoaderOptions, 'client' | 'concurrency' | 'isCurrent' | 'resolver' | 'onInterrupted'> & {
@@ -37,7 +39,8 @@ export function binderCanonicalVariantCode(row: BinderCardRecord) {
   return nonEmpty(variant?.variantCode ?? variant?.finishCode);
 }
 
-function binderTrustedResolution(row: BinderCardRecord): CollectionPriceResolution | null {
+/** Reuse only catalogue-attested facts; saved aliases never become trusted IDs. */
+export function binderTrustedResolution(row: BinderCardRecord): CollectionPriceResolution | null {
   const card = row.card as any;
   const raw = card?.raw_data ?? card?.rawData ?? {};
   const stackr = raw?.stackr;
@@ -83,6 +86,9 @@ export function binderPriceInputForRow(
     language: trustedResolution?.language ?? row.language ?? defaults.language,
     setId: trustedResolution?.setId ?? row.api_set_id ?? row.set_id,
     variantCode: binderCanonicalVariantCode(row) ?? undefined,
+    legacyReference: row.card_id,
+    legacySetId: row.set_id,
+    edition: defaults.edition,
     trustedResolution,
     productType: graded ? 'graded_card' : 'raw_card',
     // Existing binder estimates apply the saved condition multiplier at render
@@ -145,4 +151,40 @@ export async function loadProgressiveBinderPrices(
     onInterrupted: options.onInterrupted,
   });
   return mergeBinderPriceResults(rows, results);
+}
+
+/**
+ * Viewport callers use this before the slower compatibility loader. It reads
+ * only exact raw/NM variants and leaves misses unchanged, so a 12-card visible
+ * batch never resolves every virtual slot in the binder.
+ */
+export async function loadLatestSnapshotBinderPrices(
+  rows: BinderCardRecord[],
+  defaults: BinderPriceDefaults,
+  client: Pick<StackrApiClient, 'marketPriceSnapshots'>,
+  isCurrent?: () => boolean,
+) {
+  const inputs = rows.map((row) => binderPriceInputForRow(row, defaults));
+  const read = await loadExactCollectionSnapshotPrices(inputs, { client, concurrency: 1, isCurrent });
+  const legacy = read.failure
+    ? { results: new Map<number, CollectionPriceResult>(), failure: read.failure }
+    : await loadLegacyCollectionSnapshotPrices(inputs, client, isCurrent);
+  const results: CollectionPriceResult[] = inputs.map((input) => ({
+    key: input.key,
+    quantity: input.quantity,
+    reference: null,
+    variantId: null,
+    central: null,
+    status: 'unavailable' as const,
+    freshness: 'unknown' as const,
+    calculatedAt: null,
+    staleAfter: null,
+    unavailableReason: 'No matching Stackr price is available.',
+    requestError: null,
+  }));
+  for (const [index, result] of read.results) results[index] = result;
+  for (const [index, result] of legacy.results) {
+    if (results[index].central == null) results[index] = result;
+  }
+  return { rows: mergeBinderPriceResults(rows, results), failure: read.failure ?? legacy.failure };
 }

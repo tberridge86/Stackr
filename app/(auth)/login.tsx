@@ -96,7 +96,7 @@ export default function LoginScreen() {
 
       if (data.user) {
         setMessage(
-          'Account created. Please check your email to verify your account. After verification, you can set your Collector Name on your profile.'
+          'Account created. Check your email to verify it, then choose your Collector Name.'
         );
       } else {
         setMessage('Signup completed. Please check your email.');
@@ -159,15 +159,13 @@ export default function LoginScreen() {
           <View style={styles.container}>
             {recoveryMode ? <Text accessibilityRole="header" style={styles.title}>Reset password</Text> : null}
              <Text style={styles.subtitle}>
-              {recoveryMode ? 'Enter your email to request a new password reset link.' : 'Track your cards, value your collection, and trade with other collectors.'}
+              {recoveryMode ? 'Enter your email and we will send a password reset link.' : 'Organise your cards, track value and trade with collectors.'}
             </Text>
 
             {!recoveryMode ? <View style={styles.infoBox}>
-              <Text style={styles.infoTitle}>New to Stackr?</Text>
+              <Text style={styles.infoTitle}>Create an account</Text>
               <Text style={styles.infoText}>
-                Enter your email and create a password, then tap Create account.
-                You’ll choose your Collector Name next, which will appear on your
-                profile.
+                Use your email and a password. You can choose your Collector Name next.
               </Text>
             </View> : null}
 

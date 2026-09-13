@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
-import { StackrCardActionIcon, StackrScreen } from '../../components/StackrScreen';
+import { StackrCardActionIcon, StackrPageTitle, StackrScreen } from '../../components/StackrScreen';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import {
   RecentSearchPill,
@@ -1721,7 +1721,10 @@ export default function GlobalSearchScreen() {
         renderItem={() => (
           <View>
             <View style={{ gap: 9, marginBottom: 13 }}>
-              <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: 24, fontWeight: '800' }}>{showcaseConfig?.title ?? 'Search'}</Text>
+              <StackrPageTitle
+                title={showcaseConfig?.title ?? 'Search'}
+                accentText={showcaseConfig ? undefined : 'rch'}
+              />
               <StackrBrowseToolbar
                 horizontalInset={0}
                 search={query}

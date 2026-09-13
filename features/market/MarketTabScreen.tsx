@@ -1774,7 +1774,7 @@ export default function TheMarketTab() {
         placeholder="Search Market"
         onOpenFilters={() => setFiltersOpen(true)}
         activeFilterCount={activeFilterCount + Number(sortBy !== 'recommended')}
-        resultLabel={`${listingCountCopy} · ${currentSortLabel}`}
+        resultLabel={sortBy === 'recommended' ? listingCountCopy : `${listingCountCopy} · ${currentSortLabel}`}
       />
       {suggestion ? (
         <TouchableOpacity onPress={() => setSearch(suggestion)} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>

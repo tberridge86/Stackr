@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Text } from '../Text';
 import { StackrImage } from '../StackrImage';
-import { StackrCardActionIcon } from '../StackrScreen';
+import { StackrCardActionIcon, StackrPageTitle } from '../StackrScreen';
 import { StackrBottomSheet } from '../StackrModalSystem';
 import { StackrProfileAvatar } from '../StackrProfileAvatar';
 import { getPokemonLanguageDescriptor, PokemonLanguageFlagIcon } from '../PokemonLanguageBadge';
@@ -130,14 +130,7 @@ export function MarketHeader({
     <View style={{ gap: 6 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text
-            style={{ color: theme.colors.text, fontSize: 28, lineHeight: 33, fontWeight: '900' }}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.86}
-          >
-            The Ma<Text style={{ color: theme.colors.primary, fontSize: 28, lineHeight: 33, fontWeight: '900' }}>rket</Text>
-          </Text>
+          <StackrPageTitle title="Market" accentText="ket" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.86} />
         </View>
         <TouchableOpacity
           onPress={onProfile}
@@ -201,7 +194,7 @@ export function MarketShortcutRow({
     <View style={{ flexDirection: 'row', gap: 8, width: '100%' }}>
       <MarketQuickLink
         imageIcon={stackrIcons.favorite}
-        label="Favorited"
+        label="Saved"
         accessibilityLabel="Favorited listings"
         count={savedCount}
         onPress={onSaved}
@@ -240,12 +233,11 @@ function MarketQuickLink({
       style={{
         flex: 1,
         minWidth: 0,
-        minHeight: 38,
-        paddingHorizontal: 8,
-        borderRadius: 12,
-        backgroundColor: 'rgba(255,255,255,0.72)',
-        borderWidth: 1,
-        borderColor: theme.colors.border,
+        minHeight: 44,
+        paddingHorizontal: 4,
+        borderRadius: 10,
+        backgroundColor: 'transparent',
+        borderWidth: 0,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -263,7 +255,7 @@ function MarketQuickLink({
         <Ionicons name={icon} size={15} color={theme.colors.primary} style={{ flexShrink: 0 }} />
       ) : null}
       <Text
-        style={{ color: theme.colors.text, fontWeight: '900', fontSize: 11.6, flexShrink: 1, minWidth: 0 }}
+        style={{ color: theme.colors.text, fontWeight: '800', fontSize: 12, flexShrink: 1, minWidth: 0 }}
         numberOfLines={1}
         adjustsFontSizeToFit
         minimumFontScale={0.78}
@@ -629,10 +621,9 @@ function ListingMetaPill({
         minHeight: 24,
         maxWidth: '100%',
         borderRadius: 999,
-        paddingHorizontal: 7,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        backgroundColor: theme.colors.surface,
+        paddingHorizontal: 4,
+        borderWidth: 0,
+        backgroundColor: 'transparent',
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
@@ -649,7 +640,7 @@ function ListingMetaPill({
         <Ionicons name={icon} size={13} color={theme.colors.primary} style={{ flexShrink: 0 }} />
       ) : null}
       <Text
-        style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 13, fontWeight: '900', flexShrink: 1, minWidth: 0 }}
+        style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 14, fontWeight: '800', flexShrink: 1, minWidth: 0 }}
         numberOfLines={1}
         adjustsFontSizeToFit
         minimumFontScale={0.78}
@@ -694,12 +685,10 @@ export function MarketListingCard({
       accessibilityLabel={`Open listing for ${item.title}`}
       style={{
         flex: 1,
-        backgroundColor: theme.colors.card,
-        borderRadius: 18,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        padding: compact ? 7 : 8,
-        ...theme.shadows.card,
+        backgroundColor: 'transparent',
+        borderRadius: 16,
+        borderWidth: 0,
+        padding: compact ? 6 : 7,
       }}
     >
       <View>
@@ -751,7 +740,7 @@ export function MarketListingCard({
 
       <View style={{ gap: compact ? 4 : 5, paddingTop: compact ? 8 : 9, minHeight: compact ? 112 : 132 }}>
         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start' }}>
-          <Text style={{ flex: 1, minWidth: 0, color: theme.colors.text, fontSize: compact ? 13 : 13.5, lineHeight: compact ? 16 : 17, fontWeight: '900' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.78}>
+          <Text style={{ flex: 1, minWidth: 0, color: theme.colors.text, fontSize: compact ? 13.5 : 14.5, lineHeight: compact ? 17 : 19, fontWeight: '900' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.78}>
             {item.title}
           </Text>
           {onMore ? (
@@ -775,7 +764,7 @@ export function MarketListingCard({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: compact ? 1 : 2 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text
-              style={{ color: theme.colors.text, fontSize: compact ? 16 : 17, lineHeight: compact ? 19 : 21, fontWeight: '900' }}
+              style={{ color: theme.colors.text, fontSize: compact ? 16.5 : 18.5, lineHeight: compact ? 20 : 23, fontWeight: '900' }}
               numberOfLines={1}
               adjustsFontSizeToFit
               minimumFontScale={0.72}
@@ -783,7 +772,7 @@ export function MarketListingCard({
               {compact ? compactPrimary : transaction.primary}
             </Text>
             {conditionLine ? (
-              <Text style={{ color: theme.colors.textSoft, fontSize: compact ? 10.2 : 10.6, lineHeight: 14, fontWeight: '800' }} numberOfLines={1}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: compact ? 11 : 11.5, lineHeight: 15, fontWeight: '800' }} numberOfLines={1}>
                 {conditionLine}
               </Text>
             ) : null}
@@ -793,7 +782,7 @@ export function MarketListingCard({
           ) : null}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: compact ? 2 : 1, minHeight: 17 }}>
-          <Text style={{ flex: 1, minWidth: 0, color: theme.colors.textSoft, fontSize: compact ? 10.2 : 10.7, lineHeight: 14, fontWeight: '900' }} numberOfLines={1}>
+          <Text style={{ flex: 1, minWidth: 0, color: theme.colors.textSoft, fontSize: compact ? 10.8 : 11.2, lineHeight: 15, fontWeight: '800' }} numberOfLines={1}>
             {trustLabel}
           </Text>
           {item.verified && !item.isMine ? <Ionicons name={marketIcons.verified} size={13} color={theme.colors.primary} /> : null}

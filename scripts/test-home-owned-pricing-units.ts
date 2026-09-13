@@ -27,6 +27,7 @@ assert.equal(statements.length, names.size, 'Home ownership pricing helpers must
 const helperSource = statements.map((statement) => statement.getText(parsed)).join('\n');
 const compiled = ts.transpileModule([
   'const getOwnedQuantity = (card: any) => Math.max(1, Number(card.quantity ?? 1));',
+  'const binderTrustedResolution = (card: any) => card.__trustedResolution ?? null;',
   helperSource,
   'module.exports = { buildHomeOwnedPricingUnits, pricingInputForHomeUnit, reconcileManualPriceRefreshes };',
 ].join('\n'), {
@@ -58,6 +59,23 @@ assert.equal(deduped.length, 1, 'Canonical ownership must suppress duplicate leg
 assert.deepEqual(Array.from(deduped[0].binderIds), ['binder-one', 'binder-two']);
 assert.equal(deduped[0].quantity, 2);
 assert.deepEqual(Array.from(pricingInputForHomeUnit(deduped[0]).references), ['canonical-card-a', 'card-a']);
+
+const trustedCard = {
+  ...sharedCard,
+  __trustedResolution: {
+    canonical: true,
+    cardId: '11111111-1111-4111-8111-111111111111',
+    setId: '22222222-2222-4222-8222-222222222222',
+    language: 'en',
+    defaultVariantId: '33333333-3333-4333-8333-333333333333',
+    variants: [{ variantId: '33333333-3333-4333-8333-333333333333', variantCode: 'normal' }],
+  },
+};
+const trustedUnit = buildHomeOwnedPricingUnits([{ ...trustedCard, __binderId: 'trusted-binder' }], canonical, []);
+const trustedInput = pricingInputForHomeUnit(trustedUnit[0]);
+assert.equal(trustedInput.trustedResolution.cardId, '11111111-1111-4111-8111-111111111111');
+assert.deepEqual(Array.from(trustedInput.references).slice(0, 1), ['11111111-1111-4111-8111-111111111111'],
+  'Home pricing begins with catalogue-attested canonical facts when they are present.');
 
 const standalone = buildHomeOwnedPricingUnits([], [{
   set_id: 'set-ja', card_id: 'card-ja', quantity: 1, variant: 'reverse', condition: null, grade_company: null, grade: null,

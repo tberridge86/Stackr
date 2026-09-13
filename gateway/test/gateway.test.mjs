@@ -56,6 +56,70 @@ test('price snapshots accept bounded canonical IDs and reject invalid ranges bef
   assert.equal(forwarded, 1);
 });
 
+test('latest printing quotes allow bounded UUIDs only and require the explicit latest mode', async () => {
+  let forwarded = 0;
+  const env = environment({ STACKR_PRICING_ACCESS_MODE: 'public' });
+  const deps = { cache: new MemoryCache(), fetchImpl: async (url) => {
+    forwarded++;
+    assert.equal(new URL(url).searchParams.get('printingIds'), USER_ID);
+    return Response.json({ data: { snapshots: [] } });
+  } };
+  const path = `/v1/market/price-snapshots?printingIds=${USER_ID}&latestOnly=1`;
+  assert.equal((await handleRequest(request(path), env, context(), deps)).status, 200);
+  for (const query of [`printingIds=${USER_ID}`, `printingIds=${USER_ID}&variantIds=${USER_ID}&latestOnly=1`, 'printingIds=legacy-card&latestOnly=1']) {
+    assert.equal((await handleRequest(request(`/v1/market/price-snapshots?${query}`), env, context(), deps)).status, 400);
+  }
+  assert.equal(forwarded, 1);
+});
+
+test('latest snapshot batches retain owner privacy and reject ambiguous modes', async () => {
+  const env = environment({ STACKR_PRICING_OWNER_USER_ID: USER_ID });
+  let forwarded = 0;
+  const deps = { cache: new MemoryCache(), verifyAuth: async () => ({ ...authenticated(), token: 'owner-token' }),
+    fetchImpl: async (url, init) => {
+      forwarded++;
+      assert.equal(new URL(url).searchParams.get('latestOnly'), '1');
+      assert.equal(init.headers.get('authorization'), 'Bearer owner-token');
+      return Response.json({ data: { snapshots: [] } });
+    } };
+  const path = `/v1/market/price-snapshots?variantIds=${USER_ID}&latestOnly=1`;
+  const response = await handleRequest(request(path, { headers: { Authorization: 'Bearer owner-token', 'X-Stackr-Device-Id': DEVICE_ID } }), env, context(), deps);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.match(response.headers.get('vary'), /Authorization/);
+  for (const suffix of ['&rangeDays=7', '&latestOnly=1']) {
+    assert.equal((await handleRequest(request(path + suffix), env, context(), deps)).status, 400);
+  }
+  assert.equal((await handleRequest(request(path.replace('latestOnly=1', 'latestOnly=true')), env, context(), deps)).status, 400);
+  assert.equal((await handleRequest(request(path), env, context(), { ...deps,
+    verifyAuth: async () => { throw new GatewayError(401, 'authentication_required', 'Sign in.'); } })).status, 401);
+  assert.equal(forwarded, 1);
+});
+
+test('saved price batches require exact language and set scope without weakening owner privacy', async () => {
+  const env = environment({ STACKR_PRICING_OWNER_USER_ID: USER_ID });
+  let forwarded = 0;
+  const path = '/v1/market/price-snapshots?legacyIds=ja:S12a-146&legacySetId=ja:S12a&language=ja&latestOnly=1';
+  const deps = { cache: new MemoryCache(), verifyAuth: async () => ({ ...authenticated(), token: 'owner-token' }),
+    fetchImpl: async (url) => {
+      forwarded++;
+      assert.equal(new URL(url).searchParams.get('legacySetId'), 'ja:S12a');
+      return Response.json({ data: { snapshots: [], legacySnapshots: [] } });
+    } };
+  const req = (url) => request(url, { headers: { Authorization: 'Bearer owner-token', 'X-Stackr-Device-Id': DEVICE_ID } });
+  const result = await handleRequest(req(path), env, context(), deps);
+  assert.equal(result.status, 200);
+  assert.equal(result.headers.get('cache-control'), 'private, no-store');
+  for (const invalid of [path.replace('&language=ja', ''), path.replace('&legacySetId=ja:S12a', ''),
+    path.replace('&latestOnly=1', ''), `${path}&variantIds=${USER_ID}`,
+    path.replace('legacyIds=ja:S12a-146', 'legacyIds=ja:S12a-146,JA:S12A-146')]) {
+    assert.equal((await handleRequest(req(invalid), env, context(), deps)).status, 400);
+  }
+  assert.equal((await handleRequest(request(path), env, context(), { ...deps,
+    verifyAuth: async () => { throw new GatewayError(401, 'authentication_required', 'Sign in.'); } })).status, 401);
+  assert.equal(forwarded, 1);
+});
+
 test('personal pricing is owner-only, verified before cache access, and private', async () => {
   let downstream = 0;
   const cacheCalls = { match: 0, put: 0 };

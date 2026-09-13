@@ -359,14 +359,39 @@ paths:
       parameters:
         - name: variantIds
           in: query
-          required: true
-          description: Comma-separated canonical variant UUIDs; maximum 24 per request.
+          required: false
+          description: Comma-separated canonical variant UUIDs; maximum 24 per request. Supply exactly one of variantIds, printingIds or legacyIds.
           schema: { type: string }
+        - name: printingIds
+          in: query
+          required: false
+          description: Comma-separated canonical printing UUIDs; maximum 24. Requires latestOnly. Returns a quote only for a unique normal printing variant.
+          schema: { type: string }
+        - name: legacyIds
+          in: query
+          required: false
+          description: Up to 24 saved provider card references, each at most 80 safe characters. Requires latestOnly, legacySetId and language. Returns dated printing estimates separately from exact variant quotes.
+          schema: { type: string }
+        - name: legacySetId
+          in: query
+          required: false
+          description: Exact saved set reference for legacyIds only.
+          schema: { type: string, maxLength: 80 }
+        - name: language
+          in: query
+          required: false
+          description: Exact printing language for legacyIds only.
+          schema: { $ref: "#/components/schemas/LanguageCode" }
         - name: rangeDays
           in: query
           required: false
-          description: Uses server-side bucketing and includes a baseline immediately before the requested range.
+          description: Uses server-side bucketing and includes a baseline immediately before the requested range. Cannot be combined with latestOnly.
           schema: { type: integer, enum: [7, 30] }
+        - name: latestOnly
+          in: query
+          required: false
+          description: Return only the newest valid exact-variant snapshot for each requested ID, without alias or printing fallback. Cannot be combined with rangeDays.
+          schema: { type: integer, enum: [1] }
       responses:
         "200":
           description: Timestamped global market estimates only. These are not an assertion of an individual last-sold transaction. Private and no-store in default personal owner-only mode.
@@ -1799,6 +1824,10 @@ components:
       properties:
         cardId: { type: string }
         variantId: { type: string, format: uuid }
+        printingId: { type: string, format: uuid }
+        setId: { type: string, format: uuid }
+        languageCode: { $ref: "#/components/schemas/LanguageCode" }
+        variantCode: { type: string }
         calculatedAt: { type: [string, "null"], format: date-time }
         snapshotAt: { type: [string, "null"], format: date-time }
         marketCentral: { type: [number, "null"] }
@@ -1817,6 +1846,23 @@ components:
           type: string
           enum: [exact_variant, printing_level]
           description: Whether the stored estimate matches the requested finish or only the underlying printing.
+    LegacyPriceSnapshot:
+      type: object
+      required: [cardId, legacySetId, languageCode, currency, freshness, quoteScope]
+      properties:
+        cardId: { type: string }
+        legacySetId: { type: string }
+        languageCode: { $ref: "#/components/schemas/LanguageCode" }
+        marketCentral: { type: [number, "null"] }
+        calculatedAt: { type: [string, "null"], format: date-time }
+        snapshotAt: { type: [string, "null"], format: date-time }
+        currency: { type: string, const: GBP }
+        priceType: { $ref: "#/components/schemas/MarketEvidenceStatus" }
+        freshness: { type: string, const: stale }
+        staleAfter: { type: [string, "null"], format: date-time }
+        primarySource: { type: [string, "null"] }
+        priceBasis: { type: string }
+        quoteScope: { type: string, const: printing_level }
     PriceSnapshotHistoryResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"
@@ -1829,6 +1875,9 @@ components:
                 snapshots:
                   type: array
                   items: { $ref: "#/components/schemas/PriceSnapshotHistoryItem" }
+                legacySnapshots:
+                  type: array
+                  items: { $ref: "#/components/schemas/LegacyPriceSnapshot" }
                 limit: { type: integer }
                 rangeDays:
                   type: integer

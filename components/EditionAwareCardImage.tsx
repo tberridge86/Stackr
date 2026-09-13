@@ -12,6 +12,8 @@ import {
   getEditionVariantImageUrl,
   getEditionAwareImageUrl,
   getPublicScrydexCardImageUrl,
+  shouldFetchEditionImage,
+  verifiedRemoteEditionImage,
   type EditionImageSize,
 } from '../lib/editionImages';
 import type { ScanEditionHint } from '../types/scan';
@@ -20,6 +22,7 @@ import { StackrImage } from './StackrImage';
 
 type Props = {
   uri?: string | null;
+  fullUri?: string | null;
   fallbackUri?: string | null;
   cardId?: string | null;
   rawData?: any;
@@ -32,6 +35,7 @@ type Props = {
 
 function EditionAwareCardImageBase({
   uri,
+  fullUri,
   fallbackUri,
   cardId,
   rawData,
@@ -51,7 +55,9 @@ function EditionAwareCardImageBase({
     let active = true;
     setRemoteVariantUri(null);
 
-    if (rawVariantUri || !PRICE_API_URL || !cardId || !editionHint) {
+    if (!PRICE_API_URL || !cardId || !editionHint || !shouldFetchEditionImage({
+      cardId, editionHint, rawVariantUri, suppliedUri: uri ?? fullUri ?? fallbackUri,
+    })) {
       return () => {
         active = false;
       };
@@ -63,12 +69,11 @@ function EditionAwareCardImageBase({
       size: sourceSize,
     });
 
-    fetch(`${PRICE_API_URL}/api/card-image/edition?${params.toString()}`)
+    const controller = new AbortController();
+    fetch(`${PRICE_API_URL}/api/card-image/edition?${params.toString()}`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => {
-        if (active && payload?.ok && typeof payload.imageUri === 'string') {
-          setRemoteVariantUri(payload.imageUri);
-        }
+        if (active) setRemoteVariantUri(verifiedRemoteEditionImage(payload));
       })
       .catch(() => {
         if (active) setRemoteVariantUri(null);
@@ -76,8 +81,9 @@ function EditionAwareCardImageBase({
 
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [cardId, editionHint, rawVariantUri, sourceSize]);
+  }, [cardId, editionHint, rawVariantUri, sourceSize, uri, fullUri, fallbackUri]);
 
   const scrydexUnlimitedUri = React.useMemo(
     () => getPublicScrydexCardImageUrl(cardId, editionHint, sourceSize),
@@ -86,19 +92,20 @@ function EditionAwareCardImageBase({
   const resolvedDisplayUri = getEditionAwareImageUrl({
     rawVariantUri,
     remoteVariantUri,
-    suppliedUri: uri,
+    suppliedUri: uri ?? fullUri ?? fallbackUri,
     scrydexUnlimitedUri,
   });
-  const hasSourceVariant = Boolean(rawVariantUri || scrydexUnlimitedUri || remoteVariantUri);
+  const hasSourceVariant = Boolean(rawVariantUri || remoteVariantUri);
   const needsVisualPatch = Boolean(editionHint && !hasSourceVariant && editionHint !== 'unlimited');
   const contentFit = resizeMode === 'cover' ? 'cover' : resizeMode === 'stretch' ? 'fill' : 'contain';
 
   return (
     <View style={[styles.container, style]}>
-      {resolvedDisplayUri ? (
+      {resolvedDisplayUri || fullUri || fallbackUri ? (
         <StackrImage
           uri={resolvedDisplayUri}
-          fullUri={resolvedDisplayUri === uri ? fallbackUri : undefined}
+          fullUri={!hasSourceVariant ? fullUri : undefined}
+          fallbackSource={!hasSourceVariant && fallbackUri ? { uri: fallbackUri } : undefined}
           style={styles.image}
           imageStyle={imageStyle}
           contentFit={contentFit}

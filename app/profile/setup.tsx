@@ -190,12 +190,12 @@ function ProfileSetupForm({ initialProfile }: { initialProfile: ReturnType<typeo
 
           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: '900' }}>
-              {isEditing ? 'Edit Profile' : 'Set up your profile'}
+              {isEditing ? 'Edit profile' : 'Create your profile'}
             </Text>
             <Text style={{ color: theme.colors.textSoft, marginTop: 4, lineHeight: 20 }}>
               {isEditing
                 ? 'Update your collector card.'
-                : 'Your collector card is how other collectors will see you.'}
+                : 'Choose the name and look collectors will see.'}
             </Text>
           </View>
         </View>
@@ -297,7 +297,7 @@ function ProfileSetupForm({ initialProfile }: { initialProfile: ReturnType<typeo
           maxLength={30}
         />
         <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 6 }}>
-          This is the name other collectors will see. ({collectorName.length}/30)
+          Shown to other collectors. ({collectorName.length}/30)
         </Text>
 
         {/* ===============================

@@ -1044,20 +1044,21 @@ function makeStyles(theme: any) {
   },
   heroCard: {
     backgroundColor: 'transparent',
-    borderRadius: 20,
-    padding: 12,
+    borderRadius: 22,
+    padding: 10,
     marginBottom: 14,
     alignItems: 'center',
   },
   heroImageFrame: {
     width: '100%',
-    borderRadius: 12,
+    borderRadius: 18,
     overflow: 'visible',
     backgroundColor: 'transparent',
   },
   cardImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 15,
   },
   imageFallback: {
     width: '100%',

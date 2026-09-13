@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { StackrApiClient, StackrCard, StackrCatalogueAsset } from '../lib/stackrApiV1';
-import { mergePreferredSetArtwork, readPreferredSetArtwork } from '../lib/stackrPreferredSetArtwork';
+import { mergePreferredSetArtwork, readPreferredSetArtwork, PREFERRED_ARTWORK_PAGE_SIZE } from '../lib/stackrPreferredSetArtwork';
 
 const card = {
   cardId: 'printing', catalogueVersionId: 'version', languageCode: 'ja', game: 'pokemon',
@@ -33,7 +33,7 @@ async function main() {
   const progress: StackrCard[][] = [];
   const controller = new AbortController();
   const client = { setCards: async (_set: string, query: any, init: any) => {
-    assert.equal(query.includeAssets, true); assert.equal(query.limit, 500); assert.equal(query.language, 'ja');
+    assert.equal(query.includeAssets, true); assert.equal(query.limit, PREFERRED_ARTWORK_PAGE_SIZE); assert.equal(query.language, 'ja');
     assert(init.signal instanceof AbortSignal);
     calls++;
     assert.equal(query.cursor, calls === 1 ? null : 'next');

@@ -117,8 +117,33 @@ export function getPublicScrydexCardImageUrl(
   editionHint?: ScanEditionHint | null,
   size: EditionImageSize = 'large'
 ) {
-  if (!cardId || editionHint !== 'unlimited') return null;
+  if (!cardId || editionHint !== 'unlimited' || !isProviderCardId(cardId)) return null;
   return `https://images.scrydex.com/pokemon/${encodeURIComponent(cardId)}/${size}`;
+}
+
+function isProviderCardId(cardId: string) {
+  // Canonical UUIDs identify Stackr printings, not provider image addresses.
+  return !/^(?:canonical:)?[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(cardId)
+    && /^[a-z0-9]+(?:[-.][a-z0-9]+)*-[a-z0-9]+$/i.test(cardId);
+}
+
+export function shouldFetchEditionImage({ cardId, editionHint, rawVariantUri, suppliedUri }: {
+  cardId?: string | null;
+  editionHint?: ScanEditionHint | null;
+  rawVariantUri?: string | null;
+  suppliedUri?: string | null;
+}) {
+  return Boolean(cardId && isProviderCardId(cardId) && editionHint && !rawVariantUri
+    && !(editionHint === 'unlimited' && suppliedUri));
+}
+
+export function verifiedRemoteEditionImage(payload: unknown) {
+  const result = payload as { ok?: boolean; imageUri?: unknown; source?: string } | null;
+  // The backend labels constructed URLs explicitly; a successful JSON response
+  // does not prove that those images exist. Keep them as last-resort fallbacks.
+  return result?.ok && result.source !== 'scrydex_public_image'
+    && typeof result.imageUri === 'string' && /^https?:\/\//i.test(result.imageUri)
+    ? result.imageUri : null;
 }
 
 /**
