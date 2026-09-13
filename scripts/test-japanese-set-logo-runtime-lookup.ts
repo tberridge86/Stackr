@@ -12,7 +12,7 @@ function compileModule(path: string, dependencies: Record<string, unknown>) {
     module: moduleBox,
     exports: moduleBox.exports,
     require: (request: string) => {
-      if (/\.png$/.test(request)) return `bundled:${request}`;
+      if (/\.(png|webp)$/.test(request)) return `bundled:${request}`;
       if (request in dependencies) return dependencies[request];
       throw new Error(`Unexpected dependency: ${request}`);
     },
@@ -22,12 +22,15 @@ function compileModule(path: string, dependencies: Record<string, unknown>) {
 
 const englishLogos = compileModule('lib/englishSetLogos.ts', {});
 const japaneseLogos = compileModule('lib/japaneseSetLogos.ts', {});
+const traditionalChineseLogos = compileModule('lib/traditionalChineseSetLogos.ts', {});
 const getEnglishSetLogoSourceForSet = englishLogos.getEnglishSetLogoSourceForSet as (input: Record<string, unknown>) => string | null;
 const getJapaneseSetLogoSourceForSet = japaneseLogos.getJapaneseSetLogoSourceForSet as (input: Record<string, unknown>, fallbackLanguage?: string | null) => string | null;
 const getJapaneseSetLogoSource = japaneseLogos.getJapaneseSetLogoSource as (setId?: string | null, language?: string | null) => string | null;
+const getTraditionalChineseSetLogoSourceForSet = traditionalChineseLogos.getTraditionalChineseSetLogoSourceForSet as (input: Record<string, unknown>, fallbackLanguage?: string | null) => string | null;
 const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './englishSetLogos': { getEnglishSetLogoSourceForSet },
   './japaneseSetLogos': { getJapaneseSetLogoSourceForSet },
+  './traditionalChineseSetLogos': { getTraditionalChineseSetLogoSourceForSet },
   './magazineSetCovers': { getMagazineSetCoverSourceForSet: () => null },
 });
 const getLocalSetArtworkSourceForSet = localArtwork.getLocalSetArtworkSourceForSet as (input: Record<string, unknown>) => string | null;
@@ -72,6 +75,25 @@ for (const language of ['ja', 'jp', 'jpn', 'japanese', 'japan', 'ja-JP', 'ja_JP'
 }
 assert.ok(getJapaneseSetLogoSource('ja:S8b'), 'An unambiguous Japanese-prefixed legacy lookup remains supported.');
 assert.ok(getJapaneseSetLogoSource('S8b'), 'A language-omitted legacy lookup remains supported.');
+
+const traditionalChineseSca = { id: '41251d8a-6a1c-4f91-8e84-22e2fe7737fd', language: 'zh-tw' };
+assert.match(
+  getLocalSetArtworkSourceForSet(traditionalChineseSca) ?? '',
+  /traditional-chinese-set-logo\/logos\/sca\.webp$/,
+  'The reviewed Traditional Chinese SCA mark must resolve only for its exact set and language.',
+);
+for (const language of ['en', 'ja', 'zh-cn', 'ko']) {
+  assert.equal(
+    getLocalSetArtworkSourceForSet({ ...traditionalChineseSca, language }),
+    null,
+    `Traditional Chinese artwork must not cross into ${language}.`,
+  );
+}
+assert.equal(
+  getLocalSetArtworkSourceForSet({ id: 'unknown-traditional-chinese-set', language: 'zh-tw' }),
+  null,
+  'Traditional Chinese artwork must never be selected by an unverified code or name.',
+);
 
 const explore = readFileSync('app/(tabs)/explore.tsx', 'utf8');
 const search = readFileSync('app/(tabs)/search.tsx', 'utf8');

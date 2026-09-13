@@ -14,6 +14,7 @@ import {
 import { getBinderCover } from '../lib/binderCovers';
 import { getLocalSetArtworkSourceForSet } from '../lib/localSetArtwork';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
+import { getPublishedSetCoverFallback } from '../lib/publishedSetLogoFallbacks';
 import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
 import { stackrFonts } from '../lib/typography';
 import { StackrImage } from './StackrImage';
@@ -73,14 +74,16 @@ export function BinderArtwork({
   const cover = getBinderCover(coverKey);
   const resolvedLogoSource = fallbackLogoSource
     ?? (cover ? null : getLocalSetArtworkSourceForSet({
-      id: coverKey ?? sourceSetId,
+      id: sourceSetId ?? coverKey,
       language: sourceSetLanguage,
       name: setName,
       englishDisplayName: setName,
     }));
   const resolvedLogoUrl = enforceSetVisualRuntimePolicy(fallbackLogoUrl
-    ?? (cover || resolvedLogoSource ? undefined : getPokemonSetLogoUrl(coverKey ?? sourceSetId, sourceSetLanguage)));
+    ?? (cover || resolvedLogoSource ? undefined : getPokemonSetLogoUrl(sourceSetId ?? coverKey, sourceSetLanguage)));
   const hasResolvedLogo = Boolean((resolvedLogoSource || resolvedLogoUrl) && !logoFailed);
+  const publishedCoverUrl = cover || fallbackArtSource || resolvedLogoSource || resolvedLogoUrl
+    ? undefined : getPublishedSetCoverFallback({ id: sourceSetId ?? coverKey, language: sourceSetLanguage });
   const shouldDockFallbackLogo = !cover?.image && !fallbackArtSource && hasResolvedLogo;
   const setMarkPrimary = useMemo(() => {
     const cleaned = String(setName ?? sourceSetId ?? coverKey ?? '').replace(/^(ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '').trim();
@@ -116,7 +119,7 @@ export function BinderArtwork({
 
   useEffect(() => {
     setLogoFailed(false);
-  }, [resolvedLogoSource, resolvedLogoUrl]);
+  }, [resolvedLogoSource, resolvedLogoUrl, publishedCoverUrl]);
 
   useEffect(() => {
     Animated.timing(fillWidth, {
@@ -216,6 +219,16 @@ export function BinderArtwork({
               source={fallbackArtSource}
               style={styles.fallbackNameArt}
               resizeMode="contain"
+            />
+          ) : publishedCoverUrl && !logoFailed ? (
+            <StackrImage
+              uri={publishedCoverUrl}
+              onError={() => setLogoFailed(true)}
+              style={styles.fallbackNameArt}
+              contentFit="contain"
+              priority="low"
+              showFallbackIcon={false}
+              placeholderColor="transparent"
             />
           ) : shouldDockFallbackLogo ? null : resolvedLogoSource && !logoFailed ? (
             <StackrImage

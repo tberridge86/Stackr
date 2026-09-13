@@ -661,6 +661,79 @@ async function assertLatestExactSnapshotBatchAvoidsAliasResolution() {
   assert.deepEqual(legacy.legacySnapshots.map((item) => [item.cardId, item.marketCentral, item.quoteScope, item.freshness, item.legacySetId]), [
     ['me4-33', 7, 'printing_level', 'stale', 'me4'],
   ], 'legacy latest reads retain only the exact saved card/set/language base-printing cache and mark it stale');
+
+  const refreshedLegacyVariant = '77777777-7777-4777-8777-777777777777';
+  const refreshedLegacyPrinting = '88888888-8888-4888-8888-888888888888';
+  const refreshedLegacyDb = createSnapshotSupabase({
+    metadata: {
+      variant_id: refreshedLegacyVariant, printing_id: refreshedLegacyPrinting,
+      set_id: '99999999-9999-4999-8999-999999999999', set_code: 'me04',
+      language_code: 'en', collector_number: '033', card_english_display_name: 'Test card',
+      variant_code: 'normal', finish_code: 'normal',
+    },
+    externalIdentifiers: [{
+      source_entity_type: 'card', external_id: 'me4-33', language_code: 'en',
+      printing_id: refreshedLegacyPrinting, variant_id: null,
+    }],
+    snapshots: [{
+      card_id: refreshedLegacyVariant, language: 'en', primary_source: 'tcgdex', tcgdex_price: 12.34,
+      snapshot_at: '2026-09-13T12:00:00.000Z',
+      pricing_identity_json: { canonicalVariantId: refreshedLegacyVariant, productType: 'raw_card', condition: 'raw_near_mint' },
+    }],
+  });
+  const refreshedLegacy = await createMarketPricingService({ supabase: refreshedLegacyDb }).snapshotHistory([], {
+    currency: 'GBP', latestOnly: true, legacyIds: ['me4-33'], legacySetId: 'me4', language: 'en',
+  });
+  assert.deepEqual(refreshedLegacy.legacySnapshots.map((item) => [item.cardId, item.marketCentral, item.quoteScope, item.primarySource]), [
+    ['me4-33', 12.34, 'printing_level', 'tcgdex'],
+  ], 'a legacy ME binder reference resolves only its matching published normal variant and can read the current canonical provider snapshot');
+  assert.equal(refreshedLegacyDb.equalities.some((entry) => (
+    entry.tableName === 'market_price_snapshots' && entry.column === 'card_id' && entry.value === 'me4-33'
+  )), false, 'a resolved legacy reference does not repeat the obsolete legacy snapshot query');
+
+  const collisionVariantOne = '10101010-1010-4010-8010-101010101010';
+  const collisionVariantTwo = '20202020-2020-4020-8020-202020202020';
+  const collisionDb = createSnapshotSupabase({
+    metadata: [
+      {
+        variant_id: collisionVariantOne, printing_id: '30303030-3030-4030-8030-303030303030',
+        set_id: '99999999-9999-4999-8999-999999999999', set_code: 'me04', language_code: 'en',
+        variant_code: 'normal', finish_code: 'normal',
+      },
+      {
+        variant_id: collisionVariantTwo, printing_id: '40404040-4040-4040-8040-404040404040',
+        set_id: '99999999-9999-4999-8999-999999999999', set_code: 'me04', language_code: 'en',
+        variant_code: 'normal', finish_code: 'normal',
+      },
+    ],
+    externalIdentifiers: [
+      { source_entity_type: 'card', external_id: 'me4-33', language_code: 'en', printing_id: '30303030-3030-4030-8030-303030303030' },
+      { source_entity_type: 'card', external_id: 'me4-33', language_code: 'en', printing_id: '40404040-4040-4040-8040-404040404040' },
+    ],
+    snapshots: [
+      row(collisionVariantOne, 10, '2026-09-13T12:00:00.000Z'),
+      row(collisionVariantTwo, 20, '2026-09-13T12:00:00.000Z'),
+    ],
+  });
+  const collision = await createMarketPricingService({ supabase: collisionDb }).snapshotHistory([], {
+    currency: 'GBP', latestOnly: true, legacyIds: ['me4-33'], legacySetId: 'me4', language: 'en',
+  });
+  assert.deepEqual(collision.legacySnapshots, [],
+    'a legacy identifier that maps to more than one normal published printing is rejected rather than choosing the final match');
+
+  const identityBoundDb = createSnapshotSupabase({
+    metadata: [],
+    externalIdentifiers: Array.from({ length: 1_000 }, () => ({
+      source_entity_type: 'card', external_id: 'me4-33', language_code: 'en', printing_id: refreshedLegacyPrinting,
+    })),
+  });
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: identityBoundDb }).snapshotHistory([], {
+      currency: 'GBP', latestOnly: true, legacyIds: ['me4-33'], legacySetId: 'me4', language: 'en',
+    }),
+    (error) => error?.code === 'legacy_identity_result_limit' && error?.status === 503,
+    'legacy resolution must fail closed at the configured row cap, which could otherwise hide a truncated result',
+  );
   await assert.rejects(
     () => createMarketPricingService({ supabase: legacyDb }).snapshotHistory([], { currency: 'GBP', legacyIds: ['me4-33'], legacySetId: 'me4', language: 'en' }),
     /legacyIds require latestOnly/,

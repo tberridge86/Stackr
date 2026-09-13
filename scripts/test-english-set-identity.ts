@@ -65,6 +65,7 @@ async function main() {
     './tcgdexControlledCardReference': { enforceTcgdexRuntimeImagePolicy: (value: unknown) => value },
     './resilientCatalogueRead': { firstNonEmptyCatalogueRows: async () => [], preferNonEmptyCatalogueRows: async () => [] },
     './optionalCatalogueEnrichment': { readOptionalCatalogueEnrichment: async (read: any) => read(undefined), throwIfOptionalCatalogueReadAborted: () => {} },
+    './publishedSetLogoFallbacks': { getPublishedSetCoverFallback: () => undefined, getPublishedSetLogoFallback: () => undefined },
   };
   const exports: any = {};
   let clock = 1_000_000;

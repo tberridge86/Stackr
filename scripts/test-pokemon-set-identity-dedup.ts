@@ -11,7 +11,9 @@ const moduleBox: any = { exports: {} };
 vm.runInNewContext(compiled, {
   module: moduleBox,
   exports: moduleBox.exports,
-  require: () => ({}),
+  require: (name: string) => name === './publishedSetLogoFallbacks'
+    ? { getPublishedSetLogoFallback: () => undefined }
+    : {},
 });
 
 const { filterKnownDuplicateSetRecords } = moduleBox.exports as {

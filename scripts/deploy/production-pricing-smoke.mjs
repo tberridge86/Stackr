@@ -3,6 +3,8 @@ import { pathToFileURL } from 'node:url';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SHA_PATTERN = /^[0-9a-f]{40}$/i;
+const LEGACY_REFERENCE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/;
+const LANGUAGE_PATTERN = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$/;
 
 function argument(name, fallback = null) {
   const prefix = `--${name}=`;
@@ -114,6 +116,9 @@ export async function runProductionPricingSmoke({
   variantId,
   backendOriginKey,
   ownerAccessToken,
+  legacyId = null,
+  legacySetId = null,
+  legacyLanguage = null,
   expectedBackendCommit,
   expectedBackendDeploymentId,
   fetchImpl = fetch,
@@ -127,11 +132,23 @@ export async function runProductionPricingSmoke({
   const normalizedOwnerAccessToken = String(ownerAccessToken ?? '').trim();
   const normalizedCommit = String(expectedBackendCommit ?? '').trim().toLowerCase();
   const normalizedDeploymentId = String(expectedBackendDeploymentId ?? '').trim().toLowerCase();
+  const legacyBridge = [legacyId, legacySetId, legacyLanguage].some((value) => value != null)
+    ? {
+      id: String(legacyId ?? '').trim(),
+      setId: String(legacySetId ?? '').trim(),
+      language: String(legacyLanguage ?? '').trim().toLowerCase(),
+    }
+    : null;
   if (!UUID_PATTERN.test(normalizedVariantId)) throw new Error('variant ID must be a canonical UUID.');
   if (!normalizedOriginKey) throw new Error('backend origin key is required.');
   if (!SHA_PATTERN.test(normalizedCommit)) throw new Error('expected backend commit must be a full 40-character Git SHA.');
   if (!UUID_PATTERN.test(normalizedDeploymentId)) {
     throw new Error('expected backend deployment ID must be a canonical UUID.');
+  }
+  if (legacyBridge && (!LEGACY_REFERENCE_PATTERN.test(legacyBridge.id)
+    || !LEGACY_REFERENCE_PATTERN.test(legacyBridge.setId)
+    || !LANGUAGE_PATTERN.test(legacyBridge.language))) {
+    throw new Error('legacy pricing proof requires safe card, set and language references.');
   }
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1_000 || timeoutMs > 60_000) {
     throw new Error('timeout must be an integer between 1000 and 60000 milliseconds.');
@@ -186,6 +203,30 @@ export async function runProductionPricingSmoke({
       },
     },
   ];
+  if (legacyBridge) {
+    const query = new URLSearchParams({
+      legacyIds: legacyBridge.id,
+      legacySetId: legacyBridge.setId,
+      language: legacyBridge.language,
+      latestOnly: '1',
+    });
+    pricingProbes.push({
+      key: 'legacy_snapshot_bridge',
+      path: `/v1/market/price-snapshots?${query.toString()}`,
+      inspectData(data) {
+        const matches = Array.isArray(data.legacySnapshots) ? data.legacySnapshots.filter((item) => (
+          item?.cardId === legacyBridge.id
+          && item?.legacySetId === legacyBridge.setId
+          && String(item?.languageCode ?? '').toLowerCase() === legacyBridge.language
+        )) : [];
+        if (matches.length !== 1 || matches[0]?.primarySource !== 'tcgdex'
+          || matches[0]?.quoteScope !== 'printing_level'
+          || !Number.isFinite(matches[0]?.marketCentral) || matches[0].marketCentral <= 0) {
+          throw new Error('legacy snapshot bridge did not return one positive source-labelled normal-print estimate.');
+        }
+      },
+    });
+  }
 
   for (const target of [
     { label: 'direct_backend', baseUrl: backend, headers: { 'x-stackr-origin-key': normalizedOriginKey } },
@@ -249,6 +290,7 @@ export async function runProductionPricingSmoke({
     expectedBackendDeploymentId: normalizedDeploymentId,
     variantId: normalizedVariantId,
     ownerPricingValidated: Boolean(normalizedOwnerAccessToken),
+    ...(legacyBridge ? { legacySnapshotBridge: legacyBridge } : {}),
     checks: results,
   };
 }
@@ -266,6 +308,9 @@ if (isMain) {
       variantId: argument('variant-id', process.env.STACKR_PRICING_SMOKE_VARIANT_ID),
       backendOriginKey: process.env[originKeyEnvironmentName],
       ownerAccessToken: argument('owner-access-token', process.env.STACKR_PRICING_OWNER_ACCESS_TOKEN),
+      legacyId: argument('legacy-id'),
+      legacySetId: argument('legacy-set-id'),
+      legacyLanguage: argument('legacy-language'),
       expectedBackendCommit: argument('expected-backend-commit', process.env.STACKR_EXPECTED_MAIN_SHA),
       expectedBackendDeploymentId: argument(
         'expected-backend-deployment',

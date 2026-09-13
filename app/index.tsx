@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,16 +16,25 @@ export default function Index() {
   const router = useRouter();
 
   const navigatedRef = useRef(false);
+  const [introComplete, setIntroComplete] = useState(false);
   const destination = resolveStartupDestination({
     authLoading, authError, user, profileLoading, profileError, collectorName: profile?.collector_name,
   });
   const error = authError || (!authLoading && user ? profileError : null);
 
   useEffect(() => {
-    if (!destination || navigatedRef.current) return;
+    if (!destination || !introComplete || navigatedRef.current) return;
     navigatedRef.current = true;
     router.replace(destination);
-  }, [destination, router]);
+  }, [destination, introComplete, router]);
+
+  // Keep the established quiet opening animation visible long enough to read,
+  // while account work continues in parallel. This is a presentation floor,
+  // not a delay added to authentication or collection retrieval.
+  useEffect(() => {
+    const timer = setTimeout(() => setIntroComplete(true), 480);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>

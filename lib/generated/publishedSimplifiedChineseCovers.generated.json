@@ -1,0 +1,221 @@
+{
+  "observedAt": "2026-09-13",
+  "source": "api.asset_manifest: approved, available, Supabase-hosted sealed product images linked to non-deprecated Simplified Chinese sets",
+  "covers": [
+    {
+      "setId": "8e3da79a-1d8d-40ae-9f09-0150728cfbd6",
+      "setCode": "151c",
+      "storageKey": "public/sealed_product_image/35/57/3557fcf89e41f569fbe0e01d792708939fe6ecfb7ba66f136f6b8744af4c7e52/original.jpg"
+    },
+    {
+      "setId": "6fddd811-836e-4304-8d28-f36caef0d044",
+      "setCode": "cbb1c",
+      "storageKey": "public/sealed_product_image/c7/0a/c70a734245f8094258255b917c6ecd01bae2d42bdff55c86362371b4cb25d4e8/original.jpg"
+    },
+    {
+      "setId": "8a18b285-dbf1-4acb-8374-e693849d80e1",
+      "setCode": "cbb2c",
+      "storageKey": "public/sealed_product_image/1f/02/1f0230295e7de245be0d3b0b97d0d522b88ce10224fce691a8e7bcaf1be081c0/original.jpg"
+    },
+    {
+      "setId": "06ae8d84-49e1-4363-a97b-1f22ee392ed7",
+      "setCode": "cbb3c",
+      "storageKey": "public/sealed_product_image/61/36/6136fa182df0774e5c191908c8b6ace87405653413ac58c324fc5a4284354d37/original.jpg"
+    },
+    {
+      "setId": "ceddde89-0705-4372-95f2-88c20b89fddd",
+      "setCode": "cbb4c",
+      "storageKey": "public/sealed_product_image/10/a9/10a9ba7c7e439aecbbfb97d3415709e14d2f98e099438ba54f4e6bed4c29962e/original.jpg"
+    },
+    {
+      "setId": "67ae722c-a017-4446-a14e-50d70df1f98d",
+      "setCode": "cbb5c",
+      "storageKey": "public/sealed_product_image/cf/6c/cf6cbf1dc98d0e236d8d6927d5a2f8a23cf35bee613a603076fef0e23400b595/original.jpg"
+    },
+    {
+      "setId": "8fa6e9bb-57f0-41d9-a4dd-611af3e1daf8",
+      "setCode": "cs1.5c",
+      "storageKey": "public/sealed_product_image/e8/19/e8191f2caa4851243ec25122b8d090a34c62eb373e07a70b048ee4f6dcdbeb4b/original.jpg"
+    },
+    {
+      "setId": "e98642e8-97ac-4a08-b013-c0b13b70a269",
+      "setCode": "cs1ac",
+      "storageKey": "public/sealed_product_image/53/14/5314662fb775502d559ac8529ac0a3f7c136c4dfbf05e5daf09d4b72c9c18fa4/original.jpg"
+    },
+    {
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "storageKey": "public/sealed_product_image/49/bb/49bb24d63720977de4ceba08fafc3ac4a2a13dd59a0dfb35f69be54d6a20378e/original.jpg"
+    },
+    {
+      "setId": "ad94757c-4ad8-43a2-848b-3ac6dd4ca89d",
+      "setCode": "cs2.5c",
+      "storageKey": "public/sealed_product_image/d3/42/d3428a78466412f46da5b9fc1561514e0c76e155b97686fb5779e346003afd78/original.jpg"
+    },
+    {
+      "setId": "96cbe78b-6461-4875-a678-c2fc65b0d756",
+      "setCode": "cs2ac",
+      "storageKey": "public/sealed_product_image/23/80/23805867683fe9f2ae128989ed87533e4898ac1db08d0f2f5f7d767f524aab66/original.jpg"
+    },
+    {
+      "setId": "7e37b0c3-bae5-4591-89c8-815b6cb4b80d",
+      "setCode": "cs2bc",
+      "storageKey": "public/sealed_product_image/ef/94/ef94b334a22f85541e7eb9b01f6e631bf1c2dbecab53b0459c149f9a1c5c70b3/original.jpg"
+    },
+    {
+      "setId": "c651409a-2274-445d-99b0-d1b8e325cbca",
+      "setCode": "cs3.5c",
+      "storageKey": "public/sealed_product_image/87/3d/873dcc7301848498fdd3904d2ef1a584f01828c3452c9a31e9c34f2e1c3024bd/original.jpg"
+    },
+    {
+      "setId": "42e798dd-f171-4f0b-916e-2386fd2a353f",
+      "setCode": "cs3ac",
+      "storageKey": "public/sealed_product_image/17/c5/17c55df33479ffc8e48bcf49535ab40dfbed93bd6c2cdc13e92cee0a822c417d/original.jpg"
+    },
+    {
+      "setId": "f9223984-d0cf-445e-9d9f-7d447855a904",
+      "setCode": "cs3bc",
+      "storageKey": "public/sealed_product_image/01/97/019768b473dfaeaa110346847a52abc5c588011ed63a8346c7234e7de1b99c39/original.jpg"
+    },
+    {
+      "setId": "cd9dbc9a-2f9b-46af-b94a-faaeeb026395",
+      "setCode": "cs4.5c",
+      "storageKey": "public/sealed_product_image/4c/7a/4c7ab7fbb1d233adf344cd689c4abd98d6f070d40c7684091e4680794c588289/original.jpg"
+    },
+    {
+      "setId": "210bbf2d-5f63-4e1b-8af0-a2e093c53746",
+      "setCode": "cs4ac",
+      "storageKey": "public/sealed_product_image/91/49/9149f4c880d5882e8e5895da422392f735511726090bb2ffd5aa8ece472688ce/original.jpg"
+    },
+    {
+      "setId": "7846702c-18c4-4d74-9ac1-2932017fa467",
+      "setCode": "cs4bc",
+      "storageKey": "public/sealed_product_image/e5/98/e5989469055b3ffc1c41bb245283708f256fe57a32a8fb63a01ce600160b2c3a/original.jpg"
+    },
+    {
+      "setId": "92ffa013-edb7-4c49-8ed1-c50f0162d41d",
+      "setCode": "cs5ac",
+      "storageKey": "public/sealed_product_image/bc/df/bcdf848e3f93c3c9878396991460ffc48ff6c6d71dafa5f85c93780fc204bbc1/original.jpg"
+    },
+    {
+      "setId": "a952240f-194f-45a1-bd38-e8f5827c1200",
+      "setCode": "cs5bc",
+      "storageKey": "public/sealed_product_image/9a/55/9a553e11c1ace22e2922d2fb7da1c410552d889a4f880690ff5d70fe8fffb144/original.jpg"
+    },
+    {
+      "setId": "786678a0-e593-4205-b391-b392f1e71592",
+      "setCode": "cs6ac",
+      "storageKey": "public/sealed_product_image/53/83/5383db884a1ec279355e35753a69b522fbe33661b8fc32cd9175c21d516dc034/original.jpg"
+    },
+    {
+      "setId": "3c74abe8-5236-4c84-ae5b-5a5f367b63d4",
+      "setCode": "cs6bc",
+      "storageKey": "public/sealed_product_image/37/7b/377be3b2f0bf99be0d986ee6aaf1597581f8718bbf2e7022d8acc4d03bd40d0e/original.jpg"
+    },
+    {
+      "setId": "7ef923a6-e6d5-41c0-9472-707d89937384",
+      "setCode": "cshc",
+      "storageKey": "public/sealed_product_image/0d/c4/0dc43c55307f5d98376c2e4582d1dee0e0be6a799437559004652380199b8367/original.jpg"
+    },
+    {
+      "setId": "465f5ed6-b32e-4cf0-a890-c39bc812ca48",
+      "setCode": "csm1ac",
+      "storageKey": "public/sealed_product_image/43/61/4361572936831f897828de7d4906ccb44a57a013f6a0f0c0592bea175e13104e/original.jpg"
+    },
+    {
+      "setId": "64e14d7e-e9f0-49d1-9e43-f79eafc02f53",
+      "setCode": "csm1bc",
+      "storageKey": "public/sealed_product_image/85/39/8539e6c9415bd97dde27e428c3f7d5f6ef69300ae650c8ee6696b98e4428451a/original.jpg"
+    },
+    {
+      "setId": "195b9d09-dd64-4e41-9b7d-0c9fb7f2062c",
+      "setCode": "csm1cc",
+      "storageKey": "public/sealed_product_image/26/30/2630f9deedb9a0830d4af22778b9a4a7e534cb6bff49cd3101a14db1dea29e50/original.jpg"
+    },
+    {
+      "setId": "7b9800e5-fbfd-4842-b4a0-998e53981f5c",
+      "setCode": "csm2.5c",
+      "storageKey": "public/sealed_product_image/f3/8e/f38ee5aed29c27064838c695c1086f61728bf748559a4afa1e45f76b71545c28/original.jpg"
+    },
+    {
+      "setId": "1e70ad98-8533-4fd0-8d02-15dda333cce9",
+      "setCode": "csm2ac",
+      "storageKey": "public/sealed_product_image/02/a8/02a894cb53fce688966971fa8e94ba97e7d595c4d2837d0c5fde947cd8d24a05/original.jpg"
+    },
+    {
+      "setId": "1c9493a2-e579-4007-89f2-c72fdc66a2d9",
+      "setCode": "csm2bc",
+      "storageKey": "public/sealed_product_image/cb/09/cb091317020e55b014f1232d51c30eb267ef8bcf3414b8d925c9ed2ef13f7499/original.jpg"
+    },
+    {
+      "setId": "a31177e5-6f44-4236-8d84-b8afaecd825f",
+      "setCode": "csm2cc",
+      "storageKey": "public/sealed_product_image/3b/b9/3bb90767d0cc7909e2fd693e463f665113629e1f52ec1da4e6bdede01f58070c/original.jpg"
+    },
+    {
+      "setId": "8f5e256e-b756-4a9c-8aa4-80cb8fe6f5fe",
+      "setCode": "csv10c",
+      "storageKey": "public/sealed_product_image/5c/95/5c95678f5bf0f6e2bf6ae5d5d2bd16716514aa68cf0680dae44030a69bf0895d/original.jpg"
+    },
+    {
+      "setId": "31225f01-ead5-4e8d-83f8-c06978e706da",
+      "setCode": "csv1c",
+      "storageKey": "public/sealed_product_image/6a/a7/6aa79da8692e78e05380d57607fcc386b1198a3e0eead2cbb752e446545368e3/original.jpg"
+    },
+    {
+      "setId": "dc879690-6576-4cde-99ed-1eb74096b96c",
+      "setCode": "csv2c",
+      "storageKey": "public/sealed_product_image/8e/5b/8e5b38461818752c28f6b46f5850f7156eeaed21e61043f301e8c7d570054774/original.jpg"
+    },
+    {
+      "setId": "1170881a-cba2-4979-acc8-e705d80b9894",
+      "setCode": "csv3c",
+      "storageKey": "public/sealed_product_image/7b/26/7b26fe10cacbde1cef08bf3fcaf3c2632ef1fd291d2313583c80e9b27e249a47/original.jpg"
+    },
+    {
+      "setId": "0a6e8d07-bd4b-4d06-abdc-a6f27e88eb1b",
+      "setCode": "csv4c",
+      "storageKey": "public/sealed_product_image/81/a6/81a6c7a26cf69f5b6d58bd3ff43fd255726478a9c4e4c86aaa9eadd38973c23d/original.jpg"
+    },
+    {
+      "setId": "9cc48fa9-3a36-4069-b58a-3f29854cca74",
+      "setCode": "csv5c",
+      "storageKey": "public/sealed_product_image/8c/94/8c949f94ef301f9c7be9fbe5fced501feb45b5ef9e11385a7fa88872e7f7317a/original.jpg"
+    },
+    {
+      "setId": "b921de8d-c127-44c4-825b-bac5dd7e5661",
+      "setCode": "csv6c",
+      "storageKey": "public/sealed_product_image/76/1d/761d0dcd19ae3e11be5d2afadd838ce7ccdc972c3cfdbe74e50bd7feaad36603/original.jpg"
+    },
+    {
+      "setId": "1f37ca26-f79b-47b6-9ba8-87f6c14b03fa",
+      "setCode": "csv7c",
+      "storageKey": "public/sealed_product_image/40/b3/40b3443ce95d4077ca9ad848ec1b07bca2f95345f7a3f1e03f2df70fb363dd3f/original.jpg"
+    },
+    {
+      "setId": "488ef846-c6f3-42e6-8fc1-7bf2928b2bcf",
+      "setCode": "csv8c",
+      "storageKey": "public/sealed_product_image/19/33/193369ce74ef59c85ee6539a98047331c289153746302a1d20188103a5154e41/original.jpg"
+    },
+    {
+      "setId": "034890ae-726c-44ec-bae9-b3e7d1ffdf45",
+      "setCode": "csv9.5c",
+      "storageKey": "public/sealed_product_image/b2/7e/b27e08bd678e98143762684a2e777301ee99f6fe1c48e505905c4c4b59dbf74b/original.jpg"
+    },
+    {
+      "setId": "2034da87-a87d-40e9-a8f2-85ca06fb8b5f",
+      "setCode": "csv9c",
+      "storageKey": "public/sealed_product_image/a6/65/a665c92b661f37c713e1b768580a5095f50004f4d75fabea86340f6f75a41214/original.jpg"
+    },
+    {
+      "setId": "b6d885e6-40de-4e3d-808d-fc2294af8ad4",
+      "setCode": "promo-30th-p",
+      "storageKey": "public/sealed_product_image/d1/5d/d15d586cfa8b3dab5c0952fd8497cabc1a7f9c7c8556814e6f7502b625130327/original.jpg"
+    },
+    {
+      "setId": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+      "setCode": "promo-s-p",
+      "storageKey": "public/sealed_product_image/2c/03/2c03dcbb9c229dc4da43036b8fc5fdce062b5e89116b4b96727259f8c2a1518e/original.jpg"
+    }
+  ]
+}

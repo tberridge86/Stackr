@@ -10,6 +10,9 @@ const variantId = '0442aacc-93e4-40a5-8bac-3d226d10db08';
 const expectedCommit = 'f87d89d803813d8a5eddee4142edd0736f081e7d';
 const expectedDeploymentId = '9f706115-9344-4bb5-b102-fd675ee0b9d9';
 const originKey = 'test-only-origin-key';
+const legacyId = 'me4-33';
+const legacySetId = 'me4';
+const legacyLanguage = 'en';
 const requests = [];
 let healthCommit = expectedCommit.slice(0, 12);
 let pricingConfigMissing = false;
@@ -39,7 +42,8 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  const pricingPath = request.url?.includes('/price') || request.url?.startsWith('/v1/market/movers?');
+  const pricingPath = request.url?.includes('/price') || request.url?.startsWith('/v1/market/movers?')
+    || request.url?.startsWith('/v1/market/price-snapshots?');
   if (pricingPath && request.headers.authorization !== 'Bearer owner-access-token') {
     const status = pricingConfigMissing || pricingServiceUnavailable ? 503 : 401;
     const code = pricingConfigMissing
@@ -65,6 +69,10 @@ const server = createServer(async (request, response) => {
   if (request.url?.startsWith(`/v1/cards/${variantId}/price?`)) data = { variantId, availability: 'unavailable' };
   if (request.url?.startsWith(`/v1/cards/${variantId}/price-history?`)) data = { variantId, observations: [] };
   if (request.url?.startsWith('/v1/market/movers?')) data = { movers: [] };
+  if (request.url?.startsWith('/v1/market/price-snapshots?')) data = { legacySnapshots: [{
+    cardId: legacyId, legacySetId, languageCode: legacyLanguage, primarySource: 'tcgdex',
+    quoteScope: 'printing_level', marketCentral: 12.34,
+  }] };
   if (!data) {
     response.statusCode = 404;
     response.end(JSON.stringify({ error: 'not_found' }));
@@ -129,6 +137,26 @@ try {
     'gateway_owner_price_history',
     'gateway_owner_movers',
   ]);
+
+  const legacyBridgeResult = await runProductionPricingSmoke({
+    backendUrl: baseUrl,
+    gatewayUrl: baseUrl,
+    variantId,
+    backendOriginKey: originKey,
+    ownerAccessToken: 'owner-access-token',
+    legacyId,
+    legacySetId,
+    legacyLanguage,
+    expectedBackendCommit: expectedCommit,
+    expectedBackendDeploymentId: expectedDeploymentId,
+    allowHttp: true,
+  });
+  assert.equal(legacyBridgeResult.ownerPricingValidated, true);
+  assert.deepEqual(legacyBridgeResult.legacySnapshotBridge, { id: legacyId, setId: legacySetId, language: legacyLanguage });
+  assert.deepEqual(legacyBridgeResult.checks.filter((check) => check.name.includes('_owner_legacy_snapshot_bridge')).map((check) => check.name), [
+    'direct_backend_owner_legacy_snapshot_bridge',
+    'gateway_owner_legacy_snapshot_bridge',
+  ], 'the secure smoke proves the legacy-to-canonical bridge through both routes');
 
   pricingConfigMissing = true;
   await assert.rejects(

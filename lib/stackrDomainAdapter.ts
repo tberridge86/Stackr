@@ -1,5 +1,6 @@
 import { createSetFactsReader, loadCompleteSetPages } from './stackrSetRetrieval';
 import { readPreferredSetArtwork } from './stackrPreferredSetArtwork';
+import { getPublishedSetCoverFallback, getPublishedSetLogoFallback } from './publishedSetLogoFallbacks';
 import { getPersistentStackrSetFactsStore } from './stackrCatalogueCache';
 import {
   StackrApiClient,
@@ -611,6 +612,7 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
   const logo = firstAsset(assets, ['set_logo']);
   const symbol = firstAsset(assets, ['set_symbol']);
   const cover = firstAsset(assets, ['set_cover', 'set_artwork']);
+  const coverUrl = assetUrl(cover) ?? getPublishedSetCoverFallback({ id: set.setId, language: set.languageCode });
   const localName = getLocalSetName({
     id: set.setId,
     setCode: set.setCode,
@@ -649,10 +651,10 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
       setCode: set.setCode,
     },
     images: {
-      logo: assetUrl(logo),
+      logo: assetUrl(logo) ?? getPublishedSetLogoFallback({ id: set.setId, language: set.languageCode, setCode: set.setCode }),
       symbol: assetUrl(symbol),
-      cover: assetUrl(cover),
-      artwork: assetUrl(cover),
+      cover: coverUrl,
+      artwork: coverUrl,
     },
   };
 }

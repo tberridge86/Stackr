@@ -148,6 +148,8 @@ const startupIndexSource = readFileSync('app/index.tsx', 'utf8');
 const startupIndexModule: Record<string, unknown> = {};
 let renderState: StartupRenderState;
 let routedTo: string[] = [];
+let introComplete = false;
+let introTimer: (() => void) | null = null;
 
 const createElement = (type: unknown, props: Record<string, unknown> | null, ...children: RenderNode[]) => ({
   type,
@@ -169,6 +171,14 @@ vm.runInNewContext(compiledStartupIndex, {
     react: {
       useEffect: (effect: () => void) => { effect(); },
       useRef: <T,>(value: T) => ({ current: value }),
+      useState: <T,>(initial: T) => [
+        (typeof initial === 'boolean' ? introComplete : initial) as T,
+        (next: T | ((current: T) => T)) => {
+          if (typeof initial === 'boolean') introComplete = typeof next === 'function'
+            ? Boolean((next as (current: T) => T)(introComplete as T))
+            : Boolean(next);
+        },
+      ],
     },
     'expo-router': { useRouter: () => ({ replace: (route: string) => routedTo.push(route) }) },
     'react-native': { TouchableOpacity: 'TouchableOpacity', View: 'View' },
@@ -181,6 +191,8 @@ vm.runInNewContext(compiledStartupIndex, {
     '../lib/startup': { resolveStartupDestination },
   })[name] ?? {},
   console,
+  setTimeout: (callback: () => void) => { introTimer = callback; return 1; },
+  clearTimeout: () => { introTimer = null; },
 });
 
 const Index = startupIndexModule.default as () => RenderNode;
@@ -220,7 +232,15 @@ renderStartup({
   auth: { user: { id: 'collector-a' }, loading: false, error: null, refreshAuth: noAuthError },
   profile: { profile: { collector_name: 'Avery' }, loading: false, error: null, refreshProfile: noProfileError },
 });
-assert.deepEqual(routedTo, ['/(tabs)'], 'A ready collector must route immediately without an artificial splash delay.');
+assert.deepEqual(routedTo, [], 'A ready collector keeps the calm opening animation visible briefly.');
+assert.ok(introTimer, 'The initial route must schedule a bounded opening animation floor.');
+const completeIntro: () => void = introTimer ?? (() => { throw new Error('Missing opening animation timer.'); });
+completeIntro();
+renderStartup({
+  auth: { user: { id: 'collector-a' }, loading: false, error: null, refreshAuth: noAuthError },
+  profile: { profile: { collector_name: 'Avery' }, loading: false, error: null, refreshProfile: noProfileError },
+});
+assert.deepEqual(routedTo, ['/(tabs)'], 'A ready collector routes once the bounded opening animation has completed.');
 
 renderStartup({
   auth: { user: { id: 'collector-a' }, loading: false, error: null, refreshAuth: noAuthError },

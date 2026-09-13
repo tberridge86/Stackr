@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { fetchAllSets, getPokemonSetLogoUrl, getPokemonSetVisualUrl, normalizePokemonCardLanguage, type PokemonSet } from '../../lib/pokemonTcg';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
+import { StackrPageTitle } from '../../components/StackrScreen';
 import { supabase } from '../../lib/supabase';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
@@ -689,11 +690,11 @@ export default function ExploreScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
       <StackrBackdrop />
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}>
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 18 }}>
 
-        <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: 24, fontWeight: '800', marginBottom: 8 }}>Discover Sets</Text>
+        <StackrPageTitle title="Discover Sets" accentText="Sets" style={{ marginBottom: 8 }} />
         {loadError ? (
           <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingLeft: 12, marginBottom: 12 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, flex: 1 }}>{loadError}</Text>
