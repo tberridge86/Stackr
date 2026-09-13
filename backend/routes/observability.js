@@ -4,13 +4,19 @@ import { createClient } from '@supabase/supabase-js';
 import {
   loadProtectedDashboard,
   refreshProtectedDashboard,
+  createBoundedOperationalEventSink,
   recordOperationalEvent,
   storeQualityReport,
+  validateOperationalEvent,
 } from '../lib/qualityObservability.js';
 import { createTracedFetch } from '../lib/traceContext.js';
 
 const router = express.Router();
 let supabaseAdmin;
+const operationalEventSink = createBoundedOperationalEventSink(
+  (event) => recordOperationalEvent(database(), event),
+  { maxPending: 24 },
+);
 
 function database() {
   if (supabaseAdmin) return supabaseAdmin;
@@ -36,8 +42,9 @@ function requireAdmin(req, res, next) {
 
 router.post('/events', async (req, res) => {
   try {
-    const id = await recordOperationalEvent(database(), req.body);
-    res.status(202).json({ accepted: true, eventId: id });
+    validateOperationalEvent(req.body);
+    const queued = operationalEventSink.enqueue(req.body);
+    res.status(202).json({ accepted: true, queued });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
   }

@@ -64,6 +64,8 @@ The evaluator also reports top-1, top-3 and top-5 accuracy; ambiguous results; f
 
 Missing or expired evidence is `unavailable`, not zero. Cost observations retain whether they are estimated or invoiced. The scanner dashboard explicitly reports Ximilar fallback as unavailable until the feature-flag outcome is emitted as a minimized aggregate event.
 
+Operational event ingestion is best effort. The backend validates events before returning `202`, then writes them serially with a maximum of 24 active and pending events per process. Events above that bound are dropped (`queued: false`), and pending events may be lost on restart. Dashboard event counts can therefore undercount traffic during bursts; use the gateway's structured request logs for full request accounting. This bound prevents diagnostic writes from building an unlimited database queue alongside card and price reads.
+
 ## Tracing And Privacy
 
 The gateway accepts or creates a W3C `traceparent`, creates its own span, forwards the trace to Railway and recognition, and returns `Traceparent` plus `X-Trace-Id`. Railway creates child spans for Supabase REST calls. Recognition creates child spans for catalogue calls and Postgres diagnostics.

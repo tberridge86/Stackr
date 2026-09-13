@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import {
   OBSERVABILITY_DASHBOARD_KEYS,
   assembleProtectedDashboard,
+  createBoundedOperationalEventSink,
   validateOperationalEvent,
   validateQualityReportPayload,
 } from '../backend/lib/qualityObservability.js';
@@ -54,6 +55,33 @@ assert.throws(() => validateOperationalEvent({
   eventType: 'request.completed',
   userId: 'not-allowed',
 }), /Unsupported operational event field/);
+
+let releaseFirst;
+const recorded = [];
+const sink = createBoundedOperationalEventSink(async (event) => {
+  recorded.push(event.requestId);
+  if (event.requestId === 'first') await new Promise((resolve) => { releaseFirst = resolve; });
+}, { maxPending: 2 });
+assert.equal(sink.enqueue({ requestId: 'first' }), true);
+await new Promise((resolve) => setImmediate(resolve));
+assert.equal(sink.pendingCount, 1, 'one slow telemetry write may be active');
+assert.equal(sink.enqueue({ requestId: 'second' }), true);
+assert.equal(sink.enqueue({ requestId: 'third' }), false, 'a telemetry burst is shed instead of creating an unbounded backend queue');
+releaseFirst();
+await sink.whenIdle();
+assert.deepEqual(recorded, ['first', 'second'], 'telemetry writes remain single-flight and preserve accepted event order');
+
+const recovered = [];
+const rejectingSink = createBoundedOperationalEventSink(async (event) => {
+  if (event.requestId === 'rejected') throw new Error('telemetry storage unavailable');
+  recovered.push(event.requestId);
+}, { maxPending: 1 });
+assert.equal(rejectingSink.enqueue({ requestId: 'rejected' }), true, 'a recorder failure is accepted as best-effort work');
+await rejectingSink.whenIdle();
+assert.equal(rejectingSink.pendingCount, 0, 'a rejected recorder write releases the active queue slot');
+assert.equal(rejectingSink.enqueue({ requestId: 'recovered' }), true, 'the sink accepts a subsequent event after becoming idle');
+await rejectingSink.whenIdle();
+assert.deepEqual(recovered, ['recovered'], 'the queue drains normally after a recorder rejection');
 
 assert.throws(() => validateQualityReportPayload({
   runKey: 'quality:test:0001',

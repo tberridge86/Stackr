@@ -115,6 +115,60 @@ export async function recordOperationalEvent(supabase, input) {
   return data;
 }
 
+/**
+ * Operational telemetry must never occupy every backend request slot. The
+ * caller validates before enqueueing; this sink serialises the optional RPC
+ * and sheds excess work instead of making card and price reads wait behind a
+ * burst of gateway events.
+ */
+export function createBoundedOperationalEventSink(record, { maxPending = 24 } = {}) {
+  if (typeof record !== 'function') throw new Error('Operational event recorder must be a function.');
+  if (!Number.isInteger(maxPending) || maxPending < 1 || maxPending > 1_000) {
+    throw new Error('Operational event queue size must be an integer from 1 to 1000.');
+  }
+  const pending = [];
+  let draining = false;
+  let active = 0;
+  let idleResolve = null;
+  let idle = Promise.resolve();
+
+  const drain = async () => {
+    while (pending.length) {
+      const event = pending.shift();
+      active = 1;
+      try {
+        await record(event);
+      } catch {
+        // Best-effort telemetry must never become a request-path failure.
+      } finally {
+        active = 0;
+      }
+    }
+    draining = false;
+    idleResolve?.();
+    idleResolve = null;
+  };
+
+  return {
+    enqueue(event) {
+      if (pending.length + active >= maxPending) return false;
+      pending.push(event);
+      if (!draining) {
+        draining = true;
+        idle = new Promise((resolve) => { idleResolve = resolve; });
+        void drain();
+      }
+      return true;
+    },
+    get pendingCount() {
+      return pending.length + active;
+    },
+    whenIdle() {
+      return idle;
+    },
+  };
+}
+
 export async function storeQualityReport(supabase, input) {
   const payload = validateQualityReportPayload(input);
   const { data, error } = await apiRpc(supabase, 'observability_store_quality_report', {
