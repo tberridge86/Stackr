@@ -61,6 +61,11 @@ for (const promoCode of ['bwp', 'dpp', 'smp', 'sp', 'svp', 'xyp']) {
   );
 }
 
+for (const [setCode, expectedAsset] of [['SVLS', 'svls.png'], ['SVLN', 'svln.png'], ['SVK', 'svk.png'], ['PCG1', 'pcg1.png'], ['PCG10', 'pcg10.png'], ['ADV2', 'adv2.png'], ['E3', 'e3.png'], ['WEB1', 'web1.png']] as const) {
+  assert.match(getJapaneseSetLogoSourceForSet({ id: `ja:${setCode}`, language: 'ja', setCode }) ?? '', new RegExp(`${expectedAsset.replace('.', '\\.')}$`), `Japanese ${setCode} must resolve its prepared exact mark.`);
+  assert.equal(getJapaneseSetLogoSourceForSet({ id: setCode, language: 'en', setCode }), null, `Japanese ${setCode} must not cross into English.`);
+}
+
 for (const language of ['zh-tw', 'zh-cn', 'zh-Hant', 'zh-Hans', 'en', 'ko']) {
   const foreignSet = { id: 'foreign-canonical-set', setCode: 'S8b', language, externalIds: { tcgdex: 'S8b' } };
   assert.equal(getJapaneseSetLogoSource('S8b', language), null, `${language} must not use a Japanese logo for a shared code.`);
