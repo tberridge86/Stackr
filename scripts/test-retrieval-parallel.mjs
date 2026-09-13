@@ -153,6 +153,7 @@ function screenHarness() {
   const context = { exports: {}, console, AbortController, binderId: 'binder',
     visiblePriceReaderRef: { current: null }, visiblePriceIdsRef: { current: [] },
     createVisibleBinderPriceReader,
+    stackrApiClient: {},
     retrievalTraceRef: { current: null },
     beginBinderRetrieval: () => ({ cancel() {}, model() {} }),
     binderReopenCache: { lease: () => 0, save: () => false, invalidate: () => {} },
@@ -169,6 +170,13 @@ function screenHarness() {
     fetchBinderById: (_id, options) => { calls.record++; assert.equal(options.includeAssets, false); return record.promise; },
     fetchBinderCards: (_id, options) => { calls.cards++; assert.equal(options.includeAssets, false); assert.equal(options.includePrices, false); return cards.promise; },
     attachBinderCatalogueArtwork: () => { calls.artwork++; return never(); }, attachBinderSetArtwork: never,
+    // The screen now uses the visible-batch snapshot helper. Inject its
+    // contract into the VM so this remains an execution test of the extracted
+    // screen callback rather than silently omitting the new dependency.
+    loadLatestSnapshotBinderPrices: async (rows) => {
+      calls.prices++; calls.priceRows += rows.length;
+      return { rows, failure: null };
+    },
     loadProgressiveBinderPrices: (rows) => { calls.prices++; calls.priceRows += rows.length; return never(); }, getVariantCardKey: (card, set) => `${set}:${card}`,
     setLoading: (v) => { state.loading = v; }, setOwnershipReady: (v) => { state.ownershipReady = v; }, setCards: (v) => { state.cards = typeof v === 'function' ? v(state.cards) : v; },
     setShowcaseRows: () => {}, setOwnedVariants: () => {}, setVariantManagedCards: () => {}, setUserId: () => {}, setBinder: () => {}, setCustomNameArtKey: () => {}, setIsPublic: () => {},
