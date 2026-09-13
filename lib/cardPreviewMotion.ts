@@ -28,5 +28,5 @@ export function cardMotionIntensity(x: number, y: number) {
 export function relativeCardTilt(value: number, origin: number) {
   'worklet';
   const delta = Math.atan2(Math.sin(value - origin), Math.cos(value - origin));
-  return boundedCardTilt(delta / 0.55);
+  return boundedCardTilt(delta / 0.48);
 }

@@ -65,7 +65,7 @@ export const ROUTES = [
     query: query('productType', 'currency', 'condition', 'grader', 'grade', 'observationType', 'cursor', 'limit'),
   },
   { id: 'market_movers', pattern: /^\/v1\/market\/movers$/, ...publicGet, pricing: true, cache: 'market', rate: 'pricing', query: query('productType', 'currency', 'limit') },
-  { id: 'market_price_snapshots', pattern: /^\/v1\/market\/price-snapshots$/, ...publicGet, pricing: true, cache: 'none', rate: 'pricing', query: query('variantIds', 'rangeDays') },
+  { id: 'market_price_snapshots', pattern: /^\/v1\/market\/price-snapshots$/, ...publicGet, pricing: true, cache: 'none', rate: 'pricing', query: query('variantIds', 'printingIds', 'legacyIds', 'legacySetId', 'language', 'rangeDays', 'latestOnly') },
   {
     id: 'card_price_refresh',
     pattern: new RegExp(`^/v1/cards/${UUID}/price-refresh$`),

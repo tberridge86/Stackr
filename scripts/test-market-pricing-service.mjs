@@ -600,6 +600,101 @@ async function assertLabelledLegacySnapshotFallback() {
   assert.equal(usd.status, 'unavailable', 'a GBP snapshot must not serve a USD request');
 }
 
+async function assertLatestExactSnapshotBatchAvoidsAliasResolution() {
+  const first = '12121212-1212-4121-8121-121212121212';
+  const second = '34343434-3434-4343-8343-343434343434';
+  const metadata = [first, second].map((variant_id, index) => ({
+    variant_id,
+    printing_id: index ? '56565656-5656-4565-8565-565656565656' : '78787878-7878-4787-8787-787878787878',
+    language_code: 'en', set_id: '99999999-9999-4999-8999-999999999999', set_code: 'base',
+    set_english_display_name: 'Base', collector_number: String(index + 1), card_english_display_name: `Card ${index}`,
+    rarity_code: 'common', variant_code: 'normal', finish_code: 'normal',
+  }));
+  const row = (card_id, price, snapshot_at, extra = {}) => ({
+    card_id, language: 'en', primary_source: 'tcgdex', tcgdex_price: price, snapshot_at,
+    pricing_identity_json: { canonicalVariantId: card_id, productType: 'raw_card', condition: 'raw_near_mint' },
+    ...extra,
+  });
+  const db = createSnapshotSupabase({
+    metadata,
+    snapshots: [
+      row(first, 10, '2026-09-13T01:00:00.000Z'),
+      row(first, 11, '2026-09-13T02:00:00.000Z'),
+      row(second, 20, '2026-09-13T03:00:00.000Z'),
+      row(second, 999, '2026-09-13T04:00:00.000Z', { primary_source: 'unlabelled_import' }),
+      row(second, 999, '2026-09-13T05:00:00.000Z', { pricing_identity_json: { canonicalVariantId: first, productType: 'raw_card', condition: 'raw_near_mint' } }),
+      row(second, 999, '2026-09-13T06:00:00.000Z', { pricing_identity_json: { canonicalVariantId: second, productType: 'raw_card', condition: 'raw_damaged' } }),
+    ],
+    externalIdentifiers: [{ source_entity_type: 'card', external_id: 'must-not-read', language_code: 'en', variant_id: first }],
+  });
+  const history = await createMarketPricingService({ supabase: db }).snapshotHistory([first, second], { currency: 'GBP', latestOnly: true });
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: db }).snapshotHistory([first], { latestOnly: 'false' }),
+    /latestOnly must be 1/,
+  );
+  assert.deepEqual(new Map(history.snapshots.map((item) => [item.variantId, item.marketCentral])), new Map([[first, 11], [second, 20]]),
+    'latest exact snapshot batches retain only source-labelled GBP raw/NM snapshots per canonical variant');
+  assert.equal(db.equalities.some((entry) => entry.tableName === 'catalogue_external_identifiers'), false,
+    'exact latest batches must not resolve aliases before returning canonical snapshot rows');
+  const byPrinting = await createMarketPricingService({ supabase: db }).snapshotHistory([], {
+    currency: 'GBP', latestOnly: true, printingIds: [metadata[0].printing_id],
+  });
+  assert.deepEqual(byPrinting.snapshots.map((item) => [item.variantId, item.printingId, item.setId, item.languageCode, item.variantCode]), [[
+    first, metadata[0].printing_id, metadata[0].set_id, 'en', 'normal',
+  ]], 'printing latest reads require a uniquely proven normal raw variant and return scope metadata for client validation');
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: db }).snapshotHistory([], { currency: 'GBP', printingIds: [metadata[0].printing_id] }),
+    /printingIds require latestOnly/,
+  );
+  const legacyDb = createSnapshotSupabase({ snapshots: [
+    { card_id: 'me4-33', set_id: 'me4', language: 'en', primary_source: 'tcgdex', tcgdex_price: 7,
+      snapshot_at: '2026-09-10T01:00:00.000Z' },
+    { card_id: 'me4-33', set_id: 'me4', language: 'en', primary_source: 'tcgdex', tcgdex_price: 99,
+      snapshot_at: '2026-09-11T01:00:00.000Z', pricing_identity_json: { productType: 'raw_card', condition: 'raw_damaged' } },
+    { card_id: 'me4-33', set_id: 'wrong-set', language: 'en', primary_source: 'tcgdex', tcgdex_price: 88,
+      snapshot_at: '2026-09-12T01:00:00.000Z' },
+  ] });
+  const legacy = await createMarketPricingService({ supabase: legacyDb }).snapshotHistory([], {
+    currency: 'GBP', latestOnly: true, legacyIds: ['me4-33'], legacySetId: 'me4', language: 'en',
+  });
+  assert.deepEqual(legacy.snapshots, [], 'legacy records never occupy canonical variant snapshot results');
+  assert.deepEqual(legacy.legacySnapshots.map((item) => [item.cardId, item.marketCentral, item.quoteScope, item.freshness, item.legacySetId]), [
+    ['me4-33', 7, 'printing_level', 'stale', 'me4'],
+  ], 'legacy latest reads retain only the exact saved card/set/language base-printing cache and mark it stale');
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: legacyDb }).snapshotHistory([], { currency: 'GBP', legacyIds: ['me4-33'], legacySetId: 'me4', language: 'en' }),
+    /legacyIds require latestOnly/,
+  );  await assert.rejects(
+    () => createMarketPricingService({ supabase: db }).snapshotHistory([], { currency: 'GBP', latestOnly: true }),
+    /exactly one/,
+    'a snapshot request cannot silently become an unscoped bulk read',
+  );
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: db }).snapshotHistory([first], { currency: 'GBP', latestOnly: true, printingIds: [metadata[0].printing_id] }),
+    /exactly one/,
+    'canonical variants and printing selectors cannot be mixed',
+  );
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: legacyDb }).snapshotHistory([], { currency: 'GBP', latestOnly: true, legacyIds: ['me4-33', 'ME4-33'], legacySetId: 'me4', language: 'en' }),
+    /unique without regard to case/,
+    'legacy references must not be silently deduplicated',
+  );
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: legacyDb }).snapshotHistory([], { currency: 'GBP', latestOnly: true, legacyIds: [''], legacySetId: 'me4', language: 'en' }),
+    /must not contain empty/,
+    'legacy reference validation must not drop malformed selectors',
+  );
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: db }).snapshotHistory([first], { currency: 'GBP', latestOnly: true, legacySetId: 'me4', language: 'en' }),
+    /require legacyIds/,
+    'legacy scope fields cannot alter a canonical selector',
+  );
+  await assert.rejects(
+    () => createMarketPricingService({ supabase: db }).snapshotHistory([first], { currency: 'GBP', latestOnly: true, rangeDays: 7 }),
+    /latestOnly cannot be combined with rangeDays/,
+    'latest-only reads cannot silently become history reads',
+  );
+}
 async function assertRawPriceDefaultsNearMint() {
   const variantId = '77777777-7777-4777-8777-777777777777';
   const supabase = createSnapshotSupabase({
@@ -1168,6 +1263,7 @@ await assertRoutes();
 await assertInvalidServiceInput();
 await assertLabelledLegacySnapshotFallback();
 await assertNormalVariantProviderBaseSnapshotIdentity();
+await assertLatestExactSnapshotBatchAvoidsAliasResolution();
 await assertRawPriceDefaultsNearMint();
 await assertCanonicalSnapshotLabelsAndBasis();
 await assertManualRefreshIdentityAndGate();

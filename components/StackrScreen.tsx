@@ -73,16 +73,12 @@ export function StackrPageTitle({
 
   const titleChars = Array.from(title);
   const accentChars = accentText && title.endsWith(accentText) ? Array.from(accentText) : [];
-  const earliestAccentStart = Math.min(
-    Math.max(1, Math.floor(titleChars.length * 0.75)),
-    Math.max(1, titleChars.length - 1)
-  );
   const requestedAccentStart = accentChars.length
     ? titleChars.length - accentChars.length
     : titleChars.length;
-  const accentStart = requestedAccentStart >= earliestAccentStart
-    ? requestedAccentStart
-    : earliestAccentStart;
+  // Callers provide an intentional, complete suffix (for example Search/rch
+  // and Collection/ction). Never silently truncate that brand treatment.
+  const accentStart = requestedAccentStart;
   const prefix = titleChars.slice(0, accentStart).join('');
   const accent = titleChars.slice(accentStart).join('');
 

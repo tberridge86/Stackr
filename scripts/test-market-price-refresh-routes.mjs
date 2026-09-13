@@ -45,6 +45,16 @@ try {
   assert.equal(history.status, 200);
   assert.match(history.headers.get('cache-control') ?? '', /max-age=30/);
   assert.equal((await history.json()).data.bucketMinutes, 30);
+  const legacy = await fetch(`${baseUrl}/market/price-snapshots?legacyIds=ja:S12a-146&legacySetId=ja:S12a&language=ja&latestOnly=1`);
+  assert.equal(legacy.status, 200);
+  assert.deepEqual(requests.pop(), { type: 'history', ids: [], query: {
+    legacyIds: ['ja:S12a-146'], legacySetId: 'ja:S12a', language: 'ja', latestOnly: '1', printingIds: undefined,
+  } });
+  const malformedLegacy = await fetch(`${baseUrl}/market/price-snapshots?legacyIds=ja%3AS12a-146%2C&legacySetId=ja%3AS12a&language=ja&latestOnly=1`);
+  assert.equal(malformedLegacy.status, 200, 'the route passes malformed selectors to the service boundary that rejects them');
+  assert.deepEqual(requests.pop(), { type: 'history', ids: [], query: {
+    legacyIds: ['ja:S12a-146', ''], legacySetId: 'ja:S12a', language: 'ja', latestOnly: '1', printingIds: undefined,
+  } }, 'provided empty legacy references must not be silently removed before service validation');
 
   const single = await fetch(`${baseUrl}/cards/${variantId}/price-refresh`, {
     method: 'POST',

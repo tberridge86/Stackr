@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Image, Pressable, View, useWindowDimensions } from 'react-native';
+import { Image, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
 import { StackrHeroBackdrop } from './StackrBackdrop';
@@ -51,13 +51,15 @@ export function StackrScreenHeader({
             : null;
 
   return (
-    <View style={{ position: 'relative', paddingTop: 2, paddingBottom: 12, overflow: 'hidden' }}>
-      <StackrHeroBackdrop opacity={isHero ? 0.24 : 0.18} />
+    <View style={{ position: 'relative', paddingTop: 2, paddingBottom: 12, overflow: 'visible' }}>
+      <View pointerEvents="none" style={{ ...StyleSheet.absoluteFillObject, overflow: 'hidden' }}>
+        <StackrHeroBackdrop opacity={isHero ? 0.24 : 0.18} />
+      </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         {showLogo ? (
           <Image source={stackrBrand.wordmark} style={{ width: logoWidth, height: stackrLogoSizes.screenHeaderWordmark.height }} resizeMode="contain" />
         ) : (
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
             <StackrPageTitle
               title={title}
               accentText={accentText}
@@ -75,6 +77,8 @@ export function StackrScreenHeader({
             width: stackrActionIconSizes.headerTouch,
             height: stackrActionIconSizes.headerTouch,
             borderRadius: stackrActionIconSizes.headerTouch / 2,
+            flexShrink: 0,
+            marginLeft: 8,
             alignItems: 'center',
             justifyContent: 'center',
           }}

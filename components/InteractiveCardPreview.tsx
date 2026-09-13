@@ -52,19 +52,19 @@ export function InteractiveCardPreview({ children, active = true, foil = false }
     const y = enabled ? boundedCardTilt(sensorY.value + dragY.value) : 0;
     const intensity = cardMotionIntensity(x, y);
     return { transform: [
-      { perspective: 850 },
-      { translateX: cardFloatOffset(x, 7) },
-      { translateY: cardFloatOffset(y, 5) },
-      { scale: 1 + intensity * 0.018 },
-      { rotateX: `${y * 13}deg` },
-      { rotateY: `${x * 16}deg` },
+      { perspective: 820 },
+      { translateX: cardFloatOffset(x, 9) },
+      { translateY: cardFloatOffset(y, 7) },
+      { scale: 1 + intensity * 0.024 },
+      { rotateX: `${y * 16}deg` },
+      { rotateY: `${x * 20}deg` },
     ] };
   });
   const shineStyle = useAnimatedStyle(() => {
     const x = boundedCardTilt(sensorX.value + dragX.value), y = boundedCardTilt(sensorY.value + dragY.value);
     const intensity = enabled ? cardMotionIntensity(x, y) : 0;
-    return { opacity: intensity * 0.42,
-      transform: [{ translateX: cardFloatOffset(x, 112) }, { translateY: cardFloatOffset(y, 80) }, { rotate: `${-25 + x * 14 - y * 8}deg` }, { scale: 1 + intensity * 0.12 }] };
+    return { opacity: intensity * 0.52,
+      transform: [{ translateX: cardFloatOffset(x, 126) }, { translateY: cardFloatOffset(y, 92) }, { rotate: `${-25 + x * 16 - y * 10}deg` }, { scale: 1 + intensity * 0.16 }] };
   });
   return <View style={styles.frame}>
     {enabled && Platform.OS !== 'web' ? <NativeCardTilt x={sensorX} y={sensorY} /> : null}
@@ -81,6 +81,6 @@ export function InteractiveCardPreview({ children, active = true, foil = false }
 const styles = StyleSheet.create({
   frame: { flex: 1, position: 'relative', overflow: 'visible' },
   card: { flex: 1, overflow: 'visible', shadowColor: '#07111F', shadowOpacity: 0.24, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 7 },
-  foilMask: { ...StyleSheet.absoluteFillObject, overflow: 'hidden', borderRadius: 16 },
+  foilMask: { ...StyleSheet.absoluteFillObject, overflow: 'hidden', borderRadius: 15 },
   shine: { position: 'absolute', left: '-30%', top: '-30%', width: '160%', height: '160%' },
 });

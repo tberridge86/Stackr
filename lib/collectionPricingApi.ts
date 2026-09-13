@@ -1,6 +1,7 @@
 import type {
   StackrApiClient,
   StackrCardPrice,
+  StackrPriceSnapshotHistoryItem,
   StackrMarketProductType,
 } from './stackrApiV1';
 import type { StackrResolvedCard } from './stackrDomainAdapter';
@@ -16,6 +17,11 @@ export type CollectionPriceInput = {
   condition?: string | null;
   grader?: string | null;
   grade?: string | null;
+  /** Canonical printing UUID persisted when a binder row was catalogue-matched. */
+  canonicalPrintingId?: string | null;
+  legacyReference?: string | null;
+  legacySetId?: string | null;
+  edition?: string | null;
   /**
    * Canonical facts carried by an already-resolved catalogue row. They are
    * structurally verified before use so display aliases never bypass identity
@@ -135,7 +141,7 @@ export function normaliseCollectionMarketCondition(
   return Object.values(RAW_CONDITIONS).includes(normalized) ? normalized : undefined;
 }
 
-function unavailable(input: CollectionPriceInput, details: Partial<CollectionPriceResult> = {}): CollectionPriceResult {
+export function unavailableCollectionPrice(input: CollectionPriceInput, details: Partial<CollectionPriceResult> = {}): CollectionPriceResult {
   return {
     key: input.key,
     quantity: Math.max(0, Number.isFinite(input.quantity) ? input.quantity : 0),
@@ -174,6 +180,206 @@ function trustedResolution(input: CollectionPriceInput): StackrResolvedCard | nu
     variantId: defaultVariantId,
     matchedBy: 'canonical_uuid',
   };
+}
+
+/** Return a canonical raw/NM variant only when saved facts prove its scope. */
+export function exactTrustedRawNearMintVariantId(input: CollectionPriceInput): string | null {
+  if ((input.productType ?? 'raw_card') !== 'raw_card') return null;
+  if (normaliseCollectionMarketCondition(input.condition, 'raw_card') !== 'raw_near_mint') return null;
+  const resolved = trustedResolution(input);
+  if (!resolved) return null;
+  const requestedVariant = normaliseCollectionVariantCode(input.variantCode);
+  const variants = resolved.card.variants ?? [];
+  if (requestedVariant) {
+    const matches = variants.filter((candidate) => normaliseCollectionVariantCode(candidate.variantCode) === requestedVariant);
+    return matches.length === 1 ? matches[0].variantId : null;
+  }
+  return variants.length === 1 && variants[0].variantId === resolved.variantId ? resolved.variantId : null;
+}
+
+export function exactCanonicalNormalPrintingId(input: CollectionPriceInput): string | null {
+  if (exactTrustedRawNearMintVariantId(input)) return null;
+  if ((input.productType ?? 'raw_card') !== 'raw_card'
+    || normaliseCollectionMarketCondition(input.condition, 'raw_card') !== 'raw_near_mint'
+    || !['normal', 'standard'].includes(normaliseCollectionVariantCode(input.variantCode))) return null;
+  const printingId = String(input.canonicalPrintingId ?? '').trim();
+  const setId = String(input.setId ?? '').trim();
+  const language = String(input.language ?? '').trim();
+  return UUID.test(printingId) && UUID.test(setId) && Boolean(language) ? printingId : null;
+}
+
+export function exactLegacyRawNearMintReference(input: CollectionPriceInput): string | null {
+  if ((input.productType ?? 'raw_card') !== 'raw_card'
+    || normaliseCollectionMarketCondition(input.condition, 'raw_card') !== 'raw_near_mint') return null;
+  const edition = normaliseCollectionVariantCode(input.edition);
+  if (edition && !['normal', 'standard', 'unlimited'].includes(edition)) return null;
+  const variant = normaliseCollectionVariantCode(input.variantCode);
+  if (variant && !['normal', 'standard'].includes(variant)) return null;
+  const reference = String(input.legacyReference ?? '').trim();
+  const setId = String(input.legacySetId ?? '').trim();
+  return reference && setId && input.language ? reference : null;
+}
+
+export type ExactCollectionSnapshotRead = {
+  results: Map<number, CollectionPriceResult>;
+  attemptedVariantIds: string[];
+  failure: CollectionPriceRequestFailure | null;
+};
+
+export type LegacyCollectionSnapshotRead = Pick<ExactCollectionSnapshotRead, 'results' | 'failure'>;
+
+export type ExactCollectionSnapshotOptions = {
+  client: Pick<StackrApiClient, 'marketPriceSnapshots'>;
+  concurrency?: number;
+  isCurrent?: () => boolean;
+  onProgress?: (read: ExactCollectionSnapshotRead) => void;
+};
+
+function snapshotResult(input: CollectionPriceInput, variantId: string, snapshot: StackrPriceSnapshotHistoryItem): CollectionPriceResult | null {
+  if (snapshot.variantId !== variantId || snapshot.quoteScope !== 'exact_variant' || snapshot.currency !== 'GBP') return null;
+  if (!Number.isFinite(snapshot.marketCentral) || (snapshot.marketCentral ?? 0) <= 0) return null;
+  return {
+    key: input.key,
+    quantity: Math.max(0, Number.isFinite(input.quantity) ? input.quantity : 0),
+    reference: input.references[0] ?? null,
+    variantId,
+    central: snapshot.marketCentral,
+    status: snapshot.priceType as StackrCardPrice['status'],
+    freshness: snapshot.freshness,
+    calculatedAt: snapshot.calculatedAt ?? snapshot.snapshotAt,
+    staleAfter: snapshot.staleAfter ?? null,
+    unavailableReason: null,
+    requestError: null,
+  };
+}
+
+/** Read owner-authorised exact GBP snapshots in 24-ID batches before fallback. */
+export async function loadExactCollectionSnapshotPrices(
+  inputs: CollectionPriceInput[],
+  options: ExactCollectionSnapshotOptions,
+): Promise<ExactCollectionSnapshotRead> {
+  const indexesByVariant = new Map<string, number[]>();
+  const indexesByPrinting = new Map<string, number[]>();
+  inputs.forEach((input, index) => {
+    const variantId = exactTrustedRawNearMintVariantId(input);
+    if (variantId) {
+      const indexes = indexesByVariant.get(variantId) ?? [];
+      indexes.push(index);
+      indexesByVariant.set(variantId, indexes);
+      return;
+    }
+    const printingId = exactCanonicalNormalPrintingId(input);
+    if (!printingId) return;
+    const indexes = indexesByPrinting.get(printingId) ?? [];
+    indexes.push(index);
+    indexesByPrinting.set(printingId, indexes);
+  });
+  const attemptedVariantIds = [...indexesByVariant.keys(), ...indexesByPrinting.keys()];
+  const result: ExactCollectionSnapshotRead = { results: new Map(), attemptedVariantIds, failure: null };
+  const chunks = [
+    ...Array.from({ length: Math.ceil(indexesByVariant.size / 24) }, (_, index) => ({ kind: 'variant' as const, ids: [...indexesByVariant.keys()].slice(index * 24, index * 24 + 24) })),
+    ...Array.from({ length: Math.ceil(indexesByPrinting.size / 24) }, (_, index) => ({ kind: 'printing' as const, ids: [...indexesByPrinting.keys()].slice(index * 24, index * 24 + 24) })),
+  ];
+  let next = 0;
+  const concurrency = Math.max(1, Math.min(6, Math.floor(options.concurrency ?? 4)));
+  const worker = async () => {
+    while (next < chunks.length && !result.failure && (options.isCurrent?.() ?? true)) {
+      const batch = chunks[next++];
+      try {
+        const response = await options.client.marketPriceSnapshots(batch.kind === 'variant'
+          ? { variantIds: batch.ids, latestOnly: true } as Parameters<StackrApiClient['marketPriceSnapshots']>[0]
+          : { printingIds: batch.ids, latestOnly: true } as Parameters<StackrApiClient['marketPriceSnapshots']>[0]);
+        const snapshotsByVariant = new Map<string, StackrPriceSnapshotHistoryItem>();
+        for (const snapshot of response.data.snapshots) {
+          const current = snapshotsByVariant.get(snapshot.variantId);
+          const timestamp = Date.parse(String(snapshot.snapshotAt ?? snapshot.calculatedAt ?? ''));
+          const currentTimestamp = Date.parse(String(current?.snapshotAt ?? current?.calculatedAt ?? ''));
+          if (!current || (Number.isFinite(timestamp) && (!Number.isFinite(currentTimestamp) || timestamp > currentTimestamp))) {
+            snapshotsByVariant.set(snapshot.variantId, snapshot);
+          }
+        }
+        for (const id of batch.ids) {
+          const snapshot = batch.kind === 'variant'
+            ? snapshotsByVariant.get(id)
+            : response.data.snapshots.find((item) => item.printingId === id);
+          if (!snapshot) continue;
+          for (const index of (batch.kind === 'variant' ? indexesByVariant.get(id) : indexesByPrinting.get(id)) ?? []) {
+            const variantId = snapshot.variantId;
+            const input = inputs[index];
+            if (batch.kind === 'printing' && (snapshot.setId !== input.setId
+              || String(snapshot.languageCode ?? '').toLowerCase() !== String(input.language ?? '').toLowerCase()
+              || !['normal', 'standard'].includes(String(snapshot.variantCode ?? '').toLowerCase()))) continue;
+            const priced = snapshotResult(input, variantId, snapshot);
+            if (priced) result.results.set(index, priced);
+          }
+        }
+      } catch (error) {
+        const failure = readInterruption(error);
+        if (failure) result.failure = { ...failure, deferred: false };
+      }
+      if (options.isCurrent?.() ?? true) options.onProgress?.({ ...result, results: new Map(result.results) });
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, chunks.length) }, worker));
+  return result;
+}
+
+/** Read scoped legacy base-printing caches without resolving card aliases. */
+export async function loadLegacyCollectionSnapshotPrices(
+  inputs: CollectionPriceInput[],
+  client: Pick<StackrApiClient, 'marketPriceSnapshots'>,
+  isCurrent?: () => boolean,
+  onProgress?: (read: LegacyCollectionSnapshotRead) => void,
+) {
+  const groups = new Map<string, { language: string; legacySetId: string; indexes: number[] }>();
+  inputs.forEach((input, index) => {
+    const reference = exactLegacyRawNearMintReference(input);
+    if (!reference) return;
+    const language = String(input.language).toLowerCase();
+    const legacySetId = String(input.legacySetId);
+    const key = JSON.stringify([language, legacySetId]);
+    const group = groups.get(key) ?? { language, legacySetId, indexes: [] };
+    group.indexes.push(index);
+    groups.set(key, group);
+  });
+  const results = new Map<number, CollectionPriceResult>();
+  let failure: CollectionPriceRequestFailure | null = null;
+  for (const { language, legacySetId, indexes } of groups.values()) {
+    for (let offset = 0; offset < indexes.length && (isCurrent?.() ?? true); offset += 24) {
+      const batchIndexes = indexes.slice(offset, offset + 24);
+      const byReference = new Map(batchIndexes.map((index) => [inputs[index].legacyReference as string, index]));
+      const legacyIds = [...byReference.keys()];
+      let response: Awaited<ReturnType<StackrApiClient['marketPriceSnapshots']>>;
+      try {
+        response = await client.marketPriceSnapshots({ legacyIds, legacySetId, language, latestOnly: true });
+      } catch (error) {
+        // Keep already-read groups; callers can apply the same viewport cooldown
+        // used by exact batches when the service explicitly interrupted the read.
+        const interruption = readInterruption(error);
+        if (interruption && !failure) {
+          failure = { ...interruption, deferred: false };
+          if (isCurrent?.() ?? true) onProgress?.({ results: new Map(results), failure });
+          // A systemic auth, rate, service or network interruption must stop
+          // this collection read; continuing groups recreates the request storm.
+          return { results, failure };
+        }
+        if (isCurrent?.() ?? true) onProgress?.({ results: new Map(results), failure });
+        continue;
+      }
+      const byId = new Map((response.data.legacySnapshots ?? []).map((item) => [item.cardId, item]));
+      for (const index of batchIndexes) {
+        const input = inputs[index]; const snapshot = byId.get(input.legacyReference as string);
+        if (!snapshot || snapshot.legacySetId !== legacySetId || snapshot.languageCode.toLowerCase() !== language.toLowerCase()
+          || snapshot.currency !== 'GBP' || !Number.isFinite(snapshot.marketCentral) || (snapshot.marketCentral ?? 0) <= 0) continue;
+        results.set(index, { key: input.key, quantity: input.quantity, reference: input.legacyReference ?? null, variantId: null,
+          central: snapshot.marketCentral, status: snapshot.priceType as StackrCardPrice['status'], freshness: 'stale',
+          calculatedAt: snapshot.calculatedAt ?? snapshot.snapshotAt, staleAfter: snapshot.staleAfter ?? null,
+          unavailableReason: null, requestError: null });
+      }
+      if (isCurrent?.() ?? true) onProgress?.({ results: new Map(results), failure });
+    }
+  }
+  return { results, failure };
 }
 
 type ReadInterruption = Omit<CollectionPriceRequestFailure, 'deferred'>;
@@ -248,16 +454,16 @@ async function loadOne(
     } catch (error) {
       onReadFailure?.(error);
       const failure = readInterruption(error);
-      return unavailable(input, failure ? interruptionDetails(failure) : {
+      return unavailableCollectionPrice(input, failure ? interruptionDetails(failure) : {
         unavailableReason: 'Card resolution failed.',
         requestError: error instanceof Error ? error.message : String(error),
       });
     }
   }
   const { reference, resolved, requestError: resolveError } = resolution;
-  if (isCurrent && !isCurrent()) return unavailable(input, { unavailableReason: 'Stored price read superseded.' });
+  if (isCurrent && !isCurrent()) return unavailableCollectionPrice(input, { unavailableReason: 'Stored price read superseded.' });
   if (!resolved || !reference) {
-    return unavailable(input, {
+    return unavailableCollectionPrice(input, {
       unavailableReason: resolveError ? 'Card resolution failed.' : 'No exact Stackr card match was found.',
       requestError: resolveError,
     });
@@ -269,7 +475,7 @@ async function loadOne(
     ? variants.filter((candidate) => normaliseCollectionVariantCode(candidate.variantCode) === requestedVariant)
     : [];
   if (requestedVariant && matchingVariants.length !== 1) {
-    return unavailable(input, {
+    return unavailableCollectionPrice(input, {
       reference,
       unavailableReason: matchingVariants.length === 0
         ? `The requested variant \"${input.variantCode}\" was not found for this card.`
@@ -282,7 +488,7 @@ async function loadOne(
   // proves there is exactly one candidate and it is the resolved identity.
   const variant = requestedVariant ? matchingVariants[0] : null;
   if (!requestedVariant && (variants.length !== 1 || variants[0].variantId !== resolved.variantId)) {
-    return unavailable(input, {
+    return unavailableCollectionPrice(input, {
       reference,
       unavailableReason: 'A unique exact variant was not supplied for this card.',
     });
@@ -292,7 +498,7 @@ async function loadOne(
   const variantId = variant?.variantId ?? resolved.variantId;
   const condition = normaliseCollectionMarketCondition(input.condition, productType);
   if (productType === 'raw_card' && !condition) {
-    return unavailable(input, {
+    return unavailableCollectionPrice(input, {
       reference,
       variantId,
       unavailableReason: 'A recognized raw-card condition is required for an exact price.',
@@ -301,7 +507,7 @@ async function loadOne(
   const grader = String(input.grader ?? '').trim();
   const grade = String(input.grade ?? '').trim();
   if (productType === 'graded_card' && (!grader || !grade)) {
-    return unavailable(input, {
+    return unavailableCollectionPrice(input, {
       reference,
       variantId,
       unavailableReason: 'Both grader and grade are required for an exact graded-card price.',
@@ -332,7 +538,7 @@ async function loadOne(
   } catch (error) {
     onReadFailure?.(error);
     const failure = readInterruption(error);
-    return unavailable(input, {
+    return unavailableCollectionPrice(input, {
       reference,
       variantId,
       unavailableReason: 'Stackr price request failed.',
@@ -375,7 +581,7 @@ export async function loadCollectionPrices(
     return pending;
   };
   const concurrency = Math.max(1, Math.min(6, Math.floor(options.concurrency ?? 4)));
-  const results = inputs.map((input) => unavailable(input, { unavailableReason: 'Stored price read pending.' }));
+  const results = inputs.map((input) => unavailableCollectionPrice(input, { unavailableReason: 'Stored price read pending.' }));
   let nextIndex = 0;
   let completed = 0;
 
@@ -392,7 +598,7 @@ export async function loadCollectionPrices(
   if (batch.failure) options.onInterrupted?.({ ...batch.failure, deferred: false });
   if (batch.failure && nextIndex < inputs.length && (options.isCurrent?.() ?? true)) {
     for (let index = nextIndex; index < inputs.length; index += 1) {
-      results[index] = unavailable(inputs[index], interruptionDetails(batch.failure, true));
+      results[index] = unavailableCollectionPrice(inputs[index], interruptionDetails(batch.failure, true));
     }
     // completed counts attempted items, not deferred rows. Unknown values
     // remain null; stopping a batch does not invent collection coverage.

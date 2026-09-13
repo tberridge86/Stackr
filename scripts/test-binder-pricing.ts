@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   binderCanonicalVariantCode,
   binderPriceInputForRow,
+  loadLatestSnapshotBinderPrices,
   loadProgressiveBinderPrices,
   mergeBinderPriceResults,
 } from '../lib/binderPricing';
@@ -79,6 +80,16 @@ assert.equal(deniedQuoteCalls, 1, '403 stops scheduling later binder price rows'
 assert.equal(deniedRows[0].tcg_price, 9);
 assert.equal(deniedRows[1].tcg_price, 9, 'deferred rows retain their stored values');
 assert.equal(interruptedStatus, 403, 'a viewport reader can stop retrying after an access interruption');
+
+let snapshotCalls = 0;
+const cooled = await loadLatestSnapshotBinderPrices([row], { language: 'en' }, {
+  marketPriceSnapshots: async () => {
+    snapshotCalls += 1;
+    throw Object.assign(new Error('service unavailable'), { status: 503, code: 'service_unavailable' });
+  },
+} as any);
+assert.equal(snapshotCalls, 1, 'an exact snapshot cooldown does not start a second legacy request for the same visible row');
+assert.equal(cooled.failure?.status, 503, 'the viewport reader receives the interruption needed for its cooldown');
 console.log('Binder pricing uses canonical facts, preserves saved quotes, and declines unproven finishes.');
 }
 

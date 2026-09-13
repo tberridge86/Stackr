@@ -1,6 +1,10 @@
 import type { StackrApiClient, StackrCard } from './stackrApiV1';
 import { readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted } from './optionalCatalogueEnrichment';
 
+// Stream a modest page instead of waiting for a whole set's image manifest.
+// Pagination counts variants, and incoming pages may split one printing.
+export const PREFERRED_ARTWORK_PAGE_SIZE = 96;
+
 /** Copy images only: a refresh must never change the facts/edition already on screen. */
 export function mergePreferredSetArtwork(facts: StackrCard[], incoming: StackrCard[]): StackrCard[] {
   const byId = new Map(incoming.map((card) => [card.cardId, card]));
@@ -31,11 +35,11 @@ export async function readPreferredSetArtwork(
   const visited = new Set<string>();
   // Pagination is over variants, so a printing/default variant can span pages.
   // Bound work by the already-validated complete facts, not an arbitrary card count.
-  const maxPages = Math.ceil(facts.reduce((count, card) => count + card.variants.length, 0) / 500) + 1;
+  const maxPages = Math.ceil(facts.reduce((count, card) => count + card.variants.length, 0) / PREFERRED_ARTWORK_PAGE_SIZE) + 1;
   for (let page = 0; page < maxPages; page++) {
     throwIfOptionalCatalogueReadAborted(signal);
     const response = await readOptionalCatalogueEnrichment((pageSignal) => client.setCards(
-      facts[0].set.setId, { language: facts[0].languageCode, cursor, limit: 500, includeAssets: true },
+      facts[0].set.setId, { language: facts[0].languageCode, cursor, limit: PREFERRED_ARTWORK_PAGE_SIZE, includeAssets: true },
       { signal: pageSignal },
     ), signal, 7000);
     if (!response) break;

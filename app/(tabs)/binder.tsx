@@ -20,6 +20,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import { Text } from '../../components/Text';
+import { StackrPageTitle } from '../../components/StackrScreen';
 import { StackrProfileAvatar } from '../../components/StackrProfileAvatar';
 import {
   EmptyStateCard,
@@ -1421,7 +1422,7 @@ export default function BinderLibraryScreen() {
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: 24, fontWeight: '800' }}>Collection</Text>
+            <StackrPageTitle title="Collection" accentText="ction" />
             <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>{binders.length} binders</Text>
           </View>
           <TouchableOpacity onPress={() => router.push(ROUTES.profile)} accessibilityRole="button" accessibilityLabel="Open Profile" style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>

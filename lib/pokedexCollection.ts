@@ -1,7 +1,7 @@
 import { searchLocalPokemonCards } from './cardSearch';
 import { supabase } from './supabase';
 import { getPreferredSetDisplayName } from './pokemonDisplayNames';
-import { fetchStackrCardRows, fetchStackrPriceSnapshots, fetchStackrSetRows } from './stackrDomainAdapter';
+import { fetchStackrCardRows, fetchStackrSetRows } from './stackrDomainAdapter';
 
 export type PokedexCard = {
   id: string;
@@ -146,26 +146,12 @@ async function addSetNames(cards: PokedexCard[]): Promise<PokedexCard[]> {
   }));
 }
 
-async function addLatestPrices(cards: PokedexCard[]): Promise<PokedexCard[]> {
-  const cardIds = [...new Set(cards.map((card) => card.id).filter(Boolean))];
-  if (!cardIds.length) return cards;
-
-  const snapshotMap = await fetchStackrPriceSnapshots(cardIds);
-
-  return cards.map((card) => {
-    const price = snapshotMap.get(card.id);
-
-    return {
-      ...card,
-      estimated_value: price?.market_central ?? null,
-      price_source: price ? 'stackr-api' : null,
-    };
-  });
-}
-
 async function enrichPokedexCards(cards: PokedexCard[]): Promise<PokedexCard[]> {
-  const withSetNames = await addSetNames(cards);
-  return addLatestPrices(withSetNames);
+  // A character page can contain hundreds of printings. Its cards are not
+  // canonical price variants, so the old per-card resolver pass both delayed
+  // the first render and flooded the shared pricing route. Set names are a
+  // bounded metadata read; exact prices remain available from a card detail.
+  return addSetNames(cards);
 }
 
 async function fetchPokemonTcgApiCardsForPokemon(pokemonName: string): Promise<PokedexCard[]> {

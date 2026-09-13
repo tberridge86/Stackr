@@ -30,12 +30,26 @@ export function validatePath(pathname) {
 
 function validateQueryValue(name, value) {
   if (value.length > 2048) bad('invalid_query', `${name} is too long.`);
-  if (name === 'variantIds') {
+  if (name === 'legacyIds') {
+    const ids = value.split(',');
+    if (!ids.length || ids.length > 24 || new Set(ids.map((id) => id.toLowerCase())).size !== ids.length
+      || ids.some((id) => !/^[A-Za-z0-9][A-Za-z0-9:._-]{0,79}$/.test(id))) {
+      bad('invalid_legacy_ids', 'legacyIds must contain 1 to 24 unique saved card references.');
+    }
+    return;
+  }
+  if (name === 'legacySetId' && !/^[A-Za-z0-9][A-Za-z0-9:._-]{0,79}$/.test(value)) {
+    bad('invalid_legacy_set', 'legacySetId must be a saved set reference.');
+  }
+  if (name === 'variantIds' || name === 'printingIds') {
     validateVariantIds(value.split(','), 24);
     return;
   }
   if (name === 'rangeDays' && !['7', '30'].includes(value)) {
     bad('invalid_range', 'rangeDays must be 7 or 30.');
+  }
+  if (name === 'latestOnly' && value !== '1') {
+    bad('invalid_latest_only', 'latestOnly must be 1.');
   }
   if (name === 'limit' && (!/^\d+$/.test(value) || Number(value) < 1 || Number(value) > 500)) {
     bad('invalid_limit', 'limit must be an integer between 1 and 500.');
@@ -82,8 +96,22 @@ export function validateQuery(route, url) {
     seen.add(name);
     validateQueryValue(name, value);
   }
-  if (route.id === 'market_price_snapshots' && !seen.has('variantIds')) {
-    bad('variant_ids_required', 'variantIds is required.');
+  if (route.id === 'market_price_snapshots' && ['variantIds', 'printingIds', 'legacyIds'].filter((key) => seen.has(key)).length !== 1) {
+    bad('variant_ids_required', 'Supply exactly one group of card references.');
+  }
+  if (route.id === 'market_price_snapshots' && seen.has('printingIds') && !seen.has('latestOnly')) {
+    bad('latest_only_required', 'Printing snapshots require latestOnly.');
+  }
+  if (route.id === 'market_price_snapshots' && seen.has('latestOnly') && seen.has('rangeDays')) {
+    bad('invalid_snapshot_range', 'Latest snapshots cannot request a history range.');
+  }
+  if (route.id === 'market_price_snapshots') {
+    if (seen.has('legacyIds') && (!seen.has('latestOnly') || !seen.has('legacySetId') || !seen.has('language'))) {
+      bad('legacy_scope_required', 'Saved card snapshots require latestOnly, legacySetId and language.');
+    }
+    if (!seen.has('legacyIds') && (seen.has('legacySetId') || seen.has('language'))) {
+      bad('unexpected_legacy_scope', 'Saved set and language scope require legacyIds.');
+    }
   }
 }
 

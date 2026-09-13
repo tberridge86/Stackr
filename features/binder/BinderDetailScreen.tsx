@@ -1,12 +1,15 @@
 import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
 import { isCompleteBinderSnapshot, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
 import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
-import { loadProgressiveBinderPrices } from '../../lib/binderPricing';
-import { createVisibleBinderPriceReader, type VisibleBinderPriceReader, type VisiblePriceFailure } from '../../lib/binderVisiblePrices';
+import { loadLatestSnapshotBinderPrices } from '../../lib/binderPricing';
+import { createVisibleBinderPriceReader, type VisibleBinderPriceReader } from '../../lib/binderVisiblePrices';
+import { stackrApiClient } from '../../lib/stackrApiV1';
 import { attachBinderCatalogueArtwork, attachBinderSetArtwork } from '../../lib/binders';
 import { StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
+import { binderCardRarity, binderRarityChoices } from '../../lib/binderRarityFilter';
 import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
+import { getCanonicalMasterSetVariants } from '../../lib/masterSetProgress';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
@@ -855,6 +858,8 @@ export default function BinderDetailScreen() {
   const [visibleAddSearchCount, setVisibleAddSearchCount] = useState(addSearchWindow.initialCount);
 
   const [sortMode, setSortMode] = useState<SortMode>('number');
+  const [rarityFilter, setRarityFilter] = useState('all');
+  const [rarityFilterExpanded, setRarityFilterExpanded] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState<BinderCardWithDetails | null>(null);
@@ -1236,17 +1241,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       const priceReader = createVisibleBinderPriceReader(binderCards, {
         loader: async (visibleRows) => {
           if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
-          let failure: VisiblePriceFailure = null;
-          const priced = await loadProgressiveBinderPrices(visibleRows, {
-            language: binderData.language, cardMode: binderData.card_mode,
+          const priced = await loadLatestSnapshotBinderPrices(visibleRows, {
+            language: binderData.language, cardMode: binderData.card_mode, edition: binderData.edition,
             defaultCondition: binderData.default_condition,
             defaultGradeCompany: binderData.default_grade_company, defaultGrade: binderData.default_grade,
-          }, {
-            isCurrent: () => isCurrentRequest() && !artworkRequest.signal.aborted,
-            onProgress: applyPrices, onInterrupted: (interruption) => { failure = interruption; },
-          });
-          applyPrices(priced);
-          return { failure };
+          }, stackrApiClient, () => isCurrentRequest() && !artworkRequest.signal.aborted);
+          if (isCurrentRequest() && !artworkRequest.signal.aborted) applyPrices(priced.rows);
+          return { failure: priced.failure };
         },
         onError: (error) => {
           if (isCurrentRequest()) console.log('Failed to attach binder prices', error);
@@ -1479,8 +1480,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     return cards;
   }, [binder?.language, binder?.type, binder?.catalogue_set_printed_total, cards, masterSetEnabled]);
 
+  const rarityChoices = useMemo(() => binderRarityChoices(displayCards), [displayCards]);
+  const activeRarity = rarityChoices.some((choice) => choice.key === rarityFilter) ? rarityFilter : 'all';
+  useEffect(() => { setRarityFilter('all'); setRarityFilterExpanded(false); }, [binder?.id]);
+
   const sortedCards = useMemo(() => {
-    const next = [...displayCards];
+    const next = activeRarity === 'all' ? [...displayCards]
+      : displayCards.filter((card) => binderCardRarity(card).key === activeRarity);
     if (sortMode === 'binder') return next.sort((a, b) => a.slot_order - b.slot_order);
     if (sortMode === 'name') return next.sort((a, b) =>
       String(a.card?.name ?? a.card_id).localeCompare(String(b.card?.name ?? b.card_id))
@@ -1495,7 +1501,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       )
     );
     return next;
-  }, [displayCards, sortMode]);
+  }, [displayCards, sortMode, activeRarity]);
 
   const rendersFullOfficialSet = binder?.type === 'official';
 
@@ -1561,7 +1567,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const savedVariants = [...ownedVariants.keys()]
       .filter((key) => key.startsWith(`${c.set_id}:${c.card_id}:`))
       .map((key) => key.slice(`${c.set_id}:${c.card_id}:`.length));
-    const variants = masterSetEnabled ? getVariants(c.card, c.set_id) : ['card'];
+    const variants = masterSetEnabled ? (getCanonicalMasterSetVariants(c.card) ?? ['card']) : ['card'];
     if (masterSetEnabled && variants.length > 1) {
       countedSlotTotal += variants.length;
       const variantManaged = variantManagedCards.has(getVariantCardKey(c.card_id, c.set_id));
@@ -2945,6 +2951,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           ) : imageUri ? (
             <EditionAwareCardImage
               uri={imageUri}
+              fullUri={getBinderCardImageUri(item, 'large')}
               fallbackUri={savedImageUri}
               cardId={item.card_id}
               rawData={item.card}
@@ -3619,7 +3626,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 13 }}>{cards.length} entries · {currentSortLabel}</Text>
           <TouchableOpacity onPress={() => setSortDropdownOpen(true)} accessibilityRole="button" accessibilityLabel="Binder options and sort" style={{ minHeight: 44, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="options-outline" size={20} color={theme.colors.primary} />
-            <Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '700' }}>Options</Text>
+            <Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '700' }}>{activeRarity === 'all' ? 'Options' : 'Options · 1'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -3639,8 +3646,24 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           onSelect={(key) => setSortMode(key as SortMode)}
         />
         <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 8 }}>
+          {activeRarity !== 'all' ? `${sortedCards.length} cards shown · ` : ''}
           Missing: {totalNeedsSync ? 'unknown' : missingCount} · Duplicates: {duplicateCount} · Chase: {chaseCount}
         </Text>
+        {rarityChoices.length > 2 ? (
+          <View style={{ marginBottom: 8 }}>
+            <Pressable accessibilityRole="button" accessibilityState={{ expanded: rarityFilterExpanded }}
+              accessibilityLabel="Filter cards by rarity" onPress={() => setRarityFilterExpanded((open) => !open)}
+              style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>Rarity</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={{ color: theme.colors.primary, fontSize: 13 }}>{rarityChoices.find((choice) => choice.key === activeRarity)?.label}</Text>
+                <Ionicons name={rarityFilterExpanded ? 'chevron-up' : 'chevron-down'} size={16} color={theme.colors.primary} />
+              </View>
+            </Pressable>
+            {rarityFilterExpanded ? <StackrBrowseFilterGroup title="Show rarity" choices={rarityChoices}
+              selected={activeRarity} onSelect={(key) => { setRarityFilter(key); setRarityFilterExpanded(false); }} /> : null}
+          </View>
+        ) : null}
             {showsCompletion ? (
               <Pressable
                 accessibilityRole="button"
@@ -4576,7 +4599,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               rawData={modalCard}
                               editionHint={getBinderEditionHint(binder.edition)}
                               sourceSize="large"
-                              style={{ width: '100%', height: '100%' }}
+                              style={{ width: '100%', height: '100%', borderRadius: 15 }}
+                              imageStyle={{ borderRadius: 15 }}
                               resizeMode="contain"
                             />
                           )}
@@ -4880,10 +4904,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                           <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
 
                           <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                            Cached daily prices (fallback)
+                            Cached estimates
                           </Text>
                           <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, marginTop: -4, marginBottom: 8 }}>
-                            Stored daily marketplace values. Use these when live sold data is thin or unavailable.
+                            Stored marketplace estimates. Check the update date below; these are not live sold prices.
                           </Text>
 
                           <Row
@@ -4891,12 +4915,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                             value={formatCachedBinderPrice(selectedCard?.ebay_price, selectedCard.condition || 'Near Mint')}
                           />
                           <Row
-                            label="Cached TCGPlayer"
+                            label="Cached card estimate"
                             value={formatCachedBinderPrice(
                               getBinderTcgPrice(selectedCard?.card, binder?.edition) ??
                                 modalTcgFallbackPrice?.market ??
                                 modalTcgFallbackPrice?.mid ??
-                                modalTcgFallbackPrice?.low,
+                                modalTcgFallbackPrice?.low ?? selectedCard?.tcg_price,
                               selectedCard.condition || 'Near Mint'
                             )}
                           />
@@ -5426,5 +5450,3 @@ function MasterVariantIcon({
     </View>
   );
 }
-
-

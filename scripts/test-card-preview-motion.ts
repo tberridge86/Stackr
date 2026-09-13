@@ -14,6 +14,7 @@ assert.equal(cardMotionIntensity(1, 1), 1, 'maximum tilt reaches the bounded vis
 assert.ok(cardMotionIntensity(0.5, 0.5) > 0 && cardMotionIntensity(0.5, 0.5) < 1,
   'partial rotation gives proportional holo treatment');
 assert.equal(relativeCardTilt(1, 1), 0, 'opening position is neutral');
+assert.equal(relativeCardTilt(0.48, 0), 1, 'the preview reaches its bounded visual range without excessive sensor travel');
 assert.ok(Math.abs(relativeCardTilt(-Math.PI + 0.01, Math.PI - 0.01)) < 0.05,
   'crossing the sensor angle boundary must not flip the card');
 const raw = { rarity: 'Rare Holo', stackr: { defaultVariantId: 'normal', variants: [

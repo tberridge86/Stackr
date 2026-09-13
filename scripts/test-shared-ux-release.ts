@@ -77,7 +77,7 @@ assert.equal(overriddenText.props.allowFontScaling, false);
 assert.equal(overriddenText.props.maxFontSizeMultiplier, 1.8);
 assert.equal(flattenStyle(overriddenText.props.style)?.color, '#456');
 
-const { StackrScreen } = loadComponent('components/StackrScreen.tsx');
+const { StackrPageTitle, StackrScreen } = loadComponent('components/StackrScreen.tsx');
 for (const [variant, edges] of [
   ['tab', ['top', 'left', 'right']],
   ['detail', ['top', 'left', 'right']],
@@ -91,6 +91,11 @@ for (const [variant, edges] of [
 }
 assert.deepEqual(StackrScreen({ safeAreaEdges: ['left', 'right'] }).props.edges, ['left', 'right']);
 assert.deepEqual(StackrScreen({ safeAreaEdges: [] }).props.edges, []);
+
+const collectionTitle = StackrPageTitle({ title: 'Collection', accentText: 'ction' }) as ElementNode;
+assert.equal(collectionTitle.props.accessibilityLabel, 'Collection');
+assert.equal(collectionTitle.props.children[0], 'Colle', 'Page titles preserve the complete unaccented prefix.');
+assert.equal(collectionTitle.props.children[1].props.children, 'ction', 'An explicit accent suffix must never be truncated.');
 
 function boundaryFor(os: string, name: string | undefined, width = 393, height = 852): ElementNode {
   platform = os;

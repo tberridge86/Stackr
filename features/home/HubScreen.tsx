@@ -34,6 +34,7 @@ import { supabase } from '../../lib/supabase';
 import { PRICE_API_URL } from '../../lib/config';
 import { ValueTrackerCard } from '../../components/ValueTrackerCard';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
+import { StackrLoadingScreen } from '../../components/StackrLoadingScreen';
 import { attachLiveTcgdexCardReferences, getPokemonCardImageUrls } from '../../lib/pokemonTcg';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { stackrIcons } from '../../lib/stackrIcons';
@@ -70,7 +71,17 @@ import {
 } from '../../lib/mintyInsightService';
 import { getCustomBinderNameArtKeyForBinder } from '../../lib/customBinderNameArt';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
-import { loadCollectionPrices, type CollectionPriceResult } from '../../lib/collectionPricingApi';
+import {
+  exactCanonicalNormalPrintingId,
+  exactTrustedRawNearMintVariantId,
+  loadCollectionPrices,
+  loadExactCollectionSnapshotPrices,
+  loadLegacyCollectionSnapshotPrices,
+  unavailableCollectionPrice,
+  type CollectionPriceInput,
+  type CollectionPriceResult,
+} from '../../lib/collectionPricingApi';
+import { binderTrustedResolution } from '../../lib/binderPricing';
 import {
   getCollectionPriceCoverageLabel,
   getComparableCollectionValueReads,
@@ -560,20 +571,100 @@ const buildHomeOwnedPricingUnits = (
   return units;
 };
 
-const pricingInputForHomeUnit = (unit: HomeOwnedPricingUnit) => ({
-  key: unit.key,
-  references: unit.identityExact
-    ? [...new Set([unit.card?.api_card_id, unit.cardId].filter((value): value is string => Boolean(value)))]
-    : [],
-  quantity: unit.quantity,
-  language: unit.language,
-  setId: unit.card?.api_set_id ?? unit.setId,
-  variantCode: unit.variant,
-  productType: unit.productType,
-  condition: unit.condition,
-  grader: unit.gradeCompany,
-  grade: unit.grade,
-});
+const pricingInputForHomeUnit = (unit: HomeOwnedPricingUnit) => {
+  // The saved ownership row selects condition/finish, while the matching
+  // catalogue-attested binder card may safely provide canonical IDs. This
+  // avoids one alias-resolution network read for each owned card.
+  const trustedResolution = unit.card ? binderTrustedResolution(unit.card) : null;
+  return {
+    key: unit.key,
+    references: unit.identityExact
+      ? [...new Set([trustedResolution?.cardId, unit.card?.api_card_id, unit.cardId]
+        .filter((value): value is string => Boolean(value)))]
+      : [],
+    quantity: unit.quantity,
+    language: trustedResolution?.language ?? unit.language,
+    setId: trustedResolution?.setId ?? unit.card?.api_set_id ?? unit.setId,
+    variantCode: unit.variant,
+    canonicalPrintingId: trustedResolution ? null : unit.card?.api_card_id ?? null,
+    legacyReference: unit.cardId,
+    legacySetId: unit.setId,
+    trustedResolution,
+    productType: unit.productType,
+    condition: unit.condition,
+    grader: unit.gradeCompany,
+    grade: unit.grade,
+  };
+};
+
+const HOME_PRICE_FALLBACK_LIMIT = 12;
+
+/**
+ * A Home valuation first reads the owner-private exact snapshot endpoint in
+ * 24-variant batches. It intentionally does not fan every saved row out into
+ * resolver/card-price calls: a missing snapshot stays an honest missing value
+ * and only a small, likely-exact subset uses the slower compatibility path.
+ */
+const loadHomeCollectionPrices = async (
+  inputs: CollectionPriceInput[],
+  options: {
+    isCurrent: () => boolean;
+    onProgress: (results: CollectionPriceResult[], completed: number) => void;
+  },
+) => {
+  const results = inputs.map((input) => unavailableCollectionPrice(input, {
+    unavailableReason: 'No matching Stackr price is available.',
+  }));
+  const candidateIndexes = new Set(inputs.flatMap((input, index) => (
+    exactTrustedRawNearMintVariantId(input) || exactCanonicalNormalPrintingId(input) ? [index] : []
+  )));
+  let completed = 0;
+  const publish = () => options.onProgress([...results], completed);
+  const exact = await loadExactCollectionSnapshotPrices(inputs, {
+    client: stackrApiClient,
+    concurrency: 4,
+    isCurrent: options.isCurrent,
+    onProgress: (read) => {
+      for (const [index, result] of read.results) results[index] = result;
+      completed = read.results.size;
+      publish();
+    },
+  });
+  if (!options.isCurrent()) return results;
+  for (const [index, result] of exact.results) results[index] = result;
+  if (exact.failure) {
+    for (const index of candidateIndexes) {
+      if (results[index].central != null) continue;
+      results[index] = unavailableCollectionPrice(inputs[index], {
+        unavailableReason: 'Stored price read is temporarily unavailable.',
+        requestError: exact.failure.code ?? exact.failure.kind,
+        requestFailure: exact.failure,
+      });
+    }
+    publish();
+    return results;
+  }
+  // Fallback only direct canonical candidates that lack an exact snapshot.
+  // This keeps a 1,350-card collection from exhausting the shared API.
+  const fallbackIndexes = [...candidateIndexes]
+    .filter((index) => !exact.results.has(index))
+    .slice(0, HOME_PRICE_FALLBACK_LIMIT);
+  if (!fallbackIndexes.length) {
+    publish();
+    return results;
+  }
+  const fallback = await loadCollectionPrices(fallbackIndexes.map((index) => inputs[index]), {
+    concurrency: 4,
+    isCurrent: options.isCurrent,
+    onProgress: (partial, checked) => {
+      partial.forEach((result, fallbackIndex) => { results[fallbackIndexes[fallbackIndex]] = result; });
+      completed = exact.results.size + checked;
+      publish();
+    },
+  });
+  fallback.forEach((result, fallbackIndex) => { results[fallbackIndexes[fallbackIndex]] = result; });
+  return results;
+};
 
 const pricingSummaryForResults = (results: CollectionPriceResult[]) => summariseCollectionPricing(
   results.map((result) => ({
@@ -1451,14 +1542,43 @@ export default function HubScreen() {
       // Account and collection content can render while exact prices/history load.
       setCollectionValueLoading(false);
 
-      const priceResults = ownedUnits.length
-        ? await loadCollectionPrices(ownedUnits.map(pricingInputForHomeUnit), {
+      const priceInputs = ownedUnits.map(pricingInputForHomeUnit);
+      const unavailablePriceResults = () => priceInputs.map((input) => unavailableCollectionPrice(input, {
+        unavailableReason: 'No matching Stackr price is available.',
+      }));
+      const applyLegacyResults = (results: Map<number, CollectionPriceResult>) => {
+        const combined = unavailablePriceResults();
+        for (const [index, result] of results) combined[index] = result;
+        return combined;
+      };
+      const legacyPrices = ownedUnits.length
+        ? await loadLegacyCollectionSnapshotPrices(priceInputs, stackrApiClient, isCurrentRequest, (read) => {
+          // A cached full valuation stays stable during pull-to-refresh. New
+          // accounts see each completed legacy batch immediately with its true
+          // unpriced denominator, never an invented whole-collection total.
+          if (!isCurrentRequest() || hasSuccessfulCollectionPricingRef.current) return;
+          const partial = pricingSummaryForResults(applyLegacyResults(read.results));
+          if (partial.total == null) return;
+          setCollectionTotal(partial.total);
+          setCollectionPricingSummary(partial);
+          setCollectionPricingWarning(`Reading stored prices: ${partial.pricedUnits} of ${partial.totalUnits} owned cards priced. Showing the known subtotal.`);
+        })
+        : { results: new Map(), failure: null };
+      if (!isCurrentRequest()) return;
+      const priceResults = legacyPrices.failure
+        ? applyLegacyResults(legacyPrices.results)
+        : ownedUnits.length
+        ? await loadHomeCollectionPrices(priceInputs, {
           isCurrent: isCurrentRequest,
           onProgress: (results, completed) => {
             if (!isCurrentRequest() || hasSuccessfulCollectionPricingRef.current) return;
-            // Limit renders for large collections; leave pending cards in the coverage denominator.
+            // Snapshot batches already combine up to 24 exact identities.
             if (completed !== 1 && completed % 12 !== 0 && completed !== ownedUnits.length) return;
-            const partial = pricingSummaryForResults(results);
+            const combined = [...results];
+            for (const [index, legacy] of legacyPrices.results) {
+              if (combined[index]?.central == null) combined[index] = legacy;
+            }
+            const partial = pricingSummaryForResults(combined);
             if (partial.total == null) return;
             setCollectionTotal(partial.total);
             setCollectionPricingSummary(partial);
@@ -1466,7 +1586,10 @@ export default function HubScreen() {
             setCollectionPricingWarning(`Reading stored prices: ${completed} of ${ownedUnits.length} checked. Showing the known subtotal.`);
           },
         })
-        : [];
+        : unavailablePriceResults();
+      for (const [index, result] of legacyPrices.results) {
+        if (priceResults[index]?.central == null) priceResults[index] = result;
+      }
       if (!isCurrentRequest()) return;
       const nextPricingSummary = pricingSummaryForResults(priceResults);
       const identitySignature = collectionIdentitySignature(priceResults);
@@ -2490,6 +2613,9 @@ export default function HubScreen() {
           </TouchableOpacity>
         </View>
 
+        {collectionValueLoading && !activeBinder && !homeDataError ? (
+          <StackrLoadingScreen compact message="Loading your collection" />
+        ) : null}
         <HomeCollectionHero
           binder={activeBinder}
           missingCards={missingCards}

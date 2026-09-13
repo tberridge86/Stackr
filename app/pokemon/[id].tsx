@@ -25,6 +25,8 @@ import {
 import { getDisplaySetName } from '../../lib/setDisplay';
 import { stackrCardImageSizes } from '../../lib/stackrSizing';
 import { stackrHaptics } from '../../lib/haptics';
+import { supabase } from '../../lib/supabase';
+import { createAccountLoadGeneration } from '../../lib/accountLoadGeneration';
 
 type PokemonData = {
   id: number;
@@ -77,11 +79,20 @@ export default function PokemonDetailScreen() {
   const [busyCardId, setBusyCardId] = useState<string | null>(null);
   const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(new Set());
   const longPressedCardId = useRef<string | null>(null);
+  const ownershipLoadGeneration = useRef(createAccountLoadGeneration()).current;
 
   const loadOwnership = useCallback(async () => {
+    const isCurrentLoad = ownershipLoadGeneration.begin();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!isCurrentLoad()) return;
+    const requestedUserId = user?.id ?? null;
     const owned = await fetchOwnedPokedexCards();
+    const { data: { user: currentUser }, error: currentUserError } = await supabase.auth.getUser();
+    if (currentUserError) throw currentUserError;
+    if (!isCurrentLoad() || currentUser?.id !== requestedUserId) return;
     setOwnedKeys(new Set(Array.from(owned.keys())));
-  }, []);
+  }, [ownershipLoadGeneration]);
 
   useEffect(() => {
     let active = true;
@@ -141,8 +152,9 @@ export default function PokemonDetailScreen() {
 
     return () => {
       active = false;
+      ownershipLoadGeneration.invalidate();
     };
-  }, [id, loadOwnership, routeName]);
+  }, [id, loadOwnership, ownershipLoadGeneration, routeName]);
 
   useFocusEffect(
     useCallback(() => {
@@ -159,8 +171,9 @@ export default function PokemonDetailScreen() {
 
       return () => {
         active = false;
+        ownershipLoadGeneration.invalidate();
       };
-    }, [loadOwnership])
+    }, [loadOwnership, ownershipLoadGeneration])
   );
 
   const ownedCount = useMemo(
