@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  AccessibilityInfo,
   Animated,
   Image,
   Modal,
@@ -316,9 +317,28 @@ export function ValueTrackerCard({
     [values]
   );
   const marketRefresh = React.useRef(new Animated.Value(1)).current;
+  const mintyIdle = React.useRef(new Animated.Value(0)).current;
+  // Start still until the device preference is known; this avoids a flash of
+  // motion for collectors who have Reduce Motion enabled.
+  const [mintyMotionReduced, setMintyMotionReduced] = React.useState(true);
   const hasAnimatedMarketRefresh = React.useRef(false);
   const [mintyInsightOpen, setMintyInsightOpen] = React.useState(false);
   const [priceDetailsOpen, setPriceDetailsOpen] = React.useState(false);
+  React.useEffect(() => {
+    let mounted = true;
+    const apply = (reduced: boolean) => {
+      if (!mounted) return;
+      setMintyMotionReduced((current) => {
+        if (current === reduced) return current;
+        mintyIdle.stopAnimation();
+        mintyIdle.setValue(0);
+        return reduced;
+      });
+    };
+    void AccessibilityInfo.isReduceMotionEnabled().then(apply).catch(() => apply(false));
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', apply);
+    return () => { mounted = false; subscription.remove(); mintyIdle.stopAnimation(); };
+  }, [mintyIdle]);
   const fallbackMintyGeneratedAt = React.useMemo(() => new Date().toISOString(), []);
   const marketRefreshKey = useMemo(
     () => [
@@ -412,6 +432,15 @@ export function ValueTrackerCard({
       ? '#A15C07'
       : '#7A3CFF';
   const showInsightRow = !isLoading && !error;
+  React.useEffect(() => {
+    if (mintyMotionReduced || !showInsightRow) { mintyIdle.stopAnimation(); mintyIdle.setValue(0); return; }
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(mintyIdle, { toValue: 1, duration: 2400, useNativeDriver: true }),
+      Animated.timing(mintyIdle, { toValue: 0, duration: 2400, useNativeDriver: true }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [mintyIdle, mintyMotionReduced, showInsightRow]);
   const relatedSignals = [...displayInsight.related_cards, ...displayInsight.related_products].filter(Boolean);
   const mintySourceLabel = mintyInsightUpdating
     ? 'Updating'
@@ -784,9 +813,9 @@ export function ValueTrackerCard({
             accessibilityHint="Opens the full Minty recommendation and supporting signals."
             style={[styles.vaultInsightRow, isCompactLayout && styles.vaultInsightRowCompact, { backgroundColor: theme.colors.card, borderColor: `${theme.colors.primary}24` }]}
           >
-            <View style={styles.vaultInsightIcon}>
+            <Animated.View style={[styles.vaultInsightIcon, { transform: [{ translateY: mintyIdle.interpolate({ inputRange: [0, 1], outputRange: [0, -3] }) }, { rotate: mintyIdle.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '1deg'] }) }] }]}>
               <Image source={MINTY_REV2_SOURCE} style={styles.vaultInsightMascot} resizeMode="contain" />
-            </View>
+            </Animated.View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <View style={styles.vaultInsightTitleRow}>
                 <Text style={[styles.vaultInsightLabel, { color: theme.colors.text }]}>Minty Insight</Text>

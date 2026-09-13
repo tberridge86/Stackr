@@ -14,7 +14,7 @@ function compileModule(filePath, dependencies) {
     module: moduleBox,
     exports: moduleBox.exports,
     require: (request) => {
-      if (/\.png$/.test(request)) return `bundled:${request}`;
+      if (/\.(png|webp)$/.test(request)) return `bundled:${request}`;
       if (request in dependencies) return dependencies[request];
       throw new Error(`Unexpected dependency while compiling ${filePath}: ${request}`);
     },
@@ -52,10 +52,12 @@ assert.equal(fileHashes.size, 15);
 
 const englishLogos = compileModule('lib/englishSetLogos.ts', {});
 const japaneseLogos = compileModule('lib/japaneseSetLogos.ts', {});
+const traditionalChineseLogos = compileModule('lib/traditionalChineseSetLogos.ts', {});
 const getEnglishSetLogoMatch = englishLogos.getEnglishSetLogoMatch;
 const getEnglishSetLogoMatchForSet = englishLogos.getEnglishSetLogoMatchForSet;
 const getEnglishSetLogoSourceForSet = englishLogos.getEnglishSetLogoSourceForSet;
 const getJapaneseSetLogoSourceForSet = japaneseLogos.getJapaneseSetLogoSourceForSet;
+const getTraditionalChineseSetLogoSourceForSet = traditionalChineseLogos.getTraditionalChineseSetLogoSourceForSet;
 
 for (const row of manifest) {
   const expectedSource = `bundled:../${row.image_file}`;
@@ -90,6 +92,7 @@ assert.equal(new Set(sharedPop).size, 1, 'The shared POP Series logo must be sto
 const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './englishSetLogos': { getEnglishSetLogoSourceForSet },
   './japaneseSetLogos': { getJapaneseSetLogoSourceForSet },
+  './traditionalChineseSetLogos': { getTraditionalChineseSetLogoSourceForSet },
   './magazineSetCovers': {
     getMagazineSetCoverSourceForSet: (input) => input?.id === 'magazine:test' ? 'bundled:magazine' : null,
   },

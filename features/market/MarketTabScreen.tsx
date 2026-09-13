@@ -1610,7 +1610,7 @@ export default function TheMarketTab() {
     ? `${displayListings.length} listing${displayListings.length === 1 ? '' : 's'} from ${sellerFilter.name ?? 'this seller'}`
     : workspace === 'myListings'
       ? `${myListings.length} live listing${myListings.length === 1 ? '' : 's'}${draftCount ? ` - ${draftCount} draft to resume` : ''}`
-      : `${displayListings.length} listing${displayListings.length === 1 ? '' : 's'}`;
+      : '';
 
   const activeFilterChips = useMemo(() => {
     const chips: { key: string; label: string; language?: MarketLanguageFilter; onRemove: () => void }[] = [];
@@ -1774,7 +1774,7 @@ export default function TheMarketTab() {
         placeholder="Search Market"
         onOpenFilters={() => setFiltersOpen(true)}
         activeFilterCount={activeFilterCount + Number(sortBy !== 'recommended')}
-        resultLabel={sortBy === 'recommended' ? listingCountCopy : `${listingCountCopy} · ${currentSortLabel}`}
+        resultLabel={sortBy === 'recommended' ? listingCountCopy : listingCountCopy ? `${listingCountCopy} · ${currentSortLabel}` : currentSortLabel}
       />
       {suggestion ? (
         <TouchableOpacity onPress={() => setSearch(suggestion)} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>

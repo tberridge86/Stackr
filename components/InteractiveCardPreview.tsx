@@ -66,10 +66,13 @@ export function InteractiveCardPreview({ children, active = true, foil = false }
     return { opacity: intensity * 0.52,
       transform: [{ translateX: cardFloatOffset(x, 126) }, { translateY: cardFloatOffset(y, 92) }, { rotate: `${-25 + x * 16 - y * 10}deg` }, { scale: 1 + intensity * 0.16 }] };
   });
+  // Keep the card image itself clipped to the same rounded silhouette while the
+  // outer frame remains free to cast its shadow and move under the finger.
+  // This removes the square, light backing that was visible at the corners.
   return <View style={styles.frame}>
     {enabled && Platform.OS !== 'web' ? <NativeCardTilt x={sensorX} y={sensorY} /> : null}
     <Animated.View style={[styles.card, motionStyle]} {...responder.panHandlers}>
-      {children}
+      <View style={styles.cardSurface}>{children}</View>
       {foil ? <View pointerEvents="none" style={styles.foilMask}>
         <Animated.View style={[styles.shine, shineStyle]}>
           <LinearGradient colors={['transparent', 'rgba(101, 245, 234, 0.88)', 'rgba(218, 177, 255, 0.92)', 'rgba(255, 245, 186, 0.9)', 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
@@ -81,6 +84,7 @@ export function InteractiveCardPreview({ children, active = true, foil = false }
 const styles = StyleSheet.create({
   frame: { flex: 1, position: 'relative', overflow: 'visible' },
   card: { flex: 1, overflow: 'visible', shadowColor: '#07111F', shadowOpacity: 0.24, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 7 },
+  cardSurface: { flex: 1, overflow: 'hidden', borderRadius: 15, backgroundColor: 'transparent' },
   foilMask: { ...StyleSheet.absoluteFillObject, overflow: 'hidden', borderRadius: 15 },
   shine: { position: 'absolute', left: '-30%', top: '-30%', width: '160%', height: '160%' },
 });

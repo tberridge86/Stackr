@@ -61,6 +61,7 @@ function dateOrNull(value) {
 const RAW_NEAR_MINT = 'raw_near_mint';
 const SNAPSHOT_HISTORY_RPC_PAGE_SIZE = 1_000;
 const SNAPSHOT_HISTORY_RPC_MAX_ROWS = 40_000;
+const LEGACY_IDENTITY_READ_MAX_ROWS = 1_000;
 const PERSONAL_PROVIDER_REFRESH_COOLDOWN_MS = 5 * 60_000;
 const PERSONAL_PROVIDER_REFRESH_TIMEOUT_MS = 12_000;
 const personalProviderRefreshes = new Map();
@@ -758,6 +759,134 @@ async function latestLegacySnapshotItems(supabase, legacyIds, legacySetId, langu
   return latest;
 }
 
+function legacyEnglishSetCodeAliases(value) {
+  const code = clean(value)?.toLowerCase() ?? '';
+  const match = /^(me)(\d{1,2})(pt5|\.5)?([a-z]*)$/.exec(code);
+  if (!match) return [];
+  const [, prefix, numeric, half = '', suffix = ''] = match;
+  const number = Number(numeric);
+  if (!Number.isInteger(number) || number < 1 || number > 99) return [];
+  return [...new Set([
+    code,
+    `${prefix}${number}${half ? 'pt5' : ''}${suffix}`,
+    `${prefix}${String(number).padStart(2, '0')}${half ? '.5' : ''}${suffix}`,
+  ])];
+}
+
+/**
+ * Current owner refreshes persist exact provider snapshots under canonical
+ * variant UUIDs.  Older binders retain provider-era card/set references, so a
+ * bounded legacy request needs a safe read-only bridge to those snapshots.
+ *
+ * The bridge accepts only one normal/default variant whose language and set
+ * are proven by the published identifier catalogue.  The small ME set-code
+ * alias is retained because historical English rows used `me4` while the
+ * published set code is `me04`; no other set code is normalised here.
+ */
+async function resolveLegacyNormalVariants(supabase, legacyIds, legacySetId, language) {
+  const legacyByLowerId = new Map(legacyIds.map((id) => [id.toLowerCase(), id]));
+  const references = [...new Set([legacySetId, ...legacyIds])];
+  const { data: identifiers, error: identifierError } = await table(supabase, 'api', 'catalogue_external_identifiers')
+    .select('source_entity_type,external_id,language_code,set_id,printing_id,variant_id')
+    .in('external_id', references)
+    .eq('language_code', language)
+    .limit(LEGACY_IDENTITY_READ_MAX_ROWS + 1);
+  if (identifierError) throw identifierError;
+  // PostgREST may apply a project-level max_rows cap.  At the cap we cannot
+  // distinguish an exact result from a truncated one, so reject it rather
+  // than treating a partial identity set as uniquely proven.
+  if ((identifiers ?? []).length >= LEGACY_IDENTITY_READ_MAX_ROWS) {
+    throw new ApiError(503, 'legacy_identity_result_limit', 'Legacy card identity resolution exceeded its safe result bound.');
+  }
+
+  const allowedSetIds = new Set((identifiers ?? [])
+    .filter((row) => clean(row?.source_entity_type)?.toLowerCase() === 'set')
+    .filter((row) => clean(row?.external_id)?.toLowerCase() === legacySetId.toLowerCase())
+    .map((row) => clean(row?.set_id))
+    .filter(Boolean));
+  const printableRows = (identifiers ?? [])
+    .filter((row) => clean(row?.source_entity_type)?.toLowerCase() === 'card')
+    .filter((row) => legacyByLowerId.has(clean(row?.external_id)?.toLowerCase()))
+    .filter((row) => clean(row?.printing_id) || isUuid(clean(row?.variant_id)));
+  const printingIds = [...new Set(printableRows.map((row) => clean(row?.printing_id)).filter(Boolean))];
+  const directVariantIds = [...new Set([
+    ...legacyIds.filter(isUuid),
+    ...printableRows.map((row) => clean(row?.variant_id)).filter(isUuid),
+  ])];
+  if (!printingIds.length && !directVariantIds.length) return new Map();
+
+  const [printingResult, directResult] = await Promise.all([
+    printingIds.length
+      ? table(supabase, 'api', 'catalogue_cards')
+        .select('variant_id,printing_id,set_id,set_code,language_code,variant_code,finish_code')
+        .in('printing_id', printingIds)
+        .limit(LEGACY_IDENTITY_READ_MAX_ROWS + 1)
+      : Promise.resolve({ data: [], error: null }),
+    directVariantIds.length
+      ? table(supabase, 'api', 'catalogue_cards')
+        .select('variant_id,printing_id,set_id,set_code,language_code,variant_code,finish_code')
+        .in('variant_id', directVariantIds)
+        .limit(LEGACY_IDENTITY_READ_MAX_ROWS + 1)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (printingResult.error) throw printingResult.error;
+  if (directResult.error) throw directResult.error;
+  if ((printingResult.data ?? []).length >= LEGACY_IDENTITY_READ_MAX_ROWS
+    || (directResult.data ?? []).length >= LEGACY_IDENTITY_READ_MAX_ROWS) {
+    throw new ApiError(503, 'legacy_identity_result_limit', 'Legacy card identity resolution exceeded its safe result bound.');
+  }
+  const englishAliases = language === 'en' ? new Set(legacyEnglishSetCodeAliases(legacySetId)) : new Set();
+  const candidatesByLegacyId = new Map(legacyIds.map((id) => [id, []]));
+  for (const legacyId of legacyIds.filter(isUuid)) {
+    candidatesByLegacyId.set(legacyId, (directResult.data ?? [])
+      .filter((row) => clean(row?.variant_id)?.toLowerCase() === legacyId.toLowerCase())
+      .filter((row) => clean(row?.language_code)?.toLowerCase() === language)
+      .filter((row) => allowedSetIds.has(clean(row?.set_id))
+        || englishAliases.has(clean(row?.set_code)?.toLowerCase()))
+      .filter((row) => ['normal', 'standard', 'default'].includes(clean(row?.variant_code)?.toLowerCase() ?? ''))
+      .filter((row) => ['normal', 'standard', 'default', 'non_holo'].includes(clean(row?.finish_code)?.toLowerCase() ?? '')));
+  }
+  for (const identifier of printableRows) {
+    const legacyId = legacyByLowerId.get(clean(identifier?.external_id)?.toLowerCase());
+    if (!legacyId) continue;
+    const candidates = [...(printingResult.data ?? []), ...(directResult.data ?? [])]
+      .filter((row) => clean(row?.language_code)?.toLowerCase() === language)
+      .filter((row) => (clean(identifier?.printing_id)
+        ? clean(row?.printing_id) === clean(identifier.printing_id)
+        : clean(row?.variant_id) === clean(identifier?.variant_id)))
+      .filter((row) => allowedSetIds.has(clean(row?.set_id))
+        || englishAliases.has(clean(row?.set_code)?.toLowerCase()))
+      .filter((row) => ['normal', 'standard', 'default'].includes(clean(row?.variant_code)?.toLowerCase() ?? ''))
+      .filter((row) => ['normal', 'standard', 'default', 'non_holo'].includes(clean(row?.finish_code)?.toLowerCase() ?? ''));
+    candidatesByLegacyId.set(legacyId, [...(candidatesByLegacyId.get(legacyId) ?? []), ...candidates]);
+  }
+
+  const resolved = new Map();
+  for (const [legacyId, candidates] of candidatesByLegacyId) {
+    const variants = [...new Set(candidates.map((row) => clean(row?.variant_id)).filter(isUuid))];
+    if (variants.length === 1) resolved.set(legacyId, variants[0].toLowerCase());
+  }
+  return resolved;
+}
+
+async function latestCanonicalLegacySnapshotItems(supabase, legacyIds, legacySetId, language) {
+  const variantsByLegacyId = await resolveLegacyNormalVariants(supabase, legacyIds, legacySetId, language);
+  if (!variantsByLegacyId.size) return new Map();
+  const snapshots = await latestExactSnapshotItems(supabase, [...new Set(variantsByLegacyId.values())]);
+  const resolved = new Map();
+  for (const [legacyId, variantId] of variantsByLegacyId) {
+    const snapshot = snapshots.get(variantId);
+    if (!snapshot) continue;
+    resolved.set(legacyId, {
+      ...snapshot,
+      legacyReference: legacyId,
+      legacySetId,
+      languageCode: language,
+    });
+  }
+  return resolved;
+}
+
 function normaliseTcgdexNormalIdentifier(value) {
   const identifier = clean(value);
   if (!identifier) return null;
@@ -1122,7 +1251,18 @@ export function createMarketPricingService(options) {
       }
       const limit = rangeDays === 7 ? 338 : rangeDays === 30 ? 32 : parseLimit(input.limit, 72, 120);
       if (legacyIds.length) {
-        const legacySnapshots = [...(await latestLegacySnapshotItems(supabase, legacyIds, legacySetId, legacyLanguage)).values()]
+        const canonicalLegacy = await latestCanonicalLegacySnapshotItems(supabase, legacyIds, legacySetId, legacyLanguage);
+        const unresolvedLegacyIds = legacyIds.filter((legacyId) => !canonicalLegacy.has(legacyId));
+        const retainedLegacy = unresolvedLegacyIds.length
+          ? await latestLegacySnapshotItems(supabase, unresolvedLegacyIds, legacySetId, legacyLanguage)
+          : new Map();
+        // Prefer a newly refreshed canonical quote.  Retain a pre-existing
+        // legacy snapshot only for references that could not be resolved
+        // uniquely through the published catalogue.
+        for (const [legacyId, item] of retainedLegacy) {
+          if (!canonicalLegacy.has(legacyId)) canonicalLegacy.set(legacyId, item);
+        }
+        const legacySnapshots = [...canonicalLegacy.values()]
           .map((item) => ({
             cardId: item.legacyReference,
             legacySetId: item.legacySetId,

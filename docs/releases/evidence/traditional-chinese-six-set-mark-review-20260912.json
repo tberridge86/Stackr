@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "stackr-set-mark-review-proposal-v1",
+  "status": "review_only_not_activated",
+  "preparedAt": "2026-09-12",
+  "purpose": "Exact Traditional-Chinese standalone set-mark candidates preserved for a future source-specific local-pack review. This file neither bundles nor publishes the image bytes.",
+  "sourceArtifact": {
+    "githubRunId": 34701847752,
+    "githubArtifactId": 10299719637,
+    "name": "tc-published-logo-recovery-v4",
+    "archiveSha256": "7195a3f5acfed6c58beb57fc2c5b5ffb7be4773691979af70de8da59424af86b",
+    "evidenceReceipt": "docs/releases/evidence/integrated-candidate-20260912-repair/traditional-chinese-artifact-receipt.md"
+  },
+  "canonicalIdentityEvidence": {
+    "path": "docs/releases/catalogue-current-set-population-20260912.csv",
+    "language": "zh-tw",
+    "matchingRule": "exact canonical set UUID, language, set code, and native set name"
+  },
+  "ownerAttestation": {
+    "path": "catalogue/rights-evidence/cjk-app-image-permission-owner-attestation.2026-09-04.json",
+    "sha256": "0afd34fee2453ca87bf50383ce5aac3519439308297f9200855c57cc49bea0ad",
+    "appliesTo": [
+      "Japanese, Traditional-Chinese, and Simplified-Chinese set logos and expansion symbols"
+    ],
+    "sourceLimit": [
+      "TCGdex provider-issued asset URLs",
+      "Stackr-bundled Japanese set-logo files identified by the reviewed local manifest"
+    ]
+  },
+  "activationConstraint": "These files originate at wiki.52poke.com and are outside both source entries in the existing attestation. The current TCGdex CJK mark decision cannot cover them because it is provider-served-only, and the Japanese local-pack decision is limited to its 204-file manifest. A source-specific Chinese local-pack review must bind these exact bytes before an in-app require/import is enabled.",
+  "candidates": [
+    {
+      "language": "zh-tw",
+      "setId": "41251d8a-6a1c-4f91-8e84-22e2fe7737fd",
+      "setCode": "SCA",
+      "nativeSetName": "搭檔",
+      "assetFile": "SCA_d9fe2d088472.webp",
+      "sha256": "d9fe2d088472315ee507c06483f01cdc838d06c270cda61495da0b19ab2a9653",
+      "dimensions": [455, 95],
+      "sourceUrl": "https://s1.52poke.com/wiki/1/14/%E6%90%AD%E6%A1%A3_%E4%B8%AD%E6%96%87logo.png",
+      "sourcePage": "https://wiki.52poke.com/zh-hant/%E6%90%AD%E6%A1%A3%EF%BC%88TCG%EF%BC%89"
+    },
+    {
+      "language": "zh-tw",
+      "setId": "5578c7d0-f386-4945-b651-65dd2f3ee2d3",
+      "setCode": "SCB",
+      "nativeSetName": "挑戰",
+      "assetFile": "SCB_5c14f04cb271.webp",
+      "sha256": "5c14f04cb2710a447197884cfe6fe072e7d79c7ed09d65302fcf8230f62a1880",
+      "dimensions": [360, 79],
+      "sourceUrl": "https://s1.52poke.com/wiki/a/a3/%E6%8C%91%E6%88%98_%E4%B8%AD%E6%96%87logo.png",
+      "sourcePage": "https://wiki.52poke.com/zh-hant/%E6%8C%91%E6%88%98%EF%BC%88TCG%EF%BC%89"
+    },
+    {
+      "language": "zh-tw",
+      "setId": "c816b27f-f145-413b-b971-3f7b1542f24c",
+      "setCode": "SCC",
+      "nativeSetName": "進化",
+      "assetFile": "SCC_ec691c1d49a7.webp",
+      "sha256": "ec691c1d49a7fc4f48a77893d14c3310818ba200761ed43248cf573cd46c20fc",
+      "dimensions": [369, 71],
+      "sourceUrl": "https://s1.52poke.com/wiki/c/ca/%E8%BF%9B%E5%8C%96_%E4%B8%AD%E6%96%87logo.png",
+      "sourcePage": "https://wiki.52poke.com/zh-hant/%E8%BF%9B%E5%8C%96%EF%BC%88TCG%EF%BC%89"
+    },
+    {
+      "language": "zh-tw",
+      "setId": "70184f97-2d37-457a-8ae4-21a4b40d270c",
+      "setCode": "SCD",
+      "nativeSetName": "強大",
+      "assetFile": "SCD_0f8abdbc3ba9.webp",
+      "sha256": "0f8abdbc3ba9de960267a52757c369a7aa40ffaf8ef1ddb7721537d0964d2093",
+      "dimensions": [520, 107],
+      "sourceUrl": "https://s1.52poke.com/wiki/4/48/%E5%BC%BA%E5%A4%A7_%E4%B8%AD%E6%96%87logo.png",
+      "sourcePage": "https://wiki.52poke.com/zh-hant/%E5%BC%BA%E5%A4%A7%EF%BC%88TCG%EF%BC%89"
+    },
+    {
+      "language": "zh-tw",
+      "setId": "52d0226c-123a-4b62-bcc4-0433b5afb56f",
+      "setCode": "S8a",
+      "nativeSetName": "25週年收藏款",
+      "assetFile": "S8a_1ec36cbddcb1.webp",
+      "sha256": "1ec36cbddcb144fe706a3accaf1ebf73d15522b03908765593f111593f2ea037",
+      "dimensions": [240, 157],
+      "sourceUrl": "https://s1.52poke.com/wiki/8/89/TCG_%E5%89%91%26%E7%9B%BE_25%E5%91%A8%E5%B9%B4%E6%94%B6%E8%97%8F%E7%89%88_%E7%B9%81%E4%B8%ADlogo.png",
+      "sourcePage": "https://wiki.52poke.com/zh-hant/25%E5%91%A8%E5%B9%B4%E6%94%B6%E8%97%8F%E7%89%88%EF%BC%88TCG%EF%BC%89"
+    },
+    {
+      "language": "zh-tw",
+      "setId": "9932f014-e867-49a3-8597-424386f59ba5",
+      "setCode": "SN",
+      "nativeSetName": "初階牌組100 特別版",
+      "assetFile": "SN_4adeac17e99f.webp",
+      "sha256": "4adeac17e99fc3a840df79f24e5fd096e5d0625f0ab675140ef2d16b8212b8c7",
+      "dimensions": [630, 539],
+      "sourceUrl": "https://s1.52poke.com/wiki/0/06/TCG_%E5%88%9D%E9%98%B6%E7%89%8C%E7%BB%84100%E7%89%B9%E5%88%AB%E7%89%88_%E7%B9%81%E4%B8%ADlogo.png",
+      "sourcePage": "https://wiki.52poke.com/zh-hant/%E5%88%9D%E9%98%B6%E7%89%8C%E7%BB%84100%E7%89%B9%E5%88%AB%E7%89%88%EF%BC%88TCG%EF%BC%89"
+    }
+  ]
+}

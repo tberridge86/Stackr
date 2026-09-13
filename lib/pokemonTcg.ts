@@ -1,5 +1,6 @@
 import { Image, InteractionManager } from 'react-native';
 import { PRICE_API_URL } from './config';
+import { getPublishedSetLogoFallback } from './publishedSetLogoFallbacks';
 import { resolvePokeDataJapaneseSetCode } from './pokedataJapaneseSetIdentity';
 import {
   getEnglishCardDisplayName,
@@ -1112,7 +1113,8 @@ function shouldUseScrydexImages(setId?: string | null) {
 export function getPokemonSetLogoUrl(setId?: string | null, language?: string | null): string | undefined {
   if (!setId) return undefined;
   const url = approvedSetAssets.get(getSetIdentityKey(setId, language))?.logo
-    ?? approvedSetAssets.get(normalizeSetId(setId))?.logo;
+    ?? approvedSetAssets.get(normalizeSetId(setId))?.logo
+    ?? getPublishedSetLogoFallback({ id: setId, language });
   prefetchPokemonSetLogoUrl(url);
   return url;
 }

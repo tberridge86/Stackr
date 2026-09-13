@@ -2631,11 +2631,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         style={{ width: 120, marginRight: 14, opacity: isActive ? 0.75 : 1 }}
       >
         <View style={{
-          padding: 5,
-          borderRadius: 12,
-          borderWidth: 2,
-          borderColor: item.owned ? theme.colors.secondary : theme.colors.border,
-          backgroundColor: theme.colors.card,
+          borderRadius: 10,
+          overflow: 'hidden',
+          backgroundColor: 'transparent',
           ...cardShadow,
         }}>
           {isGradedBinder ? (
@@ -2675,16 +2673,6 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             }}>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10 }}>No image</Text>
             </View>
-          )}
-
-          {!isGradedBinder && (
-            <View style={{
-            position: 'absolute',
-            left: 7, right: 7, top: 7, bottom: 7,
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.7)',
-          }} />
           )}
 
           {item.owned && ownedQuantity > 1 && (

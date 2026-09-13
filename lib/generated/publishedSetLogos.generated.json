@@ -1,0 +1,1686 @@
+{
+  "observedAt": "2026-09-13",
+  "source": "api.asset_manifest; published approved Supabase set_logo assets",
+  "logos": [
+    {
+      "setId": "ab0614ce-3998-47d1-8f23-8b94291c0a01",
+      "language": "en",
+      "setCode": "A1",
+      "storageKey": "public/set_logo/55/d8/55d8e6082bf40aba9178bbd8b3d6002e5a4934ad144aaee7b07bcf7cd03c4b0e/original.webp"
+    },
+    {
+      "setId": "031dada1-c3f5-46b4-bea0-e1298313d3fd",
+      "language": "en",
+      "setCode": "A1a",
+      "storageKey": "public/set_logo/a2/1a/a21a6c1278c28a19b00b70588527ca426901f689f2999f0bcd922edd4deb6e07/original.webp"
+    },
+    {
+      "setId": "eefed2f2-de7e-4793-91a6-638ffc5c827b",
+      "language": "en",
+      "setCode": "A2",
+      "storageKey": "public/set_logo/88/fe/88febed50b942c07122f017415527e4be3344b471577bcb72eccbcc64e0b4c8b/original.webp"
+    },
+    {
+      "setId": "07c7e672-44f6-49a6-91e1-188946e63cf4",
+      "language": "en",
+      "setCode": "A2a",
+      "storageKey": "public/set_logo/c4/8a/c48a2626c1c82517808ebf59c16bb8c5475602228741fa874703b0a987766be7/original.webp"
+    },
+    {
+      "setId": "028e6f0e-6622-4f04-8197-619e862f3a36",
+      "language": "en",
+      "setCode": "A2b",
+      "storageKey": "public/set_logo/55/3e/553e2f4cf6e98d1df90fc45a5a7d4e918ef0375a47bb0502b9f77ac3ec9b505d/original.webp"
+    },
+    {
+      "setId": "85b2a4da-abc0-4912-a4ac-99a9b6dc57f1",
+      "language": "en",
+      "setCode": "A3",
+      "storageKey": "public/set_logo/4e/16/4e1698fbcb60e8da417146525d84339119e6b138b4dfa902857e3e56188cf699/original.webp"
+    },
+    {
+      "setId": "7710e7b2-b877-46bb-9438-57f4ab99a1f1",
+      "language": "en",
+      "setCode": "A4",
+      "storageKey": "public/set_logo/4d/f0/4df0bbedd05eda126d6997eb5e6f80a95a3605bec11e225a3f30c4bd6da1c41b/original.webp"
+    },
+    {
+      "setId": "9307a663-1764-4ff0-8f86-ff22280f7b49",
+      "language": "en",
+      "setCode": "A4a",
+      "storageKey": "public/set_logo/17/2e/172e6f12023930a99f7bcf9ddd05d567eb84fcf73c388b6419414eec7ca5af1e/original.webp"
+    },
+    {
+      "setId": "47b17175-557f-4d97-ac58-2fb65f698ea6",
+      "language": "en",
+      "setCode": "B1",
+      "storageKey": "public/set_logo/5e/9b/5e9b7b81bf292fcd7700f725d5fee0b490e496129c8ae78f0feb8e25b83bd1bc/original.webp"
+    },
+    {
+      "setId": "66542fcc-a805-41d3-9390-f51faf82f570",
+      "language": "en",
+      "setCode": "B2",
+      "storageKey": "public/set_logo/5a/a2/5aa21b45a86044e02db1e531acece39e62384a8c71201e4b7be84b26b79a9fdd/original.webp"
+    },
+    {
+      "setId": "97e3aeb6-2645-4c3a-9fd4-10d95a181b6e",
+      "language": "en",
+      "setCode": "base1",
+      "storageKey": "public/set_logo/07/db/07dbb3fc2772103cf16542fe180f49bceb852515ddb22ca70814eb59fe94bbfa/original.webp"
+    },
+    {
+      "setId": "739d2f18-1dd0-45dc-ba58-2195d5760ed5",
+      "language": "en",
+      "setCode": "base2",
+      "storageKey": "public/set_logo/b6/86/b6863944d7f6787f919257ddd35ebfdee368c1c6980eba949308377ee5f8149b/original.webp"
+    },
+    {
+      "setId": "85f8c1fc-874d-4b7a-892b-2137adc6647b",
+      "language": "en",
+      "setCode": "base3",
+      "storageKey": "public/set_logo/d4/6c/d46c6329fd0cbda0c3c27a671565ef60bff07372e38f4a02c62fbed9488afeac/original.webp"
+    },
+    {
+      "setId": "ffdf2db0-7ff9-426f-95f4-ba4165be9824",
+      "language": "en",
+      "setCode": "base4",
+      "storageKey": "public/set_logo/44/61/44619d8add2dd58eedbaf5d459c4bb0f9a635937ba4d4264c47510f995d941b3/original.webp"
+    },
+    {
+      "setId": "87281266-72bb-4ece-8a82-2d9838fec89f",
+      "language": "en",
+      "setCode": "base5",
+      "storageKey": "public/set_logo/c9/0d/c90d3a98f374bad10cc06112f7be41dc6c13e77a1f08f7f4a6a45318a075d049/original.webp"
+    },
+    {
+      "setId": "ce2eea9a-f1c5-4a8e-8ff2-e782fbd89927",
+      "language": "en",
+      "setCode": "basep",
+      "storageKey": "public/set_logo/8c/8f/8c8fa1f4ed63d00e69ac18e6da76d57e5f80b5151ab9f207533bddcd7c556ad5/original.jpg"
+    },
+    {
+      "setId": "20459d78-825a-4dfa-b7ae-c0c97b8994f6",
+      "language": "en",
+      "setCode": "bw1",
+      "storageKey": "public/set_logo/a4/a3/a4a373d7166f836e620b8f9efebd3d279871006774f73878c2eb4faa82c84721/original.webp"
+    },
+    {
+      "setId": "07fafdb9-7130-41c5-a076-301d8ca5070e",
+      "language": "en",
+      "setCode": "bw10",
+      "storageKey": "public/set_logo/43/97/4397b06412a048ea273d78c0a8fb8415ee8eb5faed8dc01871e5c755c84253e1/original.webp"
+    },
+    {
+      "setId": "276f194e-1d23-4d12-a13a-4ebf211588bd",
+      "language": "en",
+      "setCode": "bw11",
+      "storageKey": "public/set_logo/fb/97/fb978e348d8616eafc786e343a2a05de7e73d367b555bbd771cd2e0bcec6381f/original.webp"
+    },
+    {
+      "setId": "68e39d0d-c5de-4326-ae1b-51042e556edd",
+      "language": "en",
+      "setCode": "bw2",
+      "storageKey": "public/set_logo/aa/42/aa420494a39a48ca040a39cc84be2a99a4e9ff8dd4cc5361970e20415e07ee88/original.webp"
+    },
+    {
+      "setId": "3b49aa99-9b03-4b32-bce4-1fb67f167345",
+      "language": "en",
+      "setCode": "bw3",
+      "storageKey": "public/set_logo/1a/f7/1af772b0b048ed4a0b5f483c7b793ab040da497ce58fa604a2e48d725b110e61/original.webp"
+    },
+    {
+      "setId": "383cab7b-dbc3-4d4d-96e3-d07f4f1b6744",
+      "language": "en",
+      "setCode": "bw4",
+      "storageKey": "public/set_logo/b3/32/b3328ab9751a6794359d05c0d9b0472a88a75c2dee736d0750c8a70917997140/original.webp"
+    },
+    {
+      "setId": "62bc12c6-68e4-49a9-86b4-14db3025510f",
+      "language": "en",
+      "setCode": "bw5",
+      "storageKey": "public/set_logo/7c/26/7c26ca2b918d1d542c4821d852b9eefa41bac0dd7a8a1928bb0d4eb891866f3d/original.webp"
+    },
+    {
+      "setId": "ec087b67-2763-4b92-a34f-4183bc25649e",
+      "language": "en",
+      "setCode": "bw6",
+      "storageKey": "public/set_logo/48/45/4845159c76234f3a13ce7340b21fe158d0d5fe5ccaf1af4d296da4a913c17aa0/original.webp"
+    },
+    {
+      "setId": "e0849e8a-ee89-4443-9ab9-639d31db4e85",
+      "language": "en",
+      "setCode": "bw7",
+      "storageKey": "public/set_logo/24/2f/242ff0da7312aa1cdf058f261d7e39a6324b4056d7c8e849dad734727ca0aeb1/original.webp"
+    },
+    {
+      "setId": "42e19a74-eaac-4889-92bd-085e35f708ef",
+      "language": "en",
+      "setCode": "bw8",
+      "storageKey": "public/set_logo/b2/93/b2937e717be11f1ed04b7f1ecacc6c529f57d80cfb18d84f63220ce79248d2ff/original.webp"
+    },
+    {
+      "setId": "b78899e7-ea1a-442b-85af-041bd9609377",
+      "language": "en",
+      "setCode": "bw9",
+      "storageKey": "public/set_logo/3d/62/3d62b85a1c4dea16cb19f79ae1ee4895b4f73228419e0f91f05fb02a777c03f6/original.webp"
+    },
+    {
+      "setId": "d8804c74-d99d-4bea-a0ba-9c7a94caa4e2",
+      "language": "en",
+      "setCode": "cel25",
+      "storageKey": "public/set_logo/a5/89/a589b444ff1b7d94340b4260ac3551a78c7e2342e7c17faca7bbd26365b1ce16/original.webp"
+    },
+    {
+      "setId": "969c83b1-1004-4af8-8ef8-d724656bdc35",
+      "language": "en",
+      "setCode": "col1",
+      "storageKey": "public/set_logo/38/8e/388eb3f5c280b04aa344d6d1baea6de040a46c9ab6e984ea8c849e0a09db7018/original.webp"
+    },
+    {
+      "setId": "8fd3d411-bc40-44f6-a5e0-b69d45b57326",
+      "language": "en",
+      "setCode": "dc1",
+      "storageKey": "public/set_logo/43/36/433620f495d94cd278494c352915d7de4402f68f340adf0325425c456f85d3af/original.webp"
+    },
+    {
+      "setId": "e7ecfeee-b142-47e3-ad78-6fad8841a0e0",
+      "language": "en",
+      "setCode": "det1",
+      "storageKey": "public/set_logo/d5/d5/d5d5367a0d227a819419282a31d3ee6d8e9fd5a29fc47858f0cc84eb28188aa7/original.webp"
+    },
+    {
+      "setId": "8ebfab70-e7bb-48d8-98e7-dd8b948d12e8",
+      "language": "en",
+      "setCode": "dp1",
+      "storageKey": "public/set_logo/5c/ef/5cefdcfb8b83a7ad9f5e906a48bb74afc2dd17d414c47a2acccda2a783807699/original.webp"
+    },
+    {
+      "setId": "986caaf1-1f2b-4525-ae93-4d455cfee8c5",
+      "language": "en",
+      "setCode": "dp2",
+      "storageKey": "public/set_logo/26/9a/269a1bda50295d88d97b1ed261e4469bd80645018930260563a5d72cfdce03ea/original.webp"
+    },
+    {
+      "setId": "a9b641af-03cb-4a40-8b15-8a3b6ad01e48",
+      "language": "en",
+      "setCode": "dp3",
+      "storageKey": "public/set_logo/c1/bc/c1bc43ebe2df4e113128a3f98a3a819eb8b14126551247674dd554e2a0832e7a/original.webp"
+    },
+    {
+      "setId": "d05cc70e-4db4-45cb-a831-1b74780b9772",
+      "language": "en",
+      "setCode": "dp4",
+      "storageKey": "public/set_logo/09/fd/09fd758b61e1d652c9d31eab1e65f6485ca95cb52299063dd1a4e933dc918fb9/original.webp"
+    },
+    {
+      "setId": "a0dc1218-59f9-45f7-841b-9e93ccfc3aea",
+      "language": "en",
+      "setCode": "dp5",
+      "storageKey": "public/set_logo/a6/a6/a6a67f059636ac8032c5319748f3bcf5ad448e78dc9484c82ec8ceae2cef606d/original.webp"
+    },
+    {
+      "setId": "3f0f07ff-6f30-4034-98db-02bf9182ab78",
+      "language": "en",
+      "setCode": "dp6",
+      "storageKey": "public/set_logo/54/3a/543af798a3f1d1f646ea85518b4c021aad7dfaed120d926a9d9b9e9888905c21/original.webp"
+    },
+    {
+      "setId": "4b1e9001-6612-42bc-94ac-427b346006ee",
+      "language": "en",
+      "setCode": "dp7",
+      "storageKey": "public/set_logo/29/c7/29c7eb1f82fb0f8cb39d56226639b1df2754813faeb03d8958cc4d7a87c1fbe3/original.webp"
+    },
+    {
+      "setId": "f0ca524e-701d-4ff4-b9cf-ea9eec7eec58",
+      "language": "en",
+      "setCode": "dv1",
+      "storageKey": "public/set_logo/d7/8d/d78d0fbcd06f9a5a8aaba6636805e448502912c756f8d5a9d33c70089c5bafb7/original.webp"
+    },
+    {
+      "setId": "7cdfd12a-41e8-4311-aa5b-b2b7cd58e398",
+      "language": "en",
+      "setCode": "ecard1",
+      "storageKey": "public/set_logo/32/13/32137c143c0282cd112d33deb8f014696d0ecb3c2defb5f5359c69c6b6cdb085/original.webp"
+    },
+    {
+      "setId": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+      "language": "en",
+      "setCode": "ecard2",
+      "storageKey": "public/set_logo/0b/36/0b364cdc591deb8385eb85bea9990d1136d70abcc81462ab7a893240894bb1d7/original.webp"
+    },
+    {
+      "setId": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+      "language": "en",
+      "setCode": "ecard3",
+      "storageKey": "public/set_logo/5c/52/5c5240a373c811bbc4926d3323ae29ea72716819acdb064ddd909a684d1cd41f/original.webp"
+    },
+    {
+      "setId": "64aef6f8-1d6a-4279-9d48-b6540462f892",
+      "language": "en",
+      "setCode": "ex1",
+      "storageKey": "public/set_logo/39/e4/39e4abb0a61122aa1646a053e6094e6795473f251379764de3e8c2d6a93fbb88/original.webp"
+    },
+    {
+      "setId": "e29e51ac-ff0a-493a-9065-7e6705c6b044",
+      "language": "en",
+      "setCode": "ex10",
+      "storageKey": "public/set_logo/d3/b1/d3b1bc3b2c9f5da0d87ebb8948740b49af8a404a8d7500c1cb69a298ad0995cc/original.webp"
+    },
+    {
+      "setId": "99249942-0d40-4681-89ef-ed4575e16313",
+      "language": "en",
+      "setCode": "ex11",
+      "storageKey": "public/set_logo/6a/8e/6a8e8bb102725cba71c24617ae746727f02dec99d7c6c4efab565ad44da66692/original.webp"
+    },
+    {
+      "setId": "bf4f4e5f-7f84-4c74-aba4-7a72e11a17b2",
+      "language": "en",
+      "setCode": "ex12",
+      "storageKey": "public/set_logo/1e/4c/1e4cf580e1435e309bf14ec7de67e8333b58274855bc4834167bf121943e5f78/original.webp"
+    },
+    {
+      "setId": "eadfaa16-b109-40b9-bdc9-e39bd7a81172",
+      "language": "en",
+      "setCode": "ex13",
+      "storageKey": "public/set_logo/b5/6c/b56cfedc7d741ab815a195b5e4366a6d14c3ff3f911cffe52bbc069517da570e/original.webp"
+    },
+    {
+      "setId": "17936dba-7b9a-4737-90a9-a0464d7a4919",
+      "language": "en",
+      "setCode": "ex14",
+      "storageKey": "public/set_logo/d9/81/d98123b3bc2371d5caae24de819ae87646b47842bacfd0c38cc0d0e581b2cc82/original.webp"
+    },
+    {
+      "setId": "22af0c58-645c-42b6-a7d8-3e77e6b1e032",
+      "language": "en",
+      "setCode": "ex15",
+      "storageKey": "public/set_logo/d0/58/d058245991493950c98fcc77e8779fd09fa185179c076da9b3f6578a32098360/original.webp"
+    },
+    {
+      "setId": "9703f44c-e45a-4bfb-952c-4e747357bd4e",
+      "language": "en",
+      "setCode": "ex16",
+      "storageKey": "public/set_logo/bc/ce/bcce036ff7f96e085463c7bce60f6271b0b163205aa730c7390253f02bf08734/original.webp"
+    },
+    {
+      "setId": "a13f0885-b15c-4ad1-94b5-9902581273cb",
+      "language": "en",
+      "setCode": "ex2",
+      "storageKey": "public/set_logo/65/c4/65c499cb6e74e97248a825f078b1a4ff9dc37088f13c46a7c7e83c735357e897/original.webp"
+    },
+    {
+      "setId": "30914b3d-b822-4a86-98a7-64f043e4c3bf",
+      "language": "en",
+      "setCode": "ex3",
+      "storageKey": "public/set_logo/5e/7d/5e7dd0cbf2c00daf5a10acba22a54b0fc3433a55d676a6568b4a0827c6fe5aeb/original.webp"
+    },
+    {
+      "setId": "5ec7db1f-74f3-4ad0-8e80-24a1712c1730",
+      "language": "en",
+      "setCode": "ex4",
+      "storageKey": "public/set_logo/10/e5/10e594202efc1b078f107ab25cc4a0050db8790320d96b0438b747646f952a4b/original.webp"
+    },
+    {
+      "setId": "d6412e14-45a5-48ed-81e0-70e09c56b9a3",
+      "language": "en",
+      "setCode": "ex5",
+      "storageKey": "public/set_logo/2c/32/2c32e150a89053f36445ca405719efe48ba167a11ac55ca0b9ebc2e2f4e599b0/original.webp"
+    },
+    {
+      "setId": "1f4123e5-329b-4d39-9d85-7a079593fbcf",
+      "language": "en",
+      "setCode": "ex6",
+      "storageKey": "public/set_logo/ec/f1/ecf188c60330f61ccfb52a95b2e08d9e87c177ab60c1cb517ec1a208f732fa7f/original.webp"
+    },
+    {
+      "setId": "b80b1e71-5fdf-4c7b-b08e-2970af16c6f6",
+      "language": "en",
+      "setCode": "ex7",
+      "storageKey": "public/set_logo/2b/d7/2bd744ed71ac397eefe69a62fd5d92fcee422ca75709558140e4e564af0915d6/original.webp"
+    },
+    {
+      "setId": "3ef9a5ac-ff56-41e3-9c03-008368a5d58b",
+      "language": "en",
+      "setCode": "ex8",
+      "storageKey": "public/set_logo/ef/35/ef35ccf544efdabc7e57dae02f491ab25576b267eb66541f7a9170e9da737da1/original.webp"
+    },
+    {
+      "setId": "3c2cf854-99c6-4986-ae3f-92d7b64ca691",
+      "language": "en",
+      "setCode": "ex9",
+      "storageKey": "public/set_logo/ff/d4/ffd4978a55afd10d260219ba37b27c400db95812f4a1225dd2a9860363f8cd60/original.webp"
+    },
+    {
+      "setId": "106ceeb1-5af7-4d5d-99ba-d37af82193e8",
+      "language": "en",
+      "setCode": "fut2020",
+      "storageKey": "public/set_logo/38/14/3814f23c39b5506110773e0a56ffa1ce7166e64a122946fed40ec0a19a9aae5b/original.webp"
+    },
+    {
+      "setId": "63a759b9-e68f-481c-89ca-b77635a3f120",
+      "language": "en",
+      "setCode": "g1",
+      "storageKey": "public/set_logo/4e/89/4e89ac2291d70bf6c3bc7b70251cc2bb82f09514e4a3d79c525a6ddc3b1abc5b/original.webp"
+    },
+    {
+      "setId": "0f4ffa8e-12e1-4d3f-907c-74186a29bf1b",
+      "language": "en",
+      "setCode": "gym1",
+      "storageKey": "public/set_logo/c7/35/c735e95e14fec2cc55773e508fba686aa9ab6f9f6a63e8d9d22aa9eab7d1d8cb/original.webp"
+    },
+    {
+      "setId": "f43aed17-4a1d-49b7-9f98-fbf3f0e44c8d",
+      "language": "en",
+      "setCode": "gym2",
+      "storageKey": "public/set_logo/f5/00/f500ad6b08e6ede1304d150b5dea8f78515e48e5e1cc0ad1733884ec98f2bb5a/original.webp"
+    },
+    {
+      "setId": "15cacaa9-5700-4067-b731-ca2bc452d5b7",
+      "language": "en",
+      "setCode": "hgss1",
+      "storageKey": "public/set_logo/e4/37/e4371c2a80840b0991267f4bb7ed9de7328c8ffbf16dbbac97984688273e34f8/original.webp"
+    },
+    {
+      "setId": "3be0e25e-8dbf-4edd-a75c-aae48dd673a8",
+      "language": "en",
+      "setCode": "hgss2",
+      "storageKey": "public/set_logo/f0/60/f0602d119ea8e04878f9d993576548899d3e34e533efdcd6ddf8c6338415b5d8/original.webp"
+    },
+    {
+      "setId": "d48bebfe-e9a9-4b0c-adc9-cec8e109d93c",
+      "language": "en",
+      "setCode": "hgss3",
+      "storageKey": "public/set_logo/c9/7e/c97ee7f49bd633d3c06e1addd15bf4552951c5c4bf666bb14b9c610d35b773e8/original.jpg"
+    },
+    {
+      "setId": "623e0960-fbbf-4803-af40-960f3e0bbf9d",
+      "language": "en",
+      "setCode": "hgss4",
+      "storageKey": "public/set_logo/d7/1d/d71d8daf8ad3f074890f4d656ddd0e25f08263b5cb65d794aa6fcc7436aa195d/original.webp"
+    },
+    {
+      "setId": "1f92f73d-c7ed-4f1b-b0cd-896ce13d2fab",
+      "language": "en",
+      "setCode": "lc",
+      "storageKey": "public/set_logo/fa/fb/fafb8d3da65809d980b12021f14077de31191f048715a8f4aad8e570c52856d3/original.webp"
+    },
+    {
+      "setId": "42d59aab-eccf-413f-8c19-d88f63664057",
+      "language": "en",
+      "setCode": "me01",
+      "storageKey": "public/set_logo/a0/ae/a0aebba08de949fafa96ba14151711373f19b3c1664354fac447254506cee6a6/original.webp"
+    },
+    {
+      "setId": "977bf107-e10c-4d93-a7a4-3d7b775c5003",
+      "language": "en",
+      "setCode": "me02",
+      "storageKey": "public/set_logo/0f/b6/0fb6f6ad1e80225a3dfe9141f363f7f444a8142c51120d83059396794c6d83ca/original.webp"
+    },
+    {
+      "setId": "ddc668c0-316e-4dab-8c51-625167508fd6",
+      "language": "en",
+      "setCode": "me02.5",
+      "storageKey": "public/set_logo/bf/4f/bf4f138daba0060d1e5fd7677dabc9053295ead0db79b4165d4f6562334caaca/original.webp"
+    },
+    {
+      "setId": "a6a2829a-c5e6-444f-8d92-d6e0de9fdf64",
+      "language": "en",
+      "setCode": "me03",
+      "storageKey": "public/set_logo/33/d6/33d6d56ccb635a5a0584d730ea890f7ec187f462df8c17d3bdfef10ef25c8be5/original.webp"
+    },
+    {
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "language": "en",
+      "setCode": "me04",
+      "storageKey": "public/set_logo/2b/c6/2bc62886dc3f17135db94bb8558bb98d7e4db900563f5ce2db50a96049d54de4/original.webp"
+    },
+    {
+      "setId": "d9a2e898-8c13-4ec3-a57e-7e27e33dec08",
+      "language": "en",
+      "setCode": "neo1",
+      "storageKey": "public/set_logo/96/e8/96e819a168c8dd0856d7048b4536ea01f4b7b63c2b6409e3867cb6cce07c1580/original.webp"
+    },
+    {
+      "setId": "0f227cc4-90c0-4e1b-b91f-811b3d13630d",
+      "language": "en",
+      "setCode": "neo2",
+      "storageKey": "public/set_logo/5b/91/5b910db4674514e5787236d8d011852284406636ead536c3900139e18997dd3c/original.webp"
+    },
+    {
+      "setId": "6594ca6d-beb9-4b02-91c4-c2f1d5765712",
+      "language": "en",
+      "setCode": "neo3",
+      "storageKey": "public/set_logo/08/bd/08bdf985d7d607160724dee3d285b376a3125fd5861d2f6e949e64a7368389ff/original.webp"
+    },
+    {
+      "setId": "76866762-6684-44e1-bd7d-11a741f408d2",
+      "language": "en",
+      "setCode": "neo4",
+      "storageKey": "public/set_logo/8c/75/8c75d9a2c58cd58ef51b0221959cd7e9fb250b425f6c400eb1a07ab41e2351c9/original.webp"
+    },
+    {
+      "setId": "06abb851-f530-4fc2-b672-2cdccfce77ba",
+      "language": "en",
+      "setCode": "P-A",
+      "storageKey": "public/set_logo/8b/64/8b64ba14964d3f07fa18d11bc9b3cd14f0f6d7b2e0a2ac7def605fc4749dc05c/original.webp"
+    },
+    {
+      "setId": "772c70cd-95c5-4912-9468-3b5a3043f2cf",
+      "language": "en",
+      "setCode": "pl1",
+      "storageKey": "public/set_logo/19/62/19625b5edd676a557541098a42d6fc7238f49680f9950cf4a6005c4252e8bf63/original.webp"
+    },
+    {
+      "setId": "7c7f44f6-750c-4035-8b59-55f6bc45e26d",
+      "language": "en",
+      "setCode": "pl2",
+      "storageKey": "public/set_logo/3b/ce/3bcec569bee63ea3441f95640196f852fec0eb6301625af214953b85dac91fc1/original.webp"
+    },
+    {
+      "setId": "3e60ee1c-a63d-4473-8315-da90535f25cb",
+      "language": "en",
+      "setCode": "pl3",
+      "storageKey": "public/set_logo/f3/52/f35236f0a4ebeeb480f19d0a44f597fc8331bc55a94394c13c07a8ee11e752d2/original.webp"
+    },
+    {
+      "setId": "9b581912-773f-4599-a94f-ab01fe9e0f4d",
+      "language": "en",
+      "setCode": "pl4",
+      "storageKey": "public/set_logo/c0/fb/c0fbb1d09f5a14f4d2e729d7e34c2015391bb8908879da1c5ea7ff40be98ae72/original.webp"
+    },
+    {
+      "setId": "68fb188b-deb9-46ff-88a9-db0d1f5d34f6",
+      "language": "en",
+      "setCode": "pop8",
+      "storageKey": "public/set_logo/4a/60/4a60a30d6dc88cf06cc68c842194d4a92d967fec64af180ab737ebd66d99aa40/original.webp"
+    },
+    {
+      "setId": "a05be832-81a3-4f39-9fb2-0be6c0c73727",
+      "language": "en",
+      "setCode": "ru1",
+      "storageKey": "public/set_logo/22/7f/227f001de7349214c8ca6013f2037104e8ad68f028df651af3d2bf73e1dc551f/original.webp"
+    },
+    {
+      "setId": "3a75eae6-7d72-4227-bf44-4068c80e01fd",
+      "language": "en",
+      "setCode": "si1",
+      "storageKey": "public/set_logo/ce/d6/ced6ee2ad5c884bf087ce492f7db651129b4773610b3ed8b3552a70ed5f9eb3f/original.webp"
+    },
+    {
+      "setId": "ad42d9fa-77e8-4ea4-a591-0591acd4e853",
+      "language": "en",
+      "setCode": "sm1",
+      "storageKey": "public/set_logo/0a/c6/0ac6ebd356dfbdde827ef968cb46e4b389c3f793c74104f914a4745ddda1bbaf/original.webp"
+    },
+    {
+      "setId": "f77f15b5-a8c7-42be-8f28-297180da8ae3",
+      "language": "en",
+      "setCode": "sm10",
+      "storageKey": "public/set_logo/8d/f3/8df3defed000ccf102308eccad437d1edab13c30da4e01344040eba32f6674d9/original.webp"
+    },
+    {
+      "setId": "899893bc-ede1-4d5a-bb04-54bccf247110",
+      "language": "en",
+      "setCode": "sm11",
+      "storageKey": "public/set_logo/2e/2b/2e2b35e85aadb1a60064ac6f22ee06b85a4e55f44f129b02ccef5f24121c7a93/original.webp"
+    },
+    {
+      "setId": "60749dc8-20cb-428f-a410-35e1200cea03",
+      "language": "en",
+      "setCode": "sm115",
+      "storageKey": "public/set_logo/91/93/91936c4b1e1575092ba88c649c2cc399a0f45615e9b6b15d0b81768e05e34e7e/original.webp"
+    },
+    {
+      "setId": "b3e4c7e0-f614-4b04-929a-b8c1cfc8609e",
+      "language": "en",
+      "setCode": "sm12",
+      "storageKey": "public/set_logo/dc/dd/dcdd82512b64a6d5100032aa52abcf14ad875d70dc7676fcd878cce4832ec0ae/original.webp"
+    },
+    {
+      "setId": "84d8a262-794d-45ee-9d65-ba8528ed1f76",
+      "language": "en",
+      "setCode": "sm2",
+      "storageKey": "public/set_logo/2d/db/2ddb227500dab2d504b2bd83dbca4f7e8ddaa4fd04fc2f57cebf18837caf7970/original.webp"
+    },
+    {
+      "setId": "0fe827db-b417-4ff2-8506-536546338e74",
+      "language": "en",
+      "setCode": "sm3",
+      "storageKey": "public/set_logo/80/5f/805fda79e9527915b4e0737620e47a1401a5c425e182bd86969e370320b938fb/original.webp"
+    },
+    {
+      "setId": "cc5b8c70-db14-4fa9-af42-4c43a1bedbd0",
+      "language": "en",
+      "setCode": "sm4",
+      "storageKey": "public/set_logo/e2/da/e2dad78536ba19a2dc8e7c11a1e19ffa4f25214f1fa8d3278e70c89aa77cb3ce/original.webp"
+    },
+    {
+      "setId": "eb6b35a6-91b3-4ff8-b739-a89f072646ef",
+      "language": "en",
+      "setCode": "sm5",
+      "storageKey": "public/set_logo/0d/26/0d26e7143758b8939af7138161d8e744fd724956304cb6a0d50397d8ebf22b19/original.webp"
+    },
+    {
+      "setId": "d1bbf0dd-20e9-47f9-927f-7e7a7a555642",
+      "language": "en",
+      "setCode": "sm6",
+      "storageKey": "public/set_logo/53/57/53579c008059c8d911078ec3ec0ee4c9353061662decf0699f535256d6066f2c/original.webp"
+    },
+    {
+      "setId": "01f1a9bb-9eda-4137-a544-c065bb920545",
+      "language": "en",
+      "setCode": "sm7",
+      "storageKey": "public/set_logo/7b/b6/7bb615d364ad516cf29b1f5a7636a98a888712da2cf69c9f6fcb2cff12b043c8/original.webp"
+    },
+    {
+      "setId": "d237001c-03b2-424f-8855-6c459ef57b43",
+      "language": "en",
+      "setCode": "sm8",
+      "storageKey": "public/set_logo/2b/ff/2bffd4d854a7b38d3eccfb1646daaecc9abbe7438a75cf384d4b9e2e58be35a3/original.webp"
+    },
+    {
+      "setId": "67484037-191a-4fd6-bf2e-8e2dbf46e36b",
+      "language": "en",
+      "setCode": "sm9",
+      "storageKey": "public/set_logo/a5/c6/a5c6a23115d80c777a3374393fde1a47c8c70c6d04c0fecf54cefc8cc7901c64/original.webp"
+    },
+    {
+      "setId": "23addc10-7c42-4f3d-aa94-21a2a6ec6011",
+      "language": "en",
+      "setCode": "sv01",
+      "storageKey": "public/set_logo/95/f2/95f2d61bc1d8324176b673bede392e92898f66f707cfcf839b34db23a97feb12/original.webp"
+    },
+    {
+      "setId": "33342e0c-da19-4d33-a5c3-df0ede2260f4",
+      "language": "en",
+      "setCode": "sv02",
+      "storageKey": "public/set_logo/48/86/48866783d8f924ea45c5fccc3dffdb8a0be63c2e129b2ca8750989cb4f4d5d59/original.webp"
+    },
+    {
+      "setId": "8a4ba2ca-76e9-4f70-b0b4-7074bffe8c75",
+      "language": "en",
+      "setCode": "sv03",
+      "storageKey": "public/set_logo/19/c3/19c341c3b53e2a3928e5000fdf0c1bc16741d610448ad0e577af454ce41072db/original.webp"
+    },
+    {
+      "setId": "f2d0385c-1aae-44a9-b301-bf13da9a131e",
+      "language": "en",
+      "setCode": "sv03.5",
+      "storageKey": "public/set_logo/9a/cc/9acc63b59f5b1ad8c06963a311a8554bed62f1564ce30aa2b4789e7b02072ac2/original.webp"
+    },
+    {
+      "setId": "5b81a847-50b5-410c-b6a2-c2a50bff76b6",
+      "language": "en",
+      "setCode": "sv04",
+      "storageKey": "public/set_logo/47/b0/47b0bc72279895a472b380b7dc19df91eb1f94d13a444eb8096ffe2a98c5d502/original.webp"
+    },
+    {
+      "setId": "47e83522-7615-40cf-b62a-ffa3c0ad55a6",
+      "language": "en",
+      "setCode": "sv04.5",
+      "storageKey": "public/set_logo/2e/c1/2ec187b85d24ffc9e8c59dac6aaf4f50c52389e7982d3a445fb77be3bff5994d/original.webp"
+    },
+    {
+      "setId": "fab8637c-da98-4be7-969e-3f558e71871f",
+      "language": "en",
+      "setCode": "sv06",
+      "storageKey": "public/set_logo/19/d7/19d75de15866480932096213dc4a770d59aa7f797b0af2fcb89fb87e4a195b8b/original.webp"
+    },
+    {
+      "setId": "10cc2b5d-b4e5-4c68-841b-b02b7cc4f06e",
+      "language": "en",
+      "setCode": "sv06.5",
+      "storageKey": "public/set_logo/f2/60/f2608737be9b0d74e8d5b9f294063199742bb6aa9865f286add664d9507c4d03/original.webp"
+    },
+    {
+      "setId": "2a6febb5-52ca-485d-885d-7d0adc094540",
+      "language": "en",
+      "setCode": "sv07",
+      "storageKey": "public/set_logo/f6/f2/f6f27c701830f1bb8ef8bfe6ca2fcaee0486a4ee6f4ab834107b11401d85d168/original.webp"
+    },
+    {
+      "setId": "6203fef9-a8e6-4b20-b80a-68447b2166fc",
+      "language": "en",
+      "setCode": "sv08",
+      "storageKey": "public/set_logo/a9/76/a976b299f6868d5251b8eb63c68de4a2f374a78a4cbef1709819cdecffb09fc2/original.webp"
+    },
+    {
+      "setId": "fb3cd93c-9006-42f5-b026-96a9fedcf269",
+      "language": "en",
+      "setCode": "sv08.5",
+      "storageKey": "public/set_logo/d2/44/d244a6da37fb9a8eb41c33cce8eadd4d34d0d9b6e448ea8ecaa0304c5d566ec0/original.webp"
+    },
+    {
+      "setId": "4f3046f3-9ab7-4068-a7df-dbe2b08c263c",
+      "language": "en",
+      "setCode": "sv09",
+      "storageKey": "public/set_logo/5e/9e/5e9e6b736e1cca25a1742d25f7e23a5f4001329907ddabdf49d825c28a4cd87d/original.webp"
+    },
+    {
+      "setId": "8794c18f-e977-4e4a-965e-a0cb712435be",
+      "language": "en",
+      "setCode": "sv10",
+      "storageKey": "public/set_logo/07/76/07766d6ec57a8a367b39b6dfa37df97f7f2db94a643e5ffebcaad84b17ed7685/original.webp"
+    },
+    {
+      "setId": "ba4fbfd1-901d-4a00-b27f-a30eb8946bb2",
+      "language": "en",
+      "setCode": "sv10.5b",
+      "storageKey": "public/set_logo/60/0f/600f4d9eb4f5df71663f58b9cd3593c39c2314b2b83a3803a0e601c69f27693c/original.webp"
+    },
+    {
+      "setId": "e7196d4a-f97d-466a-853c-87c58d6456cd",
+      "language": "en",
+      "setCode": "sv10.5w",
+      "storageKey": "public/set_logo/45/c0/45c039f5c0ee41be0d1daf7ca8ab2543df0ca5d502ec09fe7284ea3c54dce891/original.webp"
+    },
+    {
+      "setId": "b6278586-87f3-46cd-8860-85df64612cfc",
+      "language": "en",
+      "setCode": "swsh1",
+      "storageKey": "public/set_logo/3c/b6/3cb6376d2b96a1799d87736ea4f051c75ad05f4247722a2b7e65b680614548d6/original.webp"
+    },
+    {
+      "setId": "819d7be8-9fa9-4f20-975c-9328a7ffbd9c",
+      "language": "en",
+      "setCode": "swsh10",
+      "storageKey": "public/set_logo/79/ec/79ecb425ae7659490a6dee81b8fc092d0e847e7110a3769782733b10859354a7/original.webp"
+    },
+    {
+      "setId": "ffec8524-253a-4e66-884c-7e647a15d40d",
+      "language": "en",
+      "setCode": "swsh10.5",
+      "storageKey": "public/set_logo/db/85/db85868e65759c86da00cdb12706f2b9d2a1d6ac136e67ac7ee6eb45477d4c5f/original.webp"
+    },
+    {
+      "setId": "d91046d7-be79-4824-960a-4a0979f023a0",
+      "language": "en",
+      "setCode": "swsh11",
+      "storageKey": "public/set_logo/a6/c6/a6c689f7226c2b2d109cde6fd634617ee56d7a1aeb3ca55e91be2ccb765c9dce/original.webp"
+    },
+    {
+      "setId": "09351915-b132-4be6-b98e-aa773aac65ad",
+      "language": "en",
+      "setCode": "swsh12",
+      "storageKey": "public/set_logo/8d/41/8d417e6b4a6f5fe9f186e431db5964df7dca155162408a246a9d86ad5613dde5/original.webp"
+    },
+    {
+      "setId": "42096fc0-51f2-4805-a114-e6f2811a0c49",
+      "language": "en",
+      "setCode": "swsh12.5",
+      "storageKey": "public/set_logo/25/28/2528051d519f700504b771c540bafee0caa8aebb3b3bb7b53a96feadfebee2fb/original.webp"
+    },
+    {
+      "setId": "564ce799-f9bc-43a1-a70a-bd6d5b0dfe76",
+      "language": "en",
+      "setCode": "swsh2",
+      "storageKey": "public/set_logo/b7/34/b734f111298c4e024dc5d5f3ed56704bc1896b812719c0d3f0bff2e03abf9c46/original.webp"
+    },
+    {
+      "setId": "fef7d309-9879-4639-9e4c-8d80122f0f3a",
+      "language": "en",
+      "setCode": "swsh3",
+      "storageKey": "public/set_logo/31/79/31799b13229803abbc53c907807e1861962b8e28cec894cf634a41f7679a44e2/original.webp"
+    },
+    {
+      "setId": "317430c1-52e0-420f-a17e-2efbcc43dec6",
+      "language": "en",
+      "setCode": "swsh3.5",
+      "storageKey": "public/set_logo/43/d7/43d7390143e1db8a3648f5f5a3a7ca4568b768cc2a1d3c17501cbb7dfe08dce8/original.webp"
+    },
+    {
+      "setId": "c40a79a9-69f9-482b-aa3b-0867059eb66d",
+      "language": "en",
+      "setCode": "swsh4",
+      "storageKey": "public/set_logo/90/c7/90c76fe0a10cf36cbb5fba08b01a80a63b2c8b7265377940a12b93355c079397/original.webp"
+    },
+    {
+      "setId": "1b9afc9d-bce8-4cff-819a-884ddf2f8f76",
+      "language": "en",
+      "setCode": "swsh4.5",
+      "storageKey": "public/set_logo/94/d7/94d7aeffb604feae0446e4ff05707448a1eddb48a8b11756840525a93968b4ab/original.webp"
+    },
+    {
+      "setId": "04dc5049-cf3a-4e5e-ad1e-85c077d03cce",
+      "language": "en",
+      "setCode": "swsh5",
+      "storageKey": "public/set_logo/17/1b/171ba58229a514a8f8558d315756f20554d3893ed9927528fbbb8e8a227d546d/original.webp"
+    },
+    {
+      "setId": "2fd9b10d-505e-44af-9ec6-b01e7da63c1f",
+      "language": "en",
+      "setCode": "swsh6",
+      "storageKey": "public/set_logo/6c/dc/6cdc17d8b5e2a05772e9f3c318d9288e80f982d658ca334871cb405785553b23/original.webp"
+    },
+    {
+      "setId": "5534149f-25ec-4195-b873-7dfbe40e5aac",
+      "language": "en",
+      "setCode": "swsh7",
+      "storageKey": "public/set_logo/2b/bf/2bbfac1054e5c9c9d2f97fd3e23b2f5b373b2e5803b49ff1960310e5ca161140/original.webp"
+    },
+    {
+      "setId": "6032d5e3-a6c5-41a5-a2f2-0edb343e092b",
+      "language": "en",
+      "setCode": "swsh8",
+      "storageKey": "public/set_logo/7e/18/7e1865e3bda7de7b6719800b0278a54f048b337ec7450d4f9797baf495815442/original.webp"
+    },
+    {
+      "setId": "c70da69d-57d8-4ea3-9952-b27882fef91e",
+      "language": "en",
+      "setCode": "swsh9",
+      "storageKey": "public/set_logo/af/ed/afed905ebd8d102e938dd9fa22d9ba26c7e5dd711646351e9ad914346cae5c60/original.webp"
+    },
+    {
+      "setId": "f5e20b43-349e-466d-a0d3-d9b8950c4281",
+      "language": "en",
+      "setCode": "xy0",
+      "storageKey": "public/set_logo/43/c0/43c0ca1a59b9a01e8a7631110a393c53da397d7c13e4c97f62c95801f5054289/original.webp"
+    },
+    {
+      "setId": "5d30fc31-1040-4140-8c02-ea1dcdb57955",
+      "language": "en",
+      "setCode": "xy1",
+      "storageKey": "public/set_logo/c4/af/c4af2e8402ceaabe4708f061909c8a365b27bc75754ce01d904c4d517bfab54d/original.webp"
+    },
+    {
+      "setId": "e40d96fe-ebdb-4c92-9259-6d5086d079bb",
+      "language": "en",
+      "setCode": "xy10",
+      "storageKey": "public/set_logo/b4/6b/b46bd313aa51e4f9c257dd31bf545b8ae03c83754197ee8c08f7ca8e34347fd2/original.webp"
+    },
+    {
+      "setId": "06f60708-8672-47d5-8dd2-4fa63b425efe",
+      "language": "en",
+      "setCode": "xy11",
+      "storageKey": "public/set_logo/6f/9e/6f9eb737ba93e6138bc982ca316aa728dec72ea4ba5b077b55a4cd28628b342f/original.webp"
+    },
+    {
+      "setId": "be4122a9-7944-449b-af87-f53b14217fd7",
+      "language": "en",
+      "setCode": "xy12",
+      "storageKey": "public/set_logo/bb/12/bb12ed026157f79368fa1f0d7304d253887d0d124b428566d99ee7fc86767b7c/original.webp"
+    },
+    {
+      "setId": "cbfa835f-4cc7-466f-8945-91e25831a94e",
+      "language": "en",
+      "setCode": "xy2",
+      "storageKey": "public/set_logo/83/e4/83e45878a73a52b2815c1f199eb2c2fb46e27b9aae9dc513a96a3b71d8cb03d9/original.webp"
+    },
+    {
+      "setId": "2924aa8a-c471-4c3a-a98a-031ae26a8e1d",
+      "language": "en",
+      "setCode": "xy3",
+      "storageKey": "public/set_logo/3a/2b/3a2bb27496a05104fe2c3bfdd17019982485ea51c8765d42c0ede98b671714f0/original.jpg"
+    },
+    {
+      "setId": "f382341d-5f76-40fe-8fe7-42e798790dc2",
+      "language": "en",
+      "setCode": "xy4",
+      "storageKey": "public/set_logo/fa/84/fa84aca8702fbdf696635183522b40b60015e62a0783330a579a60962af649e6/original.webp"
+    },
+    {
+      "setId": "d309b26d-8418-4d8c-a8e1-4c028fe859cc",
+      "language": "en",
+      "setCode": "xy5",
+      "storageKey": "public/set_logo/32/a7/32a74759af67fe8a3acceee326acacbbd18f2be6538836be50ba058cd24d5f7a/original.webp"
+    },
+    {
+      "setId": "7bb54d57-5eef-43b5-a632-ad4242cb2784",
+      "language": "en",
+      "setCode": "xy6",
+      "storageKey": "public/set_logo/1d/95/1d95bc1cf777aaed97c6d8ef3c0d985f729d59069af4d7f565f5b8cd8ce7bfe1/original.webp"
+    },
+    {
+      "setId": "fedab5a7-4bc0-4a45-8423-3d3054cece6e",
+      "language": "en",
+      "setCode": "xy7",
+      "storageKey": "public/set_logo/9a/67/9a6732549db3eff178a32669c1976bff77bfb4756d4085ac4df1cf7ecc7a62e9/original.webp"
+    },
+    {
+      "setId": "85bda8bb-6ecf-444d-858b-1c2946a0427b",
+      "language": "en",
+      "setCode": "xy8",
+      "storageKey": "public/set_logo/9d/54/9d5449553e4d8ce499420098c5594fdff646f712c5815fbcd866e341fdb531bd/original.webp"
+    },
+    {
+      "setId": "2ba4eb07-8ffa-4e73-b9f3-78f8bd53d9e9",
+      "language": "en",
+      "setCode": "xy9",
+      "storageKey": "public/set_logo/1d/10/1d105427fac4072f965427983c82e330db478955a8b38fb9b13ddae4d5c461bf/original.webp"
+    },
+    {
+      "setId": "309571d8-e64b-4859-87b1-692b7e1e8083",
+      "language": "ja",
+      "setCode": "CP1",
+      "storageKey": "public/set_logo/61/8d/618de0edae7f07b25af0b320460e596f7aea5c8aab62bd729905fc79ba696dd3/original.png"
+    },
+    {
+      "setId": "92c2515d-e527-4909-8ecd-27b5bef5a4b6",
+      "language": "ja",
+      "setCode": "CP2",
+      "storageKey": "public/set_logo/bb/8b/bb8b07e329322d935fb17c33329b1d37d1704b6e249fa8c59a0c78156eb80778/original.png"
+    },
+    {
+      "setId": "d9394254-48b4-4f36-8636-a9f358dd0742",
+      "language": "ja",
+      "setCode": "CP3",
+      "storageKey": "public/set_logo/60/33/6033407541071a3c7b09154cfc9b563b7a5aaa33ca68ff03bbf49677a658273c/original.png"
+    },
+    {
+      "setId": "5e580651-2147-468d-840b-765882875199",
+      "language": "ja",
+      "setCode": "CP4",
+      "storageKey": "public/set_logo/c0/0e/c00e02fc93ab75c5a8a1453b243f4522051f8f1bea6675a952a05c4ac448f76e/original.png"
+    },
+    {
+      "setId": "e7f6c5dd-06a9-4b7b-a906-dab5dc4db302",
+      "language": "ja",
+      "setCode": "CP5",
+      "storageKey": "public/set_logo/f7/80/f780ef7a11ad0f172b350d6aceef38a57e72817edb8538740cbf77182820bd92/original.png"
+    },
+    {
+      "setId": "68366d94-f72c-4025-b7e9-4b7fb8ad8071",
+      "language": "ja",
+      "setCode": "CP6",
+      "storageKey": "public/set_logo/77/86/7786a288a3f876c23f0a7f08f5a39547e570468543f69d0f325e61143ad5f9ea/original.png"
+    },
+    {
+      "setId": "c6c46c29-2f36-4586-b18f-af1269e684d2",
+      "language": "ja",
+      "setCode": "E2",
+      "storageKey": "public/set_logo/00/c9/00c90237f6752db166d60600b4c16e6d007320a7b4db03b80ab258eea1ebbf26/original.png"
+    },
+    {
+      "setId": "fa59f8a0-dac4-4de7-aad9-2c6efead8ed6",
+      "language": "ja",
+      "setCode": "L1a",
+      "storageKey": "public/set_logo/44/b8/44b817e37ae4d1f567727148fad037300ae3f56ed1bf01e9f1c6f0283cc0ac4c/original.png"
+    },
+    {
+      "setId": "e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+      "language": "ja",
+      "setCode": "L1b",
+      "storageKey": "public/set_logo/f3/23/f3234f24da22abb5966af659f8a3db3203d3143ec9683dfcd2cc87b40d204794/original.png"
+    },
+    {
+      "setId": "5801c250-0aca-4282-bfce-28ecbe3b5ee0",
+      "language": "ja",
+      "setCode": "L2",
+      "storageKey": "public/set_logo/1e/3c/1e3c13d1ada5e2a589fad88d5984940fbe5eaef14c7a5c97ff79afb913eeaf4e/original.png"
+    },
+    {
+      "setId": "2f857613-7720-426d-be33-d2b71d6304e2",
+      "language": "ja",
+      "setCode": "L3",
+      "storageKey": "public/set_logo/55/35/5535a1786b88b9c78ccf9945fedd7d437063e1b893b36bb4b4f128f70f411db4/original.png"
+    },
+    {
+      "setId": "7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+      "language": "ja",
+      "setCode": "LL",
+      "storageKey": "public/set_logo/9d/fd/9dfdcbec146a9ca771bd333ebfa0cfab991b96ce8270686a1707df9288af0532/original.png"
+    },
+    {
+      "setId": "f13ab591-e706-4f7c-b4c6-8fed5526ea87",
+      "language": "ja",
+      "setCode": "M-P",
+      "storageKey": "public/set_logo/d5/73/d573c5f0c2b7666f4f94131a20dd2a1ad9dacbbc7026f27fa907fb056d59c758/original.png"
+    },
+    {
+      "setId": "a05ee14c-d4fb-4598-8470-e677e3c06f22",
+      "language": "ja",
+      "setCode": "M1L",
+      "storageKey": "public/set_logo/76/80/7680f20aad79084aabf8d112b39b90378738e6029a170dc538c7bfa8a97b6358/original.png"
+    },
+    {
+      "setId": "b94f87ff-5d32-436a-87e4-50149151dba0",
+      "language": "ja",
+      "setCode": "M1S",
+      "storageKey": "public/set_logo/cc/99/cc999b70cefb1fe432e6c9c64914c86deb076daa9501aa73c5cd744e8154c0cb/original.png"
+    },
+    {
+      "setId": "8822dd6b-6f88-4ea6-9c59-0f766b63fc2b",
+      "language": "ja",
+      "setCode": "M2",
+      "storageKey": "public/set_logo/2a/92/2a92882a94dd560a1a1048f67836ca6d22602ec4bda8523281c2e4fdfe52b1a7/original.png"
+    },
+    {
+      "setId": "53abf462-8a8c-4f05-8e75-57726a38ce9e",
+      "language": "ja",
+      "setCode": "M2a",
+      "storageKey": "public/set_logo/61/eb/61eb98101e25db19c341cefb36a41d018ce16dfa27f081c98da99ad79512c75c/original.png"
+    },
+    {
+      "setId": "4be18668-d39a-44a8-831c-98e250f10538",
+      "language": "ja",
+      "setCode": "M3",
+      "storageKey": "public/set_logo/64/16/64161f4f667973ab82f4b976c20f67bdf39091c7b39391f85714ffb9dc2cc18f/original.png"
+    },
+    {
+      "setId": "c263caec-8234-4348-9ade-34d25ad4e6e7",
+      "language": "ja",
+      "setCode": "M4",
+      "storageKey": "public/set_logo/99/ce/99cee4591801aa15d41db688ac78c0c9dde67685433834ba6e42033cf7054c94/original.png"
+    },
+    {
+      "setId": "91be8fc7-b2ed-4169-b41e-0d374e4d466a",
+      "language": "ja",
+      "setCode": "M5",
+      "storageKey": "public/set_logo/d7/19/d719c4bffba1376171c4ff680cd86fb7a1badb3510b2ed2482820c4b07bfb260/original.png"
+    },
+    {
+      "setId": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+      "language": "ja",
+      "setCode": "MC",
+      "storageKey": "public/set_logo/fd/52/fd526b48b4367532f88bfae3915f459215ad13dff426a0fac9dfccba9607e989/original.png"
+    },
+    {
+      "setId": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "language": "ja",
+      "setCode": "neo1",
+      "storageKey": "public/set_logo/fb/4c/fb4cc294130a7fc6ee0b75c60798cac775a2df3c8a564317c9db8042a2c76240/original.png"
+    },
+    {
+      "setId": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+      "language": "ja",
+      "setCode": "neo2",
+      "storageKey": "public/set_logo/83/99/8399cf51a208ca39937e95466af79b1893d1276328d6c0ac81a87dd75fd1ed81/original.png"
+    },
+    {
+      "setId": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "language": "ja",
+      "setCode": "neo3",
+      "storageKey": "public/set_logo/43/59/4359c6d0a16bbfe9af077c13edc8329ed536470aa868446494e15a1608e93cad/original.png"
+    },
+    {
+      "setId": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+      "language": "ja",
+      "setCode": "neo4",
+      "storageKey": "public/set_logo/40/4a/404a6a20da54bce3cfa68b223f9139cb78b1313901647f40b946338c526d2cb2/original.png"
+    },
+    {
+      "setId": "46c7cd20-9ca5-4128-a244-9a04f9a4c9f7",
+      "language": "ja",
+      "setCode": "PMCG1",
+      "storageKey": "public/set_logo/bc/2e/bc2e12901da0faec2642cd740aea72a06642ee17cb1807cf8896ae655227a695/original.png"
+    },
+    {
+      "setId": "241c45d9-b649-4243-8c3d-4524b4e9c74c",
+      "language": "ja",
+      "setCode": "PMCG2",
+      "storageKey": "public/set_logo/d8/73/d8730e94587e3947770a8895c3f7be750607a48c1a55968d89f513c06686b1e0/original.png"
+    },
+    {
+      "setId": "b53b7df1-df06-44dd-a931-b287efc9aec6",
+      "language": "ja",
+      "setCode": "PMCG3",
+      "storageKey": "public/set_logo/f1/f9/f1f9b84186be20c1381911baf7c42c681534edcea66bf3c4ebe6f57e55d69724/original.png"
+    },
+    {
+      "setId": "e00ac7f7-8690-407d-a011-5bc5ced0ffca",
+      "language": "ja",
+      "setCode": "PMCG4",
+      "storageKey": "public/set_logo/c8/89/c889c5005d70589f884a3bf4e2d8da69c54b6d22669b4e248617bd40027956b0/original.png"
+    },
+    {
+      "setId": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+      "language": "ja",
+      "setCode": "PMCG5",
+      "storageKey": "public/set_logo/ed/71/ed71d3335a51b13fca2cfe8ce17bb9a8e0af87abcd3821b09c91ec2227c42842/original.png"
+    },
+    {
+      "setId": "b6e7c253-6790-49e5-8d54-34e6eb288e68",
+      "language": "ja",
+      "setCode": "PMCG6",
+      "storageKey": "public/set_logo/6e/a2/6ea29a2f6e34b1307a9c78d5566799614130e6755268ffd3aaa994bb47374afe/original.png"
+    },
+    {
+      "setId": "74fbb8bf-90ae-449f-9caa-725890af4617",
+      "language": "ja",
+      "setCode": "S10a",
+      "storageKey": "public/set_logo/b5/32/b532624fb1be382e9cd6cc4f75d9bea4629190bbe1f47ebada7d0bf0deac5373/original.png"
+    },
+    {
+      "setId": "baeee2c6-c600-422d-a4b2-6d84ac4baaba",
+      "language": "ja",
+      "setCode": "S10b",
+      "storageKey": "public/set_logo/a5/16/a5168f22e82012d51d28f0b430e2178ce0a87d0301508a1e63a51dadbc4f76a6/original.png"
+    },
+    {
+      "setId": "50fc7442-25ac-4bfc-851b-7e7bf9b30c2d",
+      "language": "ja",
+      "setCode": "S10D",
+      "storageKey": "public/set_logo/d9/1d/d91dd565d242ae945edcd890197f93d32edc2a4445c0392bf250c3f3f43239b6/original.png"
+    },
+    {
+      "setId": "50caa26f-e963-4122-a83b-3399c3eea056",
+      "language": "ja",
+      "setCode": "S10P",
+      "storageKey": "public/set_logo/47/91/4791a51afb04b9f74e7e67e5c2ecf92f804c0059a1420acf945063a6fdf5e93b/original.png"
+    },
+    {
+      "setId": "18813c1f-2394-468e-91d4-7a81cf6fb201",
+      "language": "ja",
+      "setCode": "S11",
+      "storageKey": "public/set_logo/71/ce/71ce127ba341523ed26d4353d6ba6a58fab32c3e6215359edfde069be003c25b/original.png"
+    },
+    {
+      "setId": "1d7afdcf-03bc-4e5e-a213-4b0439924ee9",
+      "language": "ja",
+      "setCode": "S11a",
+      "storageKey": "public/set_logo/2e/13/2e13bffbdcdf3182b09552d250d4bd16722f9594426ba206a5a742abf95bcc35/original.png"
+    },
+    {
+      "setId": "7f99a1ea-2a6b-4cdc-8ac5-c484716d164b",
+      "language": "ja",
+      "setCode": "S12",
+      "storageKey": "public/set_logo/51/85/51856a905bc1272e278b3222589ca6f5d447cb7371600e4f0a3ffdabdbe49dae/original.png"
+    },
+    {
+      "setId": "d6a23ad9-7d3d-482c-a477-304584a335e3",
+      "language": "ja",
+      "setCode": "S12a",
+      "storageKey": "public/set_logo/32/14/3214e0d2b2b9e5f8d5c8980702dcba2a620f0a85c7f78628da45f0a34e69cbd4/original.png"
+    },
+    {
+      "setId": "41462e36-155b-40f1-92ee-29a94b4cb353",
+      "language": "ja",
+      "setCode": "S1a",
+      "storageKey": "public/set_logo/60/4b/604b3bb359af5ae9c0cc6ef90b60ebe651caaf231f84f82f269065b5dcc33ad8/original.png"
+    },
+    {
+      "setId": "914a4e3c-d77c-4ac6-8b88-e38cd276d282",
+      "language": "ja",
+      "setCode": "S1H",
+      "storageKey": "public/set_logo/39/2d/392d589ac4ef26a66e9cf6f82b4aaaa45415ecd6844481d4b5a2a9dee975fd62/original.png"
+    },
+    {
+      "setId": "5287277e-bcbe-4f21-b2d3-c7187bc752dc",
+      "language": "ja",
+      "setCode": "S1W",
+      "storageKey": "public/set_logo/6b/5e/6b5e3dc4cd754c76610cf92dd78c83c560356409055f50f9b407cff9ec81b823/original.png"
+    },
+    {
+      "setId": "50370e02-5cc9-44ce-95bd-44743d477934",
+      "language": "ja",
+      "setCode": "S2",
+      "storageKey": "public/set_logo/49/26/4926be5176951240baff2f4ca88fc77a4c1545109cf954eccc0a3296b2623ea2/original.png"
+    },
+    {
+      "setId": "d64f8486-fa52-4f0d-be4d-be6dc27d1671",
+      "language": "ja",
+      "setCode": "S2a",
+      "storageKey": "public/set_logo/c3/49/c349da3391c736455f2dda58c0d20e7a72ae3ad2c9f9bca31f3f0df06d872a34/original.png"
+    },
+    {
+      "setId": "fa32c0cb-7818-4123-ab6e-9f6cfe2a9950",
+      "language": "ja",
+      "setCode": "S3",
+      "storageKey": "public/set_logo/47/fb/47fbf95e64a914e3b257536f4d28fba802e09f756b666a26ddd75a58b4d301cd/original.png"
+    },
+    {
+      "setId": "36df02c6-0228-48fc-bb24-b1d73952cc94",
+      "language": "ja",
+      "setCode": "S3a",
+      "storageKey": "public/set_logo/60/f0/60f07246b05c36b1ab3582a1f0a5380cab54ad3f58a653c12849cfda3111c201/original.png"
+    },
+    {
+      "setId": "bc55a6dd-e9c1-4413-a5a7-a4c1d2a37a90",
+      "language": "ja",
+      "setCode": "S4",
+      "storageKey": "public/set_logo/bd/eb/bdebd548cba10f6abfbb243b9c91bfba0f072fd400522d3b853024c50059d39a/original.png"
+    },
+    {
+      "setId": "9bd12a10-0bc3-4f75-ba74-d62c50293184",
+      "language": "ja",
+      "setCode": "S4a",
+      "storageKey": "public/set_logo/88/25/88252dabe2a4e44d0158f68456e3ad0294180120ce30e88f55fbd2789ae8cdd5/original.png"
+    },
+    {
+      "setId": "84bcceee-6caf-4ca9-b3d9-883b42773dfc",
+      "language": "ja",
+      "setCode": "S5a",
+      "storageKey": "public/set_logo/28/92/2892de16db39f5cbddad2369eabe2bf3c2f5c2a811a87c0abb43f5660d0edda1/original.png"
+    },
+    {
+      "setId": "b4f065d4-9b38-4489-a055-cc6cc310784f",
+      "language": "ja",
+      "setCode": "S5I",
+      "storageKey": "public/set_logo/52/23/522362f19830a0bc1f9bafb846f3d22d604bcd3c147621b0c9d1f2e30faea94c/original.png"
+    },
+    {
+      "setId": "d770730a-ab9c-4e53-acfa-aff8cbec8c0b",
+      "language": "ja",
+      "setCode": "S5R",
+      "storageKey": "public/set_logo/8b/f1/8bf19633c7e5a2db60e68d3a7cc5d94af3fa0aef46481bba5a66727646c6ac46/original.png"
+    },
+    {
+      "setId": "5659e6b4-48db-4a4c-8883-e26b64f2c41f",
+      "language": "ja",
+      "setCode": "S6a",
+      "storageKey": "public/set_logo/0f/02/0f027c31cd0660d344e2315d2984019f4e421961d05bd613bd3ab3c305bfe812/original.png"
+    },
+    {
+      "setId": "60d3fc64-7e36-473b-ae5c-b071c5aa6c98",
+      "language": "ja",
+      "setCode": "S6H",
+      "storageKey": "public/set_logo/64/f7/64f7bdb3768b3e4a8b30f5fafa234ca104a062c58cc5ab585941928995a7a0a2/original.png"
+    },
+    {
+      "setId": "bbb71d0a-367a-466e-970f-2f841fea6e98",
+      "language": "ja",
+      "setCode": "S6K",
+      "storageKey": "public/set_logo/57/8c/578cb64622be78dcd466de3b8743a726976acac21ab62be62400c2cb3c5b76c9/original.png"
+    },
+    {
+      "setId": "ff823ecc-020f-4804-9194-3671ce9a1a81",
+      "language": "ja",
+      "setCode": "S7D",
+      "storageKey": "public/set_logo/da/81/da813a46980a25c1c4dfb0cb06c942a1a1c9d27dab9bf7b81a6bb3f1b4afe42a/original.png"
+    },
+    {
+      "setId": "60a21d2e-cfa7-4103-ba7c-8e35f1b42070",
+      "language": "ja",
+      "setCode": "S7R",
+      "storageKey": "public/set_logo/ce/f6/cef6a68043edc13bec0969cc28ebd811725ec328f06e1dfa711bf9f9b773a596/original.png"
+    },
+    {
+      "setId": "5cbd3a81-6b24-4039-8559-eed8eac7877c",
+      "language": "ja",
+      "setCode": "S8",
+      "storageKey": "public/set_logo/19/bb/19bb778ee19376cf82e26c25abfb18a76d6510fd44f6d9f062758834810d7508/original.png"
+    },
+    {
+      "setId": "8d718087-7c8e-4894-a938-2cd2a3210d2c",
+      "language": "ja",
+      "setCode": "S8a",
+      "storageKey": "public/set_logo/49/73/49734aba7d9dfa6dde36ab7d3c15ae9138ec23e42844792b892a7901b21f62d8/original.png"
+    },
+    {
+      "setId": "41f64718-acd1-4c40-8a40-5c67daac2cb8",
+      "language": "ja",
+      "setCode": "S8b",
+      "storageKey": "public/set_logo/c9/d7/c9d7695c0bcf620a429d5e37d621493729e1a357619a9775b15737c99a344c34/original.png"
+    },
+    {
+      "setId": "43d798d9-3dbe-4997-a6eb-ed65af962403",
+      "language": "ja",
+      "setCode": "S9",
+      "storageKey": "public/set_logo/b8/b5/b8b57aedcfbc59fd16603ddc0af5676d1250682af0dbd9c581b6ed465d1b5924/original.png"
+    },
+    {
+      "setId": "52d75bb6-e7a0-42a5-a847-923254ac906c",
+      "language": "ja",
+      "setCode": "S9a",
+      "storageKey": "public/set_logo/1f/32/1f32f37ed779c61386654c5f2427579029842639b001c97e376f57e4fd3602cb/original.png"
+    },
+    {
+      "setId": "24d8e1a3-0706-4be3-87e2-b2224f680eb9",
+      "language": "ja",
+      "setCode": "SM0",
+      "storageKey": "public/set_logo/3f/6f/3f6fdab1c4d95076239263c45cf1916e37ab6f771a1d11ff27de5df12020fb04/original.png"
+    },
+    {
+      "setId": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+      "language": "ja",
+      "setCode": "SM1+",
+      "storageKey": "public/set_logo/56/ee/56eec9a83dff1ceab66a0f935d96df488b65d6988f784b902778b2d4445a90e4/original.png"
+    },
+    {
+      "setId": "520d745d-3f2d-4921-8ecd-4e4ff695493a",
+      "language": "ja",
+      "setCode": "SM10",
+      "storageKey": "public/set_logo/8a/74/8a747871af328616193c617bee83cf35cb5f8ae7c4511b92f65c72b658bf7707/original.png"
+    },
+    {
+      "setId": "d9378aeb-aa81-4cbe-b790-c8432b66aeb5",
+      "language": "ja",
+      "setCode": "SM10a",
+      "storageKey": "public/set_logo/db/e6/dbe6f123da45ec32662f29488e6d13523145e5bc736a90d6dc14d65e5af4d221/original.png"
+    },
+    {
+      "setId": "2e159940-3f5c-4ec9-8805-c53219263641",
+      "language": "ja",
+      "setCode": "SM10b",
+      "storageKey": "public/set_logo/eb/1d/eb1d1c812cb39a2ef73b0b856a5b22b8aed9de3e5fd676f19603615c7430f64f/original.png"
+    },
+    {
+      "setId": "d0dbab35-0a77-4dcf-a464-88bb0950bdc8",
+      "language": "ja",
+      "setCode": "SM11",
+      "storageKey": "public/set_logo/d9/10/d910015c196cda3074c1fd33f94ab97c843051c5125b7f0b915e2e119d5929a9/original.png"
+    },
+    {
+      "setId": "54c662ed-8c6b-428c-b07d-1bb58e74f5a0",
+      "language": "ja",
+      "setCode": "SM11a",
+      "storageKey": "public/set_logo/16/d7/16d7d6f5a2dd6600745f7ed213d695a50544a66d567ead88c370bd6d1c6bf247/original.png"
+    },
+    {
+      "setId": "5249f6c6-8418-41fe-8283-af5948b26c63",
+      "language": "ja",
+      "setCode": "SM11b",
+      "storageKey": "public/set_logo/69/43/694306a772c1774198bfd4179c28b4d2f8a41e735a1c0f2bda2add4209ff726e/original.png"
+    },
+    {
+      "setId": "80ffb692-f29d-450a-95eb-a3ddd60257b8",
+      "language": "ja",
+      "setCode": "SM12",
+      "storageKey": "public/set_logo/bb/df/bbdfe162afc4b1630041e5ff835f066a02ab5b744dbcbcce44af68e11ae77e5c/original.png"
+    },
+    {
+      "setId": "fe68fe5a-4e40-477a-8bcc-0fa35ef392ef",
+      "language": "ja",
+      "setCode": "SM12a",
+      "storageKey": "public/set_logo/77/d0/77d029428294067da64575f679956be1f59ea213ecb8d80ca192e8788d721165/original.png"
+    },
+    {
+      "setId": "61ec9fe1-faa4-4d6b-a532-e8a44354a55e",
+      "language": "ja",
+      "setCode": "SM1M",
+      "storageKey": "public/set_logo/41/cf/41cf60dd158fa25f0f74a96c448a24b684f213271ab08624703abf6a45665122/original.png"
+    },
+    {
+      "setId": "eab5aeee-9eb0-4bbb-bac3-96f2da23b491",
+      "language": "ja",
+      "setCode": "SM1S",
+      "storageKey": "public/set_logo/03/30/0330941d9823dd7c43f2211a3f8292fa34203e0aaabbc68c69b3141c6d8394d6/original.png"
+    },
+    {
+      "setId": "b5e09d26-0559-4d51-b6fb-09268a860a7e",
+      "language": "ja",
+      "setCode": "SM2+",
+      "storageKey": "public/set_logo/d1/4a/d14ad3abf050963d5accd9075d4f2b287bf516686a245c53fd230e04b30ddc8e/original.png"
+    },
+    {
+      "setId": "90d3234a-9c0c-4ccc-9f39-6584223e269b",
+      "language": "ja",
+      "setCode": "SM2K",
+      "storageKey": "public/set_logo/40/92/4092792f15f92695dd566d0a334898b10f7ae9317c7bfd7983f43b6c8e5c1041/original.png"
+    },
+    {
+      "setId": "adc01317-eecf-4615-abaa-d6f6cd37bfb7",
+      "language": "ja",
+      "setCode": "SM2L",
+      "storageKey": "public/set_logo/61/22/61222ff45186b7f5043410e9135592d0f59a2d2f5006b0937f86e849f05b4699/original.png"
+    },
+    {
+      "setId": "efeba6f7-0d4f-48ed-a6c9-e090bf0b4eda",
+      "language": "ja",
+      "setCode": "SM3+",
+      "storageKey": "public/set_logo/2e/fa/2efa8bd01867b29d0da0e8fdd2b9cb79fe31bbe733b06dc900f7b46bb01b4f76/original.png"
+    },
+    {
+      "setId": "7c4efad5-3391-4462-b911-f821c1f263dd",
+      "language": "ja",
+      "setCode": "SM3H",
+      "storageKey": "public/set_logo/7a/6f/7a6f3f0af3f165155866519d3100f7858341844ec4685d30d7773aac76406cd8/original.png"
+    },
+    {
+      "setId": "1201d6b1-fa7e-45ac-bc22-5b2ca0f9f3bc",
+      "language": "ja",
+      "setCode": "SM3N",
+      "storageKey": "public/set_logo/8a/a2/8aa2f8760c893b34d4943868a8b7c29e77547fdf423a67332eee948dd9636626/original.png"
+    },
+    {
+      "setId": "366d4855-590a-4d45-b2d4-836d06b43452",
+      "language": "ja",
+      "setCode": "SM4+",
+      "storageKey": "public/set_logo/ef/a3/efa3d8f5540b1354ec069cd5dc4c42504a9ff3ffbba06372b0ec8501f4dad897/original.png"
+    },
+    {
+      "setId": "e67e975c-a112-4a8a-816d-8233cc779ee2",
+      "language": "ja",
+      "setCode": "SM4A",
+      "storageKey": "public/set_logo/71/cd/71cd9e54545a495e7612046d1be836a0155f0682b147d2e0660476a3e009e29b/original.png"
+    },
+    {
+      "setId": "499d5b99-a6e2-47d5-ae7a-43c530430955",
+      "language": "ja",
+      "setCode": "SM4S",
+      "storageKey": "public/set_logo/8e/84/8e842c84db6578ac1f65f266c485bd9457c78e97ebb0cfe317656793d1145846/original.png"
+    },
+    {
+      "setId": "759e4007-8afe-41e1-9a61-68adb0a05c00",
+      "language": "ja",
+      "setCode": "SM5+",
+      "storageKey": "public/set_logo/0d/5d/0d5dc60f4ce02fb27703e2832a17ccf370210f073f833cfc190093ed95c3720e/original.png"
+    },
+    {
+      "setId": "f5e90e91-1366-4e6e-bd42-02cf0ed84790",
+      "language": "ja",
+      "setCode": "SM5M",
+      "storageKey": "public/set_logo/56/fd/56fd90abf4376fd8a8934ccb40d7239e17c2332654a02793eacb54450cbcac75/original.png"
+    },
+    {
+      "setId": "b322af01-58cc-4e5a-8a82-b7ff829cb9c0",
+      "language": "ja",
+      "setCode": "SM5S",
+      "storageKey": "public/set_logo/3b/da/3bda158cca72c80f6574a367efa2a59b6be6d2f14336d69d91c6c3764f44aabb/original.png"
+    },
+    {
+      "setId": "04fe9fe1-7206-4215-b9ab-ccea25916593",
+      "language": "ja",
+      "setCode": "SM6",
+      "storageKey": "public/set_logo/91/98/91985182d50d97aae84a7a9fd8073b37a38600d4795a1cf2ea6e16cde9e5cc70/original.png"
+    },
+    {
+      "setId": "29fb4725-1b4c-4f62-9737-0730fdcdadea",
+      "language": "ja",
+      "setCode": "SM6a",
+      "storageKey": "public/set_logo/e0/d8/e0d88ea29b06d0c2bdfab0360bc11d623634a842fa82c532c02ad833841f32b8/original.png"
+    },
+    {
+      "setId": "c7d02c37-c9b3-4d8b-ac5c-59adfe01424d",
+      "language": "ja",
+      "setCode": "SM6b",
+      "storageKey": "public/set_logo/2e/f7/2ef7e34d83d00b3b7c1f3da9425eb44cca7937d24b2708962c59f8b9082e7fe3/original.png"
+    },
+    {
+      "setId": "71a1e194-2c3d-46d0-9584-25987bde2841",
+      "language": "ja",
+      "setCode": "SM7",
+      "storageKey": "public/set_logo/0a/38/0a385a40d1b872079456ee8f961c545db68992e7cd32c46a1d3da4c8d481a5a0/original.png"
+    },
+    {
+      "setId": "728a72e3-7bf2-4436-8ea1-92b54a8d38f6",
+      "language": "ja",
+      "setCode": "SM7a",
+      "storageKey": "public/set_logo/c2/83/c2837078226af428dd634691a12b4628e59905004227b370b74840634e119cad/original.png"
+    },
+    {
+      "setId": "f34565be-80cb-47cb-914b-b4c20984cf79",
+      "language": "ja",
+      "setCode": "SM7b",
+      "storageKey": "public/set_logo/84/43/84430cc47d3614513785b693dadb1ca776711c3e6057c10bdbe15a5abc06c2ca/original.png"
+    },
+    {
+      "setId": "3e80bfaf-77fd-4f5d-82ec-4e407a74d722",
+      "language": "ja",
+      "setCode": "SM8",
+      "storageKey": "public/set_logo/a5/ca/a5ca1b18531d458c8dfd97946afd8cbcf81a59c9c99c5ef229dcf107f975ee11/original.png"
+    },
+    {
+      "setId": "3466c5e7-e660-4467-a756-44f4d5f7a853",
+      "language": "ja",
+      "setCode": "SM8a",
+      "storageKey": "public/set_logo/f4/21/f421b7c5383b8b390df2705b899f903dbc101a0f98be304165fcc3a20c779681/original.png"
+    },
+    {
+      "setId": "eb72605f-506f-4ab5-87f7-1aafeb95a278",
+      "language": "ja",
+      "setCode": "SM8b",
+      "storageKey": "public/set_logo/b5/71/b5715a627a55b9580e29b54ff5c49feb8d7c8a7c3e1c6ffce085a34646da98de/original.png"
+    },
+    {
+      "setId": "428cd43a-548e-4482-a81f-0d06b2869835",
+      "language": "ja",
+      "setCode": "SM9",
+      "storageKey": "public/set_logo/e3/fe/e3fe84bd357be731d9066c785f763ca54298ada322a6c793a1f0b669aed68860/original.png"
+    },
+    {
+      "setId": "05f31b7b-957f-4b0d-a321-29ca7edde5d4",
+      "language": "ja",
+      "setCode": "SM9a",
+      "storageKey": "public/set_logo/a3/45/a345070f7e47275b8893951ff3f90fabbec449a242bfdd719ebc57983d8fb334/original.png"
+    },
+    {
+      "setId": "30e027c6-8973-4b8a-93b8-682251f39f28",
+      "language": "ja",
+      "setCode": "SM9b",
+      "storageKey": "public/set_logo/e7/1e/e71eed4f0ee30890dac48eeb1998e239e3779c585e070c8671cd8c9efae11040/original.png"
+    },
+    {
+      "setId": "59ec63a0-5a2a-452b-a03c-90d9264b90da",
+      "language": "ja",
+      "setCode": "SMP2",
+      "storageKey": "public/set_logo/66/6e/666edae7ebefb4aae4c25cd1766a7cae87f1ebe83dc714147fa9e1ea0c3cc14d/original.png"
+    },
+    {
+      "setId": "db4076ae-7ab9-408d-988c-34aa33b7b906",
+      "language": "ja",
+      "setCode": "SV10",
+      "storageKey": "public/set_logo/ed/ca/edcad17ecaec4268068714543ec2065797dc12011762c9830c60a8f05eac61eb/original.png"
+    },
+    {
+      "setId": "9f85e389-ab18-4448-948c-fdc067aa188b",
+      "language": "ja",
+      "setCode": "SV11B",
+      "storageKey": "public/set_logo/8d/fd/8dfd25d5c33e0133dbd6d0e516323c1d3b844cadb14fdcaac58f653fba23d913/original.png"
+    },
+    {
+      "setId": "316ec693-c6dc-408c-aaca-2b57afdb9249",
+      "language": "ja",
+      "setCode": "SV11W",
+      "storageKey": "public/set_logo/da/80/da8072254751028493d841424209e4a86364e3158fabfca947bfe4da260c77f2/original.png"
+    },
+    {
+      "setId": "ca01c7f7-c1b0-4a4a-8aa0-e2c0f617d306",
+      "language": "ja",
+      "setCode": "SV1a",
+      "storageKey": "public/set_logo/a3/58/a35817ec8200002fffb412b2658c9388f312750b570b92816a85f572fcf334a1/original.png"
+    },
+    {
+      "setId": "cf6f4a09-69a3-4497-9c40-beb1221063ea",
+      "language": "ja",
+      "setCode": "SV1S",
+      "storageKey": "public/set_logo/b1/91/b191741f92a43d0cac458611dd90f490827eec2ea1ff3956b281ba2b2222c419/original.png"
+    },
+    {
+      "setId": "fffb3282-3442-41e4-b4a2-9be06199186f",
+      "language": "ja",
+      "setCode": "SV1V",
+      "storageKey": "public/set_logo/32/a3/32a32babe5179c63e1faf66d3794e77b2c65e9693047daf06e9a8e2aa2821a66/original.png"
+    },
+    {
+      "setId": "e42556b8-3e82-44bb-8c52-c06b893ee4a3",
+      "language": "ja",
+      "setCode": "SV2a",
+      "storageKey": "public/set_logo/ca/9f/ca9ff253b81eb9e7e94fe1d3f04b02a2da4b2cffe66c1e35e868ecc02acec189/original.png"
+    },
+    {
+      "setId": "44906e0e-477b-4417-a71d-5330528d3d82",
+      "language": "ja",
+      "setCode": "SV2D",
+      "storageKey": "public/set_logo/dd/f0/ddf0ca32434d57460650161e500b6257967076f2e0f5c1179bd38936fa25bceb/original.png"
+    },
+    {
+      "setId": "a6a65a33-74fa-48d5-bdc0-38d6eaa08ef3",
+      "language": "ja",
+      "setCode": "SV2P",
+      "storageKey": "public/set_logo/ba/8f/ba8fcceae6e57aec5a8ca9849a5363b5312ec1988ddd4394990e869812be451d/original.png"
+    },
+    {
+      "setId": "d1ce7f2b-1f52-452e-9d90-0155bbfdb6e6",
+      "language": "ja",
+      "setCode": "SV3",
+      "storageKey": "public/set_logo/3e/c2/3ec2e4f182d0c2d6615063104b137cb86667c5830c5b06963167612cde80ecb5/original.png"
+    },
+    {
+      "setId": "92afb596-5060-44b4-a53a-12d815e94f52",
+      "language": "ja",
+      "setCode": "SV3a",
+      "storageKey": "public/set_logo/4b/5e/4b5e20a7df4be22b1b11780fc3c8703eadc277f27172019b733e1226baaa0e9b/original.png"
+    },
+    {
+      "setId": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+      "language": "ja",
+      "setCode": "SV4a",
+      "storageKey": "public/set_logo/58/ad/58ad575a292d75e7b2ad24b8d82dfa78061e5435c04c45a211ece2e769c6e39d/original.png"
+    },
+    {
+      "setId": "be25b6d3-a750-48a3-b8af-804ddc355452",
+      "language": "ja",
+      "setCode": "SV4K",
+      "storageKey": "public/set_logo/32/44/32440efd1f3900101dc277a357f27a3ee2100a8d8399c4d524355e0fb5cd2f58/original.png"
+    },
+    {
+      "setId": "344551fb-6b1b-418a-8b59-680096d4c9bf",
+      "language": "ja",
+      "setCode": "SV4M",
+      "storageKey": "public/set_logo/12/99/129980168dc59443b57210a5a944a63407c6e232484b35a8dcbc3ed3fc69c0e0/original.png"
+    },
+    {
+      "setId": "5f94a6e3-99a2-4eba-b6c7-c689dd509da8",
+      "language": "ja",
+      "setCode": "SV5a",
+      "storageKey": "public/set_logo/09/75/0975140fc37d78b28c2733e88b43acca134c618520ce39f8e9172a33b9877235/original.png"
+    },
+    {
+      "setId": "688851ac-3d75-4431-a008-664294279341",
+      "language": "ja",
+      "setCode": "SV5K",
+      "storageKey": "public/set_logo/29/5d/295de2c1858142364a2d126683db50dc7821b42926a89a1f86797e2a8722b651/original.png"
+    },
+    {
+      "setId": "987716a9-9030-4dc8-89c2-db2bdf1a409d",
+      "language": "ja",
+      "setCode": "SV5M",
+      "storageKey": "public/set_logo/5a/36/5a3649776aca012cca38b9880631cb394acecce1d3602957043017ec7d3090bf/original.png"
+    },
+    {
+      "setId": "5b61106a-7ae7-4ee6-90cc-c101fb8738b8",
+      "language": "ja",
+      "setCode": "SV6",
+      "storageKey": "public/set_logo/d2/f5/d2f56615b617abf0d53da2212223df315ab9a22fbcf8db90323228e02e12b892/original.png"
+    },
+    {
+      "setId": "6e698306-d093-44e9-8673-cc513e36bd8d",
+      "language": "ja",
+      "setCode": "SV6a",
+      "storageKey": "public/set_logo/42/2d/422d1d4448afa4d1deeca73ff8c82b87baf575a0ecb981894b7b8a160701193f/original.png"
+    },
+    {
+      "setId": "f09d1e6a-c76e-4a2d-bb45-971e54983c2d",
+      "language": "ja",
+      "setCode": "SV7",
+      "storageKey": "public/set_logo/d9/1f/d91f2119f109571fda44749aaf21ec487a287a08fb81622ea96d2cefa115132a/original.png"
+    },
+    {
+      "setId": "98a82354-b058-4bda-ad66-359a7bd7c36f",
+      "language": "ja",
+      "setCode": "SV7a",
+      "storageKey": "public/set_logo/b1/ec/b1ecfa23cde9fee021a3a48231b1872824d569227ef553cb19dcbe40593d7672/original.png"
+    },
+    {
+      "setId": "5f0817f3-5386-4a29-9391-0529c5fcb98b",
+      "language": "ja",
+      "setCode": "SV8",
+      "storageKey": "public/set_logo/4d/bc/4dbc3482f0be1771c12622cc50fe148d45d15ce0d7ae3b18b7c623fe24273255/original.png"
+    },
+    {
+      "setId": "a7459948-3544-4122-8fec-7fc6aecfd2e5",
+      "language": "ja",
+      "setCode": "SV8a",
+      "storageKey": "public/set_logo/6f/ba/6fbaba41772543aae0c167257432932768283561a1a325544e4bff57059bc699/original.png"
+    },
+    {
+      "setId": "a65593d7-236b-4891-9c88-670650f4faaf",
+      "language": "ja",
+      "setCode": "SV9",
+      "storageKey": "public/set_logo/61/03/61031490a1b0f3cb42df7c328e0c72235725950e28baceb0123e8a2eb4d672ce/original.png"
+    },
+    {
+      "setId": "ff9ddb2d-d5c3-4c2c-bc48-89e68ea03d96",
+      "language": "ja",
+      "setCode": "SV9a",
+      "storageKey": "public/set_logo/60/cf/60cfe61eb33e2ae19f63228c4d5797a979e509b46161c213c8277ece26f39fc0/original.png"
+    },
+    {
+      "setId": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+      "language": "ja",
+      "setCode": "VS1",
+      "storageKey": "public/set_logo/9d/d2/9dd2d09e257139b23f8ebdbc32ac2a6b5b5515b5601cb7f962e555962ad203d1/original.png"
+    },
+    {
+      "setId": "f2f1d254-4bf3-474f-8ac1-5302b66caadf",
+      "language": "ja",
+      "setCode": "XY10",
+      "storageKey": "public/set_logo/f1/68/f168fceec81d94a20079fe387825a092f1aff1e0d9a24b346bd73554edc6d58b/original.png"
+    },
+    {
+      "setId": "25233d9e-6a9e-459e-83fd-cb2a27353955",
+      "language": "ja",
+      "setCode": "XY11a",
+      "storageKey": "public/set_logo/3a/84/3a846bbc10e5c3665369747d6824b126da6e7d4eb7a9330fdcc240ae757c609b/original.png"
+    },
+    {
+      "setId": "9eaba296-0320-44ac-a684-004b5493703b",
+      "language": "ja",
+      "setCode": "XY11b",
+      "storageKey": "public/set_logo/c8/13/c8132bd72faf32f2bcd71ccf7bef38705cab49d9e3392563ed255f2c851f9fa6/original.png"
+    },
+    {
+      "setId": "80507fc7-d1db-433d-9374-4efa9ee190b4",
+      "language": "ja",
+      "setCode": "XY1a",
+      "storageKey": "public/set_logo/9d/8f/9d8f466741728faa607d34b3c24a9355b51e5fda49dc1f757cff94a742d9558d/original.png"
+    },
+    {
+      "setId": "3ee8597c-8aef-4c8c-84a7-07b9870cb35c",
+      "language": "ja",
+      "setCode": "XY1b",
+      "storageKey": "public/set_logo/60/10/60108d60895d65bd7175404f0906c49eebd7f5387957e5e5a11a9b55bd090368/original.png"
+    },
+    {
+      "setId": "08b708f9-3971-4219-926d-4f7accbecaf1",
+      "language": "ja",
+      "setCode": "XY2",
+      "storageKey": "public/set_logo/31/45/3145ba7a3593247cf2de6cbba15e14f527e0a74ac04202d4523d7100b1e83cf3/original.png"
+    },
+    {
+      "setId": "38994222-f21c-45b7-9546-8033947af026",
+      "language": "ja",
+      "setCode": "XY3",
+      "storageKey": "public/set_logo/92/b9/92b95ce01c37553c3658adf063503b44db7615a5eab7b9c26a0b06ba103cca52/original.png"
+    },
+    {
+      "setId": "4456ff35-8059-4c89-bf32-72ee17974c9f",
+      "language": "ja",
+      "setCode": "XY4",
+      "storageKey": "public/set_logo/ba/81/ba81152038ef94164fd7ce1936ee4d7c167b83118d87e543768f443e10f1482e/original.png"
+    },
+    {
+      "setId": "29935849-0eac-4671-b4d0-8bdee32d6cb4",
+      "language": "ja",
+      "setCode": "XY5a",
+      "storageKey": "public/set_logo/b3/5f/b35fc8c6fb2f398e5ffec28fb898d8776df9e5936a2e552baec024bc486764a7/original.png"
+    },
+    {
+      "setId": "a930e0e2-ed87-4a87-89ef-493b529eee93",
+      "language": "ja",
+      "setCode": "XY5b",
+      "storageKey": "public/set_logo/f6/01/f601d28dd1ee6a5064e6d1e75ce43ce4ab70bb662a4ae5488ad5d56868ef1541/original.png"
+    },
+    {
+      "setId": "1b5bed18-c3ec-4a9f-a022-caf94a6199f8",
+      "language": "ja",
+      "setCode": "XY6",
+      "storageKey": "public/set_logo/41/67/4167ef6cdc004ea3f0a4185305f5334c8ad8f1857e613e6ca31d9e83e5d58898/original.png"
+    },
+    {
+      "setId": "ae0e96bd-371a-44ca-8090-e773a4f10d5e",
+      "language": "ja",
+      "setCode": "XY7",
+      "storageKey": "public/set_logo/45/49/4549b8accb2f94e5622ffbd27a257d8633356169b07c6ad062fee16c5148d903/original.png"
+    },
+    {
+      "setId": "13ef05bd-d69c-4a8f-aa8d-67b7d3cded50",
+      "language": "ja",
+      "setCode": "XY8a",
+      "storageKey": "public/set_logo/c8/de/c8de2ea21b799b429506a3a41aa9d4ae74269d56d8b1ad56b1487bc58143ad8e/original.png"
+    },
+    {
+      "setId": "dbd76042-7f79-4dae-bbf4-5a096bc58e12",
+      "language": "ja",
+      "setCode": "XY8b",
+      "storageKey": "public/set_logo/9e/f8/9ef89041cbe33e9ea7e05924a5d12926021666c92efc98e2471e59d59216d72f/original.png"
+    },
+    {
+      "setId": "9cacae59-fc63-4335-ade1-d5f81373c247",
+      "language": "ja",
+      "setCode": "XY9",
+      "storageKey": "public/set_logo/f1/6b/f16b8df0dd68551b21e452b9b822320512afe74c907520571e73d13f70f7c31a/original.png"
+    }
+  ]
+}

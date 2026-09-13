@@ -57,7 +57,7 @@ export const COLLECTOR_TABS: Array<{ key: CollectorTabKey; label: string; route:
   { key: 'home', label: 'Home', route: ROUTES.home },
   { key: 'collection', label: 'Collection', route: ROUTES.collection },
   { key: 'scan', label: 'Scan', route: ROUTES.scanWorkspace },
-  { key: 'market', label: 'The Market', route: ROUTES.market },
+  { key: 'market', label: 'Market', route: ROUTES.market },
   { key: 'search', label: 'Search', route: ROUTES.search },
 ];
 
@@ -65,5 +65,5 @@ export const SELLER_TABS: Array<{ key: SellerTabKey; label: string; route: Href 
   { key: 'dashboard', label: 'Home', route: ROUTES.sellerDashboard },
   { key: 'inventory', label: 'Inventory', route: ROUTES.sellerInventory },
   { key: 'scan', label: 'Scan', route: ROUTES.scanSellerIn },
-  { key: 'listings', label: 'The Market', route: ROUTES.sellerListings },
+  { key: 'listings', label: 'Market', route: ROUTES.sellerListings },
 ];
