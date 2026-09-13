@@ -14,12 +14,12 @@ try {
   ].map((row) => JSON.stringify(row)).join('\n') + '\n');
   const result = auditJapaneseSetLogoRuntimeCoverage({ evidencePath, outputDir, expectedTargetSetCount: 2 });
   assert.equal(result.target_set_count, 2);
-  assert.equal(result.manifest_logo_count, 204);
+  assert.equal(result.manifest_logo_count, 223);
   assert.equal(result.before.matched_current_sets, 1);
   assert.equal(result.after.matched_current_sets, 1);
   assert.deepEqual(result.proposed_exact_aliases, []);
   assert.deepEqual(result.resolution_counts, { exact_key: 1, exact_alias: 0, unique_manifest_code: 0, ambiguous_manifest_code: 1, no_manifest_bound_exact_identity: 0 });
-  assert.equal(result.unused_manifest_logo_count, 203);
+  assert.equal(result.unused_manifest_logo_count, 222);
   assert.equal(existsSync(join(outputDir, 'manifest.json')), true);
   const rows = JSON.parse(readFileSync(join(outputDir, 'japanese-set-logo-runtime-coverage.json'), 'utf8'));
   assert.equal(rows.find((row: { set_code: string }) => row.set_code === 'MG')?.resolution, 'ambiguous_manifest_code');

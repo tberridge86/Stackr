@@ -8,7 +8,7 @@ import {
   resolveOwnerExactQueueItem,
   resolveOwnedProviderVariant,
 } from './lib/owner-provider-price-refresh-core.mjs';
-import { selectOwnedCandidatesBySnapshot, runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
+import { readOwnedRows, selectOwnedCandidatesBySnapshot, runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
 
 const workflow = readFileSync('.github/workflows/owner-provider-price-refresh.yml', 'utf8');
 assert.match(workflow, /schedule:\s*\n(?:[^\n]*\n)*?\s+- cron: '\*\/10 \* \* \* \*'/, 'the exact Home queue must have a bounded scheduled consumer');
@@ -75,6 +75,25 @@ function query(data) {
   };
   return chain;
 }
+let ownerScanLimit = null;
+const threeHundredAndNineRows = Array.from({ length: 309 }, (_, index) => ({ id: `row-${index}` }));
+const scanSupabase = {
+  from(name) {
+    const chain = query(name === 'user_card_variants' ? threeHundredAndNineRows : []);
+    const originalLimit = chain.limit;
+    chain.limit = (value) => { ownerScanLimit = value; return originalLimit(value); };
+    return chain;
+  },
+};
+assert.equal((await readOwnedRows(scanSupabase, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')).length, 309,
+  'a 309-row owner collection is fully considered rather than shrinking with the 26-card provider batch');
+assert.equal(ownerScanLimit, 1001, 'the owner scan reads a bounded 1000 rows plus a sentinel');
+const cappedScanSupabase = { from() { return query(Array.from({ length: 1000 }, (_, index) => ({ id: `capped-${index}` }))); } };
+await assert.rejects(
+  readOwnedRows(cappedScanSupabase, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+  /safe result bound/,
+  'a project-level 1000-row cap fails closed instead of omitting owner cards',
+);
 const supabase = {
   from(name) { return query(name === 'user_card_variants' ? [owned, owned] : []); },
   schema() { return { from(name) { return query(name === 'catalogue_external_identifiers' ? identifiers : catalogue); } }; },

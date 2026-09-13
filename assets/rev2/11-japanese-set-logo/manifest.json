@@ -1,7 +1,7 @@
 {
   "sourceDirectory": "D:\\Stackr-1\\assets\\rev2\\11-japanese-set-logo",
   "logoDirectory": "D:\\Stackr-1\\assets\\rev2\\11-japanese-set-logo\\logos",
-  "totalUniqueLogos": 204,
+  "totalUniqueLogos": 223,
   "duplicateSourceCount": 7,
   "logos": [
     {
@@ -3942,6 +3942,215 @@
       },
       "width": 1000,
       "height": 598
+    },
+    {
+      "key": "svls",
+      "normalizedKey": "svls",
+      "listedName": "Stellar Ceruledge ex Starter Set",
+      "code": "SVLS",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/svls.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "svln",
+      "normalizedKey": "svln",
+      "listedName": "Stellar Sylveon ex Starter Set",
+      "code": "SVLN",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/svln.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "svk",
+      "normalizedKey": "svk",
+      "listedName": "Stellar Miracle Deck Build Box",
+      "code": "SVK",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/svk.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg1",
+      "normalizedKey": "pcg1",
+      "listedName": "Flight of Legends",
+      "code": "PCG1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg1.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg2",
+      "normalizedKey": "pcg2",
+      "listedName": "Clash of the Blue Sky",
+      "code": "PCG2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg2.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg3",
+      "normalizedKey": "pcg3",
+      "listedName": "Rocket Gang Strikes Back",
+      "code": "PCG3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg3.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg4",
+      "normalizedKey": "pcg4",
+      "listedName": "Golden Sky, Silvery Ocean",
+      "code": "PCG4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg4.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg5",
+      "normalizedKey": "pcg5",
+      "listedName": "Mirage Forest",
+      "code": "PCG5",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg5.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg6",
+      "normalizedKey": "pcg6",
+      "listedName": "Holon Research Tower",
+      "code": "PCG6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg6.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg7",
+      "normalizedKey": "pcg7",
+      "listedName": "Holon Phantom",
+      "code": "PCG7",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg7.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg8",
+      "normalizedKey": "pcg8",
+      "listedName": "Miracle Crystal",
+      "code": "PCG8",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg8.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg9",
+      "normalizedKey": "pcg9",
+      "listedName": "Offense and Defense of the Furthest Ends",
+      "code": "PCG9",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg9.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "pcg10",
+      "normalizedKey": "pcg10",
+      "listedName": "World Champions Pack",
+      "code": "PCG10",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pcg10.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "adv2",
+      "normalizedKey": "adv2",
+      "listedName": "Miracle of the Desert",
+      "code": "ADV2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/adv2.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "adv3",
+      "normalizedKey": "adv3",
+      "listedName": "Rulers of the Heavens",
+      "code": "ADV3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/adv3.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "e3",
+      "normalizedKey": "e3",
+      "listedName": "Wind from the Sea",
+      "code": "E3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/e3.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "e4",
+      "normalizedKey": "e4",
+      "listedName": "Split Earth",
+      "code": "E4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/e4.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "e5",
+      "normalizedKey": "e5",
+      "listedName": "Mysterious Mountains",
+      "code": "E5",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/e5.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
+    },
+    {
+      "key": "web1",
+      "normalizedKey": "web1",
+      "listedName": "Pokemon Card Web",
+      "code": "WEB1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/web1.png",
+      "sourceFile": "user-provided prepared artwork (2026-09-13)",
+      "sourceKind": "user_provided_prepared_artwork",
+      "sourceIdentity": "exact_japanese_set_code",
+      "sourceReviewStatus": "user_authorized_runtime_presentation_only"
     }
   ]
 }
