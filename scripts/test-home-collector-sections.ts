@@ -55,7 +55,7 @@ function loadComponents(path: string): Record<string, (props: Record<string, unk
   const compiled = transformSync(readFileSync(componentPath, 'utf8'), { loader: 'tsx', format: 'cjs', target: 'es2022' }).code;
   const originalLoad = (Module as unknown as { _load: Function })._load;
   (Module as unknown as { _load: Function })._load = function mockLoad(request: string, parent: unknown, isMain: boolean) {
-    if (/\.png$/.test(request)) return 1;
+    if (/\.(png|webp)$/.test(request)) return 1;
     return request in mocks ? mocks[request] : originalLoad.call(this, request, parent, isMain);
   };
   try {

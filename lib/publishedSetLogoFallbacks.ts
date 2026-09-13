@@ -1,8 +1,9 @@
 import published from './generated/publishedSetLogos.generated.json';
 import simplifiedCovers from './generated/publishedSimplifiedChineseCovers.generated.json';
+import { MOBILE_RUNTIME_CONFIG } from './mobileRuntimeConfig';
 
 type SetIdentity = { id?: string | null; setId?: string | null; setCode?: string | number | null; language?: string | null };
-const STORAGE_ROOT = 'https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/';
+const STORAGE_ROOT = `${MOBILE_RUNTIME_CONFIG.supabaseUrl}/storage/v1/object/public/stackr-catalogue-public/`;
 const normalize = (value: unknown) => String(value ?? '').trim().toLowerCase();
 const languageOf = (value: unknown) => {
   const language = normalize(value).replace(/_/g, '-');
