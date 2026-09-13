@@ -88,5 +88,26 @@ gateway version `adb42a22-b609-4aea-b2ba-0c5a7b8a23d2`, deployment
 `e498ea36-b7a7-4421-a09f-a656f9b44d9b`; owner update group
 `f9a7ee27-d599-420f-8040-7d41f1fb335b`.
 
-Current state: implemented and locally tested; current-turn PR, merge, backend,
-gateway and mobile delivery receipts remain pending. Device verification pending.
+## Release candidate receipt
+
+- PR: [#196](https://github.com/tberridge86/Stackr/pull/196), runtime source
+  `0768b4011ea964f898f03bf0563e4477cf8ab584`.
+- Candidate native build: [1.0.3 (38)](https://expo.dev/accounts/tommo86/projects/Stackr/builds/338bc856-e60d-4dc0-baa9-185b3b8f7fe1),
+  ID `338bc856-e60d-4dc0-baa9-185b3b8f7fe1`, profile `production-owner`,
+  source `0768b4011ea964f898f03bf0563e4477cf8ab584`. Uploaded and compiling;
+  it has not been submitted to TestFlight. Building the candidate does not
+  authorize distribution before the release checks pass.
+- Compatible iOS export SHA-256:
+  `7cf92b8c951849c7a2ac45927cd4a5c6b5b6d8ee0222f70c0d624f2cf639d23c`.
+  It uses the existing owner runtime and contains 568 referenced assets.
+- Secret scanning passed for all 47 changed source files. The full repository
+  scanner cannot enumerate absent sparse-checkout files locally; GitHub must run
+  the complete check.
+- GitHub accepted the PR and later the ready-for-review transition, but the
+  original Platform CI run `34748687734` remains queued with no jobs on the
+  latest read. Its cancellation/retry endpoints return contradictory completed /
+  already-running errors. This receipt update requests a fresh PR check run;
+  no checks are waived or fabricated.
+
+Current state: implemented, locally tested and candidate build running. Merge,
+backend, gateway, mobile publication and device verification remain pending.
