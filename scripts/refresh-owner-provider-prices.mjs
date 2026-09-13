@@ -16,7 +16,7 @@ import {
 const require = createRequire(import.meta.url);
 const { createMarketPricingService } = require('../backend/lib/marketPricing/service.js');
 const PRODUCTION_PROJECT_REF = 'oakdbbzdqwurpjnoqhmu';
-const OWNED_SCAN_MULTIPLIER = 10;
+const OWNED_SCAN_MAX_ROWS = 1000;
 const OWNED_SNAPSHOT_READ_MAX_ROWS = 1000;
 const QUEUE_MAX_ATTEMPTS = 5;
 const UNAVAILABLE_PROVIDER_CODES = new Set(['unresolved_provider_identity', 'ambiguous_provider_identity', 'exact_provider_quote_unavailable']);
@@ -58,16 +58,23 @@ async function queryRows(query) {
   return data ?? [];
 }
 
-async function readOwnedRows(supabase, ownerId, limit) {
+export async function readOwnedRows(supabase, ownerId) {
   // This is a candidate scan, never a provider-pull limit. It remains bounded
   // so a corrupted owner collection cannot turn a scheduled run into a broad
   // catalogue refresh.
-  return queryRows(supabase.from('user_card_variants')
+  const rows = await queryRows(supabase.from('user_card_variants')
     .select('id,card_id,set_id,variant,quantity,condition,grade_company,grade,updated_at')
     .eq('user_id', ownerId)
     .gt('quantity', 0)
     .order('updated_at', { ascending: false })
-    .limit(limit * OWNED_SCAN_MULTIPLIER));
+    .limit(OWNED_SCAN_MAX_ROWS + 1));
+  // A project max_rows setting can cap a requested 1001 rows at 1000. At that
+  // boundary we cannot prove the full owner collection was read, so stop
+  // before a partial scan drives an "all prices" refresh claim.
+  if (rows.length >= OWNED_SCAN_MAX_ROWS) {
+    throw new Error('Owner price refresh scan reached its safe result bound.');
+  }
+  return rows;
 }
 
 async function resolveOwnedCandidates(supabase, ownedRows) {
@@ -276,7 +283,7 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
   const resolvedQueue = includeQueue ? await resolveOwnerQueue(supabase, queueRows, ownerId) : [];
   const validQueue = resolvedQueue.filter((item) => item.ok);
   const invalidQueue = resolvedQueue.filter((item) => !item.ok);
-  const ownedRows = queueOnly ? [] : await readOwnedRows(supabase, ownerId, limit);
+  const ownedRows = queueOnly ? [] : await readOwnedRows(supabase, ownerId);
   const resolved = queueOnly ? [] : await resolveOwnedCandidates(supabase, ownedRows);
   // The same owned identity can appear through multiple binder rows. One
   // exact provider snapshot is sufficient for that canonical variant.
