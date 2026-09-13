@@ -120,5 +120,9 @@ assets/rev2/Places/
 assets/rev2/Tiered Trades/
 assets/rev2/mascot/
 
+# Dormant achievement source exports are not imported by the mobile runtime.
+# Keep the originals in Git while omitting 194 MiB from native uploads.
+assets/rev2/07-achievements/
+
 # Firebase admin service account files are server-side only.
 stackr-*-firebase-adminsdk-*.json

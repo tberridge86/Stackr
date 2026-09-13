@@ -813,7 +813,7 @@ export function ValueTrackerCard({
             accessibilityHint="Opens the full Minty recommendation and supporting signals."
             style={[styles.vaultInsightRow, isCompactLayout && styles.vaultInsightRowCompact, { backgroundColor: theme.colors.card, borderColor: `${theme.colors.primary}24` }]}
           >
-            <Animated.View style={[styles.vaultInsightIcon, { transform: [{ translateY: mintyIdle.interpolate({ inputRange: [0, 1], outputRange: [0, -3] }) }, { rotate: mintyIdle.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '1deg'] }) }] }]}>
+            <Animated.View style={[styles.vaultInsightIcon, { transform: [{ translateY: mintyIdle.interpolate({ inputRange: [0, 1], outputRange: [0, -5] }) }, { rotate: mintyIdle.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '1.5deg'] }) }] }]}>
               <Image source={MINTY_REV2_SOURCE} style={styles.vaultInsightMascot} resizeMode="contain" />
             </Animated.View>
             <View style={{ flex: 1, minWidth: 0 }}>
