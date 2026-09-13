@@ -27,7 +27,7 @@ function sourceLogos(path: string): { logos: Logo[]; aliases: Record<string, str
   const source = readFileSync(path, 'utf8');
   const logos = [...source.matchAll(/^  "([^"]+)": \{\r?\n    key: "([^"]+)",\r?\n    normalizedKey: "([^"]+)",[\s\S]*?\r?\n    code: "([^"]+)",\r?\n    source: require\('\.\.\/assets\/(rev2\/11-japanese-set-logo\/logos\/[^']+\.png)'\)/gm)]
     .map((match) => ({ key: match[2], normalizedKey: match[3], code: match[4], assetPath: `assets/${match[5]}` }));
-  if (logos.length !== 204 || new Set(logos.map((logo) => logo.normalizedKey)).size !== logos.length) throw new Error('Japanese logo runtime source must expose exactly 204 unique manifest keys.');
+  if (logos.length !== 223 || new Set(logos.map((logo) => logo.normalizedKey)).size !== logos.length) throw new Error('Japanese logo runtime source must expose exactly 223 unique manifest keys.');
   const aliases = Object.fromEntries([...source.matchAll(/^  "([^"]+)": "([^"]+)",\r?$/gm)].map((match) => [match[1], match[2]]));
   return { logos, aliases };
 }
