@@ -52,7 +52,7 @@ const manifest: ModelManifest = {
 const catalogue: CatalogueManifest = {
   id: 'test-catalogue',
   name: 'Test catalogue',
-  version: 'catalogue-test-v1',
+  version: 'test-catalogue-v1',
   createdAt: '2026-07-26',
   languages: ['en'],
   sources: ['test'],
