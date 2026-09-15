@@ -159,7 +159,7 @@ test('printing-ID queries are bounded to 100 IDs per request', async () => {
 test('the production worker wires the printing reader into candidate resolution', () => {
   const source = readFileSync(new URL('./refresh-owner-provider-prices.mjs', import.meta.url), 'utf8');
   assert.match(source, /import \{ readOwnerPrintingCatalogue \} from '\.\/lib\/owner-price-printing-identities\.mjs'/);
-  assert.match(source, /await readOwnerPrintingCatalogue\(supabase, ownedRows, identifierRows, directCatalogueRows\)/);
+  assert.match(source, /await readOwnerPrintingCatalogue\(supabase, referenceRows, identifierRows, directCatalogueRows\)/);
   assert.match(source, /const catalogueRows = \[\.\.\.directCatalogueRows, \.\.\.printingCatalogueRows, \.\.\.legacyCatalogueRows\]/);
   assert.match(source, /identifierRows\.length >= 1000/);
   assert.match(source, /directCatalogueRows\.length >= 1000/);
