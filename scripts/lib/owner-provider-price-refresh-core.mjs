@@ -140,22 +140,44 @@ export function resolveOwnedProviderVariant(row, identifierRows, catalogueRows) 
   const allowedSetIds = publishedSetIds(identifierRows, row.set_id, englishPair?.setAliases);
   if (!allowedSetIds.size) return { ok: false, reason: 'unresolved_saved_set' };
 
+  const cardIdentifiers = (identifierRows ?? [])
+    .filter((item) => normalise(item?.external_id) === savedCardId)
+    .filter((item) => normalise(item?.source_entity_type) === 'card');
   const candidateIds = isUuid(savedCardId)
     ? [savedCardId]
-    : [...new Set((identifierRows ?? [])
-      .filter((item) => String(item?.external_id ?? '').trim().toLowerCase() === savedCardId)
-      .filter((item) => normalise(item?.source_entity_type) === 'card')
-      .map((item) => String(item?.variant_id ?? '').trim().toLowerCase())
-      .filter(isUuid))];
-  const directCandidates = (catalogueRows ?? []).filter((card) => candidateIds.includes(String(card?.variant_id ?? '').toLowerCase()));
+    : [...new Set(cardIdentifiers.map((item) => normalise(item?.variant_id)).filter(isUuid))];
+  const aliasScopeMatches = (alias, card) => (
+    (!normalise(alias.set_id) || normalise(alias.set_id) === normalise(card.set_id))
+    && (!normalise(alias.printing_id) || normalise(alias.printing_id) === normalise(card.printing_id))
+    && (!normalise(alias.language_code) || normalise(alias.language_code) === normalise(card.language_code))
+  );
+  const directCandidates = (catalogueRows ?? [])
+    .filter((card) => candidateIds.includes(normalise(card?.variant_id)))
+    .filter((card) => isUuid(savedCardId) || cardIdentifiers.some((alias) => (
+      normalise(alias.variant_id) === normalise(card.variant_id) && aliasScopeMatches(alias, card)
+    )));
+  // Published aliases can identify a printing without naming a physical
+  // variant. Reuse that mapping only for its single attested normal finish.
+  // An alias with an explicit (even invalid) variant must never broaden to
+  // a sibling normal finish when the requested variant is unavailable.
+  const printingAliases = cardIdentifiers
+    .filter((alias) => !normalise(alias.variant_id) && isUuid(alias.printing_id));
+  const savedPrintingId = isUuid(savedCardId) && !directCandidates.length ? savedCardId : null;
+  const printingCandidates = (catalogueRows ?? [])
+    .filter((card) => (savedPrintingId && normalise(card.printing_id) === savedPrintingId)
+      || printingAliases.some((alias) => normalise(alias.printing_id) === normalise(card.printing_id)
+        && aliasScopeMatches(alias, card)))
+    .filter((card) => ['standard', 'default', 'normal'].includes(normalise(card.variant_code)))
+    .filter((card) => ['standard', 'default', 'normal', 'non_holo'].includes(normalise(card.finish_code)));
   const legacyCandidates = englishPair
     ? (catalogueRows ?? []).filter((card) => allowedSetIds.has(String(card?.set_id ?? '').toLowerCase()))
       .filter((card) => normalise(card?.language_code) === 'en')
       .filter((card) => sameCollectorNumber(card?.collector_number, englishPair.collectorNumber))
     : [];
-  if (!candidateIds.length && !legacyCandidates.length) return { ok: false, reason: 'unresolved_saved_card' };
+  if (!candidateIds.length && !printingAliases.length && !legacyCandidates.length) return { ok: false, reason: 'unresolved_saved_card' };
 
-  const candidates = [...directCandidates, ...legacyCandidates]
+  const candidates = [...directCandidates, ...printingCandidates, ...legacyCandidates]
+    .filter((card) => isUuid(card?.variant_id))
     .filter((card) => allowedSetIds.has(String(card?.set_id ?? '').toLowerCase()))
     .filter((card) => Boolean(String(card?.language_code ?? '').trim()))
     .filter((card) => NORMAL_CODES.has(normalise(card?.variant_code)))
