@@ -28,9 +28,13 @@ jobs:
         run: npm ci
       - name: Install locked backend dependencies
         run: npm ci --prefix backend
-      # Both suites use fixtures/mocks. No production environment, service
+      # All suites use fixtures/mocks. No production environment, service
       # credentials, provider calls, refresh job or deployment is configured.
       - name: Existing owner worker regression
         run: npm run test:owner-provider-price-refresh
       - name: Printing identity and rejection regressions
         run: node --test scripts/test-owner-price-printing-identities.mjs
+      - name: Language-scoped saved reference regressions
+        run: node --test scripts/test-owner-price-saved-references.mjs
+      - name: Actual worker scoped-identity integration
+        run: node --test scripts/test-owner-price-scoped-worker.mjs
