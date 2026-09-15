@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
+import { readOwnerPrintingCatalogue } from './lib/owner-price-printing-identities.mjs';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 import {
   isUuid,
@@ -90,6 +91,8 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
       .limit(5000))
     : [];
 
+  if (identifierRows.length >= 1000) throw new Error('Owner identifier read reached its safe result bound.');
+
   const provisionalVariantIds = [...new Set([
     ...rowsNeedingIdentity.map((row) => String(row.card_id ?? '').toLowerCase()).filter(isUuid),
     ...identifierRows
@@ -99,10 +102,12 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
   ])];
   const directCatalogueRows = provisionalVariantIds.length
     ? await queryRows(supabase.schema('api').from('catalogue_cards')
-      .select('variant_id,set_id,language_code,variant_code,finish_code')
+      .select('variant_id,printing_id,set_id,language_code,variant_code,finish_code')
       .in('variant_id', provisionalVariantIds)
       .limit(5000))
     : [];
+  if (directCatalogueRows.length >= 1000) throw new Error('Owner variant read reached its safe result bound.');
+  const printingCatalogueRows = await readOwnerPrintingCatalogue(supabase, ownedRows, identifierRows, directCatalogueRows);
   const legacySetReferences = new Set(rowsNeedingIdentity
     .flatMap((row) => legacyEnglishOwnerPair(row)?.setAliases ?? [])
     .map((value) => String(value).toLowerCase()));
@@ -122,7 +127,7 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
       .eq('language_code', 'en')
       .limit(1000)));
   }
-  const catalogueRows = [...directCatalogueRows, ...legacyCatalogueRows];
+  const catalogueRows = [...directCatalogueRows, ...printingCatalogueRows, ...legacyCatalogueRows];
   return ownedRows.map((row) => resolveOwnedProviderVariant(row, identifierRows, catalogueRows));
 }
 
