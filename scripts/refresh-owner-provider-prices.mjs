@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { readOwnerPrintingCatalogue } from './lib/owner-price-printing-identities.mjs';
+import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant } from './lib/owner-price-saved-references.mjs';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 import {
   isUuid,
@@ -10,7 +11,6 @@ import {
   ownedRowEligibility,
   parseOwnerPriceRefreshArguments,
   resolveOwnerExactQueueItem,
-  resolveOwnedProviderVariant,
   summariseOwnerPriceRefresh,
 } from './lib/owner-provider-price-refresh-core.mjs';
 
@@ -80,7 +80,8 @@ export async function readOwnedRows(supabase, ownerId) {
 
 async function resolveOwnedCandidates(supabase, ownedRows) {
   const rowsNeedingIdentity = ownedRows.filter((row) => !ownedRowEligibility(row));
-  const externalIds = [...new Set(rowsNeedingIdentity.flatMap((row) => [
+  const referenceRows = rowsNeedingIdentity.flatMap(ownerIdentityLookupRows);
+  const externalIds = [...new Set(referenceRows.flatMap((row) => [
     row.card_id, row.set_id, ...(legacyEnglishOwnerPair(row)?.setAliases ?? []),
   ])
     .map((value) => String(value ?? '').trim()).filter(Boolean))];
@@ -94,7 +95,7 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
   if (identifierRows.length >= 1000) throw new Error('Owner identifier read reached its safe result bound.');
 
   const provisionalVariantIds = [...new Set([
-    ...rowsNeedingIdentity.map((row) => String(row.card_id ?? '').toLowerCase()).filter(isUuid),
+    ...referenceRows.map((row) => String(row.card_id ?? '').toLowerCase()).filter(isUuid),
     ...identifierRows
     .filter((row) => String(row?.variant_id ?? '').trim())
     .map((row) => String(row.variant_id).toLowerCase())
@@ -107,8 +108,8 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
       .limit(5000))
     : [];
   if (directCatalogueRows.length >= 1000) throw new Error('Owner variant read reached its safe result bound.');
-  const printingCatalogueRows = await readOwnerPrintingCatalogue(supabase, ownedRows, identifierRows, directCatalogueRows);
-  const legacySetReferences = new Set(rowsNeedingIdentity
+  const printingCatalogueRows = await readOwnerPrintingCatalogue(supabase, referenceRows, identifierRows, directCatalogueRows);
+  const legacySetReferences = new Set(referenceRows
     .flatMap((row) => legacyEnglishOwnerPair(row)?.setAliases ?? [])
     .map((value) => String(value).toLowerCase()));
   const legacySetIds = [...new Set(identifierRows
@@ -128,7 +129,7 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
       .limit(1000)));
   }
   const catalogueRows = [...directCatalogueRows, ...printingCatalogueRows, ...legacyCatalogueRows];
-  return ownedRows.map((row) => resolveOwnedProviderVariant(row, identifierRows, catalogueRows));
+  return ownedRows.map((row) => resolveScopedOwnedProviderVariant(row, identifierRows, catalogueRows));
 }
 
 async function readOwnerQueue(supabase, ownerId, limit) {
