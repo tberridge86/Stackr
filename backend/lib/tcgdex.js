@@ -133,7 +133,13 @@ async function fetchJson(path, { timeoutMs = null, isolateInflight = false, forc
     try {
       const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: controller?.signal });
       const text = await response.text();
-      if (!response.ok) throw new Error(`TCGdex request failed (${response.status}): ${text.slice(0, 240)}`);
+      if (!response.ok) {
+        const error = new Error('TCGdex request failed');
+        error.status = response.status;
+        error.code = 'tcgdex_http_error';
+        error.retryAfter = response.headers.get('retry-after');
+        throw error;
+      }
       const value = text ? JSON.parse(text) : null;
       tcgdexCache.set(url, { value, expiresAt: Date.now() + TCGDEX_CACHE_TTL_MS });
       return value;
@@ -700,19 +706,36 @@ export function summariseTcgdexNormalPricing(card, language = 'en') {
   };
 }
 
-export async function fetchTcgdexNormalCardPrice({ cardId, language = 'en', timeoutMs = 12_000 }) {
+export function summariseTcgdexExactVariantPricing(card, language, variantCode = 'normal') {
+  if (variantCode === 'normal') return summariseTcgdexNormalPricing(card, language);
+  // Cardmarket's historical *-holo fields do not prove reverse-vs-holo.
+  // Admit only an explicit TCGplayer finish on the exact English card.
+  const keys = { holo: ['holofoil', 'holo'], reverse_holo: ['reverse-holofoil', 'reverseHolofoil', 'reverse_holofoil'] }[variantCode];
+  if (language !== 'en' || !keys || card?.variants?.[variantCode === 'holo' ? 'holo' : 'reverse'] !== true) return null;
+  const matches = getTcgplayerVariants(card.pricing).filter((entry) => keys.includes(entry.variant));
+  if (matches.length !== 1) return null;
+  const entry = matches[0];
+  const price = entry.marketGbp ?? entry.midGbp ?? entry.lowGbp;
+  if (!Number.isFinite(price) || price <= 0 || !['GBP','USD','EUR'].includes(String(entry.currency).toUpperCase())) return null;
+  return { providerCardId: card.id, providerSetId: card.set?.id, language: card.language ?? language, number: card.localId,
+    variantCode, price, priceSource: entry.source, sourceCurrency: entry.currency, pricingUpdatedAt: entry.updatedAt,
+    tcg_low: entry.lowGbp, tcg_mid: entry.marketGbp ?? entry.midGbp, raw: card };
+}
+
+export async function fetchTcgdexNormalCardPrice({ cardId, language = 'en', variantCode = 'normal', timeoutMs = 12_000 }) {
   const lang = normalizeLanguage(language);
   if (!cardId) return null;
   try {
     const card = await fetchJson(`/${lang}/cards/${encodeURIComponent(String(cardId).trim())}`, { timeoutMs, isolateInflight: true, forceRefresh: true });
     if (!card?.id) return null;
-    return summariseTcgdexNormalPricing(card, lang);
+    return summariseTcgdexExactVariantPricing(card, lang, variantCode);
   } catch (error) {
     console.log(JSON.stringify({
       event: 'tcgdex_normal_price_card_lookup_failure', provider: 'tcgdex', language: lang, cardId,
       failureReason: error instanceof Error ? error.message : String(error),
     }));
-    return null;
+    if (error?.status === 404) return null;
+    throw error;
   }
 }
 

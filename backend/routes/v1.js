@@ -391,6 +391,17 @@ export function createV1Router(options = {}) {
     });
   }));
 
+  router.get('/market/collection-valuation', asyncRoute(async (req, res) => {
+    const userId = res.locals.pricingUserId ?? await getAuthenticatedUserId(req);
+    const result = await getPricingService().collectionValuation(userId);
+    sendEnvelope(req, res, result, { cacheControl: PERSONAL_PRICING_CACHE_CONTROL });
+  }));
+  router.post('/market/collection-valuation/refresh', asyncRoute(async (req, res) => {
+    const userId = res.locals.pricingUserId ?? await getAuthenticatedUserId(req);
+    const result = await getPricingService().collectionValuation(userId, true);
+    sendEnvelope(req, res, result, { status: 202, cacheControl: PERSONAL_PRICING_CACHE_CONTROL });
+  }));
+
   router.get('/market/price-snapshots', asyncRoute(async (req, res) => {
     // Preserve a supplied empty token for the pricing service to reject.  The
     // route must not turn `legacyIds=a,` into a different valid request.

@@ -1,3 +1,4 @@
+import type { PreparedValuation } from '../../lib/preparedCollectionValuation';
 import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
 import { isCompleteBinderSnapshot, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
 import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
@@ -463,10 +464,6 @@ const formatCachedBinderPriceTimestamp = (value: string | null | undefined): str
   const timestamp = new Date(value);
   if (Number.isNaN(timestamp.getTime())) return 'Cached pricing timestamp unavailable';
   return `Updated ${timestamp.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
-};
-
-const getPreferredBinderCardPrice = (card: BinderCardWithDetails, variant?: string | null, edition?: string | null): number => {
-  return getBinderTcgPrice(card.card, edition, variant) ?? card.ebay_price ?? card.tcg_price ?? card.cardmarket_price ?? 0;
 };
 
 const getCardmarketPrice = (binderCard: any): number | null => {
@@ -1646,42 +1643,31 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     }
   }, [binderId, catalogueReadIncomplete, loading, masterSetEnabled, ownershipReady, progressPercent, totalCount, totalKnown]);
 
-  const binderValue = useMemo(() => {
-    return displayCards.reduce((sum, card) => {
-      const variantManaged = variantManagedCards.has(getVariantCardKey(card.card_id, card.set_id));
-      let variants = masterSetEnabled
-        ? getVariants(card.card, card.set_id).filter((variant) => {
-            const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, card.set_id, variant);
-            if (savedQuantity > 0) return true;
-            const defaultVariant = card.owned && !variantManaged
-              ? getDefaultOwnedVariant(getVariants(card.card, card.set_id))
-              : null;
-            return variant === defaultVariant;
-          })
-        : [...ownedVariants.keys()]
-            .filter((key) => key.startsWith(`${card.set_id}:${card.card_id}:`))
-            .map((key) => key.slice(`${card.set_id}:${card.card_id}:`.length));
-
-      if (masterSetEnabled && card.owned && !variantManaged && variants.length === 0) {
-        const defaultVariant = getDefaultOwnedVariant(getVariants(card.card, card.set_id));
-        variants = defaultVariant ? [defaultVariant] : [];
-      }
-
-      if (variants.length) {
-        return sum + variants.reduce((variantSum, variant) => {
-          const base = getPreferredBinderCardPrice(card, variant, binder?.edition);
-          const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, card.set_id, variant);
-          const quantity = savedQuantity > 0 ? savedQuantity : getOwnedQuantity(card);
-          return variantSum + getEstimatedValue(base, card.condition || 'Near Mint') * quantity;
-        }, 0);
-      }
-
-      if (!card.owned) return sum;
-
-      const base = getPreferredBinderCardPrice(card, null, binder?.edition);
-      return sum + getEstimatedValue(base, card.condition || 'Near Mint');
-    }, 0);
-  }, [binder?.edition, displayCards, masterSetEnabled, ownedVariants, variantManagedCards]);
+  const [preparedBinderValue, setPreparedBinderValue] = useState<PreparedValuation['binders'][number] | null>(null);
+  useEffect(() => { setPreparedBinderValue(null); }, [binderId, userId, isReadOnly]);
+  useEffect(() => {
+    let current = true;
+    if (!userId || !binderId || isReadOnly) return;
+    let reading = false;
+    const read = async () => {
+      if (reading) return;
+      reading = true;
+      try {
+        const response = await stackrApiClient.collectionValuation();
+        if (current && response.data.summary) setPreparedBinderValue(response.data.summary.binders.find((entry) => entry.binderId === binderId) ?? null);
+      } catch (error) {
+        if (current && [401, 403].includes((error as { status?: number }).status ?? 0)) setPreparedBinderValue(null);
+        // A transient failure retains the previous complete generation.
+      } finally { reading = false; }
+    };
+    void read();
+    const timer = setInterval(() => { void read(); }, 3 * 60 * 1000);
+    return () => { current = false; clearInterval(timer); };
+  }, [binderId, userId, isReadOnly, ownedVariants]);
+  const preparedSetValue = masterSetEnabled ? preparedBinderValue?.masterSet : preparedBinderValue?.standardSet;
+  const preparedValueLabel = (value: typeof preparedSetValue) => value?.total != null
+    ? formatCurrency(value.total) + ' known subtotal · ' + value.pricedUnits + '/' + value.totalUnits + ' priced'
+    : value ? 'No stored quotes · 0/' + value.totalUnits + ' priced' : 'Stored valuation pending';
 
   const getDisplayedVariantQuantity = useCallback((card: BinderCardWithDetails, variant: string) => {
     const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, card.set_id, variant);
@@ -3573,8 +3559,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 {heroCountLabel}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
-              <Text style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }} numberOfLines={1}>
-                {reopenStatus ? 'Pricing awaits refresh' : `${formatCurrency(binderValue)} est. value`}
+              <Text style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 15, fontWeight: '800', textAlign: 'center', flexShrink: 1 }}>
+                {'Owned: ' + preparedValueLabel(preparedBinderValue?.owned)}
+                {binder?.type === 'official' ? '\n' + (masterSetEnabled ? 'Master set: ' : 'Complete set: ') + preparedValueLabel(preparedSetValue) : ''}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
               <Text style={{ color: theme.colors.primary, fontSize: 10.5, lineHeight: 13, fontWeight: '900' }} numberOfLines={1}>

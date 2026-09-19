@@ -196,7 +196,8 @@
     "test:integration-repair": "node --import tsx scripts/test-home-saved-collection.ts && node --import tsx scripts/test-home-owned-pricing-units.ts && node --import tsx scripts/test-collection-pricing-api.ts && node --import tsx scripts/test-collection-context-account-isolation.ts && node --import tsx scripts/test-global-search-language-fanout.ts && node --import tsx scripts/test-japanese-set-logo-runtime-lookup.ts && node --import tsx scripts/test-published-set-logo-fallbacks.ts && node --import tsx scripts/test-traditional-chinese-set-logo-review.ts && npm run test:official-english-set-logos",
     "catalogue:materialize-official-english-set-logos": "python scripts/materialize-official-english-set-logos.py",
     "test:official-english-set-logos": "python scripts/materialize-official-english-set-logos.py --check && node scripts/test-official-english-set-logo-runtime-lookup.cjs",
-    "test:binder-retrieval": "node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-binder-pricing.ts && node --import tsx scripts/test-binder-visible-prices.ts && node --import tsx scripts/test-pokemon-set-identity-dedup.ts && node --import tsx scripts/test-binder-reopen.mjs && node --import tsx scripts/test-binder-rarity-filter.ts && node --import tsx scripts/test-master-set-denominator.ts"
+    "test:binder-retrieval": "node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-binder-pricing.ts && node --import tsx scripts/test-binder-visible-prices.ts && node --import tsx scripts/test-pokemon-set-identity-dedup.ts && node --import tsx scripts/test-binder-reopen.mjs && node --import tsx scripts/test-binder-rarity-filter.ts && node --import tsx scripts/test-master-set-denominator.ts",
+    "test:catalogue-pricing": "node scripts/test-catalogue-pricing.mjs && tsx scripts/test-stable-collection-prices.ts && node scripts/test-prepared-valuation-routes.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -262,6 +263,7 @@
     "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.3.14",
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",

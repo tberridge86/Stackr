@@ -158,8 +158,11 @@ async function resolveOwnerQueue(supabase, queueRows, ownerId) {
   return queueRows.map((row) => ({ row, ...resolveOwnerExactQueueItem(row, catalogueRows, ownerId) }));
 }
 
-function retryAfter(attempts) {
-  return new Date(Date.now() + Math.min(60, 2 ** Number(attempts ?? 0)) * 60_000).toISOString();
+export function ownerQueueRetryAfter(attempts, providerRetryAfter) {
+  const raw = providerRetryAfter;
+  const seconds = raw != null && Number.isFinite(Number(raw)) ? Number(raw) : (Date.parse(String(raw)) - Date.now()) / 1000;
+  return new Date(Date.now() + Math.max(Math.min(60, 2 ** Number(attempts ?? 0)) * 60_000,
+    Number.isFinite(seconds) ? Math.max(0, seconds) * 1000 : 0)).toISOString();
 }
 
 async function claimQueueItem(supabase, item) {
@@ -200,12 +203,13 @@ function recordFailureDiagnostic(summary, variantId, error, source) {
   summary.failureDiagnostics.push({ variantId: id, code: safeQueueErrorCode(error), source });
 }
 
-async function retryQueueItem(supabase, item, leaseUntil, errorCode) {
-  const attempts = Number(item.row.attempts ?? 0) + 1;
-  const exhausted = attempts >= QUEUE_MAX_ATTEMPTS;
+async function retryQueueItem(supabase, item, leaseUntil, errorCode, providerRetryAfter) {
+  const deferred = errorCode === 'provider_refresh_cooldown';
+  const attempts = Number(item.row.attempts ?? 0) + (deferred ? 0 : 1);
+  const exhausted = !deferred && attempts >= QUEUE_MAX_ATTEMPTS;
   const patch = exhausted
     ? { processed_at: new Date().toISOString(), attempts, last_error: 'exact_provider_retry_exhausted' }
-    : { attempts, last_error: errorCode, run_after: retryAfter(item.row.attempts) };
+    : { attempts, last_error: errorCode, run_after: ownerQueueRetryAfter(item.row.attempts, providerRetryAfter) };
   const { error } = await supabase.from('price_refresh_queue')
     .update(patch)
     .eq('id', item.row.id)
@@ -349,7 +353,7 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
       if (UNAVAILABLE_PROVIDER_CODES.has(code)) summary.unavailable += 1;
       else summary.failed += 1;
       recordFailureDiagnostic(summary, item.variantId, error, 'queue');
-      if (await retryQueueItem(supabase, item, leaseUntil, code)) summary.queueTerminal += 1;
+      if (await retryQueueItem(supabase, item, leaseUntil, code, error?.retryAfter)) summary.queueTerminal += 1;
       else summary.queueRetried += 1;
     }
   }
@@ -368,6 +372,10 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
 }
 
 async function main() {
+  if (process.env.STACKR_CATALOGUE_PRICING_ENABLED === 'true') {
+    const { mainCataloguePricing } = await import('./refresh-catalogue-prices.mjs');
+    return mainCataloguePricing();
+  }
   const { limit, dryRun, includeQueue, queueOnly } = parseOwnerPriceRefreshArguments(process.argv.slice(2));
   const { target, ownerId } = ownerRefreshConfiguration();
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || requireEnv('SUPABASE_SECRET_KEY');

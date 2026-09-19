@@ -38,3 +38,6 @@ jobs:
         run: node --test scripts/test-owner-price-saved-references.mjs
       - name: Actual worker scoped-identity integration
         run: node --test scripts/test-owner-price-scoped-worker.mjs
+
+      - name: Catalogue cycle and stable collection regressions
+        run: npm run test:catalogue-pricing
