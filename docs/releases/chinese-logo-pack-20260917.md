@@ -1,5 +1,23 @@
 # Chinese logo pack — integration receipt and remaining transfer
 
+## Integration completed locally — 19 September 2026
+
+The prepared pack was found in `D:/Stackr-1/assets/rev2/12-chinese-set-logos`
+and integrated into the existing release candidate at
+`2e3a3de4c6c44c475f7c40e23f1df6760bd2a42d`. All 134 original PNGs and their
+mapping manifest are committed locally; 123 exact Simplified Chinese UUIDs
+resolve through `lib/localSetArtwork.ts` in Discover Sets, Add Binder and
+official Binders. The 11 unresolved mappings and four missing-source
+placeholders below remain explicit. The original pack was not altered.
+
+Post-import hash/dimension/identity tests, idempotence, existing published-logo
+and language tests, app typecheck and lint passed (12 existing warnings, no
+errors). Follow the [current integrated repair tracker](integrated-candidate-repair-20260912.md)
+for bundle, CI, delivery and device states. The text below records the earlier
+preparation-only handoff; its file-transfer blocker is now resolved.
+
+## Historical preparation — 17 September 2026
+
 ## Status
 
 The owner has authorised adding the already supplied PNGs to Discover Sets and delivering through the existing release process. No further image preparation or new sourcing is requested.

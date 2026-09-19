@@ -1,0 +1,97 @@
+{
+  "observedAt": "2026-09-19T17:42:34.505Z",
+  "runtimeSource": "2e3a3de4c6c44c475f7c40e23f1df6760bd2a42d",
+  "baseline": "989da7d489d4e127ac80a8798a1bf67367942954",
+  "status": "READY FOR VERIFICATION; not released",
+  "logs": [
+    {
+      "path": ".tmp/integration-repair-20260919/api-contract.log",
+      "sha256": "5a6010663218b50da70cf13902d25d031747c750fe9b370cdd2fdd992cc6613b",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/binder-retrieval.log",
+      "sha256": "2fac5119d1c49b9fc68e39c580f81b85571545ba99041d66d80717d725dc911b",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/catalogue-pricing-pglite-hook.log",
+      "sha256": "387fa47bf383105a646d940b2ac161573ad060e34d238811447181c6bcdecaf1",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/gateway-test.log",
+      "sha256": "577bc11ffa2c3695d10f77a17886b3ec5bf8b3072e71c34fabbfd38d399055b2",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/home-release.log",
+      "sha256": "b313edb957f2c554764d6c1efbe8666faeb151e068e2d895e6810206a2b9b696",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/prepared-valuation-routes.log",
+      "sha256": "92b1ec0859cf65fba61ad49769c1a607ff9da0d17e308b16c55aaaa5002c849a",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/scan-collection-save.log",
+      "sha256": "20997887f4248256ed7d78a846850baf73f289536fb34f2394040bb4e4a7ea64",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/stable-collection-prices.log",
+      "sha256": "fc11eefa06a33dd2a55d8fa5488c771e9f559297782b804fbbc9fa0ed95d0c37",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/test-master-set-artwork.log",
+      "sha256": "c6b180ee8381efca7331a64c753388f12dcb21f770b4512cae9eb7bdcca0349c",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/test-mobile-runtime-config.log",
+      "sha256": "747c87ebb25517761f3b95ef9ca44bd3fbe99d0bb6faf85466b653f8bd649c0f",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/test-mobile-scanner-routing.log",
+      "sha256": "48bf0aad8e759be198d3450cba0cce4a1f60b2c34eb70b3a9e205b62b7ff598b",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/test-scan-auto-capture.log",
+      "sha256": "1a8b18d9492053e161dedd31f96d507b9b6bcbb8b55030611092cd75190d6c76",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/test-scan-navigation-serialization.log",
+      "sha256": "c069ebff892e6839d83421e955341a3d9b4baa39daf7cefc6e86bb8746efe7f1",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/test-scanner-pipeline.log",
+      "sha256": "3a316f150427c7acd7301aefaf801c48defb134c5d263123cbdc5d8663e6cf6a",
+      "result": "PASS"
+    },
+    {
+      "path": ".tmp/integration-repair-20260919/production-ios-export.log",
+      "sha256": "d7db89bb45613f5f4613d9909a60926d30f36e00c6d7ac966551fe471dab5884",
+      "result": "PASS after clean rebuild and route/asset assertions"
+    }
+  ],
+  "additionalObservedPasses": [
+    "npm run typecheck",
+    "npm run typecheck:backend",
+    "npm run lint (0 errors, 12 existing warnings)",
+    "npm run test:recognition-orchestrator (24 flag checks including 6 actual Expo production transforms)",
+    "node scripts/test-simplified-chinese-set-logo-pack.mjs",
+    "node --import tsx scripts/test-published-set-logo-fallbacks.ts"
+  ],
+  "dependencyNote": "The shared dependency junction lacks the newly declared dev-only @electric-sql/pglite. The unchanged combined SQL test passed through a temporary resolver mapping only that package to the existing pricing worktree installation, verified 0.3.14 against both locks. Shared dependencies unchanged.",
+  "deviceTests": "NOT RUN",
+  "remoteWrites": "NONE",
+  "standardProductionIosExport": "PASS: production-ios-export-20260919.json",
+  "originalUserReceiptSha256": "D16565153D11166C1BC1EA00F8E6FE7D9AC995EF77FE8590732B537A4E6854DE",
+  "bundleSecretScan": "PASS; 716 scanned export files, no findings"
+}

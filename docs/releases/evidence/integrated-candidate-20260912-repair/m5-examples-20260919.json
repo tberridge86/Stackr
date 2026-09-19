@@ -1,0 +1,126 @@
+{
+  "sampleObservedAt": "2026-09-19T11:27:34.895Z",
+  "setId": "91be8fc7-b2ed-4169-b41e-0d374e4d466a",
+  "language": "ja",
+  "printingCount": 118,
+  "paginationComplete": true,
+  "examples": [
+    {
+      "number": "004",
+      "printingId": "6ebc7134-192d-43d9-8d37-fd6b65e5a613",
+      "defaultVariantId": "61459941-7744-431e-99ef-2b4c5fa26bef",
+      "canonicalIds": [
+        "pokemon:ja:91be8fc7-b2ed-4169-b41e-0d374e4d466a:004:holo"
+      ]
+    },
+    {
+      "number": "015",
+      "printingId": "da4cb7b8-b2e9-4a4a-af5c-4feae405c4c7",
+      "defaultVariantId": "8d6094f5-708c-475c-a1f2-a57028a896be",
+      "canonicalIds": [
+        "pokemon:ja:91be8fc7-b2ed-4169-b41e-0d374e4d466a:015:holo"
+      ]
+    },
+    {
+      "number": "019",
+      "printingId": "8764a542-36e3-4cb4-af60-81f849475c75",
+      "defaultVariantId": "f895eeef-f3f2-4a9f-b430-6a9a0bdb7b54",
+      "canonicalIds": [
+        "pokemon:ja:91be8fc7-b2ed-4169-b41e-0d374e4d466a:019:holo"
+      ]
+    }
+  ],
+  "delivery": [
+    {
+      "number": "004",
+      "printingId": "6ebc7134-192d-43d9-8d37-fd6b65e5a613",
+      "variantId": "61459941-7744-431e-99ef-2b4c5fa26bef",
+      "role": "original",
+      "status": 200,
+      "bytes": 155837,
+      "hashMatches": true,
+      "observedAt": "2026-09-19T17:40:37.101Z"
+    },
+    {
+      "number": "004",
+      "printingId": "6ebc7134-192d-43d9-8d37-fd6b65e5a613",
+      "variantId": "61459941-7744-431e-99ef-2b4c5fa26bef",
+      "role": "card-grid",
+      "status": 200,
+      "bytes": 24578,
+      "hashMatches": true,
+      "observedAt": "2026-09-19T17:40:37.249Z"
+    },
+    {
+      "number": "004",
+      "printingId": "6ebc7134-192d-43d9-8d37-fd6b65e5a613",
+      "variantId": "61459941-7744-431e-99ef-2b4c5fa26bef",
+      "role": "detail-page",
+      "status": 200,
+      "bytes": 129014,
+      "hashMatches": true,
+      "observedAt": "2026-09-19T17:40:37.523Z"
+    },
+    {
+      "number": "015",
+      "printingId": "da4cb7b8-b2e9-4a4a-af5c-4feae405c4c7",
+      "variantId": "8d6094f5-708c-475c-a1f2-a57028a896be",
+      "role": "original",
+      "status": 200,
+      "bytes": 169433,
+      "hashMatches": true,
+      "observedAt": "2026-09-19T17:40:38.000Z"
+    },
+    {
+      "number": "015",
+      "printingId": "da4cb7b8-b2e9-4a4a-af5c-4feae405c4c7",
+      "variantId": "8d6094f5-708c-475c-a1f2-a57028a896be",
+      "role": "card-grid",
+      "status": 200,
+      "bytes": 25214,
+      "hashMatches": true,
+      "observedAt": "2026-09-19T17:40:38.116Z"
+    },
+    {
+      "number": "015",
+      "printingId": "da4cb7b8-b2e9-4a4a-af5c-4feae405c4c7",
+      "variantId": "8d6094f5-708c-475c-a1f2-a57028a896be",
+      "role": "detail-page",
+      "status": 200,
+      "bytes": 147394,
+      "hashMatches": true,
+      "observedAt": "2026-09-19T17:40:38.452Z"
+    },
+    {
+      "number": "019",
+      "printingId": "8764a542-36e3-4cb4-af60-81f849475c75",
+      "variantId": "f895eeef-f3f2-4a9f-b430-6a9a0bdb7b54",
+      "role": "original",
+      "status": 200,
+      "bytes": 163470,
+      "hashMatches": true,
+      "observedAt": "2026-09-19T17:40:38.836Z"
+    },
+    {
+      "number": "019",
+      "printingId": "8764a542-36e3-4cb4-af60-81f849475c75",
+      "variantId": "f895eeef-f3f2-4a9f-b430-6a9a0bdb7b54",
+      "role": "card-grid",
+      "status": 200,
+      "bytes": 21102,
+      "hashMatches": true,
+      "observedAt": "2026-09-19T17:40:39.194Z"
+    },
+    {
+      "number": "019",
+      "printingId": "8764a542-36e3-4cb4-af60-81f849475c75",
+      "variantId": "f895eeef-f3f2-4a9f-b430-6a9a0bdb7b54",
+      "role": "detail-page",
+      "status": 200,
+      "bytes": 137746,
+      "hashMatches": true,
+      "observedAt": "2026-09-19T17:40:39.632Z"
+    }
+  ],
+  "limitation": "Matched expected content SHA-256 over fetched bytes; no new image source or physical-device verification"
+}

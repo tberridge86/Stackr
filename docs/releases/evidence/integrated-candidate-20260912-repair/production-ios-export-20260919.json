@@ -1,0 +1,21 @@
+{
+  "source": "2e3a3de4c6c44c475f7c40e23f1df6760bd2a42d",
+  "profile": "production",
+  "platform": "ios",
+  "signedNativeBuild": false,
+  "exportedAt": "2026-09-19T17:46:44.597Z",
+  "bundle": "_expo/static/js/ios/entry-1659dc9d6dedbcc8a45826bcf6cd83db.hbc",
+  "bundleSha256": "82a0af0c71e1e6dab1eff930b5387e2c9c98053675357a370deb07d067bed585",
+  "bundleBytes": 6821600,
+  "sourceMapSources": 2982,
+  "assetReferences": 716,
+  "uniqueAssetHashes": 713,
+  "requiredCandidateRoutes": "PASS",
+  "exactChineseImages": 123,
+  "exactJapaneseImages": [
+    "l1b",
+    "ll"
+  ],
+  "limitation": "Local production-configured Hermes export with candidate routes and source-matched assets; not native compilation, TestFlight, device receipt or visual acceptance.",
+  "initialExport": "Rejected as incomplete (950 modules / 23 assets); clean --clear rebuild verified full app graph."
+}

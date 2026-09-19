@@ -22,6 +22,7 @@ function compileModule(path: string, dependencies: Record<string, unknown>) {
 
 const englishLogos = compileModule('lib/englishSetLogos.ts', {});
 const japaneseLogos = compileModule('lib/japaneseSetLogos.ts', {});
+const simplifiedChineseLogos = compileModule('lib/simplifiedChineseSetLogos.ts', {});
 const traditionalChineseLogos = compileModule('lib/traditionalChineseSetLogos.ts', {});
 const getEnglishSetLogoSourceForSet = englishLogos.getEnglishSetLogoSourceForSet as (input: Record<string, unknown>) => string | null;
 const getJapaneseSetLogoSourceForSet = japaneseLogos.getJapaneseSetLogoSourceForSet as (input: Record<string, unknown>, fallbackLanguage?: string | null) => string | null;
@@ -30,6 +31,7 @@ const getTraditionalChineseSetLogoSourceForSet = traditionalChineseLogos.getTrad
 const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './englishSetLogos': { getEnglishSetLogoSourceForSet },
   './japaneseSetLogos': { getJapaneseSetLogoSourceForSet },
+  './simplifiedChineseSetLogos': simplifiedChineseLogos,
   './traditionalChineseSetLogos': { getTraditionalChineseSetLogoSourceForSet },
   './magazineSetCovers': { getMagazineSetCoverSourceForSet: () => null },
 });
