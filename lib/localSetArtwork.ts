@@ -8,6 +8,7 @@ import {
   type JapaneseSetLogoLookupInput,
 } from './japaneseSetLogos';
 import { getMagazineSetCoverSourceForSet } from './magazineSetCovers';
+import { getSimplifiedChineseSetLogoSourceForSet } from './simplifiedChineseSetLogos';
 import { getTraditionalChineseSetLogoSourceForSet } from './traditionalChineseSetLogos';
 
 export type LocalSetArtworkLookupInput = EnglishSetLogoLookupInput & JapaneseSetLogoLookupInput;
@@ -27,5 +28,6 @@ export function getLocalSetArtworkSourceForSet(
   return getMagazineSetCoverSourceForSet(input, fallbackLanguage)
     ?? getEnglishSetLogoSourceForSet(input, fallbackLanguage)
     ?? getJapaneseSetLogoSourceForSet(input, fallbackLanguage)
+    ?? getSimplifiedChineseSetLogoSourceForSet(input, fallbackLanguage)
     ?? getTraditionalChineseSetLogoSourceForSet(input, fallbackLanguage);
 }
