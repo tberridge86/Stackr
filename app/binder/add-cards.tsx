@@ -22,6 +22,8 @@ import { normalizePokemonCardLanguage, type PokemonCardLanguage } from '../../li
 import { getDisplaySetName } from '../../lib/setDisplay';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
+import { useCardInspection } from '../../components/CardInspectionProvider';
+import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
 
 // ===============================
 // CONSTANTS
@@ -39,6 +41,16 @@ const cardShadow = {
   shadowOffset: { width: 0, height: 4 },
   elevation: 3,
 };
+
+function getCatalogueInspectionImage(item: any) {
+  const raw = item?.raw_data;
+  const canonicalId = String(raw?.stackr?.cardId ?? '').trim();
+  const images = raw?.images;
+  if (!canonicalId || !images) return null;
+  const imageUri = images.small ?? images.large;
+  if (typeof imageUri !== 'string' || !imageUri) return null;
+  return { canonicalId, imageUri, fullImageUri: images.large ?? imageUri, raw };
+}
 
 const getCardPrimaryName = (item: PokemonSearchCard) => getPreferredCardDisplayName({
   id: item.id,
@@ -67,6 +79,7 @@ const getSetPrimaryName = (item: PokemonSearchCard, fallbackName: string | null)
 
 export default function AddCardsToBinderScreen() {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ binderId?: string }>();
   const binderId = typeof params.binderId === 'string' ? params.binderId : '';
@@ -265,6 +278,8 @@ export default function AddCardsToBinderScreen() {
       displaySetName,
       item.number ? `#${item.number}` : null,
     ].filter(Boolean).join(' - ');
+    const catalogueInspection = getCatalogueInspectionImage(item);
+    const openDetails = () => router.push({ pathname: '/card/[id]', params: { id: item.id, setId: item.set?.id ?? '' } });
 
     return (
       <TouchableOpacity
@@ -273,15 +288,26 @@ export default function AddCardsToBinderScreen() {
           toggleCard(item);
         }}
         onLongPress={() => {
-          void stackrHaptics.cardPreview();
-          router.push({
-            pathname: '/card/[id]',
-            params: { id: item.id, setId: item.set?.id ?? '' },
+          if (!catalogueInspection) { void stackrHaptics.cardPreview(); openDetails(); return; }
+          inspectCard({
+            source: 'catalogue',
+            card: { id: catalogueInspection.canonicalId, name: item.name, language: item.language ?? null, raw_data: catalogueInspection.raw },
+            imageUri: catalogueInspection.imageUri,
+            fullImageUri: catalogueInspection.fullImageUri,
+            selectedVariantId: catalogueInspection.raw.stackr?.defaultVariantId ?? null,
+            subtitle: [displaySetName, item.number ? `#${item.number}` : null].filter(Boolean).join(' · '),
+            onDetails: openDetails,
           });
         }}
-        delayLongPress={320}
+        delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
         accessibilityRole="button"
-        accessibilityLabel={`${displayName}. Tap to select for binder. Hold for details.`}
+        accessibilityLabel={`${displayName}. Tap to select for binder. ${catalogueInspection ? 'Hold to inspect.' : 'Hold for details.'}`}
+        accessibilityActions={catalogueInspection ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+        onAccessibilityAction={(event) => {
+          if (event.nativeEvent.actionName !== 'inspect') return;
+          if (!catalogueInspection) { openDetails(); return; }
+          inspectCard({ source: 'catalogue', card: { id: catalogueInspection.canonicalId, name: item.name, language: item.language ?? null, raw_data: catalogueInspection.raw }, imageUri: catalogueInspection.imageUri, fullImageUri: catalogueInspection.fullImageUri, selectedVariantId: catalogueInspection.raw.stackr?.defaultVariantId ?? null, subtitle: [displaySetName, item.number ? `#${item.number}` : null].filter(Boolean).join(' · '), onDetails: openDetails });
+        }}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -359,6 +385,7 @@ export default function AddCardsToBinderScreen() {
     theme.colors.text,
     theme.colors.textSoft,
     toggleCard,
+    inspectCard,
   ]);
 
   // ===============================

@@ -19,6 +19,7 @@ const reactMock = {
   },
 };
 const element = (type: string) => type;
+const inspectionCalls: Record<string, unknown>[] = [];
 const mocks: Record<string, unknown> = {
   react: { __esModule: true, default: reactMock },
   'react-native': {
@@ -47,6 +48,8 @@ const mocks: Record<string, unknown> = {
   '../lib/typography': { numericTextStyle: {}, tabularNumberStyle: {}, stackrFonts: {}, typeScale: {} },
   '../lib/theme': { stackrGradients },
   './theme-context': { useTheme: () => ({ theme: lightTheme }) },
+  './CardInspectionProvider': { useCardInspection: () => ({ inspectCard: (request: Record<string, unknown>) => inspectionCalls.push(request) }) },
+  '../lib/cardInspection': { CARD_INSPECTION_LONG_PRESS_MS: 400 },
   '../lib/stackrIcons': { stackrIcons: { binders: 1, scanCard: 2 } },
 };
 
@@ -134,6 +137,19 @@ assert.ok(cardButton, 'A collection card must remain directly tappable.');
 (cardButton.props.onPress as () => void)();
 assert.equal(selected, 'missing-1');
 assert.equal(opened, 0, 'Tapping a card must not open the binder or mutate ownership.');
+
+const inspectableMissing = {
+  ...missingCards[0],
+  inspectionRequest: { source: 'catalogue', card: { id: 'canonical-missing' }, imageUri: 'https://catalogue.example/missing.jpg' },
+};
+const inspectedCollection = render({ ...baseProps, binder, missingCards: [inspectableMissing], onCardPress(card: { cardId: string }) { selected = card.cardId; } });
+const inspectButton = findButton(inspectedCollection, 'View Missing 1');
+assert.ok(inspectButton?.props.onLongPress, 'Canonical collection artwork has an inspection hold handler.');
+(inspectButton.props.onLongPress as () => void)();
+assert.equal(inspectionCalls.length, 1);
+assert.equal(inspectionCalls[0].card && (inspectionCalls[0].card as { id: string }).id, 'canonical-missing');
+(inspectButton.props.onPress as () => void)();
+assert.equal(selected, 'missing-1', 'Inspection support leaves collection taps unchanged.');
 
 const foreignCard = { ...ownedCard, name: 'ナゾノクサ', englishName: 'Oddish', language: 'ja', number: '001', imageUrl: 'https://local/japanese-original.jpg' };
 const foreignCardSnapshot = JSON.stringify(foreignCard);

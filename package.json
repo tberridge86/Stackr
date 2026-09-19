@@ -196,7 +196,8 @@
     "test:integration-repair": "node --import tsx scripts/test-home-saved-collection.ts && node --import tsx scripts/test-home-owned-pricing-units.ts && node --import tsx scripts/test-collection-pricing-api.ts && node --import tsx scripts/test-collection-context-account-isolation.ts && node --import tsx scripts/test-global-search-language-fanout.ts && node --import tsx scripts/test-japanese-set-logo-runtime-lookup.ts && node --import tsx scripts/test-published-set-logo-fallbacks.ts && node --import tsx scripts/test-traditional-chinese-set-logo-review.ts && npm run test:official-english-set-logos",
     "catalogue:materialize-official-english-set-logos": "python scripts/materialize-official-english-set-logos.py",
     "test:official-english-set-logos": "python scripts/materialize-official-english-set-logos.py --check && node scripts/test-official-english-set-logo-runtime-lookup.cjs",
-    "test:binder-retrieval": "node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-binder-pricing.ts && node --import tsx scripts/test-binder-visible-prices.ts && node --import tsx scripts/test-pokemon-set-identity-dedup.ts && node --import tsx scripts/test-binder-reopen.mjs && node --import tsx scripts/test-binder-rarity-filter.ts && node --import tsx scripts/test-master-set-denominator.ts"
+    "test:binder-retrieval": "node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-binder-pricing.ts && node --import tsx scripts/test-binder-visible-prices.ts && node --import tsx scripts/test-pokemon-set-identity-dedup.ts && node --import tsx scripts/test-binder-reopen.mjs && node --import tsx scripts/test-binder-rarity-filter.ts && node --import tsx scripts/test-master-set-denominator.ts",
+    "test:card-inspection": "npm run test:card-haptics && node --import tsx scripts/test-card-holo-profile.ts && node --import tsx scripts/test-card-inspection-interactions.ts && node --import tsx scripts/test-home-card-inspection.ts && node --import tsx scripts/test-card-inspection-lifecycle.ts && node --import tsx scripts/test-card-foil-rendering.ts"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -206,6 +207,7 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
+    "@shopify/react-native-skia": "2.2.12",
     "@stripe/stripe-react-native": "0.50.3",
     "@supabase/supabase-js": "^2.105.1",
     "@tanstack/query-async-storage-persister": "^5.101.2",
@@ -263,10 +265,12 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "@types/react-test-renderer": "19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "openapi-typescript": "7.13.0",
     "pg": "8.22.0",
+    "react-test-renderer": "19.1.0",
     "tsx": "^4.23.1",
     "typescript": "~5.9.2"
   },
