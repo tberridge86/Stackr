@@ -316,7 +316,7 @@ async function assertAssetManifestServerClientIsolation() {
   }
 }
 
-async function assertSearchServerClientIsolation() {
+async function assertSearchServerClientIsolation(exactOriginalAvailable = false) {
   const publishedViews = await readFile(
     new URL('../supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql', import.meta.url),
     'utf8',
@@ -416,7 +416,7 @@ async function assertSearchServerClientIsolation() {
                     storage_provider: 'supabase_storage',
                     storage_bucket: null,
                     storage_key: 'cards/missing-bucket-native.webp',
-                    external_url: 'https://images.example/non-ready-native.webp',
+                    external_url: exactOriginalAvailable ? 'https://images.example/exact-original.webp' : null,
                     permission_status: 'approved',
                     derivative_list: ['card-grid', 'search-result', 'detail-page'].map((role) => ({
                       role,
@@ -458,11 +458,14 @@ async function assertSearchServerClientIsolation() {
   assert.equal(catalogueClientUsed, false);
   assert.equal(result.results[0].reason, 'exact_set_code_collector_number');
   assert.equal(result.results[0].card.catalogueVersionId, '44444444-4444-4444-8444-444444444444');
-  assert.equal(result.results[0].card.variants[0].image.variantId, sharedArtworkVariantId);
-  assert.equal(
-    result.results[0].card.variants[0].image.derivatives.find((item) => item.role === 'search-result').deliveryUrl,
-    'https://project.supabase.co/storage/v1/object/public/stackr-catalogue-public/cards/shared-search-result.webp',
-  );
+  assert.equal(result.results[0].card.variants[0].image.variantId, exactOriginalAvailable ? variantId : sharedArtworkVariantId);
+  if (exactOriginalAvailable) {
+    assert.equal(result.results[0].card.variants[0].image.deliveryUrl, 'https://images.example/exact-original.webp',
+      'an approved exact original beats shared artwork when native thumbnails are unavailable');
+  } else {
+    assert.equal(result.results[0].card.variants[0].image.derivatives.find((item) => item.role === 'search-result').deliveryUrl,
+      'https://project.supabase.co/storage/v1/object/public/stackr-catalogue-public/cards/shared-search-result.webp');
+  }
   const cardSearch = operations.find((operation) => operation.table === 'catalogue_cards');
   assert.deepEqual(cardSearch?.filters.find(([name, column]) => name === 'in' && column === 'set_id'), ['in', 'set_id', [setId]]);
   assert.deepEqual(cardSearch?.filters.find(([name, column]) => name === 'eq' && column === 'collector_number'), ['eq', 'collector_number', '157']);
@@ -1089,6 +1092,7 @@ assertAssetDeliveryProjection();
 await assertAssetManifestCursorQuery();
 await assertAssetManifestServerClientIsolation();
 await assertSearchServerClientIsolation();
+await assertSearchServerClientIsolation(true);
 await assertSiblingVariantIsNotAnImageFallback();
 await assertHydrationPaginatesAssetRows();
 await assertOptInIdentityRpcHydration();
@@ -1215,7 +1219,9 @@ assert.match(generatedContract, /AssetManifestResponse:[\s\S]+assets: components
 assert.match(generatedContract, /SearchResult:[\s\S]+card\?: components\["schemas"\]\["Card"\]/);
 assert.match(generatedContract, /Card:[\s\S]+set: \{[\s\S]+setId: string;[\s\S]+collectorNumber: \{[\s\S]+value: string;/);
 assert.doesNotMatch(generatedContract, /data: Record<string, never>/);
-assert.match(domainAdapter, /asset\.cardId === card\.cardId && !asset\.variantId/);
+assert.match(domainAdapter, /resolveCardArtwork\(card, assets\)/);
+const artworkPresentation = await readFile(new URL('../lib/cardArtworkPresentation.ts', import.meta.url), 'utf8');
+assert.match(artworkPresentation, /!asset\.variantId && asset\.cardId === card\.cardId/);
 assert.match(domainAdapter, /const needsManifestFallback = cards\.some/);
 assert.match(domainAdapter, /fetchStackrAssetsForPrinting\(client, printingId\)/);
 assert.doesNotMatch(domainAdapter, /const hasEmbeddedImages = cards\.some/);
