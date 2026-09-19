@@ -863,6 +863,7 @@ export default function BinderDetailScreen() {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState<BinderCardWithDetails | null>(null);
+  const [referenceImage, setReferenceImage] = useState(false);
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailFullImageUri, setDetailFullImageUri] = useState<string | null>(null);
   const [quickActionCard, setQuickActionCard] = useState<BinderCardWithDetails | null>(null);
@@ -1893,6 +1894,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const storedLargeImage = latestCard.card?.images?.large ?? null;
     const hasFullImage = Boolean(storedLargeImage && storedLargeImage !== storedSmallImage);
     setDetailFullImageUri(null);
+    setReferenceImage(false);
     setSelectedCard(latestCard);
     setDetailVisible(true);
     void stackrHaptics.cardPreview();
@@ -1909,7 +1911,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           || resolvedVariantId !== canonicalVariantId
           || resolved?.language !== expectedLanguage) return;
         const fullImage = getBinderCardImageUri({ card: resolved, image_url: null }, 'large');
-        if (fullImage) setDetailFullImageUri(fullImage);
+        if (fullImage) {
+          setDetailFullImageUri(fullImage);
+          setSelectedCard((current) => current?.id === latestCard.id
+            ? mergeBinderArtwork([current], [{ ...current, card: resolved }])[0] : current);
+        }
       }).catch(() => {
         // Keep the existing same-card image if the optional upgrade is unavailable.
       });
@@ -2093,15 +2099,23 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const nextQuantity = Math.max(0, Math.min(999, Math.floor(Number(quantity) || 0)));
     const previousQuantity = getVariantQuantityFromMap(ownedVariants, cardId, setId, variant);
     const targetCard = cards.find((card) => card.card_id === cardId && card.set_id === setId);
-    const cardVariants = targetCard ? getVariants(targetCard.card, setId) : [variant];
+    const cardVariants = targetCard ? getVariants(targetCard.card, setId) : [];
+    if (!targetCard || !cardVariants.includes(variant)) return;
+    // Before the first finish edit, retain the existing ordinary owned copies.
+    // Otherwise selecting Reverse would make a previously owned Base disappear.
+    const legacyDefault = !variantManagedCards.has(cardKey) && targetCard.owned
+      ? getDefaultOwnedVariant(cardVariants) : null;
+    const preservedDefault = legacyDefault && legacyDefault !== variant ? legacyDefault : null;
+    const preservedQuantity = preservedDefault ? getOwnedQuantity(targetCard) : 0;
     const nextCardOwned = cardVariants.some((candidateVariant) =>
       candidateVariant === variant
         ? nextQuantity > 0
-        : getVariantQuantityFromMap(ownedVariants, cardId, setId, candidateVariant) > 0
+        : candidateVariant === preservedDefault || getVariantQuantityFromMap(ownedVariants, cardId, setId, candidateVariant) > 0
     );
 
     setOwnedVariants((prev) => {
       const next = new Map(prev);
+      if (preservedDefault) next.set(getVariantKey(cardId, setId, preservedDefault), preservedQuantity);
       if (nextQuantity > 0) next.set(key, nextQuantity);
       else next.delete(key);
       return next;
@@ -2125,16 +2139,23 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     );
 
     try {
+      if (preservedDefault) {
+        const { error } = await supabase.from('user_card_variants').upsert({
+          user_id: userId, card_id: cardId, set_id: setId, variant: preservedDefault, quantity: preservedQuantity,
+        }, { onConflict: 'user_id,card_id,set_id,variant', ignoreDuplicates: true });
+        if (error) throw error;
+      }
       if (nextQuantity <= 0) {
-        await supabase
+        const { error } = await supabase
           .from('user_card_variants')
           .delete()
           .eq('user_id', userId)
           .eq('card_id', cardId)
           .eq('set_id', setId)
           .eq('variant', variant);
+        if (error) throw error;
       } else {
-        await supabase
+        const { error } = await supabase
           .from('user_card_variants')
           .upsert({
             user_id: userId,
@@ -2143,20 +2164,23 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             variant,
             quantity: nextQuantity,
           }, { onConflict: 'user_id,card_id,set_id,variant' });
+        if (error) throw error;
       }
 
-      const { data: userBinders } = await supabase
+      const { data: userBinders, error: binderReadError } = await supabase
         .from('binders')
         .select('id')
         .eq('user_id', userId);
+      if (binderReadError) throw binderReadError;
       const userBinderIds = (userBinders ?? []).map((row) => row.id).filter(Boolean);
       if (userBinderIds.length) {
-        await supabase
+        const { error } = await supabase
           .from('binder_cards')
           .update({ owned: nextCardOwned })
           .in('binder_id', userBinderIds)
           .eq('card_id', cardId)
           .eq('set_id', setId);
+        if (error) throw error;
       }
 
       const cardName = getBinderCardDisplayName(targetCard, cardId);
@@ -2184,7 +2208,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       Alert.alert('Error', 'Failed to update variant quantity.');
       load();
     }
-  }, [cards, isReadOnly, load, ownedVariants, userId]);
+  }, [cards, isReadOnly, load, ownedVariants, userId, variantManagedCards]);
 
   const handleToggleVariant = useCallback(async (cardId: string, setId: string, variant: string) => {
     const savedQuantity = getVariantQuantityFromMap(ownedVariants, cardId, setId, variant);
@@ -4587,6 +4611,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               rawData={modalCard}
                               editionHint={getBinderEditionHint(binder.edition)}
                               sourceSize="large"
+                              onReferenceImageChange={setReferenceImage}
                               style={{ width: '100%', height: '100%', borderRadius: 15 }}
                               imageStyle={{ borderRadius: 15 }}
                               resizeMode="contain"
@@ -4682,6 +4707,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         }}
                       />
                     </View>
+
+                    {modalImageUri && (referenceImage || (masterSetEnabled && getVariants(modalCard, selectedCard.set_id).length > 1)) && (
+                      <Text style={{ color: theme.colors.textSoft, marginTop: 8 }}>Reference image; finish may differ.</Text>
+                    )}
 
                     <StackrCardIdentity
                       name={getBinderCardDisplayName(selectedCard, selectedCard.card_id)}

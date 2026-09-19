@@ -10,6 +10,7 @@ import * as pokemonSetSeries from '../lib/pokemonSetSeries';
 import * as pokemonDisplayNames from '../lib/pokemonDisplayNames';
 import * as resilientCatalogueRead from '../lib/resilientCatalogueRead';
 import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment';
+import * as cardArtworkPresentation from '../lib/cardArtworkPresentation';
 
 const PRISMATIC_ID = 'fb3cd93c-9006-42f5-b026-96a9fedcf269';
 const prismatic = {
@@ -55,6 +56,7 @@ async function main() {
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const defaultClient = {};
   const dependencies: Record<string, unknown> = {
+    './cardArtworkPresentation': cardArtworkPresentation,
     './stackrApiV1': { stackrApiClient: defaultClient },
     './englishSetIdentity': { getEnglishSetReferenceAliases, matchesEnglishSetReference },
     './pokemonSetSeries': pokemonSetSeries,
@@ -287,7 +289,7 @@ async function main() {
     defaultVariantId, variants, updatedAt: null, ...overrides,
   });
   const normal = { variantId: 'normal', canonicalId: 'canonical-normal', variantCode: 'normal', variantLabel: 'Normal', finishCode: 'normal', finishLabel: 'Normal', artworkKey: null, imageVariantId: null, image: null, updatedAt: null };
-  const reverse = { variantId: 'reverse', canonicalId: 'canonical-reverse', variantCode: 'reverse', variantLabel: 'Reverse', finishCode: 'reverse_holo', finishLabel: 'Reverse Holo', artworkKey: null, imageVariantId: null, image: imageAsset, updatedAt: null };
+  const reverse = { variantId: 'reverse', canonicalId: 'canonical-reverse', variantCode: 'reverse_holo', variantLabel: 'Reverse', finishCode: 'reverse_holo', finishLabel: 'Reverse Holo', artworkKey: null, imageVariantId: null, image: imageAsset, updatedAt: null };
   const holo = { variantId: 'holo', canonicalId: 'canonical-holo', variantCode: 'holo', variantLabel: 'Holo', finishCode: 'holo', finishLabel: 'Holo', artworkKey: null, imageVariantId: null, image: null, updatedAt: null };
   const duplicateRows = [
     duplicateRow('normal', [normal]),
@@ -305,19 +307,20 @@ async function main() {
   const normalizedDuplicates = await exports.fetchStackrCardsForSet('sv08.5', 'en', duplicateClient(duplicateRows));
   assert.equal(normalizedDuplicates.length, 3, 'only rows with the exact card, set, language, and collector identity merge');
   const merged = normalizedDuplicates.find((card: any) => card.id === 'duplicate-card' && card.language === 'en' && card.set.id === PRISMATIC_ID);
-  assert.equal(merged.externalIds.stackrVariant, 'reverse', 'an image-bearing duplicate becomes the representative default');
+  assert.equal(merged.externalIds.stackrVariant, 'normal', 'an image-bearing duplicate cannot replace the canonical selected finish');
+  assert.equal(merged.raw_data.presentation.artwork.kind, 'shared');
   assert.equal(merged.images.large, 'https://images.example/reverse.png');
   assert.deepEqual([...merged.raw_data.stackr.variants.map((variant: any) => variant.variantId)].sort(), ['holo', 'normal', 'reverse']);
   assert.deepEqual(
     [...(await exports.fetchStackrCardsForSet('sv08.5', 'en', duplicateClient([duplicateRows[1], duplicateRows[0], duplicateRows[2], duplicateRows[3], duplicateRows[4]])))
       .find((card: any) => card.id === 'duplicate-card' && card.language === 'en' && card.set.id === PRISMATIC_ID).raw_data.stackr.variants.map((variant: any) => variant.variantId)].sort(),
     ['holo', 'normal', 'reverse'],
-    'duplicate order does not lose finishes or the first valid image-bearing default',
+    'duplicate order does not lose finishes',
   );
   const singleRowWrongDefault = duplicateRow('normal', [normal, reverse]);
   const singleRowMapped = await exports.fetchStackrCardsForSet('sv08.5', 'en', duplicateClient([singleRowWrongDefault]));
   assert.equal(singleRowMapped.length, 1);
-  assert.equal(singleRowMapped[0].externalIds.stackrVariant, 'reverse', 'a single row may select its existing illustrated finish when its default has no asset');
+  assert.equal(singleRowMapped[0].externalIds.stackrVariant, 'normal', 'a shared presentation must retain the default finish for prices and ownership');
   assert.equal(singleRowMapped[0].raw_data.presentation.selected_image_variant_id, 'reverse', 'selected-image attribution stays with the real illustrated variant');
   assert.deepEqual([...singleRowMapped[0].raw_data.stackr.variants.map((variant: any) => variant.variantId)].sort(), ['normal', 'reverse']);
   const singleRowWithoutArt = await exports.fetchStackrCardsForSet('sv08.5', 'en', duplicateClient([duplicateRow('normal', [normal]) ]));

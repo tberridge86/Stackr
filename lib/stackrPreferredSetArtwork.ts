@@ -7,14 +7,19 @@ export const PREFERRED_ARTWORK_PAGE_SIZE = 96;
 
 /** Copy images only: a refresh must never change the facts/edition already on screen. */
 export function mergePreferredSetArtwork(facts: StackrCard[], incoming: StackrCard[]): StackrCard[] {
-  const byId = new Map(incoming.map((card) => [card.cardId, card]));
+  // A page can contain several rows for a printing (one per default finish).
+  // Do not let the last row discard artwork supplied by its siblings.
+  const byId = new Map<string, StackrCard[]>();
+  for (const card of incoming) byId.set(card.cardId, [...(byId.get(card.cardId) ?? []), card]);
   return facts.map((card) => {
-    const display = byId.get(card.cardId);
-    if (!display || display.set.setId !== card.set.setId || display.languageCode !== card.languageCode
-      || display.catalogueVersionId !== card.catalogueVersionId || display.collectorNumber.value !== card.collectorNumber.value) return card;
-    const variants = new Map(display.variants.map((variant) => [variant.variantId, variant]));
+    const displays = (byId.get(card.cardId) ?? []).filter((display) => display.set.setId === card.set.setId
+      && display.languageCode === card.languageCode && display.catalogueVersionId === card.catalogueVersionId
+      && display.collectorNumber.value === card.collectorNumber.value);
+    if (!displays.length) return card;
     return { ...card, variants: card.variants.map((variant) => {
-      const imageVariant = variants.get(variant.variantId);
+      const imageVariant = displays.flatMap((display) => display.variants).find((candidate) => candidate.image
+        && candidate.variantId === variant.variantId && candidate.canonicalId === variant.canonicalId
+        && candidate.imageVariantId === variant.imageVariantId);
       return imageVariant?.image && imageVariant.canonicalId === variant.canonicalId
         && imageVariant.imageVariantId === variant.imageVariantId
         ? { ...variant, image: imageVariant.image } : variant;

@@ -150,6 +150,7 @@ export default function CardDetailScreen() {
   } = useTrade();
 
   const [card, setCard] = useState<PokemonCard | null>(null);
+  const [referenceImage, setReferenceImage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [listingBusy, setListingBusy] = useState(false);
   const [collectionBusy, setCollectionBusy] = useState(false);
@@ -531,6 +532,7 @@ export default function CardDetailScreen() {
               rawData={card.raw_data}
               editionHint={editionHint}
               sourceSize="large"
+              onReferenceImageChange={setReferenceImage}
               style={styles.cardImage}
               resizeMode="contain"
             />
@@ -547,6 +549,8 @@ export default function CardDetailScreen() {
           />
         </View>
       </View>
+
+      {referenceImage && (card.images?.large || card.images?.small) && <Text style={{ color: theme.colors.textSoft, marginBottom: 8 }}>Reference image; finish may differ.</Text>}
 
       <StackrCardIdentity
         name={presentation.name}

@@ -67,6 +67,11 @@ export function snapshotBinderView(scope: BinderReopenScope, binder: BinderRecor
               image: null,
             })) : [],
           },
+          presentation: { artwork: raw?.presentation?.artwork ? {
+            ...pick(raw.presentation.artwork, ['kind', 'selectedVariantId', 'sourceVariantId', 'assetId', 'small', 'large']),
+            candidates: (raw.presentation.artwork.candidates ?? []).map((candidate: any) =>
+              pick(candidate, ['uri', 'kind', 'assetId', 'sourceVariantId'])),
+          } : undefined },
         };
       }
       result.card = card;

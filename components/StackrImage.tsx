@@ -27,6 +27,7 @@ type StackrImageProps = {
   fullUri?: string | null;
   source?: ImageSourcePropType | null;
   fallbackSource?: ImageSourcePropType | null;
+  fallbackUris?: readonly string[];
   style?: StyleProp<ViewStyle>;
   imageStyle?: StyleProp<ImageStyle>;
   contentFit?: ImageContentFit;
@@ -40,6 +41,7 @@ type StackrImageProps = {
   accessibilityLabel?: string;
   onLoad?: () => void;
   onError?: () => void;
+  onSourceChange?: (uri: string | null) => void;
 };
 
 const prefetchedUris = new Set<string>();
@@ -106,6 +108,7 @@ function StackrImageBase({
   fullUri,
   source,
   fallbackSource,
+  fallbackUris,
   style,
   imageStyle,
   contentFit = 'cover',
@@ -119,6 +122,7 @@ function StackrImageBase({
   accessibilityLabel,
   onLoad,
   onError,
+  onSourceChange,
 }: StackrImageProps) {
   const { theme } = useTheme();
   const candidates = stackrImageCandidates([
@@ -127,6 +131,7 @@ function StackrImageBase({
       const allowedUri = enforceTcgdexRuntimeImagePolicy(value);
       return allowedUri ? { uri: allowedUri } : null;
     }),
+    ...(fallbackUris ?? []).map((value) => sanitizeImageSource({ uri: value })),
     sanitizeImageSource(fallbackSource),
   ]);
   const candidateSetKey = JSON.stringify(candidates.map((candidate) => candidate.key));
@@ -144,6 +149,8 @@ function StackrImageBase({
     ? { ...resolvedSource, cacheKey: cacheKey ? `${cacheKey}:${remoteUri}` : remoteUri }
     : resolvedSource;
   const backgroundColor = placeholderColor ?? theme.colors.surface;
+
+  React.useEffect(() => { onSourceChange?.(remoteUri); }, [onSourceChange, remoteUri]);
 
   React.useEffect(() => {
     if (!prefetch || !remoteUri || prefetchedUris.has(remoteUri)) return;

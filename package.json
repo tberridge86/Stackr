@@ -6,6 +6,7 @@
     "start": "expo start",
     "build:web": "expo export --platform web --output-dir dist",
     "typecheck": "tsc --noEmit",
+    "test:master-set-artwork": "node --import tsx scripts/test-master-set-artwork.ts && node --import tsx scripts/test-master-set-ownership.ts && node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-stackr-image-recovery.ts && node --import tsx scripts/test-stackr-image-candidates.ts && node --import tsx scripts/test-edition-aware-image-selection.ts",
     "test:startup-loading": "node --import tsx scripts/test-startup-loading.ts && node --import tsx scripts/test-profile-load-state.ts",
     "test:card-haptics": "node --import tsx scripts/test-card-haptics.ts && node --import tsx scripts/test-haptics.ts && node --import tsx scripts/test-card-preview-motion.ts",
     "test:ux-p2": "node --import tsx scripts/test-ux-p2.ts && node --import tsx scripts/test-ux-p2-market.ts && node --import tsx scripts/test-scan-legacy-route.ts",
