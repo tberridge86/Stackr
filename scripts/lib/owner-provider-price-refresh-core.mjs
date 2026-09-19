@@ -97,8 +97,8 @@ export function resolveOwnerExactQueueItem(row, catalogueRows, expectedOwnerId =
     .filter((card) => String(card?.printing_id ?? '') === String(metadata.canonicalPrintingId ?? ''))
     .filter((card) => normalise(card?.language_code) === normalise(row?.language))
     .filter((card) => String(card?.set_id ?? '') === String(row?.set_id ?? ''))
-    .filter((card) => NORMAL_CODES.has(normalise(card?.variant_code)))
-    .filter((card) => NORMAL_FINISH_CODES.has(normalise(card?.finish_code)))
+    .filter((card) => NORMAL_CODES.has(normalise(card?.variant_code)) && NORMAL_FINISH_CODES.has(normalise(card?.finish_code))
+      || normalise(card?.language_code) === 'en' && ['holo','reverse_holo'].includes(normalise(card?.variant_code)) && normalise(card?.finish_code) === normalise(card?.variant_code))
     .filter((card) => !metadata.variantCode || normalise(card?.variant_code) === normalise(metadata.variantCode))
     .filter((card) => !metadata.finishCode || normalise(card?.finish_code) === normalise(metadata.finishCode));
   if (matches.length !== 1) return { ok: false, reason: 'unsupported_queue_identity' };

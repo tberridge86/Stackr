@@ -1101,7 +1101,7 @@ async function assertExactOwnerProviderRefresh() {
     supabase,
     fetchTcgdexNormalCardPrice: async (request) => {
       providerCalls += 1;
-      assert.deepEqual(request, { cardId: 'base3-4', language: 'en' }, 'the documented :normal suffix is normalised before the exact provider request');
+      assert.deepEqual(request, { cardId: 'base3-4', language: 'en', variantCode: 'normal' }, 'the documented :normal suffix is normalised before the exact provider request');
       return {
         providerCardId: 'base3-4', language: 'en', number: '4/102', price: 12.5, priceSource: 'tcgdex_market',
         pricingUpdatedAt: new Date().toISOString(), raw: { id: 'base3-4' },
@@ -1306,15 +1306,15 @@ async function assertNormalProviderFetchAbortsAndClearsInflight() {
     init.signal.addEventListener('abort', () => reject(new Error('aborted')));
   });
   try {
-    assert.equal(await fetchTcgdexNormalCardPrice({ cardId: 'test-001', language: 'en', timeoutMs: 1 }), null);
-    assert.equal(await fetchTcgdexNormalCardPrice({ cardId: 'test-001', language: 'en', timeoutMs: 1 }), null);
+    await assert.rejects(fetchTcgdexNormalCardPrice({ cardId: 'test-001', language: 'en', timeoutMs: 1 }), /aborted/);
+    await assert.rejects(fetchTcgdexNormalCardPrice({ cardId: 'test-001', language: 'en', timeoutMs: 1 }), /aborted/);
     assert.equal(calls, 2, 'an aborted normal-price request must clear its isolated inflight entry');
     globalThis.fetch = async (_url, init) => ({
       ok: true,
       text: () => new Promise((_resolve, reject) => init.signal.addEventListener('abort', () => reject(new Error('body aborted')))),
     });
-    assert.equal(await fetchTcgdexNormalCardPrice({ cardId: 'body-test-001', language: 'en', timeoutMs: 1 }), null,
-      'the deadline also covers a stalled response body');
+    await assert.rejects(fetchTcgdexNormalCardPrice({ cardId: 'body-test-001', language: 'en', timeoutMs: 1 }), /body aborted/,
+      'the deadline also covers a stalled response body and remains a retryable failure');
     calls = 0;
     globalThis.fetch = async () => {
       calls += 1;

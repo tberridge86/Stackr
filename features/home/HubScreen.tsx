@@ -1,3 +1,6 @@
+import { takeRotatingStringBatch } from '../../lib/homePriceRefreshCore';
+import { preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
+import { blocksIndependentPriceRead, mergeCollectionPriceRead, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { useTheme } from '../../components/theme-context';
 import React, {
@@ -157,6 +160,7 @@ type HomeBinderCardGroup = {
 
 type HomeCollectionCacheSnapshot = {
   pricingContractVersion: 2;
+  priceEvidence?: StoredCollectionPrice[];
   cachedAt: number;
   mintyDataRefreshedAt?: string | null;
   chartRange: ChartRange;
@@ -923,6 +927,10 @@ export default function HubScreen() {
   const hasLoadedCollectionValueRef = useRef(false);
   const hasSuccessfulCollectionPricingRef = useRef(false);
   const collectionValueReadsRef = useRef<CollectionValueRead[]>([]);
+  const preparedValuationAvailableRef = useRef(false);
+  const legacyManualRefreshCursorRef = useRef(0);
+  const collectionPriceEvidenceRef = useRef<StoredCollectionPrice[]>([]);
+  const homeCacheWriteRef = useRef<Promise<void>>(Promise.resolve());
   const refreshableVariantIdsRef = useRef<string[]>([]);
   const manualProviderRefreshInFlightRef = useRef(false);
   const pendingManualPriceRefreshesRef = useRef<PendingHomePriceRefresh>(new Map());
@@ -1291,6 +1299,9 @@ export default function HubScreen() {
           cachedHomeSnapshotUserIdRef.current = null;
           hasLoadedCollectionValueRef.current = false;
           hasSuccessfulCollectionPricingRef.current = false;
+        collectionPriceEvidenceRef.current = [];
+        legacyManualRefreshCursorRef.current = 0;
+        preparedValuationAvailableRef.current = false;
           setCollectionTotal(null);
           setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
           setCollectionPricingWarning(null);
@@ -1313,6 +1324,9 @@ export default function HubScreen() {
       if (cachedHomeSnapshotUserIdRef.current !== null) {
         hasLoadedCollectionValueRef.current = false;
         hasSuccessfulCollectionPricingRef.current = false;
+        collectionPriceEvidenceRef.current = [];
+        legacyManualRefreshCursorRef.current = 0;
+        preparedValuationAvailableRef.current = false;
         setCollectionTotal(null);
         setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
         setCollectionPricingWarning(null);
@@ -1350,6 +1364,9 @@ export default function HubScreen() {
         || !snapshot.collectionPricingSummary
       ) {
         hasSuccessfulCollectionPricingRef.current = false;
+        collectionPriceEvidenceRef.current = [];
+        legacyManualRefreshCursorRef.current = 0;
+        preparedValuationAvailableRef.current = false;
         await AsyncStorage.removeItem(storageKey);
         return false;
       }
@@ -1359,9 +1376,13 @@ export default function HubScreen() {
       if (confirmedUser?.id !== trustedUserId) {
         hasLoadedCollectionValueRef.current = false;
         hasSuccessfulCollectionPricingRef.current = false;
+        collectionPriceEvidenceRef.current = [];
+        legacyManualRefreshCursorRef.current = 0;
+        preparedValuationAvailableRef.current = false;
         return false;
       }
       cachedHomeSnapshotUserIdRef.current = trustedUserId;
+      collectionPriceEvidenceRef.current = Array.isArray(snapshot.priceEvidence) ? snapshot.priceEvidence : [];
 
       setCollectionTotal(snapshot.collectionTotal);
       setCollectionPricingSummary(snapshot.collectionPricingSummary as CollectionPricingSummary);
@@ -1394,6 +1415,7 @@ export default function HubScreen() {
     trustedUserId: string,
     snapshot: Omit<HomeCollectionCacheSnapshot, 'cachedAt'>,
   ) => {
+    const write = async () => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
@@ -1412,6 +1434,9 @@ export default function HubScreen() {
     } catch (error) {
       console.log('Home collection cache save failed', error);
     }
+    };
+    homeCacheWriteRef.current = homeCacheWriteRef.current.then(write, write);
+    await homeCacheWriteRef.current;
   }, []);
 
   const loadCollectionValue = useCallback(async () => {
@@ -1495,7 +1520,9 @@ export default function HubScreen() {
 
       if (!await confirmCurrentRequest()) return;
       collectorDataLoaded = true;
-      setActiveBinder(nextActiveBinder);
+      setActiveBinder((current) => current?.id === nextActiveBinder?.id && current && nextActiveBinder
+        ? { ...nextActiveBinder, value: current.value, valueAvailable: current.valueAvailable, valueCoverageLabel: current.valueCoverageLabel }
+        : nextActiveBinder);
       setDuplicateSummary(nextDuplicateSummary);
       setMissingCards(nextMissingCards);
       // Only the displayed binder needs its full catalogue. It must not delay
@@ -1538,10 +1565,56 @@ export default function HubScreen() {
       const ownedUnits = buildHomeOwnedPricingUnits(allCards, ownedRows, binders);
       const ownedUnitCount = ownedUnits.reduce((total, unit) => total + unit.quantity, 0);
       if (!await confirmCurrentRequest()) return;
-      setOwnedCardCount(ownedUnitCount);
       // Account and collection content can render while exact prices/history load.
       setCollectionValueLoading(false);
 
+      // One private prepared generation replaces the phone-side price fan-out.
+      // A 404 permits the old-server path during backend-first rollout only.
+      let prepared = null;
+      try { prepared = (await stackrApiClient.collectionValuation()).data; }
+      catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
+      if (!await confirmCurrentRequest()) return;
+      if (prepared) {
+        preparedValuationAvailableRef.current = true;
+        const summary = prepared.summary;
+        if (!summary) {
+          setCollectionPricingWarning('Your collection valuation is being prepared. The last completed valuation stays visible.');
+          return;
+        }
+        const pricing = preparedPricingSummary(summary);
+        const coverage = summary.binders.find((entry) => entry.binderId === nextActiveBinder?.id)?.owned;
+        const preparedBinder = nextActiveBinder && coverage ? { ...nextActiveBinder,
+          value: coverage.total ?? 0, valueAvailable: coverage.total != null,
+          valueCoverageLabel: getCollectionPriceCoverageLabel(preparedPricingSummary(coverage)) } : nextActiveBinder;
+        setCollectionTotal(pricing.total);
+        setCollectionPricingSummary(pricing);
+        setOwnedCardCount(summary.totalUnits);
+        setActiveBinder(preparedBinder);
+        const trend = preparedValuationTrend(summary, chartRange === '7D' ? 7 : 30);
+        setChartData(trend.values);
+        setCollectionChangeAmount(trend.change);
+        setCollectionChangePercent(trend.percent);
+        setTrendCoverageLabel(trend.values.length ? 'Complete comparable collection' : null);
+        setTrendProvenanceLabel(trend.values.length ? 'Recorded stored-price valuations' : null);
+        setTrendIsSubset(false);
+        const refreshReport = summary.refresh && prepared.refreshRequest
+          ? `Refresh review: ${summary.refresh.accepted} accepted, ${summary.refresh.alreadyPending} already pending, ${summary.refresh.unsupported} unsupported, ${summary.refresh.unresolved} unresolved, ${summary.refresh.blocked} blocked, ${summary.refresh.remaining ?? 0} remaining.` : null;
+        setCollectionPricingWarning(refreshReport ?? (prepared.state === 'updating'
+          ? 'Updating your collection. Showing the previous complete valuation and its quantities.'
+          : summary.cycle?.overdue ? 'The catalogue pricing cycle is overdue. Showing stored estimates and their recorded coverage.'
+          : pricing.state === 'partial' ? getCollectionPriceCoverageLabel(pricing) + '. Showing the known subtotal.'
+          : pricing.staleUnits ? 'Older stored estimates retained with their original source dates.' : null));
+        hasSuccessfulCollectionPricingRef.current = pricing.total != null;
+        cachedHomeSnapshotUserIdRef.current = trustedUserId;
+        setMintyDataRefreshedAt(pricing.latestCalculatedAt);
+        void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 2,
+          mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: trend.values, collectionValueReads: [],
+          collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: trend.change,
+          collectionChangePercent: trend.percent, ownedCardCount: summary.totalUnits, activeBinder: preparedBinder,
+          duplicateSummary: nextDuplicateSummary, missingCards: nextMissingCards });
+        return;
+      }
+      setOwnedCardCount(ownedUnitCount);
       const priceInputs = ownedUnits.map(pricingInputForHomeUnit);
       const unavailablePriceResults = () => priceInputs.map((input) => unavailableCollectionPrice(input, {
         unavailableReason: 'No matching Stackr price is available.',
@@ -1565,8 +1638,8 @@ export default function HubScreen() {
         })
         : { results: new Map(), failure: null };
       if (!isCurrentRequest()) return;
-      const priceResults = legacyPrices.failure
-        ? applyLegacyResults(legacyPrices.results)
+      let priceResults = blocksIndependentPriceRead(legacyPrices.failure)
+        ? applyLegacyResults(legacyPrices.results).map((result) => ({ ...result, requestError: legacyPrices.failure?.kind ?? null, requestFailure: legacyPrices.failure ?? undefined }))
         : ownedUnits.length
         ? await loadHomeCollectionPrices(priceInputs, {
           isCurrent: isCurrentRequest,
@@ -1591,6 +1664,8 @@ export default function HubScreen() {
         if (priceResults[index]?.central == null) priceResults[index] = result;
       }
       if (!isCurrentRequest()) return;
+      const nextPriceEvidence = mergeCollectionPriceRead(priceInputs, priceResults, collectionPriceEvidenceRef.current);
+      priceResults = nextPriceEvidence.map((entry) => entry.result);
       const nextPricingSummary = pricingSummaryForResults(priceResults);
       const identitySignature = collectionIdentitySignature(priceResults);
       const snapshotScope = selectComparableHomeSnapshotEntries(ownedUnits.map((unit, index) => ({
@@ -1685,15 +1760,10 @@ export default function HubScreen() {
       const nextPricedActiveBinder = pricedBinderSummaries.find((binder) => binder.id === nextActiveBinder?.id)
         ?? selectActiveBinder(pricedBinderSummaries);
       nextDuplicateSummary = applyHomeDuplicatePrices(nextDuplicateSummary, ownedUnits, priceResults);
-      const hadCachedPricing = hasSuccessfulCollectionPricingRef.current;
       const requestFailures = priceResults.filter((result) => result.requestError).length;
 
       if (!await confirmCurrentRequest()) return;
-      if (nextPricingSummary.state === 'unavailable' && hadCachedPricing) {
-        setCollectionPricingWarning('Live refresh is unavailable. Showing your last successful stored-price read.');
-        setCollectionValueError(null);
-        return;
-      }
+      collectionPriceEvidenceRef.current = nextPriceEvidence;
 
       const pricingWarning = requestFailures > 0
         ? `Could not refresh ${requestFailures} price${requestFailures === 1 ? '' : 's'}. ${getCollectionPriceCoverageLabel(nextPricingSummary)}.`
@@ -1726,6 +1796,7 @@ export default function HubScreen() {
 
       void saveHomeCollectionCache(trustedUserId, {
         pricingContractVersion: 2,
+        priceEvidence: nextPriceEvidence,
         mintyDataRefreshedAt: refreshedAt,
         chartRange,
         chartData: nextChartData,
@@ -1812,7 +1883,20 @@ export default function HubScreen() {
       Alert.alert('Live price refresh in progress', 'A provider refresh request is already being queued. Stored prices have not been changed yet.');
       return;
     }
-    const variantIds = [...new Set(refreshableVariantIdsRef.current)].slice(0, HOME_MANUAL_PRICE_REFRESH_LIMIT);
+    if (preparedValuationAvailableRef.current) {
+      manualProviderRefreshInFlightRef.current = true;
+      try {
+        const response = await stackrApiClient.requestCollectionValuationRefresh();
+        Alert.alert('Collection refresh accepted', response.data.refreshRequest?.pending
+          ? 'Your whole collection is queued for review. Accepted, pending, unsupported and blocked work will be reported after that review.'
+          : 'Your collection refresh request has been recorded.');
+      } catch {
+        Alert.alert('Refresh unavailable', 'The request could not be confirmed. Your stored valuation remains visible.');
+      } finally { manualProviderRefreshInFlightRef.current = false; }
+      return;
+    }
+    const rotating = takeRotatingStringBatch(refreshableVariantIdsRef.current, legacyManualRefreshCursorRef.current, HOME_MANUAL_PRICE_REFRESH_LIMIT);
+    const variantIds = rotating.items;
     if (!variantIds.length) {
       Alert.alert(
         'Live price refresh unavailable',
@@ -1840,6 +1924,7 @@ export default function HubScreen() {
           pendingManualPriceRefreshesRef.current.set(item.variantId, Number.isFinite(queuedAt) ? queuedAt : Date.now());
         }
       }
+      legacyManualRefreshCursorRef.current = rotating.nextCursor;
       await loadCollectionValueRef.current();
       const pendingCount = pendingManualPriceRefreshesRef.current.size;
       if (pendingCount) {
@@ -2195,6 +2280,9 @@ export default function HubScreen() {
       cachedHomeSnapshotUserIdRef.current = null;
       hasLoadedCollectionValueRef.current = false;
       hasSuccessfulCollectionPricingRef.current = false;
+        collectionPriceEvidenceRef.current = [];
+        legacyManualRefreshCursorRef.current = 0;
+        preparedValuationAvailableRef.current = false;
       collectionValueReadsRef.current = [];
       refreshableVariantIdsRef.current = [];
       mintyMarketSignatureRef.current = null;
