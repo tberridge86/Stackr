@@ -350,6 +350,30 @@ paths:
         "422": { $ref: "#/components/responses/Error" }
         "429": { $ref: "#/components/responses/Error" }
         "503": { $ref: "#/components/responses/Error" }
+  /market/collection-valuation:
+    get:
+      tags: [Market]
+      operationId: getCollectionValuation
+      description: Private prepared generation for the authenticated owner. Pending and updating responses retain the previous generation and its ownership revision. Never calls external price providers.
+      security: [{ SupabaseBearer: [] }]
+      responses:
+        '200':
+          description: Prepared valuation, or pending preparation. Always private and no-store.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PreparedValuationEnvelope" }
+  /market/collection-valuation/refresh:
+    post:
+      tags: [Market]
+      operationId: requestCollectionValuationRefresh
+      description: Deduplicates a background refresh request for the authenticated user's complete collection. The worker reports accepted, already pending, unsupported, unresolved and blocked identities in the prepared summary. No owner ID is accepted from the caller.
+      security: [{ SupabaseBearer: [] }]
+      responses:
+        '202':
+          description: Collection request accepted for background enumeration. No provider work runs in this request.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PreparedValuationEnvelope" }
   /market/price-snapshots:
     get:
       tags: [Market]
@@ -1113,6 +1137,110 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorEnvelope"
   schemas:
+    PreparedCoverage:
+      type: object
+      description: Quantities are exclusive. totalUnits equals pricedUnits plus unpricedUnits; pricedUnits equals freshUnits plus olderPriceUnits; unpricedUnits equals pending plus retrying plus unsupported plus unresolved plus noProviderQuote. A known subtotal is not a complete-set valuation when coverage is partial.
+      required: [total, currency, totalUnits, distinctPriceIdentities, pricedUnits, freshUnits, olderPriceUnits, unpricedUnits, pending, retrying, unsupported, unresolved, noProviderQuote, oldestSourceAt, latestSourceAt]
+      properties:
+        total: { type: number, nullable: true, minimum: 0 }
+        currency: { type: string, enum: [GBP] }
+        totalUnits: { type: integer, minimum: 0 }
+        distinctPriceIdentities: { type: integer, minimum: 0 }
+        pricedUnits: { type: integer, minimum: 0 }
+        freshUnits: { type: integer, minimum: 0 }
+        olderPriceUnits: { type: integer, minimum: 0 }
+        unpricedUnits: { type: integer, minimum: 0 }
+        pending: { type: integer, minimum: 0 }
+        retrying: { type: integer, minimum: 0 }
+        unsupported: { type: integer, minimum: 0 }
+        unresolved: { type: integer, minimum: 0 }
+        noProviderQuote: { type: integer, minimum: 0 }
+        oldestSourceAt: { type: string, format: date-time, nullable: true }
+        latestSourceAt: { type: string, format: date-time, nullable: true }
+    PreparedValuation:
+      allOf:
+        - $ref: "#/components/schemas/PreparedCoverage"
+        - type: object
+          required: [collectionRevision, valuationRevision, calculatedAt, binders, refresh]
+          properties:
+            collectionRevision: { type: string }
+            valuationRevision: { type: string, format: uuid }
+            calculatedAt: { type: string, format: date-time }
+            trend:
+              type: object
+              required: [scope, evidence, eligible, points]
+              properties:
+                scope: { type: string }
+                evidence: { type: string }
+                eligible: { type: boolean }
+                points:
+                  type: array
+                  maxItems: 1441
+                  items:
+                    type: object
+                    required: [at, total, evidence]
+                    properties:
+                      at: { type: string, format: date-time }
+                      total: { type: number, minimum: 0 }
+                      evidence: { type: string }
+            catalogueRevisions:
+              type: array
+              items: { type: string, format: uuid }
+            cycle:
+              type: object
+              nullable: true
+              properties:
+                id: { type: string, format: uuid }
+                dueAt: { type: string, format: date-time }
+                overdue: { type: boolean }
+                population: { type: integer }
+                accounted: { type: integer }
+            binders:
+              type: array
+              items:
+                type: object
+                required: [binderId, owned, standardSet, masterSet]
+                properties:
+                  binderId: { type: string, format: uuid }
+                  owned: { $ref: "#/components/schemas/PreparedCoverage" }
+                  standardSet:
+                    allOf: [{ $ref: "#/components/schemas/PreparedCoverage" }]
+                    nullable: true
+                  masterSet:
+                    allOf: [{ $ref: "#/components/schemas/PreparedCoverage" }]
+                    nullable: true
+            refresh:
+              type: object
+              nullable: true
+              properties:
+                accepted: { type: integer, minimum: 0 }
+                alreadyPending: { type: integer, minimum: 0 }
+                unsupported: { type: integer, minimum: 0 }
+                unresolved: { type: integer, minimum: 0 }
+                blocked: { type: integer, minimum: 0 }
+                remaining: { type: integer, minimum: 0 }
+    PreparedValuationEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [state, requestedCollectionRevision, summary, refreshRequest]
+              properties:
+                state: { type: string, enum: [ready, pending, updating] }
+                requestedCollectionRevision: { type: string }
+                summary:
+                  allOf: [{ $ref: "#/components/schemas/PreparedValuation" }]
+                  nullable: true
+                refreshRequest:
+                  type: object
+                  nullable: true
+                  required: [requestedAt, completedAt, pending]
+                  properties:
+                    requestedAt: { type: string, format: date-time }
+                    completedAt: { type: string, format: date-time, nullable: true }
+                    pending: { type: boolean }
     QualityEvaluationSubmission:
       type: object
       additionalProperties: false

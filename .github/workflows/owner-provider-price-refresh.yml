@@ -46,7 +46,7 @@ concurrency:
 
 jobs:
   refresh:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.STACKR_OWNER_PRICE_REFRESH_SCHEDULED_ENABLED == 'true')
+    if: vars.STACKR_PRICING_SCHEDULER != 'railway_catalogue' && (github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.STACKR_OWNER_PRICE_REFRESH_SCHEDULED_ENABLED == 'true'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # Interactive runs retain the protected production review. The scheduled

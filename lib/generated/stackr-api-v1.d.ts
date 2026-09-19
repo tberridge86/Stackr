@@ -264,6 +264,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/market/collection-valuation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Private prepared generation for the authenticated owner. Pending and updating responses retain the previous generation and its ownership revision. Never calls external price providers. */
+        get: operations["getCollectionValuation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/market/collection-valuation/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Deduplicates a background refresh request for the authenticated user's complete collection. The worker reports accepted, already pending, unsupported, unresolved and blocked identities in the prepared summary. No owner ID is accepted from the caller. */
+        post: operations["requestCollectionValuationRefresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/market/price-snapshots": {
         parameters: {
             query?: never;
@@ -624,6 +658,85 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Quantities are exclusive. totalUnits equals pricedUnits plus unpricedUnits; pricedUnits equals freshUnits plus olderPriceUnits; unpricedUnits equals pending plus retrying plus unsupported plus unresolved plus noProviderQuote. A known subtotal is not a complete-set valuation when coverage is partial. */
+        PreparedCoverage: {
+            total: number | null;
+            /** @enum {string} */
+            currency: "GBP";
+            totalUnits: number;
+            distinctPriceIdentities: number;
+            pricedUnits: number;
+            freshUnits: number;
+            olderPriceUnits: number;
+            unpricedUnits: number;
+            pending: number;
+            retrying: number;
+            unsupported: number;
+            unresolved: number;
+            noProviderQuote: number;
+            /** Format: date-time */
+            oldestSourceAt: string | null;
+            /** Format: date-time */
+            latestSourceAt: string | null;
+        };
+        PreparedValuation: components["schemas"]["PreparedCoverage"] & {
+            collectionRevision: string;
+            /** Format: uuid */
+            valuationRevision: string;
+            /** Format: date-time */
+            calculatedAt: string;
+            trend?: {
+                scope: string;
+                evidence: string;
+                eligible: boolean;
+                points: {
+                    /** Format: date-time */
+                    at: string;
+                    total: number;
+                    evidence: string;
+                }[];
+            };
+            catalogueRevisions?: string[];
+            cycle?: {
+                /** Format: uuid */
+                id?: string;
+                /** Format: date-time */
+                dueAt?: string;
+                overdue?: boolean;
+                population?: number;
+                accounted?: number;
+            } | null;
+            binders: {
+                /** Format: uuid */
+                binderId: string;
+                owned: components["schemas"]["PreparedCoverage"];
+                standardSet: components["schemas"]["PreparedCoverage"] | null;
+                masterSet: components["schemas"]["PreparedCoverage"] | null;
+            }[];
+            refresh: {
+                accepted?: number;
+                alreadyPending?: number;
+                unsupported?: number;
+                unresolved?: number;
+                blocked?: number;
+                remaining?: number;
+            } | null;
+        };
+        PreparedValuationEnvelope: components["schemas"]["Envelope"] & {
+            data?: {
+                /** @enum {string} */
+                state: "ready" | "pending" | "updating";
+                requestedCollectionRevision: string;
+                summary: components["schemas"]["PreparedValuation"] | null;
+                refreshRequest: {
+                    /** Format: date-time */
+                    requestedAt: string;
+                    /** Format: date-time */
+                    completedAt: string | null;
+                    pending: boolean;
+                } | null;
+            };
+        };
         QualityEvaluationSubmission: {
             runKey: string;
             manifestSha256: string;
@@ -1620,6 +1733,46 @@ export interface operations {
             422: components["responses"]["Error"];
             429: components["responses"]["Error"];
             503: components["responses"]["Error"];
+        };
+    };
+    getCollectionValuation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prepared valuation, or pending preparation. Always private and no-store. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreparedValuationEnvelope"];
+                };
+            };
+        };
+    };
+    requestCollectionValuationRefresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Collection request accepted for background enumeration. No provider work runs in this request. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreparedValuationEnvelope"];
+                };
+            };
         };
     };
     getMarketPriceSnapshots: {

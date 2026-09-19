@@ -41,7 +41,7 @@ jobs:
     # Do not pay for dependency installation every five minutes while the
     # exact worker is disabled. Partial provider configuration still runs its
     # gate so it fails visibly instead of masquerading as a healthy rollout.
-    if: github.event_name != 'schedule' || github.event.schedule != '*/5 * * * *' || vars.PRICING_ENGINE_V2_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED == 'true'
+    if: vars.STACKR_PRICING_SCHEDULER != 'railway_catalogue' && (github.event_name != 'schedule' || github.event.schedule != '*/5 * * * *' || vars.PRICING_ENGINE_V2_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: production

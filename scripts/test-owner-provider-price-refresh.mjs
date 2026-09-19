@@ -193,3 +193,13 @@ assert.equal(exhausted.queueTerminal, 1, 'the fifth failed attempt is terminal r
 assert.equal(exhaustedHarness.patches.at(-1).last_error, 'exact_provider_retry_exhausted');
 
 console.log('Owner provider price refresh tests passed.');
+
+const deferredHarness = queueHarness({ row: { ...queueRow, attempts: 4 } });
+const deferred = await runOwnerProviderRefresh({ supabase: deferredHarness.supabase, refreshExactProviderEstimate: async () => {
+  throw Object.assign(new Error('Shared provider budget backoff'), { code: 'provider_refresh_cooldown', retryAfter: '3600' });
+}, ownerId: queueRow.requested_by, limit: 3, dryRun: false, includeQueue: true, queueOnly: true });
+assert.equal(deferred.queueRetried, 1);
+assert.equal(deferred.queueTerminal, 0, 'budget deferral does not consume a provider attempt');
+assert.equal(deferredHarness.patches.at(-1).attempts, 4);
+assert(Date.parse(deferredHarness.patches.at(-1).run_after) >= Date.now() + 3599000);
+console.log('Shared provider budget deferrals preserve queue attempts and Retry-After.');

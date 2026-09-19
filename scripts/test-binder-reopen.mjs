@@ -185,7 +185,8 @@ await test('native viewability callback and committed ownership hook are wired s
   assert.match(source, /onViewableItemsChanged=\{onBinderViewableItemsChanged\}/);
   assert.match(source, /ownershipReady && !isReadOnly\) retrievalTraceRef\.current\?\.editable/);
   assert.match(source, /const isReadOnly = routeReadOnly \|\| reopenStatus !== null/);
-  assert.match(source, /reopenStatus \? 'Pricing awaits refresh'/, 'saved views must not turn omitted prices into a zero estimate');
+  assert.match(source, /value\?\.total != null/, 'prepared valuation must require an actual stored total');
+  assert.match(source, /Stored valuation pending/, 'saved views must not turn omitted prices into a zero estimate');
 });
 console.log(`${count} reopen, failed-refresh, isolation and measurement tests passed. Not physical-device latency proof.`);
 fs.mkdirSync('reports', { recursive: true }); fs.writeFileSync('reports/binder-reopen-tests.json', JSON.stringify({ tests: count, passed: count, scope: 'Source and persisted-cache regression; no native-device latency measurement', observedAt: new Date().toISOString() }, null, 2));

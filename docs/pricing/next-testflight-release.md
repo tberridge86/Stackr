@@ -4,6 +4,14 @@ Prepared 6 September 2026 for the owner's next larger TestFlight release. This i
 
 The five pinned Stackr-1 tasks are now being assembled in the [combined TestFlight source queue](../releases/next-testflight-pinned-20260906.md). Use that handoff for the coordinated release; the pricing branch and receipts below remain component-level history, not a second release to merge independently.
 
+## Current pricing addition — 19 September 2026
+
+Queue [PR #207](https://github.com/tberridge86/Stackr/pull/207), branch `agent/pricing/catalogue-cycle-20260919`, for the next coordinated production-owner release. Its parent includes merged PR #202. Do not replay the older pricing branch below. The [current release receipt](../releases/catalogue-pricing-20260919.md) records the exact rollout boundaries, checks and rollback; the earlier receipt remains historical.
+
+The release candidate adds stable per-card fallback, stored private Home/Binder valuations, comparable collection history and resumable catalogue scheduling. Stored valuations can be enabled independently on the existing bounded workers after the named migration and live acceptance checks. Full-catalogue provider fetching remains disabled: verified capacity and a measured 12-hour schedule are still missing. Inclusion in this queue does not waive those activation gates.
+
+App version 1.0.3 and production-owner runtime/channel are preserved. Local iOS export and source checks passed on 19 September. No native build, upload, deployment or remote migration was performed. The release owner must review the final PR checks and complete the live migration/API/device checks in the receipt before promotion.
+
 ## Approved Home added to the local queue — 6 September
 
 The owner approved the later value-first collector Home and then explicitly asked to include it alongside pricing. **The Home is now integrated in this local candidate**, with its visuals adapted to the pricing API rather than replacing it. See [combined Home release handoff](home-ux-20260906-queue.md) and the [original approved-source manifest](home-ux-20260906-manifest.json).
