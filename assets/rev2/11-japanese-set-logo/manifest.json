@@ -1170,15 +1170,23 @@
       "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (4).jpeg",
       "sourceIndex": 14,
       "sourcePosition": 4,
-      "sourceLayout": "3x2",
+      "sourceLayout": "custom",
       "sourceCrop": {
-        "left": 0,
-        "top": 562,
-        "right": 512,
-        "bottom": 1024
+        "left": 190,
+        "top": 600,
+        "right": 660,
+        "bottom": 820
       },
       "width": 1000,
-      "height": 833
+      "height": 472,
+      "sourceExclusions": [
+        {
+          "left": 610,
+          "top": 795,
+          "right": 660,
+          "bottom": 820
+        }
+      ]
     },
     {
       "key": "ll",
@@ -1189,15 +1197,15 @@
       "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (4).jpeg",
       "sourceIndex": 14,
       "sourcePosition": 5,
-      "sourceLayout": "3x2",
+      "sourceLayout": "custom",
       "sourceCrop": {
-        "left": 512,
-        "top": 562,
-        "right": 1024,
-        "bottom": 1024
+        "left": 800,
+        "top": 600,
+        "right": 1200,
+        "bottom": 815
       },
       "width": 1000,
-      "height": 565
+      "height": 541
     },
     {
       "key": "kld-keldeo-battle-strength-deck",
