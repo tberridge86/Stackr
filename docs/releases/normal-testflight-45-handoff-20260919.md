@@ -102,4 +102,3 @@ states; physical-device acceptance is still unmeasured.
 Release controls: [production runbook](../../deploy/production-runbook.md). The local coordination checklist is `D:\Stackr-1\deploy\production-release-gates-2026-09-19.md`.
 Local sanitized receipts and the exact IPA are in the isolated checkout's
 `outputs/releases/` directory.
-
