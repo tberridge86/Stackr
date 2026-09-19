@@ -386,6 +386,12 @@ function cardImageRowIsAppReady(row, options = {}) {
   });
 }
 
+function cardImageRowHasDelivery(row, options = {}) {
+  if (!row) return false;
+  const asset = toCatalogueAsset(row, options);
+  return Boolean(asset.deliveryUrl || asset.derivatives.some((item) => item.deliveryUrl));
+}
+
 function preferredAssetRows(rows, keyName, versionScoped = true, options = {}) {
   const selected = new Map();
   for (const row of rows) {
@@ -540,7 +546,9 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
         ?? byPrinting.get(card.cardId)
         ?? null;
       const explicitAlias = artworkVariantId && artworkVariantId !== nativeVariantId;
-      const row = cardImageRowIsAppReady(nativeRow, options)
+      // An approved exact original/rendition wins before any shared face even
+      // when the thumbnail pipeline has not produced every required size.
+      const row = cardImageRowHasDelivery(nativeRow, options)
         ? nativeRow
         : cardImageRowIsAppReady(artworkRow, options)
           ? artworkRow

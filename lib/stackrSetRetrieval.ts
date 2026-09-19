@@ -238,6 +238,13 @@ export function mergeBinderArtwork<T extends { id: string; card_id: string; set_
     const large = enriched.card?.images?.large;
     if (!small && !large) return row;
     const card = { ...row.card, images: { ...row.card?.images, small: small ?? row.card?.images?.small, large: large ?? row.card?.images?.large } };
+    // Image provenance and fallback renditions travel with the new image, while
+    // canonical finish facts and every private field remain the current values.
+    const artworkMetadata = enriched.card?.raw_data?.presentation?.artwork;
+    if (artworkMetadata) card.raw_data = { ...row.card?.raw_data, presentation: {
+      ...row.card?.raw_data?.presentation, artwork: artworkMetadata,
+      selected_image_variant_id: artworkMetadata.sourceVariantId,
+    } };
     // Preserve display-only provider overlays instead of making them serializable.
     if (Object.getOwnPropertyDescriptor(enriched.card, 'images')?.enumerable === false) {
       Object.defineProperty(card, 'images', { value: card.images, enumerable: false, configurable: true, writable: false });

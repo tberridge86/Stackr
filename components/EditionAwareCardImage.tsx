@@ -8,6 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { PRICE_API_URL } from '../lib/config';
+import { getCardArtworkPresentation } from '../lib/cardArtworkPresentation';
 import {
   getEditionVariantImageUrl,
   getEditionAwareImageUrl,
@@ -31,6 +32,7 @@ type Props = {
   style?: StyleProp<ViewStyle>;
   imageStyle?: StyleProp<ImageStyle>;
   resizeMode?: ImageProps['resizeMode'];
+  onReferenceImageChange?: (shared: boolean) => void;
 };
 
 function EditionAwareCardImageBase({
@@ -44,6 +46,7 @@ function EditionAwareCardImageBase({
   style,
   imageStyle,
   resizeMode = 'contain',
+  onReferenceImageChange,
 }: Props) {
   const rawVariantUri = React.useMemo(
     () => getEditionVariantImageUrl(rawData, editionHint, sourceSize),
@@ -98,6 +101,10 @@ function EditionAwareCardImageBase({
   const hasSourceVariant = Boolean(rawVariantUri || remoteVariantUri);
   const needsVisualPatch = Boolean(editionHint && !hasSourceVariant && editionHint !== 'unlimited');
   const contentFit = resizeMode === 'cover' ? 'cover' : resizeMode === 'stretch' ? 'fill' : 'contain';
+  const artwork = getCardArtworkPresentation(rawData);
+  const handleSourceChange = React.useCallback((source: string | null) => {
+    onReferenceImageChange?.(artwork?.candidates.some((candidate) => candidate.uri === source && candidate.kind === 'shared') ?? false);
+  }, [artwork, onReferenceImageChange]);
 
   return (
     <View style={[styles.container, style]}>
@@ -106,12 +113,14 @@ function EditionAwareCardImageBase({
           uri={resolvedDisplayUri}
           fullUri={!hasSourceVariant ? fullUri : undefined}
           fallbackSource={!hasSourceVariant && fallbackUri ? { uri: fallbackUri } : undefined}
+          fallbackUris={!hasSourceVariant ? artwork?.candidates.map((candidate) => candidate.uri).filter((value) => typeof value === 'string') : undefined}
+          onSourceChange={handleSourceChange}
           style={styles.image}
           imageStyle={imageStyle}
           contentFit={contentFit}
           priority={sourceSize === 'small' ? 'low' : 'normal'}
           transition={sourceSize === 'small' ? 140 : 220}
-          showFallbackIcon={false}
+          showFallbackIcon
         />
       ) : (
         <View style={styles.fallback} />

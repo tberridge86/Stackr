@@ -1,0 +1,1199 @@
+{
+  "observedAt": "2026-09-19T11:27:34.895Z",
+  "reportedAt": "2026-09-19T11:29:16.382Z",
+  "baseline": "989da7d489d4e127ac80a8798a1bf67367942954",
+  "api": "https://api.stackrtcg.com/v1",
+  "backend": {
+    "ok": true,
+    "service": "stackr-api",
+    "time": "2026-09-19T11:27:34.556Z",
+    "runtime": {
+      "gitCommit": "92ba011b1442",
+      "gitCommitSource": "bundled_workflow_sha",
+      "deploymentId": "10613eca-a888-4ef0-af96-8dc1cc7d7d20",
+      "railwayEnvironment": "production",
+      "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu"
+    }
+  },
+  "manifest": {
+    "data": {
+      "currentCatalogueVersion": "en:tcgdex-796afd47e430-full-primary-2026-08-19|ja:tcgdex-796afd47e430-full-primary-2026-08-19|zh-cn:api-launch-2026-08-09-v1|zh-tw:tcgdex-796afd47e430-full-primary-2026-08-19|ko:api-launch-2026-08-09-v1",
+      "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "minCompatibleAppSchemaVersion": "1",
+      "latestChangeSequence": 0,
+      "availableLanguageShards": [
+        {
+          "languageCode": "en",
+          "bcp47Code": "en",
+          "nativeName": "English",
+          "englishName": "English",
+          "catalogueVersion": "en:tcgdex-796afd47e430-full-primary-2026-08-19",
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "shardPath": "/v1/sets?language=en",
+          "deltaPath": "/v1/catalog/delta?language=en"
+        },
+        {
+          "languageCode": "ja",
+          "bcp47Code": "ja",
+          "nativeName": "日本語",
+          "englishName": "Japanese",
+          "catalogueVersion": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+          "catalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+          "shardPath": "/v1/sets?language=ja",
+          "deltaPath": "/v1/catalog/delta?language=ja"
+        },
+        {
+          "languageCode": "zh-cn",
+          "bcp47Code": "zh-CN",
+          "nativeName": "Chinese (Simplified)",
+          "englishName": "Chinese (Simplified)",
+          "catalogueVersion": "zh-cn:api-launch-2026-08-09-v1",
+          "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+          "shardPath": "/v1/sets?language=zh-cn",
+          "deltaPath": "/v1/catalog/delta?language=zh-cn"
+        },
+        {
+          "languageCode": "zh-tw",
+          "bcp47Code": "zh-TW",
+          "nativeName": "Chinese (Traditional)",
+          "englishName": "Chinese (Traditional)",
+          "catalogueVersion": "zh-tw:tcgdex-796afd47e430-full-primary-2026-08-19",
+          "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+          "shardPath": "/v1/sets?language=zh-tw",
+          "deltaPath": "/v1/catalog/delta?language=zh-tw"
+        },
+        {
+          "languageCode": "ko",
+          "bcp47Code": "ko",
+          "nativeName": "한국어",
+          "englishName": "Korean",
+          "catalogueVersion": "ko:api-launch-2026-08-09-v1",
+          "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+          "shardPath": "/v1/sets?language=ko",
+          "deltaPath": "/v1/catalog/delta?language=ko"
+        }
+      ],
+      "assetBaseUrl": null,
+      "modelIndexVersion": "en-clip-base-v1",
+      "generatedAt": "2026-09-19T11:27:35.296Z",
+      "etag": "\"wMlUHdd8QEokx55gcwjxVgsqsaRR2ityWSQlcW6Ci4A\""
+    },
+    "meta": {
+      "requestId": "b034cdac-b136-43b7-b781-5a2c815599ce",
+      "apiVersion": "1",
+      "generatedAt": "2026-09-19T11:27:35.296Z"
+    }
+  },
+  "sampleSha256": "9f90518a1a9cfcde58d87942588d501c738ae0c9631f02e1f4ad953e5f6e0492",
+  "sets": [
+    {
+      "language": "en",
+      "setCode": "swsh7",
+      "setId": "5534149f-25ec-4195-b873-7dfbe40e5aac",
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "pages": 4,
+      "paginationComplete": true,
+      "faces": 237,
+      "variants": 370,
+      "missingFaces": 0,
+      "exactAssetAssociations": 237,
+      "approvedSharedPresentation": 133,
+      "unresolvedEditionMappings": 0,
+      "originalsWithoutGridDerivative": 0,
+      "beforePreferredBlank": 0,
+      "afterPreferredBlank": 0,
+      "manifestRows": 0,
+      "manifestReadsSucceeded": 0,
+      "manifestReadsFailed": 0,
+      "manifestFailures": []
+    },
+    {
+      "language": "en",
+      "setCode": "base1",
+      "setId": "97e3aeb6-2645-4c3a-9fd4-10d95a181b6e",
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "pages": 3,
+      "paginationComplete": true,
+      "faces": 102,
+      "variants": 204,
+      "missingFaces": 0,
+      "exactAssetAssociations": 102,
+      "approvedSharedPresentation": 0,
+      "unresolvedEditionMappings": 102,
+      "originalsWithoutGridDerivative": 0,
+      "beforePreferredBlank": 0,
+      "afterPreferredBlank": 58,
+      "manifestRows": 0,
+      "manifestReadsSucceeded": 0,
+      "manifestReadsFailed": 0,
+      "manifestFailures": []
+    },
+    {
+      "language": "ja",
+      "setCode": "M5",
+      "setId": "91be8fc7-b2ed-4169-b41e-0d374e4d466a",
+      "catalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+      "pages": 2,
+      "paginationComplete": true,
+      "faces": 118,
+      "variants": 118,
+      "missingFaces": 0,
+      "exactAssetAssociations": 118,
+      "approvedSharedPresentation": 0,
+      "unresolvedEditionMappings": 0,
+      "originalsWithoutGridDerivative": 70,
+      "beforePreferredBlank": 0,
+      "afterPreferredBlank": 0,
+      "manifestRows": 0,
+      "manifestReadsSucceeded": 0,
+      "manifestReadsFailed": 0,
+      "manifestFailures": []
+    },
+    {
+      "language": "ja",
+      "setCode": "SV2a",
+      "setId": "e42556b8-3e82-44bb-8c52-c06b893ee4a3",
+      "catalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+      "pages": 4,
+      "paginationComplete": true,
+      "faces": 210,
+      "variants": 363,
+      "missingFaces": 0,
+      "exactAssetAssociations": 210,
+      "approvedSharedPresentation": 153,
+      "unresolvedEditionMappings": 0,
+      "originalsWithoutGridDerivative": 0,
+      "beforePreferredBlank": 0,
+      "afterPreferredBlank": 0,
+      "manifestRows": 0,
+      "manifestReadsSucceeded": 0,
+      "manifestReadsFailed": 0,
+      "manifestFailures": []
+    },
+    {
+      "language": "zh-cn",
+      "setCode": "cs6ac",
+      "setId": "786678a0-e593-4205-b391-b392f1e71592",
+      "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "pages": 3,
+      "paginationComplete": true,
+      "faces": 169,
+      "variants": 277,
+      "missingFaces": 0,
+      "exactAssetAssociations": 277,
+      "approvedSharedPresentation": 0,
+      "unresolvedEditionMappings": 0,
+      "originalsWithoutGridDerivative": 0,
+      "beforePreferredBlank": 0,
+      "afterPreferredBlank": 0,
+      "manifestRows": 0,
+      "manifestReadsSucceeded": 0,
+      "manifestReadsFailed": 0,
+      "manifestFailures": []
+    },
+    {
+      "language": "zh-cn",
+      "setCode": "151c",
+      "setId": "8e3da79a-1d8d-40ae-9f09-0150728cfbd6",
+      "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "pages": 5,
+      "paginationComplete": true,
+      "faces": 192,
+      "variants": 470,
+      "missingFaces": 0,
+      "exactAssetAssociations": 470,
+      "approvedSharedPresentation": 0,
+      "unresolvedEditionMappings": 0,
+      "originalsWithoutGridDerivative": 0,
+      "beforePreferredBlank": 0,
+      "afterPreferredBlank": 0,
+      "manifestRows": 0,
+      "manifestReadsSucceeded": 0,
+      "manifestReadsFailed": 0,
+      "manifestFailures": []
+    },
+    {
+      "language": "zh-tw",
+      "setCode": "SV2a",
+      "setId": "3c0c1ae1-7d62-4384-97f1-734ff9460162",
+      "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "pages": 4,
+      "paginationComplete": true,
+      "faces": 207,
+      "variants": 360,
+      "missingFaces": 187,
+      "exactAssetAssociations": 20,
+      "approvedSharedPresentation": 17,
+      "unresolvedEditionMappings": 0,
+      "originalsWithoutGridDerivative": 0,
+      "beforePreferredBlank": 187,
+      "afterPreferredBlank": 187,
+      "manifestRows": 0,
+      "manifestReadsSucceeded": 1,
+      "manifestReadsFailed": 186,
+      "manifestFailures": [
+        {
+          "printingId": "0dff7f31-6e73-46a1-a348-2622b76eaf42",
+          "error": "Error: /assets/manifest?printingId=0dff7f31-6e73-46a1-a348-2622b76eaf42&assetType=card_image&limit=96: 504",
+          "observedAt": "2026-09-19T11:27:47.138Z"
+        },
+        {
+          "printingId": "8138d55d-02c5-457d-a17f-c0e0f60caee4",
+          "error": "Error: /assets/manifest?printingId=8138d55d-02c5-457d-a17f-c0e0f60caee4&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:47.386Z"
+        },
+        {
+          "printingId": "1e558d3d-0e34-4f03-95cb-cc4031687ce6",
+          "error": "Error: /assets/manifest?printingId=1e558d3d-0e34-4f03-95cb-cc4031687ce6&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:47.293Z"
+        },
+        {
+          "printingId": "4bcc0ad3-48b4-426e-93c3-5c8befcad204",
+          "error": "Error: /assets/manifest?printingId=4bcc0ad3-48b4-426e-93c3-5c8befcad204&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:47.577Z"
+        },
+        {
+          "printingId": "162fd2ba-f247-485f-8f14-71c49bb8a0d6",
+          "error": "Error: /assets/manifest?printingId=162fd2ba-f247-485f-8f14-71c49bb8a0d6&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:47.559Z"
+        },
+        {
+          "printingId": "8e733e84-a13f-4bd6-ae88-9d0cedefa93d",
+          "error": "Error: /assets/manifest?printingId=8e733e84-a13f-4bd6-ae88-9d0cedefa93d&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:47.767Z"
+        },
+        {
+          "printingId": "81348774-1934-4875-8ace-adaf3caa6264",
+          "error": "Error: /assets/manifest?printingId=81348774-1934-4875-8ace-adaf3caa6264&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:47.749Z"
+        },
+        {
+          "printingId": "ad316080-3575-40fb-8ea0-f5cb0d803513",
+          "error": "Error: /assets/manifest?printingId=ad316080-3575-40fb-8ea0-f5cb0d803513&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:47.949Z"
+        },
+        {
+          "printingId": "3940c4f9-93ea-477b-b93c-20815e369aaa",
+          "error": "Error: /assets/manifest?printingId=3940c4f9-93ea-477b-b93c-20815e369aaa&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:47.935Z"
+        },
+        {
+          "printingId": "4517a96f-8e90-427c-bdb4-20ef79cc53c5",
+          "error": "Error: /assets/manifest?printingId=4517a96f-8e90-427c-bdb4-20ef79cc53c5&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.117Z"
+        },
+        {
+          "printingId": "e91571e3-0391-4afc-9d69-d5107c099d93",
+          "error": "Error: /assets/manifest?printingId=e91571e3-0391-4afc-9d69-d5107c099d93&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.099Z"
+        },
+        {
+          "printingId": "9d9bb077-a77b-4ae8-b184-4fa303fc8d90",
+          "error": "Error: /assets/manifest?printingId=9d9bb077-a77b-4ae8-b184-4fa303fc8d90&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.310Z"
+        },
+        {
+          "printingId": "c575a7cb-057a-424e-9217-772bff1943a6",
+          "error": "Error: /assets/manifest?printingId=c575a7cb-057a-424e-9217-772bff1943a6&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.281Z"
+        },
+        {
+          "printingId": "90de2934-f11f-480d-a8c3-dea21cf50a96",
+          "error": "Error: /assets/manifest?printingId=90de2934-f11f-480d-a8c3-dea21cf50a96&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.505Z"
+        },
+        {
+          "printingId": "31636f4a-cef4-48fb-bd77-e87f0f7bb17c",
+          "error": "Error: /assets/manifest?printingId=31636f4a-cef4-48fb-bd77-e87f0f7bb17c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.500Z"
+        },
+        {
+          "printingId": "21aa4efb-3016-4b74-ab6b-8c8c82d52efd",
+          "error": "Error: /assets/manifest?printingId=21aa4efb-3016-4b74-ab6b-8c8c82d52efd&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.672Z"
+        },
+        {
+          "printingId": "825c08e4-01cc-477d-b8df-485cacd17efd",
+          "error": "Error: /assets/manifest?printingId=825c08e4-01cc-477d-b8df-485cacd17efd&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.659Z"
+        },
+        {
+          "printingId": "019a06af-b1a8-44d8-b7dd-18a4541deb59",
+          "error": "Error: /assets/manifest?printingId=019a06af-b1a8-44d8-b7dd-18a4541deb59&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.847Z"
+        },
+        {
+          "printingId": "88abddfe-4b3d-4ea4-a2b2-5b000db2b46e",
+          "error": "Error: /assets/manifest?printingId=88abddfe-4b3d-4ea4-a2b2-5b000db2b46e&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:48.825Z"
+        },
+        {
+          "printingId": "5d474700-4719-4138-acd0-d732910fce8a",
+          "error": "Error: /assets/manifest?printingId=5d474700-4719-4138-acd0-d732910fce8a&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.023Z"
+        },
+        {
+          "printingId": "df858dbc-9e4a-483c-94f3-f8a7f7c655b0",
+          "error": "Error: /assets/manifest?printingId=df858dbc-9e4a-483c-94f3-f8a7f7c655b0&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.007Z"
+        },
+        {
+          "printingId": "87d1e3fa-c50e-449e-a117-f61c116da177",
+          "error": "Error: /assets/manifest?printingId=87d1e3fa-c50e-449e-a117-f61c116da177&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.199Z"
+        },
+        {
+          "printingId": "55253994-9c78-4623-b34d-585c0ee887a6",
+          "error": "Error: /assets/manifest?printingId=55253994-9c78-4623-b34d-585c0ee887a6&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.188Z"
+        },
+        {
+          "printingId": "bdda59a6-28bd-4f07-bee7-4751a52259c3",
+          "error": "Error: /assets/manifest?printingId=bdda59a6-28bd-4f07-bee7-4751a52259c3&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.363Z"
+        },
+        {
+          "printingId": "d15d80f4-283c-4f0c-8e87-2631de3778da",
+          "error": "Error: /assets/manifest?printingId=d15d80f4-283c-4f0c-8e87-2631de3778da&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.355Z"
+        },
+        {
+          "printingId": "898f6540-24ce-4e9b-90c6-6f4c590f7434",
+          "error": "Error: /assets/manifest?printingId=898f6540-24ce-4e9b-90c6-6f4c590f7434&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.547Z"
+        },
+        {
+          "printingId": "dccc0985-82d7-4e5b-b503-832c5efe8a8c",
+          "error": "Error: /assets/manifest?printingId=dccc0985-82d7-4e5b-b503-832c5efe8a8c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.529Z"
+        },
+        {
+          "printingId": "6d6c2869-6dd3-4be5-b778-dfda2f7e765b",
+          "error": "Error: /assets/manifest?printingId=6d6c2869-6dd3-4be5-b778-dfda2f7e765b&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.715Z"
+        },
+        {
+          "printingId": "c2270dd0-1847-4156-9ed2-7ebd9097822f",
+          "error": "Error: /assets/manifest?printingId=c2270dd0-1847-4156-9ed2-7ebd9097822f&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.700Z"
+        },
+        {
+          "printingId": "5ccf3511-9ee7-40d2-bdca-763f60350618",
+          "error": "Error: /assets/manifest?printingId=5ccf3511-9ee7-40d2-bdca-763f60350618&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.899Z"
+        },
+        {
+          "printingId": "53105b7f-68db-4cce-81f6-8eeaa8b10c30",
+          "error": "Error: /assets/manifest?printingId=53105b7f-68db-4cce-81f6-8eeaa8b10c30&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:49.884Z"
+        },
+        {
+          "printingId": "a7732090-a80d-4297-94e6-66ea92f7e7e0",
+          "error": "Error: /assets/manifest?printingId=a7732090-a80d-4297-94e6-66ea92f7e7e0&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.066Z"
+        },
+        {
+          "printingId": "3394e91d-54bc-40c9-a36d-ff767ec52bfd",
+          "error": "Error: /assets/manifest?printingId=3394e91d-54bc-40c9-a36d-ff767ec52bfd&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.061Z"
+        },
+        {
+          "printingId": "875043e8-61bd-41a5-8030-51b4f44e2294",
+          "error": "Error: /assets/manifest?printingId=875043e8-61bd-41a5-8030-51b4f44e2294&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.235Z"
+        },
+        {
+          "printingId": "fbcc44c1-c4e4-4d69-8aa5-85ac609428fc",
+          "error": "Error: /assets/manifest?printingId=fbcc44c1-c4e4-4d69-8aa5-85ac609428fc&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.226Z"
+        },
+        {
+          "printingId": "12c384af-2709-4769-bb6b-2c80f980b4bb",
+          "error": "Error: /assets/manifest?printingId=12c384af-2709-4769-bb6b-2c80f980b4bb&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.395Z"
+        },
+        {
+          "printingId": "98cef578-6c40-40f1-b17c-00dc24f90ef1",
+          "error": "Error: /assets/manifest?printingId=98cef578-6c40-40f1-b17c-00dc24f90ef1&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.380Z"
+        },
+        {
+          "printingId": "2bf7cf25-3b77-4abf-86eb-c875590f8a53",
+          "error": "Error: /assets/manifest?printingId=2bf7cf25-3b77-4abf-86eb-c875590f8a53&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.565Z"
+        },
+        {
+          "printingId": "d91e09f8-5698-4d81-af18-3d28d643ec58",
+          "error": "Error: /assets/manifest?printingId=d91e09f8-5698-4d81-af18-3d28d643ec58&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.553Z"
+        },
+        {
+          "printingId": "6afed3c3-f3a3-4182-b006-9749be391faa",
+          "error": "Error: /assets/manifest?printingId=6afed3c3-f3a3-4182-b006-9749be391faa&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.737Z"
+        },
+        {
+          "printingId": "8d05ccb3-f4d8-4d86-8c18-4582e00009b1",
+          "error": "Error: /assets/manifest?printingId=8d05ccb3-f4d8-4d86-8c18-4582e00009b1&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.712Z"
+        },
+        {
+          "printingId": "6062f726-230b-454d-9f17-133a61fc1a34",
+          "error": "Error: /assets/manifest?printingId=6062f726-230b-454d-9f17-133a61fc1a34&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.909Z"
+        },
+        {
+          "printingId": "140feed4-664f-4458-8214-8f05c447baed",
+          "error": "Error: /assets/manifest?printingId=140feed4-664f-4458-8214-8f05c447baed&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:50.896Z"
+        },
+        {
+          "printingId": "fe90d5fb-1954-4376-a1d2-70d034c96d65",
+          "error": "Error: /assets/manifest?printingId=fe90d5fb-1954-4376-a1d2-70d034c96d65&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.069Z"
+        },
+        {
+          "printingId": "d4a0b1c7-ee44-40e4-a32b-5da857598b48",
+          "error": "Error: /assets/manifest?printingId=d4a0b1c7-ee44-40e4-a32b-5da857598b48&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.064Z"
+        },
+        {
+          "printingId": "d20b4f20-1038-483c-9fd1-17c4770255db",
+          "error": "Error: /assets/manifest?printingId=d20b4f20-1038-483c-9fd1-17c4770255db&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.276Z"
+        },
+        {
+          "printingId": "9034045f-6547-42fc-b948-c89f0430f592",
+          "error": "Error: /assets/manifest?printingId=9034045f-6547-42fc-b948-c89f0430f592&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.246Z"
+        },
+        {
+          "printingId": "0160f4c3-2b55-4fb3-884f-cda11be8a3d5",
+          "error": "Error: /assets/manifest?printingId=0160f4c3-2b55-4fb3-884f-cda11be8a3d5&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.470Z"
+        },
+        {
+          "printingId": "dfce1016-75fb-461d-81ba-6fda18f460d6",
+          "error": "Error: /assets/manifest?printingId=dfce1016-75fb-461d-81ba-6fda18f460d6&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.459Z"
+        },
+        {
+          "printingId": "3ff07463-f877-42b9-b274-ff21199dc637",
+          "error": "Error: /assets/manifest?printingId=3ff07463-f877-42b9-b274-ff21199dc637&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.635Z"
+        },
+        {
+          "printingId": "77c9520a-9cf3-42c4-8815-71ba2baa8086",
+          "error": "Error: /assets/manifest?printingId=77c9520a-9cf3-42c4-8815-71ba2baa8086&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.627Z"
+        },
+        {
+          "printingId": "dc6ed84c-dc74-4ff7-a28e-afe296713fe6",
+          "error": "Error: /assets/manifest?printingId=dc6ed84c-dc74-4ff7-a28e-afe296713fe6&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.801Z"
+        },
+        {
+          "printingId": "ec8bf8ea-993e-4b01-ae62-b1179c530fdf",
+          "error": "Error: /assets/manifest?printingId=ec8bf8ea-993e-4b01-ae62-b1179c530fdf&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.785Z"
+        },
+        {
+          "printingId": "b0562a95-9a33-41a2-9974-b44d25cd3bdb",
+          "error": "Error: /assets/manifest?printingId=b0562a95-9a33-41a2-9974-b44d25cd3bdb&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.961Z"
+        },
+        {
+          "printingId": "5104e5aa-e311-4359-a2e9-dcf18a96e663",
+          "error": "Error: /assets/manifest?printingId=5104e5aa-e311-4359-a2e9-dcf18a96e663&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:51.954Z"
+        },
+        {
+          "printingId": "3f291979-7b04-4634-a8e4-5ed5d830eb38",
+          "error": "Error: /assets/manifest?printingId=3f291979-7b04-4634-a8e4-5ed5d830eb38&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.135Z"
+        },
+        {
+          "printingId": "a28efafb-9a22-4f46-b2aa-8cbbe68b6082",
+          "error": "Error: /assets/manifest?printingId=a28efafb-9a22-4f46-b2aa-8cbbe68b6082&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.113Z"
+        },
+        {
+          "printingId": "bc303582-fa6d-43ae-abba-1dbb63df163d",
+          "error": "Error: /assets/manifest?printingId=bc303582-fa6d-43ae-abba-1dbb63df163d&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.310Z"
+        },
+        {
+          "printingId": "74436e10-0980-4810-b852-43430b9aa332",
+          "error": "Error: /assets/manifest?printingId=74436e10-0980-4810-b852-43430b9aa332&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.309Z"
+        },
+        {
+          "printingId": "745eaa62-b9f2-454a-8f67-086a43c6833e",
+          "error": "Error: /assets/manifest?printingId=745eaa62-b9f2-454a-8f67-086a43c6833e&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.483Z"
+        },
+        {
+          "printingId": "cdc6aaf2-08c7-4d5b-ba77-55ee42473968",
+          "error": "Error: /assets/manifest?printingId=cdc6aaf2-08c7-4d5b-ba77-55ee42473968&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.460Z"
+        },
+        {
+          "printingId": "4ffcbd71-586f-402d-a0b5-80ab49291444",
+          "error": "Error: /assets/manifest?printingId=4ffcbd71-586f-402d-a0b5-80ab49291444&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.667Z"
+        },
+        {
+          "printingId": "fc70c09c-df7f-4024-b24d-e14aa7d64bd7",
+          "error": "Error: /assets/manifest?printingId=fc70c09c-df7f-4024-b24d-e14aa7d64bd7&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.659Z"
+        },
+        {
+          "printingId": "a588f313-87db-4391-b87b-2921e8972169",
+          "error": "Error: /assets/manifest?printingId=a588f313-87db-4391-b87b-2921e8972169&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.846Z"
+        },
+        {
+          "printingId": "4ececab5-bd8f-43d2-b2ef-f842631c9dd2",
+          "error": "Error: /assets/manifest?printingId=4ececab5-bd8f-43d2-b2ef-f842631c9dd2&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:52.822Z"
+        },
+        {
+          "printingId": "dfb5cbde-2097-4a03-9b53-5e5fb10f91e5",
+          "error": "Error: /assets/manifest?printingId=dfb5cbde-2097-4a03-9b53-5e5fb10f91e5&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.021Z"
+        },
+        {
+          "printingId": "0c13472b-4c12-4c9c-8d94-87e5d026ecfa",
+          "error": "Error: /assets/manifest?printingId=0c13472b-4c12-4c9c-8d94-87e5d026ecfa&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.003Z"
+        },
+        {
+          "printingId": "fa711990-8baf-4658-82b7-f93cd9a7e1ae",
+          "error": "Error: /assets/manifest?printingId=fa711990-8baf-4658-82b7-f93cd9a7e1ae&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.183Z"
+        },
+        {
+          "printingId": "4e64f4da-4597-48d9-bf5d-50904684ae9a",
+          "error": "Error: /assets/manifest?printingId=4e64f4da-4597-48d9-bf5d-50904684ae9a&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.174Z"
+        },
+        {
+          "printingId": "35f00ec4-805d-4792-a466-0c0556cbefd9",
+          "error": "Error: /assets/manifest?printingId=35f00ec4-805d-4792-a466-0c0556cbefd9&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.346Z"
+        },
+        {
+          "printingId": "049fab90-db19-41b8-affd-7f5a98fd380c",
+          "error": "Error: /assets/manifest?printingId=049fab90-db19-41b8-affd-7f5a98fd380c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.335Z"
+        },
+        {
+          "printingId": "6b977abd-951b-441f-bdf5-b6423233451e",
+          "error": "Error: /assets/manifest?printingId=6b977abd-951b-441f-bdf5-b6423233451e&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.519Z"
+        },
+        {
+          "printingId": "87465d50-7990-4240-b564-7b94a5787920",
+          "error": "Error: /assets/manifest?printingId=87465d50-7990-4240-b564-7b94a5787920&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.499Z"
+        },
+        {
+          "printingId": "64fd843f-c8b8-4a7b-a3ad-0bf7cb77df47",
+          "error": "Error: /assets/manifest?printingId=64fd843f-c8b8-4a7b-a3ad-0bf7cb77df47&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.699Z"
+        },
+        {
+          "printingId": "dd07ed02-a786-4f46-a225-ece0f09bc4c3",
+          "error": "Error: /assets/manifest?printingId=dd07ed02-a786-4f46-a225-ece0f09bc4c3&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:53.688Z"
+        },
+        {
+          "printingId": "69549310-bf79-4cb4-8c32-545fcb720a15",
+          "error": "Error: /assets/manifest?printingId=69549310-bf79-4cb4-8c32-545fcb720a15&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.233Z"
+        },
+        {
+          "printingId": "aea3c4d6-5a00-427f-8acc-fa4120c4392c",
+          "error": "Error: /assets/manifest?printingId=aea3c4d6-5a00-427f-8acc-fa4120c4392c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.222Z"
+        },
+        {
+          "printingId": "341b434b-41d8-4f8d-9e67-3bdf00fd2ac3",
+          "error": "Error: /assets/manifest?printingId=341b434b-41d8-4f8d-9e67-3bdf00fd2ac3&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.399Z"
+        },
+        {
+          "printingId": "7e48f629-cf84-4b56-8461-8b642b5031c7",
+          "error": "Error: /assets/manifest?printingId=7e48f629-cf84-4b56-8461-8b642b5031c7&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.392Z"
+        },
+        {
+          "printingId": "a7f2989a-10a9-4152-8d9c-e36a71037cd9",
+          "error": "Error: /assets/manifest?printingId=a7f2989a-10a9-4152-8d9c-e36a71037cd9&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.567Z"
+        },
+        {
+          "printingId": "d9165ad9-b454-413e-b41c-811213b3939b",
+          "error": "Error: /assets/manifest?printingId=d9165ad9-b454-413e-b41c-811213b3939b&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.555Z"
+        },
+        {
+          "printingId": "5e712b76-a0c0-4c1a-8f55-a694042ef0a6",
+          "error": "Error: /assets/manifest?printingId=5e712b76-a0c0-4c1a-8f55-a694042ef0a6&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.735Z"
+        },
+        {
+          "printingId": "3388de4b-f40d-4641-bfdb-51b220acdef9",
+          "error": "Error: /assets/manifest?printingId=3388de4b-f40d-4641-bfdb-51b220acdef9&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.720Z"
+        },
+        {
+          "printingId": "4ca22448-00c7-4135-ad89-e5d37ebb1290",
+          "error": "Error: /assets/manifest?printingId=4ca22448-00c7-4135-ad89-e5d37ebb1290&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.891Z"
+        },
+        {
+          "printingId": "fbeab9a2-ca86-4391-a037-4102fe255b51",
+          "error": "Error: /assets/manifest?printingId=fbeab9a2-ca86-4391-a037-4102fe255b51&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:54.890Z"
+        },
+        {
+          "printingId": "22ba9e89-0028-45a6-afc2-8cfa876c9432",
+          "error": "Error: /assets/manifest?printingId=22ba9e89-0028-45a6-afc2-8cfa876c9432&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.056Z"
+        },
+        {
+          "printingId": "72fea26c-1ab3-4848-9f03-db5fe6769a12",
+          "error": "Error: /assets/manifest?printingId=72fea26c-1ab3-4848-9f03-db5fe6769a12&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.049Z"
+        },
+        {
+          "printingId": "8bace6fe-90cd-4bf3-8fc7-6cacfef77b81",
+          "error": "Error: /assets/manifest?printingId=8bace6fe-90cd-4bf3-8fc7-6cacfef77b81&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.281Z"
+        },
+        {
+          "printingId": "bcefb7c2-27eb-4ab9-b7df-19502bd48248",
+          "error": "Error: /assets/manifest?printingId=bcefb7c2-27eb-4ab9-b7df-19502bd48248&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.267Z"
+        },
+        {
+          "printingId": "eb9d6aa4-af0e-4c16-a7dd-92c4749b8630",
+          "error": "Error: /assets/manifest?printingId=eb9d6aa4-af0e-4c16-a7dd-92c4749b8630&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.447Z"
+        },
+        {
+          "printingId": "33500a8f-5afe-41f7-b04f-016360045130",
+          "error": "Error: /assets/manifest?printingId=33500a8f-5afe-41f7-b04f-016360045130&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.440Z"
+        },
+        {
+          "printingId": "dcdf8934-0363-46da-abe9-27b674a7a2b7",
+          "error": "Error: /assets/manifest?printingId=dcdf8934-0363-46da-abe9-27b674a7a2b7&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.606Z"
+        },
+        {
+          "printingId": "bf7ce384-2688-476a-8207-bb54ff824493",
+          "error": "Error: /assets/manifest?printingId=bf7ce384-2688-476a-8207-bb54ff824493&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.600Z"
+        },
+        {
+          "printingId": "a685d208-3e4f-46b6-a06a-659c1c241924",
+          "error": "Error: /assets/manifest?printingId=a685d208-3e4f-46b6-a06a-659c1c241924&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.763Z"
+        },
+        {
+          "printingId": "20f7bd7a-6869-4843-b02d-b1e6faec6f10",
+          "error": "Error: /assets/manifest?printingId=20f7bd7a-6869-4843-b02d-b1e6faec6f10&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.759Z"
+        },
+        {
+          "printingId": "095485bf-9f7a-4e3e-a6d8-08acb64e4e86",
+          "error": "Error: /assets/manifest?printingId=095485bf-9f7a-4e3e-a6d8-08acb64e4e86&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.933Z"
+        },
+        {
+          "printingId": "a4d94405-8d3f-42b8-a525-c6eda248253d",
+          "error": "Error: /assets/manifest?printingId=a4d94405-8d3f-42b8-a525-c6eda248253d&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:55.914Z"
+        },
+        {
+          "printingId": "42054ee3-85c2-43ec-bca3-988a63f33704",
+          "error": "Error: /assets/manifest?printingId=42054ee3-85c2-43ec-bca3-988a63f33704&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.123Z"
+        },
+        {
+          "printingId": "36f4be0f-45e2-4324-8883-0e695ca54509",
+          "error": "Error: /assets/manifest?printingId=36f4be0f-45e2-4324-8883-0e695ca54509&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.121Z"
+        },
+        {
+          "printingId": "e5624a7c-4a05-44b2-bb22-fc9c79451ad2",
+          "error": "Error: /assets/manifest?printingId=e5624a7c-4a05-44b2-bb22-fc9c79451ad2&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.291Z"
+        },
+        {
+          "printingId": "2566babe-2d46-457f-ae89-85040b9ba8ae",
+          "error": "Error: /assets/manifest?printingId=2566babe-2d46-457f-ae89-85040b9ba8ae&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.283Z"
+        },
+        {
+          "printingId": "fa3a385d-35d1-4faa-9ce9-28b4044702af",
+          "error": "Error: /assets/manifest?printingId=fa3a385d-35d1-4faa-9ce9-28b4044702af&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.467Z"
+        },
+        {
+          "printingId": "867c29f1-e04e-4d42-9c35-920c1722607e",
+          "error": "Error: /assets/manifest?printingId=867c29f1-e04e-4d42-9c35-920c1722607e&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.462Z"
+        },
+        {
+          "printingId": "c050a72e-e092-4f1c-8e42-489003f382cd",
+          "error": "Error: /assets/manifest?printingId=c050a72e-e092-4f1c-8e42-489003f382cd&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.649Z"
+        },
+        {
+          "printingId": "102a6366-3b03-477d-8e10-ff8f6ce7868f",
+          "error": "Error: /assets/manifest?printingId=102a6366-3b03-477d-8e10-ff8f6ce7868f&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.632Z"
+        },
+        {
+          "printingId": "391543ec-cdd6-4215-bf04-2e12510e2f00",
+          "error": "Error: /assets/manifest?printingId=391543ec-cdd6-4215-bf04-2e12510e2f00&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.834Z"
+        },
+        {
+          "printingId": "5530718b-a84d-4bf0-8ba9-b37818903110",
+          "error": "Error: /assets/manifest?printingId=5530718b-a84d-4bf0-8ba9-b37818903110&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.821Z"
+        },
+        {
+          "printingId": "1e3103e1-dd4b-453f-b43e-18d58f4c2b2c",
+          "error": "Error: /assets/manifest?printingId=1e3103e1-dd4b-453f-b43e-18d58f4c2b2c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.017Z"
+        },
+        {
+          "printingId": "33af2423-fe5e-4960-a44d-0e3085b2d59d",
+          "error": "Error: /assets/manifest?printingId=33af2423-fe5e-4960-a44d-0e3085b2d59d&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:56.995Z"
+        },
+        {
+          "printingId": "95caf22b-fa20-428f-902c-b84005fb0ccb",
+          "error": "Error: /assets/manifest?printingId=95caf22b-fa20-428f-902c-b84005fb0ccb&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.205Z"
+        },
+        {
+          "printingId": "ba55ea63-1a73-4b22-982f-579804e89cfa",
+          "error": "Error: /assets/manifest?printingId=ba55ea63-1a73-4b22-982f-579804e89cfa&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.192Z"
+        },
+        {
+          "printingId": "9116ecdb-8497-4691-bf02-01711c3c173c",
+          "error": "Error: /assets/manifest?printingId=9116ecdb-8497-4691-bf02-01711c3c173c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.375Z"
+        },
+        {
+          "printingId": "627e34b4-36ce-4efc-9fc0-c5a2ad562f57",
+          "error": "Error: /assets/manifest?printingId=627e34b4-36ce-4efc-9fc0-c5a2ad562f57&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.367Z"
+        },
+        {
+          "printingId": "28d9b4c1-9792-422f-855e-321fb4a6478e",
+          "error": "Error: /assets/manifest?printingId=28d9b4c1-9792-422f-855e-321fb4a6478e&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.535Z"
+        },
+        {
+          "printingId": "e521be08-fc36-4b5d-92e7-9751ad8e2a88",
+          "error": "Error: /assets/manifest?printingId=e521be08-fc36-4b5d-92e7-9751ad8e2a88&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.525Z"
+        },
+        {
+          "printingId": "1d2dd2dd-b37a-44e9-af56-5dd751920556",
+          "error": "Error: /assets/manifest?printingId=1d2dd2dd-b37a-44e9-af56-5dd751920556&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.725Z"
+        },
+        {
+          "printingId": "29489632-7423-47b8-aad0-5cf7349c35ed",
+          "error": "Error: /assets/manifest?printingId=29489632-7423-47b8-aad0-5cf7349c35ed&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.709Z"
+        },
+        {
+          "printingId": "f5defa7f-85fc-4890-8fff-cec066245278",
+          "error": "Error: /assets/manifest?printingId=f5defa7f-85fc-4890-8fff-cec066245278&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.892Z"
+        },
+        {
+          "printingId": "1ca8b781-2a89-4d70-869e-013a6a4a2f6a",
+          "error": "Error: /assets/manifest?printingId=1ca8b781-2a89-4d70-869e-013a6a4a2f6a&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:57.878Z"
+        },
+        {
+          "printingId": "d1700e43-ebcc-4016-89dc-5695dee577ce",
+          "error": "Error: /assets/manifest?printingId=d1700e43-ebcc-4016-89dc-5695dee577ce&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.054Z"
+        },
+        {
+          "printingId": "36d4351b-65bf-49b2-856d-9b3dd8ab8a66",
+          "error": "Error: /assets/manifest?printingId=36d4351b-65bf-49b2-856d-9b3dd8ab8a66&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.038Z"
+        },
+        {
+          "printingId": "abe97b79-67e5-45d7-98ee-23ba9b017b48",
+          "error": "Error: /assets/manifest?printingId=abe97b79-67e5-45d7-98ee-23ba9b017b48&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.221Z"
+        },
+        {
+          "printingId": "6a192e52-f35e-4d06-adf7-0b3e204bf118",
+          "error": "Error: /assets/manifest?printingId=6a192e52-f35e-4d06-adf7-0b3e204bf118&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.205Z"
+        },
+        {
+          "printingId": "820d5306-e908-42cc-9223-96d13f415ce8",
+          "error": "Error: /assets/manifest?printingId=820d5306-e908-42cc-9223-96d13f415ce8&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.381Z"
+        },
+        {
+          "printingId": "cccec1a8-0b2b-41e3-98d1-fce9266aa78a",
+          "error": "Error: /assets/manifest?printingId=cccec1a8-0b2b-41e3-98d1-fce9266aa78a&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.368Z"
+        },
+        {
+          "printingId": "cc45238e-0478-42de-9da5-fb186fd1cbaa",
+          "error": "Error: /assets/manifest?printingId=cc45238e-0478-42de-9da5-fb186fd1cbaa&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.565Z"
+        },
+        {
+          "printingId": "d077474f-0054-42b5-a4bb-a002d742c8af",
+          "error": "Error: /assets/manifest?printingId=d077474f-0054-42b5-a4bb-a002d742c8af&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.545Z"
+        },
+        {
+          "printingId": "075a336a-a263-4ab8-a44a-6e905015ec02",
+          "error": "Error: /assets/manifest?printingId=075a336a-a263-4ab8-a44a-6e905015ec02&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.759Z"
+        },
+        {
+          "printingId": "ae35ed01-a70a-4ec1-8eef-bb24d7b24271",
+          "error": "Error: /assets/manifest?printingId=ae35ed01-a70a-4ec1-8eef-bb24d7b24271&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.749Z"
+        },
+        {
+          "printingId": "59a82e7b-6ced-40b9-959e-b7fbc8b444b3",
+          "error": "Error: /assets/manifest?printingId=59a82e7b-6ced-40b9-959e-b7fbc8b444b3&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.922Z"
+        },
+        {
+          "printingId": "603b95ea-4a51-48ef-b541-3b895bffcd41",
+          "error": "Error: /assets/manifest?printingId=603b95ea-4a51-48ef-b541-3b895bffcd41&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:58.917Z"
+        },
+        {
+          "printingId": "d9b43c51-dc23-4916-acb4-b628deede242",
+          "error": "Error: /assets/manifest?printingId=d9b43c51-dc23-4916-acb4-b628deede242&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.090Z"
+        },
+        {
+          "printingId": "79160d3b-d3c1-4f72-80ad-9937904c2bec",
+          "error": "Error: /assets/manifest?printingId=79160d3b-d3c1-4f72-80ad-9937904c2bec&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.071Z"
+        },
+        {
+          "printingId": "240a0ff4-4171-45e5-97b0-44b980c552ee",
+          "error": "Error: /assets/manifest?printingId=240a0ff4-4171-45e5-97b0-44b980c552ee&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.258Z"
+        },
+        {
+          "printingId": "2f30e3a5-957a-4794-b0bc-6a728f7fb7ab",
+          "error": "Error: /assets/manifest?printingId=2f30e3a5-957a-4794-b0bc-6a728f7fb7ab&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.244Z"
+        },
+        {
+          "printingId": "2e3024bc-4b4f-4f84-9b7c-dd84c5e1a84d",
+          "error": "Error: /assets/manifest?printingId=2e3024bc-4b4f-4f84-9b7c-dd84c5e1a84d&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.417Z"
+        },
+        {
+          "printingId": "05dd280f-3c05-4542-890e-7648392583b5",
+          "error": "Error: /assets/manifest?printingId=05dd280f-3c05-4542-890e-7648392583b5&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.407Z"
+        },
+        {
+          "printingId": "a4400de1-2d17-4593-bc60-4c17f962c8b6",
+          "error": "Error: /assets/manifest?printingId=a4400de1-2d17-4593-bc60-4c17f962c8b6&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.595Z"
+        },
+        {
+          "printingId": "cac742d2-5127-4595-b843-f2b08af08e7b",
+          "error": "Error: /assets/manifest?printingId=cac742d2-5127-4595-b843-f2b08af08e7b&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.591Z"
+        },
+        {
+          "printingId": "4b339bb6-d44f-4c4e-ac3f-c8d5eca3d889",
+          "error": "Error: /assets/manifest?printingId=4b339bb6-d44f-4c4e-ac3f-c8d5eca3d889&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.765Z"
+        },
+        {
+          "printingId": "b4240f90-c1e9-49a9-8912-3fedcf4c93ea",
+          "error": "Error: /assets/manifest?printingId=b4240f90-c1e9-49a9-8912-3fedcf4c93ea&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.749Z"
+        },
+        {
+          "printingId": "aaabe356-cbec-408d-8428-59114f8d7c1d",
+          "error": "Error: /assets/manifest?printingId=aaabe356-cbec-408d-8428-59114f8d7c1d&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.945Z"
+        },
+        {
+          "printingId": "dfe405cf-4d5d-4360-8046-5f35f246b535",
+          "error": "Error: /assets/manifest?printingId=dfe405cf-4d5d-4360-8046-5f35f246b535&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:27:59.920Z"
+        },
+        {
+          "printingId": "f6dc3905-55c0-44f9-8b2c-9a3efee68d9a",
+          "error": "Error: /assets/manifest?printingId=f6dc3905-55c0-44f9-8b2c-9a3efee68d9a&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.117Z"
+        },
+        {
+          "printingId": "084ea964-334b-4932-b1fd-9d8836709dc0",
+          "error": "Error: /assets/manifest?printingId=084ea964-334b-4932-b1fd-9d8836709dc0&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.111Z"
+        },
+        {
+          "printingId": "1c5f5e64-d229-4d66-806f-f160bdd89796",
+          "error": "Error: /assets/manifest?printingId=1c5f5e64-d229-4d66-806f-f160bdd89796&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.299Z"
+        },
+        {
+          "printingId": "c880177e-8043-482c-aa58-5405e3f06906",
+          "error": "Error: /assets/manifest?printingId=c880177e-8043-482c-aa58-5405e3f06906&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.293Z"
+        },
+        {
+          "printingId": "c48ecf7e-da98-42a3-be87-6ea6ce16ebd1",
+          "error": "Error: /assets/manifest?printingId=c48ecf7e-da98-42a3-be87-6ea6ce16ebd1&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.475Z"
+        },
+        {
+          "printingId": "762c10be-0432-4a92-9490-3932bd741cfa",
+          "error": "Error: /assets/manifest?printingId=762c10be-0432-4a92-9490-3932bd741cfa&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.463Z"
+        },
+        {
+          "printingId": "0f44c706-267b-4a7a-b8d6-80a5945305ba",
+          "error": "Error: /assets/manifest?printingId=0f44c706-267b-4a7a-b8d6-80a5945305ba&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.649Z"
+        },
+        {
+          "printingId": "743ba832-0356-4710-87dd-e9a1bebce6aa",
+          "error": "Error: /assets/manifest?printingId=743ba832-0356-4710-87dd-e9a1bebce6aa&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.641Z"
+        },
+        {
+          "printingId": "044aafb4-b3d0-46f6-8873-f2775726c86c",
+          "error": "Error: /assets/manifest?printingId=044aafb4-b3d0-46f6-8873-f2775726c86c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.822Z"
+        },
+        {
+          "printingId": "bae8bc5d-9ddf-4edb-bbca-7a46af3b09fd",
+          "error": "Error: /assets/manifest?printingId=bae8bc5d-9ddf-4edb-bbca-7a46af3b09fd&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.817Z"
+        },
+        {
+          "printingId": "9c04dc95-cb3b-4792-b99c-616b3ff91217",
+          "error": "Error: /assets/manifest?printingId=9c04dc95-cb3b-4792-b99c-616b3ff91217&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:01.001Z"
+        },
+        {
+          "printingId": "9b98ee35-65ca-4f84-a720-da2a23bc3a2d",
+          "error": "Error: /assets/manifest?printingId=9b98ee35-65ca-4f84-a720-da2a23bc3a2d&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:00.975Z"
+        },
+        {
+          "printingId": "7441eb4f-da64-42b3-acaa-baffd635c7ae",
+          "error": "Error: /assets/manifest?printingId=7441eb4f-da64-42b3-acaa-baffd635c7ae&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:01.167Z"
+        },
+        {
+          "printingId": "ee463265-9508-4904-bb71-b46052cef54f",
+          "error": "Error: /assets/manifest?printingId=ee463265-9508-4904-bb71-b46052cef54f&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:01.156Z"
+        },
+        {
+          "printingId": "389219a6-a71c-4c6a-bf9d-7048f23664c4",
+          "error": "Error: /assets/manifest?printingId=389219a6-a71c-4c6a-bf9d-7048f23664c4&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:01.329Z"
+        },
+        {
+          "printingId": "d382eaf8-2f55-4990-9793-b9fb909d8f97",
+          "error": "Error: /assets/manifest?printingId=d382eaf8-2f55-4990-9793-b9fb909d8f97&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:01.319Z"
+        },
+        {
+          "printingId": "266b9471-460d-4576-9ebb-353c37735246",
+          "error": "Error: /assets/manifest?printingId=266b9471-460d-4576-9ebb-353c37735246&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:01.493Z"
+        },
+        {
+          "printingId": "15cfad28-210b-4022-963a-96f160d359ed",
+          "error": "Error: /assets/manifest?printingId=15cfad28-210b-4022-963a-96f160d359ed&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:01.712Z"
+        },
+        {
+          "printingId": "d6c46784-02d3-4ab4-b426-1eae8ac7ab63",
+          "error": "Error: /assets/manifest?printingId=d6c46784-02d3-4ab4-b426-1eae8ac7ab63&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:01.883Z"
+        },
+        {
+          "printingId": "e9d97e05-26f9-452f-8df3-e8adf4497276",
+          "error": "Error: /assets/manifest?printingId=e9d97e05-26f9-452f-8df3-e8adf4497276&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:01.869Z"
+        },
+        {
+          "printingId": "26e4209d-3e4b-4ba2-8eed-9d6c7d6e285c",
+          "error": "Error: /assets/manifest?printingId=26e4209d-3e4b-4ba2-8eed-9d6c7d6e285c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.241Z"
+        },
+        {
+          "printingId": "0a8f8b4e-5e15-41d5-b583-ee558d0600d0",
+          "error": "Error: /assets/manifest?printingId=0a8f8b4e-5e15-41d5-b583-ee558d0600d0&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.231Z"
+        },
+        {
+          "printingId": "0be2cd4e-b7c9-4525-8540-6d3c203a03b1",
+          "error": "Error: /assets/manifest?printingId=0be2cd4e-b7c9-4525-8540-6d3c203a03b1&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.406Z"
+        },
+        {
+          "printingId": "055ef8ef-4c37-4a26-a597-d7af80e2ae1a",
+          "error": "Error: /assets/manifest?printingId=055ef8ef-4c37-4a26-a597-d7af80e2ae1a&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.397Z"
+        },
+        {
+          "printingId": "7c8b565a-a233-448e-86c2-9552611bbb94",
+          "error": "Error: /assets/manifest?printingId=7c8b565a-a233-448e-86c2-9552611bbb94&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.566Z"
+        },
+        {
+          "printingId": "bb3a8919-d8a3-423b-a2aa-5ae6cbcca70c",
+          "error": "Error: /assets/manifest?printingId=bb3a8919-d8a3-423b-a2aa-5ae6cbcca70c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.565Z"
+        },
+        {
+          "printingId": "1993a95e-517b-40bc-88ac-7508890ff728",
+          "error": "Error: /assets/manifest?printingId=1993a95e-517b-40bc-88ac-7508890ff728&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.734Z"
+        },
+        {
+          "printingId": "b84e39f9-dd53-40ad-bbdc-6859acff42d3",
+          "error": "Error: /assets/manifest?printingId=b84e39f9-dd53-40ad-bbdc-6859acff42d3&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.723Z"
+        },
+        {
+          "printingId": "a6ad761f-0900-49da-b9d6-0395d7ce7370",
+          "error": "Error: /assets/manifest?printingId=a6ad761f-0900-49da-b9d6-0395d7ce7370&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.914Z"
+        },
+        {
+          "printingId": "d74fac0b-7171-4805-8f89-94ee1ed5fd5f",
+          "error": "Error: /assets/manifest?printingId=d74fac0b-7171-4805-8f89-94ee1ed5fd5f&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:02.896Z"
+        },
+        {
+          "printingId": "70a8b48c-6853-41ca-a347-15e866190cd1",
+          "error": "Error: /assets/manifest?printingId=70a8b48c-6853-41ca-a347-15e866190cd1&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.083Z"
+        },
+        {
+          "printingId": "a633ca0d-b3a2-423a-9be5-2ca8ca3f82ac",
+          "error": "Error: /assets/manifest?printingId=a633ca0d-b3a2-423a-9be5-2ca8ca3f82ac&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.070Z"
+        },
+        {
+          "printingId": "0558ed43-4154-40f2-a231-9ef4e4978ba5",
+          "error": "Error: /assets/manifest?printingId=0558ed43-4154-40f2-a231-9ef4e4978ba5&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.240Z"
+        },
+        {
+          "printingId": "896bdc61-834a-4230-87e3-fd5c9b15951d",
+          "error": "Error: /assets/manifest?printingId=896bdc61-834a-4230-87e3-fd5c9b15951d&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.233Z"
+        },
+        {
+          "printingId": "74df8295-3c28-4ad0-86a6-bb43ed227507",
+          "error": "Error: /assets/manifest?printingId=74df8295-3c28-4ad0-86a6-bb43ed227507&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.492Z"
+        },
+        {
+          "printingId": "41eef45a-0c47-4e78-9e86-3328742d1c73",
+          "error": "Error: /assets/manifest?printingId=41eef45a-0c47-4e78-9e86-3328742d1c73&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.484Z"
+        },
+        {
+          "printingId": "424c4618-8f9e-4561-933d-dc9bf10b7e4d",
+          "error": "Error: /assets/manifest?printingId=424c4618-8f9e-4561-933d-dc9bf10b7e4d&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.660Z"
+        },
+        {
+          "printingId": "46cdb812-70c2-408c-ad71-e336a8d10b7b",
+          "error": "Error: /assets/manifest?printingId=46cdb812-70c2-408c-ad71-e336a8d10b7b&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.644Z"
+        },
+        {
+          "printingId": "622cd302-7e91-455c-ba83-797a59990fda",
+          "error": "Error: /assets/manifest?printingId=622cd302-7e91-455c-ba83-797a59990fda&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.818Z"
+        },
+        {
+          "printingId": "120e6a29-3736-48ce-8fac-d0fc13cd4e4c",
+          "error": "Error: /assets/manifest?printingId=120e6a29-3736-48ce-8fac-d0fc13cd4e4c&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.804Z"
+        },
+        {
+          "printingId": "4642307b-6430-4cb8-8abb-4abc54d7e892",
+          "error": "Error: /assets/manifest?printingId=4642307b-6430-4cb8-8abb-4abc54d7e892&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.976Z"
+        },
+        {
+          "printingId": "cd231727-1004-4b8a-b6b3-6744d3a4ddcb",
+          "error": "Error: /assets/manifest?printingId=cd231727-1004-4b8a-b6b3-6744d3a4ddcb&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:03.964Z"
+        },
+        {
+          "printingId": "3af38e1e-e9ce-46e8-a738-c2c5b0ce8be0",
+          "error": "Error: /assets/manifest?printingId=3af38e1e-e9ce-46e8-a738-c2c5b0ce8be0&assetType=card_image&limit=96: 503",
+          "observedAt": "2026-09-19T11:28:04.142Z"
+        }
+      ]
+    },
+    {
+      "language": "zh-tw",
+      "setCode": "SV1V",
+      "setId": "496f02eb-5cda-4b1b-a5cf-e46816c6f834",
+      "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "pages": 1,
+      "paginationComplete": true,
+      "faces": 78,
+      "variants": 78,
+      "missingFaces": 58,
+      "exactAssetAssociations": 20,
+      "approvedSharedPresentation": 0,
+      "unresolvedEditionMappings": 0,
+      "originalsWithoutGridDerivative": 0,
+      "beforePreferredBlank": 58,
+      "afterPreferredBlank": 58,
+      "manifestRows": 0,
+      "manifestReadsSucceeded": 58,
+      "manifestReadsFailed": 0,
+      "manifestFailures": []
+    }
+  ],
+  "manualSourceFaces": 59,
+  "pendingSourceChecks": 186,
+  "unresolvedMappings": 102,
+  "actualNativeRenderingChecks": 0,
+  "notes": [
+    "Bounded eight-set sample, not whole-catalogue coverage. Korean unmeasured.",
+    "Before/after replay is the preferred progressive artwork path before optional manifest fallback, not measured phone blanks.",
+    "Exact counts are approved canonical asset associations, not independently verified finish photographs.",
+    "No assets sourced, renditions regenerated, catalogue writes or deployments performed."
+  ]
+}
