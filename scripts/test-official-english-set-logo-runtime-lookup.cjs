@@ -92,6 +92,7 @@ assert.equal(new Set(sharedPop).size, 1, 'The shared POP Series logo must be sto
 const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './englishSetLogos': { getEnglishSetLogoSourceForSet },
   './japaneseSetLogos': { getJapaneseSetLogoSourceForSet },
+  './simplifiedChineseSetLogos': compileModule('lib/simplifiedChineseSetLogos.ts', {}),
   './traditionalChineseSetLogos': { getTraditionalChineseSetLogoSourceForSet },
   './magazineSetCovers': {
     getMagazineSetCoverSourceForSet: (input) => input?.id === 'magazine:test' ? 'bundled:magazine' : null,
