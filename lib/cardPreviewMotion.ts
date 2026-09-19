@@ -1,11 +1,8 @@
-/** Presentation only: never changes a card's stored finish or artwork. */
-export function isFoilPreview(raw: any, selectedVariantId?: string | null): boolean {
-  const canonical = raw?.stackr;
-  const variants = Array.isArray(canonical?.variants) ? canonical.variants : [];
-  const selected = variants.find((v: any) => v.variantId === (selectedVariantId ?? canonical?.defaultVariantId));
-  const finish = String(selected?.finishCode ?? selected?.variantCode ?? raw?.finish_code ?? '').toLowerCase();
-  if (finish) return !/non.?holo|non.?foil|normal|regular/.test(finish) && /holo|foil|reverse|prism|radiant/.test(finish);
-  return /holo|foil|radiant/.test(String(raw?.rarity ?? '').toLowerCase());
+import { resolveCardHoloProfile } from './cardHoloProfile';
+
+/** Compatibility helper; the renderer uses the full, mask-aware resolution. */
+export function isFoilPreview(raw: unknown, selectedVariantId?: string | null): boolean {
+  return resolveCardHoloProfile(raw, { selectedVariantId }).profile !== 'plain';
 }
 
 export function boundedCardTilt(value: number) {
@@ -29,4 +26,25 @@ export function relativeCardTilt(value: number, origin: number) {
   'worklet';
   const delta = Math.atan2(Math.sin(value - origin), Math.cos(value - origin));
   return boundedCardTilt(delta / 0.48);
+}
+
+export function cardInspectionMotionEnabled(active: boolean, foreground: boolean, reduceMotion: boolean) {
+  return active && foreground && !reduceMotion;
+}
+
+export function cardDragTilt(dx: number, dy: number) {
+  'worklet';
+  return { x: boundedCardTilt(dx / 140), y: boundedCardTilt(-dy / 180) };
+}
+
+export type CardSensorOrigin = { pitch: number; roll: number; interfaceOrientation: number };
+
+/** Recalibrate after an interface rotation rather than interpreting it as tilt. */
+export function calibratedCardSensor(reading: CardSensorOrigin, origin: CardSensorOrigin | null) {
+  'worklet';
+  if (!Number.isFinite(reading.pitch) || !Number.isFinite(reading.roll)) return null;
+  if (!origin || origin.interfaceOrientation !== reading.interfaceOrientation) {
+    return { origin: reading, x: 0, y: 0 };
+  }
+  return { origin, x: relativeCardTilt(reading.roll, origin.roll), y: relativeCardTilt(reading.pitch, origin.pitch) };
 }

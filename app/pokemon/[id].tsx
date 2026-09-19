@@ -27,6 +27,8 @@ import { stackrCardImageSizes } from '../../lib/stackrSizing';
 import { stackrHaptics } from '../../lib/haptics';
 import { supabase } from '../../lib/supabase';
 import { createAccountLoadGeneration } from '../../lib/accountLoadGeneration';
+import { useCardInspection } from '../../components/CardInspectionProvider';
+import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
 
 type PokemonData = {
   id: number;
@@ -59,8 +61,19 @@ const formatMoney = (value: number | null | undefined) =>
     ? `\u00A3${value.toFixed(value >= 100 ? 0 : 2)}`
     : 'Value pending';
 
+function getCatalogueInspectionImage(item: any) {
+  const raw = item?.raw_data;
+  const canonicalId = String(raw?.stackr?.cardId ?? '').trim();
+  const images = raw?.images;
+  if (!canonicalId || !images) return null;
+  const imageUri = images.small ?? images.large;
+  if (typeof imageUri !== 'string' || !imageUri) return null;
+  return { canonicalId, imageUri, fullImageUri: images.large ?? imageUri, raw };
+}
+
 export default function PokemonDetailScreen() {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const params = useLocalSearchParams<{ id: string; name?: string }>();
   const id = getParamValue(params.id);
@@ -247,16 +260,23 @@ export default function PokemonDetailScreen() {
     const imageUrl = (item.image_urls ?? [item.image_large, item.image_small])
       .filter((url): url is string => Boolean(url))
       .find((url) => !failedImageUrls.has(`${item.id}:${url}`));
+    const catalogueInspection = getCatalogueInspectionImage(item);
+    const openDetails = () => router.push({ pathname: '/card/[id]', params: { id: item.id, setId: item.set_id ?? undefined } });
 
     return (
       <Pressable
-        delayLongPress={360}
+        delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
         onLongPress={() => {
           longPressedCardId.current = item.id;
-          void stackrHaptics.cardPreview();
-          router.push({
-            pathname: '/card/[id]',
-            params: { id: item.id, setId: item.set_id ?? undefined },
+          if (!catalogueInspection) { void stackrHaptics.cardPreview(); openDetails(); return; }
+          inspectCard({
+            source: 'catalogue',
+            card: { id: catalogueInspection.canonicalId, name: item.name, language: catalogueInspection.raw?.language ?? null, raw_data: catalogueInspection.raw },
+            imageUri: catalogueInspection.imageUri,
+            fullImageUri: catalogueInspection.fullImageUri,
+            selectedVariantId: catalogueInspection.raw.stackr?.defaultVariantId ?? null,
+            subtitle: [setName, item.number ? `#${item.number}` : null].filter(Boolean).join(' · '),
+            onDetails: openDetails,
           });
         }}
         onPress={() => {
@@ -266,6 +286,14 @@ export default function PokemonDetailScreen() {
           }
           void stackrHaptics.selection();
           toggleCardOwned(item);
+        }}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.name}. Tap to change ownership. ${catalogueInspection ? 'Hold to inspect.' : 'Hold for details.'}`}
+        accessibilityActions={catalogueInspection ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+        onAccessibilityAction={(event) => {
+          if (event.nativeEvent.actionName !== 'inspect') return;
+          if (!catalogueInspection) { openDetails(); return; }
+          inspectCard({ source: 'catalogue', card: { id: catalogueInspection.canonicalId, name: item.name, language: catalogueInspection.raw?.language ?? null, raw_data: catalogueInspection.raw }, imageUri: catalogueInspection.imageUri, fullImageUri: catalogueInspection.fullImageUri, selectedVariantId: catalogueInspection.raw.stackr?.defaultVariantId ?? null, subtitle: [setName, item.number ? `#${item.number}` : null].filter(Boolean).join(' · '), onDetails: openDetails });
         }}
         style={({ pressed }) => [
           styles.cardTile,

@@ -32,6 +32,8 @@ import { numericTextStyle, stackrFonts, tabularNumberStyle, typeScale } from '..
 import { getCustomBinderNameArt } from '../lib/customBinderNameArt';
 import { stackrGradients } from '../lib/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCardInspection } from './CardInspectionProvider';
+import { CARD_INSPECTION_LONG_PRESS_MS, type CardInspectionRequest } from '../lib/cardInspection';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -78,6 +80,7 @@ export type HomeBinderTopValueCard = {
   number?: string | null;
   language?: string | null;
   imageUrl: string | null;
+  inspectionRequest?: CardInspectionRequest | null;
   estimatedValue: number | null;
 };
 
@@ -115,6 +118,8 @@ export type HomeCardPreview = {
   imageUrl: string | null;
   language?: string | null;
   estimatedValue?: number | null;
+  /** Present only when Hub has attested that the displayed artwork is canonical. */
+  inspectionRequest?: CardInspectionRequest | null;
 };
 
 export type HomeChaseListingSuggestion = {
@@ -1269,6 +1274,7 @@ export function ChaseOrMissingSection({
   onEmptyAction: () => void;
 }) {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
   const isChase = mode === 'chase';
   const title = mode === 'chase' ? 'Your Chase List' : `Missing${binderName ? ` from ${binderName}` : ' Cards'}`;
   const subtitle = mode === 'chase'
@@ -1295,11 +1301,19 @@ export function ChaseOrMissingSection({
         ) : items.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.previewRail, isChase && styles.chasePreviewRail]}>
             {items.slice(0, 5).map((item) => (
-              <TouchableOpacity
+              (() => {
+                const inspectionRequest = item.inspectionRequest;
+                return <TouchableOpacity
                 key={`${item.setId ?? 'set'}:${item.cardId}`}
                 onPress={() => onItemPress(item)}
+                onLongPress={inspectionRequest ? () => inspectCard({ ...inspectionRequest, onDetails: () => onItemPress(item) }) : undefined}
+                delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
                 accessibilityRole="button"
                 accessibilityLabel={`View ${getHomeCardDisplayName(item)}`}
+                accessibilityActions={inspectionRequest ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+                onAccessibilityAction={inspectionRequest ? (event) => {
+                  if (event.nativeEvent.actionName === 'inspect') inspectCard({ ...inspectionRequest, onDetails: () => onItemPress(item) });
+                } : undefined}
                 activeOpacity={0.84}
                 style={[
                   isChase ? styles.chasePreviewCard : styles.previewCard,
@@ -1335,7 +1349,8 @@ export function ChaseOrMissingSection({
                     {isChase ? item.estimatedValue != null ? formatMoney(item.estimatedValue) : 'Value pending' : item.estimatedValue != null ? formatMoney(item.estimatedValue) : 'View'}
                   </Text>
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity>;
+              })()
             ))}
           </ScrollView>
         ) : (

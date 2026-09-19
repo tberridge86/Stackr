@@ -18,6 +18,8 @@ import { useTheme } from '../theme-context';
 import { marketIcons, type MarketIconName } from '../../lib/marketIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
+import { CARD_INSPECTION_LONG_PRESS_MS, type CardInspectionRequest } from '../../lib/cardInspection';
+import { useCardInspection } from '../CardInspectionProvider';
 
 export type MarketMode = 'buy' | 'trade';
 export type MarketListingVariant =
@@ -48,6 +50,7 @@ export type MarketListingCardData = {
   fullImageUri?: string | null;
   imageBadgeLabel?: string | null;
   imageIsCatalogue?: boolean;
+  inspectionCard?: CardInspectionRequest['card'] & { selectedVariantId?: string | null };
   condition?: string | null;
   gradeCompany?: string | null;
   grade?: string | null;
@@ -667,6 +670,7 @@ export function MarketListingCard({
   compact?: boolean;
 }) {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
   const variant = getVariantCopy(item.variantType);
   const transaction = getListingTransaction(item, variant);
   const identityLine = getListingIdentityLine(item);
@@ -676,13 +680,27 @@ export function MarketListingCard({
   const sellerLabel = item.isMine ? 'Your listing' : item.sellerName ?? 'Collector listing';
   const compactPrimary = getCompactTransactionPrimary(transaction.primary);
   const trustLabel = item.verified && !item.isMine ? 'Verified seller' : sellerLabel;
+  const inspectionRequest = item.imageIsCatalogue === true && item.inspectionCard?.id && item.imageUri
+    ? {
+        source: 'catalogue' as const,
+        card: item.inspectionCard,
+        imageUri: item.imageUri,
+        fullImageUri: item.fullImageUri ?? null,
+        selectedVariantId: item.inspectionCard.selectedVariantId ?? null,
+        subtitle: identityLine,
+      }
+    : null;
 
   return (
     <TouchableOpacity
       onPress={onPress}
+      onLongPress={inspectionRequest ? () => inspectCard(inspectionRequest) : undefined}
+      delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
       activeOpacity={0.84}
       accessibilityRole="button"
-      accessibilityLabel={`Open listing for ${item.title}`}
+      accessibilityLabel={`Open listing for ${item.title}${inspectionRequest ? '. Hold to inspect the catalogue card.' : ''}`}
+      accessibilityActions={inspectionRequest ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+      onAccessibilityAction={inspectionRequest ? (event) => { if (event.nativeEvent.actionName === 'inspect') inspectCard(inspectionRequest); } : undefined}
       style={{
         flex: 1,
         backgroundColor: 'transparent',
