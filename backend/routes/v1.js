@@ -391,12 +391,17 @@ export function createV1Router(options = {}) {
     });
   }));
 
+  const requirePreparedValuations = () => {
+    if ((options.env ?? process.env).STACKR_PREPARED_VALUATIONS_ENABLED !== 'true') throw new ApiError(404, 'prepared_valuations_disabled', 'Prepared collection valuations are not enabled.');
+  };
   router.get('/market/collection-valuation', asyncRoute(async (req, res) => {
+    requirePreparedValuations();
     const userId = res.locals.pricingUserId ?? await getAuthenticatedUserId(req);
     const result = await getPricingService().collectionValuation(userId);
     sendEnvelope(req, res, result, { cacheControl: PERSONAL_PRICING_CACHE_CONTROL });
   }));
   router.post('/market/collection-valuation/refresh', asyncRoute(async (req, res) => {
+    requirePreparedValuations();
     const userId = res.locals.pricingUserId ?? await getAuthenticatedUserId(req);
     const result = await getPricingService().collectionValuation(userId, true);
     sendEnvelope(req, res, result, { status: 202, cacheControl: PERSONAL_PRICING_CACHE_CONTROL });

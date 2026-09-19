@@ -36,6 +36,10 @@ export function catalogueRefreshPlan(rows, { hours = 12, requestBudget = 0, rese
     capacityVerified:false,providerCalls:0};
 }
 
+export function assertCatalogueCapacity(plan) {
+  if (!plan.fits) throw Error('Verified request budget and minimum runtime do not fit the catalogue cycle; keep catalogue pricing disabled');
+}
+
 export function refreshOutcome(error, retained=false) {
   const code=String(error?.code??'provider_refresh_failed');
   const status=Number(error?.status??0);
@@ -114,6 +118,10 @@ export async function mainCataloguePricing(args=process.argv.slice(2)) {
   // Presence of a number is not proof. Release must bind its capacity evidence.
   const capacityVerified=process.env.STACKR_TCGDEX_CAPACITY_VERIFIED==='true'
     && /^[0-9a-f]{64}$/.test(process.env.STACKR_TCGDEX_CAPACITY_EVIDENCE_SHA256??'')&&requestBudget>0;
+  if (capacityVerified) {
+    const rows=await readPages(()=>supabase.schema('api').from('catalogue_cards').select('variant_id,language_code,variant_code,finish_code').order('variant_id'));
+    assertCatalogueCapacity(catalogueRefreshPlan(rows,{hours:cycleHours,requestBudget,spacingMs}));
+  }
   const ownerId=process.env.STACKR_OWNER_PRICE_REFRESH_USER_ID;
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ownerId??''))throw Error('The private valuation worker requires its configured owner');
   let result=null,queueResult=null;

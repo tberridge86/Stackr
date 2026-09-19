@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
-import { catalogueRefreshPlan, refreshOutcome } from './refresh-catalogue-prices.mjs';
-import { ownedValuationUnits, prepareCollectionValuation, readPages, resolveValuationUnit, setValuationUnits, summarisePreparedUnits } from './lib/prepared-collection-valuation.mjs';
+import { assertCatalogueCapacity, catalogueRefreshPlan, refreshOutcome } from './refresh-catalogue-prices.mjs';
+import { mergeValuationTrend, valuationTrendEvidence, ownedValuationUnits, prepareCollectionValuation, readPages, resolveValuationUnit, setValuationUnits, summarisePreparedUnits } from './lib/prepared-collection-valuation.mjs';
 import { createMarketPricingService } from '../backend/lib/marketPricing/service.js';
 import { summariseTcgdexExactVariantPricing } from '../backend/lib/tcgdex.js';
-import { ownerQueueRetryAfter } from './refresh-owner-provider-prices.mjs';
+import { ownerQueueRetryAfter, prepareStoredValuationIfEnabled } from './refresh-owner-provider-prices.mjs';
 
 const providerCard={id:'sv01-1',set:{id:'sv01'},localId:'1',language:'en',variants:{normal:true,holo:true,reverse:true},
  pricing:{tcgplayer:{unit:'USD',updated:'2026-09-18T00:00:00Z',normal:{marketPrice:5},holofoil:{marketPrice:10},'reverse-holofoil':{marketPrice:15}}}};
@@ -26,6 +26,8 @@ const paginated=await readPages(()=>({range:async(a,b)=>({data:rows.slice(a,b+1)
 assert.equal(paginated.length,1201);
 assert.equal(paginated.at(-1).id,1200);
 assert.equal(catalogueRefreshPlan([{language_code:'ja',variant_code:'normal',finish_code:'normal'}]).fits,false);
+assert.throws(()=>assertCatalogueCapacity(catalogueRefreshPlan(Array.from({length:52773},()=>({language_code:'en',variant_code:'normal',finish_code:'normal'})),{requestBudget:100000})),/do not fit/);
+assert.doesNotThrow(()=>assertCatalogueCapacity(catalogueRefreshPlan([{language_code:'en',variant_code:'normal',finish_code:'normal'}],{requestBudget:10})));
 assert.equal(refreshOutcome({status:429,retryAfter:'3600'}).delay,3600);
 assert.equal(refreshOutcome({code:'unresolved_provider_identity'}).outcome,'unresolved_identity');
 
@@ -46,9 +48,26 @@ const price={currency:'GBP',status:'market_estimate',estimates:{central:4},fresh
 assert.equal(summarisePreparedUnits([{variantId:'v',quantity:2}],new Map(),new Map([['v',price]])).total,8);
 assert.equal(summarisePreparedUnits([{variantId:'v',quantity:2}],new Map(),new Map([['v',{...price,estimates:{central:0}}]])).total,0);
 
+assert.equal(setValuationUnits([...variants,{...variants[1],variant_id:'duplicate'}],'master').length,3);
+assert.equal(setValuationUnits([...variants,{...variants[1],variant_id:'duplicate'}],'master')[1].reason,'unresolved_identity');
+assert.equal(ownedValuationUnits({ownedRows:[],binders:[{id:'b',edition:'unlimited'}],binderCards:[{binder_id:'b',card_id:'c',set_id:'s',owned:true} ]})[0].variant,'normal');
+const trendSummary={totalUnits:2,freshUnits:2,unpricedUnits:0};
+const trendUnits=[{variantId:'v',quantity:2}];const trendPrices=new Map([['v',price]]);
+const evidence=valuationTrendEvidence(trendUnits,trendPrices,trendSummary);
+assert(evidence.eligible);
+assert.notEqual(evidence.scope,valuationTrendEvidence([{variantId:'v',quantity:1}],trendPrices,trendSummary).scope);
+assert.notEqual(evidence.scope,valuationTrendEvidence(trendUnits,new Map([['v',{...price,primarySource:'new-source'}]]),trendSummary).scope);
+assert(!valuationTrendEvidence(trendUnits,trendPrices,{...trendSummary,freshUnits:1}).eligible);
+const point={at:'2026-09-19T01:00:00Z',total:8,evidence:'a'};
+assert.equal(mergeValuationTrend([point],{...point,at:'2026-09-19T02:00:00Z'},true).length,1,'re-reading the same quote does not invent history');
+assert.equal(mergeValuationTrend([point],{...point,total:9,evidence:'b'},true).length,1,'one point per time bucket');
+assert.equal(mergeValuationTrend([point],{...point,total:9,evidence:'b',at:'2026-09-19T02:00:00Z'},false).length,1,'partial generations add no trend');
+assert.equal(await prepareStoredValuationIfEnabled({env:{},dryRun:false}),null,'default-off worker does not touch database');
+assert.equal(await prepareStoredValuationIfEnabled({env:{STACKR_PREPARED_VALUATIONS_ENABLED:'true'},dryRun:true}),null,'dry run does not publish');
 const db=new PGlite();
 await db.exec("create function public.test_uuid(v text) returns uuid language sql immutable as $$ select (substr(md5(v),1,8)||'-'||substr(md5(v),9,4)||'-4'||substr(md5(v),14,3)||'-8'||substr(md5(v),18,3)||'-'||substr(md5(v),21,12))::uuid $$;");
-await db.exec(`create schema api; create schema auth;
+await db.exec(`create schema api; create schema auth; create schema catalog;
+ create table catalog.catalogue_version_external_identifiers(catalogue_version_id uuid,language_code text,variant_id uuid,printing_id uuid,external_id text,set_id uuid);
  create role anon; create role authenticated; create role service_role bypassrls;
  create table auth.users(id uuid primary key);
  create table api.catalogue_cards(variant_id uuid,printing_id uuid,set_id uuid,language_code text,variant_code text,finish_code text,catalogue_version_id uuid);
@@ -121,10 +140,17 @@ const transport=(schema='public')=>({from:(table)=>new Query(schema,table),schem
 const other=await scalar("select test_uuid('other')::text::uuid");const supabase=transport();
 const service=createMarketPricingService({supabase,fetchTcgdexNormalCardPrice:()=>{throw Error('Provider called during stored valuation');}});
 await service.collectionValuation(other);
-const prepared=await prepareCollectionValuation({supabase,service,ownerId:other});
+const prepared=await prepareStoredValuationIfEnabled({supabase,service,ownerId:other,dryRun:false,env:{STACKR_PREPARED_VALUATIONS_ENABLED:'true'}});
 assert.equal(prepared.published,true);assert.equal(prepared.summary.total,8);assert.equal(prepared.summary.totalUnits,2);
 const readback=await service.collectionValuation(other);
 assert.equal(readback.state,'ready');assert.equal(readback.summary.total,8);
+assert.equal(await scalar('select count(*)::int from public.collection_valuation_history'),1);
+assert.equal((await scalar('select api.collection_valuation_trend($1,$2)',[other,prepared.summary.trend.scope])).length,1);
+assert.equal((await scalar("select api.collection_valuation_trend(test_uuid('owner'),$1)",[prepared.summary.trend.scope])).length,0,'history is owner-scoped');
+assert.equal(await scalar("select has_table_privilege('authenticated','public.collection_valuation_history','SELECT')"),false);
+await db.exec("update public.collection_valuation_generations set calculated_at=now()-interval '4 minutes' where owner_id=test_uuid('other')");
+await prepareCollectionValuation({supabase,service,ownerId:other});
+assert.equal(await scalar('select count(*)::int from public.collection_valuation_history'),1,'unchanged provider evidence cannot create trend points');
 await db.exec("update public.user_card_variants set quantity=1 where id=test_uuid('holding')::text::uuid");
 const updating=await service.collectionValuation(other);
 assert.equal(updating.state,'updating');assert.equal(updating.summary.totalUnits,2,'old summary retains its own quantities');
@@ -160,6 +186,17 @@ assert.equal(priority.variantId,await scalar("select test_uuid('1')::text"));
 await db.query('insert into public.catalogue_price_priority_markers(variant_id,identity) values($1,$2)',[priority.variantId,priority]);
 assert.equal((await publicationPriority()).length,0,'publication markers avoid repeating the first priority page');
 await db.exec("update api.catalogue_cards set catalogue_version_id=test_uuid('revision') where variant_id=test_uuid('1')");
+await db.exec("insert into catalog.catalogue_version_external_identifiers(catalogue_version_id,language_code,variant_id,printing_id,external_id) values(test_uuid('revision'),'ja',test_uuid('1'),test_uuid('1'),'old-alias')");
+const repair=(await publicationPriority())[0].catalogue_price_priority_candidates;
+assert(repair.repairRevision,'alias-only change creates priority work without publication change');
+await db.query('update public.catalogue_price_priority_markers set identity=$2 where variant_id=$1',[repair.variantId,repair]);
+assert.equal((await publicationPriority()).length,0);
+await db.exec("update catalog.catalogue_version_external_identifiers set external_id='fixed-alias'");
+const repaired=(await publicationPriority())[0].catalogue_price_priority_candidates;
+assert.notEqual(repaired.repairRevision,repair.repairRevision);
+await db.query('update public.catalogue_price_priority_markers set identity=$2 where variant_id=$1',[repaired.variantId,repaired]);
+await db.exec("delete from catalog.catalogue_version_external_identifiers");
+assert.notEqual((await publicationPriority())[0].catalogue_price_priority_candidates.repairRevision,repaired.repairRevision,'removing an incorrect alias also signals repair');
 const identityLease=await scalar("select api.claim_price_identity(test_uuid('1'))");
 assert(identityLease);assert.equal(await scalar("select api.claim_price_identity(test_uuid('1'))"),null,'priority and catalogue cannot fetch the same identity concurrently');
 await db.exec("update public.catalogue_price_items set lease_until=now()-interval '1 second'");

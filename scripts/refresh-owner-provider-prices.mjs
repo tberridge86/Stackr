@@ -371,6 +371,13 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
   return summary;
 }
 
+export async function prepareStoredValuationIfEnabled({supabase,service,ownerId,dryRun,env=process.env}) {
+  if (dryRun || env.STACKR_PREPARED_VALUATIONS_ENABLED !== 'true') return null;
+  const { prepareCollectionValuation } = await import('./lib/prepared-collection-valuation.mjs');
+  return prepareCollectionValuation({supabase,service,ownerId,
+    providerCapacityVerified:env.STACKR_PREPARED_REFRESH_QUEUE_ENABLED === 'true'});
+}
+
 async function main() {
   if (process.env.STACKR_CATALOGUE_PRICING_ENABLED === 'true') {
     const { mainCataloguePricing } = await import('./refresh-catalogue-prices.mjs');
@@ -390,7 +397,8 @@ async function main() {
     includeQueue,
     queueOnly,
   });
-  console.log(JSON.stringify({ worker: 'owner-provider-price-refresh', ...summary }, null, 2));
+  const valuation=await prepareStoredValuationIfEnabled({supabase,service,ownerId,dryRun});
+  console.log(JSON.stringify({ worker: 'owner-provider-price-refresh', ...summary, valuationPublished:valuation?.published??false }, null, 2));
   if (summary.failed) process.exitCode = 1;
 }
 

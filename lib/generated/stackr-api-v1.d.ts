@@ -685,6 +685,17 @@ export interface components {
             valuationRevision: string;
             /** Format: date-time */
             calculatedAt: string;
+            trend?: {
+                scope: string;
+                evidence: string;
+                eligible: boolean;
+                points: {
+                    /** Format: date-time */
+                    at: string;
+                    total: number;
+                    evidence: string;
+                }[];
+            };
             catalogueRevisions?: string[];
             cycle?: {
                 /** Format: uuid */

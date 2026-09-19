@@ -1166,6 +1166,23 @@ components:
             collectionRevision: { type: string }
             valuationRevision: { type: string, format: uuid }
             calculatedAt: { type: string, format: date-time }
+            trend:
+              type: object
+              required: [scope, evidence, eligible, points]
+              properties:
+                scope: { type: string }
+                evidence: { type: string }
+                eligible: { type: boolean }
+                points:
+                  type: array
+                  maxItems: 1441
+                  items:
+                    type: object
+                    required: [at, total, evidence]
+                    properties:
+                      at: { type: string, format: date-time }
+                      total: { type: number, minimum: 0 }
+                      evidence: { type: string }
             catalogueRevisions:
               type: array
               items: { type: string, format: uuid }

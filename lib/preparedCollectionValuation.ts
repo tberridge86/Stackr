@@ -18,6 +18,7 @@ export type PreparedCoverage = {
   latestSourceAt: string | null;
 };
 export type PreparedValuation = PreparedCoverage & {
+  trend?: { scope: string; evidence: string; eligible: boolean; points: { at: string; total: number; evidence: string }[] };
   cycle?: { id: string; dueAt: string; overdue: boolean; population: number; accounted: number } | null;
   collectionRevision: string;
   valuationRevision: string;
@@ -43,4 +44,13 @@ export function preparedPricingSummary(summary: PreparedCoverage): CollectionPri
   return {total: summary.total, totalUnits: summary.totalUnits, pricedUnits: summary.pricedUnits,
     unpricedUnits: summary.unpricedUnits, staleUnits: summary.olderPriceUnits, latestCalculatedAt: summary.latestSourceAt,
     state: !summary.totalUnits ? 'empty' : !summary.pricedUnits ? 'unavailable' : summary.unpricedUnits ? 'partial' : summary.olderPriceUnits ? 'stale' : 'fresh'};
+}
+
+export function preparedValuationTrend(summary: PreparedValuation, days: 7 | 30, now = Date.now()) {
+  const points = (summary.trend?.points ?? []).filter((p) => Number.isFinite(p.total) && p.total >= 0
+    && Date.parse(p.at) >= now - days * 86400000 && Date.parse(p.at) <= now).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+  if (points.length < 2 || summary.unpricedUnits || points.at(-1)?.total !== summary.total) return { values: [], change: 0, percent: 0 };
+  const values = points.map((p) => p.total);
+  const change = values[values.length - 1] - values[0];
+  return { values, change, percent: values[0] > 0 ? change / values[0] * 100 : 0 };
 }

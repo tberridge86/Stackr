@@ -214,7 +214,18 @@ begin
    summary=p_summary,calculated_at=now(),lease_token=null,lease_until=null,
    refresh_completed_at=coalesce(p_refresh_completed,refresh_completed_at)
  where owner_id=p_owner and lease_token=p_lease and lease_until>now();
- return found;
+ if not found then return false; end if;
+ if p_summary->'trend'->>'eligible'='true' and (p_summary->>'totalUnits')::integer>0
+   and p_summary->>'freshUnits'=p_summary->>'totalUnits' and (p_summary->>'unpricedUnits')::integer=0 then
+   insert into public.collection_valuation_history(owner_id,scope,bucket_at,point_at,total,evidence)
+   select p_owner,p_summary->'trend'->>'scope',date_bin(interval '30 minutes',now(),timestamptz '1970-01-01'),
+     now(),(p_summary->>'total')::numeric,p_summary->'trend'->>'evidence'
+   where (select evidence from public.collection_valuation_history where owner_id=p_owner and scope=p_summary->'trend'->>'scope'
+     order by point_at desc limit 1) is distinct from p_summary->'trend'->>'evidence'
+   on conflict(owner_id,scope,bucket_at) do update set point_at=excluded.point_at,total=excluded.total,evidence=excluded.evidence;
+ end if;
+ delete from public.collection_valuation_history where owner_id=p_owner and bucket_at<now()-interval '90 days';
+ return true;
 end $$;
 
 revoke all on function api.collection_valuation_inputs(uuid),api.request_collection_valuation(uuid,boolean),api.claim_collection_valuation(uuid),api.publish_collection_valuation(uuid,uuid,text,jsonb,timestamptz) from public,anon,authenticated;
@@ -271,16 +282,22 @@ create table public.catalogue_price_priority_markers(variant_id uuid primary key
 alter table public.catalogue_price_priority_markers enable row level security;
 revoke all on public.catalogue_price_priority_markers from public,anon,authenticated;
 grant all on public.catalogue_price_priority_markers to service_role;
+create table public.catalogue_price_repair_signals(variant_id uuid primary key,revision uuid not null default gen_random_uuid());
+alter table public.catalogue_price_repair_signals enable row level security;
+revoke all on public.catalogue_price_repair_signals from public,anon,authenticated;
+grant all on public.catalogue_price_repair_signals to service_role;
 create function api.catalogue_price_priority_candidates(p_limit integer default 12) returns setof jsonb
 language sql stable security invoker set search_path = '' as $$
  with latest as (select id from public.catalogue_price_cycles order by started_at desc limit 1)
- select i.identity from api.catalogue_cards c cross join latest
+ select i.identity || case when repair.revision is null then '{}'::jsonb else jsonb_build_object('repairRevision',repair.revision) end from api.catalogue_cards c cross join latest
  cross join lateral (select jsonb_build_object('variantId',c.variant_id,'printingId',c.printing_id,
    'setId',c.set_id,'language',c.language_code,'variantCode',c.variant_code,'finishCode',c.finish_code,
    'catalogueVersionId',c.catalogue_version_id) identity) i
  left join public.catalogue_price_items old on old.cycle_id=latest.id and old.variant_id=c.variant_id
  left join public.catalogue_price_priority_markers marker on marker.variant_id=c.variant_id
- where i.identity is distinct from old.identity and i.identity is distinct from marker.identity
+ left join public.catalogue_price_repair_signals repair on repair.variant_id=c.variant_id
+ where (i.identity is distinct from old.identity or repair.revision is not null)
+   and (i.identity || case when repair.revision is null then '{}'::jsonb else jsonb_build_object('repairRevision',repair.revision) end) is distinct from marker.identity
  order by c.variant_id limit greatest(0,least(p_limit,30));
 $$;
 create function api.published_price_catalogue_revision() returns jsonb
@@ -290,3 +307,47 @@ language sql stable security invoker set search_path = '' as $$
 $$;
 revoke all on function api.catalogue_price_priority_candidates(integer),api.published_price_catalogue_revision() from public,anon,authenticated;
 grant execute on function api.catalogue_price_priority_candidates(integer),api.published_price_catalogue_revision() to service_role;
+
+-- History belongs to the owner and never contains individual holdings. Only
+-- comparable complete, fresh generations create points; polling creates none.
+create table public.collection_valuation_history (
+ owner_id uuid not null references auth.users(id) on delete cascade,
+ scope text not null,bucket_at timestamptz not null,point_at timestamptz not null,
+ total numeric not null check(total>=0),evidence text not null,
+ primary key(owner_id,scope,bucket_at)
+);
+alter table public.collection_valuation_history enable row level security;
+revoke all on public.collection_valuation_history from public,anon,authenticated;
+grant all on public.collection_valuation_history to service_role;
+create function api.collection_valuation_trend(p_owner uuid,p_scope text) returns jsonb
+language sql stable security invoker set search_path = '' as $$
+ select coalesce(jsonb_agg(jsonb_build_object('at',point_at,'total',total,'evidence',evidence) order by point_at),'[]'::jsonb)
+ from (select point_at,total,evidence from public.collection_valuation_history where owner_id=p_owner and scope=p_scope
+   and bucket_at>=now()-interval '31 days' order by point_at desc limit 1441) recent;
+$$;
+revoke all on function api.collection_valuation_trend(uuid,text) from public,anon,authenticated;
+grant execute on function api.collection_valuation_trend(uuid,text) to service_role;
+
+-- Alias repairs are observed transactionally, even without a new publication
+-- version. Only published variants in the changed language/version are signalled.
+create function api.signal_catalogue_price_alias_repair() returns trigger
+language plpgsql security invoker set search_path = '' as $$
+declare old_row jsonb; new_row jsonb; changed jsonb;
+begin
+ if TG_OP<>'INSERT' then old_row=to_jsonb(OLD); end if;
+ if TG_OP<>'DELETE' then new_row=to_jsonb(NEW); end if;
+ if old_row is not distinct from new_row then return null; end if;
+ for changed in select value from jsonb_array_elements(jsonb_build_array(old_row,new_row)) loop
+   insert into public.catalogue_price_repair_signals(variant_id)
+   select c.variant_id from api.catalogue_cards c
+   where c.catalogue_version_id=(changed->>'catalogue_version_id')::uuid and c.language_code=changed->>'language_code'
+     and (c.variant_id=(changed->>'variant_id')::uuid or c.printing_id=(changed->>'printing_id')::uuid
+       or changed->>'variant_id' is null and changed->>'printing_id' is null and c.set_id=(changed->>'set_id')::uuid)
+   on conflict(variant_id) do update set revision=gen_random_uuid();
+ end loop;
+ return null;
+end $$;
+revoke all on function api.signal_catalogue_price_alias_repair() from public,anon,authenticated;
+grant execute on function api.signal_catalogue_price_alias_repair() to service_role;
+create trigger catalogue_price_alias_repair after insert or update or delete on catalog.catalogue_version_external_identifiers
+ for each row execute function api.signal_catalogue_price_alias_repair();

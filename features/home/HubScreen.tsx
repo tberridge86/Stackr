@@ -1,5 +1,5 @@
 import { takeRotatingStringBatch } from '../../lib/homePriceRefreshCore';
-import { preparedPricingSummary } from '../../lib/preparedCollectionValuation';
+import { preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
 import { blocksIndependentPriceRead, mergeCollectionPriceRead, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { useTheme } from '../../components/theme-context';
@@ -1590,11 +1590,12 @@ export default function HubScreen() {
         setCollectionPricingSummary(pricing);
         setOwnedCardCount(summary.totalUnits);
         setActiveBinder(preparedBinder);
-        setChartData([]);
-        setCollectionChangeAmount(0);
-        setCollectionChangePercent(0);
-        setTrendCoverageLabel(null);
-        setTrendProvenanceLabel(null);
+        const trend = preparedValuationTrend(summary, chartRange === '7D' ? 7 : 30);
+        setChartData(trend.values);
+        setCollectionChangeAmount(trend.change);
+        setCollectionChangePercent(trend.percent);
+        setTrendCoverageLabel(trend.values.length ? 'Complete comparable collection' : null);
+        setTrendProvenanceLabel(trend.values.length ? 'Recorded stored-price valuations' : null);
         setTrendIsSubset(false);
         const refreshReport = summary.refresh && prepared.refreshRequest
           ? `Refresh review: ${summary.refresh.accepted} accepted, ${summary.refresh.alreadyPending} already pending, ${summary.refresh.unsupported} unsupported, ${summary.refresh.unresolved} unresolved, ${summary.refresh.blocked} blocked, ${summary.refresh.remaining ?? 0} remaining.` : null;
@@ -1607,9 +1608,9 @@ export default function HubScreen() {
         cachedHomeSnapshotUserIdRef.current = trustedUserId;
         setMintyDataRefreshedAt(pricing.latestCalculatedAt);
         void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 2,
-          mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: [], collectionValueReads: [],
-          collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: 0,
-          collectionChangePercent: 0, ownedCardCount: summary.totalUnits, activeBinder: preparedBinder,
+          mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: trend.values, collectionValueReads: [],
+          collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: trend.change,
+          collectionChangePercent: trend.percent, ownedCardCount: summary.totalUnits, activeBinder: preparedBinder,
           duplicateSummary: nextDuplicateSummary, missingCards: nextMissingCards });
         return;
       }

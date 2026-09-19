@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant } from './owner-price-saved-references.mjs';
 
 const token = (value) => String(value ?? '').trim().toLowerCase();
@@ -35,7 +35,7 @@ export function ownedValuationUnits({ ownedRows, binders, binderCards }) {
     // Saved legacy placement cannot prove extra copies; use its explicit quantity
     // once, even when that same card is placed into several binders.
     if (!old || Number(card.owned_quantity ?? 1) > old.quantity) legacy.set(key, { ...card,
-      id: `legacy:${key}`, variant: binder?.edition ?? 'normal', quantity: Number(card.owned_quantity ?? 1) });
+      id: `legacy:${key}`, variant: ['1st_edition','first_edition'].includes(binder?.edition) ? 'first_edition' : 'normal', quantity: Number(card.owned_quantity ?? 1) });
   }
   units.push(...legacy.values());
   return units.map((row) => {
@@ -108,7 +108,15 @@ export function summarisePreparedUnits(units, outcomes, prices, now = Date.now()
 export function setValuationUnits(catalogue, mode, edition = 'normal') {
   const scoped = catalogue.filter((c) => ['1st_edition','first_edition'].includes(edition)
     ? c.variant_code === 'first_edition' : c.variant_code !== 'first_edition');
-  if (mode === 'master') return scoped.map((c) => ({ variantId: c.variant_id, quantity: 1 }));
+  if (mode === 'master') {
+    const slots = new Map();
+    for (const c of scoped) {
+      const key = JSON.stringify([c.printing_id, variantCode(c.variant_code)]);
+      const rows = slots.get(key) ?? []; rows.push(c); slots.set(key, rows);
+    }
+    return [...slots.values()].map((rows) => rows.length === 1
+      ? { variantId: rows[0].variant_id, quantity: 1 } : { quantity: 1, reason: 'unresolved_identity' });
+  }
   const groups = new Map();
   for (const c of scoped) { const rows = groups.get(c.printing_id) ?? []; rows.push(c); groups.set(c.printing_id, rows); }
   return [...groups.values()].map((rows) => {
@@ -191,7 +199,31 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
         masterSet:b.type==='official'&&members.length?summarisePreparedUnits(setValuationUnits(members,'master',b.edition),outcomes,prices):null};
     })};
   if(JSON.stringify(await rpc('published_price_catalogue_revision',{}))!==JSON.stringify(catalogueRevision)) throw Error('Published catalogue changed during valuation preparation');
+  const evidence=valuationTrendEvidence(resolved,prices,summary);
+  const history=await rpc('collection_valuation_trend',{p_owner:ownerId,p_scope:evidence.scope});
+  summary.trend={scope:evidence.scope,evidence:evidence.evidence,eligible:evidence.eligible,
+    points:mergeValuationTrend(history??[],{at:summary.calculatedAt,total:summary.total,evidence:evidence.evidence},evidence.eligible)};
   const published=await rpc('publish_collection_valuation',{p_owner:ownerId,p_lease:claim.lease,p_revision:inputs.collectionRevision,
     p_summary:summary,p_refresh_completed:needsRefresh&&refreshComplete?claim.refreshRequestedAt:null});
   return {published,summary};
+}
+
+export function valuationTrendEvidence(units, prices, summary) {
+  const digest=(value)=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  const priced=units.filter((u)=>u.variantId).map((u)=>{
+    const p=prices.get(u.variantId);
+    return [u.variantId,u.quantity,p?.currency,p?.primarySource??(p?.sourceBreakdown??[]).map((s)=>s.sourceId??s.source_id??s.providerCode??s.provider_code??s).sort(),p?.priceBasis,p?.estimateVersion,p?.calculatedAt,p?.estimates?.central];
+  }).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  return {scope:digest(priced.map((p)=>p.slice(0,6))),evidence:digest(priced),
+    eligible:summary.totalUnits>0&&summary.freshUnits===summary.totalUnits&&summary.unpricedUnits===0};
+}
+
+export function mergeValuationTrend(history, point, eligible) {
+  const valid=history.filter((p)=>Number.isFinite(p.total)&&p.total>=0&&Number.isFinite(Date.parse(p.at)));
+  if(eligible && Number.isFinite(point.total) && valid.at(-1)?.evidence!==point.evidence) {
+    const bucket=(at)=>Math.floor(Date.parse(at)/1800000);
+    if(valid.length&&bucket(valid.at(-1).at)===bucket(point.at))valid.pop();
+    valid.push(point);
+  }
+  return valid.slice(-1441);
 }

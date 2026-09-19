@@ -20,3 +20,12 @@ assert.equal(mergeCollectionPriceRead([inputs[61]],[partial[61]],[])[0].result.c
 assert.equal(blocksIndependentPriceRead({kind:'service_error'}),false);
 for(const kind of ['authentication_required','access_denied','rate_limited'])assert.equal(blocksIndependentPriceRead({kind}),true);
 console.log('Stable price evidence: 250-to-60, decreases, removals, quantity changes, identity correction, invalidation and account clearing passed.');
+
+import { preparedValuationTrend, type PreparedValuation } from '../lib/preparedCollectionValuation';
+const now=Date.parse('2026-09-19T03:00:00Z');
+const prepared={total:8,unpricedUnits:0,trend:{scope:'s',evidence:'b',eligible:true,points:[
+  {at:'2026-09-18T01:00:00Z',total:10,evidence:'a'},{at:'2026-09-19T01:00:00Z',total:8,evidence:'b'}]}} as PreparedValuation;
+assert.deepEqual(preparedValuationTrend(prepared,7,now),{values:[10,8],change:-2,percent:-20});
+assert.equal(preparedValuationTrend({...prepared,unpricedUnits:1},7,now).values.length,0);
+assert.equal(preparedValuationTrend({...prepared,total:9},7,now).values.length,0);
+assert.equal(preparedValuationTrend({...prepared,trend:undefined},7,now).values.length,0);
