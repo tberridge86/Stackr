@@ -2,9 +2,19 @@
 
 Implemented and locally tested in `agent/catalogue/master-set-artwork-20260919`, in `D:/Stackr-master-set-artwork-20260919`. This is an isolated candidate, not a released fix or phone acceptance. No catalogue records, schemas, images, prices, seller inventory, production data, release controls or delivery settings were written. The shared `D:/Stackr-1` checkout was left intact. No new images were sourced.
 
+## Next production release queue
+
+Queued on 19 September 2026 at the owner's explicit request: "make sure this is queued for the next production release". The matching draft pull request is the release-owner handoff, following the existing PR lifecycle process in [specialist ownership](../agents/README.md). Target the next coordinated production release; queueing does not authorize automatic merge, deployment, an OTA publication or a native build/submission.
+
+- Tested implementation: `ebde3a865aa96830813812cdeeedc49d5a44f9f8`. Subsequent queue documentation does not change the implementation or extend its test evidence.
+- Include the backend exact-original selection repair and the compatible client artwork/ownership changes together in release scope. Deliver the backend first through its existing lane, then the intended production client artifact. Confirm its actual runtime/channel rather than assuming an owner-only channel satisfies the production target. No schema, gateway, provider activation or catalogue write is required for this code change.
+- Keep the PR draft until its exact-head CI/review and the existing release gates pass. Reconcile overlapping artwork/binder paths with the release owner's integration source; do not import the shared dirty checkout or replay older artwork branches wholesale.
+- Resolve the 102 edition-crossing aliases or explicitly accept the disclosed 58 additional Base Set placeholders in release review. Retry the 186 failed source checks before claiming source coverage; the 59 confirmed absent faces remain a separate sourcing queue. No new artwork coverage is claimed by this candidate.
+- Complete the installed-app acceptance below for images, finish eligibility, independent quantities, reload/mode toggles and unchanged notes/prices. Record the backend and client delivery identities separately. Automated fixtures and 30 image decodes are not device acceptance.
+
 ## Baseline and scope
 
-- Repository: `tberridge86/Stackr`; protected `main` was `989da7d489d4e127ac80a8798a1bf67367942954` at checkout and final verification. No matching open artwork repair PR was found. No PR was created or merged.
+- Repository: `tberridge86/Stackr`; protected `main` was `989da7d489d4e127ac80a8798a1bf67367942954` at checkout and implementation verification. No matching open artwork repair PR was found then. The later owner-requested draft release queue is recorded above; no merge or deployment is part of this handoff.
 - Production backend health reported bundled source `92ba011b1442`, resolving to `92ba011b1442d5afa0c2bcb1b1189b61988a5ba0`, deployment `10613eca-a888-4ef0-af96-8dc1cc7d7d20`, production project `oakdbbzdqwurpjnoqhmu`. The candidate starts from current main; main and the running backend are different revisions.
 - Public app API: `https://api.stackrtcg.com/v1`. The dated sample began at **2026-09-19 11:27:34 UTC**. Each page's API timestamp/request ID is retained in the local raw capture; its SHA-256, catalogue versions, cohort IDs and findings are in [summary.json](evidence/master-set-artwork-20260919/summary.json).
 - Eight completely paginated sets, 26 card pages, **1,313 distinct printings / 2,240 canonical variants**. Two sets each in English, Japanese, Simplified Chinese and Traditional Chinese. Korean and the rest of each catalogue are unmeasured. Terminal pagination does not certify that every real-world printing has been catalogued.
