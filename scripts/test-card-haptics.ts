@@ -161,6 +161,10 @@ async function main() {
     detailImageRequestRef: { current: 0 },
     getBinderCanonicalVariantId: () => '',
     setDetailFullImageUri: () => { binderTrace.push('clear-image'); },
+    setReferenceImage: (value: boolean) => {
+      assert.equal(value, false, 'opening another card must clear the previous reference-image label');
+      binderTrace.push('reset-reference-image');
+    },
     setSelectedCard: () => { binderTrace.push('select-card'); },
     setDetailVisible: () => { binderTrace.push('show-detail'); },
     stackrHaptics: binderHaptics,
@@ -169,7 +173,7 @@ async function main() {
   const fullImageItem = { id: 'row-1', card: { images: { small: 'small', large: 'large' } } };
   assert.doesNotThrow(() => openDetail(fullImageItem), 'binder detail must still open when native feedback rejects');
   await Promise.resolve();
-  assert.deepEqual(binderTrace, ['clear-image', 'select-card', 'show-detail', 'haptic', 'price'], 'binder detail must request feedback and continue the original detail flow');
+  assert.deepEqual(binderTrace, ['clear-image', 'reset-reference-image', 'select-card', 'show-detail', 'haptic', 'price'], 'binder detail must request feedback and continue the original detail flow');
 
   const quickActionTrace: string[] = [];
   rejectingBinderHaptics.advance(120);
