@@ -1,310 +1,214 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, Image, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { Text } from './Text';
-import { useTheme } from './theme-context';
-import { stackrLogoSizes } from '../lib/stackrSizing';
-import { typeScale } from '../lib/typography';
+import React, { useEffect, useId, useRef, useState } from 'react';
+import { AccessibilityInfo, Animated, Easing, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
+import { LoadingMarkLayer, LoadingSparkles, LoadingWordmark } from './StackrLoadingBrand';
+import {
+  getStackrLoadingLayout,
+  STACKR_LOADING_TIMING,
+  STACKR_LOADING_TRACKS,
+  type LoadingTrack,
+} from '../lib/stackrLoadingMotion';
 
 type StackrLoadingScreenProps = {
   message?: string;
   compact?: boolean;
+  /** Stops motion while an adjacent recovery action is shown. */
   busy?: boolean;
+  /** Replay the reference animation on the dedicated preview screen. */
+  loop?: boolean;
+  /** Short in-app waits can show the finished lockup immediately. */
+  animate?: boolean;
+  onReadyForDismiss?: () => void;
 };
 
-const BRAND_ICON = require('../assets/rev2/01-brand/logos/logo.png');
-const WORDMARK = require('../assets/rev2/01-brand/logos/Spelt.png');
-const BLOB_PURPLE = require('../assets/rev2/01-brand/logos/purple.png');
-const BLOB_LIGHT_PURPLE = require('../assets/rev2/01-brand/logos/lpurple.png');
-const BLOB_ORANGE = require('../assets/rev2/01-brand/logos/orange.png');
-const DOUBLE_STAR = require('../assets/rev2/01-brand/logos/doublestar.png');
-
 export function StackrLoadingScreen({
-  message = 'Opening your vault',
+  message,
   compact = false,
   busy = true,
+  loop = false,
+  animate = true,
+  onReadyForDismiss,
 }: StackrLoadingScreenProps) {
-  const { theme } = useTheme();
-  const { width } = useWindowDimensions();
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const reveal = useRef(new Animated.Value(0)).current;
-  const twinkle = useRef(new Animated.Value(0)).current;
-  const blobFloat = useRef(new Animated.Value(0)).current;
-  const float = useRef(new Animated.Value(0)).current;
-  const sweep = useRef(new Animated.Value(0)).current;
+  const { width, height } = useWindowDimensions();
+  const layout = getStackrLoadingLayout(width, height, compact);
+  const [reduceMotion, setReduceMotion] = useState<boolean | null>(null);
+  const clock = useRef(new Animated.Value(0)).current;
+  const onReadyRef = useRef(onReadyForDismiss);
+  onReadyRef.current = onReadyForDismiss;
+  const glowId = useId().replace(/:/g, '');
 
   useEffect(() => {
+    let active = true;
     AccessibilityInfo.isReduceMotionEnabled()
-      .then(setReduceMotion)
-      .catch(() => setReduceMotion(false));
+      .then((enabled) => { if (active) setReduceMotion(enabled); })
+      .catch(() => { if (active) setReduceMotion(true); });
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
+    return () => {
+      active = false;
+      subscription?.remove();
+    };
   }, []);
 
   useEffect(() => {
-    if (reduceMotion || !busy) {
-      reveal.setValue(1);
-      twinkle.setValue(0);
-      float.setValue(0);
-      blobFloat.setValue(0);
-      sweep.setValue(0.5);
-      return;
+    if (reduceMotion === null) return;
+    if (reduceMotion || !animate || !busy) {
+      clock.setValue(STACKR_LOADING_TIMING.revealEnd);
+      const readyTimer = setTimeout(() => onReadyRef.current?.(), 240);
+      return () => clearTimeout(readyTimer);
     }
-    Animated.spring(reveal, {
-      toValue: 1,
-      tension: reduceMotion ? 80 : 58,
-      friction: reduceMotion ? 12 : 8,
-      useNativeDriver: true,
+
+    clock.setValue(0);
+    const entrance = Animated.timing(clock, {
+      toValue: loop ? STACKR_LOADING_TIMING.loopEnd : STACKR_LOADING_TIMING.ready,
+      duration: loop ? STACKR_LOADING_TIMING.loopEnd : STACKR_LOADING_TIMING.ready,
+      easing: Easing.linear,
+      useNativeDriver: Platform.OS !== 'web',
       isInteraction: false,
-    }).start();
+    });
+    const animation = loop ? Animated.loop(entrance) : entrance;
+    animation.start(({ finished }) => {
+      if (finished && !loop) onReadyRef.current?.();
+    });
+    return () => animation.stop();
+  }, [animate, busy, clock, loop, reduceMotion]);
 
-    const sweepLoop = Animated.loop(
-      Animated.timing(sweep, {
-        toValue: 1,
-        duration: 1650,
-        easing: Easing.inOut(Easing.cubic),
-        useNativeDriver: true,
-        isInteraction: false,
-      })
-    );
-
-    const twinkleLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(twinkle, {
-          toValue: 1,
-          duration: 980,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-        Animated.timing(twinkle, {
-          toValue: 0,
-          duration: 980,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-      ])
-    );
-
-    const floatLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(float, {
-          toValue: 1,
-          duration: 1550,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-        Animated.timing(float, {
-          toValue: 0,
-          duration: 1350,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-      ])
-    );
-
-    const blobLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(blobFloat, {
-          toValue: 1,
-          duration: 4200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-        Animated.timing(blobFloat, {
-          toValue: 0,
-          duration: 4200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-      ])
-    );
-
-    sweepLoop.start();
-    twinkleLoop.start();
-    floatLoop.start();
-    blobLoop.start();
-
-    return () => {
-      reveal.stopAnimation();
-      sweepLoop.stop();
-      twinkleLoop.stop();
-      floatLoop.stop();
-      blobLoop.stop();
-    };
-  }, [blobFloat, busy, float, reduceMotion, reveal, sweep, twinkle]);
-
-  const logoScale = reveal.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.92, 1],
+  const track = (value: LoadingTrack) => clock.interpolate({ ...value, extrapolate: 'clamp' });
+  const frontOpacity = track(STACKR_LOADING_TRACKS.frontOpacity);
+  const frontY = track(STACKR_LOADING_TRACKS.frontY);
+  const frontRotation = clock.interpolate({
+    inputRange: STACKR_LOADING_TRACKS.frontRotation.inputRange,
+    outputRange: STACKR_LOADING_TRACKS.frontRotation.outputRange.map((value) => `${value}deg`),
+    extrapolate: 'clamp',
   });
-  const logoOpacity = reveal;
-  const logoLift = reveal.interpolate({
-    inputRange: [0, 1],
-    outputRange: [16, 0],
-  });
-  const idleLift = float.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -7],
-  });
-  const twinkleScale = twinkle.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.94, 1.08],
-  });
-  const twinkleOpacity = twinkle.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.72, 1],
-  });
-  const sweepTranslate = sweep.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-90, 150],
-  });
-  const blobShift = blobFloat.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 14],
-  });
-  const compactScale = compact ? 0.78 : 1;
-  const iconSize = Math.min(width * 0.32, compact ? 112 : 150) * compactScale;
-  const wordmarkWidth = Math.min(width * 0.66, compact ? 210 : 300) * compactScale;
+  const rear = track(STACKR_LOADING_TRACKS.rear);
+  const middle = track(STACKR_LOADING_TRACKS.middle);
+  const star = track(STACKR_LOADING_TRACKS.star);
+  const lockup = track(STACKR_LOADING_TRACKS.lockup);
+  const wordmark = track(STACKR_LOADING_TRACKS.wordmark);
+  const tagline = track(STACKR_LOADING_TRACKS.tagline);
+  const sparkles = track(STACKR_LOADING_TRACKS.sparkles);
+  const sceneOpacity = track(STACKR_LOADING_TRACKS.sceneOpacity);
+  const markSize = { width: layout.markWidth, height: layout.markHeight };
 
   return (
-    <View style={[styles.container, compact && styles.compactContainer, { backgroundColor: theme.colors.bg }]}>
+    <View
+      style={[styles.container, compact && styles.compactContainer]}
+      accessibilityRole="progressbar"
+      accessibilityLabel={message ? `Stackr. ${message}` : 'Stackr loading. Collect. Trade. Protect.'}
+      accessibilityState={{ busy }}
+    >
       <LinearGradient
-        colors={theme.dark ? ['#17112A', '#24143D', '#0F172A'] : ['#FFFFFF', theme.colors.bg, '#FFFFFF']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
+        colors={['#FFFFFF', '#FCFAFF', '#FFFDFA', '#FFFFFF']}
+        locations={[0, 0.42, 0.78, 1]}
+        start={{ x: 0.08, y: 0 }}
+        end={{ x: 0.92, y: 1 }}
+        style={StyleSheet.absoluteFill}
       />
-
-      {!compact && (
-        <>
-          <Animated.Image
-            source={BLOB_LIGHT_PURPLE}
-            style={[
-              styles.lightBlob,
-              {
-                width: width * 0.86,
-                height: width * 0.86,
-                opacity: theme.dark ? 0.1 : 0.12,
-                transform: [{ translateY: Animated.multiply(blobShift, -0.65) }],
-              },
-            ]}
-            resizeMode="contain"
-          />
-          <Animated.Image
-            source={BLOB_PURPLE}
-            style={[
-              styles.purpleBlob,
-              {
-                width: width * 0.96,
-                height: width * 0.96,
-                opacity: theme.dark ? 0.2 : 0.18,
-                transform: [{ translateY: blobShift }],
-              },
-            ]}
-            resizeMode="contain"
-          />
-          <Animated.Image
-            source={BLOB_ORANGE}
-            style={[
-              styles.orangeBlob,
-              {
-                width: width * 0.9,
-                height: width * 0.9,
-                opacity: theme.dark ? 0.18 : 0.12,
-                transform: [{ translateY: Animated.multiply(blobShift, 0.72) }],
-              },
-            ]}
-            resizeMode="contain"
-          />
-        </>
-      )}
-
-      <Animated.Image
-        source={DOUBLE_STAR}
+      <Svg
+        width={layout.auraSize}
+        height={layout.auraSize}
+        viewBox="0 0 600 600"
+        style={styles.aura}
+        pointerEvents="none"
+      >
+        <Defs>
+          <RadialGradient id={glowId} cx="50%" cy="48%" rx="50%" ry="50%">
+            <Stop offset="0" stopColor="#C7B5FF" stopOpacity={0.36} />
+            <Stop offset="0.44" stopColor="#DFD4FF" stopOpacity={0.25} />
+            <Stop offset="1" stopColor="#F5F0FF" stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        <Rect width="600" height="600" fill={`url(#${glowId})`} />
+      </Svg>
+      <Animated.View
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
         style={[
-          styles.sparkleTop,
+          styles.scene,
           {
-            opacity: twinkleOpacity,
-            transform: [{ scale: twinkleScale }],
+            width: layout.width,
+            height: layout.height + (message ? 31 * layout.scale : 0),
+            opacity: reduceMotion === null ? 0 : sceneOpacity,
           },
         ]}
-        resizeMode="contain"
-      />
-      <Animated.View style={[styles.dotPurple, { opacity: twinkleOpacity }]} />
-      <Animated.View style={[styles.dotOrange, { opacity: twinkleOpacity }]} />
-
-      <View style={[styles.stage, compact && styles.compactStage]}>
+      >
         <Animated.View
           style={[
-            styles.logoStack,
+            styles.lockup,
             {
-              opacity: logoOpacity,
-              transform: [{ translateY: Animated.add(logoLift, idleLift) }, { scale: logoScale }],
+              height: layout.markHeight,
+              gap: layout.gap,
+              transform: [{ translateX: lockup.interpolate({ inputRange: [0, 1], outputRange: [(layout.wordmarkWidth + layout.gap) / 2, 0] }) }],
             },
           ]}
         >
-          <Image source={BRAND_ICON} style={{ width: iconSize, height: iconSize }} resizeMode="contain" />
-          <Image
-            source={WORDMARK}
-            style={{ width: wordmarkWidth, height: wordmarkWidth * stackrLogoSizes.loadingWordmarkHeightRatio }}
-            resizeMode="contain"
-          />
+          <View style={markSize}>
+            <Animated.View style={[styles.markLayer, markSize, {
+              opacity: rear,
+              transform: [
+                { translateX: rear.interpolate({ inputRange: [0, 1], outputRange: [layout.markWidth * 0.22, 0] }) },
+                { rotate: rear.interpolate({ inputRange: [0, 1], outputRange: ['17deg', '0deg'] }) },
+              ],
+            }]}>
+              <LoadingMarkLayer layer="rear" {...markSize} />
+            </Animated.View>
+            <Animated.View style={[styles.markLayer, markSize, {
+              opacity: middle,
+              transform: [
+                { translateX: middle.interpolate({ inputRange: [0, 1], outputRange: [layout.markWidth * 0.12, 0] }) },
+                { rotate: middle.interpolate({ inputRange: [0, 1], outputRange: ['8deg', '0deg'] }) },
+              ],
+            }]}>
+              <LoadingMarkLayer layer="middle" {...markSize} />
+            </Animated.View>
+            <Animated.View style={[styles.markLayer, markSize, {
+              opacity: frontOpacity,
+              transform: [{ translateY: Animated.multiply(frontY, layout.scale) }, { rotate: frontRotation }],
+            }]}>
+              <LoadingMarkLayer layer="front" {...markSize} />
+            </Animated.View>
+            <Animated.View style={[styles.markLayer, markSize, {
+              opacity: star,
+              transform: [
+                { translateY: star.interpolate({ inputRange: [0, 1], outputRange: [-8 * layout.scale, 0] }) },
+                { scale: star.interpolate({ inputRange: [0, 1], outputRange: [0.72, 1] }) },
+              ],
+            }]}>
+              <LoadingMarkLayer layer="star" {...markSize} />
+            </Animated.View>
+          </View>
+          <Animated.View style={{
+            opacity: wordmark,
+            transform: [
+              { translateX: wordmark.interpolate({ inputRange: [0, 1], outputRange: [12 * layout.scale, 0] }) },
+              { scale: wordmark.interpolate({ inputRange: [0, 1], outputRange: [0.98, 1] }) },
+            ],
+          }}>
+            <LoadingWordmark width={layout.wordmarkWidth} height={layout.wordmarkHeight} />
+          </Animated.View>
         </Animated.View>
-
-        <Animated.View
-          style={[
-            styles.sloganRow,
-            {
-              opacity: logoOpacity,
-              transform: [{ translateY: logoLift }],
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.sloganLeading,
-              {
-                color: theme.colors.text,
-              },
-            ]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
-            Collect. Trade. Protect.
-          </Text>
+        <Animated.Text style={[
+          styles.tagline,
+          {
+            marginTop: 12 * layout.scale,
+            fontSize: layout.taglineSize,
+            lineHeight: layout.taglineHeight,
+            letterSpacing: layout.taglineSpacing,
+            opacity: tagline,
+            transform: [{ translateY: tagline.interpolate({ inputRange: [0, 1], outputRange: [7 * layout.scale, 0] }) }],
+          },
+        ]}>
+          Collect. Trade. Protect.
+        </Animated.Text>
+        <Animated.View style={{ opacity: sparkles, marginTop: 6 * layout.scale }}>
+          <LoadingSparkles width={layout.sparklesWidth} height={layout.sparklesHeight} />
         </Animated.View>
-
-        <Animated.Image
-          source={DOUBLE_STAR}
-          style={[
-            styles.doubleStar,
-            {
-              opacity: twinkleOpacity,
-              transform: [{ scale: twinkleScale }],
-            },
-          ]}
-          resizeMode="contain"
-        />
-
-        <View accessibilityRole="progressbar" accessibilityLabel={message} accessibilityState={{ busy }} style={styles.track}>
-          <Animated.View
-            style={[
-              styles.trackSweep,
-              {
-                transform: [{ translateX: sweepTranslate }],
-              },
-            ]}
-          />
-        </View>
-
-        <Text style={[styles.message, { color: theme.colors.text }]} numberOfLines={1}>
-          {message}
-        </Text>
-      </View>
+        {message ? (
+          <Animated.Text style={[styles.message, { opacity: tagline }]}>{message}</Animated.Text>
+        ) : null}
+      </Animated.View>
     </View>
   );
 }
@@ -315,110 +219,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
   },
-  compactContainer: {
-    minHeight: 320,
-  },
-  stage: {
-    width: '100%',
-    minHeight: 390,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 28,
-  },
-  compactStage: {
-    minHeight: 280,
-  },
-  lightBlob: {
-    position: 'absolute',
-    right: -180,
-    top: -120,
-  },
-  purpleBlob: {
-    position: 'absolute',
-    left: -210,
-    bottom: -210,
-  },
-  orangeBlob: {
-    position: 'absolute',
-    right: -210,
-    bottom: -220,
-  },
-  sparkleTop: {
-    position: 'absolute',
-    left: 28,
-    bottom: 176,
-    width: 34,
-    height: 34,
-  },
-  dotPurple: {
-    position: 'absolute',
-    right: 98,
-    bottom: 192,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#6938F5',
-  },
-  dotOrange: {
-    position: 'absolute',
-    right: 48,
-    bottom: 258,
-    width: 13,
-    height: 13,
-    borderRadius: 7,
-    backgroundColor: '#FFBE35',
-  },
-  logoStack: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  sloganRow: {
-    marginTop: 16,
-    maxWidth: 340,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  sloganLeading: {
-    ...typeScale.sectionTitle,
-    fontSize: 25,
-    lineHeight: 31,
+  compactContainer: { minHeight: 240 },
+  aura: { position: 'absolute' },
+  scene: { alignItems: 'center' },
+  lockup: { flexDirection: 'row', alignItems: 'center' },
+  markLayer: { position: 'absolute', top: 0, left: 0 },
+  tagline: {
+    color: '#061638',
+    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
     textAlign: 'center',
   },
-  doubleStar: {
-    width: 70,
-    height: 38,
-    marginTop: 12,
-    shadowColor: '#FFBE35',
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  track: {
-    width: 156,
-    height: 6,
-    borderRadius: 999,
-    marginTop: 20,
-    backgroundColor: 'rgba(105,56,245,0.14)',
-    overflow: 'hidden',
-  },
-  trackSweep: {
-    width: 72,
-    height: '100%',
-    borderRadius: 999,
-    backgroundColor: '#6938F5',
-    shadowColor: '#FFBE35',
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 0 },
-  },
   message: {
-    ...typeScale.caption,
     marginTop: 14,
-    fontSize: 13,
+    color: '#786F91',
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
     lineHeight: 17,
+    textAlign: 'center',
   },
 });
