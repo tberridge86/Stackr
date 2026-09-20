@@ -1,4 +1,5 @@
-import type { PreparedValuation } from '../../lib/preparedCollectionValuation';
+import { isGeneralPreparedCoverage, preferredPreparedValuation, preparedGeneralPricingSummary, preparedPricingSummary, type PreparedGeneralValuation, type PreparedValuation } from '../../lib/preparedCollectionValuation';
+import { getCollectionPriceCoverageLabel } from '../../lib/collectionPricingState';
 import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
 import { isCompleteBinderSnapshot, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
 import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
@@ -1646,7 +1647,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     }
   }, [binderId, catalogueReadIncomplete, loading, masterSetEnabled, ownershipReady, progressPercent, totalCount, totalKnown]);
 
-  const [preparedBinderValue, setPreparedBinderValue] = useState<PreparedValuation['binders'][number] | null>(null);
+  const [preparedBinderValue, setPreparedBinderValue] = useState<PreparedValuation['binders'][number] | PreparedGeneralValuation['binders'][number] | null>(null);
   useEffect(() => { setPreparedBinderValue(null); }, [binderId, userId, isReadOnly]);
   useEffect(() => {
     let current = true;
@@ -1657,7 +1658,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       reading = true;
       try {
         const response = await stackrApiClient.collectionValuation();
-        if (current && response.data.summary) setPreparedBinderValue(response.data.summary.binders.find((entry) => entry.binderId === binderId) ?? null);
+        if (current && response.data.summary) {
+          const summary = response.data.summary;
+          const selected = preferredPreparedValuation(summary);
+          setPreparedBinderValue(selected.binders.find((entry) => entry.binderId === binderId) ?? null);
+        }
       } catch (error) {
         if (current && [401, 403].includes((error as { status?: number }).status ?? 0)) setPreparedBinderValue(null);
         // A transient failure retains the previous complete generation.
@@ -1668,9 +1673,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     return () => { current = false; clearInterval(timer); };
   }, [binderId, userId, isReadOnly, ownedVariants]);
   const preparedSetValue = masterSetEnabled ? preparedBinderValue?.masterSet : preparedBinderValue?.standardSet;
-  const preparedValueLabel = (value: typeof preparedSetValue) => value?.total != null
-    ? formatCurrency(value.total) + ' known subtotal · ' + value.pricedUnits + '/' + value.totalUnits + ' priced'
-    : value ? 'No stored quotes · 0/' + value.totalUnits + ' priced' : 'Stored valuation pending';
+  const preparedValueLabel = (value: typeof preparedSetValue) => {
+    if (!value) return 'Stored valuation pending';
+    const coverage = isGeneralPreparedCoverage(value) ? preparedGeneralPricingSummary(value) : preparedPricingSummary(value);
+    if (!coverage) return 'Stored valuation pending';
+    return value.total != null
+      ? formatCurrency(value.total) + ' known subtotal · ' + getCollectionPriceCoverageLabel(coverage)
+      : 'No stored quotes · 0/' + value.totalUnits + ' priced';
+  };
 
   const getDisplayedVariantQuantity = useCallback((card: BinderCardWithDetails, variant: string) => {
     const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, card.set_id, variant);
@@ -4922,9 +4932,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                                   Based on {modalEbayPrice.count} listing{modalEbayPrice.count !== 1 ? 's' : ''}
                                 </Text>
                               )}
-                              {modalEbayPrice?.usedFallback && (modalEbayPrice?.count ?? 0) > 0 && (
+                              {modalEbayPrice?.usedFallback && (
                                 <Text style={{ color: '#F59E0B', fontSize: 11, marginTop: 2 }}>
-                                  Backup lookup used - check against the live sold-comps read.
+                                  General estimate — it is not an exact card or finish price.
                                 </Text>
                               )}
                               {modalEbayPrice?.count === 0 && (

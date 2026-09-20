@@ -253,6 +253,10 @@ paths:
         - $ref: "#/components/parameters/Condition"
         - $ref: "#/components/parameters/Grader"
         - $ref: "#/components/parameters/Grade"
+        - name: estimateMode
+          in: query
+          description: General mode retains an available exact quote, then permits a labelled stored estimate for the same printing, set and language.
+          schema: { type: string, enum: [exact, general], default: exact }
       responses:
         "200":
           description: Latest provider-neutral price estimate for one exact variant/product identity. Private and no-store in default personal owner-only mode.
@@ -1147,6 +1151,9 @@ components:
         totalUnits: { type: integer, minimum: 0 }
         distinctPriceIdentities: { type: integer, minimum: 0 }
         pricedUnits: { type: integer, minimum: 0 }
+        exactPricedUnits: { type: integer, minimum: 0 }
+        generalEstimateUnits: { type: integer, minimum: 0 }
+        valuationBasis: { type: string, enum: [exact_variant, general_card_estimate] }
         freshUnits: { type: integer, minimum: 0 }
         olderPriceUnits: { type: integer, minimum: 0 }
         unpricedUnits: { type: integer, minimum: 0 }
@@ -1163,6 +1170,9 @@ components:
         - type: object
           required: [collectionRevision, valuationRevision, calculatedAt, binders, refresh]
           properties:
+            general:
+              description: Opt-in general card valuation. Exact quotes take priority; labelled same-printing base estimates may fill gaps. The outer summary retains exact-only compatibility. This value does not itself contain another general summary.
+              allOf: [{ $ref: "#/components/schemas/PreparedValuation" }]
             collectionRevision: { type: string }
             valuationRevision: { type: string, format: uuid }
             calculatedAt: { type: string, format: date-time }
@@ -1920,6 +1930,16 @@ components:
                   type: object
                 fallbackEstimate:
                   type: [object, "null"]
+                  required: [reason, exact]
+                  properties:
+                    identityKey: { type: [string, "null"] }
+                    reason: { type: string }
+                    exact: { type: boolean, const: false }
+                    baseVariantId: { type: string, format: uuid }
+                    printingId: { type: string, format: uuid }
+                    language: { type: string }
+                    finishCode: { type: string }
+                    resolution: { type: string }
                 unavailableReason:
                   type: [string, "null"]
     PriceHistoryResponse:

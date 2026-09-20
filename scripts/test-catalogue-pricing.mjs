@@ -47,6 +47,13 @@ assert.equal(ownedValuationUnits(ownerInput)[0].quantity,2);
 const price={currency:'GBP',status:'market_estimate',estimates:{central:4},freshness:'fresh',staleAfter:'2099-01-01',calculatedAt:'2026-09-19'};
 assert.equal(summarisePreparedUnits([{variantId:'v',quantity:2}],new Map(),new Map([['v',price]])).total,8);
 assert.equal(summarisePreparedUnits([{variantId:'v',quantity:2}],new Map(),new Map([['v',{...price,estimates:{central:0}}]])).total,0);
+const exactPrepared=summarisePreparedUnits([{variantId:'v',quantity:2}],new Map(),new Map([['v',price]]));
+assert.equal(exactPrepared.exactPricedUnits,exactPrepared.pricedUnits,'the native exact result remains entirely exact');
+assert.equal(exactPrepared.generalEstimateUnits,0,'native exact output has no general values');
+const generalPrepared=summarisePreparedUnits([{quantity:2,priceVariantId:'v',priceScope:'printing_general',selection:{baseVariantId:'v',printingId:'p',setId:'s',language:'en',finishCode:'holo'},resolution:'same_printing_base'}],new Map(),new Map([['v',price]]),Date.now(),{general:true});
+assert.equal(generalPrepared.valuationBasis,'general_card_estimate');
+assert.equal(generalPrepared.generalEstimateUnits,2);
+assert.equal(generalPrepared.exactPricedUnits+generalPrepared.generalEstimateUnits,generalPrepared.pricedUnits);
 
 assert.equal(setValuationUnits([...variants,{...variants[1],variant_id:'duplicate'}],'master').length,3);
 assert.equal(setValuationUnits([...variants,{...variants[1],variant_id:'duplicate'}],'master')[1].reason,'unresolved_identity');
@@ -193,6 +200,30 @@ const updating=await service.collectionValuation(other);
 assert.equal(updating.state,'updating');assert.equal(updating.summary.totalUnits,2,'old summary retains its own quantities');
 const replacement=await prepareCollectionValuation({supabase,service,ownerId:other});
 assert.equal(replacement.summary.total,4);assert.equal(replacement.summary.totalUnits,1);
+// A prepared generation keeps its native exact output unchanged, but its
+// additive general summary may use a same-printing holo only after the normal
+// exact quote is absent. This exercises the real catalogue/read/price path.
+const generalHolo=await scalar("select test_uuid('prepared-general-holo')::text");
+await db.exec(`delete from public.market_price_snapshots where id=test_uuid('quote')::text::uuid;
+ insert into api.catalogue_cards(variant_id,printing_id,set_id,set_code,collector_number,language_code,variant_code,finish_code,catalogue_version_id)
+ select '${generalHolo}'::uuid,printing_id,set_id,'prepared','1',language_code,'holo','holo',catalogue_version_id from api.catalogue_cards where variant_id=test_uuid('1')::text::uuid;
+ insert into public.market_price_snapshots(id,card_id,set_id,language,primary_source,tcgdex_price,calculated_at,snapshot_at,stale_after,price_type,pricing_identity_json)
+ values(test_uuid('prepared-general-quote')::text::uuid,'${generalHolo}',test_uuid('set')::text,'ja','tcgdex',9,now(),now(),now()+interval '6 hours','market_estimate',
+ jsonb_build_object('canonicalVariantId','${generalHolo}','productType','raw_card','rawCondition','raw_near_mint'));
+ update public.user_card_variants set variant='reverseHolofoil' where id=test_uuid('holding')::text::uuid;
+ update public.collection_valuation_generations set calculated_at=now()-interval '4 minutes' where owner_id=test_uuid('other')`);
+const generalPreparation=await prepareCollectionValuation({supabase,service,ownerId:other});
+assert.equal(generalPreparation.summary.pricedUnits,0,'the exact summary never relabels a missing requested finish');
+assert.equal(generalPreparation.summary.general.pricedUnits,1);
+assert.equal(generalPreparation.summary.general.exactPricedUnits,0);
+assert.equal(generalPreparation.summary.general.generalEstimateUnits,1);
+assert.equal(generalPreparation.summary.general.total,9,'the stored unique holo is used only in the labelled general summary');
+await db.exec(`delete from public.market_price_snapshots where id=test_uuid('prepared-general-quote')::text::uuid;
+ delete from api.catalogue_cards where variant_id='${generalHolo}'::uuid;
+ insert into public.market_price_snapshots(id,card_id,set_id,language,primary_source,tcgdex_price,calculated_at,snapshot_at,stale_after,price_type,pricing_identity_json)
+ values(test_uuid('quote')::text::uuid,test_uuid('1')::text,test_uuid('set')::text,'ja','tcgdex',4,now(),now(),now()+interval '6 hours','market_estimate',
+ jsonb_build_object('canonicalVariantId',test_uuid('1')::text,'productType','raw_card','rawCondition','raw_near_mint'));
+ update public.user_card_variants set variant='normal' where id=test_uuid('holding')::text::uuid`);
 // Manual refresh enumeration crosses 1,000 identities without a repeated prefix.
 const owner=await scalar("select test_uuid('owner')::text");
 await db.exec("update public.user_card_variants set card_id=id::text,set_id=test_uuid('set')::text,variant='normal',condition='near_mint' where user_id=test_uuid('owner')");

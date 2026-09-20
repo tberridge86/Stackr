@@ -105,6 +105,7 @@ type EbayDetailData = {
   query?: string;
   soldDataSource?: string;
   evidenceStatus?: string | null;
+  generalEstimate?: boolean;
   primarySource?: string | null;
 } | null;
 
@@ -440,6 +441,7 @@ export default function MarketScreen() {
       query: card.id,
       soldDataSource: 'stackr-api',
       evidenceStatus: data.status,
+      generalEstimate: data.fallbackEstimate != null || data.quoteScope === 'printing_level',
       primarySource: data.primarySource ?? null,
     };
   }, [lookupType, rawCondition]);
@@ -715,6 +717,7 @@ export default function MarketScreen() {
         query: card.id,
         soldDataSource: 'stackr-api',
         evidenceStatus: stackrResult.price.status,
+        generalEstimate: stackrResult.price.fallbackEstimate != null || stackrResult.price.quoteScope === 'printing_level',
         primarySource: stackrResult.price.primarySource ?? null,
       });
       return;
@@ -1379,6 +1382,11 @@ export default function MarketScreen() {
                               {detailEbayData?.count != null && (
                                 <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
                                   {formatMarketEvidence(detailEbayData)}
+                                </Text>
+                              )}
+                              {detailEbayData?.generalEstimate && (
+                                <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
+                                  General estimate — not an exact card or finish price.
                                 </Text>
                               )}
                             </>

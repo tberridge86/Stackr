@@ -265,7 +265,7 @@ export default function CardDetailScreen() {
           average: pokeTrace.stackr_central,
           high: pokeTrace.stackr_high ?? null,
           count: pokeTrace.ebay_count,
-          usedFallback: false,
+          usedFallback: pokeTrace.generalEstimate === true,
         });
         setLatestSnapshotPrice({
           tcg_low: pokeTrace.stackr_low,
@@ -737,7 +737,7 @@ export default function CardDetailScreen() {
                 )}
                 {ebayPrice?.usedFallback && (
                   <Text style={styles.ebayFallbackText}>
-                    Backup lookup used - check against verified sold evidence where available.
+                    General estimate — it is not an exact card or finish price.
                   </Text>
                 )}
                 {ebayPrice?.count === 0 && (

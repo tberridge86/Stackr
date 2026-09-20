@@ -45,6 +45,8 @@ const legacyRead = await loadLegacyCollectionSnapshotPrices([
 assert.deepEqual(legacyRequests[0], { legacyIds: ['S12a-146'], legacySetId: 'ja:S12a', language: 'ja', latestOnly: true }, 'legacy batches retain Japanese colon-scoped set IDs and exclude grades');
 assert.equal(legacyRequests.length, 2, 'a recognized interruption stops remaining legacy groups instead of continuing the request storm');
 assert.equal(legacyRead.results.get(0)?.central, 4.25, 'a null-finish raw NM row receives only its labelled legacy printing estimate');
+assert.equal(legacyRead.results.get(0)?.pricingKind, 'general', 'a printing-level snapshot remains explicitly general in collection totals');
+assert.equal(legacyRead.results.get(0)?.fallbackEstimate?.exact, false);
 assert.equal(legacyRead.results.has(1), false, 'graded rows never receive a raw legacy estimate');
 assert.equal(legacyRead.failure?.status, 503, 'the interruption is returned with the preserved first group');
 assert.deepEqual(legacyProgress, [1, 1], 'legacy batches publish usable partial results without waiting for the complete collection');

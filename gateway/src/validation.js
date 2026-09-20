@@ -69,6 +69,9 @@ function validateQueryValue(name, value) {
   if (name === 'productType' && !PRODUCT_TYPES.has(value)) {
     bad('invalid_product_type', 'productType is not supported.');
   }
+  if (name === 'estimateMode' && !['exact', 'general'].includes(value)) {
+    bad('invalid_estimate_mode', 'estimateMode must be exact or general.');
+  }
   if (name === 'observationType' && !OBSERVATION_TYPES.has(value)) {
     bad('invalid_observation_type', 'observationType is not supported.');
   }

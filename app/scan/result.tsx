@@ -772,7 +772,9 @@ function ScanResultScreen() {
           high: price.estimates.high,
         } : null);
         setTcgPrice(selectedVariantMatchesResponse ? price.estimates.central : null);
-        setTcgPriceSource(selectedVariantMatchesResponse ? `Stackr market - ${price.status.replace(/_/g, ' ')}` : null);
+        setTcgPriceSource(selectedVariantMatchesResponse
+          ? `Stackr market - ${price.status.replace(/_/g, ' ')}${price.fallbackEstimate != null || price.quoteScope === 'printing_level' ? ' · General estimate' : ''}`
+          : null);
 
         const nextVariantKey = selectedVariantKey && variants.some((variant) => variant.key === selectedVariantKey)
           ? selectedVariantKey

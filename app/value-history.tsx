@@ -29,7 +29,7 @@ import { fetchStackrCardRows } from '../lib/stackrDomainAdapter';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../lib/scanCardReferenceHydration';
 import { stackrApiClient } from '../lib/stackrApiV1';
 import { loadCollectionPrices } from '../lib/collectionPricingApi';
-import { summariseCollectionPricing } from '../lib/collectionPricingState';
+import { getCollectionPriceCoverageLabel, summariseCollectionPricing } from '../lib/collectionPricingState';
 import { fetchOwnedCardRows } from '../lib/ownership';
 
 type RangeKey = '7D' | '30D' | '6M' | '12M';
@@ -965,12 +965,13 @@ export default function ValueHistoryScreen() {
           freshness: price.freshness,
           calculatedAt: price.calculatedAt,
           staleAfter: price.staleAfter,
+          pricingKind: price.pricingKind,
         })));
         setCurrentCollectionValue(summary.total);
         setCollectionCoverage(summary.total == null
           ? 'No stored collection estimates are available yet.'
           : summary.unpricedUnits > 0
-            ? `Known value covers ${summary.pricedUnits} of ${summary.totalUnits} cards. Price history is building.`
+            ? `${getCollectionPriceCoverageLabel(summary)}. Price history is building.`
             : 'Price history is building. It appears after two comparable stored valuation estimates.');
         // /price is a current estimate and /price-history is sale/asking evidence.
         // Neither can truthfully make a collection valuation chart by themselves.

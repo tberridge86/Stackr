@@ -120,15 +120,22 @@ test('one item-specific error does not discard otherwise valid siblings', async 
   assert.equal(rows[1].central, 1.25);
 });
 
-test('no identity match, missing condition and wrong finish do not fabricate a price', async () => {
+test('no identity, missing condition and unavailable general base quotes do not fabricate a price', async () => {
+  let priceCalls = 0;
   const rows = await loadCollectionPrices([
     makeInput(1, { condition: 'unknown' }), makeInput(2, { variantCode: 'reverse_holo' }),
     makeInput(3, { references: ['absent'] }),
-  ], { client: noPriceCalls, resolver: async (ref) => ref === 'absent' ? null : match });
+  ], { client: { cardPrice: async (id, options) => {
+    priceCalls++;
+    assert.equal(id, variantId);
+    assert.equal(options.estimateMode, 'general');
+    return unavailable;
+  } }, resolver: async (ref) => ref === 'absent' ? null : match });
   assert(rows.every((row) => row.central === null && row.requestFailure === undefined));
   assert.match(rows[0].unavailableReason, /condition/);
-  assert.match(rows[1].unavailableReason, /variant/);
+  assert.match(rows[1].unavailableReason, /insufficient_exact_market_evidence/);
   assert.match(rows[2].unavailableReason, /No exact/);
+  assert.equal(priceCalls, 1, 'only the proven raw Near Mint card may try its general base');
 });
 
 test('a later load/account is not locked out by another load failure or given its prices', async () => {

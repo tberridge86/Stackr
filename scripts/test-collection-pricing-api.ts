@@ -68,10 +68,57 @@ async function main() {
     client: client as any,
     resolver: resolver as any,
   });
-  assert.equal(missingVariant.status, 'unavailable');
-  assert.equal(missingVariant.central, null);
-  assert.equal(missingVariant.variantId, null, 'A missing requested variant must not fall back to the default variant');
-  assert.equal(requests.length, callsBeforeRejectedVariant, 'Rejected variants must not make a price request');
+  assert.equal(missingVariant.status, 'market_estimate');
+  assert.equal(missingVariant.pricingKind, 'general');
+  assert.equal(missingVariant.variantId, 'default-variant', 'A missing raw/NM finish may use one proved same-card general base.');
+  assert.equal(requests.length, callsBeforeRejectedVariant + 1, 'The general estimate makes one labelled base request.');
+
+  const holoOnlyResolver = async () => ({
+    variantId: 'holo-variant',
+    matchedBy: 'exact_external_id' as const,
+    card: {
+      defaultVariantId: 'holo-variant',
+      variants: [{ variantId: 'holo-variant', variantCode: 'holo' }],
+    },
+  });
+  const generalBaseRequests: any[] = [];
+  const [holoOnlyNormal] = await loadCollectionPrices([baseInput({ variantCode: 'normal' })], {
+    client: { cardPrice: async (variantId: string, query: any) => {
+      generalBaseRequests.push({ variantId, query });
+      return price(6.5);
+    } } as any,
+    resolver: holoOnlyResolver as any,
+  });
+  assert.equal(holoOnlyNormal.variantId, 'holo-variant');
+  assert.equal(holoOnlyNormal.central, 6.5);
+  assert.equal(holoOnlyNormal.pricingKind, 'general', 'A holo-only base is a labelled general estimate for a saved normal.');
+  assert.equal(holoOnlyNormal.quoteScope, 'printing_level');
+  assert.deepEqual(holoOnlyNormal.fallbackEstimate, { identityKey: null, reason: 'same_printing_general_base', exact: false });
+  assert.deepEqual(generalBaseRequests, [{ variantId: 'holo-variant', query: {
+    productType: 'raw_card', currency: 'GBP', condition: 'raw_near_mint', grader: undefined, grade: undefined, estimateMode: 'general',
+  } }]);
+  const [missingReverseHolo] = await loadCollectionPrices([baseInput({ variantCode: 'reverse_holo' })], {
+    client: { cardPrice: async () => price(6.5) } as any,
+    resolver: holoOnlyResolver as any,
+  });
+  assert.equal(missingReverseHolo.pricingKind, 'general', 'Any absent raw/NM finish uses only the labelled same-card general base.');
+  assert.equal(missingReverseHolo.variantId, 'holo-variant', 'The saved reverse-holo identity is never rewritten to the base variant.');
+  const [gradedHoloOnly] = await loadCollectionPrices([baseInput({ variantCode: 'normal', productType: 'graded_card', grader: 'PSA', grade: '10' })], {
+    client: { cardPrice: async () => { throw new Error('must not request a general base for a grade'); } } as any,
+    resolver: holoOnlyResolver as any,
+  });
+  assert.equal(gradedHoloOnly.status, 'unavailable', 'A graded saved normal cannot use a raw general base.');
+  const ambiguousHoloOnlyResolver = async () => ({
+    variantId: 'holo-one', matchedBy: 'exact_external_id' as const,
+    card: { defaultVariantId: 'holo-one', variants: [
+      { variantId: 'holo-one', variantCode: 'holo' }, { variantId: 'holo-two', variantCode: 'holo' },
+    ] },
+  });
+  const [ambiguousHoloOnly] = await loadCollectionPrices([baseInput({ variantCode: 'normal' })], {
+    client: { cardPrice: async () => { throw new Error('ambiguous base must not be requested'); } } as any,
+    resolver: ambiguousHoloOnlyResolver as any,
+  });
+  assert.equal(ambiguousHoloOnly.status, 'unavailable', 'Ambiguous holo bases fail closed.');
 
   const zeroClient = { cardPrice: async () => price(0) };
   const [zero] = await loadCollectionPrices([baseInput()], { client: zeroClient as any, resolver: singleVariantResolver as any });
@@ -166,8 +213,17 @@ assert.equal(
   assert.equal(completeGraded.central, 10);
   assert.equal(guardedRequests.length, 1, 'A complete graded identity may request its exact price');
   assert.deepEqual(guardedRequests[0][1], {
-    productType: 'graded_card', currency: 'GBP', condition: 'graded', grader: 'PSA', grade: '10',
+    productType: 'graded_card', currency: 'GBP', condition: 'graded', grader: 'PSA', grade: '10', estimateMode: 'general',
   });
+
+  const generalClient = { cardPrice: async () => ({ data: {
+    ...price(7).data,
+    quoteScope: 'printing_level',
+    fallbackEstimate: { identityKey: null, reason: 'same_printing_base_quote', exact: false },
+  } }) };
+  const [general] = await loadCollectionPrices([baseInput()], { client: generalClient as any, resolver: singleVariantResolver as any });
+  assert.equal(general.pricingKind, 'general', 'Only an explicit fallback marker can make a returned quote general.');
+  assert.equal(general.fallbackEstimate?.identityKey, null, 'Printing-level estimates may not name a different canonical identity.');
 
   const flakyClient = {
     cardPrice: async (variantId: string) => {

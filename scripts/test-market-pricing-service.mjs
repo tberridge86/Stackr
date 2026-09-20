@@ -343,7 +343,7 @@ async function assertInvalidServiceInput() {
   );
 }
 
-function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, approvedTcgdexAliases = [], insertErrors = [], onSnapshotUpdate = null }) {
+function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], storedExactPrices = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, approvedTcgdexAliases = [], insertErrors = [], onSnapshotUpdate = null }) {
   const limits = [];
   const inserted = [];
   const updates = [];
@@ -454,12 +454,55 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
         from: (tableName) => query(schemaName, tableName),
         rpc(name, args) {
           rpcCalls.push({ schemaName, name, args });
+          if (name === 'latest_stored_exact_prices' && storedExactPrices.length) {
+            return Promise.resolve({ data: storedExactPrices.filter((row) => args.p_variants.includes(row.variantId)), error: null });
+          }
           return query(schemaName, name);
         },
       };
     },
     from(tableName) { return query('public', tableName); },
   };
+}
+
+async function assertOptInGeneralStoredPrices() {
+  const variantId = '56565656-5656-4656-8656-565656565656';
+  const baseId = '57575757-5757-4757-8757-575757575757';
+  const printingId = '58585858-5858-4858-8858-585858585858';
+  const setId = '59595959-5959-4959-8959-595959595959';
+  const base = { variant_id: baseId, printing_id: printingId, set_id: setId, language_code: 'en', variant_code: 'normal', finish_code: 'normal' };
+  const requested = { ...base, variant_id: variantId, variant_code: 'reverse_holo', finish_code: 'reverse_holo' };
+  const snapshot = { card_id: baseId, language: 'en', primary_source: 'tcgdex', tcgdex_price: 2.75,
+    snapshot_at: new Date().toISOString(), pricing_identity_json: { canonicalVariantId: baseId, productType: 'raw_card', condition: 'raw_near_mint' } };
+  const fixture = (overrides = {}) => createSnapshotSupabase({ metadata: [requested, base], storedExactPrices: [{ variantId: baseId, snapshot }], ...overrides });
+  const supabase = fixture();
+  const service = createMarketPricingService({ supabase, fetchTcgdexNormalCardPrice: async () => { throw new Error('interactive reads must not fetch provider prices'); } });
+  assert.equal((await service.price(variantId)).status, 'unavailable', 'existing clients retain exact-only behavior');
+  const general = await service.price(variantId, { estimateMode: 'general' });
+  assert.equal(general.estimates.central, 2.75);
+  assert.equal(general.variantId, variantId);
+  assert.equal(general.quoteScope, 'printing_level');
+  assert.equal(general.fallbackEstimate.exact, false);
+  assert.equal(general.fallbackEstimate.reason, 'general_card_estimate');
+  assert.equal(general.fallbackEstimate.baseVariantId, baseId);
+  assert.equal(general.fallbackEstimate.printingId, printingId);
+  assert.equal(general.sample.sold, 0, 'a general market guide must not become a sold-price claim');
+  assert.deepEqual(supabase.rpcCalls.filter((call) => call.name === 'latest_stored_exact_prices').map((call) => call.args), [{ p_variants: [baseId] }]);
+  assert.equal(supabase.inserted.length, 0, 'interactive pricing must remain read-only');
+  const exactDb = fixture({ snapshots: [{ ...snapshot, card_id: variantId, tcgdex_price: 8.5, pricing_identity_json: { ...snapshot.pricing_identity_json, canonicalVariantId: variantId } }] });
+  const exact = await createMarketPricingService({ supabase: exactDb }).price(variantId, { estimateMode: 'general' });
+  assert.equal(exact.estimates.central, 8.5, 'the exact requested finish wins over a base estimate');
+  assert.equal(exact.quoteScope, 'exact_variant');
+  assert.equal(exact.fallbackEstimate ?? null, null);
+  assert.equal(exactDb.rpcCalls.some((call) => call.name === 'latest_stored_exact_prices'), false);
+  for (const conflicting of [{ language_code: 'ja' }, { set_id: printingId }, { printing_id: setId }]) {
+    const db = fixture({ metadata: [requested, { ...base, ...conflicting }] });
+    assert.equal((await createMarketPricingService({ supabase: db }).price(variantId, { estimateMode: 'general' })).status, 'unavailable', 'a general quote cannot cross printing, set, or language');
+  }
+  for (const input of [{ currency: 'USD' }, { productType: 'graded_card', grader: 'PSA', grade: '10' }, { condition: 'lightly_played' }]) {
+    assert.equal((await service.price(variantId, { ...input, estimateMode: 'general' })).status, 'unavailable', 'a raw GBP near-mint base cannot price another product/condition/currency');
+  }
+  await assert.rejects(() => service.price(variantId, { estimateMode: 'anything' }), (error) => error.code === 'invalid_estimate_mode');
 }
 
 async function assertLabelledLegacySnapshotFallback() {
@@ -1432,6 +1475,7 @@ await assertEbayAdapterBoundary();
 await assertRoutes();
 await assertInvalidServiceInput();
 await assertLabelledLegacySnapshotFallback();
+await assertOptInGeneralStoredPrices();
 await assertNormalVariantProviderBaseSnapshotIdentity();
 await assertLatestExactSnapshotBatchAvoidsAliasResolution();
 await assertRawPriceDefaultsNearMint();

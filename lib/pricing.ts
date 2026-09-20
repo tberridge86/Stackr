@@ -106,6 +106,8 @@ export type PokeTraceCardPriceResult = {
   stackr_central?: number | null;
   stackr_high?: number | null;
   evidenceStatus?: string | null;
+  /** The API explicitly marked this as a general, rather than exact-identity, estimate. */
+  generalEstimate?: boolean;
   sourceBreakdown?: Array<Record<string, unknown>>;
 };
 
@@ -476,6 +478,7 @@ export async function fetchPokeTraceCardPrice(
       stackr_central: price.estimates.central,
       stackr_high: price.estimates.high,
       evidenceStatus: price.status,
+      generalEstimate: price.fallbackEstimate != null || price.quoteScope === 'printing_level',
       sourceBreakdown: price.sourceBreakdown,
       raw: {
         id: result.resolved.variantId,

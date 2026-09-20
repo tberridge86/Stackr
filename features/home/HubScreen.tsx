@@ -1,5 +1,5 @@
 import { takeRotatingStringBatch } from '../../lib/homePriceRefreshCore';
-import { hasLowerPreparedPriceCoverage, preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
+import { hasLowerPreparedPriceCoverage, isPreparedGeneralValuation, preferredPreparedValuation, preparedGeneralPricingSummary, preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
 import { blocksIndependentPriceRead, mergeCollectionPriceRead, storedCollectionPriceResults, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { useTheme } from '../../components/theme-context';
@@ -162,7 +162,7 @@ type HomeBinderCardGroup = {
 };
 
 type HomeCollectionCacheSnapshot = {
-  pricingContractVersion: 2;
+  pricingContractVersion: 3;
   priceEvidence?: StoredCollectionPrice[];
   cachedAt: number;
   mintyDataRefreshedAt?: string | null;
@@ -183,6 +183,8 @@ const EMPTY_COLLECTION_PRICING: CollectionPricingSummary = {
   total: null,
   totalUnits: 0,
   pricedUnits: 0,
+  exactPricedUnits: 0,
+  generalEstimateUnits: 0,
   unpricedUnits: 0,
   staleUnits: 0,
   latestCalculatedAt: null,
@@ -734,6 +736,7 @@ const pricingSummaryForResults = (results: CollectionPriceResult[]) => summarise
     freshness: result.freshness,
     calculatedAt: result.calculatedAt,
     staleAfter: result.staleAfter,
+    pricingKind: result.pricingKind,
   })),
 );
 
@@ -1400,7 +1403,7 @@ export default function HubScreen() {
       );
       if (
         !snapshot
-        || snapshot.pricingContractVersion !== 2
+        || snapshot.pricingContractVersion !== 3
         || (snapshot.collectionTotal !== null && typeof snapshot.collectionTotal !== 'number')
         || !snapshot.collectionPricingSummary
       ) {
@@ -1629,7 +1632,9 @@ export default function HubScreen() {
         const retainedStoredResults = storedCollectionPriceResults(priceInputs, collectionPriceEvidenceRef.current);
         const unavailableStoredResults = unavailablePriceResults();
         const retainedStoredPricing = pricingSummaryForResults(retainedStoredResults.map((result, index) => result ?? unavailableStoredResults[index]));
-        if (hasLowerPreparedPriceCoverage(summary, retainedStoredPricing)) {
+        const selectedSummary = preferredPreparedValuation(summary);
+        const selectedPricing = isPreparedGeneralValuation(selectedSummary) ? preparedGeneralPricingSummary(selectedSummary) : preparedPricingSummary(summary);
+        if (!selectedPricing || hasLowerPreparedPriceCoverage(selectedSummary, retainedStoredPricing)) {
           preparedValuationAvailableRef.current = false;
           prepared = null;
         } else {
@@ -1637,35 +1642,41 @@ export default function HubScreen() {
         }
       }
       if (prepared) {
-        const summary = prepared.summary;
-        if (!summary) return;
-        const pricing = preparedPricingSummary(summary);
+        const exactSummary = prepared.summary;
+        if (!exactSummary) return;
+        const summary = preferredPreparedValuation(exactSummary);
+        const pricing = isPreparedGeneralValuation(summary) ? preparedGeneralPricingSummary(summary) : preparedPricingSummary(exactSummary);
+        if (!pricing) return;
         const coverage = summary.binders.find((entry) => entry.binderId === nextActiveBinder?.id)?.owned;
         const preparedBinder = nextActiveBinder && coverage ? { ...nextActiveBinder,
           value: coverage.total ?? 0, valueAvailable: coverage.total != null,
-          valueCoverageLabel: getCollectionPriceCoverageLabel(preparedPricingSummary(coverage)) } : nextActiveBinder;
+          valueCoverageLabel: getCollectionPriceCoverageLabel(isPreparedGeneralValuation(summary)
+            ? preparedGeneralPricingSummary(coverage as import('../../lib/preparedCollectionValuation').GeneralPreparedCoverage) ?? preparedPricingSummary(coverage)
+            : preparedPricingSummary(coverage)) } : nextActiveBinder;
         setCollectionTotal(pricing.total);
         setCollectionPricingSummary(pricing);
         setOwnedCardCount(summary.totalUnits);
         setActiveBinder(preparedBinder);
-        const trend = preparedValuationTrend(summary, chartRange === '7D' ? 7 : 30);
+        // The existing trend represents exact coverage only; do not present it as a
+        // general-estimate trend until the server supplies matching points.
+        const trend = !isPreparedGeneralValuation(summary) ? preparedValuationTrend(exactSummary, chartRange === '7D' ? 7 : 30) : { values: [], change: 0, percent: 0 };
         setChartData(trend.values);
         setCollectionChangeAmount(trend.change);
         setCollectionChangePercent(trend.percent);
         setTrendCoverageLabel(trend.values.length ? 'Complete comparable collection' : null);
         setTrendProvenanceLabel(trend.values.length ? 'Recorded stored-price valuations' : null);
         setTrendIsSubset(false);
-        const refreshReport = summary.refresh && prepared.refreshRequest
-          ? `Refresh review: ${summary.refresh.accepted} accepted, ${summary.refresh.alreadyPending} already pending, ${summary.refresh.unsupported} unsupported, ${summary.refresh.unresolved} unresolved, ${summary.refresh.blocked} blocked, ${summary.refresh.remaining ?? 0} remaining.` : null;
+        const refreshReport = exactSummary.refresh && prepared.refreshRequest
+          ? `Refresh review: ${exactSummary.refresh.accepted} accepted, ${exactSummary.refresh.alreadyPending} already pending, ${exactSummary.refresh.unsupported} unsupported, ${exactSummary.refresh.unresolved} unresolved, ${exactSummary.refresh.blocked} blocked, ${exactSummary.refresh.remaining ?? 0} remaining.` : null;
         setCollectionPricingWarning(refreshReport ?? (prepared.state === 'updating'
           ? 'Updating your collection. Showing the previous complete valuation and its quantities.'
-          : summary.cycle?.overdue ? 'The catalogue pricing cycle is overdue. Showing stored estimates and their recorded coverage.'
+          : exactSummary.cycle?.overdue ? 'The catalogue pricing cycle is overdue. Showing stored estimates and their recorded coverage.'
           : pricing.state === 'partial' ? getCollectionPriceCoverageLabel(pricing) + '. Showing the known subtotal.'
           : pricing.staleUnits ? 'Older stored estimates retained with their original source dates.' : null));
         hasSuccessfulCollectionPricingRef.current = pricing.total != null;
         cachedHomeSnapshotUserIdRef.current = trustedUserId;
         setMintyDataRefreshedAt(pricing.latestCalculatedAt);
-        void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 2,
+        void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 3,
           mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: trend.values, collectionValueReads: [],
           collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: trend.change,
           collectionChangePercent: trend.percent, ownedCardCount: summary.totalUnits, activeBinder: preparedBinder,
@@ -1849,7 +1860,7 @@ export default function HubScreen() {
       hasSuccessfulCollectionPricingRef.current = nextPricingSummary.total != null;
 
       void saveHomeCollectionCache(trustedUserId, {
-        pricingContractVersion: 2,
+        pricingContractVersion: 3,
         priceEvidence: nextPriceEvidence,
         mintyDataRefreshedAt: refreshedAt,
         chartRange,

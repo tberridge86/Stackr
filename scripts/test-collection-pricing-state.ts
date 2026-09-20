@@ -38,9 +38,22 @@ const partial = summariseCollectionPricing([
 assert.equal(partial.total, 9);
 assert.equal(partial.totalUnits, 5);
 assert.equal(partial.pricedUnits, 2);
+assert.equal(partial.exactPricedUnits, 2);
+assert.equal(partial.generalEstimateUnits, 0);
 assert.equal(partial.unpricedUnits, 3);
 assert.equal(partial.state, 'partial');
 assert.equal(getCollectionPriceCoverageLabel(partial), 'Prices for 2 of 5 cards');
+
+const mixedCoverage = summariseCollectionPricing([
+  { quantity: 2, centralValue: 4.5, evidenceStatus: 'market_estimate', freshness: 'fresh', pricingKind: 'exact' },
+  { quantity: 3, centralValue: 2, evidenceStatus: 'market_estimate', freshness: 'fresh', pricingKind: 'general' },
+  { quantity: 1, centralValue: null, evidenceStatus: 'unavailable', pricingKind: 'unknown' },
+], { now });
+assert.equal(mixedCoverage.total, 15, 'A labelled general estimate contributes to the known subtotal.');
+assert.equal(mixedCoverage.exactPricedUnits, 2);
+assert.equal(mixedCoverage.generalEstimateUnits, 3);
+assert.equal(mixedCoverage.unpricedUnits, 1, 'Unknown values never become zero-valued estimates.');
+assert.equal(getCollectionPriceCoverageLabel(mixedCoverage), 'Prices for 5 of 6 cards · Includes 3 general estimates');
 
 const stale = summariseCollectionPricing([
   {

@@ -666,6 +666,10 @@ export interface components {
             totalUnits: number;
             distinctPriceIdentities: number;
             pricedUnits: number;
+            exactPricedUnits?: number;
+            generalEstimateUnits?: number;
+            /** @enum {string} */
+            valuationBasis?: "exact_variant" | "general_card_estimate";
             freshUnits: number;
             olderPriceUnits: number;
             unpricedUnits: number;
@@ -680,6 +684,8 @@ export interface components {
             latestSourceAt: string | null;
         };
         PreparedValuation: components["schemas"]["PreparedCoverage"] & {
+            /** @description Opt-in general card valuation. Exact quotes take priority; labelled same-printing base estimates may fill gaps. The outer summary retains exact-only compatibility. This value does not itself contain another general summary. */
+            general?: components["schemas"]["PreparedValuation"];
             collectionRevision: string;
             /** Format: uuid */
             valuationRevision: string;
@@ -1068,7 +1074,19 @@ export interface components {
                 };
                 sample: Record<string, never>;
                 confidence: Record<string, never>;
-                fallbackEstimate?: Record<string, never> | null;
+                fallbackEstimate?: {
+                    identityKey?: string | null;
+                    reason: string;
+                    /** @constant */
+                    exact: false;
+                    /** Format: uuid */
+                    baseVariantId?: string;
+                    /** Format: uuid */
+                    printingId?: string;
+                    language?: string;
+                    finishCode?: string;
+                    resolution?: string;
+                } | null;
                 unavailableReason?: string | null;
             };
         };
@@ -1598,6 +1616,8 @@ export interface operations {
                 condition?: components["parameters"]["Condition"];
                 grader?: components["parameters"]["Grader"];
                 grade?: components["parameters"]["Grade"];
+                /** @description General mode retains an available exact quote, then permits a labelled stored estimate for the same printing, set and language. */
+                estimateMode?: "exact" | "general";
             };
             header?: never;
             path: {

@@ -8,6 +8,8 @@ export type CollectionPricingInput = {
   freshness?: CollectionPriceFreshness;
   calculatedAt?: string | null;
   staleAfter?: string | null;
+  /** Exact identity evidence and labelled general estimates are counted separately. */
+  pricingKind?: 'exact' | 'general' | 'unknown' | null;
 };
 
 export type CollectionPricingState = 'empty' | 'unavailable' | 'partial' | 'fresh' | 'stale';
@@ -16,6 +18,8 @@ export type CollectionPricingSummary = {
   total: number | null;
   totalUnits: number;
   pricedUnits: number;
+  exactPricedUnits: number;
+  generalEstimateUnits: number;
   unpricedUnits: number;
   staleUnits: number;
   latestCalculatedAt: string | null;
@@ -57,6 +61,8 @@ export function summariseCollectionPricing(
   const now = Number.isFinite(configuredNow) ? Number(configuredNow) : Date.now();
   let totalUnits = 0;
   let pricedUnits = 0;
+  let exactPricedUnits = 0;
+  let generalEstimateUnits = 0;
   let staleUnits = 0;
   let total = 0;
   let latestCalculatedAt: string | null = null;
@@ -72,6 +78,8 @@ export function summariseCollectionPricing(
     if (!priced) continue;
 
     pricedUnits += quantity;
+    if (input.pricingKind === 'general') generalEstimateUnits += quantity;
+    else exactPricedUnits += quantity;
     total += centralValue * quantity;
     if (isStale(input, now)) staleUnits += quantity;
 
@@ -97,6 +105,8 @@ export function summariseCollectionPricing(
     total: pricedUnits > 0 ? total : null,
     totalUnits,
     pricedUnits,
+    exactPricedUnits,
+    generalEstimateUnits,
     unpricedUnits,
     staleUnits,
     latestCalculatedAt,
@@ -153,10 +163,14 @@ export function getComparableCollectionValueReads(
   return values.length >= 2 ? values : [];
 }
 
-export function getCollectionPriceCoverageLabel(summary: Pick<CollectionPricingSummary, 'state' | 'pricedUnits' | 'totalUnits' | 'staleUnits'>) {
+export function getCollectionPriceCoverageLabel(summary: Pick<CollectionPricingSummary, 'state' | 'pricedUnits' | 'exactPricedUnits' | 'generalEstimateUnits' | 'totalUnits' | 'staleUnits'>) {
   if (summary.state === 'empty') return 'No cards tracked';
   if (summary.state === 'unavailable') return 'No stored market estimates yet';
-  if (summary.state === 'partial') return `Prices for ${summary.pricedUnits} of ${summary.totalUnits} cards`;
-  if (summary.state === 'stale') return `Prices for ${summary.pricedUnits} cards need updating`;
-  return `Prices for all ${summary.totalUnits} cards`;
+  const general = summary.generalEstimateUnits ?? 0;
+  const coverage = summary.state === 'partial'
+    ? `Prices for ${summary.pricedUnits} of ${summary.totalUnits} cards`
+    : summary.state === 'stale'
+      ? `Prices for ${summary.pricedUnits} cards need updating`
+      : `Prices for all ${summary.totalUnits} cards`;
+  return general > 0 ? `${coverage} · Includes ${general} general estimate${general === 1 ? '' : 's'}` : coverage;
 }
