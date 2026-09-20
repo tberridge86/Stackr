@@ -8,12 +8,12 @@ import { CollectionProvider } from '../components/collection-context';
 import { AchievementProvider } from '../components/achievement-context';
 import { AppModeProvider, useAppMode } from '../components/app-mode-context';
 import { ThemeProvider, useTheme } from '../components/theme-context';
-import { InteractionManager, KeyboardAvoidingView, Platform, Text as NativeText, TextInput as NativeTextInput, TouchableOpacity, View } from 'react-native';
+import { Animated, InteractionManager, KeyboardAvoidingView, Platform, Text as NativeText, TextInput as NativeTextInput, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StripeAppProvider } from '../components/StripeAppProvider';
 import * as SplashScreen from 'expo-splash-screen';
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -374,7 +374,12 @@ function AppShell() {
 // ===============================
 
 export default function RootLayout() {
+  const pathname = usePathname();
   const [fontWaitExpired, setFontWaitExpired] = useState(false);
+  const [showStartupScreen, setShowStartupScreen] = useState(true);
+  const startupOpacity = useRef(new Animated.Value(1)).current;
+  const startupDismissing = useRef(false);
+  const startupOverlayVisible = showStartupScreen && pathname !== '/splash-preview';
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -395,6 +400,35 @@ export default function RootLayout() {
 
   useEffect(() => { void hydrateStackrHapticsPreference(); }, []);
 
+  const finishStartup = useCallback(() => {
+    if (startupDismissing.current) return;
+    startupDismissing.current = true;
+    Animated.timing(startupOpacity, {
+      toValue: 0,
+      duration: 240,
+      useNativeDriver: Platform.OS !== 'web',
+      isInteraction: false,
+    }).start(({ finished }) => {
+      if (finished) setShowStartupScreen(false);
+      else startupDismissing.current = false;
+    });
+  }, [startupOpacity]);
+
+  const forceFinishStartup = useCallback(() => {
+    startupDismissing.current = true;
+    startupOpacity.stopAnimation();
+    setShowStartupScreen(false);
+  }, [startupOpacity]);
+
+  useEffect(() => {
+    if (!fontsLoaded && !fontError && !fontWaitExpired) return;
+    const timeout = setTimeout(forceFinishStartup, 6_000);
+    return () => {
+      clearTimeout(timeout);
+      startupOpacity.stopAnimation();
+    };
+  }, [fontError, fontWaitExpired, fontsLoaded, forceFinishStartup, startupOpacity]);
+
   return (
     <ThemeProvider>
       <View
@@ -405,9 +439,39 @@ export default function RootLayout() {
           <StackrLoadingScreen message="Opening Stackr" />
         ) : (
           <StackrSafeAreaBoundary>
-            <StackrQueryProvider>
-              <AppShell />
-            </StackrQueryProvider>
+            <View
+              style={{ flex: 1 }}
+            >
+              <View
+                style={{ flex: 1 }}
+                accessibilityElementsHidden={startupOverlayVisible}
+                importantForAccessibility={startupOverlayVisible ? 'no-hide-descendants' : 'auto'}
+              >
+                <StackrQueryProvider>
+                  <AppShell />
+                </StackrQueryProvider>
+              </View>
+              {startupOverlayVisible ? (
+                <Animated.View
+                  pointerEvents="auto"
+                  accessibilityViewIsModal
+                  importantForAccessibility="yes"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0,
+                    zIndex: 10000,
+                    elevation: 10000,
+                    opacity: startupOpacity,
+                  }}
+                >
+                  <StatusBar hidden />
+                  <StackrLoadingScreen onReadyForDismiss={finishStartup} />
+                </Animated.View>
+              ) : null}
+            </View>
           </StackrSafeAreaBoundary>
         )}
       </View>

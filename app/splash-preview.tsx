@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View } from 'react-native';
 import { Text } from '../components/Text';
 import { StackrLoadingScreen } from '../components/StackrLoadingScreen';
 import { useTheme } from '../components/theme-context';
@@ -12,7 +11,7 @@ export default function SplashPreviewScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <StackrLoadingScreen message="Opening Stackr" />
+      <StackrLoadingScreen loop message="Opening Stackr" />
 
       <SafeAreaView
         pointerEvents="box-none"
