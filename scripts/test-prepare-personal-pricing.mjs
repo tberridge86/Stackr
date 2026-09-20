@@ -27,6 +27,8 @@ assert.match(workflow, /cancel-in-progress: false/, 'production preparation must
 assert.match(workflow, /Verify a current physical backup and create logical recovery dumps/,
   'backup wording must distinguish an existing physical backup from generated logical dumps');
 assert.match(workflow, /supabase@2\.110\.0 backups list/, 'a current physical backup must be checked');
+assert.match(workflow, /backups list[^\n]+\| tee "\$RUNNER_TEMP\/personal-pricing-backup\/physical.json"/,
+  'backup-list diagnostics must remain visible when the command fails before the manifest can be verified');
 assert.match(workflow, /supabase@2\.110\.0 db dump/, 'logical recovery dumps must be made before apply');
 assert.match(workflow, /if: always\(\)\s+shell: bash\s+run: rm -rf "\$RUNNER_TEMP\/personal-pricing-backup"/,
   'ephemeral logical backup files must always be removed from the runner');
