@@ -98,8 +98,13 @@ verified distributed normal build, as recorded in
   **berridge14@icloud.com** on 20 September; the support composer and draft use
   that contact. The [Companies House record](https://find-and-update.company-information.service.gov.uk/company/17386590)
   independently confirms the entity and registered office at **18 Lyndhurst Grove,
-  Chaddesden, Derby, England, DE21 6RY**. The draft includes this address; the public
-  page is unchanged. Registration does not prove privacy-request handling.
+  Chaddesden, Derby, England, DE21 6RY**. The draft includes this address.
+  [Support-site PR #1](https://github.com/tberridge86/stackr-support/pull/1) was
+  merged as `7599af71aa4589b60a2a9f38b265452f9cf647bc`: the public site now names
+  the supplied company/number and uses the supplied contact for support/privacy
+  requests. GitHub Pages completed and both live pages independently returned
+  HTTP 200 with the corrected fields. Remaining policy text was preserved; this
+  factual correction does not prove request handling or complete the draft notice.
   Neither these drafts nor the deletion-request link establish compliant account
   deletion, private support receipt, a monitored inbox or an approved notice.
 - Fixed Settings falsely selecting the Collection tab. About shows build/update
