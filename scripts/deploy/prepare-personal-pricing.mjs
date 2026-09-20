@@ -18,6 +18,13 @@ export const REQUIRED_MIGRATIONS = Object.freeze([
   ['20260906063316_personal_pricing_privacy_boundary.sql', '70d68487f20e5867afafc12759c2e8b3c448b0e529b862bdbebc6330e11f3ca3'],
 ].map(([filename, sha256]) => Object.freeze({ filename, version: filename.slice(0, 14), name: filename.slice(15, -4), sha256 })));
 
+export const CATALOGUE_PRICING_MIGRATION = Object.freeze({
+  filename: '20260919100104_catalogue_pricing_cycles.sql',
+  version: '20260919100104',
+  name: 'catalogue_pricing_cycles',
+  sha256: '100847e33f08b9afafbe04bda2a262b369a6e8061ca8099d69ac435e15b8778e',
+});
+
 // The pricing release assumes the bounded binder artwork read was recorded on
 // production. A migration count alone cannot prove that prerequisite: another
 // unrelated migration could produce the same count.
@@ -29,9 +36,10 @@ export const REQUIRED_BINDER_MIGRATIONS = Object.freeze([
 function source(migration) { return readFileSync(resolve(root, 'supabase/migrations', migration.filename), 'utf8').replace(/\r\n/g, '\n'); }
 function digest(value) { return createHash('sha256').update(value, 'utf8').digest('hex'); }
 
-export function validateMigrationSources() {
+export function validateMigrationSources(scope = 'personal') {
+  const migrations = scope === 'catalogue' ? [CATALOGUE_PRICING_MIGRATION] : REQUIRED_MIGRATIONS;
   const sources = new Map();
-  for (const migration of REQUIRED_MIGRATIONS) {
+  for (const migration of migrations) {
     const sql = source(migration);
     if (digest(sql) !== migration.sha256) throw new Error(`migration_checksum_mismatch:${migration.filename}`);
     assertRollbackSafeMigrationSql(sql);
@@ -51,13 +59,51 @@ export function assertProductionDatabaseUrl(dbUrl) {
 export function parseArguments(argv) {
   const values = new Map();
   for (const argument of argv) {
-    const match = typeof argument === 'string' && !/[\r\n]/.test(argument) && /^--(db-url|owner-email|apply)=(.*)$/.exec(argument);
+    const match = typeof argument === 'string' && !/[\r\n]/.test(argument) && /^--(db-url|owner-email|scope|apply)=(.*)$/.exec(argument);
     if (!match) throw new Error('invalid_argument');
     if (values.has(match[1])) throw new Error('duplicate_argument');
     values.set(match[1], match[2]);
   }
   if (values.has('apply') && !['true', 'false'].includes(values.get('apply'))) throw new Error('invalid_apply_argument');
-  return { dbUrl: values.get('db-url') ?? '', ownerEmail: values.get('owner-email') ?? '', apply: values.get('apply') === 'true' };
+  if (values.has('scope') && !['personal', 'catalogue'].includes(values.get('scope'))) throw new Error('invalid_scope_argument');
+  return { dbUrl: values.get('db-url') ?? '', ownerEmail: values.get('owner-email') ?? '', scope: values.get('scope') ?? 'personal', apply: values.get('apply') === 'true' };
+}
+
+function catalogueMigrationState(rows) {
+  if (!Array.isArray(rows)) throw new Error('migration_history_result_invalid');
+  const applied = new Set(rows.map((row) => `${row.version}_${row.name}`));
+  if (applied.size !== rows.length) throw new Error('production_migration_history_duplicate');
+  const prerequisites = [...REQUIRED_BINDER_MIGRATIONS, ...REQUIRED_MIGRATIONS]
+    .map((migration) => `${migration.version}_${migration.name}`);
+  if (prerequisites.some((key) => !applied.has(key))) throw new Error('catalogue_pricing_migration_prerequisite_missing');
+  const key = `${CATALOGUE_PRICING_MIGRATION.version}_${CATALOGUE_PRICING_MIGRATION.name}`;
+  return { pending: applied.has(key) ? [] : [CATALOGUE_PRICING_MIGRATION], applied: applied.has(key) ? [CATALOGUE_PRICING_MIGRATION] : [] };
+}
+
+async function assertCataloguePricingContract(client) {
+  const result = await client.query(`
+    with expected_tables(name) as (values
+      ('public.catalogue_price_cycles'), ('public.catalogue_price_state'),
+      ('public.catalogue_price_items'), ('public.catalogue_price_provider_budget'),
+      ('public.collection_valuation_generations'), ('public.collection_valuation_history')
+    ), expected_functions(signature) as (values
+      ('api.begin_catalogue_price_cycle(integer)'), ('api.claim_catalogue_prices(uuid,integer)'),
+      ('api.finish_catalogue_price(uuid,uuid,uuid,text,integer,text)'),
+      ('api.collection_valuation_inputs(uuid)'), ('api.request_collection_valuation(uuid,boolean)'),
+      ('api.claim_collection_valuation(uuid)'), ('api.publish_collection_valuation(uuid,uuid,text,jsonb,timestamptz)'),
+      ('api.latest_stored_exact_prices(uuid[])'), ('api.collection_valuation_trend(uuid,text)')
+    )
+    select
+      (select bool_and(to_regclass(name) is not null) from expected_tables) as tables_present,
+      (select bool_and(to_regprocedure(signature) is not null
+        and has_function_privilege('service_role', to_regprocedure(signature), 'EXECUTE')
+        and not has_function_privilege('authenticated', to_regprocedure(signature), 'EXECUTE')
+        and not has_function_privilege('anon', to_regprocedure(signature), 'EXECUTE')) from expected_functions) as functions_private_to_service
+  `);
+  const contract = result.rows[0] ?? {};
+  if (contract.tables_present !== true || contract.functions_private_to_service !== true) {
+    throw new Error('catalogue_pricing_post_apply_contract_mismatch');
+  }
 }
 
 function migrationState(rows) {
@@ -75,11 +121,11 @@ function migrationState(rows) {
   return { pending: REQUIRED_MIGRATIONS.filter((migration) => !applied.has(`${migration.version}_${migration.name}`)), applied: REQUIRED_MIGRATIONS.filter((migration) => applied.has(`${migration.version}_${migration.name}`)) };
 }
 
-export async function preparePersonalPricing({ dbUrl, ownerEmail, apply = false }, createClient = createVerifiedSupabasePostgresClient) {
-  const sources = validateMigrationSources();
+export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'personal', apply = false }, createClient = createVerifiedSupabasePostgresClient) {
+  const sources = validateMigrationSources(scope);
   if (!dbUrl) throw new Error('production_database_url_required');
   assertProductionDatabaseUrl(dbUrl);
-  if (!/^\S+@\S+\.\S+$/.test(ownerEmail)) throw new Error('owner_email_required');
+  if (scope === 'personal' && !/^\S+@\S+\.\S+$/.test(ownerEmail)) throw new Error('owner_email_required');
   const client = createClient(dbUrl, 'stackr_personal_pricing_preparation');
   await client.connect();
   try {
@@ -89,19 +135,24 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, apply = false 
       await client.query("set local statement_timeout = '30s'");
       await client.query('select pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext($1))', [lockName]);
       const history = await client.query('select version, name from supabase_migrations.schema_migrations order by version, name');
-      const state = migrationState(history.rows);
+      const state = scope === 'catalogue' ? catalogueMigrationState(history.rows) : migrationState(history.rows);
       const initialPendingMigrations = state.pending.map((migration) => migration.filename);
       const initialAppliedMigrations = state.applied.map((migration) => migration.filename);
-      const owner = await client.query('select id from auth.users where lower(email) = lower($1) limit 2', [ownerEmail]);
-      if (owner.rows.length !== 1) throw new Error('pricing_owner_account_not_unique');
-      const snapshots = await client.query(`
+      let ownerId = null;
+      let sourceLabelledTcgdexSnapshotCount = null;
+      if (scope === 'personal') {
+        const owner = await client.query('select id from auth.users where lower(email) = lower($1) limit 2', [ownerEmail]);
+        if (owner.rows.length !== 1) throw new Error('pricing_owner_account_not_unique');
+        ownerId = String(owner.rows[0].id);
+        const snapshots = await client.query(`
         select lower(coalesce(primary_source, price_source, '')) as source, count(*)::int as count
         from public.market_price_snapshots
         where user_id is null
         group by 1
         order by 1
-      `);
-      const sourceLabelledTcgdex = snapshots.rows.find((row) => String(row.source).includes('tcgdex'))?.count ?? 0;
+        `);
+        sourceLabelledTcgdexSnapshotCount = Number(snapshots.rows.find((row) => String(row.source).includes('tcgdex'))?.count ?? 0);
+      }
       const newlyAppliedMigrations = apply && state.pending.length ? initialPendingMigrations : [];
       if (newlyAppliedMigrations.length) {
         for (const migration of state.pending) {
@@ -111,19 +162,24 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, apply = false 
         }
         await client.query('commit');
       } else await client.query('rollback');
+      if (scope === 'catalogue' && (state.applied.length || newlyAppliedMigrations.length)) {
+        await client.query('begin read only');
+        try { await assertCataloguePricingContract(client); } finally { await client.query('rollback'); }
+      }
       const finalAppliedMigrations = [...initialAppliedMigrations, ...newlyAppliedMigrations];
       const finalPendingMigrations = apply ? [] : initialPendingMigrations;
       return {
         ok: true,
         mode: newlyAppliedMigrations.length ? 'applied' : apply ? 'already_applied' : 'read_only_preparation',
-        ownerId: String(owner.rows[0].id),
+        scope,
+        ownerId,
         migrationHistoryCount: history.rows.length + newlyAppliedMigrations.length,
         initialPendingMigrations,
         newlyAppliedMigrations,
         pendingMigrations: finalPendingMigrations,
         appliedMigrations: finalAppliedMigrations,
-        sourceLabelledTcgdexSnapshotCount: Number(sourceLabelledTcgdex),
-        migrationSha256: Object.fromEntries(REQUIRED_MIGRATIONS.map((migration) => [migration.filename, migration.sha256])),
+        sourceLabelledTcgdexSnapshotCount,
+        migrationSha256: Object.fromEntries((scope === 'catalogue' ? [CATALOGUE_PRICING_MIGRATION] : REQUIRED_MIGRATIONS).map((migration) => [migration.filename, migration.sha256])),
       };
     } catch (error) { await client.query('rollback').catch(() => undefined); throw error; }
   } finally { await client.end(); }

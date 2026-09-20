@@ -3,6 +3,13 @@ name: Prepare Personal Pricing
 on:
   workflow_dispatch:
     inputs:
+      scope:
+        required: true
+        default: personal
+        type: choice
+        options:
+          - personal
+          - catalogue
       confirmation:
         required: true
         type: string
@@ -21,7 +28,7 @@ concurrency:
 
 jobs:
   prepare:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PREPARE PERSONAL PRICING'
+    if: github.ref == 'refs/heads/main' && ((inputs.scope == 'personal' && inputs.confirmation == 'PREPARE PERSONAL PRICING') || (inputs.scope == 'catalogue' && inputs.confirmation == 'PREPARE CATALOGUE PRICING'))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
@@ -48,14 +55,14 @@ jobs:
           npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" --file "$RUNNER_TEMP/personal-pricing-backup/schema.sql"
           npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" --data-only --use-copy --file "$RUNNER_TEMP/personal-pricing-backup/data.sql"
           node scripts/deploy/verify-backup.mjs --physical="$RUNNER_TEMP/personal-pricing-backup/physical.json" --schema="$RUNNER_TEMP/personal-pricing-backup/schema.sql" --data="$RUNNER_TEMP/personal-pricing-backup/data.sql" --require-physical
-      - name: Verify or apply the six reviewed personal-pricing migrations
+      - name: Verify or apply the reviewed pricing migration scope
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/deploy/prepare-personal-pricing.mjs --db-url="$STACKR_SOURCE_DB_URL" --owner-email="$PRICING_OWNER_EMAIL" --apply="${{ inputs.apply_migrations }}" | tee "$RUNNER_TEMP/personal-pricing-preparation.json"
+          node scripts/deploy/prepare-personal-pricing.mjs --db-url="$STACKR_SOURCE_DB_URL" --owner-email="$PRICING_OWNER_EMAIL" --scope="${{ inputs.scope }}" --apply="${{ inputs.apply_migrations }}" | tee "$RUNNER_TEMP/personal-pricing-preparation.json"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: personal-pricing-preparation-${{ github.run_id }}
+          name: ${{ inputs.scope }}-pricing-preparation-${{ github.run_id }}
           path: ${{ runner.temp }}/personal-pricing-preparation.json
           retention-days: 90
       - name: Remove ephemeral logical backup files
