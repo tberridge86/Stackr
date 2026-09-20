@@ -3,6 +3,7 @@ const NORMAL_CODES = new Set(['', 'standard', 'default', 'normal']);
 const NORMAL_FINISH_CODES = new Set(['', 'standard', 'default', 'normal', 'non_holo']);
 
 export const OWNER_PRICE_REFRESH_MAX_LIMIT = 30;
+export const OWNER_PRICE_REFRESH_COMPLETE_MAX_VARIANTS = 500;
 
 export function isUuid(value) {
   return UUID_PATTERN.test(String(value ?? '').trim());
@@ -97,11 +98,13 @@ export function parseOwnerPriceRefreshArguments(args = []) {
   let dryRun = true;
   let includeQueue = false;
   let queueOnly = false;
+  let completeOwned = false;
   for (const argument of args) {
     if (argument === '--apply') dryRun = false;
     if (argument === '--dry-run') dryRun = true;
     if (argument === '--include-queue') includeQueue = true;
     if (argument === '--queue-only') queueOnly = true;
+    if (argument === '--complete-owned') completeOwned = true;
     if (argument.startsWith('--limit=')) {
       const value = Number(argument.slice('--limit='.length));
       if (!Number.isInteger(value) || value < 1 || value > OWNER_PRICE_REFRESH_MAX_LIMIT) {
@@ -111,7 +114,10 @@ export function parseOwnerPriceRefreshArguments(args = []) {
     }
   }
   if (queueOnly && !includeQueue) throw new Error('--queue-only requires --include-queue.');
-  return { limit, dryRun, includeQueue, queueOnly };
+  if (completeOwned && (includeQueue || queueOnly)) {
+    throw new Error('--complete-owned cannot be combined with queue refresh options.');
+  }
+  return { limit, dryRun, includeQueue, queueOnly, completeOwned };
 }
 
 function queueMetadata(row) {

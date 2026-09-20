@@ -9,6 +9,7 @@ import { readGeneralPrintingCatalogue, resolveGeneralPriceIdentity } from './lib
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 import {
   isUuid,
+  OWNER_PRICE_REFRESH_COMPLETE_MAX_VARIANTS,
   legacyEnglishOwnerPair,
   ownedRowEligibility,
   savedProviderVariantCode,
@@ -24,6 +25,7 @@ const PRODUCTION_PROJECT_REF = 'oakdbbzdqwurpjnoqhmu';
 const OWNED_SCAN_MAX_ROWS = 1000;
 const OWNED_SNAPSHOT_READ_MAX_ROWS = 1000;
 const QUEUE_MAX_ATTEMPTS = 5;
+const COMPLETE_OWNED_MINIMUM_PAUSE_MS = 1_000;
 const UNAVAILABLE_PROVIDER_CODES = new Set(['unresolved_provider_identity', 'ambiguous_provider_identity', 'exact_provider_quote_unavailable']);
 // These are stable, non-sensitive ApiError codes emitted by the exact provider
 // service. All other provider errors deliberately collapse to the generic code
@@ -368,6 +370,26 @@ export function selectOwnedCandidatesBySnapshot(candidates, snapshotsByVariant, 
   }).slice(0, limit);
 }
 
+/**
+ * A complete pass deliberately avoids snapshot recency: every currently
+ * resolved owner identity gets exactly one serial provider attempt. The
+ * sentinel preserves the promise that the pass is complete rather than a
+ * silently truncated large sweep.
+ */
+export function selectCompleteOwnedCandidates(candidates) {
+  if (candidates.length >= OWNER_PRICE_REFRESH_COMPLETE_MAX_VARIANTS) {
+    throw new Error('Complete owner refresh reached its safe variant bound.');
+  }
+  return [...candidates].sort((left, right) => left.variantId.localeCompare(right.variantId));
+}
+
+const defaultSleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+function providerBackoff(error, code) {
+  return code === 'provider_refresh_cooldown'
+    || Number(error?.status ?? error?.statusCode ?? error?.response?.status) === 429;
+}
+
 async function readOwnedCandidateSnapshots(supabase, candidates) {
   const variantIds = [...new Set(candidates.map((candidate) => String(candidate.variantId).toLowerCase()).filter(isUuid))];
   if (!variantIds.length) return new Map();
@@ -398,7 +420,10 @@ async function readOwnedCandidateSnapshots(supabase, candidates) {
   return snapshots;
 }
 
-export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate, ownerId, limit, dryRun, includeQueue = false, queueOnly = false, includeGeneral = false }) {
+export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate, ownerId, limit, dryRun, includeQueue = false, queueOnly = false, includeGeneral = false, completeOwned = false, sleep = defaultSleep }) {
+  if (completeOwned && (includeQueue || queueOnly)) {
+    throw new Error('Complete owner refresh cannot include queue work.');
+  }
   const queueRows = includeQueue ? await readOwnerQueue(supabase, ownerId, limit) : [];
   const resolvedQueue = includeQueue ? await resolveOwnerQueue(supabase, queueRows, ownerId) : [];
   const validQueue = resolvedQueue.filter((item) => item.ok);
@@ -415,15 +440,17 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
     .filter((result) => !queueVariantIds.has(result.variantId))
     .map((result) => [result.variantId, result])).values()];
   const ownedBudget = Math.max(0, limit - queueSelected.length);
-  const ownedSnapshots = ownedBudget ? await readOwnedCandidateSnapshots(supabase, ownedCandidates) : new Map();
-  const ownedSelected = selectOwnedCandidatesBySnapshot(ownedCandidates, ownedSnapshots, ownedBudget);
+  const ownedSnapshots = completeOwned || !ownedBudget ? new Map() : await readOwnedCandidateSnapshots(supabase, ownedCandidates);
+  const ownedSelected = completeOwned
+    ? selectCompleteOwnedCandidates(ownedCandidates)
+    : selectOwnedCandidatesBySnapshot(ownedCandidates, ownedSnapshots, ownedBudget);
   // Keep only canonical public UUIDs. This is enough to reconcile a bounded
   // refresh against later snapshots without exposing binder rows or provider
   // identity details.
   const selectedVariantIds = [...queueSelected, ...ownedSelected]
     .map((item) => String(item.variantId ?? '').toLowerCase())
     .filter(isUuid)
-    .slice(0, limit);
+    .slice(0, completeOwned ? OWNER_PRICE_REFRESH_COMPLETE_MAX_VARIANTS : limit);
   const summary = {
     ...summariseOwnerPriceRefresh(resolved),
     generalCandidates: resolved.filter((item) => item.ok && (item.generalEstimate || item.generalVariantId)).length,
@@ -438,6 +465,10 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
     selected: queueSelected.length + ownedSelected.length,
     selectedVariantIds,
     refreshed: 0, unavailable: 0, failed: 0, dryRun,
+    completeOwned,
+    completeOwnedAttempted: 0,
+    completeOwnedDeferred: 0,
+    completeOwnedCompleted: completeOwned ? null : true,
     failureDiagnostics: [],
   };
   if (!dryRun) {
@@ -471,17 +502,33 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
       else summary.queueRetried += 1;
     }
   }
-  for (const item of ownedSelected) {
+  let consecutiveServiceFailures = 0;
+  for (let index = 0; index < ownedSelected.length; index += 1) {
+    const item = ownedSelected[index];
+    if (completeOwned && index > 0) await sleep(COMPLETE_OWNED_MINIMUM_PAUSE_MS);
+    if (completeOwned) summary.completeOwnedAttempted += 1;
     try {
       await refreshExact(refreshExactProviderEstimate, item.variantId);
       summary.refreshed += 1;
+      consecutiveServiceFailures = 0;
     } catch (error) {
       const code = safeQueueErrorCode(error);
       if (UNAVAILABLE_PROVIDER_CODES.has(code)) summary.unavailable += 1;
       else summary.failed += 1;
       recordFailureDiagnostic(summary, item.variantId, error, 'owned');
+      if (UNAVAILABLE_PROVIDER_CODES.has(code)) {
+        consecutiveServiceFailures = 0;
+        continue;
+      }
+      consecutiveServiceFailures += 1;
+      if (completeOwned && (providerBackoff(error, code) || consecutiveServiceFailures >= 5)) {
+        summary.completeOwnedDeferred = ownedSelected.length - index - 1;
+        summary.completeOwnedCompleted = false;
+        break;
+      }
     }
   }
+  if (completeOwned && summary.completeOwnedCompleted !== false) summary.completeOwnedCompleted = true;
   return summary;
 }
 
@@ -497,7 +544,7 @@ async function main() {
     const { mainCataloguePricing } = await import('./refresh-catalogue-prices.mjs');
     return mainCataloguePricing();
   }
-  const { limit, dryRun, includeQueue, queueOnly } = parseOwnerPriceRefreshArguments(process.argv.slice(2));
+  const { limit, dryRun, includeQueue, queueOnly, completeOwned } = parseOwnerPriceRefreshArguments(process.argv.slice(2));
   const includeGeneral = process.argv.includes('--general-estimates')
     || process.env.STACKR_GENERAL_CARD_ESTIMATES_ENABLED === 'true';
   const { target, ownerId } = ownerRefreshConfiguration();
@@ -513,11 +560,12 @@ async function main() {
     includeQueue,
     queueOnly,
     includeGeneral,
+    completeOwned,
   });
   const valuation=await prepareStoredValuationIfEnabled({supabase,service,ownerId,dryRun});
   console.log(JSON.stringify({ worker: 'owner-provider-price-refresh', ...summary,
     valuationPublished:valuation?.published??false,valuationDiagnostics:valuation?.diagnostics??null }, null, 2));
-  if (summary.failed) process.exitCode = 1;
+  if (summary.failed || summary.completeOwnedCompleted === false) process.exitCode = 1;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
