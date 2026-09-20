@@ -71,7 +71,18 @@ async function main() {
   failEmail = false;
   await act(async () => { compose().props.onPress(); });
   assert.equal(messageInput().props.value, 'My private report', 'opening email never clears or marks a draft delivered');
+  const openedBeforeExit = mail.length;
+  const saveImmediately = disk.setItem;
+  let finishDraftSave!: () => void;
+  disk.setItem = async (key, value) => {
+    await new Promise<void>(resolve => { finishDraftSave = resolve; });
+    await saveImmediately(key, value);
+  };
+  await act(async () => { compose().props.onPress(); });
   await act(async () => { root.unmount(); });
+  await act(async () => { finishDraftSave(); });
+  assert.equal(mail.length, openedBeforeExit, 'leaving Help must cancel a delayed composer open');
+  disk.setItem = saveImmediately;
   let haptics = true;
   const signOutScopes: string[] = [];
   let buttons: { text: string; onPress?: () => void }[] = [];

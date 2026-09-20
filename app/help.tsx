@@ -26,6 +26,8 @@ export default function HelpScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const ready = !loading && draft.ready && draft.key === key;
   const text = ready ? draft.text : '';
   const inputStyle = { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.border, borderWidth: 1, borderRadius: 12, padding: 14, fontSize: 15 };
@@ -55,14 +57,14 @@ export default function HelpScreen() {
     const ownerKey = key;
     try {
       await AsyncStorage.setItem(ownerKey, text);
-      if (activeKey.current !== ownerKey) return;
+      if (!mounted.current || activeKey.current !== ownerKey) return;
       if (compose) {
         await Linking.openURL(supportEmailUrl(text, context, diagnostics ? diagnosticText : ''));
-        if (activeKey.current === ownerKey) setMessage('Email composer opened. Your draft stays here. Send it in your email app; Stackr cannot confirm delivery.');
+        if (mounted.current && activeKey.current === ownerKey) setMessage('Email composer opened. Your draft stays here. Send it in your email app; Stackr cannot confirm delivery.');
       } else setMessage('Draft saved on this device.');
     } catch {
-      if (activeKey.current === ownerKey) setMessage('Could not save the draft or open email. Your text is still here. Try again, or copy it into an email to the address below.');
-    } finally { busyRef.current = false; setBusy(false); }
+      if (mounted.current && activeKey.current === ownerKey) setMessage('Could not save the draft or open email. Your text is still here. Try again, or copy it into an email to the address below.');
+    } finally { busyRef.current = false; if (mounted.current) setBusy(false); }
   };
 
   return <UtilityScreen title="Help">
