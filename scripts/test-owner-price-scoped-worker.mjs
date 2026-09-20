@@ -51,6 +51,7 @@ function database({ ownerRows = null, identifiers = null, catalogue = null, lang
       in(column, values) { read.filters.push(['in', column, values]); rows = rows.filter((row) => values.includes(row[column])); return chain; },
       order() { return chain; },
       limit(value) { maximum = value; return chain; },
+      range(from, to) { rows = rows.slice(from, to + 1); return chain; },
       then(resolve, reject) { return Promise.resolve({ data: rows.slice(0, maximum).map((row) => Object.fromEntries(read.columns.map((column) => [column, row[column]]))), error: null }).then(resolve, reject); },
     };
     // No insert/update/rpc methods: an unexpected write cannot pass silently.
@@ -319,4 +320,44 @@ test('English non-normal rows reject a normal sibling and generic printing-only 
   assert.equal(result.selected, 0);
   assert.deepEqual(result.skipReasons, { unsupported_or_unpublished_variant: 2 });
   assert.equal(supabase.rpcCalls.length, 0, 'explicit English evidence does not require binder context');
+});
+
+test('general owner mode selects a proven base quote without rewriting a saved default finish', async () => {
+  const meSet = 'a1919191-9191-4191-8191-919191919191';
+  const mePrinting = 'a2929292-9292-4292-8292-929292929292';
+  const meHolo = 'a3939393-9393-4393-8393-939393939393';
+  const owned = { id: 'saved-general-normal', user_id: owner, card_id: 'en:me1-133', set_id: 'en:me1', variant: 'normal', quantity: 2, condition: 'Near Mint', grade_company: '', grade: '' };
+  const config = {
+    ownerRows: [owned, { ...owned, id: 'foreign-owner', user_id: otherOwner }],
+    identifiers: [{ source_entity_type: 'card', external_id: 'me1-133', language_code: 'en', printing_id: mePrinting, set_id: null, variant_id: null, confidence: 1 }],
+    catalogue: [{ variant_id: meHolo, printing_id: mePrinting, set_id: meSet, set_code: 'me01', collector_number: '133', language_code: 'en', variant_code: 'holo', finish_code: 'holo' }],
+    languageContext: { binders: [], binderCards: [] },
+  };
+  const ordinary = await runOwnerProviderRefresh({ supabase: database(config), ownerId: owner, limit: 2, dryRun: true, refreshExactProviderEstimate: async () => { throw new Error('provider must not run'); } });
+  assert.equal(ordinary.selected, 0, 'ordinary exact refresh cannot relabel the saved Normal as Holo');
+  const db = database(config);
+  const general = await runOwnerProviderRefresh({ supabase: db, ownerId: owner, limit: 2, dryRun: true, includeGeneral: true, refreshExactProviderEstimate: async () => { throw new Error('provider must not run'); } });
+  assert.equal(general.scanned, 1, 'another owner cannot enter the general refresh cohort');
+  assert.equal(general.generalEstimatesEnabled, true);
+  assert.equal(general.generalCandidates, 1);
+  assert.deepEqual(general.selectedVariantIds, [meHolo], 'the worker selects the real published base identity for a labelled guide');
+  assert.equal(owned.variant, 'normal', 'saved physical finish is unchanged');
+  assert(db.reads.some((read) => read.table === 'api.catalogue_cards'
+    && read.filters.some(([op, column]) => op === 'in' && column === 'printing_id')
+    && read.columns.includes('set_code') && read.columns.includes('collector_number')), 'published set and collector proof survive the database projection');
+});
+
+test('general owner mode includes a separately stored base for an exact finish with no quote', async () => {
+  const reverse = 'a4949494-9494-4494-8494-949494949494';
+  const owned = { id: 'exact-reverse', user_id: owner, card_id: `en:${reverse}`, set_id: `en:${setId}`, variant: 'reverseHolofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' };
+  const db = database({ ownerRows: [owned], identifiers: [], catalogue: [
+    { variant_id: reverse, printing_id: printing, set_id: setId, language_code: 'en', variant_code: 'reverse_holo', finish_code: 'reverse_holo' },
+    { variant_id: normalVariant, printing_id: printing, set_id: setId, language_code: 'en', variant_code: 'normal', finish_code: 'normal' },
+  ] });
+  const result = await runOwnerProviderRefresh({ supabase: db, ownerId: owner, limit: 2, dryRun: true, includeGeneral: true,
+    refreshExactProviderEstimate: async () => { throw new Error('provider must not run'); } });
+  assert.equal(result.scanned, 1);
+  assert.deepEqual(result.selectedVariantIds, [normalVariant, reverse].sort(), 'the two supported price identities have independent real quote storage');
+  assert.equal(result.generalCandidates, 1);
+  assert.equal(db.rpcCalls.length, 0, 'explicit canonical scope needs no owner language inference');
 });

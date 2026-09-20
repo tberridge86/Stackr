@@ -23,7 +23,7 @@ on:
         default: '3'
         type: string
       owner_user_id:
-        description: Owner auth UUID whose saved raw Near Mint normal cards may be considered
+        description: Owner auth UUID whose saved raw Near Mint cards may be considered
         required: true
         type: string
       include_queue:
@@ -33,6 +33,11 @@ on:
         type: boolean
       queue_only:
         description: Process only this owner's due exact Home refresh requests (requires include queue)
+        required: true
+        default: false
+        type: boolean
+      general_estimates:
+        description: Include verified base-card quotes for labelled general estimates
         required: true
         default: false
         type: boolean
@@ -67,6 +72,7 @@ jobs:
       REFRESH_APPLY: ${{ github.event_name == 'schedule' && 'true' || inputs.apply }}
       REFRESH_INCLUDE_QUEUE: ${{ github.event_name == 'schedule' && 'true' || inputs.include_queue }}
       REFRESH_QUEUE_ONLY: ${{ github.event_name == 'schedule' && 'true' || inputs.queue_only }}
+      REFRESH_GENERAL_ESTIMATES: ${{ github.event_name == 'schedule' && 'false' || inputs.general_estimates }}
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -90,6 +96,7 @@ jobs:
           [[ "$REFRESH_LIMIT" =~ ^([1-9]|[12][0-9]|30)$ ]]
           [[ "$REFRESH_INCLUDE_QUEUE" =~ ^(true|false)$ ]]
           [[ "$REFRESH_QUEUE_ONLY" =~ ^(true|false)$ ]]
+          [[ "$REFRESH_GENERAL_ESTIMATES" =~ ^(true|false)$ ]]
           if [ "$REFRESH_QUEUE_ONLY" = 'true' ]; then test "$REFRESH_INCLUDE_QUEUE" = 'true'; fi
           test -n "$SUPABASE_SERVICE_ROLE_KEY"
 
@@ -108,6 +115,7 @@ jobs:
           if [ "$REFRESH_APPLY" = 'true' ]; then args=("--limit=$REFRESH_LIMIT" '--apply'); fi
           if [ "$REFRESH_INCLUDE_QUEUE" = 'true' ]; then args+=( '--include-queue' ); fi
           if [ "$REFRESH_QUEUE_ONLY" = 'true' ]; then args+=( '--queue-only' ); fi
+          if [ "$REFRESH_GENERAL_ESTIMATES" = 'true' ]; then args+=( '--general-estimates' ); fi
           node scripts/refresh-owner-provider-prices.mjs "${args[@]}" \
             | tee "$RUNNER_TEMP/owner-provider-price-refresh/summary.json"
           status=${PIPESTATUS[0]}

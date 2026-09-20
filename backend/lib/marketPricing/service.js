@@ -8,6 +8,7 @@ import {
 } from '../stackrApiV1.js';
 import { buildCanonicalIdentity } from '../pricingV2/identity.js';
 import { fetchTcgdexNormalCardPrice } from '../tcgdex.js';
+import { generalPriceBaseCandidates, wrapGeneralEstimate } from './generalEstimate.js';
 
 export const MARKET_PRICING_VERSION = 'market-pricing-v1.0.0';
 export const MARKET_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -609,6 +610,32 @@ async function findLegacySnapshotEstimate(supabase, variantId, input = {}) {
   return best;
 }
 
+/** General guide prices stay within one published printing and language. */
+async function findGeneralStoredEstimate(supabase, variantId, input = {}) {
+  if (!supportedLegacyInput(input)) return null;
+  const metadata = await catalogueRefreshMetadata(supabase, variantId);
+  if (!metadata?.canonicalPrintingId || !metadata.setId || !metadata.language) return null;
+  const rows = await queryRows(table(supabase, 'api', 'catalogue_cards')
+    .select('variant_id,printing_id,set_id,language_code,variant_code,finish_code')
+    .eq('printing_id', metadata.canonicalPrintingId)
+    .eq('set_id', metadata.setId).eq('language_code', metadata.language).limit(101));
+  if (rows.length >= 100) throw new ApiError(503, 'general_price_identity_limit', 'The card price identity is incomplete.');
+  const selections = generalPriceBaseCandidates(rows).filter((selection) => selection.baseVariantId !== variantId);
+  if (!selections.length) return null;
+  const { data, error } = await supabase.schema('api').rpc('latest_stored_exact_prices', {
+    p_variants: selections.map((selection) => selection.baseVariantId),
+  });
+  if (error) throw error;
+  for (const selection of selections) {
+    const stored = (data ?? []).find((row) => row.variantId === selection.baseVariantId);
+    const exact = stored?.estimate ? toPriceResponse(stored.estimate, selection.baseVariantId)
+      : stored?.snapshot ? legacySnapshotEstimate(stored.snapshot, selection.baseVariantId, 'exact_variant') : null;
+    const general = wrapGeneralEstimate(exact, selection, 'same_printing_base');
+    if (general) return { ...general, variantId };
+  }
+  return null;
+}
+
 /**
  * Latest-only callers already have canonical variant UUIDs. Read each exact
  * scope with a bounded per-variant query: a global ordered limit could let one
@@ -1167,6 +1194,9 @@ export function createMarketPricingService(options) {
     },
     async price(variantId, input = {}) {
       if (!isUuid(variantId)) throw new ApiError(400, 'invalid_variant_id', 'variantId must be a canonical UUID.');
+      if (input.estimateMode != null && !['exact', 'general'].includes(input.estimateMode)) {
+        throw new ApiError(400, 'invalid_estimate_mode', 'estimateMode must be exact or general.');
+      }
       let query = table(supabase, 'api', 'market_price_estimates')
         .select('*')
         .eq('variant_id', variantId);
@@ -1184,9 +1214,18 @@ export function createMarketPricingService(options) {
           ? await findLegacySnapshotEstimate(supabase, variantId, input)
           : null;
         if (legacy) return legacy;
+        if (input.estimateMode === 'general') {
+          const general = await findGeneralStoredEstimate(supabase, variantId, input);
+          if (general) return general;
+        }
         return unavailablePrice(variantId, input, reason);
       }
-      return toPriceResponse(row, variantId);
+      const price = toPriceResponse(row, variantId);
+      if (input.estimateMode === 'general' && (price.status === 'unavailable' || price.estimates?.central == null)) {
+        const general = await findGeneralStoredEstimate(supabase, variantId, input);
+        if (general) return general;
+      }
+      return price;
     },
 
     async priceHistory(variantId, input = {}) {

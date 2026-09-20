@@ -44,3 +44,15 @@ Six bounded production samples had approved matching TCGdex aliases. All 55 cand
 Older save paths defaulted some records to `normal` without recording a physical finish choice. Exact holo-only matches cannot safely repair those records by assumption. Physical finish confirmation, unsupported provider scope, complete useful price coverage and signed-in app/device acceptance remain separate. Artwork and camera acceptance are unaffected and outstanding. No last-sold evidence or fresh price is inferred from a successful job.
 
 Rollback: keep prepared app reads disabled and disable preparation if the canary fails; preserve existing stored prices and saved holdings. Revert worker source through the normal release path if needed. The optimized function preserves the old contract; reverting it would restore the measured timeout risk and should not be the first operational response.
+
+## General card estimates requested on 20 September
+
+The owner clarified that ordinary collection pricing should use general card estimates without requiring a finish choice for each saved copy. This supersedes the earlier exact-only display policy; saved holdings and their physical finish remain unchanged.
+
+The new client requests `estimateMode=general`. A usable exact quote remains first choice. When it is absent, a general estimate may use the same published printing, set and language's unique normal base, or unique holo base when no normal base exists. The response and UI explicitly identify general estimates. Grades, unsupported conditions, ambiguous identities and missing provider prices remain unavailable. General values never become sold evidence or exact-finish history.
+
+Prepared valuation publishes a separate, complete `summary.general` with exclusive exact/general copy counts and reconciled binder totals. The existing outer summary remains exact for build 46 compatibility. The new client validates the general summary before using it and does not draw an exact-only trend for a mixed estimate total. The gateway accepts only the two documented estimate modes and retains private owner access.
+
+Bounded owner refresh can opt into proven general base identities through `general_estimates`; it continues to store an exact provider quote under the real base variant. It does not rewrite holdings or copy a quote into a different variant. Existing full-catalogue and extra-capacity flags remain off. No database migration is required for this additive contract.
+
+Delivery evidence will be recorded in the release receipt and implementation PR after exact-source checks, backend/gateway deployment and the next standard iOS build. Source tests do not establish phone acceptance or complete price coverage. Missing artwork and physical camera acceptance remain separate outstanding work.

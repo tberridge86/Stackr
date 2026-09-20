@@ -14,6 +14,30 @@ import { createGatewayOriginAuth } from '../../backend/lib/gatewayOriginAuth.js'
 const USER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const DEVICE_ID = 'device:test:00000001';
 
+test('general price mode reaches the owner origin while retaining private access and strict validation', async () => {
+  const env = environment({ STACKR_PRICING_OWNER_USER_ID: USER_ID });
+  let forwarded = 0;
+  const deps = { cache: new MemoryCache(), verifyAuth: async (req) => {
+    if (!req.headers.get('authorization')) throw new GatewayError(401, 'authentication_required', 'Sign in.');
+    return { ...authenticated(), token: 'owner-token' };
+  },
+    fetchImpl: async (url) => {
+      forwarded++;
+      assert.equal(new URL(url).searchParams.get('estimateMode'), 'general');
+      return Response.json({ data: { estimates: { central: 1 }, quoteScope: 'printing_level' } });
+    } };
+  const path = `/v1/cards/${USER_ID}/price?estimateMode=general`;
+  const response = await handleRequest(request(path, { headers: { Authorization: 'Bearer owner-token', 'X-Stackr-Device-Id': DEVICE_ID } }), env, context(), deps);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('cache-control'), /private.*no-store/);
+  assert.equal((await handleRequest(request(path), env, context(), deps)).status, 401);
+  for (const value of ['', 'GENERAL', 'other', 'general&estimateMode=exact']) {
+    const invalid = await handleRequest(request(`/v1/cards/${USER_ID}/price?estimateMode=${value}`), env, context(), deps);
+    assert.equal(invalid.status, 400);
+  }
+  assert.equal(forwarded, 1, 'invalid modes and anonymous requests never reach the private origin');
+});
+
 test('set-card facts flag reaches the origin and cannot collide with artwork cache entries', async () => {
   const env = environment(); const cache = new MemoryCache(); let forwarded = 0;
   const fetchImpl = async (url) => {

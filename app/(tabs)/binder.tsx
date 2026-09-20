@@ -1212,6 +1212,7 @@ export default function BinderLibraryScreen() {
         freshness: price!.freshness,
         calculatedAt: price!.calculatedAt,
         staleAfter: price!.staleAfter,
+        pricingKind: price!.pricingKind,
       })));
     }
 

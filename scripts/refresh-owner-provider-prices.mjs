@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { readOwnerPrintingCatalogue } from './lib/owner-price-printing-identities.mjs';
 import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant, scopedOwnedRowEligibility } from './lib/owner-price-saved-references.mjs';
 import { ownedValuationUnits } from './lib/prepared-collection-valuation.mjs';
+import { readGeneralPrintingCatalogue, resolveGeneralPriceIdentity } from './lib/general-price-identities.mjs';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 import {
   isUuid,
@@ -107,8 +108,17 @@ function binderLanguageContext(row, binders, binderCards) {
   return languages.length === 1 ? { state: 'unanimous', language: languages[0] } : { state: 'ambiguous', language: null };
 }
 
-async function enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows) {
-  if (!rows.some(needsUnambiguousLanguageContext)) return rows;
+function generalOwnedCandidate(row) {
+  return Number(row?.quantity ?? 0) > 0
+    && ['near mint', 'near_mint', 'nm', 'raw_near_mint'].includes(String(row?.condition ?? '').trim().toLowerCase())
+    && !row?.grade_company && !row?.grade && Boolean(String(row?.card_id ?? '').trim())
+    && !hasSavedLanguageConflict(row);
+}
+
+async function enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows, includeGeneral = false) {
+  if (!rows.some(needsUnambiguousLanguageContext)
+    && !(includeGeneral && rows.some((row) => generalOwnedCandidate(row) && !row.language
+      && !knownLanguage(row.card_id) && !knownLanguage(row.set_id)))) return rows;
   const { data, error } = await supabase.schema('api').rpc('collection_valuation_inputs', { p_owner: ownerId });
   if (error) throw error;
   if (!data || typeof data !== 'object' || !Array.isArray(data.binders) || !Array.isArray(data.binderCards)) {
@@ -138,7 +148,7 @@ async function enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows) {
   });
 }
 
-export async function readOwnedRows(supabase, ownerId) {
+export async function readOwnedRows(supabase, ownerId, includeGeneral = false) {
   // This is a candidate scan, never a provider-pull limit. It remains bounded
   // so a corrupted owner collection cannot turn a scheduled run into a broad
   // catalogue refresh.
@@ -154,13 +164,14 @@ export async function readOwnedRows(supabase, ownerId) {
   if (rows.length >= OWNED_SCAN_MAX_ROWS) {
     throw new Error('Owner price refresh scan reached its safe result bound.');
   }
-  return enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows);
+  return enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows, includeGeneral);
 }
 
-async function resolveOwnedCandidates(supabase, ownedRows) {
+async function resolveOwnedCandidates(supabase, ownedRows, includeGeneral = false) {
   // Explicit conflict-free language prefixes are evidence, so apply their
   // scope before deciding whether a saved physical finish can be resolved.
-  const rowsNeedingIdentity = ownedRows.filter((row) => !scopedOwnedRowEligibility(row) && !hasSavedLanguageConflict(row));
+  const rowsNeedingIdentity = ownedRows.filter((row) => !hasSavedLanguageConflict(row)
+    && (!scopedOwnedRowEligibility(row) || includeGeneral && generalOwnedCandidate(row)));
   const referenceRows = rowsNeedingIdentity.flatMap(ownerIdentityLookupRows);
   const externalIds = [...new Set(referenceRows.flatMap((row) => [
     row.card_id, row.set_id, ...(legacyEnglishOwnerPair(row)?.setAliases ?? []),
@@ -210,9 +221,25 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
       .limit(1000)));
   }
   const catalogueRows = [...directCatalogueRows, ...printingCatalogueRows, ...legacyCatalogueRows];
-  return ownedRows.map((row) => hasSavedLanguageConflict(row)
-    ? { ok: false, reason: 'ambiguous_saved_identity' }
-    : resolveScopedOwnedProviderVariant(row, identifierRows, catalogueRows));
+  if (includeGeneral) catalogueRows.push(...await readGeneralPrintingCatalogue(supabase,
+    rowsNeedingIdentity, identifierRows, catalogueRows));
+  return ownedRows.map((row) => {
+    if (hasSavedLanguageConflict(row)) return { ok: false, reason: 'ambiguous_saved_identity' };
+    const exact = resolveScopedOwnedProviderVariant(row, identifierRows, catalogueRows);
+    if (!includeGeneral || !generalOwnedCandidate(row)) return exact;
+    const general = resolveGeneralPriceIdentity(row, identifierRows, catalogueRows);
+    if (!general.ok) return exact;
+    const base = catalogueRows.find((card) => card.variant_id === general.priceVariantId);
+    // This lane still writes an exact quote for the selected base variant.
+    // General attribution happens only on the labelled read/valuation path.
+    const supported = base && (['normal', 'standard', 'default', 'non_holo'].includes(base.variant_code)
+      && ['normal', 'standard', 'default', 'non_holo'].includes(base.finish_code)
+      || base.language_code === 'en' && base.variant_code === 'holo' && base.finish_code === 'holo');
+    if (!supported) return exact;
+    if (exact.ok) return general.priceVariantId === exact.variantId ? exact
+      : { ...exact, generalVariantId: general.priceVariantId };
+    return { ok: true, variantId: general.priceVariantId, generalEstimate: true };
+  });
 }
 
 async function readOwnerQueue(supabase, ownerId, limit) {
@@ -371,18 +398,20 @@ async function readOwnedCandidateSnapshots(supabase, candidates) {
   return snapshots;
 }
 
-export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate, ownerId, limit, dryRun, includeQueue = false, queueOnly = false }) {
+export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate, ownerId, limit, dryRun, includeQueue = false, queueOnly = false, includeGeneral = false }) {
   const queueRows = includeQueue ? await readOwnerQueue(supabase, ownerId, limit) : [];
   const resolvedQueue = includeQueue ? await resolveOwnerQueue(supabase, queueRows, ownerId) : [];
   const validQueue = resolvedQueue.filter((item) => item.ok);
   const invalidQueue = resolvedQueue.filter((item) => !item.ok);
-  const ownedRows = queueOnly ? [] : await readOwnedRows(supabase, ownerId);
-  const resolved = queueOnly ? [] : await resolveOwnedCandidates(supabase, ownedRows);
+  const ownedRows = queueOnly ? [] : await readOwnedRows(supabase, ownerId, includeGeneral);
+  const resolved = queueOnly ? [] : await resolveOwnedCandidates(supabase, ownedRows, includeGeneral);
   // The same owned identity can appear through multiple binder rows. One
   // exact provider snapshot is sufficient for that canonical variant.
   const queueSelected = [...new Map(validQueue.map((item) => [item.variantId, item])).values()].slice(0, limit);
   const queueVariantIds = new Set(queueSelected.map((item) => item.variantId));
   const ownedCandidates = [...new Map(resolved.filter((result) => result.ok)
+    .flatMap((result) => result.generalVariantId
+      ? [result, { ok: true, variantId: result.generalVariantId, generalEstimate: true }] : [result])
     .filter((result) => !queueVariantIds.has(result.variantId))
     .map((result) => [result.variantId, result])).values()];
   const ownedBudget = Math.max(0, limit - queueSelected.length);
@@ -397,6 +426,8 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
     .slice(0, limit);
   const summary = {
     ...summariseOwnerPriceRefresh(resolved),
+    generalCandidates: resolved.filter((item) => item.ok && (item.generalEstimate || item.generalVariantId)).length,
+    generalEstimatesEnabled: includeGeneral,
     queueScanned: queueRows.length,
     queueEligible: validQueue.length,
     queueUnsupported: invalidQueue.length,
@@ -467,6 +498,8 @@ async function main() {
     return mainCataloguePricing();
   }
   const { limit, dryRun, includeQueue, queueOnly } = parseOwnerPriceRefreshArguments(process.argv.slice(2));
+  const includeGeneral = process.argv.includes('--general-estimates')
+    || process.env.STACKR_GENERAL_CARD_ESTIMATES_ENABLED === 'true';
   const { target, ownerId } = ownerRefreshConfiguration();
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || requireEnv('SUPABASE_SECRET_KEY');
   const supabase = createClient(target.url, serviceKey);
@@ -479,6 +512,7 @@ async function main() {
     dryRun,
     includeQueue,
     queueOnly,
+    includeGeneral,
   });
   const valuation=await prepareStoredValuationIfEnabled({supabase,service,ownerId,dryRun});
   console.log(JSON.stringify({ worker: 'owner-provider-price-refresh', ...summary,

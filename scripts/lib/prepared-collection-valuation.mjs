@@ -1,5 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant } from './owner-price-saved-references.mjs';
+import { readGeneralPrintingCatalogue, resolveGeneralPriceIdentity } from './general-price-identities.mjs';
+import { generalPriceBaseCandidates, selectGeneralPriceBase, wrapGeneralEstimate } from '../../backend/lib/marketPricing/generalEstimate.js';
 
 const token = (value) => String(value ?? '').trim().toLowerCase();
 const variantCode = (value) => ({ holofoil: 'holo', reverseholofoil: 'reverse_holo', reverse_holofoil: 'reverse_holo',
@@ -70,20 +72,26 @@ export function resolveValuationUnit(unit, identifiers, catalogue) {
     scoped.map((c) => ({ ...c, variant_code: 'normal', finish_code: 'normal' })));
 }
 
-export function summarisePreparedUnits(units, outcomes, prices, now = Date.now()) {
+export function summarisePreparedUnits(units, outcomes, prices, now = Date.now(), { general = false } = {}) {
   const summary = { total: null, totalUnits: 0, distinctPriceIdentities: 0, pricedUnits: 0, freshUnits: 0,
     olderPriceUnits: 0, unpricedUnits: 0, pending: 0, retrying: 0, unsupported: 0, unresolved: 0, noProviderQuote: 0,
-    currency: 'GBP', oldestSourceAt: null, latestSourceAt: null };
+    currency: 'GBP', oldestSourceAt: null, latestSourceAt: null, exactPricedUnits: 0, generalEstimateUnits: 0,
+    ...(general ? { valuationBasis: 'general_card_estimate' } : {}) };
   const identities = new Set(); let total = 0;
   for (const unit of units) {
     const q = unit.quantity; summary.totalUnits += q;
-    if (unit.variantId) identities.add(unit.variantId);
-    const price = unit.variantId ? prices.get(unit.variantId) : null;
+    const priceVariantId = general ? unit.priceVariantId : unit.variantId;
+    if (priceVariantId) identities.add(priceVariantId);
+    const exactPrice = priceVariantId ? prices.get(priceVariantId) : null;
+    const price = general && unit.priceScope === 'printing_general'
+      ? wrapGeneralEstimate(exactPrice, unit.selection, unit.resolution) : exactPrice;
     const central = price?.estimates?.central;
     const known = typeof central === 'number' && Number.isFinite(central) && central >= 0 && price.status !== 'unavailable'
-      && price.currency === 'GBP' && !price.fallbackEstimate;
+      && price.currency === 'GBP' && (general ? (!price.fallbackEstimate || unit.priceScope === 'printing_general') : !price.fallbackEstimate);
     if (known) {
       total += central * q; summary.pricedUnits += q;
+      if (general && unit.priceScope === 'printing_general') summary.generalEstimateUnits += q;
+      else summary.exactPricedUnits += q;
       const sourceAt = price.providerUpdatedAt ?? price.calculatedAt;
       if (sourceAt && Number.isFinite(Date.parse(sourceAt))) {
         if (!summary.oldestSourceAt || sourceAt < summary.oldestSourceAt) summary.oldestSourceAt = sourceAt;
@@ -94,7 +102,7 @@ export function summarisePreparedUnits(units, outcomes, prices, now = Date.now()
     } else {
       summary.unpricedUnits += q;
       const outcome = unit.reason === 'unsupported_scope' ? 'unsupported_scope'
-        : !unit.variantId ? 'unresolved_identity' : outcomes.get(unit.variantId) ?? 'pending';
+        : !priceVariantId ? 'unresolved_identity' : outcomes.get(priceVariantId) ?? 'pending';
       const key = { unsupported_scope: 'unsupported', unresolved_identity: 'unresolved', retrying: 'retrying',
         no_provider_quote: 'noProviderQuote' }[outcome] ?? 'pending';
       summary[key] += q;
@@ -103,6 +111,55 @@ export function summarisePreparedUnits(units, outcomes, prices, now = Date.now()
   summary.distinctPriceIdentities = identities.size;
   summary.total = summary.pricedUnits ? Math.round(total * 100) / 100 : null;
   return summary;
+}
+
+function usableExactPrice(price) {
+  const central = price?.estimates?.central;
+  return !price?.fallbackEstimate && price?.quoteScope !== 'printing_level' && price?.currency === 'GBP' && price?.status !== 'unavailable'
+    && typeof central === 'number' && Number.isFinite(central) && central >= 0;
+}
+
+// General candidates retain both identities until stored quotes are known.
+// This lets an unavailable requested finish use a separately proven base, but
+// leaves an existing usable exact quote as the unambiguous first choice.
+export function chooseGeneralPriceUnits(candidates, prices) {
+  return candidates.map((unit) => {
+    if (unit.variantId && usableExactPrice(prices.get(unit.variantId))) {
+      return { ...unit, priceVariantId: unit.variantId, priceScope: 'exact' };
+    }
+    const selection = (unit.generalBaseCandidates ?? []).find((candidate) => usableExactPrice(prices.get(candidate.baseVariantId)));
+    if (selection) return {
+      ...unit,
+      priceVariantId: selection.baseVariantId,
+      priceScope: 'printing_general',
+      selection,
+    };
+    return unit.variantId ? { ...unit, priceVariantId: unit.variantId, priceScope: 'exact' } : unit;
+  });
+}
+
+function generalSetPriceCandidates(catalogue, mode, edition = 'normal') {
+  return setValuationUnits(catalogue, mode, edition).map((unit) => {
+    const requested = catalogue.find((row) => row.variant_id === unit.variantId);
+    const selection = requested ? selectGeneralPriceBase(catalogue.filter((row) => row.printing_id === requested.printing_id
+      && row.set_id === requested.set_id && row.language_code === requested.language_code)) : null;
+    return { ...unit, selection, resolution: selection?.reason ?? null,
+      generalBaseCandidates: generalPriceBaseCandidates(catalogue.filter((row) => row.printing_id === requested?.printing_id
+        && row.set_id === requested?.set_id && row.language_code === requested?.language_code)) };
+  });
+}
+
+function dedupeCatalogueRows(rows) {
+  const byVariant = new Map();
+  for (const row of rows) {
+    const key = token(row?.variant_id); if (!key) continue;
+    const prior = byVariant.get(key);
+    if (!prior) { byVariant.set(key, { ...row }); continue; }
+    const merged = { ...row, ...prior };
+    for (const [field, value] of Object.entries(row)) if (!String(merged[field] ?? '').trim() && String(value ?? '').trim()) merged[field] = value;
+    byVariant.set(key, merged);
+  }
+  return [...byVariant.values()];
 }
 
 export function setValuationUnits(catalogue, mode, edition = 'normal') {
@@ -163,11 +220,25 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
     .select('*').in('external_id',references.slice(offset,offset+50)).order('external_id').order('source_entity_type').order('variant_id').order('printing_id').order('set_id'))));
   const uuid = /^[0-9a-f-]{36}$/i;
   const sets = unique([...identifiers.map((i)=>i.set_id), ...units.map((u)=>u.set_id), ...inputs.binders.map((b)=>b.source_set_id)].filter((v)=>uuid.test(v)));
-  const catalogue = [];
-  for (const setId of sets) catalogue.push(...await measured('catalogue_members', () => readPages(() => supabase.schema('api').from('catalogue_cards')
+  const catalogueRows = [];
+  for (const setId of sets) catalogueRows.push(...await measured('catalogue_members', () => readPages(() => supabase.schema('api').from('catalogue_cards')
     .select('variant_id,printing_id,set_id,set_code,collector_number,language_code,variant_code,finish_code,catalogue_version_id').eq('set_id',setId).order('variant_id'))));
+  // Approved printing aliases can prove a general same-printing estimate even
+  // when an old saved set alias is absent. Discover only those exact printing
+  // IDs; resolution below still verifies set/language/finish uniqueness.
+  catalogueRows.push(...await measured('catalogue_printings', () => readGeneralPrintingCatalogue(supabase, units, identifiers, catalogueRows)));
+  const catalogue = dedupeCatalogueRows(catalogueRows);
   const resolved = units.map((u) => { const result=resolveValuationUnit(u,identifiers,catalogue); return { ...u, variantId:result.variantId,reason:result.reason }; });
+  const generalCandidates = resolved.map((u) => {
+    // General estimates are raw Near Mint only. Do not convert a failed exact
+    // scope check (for example a graded copy) into a raw-card estimate.
+    if (u.reason === 'unsupported_scope' || u.ambiguousDefaults || u.reason === 'ambiguous_saved_identity') return { ...u, generalReason: u.reason };
+    const result = resolveGeneralPriceIdentity(u, identifiers, catalogue);
+    return result.ok ? { ...u, generalBaseCandidates: result.baseCandidates, resolution: result.resolution, selection: result.selection }
+      : { ...u, generalReason: result.reason };
+  });
   const variantIds = unique(resolved.map((u)=>u.variantId).filter(Boolean));
+  const generalVariantIds = unique(generalCandidates.flatMap((u)=>[u.variantId,...(u.generalBaseCandidates ?? []).map((candidate)=>candidate.baseVariantId)]).filter(Boolean));
   const prices = new Map(); const outcomes = new Map(); const nextAttempts = new Map();
   // Stored-only reads. Fail the generation on any transport error: the prior
   // published generation remains intact, and the lease is resumable after expiry.
@@ -180,7 +251,7 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
   // Custom binders need prices for their owned cards only. Full-set prices are
   // used exclusively by official binders' standard/master-set totals; reading
   // every other card in a custom binder's source sets creates unused RPC work.
-  const allIds = unique([...variantIds,...inputs.binders.filter((b)=>b.type==='official')
+  const allIds = unique([...variantIds,...generalVariantIds,...inputs.binders.filter((b)=>b.type==='official')
     .flatMap((b)=>(membersByBinder.get(b.id)??[]).map((c)=>c.variant_id))]);
   for (let offset=0;offset<allIds.length;offset+=200) {
     const ids=allIds.slice(offset,offset+200);
@@ -189,6 +260,7 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
     const states=await measured('catalogue_price_state',()=>queryRows(supabase.from('catalogue_price_state').select('variant_id,outcome,next_attempt_at').in('variant_id',ids)));
     for (const state of states) { outcomes.set(state.variant_id,state.outcome); nextAttempts.set(state.variant_id,state.next_attempt_at); }
   }
+  const generalResolved = chooseGeneralPriceUnits(generalCandidates, prices);
   const needsRefresh=claim.refreshRequestedAt && (!claim.refreshCompletedAt || claim.refreshRequestedAt>claim.refreshCompletedAt);
   const collectionChanged=claim.previousCollectionRevision!==inputs.collectionRevision;
   const requestKey=inputs.collectionRevision+':'+(needsRefresh?claim.refreshRequestedAt:'automatic');
@@ -230,6 +302,25 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
         standardSet:b.type==='official'&&members.length?summarisePreparedUnits(setValuationUnits(members,'standard',b.edition),outcomes,prices):null,
         masterSet:b.type==='official'&&members.length?summarisePreparedUnits(setValuationUnits(members,'master',b.edition),outcomes,prices):null};
     })};
+  summary.general = {
+    cycle: summary.cycle,
+    ...summarisePreparedUnits(generalResolved,outcomes,prices,Date.now(),{ general: true }),
+    collectionRevision: summary.collectionRevision,
+    valuationRevision: summary.valuationRevision,
+    calculatedAt: summary.calculatedAt,
+    refresh: summary.refresh,
+    catalogueRevisions: summary.catalogueRevisions,
+    trend: { scope: null, evidence: null, eligible: false, points: [] },
+    binders: inputs.binders.map((b) => {
+      const owned = generalResolved.filter((u) => u.binderIds.includes(b.id));
+      const members = membersByBinder.get(b.id) ?? [];
+      const standard = chooseGeneralPriceUnits(generalSetPriceCandidates(members,'standard',b.edition), prices);
+      const master = chooseGeneralPriceUnits(generalSetPriceCandidates(members,'master',b.edition), prices);
+      return { binderId: b.id, owned: summarisePreparedUnits(owned,outcomes,prices,Date.now(),{ general: true }),
+        standardSet: b.type==='official'&&members.length ? summarisePreparedUnits(standard,outcomes,prices,Date.now(),{ general: true }) : null,
+        masterSet: b.type==='official'&&members.length ? summarisePreparedUnits(master,outcomes,prices,Date.now(),{ general: true }) : null };
+    }),
+  };
   if(JSON.stringify(await rpc('published_price_catalogue_revision',{}))!==JSON.stringify(catalogueRevision)) throw Error('Published catalogue changed during valuation preparation');
   const evidence=valuationTrendEvidence(resolved,prices,summary);
   const history=await rpc('collection_valuation_trend',{p_owner:ownerId,p_scope:evidence.scope});

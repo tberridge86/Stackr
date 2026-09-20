@@ -1425,6 +1425,8 @@ export async function fetchStackrPrice(
     condition?: string | null;
     grader?: string | null;
     grade?: string | number | null;
+    /** Exact evidence remains preferred; this asks the API for its labelled general estimate when absent. */
+    estimateMode?: 'general';
   } = {},
   client: StackrApiClient = stackrApiClient,
 ): Promise<{ resolved: StackrResolvedCard; price: StackrCardPrice } | null> {
@@ -1475,6 +1477,7 @@ export async function fetchStackrPrice(
     condition: clean(options.condition) ?? undefined,
     grader: clean(options.grader) ?? undefined,
     grade: clean(options.grade) ?? undefined,
+    estimateMode: options.estimateMode ?? 'general',
   });
   return { resolved, price: response.data };
 }

@@ -53,7 +53,7 @@ export const ROUTES = [
     pricing: true,
     cache: 'market',
     rate: 'pricing',
-    query: query('productType', 'currency', 'condition', 'grader', 'grade'),
+    query: query('productType', 'currency', 'condition', 'grader', 'grade', 'estimateMode'),
   },
   {
     id: 'card_price_history',

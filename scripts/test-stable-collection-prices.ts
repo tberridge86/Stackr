@@ -22,14 +22,30 @@ assert.equal(blocksIndependentPriceRead({kind:'service_error'}),false);
 for(const kind of ['authentication_required','access_denied','rate_limited'])assert.equal(blocksIndependentPriceRead({kind}),true);
 console.log('Stable price evidence: 250-to-60, decreases, removals, quantity changes, identity correction, invalidation and account clearing passed.');
 
-import { hasLowerPreparedPriceCoverage, preparedValuationTrend, type PreparedValuation } from '../lib/preparedCollectionValuation';
+import { hasLowerPreparedPriceCoverage, isPreparedGeneralValuation, preparedGeneralPricingSummary, preparedValuationTrend, preferredPreparedValuation, type PreparedGeneralValuation, type PreparedValuation } from '../lib/preparedCollectionValuation';
 const now=Date.parse('2026-09-19T03:00:00Z');
-const prepared={total:8,unpricedUnits:0,trend:{scope:'s',evidence:'b',eligible:true,points:[
-  {at:'2026-09-18T01:00:00Z',total:10,evidence:'a'},{at:'2026-09-19T01:00:00Z',total:8,evidence:'b'}]}} as PreparedValuation;
+const prepared={total:8,currency:'GBP',totalUnits:4,distinctPriceIdentities:4,pricedUnits:4,freshUnits:4,olderPriceUnits:0,unpricedUnits:0,
+  pending:0,retrying:0,unsupported:0,unresolved:0,noProviderQuote:0,oldestSourceAt:null,latestSourceAt:null,
+  collectionRevision:'collection',valuationRevision:'valuation',calculatedAt:'2026-09-19T01:00:00Z',refresh:null,trend:{scope:'s',evidence:'b',eligible:true,points:[
+  {at:'2026-09-18T01:00:00Z',total:10,evidence:'a'},{at:'2026-09-19T01:00:00Z',total:8,evidence:'b'}]},binders:[]} as PreparedValuation;
 assert.deepEqual(preparedValuationTrend(prepared,7,now),{values:[10,8],change:-2,percent:-20});
 assert.equal(preparedValuationTrend({...prepared,unpricedUnits:1},7,now).values.length,0);
 assert.equal(preparedValuationTrend({...prepared,total:9},7,now).values.length,0);
 assert.equal(preparedValuationTrend({...prepared,trend:undefined},7,now).values.length,0);
+const general = { total: 13, currency: 'GBP', totalUnits: 4, distinctPriceIdentities: 4, pricedUnits: 3,
+  exactPricedUnits: 1, generalEstimateUnits: 2, freshUnits: 3, olderPriceUnits: 0, unpricedUnits: 1,
+  pending: 1, retrying: 0, unsupported: 0, unresolved: 0, noProviderQuote: 0, oldestSourceAt: null, latestSourceAt: null,
+  valuationBasis: 'general_card_estimate', binders: [] } as PreparedGeneralValuation;
+assert.equal(preparedGeneralPricingSummary(general)?.total, 13);
+assert.equal(preparedGeneralPricingSummary(general)?.generalEstimateUnits, 2);
+const exactForGeneral = { ...prepared, currency: 'GBP', totalUnits: 4, distinctPriceIdentities: 4, pricedUnits: 1,
+  freshUnits: 1, olderPriceUnits: 0, unpricedUnits: 3, pending: 3, retrying: 0, unsupported: 0,
+  unresolved: 0, noProviderQuote: 0, oldestSourceAt: null, latestSourceAt: null } as PreparedValuation;
+assert.equal(isPreparedGeneralValuation(preferredPreparedValuation({ ...exactForGeneral, general })), true);
+assert.equal(preferredPreparedValuation({ ...exactForGeneral, general: { ...general, pricedUnits: 2 } }).total, 8,
+  'Invalid additive coverage never replaces the established exact valuation.');
+assert.equal(preferredPreparedValuation({ ...exactForGeneral, totalUnits: 5, pricedUnits: 2, general }).total, 8,
+  'A general summary for a different collection cannot replace the exact valuation.');
 const retained = storedCollectionPriceResults(inputs, previous);
 const retainedSummary = summariseCollectionPricing(retained.map((result) => ({
   quantity: result?.quantity,
@@ -56,5 +72,5 @@ assert.equal(storedCollectionPriceResults([inputs[0]], invalidated)[0]?.central,
   'An authoritative invalidation cannot be retained by the prepared-coverage guard.');
 const homeSource = readFileSync('features/home/HubScreen.tsx', 'utf8');
 assert.match(homeSource,
-  /if \(hasLowerPreparedPriceCoverage\(summary, retainedStoredPricing\)\) \{[\s\S]{0,160}preparedValuationAvailableRef\.current = false;[\s\S]{0,80}prepared = null;[\s\S]{0,120}\} else \{[\s\S]{0,100}preparedValuationAvailableRef\.current = true;/,
+  /if \(!selectedPricing \|\| hasLowerPreparedPriceCoverage\(selectedSummary, retainedStoredPricing\)\) \{[\s\S]{0,160}preparedValuationAvailableRef\.current = false;[\s\S]{0,80}prepared = null;[\s\S]{0,120}\} else \{[\s\S]{0,100}preparedValuationAvailableRef\.current = true;/,
   'A lower-coverage prepared response must take the existing stored-price path, while accepted prepared coverage keeps the prepared path.');

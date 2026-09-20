@@ -260,6 +260,8 @@ export type StackrSearchResult = {
 };
 
 export type StackrMarketProductType = 'raw_card' | 'graded_card' | 'sealed_product';
+/** A labelled general estimate may use the same printing when no exact quote exists. */
+export type StackrPriceEstimateMode = 'general';
 export type StackrMarketEvidenceStatus =
   | 'legacy_cached_market_estimate'
   | 'recent_sold_market_estimate'
@@ -302,7 +304,8 @@ export type StackrCardPrice = {
   sourceBreakdown: Array<Record<string, unknown>>;
   outliers: Record<string, unknown>;
   fallbackEstimate: {
-    identityKey: string;
+    /** A printing-level estimate has no different canonical identity to name. */
+    identityKey: string | null;
     reason: string;
     exact: false;
   } | null;
@@ -978,6 +981,7 @@ export class StackrApiClient {
     condition?: string;
     grader?: string;
     grade?: string;
+    estimateMode?: StackrPriceEstimateMode;
   } = {}) {
     return this.authenticatedGet<StackrCardPrice>(`/cards/${encodeURIComponent(variantId)}/price`, query);
   }

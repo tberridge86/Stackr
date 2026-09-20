@@ -60,6 +60,9 @@ export type CollectionPriceResult = {
   freshness: StackrCardPrice['freshness'];
   calculatedAt: string | null;
   staleAfter: string | null;
+  quoteScope?: StackrCardPrice['quoteScope'];
+  fallbackEstimate?: StackrCardPrice['fallbackEstimate'];
+  pricingKind?: 'exact' | 'general' | 'unknown';
   unavailableReason: string | null;
   requestError: string | null;
   /** Missing quotes have no request failure; transport/access failures do. */
@@ -152,10 +155,18 @@ export function unavailableCollectionPrice(input: CollectionPriceInput, details:
     freshness: 'unknown',
     calculatedAt: null,
     staleAfter: null,
+    pricingKind: 'unknown',
     unavailableReason: 'No matching Stackr price is available.',
     requestError: null,
     ...details,
   };
+}
+
+/** The server must explicitly mark any non-exact estimate; absent scope is a legacy exact response. */
+export function collectionPriceKind(price: Pick<StackrCardPrice, 'fallbackEstimate' | 'quoteScope' | 'estimates' | 'status'>): CollectionPriceResult['pricingKind'] {
+  const central = price.estimates?.central;
+  if (!Number.isFinite(central) || (central as number) < 0 || String(price.status ?? '').toLowerCase() === 'unavailable') return 'unknown';
+  return price.fallbackEstimate != null || price.quoteScope === 'printing_level' ? 'general' : 'exact';
 }
 
 function trustedResolution(input: CollectionPriceInput): StackrResolvedCard | null {
@@ -248,6 +259,9 @@ function snapshotResult(input: CollectionPriceInput, variantId: string, snapshot
     freshness: snapshot.freshness,
     calculatedAt: snapshot.calculatedAt ?? snapshot.snapshotAt,
     staleAfter: snapshot.staleAfter ?? null,
+    quoteScope: snapshot.quoteScope,
+    fallbackEstimate: null,
+    pricingKind: 'exact',
     unavailableReason: null,
     requestError: null,
   };
@@ -374,6 +388,7 @@ export async function loadLegacyCollectionSnapshotPrices(
         results.set(index, { key: input.key, quantity: input.quantity, reference: input.legacyReference ?? null, variantId: null,
           central: snapshot.marketCentral, status: snapshot.priceType as StackrCardPrice['status'], freshness: 'stale',
           calculatedAt: snapshot.calculatedAt ?? snapshot.snapshotAt, staleAfter: snapshot.staleAfter ?? null,
+          quoteScope: 'printing_level', fallbackEstimate: { identityKey: null, reason: 'legacy_printing_level_snapshot', exact: false }, pricingKind: 'general',
           unavailableReason: null, requestError: null });
       }
       if (isCurrent?.() ?? true) onProgress?.({ results: new Map(results), failure });
@@ -469,12 +484,26 @@ async function loadOne(
     });
   }
 
+  const productType = input.productType ?? 'raw_card';
+  const condition = normaliseCollectionMarketCondition(input.condition, productType);
   const requestedVariant = normaliseCollectionVariantCode(input.variantCode);
   const variants = resolved.card.variants ?? [];
   const matchingVariants = requestedVariant
     ? variants.filter((candidate) => normaliseCollectionVariantCode(candidate.variantCode) === requestedVariant)
     : [];
-  if (requestedVariant && matchingVariants.length !== 1) {
+  // A saved finish absent from an otherwise proven catalogue card can use one
+  // unambiguous raw/NM base as a labelled general estimate. It never changes
+  // the saved finish or presents the base quote as an exact variant price.
+  const mayUseGeneralBase = productType === 'raw_card'
+    && condition === 'raw_near_mint';
+  const normalBases = variants.filter((candidate) => ['normal', 'standard'].includes(normaliseCollectionVariantCode(candidate.variantCode)));
+  const holoBases = variants.filter((candidate) => normaliseCollectionVariantCode(candidate.variantCode) === 'holo');
+  let generalBase: typeof variants[number] | null = null;
+  if (requestedVariant && matchingVariants.length === 0 && mayUseGeneralBase) {
+    if (normalBases.length === 1) generalBase = normalBases[0];
+    else if (normalBases.length === 0 && holoBases.length === 1) generalBase = holoBases[0];
+  }
+  if (requestedVariant && matchingVariants.length !== 1 && !generalBase) {
     return unavailableCollectionPrice(input, {
       reference,
       unavailableReason: matchingVariants.length === 0
@@ -486,7 +515,7 @@ async function loadOne(
   // A card-level match normally resolves to the default variant. Without an
   // explicit requested variant, that is only safe when the response itself
   // proves there is exactly one candidate and it is the resolved identity.
-  const variant = requestedVariant ? matchingVariants[0] : null;
+  const variant = requestedVariant ? matchingVariants[0] ?? generalBase : null;
   if (!requestedVariant && (variants.length !== 1 || variants[0].variantId !== resolved.variantId)) {
     return unavailableCollectionPrice(input, {
       reference,
@@ -494,9 +523,7 @@ async function loadOne(
     });
   }
 
-  const productType = input.productType ?? 'raw_card';
   const variantId = variant?.variantId ?? resolved.variantId;
-  const condition = normaliseCollectionMarketCondition(input.condition, productType);
   if (productType === 'raw_card' && !condition) {
     return unavailableCollectionPrice(input, {
       reference,
@@ -520,19 +547,38 @@ async function loadOne(
       condition,
       grader: grader || undefined,
       grade: grade || undefined,
+      estimateMode: 'general',
     });
     const price = response.data;
+    // The endpoint may have an exact quote for the selected base variant, but
+    // that is still a printing-level general estimate for the saved normal.
+    const displayedPrice = generalBase ? {
+      ...price,
+      // A base-variant sale is never a sale of the requested saved finish.
+      // Keep an unavailable base unavailable; otherwise present it as a market
+      // estimate and remove sale-specific evidence from this derived quote.
+      status: price.estimates.central == null ? 'unavailable' as const : 'market_estimate' as const,
+      priceType: price.estimates.central == null ? 'unavailable' as const : 'market_estimate' as const,
+      sample: { ...price.sample, sold: 0, active: 0 },
+      lastSoldEvidence: null,
+      provenLastSold: false,
+      quoteScope: 'printing_level' as const,
+      fallbackEstimate: { identityKey: null, reason: 'same_printing_general_base', exact: false as const },
+    } : price;
     return {
       key: input.key,
       quantity: Math.max(0, Number.isFinite(input.quantity) ? input.quantity : 0),
       reference,
       variantId,
-      central: price.estimates.central,
-      status: price.status,
-      freshness: price.freshness,
-      calculatedAt: price.calculatedAt,
-      staleAfter: price.staleAfter,
-      unavailableReason: price.unavailableReason,
+      central: displayedPrice.estimates.central,
+      status: displayedPrice.status,
+      freshness: displayedPrice.freshness,
+      calculatedAt: displayedPrice.calculatedAt,
+      staleAfter: displayedPrice.staleAfter,
+      quoteScope: displayedPrice.quoteScope,
+      fallbackEstimate: displayedPrice.fallbackEstimate,
+      pricingKind: collectionPriceKind(displayedPrice),
+      unavailableReason: displayedPrice.unavailableReason,
       requestError: null,
     };
   } catch (error) {
