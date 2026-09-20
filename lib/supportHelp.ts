@@ -1,5 +1,5 @@
-// Published support contact, verified from tberridge86/stackr-support on 20 September 2026.
-export const SUPPORT_EMAIL = 'tberridge86@gmail.com';
+// Support/privacy contact designated by the operator on 20 September 2026.
+export const SUPPORT_EMAIL = 'berridge14@icloud.com';
 export const SUPPORT_URL = 'https://tberridge86.github.io/stackr-support/';
 export const PRIVACY_URL = `${SUPPORT_URL}privacy.html`;
 export const HELP_ARTICLES = [
