@@ -1,7 +1,8 @@
 # Visible repair reconciliation — 20 September 2026
 
 Status: **The requested feature release is incomplete. Build 45 is available in
-TestFlight, but availability did not deliver the agreed combined user experience.**
+TestFlight; the owner has authorized progressing the remaining steps and pushing
+the prepared normal 1.0.4 candidate while away.**
 The user reports absent shimmer, dead pricing, missing Settings/privacy work and
 unchanged binder image speed. Installed build/update identity still needs device
 confirmation; the source and live dependency omissions below are independently
@@ -13,7 +14,7 @@ verified and do not depend on that answer. Do not close these reports as green C
 | --- | --- | --- |
 | Haptic holo tilt | PR #209 was omitted. The older gradient/tilt component is not the new inspection viewer. | Native viewer, intended real-card finish coverage and actual phone motion/haptic acceptance. |
 | Missing artwork | Client fallbacks and mapped assets included, not all missing catalogue faces. Canonical UUIDs incorrectly skipped the optional edition-image resolver. | Client correction, compatible live resolver/data, actual decoded EN/JA/ZH binder images and documented remaining source gaps. |
-| Home collection totals and Market prices | Pricing client included, new prepared-valuation server/database/gateway dependencies absent. No new Market repair beyond the existing candidate. | Complete the coordinated stored-valuation rollout; trace exact owned identities and source-labelled prices through Home/Binder/Market. |
+| Home collection totals and Market prices | Pricing database/API/gateway and preparing worker are deployed. Prepared app reads remain off after a real 103/366-unit coverage result. | Reconcile saved/catalogue identity conflicts and stored quote coverage before replacing existing Home totals; verify signed-in Home/Binder/Market. |
 | Faster retrieval / binder images | Older facts-first/cache paths included. The unified retrieval task did not deliver a completed implementation; no accepted device timings. | Actual visible-image and useful-content cold/warm/reopen measurements, then fixes to measured bottlenecks. |
 | Settings, Help, Privacy | Settings still lists unavailable controls. Profile Help and Privacy lead to Settings; the requested separate destinations and broader functions were not implemented. | Working controls, verified permissions/data actions and separate Help/public legal content; no dummy toggles or invented legal/support facts. |
 
@@ -22,28 +23,27 @@ Base Set placeholders avoiding unverified edition aliases, 11 unmapped Chinese
 logos and four missing-image source entries. These are the preceding bounded audit
 results, not a fresh claim of complete live catalogue coverage.
 
-## Read-only production evidence
+## Production evidence — updated 20 September
 
-Observed 20 September at approximately 06:55–06:56 UTC:
+The earlier missing-dependency observations were resolved in the authorized
+pricing-first execution. [The pricing receipt](catalogue-pricing-20260919.md)
+records exact protected workflow runs, source, backups and rollback identities.
 
-- Direct Railway `/health`: HTTP 200, `gitCommit=92ba011b1442`, source
-  `bundled_workflow_sha`, deployment `10613eca-a888-4ef0-af96-8dc1cc7d7d20`,
-  environment `production`, Supabase `oakdbbzdqwurpjnoqhmu`. Repository resolution:
-  `92ba011b1442d5afa0c2bcb1b1189b61988a5ba0`.
-- Railway confirms that deployment is the API's latest, successful since
-  13 September. Config inspection exposed names only; no secret values were read
-  into the report. `STACKR_PREPARED_VALUATIONS_ENABLED` was not among service names.
-- Public `https://api.stackrtcg.com/v1/market/collection-valuation`: HTTP 404,
-  `route_not_found`. Public `/v1/health` returns 200. Direct origin route access
-  correctly refuses requests without gateway authentication (401); that 401 alone
-  does not establish whether a route exists.
-- Single read-only production query: migration `20260919100104` is absent;
-  `public.catalogue_price_cycles` and
-  `public.collection_valuation_generations` both resolve to NULL.
-
-These demonstrate a missing prepared-valuation delivery chain. They do not prove
-the cause of every legacy/card-specific price failure or establish fresh price
-coverage. No authenticated user-price trace or provider refresh was performed.
+- Migration `20260919100104` was rehearsed with rollback, then applied after
+  physical/logical backup verification. Private table/RPC checks passed.
+- API `5b3692aa-72e4-4c29-bec9-a11b4bb7bf89` and gateway version
+  `93fab4d5-e687-4dee-8d37-e5b4faae9e40` deliver source `ff01a46b48a461d81a7d6af2510ddc7adcc35a48`.
+  Health/source/privacy checks passed. Anonymous 401 is not owner price acceptance.
+- Both existing pricing workers successfully deployed lookup fix
+  `d2679d2110aa8e0166b1a93302639f2e5c5e8e7e`. Queue deployment
+  `bfbbbe7b-0f2e-4b21-a7c3-ac264744c328` has stored preparation enabled;
+  catalogue sweep, capacity and prepared refresh queue remain disabled.
+- First real stored-only generation: 366 units, 103 priced (all older),
+  £8.11 known subtotal, 194 unresolved, 66 pending, three unsupported.
+  No new provider identities were selected/refreshed by that generation.
+- Prepared API reads remain OFF. Missing mappings and conflicting saved finishes
+  are not permission blockers and must not be guessed to inflate coverage.
+  Existing Home fallback remains available. Signed-in/device acceptance is open.
 
 ## Local corrective candidate
 
@@ -142,27 +142,16 @@ printing fidelity or actual device delivery.
    upload approval is requested. Device distribution is a verification step and
    must not be made circularly dependent on prior device proof. The requested full
    release nevertheless remains open for the named gaps below.
-2. **Pricing/release operator — external BLOCKED on scoped service/database
-   authority and rehearsal evidence:** the existing production preparation workflow
-   now has a `catalogue` scope, default read-only, main-only/protected-environment
-   execution, separate `PREPARE CATALOGUE PRICING` confirmation and explicit apply.
-   It requires verified current physical backup/logical dumps, two binder and six
-   personal-pricing prerequisites, then only
-   `20260919100104_catalogue_pricing_cycles.sql` (SHA-256
-   `100847e33f08b9afafbe04bda2a262b369a6e8061ca8099d69ac435e15b8778e`).
-   RLS, public denial, service-role function permissions and the exact ledger row
-   must pass before commit. Rehearse and retain recovery evidence before approving
-   the production apply. Merge/deploy/apply authority is not inferred from app
-   distribution authority.
-3. **Pricing/release operator — OPEN dependency rollout:** deploy compatible API,
-   authenticated gateway routes and the existing bounded worker after the schema.
-   Keep catalogue sweep/capacity/prepared-refresh-queue flags false; only then
-   enable `STACKR_PREPARED_VALUATIONS_ENABLED` on API and worker. No provider refresh,
-   scheduler change or catalogue sweep is included in this lane. Prove authenticated
-   exact-identity/source-labelled stored prices and Home/Binder/Market readback.
-   The existing snapshot endpoint returns 401 without authentication; personal
-   pricing access policy is not weakened by this change. That response does not
-   establish an owner quote failure. Market remains unverified, not repaired.
+2. **Pricing/release operator — database and service delivery VERIFIED:** rehearsal,
+   backups, scoped migration, private contracts, API/gateway delivery and a real
+   stored worker publication passed. See the receipt above; do not reapply the
+   migration or ask for the already-given execution authority.
+3. **Pricing/release operator — OPEN coverage and app acceptance:** finish only
+   evidence-backed saved/catalogue identity repairs and validate quote coverage.
+   Keep prepared app reads off until quantities/value reconcile; retain existing
+   fallback and known prices. Catalogue-wide provider capacity and twelve-hour
+   throughput remain unverified and the sweep stays disabled. Prove authenticated
+   exact-identity/source-labelled Home/Binder/Market readback after activation.
 4. **Product/operator — external BLOCKED on facts and service decisions:** confirm
    applicable jurisdiction, representative/DPO position and response procedures
    for the designated support/privacy email;
@@ -187,6 +176,8 @@ printing fidelity or actual device delivery.
    queue flags and retains additive history; API/gateway/client rollback artifacts
    must each be validated. Previously observed IDs are not rollback eligibility.
 
-No server deployment, gateway promotion, database/catalogue mutation, price refresh,
-staging/production job, native build/upload, OTA or public-store release occurred
-in this review. Updating the existing draft PR runs its ordinary automated checks.
+The owner explicitly authorized progression and the next normal TestFlight version.
+The database/API/gateway/worker deliveries above are complete. The new native
+1.0.4 build is being prepared; public App Store release and physical acceptance
+are separate and are not claimed. No saved holding or catalogue identity was
+rewritten to bypass the unresolved price matches.
