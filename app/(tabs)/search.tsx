@@ -1529,6 +1529,14 @@ export default function GlobalSearchScreen() {
               estimatedValue={card.estimatedValue}
               listingCount={card.listingCount}
               ownedQuantity={card.ownedQuantity}
+              inspectionRequest={card.imageUri ? {
+                source: 'catalogue',
+                card: { id: card.raw?.raw_data?.stackr?.cardId ?? card.id, name: card.name, language: card.language, raw_data: card.raw?.raw_data },
+                imageUri: card.imageUri,
+                fullImageUri: card.raw?.images?.large ?? null,
+                selectedVariantId: card.raw?.raw_data?.stackr?.defaultVariantId ?? null,
+                subtitle: [card.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · '),
+              } : undefined}
               onPress={() => {
                 if (profileShowcaseSlot) {
                   void saveCardToShowcase(profileShowcaseSlot, card);

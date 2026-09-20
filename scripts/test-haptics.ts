@@ -17,6 +17,7 @@ async function main() {
   ]);
 
   assert.match(haptics, /Platform\.OS === 'web'/, 'web must remain a no-op');
+  assert.match(haptics, /await hydrateStackrHapticsPreference\(\);[\s\S]*?shouldPlay\(event\)/, 'native feedback must wait for the device preference');
   assert.match(haptics, /catch \{[\s\S]*?Tactile feedback must never block/, 'haptic failures must be contained');
   assert.match(haptics, /scanner_frame_ready: 650/, 'frame-ready feedback needs a cooldown');
   assert.match(haptics, /scanner_ambiguous: 1200/, 'ambiguous-match warnings need a cooldown');
@@ -33,6 +34,7 @@ async function main() {
     'owner suggestions require review, never an automatic exact-match haptic');
   assert.match(ownerScanner, /stackrHaptics.captureSaved\(\)/, 'saved teaching captures need completion feedback');
   assert.match(settings, /Test haptic feedback/, 'a device feedback check must be reachable outside the camera');
+  assert.match(settings, /saveStackrHapticsEnabled\(next\)/, 'the settings toggle must save its selected value');
   assert.match(haptics, /return 'requested'/, 'native dispatch must not claim physical-device success');
   assert.match(scanLearning, /added_to_binder[\s\S]*?return 'card_added'/);
   assert.match(scanLearning, /duplicate_prevented[\s\S]*?return 'duplicate_prevented'/);

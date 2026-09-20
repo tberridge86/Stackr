@@ -33,8 +33,9 @@ import { stackrFonts, typeScale } from '../lib/typography';
 import { COLLECTOR_TABS, SELLER_TABS } from '../lib/routes';
 import { stackrTabBarSizes } from '../lib/stackrSizing';
 import { installRuntimeFetchDiagnostics } from '../lib/runtimeFetchDiagnostics';
-import { stackrHaptics } from '../lib/haptics';
+import { hydrateStackrHapticsPreference, stackrHaptics } from '../lib/haptics';
 import { StackrLoadingScreen } from '../components/StackrLoadingScreen';
+import { CardInspectionProvider } from '../components/CardInspectionProvider';
 import { FONT_LOAD_TIMEOUT_MS } from '../lib/startup';
 import { lightTheme } from '../lib/theme';
 
@@ -348,8 +349,9 @@ function AppShell() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <StackrPopupProvider>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
+      <CardInspectionProvider>
+        <StackrPopupProvider>
+          <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
           {BETA_TRADE_DEMO_MODE ? (
             <AppNavigation />
           ) : (
@@ -357,8 +359,9 @@ function AppShell() {
               <AppNavigation />
             </StripeAppProvider>
           )}
-        </KeyboardAvoidingView>
-      </StackrPopupProvider>
+          </KeyboardAvoidingView>
+        </StackrPopupProvider>
+      </CardInspectionProvider>
     </GestureHandlerRootView>
   );
 }
@@ -386,6 +389,8 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded) configureNativeTypographyDefaults();
   }, [fontsLoaded]);
+
+  useEffect(() => { void hydrateStackrHapticsPreference(); }, []);
 
   return (
     <ThemeProvider>

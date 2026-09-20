@@ -1,5 +1,11 @@
 import * as Haptics from 'expo-haptics';
 import { Platform } from 'react-native';
+import {
+  getStoredHapticsEnabled,
+  hydrateStoredHapticsPreference,
+  saveStoredHapticsEnabled,
+  setTransientHapticsEnabled,
+} from './hapticPreference';
 
 /**
  * StackR's tactile vocabulary.
@@ -37,20 +43,31 @@ const cooldowns: Partial<Record<StackrHapticEvent, number>> = {
 };
 
 const lastPlayedAt = new Map<StackrHapticEvent, number>();
-let enabled = true;
 
 export function setStackrHapticsEnabled(next: boolean) {
-  enabled = next;
+  // Legacy synchronous override for existing callers. The Settings control
+  // persists through saveStackrHapticsEnabled.
+  setTransientHapticsEnabled(next);
 }
 
 export function getStackrHapticsEnabled() {
-  return enabled;
+  return getStoredHapticsEnabled();
+}
+
+/** Load the device-local preference before presenting feedback-sensitive UI. */
+export function hydrateStackrHapticsPreference() {
+  return hydrateStoredHapticsPreference();
+}
+
+/** Persist the setting only after the local write succeeds. */
+export async function saveStackrHapticsEnabled(next: boolean) {
+  return saveStoredHapticsEnabled(next);
 }
 
 /** A resolved native call confirms dispatch, not that the user felt feedback. */
 export async function testStackrHaptics(): Promise<'requested' | 'disabled' | 'unsupported' | 'unavailable'> {
   if (Platform.OS === 'web') return 'unsupported';
-  if (!enabled) return 'disabled';
+  if (!(await hydrateStackrHapticsPreference())) return 'disabled';
   try {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     return 'requested';
@@ -60,7 +77,7 @@ export async function testStackrHaptics(): Promise<'requested' | 'disabled' | 'u
 }
 
 function shouldPlay(event: StackrHapticEvent) {
-  if (!enabled || Platform.OS === 'web') return false;
+  if (!getStackrHapticsEnabled() || Platform.OS === 'web') return false;
   const now = Date.now();
   const cooldown = cooldowns[event] ?? 0;
   const last = lastPlayedAt.get(event) ?? 0;
@@ -88,6 +105,7 @@ async function doubleImpact(
 }
 
 export async function haptic(event: StackrHapticEvent) {
+  if (Platform.OS !== 'web') await hydrateStackrHapticsPreference();
   if (!shouldPlay(event)) return;
 
   await safe(async () => {

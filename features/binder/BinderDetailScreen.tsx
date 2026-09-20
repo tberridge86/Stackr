@@ -12,7 +12,7 @@ import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { getCanonicalMasterSetVariants } from '../../lib/masterSetProgress';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
-import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueInspectionImages, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -110,8 +110,8 @@ import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrS
 import { stackrIcons } from '../../lib/stackrIcons';
 import { createActivityPost } from '../../lib/activity';
 import { stackrHaptics } from '../../lib/haptics';
-import { InteractiveCardPreview } from '../../components/InteractiveCardPreview';
-import { isFoilPreview } from '../../lib/cardPreviewMotion';
+import { useCardInspection } from '../../components/CardInspectionProvider';
+import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
 import type { ScanEditionHint } from '../../types/scan';
 
 // ===============================
@@ -817,6 +817,7 @@ function isJapaneseSecretBinderCard(card: BinderCardWithDetails) {
 
 export default function BinderDetailScreen() {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
   const { id, readOnly } = useLocalSearchParams<{ id: string; readOnly?: string }>();
   const binderId = Array.isArray(id) ? id[0] : id;
   const routeReadOnly = readOnly === 'true';
@@ -2073,6 +2074,27 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     setQuickActionCard(item);
   };
 
+  const inspectBinderCard = (item: BinderCardWithDetails) => {
+    const catalogueImages = getBinderCatalogueInspectionImages(item);
+    if (!catalogueImages) return false;
+    inspectCard({
+      source: 'catalogue',
+      card: {
+        id: item.card?.raw_data?.stackr?.cardId ?? (item.card as any)?.rawData?.stackr?.cardId ?? item.card?.id ?? item.card_id,
+        name: getBinderCardDisplayName(item, item.card_id),
+        language: item.language ?? binder?.language ?? null,
+        raw_data: item.card?.raw_data ?? (item.card as any)?.rawData ?? null,
+      },
+      imageUri: catalogueImages.imageUri,
+      fullImageUri: catalogueImages.fullImageUri,
+      selectedVariantId: getBinderCanonicalVariantId(item) ?? null,
+      subtitle: [getBinderSetDisplayName(item, item.set_id), item.card_number ? `#${item.card_number}` : null].filter(Boolean).join(' · '),
+      onQuickActions: () => handleCardLongPress(item),
+      onDetails: () => openCardDetail(item),
+    });
+    return true;
+  };
+
   const handleSetVariantQuantity = useCallback(async (
     cardId: string,
     setId: string,
@@ -2632,11 +2654,17 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const isGradedBinder = binder?.card_mode === 'graded';
     const ownedQuantity = getOwnedQuantity(item);
+    const inspectionAvailable = Boolean(getBinderCatalogueInspectionImages(item));
 
     return (
       <TouchableOpacity
         onPress={() => runAfterBinderOptionsClose(() => openCardDetail(item))}
-        onLongPress={() => runAfterBinderOptionsClose(() => handleCardLongPress(item))}
+        onLongPress={() => runAfterBinderOptionsClose(() => { if (!inspectBinderCard(item)) handleCardLongPress(item); })}
+        delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
+        accessibilityRole="button"
+        accessibilityLabel={`${getBinderCardDisplayName(item, item.card_id)}. ${inspectionAvailable ? 'Hold to inspect.' : 'Hold for actions.'}`}
+        accessibilityActions={inspectionAvailable ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+        onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect') runAfterBinderOptionsClose(() => { if (!inspectBinderCard(item)) handleCardLongPress(item); }); }}
         activeOpacity={0.9}
         style={{ width: 120, marginRight: 14, opacity: isActive ? 0.75 : 1 }}
       >
@@ -2865,6 +2893,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const cardName = getBinderCardDisplayName(item, item.card_id);
     const forTrade = isForTrade(item.card_id, item.set_id);
     const isGradedBinder = binder?.card_mode === 'graded';
+    const inspectionAvailable = Boolean(getBinderCatalogueInspectionImages(item));
 
     const variants = masterSetEnabled ? getVariants(item.card, item.set_id) : ['card'];
     const multiVariant = variants.length > 1;
@@ -2908,11 +2937,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     return (
       <TouchableOpacity
         onPress={() => handleCardTileTap(item)}
-        onLongPress={() => openCardDetail(item)}
-        delayLongPress={300}
+        onLongPress={() => { if (!inspectBinderCard(item)) openCardDetail(item); }}
+        delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
         activeOpacity={0.85}
         accessibilityRole="button"
-        accessibilityLabel={`${cardName}. Tap to mark collected or missing. Hold for details.`}
+        accessibilityLabel={`${cardName}. Tap to mark collected or missing. ${inspectionAvailable ? 'Hold to inspect.' : 'Hold for details.'}`}
+        accessibilityActions={inspectionAvailable ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+        onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect' && !inspectBinderCard(item)) openCardDetail(item); }}
         style={{
           width: cardWidth,
           marginBottom: 8,
@@ -4581,7 +4612,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         onHandlerStateChange={onPinchHandlerStateChange}
                       >
                         <Animated.View style={{ flex: 1, transform: [{ scale: imageScale }] }}>
-                          <InteractiveCardPreview active={detailVisible} foil={binder.card_mode !== 'graded' && isFoilPreview(modalCard?.raw_data, getBinderCanonicalVariantId(selectedCard))}>
+                          <View style={{ flex: 1 }}>
                           {binder.card_mode === 'graded' ? (
                             <GradedSlabCard
                               item={selectedCard}
@@ -4657,7 +4688,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               </View>
                             );
                           })()}
-                          </InteractiveCardPreview>
+                          </View>
                         </Animated.View>
                       </PinchGestureHandler>
 

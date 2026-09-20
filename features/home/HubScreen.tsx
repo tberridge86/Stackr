@@ -99,6 +99,7 @@ import {
   supportsHomeSnapshotScope,
 } from '../../lib/homePriceRefreshCore';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
+import type { CardInspectionRequest } from '../../lib/cardInspection';
 
 import { sanitizeMarketplaceCondition } from '../../lib/marketplacePresentation';
 import {
@@ -289,6 +290,39 @@ const getCardImageUrl = (card: BinderCardRecord): string | null =>
   card.card?.raw_data?.images?.small ??
   null;
 
+/**
+ * Home may display saved captures or generated fallbacks.  Only pass an
+ * inspection request when the rendered URI is exactly an artwork URI from a
+ * canonical Stackr record; opening the inspector never needs another lookup.
+ */
+export const getHomeCatalogueInspectionRequest = ({
+  name,
+  language,
+  rawData,
+  imageUrl,
+  selectedVariantId,
+}: {
+  name?: string | null;
+  language?: string | null;
+  rawData?: unknown;
+  imageUrl?: string | null;
+  selectedVariantId?: string | null;
+}): CardInspectionRequest | null => {
+  const raw = rawData as { stackr?: { cardId?: unknown }; images?: { small?: unknown; large?: unknown } } | null;
+  const canonicalId = typeof raw?.stackr?.cardId === 'string' ? raw.stackr.cardId.trim() : '';
+  const small = typeof raw?.images?.small === 'string' ? raw.images.small : null;
+  const large = typeof raw?.images?.large === 'string' ? raw.images.large : null;
+  if (!canonicalId || !imageUrl || (imageUrl !== small && imageUrl !== large)) return null;
+
+  return {
+    source: 'catalogue',
+    card: { id: canonicalId, name: name ?? null, language: language ?? null, raw_data: rawData },
+    imageUri: imageUrl,
+    fullImageUri: large ?? small,
+    selectedVariantId: selectedVariantId ?? null,
+  };
+};
+
 const getCardDisplayName = (card: BinderCardRecord) =>
   card.card_name ?? card.card?.name ?? card.card?.raw_data?.name ?? card.card_id ?? 'Unknown card';
 
@@ -320,16 +354,28 @@ const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: 
     );
     const coverCard = ownedCards.find((card) => getCardImageUrl(card)) ?? cards.find((card) => getCardImageUrl(card));
     const topValueCards = ownedCards
-      .map((card) => ({
-        cardId: card.card_id,
-        setId: card.set_id,
-        name: getCardDisplayName(card),
-        setName: getCardSetName(card),
-        number: card.card_number ?? card.card?.number ?? null,
-        ...getBinderCardDisplayMetadata(card),
-        imageUrl: getCardImageUrl(card),
-        estimatedValue: null,
-      }))
+      .map((card) => {
+        const imageUrl = getCardImageUrl(card);
+        const name = getCardDisplayName(card);
+        const metadata = getBinderCardDisplayMetadata(card);
+        return {
+          cardId: card.card_id,
+          setId: card.set_id,
+          name,
+          setName: getCardSetName(card),
+          number: card.card_number ?? card.card?.number ?? null,
+          ...metadata,
+          imageUrl,
+          inspectionRequest: getHomeCatalogueInspectionRequest({
+            name,
+            language: metadata.language,
+            rawData: card.card?.raw_data,
+            imageUrl,
+            selectedVariantId: card.card?.externalIds?.stackrVariant ?? null,
+          }),
+          estimatedValue: null,
+        };
+      })
       .filter((card) => card.imageUrl)
       .slice(0, 3);
 
@@ -414,17 +460,29 @@ const buildMissingCards = (
 
   return group.cards
     .filter((card) => getOwnedQuantity(card) === 0)
-    .map((card) => ({
-      cardId: card.card_id,
-      setId: card.set_id,
-      name: getCardDisplayName(card),
-      setName: getCardSetName(card),
-      ...getBinderCardDisplayMetadata(card),
-      number: card.card_number ?? card.card?.number ?? null,
-      rarity: getCardRarity(card),
-      imageUrl: getCardImageUrl(card),
-      estimatedValue: null,
-    }))
+    .map((card) => {
+      const imageUrl = getCardImageUrl(card);
+      const name = getCardDisplayName(card);
+      const metadata = getBinderCardDisplayMetadata(card);
+      return {
+        cardId: card.card_id,
+        setId: card.set_id,
+        name,
+        setName: getCardSetName(card),
+        ...metadata,
+        number: card.card_number ?? card.card?.number ?? null,
+        rarity: getCardRarity(card),
+        imageUrl,
+        inspectionRequest: getHomeCatalogueInspectionRequest({
+          name,
+          language: metadata.language,
+          rawData: card.card?.raw_data,
+          imageUrl,
+          selectedVariantId: card.card?.externalIds?.stackrVariant ?? null,
+        }),
+        estimatedValue: null,
+      };
+    })
     .slice(0, 5);
 };
 
@@ -2056,6 +2114,12 @@ export default function HubScreen() {
           number: cardNumber,
           rarity: officialCard?.rarity ?? null,
           imageUrl: officialImage ?? null,
+          inspectionRequest: getHomeCatalogueInspectionRequest({
+            name: officialCard?.name ?? row.card_id,
+            language: officialCard?.language ?? null,
+            rawData: officialCard?.raw_data,
+            imageUrl: officialImage,
+          }),
           estimatedValue: typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated),
         };
       }));

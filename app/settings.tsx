@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Image,
   ScrollView,
+  Switch,
   TouchableOpacity,
   View,
   type ImageSourcePropType,
@@ -20,7 +21,12 @@ import { useAppMode } from '../components/app-mode-context';
 import { useTheme } from '../components/theme-context';
 import { supabase } from '../lib/supabase';
 import { OWNER_PRIVATE_RECOGNITION_ENABLED } from '../lib/ownerRecognitionCore';
-import { testStackrHaptics } from '../lib/haptics';
+import {
+  getStackrHapticsEnabled,
+  hydrateStackrHapticsPreference,
+  saveStackrHapticsEnabled,
+  testStackrHaptics,
+} from '../lib/haptics';
 
 const SETTINGS_ICONS = {
   account: require('../assets/rev2/03-ui-illustrations/hero-icons/profile.png'),
@@ -67,7 +73,35 @@ export default function SettingsScreen() {
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [testingHaptics, setTestingHaptics] = useState(false);
   const [hapticMessage, setHapticMessage] = useState<string | null>(null);
+  const [hapticsEnabled, setHapticsEnabled] = useState(getStackrHapticsEnabled);
+  const [hapticsHydrated, setHapticsHydrated] = useState(false);
+  const [savingHaptics, setSavingHaptics] = useState(false);
   const showSellerSettings = hydrated && premiumSellerAccess.allowed;
+
+  useEffect(() => {
+    let active = true;
+    void hydrateStackrHapticsPreference().then((next) => {
+      if (active) {
+        setHapticsEnabled(next);
+        setHapticsHydrated(true);
+      }
+    });
+    return () => { active = false; };
+  }, []);
+
+  const changeHapticsEnabled = useCallback(async (next: boolean) => {
+    if (savingHaptics) return;
+    setSavingHaptics(true);
+    try {
+      await saveStackrHapticsEnabled(next);
+      setHapticsEnabled(next);
+      setHapticMessage(next ? 'Touch feedback is on for Stackr actions on this device.' : 'Touch feedback is off for Stackr actions on this device.');
+    } catch {
+      setHapticMessage('Touch feedback could not be saved. Please try again.');
+    } finally {
+      setSavingHaptics(false);
+    }
+  }, [savingHaptics]);
 
   const checkForUpdate = useCallback(async () => {
     if (checkingUpdate || !Updates.isEnabled) return;
@@ -191,6 +225,18 @@ export default function SettingsScreen() {
 
         <View style={{ padding: 16, marginBottom: 14, backgroundColor: theme.colors.card, borderRadius: 16 }}>
           <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Touch feedback</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8 }}>
+            <Text style={{ flex: 1, color: theme.colors.textSoft, lineHeight: 19 }}>
+              Use haptic feedback for Stackr actions on this device.
+            </Text>
+            <Switch
+              value={hapticsEnabled}
+              disabled={savingHaptics || !hapticsHydrated}
+              onValueChange={(next) => { void changeHapticsEnabled(next); }}
+              accessibilityLabel="Touch feedback"
+              accessibilityHint="Turns haptic feedback on or off for Stackr actions on this device"
+            />
+          </View>
           <TouchableOpacity accessibilityRole="button" disabled={testingHaptics}
             onPress={async () => {
               setTestingHaptics(true);

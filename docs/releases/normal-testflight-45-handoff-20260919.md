@@ -3,6 +3,11 @@
 Status: **Delivered to normal TestFlight testing; Apple approval and both tester
 groups independently verified at 21:06:12 UTC on 19 September 2026.**
 
+**20 September correction:** delivery of the binary did not complete the requested
+feature release. The user reports missing features and unresolved price/image
+behavior. See [the reconciliation and corrective candidate](visible-repair-reconciliation-20260920.md).
+The historical delivery receipt below is not feature acceptance.
+
 The user authorized the normal Stackr app for TestFlight testing. This is a test
 candidate; ordinary production acceptance and public App Store release remain held.
 

@@ -35,6 +35,11 @@ type Props = {
   onReferenceImageChange?: (shared: boolean) => void;
 };
 
+// The production backend may make one bounded provider read after its indexed
+// canonical-card lookup. Keep the optional visual enrichment from outliving a
+// screen or competing with the next visible card request.
+const EDITION_IMAGE_REQUEST_TIMEOUT_MS = 4_500;
+
 function EditionAwareCardImageBase({
   uri,
   fullUri,
@@ -73,6 +78,7 @@ function EditionAwareCardImageBase({
     });
 
     const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), EDITION_IMAGE_REQUEST_TIMEOUT_MS);
     fetch(`${PRICE_API_URL}/api/card-image/edition?${params.toString()}`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => {
@@ -80,10 +86,14 @@ function EditionAwareCardImageBase({
       })
       .catch(() => {
         if (active) setRemoteVariantUri(null);
+      })
+      .finally(() => {
+        clearTimeout(timeout);
       });
 
     return () => {
       active = false;
+      clearTimeout(timeout);
       controller.abort();
     };
   }, [cardId, editionHint, rawVariantUri, sourceSize, uri, fullUri, fallbackUri]);

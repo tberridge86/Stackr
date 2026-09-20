@@ -17,6 +17,8 @@ import { searchIcons, type SearchIconName } from '../../lib/searchIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
 import { stackrHaptics } from '../../lib/haptics';
+import { CARD_INSPECTION_LONG_PRESS_MS, type CardInspectionRequest } from '../../lib/cardInspection';
+import { useCardInspection } from '../CardInspectionProvider';
 
 const money = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
@@ -172,6 +174,7 @@ export function SearchCardRailItem({
   listingCount,
   ownedQuantity,
   onPress,
+  inspectionRequest,
 }: {
   name: string;
   imageUri?: string | null;
@@ -184,8 +187,10 @@ export function SearchCardRailItem({
   listingCount?: number;
   ownedQuantity?: number;
   onPress: () => void;
+  inspectionRequest?: CardInspectionRequest;
 }) {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
   const estimate = money(estimatedValue);
   return (
     <TouchableOpacity
@@ -193,9 +198,13 @@ export function SearchCardRailItem({
         void stackrHaptics.cardPreview();
         onPress();
       }}
+      onLongPress={inspectionRequest ? () => inspectCard(inspectionRequest) : undefined}
+      delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
       activeOpacity={0.84}
       accessibilityRole="button"
-      accessibilityLabel={`Open card ${name}${setName ? ` from ${setName}` : ''}`}
+      accessibilityLabel={`Open card ${name}${setName ? ` from ${setName}` : ''}${inspectionRequest ? '. Hold to inspect.' : ''}`}
+      accessibilityActions={inspectionRequest ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+      onAccessibilityAction={inspectionRequest ? (event) => { if (event.nativeEvent.actionName === 'inspect') inspectCard(inspectionRequest); } : undefined}
       style={{
         width: 158,
         minHeight: 264,
@@ -467,6 +476,7 @@ export function SearchCardResult({
   listingCount,
   ownedQuantity,
   onPress,
+  inspectionRequest,
 }: {
   name: string;
   imageUri?: string | null;
@@ -478,6 +488,7 @@ export function SearchCardResult({
   listingCount?: number;
   ownedQuantity?: number;
   onPress: () => void;
+  inspectionRequest?: CardInspectionRequest;
 }) {
   const { theme } = useTheme();
   return (
@@ -486,7 +497,8 @@ export function SearchCardResult({
         void stackrHaptics.cardPreview();
         onPress();
       }}
-      accessibilityLabel={`Open card ${name}${setName ? ` from ${setName}` : ''}`}
+      accessibilityLabel={`Open card ${name}${setName ? ` from ${setName}` : ''}${inspectionRequest ? '. Hold to inspect.' : ''}`}
+      inspectionRequest={inspectionRequest}
       leading={
         <View style={{ width: 58, height: 80, borderRadius: 9, overflow: 'hidden', backgroundColor: theme.colors.surface }}>
           <StackrImage
@@ -767,19 +779,26 @@ function SearchResultShell({
   children,
   onPress,
   accessibilityLabel,
+  inspectionRequest,
 }: {
   leading: React.ReactNode;
   children: React.ReactNode;
   onPress: () => void;
   accessibilityLabel: string;
+  inspectionRequest?: CardInspectionRequest;
 }) {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
   return (
     <TouchableOpacity
       onPress={onPress}
+      onLongPress={inspectionRequest ? () => inspectCard(inspectionRequest) : undefined}
+      delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
       activeOpacity={0.84}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      accessibilityActions={inspectionRequest ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+      onAccessibilityAction={inspectionRequest ? (event) => { if (event.nativeEvent.actionName === 'inspect') inspectCard(inspectionRequest); } : undefined}
       style={{
         minHeight: 92,
         borderRadius: 16,

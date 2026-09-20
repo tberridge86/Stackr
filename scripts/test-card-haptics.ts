@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import ts from 'typescript';
@@ -11,7 +12,7 @@ type NativeCall = {
 function loadHaptics(options: { os?: string; rejectImpact?: boolean } = {}) {
   const calls: NativeCall[] = [];
   let now = 10_000;
-  const source = require('node:fs').readFileSync('lib/haptics.ts', 'utf8');
+  const source = readFileSync('lib/haptics.ts', 'utf8');
   const compiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
@@ -25,12 +26,23 @@ function loadHaptics(options: { os?: string; rejectImpact?: boolean } = {}) {
     selectionAsync: async () => { calls.push({ kind: 'selection' }); },
     notificationAsync: async () => {},
   };
+  let enabled = true;
+  const preference = {
+    getStoredHapticsEnabled: () => enabled,
+    setTransientHapticsEnabled: (next: boolean) => { enabled = next; },
+    hydrateStoredHapticsPreference: async () => enabled,
+    saveStoredHapticsEnabled: async (next: boolean) => {
+      enabled = next;
+      return enabled;
+    },
+  };
   const module = { exports: {} as Record<string, unknown> };
   vm.runInNewContext(`(function (require, module, exports) { ${compiled}\n})`, {
     Date: { now: () => now },
   }).call(null, (name: string) => {
     if (name === 'expo-haptics') return haptics;
     if (name === 'react-native') return { Platform: { OS: options.os ?? 'ios' } };
+    if (name === './hapticPreference') return preference;
     throw new Error(`Unexpected dependency: ${name}`);
   }, module, module.exports);
   return {
@@ -105,6 +117,10 @@ function runExtractedBinderHandler(handlerText: string, bindings: Record<string,
   return module.exports.handler!;
 }
 
+async function flushAsyncWork() {
+  await new Promise<void>((resolve) => setImmediate(resolve));
+}
+
 async function main() {
   const native = loadHaptics();
   await native.api.stackrHaptics.cardPreview();
@@ -143,7 +159,7 @@ async function main() {
       () => { trace.push('action'); },
     );
     assert.equal(handler(), undefined, `${componentName} must preserve its ordinary press return value`);
-    await Promise.resolve();
+    await flushAsyncWork();
     assert.deepEqual(trace, ['haptic', 'action'], `${componentName} must request card feedback before navigating even if native feedback rejects`);
   }
 
@@ -172,7 +188,7 @@ async function main() {
   });
   const fullImageItem = { id: 'row-1', card: { images: { small: 'small', large: 'large' } } };
   assert.doesNotThrow(() => openDetail(fullImageItem), 'binder detail must still open when native feedback rejects');
-  await Promise.resolve();
+  await flushAsyncWork();
   assert.deepEqual(binderTrace, ['clear-image', 'reset-reference-image', 'select-card', 'show-detail', 'haptic', 'price'], 'binder detail must request feedback and continue the original detail flow');
 
   const quickActionTrace: string[] = [];
@@ -187,7 +203,7 @@ async function main() {
     setQuickActionCard: () => { quickActionTrace.push('show-actions'); },
   });
   assert.doesNotThrow(() => quickAction(fullImageItem), 'binder quick actions must still open when native feedback rejects');
-  await Promise.resolve();
+  await flushAsyncWork();
   assert.deepEqual(quickActionTrace, ['haptic', 'show-actions'], 'binder long-hold must request feedback before opening quick actions');
   assert.equal(rejectingBinderHaptics.calls.length, 2, 'Both binder paths must reach the rejecting native module, rather than pass through cooldown suppression.');
 

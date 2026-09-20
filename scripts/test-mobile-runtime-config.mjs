@@ -34,6 +34,8 @@ const REVIEWED_TARGETS = {
 assert.deepEqual(targets, REVIEWED_TARGETS, 'reviewed mobile target anchors must not drift');
 assert.notDeepEqual(targets.staging, targets.production);
 const releaseManifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
+const appVersion = JSON.parse(readFileSync('app.json', 'utf8')).expo?.version;
+assert.match(appVersion, /^\d+\.\d+\.\d+$/, 'app.json must provide a semantic app version');
 assert.equal(
   new URL(targets.staging.supabaseUrl).hostname.split('.')[0],
   releaseManifest.components.database.stagingProjectRef,
@@ -534,14 +536,14 @@ const developmentConfig = runVerifier('development', 'staging', targets.staging)
 assert.equal(developmentConfig.scheme, 'stackr-dev');
 assert.equal(developmentConfig.iosBundleIdentifier, 'com.tommo86.Stackr.dev');
 assert.equal(developmentConfig.androidPackage, 'com.tommo86.Stackr.dev');
-assert.equal(developmentConfig.runtimeVersion, '1.0.3-development');
+assert.equal(developmentConfig.runtimeVersion, `${appVersion}-development`);
 
 for (const appVariant of ['preview', 'staging', 'seller-canary']) {
   const config = runVerifier(appVariant, 'staging', targets.staging);
   assert.equal(config.scheme, 'stackr-staging');
   assert.equal(config.iosBundleIdentifier, 'com.tommo86.Stackr.staging');
   assert.equal(config.androidPackage, 'com.tommo86.Stackr.staging');
-  assert.equal(config.runtimeVersion, `1.0.3-${appVariant}`);
+  assert.equal(config.runtimeVersion, `${appVersion}-${appVariant}`);
 }
 
 const productionConfig = runVerifier('production', 'production', targets.production);
@@ -601,7 +603,7 @@ const compatibleBuilds = [
     status: 'FINISHED',
     platform: 'ANDROID',
     channel: 'staging',
-    runtimeVersion: '1.0.3-staging',
+    runtimeVersion: `${appVersion}-staging`,
     buildProfile: 'staging',
     gitCommitHash: compatibleBuildSha,
     completedAt: '2026-08-27T12:00:00.000Z',
@@ -613,7 +615,7 @@ const compatibleBuilds = [
     status: 'FINISHED',
     platform: 'IOS',
     channel: 'staging',
-    runtimeVersion: '1.0.3-staging',
+    runtimeVersion: `${appVersion}-staging`,
     buildProfile: 'staging',
     gitCommitHash: compatibleBuildSha,
     completedAt: '2026-08-27T12:01:00.000Z',
@@ -624,7 +626,7 @@ const compatibleBuilds = [
 const compatibleBuildSelection = verifyCompatibleBuilds(compatibleBuilds, {
   requiredPlatforms: ['android', 'ios'],
   channel: 'staging',
-  runtimeVersion: '1.0.3-staging',
+  runtimeVersion: `${appVersion}-staging`,
   buildProfile: 'staging',
   gitCommitHash: compatibleBuildSha,
   nowMs: compatibleBuildNow,
@@ -635,7 +637,7 @@ assert.throws(
   () => verifyCompatibleBuilds(compatibleBuilds.slice(0, 1), {
     requiredPlatforms: ['android', 'ios'],
     channel: 'staging',
-    runtimeVersion: '1.0.3-staging',
+    runtimeVersion: `${appVersion}-staging`,
     buildProfile: 'staging',
     gitCommitHash: compatibleBuildSha,
     nowMs: compatibleBuildNow,
@@ -644,12 +646,12 @@ assert.throws(
 );
 assert.throws(
   () => verifyCompatibleBuilds([
-    { ...compatibleBuilds[0], runtimeVersion: '1.0.3' },
+    { ...compatibleBuilds[0], runtimeVersion: appVersion },
     compatibleBuilds[1],
   ], {
     requiredPlatforms: ['android', 'ios'],
     channel: 'staging',
-    runtimeVersion: '1.0.3-staging',
+    runtimeVersion: `${appVersion}-staging`,
     buildProfile: 'staging',
     gitCommitHash: compatibleBuildSha,
     nowMs: compatibleBuildNow,
@@ -663,7 +665,7 @@ assert.throws(
   ], {
     requiredPlatforms: ['android', 'ios'],
     channel: 'staging',
-    runtimeVersion: '1.0.3-staging',
+    runtimeVersion: `${appVersion}-staging`,
     buildProfile: 'staging',
     gitCommitHash: compatibleBuildSha,
     nowMs: compatibleBuildNow,
@@ -730,7 +732,7 @@ const rollbackUpdates = [
     id: '11111111-1111-4111-8111-111111111111',
     group: rollbackGroupId,
     branch: 'staging',
-    runtimeVersion: '1.0.3-staging',
+    runtimeVersion: `${appVersion}-staging`,
     platform: 'android',
     manifestPermalink: 'https://u.expo.dev/updates/android',
     isRollBackToEmbedded: false,
@@ -740,7 +742,7 @@ const rollbackUpdates = [
     id: '22222222-2222-4222-8222-222222222222',
     group: rollbackGroupId,
     branch: 'staging',
-    runtimeVersion: '1.0.3-staging',
+    runtimeVersion: `${appVersion}-staging`,
     platform: 'ios',
     manifestPermalink: 'https://u.expo.dev/updates/ios',
     isRollBackToEmbedded: false,
@@ -765,7 +767,7 @@ const rollbackProjectBranch = {
   currentPage: [{
     group: rollbackGroupId,
     branch: 'staging',
-    runtimeVersion: '1.0.3-staging',
+    runtimeVersion: `${appVersion}-staging`,
     platforms: 'android, ios',
   }],
 };
@@ -773,7 +775,7 @@ const rollbackExpected = {
   groupId: rollbackGroupId,
   environment: 'staging',
   channel: 'staging',
-  runtimeVersion: '1.0.3-staging',
+  runtimeVersion: `${appVersion}-staging`,
   platforms: 'android,ios',
   operation: 'mobile-update',
 };

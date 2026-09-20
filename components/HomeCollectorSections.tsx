@@ -15,6 +15,8 @@ import { useTheme } from "./theme-context";
 import type { HomeBinderSummary, HomeCardPreview } from "./HomeCommandCenter";
 import { stackrIcons } from "../lib/stackrIcons";
 import { getHomeCardDisplayName, getHomeCardLanguageLabel } from "../lib/homeDisplayLabels";
+import { useCardInspection } from "./CardInspectionProvider";
+import { CARD_INSPECTION_LONG_PRESS_MS } from "../lib/cardInspection";
 
 export type HomeCollectionHeroProps = {
   binder: HomeBinderSummary | null;
@@ -80,6 +82,7 @@ function getCards(
       number: card.number,
       imageUrl: card.imageUrl,
       language: card.language,
+      inspectionRequest: card.inspectionRequest,
       estimatedValue: card.estimatedValue,
     }));
   return owned.length ? { label: "From your binder", cards: owned } : null;
@@ -254,14 +257,22 @@ function CollectionCardTile({
   onPress: (card: HomeCardPreview) => void;
 }) {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
+  const inspectionRequest = card.inspectionRequest;
   const displayName = getHomeCardDisplayName(card);
   const languageLabel = getHomeCardLanguageLabel(card.language);
   return (
     <TouchableOpacity
       onPress={() => onPress(card)}
+      onLongPress={inspectionRequest ? () => inspectCard({ ...inspectionRequest, onDetails: () => onPress(card) }) : undefined}
+      delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
       activeOpacity={0.82}
       accessibilityRole="button"
       accessibilityLabel={`View ${displayName}${languageLabel ? `, ${languageLabel}` : ""}`}
+      accessibilityActions={inspectionRequest ? [{ name: "inspect", label: "Inspect card" }] : undefined}
+      onAccessibilityAction={inspectionRequest ? (event) => {
+        if (event.nativeEvent.actionName === "inspect") inspectCard({ ...inspectionRequest, onDetails: () => onPress(card) });
+      } : undefined}
       style={[
         styles.cardTile,
         {

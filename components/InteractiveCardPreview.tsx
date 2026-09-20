@@ -1,36 +1,39 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AccessibilityInfo, AppState, PanResponder, Platform, StyleSheet, View } from 'react-native';
-import { useIsFocused } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { SensorType, useAnimatedReaction, useAnimatedSensor, useAnimatedStyle, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated';
-import { boundedCardTilt, cardFloatOffset, cardMotionIntensity, relativeCardTilt } from '../lib/cardPreviewMotion';
-import { stackrHaptics } from '../lib/haptics';
+import Animated, { cancelAnimation, SensorType, useAnimatedReaction, useAnimatedSensor, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, withTiming, type SharedValue } from 'react-native-reanimated';
+import { boundedCardTilt, calibratedCardSensor, cardDragTilt, cardInspectionMotionEnabled, type CardSensorOrigin } from '../lib/cardPreviewMotion';
 
-function NativeCardTilt({ x, y }: { x: SharedValue<number>; y: SharedValue<number> }) {
-  const { sensor } = useAnimatedSensor(SensorType.ROTATION, { interval: 32, adjustToInterfaceOrientation: true });
-  const origin = useSharedValue<{ pitch: number; roll: number } | null>(null);
+export type CardPreviewLight = { x: SharedValue<number>; y: SharedValue<number> };
+
+function NativeCardTilt({ x, y, resetKey }: CardPreviewLight & { resetKey: number }) {
+  const { sensor } = useAnimatedSensor(SensorType.ROTATION, { interval: 16, adjustToInterfaceOrientation: true });
+  const origin = useSharedValue<CardSensorOrigin | null>(null);
+  useEffect(() => { origin.value = null; x.value = 0; y.value = 0; }, [origin, resetKey, x, y]);
   useAnimatedReaction(() => sensor.value, (reading) => {
-    // Availability is set after registration without a React render. Gate on a
-    // real reading instead of capturing the hook's initial false flag forever.
-    if (!Number.isFinite(reading.pitch) || !Number.isFinite(reading.roll)) return;
     if (!reading.qw && !reading.qx && !reading.qy && !reading.qz) return;
-    if (!origin.value) { origin.value = { pitch: reading.pitch, roll: reading.roll }; return; }
-    x.value = relativeCardTilt(reading.roll, origin.value.roll);
-    y.value = relativeCardTilt(reading.pitch, origin.value.pitch);
+    const next = calibratedCardSensor(reading, origin.value);
+    if (!next) return;
+    origin.value = next.origin;
+    x.value = withTiming(next.x, { duration: 85 });
+    y.value = withTiming(next.y, { duration: 85 });
   });
+  // useAnimatedSensor unregisters the native subscription on unmount.
   return null;
 }
 
-/** Mounted only around an enlarged card. Images and ownership controls stay intact. */
-export function InteractiveCardPreview({ children, active = true, foil = false }: {
-  children: React.ReactNode; active?: boolean; foil?: boolean;
+/** One motion engine, mounted only by the enlarged catalogue inspector. */
+export function InteractiveCardPreview({ children, active = true, resetKey = 0, renderMaterial, onMotionPreference }: {
+  children: React.ReactNode;
+  active?: boolean;
+  resetKey?: number;
+  renderMaterial?: (light: CardPreviewLight) => React.ReactNode;
+  onMotionPreference?: (reduced: boolean) => void;
 }) {
-  const focused = useIsFocused();
   const [foreground, setForeground] = useState(AppState.currentState === 'active');
   const [reduceMotion, setReduceMotion] = useState(true);
   const sensorX = useSharedValue(0); const sensorY = useSharedValue(0);
   const dragX = useSharedValue(0); const dragY = useSharedValue(0);
-  const enabled = active && focused && foreground && !reduceMotion;
+  const enabled = cardInspectionMotionEnabled(active, foreground, reduceMotion);
   useEffect(() => {
     let mounted = true;
     void AccessibilityInfo.isReduceMotionEnabled().then(value => { if (mounted) setReduceMotion(value); }).catch(() => {});
@@ -38,53 +41,40 @@ export function InteractiveCardPreview({ children, active = true, foil = false }
     const app = AppState.addEventListener('change', state => setForeground(state === 'active'));
     return () => { mounted = false; motion.remove(); app.remove(); };
   }, []);
-  useEffect(() => { if (!enabled) { sensorX.value = 0; sensorY.value = 0; dragX.value = 0; dragY.value = 0; } }, [enabled, sensorX, sensorY, dragX, dragY]);
-  const responder = useMemo(() => PanResponder.create({
-    onMoveShouldSetPanResponder: (_, g) => enabled && g.numberActiveTouches === 1 && Math.abs(g.dx) + Math.abs(g.dy) > 12,
-    onPanResponderGrant: () => { void stackrHaptics.selection(); },
-    onPanResponderMove: (_, g) => { dragX.value = boundedCardTilt(g.dx / 96); dragY.value = boundedCardTilt(-g.dy / 128); },
-    onPanResponderRelease: () => { dragX.value = withSpring(0, { damping: 14, stiffness: 220 }); dragY.value = withSpring(0, { damping: 14, stiffness: 220 }); },
-    onPanResponderTerminate: () => { dragX.value = withSpring(0, { damping: 14, stiffness: 220 }); dragY.value = withSpring(0, { damping: 14, stiffness: 220 }); },
-    onPanResponderTerminationRequest: () => true,
-  }), [enabled, dragX, dragY]);
-  const motionStyle = useAnimatedStyle(() => {
-    const x = enabled ? boundedCardTilt(sensorX.value + dragX.value) : 0;
-    const y = enabled ? boundedCardTilt(sensorY.value + dragY.value) : 0;
-    const intensity = cardMotionIntensity(x, y);
-    return { transform: [
-      { perspective: 820 },
-      { translateX: cardFloatOffset(x, 9) },
-      { translateY: cardFloatOffset(y, 7) },
-      { scale: 1 + intensity * 0.024 },
-      { rotateX: `${y * 16}deg` },
-      { rotateY: `${x * 20}deg` },
-    ] };
-  });
-  const shineStyle = useAnimatedStyle(() => {
-    const x = boundedCardTilt(sensorX.value + dragX.value), y = boundedCardTilt(sensorY.value + dragY.value);
-    const intensity = enabled ? cardMotionIntensity(x, y) : 0;
-    return { opacity: intensity * 0.52,
-      transform: [{ translateX: cardFloatOffset(x, 126) }, { translateY: cardFloatOffset(y, 92) }, { rotate: `${-25 + x * 16 - y * 10}deg` }, { scale: 1 + intensity * 0.16 }] };
-  });
-  // Keep the card image itself clipped to the same rounded silhouette while the
-  // outer frame remains free to cast its shadow and move under the finger.
-  // This removes the square, light backing that was visible at the corners.
+  useEffect(() => { onMotionPreference?.(reduceMotion); }, [onMotionPreference, reduceMotion]);
+  useEffect(() => {
+    for (const value of [sensorX, sensorY, dragX, dragY]) { cancelAnimation(value); value.value = 0; }
+    return () => { for (const value of [sensorX, sensorY, dragX, dragY]) cancelAnimation(value); };
+  }, [enabled, resetKey, sensorX, sensorY, dragX, dragY]);
+  const responder = useMemo(() => {
+    const release = () => {
+      dragX.value = withSpring(0, { damping: 22, stiffness: 180, overshootClamping: true });
+      dragY.value = withSpring(0, { damping: 22, stiffness: 180, overshootClamping: true });
+    };
+    return PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => enabled && g.numberActiveTouches === 1 && Math.abs(g.dx) + Math.abs(g.dy) > 6,
+      onPanResponderMove: (_, g) => { const drag = cardDragTilt(g.dx, g.dy); dragX.value = drag.x; dragY.value = drag.y; },
+      onPanResponderRelease: release,
+      onPanResponderTerminate: release,
+      onPanResponderTerminationRequest: () => true,
+    });
+  }, [enabled, dragX, dragY]);
+  const x = useDerivedValue(() => enabled ? boundedCardTilt(sensorX.value + dragX.value) : 0);
+  const y = useDerivedValue(() => enabled ? boundedCardTilt(sensorY.value + dragY.value) : 0);
+  const motionStyle = useAnimatedStyle(() => ({ transform: [
+    { perspective: 1000 }, { rotateX: `${y.value * 10}deg` }, { rotateY: `${x.value * 13}deg` },
+  ] }));
   return <View style={styles.frame}>
-    {enabled && Platform.OS !== 'web' ? <NativeCardTilt x={sensorX} y={sensorY} /> : null}
+    {enabled && Platform.OS !== 'web' ? <NativeCardTilt x={sensorX} y={sensorY} resetKey={resetKey} /> : null}
     <Animated.View style={[styles.card, motionStyle]} {...responder.panHandlers}>
-      <View style={styles.cardSurface}>{children}</View>
-      {foil ? <View pointerEvents="none" style={styles.foilMask}>
-        <Animated.View style={[styles.shine, shineStyle]}>
-          <LinearGradient colors={['transparent', 'rgba(101, 245, 234, 0.88)', 'rgba(218, 177, 255, 0.92)', 'rgba(255, 245, 186, 0.9)', 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-        </Animated.View>
-      </View> : null}
+      <View style={styles.surface}>{children}
+        {enabled && renderMaterial ? renderMaterial({ x, y }) : null}
+      </View>
     </Animated.View>
   </View>;
 }
 const styles = StyleSheet.create({
   frame: { flex: 1, position: 'relative', overflow: 'visible' },
-  card: { flex: 1, overflow: 'visible', shadowColor: '#07111F', shadowOpacity: 0.24, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 7 },
-  cardSurface: { flex: 1, overflow: 'hidden', borderRadius: 15, backgroundColor: 'transparent' },
-  foilMask: { ...StyleSheet.absoluteFillObject, overflow: 'hidden', borderRadius: 15 },
-  shine: { position: 'absolute', left: '-30%', top: '-30%', width: '160%', height: '160%' },
+  card: { flex: 1, shadowColor: '#211337', shadowOpacity: 0.28, shadowRadius: 24, shadowOffset: { width: 0, height: 16 }, elevation: 8 },
+  surface: { flex: 1, overflow: 'hidden', borderRadius: 14, backgroundColor: 'transparent' },
 });

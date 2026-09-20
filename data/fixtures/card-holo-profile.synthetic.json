@@ -1,0 +1,15 @@
+{
+  "fixtureType": "synthetic-rendering-only",
+  "notCatalogueMetadata": true,
+  "description": "Seven geometry-only resolver inputs for visual and unit tests. They name no real printing, image, artwork, provider asset, or observed finish.",
+  "cases": [
+    { "id": "plain", "finishCode": "normal", "expectedProfile": "plain", "expectedMaskKind": "none" },
+    { "id": "cosmos", "finishCode": "cosmos_holo", "expectedProfile": "cosmos", "expectedMaskKind": "regions" },
+    { "id": "reverse", "finishCode": "reverse_holo", "coverage": "exclude", "expectedProfile": "reverse", "expectedMaskKind": "outside-artwork" },
+    { "id": "diagonal", "finishCode": "line_holo", "expectedProfile": "diagonal", "expectedMaskKind": "regions" },
+    { "id": "textured", "finishCode": "textured", "expectedProfile": "textured", "expectedMaskKind": "full" },
+    { "id": "radiant", "finishCode": "radiant", "expectedProfile": "radiant", "expectedMaskKind": "full" },
+    { "id": "unknown", "finishCode": "prism", "expectedProfile": "plain", "expectedMaskKind": "none" }
+  ],
+  "normalizedRegion": { "x": 0.14, "y": 0.2, "width": 0.72, "height": 0.5 }
+}
