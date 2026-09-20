@@ -58,7 +58,10 @@ jobs:
   refresh:
     if: vars.STACKR_PRICING_SCHEDULER != 'railway_catalogue' && (github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.STACKR_OWNER_PRICE_REFRESH_SCHEDULED_ENABLED == 'true'))
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # A complete pass has <500 serial calls, each with a 12s provider timeout
+    # plus a 1s pause (<109 minutes at the provider bound). Leave headroom for
+    # discovery/publication; small manual/queue runs retain their 15m ceiling.
+    timeout-minutes: ${{ inputs.complete_owned == true && 120 || 15 }}
     # Interactive runs retain the protected production review. The scheduled
     # lane has no deployment work: it is main-only, queue-only and bounded to
     # three exact owner requests, so it uses the existing unprotected

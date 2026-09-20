@@ -21,6 +21,10 @@ valuation. Requests are paced at least one second apart. A conservative cohort
 bound, rate-limit stop and repeated-error stop prevent uncontrolled work.
 Unavailable quotes remain recorded outcomes and cannot consume another card's
 turn within a pass. The existing small manual queue remains a separate mode.
+Complete-pass dispatches have a 120-minute job ceiling: 499 identities at the
+12-second provider timeout plus one-second pacing need under109 minutes before
+discovery/publication overhead. Five consecutive service failures stop much
+earlier. Small manual/queue dispatches retain their existing15-minute ceiling.
 
 The production target is the existing owner Railway worker
 `ff1e8d30-4307-45be-855c-5f83f092d8a5`, production environment
