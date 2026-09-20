@@ -13,9 +13,10 @@ The editable notice is [privacy-policy-draft.md](privacy-policy-draft.md). The m
 | Standard scanner | Camera capture supports OCR and manual correction. Paid recognition fallback is disabled by default; the local embedding model is blocked. | Do not claim local-only recognition or an active paid provider. |
 | Recognition feedback | A user can create feedback locally. Metadata may be uploaded when signed in; a rectified image requires explicit image-upload consent. Dataset use has review/approval gates. | Remote deletion completion and operational retention are unverified. |
 | Scanner operational records | First-party scanner event/diagnostic code and an admin-only analytics view exist. | This is not a production telemetry audit. |
-| Minty | Minty insight code exists. | It does not establish a live provider, personal-data flow or provider contract. |
+| Minty | Account-scoped preferences are shared by Home and Settings, persisted before taking effect, and suppress local personalised insight when disabled or unknown. | This does not establish a live provider, personal-data flow or provider contract. |
 | Family/child accounts | No family, household, guardian or child-account flow was found in this bounded review. | This is not age-assurance evidence. |
-| Account/privacy controls | Settings labels account deletion, session management, data export and blocked-user controls unavailable; binder visibility is per binder. | Recheck after the final release changes. |
+| Account/privacy controls | The local candidate includes provider-aware password recovery, local/other-session sign-out, saved haptics/motion choices, real permission status, replaceable image-cache clearing and an account-checked collection export. Binder visibility remains per binder. | Collection export is not a complete personal-data response. Secure account deletion, blocked-user management and operational deletion evidence remain unresolved. |
+| Help and requests | Signed-out Help and Legal routes exist. Reports can include reviewed exact-card context and optional app/OS/update diagnostics. Drafts are device-local and account-scoped; opening the published email address does not mark a report sent. | No private ticket delivery, server receipt, monitored inbox or fulfilled access/deletion request has been verified. |
 
 ## Existing public page reconciliation
 

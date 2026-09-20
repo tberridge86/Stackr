@@ -2,7 +2,7 @@
 
 **Status:** Draft. Do not publish until every `[CONFIRM]` item is completed by the operator and final app/service behaviour is checked.
 
-**Last reviewed against source:** 20 September 2026  
+**Last reviewed against source:** 20 September 2026
 **Effective date:** `[CONFIRM]`
 
 ## Who is responsible for your information
