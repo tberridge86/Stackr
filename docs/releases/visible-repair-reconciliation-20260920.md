@@ -51,7 +51,7 @@ Base: `0ea201d224e3bed0a09c8fc662645b97952078b7`, branch
 `agent/release/complete-visible-repairs-20260920`, isolated checkout
 `C:\Users\berri\.codex\worktrees\stackr-normal-build42\Stackr-1`.
 The original dirty checkout and release owner's integration checkout were preserved.
-Final implementation source: `d647ef1811bdfefd0b0499a30af2a633c3383733`.
+Final implementation source: `4f7034b14d5a8ed743eba6e5f483aa38dbcb9eda`.
 PR #210 was independently confirmed open/draft at the base above before this
 update. This corrective source is committed for integration into that same PR;
 it has not been merged or delivered to a phone. Build 45 remains the last
@@ -89,6 +89,7 @@ verified distributed normal build, as recorded in
   access from Login. Six articles describe current product flows. Card inspection
   supplies whitelisted exact identity context for a report. Device-local drafts
   are account/context-scoped, survive composer failure and are never marked sent;
+  leaving Help cancels a delayed composer open after draft persistence.
   diagnostics are reviewed and opt-in. Email opening is not ticket delivery.
 - Legal links the existing public privacy page. Editable Markdown and matching
   accessible HTML drafts are prepared in `docs/privacy/`; they are explicitly
@@ -108,15 +109,16 @@ verified distributed normal build, as recorded in
 | Check | Status and scope |
 | --- | --- |
 | App typecheck and lint | PASS on final implementation source; 0 errors, 12 existing lint warnings. |
-| Settings/Help/export/Minty | PASS: executed persistence, failed-save recovery, provider-aware reset visibility, account-change sign-out guard, other-session scope, draft isolation/failure, optional diagnostics, bounded export/cancellation and Minty account/read/write tests. |
+| Settings/Help/export/Minty | PASS: executed persistence, failed-save recovery, provider-aware reset visibility, account-change sign-out guard, other-session scope, draft isolation/failure/unmount cancellation, optional diagnostics, bounded export/cancellation and Minty account/read/write tests. |
 | Card inspection/haptics | PASS: 31 motion cases, 7 material cases plus 27 identity/mask assertions, 20 mocked lifecycle cases and 25 real Skia CPU/WASM cases; haptic dispatch/preferences and entry interactions pass. Native GPU and felt haptics remain NOT RUN. |
 | Home, pricing UI and commerce restrictions | PASS: `test:home-release`, `test:collection-pricing-ui`, `test:commerce-release-lock`, `test:premium-seller-access`. No production quote is established by these checks. |
 | Binder/artwork | PASS: supplied-image lookup avoidance, edition selection, binder presentation/interactions and 18 file-backed SQLite reopen cases; shared image recovery/candidate checks. Physical cold/warm/reopen timings remain NOT RUN. |
-| Pricing preparation | PASS: exact source/checksum and migration scope, prior ledger requirements, private table/RPC contracts, checks-before-commit and rollback-on-failure. Uses mocked database boundaries; no actual migration rehearsal/apply was performed. The Bash pipeline execution branch is platform-skipped on Windows and requires Linux CI. |
+| Pricing preparation | PASS: exact source/checksum and migration scope, prior ledger requirements, private table/RPC contracts, checks-before-commit and rollback-on-failure. Uses mocked database boundaries; no actual target migration rehearsal/apply was performed. The Bash failure-propagation branch passed on Linux in Platform CI run `35497415040` (job `106042887183`) before that job's later unrelated test-harness failure. |
 | Gateway | PASS: 44 existing tests after locked gateway install; no gateway source change or deployment. |
 | Browser UI | PASS at 390×844: signed-out Settings/Help/Legal routes, saved haptic/motion controls after reload, Help search/expanded article and corrected navigation selection. These are browser checks, not phone acceptance. |
 | Source hygiene/runtime | PASS: diff whitespace check and existing mobile runtime configuration; candidate is 1.0.4. |
-| New exact-source remote CI, native build and device journeys | NOT RUN at receipt preparation. Follow PR #210's check results for subsequent CI evidence. Build 45's earlier CI/delivery applies only to its recorded source. |
+| Remote CI | Initial run on `841b3d5` exposed a missing haptic-hydration mock in the existing RootLayout test harness. Fixed the boundary and retained its assertions; `test:ux-service-release` now passes locally. Follow PR #210 for subsequent exact-source CI results. |
+| New native build and device journeys | NOT RUN. Build 45's earlier CI/delivery applies only to its recorded source. |
 
 These checks establish local implementation evidence, not production acceptance.
 
