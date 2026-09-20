@@ -39,7 +39,7 @@ const preparationStep = workflow.match(/      - name: Verify or apply the review
 assert(preparationStep, 'the preparation step must exist');
 assert.match(preparationStep, /shell: bash/, 'the migration pipeline must use explicit bash failure handling');
 const preparationRun = preparationStep.match(/        run: \|\r?\n([\s\S]*)/)?.[1]
-  .replace(/^          /gm, '').replace('${{ inputs.apply_migrations }}', 'true');
+  .replace(/^          /gm, '').replace('${{ inputs.apply_migrations }}', 'true').replace('${{ inputs.scope }}', 'catalogue');
 assert(preparationRun, 'the preparation command must exist');
 if (process.platform !== 'win32') {
   const runnerTemp = mkdtempSync(join(tmpdir(), 'stackr-pricing-workflow-test-'));
@@ -132,7 +132,7 @@ const catalogueQueries = [];
 const catalogueClient = { async connect() {}, async end() {}, async query(sql) {
   catalogueQueries.push(String(sql));
   if (String(sql).includes('schema_migrations')) return { rows: [...history, ...REQUIRED_MIGRATIONS] };
-  if (String(sql).includes('expected_tables')) return { rows: [{ tables_present: true, functions_private_to_service: true }] };
+  if (String(sql).includes('expected_tables')) return { rows: [{ tables_present: true, tables_private: true, functions_private_to_service: true }] };
   return { rows: [] };
 } };
 const catalogue = await preparePersonalPricing({
@@ -148,8 +148,9 @@ assert.equal(catalogueQueries.includes('begin read only'), true, 'catalogue pref
 const catalogueApplyQueries = [];
 const catalogueApplyClient = { ...catalogueClient, async query(sql) {
   catalogueApplyQueries.push(String(sql));
+  if (String(sql).includes('where version = $1')) return { rows: [CATALOGUE_PRICING_MIGRATION] };
   if (String(sql).includes('schema_migrations') && String(sql).startsWith('select')) return { rows: [...history, ...REQUIRED_MIGRATIONS] };
-  if (String(sql).includes('expected_tables')) return { rows: [{ tables_present: true, functions_private_to_service: true }] };
+  if (String(sql).includes('expected_tables')) return { rows: [{ tables_present: true, tables_private: true, functions_private_to_service: true }] };
   return { rows: [] };
 } };
 const catalogueApplied = await preparePersonalPricing({
@@ -159,4 +160,17 @@ assert.equal(catalogueApplied.mode, 'applied');
 assert.deepEqual(catalogueApplied.newlyAppliedMigrations, [CATALOGUE_PRICING_MIGRATION.filename]);
 assert.equal(catalogueApplyQueries.filter((query) => query.startsWith('insert into supabase_migrations')).length, 1,
   'catalogue scope records exactly its single reviewed migration');
+assert(catalogueApplyQueries.findIndex(query => query.includes('expected_tables')) < catalogueApplyQueries.indexOf('commit'), 'contract verification must happen before commit');
+for (const failure of ['tables_private', 'functions_private_to_service', 'ledger']) {
+  const calls = [];
+  const failing = { ...catalogueApplyClient, async query(sql) {
+    calls.push(String(sql));
+    if (String(sql).includes('expected_tables') && failure !== 'ledger') return { rows: [{ tables_present: true, tables_private: failure !== 'tables_private', functions_private_to_service: failure !== 'functions_private_to_service' }] };
+    if (String(sql).includes('where version = $1') && failure === 'ledger') return { rows: [] };
+    return catalogueApplyClient.query(sql);
+  } };
+  await assert.rejects(preparePersonalPricing({ dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'catalogue', apply: true }, () => failing), /contract_mismatch|ledger_mismatch/);
+  assert(!calls.includes('commit'), `${failure} must never commit`);
+  assert(calls.includes('rollback'), `${failure} must roll back`);
+}
 console.log('Personal pricing preparation tests passed.');

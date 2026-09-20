@@ -37,6 +37,7 @@ function source(migration) { return readFileSync(resolve(root, 'supabase/migrati
 function digest(value) { return createHash('sha256').update(value, 'utf8').digest('hex'); }
 
 export function validateMigrationSources(scope = 'personal') {
+  if (!['personal', 'catalogue'].includes(scope)) throw new Error('invalid_scope_argument');
   const migrations = scope === 'catalogue' ? [CATALOGUE_PRICING_MIGRATION] : REQUIRED_MIGRATIONS;
   const sources = new Map();
   for (const migration of migrations) {
@@ -95,13 +96,17 @@ async function assertCataloguePricingContract(client) {
     )
     select
       (select bool_and(to_regclass(name) is not null) from expected_tables) as tables_present,
+      (select bool_and(c.relrowsecurity
+        and not has_table_privilege('anon', c.oid, 'SELECT,INSERT,UPDATE,DELETE')
+        and not has_table_privilege('authenticated', c.oid, 'SELECT,INSERT,UPDATE,DELETE'))
+        from expected_tables e join pg_catalog.pg_class c on c.oid = to_regclass(e.name)) as tables_private,
       (select bool_and(to_regprocedure(signature) is not null
         and has_function_privilege('service_role', to_regprocedure(signature), 'EXECUTE')
         and not has_function_privilege('authenticated', to_regprocedure(signature), 'EXECUTE')
         and not has_function_privilege('anon', to_regprocedure(signature), 'EXECUTE')) from expected_functions) as functions_private_to_service
   `);
   const contract = result.rows[0] ?? {};
-  if (contract.tables_present !== true || contract.functions_private_to_service !== true) {
+  if (contract.tables_present !== true || contract.tables_private !== true || contract.functions_private_to_service !== true) {
     throw new Error('catalogue_pricing_post_apply_contract_mismatch');
   }
 }
@@ -160,12 +165,15 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
           await client.query(sql);
           await client.query('insert into supabase_migrations.schema_migrations (version, name, statements) values ($1, $2, $3::text[])', [migration.version, migration.name, [sql]]);
         }
-        await client.query('commit');
-      } else await client.query('rollback');
-      if (scope === 'catalogue' && (state.applied.length || newlyAppliedMigrations.length)) {
-        await client.query('begin read only');
-        try { await assertCataloguePricingContract(client); } finally { await client.query('rollback'); }
       }
+      // Verify the new objects and recorded ledger before the transaction can commit.
+      // A failing privilege/RLS contract must leave no partial schema behind.
+      if (scope === 'catalogue' && (state.applied.length || newlyAppliedMigrations.length)) {
+        await assertCataloguePricingContract(client);
+        const recorded = await client.query('select version, name from supabase_migrations.schema_migrations where version = $1', [CATALOGUE_PRICING_MIGRATION.version]);
+        if (recorded.rows.length !== 1 || recorded.rows[0].name !== CATALOGUE_PRICING_MIGRATION.name) throw new Error('catalogue_pricing_ledger_mismatch');
+      }
+      await client.query(newlyAppliedMigrations.length ? 'commit' : 'rollback');
       const finalAppliedMigrations = [...initialAppliedMigrations, ...newlyAppliedMigrations];
       const finalPendingMigrations = apply ? [] : initialPendingMigrations;
       return {
