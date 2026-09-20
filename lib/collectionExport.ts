@@ -21,6 +21,8 @@ type ExportOptions = Readonly<{
   now?: () => number;
   signal?: AbortSignal;
   isCurrent?: () => boolean;
+  /** Narrower values are only useful to callers testing the bounded request path. */
+  timeoutMs?: number;
 }>;
 
 function cancelled(options: ExportOptions) {
@@ -37,7 +39,7 @@ function exportBinder(row: any) {
     sourceSetId: row.source_set_id ?? null, edition: row.edition ?? null,
     cardMode: row.card_mode ?? null, defaultCondition: row.default_condition ?? null,
     defaultGradeCompany: row.default_grade_company ?? null, defaultGrade: row.default_grade ?? null,
-    isPublic: row.is_public ?? null, sortOrder: row.sort_order ?? null, createdAt: row.created_at ?? null,
+    isPublic: row.is_public ?? null, createdAt: row.created_at ?? null,
   };
 }
 
@@ -63,6 +65,36 @@ async function verifiedUser(client: any, options: ExportOptions) {
   return data.user.id as string;
 }
 
+async function readWithinDeadline<T>(
+  options: ExportOptions,
+  timeoutMs: number,
+  read: (signal: AbortSignal) => Promise<T>,
+): Promise<T> {
+  assertCurrent(options);
+  const request = new AbortController();
+  let timedOut = false;
+  const cancel = () => request.abort();
+  options.signal?.addEventListener('abort', cancel, { once: true });
+  const timeout = setTimeout(() => { timedOut = true; request.abort(); }, timeoutMs);
+  try {
+    return await Promise.race([
+      read(request.signal),
+      new Promise<never>((_resolve, reject) => request.signal.addEventListener('abort', () => {
+        reject(new CollectionExportError(
+          timedOut ? 'incomplete' : 'cancelled',
+          timedOut
+            ? 'Collection export timed out before all saved rows were read. Nothing was shared.'
+            : 'Collection export was cancelled because the active account changed.',
+        ));
+      }, { once: true })),
+    ]);
+  } finally {
+    clearTimeout(timeout);
+    options.signal?.removeEventListener('abort', cancel);
+    request.abort();
+  }
+}
+
 /** Read-only export of saved rows. It never asks catalogue, price, image or provider services for enrichment. */
 export async function createCollectionExport(options: ExportOptions = {}): Promise<CollectionExport> {
   // Keep the testable pure export path free from React Native/Supabase module
@@ -70,9 +102,11 @@ export async function createCollectionExport(options: ExportOptions = {}): Promi
   // a caller does not provide one.
   const client = options.client ?? require('./supabase').supabase;
   const startedAt = (options.now ?? Date.now)();
+  const deadlineMs = Math.min(EXPORT_TIMEOUT_MS, Math.max(1, options.timeoutMs ?? EXPORT_TIMEOUT_MS));
+  const deadlineAt = Date.now() + deadlineMs;
   const assertDeadline = () => {
     assertCurrent(options);
-    if ((options.now ?? Date.now)() - startedAt > EXPORT_TIMEOUT_MS) {
+    if (Date.now() >= deadlineAt) {
       throw new CollectionExportError('incomplete', 'Collection export timed out before all saved rows were read. Nothing was shared.');
     }
   };
@@ -80,10 +114,12 @@ export async function createCollectionExport(options: ExportOptions = {}): Promi
   const binders: any[] = [];
   for (let from = 0; ; from += PAGE_SIZE) {
     assertDeadline();
-    const { data, error } = await client.from('binders')
-      .select('id,user_id,name,type,language,source_set_id,edition,card_mode,default_condition,default_grade_company,default_grade,is_public,sort_order,created_at')
-      .eq('user_id', userId).order('sort_order', { ascending: true }).order('created_at', { ascending: true }).order('id', { ascending: true })
-      .range(from, from + PAGE_SIZE - 1);
+    const { data, error } = await readWithinDeadline(options, Math.max(1, deadlineAt - Date.now()), (signal) => {
+      const query = client.from('binders')
+        .select('id,user_id,name,type,language,source_set_id,edition,card_mode,default_condition,default_grade_company,default_grade,is_public,created_at')
+        .eq('user_id', userId).order('created_at', { ascending: true }).order('id', { ascending: true });
+      return (typeof query.abortSignal === 'function' ? query.abortSignal(signal) : query).range(from, from + PAGE_SIZE - 1);
+    });
     assertDeadline();
     if (error) throw new CollectionExportError('failed', 'Could not read saved binders for export.');
     const page = data ?? [];
@@ -97,10 +133,12 @@ export async function createCollectionExport(options: ExportOptions = {}): Promi
   for (const binder of binders) {
     for (let from = 0; ; from += PAGE_SIZE) {
       assertDeadline();
-      const { data, error } = await client.from('binder_cards')
-        .select('id,binder_id,card_id,set_id,language,owned_card_variant_id,api_card_id,api_set_id,card_name,card_number,set_name,slot_order,owned,owned_quantity,condition,grade_company,grade,notes,created_at')
-        .eq('binder_id', binder.id).order('slot_order', { ascending: true }).order('id', { ascending: true })
-        .range(from, from + PAGE_SIZE - 1);
+      const { data, error } = await readWithinDeadline(options, Math.max(1, deadlineAt - Date.now()), (signal) => {
+        const query = client.from('binder_cards')
+          .select('id,binder_id,card_id,set_id,language,owned_card_variant_id,api_card_id,api_set_id,card_name,card_number,set_name,slot_order,owned,owned_quantity,condition,grade_company,grade,notes,created_at')
+          .eq('binder_id', binder.id).order('slot_order', { ascending: true }).order('id', { ascending: true });
+        return (typeof query.abortSignal === 'function' ? query.abortSignal(signal) : query).range(from, from + PAGE_SIZE - 1);
+      });
       assertDeadline();
       if (error) throw new CollectionExportError('failed', `Could not read saved cards for binder ${binder.id}. Nothing was shared.`);
       const page = data ?? [];

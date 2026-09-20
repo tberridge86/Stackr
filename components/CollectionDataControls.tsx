@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Share, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Share } from 'react-native';
 import { createCollectionExport, CollectionExportError } from '../lib/collectionExport';
 import { supabase } from '../lib/supabase';
-import { Text } from './Text';
+import { UtilityGroup, UtilityRow } from './UtilityScreen';
 import { useTheme } from './theme-context';
 
 /** Settings-owned UI. It exports only saved user rows and never reports a sync state it cannot verify. */
@@ -10,18 +10,31 @@ export function CollectionDataControls() {
   const { theme } = useTheme();
   const generation = useRef(0);
   const controller = useRef<AbortController | null>(null);
+  const exportingRef = useRef(false);
+  const mounted = useRef(true);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
+    mounted.current = true;
     const subscription = supabase.auth.onAuthStateChange(() => {
       generation.current += 1;
       controller.current?.abort();
+      controller.current = null;
+      exportingRef.current = false;
+      if (mounted.current) setExporting(false);
     });
-    return () => { subscription.data.subscription.unsubscribe(); controller.current?.abort(); };
+    return () => {
+      mounted.current = false;
+      subscription.data.subscription.unsubscribe();
+      controller.current?.abort();
+      controller.current = null;
+      exportingRef.current = false;
+    };
   }, []);
 
   const exportCollection = useCallback(async () => {
-    if (exporting) return;
+    if (exportingRef.current) return;
+    exportingRef.current = true;
     const requestGeneration = generation.current;
     const request = new AbortController();
     controller.current = request;
@@ -34,17 +47,21 @@ export function CollectionDataControls() {
       if (error instanceof CollectionExportError && error.code === 'cancelled') return;
       Alert.alert('Collection export unavailable', error instanceof Error ? error.message : 'Please try again.');
     } finally {
-      if (controller.current === request) controller.current = null;
-      if (generation.current === requestGeneration) setExporting(false);
+      if (controller.current === request) {
+        controller.current = null;
+        exportingRef.current = false;
+        if (mounted.current) setExporting(false);
+      }
     }
-  }, [exporting]);
+  }, []);
 
-  return <View style={{ padding: 16, marginBottom: 14, backgroundColor: theme.colors.card, borderRadius: 16 }}>
-    <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Your collection data</Text>
-    <Text style={{ color: theme.colors.textSoft, marginTop: 4, lineHeight: 19 }}>Export your saved binders and card rows as JSON. Images, prices, catalogue data and secret URLs are not included.</Text>
-    <Text style={{ color: theme.colors.textSoft, marginTop: 6, lineHeight: 19 }}>Sync status is not shown because this screen cannot verify every account queue safely.</Text>
-    <TouchableOpacity accessibilityRole="button" disabled={exporting} onPress={() => { void exportCollection(); }} style={{ paddingVertical: 12 }}>
-      <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{exporting ? 'Preparing export…' : 'Export collection data'}</Text>
-    </TouchableOpacity>
-  </View>;
+  return <UtilityGroup title="Your collection data">
+    <UtilityRow
+      title="Export saved collection"
+      detail="Includes server-saved entries only. Finish pending edits before export. This is not a full personal-data export."
+      onPress={() => { void exportCollection(); }}
+      disabled={exporting}
+      trailing={exporting ? <ActivityIndicator color={theme.colors.primary} /> : undefined}
+    />
+  </UtilityGroup>;
 }
