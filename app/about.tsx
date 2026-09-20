@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { UtilityGroup, UtilityRow, UtilityScreen } from '../components/UtilityScreen';
 import { Text } from '../components/Text';
 
@@ -9,8 +9,9 @@ export default function AboutScreen() {
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [message, setMessage] = useState<string | null>(null);
+  const canCheckForUpdates = Platform.OS !== 'web' && Updates.isEnabled;
   const checkForUpdate = async () => {
-    if (busyRef.current || !Updates.isEnabled) return;
+    if (busyRef.current || !canCheckForUpdates) return;
     busyRef.current = true; setBusy(true);
     try {
       const check = await Updates.checkForUpdateAsync();
@@ -29,7 +30,7 @@ export default function AboutScreen() {
     <UtilityGroup title="Installed version">
       <UtilityRow title={`Stackr ${Constants.nativeAppVersion ?? Constants.expoConfig?.version ?? 'development'}`} detail={`Build ${Constants.nativeBuildVersion ?? 'preview'}`} />
       <UtilityRow title="App update" detail={Updates.isEmbeddedLaunch ? 'Included with this build' : Updates.createdAt?.toLocaleString() ?? 'Development preview'} />
-      {Updates.isEnabled ? <UtilityRow title={busy ? 'Checking…' : 'Check for updates'} disabled={busy} onPress={() => { void checkForUpdate(); }} /> : null}
+      {canCheckForUpdates ? <UtilityRow title={busy ? 'Checking…' : 'Check for updates'} disabled={busy} onPress={() => { void checkForUpdate(); }} /> : null}
     </UtilityGroup>
     {Updates.updateId ? <Text selectable style={{ marginBottom: 16 }}>Support reference: {Updates.updateId}</Text> : null}
     {message ? <Text accessibilityLiveRegion="polite" style={{ lineHeight: 22 }}>{message}</Text> : null}
