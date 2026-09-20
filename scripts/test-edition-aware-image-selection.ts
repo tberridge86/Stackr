@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   getEditionAwareImageUrl,
   getPublicScrydexCardImageUrl,
@@ -70,9 +71,16 @@ assert.equal(shouldFetchEditionImage({ cardId: canonicalId, editionHint: '1st_ed
 assert.equal(shouldFetchEditionImage({ cardId: 'base2-4', editionHint: 'unlimited', suppliedUri: storedStackrUri }), false,
   'each thumbnail with a stored unlimited image must not start another backend lookup');
 assert.equal(shouldFetchEditionImage({ cardId: 'base2-4', editionHint: '1st_edition', suppliedUri: storedStackrUri }), true,
-  'a supported provider printing may still resolve its specific first-edition artwork');
+  'the shared resolver policy remains available to detail views with a supplied generic rendition');
 assert.equal(verifiedRemoteEditionImage({ ok: true, imageUri: manufacturedUnlimitedUri, source: 'scrydex_public_image' }), null,
   'a constructed address returned by the edition endpoint must not replace a working supplied image');
 assert.equal(verifiedRemoteEditionImage({ ok: true, imageUri: storedStackrUri, source: 'catalogue' }), storedStackrUri);
+
+const editionImageComponent = readFileSync('components/EditionAwareCardImage.tsx', 'utf8');
+assert.match(editionImageComponent, /resolveRemoteEdition = true/, 'detail views retain the optional exact-edition resolver by default');
+assert.match(editionImageComponent, /!resolveRemoteEdition \|\| !PRICE_API_URL/, 'a caller may keep a visible supplied grid rendition without a remote resolver read');
+const binderScreen = readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
+assert.match(binderScreen, /sourceSize="small"\s+resolveRemoteEdition=\{false\}/, 'ordinary binder grid cards do not amplify optional edition resolver reads');
+assert.match(binderScreen, /sourceSize="large"\s+onReferenceImageChange/, 'binder modal detail retains its exact-edition resolver path');
 
 console.log('Edition-aware image selection checks passed.');

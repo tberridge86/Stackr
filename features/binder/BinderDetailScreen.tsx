@@ -673,6 +673,7 @@ function GradedSlabCard({
               rawData={item.card}
               editionHint={editionHint}
               sourceSize={size === 'modal' ? 'large' : 'small'}
+              resolveRemoteEdition={size === 'modal'}
               style={{ width: '100%', height: '100%' }}
               resizeMode="contain"
             />
@@ -2986,6 +2987,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               rawData={item.card}
               editionHint={imageEditionHint}
               sourceSize="small"
+              resolveRemoteEdition={false}
               style={{ width: '100%', height: '100%' }}
               resizeMode="contain"
             />

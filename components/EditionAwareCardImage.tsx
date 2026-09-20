@@ -29,6 +29,8 @@ type Props = {
   rawData?: any;
   editionHint?: ScanEditionHint | null;
   sourceSize?: EditionImageSize;
+  /** Grid cells keep their supplied rendition; detail views may enrich it. */
+  resolveRemoteEdition?: boolean;
   style?: StyleProp<ViewStyle>;
   imageStyle?: StyleProp<ImageStyle>;
   resizeMode?: ImageProps['resizeMode'];
@@ -48,6 +50,7 @@ function EditionAwareCardImageBase({
   rawData,
   editionHint,
   sourceSize = 'large',
+  resolveRemoteEdition = true,
   style,
   imageStyle,
   resizeMode = 'contain',
@@ -63,7 +66,7 @@ function EditionAwareCardImageBase({
     let active = true;
     setRemoteVariantUri(null);
 
-    if (!PRICE_API_URL || !cardId || !editionHint || !shouldFetchEditionImage({
+    if (!resolveRemoteEdition || !PRICE_API_URL || !cardId || !editionHint || !shouldFetchEditionImage({
       cardId, editionHint, rawVariantUri, suppliedUri: uri ?? fullUri ?? fallbackUri,
     })) {
       return () => {
@@ -96,7 +99,7 @@ function EditionAwareCardImageBase({
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [cardId, editionHint, rawVariantUri, sourceSize, uri, fullUri, fallbackUri]);
+  }, [cardId, editionHint, rawVariantUri, resolveRemoteEdition, sourceSize, uri, fullUri, fallbackUri]);
 
   const scrydexUnlimitedUri = React.useMemo(
     () => getPublicScrydexCardImageUrl(cardId, editionHint, sourceSize),
