@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { generalPrintingDiscoveryIds, resolveGeneralPriceIdentity } from './lib/general-price-identities.mjs';
+import { generalPrintingDiscoveryIds, readGeneralPrintingCatalogue, resolveGeneralPriceIdentity } from './lib/general-price-identities.mjs';
 import { chooseGeneralPriceUnits, summarisePreparedUnits } from './lib/prepared-collection-valuation.mjs';
 import { selectGeneralPriceBase, wrapGeneralEstimate } from '../backend/lib/marketPricing/generalEstimate.js';
 const set = '11111111-1111-4111-8111-111111111111';
@@ -80,4 +80,16 @@ const selected = chooseGeneralPriceUnits([{ quantity: 1, variantId: normal, gene
 assert.equal(selected[0].priceScope, 'printing_general', 'an unavailable exact quote falls back to the separately proven printing base');
 const exactSelected = chooseGeneralPriceUnits([{ quantity: 1, variantId: normal, generalBaseCandidates: [selectGeneralPriceBase(holoOnly)], selection: selectGeneralPriceBase(holoOnly) }], prices);
 assert.equal(exactSelected[0].priceScope, 'exact', 'a usable exact quote remains preferred to a general base');
+const discoveryCatalogue = Array.from({ length: 244 }, (_, index) => ({ ...row(`33333333-3333-4333-8333-${String(index + 1).padStart(12, '0')}`, 'normal'), printing_id: `22222222-2222-4222-8222-${String(index + 1).padStart(12, '0')}` }));
+const discoveryUnits = discoveryCatalogue.map((card) => ({ ...raw, card_id: card.variant_id, set_id: set }));
+const batches = [];
+const discoveryDb = { schema: () => ({ from: () => {
+  const query = { select: () => query, in: (_column, ids) => { batches.push(ids); return query; }, order: () => query,
+    range: async () => ({ data: [], error: null }) };
+  return query;
+} }) };
+await readGeneralPrintingCatalogue(discoveryDb, discoveryUnits, [], discoveryCatalogue);
+assert.equal(batches.length, 5, 'the measured 244-printing owner cohort must fit bounded discovery');
+assert(batches.every((batch) => batch.length <= 50), 'larger collections cannot expand any individual database request');
+assert.equal(new Set(batches.flat()).size, 244, 'no printing is skipped or fetched twice');
 console.log('General printing identity and labelled estimate tests passed.');

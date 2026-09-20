@@ -185,7 +185,7 @@ await test('native viewability callback and committed ownership hook are wired s
   assert.match(source, /onViewableItemsChanged=\{onBinderViewableItemsChanged\}/);
   assert.match(source, /ownershipReady && !isReadOnly\) retrievalTraceRef\.current\?\.editable/);
   assert.match(source, /const isReadOnly = routeReadOnly \|\| reopenStatus !== null/);
-  assert.match(source, /value\?\.total != null/, 'prepared valuation must require an actual stored total');
+  assert.match(source, /value\??\.total != null/, 'prepared valuation must require an actual stored total');
   assert.match(source, /Stored valuation pending/, 'saved views must not turn omitted prices into a zero estimate');
 });
 console.log(`${count} reopen, failed-refresh, isolation and measurement tests passed. Not physical-device latency proof.`);

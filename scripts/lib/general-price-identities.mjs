@@ -170,7 +170,7 @@ export function generalPrintingDiscoveryIds(units, identifiers, knownCatalogue =
 }
 
 const PRINTING_DISCOVERY_BATCH = 50;
-const PRINTING_DISCOVERY_MAX = 200;
+const PRINTING_DISCOVERY_MAX = 1000;
 
 /**
  * Read only printing groups established by a published printing alias or an
