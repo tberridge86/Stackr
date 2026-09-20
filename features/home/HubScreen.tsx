@@ -1614,7 +1614,7 @@ export default function HubScreen() {
       }));
 
       // One private prepared generation replaces the phone-side price fan-out.
-      // A 404 permits the old-server path during backend-first rollout only.
+      // A 404 or lower-coverage partial summary uses exact stored-price reads.
       let prepared = null;
       try { prepared = (await stackrApiClient.collectionValuation()).data; }
       catch (error) { if ((error as { status?: number }).status !== 404) throw error; }

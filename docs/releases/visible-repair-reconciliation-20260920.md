@@ -51,7 +51,10 @@ Base: `0ea201d224e3bed0a09c8fc662645b97952078b7`, branch
 `agent/release/complete-visible-repairs-20260920`, isolated checkout
 `C:\Users\berri\.codex\worktrees\stackr-normal-build42\Stackr-1`.
 The original dirty checkout and release owner's integration checkout were preserved.
-Final implementation source: `8fa5034c994ad5a661c85927b2f90e50bffa5f4c`.
+Original corrective implementation: `8fa5034c994ad5a661c85927b2f90e50bffa5f4c`.
+It now incorporates deployed main `d2679d2110aa8e0166b1a93302639f2e5c5e8e7e`
+and Home coverage repair `6f494b4`; the final frozen source is attested by the
+existing build workflow receipt before native submission.
 PR #210 was independently confirmed open/draft at the base above before this
 update. This corrective source is committed for integration into that same PR;
 it has not been merged or delivered to a phone. Build 45 remains the last
@@ -69,6 +72,12 @@ verified distributed normal build, as recorded in
 - Binder grid/showcase images with supplied artwork now skip optional edition
   lookups entirely. Inspection retains exact lookup when needed. This removes a
   proven request amplification problem without asserting measured phone speed.
+- Home compares a partial prepared response against exact saved evidence mapped
+  onto the currently owned identities and quantities. If the response prices
+  fewer units, it uses the existing stored-price read path instead of replacing
+  the known subtotal with that partial result. This path revalidates identities
+  and updates binder values, trend and cache; it does not copy an old aggregate.
+  Genuine decreases and authoritative per-identity invalidations remain valid.
 - Replaced the Settings placeholder panels with compact working controls:
   provider-aware password recovery; account-checked local/other-session sign-out;
   persisted global touch feedback; saved card-motion reduction combined with OS
