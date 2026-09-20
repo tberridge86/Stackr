@@ -2083,6 +2083,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       card: {
         id: item.card?.raw_data?.stackr?.cardId ?? (item.card as any)?.rawData?.stackr?.cardId ?? item.card?.id ?? item.card_id,
         name: getBinderCardDisplayName(item, item.card_id),
+        setId: item.set_id,
         language: item.language ?? binder?.language ?? null,
         raw_data: item.card?.raw_data ?? (item.card as any)?.rawData ?? null,
       },

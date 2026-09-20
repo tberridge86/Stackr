@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   createMintyPreferences,
   getMintyPersonalisationStorageKey,
+  LEGACY_MINTY_PERSONALISATION_STORAGE_KEY,
   visibleMintyPreferenceSnapshot,
 } from '../lib/mintyPreferences';
 
@@ -10,6 +11,7 @@ let failWrites = false;
 let failReads = false;
 let pendingRead: { resolve: (value: string | null) => void } | null = null;
 let readCount = 0;
+let legacyRemoved = 0;
 const storage = {
   async getItem(key: string) {
     readCount += 1;
@@ -21,10 +23,15 @@ const storage = {
     if (failWrites) throw new Error('disk full');
     values.set(key, value);
   },
+  async removeItem(key: string) {
+    if (key === LEGACY_MINTY_PERSONALISATION_STORAGE_KEY) legacyRemoved += 1;
+    values.delete(key);
+  },
 };
 async function main() {
   const preferences = createMintyPreferences(storage);
   await preferences.hydrate('account-a');
+  assert.equal(legacyRemoved, 1, 'the old shared key is removed without being read');
   assert.equal(preferences.getSnapshot().settings.useChaseList, true);
   await preferences.save('account-a', { useChaseList: false });
   assert.equal(preferences.getSnapshot().settings.useChaseList, false, 'active settings change after storage write');

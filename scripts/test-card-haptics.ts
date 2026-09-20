@@ -49,6 +49,7 @@ function loadHaptics(options: { os?: string; rejectImpact?: boolean } = {}) {
     api: module.exports as {
       stackrHaptics: { cardPreview: () => Promise<void>; selection: () => Promise<void> };
       setStackrHapticsEnabled: (next: boolean) => void;
+      preferenceAwareHaptics: { impactAsync: () => Promise<void>; selectionAsync: () => Promise<void>; notificationAsync: () => Promise<void> };
     },
     calls,
     advance: (milliseconds: number) => { now += milliseconds; },
@@ -147,6 +148,16 @@ async function main() {
   assert.equal(rejecting.calls.length, 1, 'the failed native request should still have been attempted once');
 
   const searchSource = await readFile('components/search/SearchResults.tsx', 'utf8');
+  const legacy = loadHaptics();
+  legacy.api.setStackrHapticsEnabled(false);
+  await legacy.api.preferenceAwareHaptics.impactAsync();
+  await legacy.api.preferenceAwareHaptics.selectionAsync();
+  await legacy.api.preferenceAwareHaptics.notificationAsync();
+  assert.equal(legacy.calls.length, 0, 'legacy scanner/listing/grade effects must obey the global saved off switch');
+  legacy.api.setStackrHapticsEnabled(true);
+  await legacy.api.preferenceAwareHaptics.impactAsync();
+  assert.equal(legacy.calls.length, 1, 'reenabling feedback restores legacy effects');
+  await assert.doesNotReject(rejecting.api.preferenceAwareHaptics.impactAsync(), 'a rejected legacy effect cannot block the product action');
   for (const componentName of ['SearchCardRailItem', 'SearchCardResult']) {
     const trace: string[] = [];
     const rejectingForHandler = loadHaptics({ rejectImpact: true });

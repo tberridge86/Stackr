@@ -35,6 +35,14 @@ async function main() {
   await assert.rejects(() => reopened.save(false), /disk unavailable/);
   assert.equal(reopened.get(), true, 'a failed write must retain the previous active setting');
   assert.equal(storage.values.get(HAPTICS_ENABLED_STORAGE_KEY), 'true', 'a failed write must not replace the saved setting');
+  let failRead = true;
+  const readFailure = createHapticPreference({
+    getItem: async () => { if (failRead) throw new Error('unreadable'); return 'true'; },
+    setItem: async () => {},
+  });
+  assert.equal(await readFailure.hydrate(), false, 'unreadable stored preference must suppress feedback');
+  failRead = false;
+  assert.equal(await readFailure.hydrate(), true, 'a later read can recover without a restart');
 
   console.log('Haptic preference persistence, reopen, and failed-write recovery checks passed.');
 }

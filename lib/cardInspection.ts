@@ -3,7 +3,7 @@ export const CARD_INSPECTION_LONG_PRESS_MS = 400;
 
 export type CardInspectionRequest = {
   source: 'catalogue' | 'condition-photo';
-  card: { id: string; name?: string | null; language?: string | null; raw_data?: unknown };
+  card: { id: string; setId?: string | null; name?: string | null; language?: string | null; raw_data?: unknown };
   imageUri: string;
   fullImageUri?: string | null;
   selectedVariantId?: string | null;

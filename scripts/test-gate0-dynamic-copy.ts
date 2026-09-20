@@ -799,6 +799,7 @@ assert.doesNotMatch(
 );
 
 const homeScreenSource = fs.readFileSync('features/home/HubScreen.tsx', 'utf8');
+const mintyPreferencesSource = fs.readFileSync('lib/mintyPreferences.ts', 'utf8');
 assert.match(homeScreenSource, /AsyncStorage\.removeItem\(LEGACY_HOME_COLLECTION_CACHE_KEY\)/);
 assert.match(homeScreenSource, /getHomeCollectionCacheKey\(trustedUserId\)/);
 assert.match(
@@ -824,9 +825,15 @@ assert.doesNotMatch(
 assert.match(homeScreenSource, /condition: sanitizeMarketplaceCondition\(row\.condition\)/);
 assert.match(homeScreenSource, /homeCollectionRequestRef\.current \+= 1/);
 assert.match(homeScreenSource, /homeSessionUserIdRef\.current !== trustedUserId/);
-assert.match(homeScreenSource, /LEGACY_MINTY_PERSONALISATION_STORAGE_KEY/);
-assert.match(homeScreenSource, /MINTY_PERSONALISATION_STORAGE_KEY_PREFIX = 'stackr:minty-personalisation:v2'/);
-assert.match(homeScreenSource, /getMintyPersonalisationStorageKey\(trustedUserId\)/);
+assert.match(mintyPreferencesSource, /LEGACY_MINTY_PERSONALISATION_STORAGE_KEY = 'stackr:minty-personalisation:v1'/);
+assert.match(mintyPreferencesSource, /MINTY_PERSONALISATION_STORAGE_KEY_PREFIX = 'stackr:minty-personalisation:v2'/);
+assert.match(mintyPreferencesSource, /getMintyPersonalisationStorageKey\(owner\)/);
+assert.match(mintyPreferencesSource, /removeItem\(LEGACY_MINTY_PERSONALISATION_STORAGE_KEY\)/);
+assert.doesNotMatch(
+  mintyPreferencesSource,
+  /getItem\(LEGACY_MINTY_PERSONALISATION_STORAGE_KEY\)/,
+  'the old shared Minty preference must only be deleted, never read',
+);
 assert.match(homeScreenSource, /mintyPreferenceGenerationRef\.current \+= 1/);
 assert.match(homeScreenSource, /mintyInsightRequestRef\.current \+= 1/);
 assert.match(homeScreenSource, /setApiMintyInsight\(null\)/);

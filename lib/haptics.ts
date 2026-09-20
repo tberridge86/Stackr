@@ -94,6 +94,20 @@ async function safe(effect: () => Promise<void>) {
   }
 }
 
+// Legacy screens keep their existing effect while obeying the same saved switch.
+async function preferredEffect(effect: () => Promise<void>) {
+  if (Platform.OS === 'web' || !(await hydrateStackrHapticsPreference())) return;
+  if (!getStackrHapticsEnabled()) return;
+  await safe(effect);
+}
+export const preferenceAwareHaptics = {
+  ImpactFeedbackStyle: Haptics.ImpactFeedbackStyle,
+  NotificationFeedbackType: Haptics.NotificationFeedbackType,
+  impactAsync: (style?: Haptics.ImpactFeedbackStyle) => preferredEffect(() => Haptics.impactAsync(style)),
+  notificationAsync: (type?: Haptics.NotificationFeedbackType) => preferredEffect(() => Haptics.notificationAsync(type)),
+  selectionAsync: () => preferredEffect(() => Haptics.selectionAsync()),
+};
+
 async function doubleImpact(
   first: Haptics.ImpactFeedbackStyle,
   second: Haptics.ImpactFeedbackStyle,
@@ -101,7 +115,7 @@ async function doubleImpact(
 ) {
   await Haptics.impactAsync(first);
   await new Promise((resolve) => setTimeout(resolve, delayMs));
-  await Haptics.impactAsync(second);
+  if (getStackrHapticsEnabled()) await Haptics.impactAsync(second);
 }
 
 export async function haptic(event: StackrHapticEvent) {

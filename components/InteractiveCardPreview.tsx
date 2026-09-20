@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AccessibilityInfo, AppState, PanResponder, Platform, StyleSheet, View } from 'react-native';
 import Animated, { cancelAnimation, SensorType, useAnimatedReaction, useAnimatedSensor, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, withTiming, type SharedValue } from 'react-native-reanimated';
 import { boundedCardTilt, calibratedCardSensor, cardDragTilt, cardInspectionMotionEnabled, type CardSensorOrigin } from '../lib/cardPreviewMotion';
+import { useCardMotionPreference } from '../lib/cardMotionPreference';
 
 export type CardPreviewLight = { x: SharedValue<number>; y: SharedValue<number> };
 
@@ -30,7 +31,9 @@ export function InteractiveCardPreview({ children, active = true, resetKey = 0, 
   onMotionPreference?: (reduced: boolean) => void;
 }) {
   const [foreground, setForeground] = useState(AppState.currentState === 'active');
-  const [reduceMotion, setReduceMotion] = useState(true);
+  const [systemReduceMotion, setReduceMotion] = useState(true);
+  const motionPreference = useCardMotionPreference();
+  const reduceMotion = systemReduceMotion || motionPreference.reduced || !motionPreference.loaded;
   const sensorX = useSharedValue(0); const sensorY = useSharedValue(0);
   const dragX = useSharedValue(0); const dragY = useSharedValue(0);
   const enabled = cardInspectionMotionEnabled(active, foreground, reduceMotion);

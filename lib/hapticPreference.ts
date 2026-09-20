@@ -15,11 +15,11 @@ export function createHapticPreference(storage: HapticPreferenceStorage) {
       loading = storage.getItem(HAPTICS_ENABLED_STORAGE_KEY)
         .then((stored) => {
           enabled = stored !== 'false';
+          hydrated = true;
           return enabled;
         })
-        .catch(() => enabled)
+        .catch(() => { enabled = false; return false; })
         .finally(() => {
-          hydrated = true;
           loading = null;
         });
     }
@@ -30,6 +30,7 @@ export function createHapticPreference(storage: HapticPreferenceStorage) {
     await hydrate();
     await storage.setItem(HAPTICS_ENABLED_STORAGE_KEY, next ? 'true' : 'false');
     enabled = next;
+    hydrated = true;
     return enabled;
   }
 

@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { canInspectCatalogueCard, type CardInspectionRequest } from '../lib/cardInspection';
 import { resolveCardHoloProfile } from '../lib/cardHoloProfile';
@@ -23,6 +24,7 @@ class MaterialBoundary extends React.Component<{ children: React.ReactNode; onUn
 export default function CardInspectionViewer({ request, onClose }: {
   request: CardInspectionRequest; onClose: (action?: () => void) => void;
 }) {
+  const router = useRouter();
   const { width, height, fontScale } = useWindowDimensions();
   const landscape = width > height * 1.2;
   const insets = useSafeAreaInsets();
@@ -86,6 +88,10 @@ export default function CardInspectionViewer({ request, onClose }: {
           {request.onQuickActions ? <Pressable accessibilityRole="button" accessibilityLabel="Card quick actions" onPress={() => onClose(request.onQuickActions)} style={styles.action}>
             <Ionicons name="ellipsis-horizontal" size={18} color={stackrSemanticColors.brand} /><Text style={styles.actionLabel}>Card actions</Text>
           </Pressable> : null}
+          <Pressable accessibilityRole="button" onPress={() => onClose(() => router.push({ pathname: '/help', params: {
+            screen: 'Card inspection', cardId: request.card.id, setId: request.card.setId ?? '',
+            language: request.card.language ?? '', finish: profile.identity?.finishCode ?? '', variantId: request.selectedVariantId ?? '',
+          } }))} style={styles.action}><Text style={styles.actionLabel}>Report a card issue</Text></Pressable>
         </View>
         </View>
       </ScrollView>

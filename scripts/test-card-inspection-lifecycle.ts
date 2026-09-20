@@ -29,6 +29,7 @@ async function main() {
   let motionListener: (reduced: boolean) => void = () => {};
   let appListeners = 0, preferenceListeners = 0;
   let gesture: any;
+  let userReduced = false;
   const useShared = (value: unknown) => React.useMemo(() => ({ value }), []);
   const { InteractiveCardPreview } = load('components/InteractiveCardPreview.tsx', {
     'react-native': {
@@ -55,6 +56,7 @@ async function main() {
       },
     },
     '../lib/cardPreviewMotion': motion,
+    '../lib/cardMotionPreference': { useCardMotionPreference: () => ({ reduced: userReduced, loaded: true }) },
   });
   function Material() { React.useEffect(() => { gpuSurfaces++; return () => { gpuSurfaces--; }; }, []); return null; }
   let root!: ReactTestRenderer;
@@ -75,6 +77,12 @@ async function main() {
   assert.equal(sensors, 0); assert.equal(gpuSurfaces, 0); cases++;
   assert.equal(gesture.onMoveShouldSetPanResponder(null, { numberActiveTouches: 1, dx: 80, dy: 0 }), false); cases++;
   await act(async () => { motionListener(false); });
+  assert.equal(sensors, 1); assert.equal(gpuSurfaces, 1); cases++;
+  userReduced = true;
+  await act(async () => { root.update(preview(true)); });
+  assert.equal(sensors, 0); assert.equal(gpuSurfaces, 0); cases++;
+  userReduced = false;
+  await act(async () => { root.update(preview(true)); });
   assert.equal(sensors, 1); assert.equal(gpuSurfaces, 1); cases++;
   await act(async () => { root.unmount(); });
   assert.equal(sensors, 0); assert.equal(gpuSurfaces, 0); assert.equal(appListeners, 0); assert.equal(preferenceListeners, 0); cases++;

@@ -113,7 +113,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
       return pathname === '/' || pathname === '/(tabs)' || pathname === '/(tabs)/index';
     }
     if (tab.key === 'collection') {
-      return pathname.startsWith('/binder') || pathname.startsWith('/collection') || pathname.startsWith('/set') || pathname.startsWith('/pokemon') || pathname.startsWith('/duplicates') || pathname === '/(tabs)/binder';
+      return pathname.startsWith('/binder') || pathname.startsWith('/collection') || pathname === '/set' || pathname.startsWith('/set/') || pathname.startsWith('/pokemon') || pathname.startsWith('/duplicates') || pathname === '/(tabs)/binder';
     }
     if (tab.key === 'scan') return pathname.startsWith('/scan');
     if (tab.key === 'market' || tab.key === 'listings') {
@@ -317,6 +317,9 @@ function AppNavigation() {
                   <Stack.Screen name="auth/reset-password" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="notifications" options={{ title: '' }} />
                   <Stack.Screen name="settings" options={{ headerShown: false, title: 'Settings' }} />
+                  <Stack.Screen name="help" options={{ headerShown: false, title: 'Help' }} />
+                  <Stack.Screen name="legal" options={{ headerShown: false, title: 'Legal' }} />
+                  <Stack.Screen name="about" options={{ headerShown: false, title: 'About Stackr' }} />
                   <Stack.Screen name="friends/index" options={{ headerShown: false, title: 'Friends' }} />
                   <Stack.Screen name="admin/japanese-catalogue" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="admin/scanner-analytics" options={{ headerShown: false, title: '' }} />

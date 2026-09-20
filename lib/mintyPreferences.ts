@@ -6,11 +6,15 @@ import {
 } from './mintyInsights';
 
 export const MINTY_PERSONALISATION_STORAGE_KEY_PREFIX = 'stackr:minty-personalisation:v2';
+// This key was shared across accounts. It is never read: remove it after an
+// account-scoped preference load so an upgrade cannot leave private choices on
+// the device for another account to encounter.
+export const LEGACY_MINTY_PERSONALISATION_STORAGE_KEY = 'stackr:minty-personalisation:v1';
 
 export const getMintyPersonalisationStorageKey = (userId: string) =>
   `${MINTY_PERSONALISATION_STORAGE_KEY_PREFIX}:${encodeURIComponent(userId)}`;
 
-export type MintyPreferenceStorage = Pick<typeof AsyncStorage, 'getItem' | 'setItem'>;
+export type MintyPreferenceStorage = Pick<typeof AsyncStorage, 'getItem' | 'setItem' | 'removeItem'>;
 export type MintyPreferencesSnapshot = {
   userId: string | null;
   settings: MintyPersonalisationSettings;
@@ -63,7 +67,12 @@ export function createMintyPreferences(storage: MintyPreferenceStorage) {
     const request = ++sequence;
     const hadKnownSettings = knownSettingsOwner === owner;
     if (!hadKnownSettings) setSnapshot({ userId: owner, settings: defaults(), loaded: false, saving: false, error: null });
-    const promise = storage.getItem(getMintyPersonalisationStorageKey(owner)).then((raw) => {
+    const promise = Promise.all([
+      storage.getItem(getMintyPersonalisationStorageKey(owner)),
+      // Cleanup is deliberately best-effort. A stale v1 value must not make a
+      // per-account preference unavailable.
+      storage.removeItem(LEGACY_MINTY_PERSONALISATION_STORAGE_KEY).catch(() => undefined),
+    ]).then(([raw]) => {
       const settings = parseSettings(raw);
       if (request !== sequence || snapshot.userId !== owner) return snapshot.settings;
       knownSettingsOwner = owner;

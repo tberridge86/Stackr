@@ -5,7 +5,7 @@ import { useTheme } from './theme-context';
 import { useMintyPreferences } from '../lib/mintyPreferences';
 import type { MintyPersonalisationSettings } from '../lib/mintyInsights';
 
-const controls: Array<{ key: keyof MintyPersonalisationSettings; title: string; detail: string }> = [
+const controls: { key: keyof MintyPersonalisationSettings; title: string; detail: string }[] = [
   { key: 'personalisedInsights', title: 'Personalised advice', detail: 'Use your collection goals to choose Minty tips.' },
   { key: 'useChaseList', title: 'Use chase list', detail: 'Connect advice to cards you are hunting.' },
   { key: 'useViewingHistory', title: 'Use viewing history', detail: 'Use cards and searches you return to.' },

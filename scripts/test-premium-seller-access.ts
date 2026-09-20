@@ -275,8 +275,8 @@ assert.match(
   /This publishes a browse-only listing\. It does not create a Stackr transaction\./,
 );
 assert.doesNotMatch(listingScreen, /title="Sell"|title="Open to either"|Set an asking price|Accept buy interest/);
-assert.match(settingsScreen, /const showSellerSettings = hydrated && premiumSellerAccess\.allowed/);
-assert.match(settingsScreen, /settingsSections\.filter\(\(section\) => !section\.sellerOnly \|\| showSellerSettings\)/);
+assert.doesNotMatch(settingsScreen, /sellerOnly|\/seller\/|Seller payout|Payment methods|owner\/recognition/,
+  'ordinary Settings must not expose seller, payment or owner-only tools');
 assert.match(listingDrafts, /CREATE_LISTING_DRAFT_KEY_PREFIX = 'stackr:create-listing-draft:v3'/);
 assert.match(listingDrafts, /getCreateListingDraftKey\(userId: string\)/);
 assert.match(listingDrafts, /encodeURIComponent\(normalizedUserId\)/);
