@@ -4,6 +4,10 @@ type BinderCardDisplay = {
   image_url?: string | null;
   card?: {
     images?: { small?: string | null; large?: string | null } | null;
+    raw_data?: {
+      images?: { small?: string | null; large?: string | null } | null;
+      stackr?: { canonical?: boolean | null; cardId?: string | null } | null;
+    } | null;
   } | null;
 };
 
@@ -23,6 +27,20 @@ export function getBinderCardImageUri(row: BinderCardDisplay, size: 'small' | 'l
 /** A matched binder record may retain a captured image while catalogue art is preferred. */
 export function getBinderSavedCardImageUri(row: BinderCardDisplay) {
   return enforceTcgdexRuntimeImagePolicy(row.image_url);
+}
+
+/** Inspection is decorative catalogue art only; never fall back to a saved capture. */
+export function getBinderCatalogueInspectionImages(row: BinderCardDisplay) {
+  const raw = row.card?.raw_data;
+  const canonicalId = String(raw?.stackr?.cardId ?? '').trim();
+  if (raw?.stackr?.canonical !== true && !canonicalId) return null;
+  const images = raw?.images;
+  const imageUri = enforceTcgdexRuntimeImagePolicy(images?.small) ?? enforceTcgdexRuntimeImagePolicy(images?.large);
+  if (!imageUri) return null;
+  return {
+    imageUri,
+    fullImageUri: enforceTcgdexRuntimeImagePolicy(images?.large) ?? imageUri,
+  };
 }
 
 /** A saved finish is more specific than a catalogue row's default variant. */

@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
-import * as Haptics from 'expo-haptics';
+import { preferenceAwareHaptics as Haptics } from '../../lib/haptics';
 import * as ImagePicker from 'expo-image-picker';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';

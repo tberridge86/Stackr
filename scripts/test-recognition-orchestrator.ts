@@ -1,7 +1,8 @@
+import './test-recognition-feature-flags.mjs';
 import assert from 'node:assert/strict';
 import { recognizeCard, createRecognitionRequest } from '../lib/recognition/orchestratorCore';
 import { createScannerDiagnostics } from '../lib/recognition/events';
-import type { RecognitionFeatureFlags } from '../lib/recognition/featureFlags';
+import { getRecognitionFeatureFlags, type RecognitionFeatureFlags } from '../lib/recognition/featureFlags';
 import type {
   CatalogueManifest,
   ModelManifest,
@@ -193,6 +194,20 @@ async function disabledFeatureFlags() {
   assert.equal(actual.error?.code, 'RECOGNITION_ENGINES_DISABLED');
 }
 
+async function missingConfigurationNeverCallsPaidFallback() {
+  let legacyCalls = 0;
+  const legacy = engine('existing_legacy_engine', async () => {
+    legacyCalls += 1;
+    return result('rescan_required');
+  });
+  const actual = await recognizeCard(request(), {
+    featureFlags: getRecognitionFeatureFlags({}),
+    engines: { legacy },
+  });
+  assert.equal(legacyCalls, 0);
+  assert.equal(actual.error?.code, 'RECOGNITION_ENGINES_DISABLED');
+}
+
 async function legacyEngineFallback() {
   let legacyCalls = 0;
   const local = engine('local_on_device_v1', async () => result('rescan_required', []));
@@ -236,6 +251,7 @@ async function run() {
   await engineTimeout();
   await malformedEngineResponse();
   await disabledFeatureFlags();
+  await missingConfigurationNeverCallsPaidFallback();
   await legacyEngineFallback();
   await noForcedResultWhenBothEnginesFail();
   console.log('recognition orchestrator tests passed');

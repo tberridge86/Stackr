@@ -1,274 +1,141 @@
-import { useRouter } from 'expo-router';
-import * as Updates from 'expo-updates';
-import Constants from 'expo-constants';
-import React, { useCallback, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-  View,
-  type ImageSourcePropType,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StackrBackdrop } from '../components/StackrBackdrop';
-import { StackrBackButton } from '../components/StackrBackButton';
-import { StackrPageTitle } from '../components/StackrScreen';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, AppState, Linking, Platform, Switch, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { Image as CachedImage } from 'expo-image';
+import { UtilityGroup, UtilityRow, UtilityScreen } from '../components/UtilityScreen';
 import { Text } from '../components/Text';
-import { useAppMode } from '../components/app-mode-context';
+import { useAuth } from '../components/auth-context';
 import { useTheme } from '../components/theme-context';
 import { supabase } from '../lib/supabase';
-import { OWNER_PRIVATE_RECOGNITION_ENABLED } from '../lib/ownerRecognitionCore';
-import { testStackrHaptics } from '../lib/haptics';
+import { getPasswordResetRedirectUrl } from '../lib/authRedirects';
+import { getStackrHapticsEnabled, hydrateStackrHapticsPreference, saveStackrHapticsEnabled } from '../lib/haptics';
+import { cardMotionPreference, useCardMotionPreference } from '../lib/cardMotionPreference';
+import { CollectionDataControls } from '../components/CollectionDataControls';
+import { MintyPreferenceControls } from '../components/MintyPreferenceControls';
 
-const SETTINGS_ICONS = {
-  account: require('../assets/rev2/03-ui-illustrations/hero-icons/profile.png'),
-  appearance: require('../assets/rev2/03-ui-illustrations/hero-icons/hub.png'),
-  notifications: require('../assets/rev2/03-ui-illustrations/hero-icons/notifications.png'),
-  market: require('../assets/rev2/03-ui-illustrations/hero-icons/marketplace.png'),
-  seller: require('../assets/rev2/03-ui-illustrations/hero-icons/seller-mode.png'),
-  privacy: require('../assets/rev2/03-ui-illustrations/hero-icons/protect.png'),
-  support: require('../assets/rev2/03-ui-illustrations/hero-icons/info.png'),
-} as const;
-
-type SettingsIconKey = keyof typeof SETTINGS_ICONS;
-
-const settingsSections: {
-  title: string;
-  body: string;
-  icon: SettingsIconKey;
-  items: string[];
-  sellerOnly?: boolean;
-}[] = [
-  { title: 'Account', icon: 'account', body: 'Password recovery is available from Login. Other account controls are not available in this build.', items: ['Password reset: Login → Forgot password', 'Session management: not available yet', 'Profile visibility: not available yet', 'Account deletion: not available yet'] },
-  { title: 'Permissions', icon: 'appearance', body: 'Camera and photo access are managed in your device settings.', items: ['iPhone Settings → Apps → Stackr → Camera and Photos'] },
-  { title: 'Notifications', icon: 'notifications', body: 'View in-app notifications from the bell. Alert preference controls are not available yet.', items: ['The Market alert preferences: not available yet', 'Trade and offer alert preferences: not available yet', 'Community alert preferences: not available yet', 'Price movement alert preferences: not available yet'] },
-  { title: 'Privacy', icon: 'privacy', body: 'Change visibility on each binder. Other privacy controls are not available in this build.', items: ['Binder visibility: change it in that binder', 'Blocked users: not available yet', 'Data export: not available yet', 'Community safety controls: not available yet'] },
-];
-
-function SettingsIcon({ source }: { source: ImageSourcePropType }) {
-  return (
-    <Image
-      source={source}
-      resizeMode="contain"
-      accessibilityIgnoresInvertColors
-      style={{ width: 34, height: 34 }}
-    />
-  );
+function describePermission(value: { status: string; accessPrivileges?: string }) {
+  return value.accessPrivileges === 'limited' ? 'Selected photos only' : value.status === 'granted' ? 'Allowed' : value.status === 'denied' ? 'Not allowed' : 'Not requested';
 }
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const { theme } = useTheme();
-  const { hydrated, premiumSellerAccess } = useAppMode();
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [checkingUpdate, setCheckingUpdate] = useState(false);
-  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
-  const [testingHaptics, setTestingHaptics] = useState(false);
-  const [hapticMessage, setHapticMessage] = useState<string | null>(null);
-  const showSellerSettings = hydrated && premiumSellerAccess.allowed;
+  const accountId = user?.id ?? null;
+  const currentAccount = useRef(accountId); currentAccount.current = accountId;
+  const [busy, setBusy] = useState<string | null>(null);
+  const busyRef = useRef(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [haptics, setHaptics] = useState(getStackrHapticsEnabled);
+  const [hapticsLoaded, setHapticsLoaded] = useState(false);
+  const motion = useCardMotionPreference();
+  const [permissions, setPermissions] = useState({ camera: 'Checking…', photos: 'Checking…', notifications: 'Checking…' });
 
-  const checkForUpdate = useCallback(async () => {
-    if (checkingUpdate || !Updates.isEnabled) return;
-    setCheckingUpdate(true);
-    setUpdateMessage('Checking for an app update…');
-    try {
-      const check = await Updates.checkForUpdateAsync();
-      if (!check.isAvailable && !check.isRollBackToEmbedded) {
-        setUpdateMessage('You have the latest available app update.');
-        return;
-      }
-      setUpdateMessage('Downloading the app update…');
-      const downloaded = await Updates.fetchUpdateAsync();
-      if (!downloaded.isNew && !downloaded.isRollBackToEmbedded) {
-        setUpdateMessage('No newer update was downloaded. Please try again later.');
-        return;
-      }
-      setUpdateMessage('Update downloaded. Restart Stackr to apply it.');
-      Alert.alert('Update ready', 'Restart Stackr to use the downloaded update.', [
-        { text: 'Later', style: 'cancel' },
-        { text: 'Restart now', onPress: () => {
-          void Updates.reloadAsync().catch(() => setUpdateMessage('Please close and reopen Stackr to apply the update.'));
-        } },
-      ]);
-    } catch {
-      setUpdateMessage('Could not check for an update. Check your connection and try again.');
-    } finally {
-      setCheckingUpdate(false);
+  const refreshPermissions = useCallback(async () => {
+    if (Platform.OS === 'web') {
+      setPermissions({ camera: 'Managed by your browser', photos: 'Selected when choosing a photo', notifications: 'Manage in the mobile app' });
+      return;
     }
-  }, [checkingUpdate]);
-
-  const handleLogout = useCallback(async () => {
-    try {
-      setLoggingOut(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        Alert.alert('Logout failed', error.message);
-        return;
-      }
-      router.replace('/login');
-    } catch {
-      Alert.alert('Logout failed', 'Something went wrong. Please try again.');
-    } finally {
-      setLoggingOut(false);
-    }
-  }, [router]);
-
-  const confirmLogout = useCallback(() => {
-    Alert.alert('Log out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Log out', style: 'destructive', onPress: handleLogout },
+    const read = async (name: keyof typeof permissions, get: () => Promise<string>) => {
+      try { const value = await get(); setPermissions(previous => ({ ...previous, [name]: value })); }
+      catch { setPermissions(previous => ({ ...previous, [name]: 'Could not check · reopen to retry' })); }
+    };
+    await Promise.all([
+      read('camera', async () => describePermission(await (await import('expo-camera')).Camera.getCameraPermissionsAsync())),
+      read('photos', async () => describePermission(await (await import('expo-image-picker')).getMediaLibraryPermissionsAsync())),
+      read('notifications', async () => describePermission(await (await import('expo-notifications')).getPermissionsAsync())),
     ]);
-  }, [handleLogout]);
+  }, []);
+  useFocusEffect(useCallback(() => { void refreshPermissions(); }, [refreshPermissions]));
+  useEffect(() => {
+    const listener = AppState.addEventListener('change', state => { if (state === 'active') void refreshPermissions(); });
+    let active = true;
+    void hydrateStackrHapticsPreference().then(value => { if (active) { setHaptics(value); setHapticsLoaded(true); } });
+    return () => { active = false; listener.remove(); };
+  }, [refreshPermissions]);
+  useEffect(() => { setMessage(null); }, [accountId]);
 
-  return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <StackrBackdrop />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 72 }} showsVerticalScrollIndicator={false}>
-        {OWNER_PRIVATE_RECOGNITION_ENABLED && <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/scan/owner')}
-          style={{ padding: 16, marginBottom: 14, backgroundColor: theme.colors.card, borderRadius: 16 }}>
-          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Private recognition &amp; my capture dataset</Text>
-          <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>Owner account only · SigLIP · manual review</Text>
-        </TouchableOpacity>}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-          <StackrBackButton onPress={() => router.back()} />
-          <View style={{ flex: 1 }}>
-            <StackrPageTitle title="Settings" accentText="ings" />
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', marginTop: 2 }}>
-              Account, privacy and collector preferences.
-            </Text>
-          </View>
-        </View>
+  const run = async (name: string, work: () => Promise<string | void>) => {
+    if (busyRef.current) return;
+    busyRef.current = true; setBusy(name); setMessage(null);
+    const owner = currentAccount.current;
+    try {
+      const result = await work();
+      if (owner === currentAccount.current && result) setMessage(result);
+    } catch {
+      if (owner === currentAccount.current) setMessage(`${name} could not be completed. Please try again. Your saved choices have been kept.`);
+    } finally { busyRef.current = false; setBusy(null); }
+  };
+  const openDeviceSettings = () => {
+    void run('Open device settings', async () => {
+      if (Platform.OS === 'web') return 'Use your browser’s site permissions, or open Settings on your phone.';
+      await Linking.openSettings();
+    });
+  };
+  const signOut = (scope: 'local' | 'others') => {
+    const expectedAccount = accountId;
+    Alert.alert(scope === 'local' ? 'Log out of this device?' : 'Sign out other sessions?',
+      scope === 'local' ? 'Finish any unsaved changes first. Saved binders remain in your account.' : 'This device stays signed in. Existing access on other devices may continue until its current token expires.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: scope === 'local' ? 'Log out' : 'Sign out others', style: 'destructive', onPress: () => { void run('Sign out', async () => {
+          if (!expectedAccount || currentAccount.current !== expectedAccount) throw new Error('Account changed');
+          const verified = await supabase.auth.getUser();
+          if (verified.error || verified.data.user?.id !== expectedAccount || currentAccount.current !== expectedAccount) throw new Error('Account changed');
+          const { error } = await supabase.auth.signOut({ scope }); if (error) throw error;
+          if (scope === 'local') router.replace('/login');
+          else return 'Other sessions were signed out. Existing access may continue until its current token expires.';
+        }); } },
+      ]);
+  };
 
-        <View
-          style={{
-            borderRadius: 22,
-            backgroundColor: 'rgba(255,255,255,0.88)',
-            borderWidth: 1,
-            borderColor: '#E8E1FF',
-            padding: 14,
-            marginBottom: 14,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 12,
-          }}
-        >
-          <View style={{ width: 48, height: 48, borderRadius: 17, backgroundColor: '#F7F3FF', borderWidth: 1, borderColor: '#E8E1FF', alignItems: 'center', justifyContent: 'center' }}>
-            <SettingsIcon source={SETTINGS_ICONS.support} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 20, fontWeight: '900' }}>
-              Settings are separated from Profile
-            </Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 3 }}>
-              {showSellerSettings
-                ? 'Available account, marketplace and seller actions are collected here; unavailable controls are labelled clearly.'
-                : 'Available account and marketplace actions are collected here; unavailable controls are labelled clearly.'}
-            </Text>
-          </View>
-        </View>
-
-        <View style={{ padding: 16, marginBottom: 14, backgroundColor: theme.colors.card, borderRadius: 16 }}>
-          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>App update</Text>
-          <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
-            Stackr {Constants.nativeAppVersion ?? Constants.expoConfig?.version ?? 'development'}
-            {Constants.nativeBuildVersion ? ` (${Constants.nativeBuildVersion})` : ''}
-          </Text>
-          <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
-            {Updates.createdAt ? `Running update: ${Updates.createdAt.toLocaleString()}` : 'Development preview'}
-            {Updates.isEmbeddedLaunch ? ' · Included with this build' : ''}
-          </Text>
-          {Updates.updateId && <Text selectable style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 11 }}>
-            Support reference: {Updates.updateId}
-          </Text>}
-          {Updates.isEnabled && <TouchableOpacity accessibilityRole="button" disabled={checkingUpdate}
-            onPress={checkForUpdate} style={{ paddingVertical: 12 }}>
-            <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{checkingUpdate ? 'Checking…' : 'Check for updates'}</Text>
-          </TouchableOpacity>}
-          {updateMessage && <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft }}>{updateMessage}</Text>}
-        </View>
-
-        <View style={{ padding: 16, marginBottom: 14, backgroundColor: theme.colors.card, borderRadius: 16 }}>
-          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Touch feedback</Text>
-          <TouchableOpacity accessibilityRole="button" disabled={testingHaptics}
-            onPress={async () => {
-              setTestingHaptics(true);
-              try {
-                const result = await testStackrHaptics();
-                setHapticMessage(result === 'requested'
-                  ? 'A short vibration was requested. If you felt nothing on iPhone, check System Haptics and turn off Low Power Mode, then try again.'
-                  : result === 'unsupported' ? 'Try touch feedback in the iPhone app.'
-                  : result === 'disabled' ? 'Touch feedback is currently turned off in Stackr.'
-                  : 'Touch feedback is unavailable in this installation. Include the app version and support reference above when reporting it.');
-              } finally { setTestingHaptics(false); }
-            }} style={{ paddingVertical: 12 }}>
-            <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{testingHaptics ? 'Testing…' : 'Test haptic feedback'}</Text>
-          </TouchableOpacity>
-          {hapticMessage && <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft }}>{hapticMessage}</Text>}
-        </View>
-
-        {settingsSections.filter((section) => !section.sellerOnly || showSellerSettings).map((section) => (
-          <View
-            key={section.title}
-            style={{
-              borderRadius: 22,
-              backgroundColor: theme.colors.card,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              padding: 14,
-              marginBottom: 12,
-              shadowColor: theme.colors.semantic.featureSurface,
-              shadowOpacity: 0.07,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 5 },
-              elevation: 1,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-              <View style={{ width: 48, height: 48, borderRadius: 17, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
-                <SettingsIcon source={SETTINGS_ICONS[section.icon]} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: theme.colors.text, fontSize: 17, lineHeight: 22, fontWeight: '900' }}>{section.title}</Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 2 }}>{section.body}</Text>
-              </View>
-            </View>
-            <View style={{ marginTop: 11, gap: 7 }}>
-              {section.items.map((item) => (
-                <View key={item} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: theme.colors.primary }} />
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700' }}>{item}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        ))}
-
-        <TouchableOpacity
-          onPress={confirmLogout}
-          disabled={loggingOut}
-          accessibilityRole="button"
-          accessibilityLabel="Log out"
-          activeOpacity={0.84}
-          style={{
-            minHeight: 52,
-            borderRadius: 19,
-            backgroundColor: '#FFECEC',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: loggingOut ? 0.68 : 1,
-          }}
-        >
-          {loggingOut ? (
-            <ActivityIndicator color="#D92D20" />
-          ) : (
-            <Text style={{ color: '#D92D20', fontSize: 14, lineHeight: 17, fontWeight: '900' }}>
-              Log out
-            </Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
-  );
+  return <UtilityScreen title="Settings">
+    <UtilityGroup title="Account & security">
+      {user ? <>
+        <UtilityRow title={user.email ?? 'Signed in'} detail="Your Stackr account" />
+        {user.identities?.some((identity: { provider: string }) => identity.provider === 'email') && user.email ? <UtilityRow title="Send password reset email" disabled={!!busy || loading} onPress={() => { void run('Password reset', async () => {
+          if (currentAccount.current !== accountId) throw new Error('Account changed');
+          const { error } = await supabase.auth.resetPasswordForEmail(user.email, { redirectTo: getPasswordResetRedirectUrl() }); if (error) throw error;
+          return 'Password reset requested. Check your email for the recovery link.';
+        }); }} /> : null}
+        <UtilityRow title="Sign out other sessions" disabled={!!busy} onPress={() => signOut('others')} />
+        <UtilityRow title="Request account deletion" onPress={() => router.push({ pathname: '/help', params: { request: 'deletion', screen: 'Settings' } })} />
+      </> : <UtilityRow title={loading ? 'Checking account…' : 'Login or recover access'} disabled={loading} onPress={() => router.push('/login')} />}
+    </UtilityGroup>
+    <UtilityGroup title="Collection">
+      <UtilityRow title="Binders and card languages" detail="Choose the language, finish, order and defaults in each binder." onPress={() => router.push('/(tabs)/binder')} />
+      <UtilityRow title="Guide-price currency" detail="GBP (£). Original quote source and currency stay attached to the price." />
+    </UtilityGroup>
+    <UtilityGroup title="Appearance & accessibility">
+      <UtilityRow title="Touch feedback" detail="Haptics for Stackr actions on this device." trailing={<Switch trackColor={{ true: theme.colors.primary }} accessibilityLabel="Touch feedback" value={haptics} disabled={!!busy || !hapticsLoaded} onValueChange={value => { void run('Save touch feedback', async () => { await saveStackrHapticsEnabled(value); setHaptics(value); }); }} />} />
+      <UtilityRow title="Reduce card motion" detail="Turn off card tilt and lighting. Your device’s Reduce Motion setting is always respected." trailing={<Switch trackColor={{ true: theme.colors.primary }} accessibilityLabel="Reduce card motion" value={motion.reduced} disabled={!!busy || (!motion.loaded && !motion.error)} onValueChange={value => { void run('Save card motion', () => cardMotionPreference.save(value)); }} />} />
+      {motion.error ? <UtilityRow title="Card motion preference could not load" detail="Motion is paused. Change the switch to save a choice or reopen Settings to retry." /> : null}
+      <UtilityRow title="Text size" detail="Stackr follows your device’s text size. Change it in your device’s accessibility settings." />
+    </UtilityGroup>
+    <UtilityGroup title="Permissions & notifications">
+      <UtilityRow title="Camera" detail={permissions.camera} onPress={openDeviceSettings} />
+      <UtilityRow title="Photo library" detail={permissions.photos} onPress={openDeviceSettings} />
+      <UtilityRow title="Notifications" detail={permissions.notifications} onPress={openDeviceSettings} />
+      <UtilityRow title="In-app notifications" onPress={() => router.push('/notifications')} />
+    </UtilityGroup>
+    {user ? <CollectionDataControls /> : null}
+    <UtilityGroup title="Your data & storage">
+      <UtilityRow title="Clear downloaded images" detail="Images will download again. Keeps original photos, binder entries and pending work." disabled={!!busy} onPress={() => Alert.alert('Clear downloaded images?', 'Offline image previews may be unavailable until they download again. Original photos and pending work stay on this device.', [
+        { text: 'Cancel', style: 'cancel' }, { text: 'Clear images', onPress: () => { void run('Clear downloaded images', async () => {
+          if (Platform.OS === 'web') return 'Your browser manages downloaded images. This action has not removed any app data.';
+          const memory = await CachedImage.clearMemoryCache(); const disk = await CachedImage.clearDiskCache();
+          if (!memory || !disk) throw new Error('Image cache unavailable');
+          return 'Downloaded image copies cleared. Your binder entries, original photos and pending work were kept.';
+        }); } },
+      ])} />
+      <UtilityRow title="Personal data request" detail="Ask about access, correction or deletion." onPress={() => router.push({ pathname: '/help', params: { request: 'data', screen: 'Settings' } })} />
+    </UtilityGroup>
+    {user ? <UtilityGroup title="Minty personalisation"><View style={{ paddingHorizontal: 16 }}><MintyPreferenceControls userId={accountId} /></View></UtilityGroup> : null}
+    <UtilityGroup title="Help & information">
+      <UtilityRow title="Help & troubleshooting" onPress={() => router.push('/help')} />
+      <UtilityRow title="Legal & privacy" onPress={() => router.push('/legal')} />
+      <UtilityRow title="About & app updates" onPress={() => router.push('/about')} />
+    </UtilityGroup>
+    {user ? <UtilityGroup title="This device"><UtilityRow title="Log out" destructive disabled={!!busy} onPress={() => signOut('local')} /></UtilityGroup> : null}
+    {busy || message ? <Text accessibilityLiveRegion="polite" style={{ lineHeight: 21, marginBottom: 20 }}>{busy ? `${busy}…` : message}</Text> : null}
+  </UtilityScreen>;
 }

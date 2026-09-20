@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Buffer } from 'buffer';
 import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
 import * as FileSystem from 'expo-file-system/legacy';
-import * as Haptics from 'expo-haptics';
+import { preferenceAwareHaptics as Haptics } from '../../lib/haptics';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Stack, router, useLocalSearchParams, usePathname } from 'expo-router';
 import { decode as decodeJpeg } from 'jpeg-js';

@@ -1,3 +1,4 @@
+import { getSimplifiedChineseSetLogoSourceForSet } from '../../lib/simplifiedChineseSetLogos';
 import { StackrBrowseToolbar, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { groupDiscoverSets as groupSetsBySeries, isDiscoverDateGroup } from '../../lib/discoverSetGroups';
@@ -229,8 +230,14 @@ function SetCard({
     localName: item.localName,
     englishDisplayName: item.englishDisplayName,
     externalIds: item.externalIds,
+  }) ?? getSimplifiedChineseSetLogoSourceForSet({
+    id: item.id, language: item.language, setCode: item.externalIds?.setCode, externalIds: item.externalIds,
   });
   const logoUrl = logoSource ? null : (getPokemonSetVisualUrl(item) ?? getPokemonSetLogoUrl(item.id, item.language));
+  // Owner-supplied Chinese logos: keep set codes as live text.
+  const chineseSetDisplayCode = normalizePokemonCardLanguage(item.language) === 'zh-cn'
+    ? String(item.externalIds?.setCode ?? raw.set_code ?? '').trim().toUpperCase()
+    : '';
   const hasExistingBinder = Boolean(existingBinder);
 
   return (
@@ -290,7 +297,7 @@ function SetCard({
           </Text>
         ) : null}
         <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }}>
-          {getPokemonLanguageDescriptor(item.language)?.label ?? item.language ?? 'English'} · {item.total} cards · {item.releaseDate ?? ''}
+          {chineseSetDisplayCode ? chineseSetDisplayCode + ' · ' : ''}{getPokemonLanguageDescriptor(item.language)?.label ?? item.language ?? 'English'} · {item.total} cards · {item.releaseDate ?? ''}
         </Text>
       </View>
 

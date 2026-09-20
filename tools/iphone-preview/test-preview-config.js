@@ -24,7 +24,7 @@ const inherited = {
 const previewEnv = buildProductionExpoEnvironment(eas.build.production.env, inherited);
 const runtime = resolveMobileRuntimeConfig(previewEnv);
 
-assert.equal(appJson.version, '1.0.3');
+assert.equal(appJson.version, '1.0.4');
 assert.deepEqual(appJson.runtimeVersion, { policy: 'appVersion' });
 assert.equal(runtime.appVariant, 'production');
 assert.equal(runtime.environment, 'production');
@@ -47,13 +47,13 @@ try {
   Object.assign(process.env, eas.build.production.env);
   delete process.env.STACKR_IPHONE_PREVIEW;
   const releaseConfig = configureApp({ config: appJson });
-  assert.equal(releaseConfig.version, '1.0.3');
+  assert.equal(releaseConfig.version, '1.0.4');
   assert.deepEqual(releaseConfig.runtimeVersion, { policy: 'appVersion' });
   assert.equal(releaseConfig.web.output, 'static');
 
   process.env.STACKR_IPHONE_PREVIEW = '1';
   const previewConfig = configureApp({ config: appJson });
-  assert.equal(previewConfig.version, '1.0.3');
+  assert.equal(previewConfig.version, '1.0.4');
   assert.deepEqual(previewConfig.runtimeVersion, { policy: 'appVersion' });
   assert.equal(previewConfig.web.output, 'single');
 } finally {

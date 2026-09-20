@@ -12,7 +12,7 @@ import { useTheme } from '../../components/theme-context';
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { getCanonicalMasterSetVariants } from '../../lib/masterSetProgress';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
-import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueInspectionImages, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -110,8 +110,8 @@ import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrS
 import { stackrIcons } from '../../lib/stackrIcons';
 import { createActivityPost } from '../../lib/activity';
 import { stackrHaptics } from '../../lib/haptics';
-import { InteractiveCardPreview } from '../../components/InteractiveCardPreview';
-import { isFoilPreview } from '../../lib/cardPreviewMotion';
+import { useCardInspection } from '../../components/CardInspectionProvider';
+import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
 import type { ScanEditionHint } from '../../types/scan';
 
 // ===============================
@@ -673,6 +673,7 @@ function GradedSlabCard({
               rawData={item.card}
               editionHint={editionHint}
               sourceSize={size === 'modal' ? 'large' : 'small'}
+              resolveRemoteEdition={size === 'modal'}
               style={{ width: '100%', height: '100%' }}
               resizeMode="contain"
             />
@@ -817,6 +818,7 @@ function isJapaneseSecretBinderCard(card: BinderCardWithDetails) {
 
 export default function BinderDetailScreen() {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
   const { id, readOnly } = useLocalSearchParams<{ id: string; readOnly?: string }>();
   const binderId = Array.isArray(id) ? id[0] : id;
   const routeReadOnly = readOnly === 'true';
@@ -860,6 +862,7 @@ export default function BinderDetailScreen() {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState<BinderCardWithDetails | null>(null);
+  const [referenceImage, setReferenceImage] = useState(false);
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailFullImageUri, setDetailFullImageUri] = useState<string | null>(null);
   const [quickActionCard, setQuickActionCard] = useState<BinderCardWithDetails | null>(null);
@@ -1879,6 +1882,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const storedLargeImage = latestCard.card?.images?.large ?? null;
     const hasFullImage = Boolean(storedLargeImage && storedLargeImage !== storedSmallImage);
     setDetailFullImageUri(null);
+    setReferenceImage(false);
     setSelectedCard(latestCard);
     setDetailVisible(true);
     void stackrHaptics.cardPreview();
@@ -1895,7 +1899,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           || resolvedVariantId !== canonicalVariantId
           || resolved?.language !== expectedLanguage) return;
         const fullImage = getBinderCardImageUri({ card: resolved, image_url: null }, 'large');
-        if (fullImage) setDetailFullImageUri(fullImage);
+        if (fullImage) {
+          setDetailFullImageUri(fullImage);
+          setSelectedCard((current) => current?.id === latestCard.id
+            ? mergeBinderArtwork([current], [{ ...current, card: resolved }])[0] : current);
+        }
       }).catch(() => {
         // Keep the existing same-card image if the optional upgrade is unavailable.
       });
@@ -2067,6 +2075,28 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     setQuickActionCard(item);
   };
 
+  const inspectBinderCard = (item: BinderCardWithDetails) => {
+    const catalogueImages = getBinderCatalogueInspectionImages(item);
+    if (!catalogueImages) return false;
+    inspectCard({
+      source: 'catalogue',
+      card: {
+        id: item.card?.raw_data?.stackr?.cardId ?? (item.card as any)?.rawData?.stackr?.cardId ?? item.card?.id ?? item.card_id,
+        name: getBinderCardDisplayName(item, item.card_id),
+        setId: item.set_id,
+        language: item.language ?? binder?.language ?? null,
+        raw_data: item.card?.raw_data ?? (item.card as any)?.rawData ?? null,
+      },
+      imageUri: catalogueImages.imageUri,
+      fullImageUri: catalogueImages.fullImageUri,
+      selectedVariantId: getBinderCanonicalVariantId(item) ?? null,
+      subtitle: [getBinderSetDisplayName(item, item.set_id), item.card_number ? `#${item.card_number}` : null].filter(Boolean).join(' · '),
+      onQuickActions: () => handleCardLongPress(item),
+      onDetails: () => openCardDetail(item),
+    });
+    return true;
+  };
+
   const handleSetVariantQuantity = useCallback(async (
     cardId: string,
     setId: string,
@@ -2079,15 +2109,23 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const nextQuantity = Math.max(0, Math.min(999, Math.floor(Number(quantity) || 0)));
     const previousQuantity = getVariantQuantityFromMap(ownedVariants, cardId, setId, variant);
     const targetCard = cards.find((card) => card.card_id === cardId && card.set_id === setId);
-    const cardVariants = targetCard ? getVariants(targetCard.card, setId) : [variant];
+    const cardVariants = targetCard ? getVariants(targetCard.card, setId) : [];
+    if (!targetCard || !cardVariants.includes(variant)) return;
+    // Before the first finish edit, retain the existing ordinary owned copies.
+    // Otherwise selecting Reverse would make a previously owned Base disappear.
+    const legacyDefault = !variantManagedCards.has(cardKey) && targetCard.owned
+      ? getDefaultOwnedVariant(cardVariants) : null;
+    const preservedDefault = legacyDefault && legacyDefault !== variant ? legacyDefault : null;
+    const preservedQuantity = preservedDefault ? getOwnedQuantity(targetCard) : 0;
     const nextCardOwned = cardVariants.some((candidateVariant) =>
       candidateVariant === variant
         ? nextQuantity > 0
-        : getVariantQuantityFromMap(ownedVariants, cardId, setId, candidateVariant) > 0
+        : candidateVariant === preservedDefault || getVariantQuantityFromMap(ownedVariants, cardId, setId, candidateVariant) > 0
     );
 
     setOwnedVariants((prev) => {
       const next = new Map(prev);
+      if (preservedDefault) next.set(getVariantKey(cardId, setId, preservedDefault), preservedQuantity);
       if (nextQuantity > 0) next.set(key, nextQuantity);
       else next.delete(key);
       return next;
@@ -2111,16 +2149,23 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     );
 
     try {
+      if (preservedDefault) {
+        const { error } = await supabase.from('user_card_variants').upsert({
+          user_id: userId, card_id: cardId, set_id: setId, variant: preservedDefault, quantity: preservedQuantity,
+        }, { onConflict: 'user_id,card_id,set_id,variant', ignoreDuplicates: true });
+        if (error) throw error;
+      }
       if (nextQuantity <= 0) {
-        await supabase
+        const { error } = await supabase
           .from('user_card_variants')
           .delete()
           .eq('user_id', userId)
           .eq('card_id', cardId)
           .eq('set_id', setId)
           .eq('variant', variant);
+        if (error) throw error;
       } else {
-        await supabase
+        const { error } = await supabase
           .from('user_card_variants')
           .upsert({
             user_id: userId,
@@ -2129,20 +2174,23 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             variant,
             quantity: nextQuantity,
           }, { onConflict: 'user_id,card_id,set_id,variant' });
+        if (error) throw error;
       }
 
-      const { data: userBinders } = await supabase
+      const { data: userBinders, error: binderReadError } = await supabase
         .from('binders')
         .select('id')
         .eq('user_id', userId);
+      if (binderReadError) throw binderReadError;
       const userBinderIds = (userBinders ?? []).map((row) => row.id).filter(Boolean);
       if (userBinderIds.length) {
-        await supabase
+        const { error } = await supabase
           .from('binder_cards')
           .update({ owned: nextCardOwned })
           .in('binder_id', userBinderIds)
           .eq('card_id', cardId)
           .eq('set_id', setId);
+        if (error) throw error;
       }
 
       const cardName = getBinderCardDisplayName(targetCard, cardId);
@@ -2170,7 +2218,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       Alert.alert('Error', 'Failed to update variant quantity.');
       load();
     }
-  }, [cards, isReadOnly, load, ownedVariants, userId]);
+  }, [cards, isReadOnly, load, ownedVariants, userId, variantManagedCards]);
 
   const handleToggleVariant = useCallback(async (cardId: string, setId: string, variant: string) => {
     const savedQuantity = getVariantQuantityFromMap(ownedVariants, cardId, setId, variant);
@@ -2608,11 +2656,17 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const isGradedBinder = binder?.card_mode === 'graded';
     const ownedQuantity = getOwnedQuantity(item);
+    const inspectionAvailable = Boolean(getBinderCatalogueInspectionImages(item));
 
     return (
       <TouchableOpacity
         onPress={() => runAfterBinderOptionsClose(() => openCardDetail(item))}
-        onLongPress={() => runAfterBinderOptionsClose(() => handleCardLongPress(item))}
+        onLongPress={() => runAfterBinderOptionsClose(() => { if (!inspectBinderCard(item)) handleCardLongPress(item); })}
+        delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
+        accessibilityRole="button"
+        accessibilityLabel={`${getBinderCardDisplayName(item, item.card_id)}. ${inspectionAvailable ? 'Hold to inspect.' : 'Hold for actions.'}`}
+        accessibilityActions={inspectionAvailable ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+        onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect') runAfterBinderOptionsClose(() => { if (!inspectBinderCard(item)) handleCardLongPress(item); }); }}
         activeOpacity={0.9}
         style={{ width: 120, marginRight: 14, opacity: isActive ? 0.75 : 1 }}
       >
@@ -2841,6 +2895,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const cardName = getBinderCardDisplayName(item, item.card_id);
     const forTrade = isForTrade(item.card_id, item.set_id);
     const isGradedBinder = binder?.card_mode === 'graded';
+    const inspectionAvailable = Boolean(getBinderCatalogueInspectionImages(item));
 
     const variants = masterSetEnabled ? getVariants(item.card, item.set_id) : ['card'];
     const multiVariant = variants.length > 1;
@@ -2884,11 +2939,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     return (
       <TouchableOpacity
         onPress={() => handleCardTileTap(item)}
-        onLongPress={() => openCardDetail(item)}
-        delayLongPress={300}
+        onLongPress={() => { if (!inspectBinderCard(item)) openCardDetail(item); }}
+        delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
         activeOpacity={0.85}
         accessibilityRole="button"
-        accessibilityLabel={`${cardName}. Tap to mark collected or missing. Hold for details.`}
+        accessibilityLabel={`${cardName}. Tap to mark collected or missing. ${inspectionAvailable ? 'Hold to inspect.' : 'Hold for details.'}`}
+        accessibilityActions={inspectionAvailable ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
+        onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect' && !inspectBinderCard(item)) openCardDetail(item); }}
         style={{
           width: cardWidth,
           marginBottom: 8,
@@ -2931,6 +2988,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               rawData={item.card}
               editionHint={imageEditionHint}
               sourceSize="small"
+              resolveRemoteEdition={false}
               style={{ width: '100%', height: '100%' }}
               resizeMode="contain"
             />
@@ -4557,7 +4615,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         onHandlerStateChange={onPinchHandlerStateChange}
                       >
                         <Animated.View style={{ flex: 1, transform: [{ scale: imageScale }] }}>
-                          <InteractiveCardPreview active={detailVisible} foil={binder.card_mode !== 'graded' && isFoilPreview(modalCard?.raw_data, getBinderCanonicalVariantId(selectedCard))}>
+                          <View style={{ flex: 1 }}>
                           {binder.card_mode === 'graded' ? (
                             <GradedSlabCard
                               item={selectedCard}
@@ -4574,6 +4632,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               rawData={modalCard}
                               editionHint={getBinderEditionHint(binder.edition)}
                               sourceSize="large"
+                              onReferenceImageChange={setReferenceImage}
                               style={{ width: '100%', height: '100%', borderRadius: 15 }}
                               imageStyle={{ borderRadius: 15 }}
                               resizeMode="contain"
@@ -4632,7 +4691,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               </View>
                             );
                           })()}
-                          </InteractiveCardPreview>
+                          </View>
                         </Animated.View>
                       </PinchGestureHandler>
 
@@ -4669,6 +4728,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         }}
                       />
                     </View>
+
+                    {modalImageUri && (referenceImage || (masterSetEnabled && getVariants(modalCard, selectedCard.set_id).length > 1)) && (
+                      <Text style={{ color: theme.colors.textSoft, marginTop: 8 }}>Reference image; finish may differ.</Text>
+                    )}
 
                     <StackrCardIdentity
                       name={getBinderCardDisplayName(selectedCard, selectedCard.card_id)}

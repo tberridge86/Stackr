@@ -153,6 +153,7 @@ function renderRoot(fontsLoaded: boolean, fontError: unknown) {
   const scheduledTimers: Array<{ delay: number; callback: () => void }> = [];
   let hideCalls = 0;
   let typographyCalls = 0;
+  let hapticHydrationCalls = 0;
   const root = rootFunction('RootLayout', {
     React: react,
     useFonts: () => [fontsLoaded, fontError],
@@ -166,6 +167,7 @@ function renderRoot(fontsLoaded: boolean, fontError: unknown) {
     },
     clearTimeout: () => {},
     configureNativeTypographyDefaults: () => { typographyCalls += 1; },
+    hydrateStackrHapticsPreference: () => { hapticHydrationCalls += 1; return Promise.resolve(true); },
     SplashScreen: { hideAsync: () => { hideCalls += 1; return Promise.resolve(); } },
     FONT_LOAD_TIMEOUT_MS: 5_000,
     lightTheme: { colors: { bg: '#F6F5F8' } },
@@ -180,11 +182,13 @@ function renderRoot(fontsLoaded: boolean, fontError: unknown) {
     scheduledTimers,
     getHideCalls: () => hideCalls,
     getTypographyCalls: () => typographyCalls,
+    getHapticHydrationCalls: () => hapticHydrationCalls,
   };
 }
 
 const pendingFonts = renderRoot(false, null);
 let root = pendingFonts.render();
+assert.equal(pendingFonts.getHapticHydrationCalls(), 1, 'Root startup hydrates the persisted haptics preference.');
 assert.equal(root.type, 'ThemeProvider');
 assert.equal(root.props.children.type, 'View');
 assert.equal(root.props.children.props.children.type, 'StackrLoadingScreen', 'Pending fonts mount the real Stackr loading screen.');

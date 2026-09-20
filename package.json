@@ -1,13 +1,15 @@
 {
   "name": "Stackr-native",
   "main": "expo-router/entry",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "start": "expo start",
     "build:web": "expo export --platform web --output-dir dist",
     "typecheck": "tsc --noEmit",
+    "test:settings-help": "node --import tsx scripts/test-settings-help.ts && node --import tsx scripts/test-collection-export.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-minty-preferences.ts",
+    "test:master-set-artwork": "node --import tsx scripts/test-master-set-artwork.ts && node --import tsx scripts/test-master-set-ownership.ts && node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-stackr-image-recovery.ts && node --import tsx scripts/test-stackr-image-candidates.ts && node --import tsx scripts/test-edition-aware-image-selection.ts",
     "test:startup-loading": "node --import tsx scripts/test-startup-loading.ts && node --import tsx scripts/test-profile-load-state.ts",
-    "test:card-haptics": "node --import tsx scripts/test-card-haptics.ts && node --import tsx scripts/test-haptics.ts && node --import tsx scripts/test-card-preview-motion.ts",
+    "test:card-haptics": "node --import tsx scripts/test-card-haptics.ts && node --import tsx scripts/test-haptic-preference.ts && node --import tsx scripts/test-haptics.ts && node --import tsx scripts/test-card-preview-motion.ts",
     "test:ux-p2": "node --import tsx scripts/test-ux-p2.ts && node --import tsx scripts/test-ux-p2-market.ts && node --import tsx scripts/test-scan-legacy-route.ts",
     "test:ux-p3": "node --import tsx scripts/test-scan-lab-review-decision.ts",
     "test:ux-audit-fixes": "node --import tsx scripts/test-search-recovery.ts && node --import tsx scripts/test-scan-variant-ownership.ts && node --import tsx scripts/test-scan-variant-adapter.ts && node --import tsx scripts/test-scan-collection-save.ts && node --import tsx scripts/test-market-evidence.ts && node --import tsx scripts/test-scan-composite-save.ts && node --import tsx scripts/test-community-binder-sharing.ts && node --import tsx scripts/test-price-request-races.ts && node --import tsx scripts/test-password-reset-recovery.ts",
@@ -197,7 +199,8 @@
     "catalogue:materialize-official-english-set-logos": "python scripts/materialize-official-english-set-logos.py",
     "test:official-english-set-logos": "python scripts/materialize-official-english-set-logos.py --check && node scripts/test-official-english-set-logo-runtime-lookup.cjs",
     "test:binder-retrieval": "node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-binder-pricing.ts && node --import tsx scripts/test-binder-visible-prices.ts && node --import tsx scripts/test-pokemon-set-identity-dedup.ts && node --import tsx scripts/test-binder-reopen.mjs && node --import tsx scripts/test-binder-rarity-filter.ts && node --import tsx scripts/test-master-set-denominator.ts",
-    "test:catalogue-pricing": "node scripts/test-catalogue-pricing.mjs && tsx scripts/test-stable-collection-prices.ts && node scripts/test-prepared-valuation-routes.mjs"
+    "test:catalogue-pricing": "node scripts/test-catalogue-pricing.mjs && tsx scripts/test-stable-collection-prices.ts && node scripts/test-prepared-valuation-routes.mjs",
+    "test:card-inspection": "npm run test:card-haptics && node --import tsx scripts/test-card-holo-profile.ts && node --import tsx scripts/test-card-inspection-interactions.ts && node --import tsx scripts/test-home-card-inspection.ts && node --import tsx scripts/test-card-inspection-lifecycle.ts && node --import tsx scripts/test-card-foil-rendering.ts"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -207,6 +210,7 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
+    "@shopify/react-native-skia": "2.2.12",
     "@stripe/stripe-react-native": "0.50.3",
     "@supabase/supabase-js": "^2.105.1",
     "@tanstack/query-async-storage-persister": "^5.101.2",
@@ -265,10 +269,12 @@
   "devDependencies": {
     "@electric-sql/pglite": "0.3.14",
     "@types/react": "~19.1.0",
+    "@types/react-test-renderer": "19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "openapi-typescript": "7.13.0",
     "pg": "8.22.0",
+    "react-test-renderer": "19.1.0",
     "tsx": "^4.23.1",
     "typescript": "~5.9.2"
   },

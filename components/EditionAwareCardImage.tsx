@@ -8,6 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { PRICE_API_URL } from '../lib/config';
+import { getCardArtworkPresentation } from '../lib/cardArtworkPresentation';
 import {
   getEditionVariantImageUrl,
   getEditionAwareImageUrl,
@@ -28,10 +29,18 @@ type Props = {
   rawData?: any;
   editionHint?: ScanEditionHint | null;
   sourceSize?: EditionImageSize;
+  /** Grid cells keep their supplied rendition; detail views may enrich it. */
+  resolveRemoteEdition?: boolean;
   style?: StyleProp<ViewStyle>;
   imageStyle?: StyleProp<ImageStyle>;
   resizeMode?: ImageProps['resizeMode'];
+  onReferenceImageChange?: (shared: boolean) => void;
 };
+
+// The production backend may make one bounded provider read after its indexed
+// canonical-card lookup. Keep the optional visual enrichment from outliving a
+// screen or competing with the next visible card request.
+const EDITION_IMAGE_REQUEST_TIMEOUT_MS = 4_500;
 
 function EditionAwareCardImageBase({
   uri,
@@ -41,9 +50,11 @@ function EditionAwareCardImageBase({
   rawData,
   editionHint,
   sourceSize = 'large',
+  resolveRemoteEdition = true,
   style,
   imageStyle,
   resizeMode = 'contain',
+  onReferenceImageChange,
 }: Props) {
   const rawVariantUri = React.useMemo(
     () => getEditionVariantImageUrl(rawData, editionHint, sourceSize),
@@ -55,7 +66,7 @@ function EditionAwareCardImageBase({
     let active = true;
     setRemoteVariantUri(null);
 
-    if (!PRICE_API_URL || !cardId || !editionHint || !shouldFetchEditionImage({
+    if (!resolveRemoteEdition || !PRICE_API_URL || !cardId || !editionHint || !shouldFetchEditionImage({
       cardId, editionHint, rawVariantUri, suppliedUri: uri ?? fullUri ?? fallbackUri,
     })) {
       return () => {
@@ -70,6 +81,7 @@ function EditionAwareCardImageBase({
     });
 
     const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), EDITION_IMAGE_REQUEST_TIMEOUT_MS);
     fetch(`${PRICE_API_URL}/api/card-image/edition?${params.toString()}`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => {
@@ -77,13 +89,17 @@ function EditionAwareCardImageBase({
       })
       .catch(() => {
         if (active) setRemoteVariantUri(null);
+      })
+      .finally(() => {
+        clearTimeout(timeout);
       });
 
     return () => {
       active = false;
+      clearTimeout(timeout);
       controller.abort();
     };
-  }, [cardId, editionHint, rawVariantUri, sourceSize, uri, fullUri, fallbackUri]);
+  }, [cardId, editionHint, rawVariantUri, resolveRemoteEdition, sourceSize, uri, fullUri, fallbackUri]);
 
   const scrydexUnlimitedUri = React.useMemo(
     () => getPublicScrydexCardImageUrl(cardId, editionHint, sourceSize),
@@ -98,6 +114,10 @@ function EditionAwareCardImageBase({
   const hasSourceVariant = Boolean(rawVariantUri || remoteVariantUri);
   const needsVisualPatch = Boolean(editionHint && !hasSourceVariant && editionHint !== 'unlimited');
   const contentFit = resizeMode === 'cover' ? 'cover' : resizeMode === 'stretch' ? 'fill' : 'contain';
+  const artwork = getCardArtworkPresentation(rawData);
+  const handleSourceChange = React.useCallback((source: string | null) => {
+    onReferenceImageChange?.(artwork?.candidates.some((candidate) => candidate.uri === source && candidate.kind === 'shared') ?? false);
+  }, [artwork, onReferenceImageChange]);
 
   return (
     <View style={[styles.container, style]}>
@@ -106,12 +126,14 @@ function EditionAwareCardImageBase({
           uri={resolvedDisplayUri}
           fullUri={!hasSourceVariant ? fullUri : undefined}
           fallbackSource={!hasSourceVariant && fallbackUri ? { uri: fallbackUri } : undefined}
+          fallbackUris={!hasSourceVariant ? artwork?.candidates.map((candidate) => candidate.uri).filter((value) => typeof value === 'string') : undefined}
+          onSourceChange={handleSourceChange}
           style={styles.image}
           imageStyle={imageStyle}
           contentFit={contentFit}
           priority={sourceSize === 'small' ? 'low' : 'normal'}
           transition={sourceSize === 'small' ? 140 : 220}
-          showFallbackIcon={false}
+          showFallbackIcon
         />
       ) : (
         <View style={styles.fallback} />

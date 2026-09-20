@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
+import { preferenceAwareHaptics as Haptics } from '../../lib/haptics';
 import { useIsFocused } from '@react-navigation/native';
 import { router, Stack } from 'expo-router';
 import { Camera, getCameraPermissionStatus, useCameraPermission } from '../../lib/visionCamera';

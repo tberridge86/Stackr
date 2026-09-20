@@ -46,6 +46,20 @@ export function preparedPricingSummary(summary: PreparedCoverage): CollectionPri
     state: !summary.totalUnits ? 'empty' : !summary.pricedUnits ? 'unavailable' : summary.unpricedUnits ? 'partial' : summary.olderPriceUnits ? 'stale' : 'fresh'};
 }
 
+/**
+ * A partial prepared run is not allowed to make already stored, exact prices
+ * disappear from Home. The caller first maps stored evidence to the current
+ * owned identities, so collection edits cannot retain removed-card evidence.
+ */
+export function hasLowerPreparedPriceCoverage(
+  prepared: Pick<PreparedCoverage, 'totalUnits' | 'pricedUnits' | 'unpricedUnits'>,
+  stored: Pick<CollectionPricingSummary, 'total' | 'pricedUnits'>,
+) {
+  return prepared.unpricedUnits > 0
+    && stored.total != null
+    && stored.pricedUnits > prepared.pricedUnits;
+}
+
 export function preparedValuationTrend(summary: PreparedValuation, days: 7 | 30, now = Date.now()) {
   const points = (summary.trend?.points ?? []).filter((p) => Number.isFinite(p.total) && p.total >= 0
     && Date.parse(p.at) >= now - days * 86400000 && Date.parse(p.at) <= now).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));

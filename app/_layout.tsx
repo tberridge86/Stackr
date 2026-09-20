@@ -33,8 +33,9 @@ import { stackrFonts, typeScale } from '../lib/typography';
 import { COLLECTOR_TABS, SELLER_TABS } from '../lib/routes';
 import { stackrTabBarSizes } from '../lib/stackrSizing';
 import { installRuntimeFetchDiagnostics } from '../lib/runtimeFetchDiagnostics';
-import { stackrHaptics } from '../lib/haptics';
+import { hydrateStackrHapticsPreference, stackrHaptics } from '../lib/haptics';
 import { StackrLoadingScreen } from '../components/StackrLoadingScreen';
+import { CardInspectionProvider } from '../components/CardInspectionProvider';
 import { FONT_LOAD_TIMEOUT_MS } from '../lib/startup';
 import { lightTheme } from '../lib/theme';
 
@@ -112,7 +113,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
       return pathname === '/' || pathname === '/(tabs)' || pathname === '/(tabs)/index';
     }
     if (tab.key === 'collection') {
-      return pathname.startsWith('/binder') || pathname.startsWith('/collection') || pathname.startsWith('/set') || pathname.startsWith('/pokemon') || pathname.startsWith('/duplicates') || pathname === '/(tabs)/binder';
+      return pathname.startsWith('/binder') || pathname.startsWith('/collection') || pathname === '/set' || pathname.startsWith('/set/') || pathname.startsWith('/pokemon') || pathname.startsWith('/duplicates') || pathname === '/(tabs)/binder';
     }
     if (tab.key === 'scan') return pathname.startsWith('/scan');
     if (tab.key === 'market' || tab.key === 'listings') {
@@ -316,6 +317,9 @@ function AppNavigation() {
                   <Stack.Screen name="auth/reset-password" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="notifications" options={{ title: '' }} />
                   <Stack.Screen name="settings" options={{ headerShown: false, title: 'Settings' }} />
+                  <Stack.Screen name="help" options={{ headerShown: false, title: 'Help' }} />
+                  <Stack.Screen name="legal" options={{ headerShown: false, title: 'Legal' }} />
+                  <Stack.Screen name="about" options={{ headerShown: false, title: 'About Stackr' }} />
                   <Stack.Screen name="friends/index" options={{ headerShown: false, title: 'Friends' }} />
                   <Stack.Screen name="admin/japanese-catalogue" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="admin/scanner-analytics" options={{ headerShown: false, title: '' }} />
@@ -348,8 +352,9 @@ function AppShell() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <StackrPopupProvider>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
+      <CardInspectionProvider>
+        <StackrPopupProvider>
+          <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
           {BETA_TRADE_DEMO_MODE ? (
             <AppNavigation />
           ) : (
@@ -357,8 +362,9 @@ function AppShell() {
               <AppNavigation />
             </StripeAppProvider>
           )}
-        </KeyboardAvoidingView>
-      </StackrPopupProvider>
+          </KeyboardAvoidingView>
+        </StackrPopupProvider>
+      </CardInspectionProvider>
     </GestureHandlerRootView>
   );
 }
@@ -386,6 +392,8 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded) configureNativeTypographyDefaults();
   }, [fontsLoaded]);
+
+  useEffect(() => { void hydrateStackrHapticsPreference(); }, []);
 
   return (
     <ThemeProvider>

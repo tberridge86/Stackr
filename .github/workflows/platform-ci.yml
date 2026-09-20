@@ -47,10 +47,12 @@ jobs:
       - run: npm test --prefix backend
       - run: npm run test:live-pricing
       - run: npm run test:personal-pricing
+      - run: node scripts/test-prepare-personal-pricing.mjs
       - run: node scripts/test-gateway-privacy-smoke.mjs
       - run: node scripts/test-gateway-privacy-deployment.mjs
       - run: npm run test:collection-pricing-ui
       - run: npm run test:home-release
+      - run: npm run test:settings-help
       - run: npm run test:ux-p1
       - run: npm run test:ux-p2
       - run: npm run test:ux-p3
@@ -69,10 +71,13 @@ jobs:
       - run: npm run test:stackr-preview-proxy
       - run: npm run test:asset-pipeline
       - run: npm run test:asset-repair
+      - run: npm run test:master-set-artwork
+      - run: node scripts/test-simplified-chinese-set-logo-pack.mjs
+      - run: node --import tsx scripts/test-japanese-set-logo-runtime-lookup.ts
       - run: npm run test:recognition-orchestrator
       - run: npm run test:owner-recognition
       - run: npm run test:owner-teaching
-      - run: npm run test:card-haptics
+      - run: npm run test:card-inspection
       - run: npm run test:scanner-calibration
       - run: npm run test:scanner-pipeline
       - run: npm run test:scanner-analytics

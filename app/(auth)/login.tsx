@@ -155,6 +155,12 @@ export default function LoginScreen() {
               style={styles.logo}
               resizeMode="contain"
             />
+            <Pressable accessibilityRole="button" onPress={() => router.push('/help')} style={styles.forgotButton}>
+              <Text style={styles.forgotText}>Help & account support</Text>
+            </Pressable>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/legal')} style={styles.forgotButton}>
+              <Text style={styles.forgotText}>Legal & privacy</Text>
+            </Pressable>
           </View>
           <View style={styles.container}>
             {recoveryMode ? <Text accessibilityRole="header" style={styles.title}>Reset password</Text> : null}

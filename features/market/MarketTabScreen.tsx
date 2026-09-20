@@ -281,6 +281,27 @@ function getCatalogueImage(listing: MarketplaceListing, card?: CardDetail | null
   );
 }
 
+function getDecorativeCatalogueInspectionCard(
+  card: CardDetail | null | undefined,
+  imageStrategy: { uri: string | null; isCatalogue: boolean },
+  fullImageStrategy: { uri: string | null; isCatalogue: boolean },
+) {
+  const raw = card?.rawData;
+  const canonicalId = String(raw?.stackr?.cardId ?? '').trim();
+  const images = raw?.images;
+  const canonicalImages = [images?.small, images?.large].filter((uri): uri is string => typeof uri === 'string' && !!uri.trim());
+  if (!canonicalId || !canonicalImages.length) return undefined;
+  if (imageStrategy.isCatalogue !== true || fullImageStrategy.isCatalogue !== true) return undefined;
+  if (!imageStrategy.uri || !fullImageStrategy.uri || !canonicalImages.includes(imageStrategy.uri) || !canonicalImages.includes(fullImageStrategy.uri)) return undefined;
+  return {
+    id: canonicalId,
+    name: card?.name ?? null,
+    language: card?.language ?? null,
+    raw_data: raw,
+    selectedVariantId: raw?.stackr?.defaultVariantId ?? null,
+  };
+}
+
 function getListingImageStrategy(listing: MarketplaceListing, card?: CardDetail | null, large = false) {
   const categoryType = getListingCategoryType(listing);
   const sellerPhotos = getSellerPhotoUris(listing);
@@ -1361,6 +1382,7 @@ export default function TheMarketTab() {
     const product = isProductListing(listing);
     const imageStrategy = getListingImageStrategy(listing, card);
     const fullImageStrategy = getListingImageStrategy(listing, card, true);
+    const inspectionCard = getDecorativeCatalogueInspectionCard(card, imageStrategy, fullImageStrategy);
     const title = gate0MarketText(
       product ? listing.product_name : card?.name ?? listing.product_name ?? listing.card_id,
       product ? 'Sealed product' : 'Collector listing',
@@ -1383,6 +1405,7 @@ export default function TheMarketTab() {
       fullImageUri: fullImageStrategy.uri,
       imageBadgeLabel: imageStrategy.label,
       imageIsCatalogue: imageStrategy.isCatalogue,
+      inspectionCard,
       condition: listing.condition,
       gradeCompany: listing.grade_company,
       grade: listing.grade,

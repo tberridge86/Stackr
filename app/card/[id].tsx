@@ -8,14 +8,16 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  Pressable,
   useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import { StackrButton } from '../../components/StackrControls';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
-import { InteractiveCardPreview } from '../../components/InteractiveCardPreview';
-import { isFoilPreview } from '../../lib/cardPreviewMotion';
+import { useCardInspection } from '../../components/CardInspectionProvider';
+import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
+import { getEditionVariantImageUrl } from '../../lib/editionImages';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import PricingV2Summary from '../../components/PricingV2Summary';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
@@ -116,6 +118,7 @@ type LatestSnapshotPrice = {
 
 export default function CardDetailScreen() {
   const { theme } = useTheme();
+  const { inspectCard } = useCardInspection();
   const { user } = useAuth();
   const userId = user?.id ?? null;
   const { premiumSellerAccess } = useAppMode();
@@ -150,6 +153,7 @@ export default function CardDetailScreen() {
   } = useTrade();
 
   const [card, setCard] = useState<PokemonCard | null>(null);
+  const [referenceImage, setReferenceImage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [listingBusy, setListingBusy] = useState(false);
   const [collectionBusy, setCollectionBusy] = useState(false);
@@ -491,6 +495,8 @@ export default function CardDetailScreen() {
 
   const isWishlisted = isWanted(card.id);
   const presentation = cardPresentation ?? buildForeignCardPresentation(card);
+  const inspectionCardId = card.raw_data?.stackr?.cardId ?? card.id;
+  const inspectionImageUri = getEditionVariantImageUrl(card.raw_data, editionHint, 'large') ?? card.images?.large ?? card.images?.small ?? '';
   const presentedDetails = presentation.details;
   const hasEbayValues = ebayPrice?.low != null || ebayPrice?.average != null || ebayPrice?.high != null;
   const hasTcgValues = resolvedTcgPrices?.low != null || resolvedTcgPrices?.mid != null || resolvedTcgPrices?.market != null;
@@ -524,17 +530,33 @@ export default function CardDetailScreen() {
       <View style={styles.heroCard}>
         <View style={[styles.heroImageFrame, { height: heroImageHeight }]}>
           {card.images?.large || card.images?.small ? (
-            <InteractiveCardPreview foil={isFoilPreview(card.raw_data)}>
-            <EditionAwareCardImage
+            <Pressable
+              style={{ flex: 1 }}
+              onLongPress={() => inspectCard({
+                source: 'catalogue',
+                card: { id: inspectionCardId, name: card.name, language: card.language, raw_data: card.raw_data },
+                imageUri: inspectionImageUri,
+                fullImageUri: inspectionImageUri,
+                selectedVariantId: card.raw_data?.stackr?.defaultVariantId ?? null,
+                subtitle: [presentation.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · '),
+              })}
+              delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
+              accessibilityRole="button"
+              accessibilityLabel={`Inspect ${presentation.name}`}
+              accessibilityActions={[{ name: 'inspect', label: 'Inspect card' }]}
+              onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect') inspectCard({ source: 'catalogue', card: { id: inspectionCardId, name: card.name, language: card.language, raw_data: card.raw_data }, imageUri: inspectionImageUri, fullImageUri: inspectionImageUri, selectedVariantId: card.raw_data?.stackr?.defaultVariantId ?? null, subtitle: [presentation.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · ') }); }}
+            >
+              <EditionAwareCardImage
               uri={card.images?.large || card.images?.small}
               cardId={card.id}
               rawData={card.raw_data}
               editionHint={editionHint}
               sourceSize="large"
+              onReferenceImageChange={setReferenceImage}
               style={styles.cardImage}
               resizeMode="contain"
-            />
-            </InteractiveCardPreview>
+              />
+            </Pressable>
           ) : (
             <View style={styles.imageFallback}>
               <Text style={styles.imageFallbackText}>No image</Text>
@@ -548,6 +570,8 @@ export default function CardDetailScreen() {
         </View>
       </View>
 
+      {referenceImage && (card.images?.large || card.images?.small) && <Text style={{ color: theme.colors.textSoft, marginBottom: 8 }}>Reference image; finish may differ.</Text>}
+
       <StackrCardIdentity
         name={presentation.name}
         setName={presentation.setName}
@@ -556,6 +580,21 @@ export default function CardDetailScreen() {
         style={{ marginBottom: 10 }}
       />
 
+      <StackrButton
+        label="Inspect card"
+        icon="scan-outline"
+        variant="secondary"
+        onPress={() => inspectCard({
+          source: 'catalogue',
+          card: { id: inspectionCardId, name: card.name, language: card.language, raw_data: card.raw_data },
+          imageUri: inspectionImageUri,
+          fullImageUri: inspectionImageUri,
+          selectedVariantId: card.raw_data?.stackr?.defaultVariantId ?? null,
+          subtitle: [presentation.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · '),
+        })}
+        accessibilityLabel={`Inspect ${presentation.name}`}
+        style={{ marginBottom: 12 }}
+      />
       <StackrButton label="Add to collection" icon="albums-outline" variant="primary" loading={collectionBusy} disabled={collectionBusy} onPress={() => { void openCollectionReview(); }} style={{ marginBottom: 12 }} />
       {collectionError ? <View style={{ marginBottom: 12, gap: 8 }}>
         <Text accessibilityRole="alert" style={{ color: theme.colors.text, lineHeight: 20 }}>{collectionError}</Text>

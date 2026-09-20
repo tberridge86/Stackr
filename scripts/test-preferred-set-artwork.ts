@@ -20,6 +20,11 @@ async function main() {
   const second = mergePreferredSetArtwork(first, [page('holo')]);
   assert.equal(second[0].defaultVariantId, 'normal', 'partial-page defaults cannot change the selected finish');
   assert.deepEqual(second[0].variants.map((v) => v.image?.assetId), ['normal', 'holo']);
+  const samePage = mergePreferredSetArtwork([card], [page('normal'), page('holo')]);
+  assert.deepEqual(samePage[0].variants.map((v) => v.image?.assetId), ['normal', 'holo'],
+    'several rows of the same printing in one page must retain every supplied finish image');
+  const wrongLanguageLast = mergePreferredSetArtwork([card], [page('normal'), { ...page('normal'), languageCode: 'en' }]);
+  assert.equal(wrongLanguageLast[0].variants[0].image?.assetId, 'normal');
   for (const other of [
     { ...page('normal'), languageCode: 'en' },
     { ...page('normal'), catalogueVersionId: 'changed' },

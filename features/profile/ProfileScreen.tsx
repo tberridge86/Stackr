@@ -1864,10 +1864,10 @@ export default function ProfileScreen() {
         ) : null}
 
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 18, marginBottom: 18 }}>
-          {['Settings', 'Privacy', 'Help'].map((label) => (
+          {(['Settings', 'Legal', 'Help'] as const).map((label) => (
             <TouchableOpacity
               key={label}
-              onPress={() => router.push(ROUTES.settings as any)}
+              onPress={() => router.push(label === 'Settings' ? ROUTES.settings : label === 'Legal' ? '/legal' : '/help')}
               accessibilityRole="button"
               accessibilityLabel={`Open ${label}`}
               style={{ minHeight: 44, justifyContent: 'center' }}

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult, type BarcodeType, type CameraType } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
+import { preferenceAwareHaptics as Haptics } from '../../lib/haptics';
 import * as ImageManipulator from 'expo-image-manipulator';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';

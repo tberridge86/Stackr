@@ -11,7 +11,7 @@ const plan = JSON.parse(result.stdout.trim().split('\n').at(-1));
 assert.equal(plan.dryRun, true);
 assert.equal(plan.bundleIdentifier, 'com.tommo86.Stackr');
 assert.equal(plan.environment, 'production');
-assert.equal(plan.runtimeVersion, '1.0.3-owner-recognition-v1');
+assert.equal(plan.runtimeVersion, '1.0.4-owner-recognition-v1');
 assert.equal(plan.ownerFeatureEnabled, true);
 assert.deepEqual(plan.args, ['submit', '--platform', 'ios', '--profile', 'production-owner',
   '--id', buildId, '--groups', 'Team (Expo)', '--non-interactive', '--no-wait']);

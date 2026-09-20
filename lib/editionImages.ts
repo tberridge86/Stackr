@@ -122,9 +122,23 @@ export function getPublicScrydexCardImageUrl(
 }
 
 function isProviderCardId(cardId: string) {
-  // Canonical UUIDs identify Stackr printings, not provider image addresses.
-  return !/^(?:canonical:)?[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(cardId)
+  // UUID-shaped values identify Stackr-style records, not provider image
+  // addresses. This remains broader than the strict UUID accepted by the
+  // backend resolver so malformed, partial, or future-version UUIDs can never
+  // become constructed ScryDex URLs.
+  return !looksLikeStackrUuidIdentifier(cardId)
     && /^[a-z0-9]+(?:[-.][a-z0-9]+)*-[a-z0-9]+$/i.test(cardId);
+}
+
+function looksLikeStackrUuidIdentifier(cardId: string) {
+  return /^(?:canonical:)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]+$/i.test(cardId);
+}
+
+function isCanonicalStackrCardId(cardId: string) {
+  // `/api/card-image/edition` resolves this exact `pokemon_cards.id` through
+  // its database lookup. Do not accept prefixed or partial UUID-shaped values:
+  // those have no corresponding backend identity and must not trigger a read.
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cardId);
 }
 
 export function shouldFetchEditionImage({ cardId, editionHint, rawVariantUri, suppliedUri }: {
@@ -133,7 +147,7 @@ export function shouldFetchEditionImage({ cardId, editionHint, rawVariantUri, su
   rawVariantUri?: string | null;
   suppliedUri?: string | null;
 }) {
-  return Boolean(cardId && isProviderCardId(cardId) && editionHint && !rawVariantUri
+  return Boolean(cardId && (isProviderCardId(cardId) || isCanonicalStackrCardId(cardId)) && editionHint && !rawVariantUri
     && !(editionHint === 'unlimited' && suppliedUri));
 }
 

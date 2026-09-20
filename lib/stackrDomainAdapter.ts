@@ -1,5 +1,6 @@
 import { createSetFactsReader, loadCompleteSetPages } from './stackrSetRetrieval';
 import { readPreferredSetArtwork } from './stackrPreferredSetArtwork';
+import { resolveCardArtwork } from './cardArtworkPresentation';
 import { getPublishedSetCoverFallback, getPublishedSetLogoFallback } from './publishedSetLogoFallbacks';
 import { getPersistentStackrSetFactsStore } from './stackrCatalogueCache';
 import {
@@ -471,19 +472,6 @@ function firstAsset(assets: StackrCatalogueAsset[], types: string[]) {
   return assets.find((asset) => types.includes(asset.assetType) && assetUrl(asset));
 }
 
-function derivativeUrl(asset: StackrCatalogueAsset | undefined, hints: string[]) {
-  if (!asset) return undefined;
-  for (const derivative of asset.derivatives ?? []) {
-    const key = String(derivative.role ?? derivative.key ?? derivative.name ?? derivative.type ?? '').toLowerCase();
-    const url = clean(derivative.url)
-      ?? clean(derivative.deliveryUrl)
-      ?? clean(derivative.deliveryPath)
-      ?? clean(derivative.path);
-    if (url && hints.some((hint) => key.includes(hint))) return url;
-  }
-  return assetUrl(asset);
-}
-
 function embeddedCardImageAssets(card: StackrCard) {
   const byId = new Map<string, StackrCatalogueAsset>();
   for (const variant of card.variants) {
@@ -495,23 +483,8 @@ function embeddedCardImageAssets(card: StackrCard) {
 }
 
 function primaryCardImageAsset(card: StackrCard, assets: StackrCatalogueAsset[]) {
-  const defaultVariant = card.variants.find((variant) => variant.variantId === card.defaultVariantId);
-  const preferredVariantIds = [
-    card.defaultVariantId,
-    defaultVariant?.imageVariantId,
-    defaultVariant?.sameArtworkAsVariantId,
-  ].filter((value): value is string => Boolean(value));
-  for (const variantId of preferredVariantIds) {
-    const asset = firstAsset(
-      assets.filter((candidate) => candidate.variantId === variantId),
-      ['card_image'],
-    );
-    if (asset) return asset;
-  }
-  return firstAsset(
-    assets.filter((asset) => asset.cardId === card.cardId && !asset.variantId),
-    ['card_image'],
-  );
+  const presentation = resolveCardArtwork(card, assets);
+  return assets.find((asset) => asset.assetId === presentation.assetId);
 }
 
 function canonicalSetCardIdentity(card: StackrCard) {
@@ -572,29 +545,8 @@ function normalizeCanonicalSetCards(cards: StackrCard[]) {
   }
 
   return [...groups.values()].map((rows) => {
-    let representative = rows[0];
-    // Preserve the first image-bearing default when duplicate responses are
-    // interleaved; do not assign an image from another finish to this default.
-    if (!primaryCardImageAsset(representative, embeddedCardImageAssets(representative))) {
-      representative = rows.find((row) => (
-        Boolean(primaryCardImageAsset(row, embeddedCardImageAssets(row)))
-      )) ?? representative;
-    }
-    const merged = { ...representative, variants: mergeCanonicalVariants(rows) };
-    if (primaryCardImageAsset(merged, embeddedCardImageAssets(merged))) return merged;
-
-    // Some single API rows retain all finish variants but point their default
-    // at a finish with no image. Select only an already-present variant whose
-    // own embedded asset validates as primary; this changes no image ownership.
-    const illustratedVariant = merged.variants.find((variant) => (
-      Boolean(primaryCardImageAsset(
-        { ...merged, defaultVariantId: variant.variantId },
-        embeddedCardImageAssets(merged),
-      ))
-    ));
-    return illustratedVariant
-      ? { ...merged, defaultVariantId: illustratedVariant.variantId }
-      : merged;
+    // Image availability must never choose the finish used for ownership/prices.
+    return { ...rows[0], variants: mergeCanonicalVariants(rows) };
   });
 }
 
@@ -668,6 +620,7 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
   const allAssets = [...embeddedCardImageAssets(card), ...assets];
   const cardAssets = allAssets.filter((asset) => asset.cardId === card.cardId || relevantVariantIds.has(asset.variantId ?? ''));
   const primary = primaryCardImageAsset(card, cardAssets);
+  const artwork = resolveCardArtwork(card, cardAssets);
   const raw = {
     english_display_name: card.names.englishDisplay,
     english_display_source: card.names.englishDisplaySource ?? null,
@@ -698,8 +651,8 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
     supertype: card.details?.supertype ?? undefined,
     subtypes: card.details?.subtypes ?? undefined,
   });
-  const smallImage = derivativeUrl(primary, ['card-grid', 'grid', 'search', 'small', 'thumb']);
-  const largeImage = derivativeUrl(primary, ['detail', 'large']);
+  const smallImage = artwork.small;
+  const largeImage = artwork.large;
   const mapped: StackrLegacyCard = {
     id: card.cardId,
     name: presentation.name,
@@ -759,6 +712,7 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
       subtypes: presentation.details.subtypes ?? [],
       artist: card.details?.artist ?? null,
       presentation: {
+        artwork,
         language: presentation.languageLabel,
         native_image_retained: true,
         selected_image_variant_id: primary?.variantId ?? null,

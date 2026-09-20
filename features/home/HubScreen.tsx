@@ -1,6 +1,6 @@
 import { takeRotatingStringBatch } from '../../lib/homePriceRefreshCore';
-import { preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
-import { blocksIndependentPriceRead, mergeCollectionPriceRead, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
+import { hasLowerPreparedPriceCoverage, preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
+import { blocksIndependentPriceRead, mergeCollectionPriceRead, storedCollectionPriceResults, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { useTheme } from '../../components/theme-context';
 import React, {
@@ -28,6 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FeatureTipModal } from '../../components/FeatureTipModal';
 import { useAppMode } from '../../components/app-mode-context';
+import { useAuth } from '../../components/auth-context';
 import { useProfile } from '../../components/profile-context';
 import { StackrProfileAvatar } from '../../components/StackrProfileAvatar';
 import { fetchBinders, fetchBinderCards, type BinderCardRecord, type BinderRecord } from '../../lib/binders';
@@ -66,8 +67,9 @@ import {
   type MintyFeedbackProfile,
   type MintyInsight,
   type MintyInsightFeedback,
-  type MintyPersonalisationSettings,
 } from '../../lib/mintyInsights';
+import { MintyPreferenceControls } from '../../components/MintyPreferenceControls';
+import { useMintyPreferences } from '../../lib/mintyPreferences';
 import {
   loadMintyInsight,
   recordMintyInsightFeedback,
@@ -99,6 +101,7 @@ import {
   supportsHomeSnapshotScope,
 } from '../../lib/homePriceRefreshCore';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
+import type { CardInspectionRequest } from '../../lib/cardInspection';
 
 import { sanitizeMarketplaceCondition } from '../../lib/marketplacePresentation';
 import {
@@ -200,13 +203,9 @@ const HOME_PRICE_REFRESH_BATCH_SIZE = 12;
 
 const HUB_TIP_STORAGE_KEY = 'stackr:feature-tip-dismissed:hub-overview-v1';
 const HOME_MASTER_SET_STORAGE_PREFIX = 'stackr:binder-master-set:';
-const LEGACY_MINTY_PERSONALISATION_STORAGE_KEY = 'stackr:minty-personalisation:v1';
 const LEGACY_MINTY_FEEDBACK_STORAGE_KEY = 'stackr:minty-feedback:v1';
-const MINTY_PERSONALISATION_STORAGE_KEY_PREFIX = 'stackr:minty-personalisation:v2';
 const MINTY_FEEDBACK_STORAGE_KEY_PREFIX = 'stackr:minty-feedback:v2';
 
-const getMintyPersonalisationStorageKey = (userId: string) =>
-  `${MINTY_PERSONALISATION_STORAGE_KEY_PREFIX}:${encodeURIComponent(userId)}`;
 const getMintyFeedbackStorageKey = (userId: string) =>
   `${MINTY_FEEDBACK_STORAGE_KEY_PREFIX}:${encodeURIComponent(userId)}`;
 const HUB_TIP_ITEMS = [
@@ -289,6 +288,39 @@ const getCardImageUrl = (card: BinderCardRecord): string | null =>
   card.card?.raw_data?.images?.small ??
   null;
 
+/**
+ * Home may display saved captures or generated fallbacks.  Only pass an
+ * inspection request when the rendered URI is exactly an artwork URI from a
+ * canonical Stackr record; opening the inspector never needs another lookup.
+ */
+export const getHomeCatalogueInspectionRequest = ({
+  name,
+  language,
+  rawData,
+  imageUrl,
+  selectedVariantId,
+}: {
+  name?: string | null;
+  language?: string | null;
+  rawData?: unknown;
+  imageUrl?: string | null;
+  selectedVariantId?: string | null;
+}): CardInspectionRequest | null => {
+  const raw = rawData as { stackr?: { cardId?: unknown }; images?: { small?: unknown; large?: unknown } } | null;
+  const canonicalId = typeof raw?.stackr?.cardId === 'string' ? raw.stackr.cardId.trim() : '';
+  const small = typeof raw?.images?.small === 'string' ? raw.images.small : null;
+  const large = typeof raw?.images?.large === 'string' ? raw.images.large : null;
+  if (!canonicalId || !imageUrl || (imageUrl !== small && imageUrl !== large)) return null;
+
+  return {
+    source: 'catalogue',
+    card: { id: canonicalId, name: name ?? null, language: language ?? null, raw_data: rawData },
+    imageUri: imageUrl,
+    fullImageUri: large ?? small,
+    selectedVariantId: selectedVariantId ?? null,
+  };
+};
+
 const getCardDisplayName = (card: BinderCardRecord) =>
   card.card_name ?? card.card?.name ?? card.card?.raw_data?.name ?? card.card_id ?? 'Unknown card';
 
@@ -320,16 +352,28 @@ const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: 
     );
     const coverCard = ownedCards.find((card) => getCardImageUrl(card)) ?? cards.find((card) => getCardImageUrl(card));
     const topValueCards = ownedCards
-      .map((card) => ({
-        cardId: card.card_id,
-        setId: card.set_id,
-        name: getCardDisplayName(card),
-        setName: getCardSetName(card),
-        number: card.card_number ?? card.card?.number ?? null,
-        ...getBinderCardDisplayMetadata(card),
-        imageUrl: getCardImageUrl(card),
-        estimatedValue: null,
-      }))
+      .map((card) => {
+        const imageUrl = getCardImageUrl(card);
+        const name = getCardDisplayName(card);
+        const metadata = getBinderCardDisplayMetadata(card);
+        return {
+          cardId: card.card_id,
+          setId: card.set_id,
+          name,
+          setName: getCardSetName(card),
+          number: card.card_number ?? card.card?.number ?? null,
+          ...metadata,
+          imageUrl,
+          inspectionRequest: getHomeCatalogueInspectionRequest({
+            name,
+            language: metadata.language,
+            rawData: card.card?.raw_data,
+            imageUrl,
+            selectedVariantId: card.card?.externalIds?.stackrVariant ?? null,
+          }),
+          estimatedValue: null,
+        };
+      })
       .filter((card) => card.imageUrl)
       .slice(0, 3);
 
@@ -414,17 +458,29 @@ const buildMissingCards = (
 
   return group.cards
     .filter((card) => getOwnedQuantity(card) === 0)
-    .map((card) => ({
-      cardId: card.card_id,
-      setId: card.set_id,
-      name: getCardDisplayName(card),
-      setName: getCardSetName(card),
-      ...getBinderCardDisplayMetadata(card),
-      number: card.card_number ?? card.card?.number ?? null,
-      rarity: getCardRarity(card),
-      imageUrl: getCardImageUrl(card),
-      estimatedValue: null,
-    }))
+    .map((card) => {
+      const imageUrl = getCardImageUrl(card);
+      const name = getCardDisplayName(card);
+      const metadata = getBinderCardDisplayMetadata(card);
+      return {
+        cardId: card.card_id,
+        setId: card.set_id,
+        name,
+        setName: getCardSetName(card),
+        ...metadata,
+        number: card.card_number ?? card.card?.number ?? null,
+        rarity: getCardRarity(card),
+        imageUrl,
+        inspectionRequest: getHomeCatalogueInspectionRequest({
+          name,
+          language: metadata.language,
+          rawData: card.card?.raw_data,
+          imageUrl,
+          selectedVariantId: card.card?.externalIds?.stackrVariant ?? null,
+        }),
+        estimatedValue: null,
+      };
+    })
     .slice(0, 5);
 };
 
@@ -851,7 +907,9 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
 export default function HubScreen() {
   const { theme, isDark } = useTheme();
   const { hasChosenMode, hydrated: appModeHydrated, premiumSellerAccess, setMode } = useAppMode();
+  const { user: authUser } = useAuth();
   const { profile: myProfile } = useProfile();
+  const mintyPreferences = useMintyPreferences(authUser?.id ?? null);
   const { width: screenWidth } = useWindowDimensions();
   const homeScreenPadding = screenWidth < 360
     ? HOME_TOKENS.layout.screenPaddingSmall
@@ -908,9 +966,9 @@ export default function HubScreen() {
   const [activityLoading, setActivityLoading] = useState(true);
   const [activityError, setActivityError] = useState<string | null>(null);
   const [mintySettingsOpen, setMintySettingsOpen] = useState(false);
-  const [mintyPersonalisation, setMintyPersonalisation] = useState<MintyPersonalisationSettings>(DEFAULT_MINTY_PERSONALISATION_SETTINGS);
+  const mintyPersonalisation = mintyPreferences.settings;
   const [mintyFeedback, setMintyFeedback] = useState<MintyFeedbackProfile>(DEFAULT_MINTY_FEEDBACK_PROFILE);
-  const [apiMintyInsight, setApiMintyInsight] = useState<MintyInsight | null>(null);
+  const [, setApiMintyInsight] = useState<MintyInsight | null>(null);
   const [mintyInsightRefreshing, setMintyInsightRefreshing] = useState(false);
   const [mintyInsightError, setMintyInsightError] = useState<string | null>(null);
   const [mintyDataRefreshedAt, setMintyDataRefreshedAt] = useState<string | null>(null);
@@ -1023,10 +1081,8 @@ export default function HubScreen() {
       const trustedUserId = user?.id ?? null;
       if (!trustedUserId || (expectedUserId !== undefined && expectedUserId !== trustedUserId)) return;
 
-      const [settingsRaw, feedbackRaw] = await Promise.all([
-        AsyncStorage.getItem(getMintyPersonalisationStorageKey(trustedUserId)),
+      const [feedbackRaw] = await Promise.all([
         AsyncStorage.getItem(getMintyFeedbackStorageKey(trustedUserId)),
-        AsyncStorage.removeItem(LEGACY_MINTY_PERSONALISATION_STORAGE_KEY),
         AsyncStorage.removeItem(LEGACY_MINTY_FEEDBACK_STORAGE_KEY),
       ]);
       const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser();
@@ -1036,13 +1092,6 @@ export default function HubScreen() {
         || confirmedUser?.id !== trustedUserId
         || homeSessionUserIdRef.current !== trustedUserId
       ) return;
-      if (settingsRaw) {
-        const parsed = JSON.parse(settingsRaw);
-        setMintyPersonalisation({
-          ...DEFAULT_MINTY_PERSONALISATION_SETTINGS,
-          ...(parsed && typeof parsed === 'object' ? parsed : {}),
-        });
-      }
       if (feedbackRaw) {
         const parsed = JSON.parse(feedbackRaw);
         setMintyFeedback({
@@ -1060,7 +1109,7 @@ export default function HubScreen() {
 
   const persistMintyPreference = useCallback(async (
     ownerUserId: string | null,
-    kind: 'personalisation' | 'feedback',
+    kind: 'feedback',
     value: unknown,
   ) => {
     if (!ownerUserId) return;
@@ -1073,23 +1122,12 @@ export default function HubScreen() {
         || homeSessionUserIdRef.current !== ownerUserId
         || generation !== mintyPreferenceGenerationRef.current
       ) return;
-      const storageKey = kind === 'personalisation'
-        ? getMintyPersonalisationStorageKey(ownerUserId)
-        : getMintyFeedbackStorageKey(ownerUserId);
+      const storageKey = getMintyFeedbackStorageKey(ownerUserId);
       await AsyncStorage.setItem(storageKey, JSON.stringify(value));
     } catch (error) {
       console.log(`Minty ${kind} save failed`, error);
     }
   }, []);
-
-  const updateMintyPersonalisation = useCallback((updates: Partial<MintyPersonalisationSettings>) => {
-    const ownerUserId = homeSessionUserIdRef.current;
-    setMintyPersonalisation((current) => {
-      const next = { ...current, ...updates };
-      void persistMintyPreference(ownerUserId, 'personalisation', next);
-      return next;
-    });
-  }, [persistMintyPreference]);
 
   const handleMintyInsightFeedback = useCallback((feedbackType: MintyInsightFeedback, insight: MintyInsight) => {
     const ownerUserId = homeSessionUserIdRef.current;
@@ -1141,13 +1179,16 @@ export default function HubScreen() {
     void loadApiMintyInsight(true);
   }, [loadApiMintyInsight]);
 
-  const resetMintyPreferences = useCallback(() => {
+  const resetMintyPreferences = useCallback(async () => {
     const ownerUserId = homeSessionUserIdRef.current;
-    setMintyPersonalisation(DEFAULT_MINTY_PERSONALISATION_SETTINGS);
+    try {
+      await mintyPreferences.save(DEFAULT_MINTY_PERSONALISATION_SETTINGS);
+    } catch {
+      return;
+    }
     setMintyFeedback(DEFAULT_MINTY_FEEDBACK_PROFILE);
-    void persistMintyPreference(ownerUserId, 'personalisation', DEFAULT_MINTY_PERSONALISATION_SETTINGS);
     void persistMintyPreference(ownerUserId, 'feedback', DEFAULT_MINTY_FEEDBACK_PROFILE);
-  }, [persistMintyPreference]);
+  }, [mintyPreferences, persistMintyPreference]);
 
   // ===============================
   // LOAD ALL DATA
@@ -1567,20 +1608,37 @@ export default function HubScreen() {
       if (!await confirmCurrentRequest()) return;
       // Account and collection content can render while exact prices/history load.
       setCollectionValueLoading(false);
+      const priceInputs = ownedUnits.map(pricingInputForHomeUnit);
+      const unavailablePriceResults = () => priceInputs.map((input) => unavailableCollectionPrice(input, {
+        unavailableReason: 'No matching Stackr price is available.',
+      }));
 
       // One private prepared generation replaces the phone-side price fan-out.
-      // A 404 permits the old-server path during backend-first rollout only.
+      // A 404 or lower-coverage partial summary uses exact stored-price reads.
       let prepared = null;
       try { prepared = (await stackrApiClient.collectionValuation()).data; }
       catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
       if (!await confirmCurrentRequest()) return;
       if (prepared) {
-        preparedValuationAvailableRef.current = true;
         const summary = prepared.summary;
         if (!summary) {
+          preparedValuationAvailableRef.current = true;
           setCollectionPricingWarning('Your collection valuation is being prepared. The last completed valuation stays visible.');
           return;
         }
+        const retainedStoredResults = storedCollectionPriceResults(priceInputs, collectionPriceEvidenceRef.current);
+        const unavailableStoredResults = unavailablePriceResults();
+        const retainedStoredPricing = pricingSummaryForResults(retainedStoredResults.map((result, index) => result ?? unavailableStoredResults[index]));
+        if (hasLowerPreparedPriceCoverage(summary, retainedStoredPricing)) {
+          preparedValuationAvailableRef.current = false;
+          prepared = null;
+        } else {
+          preparedValuationAvailableRef.current = true;
+        }
+      }
+      if (prepared) {
+        const summary = prepared.summary;
+        if (!summary) return;
         const pricing = preparedPricingSummary(summary);
         const coverage = summary.binders.find((entry) => entry.binderId === nextActiveBinder?.id)?.owned;
         const preparedBinder = nextActiveBinder && coverage ? { ...nextActiveBinder,
@@ -1615,10 +1673,6 @@ export default function HubScreen() {
         return;
       }
       setOwnedCardCount(ownedUnitCount);
-      const priceInputs = ownedUnits.map(pricingInputForHomeUnit);
-      const unavailablePriceResults = () => priceInputs.map((input) => unavailableCollectionPrice(input, {
-        unavailableReason: 'No matching Stackr price is available.',
-      }));
       const applyLegacyResults = (results: Map<number, CollectionPriceResult>) => {
         const combined = unavailablePriceResults();
         for (const [index, result] of results) combined[index] = result;
@@ -2056,6 +2110,12 @@ export default function HubScreen() {
           number: cardNumber,
           rarity: officialCard?.rarity ?? null,
           imageUrl: officialImage ?? null,
+          inspectionRequest: getHomeCatalogueInspectionRequest({
+            name: officialCard?.name ?? row.card_id,
+            language: officialCard?.language ?? null,
+            rawData: officialCard?.raw_data,
+            imageUrl: officialImage,
+          }),
           estimatedValue: typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated),
         };
       }));
@@ -2308,7 +2368,6 @@ export default function HubScreen() {
       setSelectedChaseKey(null);
       setChaseListingsByKey({});
       setRecentActivity([]);
-      setMintyPersonalisation(DEFAULT_MINTY_PERSONALISATION_SETTINGS);
       setMintyFeedback(DEFAULT_MINTY_FEEDBACK_PROFILE);
       setApiMintyInsight(null);
       setMintyInsightError(null);
@@ -2421,9 +2480,9 @@ export default function HubScreen() {
     ownedCardCount,
     recentActivity,
   ]);
-  const mintyInsight = sanitizeMintyInsightForGate0(
-    collectionTotal != null ? apiMintyInsight ?? localMintyInsight : localMintyInsight,
-  );
+  // The API insight has no preference contract. Use the locally built result so
+  // each device-local Minty control changes the advice shown in Home.
+  const mintyInsight = sanitizeMintyInsightForGate0(localMintyInsight);
 
   const openMintyAction = useCallback((insight: MintyInsight) => {
     switch (insight.recommended_route) {
@@ -2510,43 +2569,6 @@ export default function HubScreen() {
     shadowOffset: { width: 0, height: glow ? 0 : 4 },
     elevation: glow ? 6 : 2,
   });
-
-  const renderMintySettingRow = (
-    key: keyof MintyPersonalisationSettings,
-    title: string,
-    subtitle: string
-  ) => {
-    const enabled = mintyPersonalisation[key];
-    return (
-      <TouchableOpacity
-        key={key}
-        onPress={() => updateMintyPersonalisation({ [key]: !enabled } as Partial<MintyPersonalisationSettings>)}
-        activeOpacity={0.78}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11 }}
-      >
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>{title}</Text>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', lineHeight: 15, marginTop: 2 }}>
-            {subtitle}
-          </Text>
-        </View>
-        <View
-          style={{
-            width: 46,
-            height: 26,
-            borderRadius: 999,
-            padding: 3,
-            alignItems: enabled ? 'flex-end' : 'flex-start',
-            backgroundColor: enabled ? theme.colors.primary : theme.colors.surface,
-            borderWidth: 1,
-            borderColor: enabled ? theme.colors.primary : theme.colors.border,
-          }}
-        >
-          <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#FFFFFF' }} />
-        </View>
-      </TouchableOpacity>
-    );
-  };
 
   const profileHasNew = !hasChosenMode;
   const hasHomeMovement = collectionPricingSummary.state === 'fresh'
@@ -2822,21 +2844,11 @@ export default function HubScreen() {
 
       <StackrBottomSheet visible={mintySettingsOpen} title="Minty personalisation" onClose={() => setMintySettingsOpen(false)} maxHeight="88%">
             <View style={{ borderRadius: 18, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingHorizontal: 14, marginTop: 8 }}>
-              {renderMintySettingRow('personalisedInsights', 'Personalised advice', 'Use your collection goals to pick the most useful Minty tips.')}
-              <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('useChaseList', 'Use chase list', 'Connect advice to cards you are hunting.')}
-              <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('useViewingHistory', 'Use viewing history', 'Notice cards and searches you keep coming back to.')}
-              <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('useTradeHistory', 'Use trade history', 'Suggest ways to use duplicates for better cards.')}
-              <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('usePriceAlerts', 'Use price alerts', 'Prioritise cards you already want price help with.')}
-              <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('useMarketCatalysts', 'Use events and releases', 'Consider upcoming sets, events, game news, and anniversary dates.')}
+              <MintyPreferenceControls userId={authUser?.id ?? null} />
             </View>
 
             <TouchableOpacity
-              onPress={resetMintyPreferences}
+              onPress={() => void resetMintyPreferences()}
               activeOpacity={0.78}
               style={{ marginTop: 14, borderRadius: 15, borderWidth: 1, borderColor: `${theme.colors.primary}44`, backgroundColor: `${theme.colors.primary}10`, paddingVertical: 13, alignItems: 'center' }}
             >
