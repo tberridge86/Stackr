@@ -51,7 +51,7 @@ Base: `0ea201d224e3bed0a09c8fc662645b97952078b7`, branch
 `agent/release/complete-visible-repairs-20260920`, isolated checkout
 `C:\Users\berri\.codex\worktrees\stackr-normal-build42\Stackr-1`.
 The original dirty checkout and release owner's integration checkout were preserved.
-Final implementation source: `5a3eb7eee5b5aa8d9bc00b46a79d80d6bffc8d4f`.
+Final implementation source: `d647ef1811bdfefd0b0499a30af2a633c3383733`.
 PR #210 was independently confirmed open/draft at the base above before this
 update. This corrective source is committed for integration into that same PR;
 it has not been merged or delivered to a phone. Build 45 remains the last
@@ -97,7 +97,8 @@ verified distributed normal build, as recorded in
   deletion, private support receipt, a monitored inbox or an approved notice.
 - Fixed Settings falsely selecting the Collection tab. About shows build/update
   identity and uses the existing compatible-update path without claiming that an
-  OTA check establishes the latest native version.
+  OTA check establishes the latest native version. Native update checks are hidden
+  on web because the installed web shim always returns a non-update result.
 - App/package version is prepared as `1.0.4`, preserving the existing appVersion
   runtime policy and audience flags. The Skia-dependent candidate cannot be sent
   to build 45's `1.0.3` runtime. No remote build number has been allocated here.
