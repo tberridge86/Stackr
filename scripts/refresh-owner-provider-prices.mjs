@@ -3,13 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { readOwnerPrintingCatalogue } from './lib/owner-price-printing-identities.mjs';
-import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant } from './lib/owner-price-saved-references.mjs';
+import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant, scopedOwnedRowEligibility } from './lib/owner-price-saved-references.mjs';
 import { ownedValuationUnits } from './lib/prepared-collection-valuation.mjs';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 import {
   isUuid,
   legacyEnglishOwnerPair,
   ownedRowEligibility,
+  savedProviderVariantCode,
+  verifiedLegacyEnglishMePair,
   parseOwnerPriceRefreshArguments,
   resolveOwnerExactQueueItem,
   summariseOwnerPriceRefresh,
@@ -74,11 +76,35 @@ function hasSavedLanguageConflict(row) {
 }
 
 function needsUnambiguousLanguageContext(row) {
-  if (hasSavedLanguageConflict(row) || String(row?.language ?? '').trim() || ownedRowEligibility(row)) return false;
+  const explicit = [knownLanguage(row?.card_id), knownLanguage(row?.set_id)].filter(Boolean);
+  if (hasSavedLanguageConflict(row) || String(row?.language ?? '').trim() || explicit.length) return false;
+  const finish = savedProviderVariantCode(row);
+  if (!finish) return false;
+  // Holo/reverse rows can be considered only when a binder proves English.
+  // Test the remaining saved-row gates without assigning that language: any
+  // missing or conflicting context below still leaves the row unresolved.
+  if (finish !== 'normal') return !ownedRowEligibility({ ...row, language: 'en' });
+  if (ownedRowEligibility(row)) return false;
   // This does not resolve or alter the row. It asks only whether the existing
   // verified English bridge would be applicable if a binder context proves it.
   // ME rows already have an established unscoped rule and need no extra read.
   return !legacyEnglishOwnerPair(row) && Boolean(legacyEnglishOwnerPair({ ...row, language: 'en' }));
+}
+
+function binderLanguageContext(row, binders, binderCards) {
+  const pair = JSON.stringify([row?.set_id, row?.card_id]);
+  const byId = new Map((binders ?? []).map((binder) => [String(binder.id ?? ''), binder]));
+  const ownedId = String(row?.id ?? '');
+  const ids = new Set([
+    ...(binderCards ?? []).filter((card) => card.owned && (String(card.owned_card_variant_id ?? '') === ownedId
+      || (!card.owned_card_variant_id && JSON.stringify([card.set_id, card.card_id]) === pair))).map((card) => card.binder_id),
+    ...(binders ?? []).filter((binder) => binder.type === 'official' && binder.source_set_id === row.set_id).map((binder) => binder.id),
+  ]);
+  if (!ids.size) return { state: 'absent', language: null };
+  const values = [...ids].map((id) => String(byId.get(String(id ?? ''))?.language ?? '').trim().toLowerCase());
+  if (values.some((value) => !value)) return { state: 'ambiguous', language: null };
+  const languages = [...new Set(values)];
+  return languages.length === 1 ? { state: 'unanimous', language: languages[0] } : { state: 'ambiguous', language: null };
 }
 
 async function enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows) {
@@ -99,6 +125,14 @@ async function enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows) {
   }).filter((unit) => ownedIds.has(String(unit?.id ?? '')))
     .map((unit) => [String(unit.id), unit.language]));
   return rows.map((row) => {
+    const finish = savedProviderVariantCode(row);
+    const explicit = [knownLanguage(row?.card_id), knownLanguage(row?.set_id)].filter(Boolean);
+    if (finish && finish !== 'normal' && !String(row?.language ?? '').trim() && !explicit.length) {
+      const context = binderLanguageContext(row, data.binders, data.binderCards);
+      if (context.state === 'unanimous') return { ...row, language: context.language };
+      if (context.state === 'absent' && verifiedLegacyEnglishMePair(row)) return { ...row, language: 'en' };
+      return row;
+    }
     const language = languageByOwnedId.get(String(row?.id ?? ''));
     return String(language ?? '').trim() ? { ...row, language } : row;
   });
@@ -124,7 +158,9 @@ export async function readOwnedRows(supabase, ownerId) {
 }
 
 async function resolveOwnedCandidates(supabase, ownedRows) {
-  const rowsNeedingIdentity = ownedRows.filter((row) => !ownedRowEligibility(row) && !hasSavedLanguageConflict(row));
+  // Explicit conflict-free language prefixes are evidence, so apply their
+  // scope before deciding whether a saved physical finish can be resolved.
+  const rowsNeedingIdentity = ownedRows.filter((row) => !scopedOwnedRowEligibility(row) && !hasSavedLanguageConflict(row));
   const referenceRows = rowsNeedingIdentity.flatMap(ownerIdentityLookupRows);
   const externalIds = [...new Set(referenceRows.flatMap((row) => [
     row.card_id, row.set_id, ...(legacyEnglishOwnerPair(row)?.setAliases ?? []),
@@ -168,7 +204,7 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
   const legacyCatalogueRows = [];
   for (const setId of legacySetIds) {
     legacyCatalogueRows.push(...await queryRows(supabase.schema('api').from('catalogue_cards')
-      .select('variant_id,set_id,language_code,collector_number,variant_code,finish_code')
+      .select('variant_id,printing_id,set_id,language_code,collector_number,variant_code,finish_code')
       .eq('set_id', setId)
       .eq('language_code', 'en')
       .limit(1000)));

@@ -12,6 +12,22 @@ function normalise(value) {
   return String(value ?? '').trim().toLowerCase();
 }
 
+function savedVariantToken(value) {
+  return String(value ?? '').trim()
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/[-\s]+/g, '_')
+    .toLowerCase();
+}
+
+/** The only physical finishes the exact TCGdex refresh can prove today. */
+export function savedProviderVariantCode(value) {
+  const token = savedVariantToken(typeof value === 'object' ? value?.variant : value);
+  if (NORMAL_CODES.has(token) || token === 'non_holo') return 'normal';
+  if (['holo', 'holofoil'].includes(token)) return 'holo';
+  if (['reverse_holo', 'reverse_holofoil', 'reverseholofoil'].includes(token)) return 'reverse_holo';
+  return null;
+}
+
 function sameCollectorNumber(left, right) {
   const normalize = (value) => {
     const raw = String(value ?? '').trim().toLowerCase();
@@ -68,6 +84,12 @@ export function legacyEnglishOwnerPair(row) {
   const establishedMePair = /^me\d{1,2}(?:pt5|\.5)?[a-z]*$/.test(setCode);
   if (!establishedMePair && !isEnglishLanguage(row?.language)) return null;
   return { setAliases, collectorNumber: cardMatch[2] };
+}
+
+/** The long-standing unscoped English rule applies only to ME set/card pairs. */
+export function verifiedLegacyEnglishMePair(row) {
+  if (!/^me\d{1,2}(?:pt5|\.5)?[a-z]*$/.test(normalise(row?.set_id))) return null;
+  return legacyEnglishOwnerPair(row);
 }
 
 export function parseOwnerPriceRefreshArguments(args = []) {
@@ -131,7 +153,8 @@ export function ownedRowEligibility(row) {
   if (Number(row?.quantity ?? 0) < 1) return 'quantity_not_positive';
   if (!['near mint', 'near_mint', 'nm'].includes(normalise(row?.condition))) return 'not_raw_near_mint';
   if (normalise(row?.grade_company) || normalise(row?.grade)) return 'graded_card';
-  if (!NORMAL_CODES.has(normalise(row?.variant))) return 'non_normal_saved_variant';
+  const variant = savedProviderVariantCode(row);
+  if (!variant || (variant !== 'normal' && !isEnglishLanguage(row?.language))) return 'non_normal_saved_variant';
   if (!String(row?.card_id ?? '').trim() || !String(row?.set_id ?? '').trim()) return 'missing_saved_identity';
   return null;
 }
@@ -149,16 +172,18 @@ function publishedSetIds(identifierRows, savedSetId, aliases = []) {
 
 /**
  * Resolves a legacy owned-card row without guessing. A legacy card id and set
- * id must each map through the published identifier view to one exact default
- * variant. Caller-supplied catalogue rows make the final normal/default check
- * explicit before a provider request is possible.
+ * id must each map through the published identifier view to one exact physical
+ * variant. Caller-supplied catalogue rows make the final finish check explicit
+ * before a provider request is possible.
  */
 export function resolveOwnedProviderVariant(row, identifierRows, catalogueRows) {
   const eligibility = ownedRowEligibility(row);
   if (eligibility) return { ok: false, reason: eligibility };
+  const expectedVariant = savedProviderVariantCode(row);
 
   const savedCardId = String(row.card_id).trim().toLowerCase();
   const englishPair = legacyEnglishOwnerPair(row);
+  const verifiedMePair = verifiedLegacyEnglishMePair(row);
   const allowedSetIds = publishedSetIds(identifierRows, row.set_id, englishPair?.setAliases);
   if (!allowedSetIds.size) return { ok: false, reason: 'unresolved_saved_set' };
 
@@ -180,21 +205,43 @@ export function resolveOwnedProviderVariant(row, identifierRows, catalogueRows) 
     )));
   // Published aliases can identify a printing without naming a physical
   // variant. Reuse that mapping only for its single attested normal finish.
-  // An alias with an explicit (even invalid) variant must never broaden to
-  // a sibling normal finish when the requested variant is unavailable.
+  // Holo/reverse rows need a direct canonical-variant mapping; an alias with
+  // an explicit (even invalid) variant must never broaden to a sibling finish.
   const printingAliases = cardIdentifiers
     .filter((alias) => !normalise(alias.variant_id) && isUuid(alias.printing_id));
-  const savedPrintingId = isUuid(savedCardId) && !directCandidates.length ? savedCardId : null;
+  // The measured ME cohort has one authoritative English printing-level card
+  // alias. It can constrain the established ME collector pair only when it
+  // is coherent with the published English set and names one printing. Any
+  // canonical, foreign, invalid, or conflicting literal alias must use the
+  // direct path and therefore cannot be bypassed by a collector match.
+  const coherentMePrintingAliases = cardIdentifiers.filter((alias) => !normalise(alias.variant_id)
+    && isUuid(alias.printing_id)
+    && normalise(alias.language_code) === 'en'
+    && (!normalise(alias.set_id) || allowedSetIds.has(normalise(alias.set_id))));
+  const coherentMePrintingIds = [...new Set(coherentMePrintingAliases.map((alias) => normalise(alias.printing_id)))];
+  const exactMePrintingId = cardIdentifiers.length
+    && coherentMePrintingAliases.length === cardIdentifiers.length
+    && coherentMePrintingIds.length === 1
+    ? coherentMePrintingIds[0]
+    : null;
+  const savedPrintingId = expectedVariant === 'normal' && isUuid(savedCardId) && !directCandidates.length ? savedCardId : null;
   const printingCandidates = (catalogueRows ?? [])
+    .filter(() => expectedVariant === 'normal')
     .filter((card) => (savedPrintingId && normalise(card.printing_id) === savedPrintingId)
       || printingAliases.some((alias) => normalise(alias.printing_id) === normalise(card.printing_id)
         && aliasScopeMatches(alias, card)))
     .filter((card) => ['standard', 'default', 'normal'].includes(normalise(card.variant_code)))
     .filter((card) => ['standard', 'default', 'normal', 'non_holo'].includes(normalise(card.finish_code)));
-  const legacyCandidates = englishPair
+  // New physical finishes use a direct canonical alias, except for the
+  // measured ME printing-level identity above. That exception still requires
+  // set, collector, English, printing, finish and uniqueness agreement.
+  const legacyPair = expectedVariant === 'normal' ? englishPair
+    : isEnglishLanguage(row?.language) && exactMePrintingId ? verifiedMePair : null;
+  const legacyCandidates = legacyPair
     ? (catalogueRows ?? []).filter((card) => allowedSetIds.has(String(card?.set_id ?? '').toLowerCase()))
       .filter((card) => normalise(card?.language_code) === 'en')
-      .filter((card) => sameCollectorNumber(card?.collector_number, englishPair.collectorNumber))
+      .filter((card) => expectedVariant === 'normal' || normalise(card?.printing_id) === exactMePrintingId)
+      .filter((card) => sameCollectorNumber(card?.collector_number, legacyPair.collectorNumber))
     : [];
   if (!candidateIds.length && !printingAliases.length && !legacyCandidates.length) return { ok: false, reason: 'unresolved_saved_card' };
 
@@ -202,8 +249,11 @@ export function resolveOwnedProviderVariant(row, identifierRows, catalogueRows) 
     .filter((card) => isUuid(card?.variant_id))
     .filter((card) => allowedSetIds.has(String(card?.set_id ?? '').toLowerCase()))
     .filter((card) => Boolean(String(card?.language_code ?? '').trim()))
-    .filter((card) => NORMAL_CODES.has(normalise(card?.variant_code)))
-    .filter((card) => NORMAL_FINISH_CODES.has(normalise(card?.finish_code)));
+    .filter((card) => expectedVariant === 'normal'
+      ? NORMAL_CODES.has(normalise(card?.variant_code)) && NORMAL_FINISH_CODES.has(normalise(card?.finish_code))
+      : normalise(card?.language_code) === 'en'
+        && normalise(card?.variant_code) === expectedVariant
+        && normalise(card?.finish_code) === expectedVariant);
   const unique = [...new Map(candidates.map((card) => [String(card.variant_id).toLowerCase(), card])).values()];
   if (unique.length !== 1) return { ok: false, reason: unique.length ? 'ambiguous_saved_identity' : 'unsupported_or_unpublished_variant' };
   return { ok: true, variantId: String(unique[0].variant_id).toLowerCase() };

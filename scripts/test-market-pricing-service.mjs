@@ -12,7 +12,11 @@ import { buildCanonicalIdentity } from '../backend/lib/pricingV2/identity.js';
 import { scoreObservationMatch } from '../backend/lib/pricingV2/matcher.js';
 import { normaliseObservation } from '../backend/lib/pricingV2/normalise.js';
 import { calculatePricingEstimate } from '../backend/lib/pricingV2/statistics.js';
-import { fetchTcgdexNormalCardPrice, summariseTcgdexNormalPricing } from '../backend/lib/tcgdex.js';
+import {
+  fetchTcgdexNormalCardPrice,
+  summariseTcgdexExactVariantPricing,
+  summariseTcgdexNormalPricing,
+} from '../backend/lib/tcgdex.js';
 
 const migration = readFileSync('supabase/migrations/20260728171416_stackr_market_pricing_service.sql', 'utf8');
 const snapshotBucketMigration = readFileSync('supabase/migrations/20260904130000_market_price_snapshot_history_buckets.sql', 'utf8');
@@ -1203,6 +1207,99 @@ async function assertExactOwnerProviderRefresh() {
   assert.equal(normal.sourceCurrency, 'USD', 'the quote retains its original provider currency alongside its configured GBP conversion');
 }
 
+async function assertExactEnglishFinishProviderRefresh() {
+  const setId = '31313131-3131-4313-8313-313131313131';
+  const printingId = '32323232-3232-4232-8232-323232323232';
+  const source = { id: '33333333-3333-4333-8333-333333333333', code: 'tcgdex', active: true, licence_status: 'approved', deprecated_at: null };
+  const version = { id: '34343434-3434-4434-8434-343434343434', status: 'published', language_code: 'en', deprecated_at: null, superseded_by_version_id: null };
+  const input = { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' };
+
+  for (const [variantCode, variantId, providerCardId] of [
+    ['holo', '35353535-3535-4535-8535-353535353535', 'base3-4-holo'],
+    ['reverse_holo', '36363636-3636-4636-8636-363636363636', 'base3-4-reverse'],
+  ]) {
+    const metadata = {
+      variant_id: variantId, printing_id: printingId, language_code: 'en',
+      set_id: setId, set_code: 'base3', set_english_display_name: 'Base Set', collector_number: '4/102',
+      card_english_display_name: 'Charizard', rarity_code: 'Rare', variant_code: variantCode, finish_code: variantCode,
+    };
+    const aliases = [{ catalogue_version_id: version.id, source_id: source.id, source_entity_type: 'card', external_id: `${providerCardId}:${variantCode}`, language_code: 'en', variant_id: variantId }];
+    let calls = 0;
+    const db = createSnapshotSupabase({ metadata, tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: aliases });
+    const service = createMarketPricingService({
+      supabase: db,
+      fetchTcgdexNormalCardPrice: async (request) => {
+        calls += 1;
+        assert.deepEqual(request, { cardId: providerCardId, language: 'en', variantCode });
+        return {
+          providerCardId, language: 'en', number: '4/102', variantCode,
+          price: 12.5, priceSource: 'tcgdex_tcgplayer', pricingUpdatedAt: new Date().toISOString(),
+        };
+      },
+    });
+    const refreshed = await service.refreshExactProviderEstimate(variantId, input);
+    assert.equal(refreshed.estimates.central, 12.5, `${variantCode} persists only after its exact quote is accepted`);
+    assert.equal(calls, 1);
+    assert.equal(db.inserted[0].card_id, variantId);
+    assert.equal(db.inserted[0].tcgdex_card_id, providerCardId);
+
+    const wrongFinishVariantId = variantCode === 'holo'
+      ? '41414141-4141-4141-8141-414141414141'
+      : '42424242-4242-4242-8242-424242424242';
+    const wrongFinishMetadata = { ...metadata, variant_id: wrongFinishVariantId };
+    const wrongFinishService = createMarketPricingService({
+      supabase: createSnapshotSupabase({
+        metadata: wrongFinishMetadata,
+        tcgdexSource: source,
+        publishedVersion: version,
+        approvedTcgdexAliases: [{ ...aliases[0], variant_id: wrongFinishVariantId }],
+      }),
+      fetchTcgdexNormalCardPrice: async () => ({
+        providerCardId, language: 'en', number: '4/102', variantCode: variantCode === 'holo' ? 'reverse_holo' : 'holo',
+        price: 12.5, pricingUpdatedAt: new Date().toISOString(),
+      }),
+    });
+    await assert.rejects(
+      () => wrongFinishService.refreshExactProviderEstimate(wrongFinishVariantId, input),
+      (error) => error.code === 'exact_provider_quote_unavailable',
+      `a ${variantCode} request must reject a sibling finish quote`,
+    );
+  }
+
+  const nonEnglishMetadata = {
+    variant_id: '37373737-3737-4737-8737-373737373737', printing_id: printingId, language_code: 'ja',
+    set_id: setId, set_code: 'S12a', set_english_display_name: 'VSTAR Universe', collector_number: '146',
+    card_english_display_name: 'Mewtwo', rarity_code: 'AR', variant_code: 'holo', finish_code: 'holo',
+  };
+  const nonEnglishService = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata: nonEnglishMetadata, tcgdexSource: source, publishedVersion: version }),
+    fetchTcgdexNormalCardPrice: async () => { throw new Error('non-English finish must reject before a provider call'); },
+  });
+  await assert.rejects(
+    () => nonEnglishService.refreshExactProviderEstimate(nonEnglishMetadata.variant_id, input),
+    (error) => error.code === 'unsupported_refresh_scope',
+  );
+
+  const unsupportedFinishMetadata = { ...nonEnglishMetadata, variant_id: '38383838-3838-4838-8838-383838383838', language_code: 'en', variant_code: 'rainbow', finish_code: 'rainbow' };
+  const unsupportedFinishService = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata: unsupportedFinishMetadata, tcgdexSource: source, publishedVersion: version }),
+    fetchTcgdexNormalCardPrice: async () => { throw new Error('unsupported finish must reject before a provider call'); },
+  });
+  await assert.rejects(
+    () => unsupportedFinishService.refreshExactProviderEstimate(unsupportedFinishMetadata.variant_id, input),
+    (error) => error.code === 'unsupported_refresh_scope',
+  );
+
+  assert.equal(
+    summariseTcgdexExactVariantPricing({
+      id: 'base3-4-holo', language: 'en', localId: '4/102', set: { id: 'base3' }, variants: { holo: true },
+      pricing: { cardmarket: { unit: 'EUR', 'trend-holo': 9, updated: new Date().toISOString() } },
+    }, 'en', 'holo'),
+    null,
+    'Cardmarket holo-only data cannot establish an exact English holo estimate',
+  );
+}
+
 async function assertExactProviderDailySnapshotConflictHandling() {
   const setId = '11111111-1111-4111-8111-111111111111';
   const source = { id: '44444444-4444-4444-8444-444444444444', code: 'tcgdex', active: true, licence_status: 'approved', deprecated_at: null };
@@ -1343,6 +1440,7 @@ await assertManualRefreshIdentityAndGate();
 await assertIdentityAwareDenseRangeHistory();
 await assertPagedRangeHistoryKeepsBaseline();
 await assertExactOwnerProviderRefresh();
+await assertExactEnglishFinishProviderRefresh();
 await assertExactProviderDailySnapshotConflictHandling();
 await assertNormalProviderFetchAbortsAndClearsInflight();
 

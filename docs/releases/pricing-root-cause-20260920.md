@@ -23,7 +23,23 @@ The ordinary owner worker obtains language context only when a potentially eligi
 
 ## Delivery and remaining acceptance
 
-At source review, the new migration and worker changes are not yet deployed. Record the merged SHA, CI, protected rehearsal/apply receipts, worker deployments, actual bounded refresh outcomes and production readback in the PR before calling the repair delivered. Keep prepared app reads off until real output/coverage is reconciled; resume preparation only after the database repair passes.
+PR [#214](https://github.com/tberridge86/Stackr/pull/214) merged as `0ac3c79b668535a7fa982c8a248299dc75208581`. All eight applicable PR checks and merged-main Platform CI [35513020843](https://github.com/tberridge86/Stackr/actions/runs/35513020843) passed. The wider release-candidate gate was skipped by its existing invocation condition.
+
+Production backup-first rehearsal [35513031305](https://github.com/tberridge86/Stackr/actions/runs/35513031305) restored the original function and unchanged 146-entry ledger. Backup-first apply [35513275777](https://github.com/tberridge86/Stackr/actions/runs/35513275777) applied only the pinned repair migration, producing 147 ledger entries. The deployed function completed in **13.215 ms** in a read-only service-role execution plan under the 8-second statement budget.
+
+Exact-source Railway automatic worker `38723681-e8bc-42a0-b84d-6cad9fc15dad` and queue worker `4e28e591-ef89-4dba-aa2c-aee21efa0ef1` deployed successfully. The queue ran cleanly before preparation was resumed. Preparation resume deployment `3ef3f2c1-98a5-479a-b679-a4dec11de526` published complete generations at 13:36:20 and 13:40:49 UTC in **44,944 ms** and **39,595 ms**, with 163 owned price identities and 2,987 stored-price identities including official set totals. Neither run timed out or failed; the slowest stored-price reads took 4,235 ms and 3,989 ms. Both production readbacks confirmed **111/366 priced copies**, previously 103/366, and the same GBP 8.94 priced subtotal. Prepared app reads remain OFF pending coverage reconciliation and signed-in acceptance.
+
+Owner dry run [35513033176](https://github.com/tberridge86/Stackr/actions/runs/35513033176) selected the three newly mapped normal variants. Bounded refresh [35513304106](https://github.com/tberridge86/Stackr/actions/runs/35513304106) selected seven, persisted all three newly matched variants and reported four unavailable provider identities, zero failures. Production storage and the service-role stored-price RPC both returned GBP 0.24, 0.09 and 0.06 for the three exact variants, covering eight copies. Their provider timestamp is 19 September 22:54:55 UTC, so these are older market estimates. Signed-in app/device readback is not established by those database checks.
+
+The other four selected variants were English PBL collectors 85, 88, 95 and 117 with no approved TCGdex mapping. No catalogue records were changed or substitute providers selected.
+
+## Explicit finish refresh follow-up
+
+The ordinary owner worker rejected all saved non-normal finishes before reaching a provider service that already supports exact English holo and reverse-holo TCGplayer fields. The frozen 309-row ownership scan contains 102 such rows: 45 with Japanese context and 57 unscoped ME4 references. The existing verified English ME rule, constrained by each card's single coherent published English printing alias, exact set/collector, exact saved finish and unique physical variant, resolves **55** of those 57: 11 holo and 44 reverse-holo. The two missing physical identities remain unavailable; the 45 Japanese rows remain outside this provider's supported finish scope.
+
+The worker repair accepts direct English canonical finish identities and this printing-bound ME case. It distinguishes absent binder context from conflicting or missing-language matched binders, applies explicit language prefixes before eligibility, and refuses foreign/conflicting aliases or a different finish. Generic unscoped non-ME references and printing-only substitutions remain excluded. Stored prepared valuation semantics stay unchanged. No saved holdings, catalogue rows, provider flags or paid sources change.
+
+Six bounded production samples had approved matching TCGdex aliases. All 55 candidate identities had **zero** exact TCGdex snapshots before this follow-up. These are identity and baseline measurements, not quote availability; record the deployed bounded refresh and actual stored readback before reporting coverage gain.
 
 Older save paths defaulted some records to `normal` without recording a physical finish choice. Exact holo-only matches cannot safely repair those records by assumption. Physical finish confirmation, unsupported provider scope, complete useful price coverage and signed-in app/device acceptance remain separate. Artwork and camera acceptance are unaffected and outstanding. No last-sold evidence or fresh price is inferred from a successful job.
 

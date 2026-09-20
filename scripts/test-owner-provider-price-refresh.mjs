@@ -61,6 +61,63 @@ assert.equal(legacyEnglishOwnerPair({ ...owned, language: 'ja', card_id: 'sv8pt5
 assert.equal(legacyEnglishOwnerPair({ ...owned, language: 'en', card_id: 'zsv10pt5-10', set_id: 'zsv10pt5' }), null, 'unknown codes are not normalised as English aliases');
 assert.equal(legacyEnglishOwnerPair({ ...owned, card_id: 'm3-10', set_id: 'm3' }), null, 'Japanese ME identifiers must not be reinterpreted as English');
 assert.deepEqual(resolveOwnedProviderVariant(owned, identifiers, catalogue), { ok: true, variantId: variant });
+const holoVariant = '88888888-8888-4888-8888-888888888888';
+const reverseVariant = '99999999-9999-4999-8999-999999999999';
+const finishCatalogue = [
+  ...catalogue,
+  { variant_id: holoVariant, printing_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', set_id: set, language_code: 'en', variant_code: 'holo', finish_code: 'holo' },
+  { variant_id: reverseVariant, printing_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', set_id: set, language_code: 'en', variant_code: 'reverse_holo', finish_code: 'reverse_holo' },
+];
+const englishHolo = { ...owned, language: 'en', card_id: 'tcgdex-holo', variant: 'holofoil' };
+const englishReverse = { ...owned, language: 'en', card_id: 'tcgdex-reverse', variant: 'reverseHolofoil' };
+assert.equal(ownedRowEligibility(englishHolo), null, 'the exact English holo spelling is eligible');
+assert.equal(ownedRowEligibility(englishReverse), null, 'the exact English reverse spelling is eligible');
+assert.equal(ownedRowEligibility({ ...englishReverse, variant: 'reverseholofoil' }), null, 'the established lowercase reverse spelling stays eligible');
+assert.deepEqual(resolveOwnedProviderVariant(englishHolo, [
+  ...identifiers, { source_entity_type: 'card', external_id: 'tcgdex-holo', set_id: set, variant_id: holoVariant, language_code: 'en' },
+], finishCatalogue), { ok: true, variantId: holoVariant }, 'an exact card alias resolves only the requested English holo');
+assert.deepEqual(resolveOwnedProviderVariant(englishReverse, [
+  ...identifiers, { source_entity_type: 'card', external_id: 'tcgdex-reverse', set_id: set, variant_id: reverseVariant, language_code: 'en' },
+], finishCatalogue), { ok: true, variantId: reverseVariant }, 'an exact card alias resolves only the requested English reverse');
+assert.equal(resolveOwnedProviderVariant(englishHolo, [
+  ...identifiers, { source_entity_type: 'card', external_id: 'tcgdex-holo', set_id: set, variant_id: variant, language_code: 'en' },
+], catalogue).reason, 'unsupported_or_unpublished_variant', 'a holo row cannot fall back to a normal sibling');
+assert.equal(resolveOwnedProviderVariant({ ...englishHolo, language: 'ja' }, [
+  ...identifiers, { source_entity_type: 'card', external_id: 'tcgdex-holo', set_id: set, variant_id: holoVariant, language_code: 'ja' },
+], [{ ...finishCatalogue[1], language_code: 'ja' }]).reason, 'non_normal_saved_variant', 'non-English holo rows remain unsupported');
+assert.equal(resolveOwnedProviderVariant({ ...englishHolo, variant: 'first_edition' }, identifiers, finishCatalogue).reason, 'non_normal_saved_variant', 'other physical variants remain unsupported');
+assert.equal(resolveOwnedProviderVariant(englishHolo, [
+  ...identifiers, { source_entity_type: 'card', external_id: 'tcgdex-holo', set_id: set, variant_id: holoVariant, language_code: 'en' },
+], [{ ...finishCatalogue[1], finish_code: 'reverse_holo' }]).reason, 'unsupported_or_unpublished_variant', 'a mismatched catalogue finish cannot be refreshed');
+const meFinishSet = 'abababab-abab-4bab-8bab-abababababab';
+const meFinishVariant = 'bcbcbcbc-bcbc-4cbc-8cbc-bcbcbcbcbcbc';
+const meFinishPrinting = 'cdcdcdcd-cdcd-4dcd-8dcd-cdcdcdcdcdcd';
+const englishMeReverse = { ...owned, language: 'en', card_id: 'me4-068', set_id: 'me4', variant: 'reverseHolofoil' };
+const meFinishIdentifiers = [
+  { source_entity_type: 'set', external_id: 'me04', language_code: 'en', set_id: meFinishSet },
+  { source_entity_type: 'card', external_id: 'me4-068', language_code: 'en', printing_id: meFinishPrinting, variant_id: null },
+];
+const meFinishCatalogue = [{ variant_id: meFinishVariant, printing_id: meFinishPrinting, set_id: meFinishSet, language_code: 'en', collector_number: '68', variant_code: 'reverse_holo', finish_code: 'reverse_holo' }];
+assert.deepEqual(resolveOwnedProviderVariant(englishMeReverse, meFinishIdentifiers, meFinishCatalogue), { ok: true, variantId: meFinishVariant }, 'the verified ME pair may resolve one exact English reverse finish only when its authoritative printing alias also agrees');
+assert.equal(resolveOwnedProviderVariant(englishMeReverse, [
+  ...meFinishIdentifiers,
+  { source_entity_type: 'card', external_id: 'me4-068', language_code: 'en', set_id: meFinishSet, variant_id: variant },
+], [...meFinishCatalogue, { ...catalogue[0], set_id: meFinishSet, language_code: 'en', collector_number: '68' }]).reason, 'unsupported_or_unpublished_variant', 'a literal normal alias cannot be bypassed by the ME collector finish bridge');
+assert.equal(resolveOwnedProviderVariant(englishMeReverse, [
+  ...meFinishIdentifiers,
+  { source_entity_type: 'card', external_id: 'me4-068', language_code: 'en', set_id: meFinishSet, variant_id: 'dededede-dede-4ede-8ede-dededededede' },
+], meFinishCatalogue).reason, 'unsupported_or_unpublished_variant', 'an invalid literal canonical alias cannot be bypassed by the ME collector finish bridge');
+assert.equal(resolveOwnedProviderVariant(englishMeReverse, [{ ...meFinishIdentifiers[0] }, {
+  source_entity_type: 'card', external_id: 'me4-068', language_code: 'en', printing_id: 'edededed-eded-4ede-8ede-edededededed', variant_id: null,
+}], meFinishCatalogue).reason, 'unsupported_or_unpublished_variant', 'a printing-only alias with another printing cannot satisfy the ME bridge');
+assert.equal(resolveOwnedProviderVariant(englishMeReverse, [...meFinishIdentifiers, {
+  source_entity_type: 'card', external_id: 'me4-068', language_code: 'en', printing_id: 'edededed-eded-4ede-8ede-edededededed', variant_id: null,
+}], meFinishCatalogue).reason, 'unsupported_or_unpublished_variant', 'conflicting printing identities cannot satisfy the ME bridge');
+assert.equal(resolveOwnedProviderVariant(englishMeReverse, [{ ...meFinishIdentifiers[0] }, {
+  source_entity_type: 'card', external_id: 'me4-068', language_code: 'ja', printing_id: meFinishPrinting, variant_id: null,
+}], meFinishCatalogue).reason, 'unsupported_or_unpublished_variant', 'a foreign literal alias cannot satisfy the English ME bridge');
+assert.equal(resolveOwnedProviderVariant({ ...englishMeReverse, language: 'ja' }, meFinishIdentifiers, [{ ...meFinishCatalogue[0], language_code: 'ja' }]).reason, 'non_normal_saved_variant', 'the ME rule does not authorise a foreign-language finish');
+assert.equal(resolveOwnedProviderVariant({ ...englishMeReverse, card_id: 'sv4-068', set_id: 'sv4' }, meFinishIdentifiers, meFinishCatalogue).reason, 'unresolved_saved_set', 'SV collector pairs never inherit the ME finish bridge');
 const englishLegacySet = '33333333-3333-4333-8333-333333333333';
 const englishLegacyVariant = '44444444-4444-4444-8444-444444444444';
 assert.deepEqual(resolveOwnedProviderVariant(
@@ -153,6 +210,15 @@ const queueRow = {
 };
 const queueCatalogue = [{ ...catalogue[0], printing_id: queuePrinting }];
 assert.deepEqual(resolveOwnerExactQueueItem(queueRow, queueCatalogue), { ok: true, variantId: variant });
+const queueHoloVariant = '77777777-7777-4777-8777-777777777777';
+const queueHoloRow = {
+  ...queueRow,
+  metadata: { ...queueRow.metadata, canonicalVariantId: queueHoloVariant, variantCode: 'holo', finishCode: 'holo' },
+};
+const queueHoloCatalogue = [{
+  ...queueCatalogue[0], variant_id: queueHoloVariant, language_code: 'en', variant_code: 'holo', finish_code: 'holo',
+}];
+assert.deepEqual(resolveOwnerExactQueueItem(queueHoloRow, queueHoloCatalogue), { ok: true, variantId: queueHoloVariant }, 'a queue item may refresh its exact English holo variant when every canonical identity field agrees');
 assert.equal(resolveOwnerExactQueueItem(queueRow, queueCatalogue, 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb').reason, 'unsupported_queue_identity', 'a queue row from another owner is never eligible');
 assert.equal(resolveOwnerExactQueueItem({ ...queueRow, metadata: { ...queueRow.metadata, finishCode: 'reverse_holo' } }, queueCatalogue).reason, 'unsupported_queue_identity');
 assert.equal(resolveOwnerExactQueueItem({ ...queueRow, metadata: { ...queueRow.metadata, currency: 'USD' } }, queueCatalogue).reason, 'unsupported_queue_scope');
