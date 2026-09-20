@@ -90,3 +90,23 @@ test('every accepted explicit language still requires that same published langua
 test('unknown aliases with no language evidence cannot satisfy a prefixed row', () => {
   assert.equal(resolve(row, aliases.map(({ language_code, ...rest }) => rest)).ok, false);
 });
+
+test('database lookup includes the verified ME set spelling needed by the resolver', () => {
+  for (const [savedSet, publishedSet] of [['me1', 'me01'], ['me2pt5', 'me02.5']]) {
+    const saved = { ...row, card_id: `${savedSet}-001`, set_id: savedSet };
+    const references = new Set(ownerIdentityLookupRows(saved).flatMap((item) => [item.card_id, item.set_id]));
+    const published = [{ source_entity_type: 'set', external_id: publishedSet, language_code: 'en', set_id: setId }];
+    const fetched = published.filter((item) => references.has(item.external_id));
+    assert.deepEqual(resolve(saved, fetched, [{ ...card, language_code: 'en', collector_number: '001' }]), expected);
+    assert.equal(ownerIdentityLookupRows(saved).every((item) => item.card_id === saved.card_id), true);
+    assert.equal(resolve(saved, fetched, [{ ...card, language_code: 'ja', collector_number: '001' }]).ok, false);
+    assert.equal(resolve(saved, fetched, [{ ...card, language_code: 'en', collector_number: '001', variant_code: 'holo', finish_code: 'holo' }]).ok, false);
+  }
+});
+
+test('verified ME lookup does not rewrite foreign or mismatched saved pairs', () => {
+  const foreign = { ...row, card_id: 'ja:me1-001', set_id: 'ja:me1' };
+  assert.deepEqual(ownerIdentityLookupRows(foreign).map((item) => item.set_id), ['ja:me1', 'me1']);
+  const mismatched = { ...row, card_id: 'me2-001', set_id: 'me1' };
+  assert.deepEqual(ownerIdentityLookupRows(mismatched), [mismatched]);
+});
