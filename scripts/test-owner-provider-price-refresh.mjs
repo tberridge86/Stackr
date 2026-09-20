@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
+  OWNER_PRICE_REFRESH_COMPLETE_MAX_VARIANTS,
   OWNER_PRICE_REFRESH_MAX_LIMIT,
   ownedRowEligibility,
   legacyEnglishOwnerPair,
@@ -8,7 +9,7 @@ import {
   resolveOwnerExactQueueItem,
   resolveOwnedProviderVariant,
 } from './lib/owner-provider-price-refresh-core.mjs';
-import { readOwnedRows, selectOwnedCandidatesBySnapshot, runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
+import { readOwnedRows, selectCompleteOwnedCandidates, selectOwnedCandidatesBySnapshot, runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
 
 const workflow = readFileSync('.github/workflows/owner-provider-price-refresh.yml', 'utf8');
 assert.match(workflow, /schedule:\s*\n(?:[^\n]*\n)*?\s+- cron: '\*\/10 \* \* \* \*'/, 'the exact Home queue must have a bounded scheduled consumer');
@@ -45,11 +46,20 @@ assert.deepEqual(
   'when all identities have a snapshot, the oldest exact evidence is refreshed first',
 );
 assert.deepEqual(selectOwnedCandidatesBySnapshot(coverageCandidates, new Map(), 0), [], 'a full queue leaves no owned refresh budget');
+assert.throws(
+  () => selectCompleteOwnedCandidates(Array.from({ length: OWNER_PRICE_REFRESH_COMPLETE_MAX_VARIANTS }, (_, index) => ({
+    variantId: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+  }))),
+  /safe variant bound/,
+  'a complete pass fails before provider work when its all-owned plan reaches the safe bound',
+);
 
-assert.deepEqual(parseOwnerPriceRefreshArguments([]), { limit: 10, dryRun: true, includeQueue: false, queueOnly: false });
-assert.deepEqual(parseOwnerPriceRefreshArguments(['--limit=2', '--apply']), { limit: 2, dryRun: false, includeQueue: false, queueOnly: false });
-assert.deepEqual(parseOwnerPriceRefreshArguments(['--include-queue', '--queue-only']), { limit: 10, dryRun: true, includeQueue: true, queueOnly: true });
+assert.deepEqual(parseOwnerPriceRefreshArguments([]), { limit: 10, dryRun: true, includeQueue: false, queueOnly: false, completeOwned: false });
+assert.deepEqual(parseOwnerPriceRefreshArguments(['--limit=2', '--apply']), { limit: 2, dryRun: false, includeQueue: false, queueOnly: false, completeOwned: false });
+assert.deepEqual(parseOwnerPriceRefreshArguments(['--include-queue', '--queue-only']), { limit: 10, dryRun: true, includeQueue: true, queueOnly: true, completeOwned: false });
+assert.deepEqual(parseOwnerPriceRefreshArguments(['--complete-owned', '--apply']), { limit: 10, dryRun: false, includeQueue: false, queueOnly: false, completeOwned: true });
 assert.throws(() => parseOwnerPriceRefreshArguments(['--queue-only']), /requires --include-queue/);
+assert.throws(() => parseOwnerPriceRefreshArguments(['--complete-owned', '--include-queue']), /cannot be combined/);
 assert.throws(() => parseOwnerPriceRefreshArguments([`--limit=${OWNER_PRICE_REFRESH_MAX_LIMIT + 1}`]), /1 to 30/);
 assert.equal(ownedRowEligibility({ ...owned, condition: 'Lightly Played' }), 'not_raw_near_mint');
 assert.equal(ownedRowEligibility({ ...owned, grade: '10' }), 'graded_card');
@@ -177,6 +187,79 @@ assert.equal(calls, 0, 'dry run must never invoke provider refresh');
 const applied = await runOwnerProviderRefresh({ supabase, refreshExactProviderEstimate: async (id, input) => { calls += 1; assert.equal(id, variant); assert.deepEqual(input, { productType: 'raw_card', condition: 'near_mint', currency: 'GBP' }); }, ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 2, dryRun: false });
 assert.equal(applied.refreshed, 1);
 assert.equal(calls, 1);
+
+const completeVariantIds = Array.from({ length: 31 }, (_, index) =>
+  `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`);
+const completeOwnedRows = completeVariantIds.map((variantId) => ({
+  card_id: variantId, set_id: set, variant: 'normal', quantity: 1,
+  condition: 'Near Mint', grade_company: '', grade: '',
+}));
+const completeCatalogue = completeVariantIds.map((variantId) => ({
+  variant_id: variantId, set_id: set, language_code: 'en', variant_code: 'normal', finish_code: 'normal',
+}));
+let completeSnapshotReads = 0;
+const completeSupabase = {
+  from(name) {
+    if (name === 'market_price_snapshots') completeSnapshotReads += 1;
+    return query(name === 'user_card_variants' ? completeOwnedRows : []);
+  },
+  schema() { return { from(name) { return query(name === 'catalogue_external_identifiers' ? [] : completeCatalogue); } }; },
+};
+const completeDry = await runOwnerProviderRefresh({
+  supabase: completeSupabase,
+  refreshExactProviderEstimate: async () => { throw new Error('dry complete pass must not call the provider'); },
+  ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 1, dryRun: true, completeOwned: true,
+  sleep: async () => { throw new Error('dry complete pass must not wait'); },
+});
+assert.equal(completeDry.selected, 31, 'a complete pass plans every resolved identity rather than applying the ordinary 30-card limit');
+assert.equal(completeDry.completeOwnedCompleted, null, 'a dry complete pass reports a plan rather than a completed provider run');
+assert.deepEqual(completeDry.selectedVariantIds, [...completeVariantIds].sort(), 'the complete plan is stable and deduplicated');
+assert.equal(completeSnapshotReads, 0, 'a complete plan skips snapshot recency reads rather than risking a truncated history query');
+
+const completeCalls = [];
+const completeSleeps = [];
+const completeApplied = await runOwnerProviderRefresh({
+  supabase: completeSupabase,
+  refreshExactProviderEstimate: async (variantId) => {
+    completeCalls.push(variantId);
+    if (variantId === completeVariantIds[0]) throw Object.assign(new Error('no quote'), { code: 'exact_provider_quote_unavailable' });
+  },
+  ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 1, dryRun: false, completeOwned: true,
+  sleep: async (milliseconds) => { completeSleeps.push(milliseconds); },
+});
+assert.equal(completeApplied.unavailable, 1, 'an unavailable provider quote remains honest in a complete pass');
+assert.equal(completeApplied.refreshed, 30, 'one unavailable quote does not block later supported identities');
+assert.equal(completeApplied.completeOwnedAttempted, 31);
+assert.equal(completeApplied.completeOwnedDeferred, 0);
+assert.equal(completeApplied.completeOwnedCompleted, true);
+assert.deepEqual(completeCalls, [...completeVariantIds].sort(), 'each resolved identity receives one serial provider attempt');
+assert.deepEqual(completeSleeps, Array.from({ length: 30 }, () => 1_000), 'complete passes pace every provider attempt after the first');
+
+const backoffCalls = [];
+const backoff = await runOwnerProviderRefresh({
+  supabase: completeSupabase,
+  refreshExactProviderEstimate: async (variantId) => {
+    backoffCalls.push(variantId);
+    if (backoffCalls.length === 2) throw Object.assign(new Error('rate limited'), { status: 429 });
+  },
+  ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 1, dryRun: false, completeOwned: true,
+  sleep: async () => {},
+});
+assert.equal(backoff.completeOwnedAttempted, 2, 'a provider 429 stops the remaining complete pass');
+assert.equal(backoff.completeOwnedDeferred, 29);
+assert.equal(backoff.completeOwnedCompleted, false);
+assert.equal(backoff.failed, 1);
+
+const failureStop = await runOwnerProviderRefresh({
+  supabase: completeSupabase,
+  refreshExactProviderEstimate: async () => { throw new Error('service unavailable'); },
+  ownerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', limit: 1, dryRun: false, completeOwned: true,
+  sleep: async () => {},
+});
+assert.equal(failureStop.completeOwnedAttempted, 5, 'five consecutive real provider failures stop the complete pass');
+assert.equal(failureStop.completeOwnedDeferred, 26);
+assert.equal(failureStop.completeOwnedCompleted, false);
+assert.equal(failureStop.failed, 5);
 
 const ownedFailure = await runOwnerProviderRefresh({
   supabase,
