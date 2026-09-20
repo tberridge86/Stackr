@@ -1,4 +1,4 @@
-import { ownedRowEligibility, resolveOwnedProviderVariant } from './owner-provider-price-refresh-core.mjs';
+import { legacyEnglishOwnerPair, ownedRowEligibility, resolveOwnedProviderVariant } from './owner-provider-price-refresh-core.mjs';
 
 const LANGUAGES = new Set(['en', 'ja', 'ko', 'zh-cn', 'zh-tw']);
 const clean = (value) => String(value ?? '').trim();
@@ -22,12 +22,20 @@ function scope(row) {
   return { card, set, valid, language: card.language ?? set.language };
 }
 
-/** Enumerate only literal and explicitly language-qualified saved references. */
+/** Fetch the published references already accepted by the resolver. */
 export function ownerIdentityLookupRows(row) {
   const value = scope(row);
   if (!value.valid) return [];
   const bare = { ...row, card_id: value.card.bare, set_id: value.set.bare };
-  return value.card.raw === value.card.bare && value.set.raw === value.set.bare ? [row] : [row, bare];
+  const rows = value.card.raw === value.card.bare && value.set.raw === value.set.bare ? [row] : [row, bare];
+  // The existing ME resolver accepts the verified padded/half-set spelling,
+  // but cannot resolve it unless the database lookup actually fetched it.
+  // Keep card references exact and never extend this bridge to foreign/SV IDs.
+  const englishPair = !value.language || value.language === 'en' ? legacyEnglishOwnerPair(bare) : null;
+  for (const set_id of englishPair?.setAliases ?? []) {
+    if (!rows.some((item) => item.set_id === set_id && item.card_id === bare.card_id)) rows.push({ ...bare, set_id });
+  }
+  return rows;
 }
 
 /**

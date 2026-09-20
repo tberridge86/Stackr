@@ -112,6 +112,32 @@ This lane can use existing bounded provider workers without starting catalogue-w
 
 Stored-lane rollback: set `STACKR_PREPARED_VALUATIONS_ENABLED=false` on API and workers and `STACKR_PREPARED_REFRESH_QUEUE_ENABLED=false`. Restore the recorded client artifact if needed (Binder requires the prepared endpoint). Keep additive tables and all valid history. Existing bounded provider commands remain usable with all new flags off.
 
+## Pricing-first production execution — 20 September 2026
+
+This section supersedes the earlier not-deployed observations for the stored-valuation lane. The owner explicitly authorized executing the pricing-first release at the agent's discretion. Catalogue-wide fetching, camera, artwork and Settings remain separate.
+
+- Source PR [#207](https://github.com/tberridge86/Stackr/pull/207) merged as `df9374428d3f7f469ee37c32978bda09351c797d`. Backup diagnostics [#211](https://github.com/tberridge86/Stackr/pull/211) and bounded existing-credential fallback [#212](https://github.com/tberridge86/Stackr/pull/212) merged; deployed source `ff01a46b48a461d81a7d6af2510ddc7adcc35a48`. Applicable PR/main CI passed.
+- [Protected rehearsal](https://github.com/tberridge86/Stackr/actions/runs/35501073985) passed, including real transaction rollback. [Protected application](https://github.com/tberridge86/Stackr/actions/runs/35501334284) applied only `20260919100104_catalogue_pricing_cycles.sql`, SHA-256 `100847e33f08b9afafbe04bda2a262b369a6e8061ca8099d69ac435e15b8778e`. Current physical backup and logical schema/data backups were verified. Ledger count 146; valuation RLS enabled; anonymous table/RPC access denied.
+- [API release](https://github.com/tberridge86/Stackr/actions/runs/35501570316) passed, Railway deployment `5b3692aa-72e4-4c29-bec9-a11b4bb7bf89`. Health/source/privacy checks passed; owner-authenticated price acceptance remains unverified.
+- [Gateway release](https://github.com/tberridge86/Stackr/actions/runs/35501769342) passed at 100% traffic. Version `93fab4d5-e687-4dee-8d37-e5b4faae9e40`, deployment `97a93ec9-e79a-430f-9865-e8583612850e`. The new route correctly denies anonymous access with private/no-store headers. This does not prove a signed-in owner read.
+- Existing five-minute queue worker deployment `82dace23-3aa7-4892-b4c2-5372fc6d94b4` enables only stored valuation preparation. Catalogue sweep, capacity-verification and prepared refresh queue flags remain false; existing provider schedules and limits are unchanged.
+- First real stored-only generation published at 09:21:10 UTC: 366 owned units, 103 priced (all older), known subtotal £8.11, 263 unpriced: 194 unresolved, 66 pending and 3 unsupported. That invocation selected/refreshed zero provider identities and reported zero failures. A successful publication is **not** acceptance of its coverage.
+- **API prepared reads remain disabled.** The current Home fallback is retained while coverage is reconciled. No new app binary or OTA was delivered in this execution; installed-device acceptance remains open.
+
+### Concrete coverage findings
+
+Read-only reproduction using the actual saved inputs and published catalogue matched the generation: 169 units resolved to an exact variant; 141 had an unavailable or conflicting published physical finish; 39 lacked a fetched saved-set mapping; 13 lacked a saved-card mapping; one had conflicting binder defaults; three were outside raw near-mint scope. These are units, not unique cards. The 169 resolved units include the 66 without a stored quote.
+
+The lookup omitted padded ME set references already supported by its resolver (for example `me1` to published `me01`, and `me2pt5` to `me02.5`). The follow-up fix fetches those existing aliases without inventing card aliases or broadening language/finish matching. A read-only replay for the nine affected production units then reaches their sets but still rejects the requested finish; this fix does **not** claim increased price coverage.
+
+Examples of the remaining physical-identity disagreement include saved normal `me4-73` versus published holo, saved normal `ja:S12a-012` versus published holo, and saved holo `ja:S12a-098` versus published normal. Neither saved holdings nor published catalogue identities were rewritten. These require identity evidence/correction, not substituting a different finish merely to obtain a price. The remaining catalogue-backed coverage work is a prerequisite to enabling this prepared total, not an unreported completed pricing release.
+
+### Remaining acceptance and rollback
+
+Open: reconcile the named saved/catalogue identity conflicts; obtain exact stored quotes for supported unresolved coverage through the existing approved bounded lane; then enable the prepared API only after Home/Binder quantity/value reconciliation. Signed-in API timing and real-device Home/Binder/reopen/account-switch checks remain unverified. Catalogue-wide 12-hour refresh still requires provider capacity evidence and a schedule that fits the workload; it remains disabled.
+
+Rollback for the stored lane: disable `STACKR_PREPARED_VALUATIONS_ENABLED` on the queue worker (API is already off), keep the other three flags false and preserve additive tables/quote history. API baseline is `10613eca-a888-4ef0-af96-8dc1cc7d7d20`; gateway baseline version `7d724981-b3f1-4ab6-9769-87cf6783e12e`, deployment `e442522a-8452-420c-b123-55dd4df86b71`. No rollback was required or executed.
+
 ## Full catalogue activation order and exact rollback procedure
 
 1. Review the candidate and resolve the above implementation/capacity gaps. Capture exact merged SHA and applicable CI. Use the release role; do not overlap another API/gateway/client promotion.
