@@ -15,6 +15,22 @@ export function blocksIndependentPriceRead(failure?: { kind: string } | null) {
   return Boolean(failure && ['authentication_required', 'access_denied', 'rate_limited'].includes(failure.kind));
 }
 
+/**
+ * Reapply only saved evidence for the exact units in the current collection.
+ * This is used while deciding whether a lower-coverage prepared generation is
+ * safe to display; it never carries a removed or changed identity forward.
+ */
+export function storedCollectionPriceResults(
+  inputs: readonly CollectionPriceInput[],
+  previous: readonly StoredCollectionPrice[],
+): (CollectionPriceResult | null)[] {
+  const byIdentity = new Map(previous.map((entry) => [entry.identity, entry.result]));
+  return inputs.map((input) => {
+    const result = byIdentity.get(collectionPriceIdentity(input));
+    return result ? { ...result, key: input.key, quantity: input.quantity } : null;
+  });
+}
+
 /** Merge evidence, never totals. Authoritative missing/invalidated results replace old evidence. */
 export function mergeCollectionPriceRead(
   inputs: readonly CollectionPriceInput[],

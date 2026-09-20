@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { mergeCollectionPriceRead, blocksIndependentPriceRead } from '../lib/stableCollectionPrices';
+import { readFileSync } from 'node:fs';
+import { mergeCollectionPriceRead, blocksIndependentPriceRead, storedCollectionPriceResults } from '../lib/stableCollectionPrices';
 import { summariseCollectionPricing } from '../lib/collectionPricingState';
 import type { CollectionPriceInput, CollectionPriceResult } from '../lib/collectionPricingApi';
 const inputs: CollectionPriceInput[]=Array.from({length:250},(_,i)=>({key:String(i),references:[String(i)],quantity:1,
@@ -21,7 +22,7 @@ assert.equal(blocksIndependentPriceRead({kind:'service_error'}),false);
 for(const kind of ['authentication_required','access_denied','rate_limited'])assert.equal(blocksIndependentPriceRead({kind}),true);
 console.log('Stable price evidence: 250-to-60, decreases, removals, quantity changes, identity correction, invalidation and account clearing passed.');
 
-import { preparedValuationTrend, type PreparedValuation } from '../lib/preparedCollectionValuation';
+import { hasLowerPreparedPriceCoverage, preparedValuationTrend, type PreparedValuation } from '../lib/preparedCollectionValuation';
 const now=Date.parse('2026-09-19T03:00:00Z');
 const prepared={total:8,unpricedUnits:0,trend:{scope:'s',evidence:'b',eligible:true,points:[
   {at:'2026-09-18T01:00:00Z',total:10,evidence:'a'},{at:'2026-09-19T01:00:00Z',total:8,evidence:'b'}]}} as PreparedValuation;
@@ -29,3 +30,31 @@ assert.deepEqual(preparedValuationTrend(prepared,7,now),{values:[10,8],change:-2
 assert.equal(preparedValuationTrend({...prepared,unpricedUnits:1},7,now).values.length,0);
 assert.equal(preparedValuationTrend({...prepared,total:9},7,now).values.length,0);
 assert.equal(preparedValuationTrend({...prepared,trend:undefined},7,now).values.length,0);
+const retained = storedCollectionPriceResults(inputs, previous);
+const retainedSummary = summariseCollectionPricing(retained.map((result) => ({
+  quantity: result?.quantity,
+  centralValue: result?.central,
+  evidenceStatus: result?.status,
+  freshness: result?.freshness,
+})));
+assert.equal(hasLowerPreparedPriceCoverage({ totalUnits: 366, pricedUnits: 103, unpricedUnits: 263 }, retainedSummary), true,
+  'A lower-coverage prepared subtotal must not erase current exact saved evidence, even when its reported unit count differs.');
+assert.equal(hasLowerPreparedPriceCoverage({ totalUnits: 366, pricedUnits: 250, unpricedUnits: 116 }, retainedSummary), false);
+assert.equal(hasLowerPreparedPriceCoverage({ totalUnits: 366, pricedUnits: 103, unpricedUnits: 0 }, retainedSummary), false);
+const afterRemoval = storedCollectionPriceResults(inputs.slice(1), previous);
+const afterRemovalSummary = summariseCollectionPricing(afterRemoval.map((result) => ({
+  quantity: result?.quantity,
+  centralValue: result?.central,
+  evidenceStatus: result?.status,
+  freshness: result?.freshness,
+})));
+assert.equal(afterRemovalSummary.total, 2490, 'Removed identities are not retained in the fallback subtotal.');
+assert.equal(storedCollectionPriceResults([{ ...inputs[0], variantCode: 'holo' }], previous)[0], null,
+  'A changed finish cannot reuse a normal-card quote.');
+const invalidated = mergeCollectionPriceRead([inputs[0]], [{ ...initial[0], central: null, status: 'unavailable', requestError: null }], previous);
+assert.equal(storedCollectionPriceResults([inputs[0]], invalidated)[0]?.central, null,
+  'An authoritative invalidation cannot be retained by the prepared-coverage guard.');
+const homeSource = readFileSync('features/home/HubScreen.tsx', 'utf8');
+assert.match(homeSource,
+  /if \(hasLowerPreparedPriceCoverage\(summary, retainedStoredPricing\)\) \{[\s\S]{0,160}preparedValuationAvailableRef\.current = false;[\s\S]{0,80}prepared = null;[\s\S]{0,120}\} else \{[\s\S]{0,100}preparedValuationAvailableRef\.current = true;/,
+  'A lower-coverage prepared response must take the existing stored-price path, while accepted prepared coverage keeps the prepared path.');

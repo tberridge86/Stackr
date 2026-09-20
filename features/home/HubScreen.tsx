@@ -1,6 +1,6 @@
 import { takeRotatingStringBatch } from '../../lib/homePriceRefreshCore';
-import { preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
-import { blocksIndependentPriceRead, mergeCollectionPriceRead, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
+import { hasLowerPreparedPriceCoverage, preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
+import { blocksIndependentPriceRead, mergeCollectionPriceRead, storedCollectionPriceResults, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { useTheme } from '../../components/theme-context';
 import React, {
@@ -1608,6 +1608,10 @@ export default function HubScreen() {
       if (!await confirmCurrentRequest()) return;
       // Account and collection content can render while exact prices/history load.
       setCollectionValueLoading(false);
+      const priceInputs = ownedUnits.map(pricingInputForHomeUnit);
+      const unavailablePriceResults = () => priceInputs.map((input) => unavailableCollectionPrice(input, {
+        unavailableReason: 'No matching Stackr price is available.',
+      }));
 
       // One private prepared generation replaces the phone-side price fan-out.
       // A 404 permits the old-server path during backend-first rollout only.
@@ -1616,12 +1620,25 @@ export default function HubScreen() {
       catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
       if (!await confirmCurrentRequest()) return;
       if (prepared) {
-        preparedValuationAvailableRef.current = true;
         const summary = prepared.summary;
         if (!summary) {
+          preparedValuationAvailableRef.current = true;
           setCollectionPricingWarning('Your collection valuation is being prepared. The last completed valuation stays visible.');
           return;
         }
+        const retainedStoredResults = storedCollectionPriceResults(priceInputs, collectionPriceEvidenceRef.current);
+        const unavailableStoredResults = unavailablePriceResults();
+        const retainedStoredPricing = pricingSummaryForResults(retainedStoredResults.map((result, index) => result ?? unavailableStoredResults[index]));
+        if (hasLowerPreparedPriceCoverage(summary, retainedStoredPricing)) {
+          preparedValuationAvailableRef.current = false;
+          prepared = null;
+        } else {
+          preparedValuationAvailableRef.current = true;
+        }
+      }
+      if (prepared) {
+        const summary = prepared.summary;
+        if (!summary) return;
         const pricing = preparedPricingSummary(summary);
         const coverage = summary.binders.find((entry) => entry.binderId === nextActiveBinder?.id)?.owned;
         const preparedBinder = nextActiveBinder && coverage ? { ...nextActiveBinder,
@@ -1656,10 +1673,6 @@ export default function HubScreen() {
         return;
       }
       setOwnedCardCount(ownedUnitCount);
-      const priceInputs = ownedUnits.map(pricingInputForHomeUnit);
-      const unavailablePriceResults = () => priceInputs.map((input) => unavailableCollectionPrice(input, {
-        unavailableReason: 'No matching Stackr price is available.',
-      }));
       const applyLegacyResults = (results: Map<number, CollectionPriceResult>) => {
         const combined = unavailablePriceResults();
         for (const [index, result] of results) combined[index] = result;
