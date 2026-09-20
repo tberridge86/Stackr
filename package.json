@@ -199,7 +199,7 @@
     "catalogue:materialize-official-english-set-logos": "python scripts/materialize-official-english-set-logos.py",
     "test:official-english-set-logos": "python scripts/materialize-official-english-set-logos.py --check && node scripts/test-official-english-set-logo-runtime-lookup.cjs",
     "test:binder-retrieval": "node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-binder-pricing.ts && node --import tsx scripts/test-binder-visible-prices.ts && node --import tsx scripts/test-pokemon-set-identity-dedup.ts && node --import tsx scripts/test-binder-reopen.mjs && node --import tsx scripts/test-binder-rarity-filter.ts && node --import tsx scripts/test-master-set-denominator.ts",
-    "test:catalogue-pricing": "node scripts/test-catalogue-pricing.mjs && tsx scripts/test-stable-collection-prices.ts && node scripts/test-prepared-valuation-routes.mjs",
+    "test:catalogue-pricing": "node scripts/test-catalogue-pricing.mjs && node scripts/test-published-price-catalogue-revision.mjs && tsx scripts/test-stable-collection-prices.ts && node scripts/test-prepared-valuation-routes.mjs",
     "test:card-inspection": "npm run test:card-haptics && node --import tsx scripts/test-card-holo-profile.ts && node --import tsx scripts/test-card-inspection-interactions.ts && node --import tsx scripts/test-home-card-inspection.ts && node --import tsx scripts/test-card-inspection-lifecycle.ts && node --import tsx scripts/test-card-foil-rendering.ts"
   },
   "dependencies": {

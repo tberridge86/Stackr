@@ -26,11 +26,19 @@ function scope(row) {
 export function ownerIdentityLookupRows(row) {
   const value = scope(row);
   if (!value.valid) return [];
-  const bare = { ...row, card_id: value.card.bare, set_id: value.set.bare };
+  const bare = {
+    ...row,
+    card_id: value.card.bare,
+    set_id: value.set.bare,
+    // An explicit en: reference is the same verified language evidence as an
+    // explicitly stored English row. Preserve an already stored language so a
+    // conflicting value cannot be silently overridden.
+    ...(value.language === 'en' && !clean(row?.language) ? { language: 'en' } : {}),
+  };
   const rows = value.card.raw === value.card.bare && value.set.raw === value.set.bare ? [row] : [row, bare];
-  // The existing ME resolver accepts the verified padded/half-set spelling,
-  // but cannot resolve it unless the database lookup actually fetched it.
-  // Keep card references exact and never extend this bridge to foreign/SV IDs.
+  // The resolver accepts only verified English legacy set spellings, but cannot
+  // resolve them unless the database lookup actually fetched them. Keep card
+  // references exact; SV/SWSH aliases require an explicit English row language.
   const englishPair = !value.language || value.language === 'en' ? legacyEnglishOwnerPair(bare) : null;
   for (const set_id of englishPair?.setAliases ?? []) {
     if (!rows.some((item) => item.set_id === set_id && item.card_id === bare.card_id)) rows.push({ ...bare, set_id });
@@ -59,6 +67,7 @@ export function resolveScopedOwnedProviderVariant(row, identifierRows, catalogue
     ...row,
     card_id: preferredReference(value.card, 'card'),
     set_id: preferredReference(value.set, 'set'),
+    language: row?.language ?? value.language,
   };
   const identifiers = (identifierRows ?? []).filter((item) => normalise(item.language_code) === value.language);
   const catalogue = (catalogueRows ?? []).filter((item) => normalise(item.language_code) === value.language);

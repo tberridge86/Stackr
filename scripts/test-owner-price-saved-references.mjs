@@ -75,7 +75,7 @@ test('saved finish, grade and condition gates run before namespace mapping', () 
   assert.equal(resolve({ ...row, grade: '10' }).reason, 'graded_card');
   assert.equal(resolve({ ...row, condition: 'Lightly Played' }).reason, 'not_raw_near_mint');
 });
-test('unprefixed unknown SV spellings are not assigned an English language', () => {
+test('unprefixed SV spellings are not assigned an English language', () => {
   const saved = { ...row, card_id: 'sv1-205', set_id: 'sv1' };
   assert.deepEqual(ownerIdentityLookupRows(saved), [saved]);
   assert.equal(resolve(saved).reason, 'unresolved_saved_set');
@@ -109,4 +109,36 @@ test('verified ME lookup does not rewrite foreign or mismatched saved pairs', ()
   assert.deepEqual(ownerIdentityLookupRows(foreign).map((item) => item.set_id), ['ja:me1', 'me1']);
   const mismatched = { ...row, card_id: 'me2-001', set_id: 'me1' };
   assert.deepEqual(ownerIdentityLookupRows(mismatched), [mismatched]);
+});
+
+test('explicit English SV rows fetch only their verified set aliases and keep the card literal', () => {
+  const saved = { ...row, language: 'en', card_id: 'sv4-007', set_id: 'sv4' };
+  assert.deepEqual(ownerIdentityLookupRows(saved), [saved, { ...saved, set_id: 'sv04' }]);
+  const published = [{ source_entity_type: 'set', external_id: 'sv04', language_code: 'en', set_id: setId }];
+  const cards = [{ ...card, language_code: 'en', collector_number: '007' }];
+  assert.deepEqual(resolve(saved, published, cards), expected);
+  assert.equal(resolve(saved, published, [{ ...cards[0], collector_number: '008' }]).reason, 'unresolved_saved_card');
+  assert.equal(resolve(saved, published, [{ ...cards[0], variant_code: 'holo', finish_code: 'holo' }]).ok, false);
+  assert.equal(resolve(saved, published, [...cards, { ...cards[0], variant_id: other }]).reason, 'ambiguous_saved_identity');
+});
+
+test('an explicit English namespace is sufficient evidence for the same SV alias bridge', () => {
+  const saved = { ...row, card_id: 'en:sv4-007', set_id: 'en:sv4' };
+  const published = [{ source_entity_type: 'set', external_id: 'sv04', language_code: 'en', set_id: setId }];
+  const cards = [{ ...card, language_code: 'en', collector_number: '007' }];
+  assert.deepEqual(ownerIdentityLookupRows(saved), [
+    saved,
+    { ...saved, card_id: 'sv4-007', set_id: 'sv4', language: 'en' },
+    { ...saved, card_id: 'sv4-007', set_id: 'sv04', language: 'en' },
+  ]);
+  assert.deepEqual(resolve(saved, published, cards), expected);
+});
+
+test('SV/SWSH aliases refuse unknown or non-English saved scope', () => {
+  const sv = { ...row, language: 'ja', card_id: 'sv4-007', set_id: 'sv4' };
+  const unknown = { ...row, language: 'en', card_id: 'zsv10pt5-007', set_id: 'zsv10pt5' };
+  const opaque = { ...row, language: 'en', card_id: 'svp-007', set_id: 'svp' };
+  assert.deepEqual(ownerIdentityLookupRows(sv), [sv]);
+  assert.deepEqual(ownerIdentityLookupRows(unknown), [unknown]);
+  assert.deepEqual(ownerIdentityLookupRows(opaque), [opaque]);
 });

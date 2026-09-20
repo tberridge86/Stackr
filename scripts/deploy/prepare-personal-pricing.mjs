@@ -25,6 +25,13 @@ export const CATALOGUE_PRICING_MIGRATION = Object.freeze({
   sha256: '100847e33f08b9afafbe04bda2a262b369a6e8061ca8099d69ac435e15b8778e',
 });
 
+export const PRICING_REPAIR_MIGRATION = Object.freeze({
+  filename: '20260920130134_optimise_published_price_catalogue_revision.sql',
+  version: '20260920130134',
+  name: 'optimise_published_price_catalogue_revision',
+  sha256: 'e0bdcd5db991720b3f5d35428d3c8f43baed5d721eab5fd5edda37a1323d4ada',
+});
+
 // The pricing release assumes the bounded binder artwork read was recorded on
 // production. A migration count alone cannot prove that prerequisite: another
 // unrelated migration could produce the same count.
@@ -37,8 +44,9 @@ function source(migration) { return readFileSync(resolve(root, 'supabase/migrati
 function digest(value) { return createHash('sha256').update(value, 'utf8').digest('hex'); }
 
 export function validateMigrationSources(scope = 'personal') {
-  if (!['personal', 'catalogue'].includes(scope)) throw new Error('invalid_scope_argument');
-  const migrations = scope === 'catalogue' ? [CATALOGUE_PRICING_MIGRATION] : REQUIRED_MIGRATIONS;
+  if (!['personal', 'catalogue', 'pricing-repair'].includes(scope)) throw new Error('invalid_scope_argument');
+  const migrations = scope === 'catalogue' ? [CATALOGUE_PRICING_MIGRATION]
+    : scope === 'pricing-repair' ? [PRICING_REPAIR_MIGRATION] : REQUIRED_MIGRATIONS;
   const sources = new Map();
   for (const migration of migrations) {
     const sql = source(migration);
@@ -68,7 +76,7 @@ export function parseArguments(argv) {
   if (values.has('apply') && !['true', 'false'].includes(values.get('apply'))) throw new Error('invalid_apply_argument');
   if (values.has('rehearse') && !['true', 'false'].includes(values.get('rehearse'))) throw new Error('invalid_rehearse_argument');
   if (values.get('apply') === 'true' && values.get('rehearse') === 'true') throw new Error('apply_and_rehearse_mutually_exclusive');
-  if (values.has('scope') && !['personal', 'catalogue'].includes(values.get('scope'))) throw new Error('invalid_scope_argument');
+  if (values.has('scope') && !['personal', 'catalogue', 'pricing-repair'].includes(values.get('scope'))) throw new Error('invalid_scope_argument');
   return { dbUrl: values.get('db-url') ?? '', ownerEmail: values.get('owner-email') ?? '', scope: values.get('scope') ?? 'personal', apply: values.get('apply') === 'true', rehearse: values.get('rehearse') === 'true' };
 }
 
@@ -81,6 +89,17 @@ function catalogueMigrationState(rows) {
   if (prerequisites.some((key) => !applied.has(key))) throw new Error('catalogue_pricing_migration_prerequisite_missing');
   const key = `${CATALOGUE_PRICING_MIGRATION.version}_${CATALOGUE_PRICING_MIGRATION.name}`;
   return { pending: applied.has(key) ? [] : [CATALOGUE_PRICING_MIGRATION], applied: applied.has(key) ? [CATALOGUE_PRICING_MIGRATION] : [] };
+}
+
+function pricingRepairMigrationState(rows) {
+  if (!Array.isArray(rows)) throw new Error('migration_history_result_invalid');
+  const applied = new Set(rows.map((row) => `${row.version}_${row.name}`));
+  if (applied.size !== rows.length) throw new Error('production_migration_history_duplicate');
+  const prerequisites = [...REQUIRED_BINDER_MIGRATIONS, ...REQUIRED_MIGRATIONS, CATALOGUE_PRICING_MIGRATION]
+    .map((migration) => `${migration.version}_${migration.name}`);
+  if (prerequisites.some((key) => !applied.has(key))) throw new Error('pricing_repair_migration_prerequisite_missing');
+  const key = `${PRICING_REPAIR_MIGRATION.version}_${PRICING_REPAIR_MIGRATION.name}`;
+  return { pending: applied.has(key) ? [] : [PRICING_REPAIR_MIGRATION], applied: applied.has(key) ? [PRICING_REPAIR_MIGRATION] : [] };
 }
 
 async function assertCataloguePricingContract(client) {
@@ -110,6 +129,34 @@ async function assertCataloguePricingContract(client) {
   const contract = result.rows[0] ?? {};
   if (contract.tables_present !== true || contract.tables_private !== true || contract.functions_private_to_service !== true) {
     throw new Error('catalogue_pricing_post_apply_contract_mismatch');
+  }
+}
+
+async function readPublishedPriceCatalogueRevisionDefinition(client) {
+  const result = await client.query(`
+    select pg_get_functiondef('api.published_price_catalogue_revision()'::regprocedure) as definition,
+      md5(pg_get_functiondef('api.published_price_catalogue_revision()'::regprocedure)) as definition_hash
+  `);
+  const row = result.rows[0] ?? {};
+  if (typeof row.definition !== 'string' || !row.definition_hash) throw new Error('pricing_repair_function_missing');
+  return { definition: row.definition, definitionHash: String(row.definition_hash) };
+}
+
+async function assertPricingRepairContract(client) {
+  const result = await client.query(`
+    select
+      to_regprocedure('api.published_price_catalogue_revision()') is not null as function_present,
+      has_function_privilege('service_role', 'api.published_price_catalogue_revision()', 'EXECUTE') as service_can_execute,
+      not has_function_privilege('authenticated', 'api.published_price_catalogue_revision()', 'EXECUTE') as authenticated_cannot_execute,
+      not has_function_privilege('anon', 'api.published_price_catalogue_revision()', 'EXECUTE') as anon_cannot_execute,
+      position('catalog.catalogue_versions' in pg_get_functiondef('api.published_price_catalogue_revision()'::regprocedure)) > 0 as metadata_backed,
+      position('api.catalogue_cards' in pg_get_functiondef('api.published_price_catalogue_revision()'::regprocedure)) = 0 as no_full_card_projection
+  `);
+  const contract = result.rows[0] ?? {};
+  if (contract.function_present !== true || contract.service_can_execute !== true
+    || contract.authenticated_cannot_execute !== true || contract.anon_cannot_execute !== true
+    || contract.metadata_backed !== true || contract.no_full_card_projection !== true) {
+    throw new Error('pricing_repair_post_apply_contract_mismatch');
   }
 }
 
@@ -143,11 +190,13 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
       await client.query("set local statement_timeout = '30s'");
       await client.query('select pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext($1))', [lockName]);
       const history = await client.query('select version, name from supabase_migrations.schema_migrations order by version, name');
-      const state = scope === 'catalogue' ? catalogueMigrationState(history.rows) : migrationState(history.rows);
+      const state = scope === 'catalogue' ? catalogueMigrationState(history.rows)
+        : scope === 'pricing-repair' ? pricingRepairMigrationState(history.rows) : migrationState(history.rows);
       const initialPendingMigrations = state.pending.map((migration) => migration.filename);
       const initialAppliedMigrations = state.applied.map((migration) => migration.filename);
       let ownerId = null;
       let sourceLabelledTcgdexSnapshotCount = null;
+      let previousPricingRepairFunction = null;
       if (scope === 'personal') {
         const owner = await client.query('select id from auth.users where lower(email) = lower($1) limit 2', [ownerEmail]);
         if (owner.rows.length !== 1) throw new Error('pricing_owner_account_not_unique');
@@ -161,6 +210,7 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
         `);
         sourceLabelledTcgdexSnapshotCount = Number(snapshots.rows.find((row) => String(row.source).includes('tcgdex'))?.count ?? 0);
       }
+      if (scope === 'pricing-repair' && rehearse) previousPricingRepairFunction = await readPublishedPriceCatalogueRevisionDefinition(client);
       const newlyAppliedMigrations = apply && state.pending.length ? initialPendingMigrations : [];
       const rehearsedMigrations = rehearse ? initialPendingMigrations : [];
       if (newlyAppliedMigrations.length || rehearsedMigrations.length) {
@@ -177,6 +227,11 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
         const recorded = await client.query('select version, name from supabase_migrations.schema_migrations where version = $1', [CATALOGUE_PRICING_MIGRATION.version]);
         if (recorded.rows.length !== 1 || recorded.rows[0].name !== CATALOGUE_PRICING_MIGRATION.name) throw new Error('catalogue_pricing_ledger_mismatch');
       }
+      if (scope === 'pricing-repair' && (state.applied.length || newlyAppliedMigrations.length || rehearsedMigrations.length)) {
+        await assertPricingRepairContract(client);
+        const recorded = await client.query('select version, name from supabase_migrations.schema_migrations where version = $1', [PRICING_REPAIR_MIGRATION.version]);
+        if (recorded.rows.length !== 1 || recorded.rows[0].name !== PRICING_REPAIR_MIGRATION.name) throw new Error('pricing_repair_ledger_mismatch');
+      }
       await client.query(newlyAppliedMigrations.length ? 'commit' : 'rollback');
       if (rehearsedMigrations.length) {
         const restored = await client.query('select version, name from supabase_migrations.schema_migrations order by version, name');
@@ -184,6 +239,14 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
         if (scope === 'catalogue') {
           const remaining = await client.query("select to_regclass('public.collection_valuation_generations') as valuation_table");
           if (remaining.rows[0]?.valuation_table != null) throw new Error('rehearsal_schema_not_restored');
+        }
+        if (scope === 'pricing-repair') {
+          const restored = await readPublishedPriceCatalogueRevisionDefinition(client);
+          if (restored.definitionHash !== previousPricingRepairFunction.definitionHash || restored.definition !== previousPricingRepairFunction.definition) {
+            throw new Error('rehearsal_published_price_catalogue_revision_not_restored');
+          }
+          const valuation = await client.query("select to_regclass('public.collection_valuation_generations') as valuation_table");
+          if (valuation.rows[0]?.valuation_table == null) throw new Error('rehearsal_valuation_schema_not_preserved');
         }
       }
       const finalAppliedMigrations = [...initialAppliedMigrations, ...newlyAppliedMigrations];
@@ -200,7 +263,8 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
         pendingMigrations: finalPendingMigrations,
         appliedMigrations: finalAppliedMigrations,
         sourceLabelledTcgdexSnapshotCount,
-        migrationSha256: Object.fromEntries((scope === 'catalogue' ? [CATALOGUE_PRICING_MIGRATION] : REQUIRED_MIGRATIONS).map((migration) => [migration.filename, migration.sha256])),
+        migrationSha256: Object.fromEntries((scope === 'catalogue' ? [CATALOGUE_PRICING_MIGRATION]
+          : scope === 'pricing-repair' ? [PRICING_REPAIR_MIGRATION] : REQUIRED_MIGRATIONS).map((migration) => [migration.filename, migration.sha256])),
       };
     } catch (error) { await client.query('rollback').catch(() => undefined); throw error; }
   } finally { await client.end(); }

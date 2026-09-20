@@ -127,32 +127,66 @@ export function setValuationUnits(catalogue, mode, edition = 'normal') {
 }
 
 export async function prepareCollectionValuation({ supabase, service, ownerId, providerCapacityVerified = false }) {
-  const rpc = async (name, args) => { const { data, error } = await supabase.schema('api').rpc(name,args); if (error) throw error; return data; };
+  const started = performance.now();
+  const stages = new Map();
+  const measured = async (stage, work) => {
+    const at = performance.now();
+    try { return await work(); }
+    catch (cause) {
+      const candidate = String(cause?.code ?? '');
+      const code = /^(?:[0-9A-Z]{5}|PGRST\d{3}|[a-z][a-z_]{0,63})$/.test(candidate) ? candidate : 'operation_failed';
+      const error = new Error(`Prepared valuation failed at ${stage}: ${code}`);
+      error.code = code;
+      error.valuationStage = stage;
+      error.elapsedMs = Math.round(performance.now() - at);
+      throw error;
+    } finally {
+      const elapsedMs = Math.round(performance.now() - at);
+      const timing = stages.get(stage) ?? { calls: 0, elapsedMs: 0, maxMs: 0 };
+      timing.calls++; timing.elapsedMs += elapsedMs; timing.maxMs = Math.max(timing.maxMs, elapsedMs);
+      stages.set(stage, timing);
+    }
+  };
+  const rpc = (name, args) => measured(name, async () => {
+    const { data, error } = await supabase.schema('api').rpc(name,args);
+    if (error) throw error;
+    return data;
+  });
   const claim = await rpc('claim_collection_valuation', { p_owner: ownerId });
   if (!claim) return null;
   const catalogueRevision=await rpc('published_price_catalogue_revision',{});
   const inputs = claim.inputs; const units = ownedValuationUnits(inputs);
-  const lookupUnits = [...units, ...inputs.binders.filter((b) => b.source_set_id).map((b) => ({set_id:b.source_set_id,card_id:''}))];
+  const lookupUnits = [...units, ...inputs.binders.filter((b) => b.source_set_id).map((b) => ({set_id:b.source_set_id,card_id:'',language:b.language}))];
   const references = unique(lookupUnits.flatMap(ownerIdentityLookupRows).flatMap((u) => [u.card_id,u.set_id]).filter(Boolean));
   const identifiers = [];
-  for (let offset=0; offset<references.length; offset+=50) identifiers.push(...await readPages(() => supabase.schema('api').from('catalogue_external_identifiers')
-    .select('*').in('external_id',references.slice(offset,offset+50)).order('external_id').order('source_entity_type').order('variant_id').order('printing_id').order('set_id')));
+  for (let offset=0; offset<references.length; offset+=50) identifiers.push(...await measured('catalogue_identifiers', () => readPages(() => supabase.schema('api').from('catalogue_external_identifiers')
+    .select('*').in('external_id',references.slice(offset,offset+50)).order('external_id').order('source_entity_type').order('variant_id').order('printing_id').order('set_id'))));
   const uuid = /^[0-9a-f-]{36}$/i;
   const sets = unique([...identifiers.map((i)=>i.set_id), ...units.map((u)=>u.set_id), ...inputs.binders.map((b)=>b.source_set_id)].filter((v)=>uuid.test(v)));
   const catalogue = [];
-  for (const setId of sets) catalogue.push(...await readPages(() => supabase.schema('api').from('catalogue_cards')
-    .select('variant_id,printing_id,set_id,set_code,collector_number,language_code,variant_code,finish_code,catalogue_version_id').eq('set_id',setId).order('variant_id')));
+  for (const setId of sets) catalogue.push(...await measured('catalogue_members', () => readPages(() => supabase.schema('api').from('catalogue_cards')
+    .select('variant_id,printing_id,set_id,set_code,collector_number,language_code,variant_code,finish_code,catalogue_version_id').eq('set_id',setId).order('variant_id'))));
   const resolved = units.map((u) => { const result=resolveValuationUnit(u,identifiers,catalogue); return { ...u, variantId:result.variantId,reason:result.reason }; });
   const variantIds = unique(resolved.map((u)=>u.variantId).filter(Boolean));
   const prices = new Map(); const outcomes = new Map(); const nextAttempts = new Map();
   // Stored-only reads. Fail the generation on any transport error: the prior
   // published generation remains intact, and the lease is resumable after expiry.
-  const allIds = unique([...variantIds,...catalogue.map((c)=>c.variant_id)]);
+  const membersByBinder = new Map(inputs.binders.map((binder) => {
+    const references = ownerIdentityLookupRows({set_id:binder.source_set_id,card_id:'',language:binder.language}).map((u)=>u.set_id);
+    const setIds = new Set([binder.source_set_id,...identifiers.filter((i)=>i.source_entity_type==='set'
+      && references.includes(i.external_id) && (!binder.language || i.language_code===binder.language)).map((i)=>i.set_id)]);
+    return [binder.id,catalogue.filter((c)=>setIds.has(c.set_id) && (!binder.language || c.language_code===binder.language))];
+  }));
+  // Custom binders need prices for their owned cards only. Full-set prices are
+  // used exclusively by official binders' standard/master-set totals; reading
+  // every other card in a custom binder's source sets creates unused RPC work.
+  const allIds = unique([...variantIds,...inputs.binders.filter((b)=>b.type==='official')
+    .flatMap((b)=>(membersByBinder.get(b.id)??[]).map((c)=>c.variant_id))]);
   for (let offset=0;offset<allIds.length;offset+=200) {
     const ids=allIds.slice(offset,offset+200);
-    const response=await service.storedExactPrices(ids);
+    const response=await measured('stored_exact_prices',()=>service.storedExactPrices(ids));
     for (const price of response) prices.set(price.variantId,price);
-    const states=await queryRows(supabase.from('catalogue_price_state').select('variant_id,outcome,next_attempt_at').in('variant_id',ids));
+    const states=await measured('catalogue_price_state',()=>queryRows(supabase.from('catalogue_price_state').select('variant_id,outcome,next_attempt_at').in('variant_id',ids)));
     for (const state of states) { outcomes.set(state.variant_id,state.outcome); nextAttempts.set(state.variant_id,state.next_attempt_at); }
   }
   const needsRefresh=claim.refreshRequestedAt && (!claim.refreshCompletedAt || claim.refreshRequestedAt>claim.refreshCompletedAt);
@@ -191,9 +225,7 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
     catalogueRevisions:unique(catalogue.map((c)=>c.catalogue_version_id)),
     binders:inputs.binders.map((b)=>{
       const owned=resolved.filter((u)=>u.binderIds.includes(b.id));
-      const setReferences=ownerIdentityLookupRows({set_id:b.source_set_id,card_id:''}).map((u)=>u.set_id);
-      const setIds=unique([b.source_set_id,...identifiers.filter((i)=>i.source_entity_type==='set'&&setReferences.includes(i.external_id)&&(!b.language||i.language_code===b.language)).map((i)=>i.set_id)]);
-      const members=catalogue.filter((c)=>setIds.includes(c.set_id)&&(!b.language||c.language_code===b.language));
+      const members=membersByBinder.get(b.id)??[];
       return {binderId:b.id,owned:summarisePreparedUnits(owned,outcomes,prices),
         standardSet:b.type==='official'&&members.length?summarisePreparedUnits(setValuationUnits(members,'standard',b.edition),outcomes,prices):null,
         masterSet:b.type==='official'&&members.length?summarisePreparedUnits(setValuationUnits(members,'master',b.edition),outcomes,prices):null};
@@ -205,7 +237,8 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
     points:mergeValuationTrend(history??[],{at:summary.calculatedAt,total:summary.total,evidence:evidence.evidence},evidence.eligible)};
   const published=await rpc('publish_collection_valuation',{p_owner:ownerId,p_lease:claim.lease,p_revision:inputs.collectionRevision,
     p_summary:summary,p_refresh_completed:needsRefresh&&refreshComplete?claim.refreshRequestedAt:null});
-  return {published,summary};
+  return {published,summary,diagnostics:{elapsedMs:Math.round(performance.now()-started),
+    ownedPriceIdentities:variantIds.length,storedPriceIdentities:allIds.length,stages:Object.fromEntries(stages)}};
 }
 
 export function valuationTrendEvidence(units, prices, summary) {
