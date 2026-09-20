@@ -248,8 +248,8 @@ const edgeSource = fs.readFileSync('supabase/functions/minty-insight/index.ts', 
 
 assert.match(
   hubSource,
-  /sanitizeMintyInsightForGate0\(\s*collectionTotal != null \? apiMintyInsight \?\? localMintyInsight : localMintyInsight,?\s*\)/,
-  'Hub must sanitize the selected API, cached or local insight at the display boundary'
+  /sanitizeMintyInsightForGate0\(localMintyInsight\)/,
+  'Hub must sanitize the preference-aware local insight at the display boundary'
 );
 assert.match(
   hubSource,
