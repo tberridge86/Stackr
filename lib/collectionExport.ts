@@ -16,6 +16,11 @@ export type CollectionExport = Readonly<{
   cards: readonly Record<string, unknown>[];
 }>;
 
+type PostgrestPage = Readonly<{
+  data: readonly any[] | null;
+  error: unknown | null;
+}>;
+
 type ExportOptions = Readonly<{
   client?: any;
   now?: () => number;
@@ -65,7 +70,7 @@ async function verifiedUser(client: any, options: ExportOptions) {
   return data.user.id as string;
 }
 
-async function readWithinDeadline<T>(
+async function readWithinDeadline<T extends PostgrestPage>(
   options: ExportOptions,
   timeoutMs: number,
   read: (signal: AbortSignal) => Promise<T>,
@@ -114,11 +119,11 @@ export async function createCollectionExport(options: ExportOptions = {}): Promi
   const binders: any[] = [];
   for (let from = 0; ; from += PAGE_SIZE) {
     assertDeadline();
-    const { data, error } = await readWithinDeadline(options, Math.max(1, deadlineAt - Date.now()), (signal) => {
+    const { data, error } = await readWithinDeadline<PostgrestPage>(options, Math.max(1, deadlineAt - Date.now()), (signal) => {
       const query = client.from('binders')
         .select('id,user_id,name,type,language,source_set_id,edition,card_mode,default_condition,default_grade_company,default_grade,is_public,created_at')
         .eq('user_id', userId).order('created_at', { ascending: true }).order('id', { ascending: true });
-      return (typeof query.abortSignal === 'function' ? query.abortSignal(signal) : query).range(from, from + PAGE_SIZE - 1);
+      return (typeof query.abortSignal === 'function' ? query.abortSignal(signal) : query).range(from, from + PAGE_SIZE - 1) as Promise<PostgrestPage>;
     });
     assertDeadline();
     if (error) throw new CollectionExportError('failed', 'Could not read saved binders for export.');
@@ -133,11 +138,11 @@ export async function createCollectionExport(options: ExportOptions = {}): Promi
   for (const binder of binders) {
     for (let from = 0; ; from += PAGE_SIZE) {
       assertDeadline();
-      const { data, error } = await readWithinDeadline(options, Math.max(1, deadlineAt - Date.now()), (signal) => {
+      const { data, error } = await readWithinDeadline<PostgrestPage>(options, Math.max(1, deadlineAt - Date.now()), (signal) => {
         const query = client.from('binder_cards')
           .select('id,binder_id,card_id,set_id,language,owned_card_variant_id,api_card_id,api_set_id,card_name,card_number,set_name,slot_order,owned,owned_quantity,condition,grade_company,grade,notes,created_at')
           .eq('binder_id', binder.id).order('slot_order', { ascending: true }).order('id', { ascending: true });
-        return (typeof query.abortSignal === 'function' ? query.abortSignal(signal) : query).range(from, from + PAGE_SIZE - 1);
+        return (typeof query.abortSignal === 'function' ? query.abortSignal(signal) : query).range(from, from + PAGE_SIZE - 1) as Promise<PostgrestPage>;
       });
       assertDeadline();
       if (error) throw new CollectionExportError('failed', `Could not read saved cards for binder ${binder.id}. Nothing was shared.`);

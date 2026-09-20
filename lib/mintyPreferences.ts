@@ -20,6 +20,7 @@ export type MintyPreferencesSnapshot = {
 };
 
 const defaults = () => ({ ...DEFAULT_MINTY_PERSONALISATION_SETTINGS });
+const failedReadSettings = () => ({ ...defaults(), personalisedInsights: false });
 
 function parseSettings(raw: string | null): MintyPersonalisationSettings {
   if (!raw) return defaults();
@@ -42,28 +43,45 @@ export function createMintyPreferences(storage: MintyPreferenceStorage) {
     userId: null, settings: defaults(), loaded: true, saving: false, error: null,
   };
   let sequence = 0;
+  let knownSettingsOwner: string | null = null;
+  let hydration: { owner: string; promise: Promise<MintyPersonalisationSettings> } | null = null;
   const listeners = new Set<() => void>();
   const emit = () => listeners.forEach((listener) => listener());
   const setSnapshot = (next: MintyPreferencesSnapshot) => { snapshot = next; emit(); };
 
-  async function hydrate(userId: string | null | undefined) {
+  function hydrate(userId: string | null | undefined, { retry = false } = {}) {
     const owner = userId?.trim() || null;
-    const request = ++sequence;
     if (!owner) {
+      sequence += 1;
+      hydration = null;
+      knownSettingsOwner = null;
       setSnapshot({ userId: null, settings: defaults(), loaded: true, saving: false, error: null });
-      return snapshot.settings;
+      return Promise.resolve(snapshot.settings);
     }
-    setSnapshot({ userId: owner, settings: defaults(), loaded: false, saving: false, error: null });
-    try {
-      const settings = parseSettings(await storage.getItem(getMintyPersonalisationStorageKey(owner)));
+    if (snapshot.userId === owner && snapshot.loaded && !retry) return Promise.resolve(snapshot.settings);
+    if (hydration?.owner === owner) return hydration.promise;
+    const request = ++sequence;
+    const hadKnownSettings = knownSettingsOwner === owner;
+    if (!hadKnownSettings) setSnapshot({ userId: owner, settings: defaults(), loaded: false, saving: false, error: null });
+    const promise = storage.getItem(getMintyPersonalisationStorageKey(owner)).then((raw) => {
+      const settings = parseSettings(raw);
       if (request !== sequence || snapshot.userId !== owner) return snapshot.settings;
+      knownSettingsOwner = owner;
       setSnapshot({ userId: owner, settings, loaded: true, saving: false, error: null });
       return settings;
-    } catch {
+    }).catch(() => {
       if (request !== sequence || snapshot.userId !== owner) return snapshot.settings;
-      setSnapshot({ userId: owner, settings: defaults(), loaded: true, saving: false, error: 'Minty preferences could not be loaded on this device.' });
+      if (hadKnownSettings) {
+        setSnapshot({ ...snapshot, saving: false, error: 'Minty preferences could not be reloaded. Your saved choices are still active.' });
+      } else {
+        setSnapshot({ userId: owner, settings: failedReadSettings(), loaded: false, saving: false, error: 'Minty preferences could not be loaded on this device. Retry to enable personalisation.' });
+      }
       return snapshot.settings;
-    }
+    }).finally(() => {
+      if (hydration?.owner === owner) hydration = null;
+    });
+    hydration = { owner, promise };
+    return promise;
   }
 
   async function save(userId: string | null | undefined, updates: Partial<MintyPersonalisationSettings>) {
@@ -79,6 +97,7 @@ export function createMintyPreferences(storage: MintyPreferenceStorage) {
       await storage.setItem(getMintyPersonalisationStorageKey(owner), body);
       if (request !== sequence || snapshot.userId !== owner) throw new Error('Your account changed before Minty preferences could be saved.');
       setSnapshot({ userId: owner, settings: next, loaded: true, saving: false, error: null });
+      knownSettingsOwner = owner;
       return next;
     } catch (error) {
       if (snapshot.userId === owner) {
@@ -100,11 +119,19 @@ export function createMintyPreferences(storage: MintyPreferenceStorage) {
 
 export const mintyPreferences = createMintyPreferences(AsyncStorage);
 
+export function visibleMintyPreferenceSnapshot(snapshot: MintyPreferencesSnapshot, userId: string | null | undefined) {
+  const owner = userId?.trim() || null;
+  if (snapshot.userId === owner) return snapshot;
+  return { userId: owner, settings: defaults(), loaded: owner === null, saving: false, error: null };
+}
+
 export function useMintyPreferences(userId: string | null | undefined) {
   const snapshot = useSyncExternalStore(mintyPreferences.subscribe, mintyPreferences.getSnapshot, mintyPreferences.getSnapshot);
   useEffect(() => { void mintyPreferences.hydrate(userId); }, [userId]);
+  const visible = visibleMintyPreferenceSnapshot(snapshot, userId);
   return {
-    ...snapshot,
+    ...visible,
     save: (updates: Partial<MintyPersonalisationSettings>) => mintyPreferences.save(userId, updates),
+    reload: () => mintyPreferences.hydrate(userId, { retry: true }),
   };
 }

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Switch, View } from 'react-native';
+import { Pressable, Switch, View } from 'react-native';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
 import { useMintyPreferences } from '../lib/mintyPreferences';
@@ -38,6 +38,11 @@ export function MintyPreferenceControls({ userId }: { userId: string | null | un
         />
       </View>
     </View>)}
-    {preferences.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.semantic.error, fontSize: 13, marginTop: 10 }}>{preferences.error}</Text> : null}
+    {preferences.error ? <View style={{ marginTop: 10, gap: 6 }}>
+      <Text accessibilityRole="alert" style={{ color: theme.colors.semantic.error, fontSize: 13 }}>{preferences.error}</Text>
+      <Pressable accessibilityRole="button" onPress={() => void preferences.reload()} style={{ alignSelf: 'flex-start' }}>
+        <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Retry loading Minty preferences</Text>
+      </Pressable>
+    </View> : null}
   </View>;
 }
