@@ -94,9 +94,12 @@ verified distributed normal build, as recorded in
 - Legal links the existing public privacy page. Editable Markdown and matching
   accessible HTML drafts are prepared in `docs/privacy/`; they are explicitly
   unpublished and contain unresolved operator/legal/retention/provider facts.
-  The operator designated **Stackr TCG Ltd** and **berridge14@icloud.com** on
-  20 September; the support composer and draft use that contact. Postal address
-  and precise registered spelling remain to confirm; the public page is unchanged.
+  The operator confirmed **STACKRTCG LIMITED**, company number **17386590**, and
+  **berridge14@icloud.com** on 20 September; the support composer and draft use
+  that contact. The [Companies House record](https://find-and-update.company-information.service.gov.uk/company/17386590)
+  independently confirms the entity and registered office at **18 Lyndhurst Grove,
+  Chaddesden, Derby, England, DE21 6RY**. The draft includes this address; the public
+  page is unchanged. Registration does not prove privacy-request handling.
   Neither these drafts nor the deletion-request link establish compliant account
   deletion, private support receipt, a monitored inbox or an approved notice.
 - Fixed Settings falsely selecting the Collection tab. About shows build/update
@@ -161,8 +164,8 @@ printing fidelity or actual device delivery.
    pricing access policy is not weakened by this change. That response does not
    establish an owner quote failure. Market remains unverified, not repaired.
 4. **Product/operator — external BLOCKED on facts and service decisions:** confirm
-   the postal address/registered spelling for the supplied Stackr TCG Ltd identity,
-   jurisdiction and response procedures for the designated support/privacy email;
+   applicable jurisdiction, representative/DPO position and response procedures
+   for the designated support/privacy email;
    validate processor, lawful-basis, retention and age-policy facts in the prepared
    draft. Private request delivery with a real receipt and authenticated deletion
    with completion evidence remain OPEN implementation/service gates. The email

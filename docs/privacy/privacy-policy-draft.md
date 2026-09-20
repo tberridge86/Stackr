@@ -7,9 +7,9 @@
 
 ## Who is responsible for your information
 
-The operator identifies **Stackr TCG Ltd** as responsible for Stackr. The designated support and privacy contact is `berridge14@icloud.com`.
+The operator identifies **STACKRTCG LIMITED** (company number **17386590**) as responsible for Stackr. Its registered office is 18 Lyndhurst Grove, Chaddesden, Derby, England, DE21 6RY, as listed by [Companies House](https://find-and-update.company-information.service.gov.uk/company/17386590). The designated support and privacy contact is `berridge14@icloud.com`.
 
-`[CONFIRM the registered legal spelling, postal address, jurisdiction, representative and DPO position.]`
+`[CONFIRM jurisdiction, representative and DPO position.]`
 
 The designated contact does not yet establish a monitored inbox, response time, identity-verification process, secure request handling, delivery receipt or completed rights-request procedure. Opening an email composer in the app does not prove that a request was sent or received.
 
@@ -48,7 +48,6 @@ No family, household, guardian or child-account flow was identified in the revie
 
 ## Operator completion checklist
 
-- [ ] Registered legal spelling and postal address for Stackr TCG Ltd
 - [ ] Jurisdiction, representative and DPO position
 - [ ] Purpose and lawful-basis matrix
 - [ ] Current subprocessors, locations and transfer safeguards

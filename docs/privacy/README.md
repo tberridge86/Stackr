@@ -8,7 +8,7 @@ The editable notice is [privacy-policy-draft.md](privacy-policy-draft.md). The m
 
 | Area | What source supports | Limit |
 | --- | --- | --- |
-| Account and collection | The operator identifies **Stackr TCG Ltd** as responsible for Stackr and designates `berridge14@icloud.com` for support and privacy contact. Supabase authentication and account-scoped collection, binder and related app data are present. | Confirm the registered legal spelling, postal address, jurisdiction, hosting and transfer arrangements. The designated email does not itself prove monitoring, delivery, response or rights-request handling. |
+| Account and collection | The operator identifies **STACKRTCG LIMITED** (company number **17386590**) as responsible for Stackr and designates `berridge14@icloud.com` for support and privacy contact. Its registered office is 18 Lyndhurst Grove, Chaddesden, Derby, England, DE21 6RY, as listed by [Companies House](https://find-and-update.company-information.service.gov.uk/company/17386590). Supabase authentication and account-scoped collection, binder and related app data are present. | Confirm jurisdiction, hosting and transfer arrangements. The designated email does not itself prove monitoring, delivery, response or rights-request handling. |
 | Device permissions | Camera and photo access are managed in device settings. | A device control is not a data-deletion control. |
 | Standard scanner | Camera capture supports OCR and manual correction. Paid recognition fallback is disabled by default; the local embedding model is blocked. | Do not claim local-only recognition or an active paid provider. |
 | Recognition feedback | A user can create feedback locally. Metadata may be uploaded when signed in; a rectified image requires explicit image-upload consent. Dataset use has review/approval gates. | Remote deletion completion and operational retention are unverified. |
@@ -24,7 +24,7 @@ The page at <https://tberridge86.github.io/stackr-support/privacy.html> is dated
 
 ## Publication blockers
 
-1. Registered legal spelling, postal address, jurisdiction, representative and DPO position for Stackr TCG Ltd.
+1. Jurisdiction, representative and DPO position for STACKRTCG LIMITED (company number 17386590).
 2. Purpose and lawful basis for account, community/marketplace, diagnostics, recognition feedback and support.
 3. Current processors, locations, transfer safeguards and contracts for Supabase, Railway and any active recognition, payment, analytics, insight or support provider.
 4. Retention and actual deletion for accounts, binders, images/captures, feedback, logs, support messages and backups.
