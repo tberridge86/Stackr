@@ -60,14 +60,16 @@ export function assertProductionDatabaseUrl(dbUrl) {
 export function parseArguments(argv) {
   const values = new Map();
   for (const argument of argv) {
-    const match = typeof argument === 'string' && !/[\r\n]/.test(argument) && /^--(db-url|owner-email|scope|apply)=(.*)$/.exec(argument);
+    const match = typeof argument === 'string' && !/[\r\n]/.test(argument) && /^--(db-url|owner-email|scope|apply|rehearse)=(.*)$/.exec(argument);
     if (!match) throw new Error('invalid_argument');
     if (values.has(match[1])) throw new Error('duplicate_argument');
     values.set(match[1], match[2]);
   }
   if (values.has('apply') && !['true', 'false'].includes(values.get('apply'))) throw new Error('invalid_apply_argument');
+  if (values.has('rehearse') && !['true', 'false'].includes(values.get('rehearse'))) throw new Error('invalid_rehearse_argument');
+  if (values.get('apply') === 'true' && values.get('rehearse') === 'true') throw new Error('apply_and_rehearse_mutually_exclusive');
   if (values.has('scope') && !['personal', 'catalogue'].includes(values.get('scope'))) throw new Error('invalid_scope_argument');
-  return { dbUrl: values.get('db-url') ?? '', ownerEmail: values.get('owner-email') ?? '', scope: values.get('scope') ?? 'personal', apply: values.get('apply') === 'true' };
+  return { dbUrl: values.get('db-url') ?? '', ownerEmail: values.get('owner-email') ?? '', scope: values.get('scope') ?? 'personal', apply: values.get('apply') === 'true', rehearse: values.get('rehearse') === 'true' };
 }
 
 function catalogueMigrationState(rows) {
@@ -126,7 +128,8 @@ function migrationState(rows) {
   return { pending: REQUIRED_MIGRATIONS.filter((migration) => !applied.has(`${migration.version}_${migration.name}`)), applied: REQUIRED_MIGRATIONS.filter((migration) => applied.has(`${migration.version}_${migration.name}`)) };
 }
 
-export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'personal', apply = false }, createClient = createVerifiedSupabasePostgresClient) {
+export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'personal', apply = false, rehearse = false }, createClient = createVerifiedSupabasePostgresClient) {
+  if (apply && rehearse) throw new Error('apply_and_rehearse_mutually_exclusive');
   const sources = validateMigrationSources(scope);
   if (!dbUrl) throw new Error('production_database_url_required');
   assertProductionDatabaseUrl(dbUrl);
@@ -134,7 +137,7 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
   const client = createClient(dbUrl, 'stackr_personal_pricing_preparation');
   await client.connect();
   try {
-    await client.query(apply ? 'begin' : 'begin read only');
+    await client.query(apply || rehearse ? 'begin' : 'begin read only');
     try {
       await client.query("set local lock_timeout = '1s'");
       await client.query("set local statement_timeout = '30s'");
@@ -159,7 +162,8 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
         sourceLabelledTcgdexSnapshotCount = Number(snapshots.rows.find((row) => String(row.source).includes('tcgdex'))?.count ?? 0);
       }
       const newlyAppliedMigrations = apply && state.pending.length ? initialPendingMigrations : [];
-      if (newlyAppliedMigrations.length) {
+      const rehearsedMigrations = rehearse ? initialPendingMigrations : [];
+      if (newlyAppliedMigrations.length || rehearsedMigrations.length) {
         for (const migration of state.pending) {
           const sql = sources.get(migration.version);
           await client.query(sql);
@@ -168,22 +172,31 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
       }
       // Verify the new objects and recorded ledger before the transaction can commit.
       // A failing privilege/RLS contract must leave no partial schema behind.
-      if (scope === 'catalogue' && (state.applied.length || newlyAppliedMigrations.length)) {
+      if (scope === 'catalogue' && (state.applied.length || newlyAppliedMigrations.length || rehearsedMigrations.length)) {
         await assertCataloguePricingContract(client);
         const recorded = await client.query('select version, name from supabase_migrations.schema_migrations where version = $1', [CATALOGUE_PRICING_MIGRATION.version]);
         if (recorded.rows.length !== 1 || recorded.rows[0].name !== CATALOGUE_PRICING_MIGRATION.name) throw new Error('catalogue_pricing_ledger_mismatch');
       }
       await client.query(newlyAppliedMigrations.length ? 'commit' : 'rollback');
+      if (rehearsedMigrations.length) {
+        const restored = await client.query('select version, name from supabase_migrations.schema_migrations order by version, name');
+        if (JSON.stringify(restored.rows) !== JSON.stringify(history.rows)) throw new Error('rehearsal_ledger_not_restored');
+        if (scope === 'catalogue') {
+          const remaining = await client.query("select to_regclass('public.collection_valuation_generations') as valuation_table");
+          if (remaining.rows[0]?.valuation_table != null) throw new Error('rehearsal_schema_not_restored');
+        }
+      }
       const finalAppliedMigrations = [...initialAppliedMigrations, ...newlyAppliedMigrations];
       const finalPendingMigrations = apply ? [] : initialPendingMigrations;
       return {
         ok: true,
-        mode: newlyAppliedMigrations.length ? 'applied' : apply ? 'already_applied' : 'read_only_preparation',
+        mode: rehearse ? 'rehearsed_rolled_back' : newlyAppliedMigrations.length ? 'applied' : apply ? 'already_applied' : 'read_only_preparation',
         scope,
         ownerId,
         migrationHistoryCount: history.rows.length + newlyAppliedMigrations.length,
         initialPendingMigrations,
         newlyAppliedMigrations,
+        rehearsedMigrations,
         pendingMigrations: finalPendingMigrations,
         appliedMigrations: finalAppliedMigrations,
         sourceLabelledTcgdexSnapshotCount,

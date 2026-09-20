@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import './test-production-backup-list.mjs';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -26,7 +27,10 @@ assert.match(workflow, /timeout-minutes:\s*30/, 'preparation must have a bounded
 assert.match(workflow, /cancel-in-progress: false/, 'production preparation must stay serialized');
 assert.match(workflow, /Verify a current physical backup and create logical recovery dumps/,
   'backup wording must distinguish an existing physical backup from generated logical dumps');
-assert.match(workflow, /supabase@2\.110\.0 backups list/, 'a current physical backup must be checked');
+assert.match(workflow, /node scripts\/deploy\/list-production-backups.mjs --output="\$RUNNER_TEMP\/personal-pricing-backup\/physical.json"/,
+  'physical backup listing uses the fixed production target and reports bounded authentication failures');
+assert.match(workflow, /SUPABASE_BACKUP_FALLBACK_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/,
+  'fallback is limited to the existing protected credential');
 assert.match(workflow, /supabase@2\.110\.0 db dump/, 'logical recovery dumps must be made before apply');
 assert.match(workflow, /if: always\(\)\s+shell: bash\s+run: rm -rf "\$RUNNER_TEMP\/personal-pricing-backup"/,
   'ephemeral logical backup files must always be removed from the runner');
@@ -39,7 +43,7 @@ const preparationStep = workflow.match(/      - name: Verify or apply the review
 assert(preparationStep, 'the preparation step must exist');
 assert.match(preparationStep, /shell: bash/, 'the migration pipeline must use explicit bash failure handling');
 const preparationRun = preparationStep.match(/        run: \|\r?\n([\s\S]*)/)?.[1]
-  .replace(/^          /gm, '').replace('${{ inputs.apply_migrations }}', 'true').replace('${{ inputs.scope }}', 'catalogue');
+  .replace(/^          /gm, '').replace('${{ inputs.apply_migrations }}', 'true').replace('${{ inputs.scope }}', 'catalogue').replace('${{ inputs.rehearse_migrations }}', 'false');
 assert(preparationRun, 'the preparation command must exist');
 if (process.platform !== 'win32') {
   const runnerTemp = mkdtempSync(join(tmpdir(), 'stackr-pricing-workflow-test-'));
@@ -62,6 +66,9 @@ if (process.platform !== 'win32') {
 assert.throws(() => assertProductionDatabaseUrl('postgresql://postgres.invalid:x@example.com/postgres'), /project_ref/);
 assert.deepEqual(parseArguments(['--db-url=postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', '--owner-email=tberridge86@gmail.com']).ownerEmail, 'tberridge86@gmail.com');
 assert.equal(parseArguments(['--apply=true']).apply, true);
+assert.equal(parseArguments(['--rehearse=true']).rehearse, true);
+assert.throws(() => parseArguments(['--rehearse=maybe']), /invalid_rehearse_argument/);
+assert.throws(() => parseArguments(['--rehearse=true', '--apply=true']), /mutually_exclusive/);
 assert.equal(parseArguments(['--scope=catalogue']).scope, 'catalogue');
 assert.throws(() => parseArguments(['--scope=all']), /invalid_scope_argument/);
 
@@ -161,6 +168,38 @@ assert.deepEqual(catalogueApplied.newlyAppliedMigrations, [CATALOGUE_PRICING_MIG
 assert.equal(catalogueApplyQueries.filter((query) => query.startsWith('insert into supabase_migrations')).length, 1,
   'catalogue scope records exactly its single reviewed migration');
 assert(catalogueApplyQueries.findIndex(query => query.includes('expected_tables')) < catalogueApplyQueries.indexOf('commit'), 'contract verification must happen before commit');
+const rehearsalQueries = [];
+const rehearsalClient = { ...catalogueApplyClient, async query(sql) {
+  rehearsalQueries.push(String(sql));
+  if (String(sql).includes('as valuation_table')) return { rows: [{ valuation_table: null }] };
+  return catalogueApplyClient.query(sql);
+} };
+const rehearsed = await preparePersonalPricing({
+  dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'catalogue', rehearse: true,
+}, () => rehearsalClient);
+assert.equal(rehearsed.mode, 'rehearsed_rolled_back');
+assert.deepEqual(rehearsed.rehearsedMigrations, [CATALOGUE_PRICING_MIGRATION.filename]);
+assert.deepEqual(rehearsed.newlyAppliedMigrations, []);
+assert.deepEqual(rehearsed.pendingMigrations, [CATALOGUE_PRICING_MIGRATION.filename]);
+assert.equal(rehearsed.migrationHistoryCount, history.length + REQUIRED_MIGRATIONS.length);
+assert(!rehearsalQueries.includes('commit'), 'a successful rehearsal must never commit');
+assert(rehearsalQueries.indexOf('rollback') > rehearsalQueries.findIndex(query => query.includes('expected_tables')));
+assert(rehearsalQueries.findIndex(query => query.includes('as valuation_table')) > rehearsalQueries.indexOf('rollback'));
+await assert.rejects(preparePersonalPricing({ scope: 'catalogue', apply: true, rehearse: true }, () => {
+  throw new Error('must not connect');
+}), /mutually_exclusive/);
+for (const residue of ['ledger', 'schema']) {
+  let rolledBack = false;
+  const dirtyRollback = { ...rehearsalClient, async query(sql) {
+    if (sql === 'rollback') rolledBack = true;
+    if (rolledBack && residue === 'ledger' && String(sql).includes('order by version')) return { rows: [...history, ...REQUIRED_MIGRATIONS, CATALOGUE_PRICING_MIGRATION] };
+    if (rolledBack && residue === 'schema' && String(sql).includes('as valuation_table')) return { rows: [{ valuation_table: 'collection_valuation_generations' }] };
+    return rehearsalClient.query(sql);
+  } };
+  await assert.rejects(preparePersonalPricing({
+    dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'catalogue', rehearse: true,
+  }, () => dirtyRollback), /rehearsal_(ledger|schema)_not_restored/);
+}
 for (const failure of ['tables_private', 'functions_private_to_service', 'ledger']) {
   const calls = [];
   const failing = { ...catalogueApplyClient, async query(sql) {
