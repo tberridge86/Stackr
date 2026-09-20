@@ -122,6 +122,43 @@ test('active owner dry run carries only unanimous English binder context into th
   assert.deepEqual(supabase.rpcCalls, [{ schema: 'api', name: 'collection_valuation_inputs', args: { p_owner: owner } }]);
 });
 
+test('active owner dry run refreshes only exact English holo and reverse-holo variants after binder language proof', async () => {
+  const holo = 'abababab-abab-4bab-8bab-abababababab';
+  const reverse = 'acacacac-acac-4cac-8cac-acacacacacac';
+  const owned = [
+    { id: 'owned-holo', user_id: owner, card_id: holo, set_id: setId, variant: 'holofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' },
+    { id: 'owned-reverse', user_id: owner, card_id: reverse, set_id: setId, variant: 'reverseHolofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' },
+  ];
+  const supabase = database({
+    ownerRows: owned,
+    identifiers: [],
+    catalogue: [
+      { variant_id: holo, printing_id: printing, set_id: setId, language_code: 'en', variant_code: 'holo', finish_code: 'holo' },
+      { variant_id: reverse, printing_id: printing, set_id: setId, language_code: 'en', variant_code: 'reverse_holo', finish_code: 'reverse_holo' },
+      { variant_id: normalVariant, printing_id: printing, set_id: setId, language_code: 'en', variant_code: 'normal', finish_code: 'normal' },
+    ],
+    languageContext: {
+      binders: [{ id: 'binder-en', user_id: owner, type: 'custom', language: 'en' }],
+      binderCards: owned.map((row) => ({
+        id: `placement-${row.id}`, binder_id: 'binder-en', owned_card_variant_id: row.id,
+        card_id: row.card_id, set_id: row.set_id, owned: true, owned_quantity: 1,
+      })),
+    },
+  });
+  let providerCalls = 0;
+  const result = await runOwnerProviderRefresh({
+    supabase, ownerId: owner, limit: 2, dryRun: true,
+    refreshExactProviderEstimate: async () => { providerCalls += 1; },
+  });
+  assert.equal(result.scanned, 2, 'the bounded owner scan must retain both saved finish identities');
+  assert.equal(result.eligible, 2);
+  assert.equal(result.skipped, 0);
+  assert.deepEqual(result.selectedVariantIds, [holo, reverse], 'only the exact selected English finish variants are refreshable');
+  assert.equal(providerCalls, 0, 'dry run never invokes a provider');
+  assert.deepEqual(supabase.rpcCalls, [{ schema: 'api', name: 'collection_valuation_inputs', args: { p_owner: owner } }],
+    'the worker may use only the owner-scoped binder snapshot to supply otherwise absent language');
+});
+
 test('disagreeing, missing, or failed language context fails closed without assigning English', async () => {
   const owned = { id: 'sv10-owned', user_id: owner, card_id: 'sv10-001', set_id: 'sv10', variant: 'normal', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' };
   const base = {
@@ -147,9 +184,139 @@ test('disagreeing, missing, or failed language context fails closed without assi
 });
 
 test('conflicting explicit language prefixes are refused before any context lookup', async () => {
-  const conflicted = { id: 'conflicted', user_id: owner, card_id: 'en:sv10-001', set_id: 'ja:sv10', variant: 'normal', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' };
+  const conflicted = { id: 'conflicted', user_id: owner, card_id: 'en:sv10-001', set_id: 'ja:sv10', variant: 'holofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' };
   const supabase = database({ ownerRows: [conflicted] });
   const result = await runOwnerProviderRefresh({ supabase, ownerId: owner, limit: 1, dryRun: true, refreshExactProviderEstimate: async () => { throw new Error('provider must not run'); } });
   assert.deepEqual(result.skipReasons, { ambiguous_saved_identity: 1 });
   assert.equal(supabase.rpcCalls.length, 0);
+});
+
+test('explicit English prefixes permit only the exact saved holo and reverse finishes without a binder snapshot', async () => {
+  const prefixSet = '76767676-7676-4676-8676-767676767676';
+  const prefixHolo = '78787878-7878-4878-8878-787878787878';
+  const prefixReverse = '79797979-7979-4979-8979-797979797979';
+  const owned = [
+    { id: 'prefix-holo', user_id: owner, card_id: 'en:prefix-holo', set_id: 'en:prefix-set', variant: 'holofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' },
+    { id: 'prefix-reverse', user_id: owner, card_id: 'en:prefix-reverse', set_id: 'en:prefix-set', variant: 'reverseHolofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' },
+  ];
+  const supabase = database({
+    ownerRows: owned,
+    identifiers: [
+      { source_entity_type: 'set', external_id: 'prefix-set', language_code: 'en', set_id: prefixSet },
+      { source_entity_type: 'card', external_id: 'prefix-holo', language_code: 'en', set_id: prefixSet, variant_id: prefixHolo },
+      { source_entity_type: 'card', external_id: 'prefix-reverse', language_code: 'en', set_id: prefixSet, variant_id: prefixReverse },
+    ],
+    catalogue: [
+      { variant_id: prefixHolo, printing_id: printing, set_id: prefixSet, language_code: 'en', variant_code: 'holo', finish_code: 'holo' },
+      { variant_id: prefixReverse, printing_id: printing, set_id: prefixSet, language_code: 'en', variant_code: 'reverse_holo', finish_code: 'reverse_holo' },
+      { variant_id: normalVariant, printing_id: printing, set_id: prefixSet, language_code: 'en', variant_code: 'normal', finish_code: 'normal' },
+    ],
+  });
+  const result = await runOwnerProviderRefresh({
+    supabase, ownerId: owner, limit: 2, dryRun: true,
+    refreshExactProviderEstimate: async () => { throw new Error('provider must not run'); },
+  });
+  assert.equal(result.eligible, 2);
+  assert.deepEqual(result.selectedVariantIds, [prefixHolo, prefixReverse]);
+  assert.equal(supabase.rpcCalls.length, 0, 'explicit en: evidence must not read a binder snapshot');
+});
+
+test('an unbound verified ME pair needs one English printing-only alias and an exact published finish', async () => {
+  const meSet = '89898989-8989-4989-8989-898989898989';
+  const mePrinting = '8a8a8a8a-8a8a-4a8a-8a8a-8a8a8a8a8a8a';
+  const meReverse = '8b8b8b8b-8b8b-4b8b-8b8b-8b8b8b8b8b8b';
+  const owned = { id: 'me-reverse', user_id: owner, card_id: 'me4-068', set_id: 'me4', variant: 'reverseHolofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' };
+  const supabase = database({
+    ownerRows: [owned],
+    identifiers: [
+      { source_entity_type: 'set', external_id: 'me4', language_code: 'en', set_id: meSet },
+      { source_entity_type: 'set', external_id: 'me04', language_code: 'en', set_id: meSet },
+      { source_entity_type: 'card', external_id: 'me4-068', language_code: 'en', set_id: meSet, printing_id: mePrinting, variant_id: null },
+    ],
+    catalogue: [
+      { variant_id: meReverse, printing_id: mePrinting, set_id: meSet, language_code: 'en', collector_number: '068', variant_code: 'reverse_holo', finish_code: 'reverse_holo' },
+      { variant_id: normalVariant, printing_id: mePrinting, set_id: meSet, language_code: 'en', collector_number: '068', variant_code: 'normal', finish_code: 'normal' },
+    ],
+    languageContext: { binders: [], binderCards: [] },
+  });
+  const result = await runOwnerProviderRefresh({
+    supabase, ownerId: owner, limit: 1, dryRun: true,
+    refreshExactProviderEstimate: async () => { throw new Error('provider must not run'); },
+  });
+  assert.equal(result.eligible, 1);
+  assert.deepEqual(result.selectedVariantIds, [meReverse]);
+  assert.deepEqual(supabase.rpcCalls, [{ schema: 'api', name: 'collection_valuation_inputs', args: { p_owner: owner } }]);
+  const legacyRead = supabase.reads.find((read) => read.table === 'api.catalogue_cards'
+    && read.filters.some(([operation, column, value]) => operation === 'eq' && column === 'set_id' && value === meSet));
+  assert(legacyRead, 'the verified ME resolution must read its one published English set');
+  assert(legacyRead.columns.includes('printing_id'), 'the ME printing guard must receive the production projection');
+});
+
+test('a projected ME catalogue row without its printing ID cannot resolve a physical finish', async () => {
+  const meSet = '92929292-9292-4292-8292-929292929292';
+  const mePrinting = '93939393-9393-4393-8393-939393939393';
+  const meReverse = '94949494-9494-4494-8494-949494949494';
+  const owned = { id: 'me-no-printing', user_id: owner, card_id: 'me4-068', set_id: 'me4', variant: 'reverseHolofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' };
+  const supabase = database({
+    ownerRows: [owned],
+    identifiers: [
+      { source_entity_type: 'set', external_id: 'me4', language_code: 'en', set_id: meSet },
+      { source_entity_type: 'card', external_id: 'me4-068', language_code: 'en', set_id: meSet, printing_id: mePrinting, variant_id: null },
+    ],
+    catalogue: [{ variant_id: meReverse, set_id: meSet, language_code: 'en', collector_number: '068', variant_code: 'reverse_holo', finish_code: 'reverse_holo' }],
+    languageContext: { binders: [], binderCards: [] },
+  });
+  const result = await runOwnerProviderRefresh({ supabase, ownerId: owner, limit: 1, dryRun: true, refreshExactProviderEstimate: async () => { throw new Error('provider must not run'); } });
+  assert.equal(result.selected, 0);
+  assert.deepEqual(result.skipReasons, { unsupported_or_unpublished_variant: 1 });
+});
+
+test('ME finish inference fails closed for foreign, missing, or conflicting binder language evidence', async () => {
+  const meSet = '8c8c8c8c-8c8c-4c8c-8c8c-8c8c8c8c8c8c';
+  const mePrinting = '8d8d8d8d-8d8d-4d8d-8d8d-8d8d8d8d8d8d';
+  const meReverse = '8e8e8e8e-8e8e-4e8e-8e8e-8e8e8e8e8e8e';
+  const owned = { id: 'me-context', user_id: owner, card_id: 'me4-068', set_id: 'me4', variant: 'reverseHolofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' };
+  const base = {
+    ownerRows: [owned],
+    identifiers: [
+      { source_entity_type: 'set', external_id: 'me4', language_code: 'en', set_id: meSet },
+      { source_entity_type: 'card', external_id: 'me4-068', language_code: 'en', set_id: meSet, printing_id: mePrinting, variant_id: null },
+    ],
+    catalogue: [{ variant_id: meReverse, printing_id: mePrinting, set_id: meSet, language_code: 'en', collector_number: '068', variant_code: 'reverse_holo', finish_code: 'reverse_holo' }],
+  };
+  const contexts = [
+    { label: 'foreign', binders: [{ id: 'binder-ja', user_id: owner, type: 'custom', language: 'ja' }], binderCards: [{ id: 'placement', binder_id: 'binder-ja', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }] },
+    { label: 'missing', binders: [{ id: 'binder-empty', user_id: owner, type: 'custom', language: '' }], binderCards: [{ id: 'placement', binder_id: 'binder-empty', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }] },
+    { label: 'conflicting', binders: [{ id: 'binder-en', user_id: owner, type: 'custom', language: 'en' }, { id: 'binder-ja', user_id: owner, type: 'custom', language: 'ja' }], binderCards: [{ id: 'placement-en', binder_id: 'binder-en', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }, { id: 'placement-ja', binder_id: 'binder-ja', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }] },
+  ];
+  for (const { label, ...languageContext } of contexts) {
+    const supabase = database({ ...base, languageContext });
+    const result = await runOwnerProviderRefresh({ supabase, ownerId: owner, limit: 1, dryRun: true, refreshExactProviderEstimate: async () => { throw new Error('provider must not run'); } });
+    assert.equal(result.selected, 0, `${label} binder evidence must not infer English`);
+    assert.deepEqual(result.skipReasons, { non_normal_saved_variant: 1 }, `${label} binder evidence must fail closed`);
+    assert.equal(supabase.rpcCalls.length, 1, `${label} evidence must be inspected before refusing`);
+  }
+});
+
+test('English non-normal rows reject a normal sibling and generic printing-only aliases', async () => {
+  const guardSet = '8f8f8f8f-8f8f-4f8f-8f8f-8f8f8f8f8f8f';
+  const guardPrinting = '90909090-9090-4090-8090-909090909090';
+  const normalOnly = '91919191-9191-4191-8191-919191919191';
+  const owned = [
+    { id: 'normal-sibling', user_id: owner, card_id: 'en:normal-only', set_id: 'en:guard-set', variant: 'holofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' },
+    { id: 'printing-only', user_id: owner, card_id: 'en:printing-only', set_id: 'en:guard-set', variant: 'reverseHolofoil', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' },
+  ];
+  const supabase = database({
+    ownerRows: owned,
+    identifiers: [
+      { source_entity_type: 'set', external_id: 'guard-set', language_code: 'en', set_id: guardSet },
+      { source_entity_type: 'card', external_id: 'normal-only', language_code: 'en', set_id: guardSet, variant_id: normalOnly },
+      { source_entity_type: 'card', external_id: 'printing-only', language_code: 'en', set_id: guardSet, printing_id: guardPrinting, variant_id: null },
+    ],
+    catalogue: [{ variant_id: normalOnly, printing_id: guardPrinting, set_id: guardSet, language_code: 'en', variant_code: 'normal', finish_code: 'normal' }],
+  });
+  const result = await runOwnerProviderRefresh({ supabase, ownerId: owner, limit: 2, dryRun: true, refreshExactProviderEstimate: async () => { throw new Error('provider must not run'); } });
+  assert.equal(result.selected, 0);
+  assert.deepEqual(result.skipReasons, { unsupported_or_unpublished_variant: 2 });
+  assert.equal(supabase.rpcCalls.length, 0, 'explicit English evidence does not require binder context');
 });

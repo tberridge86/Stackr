@@ -70,8 +70,34 @@ test('a missing or conflicting saved set stays unresolved', () => {
 test('explicit language does not authorise a different physical finish', () => {
   for (const code of ['holo', 'reverse_holo', 'master_ball']) assert.equal(resolve(row, aliases, [{ ...card, variant_code: code, finish_code: code }]).ok, false);
 });
+test('an explicit English saved finish resolves only its direct published physical variant', () => {
+  const holo = '77777777-7777-4777-8777-777777777777';
+  const english = { ...row, language: 'en', card_id: 'holo-146', set_id: 'set-en', variant: 'holofoil' };
+  const published = [
+    { source_entity_type: 'set', external_id: 'set-en', language_code: 'en', set_id: setId },
+    { source_entity_type: 'card', external_id: 'holo-146', language_code: 'en', set_id: setId, variant_id: holo },
+  ];
+  const normal = { ...card, language_code: 'en', collector_number: '146' };
+  const exact = { ...normal, variant_id: holo, variant_code: 'holo', finish_code: 'holo' };
+  assert.deepEqual(resolve(english, published, [normal, exact]), { ok: true, variantId: holo });
+  assert.equal(resolve(english, published, [normal]).reason, 'unsupported_or_unpublished_variant', 'an English holo row cannot borrow the normal variant');
+  assert.equal(resolve({ ...english, language: 'ja' }, published, [exact]).reason, 'non_normal_saved_variant', 'foreign-language saved finishes remain unsupported');
+});
+test('an explicit English ME finish prefix is scoped before finish eligibility', () => {
+  const reverse = '88888888-8888-4888-8888-888888888888';
+  const printing = '99999999-9999-4999-8999-999999999999';
+  const saved = { ...row, card_id: 'en:me4-068', set_id: 'en:me4', variant: 'reverseHolofoil' };
+  const published = [
+    { source_entity_type: 'set', external_id: 'me04', language_code: 'en', set_id: setId },
+    { source_entity_type: 'card', external_id: 'me4-068', language_code: 'en', printing_id: printing, variant_id: null },
+  ];
+  const exact = { ...card, variant_id: reverse, printing_id: printing, language_code: 'en', collector_number: '68', variant_code: 'reverse_holo', finish_code: 'reverse_holo' };
+  assert.deepEqual(resolve(saved, published, [exact]), { ok: true, variantId: reverse });
+  assert.equal(resolve(saved, published, [{ ...exact, printing_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' }]).reason, 'unsupported_or_unpublished_variant', 'the exact finish also needs the published printing identity');
+  assert.equal(resolve({ ...saved, set_id: 'ja:me4' }, published, [exact]).reason, 'ambiguous_saved_identity', 'conflicting explicit language evidence remains terminal');
+});
 test('saved finish, grade and condition gates run before namespace mapping', () => {
-  assert.equal(resolve({ ...row, variant: 'reverseHolofoil' }).reason, 'non_normal_saved_variant');
+  assert.equal(resolve({ ...row, variant: 'reverseHolofoil' }).reason, 'non_normal_saved_variant', 'a non-English scoped saved finish remains unsupported');
   assert.equal(resolve({ ...row, grade: '10' }).reason, 'graded_card');
   assert.equal(resolve({ ...row, condition: 'Lightly Played' }).reason, 'not_raw_near_mint');
 });

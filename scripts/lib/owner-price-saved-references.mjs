@@ -22,6 +22,14 @@ function scope(row) {
   return { card, set, valid, language: card.language ?? set.language };
 }
 
+/** Apply conflict-free explicit language evidence before the saved-row gates. */
+export function scopedOwnedRowEligibility(row) {
+  const value = scope(row);
+  if (!value.valid) return 'ambiguous_saved_identity';
+  const scopedInput = value.language && !clean(row?.language) ? { ...row, language: value.language } : row;
+  return ownedRowEligibility(scopedInput);
+}
+
 /** Fetch the published references already accepted by the resolver. */
 export function ownerIdentityLookupRows(row) {
   const value = scope(row);
@@ -54,20 +62,21 @@ export function ownerIdentityLookupRows(row) {
  * precedence; even a conflicting literal alias must not be bypassed.
  */
 export function resolveScopedOwnedProviderVariant(row, identifierRows, catalogueRows) {
-  const eligibility = ownedRowEligibility(row);
-  if (eligibility) return { ok: false, reason: eligibility };
   const value = scope(row);
   if (!value.valid) return { ok: false, reason: 'ambiguous_saved_identity' };
-  if (!value.language) return resolveOwnedProviderVariant(row, identifierRows, catalogueRows);
+  const scopedInput = value.language && !clean(row?.language) ? { ...row, language: value.language } : row;
+  const eligibility = scopedOwnedRowEligibility(row);
+  if (eligibility) return { ok: false, reason: eligibility };
+  if (!value.language) return resolveOwnedProviderVariant(scopedInput, identifierRows, catalogueRows);
 
   const preferredReference = (ref, entity) => (identifierRows ?? []).some((item) => (
     normalise(item.source_entity_type) === entity && normalise(item.external_id) === normalise(ref.raw)
   )) ? ref.raw : ref.bare;
   const scopedRow = {
-    ...row,
+    ...scopedInput,
     card_id: preferredReference(value.card, 'card'),
     set_id: preferredReference(value.set, 'set'),
-    language: row?.language ?? value.language,
+    language: scopedInput.language ?? value.language,
   };
   const identifiers = (identifierRows ?? []).filter((item) => normalise(item.language_code) === value.language);
   const catalogue = (catalogueRows ?? []).filter((item) => normalise(item.language_code) === value.language);
