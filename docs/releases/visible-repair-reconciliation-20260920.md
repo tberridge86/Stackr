@@ -51,7 +51,7 @@ Base: `0ea201d224e3bed0a09c8fc662645b97952078b7`, branch
 `agent/release/complete-visible-repairs-20260920`, isolated checkout
 `C:\Users\berri\.codex\worktrees\stackr-normal-build42\Stackr-1`.
 The original dirty checkout and release owner's integration checkout were preserved.
-Final implementation source: `4f7034b14d5a8ed743eba6e5f483aa38dbcb9eda`.
+Final implementation source: `8fa5034c994ad5a661c85927b2f90e50bffa5f4c`.
 PR #210 was independently confirmed open/draft at the base above before this
 update. This corrective source is committed for integration into that same PR;
 it has not been merged or delivered to a phone. Build 45 remains the last
@@ -90,10 +90,13 @@ verified distributed normal build, as recorded in
   supplies whitelisted exact identity context for a report. Device-local drafts
   are account/context-scoped, survive composer failure and are never marked sent;
   leaving Help cancels a delayed composer open after draft persistence.
-  diagnostics are reviewed and opt-in. Email opening is not ticket delivery.
+  Diagnostics are reviewed and opt-in. Email opening is not ticket delivery.
 - Legal links the existing public privacy page. Editable Markdown and matching
   accessible HTML drafts are prepared in `docs/privacy/`; they are explicitly
   unpublished and contain unresolved operator/legal/retention/provider facts.
+  The operator designated **Stackr TCG Ltd** and **berridge14@icloud.com** on
+  20 September; the support composer and draft use that contact. Postal address
+  and precise registered spelling remain to confirm; the public page is unchanged.
   Neither these drafts nor the deletion-request link establish compliant account
   deletion, private support receipt, a monitored inbox or an approved notice.
 - Fixed Settings falsely selecting the Collection tab. About shows build/update
@@ -117,7 +120,7 @@ verified distributed normal build, as recorded in
 | Gateway | PASS: 44 existing tests after locked gateway install; no gateway source change or deployment. |
 | Browser UI | PASS at 390×844: signed-out Settings/Help/Legal routes, saved haptic/motion controls after reload, Help search/expanded article and corrected navigation selection. These are browser checks, not phone acceptance. |
 | Source hygiene/runtime | PASS: diff whitespace check and existing mobile runtime configuration; candidate is 1.0.4. |
-| Remote CI | Initial run on `841b3d5` exposed a missing haptic-hydration mock in the existing RootLayout test harness. Fixed the boundary and retained its assertions; `test:ux-service-release` now passes locally. Follow PR #210 for subsequent exact-source CI results. |
+| Remote CI | Initial run on `841b3d5` exposed a missing haptic-hydration mock in the existing RootLayout test harness; run on `5535446` then exposed stale preview version assertions. Both are fixed without dropping runtime-isolation assertions. `test:ux-service-release`, `test:iphone-preview` and the related owner-submission dry-run test pass locally. Follow PR #210 for subsequent exact-source CI results. |
 | New native build and device journeys | NOT RUN. Build 45's earlier CI/delivery applies only to its recorded source. |
 
 These checks establish local implementation evidence, not production acceptance.
@@ -157,8 +160,9 @@ printing fidelity or actual device delivery.
    The existing snapshot endpoint returns 401 without authentication; personal
    pricing access policy is not weakened by this change. That response does not
    establish an owner quote failure. Market remains unverified, not repaired.
-4. **Product/operator — external BLOCKED on facts and service decisions:** supply
-   controller legal name/contact and confirm the monitored support/privacy channel;
+4. **Product/operator — external BLOCKED on facts and service decisions:** confirm
+   the postal address/registered spelling for the supplied Stackr TCG Ltd identity,
+   jurisdiction and response procedures for the designated support/privacy email;
    validate processor, lawful-basis, retention and age-policy facts in the prepared
    draft. Private request delivery with a real receipt and authenticated deletion
    with completion evidence remain OPEN implementation/service gates. The email
