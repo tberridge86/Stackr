@@ -1,0 +1,557 @@
+{
+  "observedDate": "2026-09-19",
+  "environment": "production",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "source": "Read-only api.catalogue_cards aggregate grouped by published revision, language, variant and finish",
+  "population": 75752,
+  "providerCalls": 0,
+  "outcome": "planning_only_not_a_completed_cycle",
+  "groups": [
+    {
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "language_code": "en",
+      "variant_code": "first_edition",
+      "finish_code": "first_edition",
+      "identities": 938
+    },
+    {
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "language_code": "en",
+      "variant_code": "holo",
+      "finish_code": "holo",
+      "identities": 5733
+    },
+    {
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "language_code": "en",
+      "variant_code": "normal",
+      "finish_code": "normal",
+      "identities": 18195
+    },
+    {
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "language_code": "en",
+      "variant_code": "normal",
+      "finish_code": null,
+      "identities": 120
+    },
+    {
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "language_code": "en",
+      "variant_code": "reverse_holo",
+      "finish_code": "reverse_holo",
+      "identities": 8182
+    },
+    {
+      "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+      "language_code": "ja",
+      "variant_code": "first_edition",
+      "finish_code": "first_edition",
+      "identities": 142
+    },
+    {
+      "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+      "language_code": "ja",
+      "variant_code": "holo",
+      "finish_code": "holo",
+      "identities": 4055
+    },
+    {
+      "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+      "language_code": "ja",
+      "variant_code": "normal",
+      "finish_code": "normal",
+      "identities": 8566
+    },
+    {
+      "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+      "language_code": "ja",
+      "variant_code": "reverse_holo",
+      "finish_code": "reverse_holo",
+      "identities": 1008
+    },
+    {
+      "catalogue_version_id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "language_code": "ko",
+      "variant_code": "holo",
+      "finish_code": "holo",
+      "identities": 117
+    },
+    {
+      "catalogue_version_id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "language_code": "ko",
+      "variant_code": "normal",
+      "finish_code": "normal",
+      "identities": 122
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "altaria_stamp",
+      "finish_code": "stamped",
+      "identities": 22
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "camerupt_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "cinderace_stamp",
+      "finish_code": "stamped",
+      "identities": 24
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "clefairy_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "decidueye_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "dragonite_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "dragonite_stamp_1",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "dragonite_stamp_14",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "dragonite_stamp_15",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "dragonite_stamp_16",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "gimmighoul_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "greninja_stamp",
+      "finish_code": "stamped",
+      "identities": 44
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "holo",
+      "finish_code": "holo",
+      "identities": 6856
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "infernape_stamp",
+      "finish_code": "stamped",
+      "identities": 19
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "koraidon_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "latios_stamp",
+      "finish_code": "stamped",
+      "identities": 23
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "lucario_stamp",
+      "finish_code": "stamped",
+      "identities": 43
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "mabosstiff_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "master_ball",
+      "finish_code": "master_ball",
+      "identities": 1921
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "maushold_stamp",
+      "finish_code": "stamped",
+      "identities": 26
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "melmetal_stamp",
+      "finish_code": "stamped",
+      "identities": 22
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "mewtwo_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "mewtwo_stamp_1",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "mewtwo_stamp_14",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "mewtwo_stamp_15",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "mewtwo_stamp_2",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "miraidon_stamp",
+      "finish_code": "stamped",
+      "identities": 22
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "normal",
+      "finish_code": "normal",
+      "identities": 5686
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "pikachu_stamp",
+      "finish_code": "stamped",
+      "identities": 64
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "poke_ball",
+      "finish_code": "poke_ball",
+      "identities": 1921
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_altaria_stamp",
+      "finish_code": "stamped",
+      "identities": 22
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_camerupt_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_clefairy_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_decidueye_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_dragonite_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_dragonite_stamp_1",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_dragonite_stamp_14",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_dragonite_stamp_15",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_dragonite_stamp_16",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_gimmighoul_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_greninja_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_holo",
+      "finish_code": "reverse_holo",
+      "identities": 2994
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_infernape_stamp",
+      "finish_code": "stamped",
+      "identities": 19
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_koraidon_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_latios_stamp",
+      "finish_code": "stamped",
+      "identities": 23
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_lucario_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_mabosstiff_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_maushold_stamp",
+      "finish_code": "stamped",
+      "identities": 26
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_melmetal_stamp",
+      "finish_code": "stamped",
+      "identities": 22
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_mewtwo_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_mewtwo_stamp_1",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_mewtwo_stamp_14",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_mewtwo_stamp_15",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_mewtwo_stamp_2",
+      "finish_code": "stamped",
+      "identities": 1
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_miraidon_stamp",
+      "finish_code": "stamped",
+      "identities": 22
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_pikachu_stamp",
+      "finish_code": "stamped",
+      "identities": 24
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_sinistcha_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_turtwig_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "reverse_zamazenta_stamp",
+      "finish_code": "stamped",
+      "identities": 22
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "sinistcha_stamp",
+      "finish_code": "stamped",
+      "identities": 21
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "sprigatito_stamp",
+      "finish_code": "stamped",
+      "identities": 23
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "turtwig_stamp",
+      "finish_code": "stamped",
+      "identities": 20
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "tyranitar_stamp",
+      "finish_code": "stamped",
+      "identities": 30
+    },
+    {
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "language_code": "zh-cn",
+      "variant_code": "zamazenta_stamp",
+      "finish_code": "stamped",
+      "identities": 22
+    },
+    {
+      "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "language_code": "zh-tw",
+      "variant_code": "holo",
+      "finish_code": "holo",
+      "identities": 1147
+    },
+    {
+      "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "language_code": "zh-tw",
+      "variant_code": "normal",
+      "finish_code": "normal",
+      "identities": 6289
+    },
+    {
+      "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "language_code": "zh-tw",
+      "variant_code": "reverse_holo",
+      "finish_code": "reverse_holo",
+      "identities": 730
+    }
+  ]
+}

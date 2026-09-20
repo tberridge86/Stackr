@@ -1,3 +1,4 @@
+import type { PreparedValuationResponse } from './preparedCollectionValuation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRICE_API_URL, STACKR_API_URL } from './config';
 import {
@@ -1046,6 +1047,14 @@ export class StackrApiClient {
       rangeDays: query.rangeDays,
       latestOnly: query.latestOnly ? '1' : undefined,
     });
+  }
+
+  collectionValuation() {
+    return this.authenticatedGet<PreparedValuationResponse>('/market/collection-valuation', {});
+  }
+
+  requestCollectionValuationRefresh() {
+    return this.authenticatedPost<PreparedValuationResponse>('/market/collection-valuation/refresh', {});
   }
 
   requestMarketPriceRefresh(variantIds: string[], payload: StackrPriceRefreshRequest = {}) {
