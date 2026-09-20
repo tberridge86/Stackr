@@ -156,6 +156,35 @@ assert.equal(await scalar('select count(*)::int from public.collection_valuation
 assert.equal((await scalar('select api.collection_valuation_trend($1,$2)',[other,prepared.summary.trend.scope])).length,1);
 assert.equal((await scalar("select api.collection_valuation_trend(test_uuid('owner'),$1)",[prepared.summary.trend.scope])).length,0,'history is owner-scoped');
 assert.equal(await scalar("select has_table_privilege('authenticated','public.collection_valuation_history','SELECT')"),false);
+// A custom binder owns one exact identity from a 1,201-card set. Its unused
+// standard/master totals must not cause 1,200 additional stored-price reads.
+await db.exec("update public.binders set type='custom' where id=test_uuid('binder'); update public.collection_valuation_generations set calculated_at=now()-interval '4 minutes' where owner_id=test_uuid('other')");
+const customReadIds=[];
+const customPreparation=await prepareCollectionValuation({supabase,ownerId:other,service:{...service,
+ storedExactPrices:async(ids)=>{customReadIds.push(...ids);return service.storedExactPrices(ids);}}});
+assert.deepEqual(customReadIds,[await scalar("select test_uuid('1')::text")]);
+assert.equal(customPreparation.summary.total,8);
+assert.equal(customPreparation.summary.binders[0].standardSet,null);
+assert.equal(customPreparation.diagnostics.storedPriceIdentities,1);
+assert.equal(customPreparation.diagnostics.stages.stored_exact_prices.calls,1);
+await db.exec("update public.binders set type='official' where id=test_uuid('binder'); update public.collection_valuation_generations set calculated_at=now()-interval '4 minutes' where owner_id=test_uuid('other')");
+const officialReadIds=[];
+const officialPreparation=await prepareCollectionValuation({supabase,ownerId:other,service:{...service,
+ storedExactPrices:async(ids)=>{officialReadIds.push(...ids);return service.storedExactPrices(ids);}}});
+assert.equal(new Set(officialReadIds).size,241,'official set totals retain every member of their exact language');
+assert.equal(officialPreparation.summary.total,8);
+assert.equal(officialPreparation.summary.binders[0].standardSet.totalUnits,241);
+// Surface the failing operation without leaking the database's raw message,
+// and leave the last successful generation intact when any read fails.
+await db.exec("update public.collection_valuation_generations set calculated_at=now()-interval '4 minutes' where owner_id=test_uuid('other')");
+const failingTransport={...supabase,schema:(schema)=>({ ...supabase.schema(schema),rpc:(name,args)=>
+ name==='published_price_catalogue_revision'?Promise.resolve({data:null,error:{code:'57014',message:'private database context'}}):supabase.schema(schema).rpc(name,args)})};
+await assert.rejects(prepareCollectionValuation({supabase:failingTransport,service,ownerId:other}),(error)=>{
+ assert.equal(error.valuationStage,'published_price_catalogue_revision');
+ assert.equal(error.code,'57014');assert(!error.message.includes('private database context'));return true;
+});
+assert.equal((await scalar('select summary from public.collection_valuation_generations where owner_id=$1',[other])).valuationRevision,officialPreparation.summary.valuationRevision);
+await db.exec("update public.collection_valuation_generations set lease_until=now()-interval '1 second' where owner_id=test_uuid('other')");
 await db.exec("update public.collection_valuation_generations set calculated_at=now()-interval '4 minutes' where owner_id=test_uuid('other')");
 await prepareCollectionValuation({supabase,service,ownerId:other});
 assert.equal(await scalar('select count(*)::int from public.collection_valuation_history'),1,'unchanged provider evidence cannot create trend points');

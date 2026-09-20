@@ -13,12 +13,31 @@ function normalise(value) {
 }
 
 function sameCollectorNumber(left, right) {
-  const normalize = (value) => String(value ?? '').trim().replace(/^0+(?=\d)/, '');
+  const normalize = (value) => {
+    const raw = String(value ?? '').trim().toLowerCase();
+    return /^\d+$/.test(raw) ? raw.replace(/^0+(?=\d)/, '') : raw;
+  };
   return Boolean(normalize(left) && normalize(right)) && normalize(left) === normalize(right);
+}
+
+function isEnglishLanguage(value) {
+  return ['en', 'english', 'en-us', 'en-gb'].includes(normalise(value).replace(/_/g, '-'));
 }
 
 function englishSetCodeAliases(value) {
   const code = normalise(value);
+  const explicit = [
+    ['sv8pt5', 'sv08.5'],
+    ['swsh12pt5', 'swsh12.5'],
+    ['swsh35', 'swsh3.5'],
+    ['swsh45', 'swsh4.5'],
+    ['swsh45sv', 'swsh4.5sv'],
+    ['swsh12pt5gg', 'swsh12.5gg'],
+    ['sm35', 'sm3.5'],
+    ['sm75', 'sm7.5'],
+  ];
+  const explicitPair = explicit.find(([legacy, canonical]) => code === legacy || code === canonical);
+  if (explicitPair) return [...new Set([code, ...explicitPair])];
   const match = /^(sv|me)(\d{1,2})(pt5|\.5)?([a-z]*)$/.exec(code);
   if (!match) return [];
   const [, prefix, numeric, half = '', suffix = ''] = match;
@@ -32,19 +51,22 @@ function englishSetCodeAliases(value) {
 }
 
 /**
- * Legacy English app rows used `<ME code>` and `<ME code>-<collector>` together.
- * This mirrors the verified ME alias rule in lib/englishSetIdentity. It does
- * not reinterpret SV or arbitrary unprefixed/foreign ids as English: Japanese
- * ME identities use their distinct `m` prefix. The resulting set must still
- * resolve through a published English set and one exact normal variant.
+ * Legacy English app rows used a verified English set code and
+ * `<set code>-<collector>` together. ME pairs retain their established
+ * behavior. SV/SWSH legacy aliases require an explicit English saved language;
+ * this does not infer a language for bare or foreign references. The resulting
+ * set must still resolve through a published English set and one exact normal
+ * variant.
  */
 export function legacyEnglishOwnerPair(row) {
-  const setMatch = /^(me\d{1,2}(?:pt5|\.5)?[a-z]*)$/.exec(normalise(row?.set_id));
-  const cardMatch = /^(me\d{1,2}(?:pt5|\.5)?[a-z]*)-(\d+)$/.exec(normalise(row?.card_id));
-  if (!setMatch || !cardMatch) return null;
-  const setAliases = englishSetCodeAliases(setMatch[1]);
+  const setCode = normalise(row?.set_id);
+  const cardMatch = /^([a-z0-9.]+)-([a-z0-9]+)$/.exec(normalise(row?.card_id));
+  if (!cardMatch) return null;
+  const setAliases = englishSetCodeAliases(setCode);
   const cardSetAliases = englishSetCodeAliases(cardMatch[1]);
   if (!setAliases.length || !cardSetAliases.some((value) => setAliases.includes(value))) return null;
+  const establishedMePair = /^me\d{1,2}(?:pt5|\.5)?[a-z]*$/.test(setCode);
+  if (!establishedMePair && !isEnglishLanguage(row?.language)) return null;
   return { setAliases, collectorNumber: cardMatch[2] };
 }
 

@@ -55,6 +55,10 @@ assert.equal(ownedRowEligibility({ ...owned, condition: 'Lightly Played' }), 'no
 assert.equal(ownedRowEligibility({ ...owned, grade: '10' }), 'graded_card');
 assert.deepEqual(legacyEnglishOwnerPair({ ...owned, card_id: 'me2pt5-2', set_id: 'me2pt5' }), { setAliases: ['me2pt5', 'me02.5'], collectorNumber: '2' });
 assert.equal(legacyEnglishOwnerPair({ ...owned, card_id: 'sv8pt5-10', set_id: 'sv8pt5' }), null, 'unprefixed SV pairs remain held because their language is ambiguous');
+assert.deepEqual(legacyEnglishOwnerPair({ ...owned, language: 'en', card_id: 'sv8pt5-10', set_id: 'sv8pt5' }), { setAliases: ['sv8pt5', 'sv08.5'], collectorNumber: '10' });
+assert.deepEqual(legacyEnglishOwnerPair({ ...owned, language: 'en-GB', card_id: 'swsh12pt5gg-GG06', set_id: 'swsh12pt5gg' }), { setAliases: ['swsh12pt5gg', 'swsh12.5gg'], collectorNumber: 'gg06' });
+assert.equal(legacyEnglishOwnerPair({ ...owned, language: 'ja', card_id: 'sv8pt5-10', set_id: 'sv8pt5' }), null, 'non-English rows cannot use English aliases');
+assert.equal(legacyEnglishOwnerPair({ ...owned, language: 'en', card_id: 'zsv10pt5-10', set_id: 'zsv10pt5' }), null, 'unknown codes are not normalised as English aliases');
 assert.equal(legacyEnglishOwnerPair({ ...owned, card_id: 'm3-10', set_id: 'm3' }), null, 'Japanese ME identifiers must not be reinterpreted as English');
 assert.deepEqual(resolveOwnedProviderVariant(owned, identifiers, catalogue), { ok: true, variantId: variant });
 const englishLegacySet = '33333333-3333-4333-8333-333333333333';
@@ -64,6 +68,16 @@ assert.deepEqual(resolveOwnedProviderVariant(
   [{ source_entity_type: 'set', external_id: 'me02.5', language_code: 'en', set_id: englishLegacySet }],
   [{ variant_id: englishLegacyVariant, set_id: englishLegacySet, language_code: 'en', collector_number: '002', variant_code: 'normal', finish_code: 'normal' }],
 ), { ok: true, variantId: englishLegacyVariant });
+const svLegacySet = '55555555-5555-4555-8555-555555555555';
+const svLegacyVariant = '66666666-6666-4666-8666-666666666666';
+const svLegacyOwned = { ...owned, language: 'en', card_id: 'sv4-007', set_id: 'sv4' };
+const svLegacyIdentifiers = [{ source_entity_type: 'set', external_id: 'sv04', language_code: 'en', set_id: svLegacySet }];
+const svLegacyCatalogue = [{ variant_id: svLegacyVariant, set_id: svLegacySet, language_code: 'en', collector_number: '007', variant_code: 'normal', finish_code: 'normal' }];
+assert.deepEqual(resolveOwnedProviderVariant(svLegacyOwned, svLegacyIdentifiers, svLegacyCatalogue), { ok: true, variantId: svLegacyVariant }, 'an explicit English SV row may use its verified set alias');
+assert.equal(resolveOwnedProviderVariant({ ...svLegacyOwned, language: 'ja' }, svLegacyIdentifiers, svLegacyCatalogue).reason, 'unresolved_saved_set', 'non-English SV rows remain exact');
+assert.equal(resolveOwnedProviderVariant(svLegacyOwned, svLegacyIdentifiers, [{ ...svLegacyCatalogue[0], collector_number: '008' }]).reason, 'unresolved_saved_card', 'English aliases require the exact collector number');
+assert.equal(resolveOwnedProviderVariant(svLegacyOwned, svLegacyIdentifiers, [{ ...svLegacyCatalogue[0], variant_code: 'holo', finish_code: 'holo' }]).reason, 'unsupported_or_unpublished_variant', 'English aliases cannot substitute a holo finish');
+assert.equal(resolveOwnedProviderVariant(svLegacyOwned, svLegacyIdentifiers, [...svLegacyCatalogue, { ...svLegacyCatalogue[0], variant_id: '77777777-7777-4777-8777-777777777777' }]).reason, 'ambiguous_saved_identity', 'multiple normal variants remain ambiguous');
 assert.deepEqual(resolveOwnedProviderVariant({ ...owned, card_id: variant, set_id: set }, [], catalogue), { ok: true, variantId: variant });
 assert.equal(resolveOwnedProviderVariant(owned, identifiers, [{ ...catalogue[0], finish_code: 'holo' }]).reason, 'unsupported_or_unpublished_variant');
 assert.equal(resolveOwnedProviderVariant(owned, [...identifiers, { ...identifiers[0], variant_id: '33333333-3333-4333-8333-333333333333' }], [...catalogue, { ...catalogue[0], variant_id: '33333333-3333-4333-8333-333333333333' }]).reason, 'ambiguous_saved_identity');

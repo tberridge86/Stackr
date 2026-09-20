@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { readOwnerPrintingCatalogue } from './lib/owner-price-printing-identities.mjs';
 import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant } from './lib/owner-price-saved-references.mjs';
+import { ownedValuationUnits } from './lib/prepared-collection-valuation.mjs';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 import {
   isUuid,
@@ -59,6 +60,50 @@ async function queryRows(query) {
   return data ?? [];
 }
 
+const knownLanguage = (value) => {
+  const match = /^(en|ja|ko|zh-cn|zh-tw):/i.exec(String(value ?? '').trim());
+  return match?.[1].toLowerCase() ?? null;
+};
+const normaliseLanguage = (value) => String(value ?? '').trim().toLowerCase().replace(/_/g, '-');
+
+function hasSavedLanguageConflict(row) {
+  const explicit = [...new Set([knownLanguage(row?.card_id), knownLanguage(row?.set_id)].filter(Boolean))];
+  if (explicit.length > 1) return true;
+  const stored = normaliseLanguage(row?.language);
+  return Boolean(stored && explicit[0] && stored !== explicit[0]);
+}
+
+function needsUnambiguousLanguageContext(row) {
+  if (hasSavedLanguageConflict(row) || String(row?.language ?? '').trim() || ownedRowEligibility(row)) return false;
+  // This does not resolve or alter the row. It asks only whether the existing
+  // verified English bridge would be applicable if a binder context proves it.
+  // ME rows already have an established unscoped rule and need no extra read.
+  return !legacyEnglishOwnerPair(row) && Boolean(legacyEnglishOwnerPair({ ...row, language: 'en' }));
+}
+
+async function enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows) {
+  if (!rows.some(needsUnambiguousLanguageContext)) return rows;
+  const { data, error } = await supabase.schema('api').rpc('collection_valuation_inputs', { p_owner: ownerId });
+  if (error) throw error;
+  if (!data || typeof data !== 'object' || !Array.isArray(data.binders) || !Array.isArray(data.binderCards)) {
+    throw new Error('Owned language context snapshot is unavailable.');
+  }
+  // Reuse the prepared-valuation context logic, but retain only the already
+  // bounded ownership scan. Legacy binder placements cannot become additional
+  // provider-refresh candidates here.
+  const ownedIds = new Set(rows.map((row) => String(row?.id ?? '')).filter(Boolean));
+  const languageByOwnedId = new Map(ownedValuationUnits({
+    ownedRows: rows,
+    binders: data.binders,
+    binderCards: data.binderCards,
+  }).filter((unit) => ownedIds.has(String(unit?.id ?? '')))
+    .map((unit) => [String(unit.id), unit.language]));
+  return rows.map((row) => {
+    const language = languageByOwnedId.get(String(row?.id ?? ''));
+    return String(language ?? '').trim() ? { ...row, language } : row;
+  });
+}
+
 export async function readOwnedRows(supabase, ownerId) {
   // This is a candidate scan, never a provider-pull limit. It remains bounded
   // so a corrupted owner collection cannot turn a scheduled run into a broad
@@ -75,11 +120,11 @@ export async function readOwnedRows(supabase, ownerId) {
   if (rows.length >= OWNED_SCAN_MAX_ROWS) {
     throw new Error('Owner price refresh scan reached its safe result bound.');
   }
-  return rows;
+  return enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows);
 }
 
 async function resolveOwnedCandidates(supabase, ownedRows) {
-  const rowsNeedingIdentity = ownedRows.filter((row) => !ownedRowEligibility(row));
+  const rowsNeedingIdentity = ownedRows.filter((row) => !ownedRowEligibility(row) && !hasSavedLanguageConflict(row));
   const referenceRows = rowsNeedingIdentity.flatMap(ownerIdentityLookupRows);
   const externalIds = [...new Set(referenceRows.flatMap((row) => [
     row.card_id, row.set_id, ...(legacyEnglishOwnerPair(row)?.setAliases ?? []),
@@ -129,7 +174,9 @@ async function resolveOwnedCandidates(supabase, ownedRows) {
       .limit(1000)));
   }
   const catalogueRows = [...directCatalogueRows, ...printingCatalogueRows, ...legacyCatalogueRows];
-  return ownedRows.map((row) => resolveScopedOwnedProviderVariant(row, identifierRows, catalogueRows));
+  return ownedRows.map((row) => hasSavedLanguageConflict(row)
+    ? { ok: false, reason: 'ambiguous_saved_identity' }
+    : resolveScopedOwnedProviderVariant(row, identifierRows, catalogueRows));
 }
 
 async function readOwnerQueue(supabase, ownerId, limit) {
@@ -398,7 +445,8 @@ async function main() {
     queueOnly,
   });
   const valuation=await prepareStoredValuationIfEnabled({supabase,service,ownerId,dryRun});
-  console.log(JSON.stringify({ worker: 'owner-provider-price-refresh', ...summary, valuationPublished:valuation?.published??false }, null, 2));
+  console.log(JSON.stringify({ worker: 'owner-provider-price-refresh', ...summary,
+    valuationPublished:valuation?.published??false,valuationDiagnostics:valuation?.diagnostics??null }, null, 2));
   if (summary.failed) process.exitCode = 1;
 }
 

@@ -8,6 +8,7 @@ import {
   REQUIRED_BINDER_MIGRATIONS,
   REQUIRED_MIGRATIONS,
   CATALOGUE_PRICING_MIGRATION,
+  PRICING_REPAIR_MIGRATION,
   assertProductionDatabaseUrl,
   parseArguments,
   preparePersonalPricing,
@@ -16,10 +17,12 @@ import {
 
 assert.equal(validateMigrationSources().size, 6);
 assert.equal(validateMigrationSources('catalogue').size, 1);
+assert.equal(validateMigrationSources('pricing-repair').size, 1);
 const workflow = readFileSync('.github/workflows/prepare-personal-pricing.yml', 'utf8');
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'preparation must be main-only');
 assert.match(workflow, /inputs\.scope == 'personal' && inputs\.confirmation == 'PREPARE PERSONAL PRICING'/, 'personal preparation needs an explicit typed confirmation');
 assert.match(workflow, /inputs\.scope == 'catalogue' && inputs\.confirmation == 'PREPARE CATALOGUE PRICING'/, 'catalogue preparation needs a separate explicit typed confirmation');
+assert.match(workflow, /inputs\.scope == 'pricing-repair' && inputs\.confirmation == 'PREPARE PRICING REPAIR'/, 'pricing repair needs a separate explicit typed confirmation');
 assert.match(workflow, /environment:\s+production/, 'preparation must use production environment protection');
 assert.match(workflow, /SUPABASE_PROJECT_REF:\s*\$\{\{\s*vars\.SUPABASE_PROJECT_REF\s*\}\}/,
   'the database URL normalizer requires the protected project identity as well as its connection URL');
@@ -70,6 +73,7 @@ assert.equal(parseArguments(['--rehearse=true']).rehearse, true);
 assert.throws(() => parseArguments(['--rehearse=maybe']), /invalid_rehearse_argument/);
 assert.throws(() => parseArguments(['--rehearse=true', '--apply=true']), /mutually_exclusive/);
 assert.equal(parseArguments(['--scope=catalogue']).scope, 'catalogue');
+assert.equal(parseArguments(['--scope=pricing-repair']).scope, 'pricing-repair');
 assert.throws(() => parseArguments(['--scope=all']), /invalid_scope_argument/);
 
 const history = [
@@ -212,4 +216,39 @@ for (const failure of ['tables_private', 'functions_private_to_service', 'ledger
   assert(!calls.includes('commit'), `${failure} must never commit`);
   assert(calls.includes('rollback'), `${failure} must roll back`);
 }
+
+const pricingRepairHistory = [...history, ...REQUIRED_MIGRATIONS, CATALOGUE_PRICING_MIGRATION];
+const repairFunction = { definition: 'CREATE FUNCTION api.published_price_catalogue_revision() RETURNS jsonb LANGUAGE sql AS $$ select old $$;', definition_hash: 'old-function-hash' };
+const pricingRepairQueries = [];
+const pricingRepairClient = { async connect() {}, async end() {}, async query(sql) {
+  const text = String(sql); pricingRepairQueries.push(text);
+  if (text.includes('where version = $1')) return { rows: [PRICING_REPAIR_MIGRATION] };
+  if (text.includes('no_full_card_projection')) return { rows: [{ function_present: true, service_can_execute: true, authenticated_cannot_execute: true, anon_cannot_execute: true, metadata_backed: true, no_full_card_projection: true }] };
+  if (text.includes('pg_get_functiondef')) return { rows: [repairFunction] };
+  if (text.includes('as valuation_table')) return { rows: [{ valuation_table: 'collection_valuation_generations' }] };
+  if (text.includes('schema_migrations') && text.startsWith('select')) return { rows: pricingRepairHistory };
+  return { rows: [] };
+} };
+const pricingRepair = await preparePersonalPricing({
+  dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'pricing-repair', apply: true,
+}, () => pricingRepairClient);
+assert.equal(pricingRepair.mode, 'applied');
+assert.deepEqual(pricingRepair.newlyAppliedMigrations, [PRICING_REPAIR_MIGRATION.filename]);
+assert.equal(pricingRepairQueries.filter((query) => query.startsWith('insert into supabase_migrations')).length, 1,
+  'pricing repair records only its reviewed additive migration');
+assert(pricingRepairQueries.findIndex(query => query.includes('no_full_card_projection')) < pricingRepairQueries.indexOf('commit'),
+  'pricing repair verifies the revised private function before commit');
+const pricingRepairRehearsal = await preparePersonalPricing({
+  dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'pricing-repair', rehearse: true,
+}, () => pricingRepairClient);
+assert.equal(pricingRepairRehearsal.mode, 'rehearsed_rolled_back');
+assert.deepEqual(pricingRepairRehearsal.rehearsedMigrations, [PRICING_REPAIR_MIGRATION.filename]);
+assert(pricingRepairQueries.some(query => query.includes('pg_get_functiondef')), 'rehearsal records the original function definition before applying the repair');
+assert(pricingRepairQueries.some(query => query.includes("as valuation_table")), 'rehearsal verifies the existing valuation schema survives rollback');
+await assert.rejects(preparePersonalPricing({
+  dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'pricing-repair',
+}, () => ({ ...pricingRepairClient, async query(sql) {
+  if (String(sql).includes('schema_migrations') && String(sql).startsWith('select')) return { rows: pricingRepairHistory.filter((row) => row !== CATALOGUE_PRICING_MIGRATION) };
+  return pricingRepairClient.query(sql);
+} })), /pricing_repair_migration_prerequisite_missing/);
 console.log('Personal pricing preparation tests passed.');
