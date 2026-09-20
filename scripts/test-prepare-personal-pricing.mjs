@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import {
   REQUIRED_BINDER_MIGRATIONS,
   REQUIRED_MIGRATIONS,
+  CATALOGUE_PRICING_MIGRATION,
   assertProductionDatabaseUrl,
   parseArguments,
   preparePersonalPricing,
@@ -13,9 +14,11 @@ import {
 } from './deploy/prepare-personal-pricing.mjs';
 
 assert.equal(validateMigrationSources().size, 6);
+assert.equal(validateMigrationSources('catalogue').size, 1);
 const workflow = readFileSync('.github/workflows/prepare-personal-pricing.yml', 'utf8');
 assert.match(workflow, /github\.ref == 'refs\/heads\/main'/, 'preparation must be main-only');
-assert.match(workflow, /inputs\.confirmation == 'PREPARE PERSONAL PRICING'/, 'preparation needs an explicit typed confirmation');
+assert.match(workflow, /inputs\.scope == 'personal' && inputs\.confirmation == 'PREPARE PERSONAL PRICING'/, 'personal preparation needs an explicit typed confirmation');
+assert.match(workflow, /inputs\.scope == 'catalogue' && inputs\.confirmation == 'PREPARE CATALOGUE PRICING'/, 'catalogue preparation needs a separate explicit typed confirmation');
 assert.match(workflow, /environment:\s+production/, 'preparation must use production environment protection');
 assert.match(workflow, /SUPABASE_PROJECT_REF:\s*\$\{\{\s*vars\.SUPABASE_PROJECT_REF\s*\}\}/,
   'the database URL normalizer requires the protected project identity as well as its connection URL');
@@ -29,12 +32,14 @@ assert.match(workflow, /if: always\(\)\s+shell: bash\s+run: rm -rf "\$RUNNER_TEM
   'ephemeral logical backup files must always be removed from the runner');
 assert.match(workflow, /--apply="\$\{\{ inputs\.apply_migrations \}\}"/,
   'apply must be an explicit workflow input');
+assert.match(workflow, /--scope="\$\{\{ inputs\.scope \}\}"/,
+  'the applied scope must be explicit rather than inferred from a database state');
 assert.doesNotMatch(workflow, /supabase@2\.110\.0 db push/, 'the bounded workflow must not run a global migration push');
-const preparationStep = workflow.match(/      - name: Verify or apply the six reviewed personal-pricing migrations\n([\s\S]*?)(?=\n      - |$)/)?.[1];
+const preparationStep = workflow.match(/      - name: Verify or apply the reviewed pricing migration scope\r?\n([\s\S]*?)(?=\r?\n      - |$)/)?.[1];
 assert(preparationStep, 'the preparation step must exist');
 assert.match(preparationStep, /shell: bash/, 'the migration pipeline must use explicit bash failure handling');
-const preparationRun = preparationStep.match(/        run: \|\n([\s\S]*)/)?.[1]
-  .replace(/^          /gm, '').replace('${{ inputs.apply_migrations }}', 'true');
+const preparationRun = preparationStep.match(/        run: \|\r?\n([\s\S]*)/)?.[1]
+  .replace(/^          /gm, '').replace('${{ inputs.apply_migrations }}', 'true').replace('${{ inputs.scope }}', 'catalogue').replace('${{ inputs.rehearse_migrations }}', 'false');
 assert(preparationRun, 'the preparation command must exist');
 if (process.platform !== 'win32') {
   const runnerTemp = mkdtempSync(join(tmpdir(), 'stackr-pricing-workflow-test-'));
@@ -57,6 +62,11 @@ if (process.platform !== 'win32') {
 assert.throws(() => assertProductionDatabaseUrl('postgresql://postgres.invalid:x@example.com/postgres'), /project_ref/);
 assert.deepEqual(parseArguments(['--db-url=postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', '--owner-email=tberridge86@gmail.com']).ownerEmail, 'tberridge86@gmail.com');
 assert.equal(parseArguments(['--apply=true']).apply, true);
+assert.equal(parseArguments(['--rehearse=true']).rehearse, true);
+assert.throws(() => parseArguments(['--rehearse=maybe']), /invalid_rehearse_argument/);
+assert.throws(() => parseArguments(['--rehearse=true', '--apply=true']), /mutually_exclusive/);
+assert.equal(parseArguments(['--scope=catalogue']).scope, 'catalogue');
+assert.throws(() => parseArguments(['--scope=all']), /invalid_scope_argument/);
 
 const history = [
   ...Array.from({ length: 122 }, (_, index) => ({ version: String(index).padStart(14, '0'), name: `baseline_${index}` })),
@@ -120,4 +130,82 @@ assert.deepEqual(applied.newlyAppliedMigrations, REQUIRED_MIGRATIONS.map(({ file
 assert.deepEqual(applied.appliedMigrations, REQUIRED_MIGRATIONS.map(({ filename }) => filename));
 assert.deepEqual(applied.pendingMigrations, []);
 assert.equal(applied.migrationHistoryCount, history.length + REQUIRED_MIGRATIONS.length);
+
+const catalogueQueries = [];
+const catalogueClient = { async connect() {}, async end() {}, async query(sql) {
+  catalogueQueries.push(String(sql));
+  if (String(sql).includes('schema_migrations')) return { rows: [...history, ...REQUIRED_MIGRATIONS] };
+  if (String(sql).includes('expected_tables')) return { rows: [{ tables_present: true, tables_private: true, functions_private_to_service: true }] };
+  return { rows: [] };
+} };
+const catalogue = await preparePersonalPricing({
+  dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres',
+  scope: 'catalogue',
+}, () => catalogueClient);
+assert.equal(catalogue.mode, 'read_only_preparation');
+assert.equal(catalogue.ownerId, null, 'catalogue preparation must not inspect a personal account');
+assert.deepEqual(catalogue.pendingMigrations, [CATALOGUE_PRICING_MIGRATION.filename]);
+assert.equal(catalogueQueries.some((query) => /auth\.users|market_price_snapshots/i.test(query)), false);
+assert.equal(catalogueQueries.includes('begin read only'), true, 'catalogue preflight is read-only');
+
+const catalogueApplyQueries = [];
+const catalogueApplyClient = { ...catalogueClient, async query(sql) {
+  catalogueApplyQueries.push(String(sql));
+  if (String(sql).includes('where version = $1')) return { rows: [CATALOGUE_PRICING_MIGRATION] };
+  if (String(sql).includes('schema_migrations') && String(sql).startsWith('select')) return { rows: [...history, ...REQUIRED_MIGRATIONS] };
+  if (String(sql).includes('expected_tables')) return { rows: [{ tables_present: true, tables_private: true, functions_private_to_service: true }] };
+  return { rows: [] };
+} };
+const catalogueApplied = await preparePersonalPricing({
+  dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'catalogue', apply: true,
+}, () => catalogueApplyClient);
+assert.equal(catalogueApplied.mode, 'applied');
+assert.deepEqual(catalogueApplied.newlyAppliedMigrations, [CATALOGUE_PRICING_MIGRATION.filename]);
+assert.equal(catalogueApplyQueries.filter((query) => query.startsWith('insert into supabase_migrations')).length, 1,
+  'catalogue scope records exactly its single reviewed migration');
+assert(catalogueApplyQueries.findIndex(query => query.includes('expected_tables')) < catalogueApplyQueries.indexOf('commit'), 'contract verification must happen before commit');
+const rehearsalQueries = [];
+const rehearsalClient = { ...catalogueApplyClient, async query(sql) {
+  rehearsalQueries.push(String(sql));
+  if (String(sql).includes('as valuation_table')) return { rows: [{ valuation_table: null }] };
+  return catalogueApplyClient.query(sql);
+} };
+const rehearsed = await preparePersonalPricing({
+  dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'catalogue', rehearse: true,
+}, () => rehearsalClient);
+assert.equal(rehearsed.mode, 'rehearsed_rolled_back');
+assert.deepEqual(rehearsed.rehearsedMigrations, [CATALOGUE_PRICING_MIGRATION.filename]);
+assert.deepEqual(rehearsed.newlyAppliedMigrations, []);
+assert.deepEqual(rehearsed.pendingMigrations, [CATALOGUE_PRICING_MIGRATION.filename]);
+assert.equal(rehearsed.migrationHistoryCount, history.length + REQUIRED_MIGRATIONS.length);
+assert(!rehearsalQueries.includes('commit'), 'a successful rehearsal must never commit');
+assert(rehearsalQueries.indexOf('rollback') > rehearsalQueries.findIndex(query => query.includes('expected_tables')));
+assert(rehearsalQueries.findIndex(query => query.includes('as valuation_table')) > rehearsalQueries.indexOf('rollback'));
+await assert.rejects(preparePersonalPricing({ scope: 'catalogue', apply: true, rehearse: true }, () => {
+  throw new Error('must not connect');
+}), /mutually_exclusive/);
+for (const residue of ['ledger', 'schema']) {
+  let rolledBack = false;
+  const dirtyRollback = { ...rehearsalClient, async query(sql) {
+    if (sql === 'rollback') rolledBack = true;
+    if (rolledBack && residue === 'ledger' && String(sql).includes('order by version')) return { rows: [...history, ...REQUIRED_MIGRATIONS, CATALOGUE_PRICING_MIGRATION] };
+    if (rolledBack && residue === 'schema' && String(sql).includes('as valuation_table')) return { rows: [{ valuation_table: 'collection_valuation_generations' }] };
+    return rehearsalClient.query(sql);
+  } };
+  await assert.rejects(preparePersonalPricing({
+    dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'catalogue', rehearse: true,
+  }, () => dirtyRollback), /rehearsal_(ledger|schema)_not_restored/);
+}
+for (const failure of ['tables_private', 'functions_private_to_service', 'ledger']) {
+  const calls = [];
+  const failing = { ...catalogueApplyClient, async query(sql) {
+    calls.push(String(sql));
+    if (String(sql).includes('expected_tables') && failure !== 'ledger') return { rows: [{ tables_present: true, tables_private: failure !== 'tables_private', functions_private_to_service: failure !== 'functions_private_to_service' }] };
+    if (String(sql).includes('where version = $1') && failure === 'ledger') return { rows: [] };
+    return catalogueApplyClient.query(sql);
+  } };
+  await assert.rejects(preparePersonalPricing({ dbUrl: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:placeholder@aws-0-eu-west-2.pooler.supabase.com:6543/postgres', scope: 'catalogue', apply: true }, () => failing), /contract_mismatch|ledger_mismatch/);
+  assert(!calls.includes('commit'), `${failure} must never commit`);
+  assert(calls.includes('rollback'), `${failure} must roll back`);
+}
 console.log('Personal pricing preparation tests passed.');

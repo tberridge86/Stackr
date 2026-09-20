@@ -2,6 +2,22 @@
 
 Status: implemented candidate with local integration evidence; **not deployed or accepted in production**. Catalogue provider expansion remains disabled. This receipt must stay open through release and device acceptance.
 
+## Pricing-first release continuation — 20 September
+
+The owner authorized proceeding at the release agent's discretion, with pricing
+first, catalogue repairs next and camera afterwards. Continue PR #207 without
+Settings, holo or catalogue-art changes. Build 45 already includes the pricing
+client; missing live prepared-valuation dependencies are the immediate target.
+
+The existing protected `Prepare Personal Pricing` workflow now has a bounded
+`catalogue` scope for the exact additive pricing migration. A separate rehearsal
+option executes the migration and its privacy/ledger checks, then rolls back and
+verifies restoration. Rehearsal and apply are mutually exclusive. Current backups,
+the existing migration prerequisites and production environment review remain
+required. No full catalogue provider sweep, new provider or scheduler change is
+included. Live delivery identities and actual readback must be appended after
+execution; this preparation is not deployment evidence.
+
 ## Source and ownership
 
 Repository `tberridge86/Stackr`; base `989da7d489d4e127ac80a8798a1bf67367942954` was fetched and confirmed as current main on 19 September. PR #202 is merged and its printing/language resolver is reused. Work is isolated on `agent/pricing/catalogue-cycle-20260919`; the heavily modified `D:\Stackr-1` checkout was preserved. No wholesale replay of older work.
