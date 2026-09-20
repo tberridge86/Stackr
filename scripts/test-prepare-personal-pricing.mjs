@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import './test-production-backup-list.mjs';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -26,9 +27,10 @@ assert.match(workflow, /timeout-minutes:\s*30/, 'preparation must have a bounded
 assert.match(workflow, /cancel-in-progress: false/, 'production preparation must stay serialized');
 assert.match(workflow, /Verify a current physical backup and create logical recovery dumps/,
   'backup wording must distinguish an existing physical backup from generated logical dumps');
-assert.match(workflow, /supabase@2\.110\.0 backups list/, 'a current physical backup must be checked');
-assert.match(workflow, /backups list[^\n]+\| tee "\$RUNNER_TEMP\/personal-pricing-backup\/physical.json"/,
-  'backup-list diagnostics must remain visible when the command fails before the manifest can be verified');
+assert.match(workflow, /node scripts\/deploy\/list-production-backups.mjs --output="\$RUNNER_TEMP\/personal-pricing-backup\/physical.json"/,
+  'physical backup listing uses the fixed production target and reports bounded authentication failures');
+assert.match(workflow, /SUPABASE_BACKUP_FALLBACK_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/,
+  'fallback is limited to the existing protected credential');
 assert.match(workflow, /supabase@2\.110\.0 db dump/, 'logical recovery dumps must be made before apply');
 assert.match(workflow, /if: always\(\)\s+shell: bash\s+run: rm -rf "\$RUNNER_TEMP\/personal-pricing-backup"/,
   'ephemeral logical backup files must always be removed from the runner');
