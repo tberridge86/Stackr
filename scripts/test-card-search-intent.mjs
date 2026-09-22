@@ -14,3 +14,5 @@ for (const query of ['151', 'Pikachu 10', 'Charizard 4/102', 'PSA #10 Charizard'
 }
 assert.equal(parseCardSearchIntent('PSA 10').catalogueQuery, '');
 console.log('Card search grading intent preserves card identity and number-only queries.');
+
+await import('./test-card-search-boundary.mjs');
