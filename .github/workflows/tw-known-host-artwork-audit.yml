@@ -1,0 +1,103 @@
+name: TW exact missing artwork byte verification
+on:
+  push:
+    branches: ['artwork/tw-sv4a-sv2a-20260926']
+    paths: ['.github/workflows/tw-known-host-artwork-audit.yml']
+permissions:
+  contents: read
+concurrency:
+  group: tw-known-host-fronts-20260926
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Prepare isolated pinned decoder
+        run: |
+          python3 -m venv /tmp/tw-front-venv
+          /tmp/tw-front-venv/bin/python -m pip install --disable-pip-version-check --no-deps Pillow==12.3.0
+      - name: Fetch exact missing-number candidates without credentials or writes
+        shell: bash
+        run: |
+          /tmp/tw-front-venv/bin/python - <<'PY'
+          import concurrent.futures,hashlib,io,json,re,threading,time,warnings
+          from collections import Counter,defaultdict
+          from datetime import datetime,timezone
+          from pathlib import Path
+          from urllib.request import Request,HTTPRedirectHandler,build_opener
+          from urllib.parse import urlsplit
+          from urllib.error import HTTPError
+          from PIL import Image
+          root=Path('tw-approved-host-evidence');root.mkdir()
+          allowed={'api.tcgdex.net','assets.tcgdex.net'}
+          lock=threading.Lock();last=[0.0]
+          Image.MAX_IMAGE_PIXELS=8000000
+          warnings.simplefilter('error',Image.DecompressionBombWarning)
+          class SafeRedirect(HTTPRedirectHandler):
+            def redirect_request(self,req,fp,code,msg,headers,url):
+              p=urlsplit(url)
+              if p.scheme!='https' or p.hostname not in allowed or p.username or p.password:raise ValueError('Redirect rejected')
+              return super().redirect_request(req,fp,code,msg,headers,url)
+          def fetch(url,limit=4000000):
+            p=urlsplit(url)
+            if p.scheme!='https' or p.hostname not in allowed:raise ValueError('Disallowed URL')
+            with lock:
+              wait=max(0,0.50-(time.monotonic()-last[0]))
+              if wait:time.sleep(wait)
+              last[0]=time.monotonic()
+            with build_opener(SafeRedirect()).open(Request(url,headers={'User-Agent':'StackrArtworkVerifier/1.0','Cache-Control':'no-cache'}),timeout=12) as r:
+              b=r.read(limit+1)
+              if len(b)>limit:raise ValueError('Size cap')
+              return b,r.status,r.headers.get_content_type(),r.geturl()
+          targets=[]
+          for code,expected,missing in [('SV4a',314,294),('SV2a',207,187)]:
+            data,_,_,_=fetch('https://api.tcgdex.net/v2/zh-tw/sets/'+code)
+            j=json.loads(data);(root/(code+'-metadata.json')).write_bytes(data)
+            cards=j['cards'];assert j['id']==code and len(cards)==expected
+            assert len({c['localId'] for c in cards})==expected
+            cohort=[c for c in cards if int(c['localId'])>20]
+            assert len(cohort)==missing
+            for c in cohort:
+              assert re.fullmatch(r'\d{3}',c['localId']) and c['id']==code+'-'+c['localId']
+              targets.append({'language':'zh-tw','set_code':code,'number':c['localId'],'native_name':c['name'],'provider_id':c['id'],'url':'https://assets.tcgdex.net/zh-tw/SV/'+code+'/'+c['localId']+'/high.webp'})
+          assert len(targets)==481
+          (root/'candidate-manifest.json').write_text(json.dumps(targets,ensure_ascii=False,indent=2))
+          def verify(c):
+            out=dict(c,checked_at=datetime.now(timezone.utc).isoformat(),status='unverified')
+            try:
+              b,status,mime,url=fetch(c['url'])
+              if status!=200 or mime not in ('image/webp','image/jpeg','image/png'):raise ValueError('Not an image response')
+              with Image.open(io.BytesIO(b)) as im:
+                w,h=im.size;fmt=im.format
+                if w<240 or h<330 or not 0.62<w/h<0.80:raise ValueError('Invalid card image dimensions')
+                im.verify()
+              with Image.open(io.BytesIO(b)) as im:im.load()
+              path=root/'images'/c['set_code']/(c['number']+'.webp');path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b)
+              out.update(status='bytes_verified_identity_review_required',http_status=status,mime_type=mime,sha256=hashlib.sha256(b).hexdigest(),width=w,height=h,byte_size=len(b),final_url=url)
+            except HTTPError as e:out.update(status='http_unavailable',http_status=e.code,error=str(e))
+            except Exception as e:out.update(status='fetch_or_decode_failed',error=type(e).__name__+': '+str(e)[:200])
+            return out
+          results=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+            for n,r in enumerate(pool.map(verify,targets),1):
+              results.append(r)
+              if n%40==0:print('PROGRESS',n,dict(Counter(x['status'] for x in results)),flush=True)
+          hashes=defaultdict(list)
+          for r in results:
+            if r.get('sha256'):hashes[r['sha256']].append(r['provider_id'])
+          duplicates={h:ids for h,ids in hashes.items() if len(ids)>1}
+          for r in results:
+            if r.get('sha256') in duplicates:r['status']='duplicate_bytes_identity_review'
+          report={'checked_at':datetime.now(timezone.utc).isoformat(),'production_writes':0,'status':'SOURCE_VERIFICATION_ONLY','summary':{s:dict(Counter(r['status'] for r in results if r['set_code']==s)) for s in ('SV4a','SV2a')},'duplicates':duplicates,'rows':results}
+          (root/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps({k:v for k,v in report.items() if k!='rows'},ensure_ascii=False),flush=True)
+          PY
+      - name: Preserve candidate images and row-level evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-approved-host-evidence-${{ github.run_id }}
+          path: tw-approved-host-evidence
+          retention-days: 7
+          if-no-files-found: error
