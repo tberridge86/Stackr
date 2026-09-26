@@ -1,0 +1,83 @@
+name: TW remaining 365 exact-number reconciliation
+on:
+  push:
+    branches: ['artwork/tw-sv4a-sv2a-20260926']
+    paths: ['.github/workflows/tw-remaining365-reconcile.yml']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: tw-remaining365-evidence-20260926
+  cancel-in-progress: false
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout audited reconciliation script only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 2f2dc1ea94b0bac87dc2251fb11f5f1ef043723a
+          persist-credentials: false
+          sparse-checkout: scripts/audits/reconcile-tw365-evidence.py
+          sparse-checkout-cone-mode: false
+      - name: Obtain the completed read-only evidence artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,hashlib,zipfile,io
+          from pathlib import Path
+          from urllib.request import Request,HTTPRedirectHandler,build_opener
+          from urllib.parse import urlsplit
+          repo='https://api.github.com/repos/tberridge86/Stackr'
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
+          class SafeRedirect(HTTPRedirectHandler):
+            def redirect_request(self,req,fp,code,msg,oldheaders,url):
+              p=urlsplit(url)
+              if p.scheme!='https' or p.username or p.password or p.port not in (None,443):raise ValueError('Unsafe redirect')
+              if not (p.hostname=='api.github.com' or p.hostname.endswith('.blob.core.windows.net') or p.hostname.endswith('.githubusercontent.com') or p.hostname.endswith('.actions.githubusercontent.com')):raise ValueError('Unexpected artifact download host')
+              new=super().redirect_request(req,fp,code,msg,oldheaders,url)
+              new.remove_header('Authorization');return new
+          opener=build_opener(SafeRedirect())
+          def get(url,limit):
+            with opener.open(Request(url,headers=headers),timeout=90) as r:
+              b=r.read(limit+1)
+              if len(b)>limit:raise ValueError('Artifact size cap')
+              return b
+          run=json.loads(get(repo+'/actions/runs/36272836991',100000))
+          if run['status']!='completed' or run['conclusion']!='success' or run['head_sha']!='019ffaabc6e03c76daa610e3d70e991d05d60aff':raise ValueError('Prior audit did not finish successfully')
+          artifacts=json.loads(get(repo+'/actions/runs/36272836991/artifacts',100000))['artifacts']
+          matches=[a for a in artifacts if a['name']=='tw-remaining365-evidence-36272836991' and not a['expired']]
+          if len(matches)!=1:raise ValueError('Expected one prior evidence artifact')
+          a=matches[0];body=get(repo+'/actions/artifacts/'+str(a['id'])+'/zip',200000000)
+          digest='sha256:'+hashlib.sha256(body).hexdigest()
+          if a.get('digest') and a['digest']!=digest:raise ValueError('Artifact digest mismatch')
+          dest=Path('prior-evidence').resolve();dest.mkdir()
+          with zipfile.ZipFile(io.BytesIO(body)) as z:
+            if sum(i.file_size for i in z.infolist())>600000000:raise ValueError('Expanded archive cap')
+            for i in z.infolist():
+              target=(dest/i.filename).resolve()
+              if not target.is_relative_to(dest):raise ValueError('Archive traversal')
+              if ((i.external_attr>>16)&0o170000)==0o120000:raise ValueError('Symlink forbidden')
+            z.extractall(dest)
+          Path('prior-artifact-provenance.json').write_text(json.dumps({'run_id':run['id'],'head_sha':run['head_sha'],'artifact_id':a['id'],'digest':digest},indent=2))
+          print('Prior evidence verified; no production credentials used')
+          PY
+      - name: Prepare isolated validator
+        run: |
+          python3 -m venv /tmp/tw365-final-venv
+          /tmp/tw365-final-venv/bin/python -m pip install --disable-pip-version-check --no-deps Pillow==12.3.0
+      - name: Reuse originals and reconcile shifted official IDs by exact printed identity
+        run: |
+          /tmp/tw365-final-venv/bin/python scripts/audits/reconcile-tw365-evidence.py --prior prior-evidence --output reconciled-evidence
+          cp prior-artifact-provenance.json reconciled-evidence/
+      - name: Preserve review-only source package
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-remaining365-reconciled-${{ github.run_id }}
+          path: reconciled-evidence
+          retention-days: 7
+          if-no-files-found: error
