@@ -1,0 +1,55 @@
+name: TW remaining 365 bounded format and identity probe
+on:
+  push:
+    branches: ['artwork/tw-sv4a-sv2a-20260926']
+    paths: ['.github/workflows/tw-remaining365-format-probe.yml']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Read public image formats and catalogue routes only
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,time
+          from pathlib import Path
+          from urllib.request import Request,build_opener,HTTPRedirectHandler
+          from urllib.parse import urlsplit
+          from urllib.error import HTTPError
+          root=Path('remaining365-probe');root.mkdir()
+          allowed={'assets.tcgdex.net','api.tcgdex.net','asia.pokemon-card.com','www.pokecardex.com'}
+          class SafeRedirect(HTTPRedirectHandler):
+            def redirect_request(self,req,fp,code,msg,headers,url):
+              p=urlsplit(url)
+              if p.scheme!='https' or p.hostname not in allowed or p.username or p.password:raise ValueError('Redirect outside allowlist')
+              return super().redirect_request(req,fp,code,msg,headers,url)
+          urls=[]
+          for code,num in [('SV4a','177'),('SV4a','236'),('SV4a','354'),('SV2a','021'),('SV2a','173'),('SV2a','207')]:
+            for fmt in ['high.png','high.jpg','low.webp']:
+              urls.append((f'{code}-{num}-{fmt}',f'https://assets.tcgdex.net/zh-tw/SV/{code}/{num}/{fmt}'))
+          urls += [('pokecardex-home.html','https://www.pokecardex.com/'),('official-SV4a-page9.html','https://asia.pokemon-card.com/tw/card-search/list/?expansionCodes=SV4a&pageNo=9'),('official-SV2a-page2.html','https://asia.pokemon-card.com/tw/card-search/list/?expansionCodes=SV2a&pageNo=2')]
+          results=[]
+          for name,url in urls:
+            time.sleep(.8)
+            r={'url':url,'filename':name}
+            try:
+              with build_opener(SafeRedirect()).open(Request(url,headers={'User-Agent':'StackrArtworkVerifier/1.0'}),timeout=12) as res:
+                body=res.read(3000001)
+                if len(body)>3000000:raise ValueError('Byte cap exceeded')
+                r.update(status=res.status,mime=res.headers.get_content_type(),bytes=len(body));(root/name).write_bytes(body)
+            except HTTPError as e:r.update(status=e.code)
+            except Exception as e:r.update(error=type(e).__name__+': '+str(e)[:120])
+            results.append(r);print(json.dumps(r),flush=True)
+          (root/'report.json').write_text(json.dumps(results,indent=2))
+          PY
+      - name: Preserve read-only probe evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-remaining365-probe-${{ github.run_id }}
+          path: remaining365-probe
+          retention-days: 7
+          if-no-files-found: error
