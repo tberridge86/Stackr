@@ -1,0 +1,75 @@
+name: TW official remaining 365 artwork discovery
+on:
+  push:
+    branches: ['artwork/tw-sv4a-sv2a-20260926']
+    paths: ['.github/workflows/tw-official-remaining-365-discovery.yml']
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Crawl only official Taiwan card-search result pages
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,re,time,html
+          from pathlib import Path
+          from urllib.request import Request,urlopen
+          from urllib.parse import urljoin,urlparse
+          root=Path('tw-official-365');root.mkdir()
+          base='https://asia.pokemon-card.com'
+          targets={'SV4a':set(f'{i:03d}' for i in range(21,355)),
+                   'SV2a':set(f'{i:03d}' for i in range(21,208))}
+          # Remove 116 already recovered SV4a identities from the remaining cohort.
+          recovered=set(f'{i:03d}' for i in list(range(21,127))+[147]+list(range(168,177)))
+          targets['SV4a']-=recovered
+          assert len(targets['SV4a'])==178 and len(targets['SV2a'])==187
+          evidence=[]
+          for code in ('SV4a','SV2a'):
+            seen=set()
+            for page in range(1,26):
+              url=f'{base}/tw/card-search/list/?expansionCodes={code}&pageNo={page}'
+              with urlopen(Request(url,headers={'User-Agent':'StackrArtworkAudit/1.0'}),timeout=20) as r:
+                body=r.read(3000000).decode('utf-8','replace')
+              # Preserve only bounded URL/identity evidence, not full pages.
+              for m in re.finditer(r'(?:src|href)=[\"\']([^\"\']+)[\"\']',body,re.I):
+                u=html.unescape(urljoin(url,m.group(1)))
+                p=urlparse(u)
+                if p.scheme=='https' and p.hostname and p.hostname.endswith('pokemon-card.com'):
+                  if re.search(r'\.(?:jpg|jpeg|png|webp)(?:\?|$)',u,re.I):
+                    seen.add(u)
+              for num in targets[code]:
+                if num in body:
+                  evidence.append({'set_code':code,'number':num,'page':page,'page_url':url})
+              if 'Next' not in body and page>1: break
+              time.sleep(.8)
+            (root/f'{code}-image-urls.json').write_text(json.dumps(sorted(seen),ensure_ascii=False,indent=2))
+          # Try to associate official image URLs to exact set/number by URL and nearby filename patterns.
+          associations=[]
+          for code in ('SV4a','SV2a'):
+            urls=json.loads((root/f'{code}-image-urls.json').read_text())
+            for num in sorted(targets[code]):
+              matches=[u for u in urls if code.lower() in u.lower() and re.search(r'(?<!\d)0*'+str(int(num))+r'(?!\d)',u)]
+              associations.append({'set_code':code,'number':num,'official_image_matches':matches})
+          summary={
+            'production_writes':0,
+            'remaining_target_count':365,
+            'official_image_url_counts':{c:len(json.loads((root/f'{c}-image-urls.json').read_text())) for c in ('SV4a','SV2a')},
+            'exact_url_associations':sum(bool(x['official_image_matches']) for x in associations),
+            'page_identity_hits':len({(x['set_code'],x['number']) for x in evidence})
+          }
+          (root/'associations.json').write_text(json.dumps(associations,ensure_ascii=False,indent=2))
+          (root/'page-evidence.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2))
+          (root/'summary.json').write_text(json.dumps(summary,indent=2))
+          print(json.dumps(summary),flush=True)
+          PY
+      - name: Preserve official-source discovery evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-official-remaining-365-${{ github.run_id }}
+          path: tw-official-365
+          retention-days: 7
+          if-no-files-found: error
