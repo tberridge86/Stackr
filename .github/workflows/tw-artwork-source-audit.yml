@@ -1,0 +1,92 @@
+name: TW artwork source and pipeline audit
+on:
+  push:
+    branches: ['artwork/tw-sv4a-sv2a-20260926']
+    paths: ['.github/workflows/tw-artwork-source-audit.yml']
+permissions:
+  contents: read
+concurrency:
+  group: tw-artwork-source-audit-20260926
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Read-only source and existing pipeline inspection
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, re, shutil, time
+          from pathlib import Path
+          from urllib.request import Request, build_opener, HTTPRedirectHandler
+          from urllib.parse import urlsplit, urljoin
+          from datetime import datetime, timezone
+          from html.parser import HTMLParser
+          root=Path('tw-artwork-audit'); root.mkdir()
+          allowed={'api.tcgdex.net','assets.tcgdex.net','asia.pokemon-card.com','supabase.com'}
+          class Redirect(HTTPRedirectHandler):
+            def redirect_request(self, req, fp, code, msg, headers, url):
+              if urlsplit(url).scheme!='https' or urlsplit(url).hostname not in allowed: raise ValueError('Disallowed redirect')
+              return super().redirect_request(req,fp,code,msg,headers,url)
+          results=[]
+          def get(url,name):
+            try:
+              if urlsplit(url).scheme!='https' or urlsplit(url).hostname not in allowed: raise ValueError('Disallowed host')
+              req=Request(url,headers={'User-Agent':'StackrArtworkAudit/1.0','Cache-Control':'no-cache'})
+              with build_opener(Redirect()).open(req,timeout=20) as r:
+                b=r.read(12000001)
+                if len(b)>12000000: raise ValueError('Oversize response')
+                (root/name).write_bytes(b)
+                result={'url':url,'file':name,'status':r.status,'mime':r.headers.get_content_type(),'bytes':len(b)}
+                results.append(result); print(json.dumps(result),flush=True)
+                time.sleep(0.75)
+                return b
+            except Exception as e:
+              result={'url':url,'file':name,'error':type(e).__name__+': '+str(e)[:250]};results.append(result);print(json.dumps(result),flush=True)
+              return None
+          for code in ['SV4a','SV2a']:
+            b=get('https://api.tcgdex.net/v2/zh-tw/sets/'+code,code+'.json')
+            if b:
+              try:
+                j=json.loads(b);print(json.dumps({'set':code,'name':j.get('name'),'cards':len(j.get('cards',[])),'with_images':sum(bool(x.get('image')) for x in j.get('cards',[]))},ensure_ascii=False),flush=True)
+              except Exception: pass
+            get('https://api.tcgdex.net/v2/zh-tw/cards/'+code+'-021',code+'-021.json')
+          html=get('https://asia.pokemon-card.com/tw/card-search/','tw-search.html')
+          get('https://supabase.com/changelog.md','supabase-changelog.md')
+          class Scripts(HTMLParser):
+            def __init__(self): super().__init__();self.urls=[]
+            def handle_starttag(self,t,a):
+              if t=='script':
+                s=dict(a).get('src')
+                if s:self.urls.append(urljoin('https://asia.pokemon-card.com/tw/card-search/',s))
+          if html:
+            p=Scripts();p.feed(html.decode('utf-8'))
+            js=[u for u in p.urls if urlsplit(u).hostname=='asia.pokemon-card.com']
+            for n,u in enumerate(js[:8]):get(u,'script-'+str(n)+'.js')
+          # Only tracked, non-secret code/documentation files; no .env, credentials, or user data.
+          import subprocess
+          tracked=subprocess.check_output(['git','ls-files'],text=True).splitlines()
+          kept=[]
+          for f in tracked:
+            p=Path(f); low=f.lower()
+            if p.suffix not in {'.mjs','.js','.ts','.json','.yml','.yaml','.md'}:continue
+            if p.stat().st_size>500000:continue
+            include=((f.startswith('backend/lib/') or f.startswith('scripts/') or f.startswith('lib/catalogue/') or f.startswith('src/catalogue/') or f.startswith('services/catalogue/')) and any(k in low for k in ['asset','catalog','ingest','objectstorage','source','supabasetarget'])) or f.startswith('.github/workflows/') or f in ['package.json','backend/package.json']
+            if include:
+              dest=root/'pipeline'/p;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,dest);kept.append(f)
+          (root/'files.json').write_text(json.dumps(kept,indent=2))
+          (root/'audit-summary.json').write_text(json.dumps({'checked_at':datetime.now(timezone.utc).isoformat(),'production_writes':0,'database_credentials_used':False,'http_results':results,'pipeline_files':len(kept)},indent=2))
+          PY
+      - name: Preserve audit evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-artwork-source-audit-${{ github.run_id }}
+          path: tw-artwork-audit
+          retention-days: 7
+          if-no-files-found: error
