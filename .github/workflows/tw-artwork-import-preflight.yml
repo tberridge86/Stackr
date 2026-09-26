@@ -1,0 +1,71 @@
+name: TW artwork production import read-only preflight
+on:
+  push:
+    branches: ['artwork/tw-sv4a-sv2a-20260926']
+    paths: ['.github/workflows/tw-artwork-import-preflight.yml']
+permissions:
+  contents: read
+jobs:
+  preflight:
+    if: github.actor == 'tberridge86' && github.ref == 'refs/heads/artwork/tw-sv4a-sv2a-20260926'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 5
+    steps:
+      - name: Read only exact cohort and source policy
+        env:
+          SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,hashlib
+          from pathlib import Path
+          from urllib.request import Request,build_opener,HTTPRedirectHandler
+          from urllib.parse import urlsplit,urlencode
+          from datetime import datetime,timezone
+          root=Path('tw-import-preflight');root.mkdir()
+          status={'checked_at':datetime.now(timezone.utc).isoformat(),'production_writes':0,'checks':{}}
+          url=os.environ.get('SUPABASE_URL','').rstrip('/')
+          key=os.environ.get('SUPABASE_SECRET_KEY','')
+          class NoRedirect(HTTPRedirectHandler):
+            def redirect_request(self,*args):raise ValueError('Authenticated redirect refused')
+          def read(schema,table,query):
+            headers={'apikey':key,'Accept-Profile':schema,'Accept':'application/json'}
+            if key.startswith('eyJ'):headers['Authorization']='Bearer '+key
+            endpoint=url+'/rest/v1/'+table+'?'+urlencode(query)
+            with build_opener(NoRedirect()).open(Request(endpoint,headers=headers),timeout=35) as r:
+              b=r.read(8000001)
+              if len(b)>8000000:raise ValueError('Read response cap')
+              return json.loads(b)
+          try:
+            if url!='https://oakdbbzdqwurpjnoqhmu.supabase.co' or not key:raise ValueError('Protected production URL/key unavailable')
+            status['checks']['configured_production_credentials']=True
+            cohort=read('api','catalogue_cards',{'select':'variant_id,printing_id,set_id,set_code,language_code,collector_number,card_native_name,variant_code,finish_code,native_image_status,same_artwork_as_variant_id','catalogue_version_id':'eq.f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e','set_id':'in.(34f73eff-5db3-4617-bd57-73421edebb86,3c0c1ae1-7d62-4384-97f1-734ff9460162)','order':'set_code,collector_number,variant_code','limit':'1000'})
+            if len(cohort)!=767 or len({r['printing_id'] for r in cohort})!=521:raise ValueError('Cohort changed or truncated')
+            if any(r['language_code']!='zh-tw' for r in cohort):raise ValueError('Wrong language')
+            (root/'cohort.json').write_text(json.dumps(cohort,ensure_ascii=False,indent=2))
+            source=read('ingest','sources',{'select':'id,code,licence_status,active,deprecated_at,robots_policy,internal_notes','code':'eq.tcgdex'})
+            if len(source)!=1 or source[0]['licence_status']!='approved' or not source[0]['active'] or source[0]['deprecated_at']:raise ValueError('TCGdex is not approved')
+            (root/'source-policy.json').write_text(json.dumps(source,ensure_ascii=False,indent=2))
+            # Column-level access checks only; no mutation is attempted.
+            read('catalog','assets',{'select':'id,asset_id,source_id,variant_id','limit':'1'})
+            read('catalog','catalogue_version_assets',{'select':'catalogue_version_id,asset_id','limit':'1'})
+            status['checks'].update(cohort_variant_count=len(cohort),cohort_printing_count=521,source_currently_approved=True,asset_read_access=True)
+            status['status']='READ_ONLY_PREFLIGHT_PASSED'
+          except Exception as e:
+            # Never print credentials, request headers, or exception bodies.
+            status['status']='PREFLIGHT_BLOCKED';status['error_type']=type(e).__name__
+            status['error']=str(e).replace(key,'[REDACTED]')[:200] if key else str(e)[:200]
+          (root/'result.json').write_text(json.dumps(status,indent=2))
+          print(json.dumps(status),flush=True)
+          if status['status']!='READ_ONLY_PREFLIGHT_PASSED':raise SystemExit(1)
+          PY
+      - name: Preserve non-secret metadata preflight
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-import-preflight-${{ github.run_id }}
+          path: tw-import-preflight
+          retention-days: 7
+          if-no-files-found: warn
