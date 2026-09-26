@@ -5,71 +5,45 @@ on:
     paths: ['.github/workflows/tw-official-remaining-365-discovery.yml']
 permissions:
   contents: read
+concurrency:
+  group: tw-official-365-readonly-20260926
+  cancel-in-progress: false
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 24
     steps:
-      - name: Crawl only official Taiwan card-search result pages
-        shell: bash
+      - name: Checkout only the pinned read-only verifier
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 0b34d75693387dc5ac697c698cd74206d48987dd
+          persist-credentials: false
+          sparse-checkout: scripts/audit-tw-remaining-365.py
+          sparse-checkout-cone-mode: false
+      - name: Prepare isolated pinned decoder and test selectors
         run: |
-          python3 - <<'PY'
-          import json,re,time,html
-          from pathlib import Path
-          from urllib.request import Request,urlopen
-          from urllib.parse import urljoin,urlparse
-          root=Path('tw-official-365');root.mkdir()
-          base='https://asia.pokemon-card.com'
-          targets={'SV4a':set(f'{i:03d}' for i in range(21,355)),
-                   'SV2a':set(f'{i:03d}' for i in range(21,208))}
-          # Remove 116 already recovered SV4a identities from the remaining cohort.
-          recovered=set(f'{i:03d}' for i in list(range(21,127))+[147]+list(range(168,177)))
-          targets['SV4a']-=recovered
-          assert len(targets['SV4a'])==178 and len(targets['SV2a'])==187
-          evidence=[]
-          for code in ('SV4a','SV2a'):
-            seen=set()
-            for page in range(1,26):
-              url=f'{base}/tw/card-search/list/?expansionCodes={code}&pageNo={page}'
-              with urlopen(Request(url,headers={'User-Agent':'StackrArtworkAudit/1.0'}),timeout=20) as r:
-                body=r.read(3000000).decode('utf-8','replace')
-              # Preserve only bounded URL/identity evidence, not full pages.
-              for m in re.finditer(r'(?:src|href)=[\"\']([^\"\']+)[\"\']',body,re.I):
-                u=html.unescape(urljoin(url,m.group(1)))
-                p=urlparse(u)
-                if p.scheme=='https' and p.hostname and p.hostname.endswith('pokemon-card.com'):
-                  if re.search(r'\.(?:jpg|jpeg|png|webp)(?:\?|$)',u,re.I):
-                    seen.add(u)
-              for num in targets[code]:
-                if num in body:
-                  evidence.append({'set_code':code,'number':num,'page':page,'page_url':url})
-              if 'Next' not in body and page>1: break
-              time.sleep(.8)
-            (root/f'{code}-image-urls.json').write_text(json.dumps(sorted(seen),ensure_ascii=False,indent=2))
-          # Try to associate official image URLs to exact set/number by URL and nearby filename patterns.
-          associations=[]
-          for code in ('SV4a','SV2a'):
-            urls=json.loads((root/f'{code}-image-urls.json').read_text())
-            for num in sorted(targets[code]):
-              matches=[u for u in urls if code.lower() in u.lower() and re.search(r'(?<!\d)0*'+str(int(num))+r'(?!\d)',u)]
-              associations.append({'set_code':code,'number':num,'official_image_matches':matches})
-          summary={
-            'production_writes':0,
-            'remaining_target_count':365,
-            'official_image_url_counts':{c:len(json.loads((root/f'{c}-image-urls.json').read_text())) for c in ('SV4a','SV2a')},
-            'exact_url_associations':sum(bool(x['official_image_matches']) for x in associations),
-            'page_identity_hits':len({(x['set_code'],x['number']) for x in evidence})
-          }
-          (root/'associations.json').write_text(json.dumps(associations,ensure_ascii=False,indent=2))
-          (root/'page-evidence.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2))
-          (root/'summary.json').write_text(json.dumps(summary,indent=2))
-          print(json.dumps(summary),flush=True)
+          python3 -m venv /tmp/tw-365-venv
+          /tmp/tw-365-venv/bin/python -m pip install --disable-pip-version-check --no-deps Pillow==12.3.0
+          /tmp/tw-365-venv/bin/python -m py_compile scripts/audit-tw-remaining-365.py
+          /tmp/tw-365-venv/bin/python - <<'PY'
+          import runpy
+          m=runpy.run_path('scripts/audit-tw-remaining-365.py')
+          source='''<h1 class="pageHeader cardDetail"><span class="evolveMarker">基礎</span> 走路草 </h1><span class="collectorNumber">001/190</span><div class="cardImage"><img src="https://asia.pokemon-card.com/tw/card-img/tw00009029.png"></div><a href="/tw/card-search/list/?expansionCodes=SV4a">高級擴充包</a>'''
+          r=m['parse_detail'](source,'https://asia.pokemon-card.com/tw/card-search/detail/9029/')
+          assert r['official_native_name']=='走路草' and r['number']=='001' and r['denominator']==190 and r['official_set_codes']==['SV4a']
+          listing='''<li class="card"><a href="/tw/card-search/detail/9029/"><img class="lazy" src="" data-original="https://asia.pokemon-card.com/tw/card-img/tw00009029.png"></a></li><a href="/tw/card-search/list/?pageNo=2&amp;expansionCodes=SV4a">Next</a>'''
+          links,nxt=m['parse_list'](listing,'https://asia.pokemon-card.com/tw/card-search/list/?expansionCodes=SV4a')
+          assert list(links)==[9029] and len(nxt)==1 and '&expansionCodes=SV4a' in nxt[0]
+          assert m['normalized_name']('莉佳的招待[支援者]')==m['normalized_name']('莉佳的招待')
+          print('Exact identity and lazy-image/pagination selector tests passed.')
           PY
-      - name: Preserve official-source discovery evidence
+      - name: Recover and verify official Traditional Chinese fronts without production access
+        run: /tmp/tw-365-venv/bin/python scripts/audit-tw-remaining-365.py
+      - name: Preserve exact manifest and recovery evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: tw-official-remaining-365-${{ github.run_id }}
           path: tw-official-365
-          retention-days: 7
+          retention-days: 14
           if-no-files-found: error
