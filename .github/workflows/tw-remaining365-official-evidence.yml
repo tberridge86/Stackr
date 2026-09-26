@@ -1,0 +1,141 @@
+name: TW remaining 365 official identity evidence
+on:
+  push:
+    branches: ['artwork/tw-sv4a-sv2a-20260926']
+    paths: ['.github/workflows/tw-remaining365-official-evidence.yml']
+permissions:
+  contents: read
+concurrency:
+  group: tw-remaining365-evidence-20260926
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - name: Prepare isolated image validator
+        run: |
+          python3 -m venv /tmp/tw365-venv
+          /tmp/tw365-venv/bin/python -m pip install --disable-pip-version-check --no-deps Pillow==12.3.0
+      - name: Bounded official-source evidence only; no production credentials or publication
+        shell: bash
+        run: |
+          /tmp/tw365-venv/bin/python - <<'PY'
+          import concurrent.futures,hashlib,html,io,json,re,threading,time,unicodedata,warnings
+          from collections import Counter,defaultdict
+          from datetime import datetime,timezone
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.request import Request,HTTPRedirectHandler,build_opener
+          from urllib.parse import urlsplit,urljoin
+          from urllib.robotparser import RobotFileParser
+          from urllib.error import HTTPError
+          from PIL import Image
+          root=Path('tw-remaining365-evidence');root.mkdir()
+          allowed={'api.tcgdex.net','asia.pokemon-card.com'}
+          lock=threading.Lock();last=[0.0]
+          Image.MAX_IMAGE_PIXELS=8000000
+          warnings.simplefilter('error',Image.DecompressionBombWarning)
+          def validate_url(url):
+            p=urlsplit(url)
+            if p.scheme!='https' or p.hostname not in allowed or p.port not in (None,443) or p.username or p.password:raise ValueError('URL outside exact allowlist')
+            return url
+          class SafeRedirect(HTTPRedirectHandler):
+            def redirect_request(self,req,fp,code,msg,headers,url):
+              validate_url(url)
+              return super().redirect_request(req,fp,code,msg,headers,url)
+          robot=None
+          def fetch(url,limit=5000000):
+            validate_url(url)
+            if robot is not None and urlsplit(url).hostname=='asia.pokemon-card.com' and not robot.can_fetch('StackrArtworkVerifier',url):raise ValueError('Robots disallow')
+            with lock:
+              pause=max(0,.75-(time.monotonic()-last[0]))
+              if pause:time.sleep(pause)
+              last[0]=time.monotonic()
+            with build_opener(SafeRedirect()).open(Request(url,headers={'User-Agent':'StackrArtworkVerifier/1.0','Cache-Control':'no-cache'}),timeout=16) as r:
+              b=r.read(limit+1)
+              if len(b)>limit:raise ValueError('Byte cap exceeded')
+              if r.status!=200:raise ValueError('Non-200 response')
+              return b,r.headers.get_content_type(),r.geturl()
+          rb,_,_=fetch('https://asia.pokemon-card.com/robots.txt');(root/'robots.txt').write_bytes(rb)
+          robot=RobotFileParser();robot.parse(rb.decode('utf-8').splitlines())
+          policy,_,_=fetch('https://asia.pokemon-card.com/tw/policy/');(root/'source-policy.html').write_bytes(policy)
+          targets=[]
+          scope={'SV4a':{'min':177,'max':354,'count':178,'base':9028,'denominator':190,'md5':'02680e1283ec663376bc1ad723ccd143','product':'閃色寶藏ex','set_id':'34f73eff-5db3-4617-bd57-73421edebb86'},'SV2a':{'min':21,'max':207,'count':187,'base':8123,'denominator':165,'md5':'bd6e655a8c328ed73c759106cfe2f2bc','product':'寶可夢卡牌151','set_id':'3c0c1ae1-7d62-4384-97f1-734ff9460162'}}
+          for code,s in scope.items():
+            body,_,_=fetch('https://api.tcgdex.net/v2/zh-tw/sets/'+code)
+            dataset=json.loads(body);(root/(code+'-target-metadata.json')).write_bytes(body)
+            assert dataset['id']==code
+            cohort=sorted([c for c in dataset['cards'] if s['min']<=int(c['localId'])<=s['max']],key=lambda x:x['localId'])
+            roster='\n'.join(c['localId']+'|'+c['name'] for c in cohort)
+            assert len(cohort)==s['count'] and hashlib.md5(roster.encode()).hexdigest()==s['md5'],'Live target roster differs from production snapshot'
+            for c in cohort:
+              targets.append({'language':'zh-tw','set_id':s['set_id'],'set_code':code,'collector_number':c['localId'],'native_name':c['name'],'provider_id':c['id'],'candidate_detail_url':f"https://asia.pokemon-card.com/tw/card-search/detail/{s['base']+int(c['localId'])}/"})
+          assert len(targets)==365
+          (root/'target-manifest.json').write_text(json.dumps(targets,ensure_ascii=False,indent=2))
+          class Text(HTMLParser):
+            def __init__(self):super().__init__();self.text=[]
+            def handle_data(self,data):self.text.append(data)
+          def text(fragment):
+            p=Text();p.feed(fragment);return ' '.join(p.text)
+          def norm(value):return re.sub(r'\s+','',unicodedata.normalize('NFKC',html.unescape(value)))
+          def verify(c):
+            s=scope[c['set_code']]
+            out=dict(c,checked_at=datetime.now(timezone.utc).isoformat(),source_status='UNREGISTERED_OFFICIAL_TW_SOURCE',publication_status='QUARANTINED_SOURCE_REVIEW_REQUIRED',image_verified=False,identity_verified=False,status='unverified')
+            try:
+              body,mime,url=fetch(c['candidate_detail_url'],2000000)
+              if mime!='text/html':raise ValueError('Detail is not HTML')
+              raw=body.decode('utf-8');page=root/'identity-pages'/c['set_code']/(c['collector_number']+'.html');page.parent.mkdir(parents=True,exist_ok=True);page.write_bytes(body)
+              h1=re.search(r'<h1\b[^>]*>(.*?)</h1>',raw,re.S|re.I)
+              number=re.search(r'<span\b[^>]*class=[\"\'][^\"\']*collectorNumber[^\"\']*[\"\'][^>]*>(.*?)</span>',raw,re.S|re.I)
+              image=re.search(r'<div\b[^>]*class=[\"\']cardImage[\"\'][^>]*>\s*<img\b[^>]*src=[\"\']([^\"\']+)',raw,re.S|re.I)
+              symbol=re.search(r'<span\b[^>]*class=[\"\']expansionSymbol[\"\'][^>]*>(.*?)</span>',raw,re.S|re.I)
+              if not all([h1,number,image,symbol]):raise ValueError('Official detail structure changed')
+              title=re.sub(r'<span\b[^>]*>.*?</span>','',h1.group(1),flags=re.S|re.I)
+              actual_name=text(title).strip()
+              expected_name=re.sub(r'\[[^\]]+\]$','',c['native_name']).strip()
+              actual_number=norm(text(number.group(1)))
+              source_url=html.unescape(urljoin(url,image.group(1)));validate_url(source_url)
+              checks={'native_name':norm(actual_name)==norm(expected_name),'collector_number':actual_number==f"{c['collector_number']}/{s['denominator']}",'set_symbol':c['set_code'].lower() in html.unescape(symbol.group(1)).lower(),'product':s['product'] in norm(text(raw)),'image_locality':bool(re.fullmatch(r'https://asia\.pokemon-card\.com/tw/card-img/tw[0-9]+\.png',source_url))}
+              out.update(identity_checks=checks,official_native_name=actual_name,official_number=actual_number,identity_page=url,source_url=source_url,identity_page_sha256=hashlib.sha256(body).hexdigest())
+              if not all(checks.values()):out['status']='official_identity_mismatch';return out
+              out['identity_verified']=True
+              data,mime,final=fetch(source_url,5000000)
+              if mime not in ('image/png','image/jpeg','image/webp'):raise ValueError('Source is not an image')
+              with Image.open(io.BytesIO(data)) as im:
+                width,height=im.size;fmt=im.format
+                if width<320 or height<440 or not .6<width/height<.82:raise ValueError('Unexpected card dimensions')
+                im.verify()
+              with Image.open(io.BytesIO(data)) as im:
+                im.load()
+                if len(set(im.convert('RGB').resize((16,16)).getdata()))<12:raise ValueError('Blank image')
+              suffix={'PNG':'.png','JPEG':'.jpg','WEBP':'.webp'}[fmt]
+              name=Path('evidence-images')/c['set_code']/(c['collector_number']+suffix);dest=root/name;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data)
+              out.update(status='OFFICIAL_IDENTITY_AND_BYTES_VERIFIED_SOURCE_REVIEW_REQUIRED',image_verified=True,http_status=200,mime_type=mime,width=width,height=height,byte_size=len(data),sha256=hashlib.sha256(data).hexdigest(),evidence_file=str(name),final_url=final)
+            except HTTPError as e:out.update(status='HTTP_UNAVAILABLE',http_status=e.code,error=str(e))
+            except Exception as e:out.update(status='VERIFICATION_FAILED',error=type(e).__name__+': '+str(e)[:240])
+            return out
+          results=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+            for i,r in enumerate(pool.map(verify,targets),1):
+              results.append(r)
+              with (root/'results.jsonl').open('a') as f:f.write(json.dumps(r,ensure_ascii=False)+'\n')
+              if i%25==0:print('PROGRESS',i,dict(Counter(x['status'] for x in results)),flush=True)
+          hashes=defaultdict(list)
+          for r in results:
+            if r.get('sha256'):hashes[r['sha256']].append(r['provider_id'])
+          duplicates={k:v for k,v in hashes.items() if len(v)>1}
+          for r in results:
+            if r.get('sha256') in duplicates:r['status']='DUPLICATE_SOURCE_IMAGE_REVIEW_REQUIRED'
+          report={'created_at':datetime.now(timezone.utc).isoformat(),'scope':'Exact remaining 365 Traditional Chinese fronts','production_writes':0,'database_credentials_used':False,'source_permission_status':'REVIEW_REQUIRED_NOT_APPROVED','publication_status':'NOT_UPLOADED','counts':dict(Counter(x['status'] for x in results)),'by_set':{code:dict(Counter(x['status'] for x in results if x['set_code']==code)) for code in scope},'duplicate_hashes':duplicates,'rows':results}
+          (root/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps({k:v for k,v in report.items() if k!='rows'},ensure_ascii=False),flush=True)
+          PY
+      - name: Preserve quarantined audit evidence only
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-remaining365-evidence-${{ github.run_id }}
+          path: tw-remaining365-evidence
+          retention-days: 7
+          if-no-files-found: error
