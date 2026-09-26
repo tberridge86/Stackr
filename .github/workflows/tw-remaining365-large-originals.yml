@@ -1,0 +1,206 @@
+name: TW remaining 365 final original-size verification
+on:
+  push:
+    branches: ['artwork/tw-sv4a-sv2a-20260926']
+    paths: ['.github/workflows/tw-remaining365-large-originals.yml']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: tw-remaining365-evidence-20260926
+  cancel-in-progress: false
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact validated identity parser
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 2f2dc1ea94b0bac87dc2251fb11f5f1ef043723a
+          persist-credentials: false
+          sparse-checkout: scripts/audits/reconcile-tw365-evidence.py
+          sparse-checkout-cone-mode: false
+      - name: Read the exact previous compact evidence artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,hashlib,zipfile
+          from pathlib import Path
+          from urllib.request import Request,HTTPRedirectHandler,build_opener
+          from urllib.parse import urlsplit
+          api='https://api.github.com/repos/tberridge86/Stackr'
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
+          class SafeRedirect(HTTPRedirectHandler):
+            def redirect_request(self,req,fp,code,msg,oldheaders,url):
+              p=urlsplit(url)
+              if p.scheme!='https' or p.username or p.password or p.port not in (None,443):raise ValueError('Unsafe artifact redirect')
+              if not (p.hostname=='api.github.com' or p.hostname.endswith('.blob.core.windows.net') or p.hostname.endswith('.githubusercontent.com') or p.hostname.endswith('.actions.githubusercontent.com')):raise ValueError('Artifact host rejected')
+              new=super().redirect_request(req,fp,code,msg,oldheaders,url);new.remove_header('Authorization');return new
+          opener=build_opener(SafeRedirect())
+          def metadata(url):
+            with opener.open(Request(url,headers=headers),timeout=30) as r:
+              b=r.read(200001)
+              if len(b)>200000:raise ValueError('Metadata cap')
+              return json.loads(b)
+          run=metadata(api+'/actions/runs/36273754891')
+          if run['status']!='completed' or run['conclusion']!='success' or run['head_sha']!='cf94d1407257a2800438ec2b1042b89ef25cee9a':raise ValueError('Previous run not verified')
+          a=metadata(api+'/actions/artifacts/10916531606')
+          if a['expired'] or a['size_in_bytes']!=30241460:raise ValueError('Review artifact changed')
+          path=Path('prior-review.zip');h=hashlib.sha256();n=0
+          with opener.open(Request(api+'/actions/artifacts/10916531606/zip',headers=headers),timeout=60) as r,path.open('wb') as f:
+            while True:
+              b=r.read(1024*1024)
+              if not b:break
+              n+=len(b)
+              if n>40000000:raise ValueError('Review archive cap')
+              h.update(b);f.write(b)
+          if n!=30241460 or h.hexdigest()!='67b5f33fadaef4289c80b8ca1aa8c4b404ce2b8bd0dacca2ead38d41a075770c':raise ValueError('Review archive hash mismatch')
+          root=Path('prior-review').resolve();root.mkdir()
+          with zipfile.ZipFile(path) as z:
+            if sum(i.file_size for i in z.infolist())>80000000:raise ValueError('Expanded review cap')
+            for i in z.infolist():
+              if not (root/i.filename).resolve().is_relative_to(root) or ((i.external_attr>>16)&0o170000)==0o120000:raise ValueError('Unsafe archive member')
+            z.extractall(root)
+          path.unlink()
+          print('Previous 342 source verifications loaded; no production credentials',flush=True)
+          PY
+      - name: Prepare isolated decoder
+        run: |
+          python3 -m venv /tmp/tw-final23
+          /tmp/tw-final23/bin/python -m pip install --disable-pip-version-check --no-deps Pillow==12.3.0
+      - name: Recheck 23 official identities and fetch originals under a bounded 12 MiB limit
+        shell: bash
+        run: |
+          /tmp/tw-final23/bin/python - <<'PY'
+          import concurrent.futures,copy,hashlib,importlib.util,io,json,os,re,shutil,threading,time,warnings
+          from collections import Counter,defaultdict
+          from datetime import datetime,timezone
+          from pathlib import Path
+          from urllib.request import Request,HTTPRedirectHandler,build_opener
+          from urllib.parse import urlsplit
+          from urllib.robotparser import RobotFileParser
+          from PIL import Image,ImageDraw
+          spec=importlib.util.spec_from_file_location('identity_parser','scripts/audits/reconcile-tw365-evidence.py');parser=importlib.util.module_from_spec(spec);spec.loader.exec_module(parser)
+          prior=Path('prior-review');out=Path('final-review');out.mkdir();full=Path('final-23-originals');full.mkdir()
+          report=json.loads((prior/'verification.json').read_text());targets=json.loads((prior/'target-manifest.json').read_text())
+          assert len(report['rows'])==len(targets)==365
+          assert Counter(t['set_code'] for t in targets)=={'SV4a':178,'SV2a':187}
+          expected={'036','044','047','051','055','057','062','064','067','071','075','078','087','093','095','097','099','103','106','107','112','131','140'}
+          held=[r for r in report['rows'] if r['status']=='IMAGE_VERIFICATION_FAILED']
+          assert len(held)==23 and {r['collector_number'] for r in held}==expected and all(r['set_code']=='SV2a' and r['identity_verified'] for r in held)
+          assert sum(r['status']=='IDENTITY_AND_IMAGE_VERIFIED_SOURCE_REVIEW_REQUIRED' for r in report['rows'])==342
+          assert len({(r['set_code'],r['collector_number']) for r in report['rows']})==365
+          for code,digest in {'SV4a':'02680e1283ec663376bc1ad723ccd143','SV2a':'bd6e655a8c328ed73c759106cfe2f2bc'}.items():
+            roster=sorted([t for t in targets if t['set_code']==code],key=lambda t:t['collector_number'])
+            assert hashlib.md5('\n'.join(t['collector_number']+'|'+t['native_name'] for t in roster).encode()).hexdigest()==digest
+          shutil.copytree(prior/'previews',out/'previews')
+          Image.MAX_IMAGE_PIXELS=8000000
+          warnings.simplefilter('error',Image.DecompressionBombWarning)
+          lock=threading.Lock();last=[0.0];robot=None
+          def allowed(url):
+            p=urlsplit(url)
+            if p.scheme!='https' or p.hostname!='asia.pokemon-card.com' or p.username or p.password or p.port not in (None,443):raise ValueError('Official source URL rejected')
+            if robot is not None and not robot.can_fetch('StackrArtworkVerifier',url):raise ValueError('Robots disallow')
+          class Redirect(HTTPRedirectHandler):
+            def redirect_request(self,req,fp,code,msg,headers,url):allowed(url);return super().redirect_request(req,fp,code,msg,headers,url)
+          def fetch(url,limit):
+            allowed(url)
+            with lock:
+              delay=max(0,.75-(time.monotonic()-last[0]))
+              if delay:time.sleep(delay)
+              last[0]=time.monotonic()
+            with build_opener(Redirect()).open(Request(url,headers={'User-Agent':'StackrArtworkVerifier/1.0','Cache-Control':'no-cache'}),timeout=20) as res:
+              if res.status!=200:raise ValueError('HTTP status '+str(res.status))
+              if int(res.headers.get('Content-Length','0'))>limit:raise ValueError('Content-Length exceeds bounded original cap')
+              b=res.read(limit+1)
+              if len(b)>limit:raise ValueError('Image exceeds bounded original cap')
+              return b,res.headers.get_content_type(),res.geturl()
+          rb,_,_=fetch('https://asia.pokemon-card.com/robots.txt',100000)
+          robot=RobotFileParser();robot.parse(rb.decode().splitlines());(out/'robots.txt').write_bytes(rb)
+          def verify(row):
+            r=copy.deepcopy(row);r['previous_error']=r.pop('error',None);r['checked_at']=datetime.now(timezone.utc).isoformat()
+            try:
+              page,mime,page_url=fetch(r['identity_page'],2000000)
+              if mime!='text/html':raise ValueError('Official detail MIME mismatch')
+              identity=parser.parse_page(page.decode('utf-8'),'SV2a',page_url)
+              if identity['collector_number']!=r['collector_number'] or parser.name_norm(identity['native_name'])!=parser.name_norm(r['target_native_name']) or identity['source_url']!=r['source_url']:raise ValueError('Official identity drift')
+              b,mime,url=fetch(r['source_url'],12*1024*1024)
+              if mime not in ('image/png','image/jpeg','image/webp'):raise ValueError('Invalid image MIME')
+              with Image.open(io.BytesIO(b)) as im:
+                w,h=im.size;fmt=im.format
+                if not 320<=w or not 440<=h or w*h>8000000 or not .6<w/h<.82:raise ValueError('Image dimensions outside unchanged limits')
+                im.verify()
+              with Image.open(io.BytesIO(b)) as im:
+                im.load();rgba=im.convert('RGBA');bg=Image.new('RGBA',rgba.size,'white');bg.alpha_composite(rgba);rgb=bg.convert('RGB')
+                if len(set(rgb.resize((16,16)).getdata()))<12:raise ValueError('Blank image')
+                rgb.thumbnail((360,510),Image.Resampling.LANCZOS);dest=out/'previews'/'SV2a'/(r['collector_number']+'.jpg');rgb.save(dest,quality=87)
+              relative=Path('source-images')/'SV2a'/(r['collector_number']+{'PNG':'.png','JPEG':'.jpg','WEBP':'.webp'}[fmt]);dest=full/relative;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(b)
+              p=full/'identity-pages'/'SV2a'/(r['collector_number']+'.html');p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(page)
+              r.update(identity,status='IDENTITY_AND_IMAGE_VERIFIED_SOURCE_REVIEW_REQUIRED',image_verified=True,identity_verified=True,byte_method='bounded_12MiB_refetch_after_5MB_cap',max_download_bytes=12*1024*1024,width=w,height=h,mime_type=mime,byte_size=len(b),sha256=hashlib.sha256(b).hexdigest(),source_file=str(relative),source_archive='final_23_originals',publication_status='NOT_UPLOADED',source_permission_status='REVIEW_REQUIRED')
+            except Exception as e:r.update(status='IMAGE_VERIFICATION_FAILED',error=type(e).__name__+': '+str(e)[:240])
+            print('FINAL23_ROW '+json.dumps({k:r.get(k) for k in ('collector_number','status','byte_size','width','height','error')},ensure_ascii=False),flush=True)
+            return r
+          with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:replacements={r['collector_number']:r for r in pool.map(verify,held)}
+          rows=[]
+          for r in report['rows']:
+            if r['set_code']=='SV2a' and r['collector_number'] in replacements:r=replacements[r['collector_number']]
+            else:r=dict(r,source_archive='prior_342_originals')
+            rows.append(r)
+          hashes=defaultdict(list)
+          for r in rows:
+            if r.get('image_verified') and r.get('sha256'):hashes[r['sha256']].append(r['provider_id'])
+          duplicates={h:ids for h,ids in hashes.items() if len(ids)>1}
+          for r in rows:
+            if r.get('sha256') in duplicates:r['status']='DUPLICATE_BYTES_REVIEW_REQUIRED'
+          good=[r for r in rows if r['status']=='IDENTITY_AND_IMAGE_VERIFIED_SOURCE_REVIEW_REQUIRED']
+          for code in ('SV4a','SV2a'):
+            subset=[r for r in good if r['set_code']==code]
+            for start in range(0,len(subset),20):
+              sheet=Image.new('RGB',(1200,1800),'white');draw=ImageDraw.Draw(sheet)
+              for i,r in enumerate(subset[start:start+20]):
+                with Image.open(out/'previews'/code/(r['collector_number']+'.jpg')) as im:
+                  im.load();im.thumbnail((224,330));x=(i%5)*240;y=(i//5)*450;sheet.paste(im,(x+(240-im.width)//2,y+38));draw.text((x+12,y+12),code+' / '+r['collector_number'],fill='black')
+              sheet.save(out/(code+'-contact-'+str(start//20+1)+'.jpg'),quality=90)
+          result={'created_at':datetime.now(timezone.utc).isoformat(),'production_writes':0,'source_permission_status':'REVIEW_REQUIRED','publication_status':'NOT_UPLOADED','target_count':365,'counts':dict(Counter(r['status'] for r in rows)),'by_set':{c:dict(Counter(r['status'] for r in rows if r['set_code']==c)) for c in ('SV4a','SV2a')},'duplicate_image_hashes':duplicates,'previous_review_artifact_id':10916531606,'original_archives':{'prior_342_originals':{'artifact_id':10917120115,'run_id':36273754891,'sha256':'097ff4745831222c6e20d3400a6cbed19b6cb5a4935403843bc9284882ce6b37'},'final_23_originals':{'run_id':int(os.environ['GITHUB_RUN_ID']),'artifact_name':'tw-final23-originals-'+os.environ['GITHUB_RUN_ID']}},'rows':rows}
+          (out/'verification.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));(out/'target-manifest.json').write_text(json.dumps(targets,ensure_ascii=False,indent=2))
+          (full/'verification.json').write_text(json.dumps({'production_writes':0,'source_permission_status':'REVIEW_REQUIRED','rows':list(replacements.values())},ensure_ascii=False,indent=2))
+          summary={k:v for k,v in result.items() if k!='rows'};summary['unresolved']=[{k:r.get(k) for k in ('set_code','collector_number','status','error')} for r in rows if r not in good]
+          (out/'summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2))
+          count=len(good)
+          readme=f'''# Stackr: remaining 365 Traditional Chinese fronts\n\nSource-evidence verification completed 26 September 2026.\n\nVerified fronts: {count}/365. SV4a and SV2a identities were checked against official Taiwan pages, including the native name, printed number, denominator, expansion symbol, product and exact linked image. Image MIME, size, pixel limits, decoding, nonblank content and SHA-256 integrity were checked. No duplicate image hashes were accepted.\n\nThe earlier 23 download failures were diagnosed as the old 5 MB byte cap, not unavailable URLs. Only those originals were retried with a 12 MiB bound; the 8-megapixel limit and all identity tests remained in place.\n\nThis package contains reduced review previews, complete row-level provenance and an exact target manifest. Previews are not production renditions. Full-resolution originals are preserved in the two referenced workflow artifacts; existing originals were not downloaded again. These are catalogue fronts, not independently certified scans of every foil finish.\n\nNO PRODUCTION WRITES. Official Taiwan source permission review is still required. No source approval, production gate, pricing, catalogue identity or held Supreme Victors mapping was changed. The earlier 116 recovered fronts and these newly verified fronts remain separate from published production coverage.\n\n'''
+          (out/'README.md').write_text(readme+json.dumps(summary,ensure_ascii=False,indent=2)+'\n')
+          print('CONSOLIDATED_365_SUMMARY '+json.dumps(summary,ensure_ascii=False),flush=True)
+          PY
+      - name: Preserve the additional full-resolution originals
+        id: originals
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-final23-originals-${{ github.run_id }}
+          path: final-23-originals
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: error
+      - name: Record final original archive identity in compact review index
+        env:
+          ARTIFACT_ID: ${{ steps.originals.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.originals.outputs.artifact-digest }}
+        run: |
+          python3 - <<'PY'
+          import os,json
+          from pathlib import Path
+          for name in ('verification.json','summary.json'):
+            p=Path('final-review')/name
+            r=json.loads(p.read_text());r['original_archives']['final_23_originals'].update(artifact_id=int(os.environ['ARTIFACT_ID']),sha256=os.environ.get('ARTIFACT_DIGEST'));p.write_text(json.dumps(r,ensure_ascii=False,indent=2))
+          PY
+      - name: Preserve consolidated 365-card review package
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-complete365-review-${{ github.run_id }}
+          path: final-review
+          retention-days: 14
+          if-no-files-found: error
