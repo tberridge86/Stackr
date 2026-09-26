@@ -1,0 +1,77 @@
+{
+  "verifiedAt": "2026-09-26T12:42:07.923907+00:00",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "importRunId": "e061242a-7aa6-5fff-8dfe-ae3840a06651",
+  "rawRows": 655,
+  "referenceRows": 642,
+  "appendixSheets": 13,
+  "payloadEquality": "pass_all_655",
+  "payloadSha256": "pass_all_655",
+  "duplicateIds": 0,
+  "sourceLanguageCounts": {
+    "en": 192,
+    "ja": 246,
+    "zh-TW": 140,
+    "zh-CN": 64
+  },
+  "allCanonicalSetsUnchanged": 788,
+  "canonicalSetComparison": "pass_all_788",
+  "representatives": [
+    {
+      "ref": "en-a0c246625f70",
+      "language": "en",
+      "name": "Base Set",
+      "canonicalId": "97e3aeb6-2645-4c3a-9fd4-10d95a181b6e",
+      "sourceReadback": "pass",
+      "publicProjectionUnchanged": "pass",
+      "liveApi": "pass_http_200_all_identity_and_metadata_fields_match",
+      "liveUrl": "https://api.stackrtcg.com/v1/sets/97e3aeb6-2645-4c3a-9fd4-10d95a181b6e",
+      "publicSetCode": "base1",
+      "catalogueVersion": "en:tcgdex-796afd47e430-full-primary-2026-08-19"
+    },
+    {
+      "ref": "ja-d722650df667",
+      "language": "ja",
+      "name": "Expansion Pack",
+      "canonicalId": "46c7cd20-9ca5-4128-a244-9a04f9a4c9f7",
+      "sourceReadback": "pass",
+      "publicProjectionUnchanged": "pass",
+      "liveApi": "pass_http_200_all_identity_and_metadata_fields_match",
+      "liveUrl": "https://api.stackrtcg.com/v1/sets/46c7cd20-9ca5-4128-a244-9a04f9a4c9f7",
+      "publicSetCode": "PMCG1",
+      "catalogueVersion": "ja:tcgdex-796afd47e430-full-primary-2026-08-19"
+    },
+    {
+      "ref": "zh-CN-cff2a96842bc",
+      "language": "zh-CN",
+      "name": "Storming Emergence: Abundant",
+      "canonicalId": "195b9d09-dd64-4e41-9b7d-0c9fb7f2062c",
+      "sourceReadback": "pass",
+      "publicProjectionUnchanged": "pass",
+      "liveApi": "pass_http_200_all_identity_and_metadata_fields_match",
+      "liveUrl": "https://api.stackrtcg.com/v1/sets/195b9d09-dd64-4e41-9b7d-0c9fb7f2062c",
+      "publicSetCode": "csm1cc",
+      "catalogueVersion": "zh-cn:api-launch-2026-08-09-v1"
+    },
+    {
+      "ref": "zh-TW-08c3dcbf7c89",
+      "language": "zh-TW",
+      "name": "Sword & Shield: Set A",
+      "canonicalId": "9ebab1ca-0ebf-429c-83ed-9fe6735f9832",
+      "sourceReadback": "pass",
+      "publicProjectionUnchanged": "pass",
+      "liveApi": "pass_http_200_all_identity_and_metadata_fields_match",
+      "liveUrl": "https://api.stackrtcg.com/v1/sets/9ebab1ca-0ebf-429c-83ed-9fe6735f9832",
+      "publicSetCode": "SC1a",
+      "catalogueVersion": "zh-tw:tcgdex-796afd47e430-full-primary-2026-08-19"
+    }
+  ],
+  "gatewayHttp": {
+    "url": "https://api.stackrtcg.com/v1/sets?language=en&limit=1",
+    "status": 200,
+    "body": "{\"data\":{\"sets\":[{\"setId\":\"013aaf61-7b4f-4f79-b96f-285b53de2d41\",\"game\":\"pokemon\",\"languageCode\":\"en\",\"language\":{\"englishName\":\"English\",\"nativeName\":\"English\"},\"seriesId\":null,\"seriesNativeName\":null,\"seriesEnglishDisplayName\":null,\"setCode\":\"wp\",\"nativeName\":\"W Promotional\",\"englishDisplayName\":\"W Promotional\",\"releaseDate\":\"1999-09-01\",\"printedTotal\":7,\"total\":7,\"regionCode\":null,\"updatedAt\":\"2026-08-20T18:03:26.607+00:00\",\"sourceUpdatedAt\":null}]},\"meta\":{\"requestId\":\"1e2c4c63-424c-47e5-856f-9f489666f824\",\"apiVersion\":\"1\",\"generatedAt\":\"2026-09-26T12:41:51.281Z\",\"pagination\":{\"limit\":1,\"nextCursor\":\"eyJzZXRfaWQiOiIwMTNhYWY2MS03YjRmLTRmNzktYjk2Zi0yODViNTNkZTJkNDEifQ\"}}}"
+  },
+  "canonicalPromotion": "not_performed",
+  "pricesAndArtwork": "no_write_operations",
+  "schemaMigration": "none"
+}
