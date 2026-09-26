@@ -12,7 +12,7 @@ concurrency:
 jobs:
   reconcile:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - name: Checkout audited reconciliation script only
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -21,13 +21,14 @@ jobs:
           persist-credentials: false
           sparse-checkout: scripts/audits/reconcile-tw365-evidence.py
           sparse-checkout-cone-mode: false
-      - name: Obtain the completed read-only evidence artifact
+      - name: Stream the exact completed audit archive and verify its digest
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           python3 - <<'PY'
-          import os,json,hashlib,zipfile,io
+          import os,json,hashlib,zipfile
+          from collections import Counter
           from pathlib import Path
           from urllib.request import Request,HTTPRedirectHandler,build_opener
           from urllib.parse import urlsplit
@@ -44,26 +45,44 @@ jobs:
           def get(url,limit):
             with opener.open(Request(url,headers=headers),timeout=90) as r:
               b=r.read(limit+1)
-              if len(b)>limit:raise ValueError('Artifact size cap')
+              if len(b)>limit:raise ValueError('Metadata size cap')
               return b
           run=json.loads(get(repo+'/actions/runs/36272836991',100000))
           if run['status']!='completed' or run['conclusion']!='success' or run['head_sha']!='019ffaabc6e03c76daa610e3d70e991d05d60aff':raise ValueError('Prior audit did not finish successfully')
           artifacts=json.loads(get(repo+'/actions/runs/36272836991/artifacts',100000))['artifacts']
-          matches=[a for a in artifacts if a['name']=='tw-remaining365-evidence-36272836991' and not a['expired']]
-          if len(matches)!=1:raise ValueError('Expected one prior evidence artifact')
-          a=matches[0];body=get(repo+'/actions/artifacts/'+str(a['id'])+'/zip',200000000)
-          digest='sha256:'+hashlib.sha256(body).hexdigest()
-          if a.get('digest') and a['digest']!=digest:raise ValueError('Artifact digest mismatch')
+          matches=[a for a in artifacts if a['id']==10916287849 and a['name']=='tw-remaining365-evidence-36272836991' and not a['expired']]
+          if len(matches)!=1:raise ValueError('Expected one exact prior evidence artifact')
+          a=matches[0]
+          if a['size_in_bytes']!=524594949:raise ValueError('Observed evidence artifact size changed')
+          archive=Path('prior-evidence.zip');h=hashlib.sha256();size=0
+          with opener.open(Request(repo+'/actions/artifacts/10916287849/zip',headers=headers),timeout=90) as r,archive.open('wb') as f:
+            while True:
+              chunk=r.read(1024*1024)
+              if not chunk:break
+              size+=len(chunk)
+              if size>650000000:raise ValueError('Bounded archive size exceeded')
+              f.write(chunk);h.update(chunk)
+          digest='sha256:'+h.hexdigest()
+          if size!=a['size_in_bytes'] or digest!='sha256:c84a26d1115d1ef6bfb1f3f83fff9e01342c3d637168d2e6c0208b8ad5505602' or (a.get('digest') and a['digest']!=digest):raise ValueError('Artifact integrity mismatch')
           dest=Path('prior-evidence').resolve();dest.mkdir()
-          with zipfile.ZipFile(io.BytesIO(body)) as z:
-            if sum(i.file_size for i in z.infolist())>600000000:raise ValueError('Expanded archive cap')
+          with zipfile.ZipFile(archive) as z:
+            expanded=sum(i.file_size for i in z.infolist())
+            if expanded>1200000000 or len(z.infolist())>1000:raise ValueError('Expanded archive limit')
             for i in z.infolist():
               target=(dest/i.filename).resolve()
               if not target.is_relative_to(dest):raise ValueError('Archive traversal')
               if ((i.external_attr>>16)&0o170000)==0o120000:raise ValueError('Symlink forbidden')
             z.extractall(dest)
-          Path('prior-artifact-provenance.json').write_text(json.dumps({'run_id':run['id'],'head_sha':run['head_sha'],'artifact_id':a['id'],'digest':digest},indent=2))
-          print('Prior evidence verified; no production credentials used')
+          archive.unlink()
+          provenance={'run_id':run['id'],'head_sha':run['head_sha'],'artifact_id':a['id'],'digest':digest,'archive_bytes':size,'expanded_bytes':expanded}
+          Path('prior-artifact-provenance.json').write_text(json.dumps(provenance,indent=2))
+          report=json.loads((dest/'verification.json').read_text())
+          failures=[{k:r.get(k) for k in ('set_code','collector_number','error','source_url')} for r in report['rows'] if r['status']=='VERIFICATION_FAILED']
+          print('INITIAL_ERROR_COUNTS '+json.dumps(dict(Counter(r.get('error') for r in failures))),flush=True)
+          print('INITIAL_FAILURE_ROWS '+json.dumps(failures,ensure_ascii=False),flush=True)
+          compact=Path('review-evidence');compact.mkdir()
+          (compact/'prior-failure-diagnostics.json').write_text(json.dumps(failures,ensure_ascii=False,indent=2))
+          print('Prior archive verified; no production credentials used',flush=True)
           PY
       - name: Prepare isolated validator
         run: |
@@ -73,11 +92,56 @@ jobs:
         run: |
           /tmp/tw365-final-venv/bin/python scripts/audits/reconcile-tw365-evidence.py --prior prior-evidence --output reconciled-evidence
           cp prior-artifact-provenance.json reconciled-evidence/
-      - name: Preserve review-only source package
+      - name: Build compact reports and labelled image previews
+        if: always()
+        shell: bash
+        run: |
+          /tmp/tw365-final-venv/bin/python - <<'PY'
+          import json,shutil,hashlib
+          from collections import Counter
+          from pathlib import Path
+          from PIL import Image,ImageOps,ImageDraw
+          src=Path('reconciled-evidence');out=Path('review-evidence');out.mkdir(exist_ok=True)
+          if not (src/'verification.json').exists():raise SystemExit('No final reconciliation report exists')
+          report=json.loads((src/'verification.json').read_text())
+          for name in ('verification.json','target-manifest.json','prior-artifact-provenance.json'):
+            if (src/name).exists():shutil.copy2(src/name,out/name)
+          good=[r for r in report['rows'] if r['status']=='IDENTITY_AND_IMAGE_VERIFIED_SOURCE_REVIEW_REQUIRED']
+          for r in good:
+            path=src/r['source_file'];b=path.read_bytes()
+            if hashlib.sha256(b).hexdigest()!=r['sha256']:raise ValueError('Output checksum mismatch')
+            dest=out/'previews'/r['set_code']/(r['collector_number']+'.jpg');dest.parent.mkdir(parents=True,exist_ok=True)
+            with Image.open(path) as im:
+              im.load();im=im.convert('RGBA');bg=Image.new('RGBA',im.size,'white');bg.alpha_composite(im);im=bg.convert('RGB');im.thumbnail((360,510),Image.Resampling.LANCZOS);im.save(dest,quality=87)
+          for code in ('SV4a','SV2a'):
+            rows=[r for r in good if r['set_code']==code]
+            for start in range(0,len(rows),20):
+              batch=rows[start:start+20];sheet=Image.new('RGB',(1200,1800),'white');draw=ImageDraw.Draw(sheet)
+              for idx,r in enumerate(batch):
+                with Image.open(out/'previews'/code/(r['collector_number']+'.jpg')) as im:
+                  im.thumbnail((224,330),Image.Resampling.LANCZOS);x=(idx%5)*240;y=(idx//5)*450;sheet.paste(im,(x+(240-im.width)//2,y+38));draw.text((x+12,y+12),code+' / '+r['collector_number'],fill='black')
+              sheet.save(out/(code+'-contact-'+str(start//20+1)+'.jpg'),quality=90)
+          unresolved=[r for r in report['rows'] if r not in good]
+          summary={k:v for k,v in report.items() if k not in ('rows','page_parse_failures')}
+          summary['unresolved_details']=[{k:r.get(k) for k in ('set_code','collector_number','status','error','candidate_count')} for r in unresolved]
+          (out/'summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2))
+          (out/'README.md').write_text('# Traditional Chinese remaining 365: source evidence review\n\nThis is a read-only source-validation package. No production images, database identities, source permissions or pricing were changed. Source permission review for the official Taiwan site is still required. Images in previews/ are reduced review copies, not production originals or exact-foil certifications. Full-size originals are preserved in the separate full-source-evidence workflow artifact.\n\n'+json.dumps(summary,ensure_ascii=False,indent=2)+'\n')
+          print('FINAL_RECONCILIATION '+json.dumps(summary,ensure_ascii=False),flush=True)
+          PY
+      - name: Preserve compact review results and previews
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: tw-remaining365-reconciled-${{ github.run_id }}
+          name: tw-remaining365-review-${{ github.run_id }}
+          path: review-evidence
+          retention-days: 14
+          if-no-files-found: error
+      - name: Preserve full original source evidence separately
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw-remaining365-full-originals-${{ github.run_id }}
           path: reconciled-evidence
           retention-days: 7
-          if-no-files-found: error
+          if-no-files-found: warn
+          compression-level: 0
