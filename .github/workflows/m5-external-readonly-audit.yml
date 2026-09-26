@@ -1,0 +1,233 @@
+name: M5 external artwork read-only verification
+
+on:
+  push:
+    branches: [audit/m5-external-checks-20260926]
+    paths: [.github/workflows/m5-external-readonly-audit.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m5-external-readonly-audit
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install pinned image decoder in isolated environment
+        run: |
+          python3 -m venv /tmp/m5-audit-venv
+          /tmp/m5-audit-venv/bin/python -m pip install --disable-pip-version-check --no-deps 'Pillow==12.3.0'
+      - name: Verify exact manifest with no production credentials or writes
+        shell: bash
+        run: |
+          /tmp/m5-audit-venv/bin/python - <<'PY'
+          import concurrent.futures, hashlib, html, io, json, os, re, unicodedata, warnings
+          from collections import Counter, defaultdict
+          from datetime import datetime, timezone
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.request import Request, HTTPRedirectHandler, build_opener
+          from urllib.parse import urlsplit
+          from PIL import Image
+
+          # Exact read-only export of the 70 approved M5 external references, 2026-09-26.
+          # URLs are reconstructed only from the literal filenames returned by the database.
+          # There are no credentials, database clients, status changes, or acquisition writes.
+          MANIFEST = '''001|normal|トロピウス|050220_P_TOROPIUSU.jpg
+          002|normal|アゴジムシ|050221_P_AGOJIMUSHI.jpg
+          003|normal|カリキリ|050222_P_KARIKIRI.jpg
+          005|normal|チャデス|050224_P_CHIXYADESU.jpg
+          006|normal|ヤバソチャ|050225_P_YABASOCHIXYA.jpg
+          007|normal|ヒードラン|050226_P_HIDORAN.jpg
+          008|normal|ヤクデ|050227_P_YAKUDE.jpg
+          009|normal|マルヤクデ|050228_P_MARUYAKUDE.jpg
+          010|normal|カルボウ|10.webp
+          011|holo|グレンアルマ|11.webp
+          012|normal|トサキント|050231_P_TOSAKINTO.jpg
+          013|normal|アズマオウ|050232_P_AZUMAOU.jpg
+          014|normal|ホエルコ|050233_P_HOERUKO.jpg
+          016|normal|ジーランス|050235_P_JIRANSU.jpg
+          017|normal|アシマリ|050236_P_ASHIMARI.jpg
+          018|normal|オシャマリ|050237_P_OSHIXYAMARI.jpg
+          020|normal|ナミイルカ|050239_P_NAMIIRUKA.jpg
+          021|normal|イルカマン|050240_P_IRUKAMAN.jpg
+          022|normal|ラクライ|050241_P_RAKURAI.jpg
+          023|normal|ライボルト|050242_P_RAIBORUTO.jpg
+          024|normal|デンヂムシ|24.webp
+          025|normal|クワガノン|050244_P_KUWAGANON.jpg
+          027|normal|ミライドン|050246_P_MIRAIDON.jpg
+          028|normal|ヤドン|050247_P_YADON.jpg
+          029|normal|ヤドラン|050248_P_YADORAN.jpg
+          030|normal|ルージュラ|050249_P_RUJIXYURA.jpg
+          031|normal|カゲボウズ|050250_P_KAGEBOUZU.jpg
+          032|normal|ジュペッタ|050251_P_JIXYUPETTA.jpg
+          034|normal|ヒトモシ|050253_P_HITOMOSHI.jpg
+          035|normal|ランプラー|050254_P_RANPURA.jpg
+          037|normal|ダダリン|050256_P_DADARIN.jpg
+          038|normal|マーシャドー|050257_P_MASHIXYADO.jpg
+          039|normal|コノヨザル|050258_P_KONOYOZARU.jpg
+          040|normal|マンキー|050259_P_MANKI.jpg
+          041|normal|オコリザル|050260_P_OKORIZARU.jpg
+          042|normal|ズガイドス|050261_P_ZUGAIDOSU.jpg
+          044|normal|モグリュー|050263_P_MOGURIXYU.jpg
+          045|normal|コライドン|050264_P_KORAIDON.jpg
+          047|normal|バルチャイ|050266_P_BARUCHIXYAI.jpg
+          048|normal|バルジーナ|050267_P_BARUJINA.jpg
+          049|normal|マーイーカ|050268_P_MAIKA.jpg
+          050|normal|カラマネロ|050269_P_KARAMANERO.jpg
+          051|normal|クスネ|050270_P_KUSUNE.jpg
+          052|normal|フォクスライ|050271_P_FUOKUSURAI.jpg
+          054|normal|ザルード|050273_P_ZARUDO.jpg
+          055|normal|オラチフ|050274_P_ORACHIFU.jpg
+          056|normal|マフィティフ|050275_P_MAFUITEIFU.jpg
+          058|normal|エアームド|050277_P_EAMUDO.jpg
+          059|normal|タテトプス|050278_P_TATETOPUSU.jpg
+          060|holo|トリデプス|60.webp
+          061|normal|ドーミラー|61.webp
+          062|normal|ドータクン|050281_P_DOTAKUN.jpg
+          064|normal|ツツケラ|050283_P_TSUTSUKERA.jpg
+          065|normal|ケララッパ|050284_P_KERARAPPA.jpg
+          066|normal|ドデカバシ|050285_P_DODEKABASHI.jpg
+          067|normal|タイプ：ヌル|050286_P_TAIPUNURU.jpg
+          069|normal|オトシドリ|69.webp
+          070|normal|ダークベル|050289_T_DAKUBERU.jpg
+          071|normal|古びたずがいの化石|71.webp
+          072|normal|古びたたての化石|72.webp
+          073|normal|ごうかいボム|050292_T_GOUKAIBOMU.jpg
+          074|normal|リトライバッジ|050293_T_RITORAIBAJJI.jpg
+          075|normal|カスミの元気|050294_T_KASUMINOGENKI.jpg
+          076|normal|グラジオの決戦|050295_T_GURAJIONOKESSEN.jpg
+          077|normal|サビ組のしたっぱ|050296_T_SABIGUMINOSHITAPPA.jpg
+          078|normal|ムク|050297_T_MUKU.jpg
+          079|normal|化石採掘場|050298_T_KASEKISAIKUTSUJIXYOU.jpg
+          083|holo|グレンアルマ|83.webp
+          091|holo|トリデプス|91.webp
+          107|holo|ブレイブバングル|107.webp'''
+          allowed = {'www.pokemon-card.com', 'pokemoncardimages.pokedata.io'}
+          output = Path('m5-audit-evidence')
+          output.mkdir(exist_ok=True)
+          (output / 'images').mkdir(exist_ok=True)
+          Image.MAX_IMAGE_PIXELS = 8000000
+          warnings.simplefilter('error', Image.DecompressionBombWarning)
+
+          def allowed_url(url):
+              parts = urlsplit(url)
+              if parts.scheme != 'https' or parts.hostname not in allowed or parts.username or parts.password or parts.port not in (None, 443):
+                  raise ValueError('URL outside fixed audit allowlist')
+              return url
+
+          class SafeRedirect(HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  allowed_url(newurl)
+                  return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+          def fetch(url, limit):
+              allowed_url(url)
+              request = Request(url, headers={'User-Agent': 'StackrArtworkVerifier/1.0', 'Cache-Control': 'no-cache'})
+              with build_opener(SafeRedirect()).open(request, timeout=12) as response:
+                  if response.status != 200:
+                      raise ValueError('Unexpected HTTP status ' + str(response.status))
+                  data = response.read(limit + 1)
+                  if len(data) > limit:
+                      raise ValueError('Response exceeds audit byte limit')
+                  return data, response.headers.get_content_type(), response.geturl()
+
+          class VisibleText(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.parts = []
+                  self.skip = 0
+              def handle_starttag(self, tag, attrs):
+                  if tag in ('script', 'style'):
+                      self.skip += 1
+              def handle_endtag(self, tag):
+                  if tag in ('script', 'style') and self.skip:
+                      self.skip -= 1
+              def handle_data(self, data):
+                  if not self.skip:
+                      self.parts.append(data)
+
+          def normalize(text):
+              return unicodedata.normalize('NFKC', html.unescape(text))
+
+          entries = []
+          for line in MANIFEST.strip().splitlines():
+              number, variant, native_name, filename = line.strip().split('|')
+              prefix = 'https://www.pokemon-card.com/assets/images/card_images/large/M5/' if filename.endswith('.jpg') else 'https://pokemoncardimages.pokedata.io/images/Abyss+Eve/'
+              entries.append(dict(collector_number=number, variant_code=variant, native_name=native_name, url=prefix + filename))
+          assert len(entries) == 70 and len({x['collector_number'] for x in entries}) == 70
+          assert sum(x['url'].endswith('.jpg') for x in entries) == 59
+          (output / 'manifest.json').write_text(json.dumps(entries, ensure_ascii=False, indent=2), encoding='utf-8')
+
+          def verify(entry):
+              result = dict(entry, checked_at=datetime.now(timezone.utc).isoformat(), image_verified=False, official_identity_matched=False, status='unverified')
+              try:
+                  data, mime, final_url = fetch(entry['url'], 4 * 1024 * 1024)
+                  if mime not in ('image/jpeg', 'image/png', 'image/webp'):
+                      raise ValueError('Response is not an accepted image MIME type: ' + mime)
+                  with Image.open(io.BytesIO(data)) as image:
+                      width, height = image.size
+                      image_format = image.format
+                      if image_format not in ('JPEG', 'PNG', 'WEBP') or width < 128 or height < 180 or not 0.5 < width / height < 0.9:
+                          raise ValueError('Unexpected image format, dimensions, or aspect ratio')
+                      image.verify()
+                  with Image.open(io.BytesIO(data)) as image:
+                      image.load()
+                      if len(set(image.convert('RGB').resize((16, 16)).getdata())) < 8:
+                          raise ValueError('Image is blank or near-uniform')
+                  suffix = {'JPEG': '.jpg', 'PNG': '.png', 'WEBP': '.webp'}[image_format]
+                  (output / 'images' / (entry['collector_number'] + suffix)).write_bytes(data)
+                  result.update(image_verified=True, http_status=200, mime_type=mime, final_url=final_url, width=width, height=height, byte_size=len(data), sha256=hashlib.sha256(data).hexdigest(), status='image_verified_identity_pending')
+                  if urlsplit(entry['url']).hostname == 'www.pokemon-card.com':
+                      try:
+                          filename = entry['url'].rsplit('/', 1)[-1]
+                          card_id = int(filename.split('_', 1)[0])
+                          page_url = 'https://www.pokemon-card.com/card-search/details.php/card/' + str(card_id)
+                          page_bytes, page_mime, page_final = fetch(page_url, 2 * 1024 * 1024)
+                          raw = page_bytes.decode('utf-8')
+                          parser = VisibleText()
+                          parser.feed(raw)
+                          text = normalize(' '.join(parser.parts))
+                          number_pattern = r'(?<!\d)0*' + str(int(entry['collector_number'])) + r'\s*/\s*\d+'
+                          matches = dict(exact_image=filename in raw, native_name=normalize(entry['native_name']) in text, collector_number=bool(re.search(number_pattern, text)), set_code='M5' in raw)
+                          result.update(identity_page=page_url, identity_checks=matches, official_identity_matched=all(matches.values()))
+                          if all(matches.values()):
+                              result['status'] = 'image_and_official_identity_verified'
+                      except Exception as exc:
+                          result['identity_error'] = type(exc).__name__ + ': ' + str(exc)[:240]
+              except Exception as exc:
+                  result.update(status='fetch_or_decode_failed', error=type(exc).__name__ + ': ' + str(exc)[:240])
+              return result
+
+          results = []
+          with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+              for result in pool.map(verify, entries):
+                  results.append(result)
+                  print('M5_RESULT ' + json.dumps(result, ensure_ascii=False), flush=True)
+          hashes = defaultdict(list)
+          for result in results:
+              if result.get('sha256'):
+                  hashes[result['sha256']].append(result['collector_number'])
+          duplicate_hashes = {key: nums for key, nums in hashes.items() if len(nums) > 1}
+          for result in results:
+              if result.get('sha256') in duplicate_hashes:
+                  result.update(status='duplicate_image_identity_review', official_identity_matched=False, duplicate_numbers=duplicate_hashes[result['sha256']])
+          report = dict(created_at=datetime.now(timezone.utc).isoformat(), scope='70 exact Japanese M5 external reference URLs', production_writes=0, database_credentials_used=False, counts=dict(Counter(x['status'] for x in results)), duplicate_image_hashes=duplicate_hashes, rows=results)
+          (output / 'verification.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
+          print('M5_SUMMARY ' + json.dumps({k: v for k, v in report.items() if k != 'rows'}, ensure_ascii=False), flush=True)
+          if os.environ.get('GITHUB_STEP_SUMMARY'):
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+                  summary.write('# M5 external image verification\n\nRead-only: no production or database writes.\n\n' + json.dumps(report['counts'], indent=2) + '\n\nImage reachability is separate from exact printing/finish validation.\n')
+          PY
+      - name: Preserve verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: m5-external-readonly-${{ github.run_id }}
+          path: m5-audit-evidence
+          retention-days: 7
+          if-no-files-found: warn
