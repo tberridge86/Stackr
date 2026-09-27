@@ -84,10 +84,23 @@ export function validatePublicSources(rows, manifest) {
   check(manifest.length === rows.length, 'Current canonical public manifest is incomplete');
   for (const r of rows) {
     const hits = manifest.filter(a => a.asset_id === r.source_asset_id && a.printing_id === r.canonical_printing_id);
-    check(hits.length === 1 && hits[0].content_sha256 === r.sha256 && isDeepStrictEqual(hits[0].derivative_list, r.derivative_list), 'Current public source changed or was withdrawn');
+    check(hits.length === 1 && hits[0].set_id === SOURCE_SET && hits[0].content_sha256 === r.sha256 && isDeepStrictEqual(hits[0].derivative_list, r.derivative_list), 'Current public source changed or was withdrawn');
   }
 }
 const CARDS = "select game_code,language_code,set_id,set_code,printing_id,collector_number,card_english_display_name,variant_id,variant_code,finish_code,catalogue_version_id from api.catalogue_cards where set_id=any($1::uuid[]) and language_code='en' limit 500";
+const MANIFEST = "select asset_id,set_id,printing_id,content_sha256,storage_key,derivative_list from api.asset_manifest where asset_row_id=any($1::uuid[]) and catalogue_version_id=$2 and asset_type='card_image'";
+export async function targetManifest(db, rows, cards) {
+  const printingIds = rows.map(r => r.duplicate_printing_id);
+  const variantIds = cards.filter(c => c.set_id === TARGET_SET).map(c => c.variant_id);
+  // Resolve every possible direct/inherited target binding using base-table IDs,
+  // then push a bounded primary-key filter into the public view.
+  const candidates = (await db.query(`select asset_id as id from catalog.catalogue_version_assets
+    where catalogue_version_id=$1 and (set_id=$2 or printing_id=any($3::uuid[]) or variant_id=any($4::uuid[]))
+    union select id from catalog.assets where set_id=$2 or printing_id=any($3::uuid[]) or variant_id=any($4::uuid[])`,
+  [VERSION, TARGET_SET, printingIds, variantIds])).rows.map(r => r.id);
+  if (!candidates.length) return [];
+  return (await db.query(MANIFEST, [candidates, VERSION])).rows.filter(a => a.set_id === TARGET_SET || printingIds.includes(a.printing_id));
+}
 async function readState(db, rows, fronts) {
   const cards = (await db.query(CARDS, [[SOURCE_SET, TARGET_SET]])).rows.sort((a,b) => a.variant_id.localeCompare(b.variant_id));
   check(cards.length === 314, 'Catalogue population drift');
@@ -98,11 +111,11 @@ async function readState(db, rows, fronts) {
   const source = (await db.query('select id,code,licence_status,active from ingest.sources where id=$1', sourceIds)).rows[0];
   check(source?.code === 'tcgdex' && source.active === true && source.licence_status === 'approved', 'Existing source is not eligible');
   for (const r of rows) validatePair(r, cards, sources.find(s => s.asset_id === r.source_asset_id), fronts.find(f => f.localId === String(r.collector_number).padStart(3, '0')));
-  validatePublicSources(rows, (await db.query("select asset_id,printing_id,content_sha256,derivative_list from api.asset_manifest where set_id=$1 and catalogue_version_id=$2 and asset_type='card_image'", [SOURCE_SET, VERSION])).rows);
-  const published = (await db.query("select asset_id,printing_id,content_sha256,storage_key,derivative_list from api.asset_manifest where set_id=$1 and asset_type='card_image'", [TARGET_SET])).rows;
+  validatePublicSources(rows, (await db.query(MANIFEST, [sources.map(s => s.id), VERSION])).rows);
+  const published = await targetManifest(db, rows, cards);
   for (const a of published) {
     const r = rows.find(r => r.duplicate_printing_id === a.printing_id);
-    check(r && a.asset_id === `${PREFIX}${r.duplicate_printing_id}:${r.sha256}` && a.content_sha256 === r.sha256 && a.storage_key === copyKey(r) && isDeepStrictEqual(a.derivative_list, r.derivative_list), 'Existing target artwork conflict');
+    check(r && a.set_id === TARGET_SET && a.asset_id === `${PREFIX}${r.duplicate_printing_id}:${r.sha256}` && a.content_sha256 === r.sha256 && a.storage_key === copyKey(r) && isDeepStrictEqual(a.derivative_list, r.derivative_list), 'Existing target artwork conflict');
   }
   return { cards, sources, source };
 }
@@ -191,11 +204,11 @@ async function insertLinks(db, rows, state, journal) {
     const linked = await db.query("insert into catalog.catalogue_version_assets(catalogue_version_id,language_code,set_id,printing_id,variant_id,asset_id,asset_type) values($1,'en',$2,$3,null,$4,'card_image') on conflict do nothing returning asset_id", [VERSION, TARGET_SET, r.duplicate_printing_id, stored[0].id]);
     if (linked.rows.length) journal.links_created.push(stored[0].id);
   }
-  const result = (await db.query("select asset_id,printing_id,content_sha256,storage_key,derivative_list from api.asset_manifest where set_id=$1 and asset_type='card_image'", [TARGET_SET])).rows;
+  const result = await targetManifest(db, rows, state.cards);
   check(result.length === 120 && new Set(result.map(r => r.printing_id)).size === 120, 'Target manifest is incomplete');
   for (const r of rows) {
     const hits = result.filter(a => a.printing_id === r.duplicate_printing_id);
-    check(hits.length === 1 && hits[0].asset_id === `${PREFIX}${r.duplicate_printing_id}:${r.sha256}` && hits[0].content_sha256 === r.sha256 && hits[0].storage_key === copyKey(r) && isDeepStrictEqual(hits[0].derivative_list, r.derivative_list), 'Target manifest identity changed');
+    check(hits.length === 1 && hits[0].set_id === TARGET_SET && hits[0].asset_id === `${PREFIX}${r.duplicate_printing_id}:${r.sha256}` && hits[0].content_sha256 === r.sha256 && hits[0].storage_key === copyKey(r) && isDeepStrictEqual(hits[0].derivative_list, r.derivative_list), 'Target manifest identity changed');
   }
 }
 async function main() {
@@ -236,6 +249,12 @@ async function main() {
     db = createVerifiedSupabasePostgresClient(process.env.SUPABASE_DB_URL, 'stackr-pbl-relink', { connectionTimeoutMillis: 15000 });
     await db.connect(); connected = true; await db.query('begin read only'); await db.query("set local statement_timeout='45s'");
     const before = await readState(db, rows, fronts); await db.query('rollback');
+    // Prove the production schema accepts the exact new bindings before copies
+    // are created; staging and production can have different object constraints.
+    await db.query('begin isolation level serializable'); await db.query("set local statement_timeout='45s'"); await db.query("set local lock_timeout='5s'");
+    await insertLinks(db, rows, before, { assets_created: [], links_created: [] }); await db.query('rollback');
+    journal.production_rehearsal = { status: 'passed_and_rolled_back', tested_assets: 120, tested_links: 120 }; await save();
+    console.log(JSON.stringify({ phase: 'production_metadata_rehearsal_passed_and_rolled_back' }));
     journal.public_files_verified = await verifyFiles(rows, before.sources, sharp); await save();
     await copyOriginals(rows, before.sources, db, sharp, require, journal, save);
     console.log(JSON.stringify({ phase: 'original_copies_verified', count: 120 }));
@@ -248,8 +267,8 @@ async function main() {
     journal.published_at = new Date().toISOString(); journal.status = 'published'; await save();
     // Re-read the current public manifest outside the publishing transaction.
     const finalState = await readState(db, rows, fronts); check(isDeepStrictEqual(finalState.sources, locked.sources), 'Canonical source assets changed');
-    const count = (await db.query("select count(distinct printing_id)::int n from api.asset_manifest where set_id=$1 and asset_type='card_image' and asset_id like $2", [TARGET_SET, `${PREFIX}%`])).rows[0].n;
-    check(count === 120, 'Post-commit image coverage differs');
+    const finalManifest = await targetManifest(db, rows, finalState.cards);
+    check(finalManifest.length === 120 && new Set(finalManifest.map(a => a.printing_id)).size === 120 && finalManifest.every(a => a.asset_id.startsWith(PREFIX)), 'Post-commit image coverage differs');
     journal.public_files_reverified = await verifyFiles(rows, locked.sources, sharp, true);
     journal.status = 'published_120_duplicate_fronts_verified'; journal.verified_at = new Date().toISOString(); await save(); console.log(JSON.stringify(journal));
   } catch (error) {

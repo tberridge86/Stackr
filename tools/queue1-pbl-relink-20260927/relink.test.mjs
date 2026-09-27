@@ -2,7 +2,7 @@ import test from 'node:test';
 import { Buffer } from 'node:buffer';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { assertConfig, validateCohort, validatePair, validatePublicSources, relinkPayload, samePayload, copyKey, copyObjects, SOURCE_SET, TARGET_SET, VERSION, PREFIX } from './relink.mjs';
+import { assertConfig, validateCohort, validatePair, validatePublicSources, relinkPayload, samePayload, copyKey, copyObjects, targetManifest, SOURCE_SET, TARGET_SET, VERSION, PREFIX } from './relink.mjs';
 const rows=validateCohort(readFileSync(new URL('./cohort.json',import.meta.url)));
 const row=rows[0];
 function fixture(){
@@ -36,8 +36,27 @@ test('retries accept the exact payload but reject storage or provenance changes'
   const {source}=fixture();const a=relinkPayload(row,source);assert.equal(samePayload({...a,id:'another',byte_size:100},a),true);assert.equal(samePayload({...a,storage_key:'other'},a),false);assert.equal(samePayload({...a,recognition_reference_eligible:true},a),false);
 });
 test('withdrawn, replaced or rebound public sources cannot be resurrected',()=>{
-  const m={asset_id:row.source_asset_id,printing_id:row.canonical_printing_id,content_sha256:row.sha256,derivative_list:row.derivative_list};
+  const m={asset_id:row.source_asset_id,set_id:SOURCE_SET,printing_id:row.canonical_printing_id,content_sha256:row.sha256,derivative_list:row.derivative_list};
   validatePublicSources([row],[m]);assert.throws(()=>validatePublicSources([row],[]));assert.throws(()=>validatePublicSources([row],[{...m,printing_id:row.duplicate_printing_id}]));assert.throws(()=>validatePublicSources([row],[{...m,content_sha256:'0'.repeat(64)}]));
+  assert.throws(()=>validatePublicSources([row],[{...m,set_id:TARGET_SET}]));
+});
+
+test('empty target bindings do not scan the public manifest',async()=>{
+  let calls=0;const db={query:async()=>{calls++;return {rows:[]};}};
+  assert.deepEqual(await targetManifest(db,[row],fixture().cards),[]);assert.equal(calls,1);
+});
+
+test('bounded public read retains conflicting target bindings and excludes unrelated overrides',async()=>{
+  const {cards}=fixture();let calls=0;
+  const target={set_id:TARGET_SET,printing_id:row.duplicate_printing_id,asset_id:'conflicting-artwork'};
+  const wrongSet={set_id:SOURCE_SET,printing_id:row.duplicate_printing_id,asset_id:'wrong-set'};
+  const db={query:async(sql,params)=>{
+    calls++;
+    if(calls===1){assert.deepEqual(params,[VERSION,TARGET_SET,[row.duplicate_printing_id],['target']]);return {rows:[{id:'candidate'}]};}
+    assert.match(sql,/asset_row_id=any/);assert.deepEqual(params,[['candidate'],VERSION]);
+    return {rows:[target,wrongSet,{set_id:SOURCE_SET,printing_id:row.canonical_printing_id,asset_id:'unrelated'}]};
+  }};
+  assert.deepEqual(await targetManifest(db,[row],cards),[target,wrongSet]);
 });
 test('execution forbids alternate refs, targets and URL overrides',()=>{
   const env={GITHUB_REF:'refs/heads/main',GITHUB_SHA:'a'.repeat(40),STACKR_EXPECTED_MAIN_SHA:'a'.repeat(40),STACKR_PBL_CONFIRMATION:'RELINK PBL',SUPABASE_STAGING_DB_URL:'postgres://postgres@db.lmwfhvexfcoyeuoyrlco.supabase.co/postgres',SUPABASE_DB_URL:'postgres://postgres@db.oakdbbzdqwurpjnoqhmu.supabase.co/postgres'};
