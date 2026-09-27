@@ -122,7 +122,8 @@ export function validateManifest(rows, found, complete=false) {
   if(complete)check(found.length===201 && new Set(found.map(a=>a.printing_id)).size===201,'Incomplete public manifest');
   for(const a of found) {
     const r=rows.find(r=>r.printing_id===a.printing_id);
-    check(r && a.set_id===r.set_id && a.catalogue_version_id===r.catalogue_version_id && a.language_code===r.language_code && a.variant_id===null && a.asset_id===`${PREFIX}${r.printing_id}:${r.image_sha256}` && a.content_sha256===r.image_sha256,'Existing artwork conflict');
+    // api.asset_manifest carries language through its catalogue version, not a language_code column.
+    check(r && a.set_id===r.set_id && a.catalogue_version_id===r.catalogue_version_id && a.catalogue_version_id===VERSIONS[r.language_code] && a.variant_id===null && a.asset_id===`${PREFIX}${r.printing_id}:${r.image_sha256}` && a.content_sha256===r.image_sha256,'Existing artwork conflict');
   }
 }
 export async function writeMetadata(db, plans, receipt) {
