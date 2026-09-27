@@ -18,3 +18,4 @@
 /supabase/staging-migrations/overrides/*.sql text eol=lf
 
 tools/queue1-pbl-relink-20260927/cohort.json text eol=lf
+/tools/mep89-publish-20260927/cohort.json text eol=lf

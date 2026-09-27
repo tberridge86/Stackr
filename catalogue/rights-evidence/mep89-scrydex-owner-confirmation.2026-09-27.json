@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "stackr-owner-image-permission-attestation-v1",
+  "attestationId": "mep89-scrydex-owner-confirmation:2026-09-27",
+  "recordedAt": "2026-09-27T14:24:50.299935+00:00",
+  "approvingPerson": "Jack Berridge",
+  "recordBasis": "Explicit Scrydex confirmation in the existing Stackr artwork Codex conversation on 27 September 2026.",
+  "ownerStatement": "SCYDEX YES TOO.",
+  "interpretedScope": "Storing, resizing and displaying the 89 reviewed English MEP Scrydex images in Stackr; follows the explicit source-specific permission question.",
+  "decision": "Owner representation of existing permission for these exact originals and their search/grid/detail derivatives; not an independently issued rights-holder licence.",
+  "sourceCode": "scrydex",
+  "languageCode": "en",
+  "targetCount": 89,
+  "cohortSha256": "4a3f56695c97f2bed45f0ba30fc26e76a80c5a06c2976786b2b5b9afca4a967d",
+  "scope": {
+    "mep_numbered_001_through_088": 88,
+    "mep_unnumbered_museum_jumbo": 1
+  },
+  "capabilities": {
+    "store": true,
+    "resize": true,
+    "displayInStackr": true
+  },
+  "excluded": [
+    "Other cohorts and languages",
+    "Model training or embeddings",
+    "Artwork resale or bulk export",
+    "Global source activation"
+  ],
+  "sourceWideApproval": false,
+  "retainsAttribution": true
+}
