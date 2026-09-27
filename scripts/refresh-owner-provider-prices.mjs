@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { readOwnerPrintingCatalogue } from './lib/owner-price-printing-identities.mjs';
-import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant, scopedOwnedRowEligibility } from './lib/owner-price-saved-references.mjs';
+import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant, scopedOwnedRowEligibility, readSavedCardLanguages } from './lib/owner-price-saved-references.mjs';
 import { ownedValuationUnits } from './lib/prepared-collection-valuation.mjs';
 import { readGeneralPrintingCatalogue, resolveGeneralPriceIdentity } from './lib/general-price-identities.mjs';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
@@ -96,13 +96,13 @@ function needsUnambiguousLanguageContext(row) {
 
 function binderLanguageContext(row, binders, binderCards) {
   const pair = JSON.stringify([row?.set_id, row?.card_id]);
-  const byId = new Map((binders ?? []).map((binder) => [String(binder.id ?? ''), binder]));
+  const byId = new Map((binders ?? []).filter(binder => binder.type === 'official').map((binder) => [String(binder.id ?? ''), binder]));
   const ownedId = String(row?.id ?? '');
   const ids = new Set([
     ...(binderCards ?? []).filter((card) => card.owned && (String(card.owned_card_variant_id ?? '') === ownedId
       || (!card.owned_card_variant_id && JSON.stringify([card.set_id, card.card_id]) === pair))).map((card) => card.binder_id),
     ...(binders ?? []).filter((binder) => binder.type === 'official' && binder.source_set_id === row.set_id).map((binder) => binder.id),
-  ]);
+  ].filter(id => byId.has(String(id ?? ''))));
   if (!ids.size) return { state: 'absent', language: null };
   const values = [...ids].map((id) => String(byId.get(String(id ?? ''))?.language ?? '').trim().toLowerCase());
   if (values.some((value) => !value)) return { state: 'ambiguous', language: null };
@@ -173,7 +173,7 @@ export async function readOwnedRows(supabase, ownerId, includeGeneral = false, c
     const { data, error } = await supabase.schema('api').rpc('collection_valuation_inputs', { p_owner: ownerId });
     if (error) throw error;
     if (!data || !Array.isArray(data.ownedRows) || !Array.isArray(data.binders) || !Array.isArray(data.binderCards)) throw Error('Complete owner snapshot is unavailable.');
-    const units = ownedValuationUnits(data);
+    const units = await readSavedCardLanguages(supabase, ownedValuationUnits(data));
     if (units.length >= OWNED_SCAN_MAX_ROWS) throw Error('Complete owner snapshot reached its safe result bound.');
     return units.map(unit => {
       const finish = savedProviderVariantCode(unit);
@@ -254,7 +254,7 @@ async function resolveOwnedCandidates(supabase, ownedRows, includeGeneral = fals
     // General attribution happens only on the labelled read/valuation path.
     const supported = base && (['normal', 'standard', 'default', 'non_holo'].includes(base.variant_code)
       && ['normal', 'standard', 'default', 'non_holo'].includes(base.finish_code)
-      || base.language_code === 'en' && base.variant_code === 'holo' && base.finish_code === 'holo');
+      || ['en', 'ja'].includes(base.language_code) && base.variant_code === 'holo' && base.finish_code === 'holo');
     if (!supported) return exact;
     if (exact.ok) return general.priceVariantId === exact.variantId ? exact
       : { ...exact, generalVariantId: general.priceVariantId };

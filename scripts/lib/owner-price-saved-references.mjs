@@ -22,6 +22,48 @@ function scope(row) {
   return { card, set, valid, language: card.language ?? set.language };
 }
 
+/** Custom folders are language-neutral. Only a saved language/prefix or one
+ * published card identity can supply a missing per-card language. */
+export function withPublishedOwnedLanguage(row, identifierRows = [], catalogueRows = []) {
+  if (clean(row?.language)) return row;
+  const value = scope(row);
+  if (!value.valid) return row;
+  if (value.language) return { ...row, language: value.language };
+  const literal = identifierRows.filter(item => normalise(item.source_entity_type) === 'card'
+    && normalise(item.external_id) === normalise(value.card.raw));
+  const direct = catalogueRows.filter(item => [item.variant_id, item.printing_id].some(id => normalise(id) === normalise(value.card.raw)));
+  const candidates = literal.length ? literal : direct;
+  // Missing or contradictory language evidence cannot be repaired by a folder
+  // default, name, image URL or collector-number resemblance.
+  const languages = [...new Set(candidates.map(item => normalise(item.language_code)))];
+  return languages.length === 1 && LANGUAGES.has(languages[0]) ? { ...row, language: languages[0] } : row;
+}
+
+export function withSavedCardLanguage(row, cards = []) {
+  if (clean(row?.language) || scope(row).language || !scope(row).valid) return row;
+  const matches = cards.filter(card => clean(card.id) === clean(row.card_id)
+    && clean(card.set_id) === clean(row.set_id));
+  const languages = [...new Set(matches.map(card => normalise(card.language)))];
+  return languages.length === 1 && LANGUAGES.has(languages[0])
+    ? { ...row, language: languages[0], languageSource: 'saved_card_metadata' } : row;
+}
+
+/** Read the exact legacy card records already referenced by these holdings.
+ * This supplies language only; canonical printing/finish resolution stays in
+ * the existing resolver and no saved record or alias is rewritten. */
+export async function readSavedCardLanguages(supabase, rows) {
+  const ids = [...new Set(rows.filter(row => !clean(row.language) && !scope(row).language && scope(row).valid)
+    .map(row => clean(row.card_id)).filter(Boolean))];
+  const cards = [];
+  for (let offset = 0; offset < ids.length; offset += 100) {
+    const { data, error } = await supabase.from('pokemon_cards').select('id,set_id,language')
+      .in('id', ids.slice(offset, offset + 100));
+    if (error) throw error;
+    cards.push(...data ?? []);
+  }
+  return rows.map(row => withSavedCardLanguage(row, cards));
+}
+
 /** Apply conflict-free explicit language evidence before the saved-row gates. */
 export function scopedOwnedRowEligibility(row) {
   const value = scope(row);

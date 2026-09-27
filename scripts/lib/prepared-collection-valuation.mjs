@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant } from './owner-price-saved-references.mjs';
+import { ownerIdentityLookupRows, resolveScopedOwnedProviderVariant, withPublishedOwnedLanguage, readSavedCardLanguages } from './owner-price-saved-references.mjs';
 import { readGeneralPrintingCatalogue, resolveGeneralPriceIdentity } from './general-price-identities.mjs';
 import { generalPriceBaseCandidates, selectGeneralPriceBase, wrapGeneralEstimate } from '../../backend/lib/marketPricing/generalEstimate.js';
 
@@ -51,13 +51,16 @@ export function ownedValuationUnits({ ownedRows, binders, binderCards }) {
       condition: row.condition || unanimous('default_condition'),
       grade_company: row.grade_company || (modes.includes('graded') ? unanimous('default_grade_company') || 'unknown' : null),
       grade: row.grade || (modes.includes('graded') ? unanimous('default_grade') : null),
-      language: row.language || unanimous('language'), edition: row.edition || unanimous('edition'),
+      language: row.language || withPublishedOwnedLanguage(row).language
+        || (() => { const values = unique(matching.filter(b => b.type === 'official').map(b => b.language).filter(Boolean)); return values.length === 1 ? values[0] : null; })(),
+      edition: row.edition || unanimous('edition'),
       ambiguousDefaults: modes.length > 1 || unique(matching.map((b) => b.edition).filter(Boolean)).length > 1,
     };
   }).filter((row) => row.quantity > 0);
 }
 
 export function resolveValuationUnit(unit, identifiers, catalogue) {
+  unit = withPublishedOwnedLanguage(unit, identifiers, catalogue);
   if (unit.ambiguousDefaults) return { ok: false, reason: 'ambiguous_saved_identity' };
   if (unit.grade_company || unit.grade || !['near mint','near_mint','raw_near_mint','nm'].includes(token(unit.condition))) return { ok: false, reason: 'unsupported_scope' };
   const code = ['1st_edition','first_edition'].includes(unit.edition) ? 'first_edition' : variantCode(unit.variant);
@@ -212,7 +215,8 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
   const claim = await rpc('claim_collection_valuation', { p_owner: ownerId });
   if (!claim) return null;
   const catalogueRevision=await rpc('published_price_catalogue_revision',{});
-  const inputs = claim.inputs; const units = ownedValuationUnits(inputs);
+  const inputs = claim.inputs;
+  const units = await measured('saved_card_languages', () => readSavedCardLanguages(supabase, ownedValuationUnits(inputs)));
   const lookupUnits = [...units, ...inputs.binders.filter((b) => b.source_set_id).map((b) => ({set_id:b.source_set_id,card_id:'',language:b.language}))];
   const references = unique(lookupUnits.flatMap(ownerIdentityLookupRows).flatMap((u) => [u.card_id,u.set_id]).filter(Boolean));
   const identifiers = [];

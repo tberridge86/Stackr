@@ -7,6 +7,49 @@ import { mergeValuationTrend, valuationTrendEvidence, ownedValuationUnits, prepa
 import { createMarketPricingService } from '../backend/lib/marketPricing/service.js';
 import { summariseTcgdexExactVariantPricing } from '../backend/lib/tcgdex.js';
 import { ownerQueueRetryAfter, prepareStoredValuationIfEnabled } from './refresh-owner-provider-prices.mjs';
+import { withSavedCardLanguage, withPublishedOwnedLanguage, readSavedCardLanguages } from './lib/owner-price-saved-references.mjs';
+
+const mixedInputs = {
+  ownedRows: [
+    { id: 'ja-owned', set_id: 'ja:S12a', card_id: 'ja:S12a-012', quantity: 1, condition: 'Near Mint' },
+    { id: 'en-owned', set_id: 'sv4', card_id: 'sv4-204', quantity: 1, condition: 'Near Mint' },
+    { id: 'unknown-owned', set_id: 'unknown', card_id: 'unknown-1', quantity: 1, condition: 'Near Mint' },
+  ],
+  binders: [{ id: 'mixed', type: 'custom', language: 'en', card_mode: 'raw' }],
+  binderCards: ['ja-owned', 'en-owned', 'unknown-owned'].map(id => ({ owned_card_variant_id: id, binder_id: 'mixed', owned: true })),
+};
+const unchangedInputs = JSON.stringify(mixedInputs);
+const mixedUnits = ownedValuationUnits(mixedInputs);
+assert.equal(mixedUnits[0].language, 'ja', 'card prefix wins over custom-folder defaults');
+assert.equal(mixedUnits[1].language, null, 'a mixed folder cannot prove an unprefixed card language');
+const savedLanguageRows = [{ id: 'sv4-204', set_id: 'sv4', language: 'en' }];
+assert.equal(withSavedCardLanguage(mixedUnits[1], savedLanguageRows).language, 'en');
+assert.equal(withSavedCardLanguage(mixedUnits[1], [{ ...savedLanguageRows[0], set_id: 'wrong' }]).language, null);
+assert.equal(withSavedCardLanguage(mixedUnits[1], [...savedLanguageRows, { ...savedLanguageRows[0], language: 'ja' }]).language, null);
+assert.equal(withPublishedOwnedLanguage({ ...mixedUnits[1], language: 'ja' }, [{ source_entity_type: 'card', external_id: 'sv4-204', language_code: 'en' }]).language, 'ja', 'never overwrite a saved language');
+const restored = await readSavedCardLanguages({ from(name) {
+  assert.equal(name, 'pokemon_cards');
+  return { select: () => ({ in: async (key, ids) => { assert.equal(key, 'id'); assert(!ids.includes('ja:S12a-012')); return { data: savedLanguageRows }; } }) };
+} }, mixedUnits);
+assert.deepEqual(restored.map(u => u.language), ['ja', 'en', null]);
+assert.equal(JSON.stringify(mixedInputs), unchangedInputs, 'language reads cannot mutate holdings');
+await assert.rejects(readSavedCardLanguages({ from: () => ({ select: () => ({ in: async () => ({ error: new Error('metadata unavailable') }) }) }) }, mixedUnits), /metadata unavailable/);
+
+const jaHoloCard = { id: 'S12a-012', set: { id: 'S12a' }, localId: '012', language: 'ja',
+  variants: { holo: true, normal: false, reverse: false, firstEdition: false, wPromo: false },
+  pricing: { cardmarket: { unit: 'EUR', updated: '2026-09-27T09:52:36.626Z', trend: 1.37 } } };
+const jaHoloQuote = summariseTcgdexExactVariantPricing(jaHoloCard, 'ja', 'holo');
+assert.equal(jaHoloQuote.variantCode, 'holo');
+assert.equal(jaHoloQuote.finishEvidence, 'provider_single_holo_variant');
+assert.equal(jaHoloQuote.providerCardId, 'S12a-012');
+assert.equal(jaHoloQuote.priceSource, 'tcgdex_cardmarket');
+assert.equal(jaHoloQuote.raw, jaHoloCard, 'retain original evidence without rewriting variant flags');
+assert.equal(summariseTcgdexExactVariantPricing(jaHoloCard, 'ja', 'normal'), null);
+assert.equal(summariseTcgdexExactVariantPricing(jaHoloCard, 'zh-tw', 'holo'), null);
+for (const key of ['normal', 'reverse', 'firstEdition', 'wPromo', 'newFinish']) {
+  assert.equal(summariseTcgdexExactVariantPricing({ ...jaHoloCard, variants: { ...jaHoloCard.variants, [key]: true } }, 'ja', 'holo'), null);
+  assert.equal(summariseTcgdexExactVariantPricing({ ...jaHoloCard, variants: { ...jaHoloCard.variants, [key]: undefined } }, 'ja', 'holo'), null);
+}
 
 const providerCard={id:'sv01-1',set:{id:'sv01'},localId:'1',language:'en',variants:{normal:true,holo:true,reverse:true},
  pricing:{tcgplayer:{unit:'USD',updated:'2026-09-18T00:00:00Z',normal:{marketPrice:5},holofoil:{marketPrice:10},'reverse-holofoil':{marketPrice:15}}}};
@@ -128,6 +171,8 @@ await db.exec(`alter table public.user_card_variants add card_id text,add set_id
  alter table public.binder_cards add card_id text,add set_id text,add owned boolean,add owned_card_variant_id uuid;
  alter table api.catalogue_cards add set_code text,add collector_number text;
  create table api.catalogue_external_identifiers(source_entity_type text,external_id text,language_code text,set_id uuid,printing_id uuid,variant_id uuid);
+ create table public.pokemon_cards(id text primary key,set_id text,language text);
+ insert into public.pokemon_cards values(test_uuid('1')::text,test_uuid('set')::text,'ja');
  alter table public.market_price_snapshots add set_id text,add language text,add primary_source text,add tcgdex_price numeric,
    add snapshot_at timestamptz,add stale_after timestamptz,add price_type text;
  insert into public.user_card_variants(id,user_id,quantity,card_id,set_id,variant,condition)

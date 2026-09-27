@@ -683,6 +683,10 @@ export function summariseTcgdexNormalPricing(card, language = 'en') {
     : null;
   const cardmarketNormal = getCardmarketVariants(card?.pricing).find((entry) => entry.variant === 'standard');
   const preferred = lang === 'en' ? tcgplayerNormal ?? cardmarketNormal : cardmarketNormal;
+  return summariseTcgdexPriceEntry(card, lang, preferred);
+}
+
+function summariseTcgdexPriceEntry(card, lang, preferred) {
   if (!preferred) return null;
   const sourceCurrency = String(preferred.currency ?? '').toUpperCase();
   if (!['GBP', 'EUR', 'USD'].includes(sourceCurrency)) return null;
@@ -706,8 +710,23 @@ export function summariseTcgdexNormalPricing(card, language = 'en') {
   };
 }
 
+export function isUnambiguousJapaneseHolo(card, language) {
+  const variants = card?.variants;
+  return language === 'ja' && variants?.holo === true
+    && ['normal', 'reverse', 'firstEdition', 'wPromo'].every(key => variants[key] === false)
+    && Object.entries(variants).every(([key, value]) => key === 'holo' || value === false);
+}
+
 export function summariseTcgdexExactVariantPricing(card, language, variantCode = 'normal') {
   if (variantCode === 'normal') return summariseTcgdexNormalPricing(card, language);
+  // Japanese holo-only provider records have one physical finish. Their
+  // Cardmarket standard aggregate belongs to that exact holo, not a fabricated
+  // non-holo or an English counterpart. Missing/competing finishes fail closed.
+  if (variantCode === 'holo' && isUnambiguousJapaneseHolo(card, language)) {
+    const entry = getCardmarketVariants(card?.pricing).find(value => value.variant === 'standard');
+    const quote = summariseTcgdexPriceEntry(card, language, entry);
+    return quote ? { ...quote, variantCode, finishEvidence: 'provider_single_holo_variant' } : null;
+  }
   // Cardmarket's historical *-holo fields do not prove reverse-vs-holo.
   // Admit only an explicit TCGplayer finish on the exact English card.
   const keys = { holo: ['holofoil', 'holo'], reverse_holo: ['reverse-holofoil', 'reverseHolofoil', 'reverse_holofoil'] }[variantCode];

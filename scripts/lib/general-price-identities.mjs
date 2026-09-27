@@ -1,4 +1,4 @@
-import { ownerIdentityLookupRows } from './owner-price-saved-references.mjs';
+import { ownerIdentityLookupRows, withPublishedOwnedLanguage } from './owner-price-saved-references.mjs';
 import { legacyEnglishOwnerPair, verifiedLegacyEnglishMePair } from './owner-provider-price-refresh-core.mjs';
 import { generalPriceBaseCandidates, selectGeneralPriceBase } from '../../backend/lib/marketPricing/generalEstimate.js';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -74,6 +74,7 @@ function consolidateCatalogueRows(rows) {
  * not derive a printing from collector numbers, a sibling set, or a language.
  */
 export function resolveGeneralPriceIdentity(unit, identifiers, catalogue) {
+  unit = withPublishedOwnedLanguage(unit, identifiers, catalogue);
   const scope = scopedReferences(unit);
   if (!scope) return { ok: false, reason: 'general_identity_unproven' };
   const cardAliases = preferredAliases(identifiers ?? [], scope.card, 'card', scope.language);
