@@ -1,0 +1,42 @@
+name: Queue 1 English artwork review acquisition
+on:
+  push:
+    branches: ['agent/catalogue/queue1-acquisition-20260927']
+    paths: ['tools/queue1-20260927/**', '.github/workflows/queue1-artwork-review-20260927.yml']
+permissions:
+  contents: read
+concurrency:
+  group: queue1-review-acquisition-20260927
+  cancel-in-progress: false
+jobs:
+  acquire:
+    if: github.ref == 'refs/heads/agent/catalogue/queue1-acquisition-20260927'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Install only the pinned image decoder
+        run: python3 -m pip install 'Pillow==12.3.0'
+      - name: Test identity and acquisition guards
+        run: python3 -m unittest discover -s tools/queue1-20260927 -p 'test_*.py' -v
+      - name: Acquire exactly the first 348 review candidates
+        run: python3 tools/queue1-20260927/acquire.py --fetch --output queue1-review
+      - name: Publish acquisition receipt
+        if: always()
+        run: |
+          if [ -f queue1-review/summary.json ]; then
+            cat queue1-review/summary.json
+            printf '## Queue 1 review-only acquisition\n\n```json\n' >> "$GITHUB_STEP_SUMMARY"
+            cat queue1-review/summary.json >> "$GITHUB_STEP_SUMMARY"
+            printf '\n```\n\nNo database, storage, publication or deployment writes.\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: queue1-review-${{ github.run_id }}
+          path: queue1-review
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6

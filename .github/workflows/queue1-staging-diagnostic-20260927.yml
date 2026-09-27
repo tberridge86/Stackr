@@ -1,0 +1,18 @@
+name: Queue 1 staging rejection diagnostic
+on:
+  push:
+    branches: ['agent/catalogue/queue1-acquisition-20260927']
+    paths: ['.github/workflows/queue1-staging-diagnostic-20260927.yml']
+permissions:
+  contents: read
+  checks: read
+jobs:
+  read-rejection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Read annotations only; no staging credentials or writes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/tberridge86/Stackr/check-runs/108577336728/annotations --jq '.[] | {annotation_level, title, message, path}'

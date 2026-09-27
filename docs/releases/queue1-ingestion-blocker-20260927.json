@@ -1,0 +1,35 @@
+{
+  "observed_at_utc": "2026-09-27T07:52:23.340370+00:00",
+  "request": "Go to work mode and ingest the first round",
+  "status": "blocked_before_ingestion_by_environment_protection",
+  "pull_request": 220,
+  "attempted_run_id": 36304151170,
+  "attempted_revision": "d811bf59d598985103d86647e172d2a9dc05a678",
+  "diagnostic_run_id": 36304247499,
+  "diagnostic_job_id": 108577613996,
+  "exact_github_rejection": "Branch \"agent/catalogue/queue1-acquisition-20260927\" is not allowed to deploy to staging due to environment protection rules.",
+  "runner_import_steps_executed": 0,
+  "staging_project": "lmwfhvexfcoyeuoyrlco",
+  "queue1_private_assets": 0,
+  "review_bucket_exists": false,
+  "first_round": [
+    {"set_code":"sm3.5","printings":78,"linked_image_assets":0},
+    {"set_code":"sm7.5","printings":78,"linked_image_assets":0},
+    {"set_code":"swsh12.5gg","printings":70,"linked_image_assets":0},
+    {"set_code":"swsh4.5sv","printings":122,"linked_image_assets":0}
+  ],
+  "acquired_images_retained": 348,
+  "local_guard_tests_passed": 20,
+  "source_status": "under_review",
+  "source_status_changed": false,
+  "environment_protection_changed": false,
+  "direct_database_write_workaround_used": false,
+  "production_changes": 0,
+  "next_execution": "Complete normal protected review/integration of PR 220, then dispatch Queue 1 private staging ingestion from main with confirmation STAGE QUEUE1. Existing staging protection still applies. This is not auto-merge or auto-deployment.",
+  "publication_limit": "Source approval remains separate. A future successful private staging import must not be counted as public/app image delivery.",
+  "evidence": [
+    "https://github.com/tberridge86/Stackr/actions/runs/36304151170",
+    "https://github.com/tberridge86/Stackr/actions/runs/36304247499",
+    "https://github.com/tberridge86/Stackr/pull/220"
+  ]
+}

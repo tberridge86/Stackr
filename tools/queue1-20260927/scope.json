@@ -1,0 +1,50 @@
+[
+  {
+    "set_code": "sm3.5",
+    "set_name": "Shining Legends",
+    "set_id": "944a1f4e-a7cd-4ff1-a8ec-cc8f35d3c6d0",
+    "expected_count": 78,
+    "provider_dataset_id": "sm35",
+    "provider_git_blob_sha1": "3134b923b6ff3f9642b792c21a579319a79fe952",
+    "dataset_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/master/cards/en/sm35.json",
+    "identity_sha256": "2d5fa3cc07767aed9ef0aae635caa9be661d5a46d0ea2c13863a8f651c8c55bb",
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "set_code": "sm7.5",
+    "set_name": "Dragon Majesty",
+    "set_id": "702e4fd6-5396-43b5-a98f-a736e7dcd48c",
+    "expected_count": 78,
+    "provider_dataset_id": "sm75",
+    "provider_git_blob_sha1": "aea328fd17b49d6b4e84c6786c764301d3efa8e3",
+    "dataset_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/master/cards/en/sm75.json",
+    "identity_sha256": "94d131cd5c90e373f0946ec6dabfad209bd1464c3db340f5ad71d8ecd0e27b32",
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "set_code": "swsh4.5sv",
+    "set_name": "Shining Fates Shiny Vault",
+    "set_id": "3d504918-a4a4-4ec6-9ba5-f51d676832e5",
+    "expected_count": 122,
+    "provider_dataset_id": "swsh45sv",
+    "provider_git_blob_sha1": "2109b7363a8736dc66cbbaa739ca98df98be7dfe",
+    "dataset_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/master/cards/en/swsh45sv.json",
+    "identity_sha256": "e5a6b2b194c142a9206cbb4ec6006d053e79bafa0fdcd7c2f529b4e87bdec162",
+    "variant_code": "holo",
+    "finish_code": "holo"
+  },
+  {
+    "set_code": "swsh12.5gg",
+    "set_name": "Crown Zenith Galarian Gallery",
+    "set_id": "8bb033f3-6059-4f5f-a021-c363241092a1",
+    "expected_count": 70,
+    "provider_dataset_id": "swsh12pt5gg",
+    "provider_git_blob_sha1": "b3760db93bd9fb9f5e0f5e24a05c50b7058f5c63",
+    "dataset_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/master/cards/en/swsh12pt5gg.json",
+    "identity_sha256": "7c1ce572bc56c6f4f0e946999ca9c97512a0c129fb94ee32d64a477717879ee8",
+    "variant_code": "holo",
+    "finish_code": "holo"
+  }
+]

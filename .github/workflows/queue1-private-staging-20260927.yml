@@ -1,0 +1,107 @@
+name: Queue 1 private staging ingestion
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type STAGE QUEUE1 to privately ingest the fixed 348 acquired images
+        required: true
+        type: string
+  pull_request:
+    paths: ['tools/queue1-stage-20260927/**', '.github/workflows/queue1-private-staging-20260927.yml']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ${{ github.event_name == 'workflow_dispatch' && 'stackr-staging-database-maintenance' || format('queue1-validation-{0}', github.ref) }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Read fixed acquisition receipts without staging access
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api repos/tberridge86/Stackr/actions/artifacts/10926700303/zip > queue1-acquired.zip
+          echo 'b7a307717726c7b22cfeda5b3179dec5ec79f42c4bb9240aba8f56246d9b21b1  queue1-acquired.zip' | sha256sum -c -
+          mkdir -p queue1-source
+          python3 - <<'PY'
+          import zipfile,pathlib
+          with zipfile.ZipFile('queue1-acquired.zip') as z:
+              pathlib.Path('queue1-source/receipts.json').write_bytes(z.read('receipts.json'))
+          PY
+      - name: Test exact identities and private-ingestion restrictions
+        run: node --test tools/queue1-stage-20260927/stage.test.mjs
+      - name: Verify existing backend dependencies and import compatibility
+        run: |
+          npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
+          node --input-type=module -e "await import('./backend/lib/assetPipeline.js'); await import('./backend/lib/objectStorage.js'); console.log('Existing image and storage modules loaded');"
+  ingest:
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirmation == 'STAGE QUEUE1'
+    environment: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Retrieve already acquired artifact, not provider images
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api repos/tberridge86/Stackr/actions/artifacts/10926700303/zip > queue1-acquired.zip
+          echo 'b7a307717726c7b22cfeda5b3179dec5ec79f42c4bb9240aba8f56246d9b21b1  queue1-acquired.zip' | sha256sum -c -
+          python3 - <<'PY'
+          import zipfile, pathlib, stat
+          root=pathlib.Path('queue1-source').resolve()
+          with zipfile.ZipFile('queue1-acquired.zip') as z:
+              assert len(z.infolist()) < 1000
+              assert sum(i.file_size for i in z.infolist()) < 1024*1024*1024
+              for i in z.infolist():
+                  p=pathlib.Path(i.filename)
+                  assert not p.is_absolute() and '..' not in p.parts
+                  assert not stat.S_ISLNK(i.external_attr >> 16)
+                  assert (root/p).resolve().is_relative_to(root)
+              z.extractall(root)
+          PY
+      - name: Install existing locked backend image and storage dependencies
+        run: npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Ingest first 78 then remaining prepared sets into private staging
+        env:
+          SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+        run: node tools/queue1-stage-20260927/stage.mjs --execute --input=queue1-source --output=queue1-stage-result
+      - name: Record private staging result, not production completion
+        if: always()
+        shell: bash
+        run: |
+          if [ -f queue1-stage-result/summary.json ]; then
+            cat queue1-stage-result/summary.json
+            printf '## Queue 1 private staging ingestion\n\n```json\n' >> "$GITHUB_STEP_SUMMARY"
+            cat queue1-stage-result/summary.json >> "$GITHUB_STEP_SUMMARY"
+            printf '\n```\n\nPrivate storage only. Source approval flags remain unchanged. No public catalogue version, production or app release writes.\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -f queue1-stage-result/error.json ]; then cat queue1-stage-result/error.json; fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: queue1-private-staging-${{ github.run_id }}
+          path: queue1-stage-result
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
