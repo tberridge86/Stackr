@@ -18,18 +18,34 @@ test('complete general pass uses the valuation cohort and deduplicates legacy bi
   const owned={...saved,id:'saved',card_id:'sv1-133',set_id:'sv1',quantity:2};
   const placement={binder_id:'b',card_id:'sv1-134',set_id:'sv1',owned:true,owned_quantity:3};
   const snapshot={ownedRows:[owned],binders:[binder],binderCards:[placement,{...placement}]};
-  const supabase=database({ownerRows:[owned],languageContext:snapshot});
+  const supabase=database({ownerRows:[owned],languageContext:snapshot,
+    pokemonCards:[{id:'sv1-133',set_id:'sv1',language:'en'},{id:'sv1-134',set_id:'sv1',language:'ja'}]});
   const rows=await readOwnedRows(supabase,owner,true,true);
   assert.equal(rows.length,2);assert.equal(rows.reduce((n,row)=>n+row.quantity,0),5);
-  assert.equal(rows.find(row=>String(row.id).startsWith('legacy:')).language,'en');
+  assert.equal(rows.find(row=>String(row.id).startsWith('legacy:')).language,'ja', 'exact saved card language overrides a custom folder default');
   assert(supabase.rpcCalls.every(call=>call.args.p_owner===owner),'snapshot remains owner scoped');
   await assert.rejects(readOwnedRows(database({ownerRows:[owned],languageContext:{binders:[],binderCards:[]}}),owner,true,true),/snapshot is unavailable/);
 });
 
-function database({ ownerRows = null, identifiers = null, catalogue = null, languageContext = null, languageContextError = null } = {}) {
+test('complete mixed-folder pass selects an exact Japanese holo base without changing saved default finish', async () => {
+  const owned = { ...saved, id: 'ja-holo-owned', card_id: 'ja:S12a-005' };
+  const snapshot = { ownedRows: [owned], binders: [{ id: 'mixed', type: 'custom', language: 'en' }],
+    binderCards: [{ binder_id: 'mixed', owned_card_variant_id: owned.id, owned: true }] };
+  const before = JSON.stringify(snapshot);
+  const supabase = database({ ownerRows: [owned], languageContext: snapshot,
+    catalogue: [{ ...catalogueBase, variant_id: holoVariant, printing_id: printing, variant_code: 'holo', finish_code: 'holo' }] });
+  const result = await runOwnerProviderRefresh({ supabase, ownerId: owner, limit: 3, dryRun: true,
+    completeOwned: true, includeGeneral: true,
+    refreshExactProviderEstimate: async () => { throw Error('dry run cannot call provider'); } });
+  assert.deepEqual(result.selectedVariantIds, [holoVariant]);
+  assert.equal(JSON.stringify(snapshot), before);
+});
+
+function database({ ownerRows = null, identifiers = null, catalogue = null, languageContext = null, languageContextError = null, pokemonCards = [] } = {}) {
   const reads = [];
   const rpcCalls = [];
   const tables = {
+    'public.pokemon_cards': pokemonCards,
     'public.user_card_variants': ownerRows ?? [
       { ...saved, id: 'saved-normal', card_id: 'ja:S12a-146' },
       { ...saved, id: 'saved-holo', card_id: 'ja:S12a-005' },
@@ -106,7 +122,7 @@ test('actual owner worker resolves scoped saved IDs with filter-aware reads and 
   assert.equal(supabase.rpcCalls.length, 0, 'unrelated scoped identities do not read a private language snapshot');
 });
 
-test('active owner dry run carries only unanimous English binder context into the verified SV10 alias bridge', async () => {
+test('active owner dry run carries only unanimous English official-binder context into the verified SV10 alias bridge', async () => {
   const sv10Set = '77777777-7777-4777-8777-777777777777';
   const sv10Variants = ['88888888-8888-4888-8888-888888888881', '88888888-8888-4888-8888-888888888882', '88888888-8888-4888-8888-888888888883'];
   const owned = ['001', '002', '010'].map((collector, index) => ({
@@ -120,7 +136,7 @@ test('active owner dry run carries only unanimous English binder context into th
       { variant_id: `99999999-9999-4999-8999-99999999999${index}`, set_id: sv10Set, language_code: 'en', collector_number: collector, variant_code: 'reverse_holo', finish_code: 'reverse_holo' },
     ]),
     languageContext: {
-      binders: [{ id: 'binder-en', user_id: owner, type: 'custom', language: 'en' }],
+      binders: [{ id: 'binder-en', user_id: owner, type: 'official', language: 'en' }],
       binderCards: owned.map((row) => ({ id: `placement-${row.id}`, binder_id: 'binder-en', owned_card_variant_id: row.id, card_id: row.card_id, set_id: row.set_id, owned: true, owned_quantity: row.quantity })),
     },
   });
@@ -136,7 +152,7 @@ test('active owner dry run carries only unanimous English binder context into th
   assert.deepEqual(supabase.rpcCalls, [{ schema: 'api', name: 'collection_valuation_inputs', args: { p_owner: owner } }]);
 });
 
-test('active owner dry run refreshes only exact English holo and reverse-holo variants after binder language proof', async () => {
+test('active owner dry run refreshes only exact English holo and reverse-holo variants after official-binder language proof', async () => {
   const holo = 'abababab-abab-4bab-8bab-abababababab';
   const reverse = 'acacacac-acac-4cac-8cac-acacacacacac';
   const owned = [
@@ -152,7 +168,7 @@ test('active owner dry run refreshes only exact English holo and reverse-holo va
       { variant_id: normalVariant, printing_id: printing, set_id: setId, language_code: 'en', variant_code: 'normal', finish_code: 'normal' },
     ],
     languageContext: {
-      binders: [{ id: 'binder-en', user_id: owner, type: 'custom', language: 'en' }],
+      binders: [{ id: 'binder-en', user_id: owner, type: 'official', language: 'en' }],
       binderCards: owned.map((row) => ({
         id: `placement-${row.id}`, binder_id: 'binder-en', owned_card_variant_id: row.id,
         card_id: row.card_id, set_id: row.set_id, owned: true, owned_quantity: 1,
@@ -285,7 +301,7 @@ test('a projected ME catalogue row without its printing ID cannot resolve a phys
   assert.deepEqual(result.skipReasons, { unsupported_or_unpublished_variant: 1 });
 });
 
-test('ME finish inference fails closed for foreign, missing, or conflicting binder language evidence', async () => {
+test('ME finish inference fails closed for foreign, missing, or conflicting official-binder language evidence', async () => {
   const meSet = '8c8c8c8c-8c8c-4c8c-8c8c-8c8c8c8c8c8c';
   const mePrinting = '8d8d8d8d-8d8d-4d8d-8d8d-8d8d8d8d8d8d';
   const meReverse = '8e8e8e8e-8e8e-4e8e-8e8e-8e8e8e8e8e8e';
@@ -299,9 +315,9 @@ test('ME finish inference fails closed for foreign, missing, or conflicting bind
     catalogue: [{ variant_id: meReverse, printing_id: mePrinting, set_id: meSet, language_code: 'en', collector_number: '068', variant_code: 'reverse_holo', finish_code: 'reverse_holo' }],
   };
   const contexts = [
-    { label: 'foreign', binders: [{ id: 'binder-ja', user_id: owner, type: 'custom', language: 'ja' }], binderCards: [{ id: 'placement', binder_id: 'binder-ja', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }] },
-    { label: 'missing', binders: [{ id: 'binder-empty', user_id: owner, type: 'custom', language: '' }], binderCards: [{ id: 'placement', binder_id: 'binder-empty', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }] },
-    { label: 'conflicting', binders: [{ id: 'binder-en', user_id: owner, type: 'custom', language: 'en' }, { id: 'binder-ja', user_id: owner, type: 'custom', language: 'ja' }], binderCards: [{ id: 'placement-en', binder_id: 'binder-en', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }, { id: 'placement-ja', binder_id: 'binder-ja', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }] },
+    { label: 'foreign', binders: [{ id: 'binder-ja', user_id: owner, type: 'official', language: 'ja' }], binderCards: [{ id: 'placement', binder_id: 'binder-ja', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }] },
+    { label: 'missing', binders: [{ id: 'binder-empty', user_id: owner, type: 'official', language: '' }], binderCards: [{ id: 'placement', binder_id: 'binder-empty', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }] },
+    { label: 'conflicting', binders: [{ id: 'binder-en', user_id: owner, type: 'official', language: 'en' }, { id: 'binder-ja', user_id: owner, type: 'official', language: 'ja' }], binderCards: [{ id: 'placement-en', binder_id: 'binder-en', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }, { id: 'placement-ja', binder_id: 'binder-ja', owned_card_variant_id: owned.id, card_id: owned.card_id, set_id: owned.set_id, owned: true, owned_quantity: 1 }] },
   ];
   for (const { label, ...languageContext } of contexts) {
     const supabase = database({ ...base, languageContext });
