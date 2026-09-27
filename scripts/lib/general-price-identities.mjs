@@ -82,6 +82,7 @@ export function resolveGeneralPriceIdentity(unit, identifiers, catalogue) {
     && [token(scope.card.raw),token(scope.card.bare)].includes(token(row.external_id)));
   const literalSets = preferredAliases(identifiers ?? [], scope.set, 'set', scope.language);
   const hasLiteralSetAlias = (identifiers ?? []).some(row => row.source_entity_type === 'set'
+    && token(row.language_code) === scope.language
     && [token(scope.set.raw),token(scope.set.bare)].includes(token(row.external_id)));
   const legacyPair = scope.language === 'en' ? legacyEnglishOwnerPair({ ...unit,
     card_id: scope.card.bare, set_id: scope.set.bare, language: scope.language }) : null;
