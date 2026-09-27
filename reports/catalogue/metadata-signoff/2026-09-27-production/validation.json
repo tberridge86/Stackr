@@ -1,0 +1,137 @@
+{
+  "verifiedAt": "2026-09-27T06:37:45.879572+00:00",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "run": "ea50db41-86ff-5969-b534-61cf3bb155c8",
+  "status": "PASS",
+  "canonicalReferences": 639,
+  "operations": {
+    "sets unchanged": 132,
+    "sets updated": 333,
+    "sets inserted": 102,
+    "sealed_products inserted": 110
+  },
+  "all677EntityOperationsReadBack": true,
+  "allBeforeImagesEqualBackup": true,
+  "existingSetFieldsOutsideAllowlistUnchanged": true,
+  "sourcePayloadHashesPreserved": 655,
+  "sourceQuarantined": 1,
+  "openIntakeConflicts": 1,
+  "publishedSets": 696,
+  "newSetsPublished": 0,
+  "invariants": [
+    {
+      "tbl": "catalog.assets",
+      "rows": 64400,
+      "hash": "dde0ce802a95e0214237622a9b0bef9b"
+    },
+    {
+      "tbl": "catalog.card_printings",
+      "rows": 59246,
+      "hash": "a7537bac779bfac2e149f8ff23a69532"
+    },
+    {
+      "tbl": "catalog.catalogue_versions",
+      "rows": 12,
+      "hash": "2fce41908b76fb00c4f3a367009ded4f"
+    },
+    {
+      "tbl": "catalog.catalogue_version_sets",
+      "rows": 1261,
+      "hash": "48b9fc2d823bada986f5165fd2acff39"
+    }
+  ],
+  "representatives": [
+    {
+      "ref": "en-a0c246625f70",
+      "language": "en",
+      "name": "Base Set",
+      "canonicalId": "97e3aeb6-2645-4c3a-9fd4-10d95a181b6e",
+      "detailHttp": 200,
+      "listHttp": 200,
+      "metadataEqualsProduction": true,
+      "url": "https://api.stackrtcg.com/v1/sets/97e3aeb6-2645-4c3a-9fd4-10d95a181b6e",
+      "setCode": "base1",
+      "englishDisplayName": "Base Set",
+      "printedTotal": 102,
+      "total": 102
+    },
+    {
+      "ref": "ja-d722650df667",
+      "language": "ja",
+      "name": "Expansion Pack",
+      "canonicalId": "46c7cd20-9ca5-4128-a244-9a04f9a4c9f7",
+      "detailHttp": 200,
+      "listHttp": 200,
+      "metadataEqualsProduction": true,
+      "url": "https://api.stackrtcg.com/v1/sets/46c7cd20-9ca5-4128-a244-9a04f9a4c9f7",
+      "setCode": "PMCG1",
+      "englishDisplayName": "Expansion Pack",
+      "printedTotal": 102,
+      "total": 102
+    },
+    {
+      "ref": "zh-CN-cff2a96842bc",
+      "language": "zh-CN",
+      "name": "Storming Emergence: Abundant",
+      "canonicalId": "195b9d09-dd64-4e41-9b7d-0c9fb7f2062c",
+      "detailHttp": 200,
+      "listHttp": 200,
+      "metadataEqualsProduction": true,
+      "url": "https://api.stackrtcg.com/v1/sets/195b9d09-dd64-4e41-9b7d-0c9fb7f2062c",
+      "setCode": "csm1cc",
+      "englishDisplayName": "Storming Emergence: Abundant",
+      "printedTotal": 151,
+      "total": 212
+    },
+    {
+      "ref": "zh-TW-08c3dcbf7c89",
+      "language": "zh-TW",
+      "name": "Sword & Shield: Set A",
+      "canonicalId": "9ebab1ca-0ebf-429c-83ed-9fe6735f9832",
+      "detailHttp": 200,
+      "listHttp": 200,
+      "metadataEqualsProduction": true,
+      "url": "https://api.stackrtcg.com/v1/sets/9ebab1ca-0ebf-429c-83ed-9fe6735f9832",
+      "setCode": "SC1a",
+      "englishDisplayName": "Sword & Shield: Set A",
+      "printedTotal": 154,
+      "total": 187
+    }
+  ],
+  "pricingAndArtworkWrites": 0,
+  "schemaChanges": 0,
+  "cardRoutes": [
+    {
+      "language": "en",
+      "status": 200,
+      "url": "https://api.stackrtcg.com/v1/sets/97e3aeb6-2645-4c3a-9fd4-10d95a181b6e/cards?limit=1",
+      "dataKeys": [
+        "cards"
+      ]
+    },
+    {
+      "language": "ja",
+      "status": 200,
+      "url": "https://api.stackrtcg.com/v1/sets/46c7cd20-9ca5-4128-a244-9a04f9a4c9f7/cards?limit=1",
+      "dataKeys": [
+        "cards"
+      ]
+    },
+    {
+      "language": "zh-CN",
+      "status": 200,
+      "url": "https://api.stackrtcg.com/v1/sets/195b9d09-dd64-4e41-9b7d-0c9fb7f2062c/cards?limit=1",
+      "dataKeys": [
+        "cards"
+      ]
+    },
+    {
+      "language": "zh-TW",
+      "status": 200,
+      "url": "https://api.stackrtcg.com/v1/sets/9ebab1ca-0ebf-429c-83ed-9fe6735f9832/cards?limit=1",
+      "dataKeys": [
+        "cards"
+      ]
+    }
+  ]
+}

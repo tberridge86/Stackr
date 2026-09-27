@@ -1,0 +1,48 @@
+{
+  "run": "ea50db41-86ff-5969-b534-61cf3bb155c8",
+  "source": "a23954d2-49ca-4f2e-8cee-ed628e179006",
+  "intake": "e061242a-7aa6-5fff-8dfe-ae3840a06651",
+  "sha256": "add080a95d52e714e86fc4e6a43ec28892e647cabb79cd72412d9a6b2f353414",
+  "refs": {
+    "canonical": 639,
+    "quarantined": 1,
+    "source_only_not_a_set_or_sealed_product": 2
+  },
+  "operations": {
+    "sets unchanged": 132,
+    "sets updated": 333,
+    "sets inserted": 102,
+    "sealed_products inserted": 110
+  },
+  "fieldUpdates": {
+    "native_name": 70,
+    "english_display_name": 283,
+    "release_date": 63,
+    "printed_total": 12,
+    "total": 121
+  },
+  "newSetsArePublished": false,
+  "publicationPolicy": "preserve_existing_release_membership; new canonical metadata awaits normal coverage publication",
+  "ownerApproval": "YOU HAVE AUDITED - I HAVE TRUST THAT THIS IS CORRECT - PLEASE PUSH TO THE SUPABASE PRODUCTION DB",
+  "status": "completed_and_validated",
+  "validationAt": "2026-09-27T06:37:45.879572+00:00",
+  "entityOperations": 677,
+  "canonicalReferenceLinks": 639,
+  "sourceRecordsStored": 655,
+  "eventProgrammesSourceOnly": 2,
+  "unresolvedCoreRecords": 1,
+  "schemaMigration": "none; data-only transaction",
+  "archiveCommit": "recorded in git history and delivery report",
+  "files": {
+    "applied-promotion.sql": "8344823bbf7480ce9afd8f5aa3b0a95b97edfb8f0b0420850d292af2f039d6ee",
+    "canonical-reference-map.csv": "7041105686d9cfc1b0610367e362a39c26d3f454ab8fc1a3c7aa80d20a98414e",
+    "field-changes.csv": "51b52a7ee07defc8349273825f2f9bc45ab27a35094a3cce50cf9868a289170c",
+    "invariants-after.json": "7bd2b79bc5910a3002bceb7605bae752955082ee7498b4ec8c2a4f5a61ac6a6d",
+    "invariants-before.json": "7bd2b79bc5910a3002bceb7605bae752955082ee7498b4ec8c2a4f5a61ac6a6d",
+    "production-readback.json": "e14f0361d4fe32f51dae9bf4691897256d7c884507b20993509e9af8ab6185ae",
+    "production-sets-before.json": "098be2a00a749954c52ee1a062e486ddc1ecf9f7b55a791645d0f96d39368f80",
+    "promotion-plan.json": "f63c67a70953fad9837321292b8e376b2593551370cfabdeaec87a52d2f744d2",
+    "rollback.sql": "360707c7671ebf3a722e92958f029db7439c3fe2bdd6be1e54751d73552cd5fe",
+    "validation.json": "9d984367b085c31b0a277c767cd951a93fca5d591e5aefd4001d51d503791a94"
+  }
+}
