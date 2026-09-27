@@ -249,6 +249,12 @@ async function main() {
     db = createVerifiedSupabasePostgresClient(process.env.SUPABASE_DB_URL, 'stackr-pbl-relink', { connectionTimeoutMillis: 15000 });
     await db.connect(); connected = true; await db.query('begin read only'); await db.query("set local statement_timeout='45s'");
     const before = await readState(db, rows, fronts); await db.query('rollback');
+    // Prove the production schema accepts the exact new bindings before copies
+    // are created; staging and production can have different object constraints.
+    await db.query('begin isolation level serializable'); await db.query("set local statement_timeout='45s'"); await db.query("set local lock_timeout='5s'");
+    await insertLinks(db, rows, before, { assets_created: [], links_created: [] }); await db.query('rollback');
+    journal.production_rehearsal = { status: 'passed_and_rolled_back', tested_assets: 120, tested_links: 120 }; await save();
+    console.log(JSON.stringify({ phase: 'production_metadata_rehearsal_passed_and_rolled_back' }));
     journal.public_files_verified = await verifyFiles(rows, before.sources, sharp); await save();
     await copyOriginals(rows, before.sources, db, sharp, require, journal, save);
     console.log(JSON.stringify({ phase: 'original_copies_verified', count: 120 }));
