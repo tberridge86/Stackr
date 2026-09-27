@@ -115,3 +115,19 @@ server API. The existing separate serializable write transaction is unchanged.
 Post-publication manifest verification reads the same `api.asset_manifest` view
 through the database; it does not prove the external Stackr HTTP route or phone UI.
 No exposed-schema, grant, RLS or bucket-policy changes are required.
+
+Run [36314596818](https://github.com/tberridge86/Stackr/actions/runs/36314596818)
+at revision `042c91b9f0104461adc0f0e66f9b24ab91b585fc` verified all 1,392 source
+files, copied and verified all 1,392 production files, then hit the existing
+45-second database statement limit before inserting any asset or version link.
+Its receipt contains 1,392 verified objects and zero assets/links; production
+independently shows zero published Queue 1 rows. The stored files are retained.
+
+The transaction now requests only the same bounded card identity columns already
+used successfully during preflight, rather than expanding every catalogue view
+column. Conflict checks read the cohort in one query instead of rescanning the
+manifest for each printing. The 45-second limit is retained. A retry verifies
+existing production files against the approved hashes and image dimensions,
+skips uploading them, and reads private staging only for missing files. Mismatched
+existing bytes stop the release; they are never replaced. Post-commit anonymous
+verification still downloads and validates every file.

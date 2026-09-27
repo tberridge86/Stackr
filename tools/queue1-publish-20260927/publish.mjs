@@ -16,6 +16,23 @@ export const COHORT_SHA = '69c2fdecbb43337fde90b6687996faaade168f6a561ce6b8cfa1d
 export const APPROVAL_SHA = 'c4d95ec09b4678637a977aa4bdbc2ac242a5a49fc2bb7839e059388a91749ff1';
 export const APPROVAL_PATH = 'catalogue/rights-evidence/queue1-english-pokemon-tcg-api-owner-confirmation.2026-09-27.json';
 export const SCOPE = { 'sm3.5': 78, 'sm7.5': 78, 'swsh4.5sv': 122, 'swsh12.5gg': 70 };
+export const CARD_IDENTITY_SQL = "select game_code,language_code,set_id,set_code,printing_id,collector_number,card_english_display_name,variant_id,variant_code,finish_code,same_artwork_as_variant_id,catalogue_version_id from api.catalogue_cards where game_code='pokemon' and language_code='en' and set_code=any($1::text[]) limit 1000";
+export function assertNoArtworkConflicts(plans, existingPublic) {
+  const expected = new Map(plans.map(r => [r.target.printing_id, `${PREFIX}${r.target.printing_id}:${r.image_sha256}`]));
+  for (const asset of existingPublic) check(expected.get(asset.printing_id) === asset.asset_id, 'Existing published artwork requires review');
+}
+export async function prepareApprovedBytes(objects, { existingKeys, readSource, readTarget, validate }) {
+  for (let i = 0; i < objects.length; i += 6) {
+    const outcomes = await Promise.allSettled(objects.slice(i, i + 6).map(async o => {
+      const existing = existingKeys.has(o.key);
+      const bytes = await (existing ? readTarget(o) : readSource(o));
+      await validate(bytes, o);
+      if (existing) o.existingBytesVerified = true;
+      else o.bytes = bytes;
+    }));
+    const failed = outcomes.find(o => o.status === 'rejected'); if (failed) throw failed.reason;
+  }
+}
 export const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 export function check(ok, message) { if (!ok) throw new Error(message); }
 export function nameKey(value) { return String(value).normalize('NFKC').toLowerCase().replaceAll('’', "'").replace(/[‐‑–—-](ex|gx)\b/g, ' $1').replace(/\s+/g, ' ').trim(); }
@@ -138,7 +155,7 @@ async function main() {
   const target = client(PRODUCTION, await serverKey(PRODUCTION, process.env.SUPABASE_PRODUCTION_SECRET_KEY));
   const result = async promise => { const { data, error } = await promise; if (error) throw new Error(error.message); return data; };
   return withCatalogueReaders(createVerifiedSupabasePostgresClient, process.env, async ({ sourceDb, targetDb }) => {
-  const cards = async db => (await db.query("select game_code,language_code,set_id,set_code,printing_id,collector_number,card_english_display_name,variant_id,variant_code,finish_code,same_artwork_as_variant_id,catalogue_version_id from api.catalogue_cards where game_code='pokemon' and language_code='en' and set_code=any($1::text[]) limit 1000", [Object.keys(SCOPE)])).rows;
+  const cards = async db => (await db.query(CARD_IDENTITY_SQL, [Object.keys(SCOPE)])).rows;
   const sourceRecord = async db => { const records = (await db.query("select id,code,active,licence_status from ingest.sources where code='pokemon_tcg_api'")).rows; check(records.length === 1 && records[0].active && ['under_review', 'approved'].includes(records[0].licence_status), 'Source revoked or unavailable'); return records[0]; };
   const ss = await sourceRecord(sourceDb), ts = await sourceRecord(targetDb);
   const reviewBucket = await result(source.storage.getBucket(REVIEW_BUCKET)), publicBucket = await result(target.storage.getBucket(PUBLIC_BUCKET));
@@ -152,38 +169,42 @@ async function main() {
   const journal = { started_at: new Date().toISOString(), revision: process.env.GITHUB_SHA, run_id: process.env.GITHUB_RUN_ID, cohort_sha256: COHORT_SHA, approval_sha256: APPROVAL_SHA, status: 'preflight', objects: [], assets: [], links: [] };
   const save = () => writeFile(path.join(output, 'receipt.json'), JSON.stringify(journal, null, 2));
   await save();
+  const printingIds = plans.map(r => r.target.printing_id);
+  const publicAssets = async db => (await db.query("select printing_id,asset_id from api.asset_manifest where printing_id=any($1::uuid[]) and asset_type='card_image'", [printingIds])).rows;
+  assertNoArtworkConflicts(plans, await publicAssets(targetDb));
+  const existingAssets = (await targetDb.query('select * from catalog.assets where asset_id=any($1::text[])', [plans.map(r => `${PREFIX}${r.target.printing_id}:${r.image_sha256}`)])).rows;
   // Validate the entire batch before the first write, including any resume conflicts.
   const prepared = [];
   for (const r of plans) {
     const objects = r.objects.map(o => ({ ...o, key: contentHashStorageKey({ visibility: 'public', assetType: 'card_image', sha256: o.sha256, role: o.role, extension: o.role === 'original' ? 'png' : 'webp' }), sourceKey: o.key }));
     const payload = publicPayload(r, ts.id, objects);
-    const existing = (await targetDb.query('select * from catalog.assets where asset_id=$1', [payload.asset_id])).rows[0];
+    const existing = existingAssets.find(a => a.asset_id === payload.asset_id);
     if (existing) { existing.byte_size = Number(existing.byte_size); assertExistingAsset(existing, payload); }
-    const other = (await targetDb.query("select asset_id from api.asset_manifest where printing_id=$1 and asset_type='card_image' and asset_id<>$2 limit 1", [r.target.printing_id, payload.asset_id])).rows;
-    check(other.length === 0, 'Existing published artwork requires review');
     prepared.push({ r, objects, payload });
   }
-  // Download from private staging only. No request to the original provider is made.
+  // Reuse existing production bytes only after rechecking the frozen hash and decode.
+  // Missing objects still come from private staging; never fetch the original provider.
   async function validateBytes(bytes, o) {
     check(bytes.length === o.byteSize && digest(bytes) === o.sha256, 'Image bytes changed');
     const info = await sharp(bytes).metadata();
     check(info.width === o.width && info.height === o.height && info.format === (o.role === 'original' ? 'png' : 'webp'), 'Image decode/dimensions changed');
   }
   const allObjects = prepared.flatMap(p => p.objects);
-  for (let i = 0; i < allObjects.length; i += 6) {
-    const outcomes = await Promise.allSettled(allObjects.slice(i, i + 6).map(async o => {
-      const blob = await result(source.storage.from(REVIEW_BUCKET).download(o.sourceKey));
-      o.bytes = Buffer.from(await blob.arrayBuffer()); await validateBytes(o.bytes, o);
-    }));
-    const failed = outcomes.find(o => o.status === 'rejected'); if (failed) throw failed.reason;
-  }
-  journal.status = 'all_source_bytes_verified'; await save();
+  const existingObjects = (await targetDb.query('select name from storage.objects where bucket_id=$1 and name=any($2::text[])', [PUBLIC_BUCKET, allObjects.map(o => o.key)])).rows;
+  const readBytes = async (storage, key) => Buffer.from(await (await result(storage.download(key))).arrayBuffer());
+  await prepareApprovedBytes(allObjects, {
+    existingKeys: new Set(existingObjects.map(o => o.name)),
+    readSource: o => readBytes(source.storage.from(REVIEW_BUCKET), o.sourceKey),
+    readTarget: o => readBytes(target.storage.from(PUBLIC_BUCKET), o.key), validate: validateBytes,
+  });
+  journal.status = 'all_approved_bytes_verified'; await save();
   console.log(JSON.stringify({ phase: journal.status, images: 348, objects: allObjects.length }));
   let db, committed = false, commitAttempted = false;
   try {
     for (let i = 0; i < allObjects.length; i += 6) {
       const outcomes = await Promise.allSettled(allObjects.slice(i, i + 6).map(async o => {
         const entry = { key: o.key, sha256: o.sha256, role: o.role, created: false, verified: false }; journal.objects.push(entry);
+        if (o.existingBytesVerified) { entry.verified = true; return; }
         const uploaded = await target.storage.from(PUBLIC_BUCKET).upload(o.key, o.bytes, { contentType: o.mimeType, cacheControl: '31536000', upsert: false });
         if (uploaded.error) check(Number(uploaded.error.statusCode) === 409 || /already exists|duplicate/i.test(uploaded.error.message), 'Upload failed'); else entry.created = true;
         const blob = await result(target.storage.from(PUBLIC_BUCKET).download(o.key));
@@ -200,14 +221,13 @@ async function main() {
     const versions = [...new Set(plans.map(p => p.target.catalogue_version_id))];
     const locked = await db.query("select id from catalog.catalogue_versions where id=any($1::uuid[]) and status='published' and deprecated_at is null for share", [versions]);
     check(locked.rows.length === versions.length, 'Publication version changed');
-    const current = await db.query("select * from api.catalogue_cards where game_code='pokemon' and language_code='en' and set_code=any($1::text[])", [Object.keys(SCOPE)]);
+    const current = await db.query(CARD_IDENTITY_SQL, [Object.keys(SCOPE)]);
     const rebound = bind(rows, current.rows);
     for (let i = 0; i < plans.length; i++) for (const k of ['set_id', 'printing_id', 'variant_id', 'catalogue_version_id']) check(plans[i].target[k] === rebound[i].target[k], 'Production identity/version drift');
     const lockedSource = (await db.query('select id,code,active,licence_status from ingest.sources where id=$1 for share', [ts.id])).rows[0];
     check(isDeepStrictEqual(lockedSource, ts), 'Production source drift');
+    assertNoArtworkConflicts(plans, await publicAssets(db));
     for (const { r, payload } of prepared) {
-      const existingPublic = await db.query("select asset_id from api.asset_manifest where printing_id=$1 and asset_type='card_image' and asset_id<>$2 limit 1", [r.target.printing_id, payload.asset_id]);
-      check(existingPublic.rows.length === 0, 'New published artwork requires review');
       const keys = Object.keys(payload);
       const values = keys.map(k => typeof payload[k] === 'object' && payload[k] !== null ? JSON.stringify(payload[k]) : payload[k]);
       const inserted = await db.query(`insert into catalog.assets (${keys.join(',')}) values (${keys.map((_, i) => '$' + (i + 1)).join(',')}) on conflict do nothing returning id`, values);

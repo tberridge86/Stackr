@@ -3,10 +3,37 @@ import { Buffer } from 'node:buffer';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolveServerKey } from './credentials.mjs';
-import { validateEvidence, assertConfig, withCatalogueReaders, bind, assertPrivateAsset, publicPayload, assertExistingAsset, STAGING, PRODUCTION, APPROVAL_PATH } from './publish.mjs';
+import { validateEvidence, assertConfig, withCatalogueReaders, bind, assertPrivateAsset, publicPayload, assertExistingAsset, assertNoArtworkConflicts, prepareApprovedBytes, digest, STAGING, PRODUCTION, APPROVAL_PATH, PREFIX } from './publish.mjs';
 const cohort = readFileSync(new URL('./cohort.json', import.meta.url));
 const approval = readFileSync(new URL('../../' + APPROVAL_PATH, import.meta.url));
 const rows = validateEvidence(cohort, approval);
+test('batch conflict checks accept exact retries and reject other artwork or printing mappings', () => {
+  const plans = [{ target: { printing_id: 'printing' }, image_sha256: 'hash' }];
+  assert.doesNotThrow(() => assertNoArtworkConflicts(plans, []));
+  assert.doesNotThrow(() => assertNoArtworkConflicts(plans, [{ printing_id: 'printing', asset_id: PREFIX + 'printing:hash' }]));
+  assert.throws(() => assertNoArtworkConflicts(plans, [{ printing_id: 'printing', asset_id: 'other-artwork' }]));
+  assert.throws(() => assertNoArtworkConflicts(plans, [{ printing_id: 'other-printing', asset_id: PREFIX + 'printing:hash' }]));
+});
+test('resume verifies existing production bytes and reads staging only for missing files', async () => {
+  const bytes = Buffer.from('approved fixture'), calls = [];
+  const objects = [{ key: 'present', sha256: digest(bytes) }, { key: 'missing', sha256: digest(bytes) }];
+  await prepareApprovedBytes(objects, { existingKeys: new Set(['present']),
+    readSource: async o => { calls.push('source:' + o.key); return bytes; },
+    readTarget: async o => { calls.push('target:' + o.key); return bytes; },
+    validate: async (b, o) => assert.equal(digest(b), o.sha256),
+  });
+  assert.deepEqual(calls.sort(), ['source:missing', 'target:present']);
+  assert.equal(objects[0].existingBytesVerified, true); assert.equal(objects[0].bytes, undefined);
+  assert.equal(objects[1].bytes, bytes); assert.equal(objects[1].existingBytesVerified, undefined);
+});
+test('changed production bytes cannot be marked verified or silently replaced from staging', async () => {
+  const object = { key: 'present', sha256: digest(Buffer.from('approved fixture')) };
+  await assert.rejects(prepareApprovedBytes([object], { existingKeys: new Set(['present']),
+    readSource: () => assert.fail('must not replace conflicting bytes'), readTarget: async () => Buffer.from('wrong'),
+    validate: async (bytes, o) => assert.equal(digest(bytes), o.sha256),
+  }));
+  assert.equal(object.existingBytesVerified, undefined);
+});
 const modernKey = 'sb_secret_test_fixture';
 test('modern configured server key needs no management request', async () => {
   assert.equal(await resolveServerKey({ project: STAGING, configuredKey: modernKey, fetchImpl: () => assert.fail('unexpected request') }), modernKey);
