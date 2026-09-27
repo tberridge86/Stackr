@@ -408,12 +408,21 @@ function providerBackoff(error, code) {
     || Number(error?.status ?? error?.statusCode ?? error?.response?.status) === 429;
 }
 
-async function readOwnedCandidateSnapshots(supabase, candidates) {
+export async function readOwnedCandidateSnapshots(supabase, candidates) {
   const variantIds = [...new Set(candidates.map((candidate) => String(candidate.variantId).toLowerCase()).filter(isUuid))];
   if (!variantIds.length) return new Map();
-  const { data, error } = await supabase.from('market_price_snapshots')
+  const snapshots = new Map();
+  let remaining = variantIds;
+  // A bounded response can contain hundreds of historical rows for one card.
+  // Once its newest snapshot is known, exclude that identity from subsequent
+  // reads. This proves recency for every candidate without scanning its entire
+  // history or treating a capped response as evidence that other cards are new.
+  // Each nonempty read must remove at least one identity, bounding the loop by
+  // the already-bounded owner candidate population.
+  while (remaining.length) {
+    const { data, error } = await supabase.from('market_price_snapshots')
     .select('card_id,snapshot_at,calculated_at')
-    .in('card_id', variantIds)
+    .in('card_id', remaining)
     .is('user_id', null)
     .eq('primary_source', 'tcgdex')
     .eq('price_type', 'market_estimate')
@@ -422,18 +431,16 @@ async function readOwnedCandidateSnapshots(supabase, candidates) {
     .gt('tcgdex_price', 0)
     .order('snapshot_at', { ascending: false })
     .limit(OWNED_SNAPSHOT_READ_MAX_ROWS);
-  if (error) throw error;
-  // A PostgREST project cap can make an exact limit indistinguishable from a
-  // truncated result. Refuse the run before any provider call instead of
-  // claiming a partial set is complete or old.
-  if ((data ?? []).length >= OWNED_SNAPSHOT_READ_MAX_ROWS) {
-    throw new Error('Owned snapshot recency read reached its safe result bound.');
-  }
-  const snapshots = new Map();
-  for (const row of data ?? []) {
-    const variantId = String(row?.card_id ?? '').toLowerCase();
-    if (!isUuid(variantId) || snapshots.has(variantId)) continue;
-    snapshots.set(variantId, { snapshotAt: row.snapshot_at ?? null, calculatedAt: row.calculated_at ?? null });
+    if (error) throw error;
+    if (!(data ?? []).length) break;
+    const requested = new Set(remaining);
+    for (const row of data) {
+      const variantId = String(row?.card_id ?? '').toLowerCase();
+      if (!requested.has(variantId)) throw new Error('Owned snapshot recency returned an unrequested identity.');
+      if (snapshots.has(variantId)) continue;
+      snapshots.set(variantId, { snapshotAt: row.snapshot_at ?? null, calculatedAt: row.calculated_at ?? null });
+    }
+    remaining = remaining.filter((id) => !snapshots.has(id));
   }
   return snapshots;
 }
