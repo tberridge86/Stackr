@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {PGlite} from '@electric-sql/pglite';
+import {MIGRATION} from './publish.mjs';
+const db=new PGlite();
+const id=n=>`00000000-0000-4000-a000-${String(n).padStart(12,'0')}`;
+await db.exec(`create schema api;create schema catalog;create role anon;create role authenticated;create role service_role;
+create table catalog.card_variants(id uuid,printing_id uuid,deprecated_at timestamptz);
+create table catalog.catalogue_versions(id uuid,status text,deprecated_at timestamptz);
+create table catalog.catalogue_version_assets(asset_id uuid,set_id uuid,printing_id uuid,variant_id uuid,catalogue_version_id uuid);
+create table catalog.assets(id uuid,asset_id text,asset_type text,game_code text,storage_provider text,storage_bucket text,storage_key text,url text,original_source_url text,source_attribution text,attribution_text text,permission_status text,rights_status text,content_sha256 text,perceptual_hash text,mime_type text,width int,height int,byte_size bigint,derivative_list jsonb,cache_control text,externally_referenced boolean,unavailable_reason text,last_verified_at timestamptz,created_at timestamptz,updated_at timestamptz,asset_visibility text,publicly_servable boolean,retention_status text,deleted_at timestamptz,deprecated_at timestamptz);`);
+const sql=readFileSync(new URL(`../../supabase/migrations/${MIGRATION}.sql`,import.meta.url),'utf8');
+const selection=sql.slice(sql.indexOf('  SELECT\n    COALESCE'),sql.indexOf('  FROM candidate c'));
+await db.exec(`create view api.asset_manifest as ${selection} from catalog.assets a join catalog.catalogue_version_assets cva on cva.asset_id=a.id;`);
+await db.exec(sql);
+await db.query("insert into catalog.catalogue_versions values($1,'published',null),($2,'draft',null)",[id(10),id(11)]);
+await db.query('insert into catalog.card_variants values($1,$3,null),($2,$3,null)',[id(1),id(2),id(20)]);
+async function add(n,variant,version=id(10),permission='approved'){
+ await db.query("insert into catalog.assets(id,asset_id,asset_type,storage_provider,permission_status,rights_status,asset_visibility,publicly_servable,retention_status) values($1,$2,'card_image','external_reference',$3,'approved','public_catalogue',true,'active')",[id(n),'asset-'+n,permission]);
+ await db.query('insert into catalog.catalogue_version_assets values($1,$2,$3,$4,$5)',[id(n),id(30),id(20),variant,version]);
+}
+const read=async(v,p,limit=1000,cursor=null)=>(await db.query('select asset_id,variant_id from api.card_image_manifest_for_identities($1,$2,$3,$4,$5)',[v,p,cursor?id(10):null,cursor,limit])).rows;
+await add(40,null);await add(41,id(2));await add(42,null,id(11));await add(43,null,id(10),'under_review');
+assert.deepEqual(await read([id(1)],[id(20)]),[{asset_id:'asset-40',variant_id:null}],'mixed arrays must include only the printing front, not sibling finish');
+assert.deepEqual(await read([id(2)],[id(20)]),[{asset_id:'asset-40',variant_id:null},{asset_id:'asset-41',variant_id:id(2)}]);
+assert.deepEqual(await read([id(1)],[]),[],'variant-only call does not invent printing scope');
+assert.equal((await read([],[id(20)])).length,2,'printing-only compatibility');
+assert.equal((await read([id(2)],[id(20)],1)).length,1);
+assert.deepEqual(await read([id(2)],[id(20)],1000,id(40)),[{asset_id:'asset-41',variant_id:id(2)}]);
+assert.deepEqual(await read([],[]),[]);await assert.rejects(read(Array(101).fill(id(1)),[]));
+await db.query('update catalog.assets set deleted_at=now() where id=$1',[id(40)]);assert.deepEqual(await read([id(1)],[id(20)]),[]);
+await db.close();console.log('Mixed/printing/variant scopes, sibling isolation, rights, drafts, deletion, bounds and cursor passed.');
