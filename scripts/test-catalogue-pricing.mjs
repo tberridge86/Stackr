@@ -62,6 +62,23 @@ assert.equal(reverseQuote.pricingUpdatedAt,'2026-09-18T00:00:00Z');
 assert.equal(summariseTcgdexExactVariantPricing(providerCard,'ja','holo'),null,'no English counterpart for Japanese');
 assert.equal(summariseTcgdexExactVariantPricing({...providerCard,variants:{normal:true}},'en','reverse_holo'),null,'explicit finish proof required');
 assert.equal(summariseTcgdexExactVariantPricing({...providerCard,pricing:{cardmarket:{unit:'EUR',trend:9,'trend-holo':20}}},'en','holo'),null,'ambiguous Cardmarket finish rejected');
+const enSingleHolo = { ...jaHoloCard, id: 'svp-159', localId: '159', set: { id: 'svp' }, language: 'en',
+  pricing: { cardmarket: { ...jaHoloCard.pricing.cardmarket, idProduct: 100 } },
+  variants_detailed: [
+    { type: 'holo', size: 'standard', thirdParty: { cardmarket: 100 } },
+    { type: 'holo', size: 'standard', stamp: ['pokemon-center'], thirdParty: { cardmarket: 200 } },
+  ] };
+assert.equal(summariseTcgdexExactVariantPricing(enSingleHolo, 'en', 'holo').priceSource, 'tcgdex_cardmarket');
+assert.equal(summariseTcgdexExactVariantPricing(enSingleHolo, 'en', 'holo').pricingUpdatedAt, jaHoloCard.pricing.cardmarket.updated);
+assert.equal(summariseTcgdexExactVariantPricing(enSingleHolo, 'en', 'normal'), null);
+assert.equal(summariseTcgdexExactVariantPricing(enSingleHolo, 'en', 'reverse_holo'), null);
+assert.equal(summariseTcgdexExactVariantPricing({ ...enSingleHolo, pricing: { cardmarket: { ...enSingleHolo.pricing.cardmarket, idProduct: 200 } } }, 'en', 'holo'), null, 'stamped aggregate must not price ordinary holo');
+assert.equal(summariseTcgdexExactVariantPricing({ ...enSingleHolo, variants_detailed: [...enSingleHolo.variants_detailed, enSingleHolo.variants_detailed[0]] }, 'en', 'holo'), null);
+for (const key of ['normal', 'reverse', 'firstEdition', 'wPromo', 'newFinish']) {
+  assert.equal(summariseTcgdexExactVariantPricing({ ...enSingleHolo, variants: { ...enSingleHolo.variants, [key]: true } }, 'en', 'holo'), null);
+  assert.equal(summariseTcgdexExactVariantPricing({ ...enSingleHolo, variants: { ...enSingleHolo.variants, [key]: undefined } }, 'en', 'holo'), null);
+}
+assert.equal(summariseTcgdexExactVariantPricing({ ...enSingleHolo, pricing: { ...enSingleHolo.pricing, tcgplayer: providerCard.pricing.tcgplayer } }, 'en', 'holo').priceSource, 'tcgdex_tcgplayer', 'explicit TCGplayer finish retains priority');
 assert(Date.parse(ownerQueueRetryAfter(0,'3600'))>=Date.now()+3599000,'priority queue honours provider Retry-After');
 assert(refreshOutcome({status:401}).systemic);assert(refreshOutcome({status:503}).systemic);
 

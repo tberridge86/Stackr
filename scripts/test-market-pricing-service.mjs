@@ -1343,31 +1343,32 @@ async function assertExactEnglishFinishProviderRefresh() {
   );
 }
 
-async function assertJapaneseSingleHoloProviderRefresh() {
-  const variantId = '45454545-4545-4545-8545-454545454545';
+async function assertSingleHoloProviderRefresh(language) {
+  const variantId = language === 'ja' ? '45454545-4545-4545-8545-454545454545' : '46464646-4646-4646-8646-464646464646';
+  const cardId = language === 'ja' ? 'S12a-012' : 'svp-012';
   const source = { id: '33333333-3333-4333-8333-333333333333', code: 'tcgdex', active: true, licence_status: 'approved', deprecated_at: null };
-  const version = { id: '34343434-3434-4434-8434-343434343434', status: 'published', language_code: 'ja', deprecated_at: null, superseded_by_version_id: null };
+  const version = { id: '34343434-3434-4434-8434-343434343434', status: 'published', language_code: language, deprecated_at: null, superseded_by_version_id: null };
   const metadata = { variant_id: variantId, printing_id: '32323232-3232-4232-8232-323232323232',
     set_id: '31313131-3131-4313-8313-313131313131', set_code: 'S12a', collector_number: '012',
-    language_code: 'ja', variant_code: 'holo', finish_code: 'holo', card_english_display_name: 'Leafeon VSTAR' };
-  const aliases = [{ catalogue_version_id: version.id, source_id: source.id, source_entity_type: 'card', external_id: 'S12a-012', language_code: 'ja', variant_id: variantId }];
+    language_code: language, variant_code: 'holo', finish_code: 'holo', card_english_display_name: 'Leafeon VSTAR' };
+  const aliases = [{ catalogue_version_id: version.id, source_id: source.id, source_entity_type: 'card', external_id: cardId, language_code: language, variant_id: variantId }];
   const updated = new Date(Date.now() - 8 * 60 * 60_000).toISOString();
-  const raw = { id: 'S12a-012', language: 'ja', set: { id: 'S12a' }, localId: '012',
+  const raw = { id: cardId, language, set: { id: 'S12a' }, localId: '012',
     variants: { holo: true, normal: false, reverse: false, firstEdition: false, wPromo: false },
     pricing: { cardmarket: { unit: 'EUR', updated, trend: 1.37 } } };
-  const quote = summariseTcgdexExactVariantPricing(raw, 'ja', 'holo');
+  const quote = summariseTcgdexExactVariantPricing(raw, language, 'holo');
   const input = { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' };
   let fixtureIndex = 0;
   for (const [label, candidate] of [
     ['accepted', quote], ['missing proof', { ...quote, finishEvidence: null }],
-    ['wrong language', { ...quote, language: 'en' }], ['wrong number', { ...quote, number: '225' }],
+    ['wrong language', { ...quote, language: language === 'ja' ? 'en' : 'ja' }], ['wrong number', { ...quote, number: '225' }],
     ['competing finish', { ...quote, raw: { ...raw, variants: { ...raw.variants, normal: true } } }],
   ]) {
     const fixtureId = variantId.slice(0, -1) + fixtureIndex++;
     const db = createSnapshotSupabase({ metadata: { ...metadata, variant_id: fixtureId }, tcgdexSource: source, publishedVersion: version,
       approvedTcgdexAliases: aliases.map(alias => ({ ...alias, variant_id: fixtureId })) });
     const service = createMarketPricingService({ supabase: db, fetchTcgdexNormalCardPrice: async request => {
-      assert.deepEqual(request, { cardId: 'S12a-012', language: 'ja', variantCode: 'holo' });
+      assert.deepEqual(request, { cardId, language, variantCode: 'holo' });
       return candidate;
     } });
     if (label === 'accepted') {
@@ -1525,7 +1526,8 @@ await assertIdentityAwareDenseRangeHistory();
 await assertPagedRangeHistoryKeepsBaseline();
 await assertExactOwnerProviderRefresh();
 await assertExactEnglishFinishProviderRefresh();
-await assertJapaneseSingleHoloProviderRefresh();
+await assertSingleHoloProviderRefresh('ja');
+await assertSingleHoloProviderRefresh('en');
 await assertExactProviderDailySnapshotConflictHandling();
 await assertNormalProviderFetchAbortsAndClearsInflight();
 

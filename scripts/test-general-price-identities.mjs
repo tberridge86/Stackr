@@ -13,6 +13,20 @@ const legacyRaw={...raw,set_id:'sv1',card_id:'sv1-133'};
 const legacySet=[{source_entity_type:'set',external_id:'sv01',language_code:'en',set_id:set}];
 assert.equal(resolveGeneralPriceIdentity(legacyRaw,legacySet,[row(holo,'holo')]).priceVariantId,holo,'existing verified legacy pair can identify a general holo base');
 assert.equal(resolveGeneralPriceIdentity({...legacyRaw,language:null},legacySet,[row(holo,'holo')]).ok,false,'no inferred English');
+const foreignSetAlias = {source_entity_type:'set',external_id:'SV8',language_code:'ja',set_id:'99999999-9999-4999-8999-999999999999'};
+const englishSv8 = {...legacySet[0],external_id:'sv08'};
+const sv8Holding = {...legacyRaw,set_id:'sv8',card_id:'sv8-133'};
+assert.equal(resolveGeneralPriceIdentity(sv8Holding,[foreignSetAlias,englishSv8],[row(holo,'holo')]).priceVariantId,holo,'a foreign set code cannot shadow the verified English spelling');
+assert.equal(resolveGeneralPriceIdentity({...sv8Holding,language:null},[foreignSetAlias,englishSv8],[row(holo,'holo')]).ok,false,'set-code collision does not infer English');
+assert.equal(resolveGeneralPriceIdentity(sv8Holding,[foreignSetAlias,englishSv8,{...foreignSetAlias,language_code:'en'}],[row(holo,'holo')]).ok,false,'an explicit conflicting English alias remains authoritative');
+for(const [saved, published] of [['svp','svp'],['zsv10pt5','sv10.5b']]) {
+  const unit={...legacyRaw,set_id:saved,card_id:`${saved}-51`};
+  const aliases=[{...legacySet[0],external_id:published}];
+  const cards=[{...row(holo,'holo'),collector_number:'051',set_code:published}];
+  assert.equal(resolveGeneralPriceIdentity(unit,aliases,cards).priceVariantId,holo,'verified promo/Black Bolt spelling and padded collector number');
+  assert.equal(resolveGeneralPriceIdentity({...unit,language:null},aliases,cards).ok,false);
+  assert.equal(resolveGeneralPriceIdentity({...unit,card_id:`${saved}-52`},aliases,cards).ok,false);
+}
 assert.equal(resolveGeneralPriceIdentity({...legacyRaw,card_id:'sv2-133'},legacySet,[row(holo,'holo')]).ok,false,'saved set/card prefix conflict');
 assert.equal(resolveGeneralPriceIdentity(legacyRaw,[...legacySet,{source_entity_type:'card',external_id:'sv1-133',language_code:'ja',printing_id:printing}],[row(holo,'holo')]).ok,false,'foreign literal alias cannot be bypassed');
 assert.equal(resolveGeneralPriceIdentity(legacyRaw,legacySet,[row(holo,'holo'),{...row(normal,'normal'),printing_id:'55555555-5555-4555-8555-555555555555'}]).ok,false,'repeated collector number cannot choose a printing');

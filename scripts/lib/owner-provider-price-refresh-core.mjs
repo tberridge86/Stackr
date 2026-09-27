@@ -44,6 +44,8 @@ function isEnglishLanguage(value) {
 function englishSetCodeAliases(value) {
   const code = normalise(value);
   const explicit = [
+    ['svp', 'svp'],
+    ['zsv10pt5', 'sv10.5b'],
     ['sv8pt5', 'sv08.5'],
     ['swsh12pt5', 'swsh12.5'],
     ['swsh35', 'swsh3.5'],

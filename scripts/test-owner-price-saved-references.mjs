@@ -16,6 +16,16 @@ const expected = { ok: true, variantId: variant };
 const resolve = (saved = row, ids = aliases, cards = [card]) => resolveScopedOwnedProviderVariant(saved, ids, cards);
 
 test('explicit Japanese prefix uses existing published card and set aliases', () => assert.deepEqual(resolve(), expected));
+test('an explicit saved language scopes an unprefixed shared set code', () => {
+  const saved = {...row,card_id:'sv8-209',set_id:'sv8',language:'en'};
+  const ids = [
+    {source_entity_type:'set',external_id:'sv08',language_code:'en',set_id:setId},
+    {source_entity_type:'set',external_id:'SV8',language_code:'ja',set_id:other},
+    {source_entity_type:'card',external_id:'sv8-209',language_code:'en',variant_id:variant},
+  ];
+  assert.deepEqual(resolve(saved,ids,[{...card,language_code:'en',collector_number:'209'}]),expected);
+  assert.equal(resolve({...row,language:'en'},aliases,[card]).ok,false,'saved language conflicting with a prefix remains unresolved');
+});
 test('lookup enumeration preserves provider case, number and original references', () => {
   assert.deepEqual(ownerIdentityLookupRows(row), [row, { ...row, card_id: 'S12a-146', set_id: 'S12a' }]);
   assert.deepEqual(row.card_id, 'ja:S12a-146');
@@ -162,7 +172,7 @@ test('an explicit English namespace is sufficient evidence for the same SV alias
 
 test('SV/SWSH aliases refuse unknown or non-English saved scope', () => {
   const sv = { ...row, language: 'ja', card_id: 'sv4-007', set_id: 'sv4' };
-  const unknown = { ...row, language: 'en', card_id: 'zsv10pt5-007', set_id: 'zsv10pt5' };
+  const unknown = { ...row, language: 'en', card_id: 'unknown10-007', set_id: 'unknown10' };
   const opaque = { ...row, language: 'en', card_id: 'svp-007', set_id: 'svp' };
   assert.deepEqual(ownerIdentityLookupRows(sv), [sv]);
   assert.deepEqual(ownerIdentityLookupRows(unknown), [unknown]);

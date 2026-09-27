@@ -68,7 +68,8 @@ assert.equal(legacyEnglishOwnerPair({ ...owned, card_id: 'sv8pt5-10', set_id: 's
 assert.deepEqual(legacyEnglishOwnerPair({ ...owned, language: 'en', card_id: 'sv8pt5-10', set_id: 'sv8pt5' }), { setAliases: ['sv8pt5', 'sv08.5'], collectorNumber: '10' });
 assert.deepEqual(legacyEnglishOwnerPair({ ...owned, language: 'en-GB', card_id: 'swsh12pt5gg-GG06', set_id: 'swsh12pt5gg' }), { setAliases: ['swsh12pt5gg', 'swsh12.5gg'], collectorNumber: 'gg06' });
 assert.equal(legacyEnglishOwnerPair({ ...owned, language: 'ja', card_id: 'sv8pt5-10', set_id: 'sv8pt5' }), null, 'non-English rows cannot use English aliases');
-assert.equal(legacyEnglishOwnerPair({ ...owned, language: 'en', card_id: 'zsv10pt5-10', set_id: 'zsv10pt5' }), null, 'unknown codes are not normalised as English aliases');
+assert.deepEqual(legacyEnglishOwnerPair({ ...owned, language: 'en', card_id: 'zsv10pt5-10', set_id: 'zsv10pt5' }), { setAliases: ['zsv10pt5', 'sv10.5b'], collectorNumber: '10' });
+assert.equal(legacyEnglishOwnerPair({ ...owned, language: 'en', card_id: 'unknown10-10', set_id: 'unknown10' }), null, 'unknown codes are not normalised as English aliases');
 assert.equal(legacyEnglishOwnerPair({ ...owned, card_id: 'm3-10', set_id: 'm3' }), null, 'Japanese ME identifiers must not be reinterpreted as English');
 assert.deepEqual(resolveOwnedProviderVariant(owned, identifiers, catalogue), { ok: true, variantId: variant });
 const holoVariant = '88888888-8888-4888-8888-888888888888';

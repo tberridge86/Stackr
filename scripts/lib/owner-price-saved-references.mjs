@@ -106,10 +106,13 @@ export function ownerIdentityLookupRows(row) {
 export function resolveScopedOwnedProviderVariant(row, identifierRows, catalogueRows) {
   const value = scope(row);
   if (!value.valid) return { ok: false, reason: 'ambiguous_saved_identity' };
+  const savedLanguage = normalise(row?.language);
+  if (value.language && savedLanguage && value.language !== savedLanguage) return { ok: false, reason: 'ambiguous_saved_identity' };
+  const language = value.language ?? (LANGUAGES.has(savedLanguage) ? savedLanguage : null);
   const scopedInput = value.language && !clean(row?.language) ? { ...row, language: value.language } : row;
   const eligibility = scopedOwnedRowEligibility(row);
   if (eligibility) return { ok: false, reason: eligibility };
-  if (!value.language) return resolveOwnedProviderVariant(scopedInput, identifierRows, catalogueRows);
+  if (!language) return resolveOwnedProviderVariant(scopedInput, identifierRows, catalogueRows);
 
   const preferredReference = (ref, entity) => (identifierRows ?? []).some((item) => (
     normalise(item.source_entity_type) === entity && normalise(item.external_id) === normalise(ref.raw)
@@ -118,9 +121,9 @@ export function resolveScopedOwnedProviderVariant(row, identifierRows, catalogue
     ...scopedInput,
     card_id: preferredReference(value.card, 'card'),
     set_id: preferredReference(value.set, 'set'),
-    language: scopedInput.language ?? value.language,
+    language: scopedInput.language ?? language,
   };
-  const identifiers = (identifierRows ?? []).filter((item) => normalise(item.language_code) === value.language);
-  const catalogue = (catalogueRows ?? []).filter((item) => normalise(item.language_code) === value.language);
+  const identifiers = (identifierRows ?? []).filter((item) => normalise(item.language_code) === language);
+  const catalogue = (catalogueRows ?? []).filter((item) => normalise(item.language_code) === language);
   return resolveOwnedProviderVariant(scopedRow, identifiers, catalogue);
 }

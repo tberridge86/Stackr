@@ -710,28 +710,37 @@ function summariseTcgdexPriceEntry(card, lang, preferred) {
   };
 }
 
-export function isUnambiguousJapaneseHolo(card, language) {
+export function isUnambiguousHolo(card, language) {
   const variants = card?.variants;
-  return language === 'ja' && variants?.holo === true
+  const uniqueFinish = ['en', 'ja'].includes(language) && (!card?.language || card.language === language) && variants?.holo === true
     && ['normal', 'reverse', 'firstEdition', 'wPromo'].every(key => variants[key] === false)
     && Object.entries(variants).every(([key, value]) => key === 'holo' || value === false);
+  if (!uniqueFinish) return false;
+  // Detailed promo records can contain both the ordinary and stamped holo.
+  // The top-level aggregate must identify the single ordinary product.
+  if (card.variants_detailed == null) return true;
+  if (!Array.isArray(card.variants_detailed)) return false;
+  const productId = card.pricing?.cardmarket?.idProduct;
+  const ordinary = card.variants_detailed.filter(entry => entry.type === 'holo' && entry.size === 'standard'
+    && (!entry.stamp || Array.isArray(entry.stamp) && entry.stamp.length === 0));
+  return ordinary.length === 1 && productId != null
+    && String(ordinary[0].thirdParty?.cardmarket) === String(productId);
 }
 
 export function summariseTcgdexExactVariantPricing(card, language, variantCode = 'normal') {
   if (variantCode === 'normal') return summariseTcgdexNormalPricing(card, language);
-  // Japanese holo-only provider records have one physical finish. Their
-  // Cardmarket standard aggregate belongs to that exact holo, not a fabricated
-  // non-holo or an English counterpart. Missing/competing finishes fail closed.
-  if (variantCode === 'holo' && isUnambiguousJapaneseHolo(card, language)) {
+  // Cardmarket's historical *-holo fields do not prove reverse-vs-holo.
+  // Prefer an explicit TCGplayer finish on the exact English card.
+  const keys = { holo: ['holofoil', 'holo'], reverse_holo: ['reverse-holofoil', 'reverseHolofoil', 'reverse_holofoil'] }[variantCode];
+  if (!keys || card?.variants?.[variantCode === 'holo' ? 'holo' : 'reverse'] !== true) return null;
+  const matches = language === 'en' ? getTcgplayerVariants(card.pricing).filter((entry) => keys.includes(entry.variant)) : [];
+  // A standard Cardmarket aggregate is safe only when the provider proves one
+  // ordinary holo product. Preserve the provider language, timestamp and raw evidence.
+  if (!matches.length && variantCode === 'holo' && isUnambiguousHolo(card, language)) {
     const entry = getCardmarketVariants(card?.pricing).find(value => value.variant === 'standard');
     const quote = summariseTcgdexPriceEntry(card, language, entry);
     return quote ? { ...quote, variantCode, finishEvidence: 'provider_single_holo_variant' } : null;
   }
-  // Cardmarket's historical *-holo fields do not prove reverse-vs-holo.
-  // Admit only an explicit TCGplayer finish on the exact English card.
-  const keys = { holo: ['holofoil', 'holo'], reverse_holo: ['reverse-holofoil', 'reverseHolofoil', 'reverse_holofoil'] }[variantCode];
-  if (language !== 'en' || !keys || card?.variants?.[variantCode === 'holo' ? 'holo' : 'reverse'] !== true) return null;
-  const matches = getTcgplayerVariants(card.pricing).filter((entry) => keys.includes(entry.variant));
   if (matches.length !== 1) return null;
   const entry = matches[0];
   const price = entry.marketGbp ?? entry.midGbp ?? entry.lowGbp;
