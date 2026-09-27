@@ -30,7 +30,13 @@ export function validateCohort(bytes) {
   check(rows.length === 120 && new Set(rows.map(r => r.duplicate_printing_id)).size === 120 && new Set(rows.map(r => r.canonical_printing_id)).size === 120, 'Wrong cohort population');
   return rows;
 }
-export function validatePair(r, cards, source) {
+export function validateProviderFront(r, d) {
+  const number = String(r.collector_number).padStart(3, '0');
+  check(d?.id === `me05-${number}` && d.localId === number && d.name === r.name && d.set?.id === 'me05'
+    && d.image === `https://assets.tcgdex.net/en/me/me05/${number}`, 'Current provider printing-front descriptor mismatch');
+}
+export function validatePair(r, cards, source, front) {
+  validateProviderFront(r, front);
   const target = cards.filter(c => c.printing_id === r.duplicate_printing_id);
   const canonical = cards.filter(c => c.printing_id === r.canonical_printing_id);
   check(target.length === 1 && canonical.length >= 1, 'Printing binding missing/ambiguous');
@@ -43,12 +49,13 @@ export function validatePair(r, cards, source) {
   check(canonical.every(c => c.set_id === SOURCE_SET && c.set_code === 'me05'), 'Canonical set changed');
   check(source && source.asset_id === r.source_asset_id && source.content_sha256 === r.sha256 && source.storage_key === r.storage_key, 'Source bytes/binding changed');
   const v = canonical.find(c => c.variant_id === source.variant_id);
-  check(v && ['normal', 'holo'].includes(v.variant_code) && v.variant_code === v.finish_code, 'Stamped/reverse/unknown source variant forbidden');
+  check(v && ['normal', 'holo', 'reverse_holo'].includes(v.variant_code) && v.variant_code === v.finish_code, 'Stamped/unknown source variant forbidden');
   check(source.permission_status === 'approved' && source.rights_status === 'approved' && source.publicly_servable === true && source.asset_visibility === 'public_catalogue' && source.retention_status === 'active' && !source.deprecated_at, 'Source no longer eligible');
   check(source.asset_type === 'card_image' && source.storage_provider === 'supabase_storage' && source.storage_bucket === 'stackr-catalogue-public', 'Wrong source storage/type');
   check(isDeepStrictEqual(source.derivative_list, r.derivative_list), 'Source renditions changed');
   const u = new URL(source.original_source_url);
   check(u.origin === 'https://assets.tcgdex.net' && !u.search && !u.hash && u.pathname === `/en/me/me05/${String(r.collector_number).padStart(3, '0')}/high.webp`, 'Source language/printing path mismatch');
+  check(source.original_source_url === `${front.image}/high.webp`, 'Asset is not the independently verified generic provider front');
   return t;
 }
 export function relinkPayload(r, source) {
@@ -56,7 +63,7 @@ export function relinkPayload(r, source) {
     set_id: TARGET_SET, printing_id: r.duplicate_printing_id, variant_id: null,
     created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
     recognition_reference_eligible: false,
-    licensing_review_notes: JSON.stringify({ purpose: 'Reuse an existing eligible public printing-front image for a documented duplicate printing; no new source permission or finish claim', sourceAssetId: source.id, sourcePrintingId: r.canonical_printing_id, cohortSha256: HASH, exactFinishVerified: false, artworkScope: 'printing_front' }),
+    licensing_review_notes: JSON.stringify({ purpose: 'Reuse an existing eligible public printing-front image for a documented duplicate printing; no new source permission or finish claim', sourceAssetId: source.id, sourcePrintingId: r.canonical_printing_id, cohortSha256: HASH, currentProviderFrontVerified: true, sourceVariantId: source.variant_id, exactFinishVerified: false, artworkScope: 'printing_front' }),
   };
 }
 export function samePayload(actual, expected) {
@@ -71,7 +78,7 @@ export function validatePublicSources(rows, manifest) {
   }
 }
 const CARDS = "select game_code,language_code,set_id,set_code,printing_id,collector_number,card_english_display_name,variant_id,variant_code,finish_code,catalogue_version_id from api.catalogue_cards where set_id=any($1::uuid[]) and language_code='en' limit 500";
-async function readState(db, rows) {
+async function readState(db, rows, fronts) {
   const cards = (await db.query(CARDS, [[SOURCE_SET, TARGET_SET]])).rows.sort((a,b) => a.variant_id.localeCompare(b.variant_id));
   check(cards.length === 314, 'Catalogue population drift');
   const sources = (await db.query('select * from catalog.assets where asset_id=any($1::text[])', [rows.map(r => r.source_asset_id)])).rows.sort((a,b) => a.asset_id.localeCompare(b.asset_id));
@@ -80,7 +87,7 @@ async function readState(db, rows) {
   check(sourceIds.length === 1, 'Mixed source provenance');
   const source = (await db.query('select id,code,licence_status,active from ingest.sources where id=$1', sourceIds)).rows[0];
   check(source?.code === 'tcgdex' && source.active === true && source.licence_status === 'approved', 'Existing source is not eligible');
-  for (const r of rows) validatePair(r, cards, sources.find(s => s.asset_id === r.source_asset_id));
+  for (const r of rows) validatePair(r, cards, sources.find(s => s.asset_id === r.source_asset_id), fronts.find(f => f.localId === String(r.collector_number).padStart(3, '0')));
   validatePublicSources(rows, (await db.query("select asset_id,printing_id,content_sha256,derivative_list from api.asset_manifest where set_id=$1 and catalogue_version_id=$2 and asset_type='card_image'", [SOURCE_SET, VERSION])).rows);
   const published = (await db.query("select asset_id,printing_id,content_sha256,derivative_list from api.asset_manifest where set_id=$1 and asset_type='card_image'", [TARGET_SET])).rows;
   for (const a of published) {
@@ -146,26 +153,42 @@ async function main() {
   const save = () => writeFile(`${output}/receipt.json`, JSON.stringify(journal, null, 2)); await save();
   let db; let connected = false; let committed = false; let commitAttempted = false;
   try {
+    const fronts = [];
+    for (let i = 0; i < rows.length; i += 3) {
+      const results = await Promise.allSettled(rows.slice(i, i + 3).map(async r => {
+        const number = String(r.collector_number).padStart(3, '0');
+        const d = await retryStorageRead(async () => {
+          const response = await fetch(`https://api.tcgdex.net/v2/en/cards/me05-${number}`, { signal: AbortSignal.timeout(30000), redirect: 'error' });
+          if (!response.ok) { const e = new Error('Provider descriptor read failed'); e.status = response.status; throw e; }
+          return response.json();
+        });
+        validateProviderFront(r, d);
+        return { id: d.id, localId: d.localId, name: d.name, set: { id: d.set.id }, image: d.image };
+      }));
+      const failure = results.find(r => r.status === 'rejected'); if (failure) throw failure.reason;
+      fronts.push(...results.map(r => r.value));
+    }
+    journal.current_provider_fronts_verified = fronts.length; await save();
     // Roll back a full metadata/link rehearsal in canonical staging before production is opened.
     db = createVerifiedSupabasePostgresClient(process.env.SUPABASE_STAGING_DB_URL, 'stackr-pbl-rehearsal', { connectionTimeoutMillis: 15000 });
     await db.connect(); connected = true; await db.query('begin isolation level serializable');
     await db.query("set local statement_timeout='45s'"); await db.query("set local lock_timeout='5s'");
-    const staged = await readState(db, rows); const rehearsal = { assets_created: [], links_created: [] };
+    const staged = await readState(db, rows, fronts); const rehearsal = { assets_created: [], links_created: [] };
     await insertLinks(db, rows, staged, rehearsal); await db.query('rollback'); await db.end(); connected = false;
     journal.staging_rehearsal = { status: 'passed_and_rolled_back', tested_assets: 120, tested_links: 120 }; await save();
     db = createVerifiedSupabasePostgresClient(process.env.SUPABASE_DB_URL, 'stackr-pbl-relink', { connectionTimeoutMillis: 15000 });
     await db.connect(); connected = true; await db.query('begin read only'); await db.query("set local statement_timeout='45s'");
-    const before = await readState(db, rows); await db.query('rollback');
+    const before = await readState(db, rows, fronts); await db.query('rollback');
     journal.public_files_verified = await verifyFiles(rows, before.sources, sharp); await save();
     await db.query('begin isolation level serializable'); await db.query("set local statement_timeout='45s'"); await db.query("set local lock_timeout='5s'");
     await db.query("select pg_advisory_xact_lock(hashtext('stackr-pbl-relink-20260927'))");
-    const locked = await readState(db, rows);
+    const locked = await readState(db, rows, fronts);
     check(isDeepStrictEqual(locked, before), 'Catalogue changed during file verification');
     await insertLinks(db, rows, locked, journal);
     journal.status = 'commit_intent'; await save(); commitAttempted = true; await db.query('commit'); committed = true;
     journal.published_at = new Date().toISOString(); journal.status = 'published'; await save();
     // Re-read the current public manifest outside the publishing transaction.
-    const finalState = await readState(db, rows); check(isDeepStrictEqual(finalState.sources, locked.sources), 'Canonical source assets changed');
+    const finalState = await readState(db, rows, fronts); check(isDeepStrictEqual(finalState.sources, locked.sources), 'Canonical source assets changed');
     const count = (await db.query("select count(distinct printing_id)::int n from api.asset_manifest where set_id=$1 and asset_type='card_image' and asset_id like $2", [TARGET_SET, `${PREFIX}%`])).rows[0].n;
     check(count === 120, 'Post-commit image coverage differs');
     journal.public_files_reverified = await verifyFiles(rows, locked.sources, sharp);

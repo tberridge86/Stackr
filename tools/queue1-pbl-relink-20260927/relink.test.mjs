@@ -9,13 +9,13 @@ function fixture(){
   const base={game_code:'pokemon',language_code:'en',catalogue_version_id:VERSION,collector_number:row.collector_number,card_english_display_name:row.name};
   const cards=[{...base,set_id:TARGET_SET,set_code:'PBL',printing_id:row.duplicate_printing_id,variant_id:'target',variant_code:'normal',finish_code:null},{...base,set_id:SOURCE_SET,set_code:'me05',printing_id:row.canonical_printing_id,variant_id:'source',variant_code:'normal',finish_code:'normal'}];
   const source={id:'original',asset_id:row.source_asset_id,variant_id:'source',content_sha256:row.sha256,storage_key:row.storage_key,permission_status:'approved',rights_status:'approved',publicly_servable:true,asset_visibility:'public_catalogue',retention_status:'active',asset_type:'card_image',storage_provider:'supabase_storage',storage_bucket:'stackr-catalogue-public',derivative_list:structuredClone(row.derivative_list),original_source_url:`https://assets.tcgdex.net/en/me/me05/${row.collector_number.padStart(3,'0')}/high.webp`,recognition_reference_eligible:true,byte_size:'100'};
-  return {cards,source};
+  return {cards,source,front:{id:'me05-'+row.collector_number.padStart(3,'0'),localId:row.collector_number.padStart(3,'0'),name:row.name,set:{id:'me05'},image:`https://assets.tcgdex.net/en/me/me05/${row.collector_number.padStart(3,'0')}`}};
 }
 test('fixed 120-printing cohort is pinned and tamper-evident',()=>{
   assert.equal(rows.length,120);assert.throws(()=>validateCohort(Buffer.from(JSON.stringify(rows))),/changed/);
 });
 test('exact duplicate pair retains independent original printing IDs',()=>{
-  const {cards,source}=fixture();assert.equal(validatePair(row,cards,source).printing_id,row.duplicate_printing_id);
+  const {cards,source,front}=fixture();assert.equal(validatePair(row,cards,source,front).printing_id,row.duplicate_printing_id);
   const payload=relinkPayload(row,source);assert.equal(payload.printing_id,row.duplicate_printing_id);assert.equal(payload.set_id,TARGET_SET);assert.equal(payload.variant_id,null);assert.equal(payload.recognition_reference_eligible,false);assert.ok(payload.asset_id.startsWith(PREFIX));assert.equal(source.variant_id,'source');assert.equal(payload.storage_key,source.storage_key);
 });
 for(const [label,mutate] of [
@@ -24,12 +24,14 @@ for(const [label,mutate] of [
   ['same name different set',f=>f.cards[0].set_id=SOURCE_SET],
   ['changed name',f=>f.cards[0].card_english_display_name='Different'],
   ['finish drift',f=>f.cards[0].finish_code='holo'],
-  ['reverse or stamped source',f=>{f.cards[1].variant_code='reverse_holo';f.cards[1].finish_code='reverse_holo';}],
+  ['named stamp source',f=>{f.cards[1].variant_code='staff';f.cards[1].finish_code='staff';}],
+  ['withdrawn provider descriptor',f=>f.front=undefined],
+  ['wrong live image reference',f=>f.front.image+='-reverse'],
   ['foreign provider image',f=>f.source.original_source_url='https://assets.tcgdex.net/ja/me/me05/001/high.webp'],
   ['source rights revoked',f=>f.source.permission_status='denied'],
   ['different stored bytes',f=>f.source.content_sha256='0'.repeat(64)],
   ['duplicate target binding',f=>f.cards.push({...f.cards[0]})],
-])test(`rejects ${label}`,()=>{const f=fixture();mutate(f);assert.throws(()=>validatePair(row,f.cards,f.source));});
+])test(`rejects ${label}`,()=>{const f=fixture();mutate(f);assert.throws(()=>validatePair(row,f.cards,f.source,f.front));});
 test('retries accept the exact payload but reject storage or provenance changes',()=>{
   const {source}=fixture();const a=relinkPayload(row,source);assert.equal(samePayload({...a,id:'another',byte_size:100},a),true);assert.equal(samePayload({...a,storage_key:'other'},a),false);assert.equal(samePayload({...a,recognition_reference_eligible:true},a),false);
 });
@@ -44,4 +46,10 @@ test('execution forbids alternate refs, targets and URL overrides',()=>{
 test('workflow isolates relinking from broad deployment and requires the protected environment',()=>{
   const wf=readFileSync(new URL('../../.github/workflows/deploy-production.yml',import.meta.url),'utf8');
   const job=wf.match(/^  pbl_artwork_links:\r?\n[\s\S]*?(?=^  [a-z_]+:\r?\n)/m)?.[0];assert.ok(job);assert.match(job,/environment: production/);assert.match(job,/expected_main_sha/);assert.match(job,/false false false false/);assert.match(wf,/inputs\.release_scope != 'pbl_artwork_links'/);assert.doesNotMatch(job,/SUPABASE_ACCESS_TOKEN|SUPABASE_PRODUCTION_SECRET_KEY|SUPABASE_STAGING_SECRET_KEY/);
+});
+
+test('a reverse-associated asset is usable only as a provider-verified generic printing front',()=>{
+  const f=fixture();f.cards[1].variant_code='reverse_holo';f.cards[1].finish_code='reverse_holo';
+  assert.throws(()=>validatePair(row,f.cards,f.source));validatePair(row,f.cards,f.source,f.front);
+  const p=relinkPayload(row,f.source);assert.equal(p.variant_id,null);assert.equal(JSON.parse(p.licensing_review_notes).exactFinishVerified,false);
 });
