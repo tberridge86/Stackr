@@ -9,7 +9,7 @@ import {
   resolveOwnerExactQueueItem,
   resolveOwnedProviderVariant,
 } from './lib/owner-provider-price-refresh-core.mjs';
-import { readOwnedRows, selectCompleteOwnedCandidates, selectOwnedCandidatesBySnapshot, runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
+import { readOwnedCandidateSnapshots, readOwnedRows, selectCompleteOwnedCandidates, selectOwnedCandidatesBySnapshot, runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
 
 const workflow = readFileSync('.github/workflows/owner-provider-price-refresh.yml', 'utf8');
 assert.match(workflow, /schedule:\s*\n(?:[^\n]*\n)*?\s+- cron: '\*\/10 \* \* \* \*'/, 'the exact Home queue must have a bounded scheduled consumer');
@@ -157,6 +157,29 @@ function query(data) {
   };
   return chain;
 }
+const recencyReads = [];
+const recentId = coverageCandidates[0].variantId;
+const oldId = coverageCandidates[1].variantId;
+const missingId = coverageCandidates[2].variantId;
+const longHistory = [
+  ...Array.from({length: 1000}, (_, index) => ({card_id: recentId, snapshot_at: index ? '2026-09-24T00:00:00Z' : '2026-09-27T00:00:00Z'})),
+  {card_id: oldId, snapshot_at:'2026-09-20T00:00:00Z'},
+];
+const recencySupabase = {from(name) {
+  assert.equal(name, 'market_price_snapshots');
+  let ids, limit;
+  const chain = query([]);
+  chain.in = (field, values) => {assert.equal(field, 'card_id'); ids = values; return chain;};
+  chain.limit = value => {limit=value; return chain;};
+  chain.then = resolve => {recencyReads.push([...ids]); return Promise.resolve({data:longHistory.filter(r=>ids.includes(r.card_id)).slice(0,limit),error:null}).then(resolve);};
+  return chain;
+}};
+const recency = await readOwnedCandidateSnapshots(recencySupabase, coverageCandidates.slice(0,3));
+assert.deepEqual(recencyReads, [[recentId,oldId,missingId],[oldId,missingId],[missingId]], 'history-heavy cards cannot hide older or never-priced identities behind the response cap');
+assert.equal(recency.get(recentId).snapshotAt, '2026-09-27T00:00:00Z', 'the first newest record is retained');
+assert.deepEqual(selectOwnedCandidatesBySnapshot(coverageCandidates.slice(0,3),recency,2).map(c=>c.variantId),[missingId,oldId], 'bounded refresh still chooses missing first, then oldest');
+await assert.rejects(readOwnedCandidateSnapshots({from(){return query([{card_id:oldId}]);}},coverageCandidates.slice(0,1)), /unrequested identity/, 'unexpected rows fail closed instead of looping');
+await assert.rejects(readOwnedCandidateSnapshots({from(){const chain=query([]);chain.then=resolve=>Promise.resolve({data:null,error:Error('recency unavailable')}).then(resolve);return chain;}},coverageCandidates.slice(0,1)), /recency unavailable/, 'transport failure cannot become missing-price evidence');
 let ownerScanLimit = null;
 const threeHundredAndNineRows = Array.from({ length: 309 }, (_, index) => ({ id: `row-${index}` }));
 const scanSupabase = {
