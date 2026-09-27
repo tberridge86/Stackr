@@ -16,7 +16,7 @@ test('temporary storage connection pressure gets a bounded retry', async () => {
   assert.equal(calls, 4);
 });
 test('access denials and byte-validation errors are never retried', async () => {
-  for (const error of [Object.assign(new Error('forbidden'), { status: 403 }), new Error('Image bytes changed')]) {
+  for (const error of [Object.assign(new Error('forbidden'), { status: 403 }), Object.assign(new Error('fetch failed'), { status: 401 }), new Error('Image bytes changed')]) {
     let calls = 0;
     await assert.rejects(retryStorageRead(async () => { calls++; throw error; }, () => assert.fail('must not retry')));
     assert.equal(calls, 1);

@@ -22,8 +22,8 @@ export async function retryStorageRead(read, wait = delay) {
   for (let attempt = 0; ; attempt++) {
     try { return await read(); } catch (error) {
       const status = Number(error.status ?? error.statusCode);
-      const transient = status === 429 || (status >= 500 && status <= 504)
-        || /too many connections issued to the database|remaining connection slots|fetch failed|ECONNRESET/i.test(error.message);
+      const transient = status !== 401 && status !== 403 && (status === 429 || (status >= 500 && status <= 504)
+        || /too many connections issued to the database|remaining connection slots|fetch failed|ECONNRESET/i.test(error.message));
       if (!transient || attempt >= 3) throw error;
       await wait(1000 * (2 ** attempt));
     }
@@ -166,7 +166,7 @@ async function main() {
   });
   const source = client(STAGING, await serverKey(STAGING, process.env.SUPABASE_STAGING_SECRET_KEY));
   const target = client(PRODUCTION, await serverKey(PRODUCTION, process.env.SUPABASE_PRODUCTION_SECRET_KEY));
-  const result = async promise => { const { data, error } = await promise; if (error) throw new Error(error.message); return data; };
+  const result = async promise => { const { data, error } = await promise; if (error) throw Object.assign(new Error(error.message), { status: error.status ?? error.statusCode }); return data; };
   return withCatalogueReaders(createVerifiedSupabasePostgresClient, process.env, async ({ sourceDb, targetDb }) => {
   const cards = async db => (await db.query(CARD_IDENTITY_SQL, [Object.keys(SCOPE)])).rows;
   const sourceRecord = async db => { const records = (await db.query("select id,code,active,licence_status from ingest.sources where code='pokemon_tcg_api'")).rows; check(records.length === 1 && records[0].active && ['under_review', 'approved'].includes(records[0].licence_status), 'Source revoked or unavailable'); return records[0]; };
