@@ -7,7 +7,7 @@ import { check, digest } from '../queue1-publish-20260927/publish.mjs';
 
 export const COHORT_SHA='fb4d9669eab795fa941347d8775a4747f117208983a6bea16b0a406b3a4d1ca5';
 export const MIGRATION='20260927150826_catalogue_repeated_printed_number_identity';
-export const MIGRATION_SHA='6eaea4bc3f35c102d8d0a38c3cb225626da53ba79169022d95d1bd3a138907e7';
+export const MIGRATION_SHA='732fc55f3c8b18422c8eecbaafcc0ae5f419dfd4a0971e007fe7ae8bf1598d25';
 export const PROJECTS={staging:'lmwfhvexfcoyeuoyrlco',production:'oakdbbzdqwurpjnoqhmu'};
 export const stableId=text=>{const h=createHash('sha256').update('stackr-newsets480:'+text).digest('hex');return `${h.slice(0,8)}-${h.slice(8,12)}-5${h.slice(13,16)}-a${h.slice(17,20)}-${h.slice(20,32)}`;};
 export function canonicalKey(s,c,b) {
@@ -97,7 +97,7 @@ export async function writeMetadata(db,c,environment,migration) {
   const printingRows=[],variantRows=[],rawRows=[],mappingRows=[],nameRows=[],versionPrintings=[],versionVariants=[],versionMappings=[];
   for(const r of c.cards) {
     const s=c.sets.find(s=>s.provider_set_code===r.provider_set_code),b=r.bindings[environment],setId=s.ids[environment],source=sources.find(s=>s.code===r.source_code),v=c.versions[r.language_code];
-    const p={id:b.printing_id,game_code:'pokemon',set_id:setId,language_code:r.language_code,collector_number:r.collector_number,...numberParts(r.collector_number),native_name:r.native_name,english_display_name:r.language_code==='en'?r.native_name:null,artist:r.artist,supertype:r.supertype,subtypes:r.subtypes,rarity_id:rarities.find(x=>x.code===r.rarity_code)?.id??null};
+    const p={id:b.printing_id,game_code:'pokemon',set_id:setId,language_code:r.language_code,collector_number:r.collector_number,printing_discriminator:r.printing_scoped_key?r.provider_id:'',...numberParts(r.collector_number),native_name:r.native_name,english_display_name:r.language_code==='en'?r.native_name:null,artist:r.artist,supertype:r.supertype,subtypes:r.subtypes,rarity_id:rarities.find(x=>x.code===r.rarity_code)?.id??null};
     if(!b.existing_printing)printingRows.push(p);
     const variant={id:b.variant_id,printing_id:b.printing_id,game_code:'pokemon',set_id:setId,language_code:r.language_code,collector_number:r.collector_number,variant_code:r.variant_code,finish_code:r.variant_code,canonical_key:canonicalKey(setId,r,b),is_default:!b.existing_printing,source_confidence:0.98,native_image_status:'missing'};
     if(!b.existing_variant)variantRows.push(variant);
@@ -111,12 +111,15 @@ export async function writeMetadata(db,c,environment,migration) {
     versionMappings.push({...mapping,catalogue_version_id:v,set_id:null,printing_id:null});
   }
   counts.printings_created=(await bulk(db,'catalog.card_printings',printingRows,Object.keys(printingRows[0]))).length;
+  const insertedPrintings=(await db.query('select id from catalog.card_printings where id=any($1::uuid[])',[c.cards.map(r=>r.bindings[environment].printing_id)])).rows;
+  check(insertedPrintings.length===480,'Printing uniqueness conflict before variant insertion');
   counts.variants_created=(await bulk(db,'catalog.card_variants',variantRows,Object.keys(variantRows[0]))).length;
   const printings=(await db.query('select * from catalog.card_printings where id=any($1::uuid[])',[c.cards.map(r=>r.bindings[environment].printing_id)])).rows;
   const variants=(await db.query('select * from catalog.card_variants where id=any($1::uuid[])',[c.cards.map(r=>r.bindings[environment].variant_id)])).rows;
   for(const r of c.cards) {
     const b=r.bindings[environment],p=printings.find(x=>x.id===b.printing_id),v=variants.find(x=>x.id===b.variant_id);
     equalFields(p,b.existing_printing??printingRows.find(x=>x.id===b.printing_id),['id','game_code','set_id','language_code','collector_number','native_name','english_display_name'],'Printing');
+    check(p.printing_discriminator===(r.printing_scoped_key?r.provider_id:''),'Printing discriminator changed');
     equalFields(v,b.existing_variant??variantRows.find(x=>x.id===b.variant_id),['id','printing_id','game_code','set_id','language_code','collector_number','variant_code','finish_code','canonical_key'],'Variant');
     check(!p.deprecated_at&&!v.deprecated_at,'Deprecated identity');
   }
