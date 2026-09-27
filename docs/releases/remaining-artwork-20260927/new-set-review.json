@@ -10296,5 +10296,284 @@
     "English anniversary energy cards and associated product promos require separate scope; do not call 191 source card records a complete product catalogue."
   ],
   "production_changes": 0,
-  "device_verified": false
+  "device_verified": false,
+  "classic_unique_provider_ids": 30,
+  "M6_staging_missing_collectors": [
+    "072",
+    "074",
+    "076"
+  ],
+  "M6a_staging_missing_provider_identifiers": 44,
+  "classic_source_records": [
+    {
+      "id": "me55c-58",
+      "number": "58",
+      "name": "Pikachu",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-58/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-58/large"
+      }
+    },
+    {
+      "id": "me55c-4",
+      "number": "4",
+      "name": "Charizard",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-4/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-4/large"
+      }
+    },
+    {
+      "id": "me55c-18",
+      "number": "18",
+      "name": "Misty",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-18/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-18/large"
+      }
+    },
+    {
+      "id": "me55c-69",
+      "number": "69",
+      "name": "Erika's Jigglypuff",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-69/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-69/large"
+      }
+    },
+    {
+      "id": "me55c-25",
+      "number": "25",
+      "name": "Sneasel",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-25/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-25/large"
+      }
+    },
+    {
+      "id": "me55c-106",
+      "number": "106",
+      "name": "Shining Celebi",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-106/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-106/large"
+      }
+    },
+    {
+      "id": "me55c-149",
+      "number": "149",
+      "name": "Lugia",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-149/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-149/large"
+      }
+    },
+    {
+      "id": "me55c-5",
+      "number": "5",
+      "name": "Delcatty",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-5/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-5/large"
+      }
+    },
+    {
+      "id": "me55c-19",
+      "number": "19",
+      "name": "Dark Tyranitar",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-19/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-19/large"
+      }
+    },
+    {
+      "id": "me55c-108",
+      "number": "108",
+      "name": "Scizor ex",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-108/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-108/large"
+      }
+    },
+    {
+      "id": "me55c-11",
+      "number": "11",
+      "name": "Metagross",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-11/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-11/large"
+      }
+    },
+    {
+      "id": "me55c-106p",
+      "number": "106",
+      "name": "Palkia LV.X",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-106p/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-106p/large"
+      }
+    },
+    {
+      "id": "me55c-43",
+      "number": "43",
+      "name": "Uxie",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-43/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-43/large"
+      }
+    },
+    {
+      "id": "me55c-47",
+      "number": "47",
+      "name": "Crobat G",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-47/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-47/large"
+      }
+    },
+    {
+      "id": "me55c-94",
+      "number": "94",
+      "name": "Gengar",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-94/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-94/large"
+      }
+    },
+    {
+      "id": "me55c-99",
+      "number": "99",
+      "name": "Darkrai & Cresselia LEGEND",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-99/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-99/large"
+      }
+    },
+    {
+      "id": "me55c-100",
+      "number": "100",
+      "name": "Darkrai & Cresselia LEGEND",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-100/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-100/large"
+      }
+    },
+    {
+      "id": "me55c-101",
+      "number": "101",
+      "name": "N",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-101/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-101/large"
+      }
+    },
+    {
+      "id": "me55c-85",
+      "number": "85",
+      "name": "Rayquaza-EX",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-85/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-85/large"
+      }
+    },
+    {
+      "id": "me55c-11g",
+      "number": "11",
+      "name": "Genesect-EX",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-11g/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-11g/large"
+      }
+    },
+    {
+      "id": "me55c-106m",
+      "number": "106",
+      "name": "M Gardevoir-EX",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-106m/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-106m/large"
+      }
+    },
+    {
+      "id": "me55c-41",
+      "number": "41",
+      "name": "Greninja BREAK",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-41/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-41/large"
+      }
+    },
+    {
+      "id": "me55c-89",
+      "number": "89",
+      "name": "Solgaleo-GX",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-89/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-89/large"
+      }
+    },
+    {
+      "id": "me55c-57",
+      "number": "57",
+      "name": "Buzzwole-GX",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-57/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-57/large"
+      }
+    },
+    {
+      "id": "me55c-33",
+      "number": "33",
+      "name": "Pikachu & Zekrom-GX",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-33/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-33/large"
+      }
+    },
+    {
+      "id": "me55c-138",
+      "number": "138",
+      "name": "Zacian V",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-138/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-138/large"
+      }
+    },
+    {
+      "id": "me55c-50",
+      "number": "50",
+      "name": "Raikou",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-50/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-50/large"
+      }
+    },
+    {
+      "id": "me55c-114",
+      "number": "114",
+      "name": "Mew VMAX",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-114/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-114/large"
+      }
+    },
+    {
+      "id": "me55c-123",
+      "number": "123",
+      "name": "Arceus VSTAR",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-123/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-123/large"
+      }
+    },
+    {
+      "id": "me55c-203",
+      "number": "203",
+      "name": "Magikarp",
+      "images": {
+        "small": "https://images.scrydex.com/pokemon/me55c-203/small",
+        "large": "https://images.scrydex.com/pokemon/me55c-203/large"
+      }
+    }
+  ]
 }

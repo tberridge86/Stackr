@@ -37,3 +37,12 @@ The published catalogue currently has no cards for these newly checked editions.
 ## Next execution
 
 Bind the existing artwork permission to the concrete 89-file Scrydex cohort, then rehearse a printing-front-only additive release in staging and use the protected production workflow. Keep finish and jumbo distinctions. In parallel, resolve the listed new-set identity differences before a bounded metadata import; never promote the partial Japanese staging lists as complete sets.
+
+## Exact new-set identity corrections to make
+
+- Japanese Storm Emeralda staging omits **072, 074 and 076**. These are the second cards in three same-named paired Stadiums (071/072, 073/074 and 075/076). Preserve both collectors; matching by name would lose a physical card.
+- Japanese 30th staging lacks 44 of the 176 inspected provider identifiers, including card 152, the other LEGEND half. This is a comparison to a provider population, not a verified physical-card denominator.
+- Japanese 30th card **156** is `MサーナイトEX` in the official feed but `サーナイトEX` in TCGdex; preserve the official Mega distinction during binding.
+- The inspected official Japanese 30th feed omits numbered cards **119, 121, 128, 129 and 131**, combines **151152** as one gallery item, and uses lowercase energy identifiers. TCGdex additionally lists R/G/B Mew identifiers. Preserve the source distinction pending exact printed-number/variant review.
+- The English Classic Collection has repeated printed numbers 106 (three cards) and 11 (two cards). The PokemonTCG source preserves distinct provider IDs (`me55c-106`, `me55c-106p`, `me55c-106m`, `me55c-11`, `me55c-11g`) and image URLs. These suffixes are provider discriminators, not printed collector-number suffixes. Keep that distinction when creating canonical identities.
+- The existing staging snapshot workflow is pinned to source revision `771a8381c57c73182b9776657a15cd1166c66d36`; it cannot be assumed to contain the newly inspected source state. No incomplete legacy snapshot was dispatched.
