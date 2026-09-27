@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { Buffer } from 'node:buffer';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { validateEvidence, assertConfig, bind, assertPrivateAsset, publicPayload, assertExistingAsset, STAGING, PRODUCTION, APPROVAL_PATH } from './publish.mjs';
