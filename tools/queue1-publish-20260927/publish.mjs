@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 import { resolveServerKey } from './credentials.mjs';
+import { setTimeout as delay } from 'node:timers/promises';
 
 export const STAGING = 'lmwfhvexfcoyeuoyrlco';
 export const PRODUCTION = 'oakdbbzdqwurpjnoqhmu';
@@ -16,14 +17,26 @@ export const COHORT_SHA = '69c2fdecbb43337fde90b6687996faaade168f6a561ce6b8cfa1d
 export const APPROVAL_SHA = 'c4d95ec09b4678637a977aa4bdbc2ac242a5a49fc2bb7839e059388a91749ff1';
 export const APPROVAL_PATH = 'catalogue/rights-evidence/queue1-english-pokemon-tcg-api-owner-confirmation.2026-09-27.json';
 export const SCOPE = { 'sm3.5': 78, 'sm7.5': 78, 'swsh4.5sv': 122, 'swsh12.5gg': 70 };
+export const STORAGE_CONCURRENCY = 3;
+export async function retryStorageRead(read, wait = delay) {
+  for (let attempt = 0; ; attempt++) {
+    try { return await read(); } catch (error) {
+      const status = Number(error.status ?? error.statusCode);
+      const transient = status !== 401 && status !== 403 && (status === 429 || (status >= 500 && status <= 504)
+        || /too many connections issued to the database|remaining connection slots|fetch failed|ECONNRESET/i.test(error.message));
+      if (!transient || attempt >= 3) throw error;
+      await wait(1000 * (2 ** attempt));
+    }
+  }
+}
 export const CARD_IDENTITY_SQL = "select game_code,language_code,set_id,set_code,printing_id,collector_number,card_english_display_name,variant_id,variant_code,finish_code,same_artwork_as_variant_id,catalogue_version_id from api.catalogue_cards where game_code='pokemon' and language_code='en' and set_code=any($1::text[]) limit 1000";
 export function assertNoArtworkConflicts(plans, existingPublic) {
   const expected = new Map(plans.map(r => [r.target.printing_id, `${PREFIX}${r.target.printing_id}:${r.image_sha256}`]));
   for (const asset of existingPublic) check(expected.get(asset.printing_id) === asset.asset_id, 'Existing published artwork requires review');
 }
 export async function prepareApprovedBytes(objects, { existingKeys, readSource, readTarget, validate }) {
-  for (let i = 0; i < objects.length; i += 6) {
-    const outcomes = await Promise.allSettled(objects.slice(i, i + 6).map(async o => {
+  for (let i = 0; i < objects.length; i += STORAGE_CONCURRENCY) {
+    const outcomes = await Promise.allSettled(objects.slice(i, i + STORAGE_CONCURRENCY).map(async o => {
       const existing = existingKeys.has(o.key);
       const bytes = await (existing ? readTarget(o) : readSource(o));
       await validate(bytes, o);
@@ -153,7 +166,7 @@ async function main() {
   });
   const source = client(STAGING, await serverKey(STAGING, process.env.SUPABASE_STAGING_SECRET_KEY));
   const target = client(PRODUCTION, await serverKey(PRODUCTION, process.env.SUPABASE_PRODUCTION_SECRET_KEY));
-  const result = async promise => { const { data, error } = await promise; if (error) throw new Error(error.message); return data; };
+  const result = async promise => { const { data, error } = await promise; if (error) throw Object.assign(new Error(error.message), { status: error.status ?? error.statusCode }); return data; };
   return withCatalogueReaders(createVerifiedSupabasePostgresClient, process.env, async ({ sourceDb, targetDb }) => {
   const cards = async db => (await db.query(CARD_IDENTITY_SQL, [Object.keys(SCOPE)])).rows;
   const sourceRecord = async db => { const records = (await db.query("select id,code,active,licence_status from ingest.sources where code='pokemon_tcg_api'")).rows; check(records.length === 1 && records[0].active && ['under_review', 'approved'].includes(records[0].licence_status), 'Source revoked or unavailable'); return records[0]; };
@@ -191,18 +204,26 @@ async function main() {
   }
   const allObjects = prepared.flatMap(p => p.objects);
   const existingObjects = (await targetDb.query('select name from storage.objects where bucket_id=$1 and name=any($2::text[])', [PUBLIC_BUCKET, allObjects.map(o => o.key)])).rows;
-  const readBytes = async (storage, key) => Buffer.from(await (await result(storage.download(key))).arrayBuffer());
+  const readBytes = (storage, key) => retryStorageRead(async () => Buffer.from(await (await result(storage.download(key))).arrayBuffer()));
+  const readPublicBytes = o => retryStorageRead(async () => {
+    const response = await limitedFetch(`https://${PRODUCTION}.supabase.co/storage/v1/object/public/${PUBLIC_BUCKET}/${o.key}`);
+    if (!response.ok) {
+      await response.body?.cancel();
+      throw Object.assign(new Error('Public storage response failed'), { status: response.status });
+    }
+    return Buffer.from(await response.arrayBuffer());
+  });
   await prepareApprovedBytes(allObjects, {
     existingKeys: new Set(existingObjects.map(o => o.name)),
     readSource: o => readBytes(source.storage.from(REVIEW_BUCKET), o.sourceKey),
-    readTarget: o => readBytes(target.storage.from(PUBLIC_BUCKET), o.key), validate: validateBytes,
+    readTarget: readPublicBytes, validate: validateBytes,
   });
   journal.status = 'all_approved_bytes_verified'; await save();
   console.log(JSON.stringify({ phase: journal.status, images: 348, objects: allObjects.length }));
   let db, committed = false, commitAttempted = false;
   try {
-    for (let i = 0; i < allObjects.length; i += 6) {
-      const outcomes = await Promise.allSettled(allObjects.slice(i, i + 6).map(async o => {
+    for (let i = 0; i < allObjects.length; i += STORAGE_CONCURRENCY) {
+      const outcomes = await Promise.allSettled(allObjects.slice(i, i + STORAGE_CONCURRENCY).map(async o => {
         const entry = { key: o.key, sha256: o.sha256, role: o.role, created: false, verified: false }; journal.objects.push(entry);
         if (o.existingBytesVerified) { entry.verified = true; return; }
         const uploaded = await target.storage.from(PUBLIC_BUCKET).upload(o.key, o.bytes, { contentType: o.mimeType, cacheControl: '31536000', upsert: false });
@@ -211,7 +232,7 @@ async function main() {
         await validateBytes(Buffer.from(await blob.arrayBuffer()), o); entry.verified = true; delete o.bytes;
       }));
       await save(); const failed = outcomes.find(o => o.status === 'rejected'); if (failed) throw failed.reason;
-      if (i % 120 === 0) console.log(JSON.stringify({ phase: 'storage_verified', objects: Math.min(i + 6, allObjects.length) }));
+      if (i % 120 === 0) console.log(JSON.stringify({ phase: 'storage_verified', objects: Math.min(i + STORAGE_CONCURRENCY, allObjects.length) }));
     }
     check(isDeepStrictEqual(await sourceRecord(sourceDb), ss) && isDeepStrictEqual(await sourceRecord(targetDb), ts), 'Source changed during transfer');
     db = createVerifiedSupabasePostgresClient(process.env.SUPABASE_DB_URL, 'stackr-queue1-publication', { connectionTimeoutMillis: 15000 });
@@ -250,10 +271,9 @@ async function main() {
       check(hit.length === 1 && isDeepStrictEqual(hit[0].derivative_list, payload.derivative_list), 'Post-commit manifest mismatch');
     }
     // Verify anonymous public delivery of each derivative, not just HTTP success.
-    for (let i = 0; i < allObjects.length; i += 6) {
-      const outcomes = await Promise.allSettled(allObjects.slice(i, i + 6).map(async o => {
-        const response = await limitedFetch(`https://${PRODUCTION}.supabase.co/storage/v1/object/public/${PUBLIC_BUCKET}/${o.key}`);
-        check(response.ok, 'Public image delivery failed'); await validateBytes(Buffer.from(await response.arrayBuffer()), o);
+    for (let i = 0; i < allObjects.length; i += STORAGE_CONCURRENCY) {
+      const outcomes = await Promise.allSettled(allObjects.slice(i, i + STORAGE_CONCURRENCY).map(async o => {
+        await validateBytes(await readPublicBytes(o), o);
       }));
       const failed = outcomes.find(o => o.status === 'rejected'); if (failed) throw failed.reason;
     }

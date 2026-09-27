@@ -131,3 +131,14 @@ existing production files against the approved hashes and image dimensions,
 skips uploading them, and reads private staging only for missing files. Mismatched
 existing bytes stop the release; they are never replaced. Post-commit anonymous
 verification still downloads and validates every file.
+
+Resume [36316479503](https://github.com/tberridge86/Stackr/actions/runs/36316479503)
+at `87c4b6b3f36afe94878e7ad9f7684f5962d869ef` reached storage revalidation but
+stopped on `Too many connections issued to the database`, before new writes.
+Production inspection showed five Storage API database connections. Storage
+concurrency is now three, with at most four attempts and short backoff for
+temporary read pressure/server failures. Access denials and hash/decode failures
+are not retried. No database connection limits or access controls are changed.
+Existing public-file revalidation uses the anonymous public delivery URL, the same
+path verified after commit, rather than authenticating reads of a public bucket.
+Private staging reads still require the verified server credential.
