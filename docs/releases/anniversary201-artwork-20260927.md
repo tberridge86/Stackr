@@ -1,0 +1,17 @@
+# Remaining anniversary artwork — 27 September 2026
+
+The 480 previously published Storm Emeralda and anniversary printings had 201 missing fronts: 161 English 30th Celebration, 30 English Classic Collection and 10 Japanese M6a. The earlier 279 official Japanese references remain intact. This release adds images to those existing identities; it creates no production cards or variants.
+
+All 201 Scrydex large images were acquired and decoded on 27 September. The former English 403 sample no longer represents availability. Each public card page was matched by provider ID, language, expansion, actual printed number and normalized native name. Source-page and image hashes are frozen in `tools/anniversary201-publish-20260927/cohort.json`. Nidoran's name differs only in spacing before the female symbol. Japanese ampersand width is normalized for matching, without renaming canonical cards.
+
+All ten Japanese gaps were visually checked: 119, 121, 128, 129, 131, 151, 152, R, G and B. Scrydex supplies distinct individual 151/152 LEGEND fronts; the combined official image remains excluded. Source orientation is retained. The three Classic printings numbered 106 were also visually checked and retain separate provider and printing identities. RGB source photographs have uneven sharpness and lighting; their identities and printed codes are legible. No artwork is generated or reconstructed.
+
+The user's existing “SCYDEX YES TOO.” permission and “201 NEXT PLEASE” continuation are recorded in the bounded owner attestation. This is an owner representation, not an independently issued rights-holder licence. Images remain printing-front assets with no exact-finish or recognition claim. Scrydex's global inactive/under-review provenance remains unchanged.
+
+The new `anniversary201_artwork` scope uses the existing protected production workflow and shared deployment lock. It requires the exact reviewed main revision and disables unrelated deployment inputs. It validates 201 originals and 603 resized WebP files, rehearses and rolls back both environments, verifies each immutable storage object, then publishes 201 assets and version memberships atomically. Existing objects cannot be overwritten; conflicts abort. Staging's missing prior metadata/schema is prepared only inside its rollback transaction. Production does not replay metadata imports or migrations.
+
+The three affected sets' coverage is updated only after their 201 new fronts and the retained 279 official references pass manifest checks. Expected new-set totals: Storm 113/113, English anniversary 161/161, Japanese anniversary 176/176 and Classic 30/30. Set logos and other languages are separate scopes. Phone rendering and the external Stackr HTTP route remain unverified.
+
+Validation: 19 focused publisher tests and deployment-tooling checks passed locally. Publication and final storage readback are pending the protected release. The matching PR will retain exact CI, merge, run and receipt identifiers.
+
+Rollback: if database publication fails before commit, its transaction rolls back. Uploaded content-addressed files may remain unlinked and must not be deleted blindly. After commit, a rollback must target only this cohort's asset IDs and version links and restore the three pre-release coverage snapshots; preserve all cards, provider mappings, ownership records, prior assets and shared storage objects. Failed or unknown commit outcomes require readback before retrying.

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "stackr-owner-image-permission-attestation-v1",
+  "attestationId": "anniversary201-scrydex-owner-confirmation:2026-09-27",
+  "recordedAt": "2026-09-27T15:52:00.696295+00:00",
+  "recordBasis": "Existing explicit Scrydex artwork permission for Storm Emeralda and anniversary imports, followed by continuation of the remaining 201 artwork records.",
+  "ownerStatement": "SCYDEX YES TOO.",
+  "continuationStatement": "201 NEXT PLEASE",
+  "interpretedScope": "Store, resize and display these exact 201 fronts: 161 English 30th Celebration, 30 English Classic Collection and 10 Japanese 30th Celebration. Preserve source orientations and individual LEGEND halves.",
+  "decision": "Owner representation of existing permission; not an independently issued rights-holder licence.",
+  "sourceCode": "scrydex",
+  "languageCodes": [
+    "en",
+    "ja"
+  ],
+  "targetCount": 201,
+  "cohortSha256": "682676785d0e8aa40e0622e878cc1cb2e6fc9e904891ec91ac7e9ee4f22fc4ae",
+  "capabilities": {
+    "store": true,
+    "resize": true,
+    "displayInStackr": true
+  },
+  "excluded": [
+    "Other cohorts and languages",
+    "Model training or embeddings",
+    "Artwork resale or bulk export",
+    "Global source activation"
+  ],
+  "sourceWideApproval": false,
+  "retainsAttribution": true
+}

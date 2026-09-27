@@ -12,7 +12,7 @@ on:
         required: true
         default: catalogue_assets
         type: choice
-        options: [backend_only, queue1_artwork, pbl_artwork_links, mep89_artwork, pocket131_artwork, newsets480_metadata, catalogue_assets, catalogue_api, full_platform]
+        options: [backend_only, queue1_artwork, pbl_artwork_links, mep89_artwork, pocket131_artwork, newsets480_metadata, anniversary201_artwork, catalogue_assets, catalogue_api, full_platform]
       expected_main_sha:
         description: Exact 40-character main SHA approved for backend-only or Queue 1 artwork deployment
         required: false
@@ -578,8 +578,64 @@ jobs:
           retention-days: 90
           if-no-files-found: warn
 
+  anniversary201_artwork:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope == 'anniversary201_artwork'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+      - name: Validate exact bounded release
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_main_sha }}
+          FORBIDDEN_FLAGS: ${{ inputs.gateway_bootstrap }} ${{ inputs.apply_migrations }} ${{ inputs.publish_mobile_update }} ${{ inputs.promote_gateway }}
+          OTHER_IDENTIFIERS: ${{ inputs.catalogue_release_label }}${{ inputs.catalogue_version_id }}${{ inputs.index_version_id }}${{ inputs.previous_catalogue_version_id }}${{ inputs.previous_index_version_id }}${{ inputs.previous_recognition_deployment_id }}${{ inputs.previous_gateway_tag }}${{ inputs.pricing_smoke_variant_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$EXPECTED_SHA" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$FORBIDDEN_FLAGS" = 'false false false false'
+          test -z "$OTHER_IDENTIFIERS"
+          git diff --exit-code
+          node --test tools/anniversary201-publish-20260927/publish.test.mjs
+      - name: Install locked dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Rehearse and publish 201 owner-approved anniversary Scrydex fronts
+        env:
+          STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+          STACKR_ANNIVERSARY201_CONFIRMATION: PUBLISH ANNIVERSARY201
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
+          SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          STACKR_ANNIVERSARY201_OUTPUT: ${{ runner.temp }}/anniversary201-artwork
+        run: node tools/anniversary201-publish-20260927/publish.mjs --execute
+      - name: Scan non-secret publication receipt
+        id: anniversary201_receipt_scan
+        if: always()
+        run: node scripts/deploy/secret-scan.mjs --directory="$RUNNER_TEMP/anniversary201-artwork"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always() && steps.anniversary201_receipt_scan.outcome == 'success'
+        with:
+          name: anniversary201-artwork-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/anniversary201-artwork
+          retention-days: 90
+          if-no-files-found: warn
+
   deploy:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope != 'backend_only' && inputs.release_scope != 'queue1_artwork' && inputs.release_scope != 'pbl_artwork_links' && inputs.release_scope != 'mep89_artwork' && inputs.release_scope != 'pocket131_artwork' && inputs.release_scope != 'newsets480_metadata'
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope != 'backend_only' && inputs.release_scope != 'queue1_artwork' && inputs.release_scope != 'pbl_artwork_links' && inputs.release_scope != 'mep89_artwork' && inputs.release_scope != 'pocket131_artwork' && inputs.release_scope != 'newsets480_metadata' && inputs.release_scope != 'anniversary201_artwork'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     environment: production
