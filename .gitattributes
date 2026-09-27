@@ -6,6 +6,7 @@
 /docs/third-party/tcgdex-card-reference-notice.md text eol=lf
 /catalogue/*.json text eol=lf
 /catalogue/rights-evidence/*.json text eol=lf
+/tools/queue1-publish-20260927/cohort.json text eol=lf
 /catalogue/rights-reviews/*.json text eol=lf
 /lib/generated/*.generated.ts text eol=lf
 /backend/lib/generated/*.generated.mjs text eol=lf
