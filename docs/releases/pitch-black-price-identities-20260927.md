@@ -30,3 +30,8 @@ Home/binder valuation. This workflow does not introduce another pricing worker.
 Local PGlite tests execute the actual update queries, demonstrate complete
 rollback, reject changed identities and preserve saved card references/quantities.
 Production publication and pricing remain unverified until a run receipt exists.
+
+The first dry run (36349783004) stopped in staging before any alias write because
+the staging Pokemon TCG API source has a different UUID. The repair now pins both
+verified environment-specific source IDs and checks their registered source code.
+Tests prove that the staging source update cannot change the production source.

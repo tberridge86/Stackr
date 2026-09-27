@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
-import {SOURCE,OLD_SET,SET,VERSION,validatePairs,validateAliases,readAliases,repairAliases} from './repair.mjs';
+import {SOURCE,STAGING_SOURCE,OLD_SET,SET,VERSION,validatePairs,validateAliases,readAliases,repairAliases} from './repair.mjs';
 const cohort=JSON.parse(await readFile(new URL('../queue1-pbl-relink-20260927/cohort.json',import.meta.url),'utf8'));
 const cards=cohort.flatMap(r=>[
  {variant_id:randomUUID(),printing_id:r.duplicate_printing_id,set_id:OLD_SET,set_code:'PBL',language_code:'en',catalogue_version_id:VERSION,collector_number:r.collector_number,card_english_display_name:r.name,variant_code:'normal',finish_code:null},
@@ -25,6 +25,11 @@ for(const a of aliases){
 await db.query("insert into public.holdings values($1,'me5-32',2)",[randomUUID()]);
 const saved=(await db.query('select * from public.holdings')).rows;
 const before=await readAliases(db);validateAliases(before.live,pairs);
+await db.query('insert into ingest.external_identifiers select gen_random_uuid(),$1,source_entity_type,external_id,language_code,set_id,printing_id,variant_id,is_current,deprecated_at,updated_at from ingest.external_identifiers where source_id=$2',[STAGING_SOURCE,SOURCE]);
+await db.query('insert into catalog.catalogue_version_external_identifiers select catalogue_version_id,$1,source_entity_type,external_id,language_code,set_id,printing_id,variant_id from catalog.catalogue_version_external_identifiers where source_id=$2',[STAGING_SOURCE,SOURCE]);
+const stagingBefore=await readAliases(db,STAGING_SOURCE);
+await db.exec('begin');await repairAliases(db,pairs,STAGING_SOURCE);assert.deepEqual(await readAliases(db),before,'staging source cannot modify production source');await db.exec('rollback');assert.deepEqual(await readAliases(db,STAGING_SOURCE),stagingBefore);
+await assert.rejects(repairAliases(db,pairs,randomUUID()),'unknown environment source rejected');
 await db.exec('begin');await repairAliases(db,pairs);await db.exec('rollback');assert.deepEqual(await readAliases(db),before,'rehearsal restores all alias fields');
 await db.exec('begin');const changed=await repairAliases(db,pairs);await db.exec('commit');validateAliases(changed.after.live,pairs,true);validateAliases(changed.after.published,pairs,true);
 assert(changed.after.live.filter(r=>r.source_entity_type==='card').every(r=>r.variant_id===null&&r.printing_id),'corrected aliases only prove printing');
