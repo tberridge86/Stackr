@@ -29169,7 +29169,7 @@
       "provider_set_code": "M6",
       "language_code": "ja",
       "collector_number": "098",
-      "native_name": "とくちゅうチョッキ",
+      "native_name": "ポケモンキャッチャー",
       "variant_code": "holo",
       "printing_scoped_key": false,
       "rarity_code": "mega_hyper_rare",
@@ -29252,6 +29252,62 @@
           "existing_printing": null,
           "existing_variant": null
         }
+      },
+      "official_correction": {
+        "source_url": "https://www.pokemon-card.com/card-search/details.php/card/50539/regu/all",
+        "image_url": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050539_T_POKEMONKIXYATCHIXYA.jpg",
+        "image_sha256": "c7b3f2c8c38a05c58945633b5a6b0b8e148d5829451dc0e87bf927a23e8a53eb",
+        "printed_number_visually_verified": true,
+        "source_metadata": {
+          "hp": null,
+          "id": "50539",
+          "set": {
+            "id": "M6",
+            "code": "M6",
+            "name": "拡張パック「ストームエメラルダ」",
+            "total": null,
+            "productUrls": [
+              "https://www.pokemon-card.com/ex/m6/"
+            ],
+            "printedTotal": 76,
+            "productNames": [
+              "拡張パック「ストームエメラルダ」"
+            ],
+            "providerProductFilterId": null
+          },
+          "name": "ポケモンキャッチャー",
+          "image": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050539_T_POKEMONKIXYATCHIXYA.jpg",
+          "stage": null,
+          "artist": "Studio Bora Inc.",
+          "cardID": "50539",
+          "finish": "normal",
+          "number": "098",
+          "rarity": "sr_c",
+          "localId": "098",
+          "setCode": "M6",
+          "variant": "normal",
+          "imageUrl": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050539_T_POKEMONKIXYATCHIXYA.jpg",
+          "variants": {
+            "normal": true
+          },
+          "supertype": "trainer",
+          "productUrls": [
+            "https://www.pokemon-card.com/ex/m6/"
+          ],
+          "printedTotal": 76,
+          "productNames": [
+            "拡張パック「ストームエメラルダ」"
+          ],
+          "officialDetailUrl": "https://www.pokemon-card.com/card-search/details.php/card/50539/regu/all",
+          "officialDetailName": "ポケモンキャッチャー",
+          "detailParserVersion": "pokemon-card-jp-html-v1",
+          "providerThumbnailUrl": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050539_T_POKEMONKIXYATCHIXYA.jpg",
+          "officialDetailImageUrl": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050539_T_POKEMONKIXYATCHIXYA.jpg",
+          "officialSearchEndpoint": "https://www.pokemon-card.com/card-search/resultAPI.php?keyword=&se_ta=&regulation_sidebar_form=all&pg=&illust=&sm_and_keyword=true&page=1",
+          "officialSearchHitCount": 23458,
+          "providerProductFilterId": null
+        },
+        "reason": "TCGdex swaps the names and artists of printed numbers 098 and 099."
       }
     },
     {
@@ -29260,7 +29316,7 @@
       "provider_set_code": "M6",
       "language_code": "ja",
       "collector_number": "099",
-      "native_name": "ポケモンキャッチャー",
+      "native_name": "とくちゅうチョッキ",
       "variant_code": "holo",
       "printing_scoped_key": false,
       "rarity_code": "mega_hyper_rare",
@@ -29342,6 +29398,62 @@
           "existing_printing": null,
           "existing_variant": null
         }
+      },
+      "official_correction": {
+        "source_url": "https://www.pokemon-card.com/card-search/details.php/card/50540/regu/all",
+        "image_url": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050540_T_TOKUCHIXYUUCHIXYOKKI.jpg",
+        "image_sha256": "b54618fb9a13682a55394ebb1ee4826ebcb349874de50ce43f5b383a319ed475",
+        "printed_number_visually_verified": true,
+        "source_metadata": {
+          "hp": null,
+          "id": "50540",
+          "set": {
+            "id": "M6",
+            "code": "M6",
+            "name": "拡張パック「ストームエメラルダ」",
+            "total": null,
+            "productUrls": [
+              "https://www.pokemon-card.com/ex/m6/"
+            ],
+            "printedTotal": 76,
+            "productNames": [
+              "拡張パック「ストームエメラルダ」"
+            ],
+            "providerProductFilterId": null
+          },
+          "name": "とくちゅうチョッキ",
+          "image": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050540_T_TOKUCHIXYUUCHIXYOKKI.jpg",
+          "stage": null,
+          "artist": "Toyste Beach",
+          "cardID": "50540",
+          "finish": "normal",
+          "number": "099",
+          "rarity": "sr_c",
+          "localId": "099",
+          "setCode": "M6",
+          "variant": "normal",
+          "imageUrl": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050540_T_TOKUCHIXYUUCHIXYOKKI.jpg",
+          "variants": {
+            "normal": true
+          },
+          "supertype": "trainer",
+          "productUrls": [
+            "https://www.pokemon-card.com/ex/m6/"
+          ],
+          "printedTotal": 76,
+          "productNames": [
+            "拡張パック「ストームエメラルダ」"
+          ],
+          "officialDetailUrl": "https://www.pokemon-card.com/card-search/details.php/card/50540/regu/all",
+          "officialDetailName": "とくちゅうチョッキ",
+          "detailParserVersion": "pokemon-card-jp-html-v1",
+          "providerThumbnailUrl": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050540_T_TOKUCHIXYUUCHIXYOKKI.jpg",
+          "officialDetailImageUrl": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050540_T_TOKUCHIXYUUCHIXYOKKI.jpg",
+          "officialSearchEndpoint": "https://www.pokemon-card.com/card-search/resultAPI.php?keyword=&se_ta=&regulation_sidebar_form=all&pg=&illust=&sm_and_keyword=true&page=1",
+          "officialSearchHitCount": 23458,
+          "providerProductFilterId": null
+        },
+        "reason": "TCGdex swaps the names and artists of printed numbers 098 and 099."
       }
     },
     {

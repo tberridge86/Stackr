@@ -23,3 +23,4 @@ tools/queue1-pbl-relink-20260927/cohort.json text eol=lf
 /catalogue/rights-evidence/pocket131-scrydex-owner-confirmation.2026-09-27.json text eol=lf
 /tools/newsets480-publish-20260927/cohort.json text eol=lf
 /supabase/migrations/20260927150826_catalogue_repeated_printed_number_identity.sql text eol=lf
+/tools/newsets480-publish-20260927/references.json text eol=lf

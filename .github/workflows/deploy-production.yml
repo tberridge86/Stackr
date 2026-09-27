@@ -556,7 +556,7 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
           npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
-      - name: Rehearse and publish 480 reviewed Storm Emeralda and anniversary records
+      - name: Rehearse and publish 480 cards and 279 official Japanese references
         env:
           STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
           STACKR_NEWSETS480_CONFIRMATION: IMPORT NEWSETS480
