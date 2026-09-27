@@ -2,7 +2,7 @@ import test from 'node:test';
 import { Buffer } from 'node:buffer';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { assertConfig, validateCohort, validatePair, validatePublicSources, relinkPayload, samePayload, SOURCE_SET, TARGET_SET, VERSION, PREFIX } from './relink.mjs';
+import { assertConfig, validateCohort, validatePair, validatePublicSources, relinkPayload, samePayload, copyKey, copyObjects, SOURCE_SET, TARGET_SET, VERSION, PREFIX } from './relink.mjs';
 const rows=validateCohort(readFileSync(new URL('./cohort.json',import.meta.url)));
 const row=rows[0];
 function fixture(){
@@ -16,7 +16,7 @@ test('fixed 120-printing cohort is pinned and tamper-evident',()=>{
 });
 test('exact duplicate pair retains independent original printing IDs',()=>{
   const {cards,source,front}=fixture();assert.equal(validatePair(row,cards,source,front).printing_id,row.duplicate_printing_id);
-  const payload=relinkPayload(row,source);assert.equal(payload.printing_id,row.duplicate_printing_id);assert.equal(payload.set_id,TARGET_SET);assert.equal(payload.variant_id,null);assert.equal(payload.recognition_reference_eligible,false);assert.ok(payload.asset_id.startsWith(PREFIX));assert.equal(source.variant_id,'source');assert.equal(payload.storage_key,source.storage_key);
+  const payload=relinkPayload(row,source);assert.equal(payload.printing_id,row.duplicate_printing_id);assert.equal(payload.set_id,TARGET_SET);assert.equal(payload.variant_id,null);assert.equal(payload.recognition_reference_eligible,false);assert.ok(payload.asset_id.startsWith(PREFIX));assert.equal(source.variant_id,'source');assert.notEqual(payload.storage_key,source.storage_key);assert.equal(payload.storage_key,copyKey(row));assert.deepEqual(payload.derivative_list,source.derivative_list);
 });
 for(const [label,mutate] of [
   ['foreign language',f=>f.cards[0].language_code='ja'],
@@ -45,7 +45,20 @@ test('execution forbids alternate refs, targets and URL overrides',()=>{
 });
 test('workflow isolates relinking from broad deployment and requires the protected environment',()=>{
   const wf=readFileSync(new URL('../../.github/workflows/deploy-production.yml',import.meta.url),'utf8');
-  const job=wf.match(/^  pbl_artwork_links:\r?\n[\s\S]*?(?=^  [a-z_]+:\r?\n)/m)?.[0];assert.ok(job);assert.match(job,/environment: production/);assert.match(job,/expected_main_sha/);assert.match(job,/false false false false/);assert.match(wf,/inputs\.release_scope != 'pbl_artwork_links'/);assert.doesNotMatch(job,/SUPABASE_ACCESS_TOKEN|SUPABASE_PRODUCTION_SECRET_KEY|SUPABASE_STAGING_SECRET_KEY/);
+  const job=wf.match(/^  pbl_artwork_links:\r?\n[\s\S]*?(?=^  [a-z_]+:\r?\n)/m)?.[0];assert.ok(job);assert.match(job,/environment: production/);assert.match(job,/expected_main_sha/);assert.match(job,/false false false false/);assert.match(wf,/inputs\.release_scope != 'pbl_artwork_links'/);assert.match(job,/SUPABASE_PRODUCTION_SECRET_KEY/);assert.doesNotMatch(job,/SUPABASE_STAGING_SECRET_KEY/);
+});
+
+test('120 copied originals preserve hashes and have distinct immutable keys',()=>{
+  const keys=rows.map(copyKey);assert.equal(new Set(keys).size,120);
+  for(let i=0;i<rows.length;i++){assert.notEqual(keys[i],rows[i].storage_key);assert.ok(keys[i].includes(rows[i].sha256));assert.ok(keys[i].includes(rows[i].duplicate_printing_id));}
+  assert.throws(()=>copyKey({...row,storage_key:'outside/original.jpg'}));
+  assert.throws(()=>copyKey({...row,duplicate_printing_id:'../unsafe'}));
+});
+
+test('copy plans retain original provenance and reject mismatched source bytes',()=>{
+  const {source}=fixture();const [o]=copyObjects([row],[source]);assert.equal(o.sourceKey,source.storage_key);assert.equal(o.key,copyKey(row));assert.equal(o.sha256,source.content_sha256);assert.equal(o.byteSize,100);
+  assert.throws(()=>copyObjects([row],[{...source,content_sha256:'0'.repeat(64)}]));
+  const p=relinkPayload(row,source);assert.equal(p.storage_key,p.storage_path);assert.equal(p.storage_key,p.archival_storage_key);assert.ok(p.url.endsWith(p.storage_key));assert.equal(p.original_source_url,source.original_source_url);
 });
 
 test('a reverse-associated asset is usable only as a provider-verified generic printing front',()=>{

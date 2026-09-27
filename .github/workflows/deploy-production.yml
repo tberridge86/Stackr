@@ -392,6 +392,8 @@ jobs:
         env:
           STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
           STACKR_PBL_CONFIRMATION: RELINK PBL
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
           SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           STACKR_PBL_OUTPUT: ${{ runner.temp }}/pbl-artwork-links

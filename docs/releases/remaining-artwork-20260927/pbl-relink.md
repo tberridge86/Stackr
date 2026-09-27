@@ -1,55 +1,22 @@
-# Pitch Black duplicate artwork links
+# Pitch Black duplicate artwork repair
 
-The 120 original Queue 1 `PBL` printing records lack direct artwork even though
-their canonical `me05` counterparts have all 120 public fronts. The set picker
-hides the duplicate when the canonical set is available; that does not repair a
-saved binder referring to an old PBL ID.
+The 120 original Queue 1 PBL printing records lack direct artwork even though their canonical me05 counterparts have all 120 public fronts. The set picker hides the duplicate when the canonical set is available; saved binders referring to an old PBL ID still need the repair.
 
-`tools/queue1-pbl-relink-20260927/cohort.json` freezes all 120 name/number/printing
-pairs and exact existing source image IDs, hashes and derivative descriptors.
-The repair creates one printing-front asset binding and current catalogue-version
-link per duplicate. It reuses the existing storage keys and approved source
-provenance; no object upload, card/variant edit, source activation, ownership
-change, model-training permission or exact-finish claim is introduced.
+The frozen cohort pins 120 exact name/number/printing pairs and current public source asset IDs, hashes and derivative descriptors. Current TCGdex descriptors must independently confirm each generic English front. New bindings have no variant, no exact-finish claim and no recognition eligibility.
 
-Execution uses `deploy-production.yml`, `release_scope=pbl_artwork_links`, the exact
-merged main SHA and the existing protected production environment/shared lock.
-Every unrelated migration, gateway and mobile option must remain false.
+## Current implementation
 
-The job first inserts and verifies the exact bindings inside a serializable
-staging transaction and rolls it back. It then reads the live production
-identities and eligible public source assets, downloads/hashes/decodes all 480
-existing originals and derivatives, rebinds inside a serializable production
-transaction, and inserts the 120 assets/links atomically. Existing different
-target artwork, variant drift, wrong source/number/language, revoked eligibility
-or changed bytes stop the operation. Repeated runs accept only the exact same
-payload. No source or existing target asset is overwritten.
+Production has a unique index on original Storage-object references. Staging has a different shared-object rule. To retain both schemas, the repair makes exactly 120 byte-identical copies of the existing approved public originals under deterministic printing-specific, content-addressed keys. It reuses the 360 existing derivative files. No provider image is reacquired, no source permission is changed, and no existing asset, object, card identity, finish or ownership record is replaced.
 
-After commit, the job checks 120 distinct target manifest printings and repeats
-all 480 public file checks. Its scanned receipt records the new asset and link
-IDs, revision, timestamps, staging rehearsal, commit state and verification.
-Device rendering remains separate. A commit with uncertain outcome must be
-reconciled before any retry or rollback.
+The existing protected `deploy-production.yml` scope `pbl_artwork_links` requires the exact merged main SHA, shared production lock and all unrelated options disabled. Its existing credential resolver reads only the current production server key; staging has no Storage write credential.
 
-Rollback, if required after a verified publication, is a reviewed transaction
-restricted to the exact created IDs in the receipt: remove only their
-`catalogue_version_assets` rows and new `catalog.assets` bindings. Never delete
-the shared storage objects, canonical source assets, card identities or owner
-records. A precommit failure rolls back without an application-data change.
+Execution first rehearses the complete 120-asset/120-link insertion in staging and rolls it back. It then validates production identity and rights, verifies the 480 existing files, checks all proposed copy bytes and any existing copy keys before uploading, and copies only missing originals with overwrite disabled. Each copy is anonymously hashed, sized and decoded. A serializable transaction rechecks the source state and inserts 120 asset bindings and current-version links atomically. Post-commit checks require the exact copied original keys, hashes and derivative descriptors for all 120 target printings, then verify their 480 public files again.
 
-The first protected attempt, run `36321928721` at revision
-`d2a50b73116afb08d72287b54e7d78d2bc2dfcad`, stopped in the read-only staging
-preflight: 40 current public assets are associated with reverse-holo variants.
-It created no assets, links or storage objects and never opened production.
+Failures roll back catalogue changes before commit. Uploaded copies can remain without catalogue links after a later failure; the receipt records their exact keys, creation and verification state. A retry verifies existing copy bytes and accepts only an identical asset payload. Never delete canonical originals or shared derivatives. Any cleanup of copies requires receipt reconciliation and proving no remaining asset references. An uncertain commit must be reconciled before retry or rollback.
 
-The follow-up independently reads all 120 current TCGdex card descriptors and
-requires their exact English set, collector number, name and generic `image`
-reference to match the frozen source asset URL. Only then may an existing
-normal, holo or reverse-holo association supply the printing front. Named
-stamps, unknown variants, withdrawn public assets, changed references and
-changed bytes remain rejected. The new binding has no variant and makes no
-exact-finish claim; unavailable historical assets are never restored.
+## Previous attempts
 
-Validation: 19 focused identity/retry/config/workflow checks; existing deployment
-tooling checks; changed-file ESLint. The actual staging and production results
-will be appended to the matching PR and the owner-facing receipt.
+- Run 36321928721 at d2a50b73116afb08d72287b54e7d78d2bc2dfcad stopped in read-only staging preflight because 40 generic source fronts were associated with reverse-holo variants. No writes occurred. Fresh provider-front proof now distinguishes the generic image from that catalogue association.
+- Run 36322628918 at ae7db1dc5dba9365ef3d5fe419809f4b2ed8af29 passed all 120 current provider checks, the full staging rehearsal/rollback and all 480 public file checks. Production's original-object uniqueness constraint rejected the first new binding; the transaction rolled back, with no created assets, links or objects. Distinct original copies address this without changing a database rule.
+
+Validation: 21 focused PBL checks plus 43 existing publication/credential checks passed. Changed-file ESLint and deployment-tooling checks apply. Actual execution results are recorded in the matching PR and owner-facing receipt. Device rendering remains unverified.
