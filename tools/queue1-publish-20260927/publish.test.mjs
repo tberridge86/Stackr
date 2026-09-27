@@ -3,10 +3,31 @@ import { Buffer } from 'node:buffer';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolveServerKey } from './credentials.mjs';
-import { validateEvidence, assertConfig, withCatalogueReaders, bind, assertPrivateAsset, publicPayload, assertExistingAsset, assertNoArtworkConflicts, prepareApprovedBytes, digest, STAGING, PRODUCTION, APPROVAL_PATH, PREFIX } from './publish.mjs';
+import { validateEvidence, assertConfig, withCatalogueReaders, bind, assertPrivateAsset, publicPayload, assertExistingAsset, assertNoArtworkConflicts, prepareApprovedBytes, retryStorageRead, digest, STAGING, PRODUCTION, APPROVAL_PATH, PREFIX } from './publish.mjs';
 const cohort = readFileSync(new URL('./cohort.json', import.meta.url));
 const approval = readFileSync(new URL('../../' + APPROVAL_PATH, import.meta.url));
 const rows = validateEvidence(cohort, approval);
+test('temporary storage connection pressure gets a bounded retry', async () => {
+  let calls = 0; const waits = [];
+  assert.equal(await retryStorageRead(async () => { if (++calls < 3) throw new Error('Too many connections issued to the database'); return 'bytes'; }, async ms => waits.push(ms)), 'bytes');
+  assert.equal(calls, 3); assert.ok(waits.every(ms => ms > 0 && ms <= 4000));
+  calls = 0;
+  await assert.rejects(retryStorageRead(async () => { calls++; throw Object.assign(new Error('unavailable'), { status: 503 }); }, async () => {}));
+  assert.equal(calls, 4);
+});
+test('access denials and byte-validation errors are never retried', async () => {
+  for (const error of [Object.assign(new Error('forbidden'), { status: 403 }), new Error('Image bytes changed')]) {
+    let calls = 0;
+    await assert.rejects(retryStorageRead(async () => { calls++; throw error; }, () => assert.fail('must not retry')));
+    assert.equal(calls, 1);
+  }
+});
+test('storage preparation never exceeds three simultaneous reads', async () => {
+  const objects = Array.from({ length: 10 }, (_, i) => ({ key: String(i) }));
+  let active = 0, peak = 0;
+  await prepareApprovedBytes(objects, { existingKeys: new Set(), readSource: async () => { active++; peak = Math.max(active, peak); await Promise.resolve(); active--; return Buffer.from('fixture'); }, readTarget: () => assert.fail('wrong storage'), validate: async () => {} });
+  assert.equal(peak, 3);
+});
 test('batch conflict checks accept exact retries and reject other artwork or printing mappings', () => {
   const plans = [{ target: { printing_id: 'printing' }, image_sha256: 'hash' }];
   assert.doesNotThrow(() => assertNoArtworkConflicts(plans, []));
