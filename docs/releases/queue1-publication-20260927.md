@@ -88,10 +88,19 @@ production review but failed on the first Supabase source read with
 
 The publisher now prefers the configured modern server secret. If the saved key
 is legacy, it uses the existing production environment's `SUPABASE_ACCESS_TOKEN`
-to read the exact project's existing modern server key through the
+to read the exact project's named existing modern server key through the
 [documented Management API](https://supabase.com/docs/reference/api/v1-get-project-api-keys).
 This requires existing `secrets:read` access; missing access or ambiguous keys
 stops before writes. It creates no keys, changes no key settings and never enables
 legacy keys. Fetched credentials stay in memory and are masked in GitHub logs.
-Five additional credential tests cover fixed projects, read-only lookup, modern
+Six additional credential tests cover fixed projects, read-only lookup, modern
 key selection, failure handling and secret-free diagnostics.
+
+Retry [36313752514](https://github.com/tberridge86/Stackr/actions/runs/36313752514)
+at revision `bbad42a627605687c4985386acffdef491884855` successfully reached the
+management API but stopped before writes because multiple server keys exist.
+Read-only dashboard inspection confirmed four secret keys in each project. The
+resolver now selects staging's existing `stackr_catalogue_operator` key and
+production's existing `default` key by exact name and secret type. It still rejects
+missing, duplicate, malformed or restricted-role matching keys. No key was revealed
+in chat, created, rotated or enabled during that inspection.

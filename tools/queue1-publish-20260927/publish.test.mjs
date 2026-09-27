@@ -17,7 +17,7 @@ test('legacy credential is replaced only by an existing modern server key from t
     assert.equal(url, `https://api.supabase.com/v1/projects/${STAGING}/api-keys?reveal=true`);
     assert.equal(options.method, 'GET'); assert.equal(options.redirect, 'error');
     assert.equal(options.headers.Authorization, 'Bearer test-management-token');
-    return { ok: true, json: async () => [{ type: 'legacy', api_key: 'old' }, { type: 'publishable', api_key: 'sb_publishable_fixture' }, { type: 'secret', api_key: modernKey }] };
+    return { ok: true, json: async () => [{ type: 'legacy', api_key: 'old' }, { type: 'publishable', api_key: 'sb_publishable_fixture' }, { name: 'default', type: 'secret', api_key: modernKey + 'other' }, { name: 'stackr_catalogue_operator', type: 'secret', api_key: modernKey }] };
   } });
   assert.equal(actual, modernKey); assert.equal(masked, modernKey);
 });
@@ -26,8 +26,13 @@ test('key lookup rejects unrelated projects and missing management credentials b
   await assert.rejects(resolveServerKey({ project: 'other', configuredKey: modernKey, fetchImpl }));
   await assert.rejects(resolveServerKey({ project: PRODUCTION, configuredKey: 'legacy', fetchImpl }));
 });
-test('key lookup rejects missing, ambiguous, malformed and restricted-role server keys', async () => {
-  for (const keys of [[], {}, [{ type: 'legacy', api_key: modernKey }], [{ type: 'secret', api_key: 'masked' }], [{ type: 'secret', api_key: modernKey, secret_jwt_template: { role: 'anon' } }], [{ type: 'secret', api_key: modernKey }, { type: 'secret', api_key: modernKey + '2' }]]) {
+test('production selects its existing default server key among multiple keys', async () => {
+  const keys = [{ name: 'railway_backend_2026_08_rotation', type: 'secret', api_key: modernKey + 'other' }, { name: 'default', type: 'secret', api_key: modernKey }];
+  assert.equal(await resolveServerKey({ project: PRODUCTION, accessToken: 'fixture', fetchImpl: async () => ({ ok: true, json: async () => keys }) }), modernKey);
+});
+test('key lookup rejects missing, ambiguous, malformed and restricted-role named server keys', async () => {
+  const name = 'stackr_catalogue_operator';
+  for (const keys of [[], {}, [{ name: 'wrong', type: 'secret', api_key: modernKey }], [{ name, type: 'legacy', api_key: modernKey }], [{ name, type: 'secret', api_key: 'masked' }], [{ name, type: 'secret', api_key: modernKey, secret_jwt_template: { role: 'anon' } }], [{ name, type: 'secret', api_key: modernKey }, { name, type: 'secret', api_key: modernKey + '2' }]]) {
     await assert.rejects(resolveServerKey({ project: STAGING, accessToken: 'fixture', fetchImpl: async () => ({ ok: true, json: async () => keys }) }));
   }
 });
