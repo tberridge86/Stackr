@@ -9,6 +9,15 @@ const holo = '44444444-4444-4444-8444-444444444444';
 const row = (variant_id, variant_code, finish_code = variant_code) => ({ variant_id, printing_id: printing, set_id: set, set_code: 'me01', collector_number: '133', language_code: 'en', variant_code, finish_code });
 const raw = { quantity: 1, condition: 'Near Mint', grade_company: '', grade: '', language: 'en', set_id: 'me1', card_id: 'me1-133', variant: 'normal' };
 
+const legacyRaw={...raw,set_id:'sv1',card_id:'sv1-133'};
+const legacySet=[{source_entity_type:'set',external_id:'sv01',language_code:'en',set_id:set}];
+assert.equal(resolveGeneralPriceIdentity(legacyRaw,legacySet,[row(holo,'holo')]).priceVariantId,holo,'existing verified legacy pair can identify a general holo base');
+assert.equal(resolveGeneralPriceIdentity({...legacyRaw,language:null},legacySet,[row(holo,'holo')]).ok,false,'no inferred English');
+assert.equal(resolveGeneralPriceIdentity({...legacyRaw,card_id:'sv2-133'},legacySet,[row(holo,'holo')]).ok,false,'saved set/card prefix conflict');
+assert.equal(resolveGeneralPriceIdentity(legacyRaw,[...legacySet,{source_entity_type:'card',external_id:'sv1-133',language_code:'ja',printing_id:printing}],[row(holo,'holo')]).ok,false,'foreign literal alias cannot be bypassed');
+assert.equal(resolveGeneralPriceIdentity(legacyRaw,legacySet,[row(holo,'holo'),{...row(normal,'normal'),printing_id:'55555555-5555-4555-8555-555555555555'}]).ok,false,'repeated collector number cannot choose a printing');
+assert.equal(resolveGeneralPriceIdentity({...raw,set_id:set,card_id:printing},[],[row(holo,'holo')]).priceVariantId,holo,'published canonical printing remains general');
+
 assert.equal(selectGeneralPriceBase([row(normal, 'normal'), row(holo, 'holo')]).baseVariantId, normal, 'normal is preferred over holo');
 assert.equal(selectGeneralPriceBase([row(holo, 'holo')]).baseVariantId, holo, 'a unique holo is a safe general base');
 assert.equal(selectGeneralPriceBase([row(holo, 'holo'), row('55555555-5555-4555-8555-555555555555', 'holo')]), null, 'two holos are ambiguous');

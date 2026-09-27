@@ -112,6 +112,7 @@ function binderLanguageContext(row, binders, binderCards) {
 
 function generalOwnedCandidate(row) {
   return Number(row?.quantity ?? 0) > 0
+    && !row?.ambiguousDefaults
     && ['near mint', 'near_mint', 'nm', 'raw_near_mint'].includes(String(row?.condition ?? '').trim().toLowerCase())
     && !row?.grade_company && !row?.grade && Boolean(String(row?.card_id ?? '').trim())
     && !hasSavedLanguageConflict(row);
@@ -150,7 +151,7 @@ async function enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows, includ
   });
 }
 
-export async function readOwnedRows(supabase, ownerId, includeGeneral = false) {
+export async function readOwnedRows(supabase, ownerId, includeGeneral = false, completeOwned = false) {
   // This is a candidate scan, never a provider-pull limit. It remains bounded
   // so a corrupted owner collection cannot turn a scheduled run into a broad
   // catalogue refresh.
@@ -165,6 +166,23 @@ export async function readOwnedRows(supabase, ownerId, includeGeneral = false) {
   // before a partial scan drives an "all prices" refresh claim.
   if (rows.length >= OWNED_SCAN_MAX_ROWS) {
     throw new Error('Owner price refresh scan reached its safe result bound.');
+  }
+  if (completeOwned && includeGeneral) {
+    // A complete collection pass uses the same deduplicated saved-unit cohort
+    // as Home and binders, including legacy owned placements. No holdings write.
+    const { data, error } = await supabase.schema('api').rpc('collection_valuation_inputs', { p_owner: ownerId });
+    if (error) throw error;
+    if (!data || !Array.isArray(data.ownedRows) || !Array.isArray(data.binders) || !Array.isArray(data.binderCards)) throw Error('Complete owner snapshot is unavailable.');
+    const units = ownedValuationUnits(data);
+    if (units.length >= OWNED_SCAN_MAX_ROWS) throw Error('Complete owner snapshot reached its safe result bound.');
+    return units.map(unit => {
+      const finish = savedProviderVariantCode(unit);
+      if (finish && finish !== 'normal' && !unit.language && !knownLanguage(unit.card_id) && !knownLanguage(unit.set_id)
+        && binderLanguageContext(unit,data.binders,data.binderCards).state === 'absent' && verifiedLegacyEnglishMePair(unit)) {
+        return { ...unit, language:'en' };
+      }
+      return unit;
+    });
   }
   return enrichOwnedRowsWithBinderLanguage(supabase, ownerId, rows, includeGeneral);
 }
@@ -226,7 +244,7 @@ async function resolveOwnedCandidates(supabase, ownedRows, includeGeneral = fals
   if (includeGeneral) catalogueRows.push(...await readGeneralPrintingCatalogue(supabase,
     rowsNeedingIdentity, identifierRows, catalogueRows));
   return ownedRows.map((row) => {
-    if (hasSavedLanguageConflict(row)) return { ok: false, reason: 'ambiguous_saved_identity' };
+    if (hasSavedLanguageConflict(row) || row.ambiguousDefaults) return { ok: false, reason: 'ambiguous_saved_identity' };
     const exact = resolveScopedOwnedProviderVariant(row, identifierRows, catalogueRows);
     if (!includeGeneral || !generalOwnedCandidate(row)) return exact;
     const general = resolveGeneralPriceIdentity(row, identifierRows, catalogueRows);
@@ -428,7 +446,7 @@ export async function runOwnerProviderRefresh({ supabase, refreshExactProviderEs
   const resolvedQueue = includeQueue ? await resolveOwnerQueue(supabase, queueRows, ownerId) : [];
   const validQueue = resolvedQueue.filter((item) => item.ok);
   const invalidQueue = resolvedQueue.filter((item) => !item.ok);
-  const ownedRows = queueOnly ? [] : await readOwnedRows(supabase, ownerId, includeGeneral);
+  const ownedRows = queueOnly ? [] : await readOwnedRows(supabase, ownerId, includeGeneral, completeOwned);
   const resolved = queueOnly ? [] : await resolveOwnedCandidates(supabase, ownedRows, includeGeneral);
   // The same owned identity can appear through multiple binder rows. One
   // exact provider snapshot is sufficient for that canonical variant.

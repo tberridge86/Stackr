@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
+import { readOwnedRows, runOwnerProviderRefresh } from './refresh-owner-provider-prices.mjs';
 
 const owner = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const otherOwner = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -12,6 +12,19 @@ const foreignVariant = '55555555-5555-4555-8555-555555555555';
 const printing = '66666666-6666-4666-8666-666666666666';
 const saved = { user_id: owner, set_id: 'ja:S12a', variant: 'normal', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' };
 const catalogueBase = { set_id: setId, language_code: 'ja', variant_code: 'normal', finish_code: 'normal' };
+
+test('complete general pass uses the valuation cohort and deduplicates legacy binder placements', async () => {
+  const binder={id:'b',type:'custom',language:'en',default_condition:'Near Mint'};
+  const owned={...saved,id:'saved',card_id:'sv1-133',set_id:'sv1',quantity:2};
+  const placement={binder_id:'b',card_id:'sv1-134',set_id:'sv1',owned:true,owned_quantity:3};
+  const snapshot={ownedRows:[owned],binders:[binder],binderCards:[placement,{...placement}]};
+  const supabase=database({ownerRows:[owned],languageContext:snapshot});
+  const rows=await readOwnedRows(supabase,owner,true,true);
+  assert.equal(rows.length,2);assert.equal(rows.reduce((n,row)=>n+row.quantity,0),5);
+  assert.equal(rows.find(row=>String(row.id).startsWith('legacy:')).language,'en');
+  assert(supabase.rpcCalls.every(call=>call.args.p_owner===owner),'snapshot remains owner scoped');
+  await assert.rejects(readOwnedRows(database({ownerRows:[owned],languageContext:{binders:[],binderCards:[]}}),owner,true,true),/snapshot is unavailable/);
+});
 
 function database({ ownerRows = null, identifiers = null, catalogue = null, languageContext = null, languageContextError = null } = {}) {
   const reads = [];

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
+import './test-stored-price-read.mjs';
 import { assertCatalogueCapacity, catalogueRefreshPlan, refreshOutcome } from './refresh-catalogue-prices.mjs';
 import { mergeValuationTrend, valuationTrendEvidence, ownedValuationUnits, prepareCollectionValuation, readPages, resolveValuationUnit, setValuationUnits, summarisePreparedUnits } from './lib/prepared-collection-valuation.mjs';
 import { createMarketPricingService } from '../backend/lib/marketPricing/service.js';

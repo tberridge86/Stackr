@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertRollbackSafeMigrationSql } from './migration-transaction-safety.mjs';
 import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
+import { prepareStoredPriceRead, storedPriceReadSource, STORED_PRICE_READ_MIGRATION } from './prepare-stored-price-read.mjs';
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const productionRef = 'oakdbbzdqwurpjnoqhmu';
@@ -44,6 +45,7 @@ function source(migration) { return readFileSync(resolve(root, 'supabase/migrati
 function digest(value) { return createHash('sha256').update(value, 'utf8').digest('hex'); }
 
 export function validateMigrationSources(scope = 'personal') {
+  if (scope === 'stored-price-read') return new Map([[STORED_PRICE_READ_MIGRATION.version, storedPriceReadSource()]]);
   if (!['personal', 'catalogue', 'pricing-repair'].includes(scope)) throw new Error('invalid_scope_argument');
   const migrations = scope === 'catalogue' ? [CATALOGUE_PRICING_MIGRATION]
     : scope === 'pricing-repair' ? [PRICING_REPAIR_MIGRATION] : REQUIRED_MIGRATIONS;
@@ -76,7 +78,7 @@ export function parseArguments(argv) {
   if (values.has('apply') && !['true', 'false'].includes(values.get('apply'))) throw new Error('invalid_apply_argument');
   if (values.has('rehearse') && !['true', 'false'].includes(values.get('rehearse'))) throw new Error('invalid_rehearse_argument');
   if (values.get('apply') === 'true' && values.get('rehearse') === 'true') throw new Error('apply_and_rehearse_mutually_exclusive');
-  if (values.has('scope') && !['personal', 'catalogue', 'pricing-repair'].includes(values.get('scope'))) throw new Error('invalid_scope_argument');
+  if (values.has('scope') && !['personal', 'catalogue', 'pricing-repair', 'stored-price-read'].includes(values.get('scope'))) throw new Error('invalid_scope_argument');
   return { dbUrl: values.get('db-url') ?? '', ownerEmail: values.get('owner-email') ?? '', scope: values.get('scope') ?? 'personal', apply: values.get('apply') === 'true', rehearse: values.get('rehearse') === 'true' };
 }
 
@@ -180,6 +182,7 @@ export async function preparePersonalPricing({ dbUrl, ownerEmail, scope = 'perso
   const sources = validateMigrationSources(scope);
   if (!dbUrl) throw new Error('production_database_url_required');
   assertProductionDatabaseUrl(dbUrl);
+  if (scope === 'stored-price-read') return prepareStoredPriceRead({client:createClient(dbUrl,'stackr_personal_pricing_preparation'),apply,rehearse});
   if (scope === 'personal' && !/^\S+@\S+\.\S+$/.test(ownerEmail)) throw new Error('owner_email_required');
   const client = createClient(dbUrl, 'stackr_personal_pricing_preparation');
   await client.connect();
