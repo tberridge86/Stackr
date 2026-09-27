@@ -1,0 +1,30 @@
+name: Invoke reviewed Queue 1 staging workflow
+on:
+  push:
+    branches: ['agent/catalogue/queue1-acquisition-20260927']
+    paths: ['.github/workflows/queue1-authorised-dispatch-20260927.yml']
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: queue1-authorised-dispatch-20260927
+  cancel-in-progress: false
+jobs:
+  dispatch-reviewed-main:
+    if: github.actor == 'tberridge86' && github.ref == 'refs/heads/agent/catalogue/queue1-acquisition-20260927' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Invoke only the reviewed main workflow; no database or environment credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='b5ac888cade839c24e566af9774b74b2abcd7f79'
+          actual="$(gh api repos/tberridge86/Stackr/commits/main --jq .sha)"
+          [[ "$actual" == "$expected" ]] || { echo 'Main moved; review the new revision before execution.'; exit 1; }
+          prior="$(gh api "repos/tberridge86/Stackr/actions/workflows/queue1-private-staging-20260927.yml/runs?event=workflow_dispatch&head_sha=${expected}&per_page=100" --jq .total_count)"
+          [[ "$prior" == '0' ]] || { echo 'A dispatch already exists for this reviewed revision; do not duplicate it.'; exit 1; }
+          printf '%s' '{"ref":"main","inputs":{"confirmation":"STAGE QUEUE1"}}' | gh api repos/tberridge86/Stackr/actions/workflows/queue1-private-staging-20260927.yml/dispatches --method POST --input -
+          echo 'Requested the existing protected staging workflow on reviewed main. This dispatcher changes no protection rules, source flags, storage or database records.'
