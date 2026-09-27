@@ -1,0 +1,59 @@
+name: Repair Pitch Black Price Identities
+on:
+  workflow_dispatch:
+    inputs:
+      expected_main_sha:
+        description: Reviewed exact main commit
+        type: string
+        required: true
+      apply:
+        description: Commit the bounded alias repair after staging and production rehearsals
+        type: boolean
+        default: false
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: pitch-black-price-identities-production
+  cancel-in-progress: false
+jobs:
+  repair:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Verify reviewed source
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_main_sha }}
+        run: |
+          test "$EXPECTED_SHA" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node tools/pbl-price-identities-20260927/repair.test.mjs
+      - name: Rehearse and optionally repair existing aliases
+        env:
+          STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+          STACKR_PBL_APPLY: ${{ inputs.apply }}
+          STACKR_PBL_OUTPUT: ${{ runner.temp }}/pbl-price-identities
+          SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node tools/pbl-price-identities-20260927/repair.mjs
+      - name: Scan receipt
+        if: always()
+        id: scan
+        run: node scripts/deploy/secret-scan.mjs --directory="$RUNNER_TEMP/pbl-price-identities"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always() && steps.scan.outcome == 'success'
+        with:
+          name: pbl-price-identities-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pbl-price-identities
+          retention-days: 90
