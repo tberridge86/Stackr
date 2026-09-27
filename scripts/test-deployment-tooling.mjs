@@ -3703,7 +3703,7 @@ assert.match(productionWorkflow, /STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED/);
 assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
-assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[backend_only, queue1_artwork, pbl_artwork_links, catalogue_assets, catalogue_api, full_platform\]/);
+assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[backend_only, queue1_artwork, pbl_artwork_links, mep89_artwork, catalogue_assets, catalogue_api, full_platform\]/);
 assert.match(productionWorkflow, /--require-catalogue-api-ready/);
 assert.match(
   productionWorkflow,
