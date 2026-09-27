@@ -1388,7 +1388,8 @@ export async function fetchStackrPriceSnapshots(
 
 export async function searchStackrCards(
   query: string,
-  options: { language?: string | null; setId?: string | null; limit?: number } = {},
+  options: { language?: string | null; setId?: string | null; limit?: number;
+    onCanonicalResults?: (cards: StackrLegacyCard[]) => void } = {},
   client: StackrApiClient = stackrApiClient,
 ) {
   const value = String(query ?? '').trim();
@@ -1404,12 +1405,15 @@ export async function searchStackrCards(
     limit: Math.max(1, Math.min(100, options.limit ?? 40)),
   });
   const cards = response.data.results.filter((result) => result.type === 'card' && result.card);
+  // Canonical matches are usable immediately; optional image manifests must
+  // not hold the first card rows behind a separate network round trip.
+  options.onCanonicalResults?.(cards.map((result) => stackrCardToLegacyCard(result.card!)));
   const printingIds = [...new Set(cards
     .map((result) => result.card!)
     .filter((card) => !primaryCardImageAsset(card, embeddedCardImageAssets(card)))
     .map((card) => card.cardId))];
   const assets = await Promise.all(printingIds.map((printingId) => (
-    fetchStackrAssetsForPrinting(client, printingId)
+    fetchStackrAssetsForPrinting(client, printingId).catch(() => [])
   )));
   const assetsByPrinting = new Map(printingIds.map((id, index) => [id, assets[index]]));
   return cards.map((result) => stackrCardToLegacyCard(result.card!, assetsByPrinting.get(result.card!.cardId) ?? []));

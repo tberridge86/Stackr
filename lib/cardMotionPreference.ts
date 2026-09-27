@@ -19,6 +19,8 @@ export function createCardMotionPreference(storage: Pick<typeof AsyncStorage, 'g
     subscribe: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
     hydrate,
     save: async (reduced: boolean) => {
+      // A delayed startup read must settle before it can overwrite this choice.
+      await hydrate();
       await storage.setItem(CARD_MOTION_KEY, String(reduced));
       snapshot = { reduced, loaded: true, error: false };
       emit();

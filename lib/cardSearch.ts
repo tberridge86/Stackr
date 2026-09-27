@@ -30,6 +30,7 @@ type SearchOptions = {
   skipApiBackedSearch?: boolean;
   skipIndexFallback?: boolean;
   skipNameCorrection?: boolean;
+  onCanonicalResults?: (rows: SearchRow[]) => void;
 };
 
 type ParsedSearch = {
@@ -882,11 +883,7 @@ export async function searchLocalPokemonCards<T extends SearchRow = SearchRow>(
   const catalogueQuery = parseCardSearchIntent(trimmed).catalogueQuery;
   if (catalogueQuery.length < 2) return [];
   const limit = options.limit ?? 80;
-  const cards = await attachLiveTcgdexCardReferences(await searchStackrCards(catalogueQuery, {
-    language: isAllLanguageSearch(options.language) ? null : options.language,
-    limit,
-  }));
-  return cards.map((card) => ({
+  const toRows = (cards: Awaited<ReturnType<typeof searchStackrCards>>) => cards.map((card) => ({
     id: card.id,
     name: card.name,
     language: card.language,
@@ -899,5 +896,12 @@ export async function searchLocalPokemonCards<T extends SearchRow = SearchRow>(
     set_name: card.set.name,
     external_ids: card.externalIds,
     raw_data: card.raw_data,
-  })) as unknown as T[];
+  }));
+  const cards = await attachLiveTcgdexCardReferences(await searchStackrCards(catalogueQuery, {
+    language: isAllLanguageSearch(options.language) ? null : options.language,
+    limit,
+    onCanonicalResults: options.onCanonicalResults
+      ? (matches) => options.onCanonicalResults?.(toRows(matches)) : undefined,
+  }));
+  return toRows(cards) as unknown as T[];
 }

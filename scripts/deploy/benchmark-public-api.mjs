@@ -79,6 +79,10 @@ const scenarios = [
 
 const results = [];
 for (const scenario of scenarios) {
+  const durations = [];
+  const statuses = new Set();
+  const usefulCounts = [];
+  try {
   const url = `${gateway}${scenario.path}`;
   for (let index = 0; index < warmups; index += 1) {
     const warmup = await timedRequest(url, timeoutMs);
@@ -86,9 +90,6 @@ for (const scenario of scenarios) {
     validatePublicApiBenchmarkResponse(scenario.id, warmup.body);
   }
 
-  const durations = [];
-  const statuses = new Set();
-  const usefulCounts = [];
   for (let index = 0; index < samples; index += 1) {
     const sample = await timedRequest(url, timeoutMs);
     statuses.add(sample.status);
@@ -114,6 +115,16 @@ for (const scenario of scenarios) {
     maxMs: Number(Math.max(...durations).toFixed(2)),
     passed: p95Ms <= scenario.thresholdMs,
   });
+  } catch (error) {
+    // Keep completed scenarios and partial measurements when one route fails.
+    // A failed identity check or timeout is never counted as a fast success.
+    results.push({
+      id: scenario.id, path: scenario.path, samples: durations.length,
+      requestedSamples: samples, statuses: [...statuses].sort(),
+      thresholdP95Ms: scenario.thresholdMs, passed: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 const report = {

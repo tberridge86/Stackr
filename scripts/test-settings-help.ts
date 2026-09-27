@@ -35,6 +35,18 @@ async function main() {
   const reopened = createCardMotionPreference(disk); await reopened.hydrate(); assert.equal(reopened.getSnapshot().reduced, false);
   failSave = true; await assert.rejects(motion.save(true)); assert.equal(motion.getSnapshot().reduced, false); failSave = false;
 
+  let finishStartupRead!: (value: string) => void;
+  const racingMotion = createCardMotionPreference({
+    getItem: () => new Promise<string>(resolve => { finishStartupRead = resolve; }),
+    setItem: disk.setItem,
+  });
+  const startup = racingMotion.hydrate();
+  const choice = racingMotion.save(true);
+  finishStartupRead('false');
+  await Promise.all([startup, choice]);
+  assert.equal(racingMotion.getSnapshot().reduced, true, 'a late startup read cannot re-enable motion after the user disables it');
+  assert.equal(storage.get(CARD_MOTION_KEY), 'true');
+
   let account: any = { id: 'A', email: 'A@example.invalid', identities: [{ provider: 'apple' }] };
   let failEmail = true; const mail: string[] = [];
   const route: string[] = [];

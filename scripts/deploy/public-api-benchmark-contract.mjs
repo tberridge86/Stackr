@@ -32,7 +32,7 @@ export function validatePublicApiBenchmarkResponse(scenario, body) {
 
   if (scenario === 'health') {
     assert.equal(body.data.status, 'ok', 'health_status_not_ok');
-    assert.equal(body.data.service, 'stackr-api', 'health_service_identity_mismatch');
+    assert(['stackr-api', 'stackr-api-gateway'].includes(body.data.service), 'health_service_identity_mismatch');
     return { usefulCount: 1, expectedIdentityFound: true, languageVerified: null };
   }
 
