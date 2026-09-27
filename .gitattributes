@@ -16,3 +16,5 @@
 # Migration ledgers and security fixtures hash the canonical SQL bytes.
 /supabase/migrations/*.sql text eol=lf
 /supabase/staging-migrations/overrides/*.sql text eol=lf
+
+tools/queue1-pbl-relink-20260927/cohort.json text eol=lf
