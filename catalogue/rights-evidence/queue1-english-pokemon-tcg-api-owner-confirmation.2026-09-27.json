@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "stackr-owner-image-permission-attestation-v1",
+  "attestationId": "queue1-english-pokemon-tcg-api-owner-confirmation:2026-09-27",
+  "recordedAt": "2026-09-27T09:08:10.391379+00:00",
+  "approvingPerson": "Jack Berridge",
+  "recordBasis": "Explicit confirmation in Codex chat 01a0e214-fd70-7f72-b6f9-73facefe843d on 27 September 2026.",
+  "question": "Does your existing artwork permission also cover storing, resizing and displaying these English Pokémon TCG API images in Stackr?",
+  "ownerStatement": "YES",
+  "decision": "Accept the owner's representation of existing permission for this exact cohort and its original/search/grid/detail files. This record is an owner attestation, not an independently issued rights-holder licence.",
+  "sourceCode": "pokemon_tcg_api",
+  "languageCode": "en",
+  "targetCount": 348,
+  "cohortSha256": "69c2fdecbb43337fde90b6687996faaade168f6a561ce6b8cfa1dfa5ec2b1730",
+  "scope": {
+    "sm3.5": 78,
+    "sm7.5": 78,
+    "swsh4.5sv": 122,
+    "swsh12.5gg": 70
+  },
+  "capabilities": {
+    "store": true,
+    "resize": true,
+    "displayInStackr": true
+  },
+  "excluded": [
+    "Other cohorts and languages",
+    "New bulk provider acquisition",
+    "Model training or embeddings",
+    "Artwork resale or bulk export",
+    "Changing the private review bucket to public"
+  ],
+  "sourceWideApproval": false,
+  "retainsAttribution": true
+}

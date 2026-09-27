@@ -648,10 +648,9 @@ assert.match(backendRollback.stdout, /"deploymentRollback": true/);
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
 const platformCiWorkflow = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
-const productionBackendOnlyJob = productionWorkflow.slice(
-  productionWorkflow.indexOf('  backend_only:'),
-  productionWorkflow.indexOf('  deploy:', productionWorkflow.indexOf('  backend_only:')),
-);
+const productionBackendOnlyJob = productionWorkflow.match(
+  /^  backend_only:\r?\n[\s\S]*?(?=^  [a-zA-Z0-9_-]+:\r?$)/m,
+)?.[0] ?? '';
 const productionBackendHardeningWorkflow = readFileSync(
   '.github/workflows/deploy-production-backend-hardening.yml',
   'utf8',
@@ -3704,7 +3703,7 @@ assert.match(productionWorkflow, /STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED/);
 assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
-assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[backend_only, catalogue_assets, catalogue_api, full_platform\]/);
+assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[backend_only, queue1_artwork, catalogue_assets, catalogue_api, full_platform\]/);
 assert.match(productionWorkflow, /--require-catalogue-api-ready/);
 assert.match(
   productionWorkflow,
