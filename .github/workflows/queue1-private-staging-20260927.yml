@@ -1,17 +1,53 @@
 name: Queue 1 private staging ingestion
 on:
-  push:
-    branches: ['agent/catalogue/queue1-acquisition-20260927']
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type STAGE QUEUE1 to privately ingest the fixed 348 acquired images
+        required: true
+        type: string
+  pull_request:
     paths: ['tools/queue1-stage-20260927/**', '.github/workflows/queue1-private-staging-20260927.yml']
 permissions:
   contents: read
   actions: read
 concurrency:
-  group: stackr-staging-database-maintenance
+  group: ${{ github.event_name == 'workflow_dispatch' && 'stackr-staging-database-maintenance' || format('queue1-validation-{0}', github.ref) }}
   cancel-in-progress: false
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Read fixed acquisition receipts without staging access
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api repos/tberridge86/Stackr/actions/artifacts/10926700303/zip > queue1-acquired.zip
+          echo 'b7a307717726c7b22cfeda5b3179dec5ec79f42c4bb9240aba8f56246d9b21b1  queue1-acquired.zip' | sha256sum -c -
+          mkdir -p queue1-source
+          python3 - <<'PY'
+          import zipfile,pathlib
+          with zipfile.ZipFile('queue1-acquired.zip') as z:
+              pathlib.Path('queue1-source/receipts.json').write_bytes(z.read('receipts.json'))
+          PY
+      - name: Test exact identities and private-ingestion restrictions
+        run: node --test tools/queue1-stage-20260927/stage.test.mjs
+      - name: Verify existing backend dependencies and import compatibility
+        run: |
+          npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
+          node --input-type=module -e "await import('./backend/lib/assetPipeline.js'); await import('./backend/lib/objectStorage.js'); console.log('Existing image and storage modules loaded');"
   ingest:
-    if: github.ref == 'refs/heads/agent/catalogue/queue1-acquisition-20260927'
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirmation == 'STAGE QUEUE1'
     environment: staging
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -43,8 +79,6 @@ jobs:
                   assert (root/p).resolve().is_relative_to(root)
               z.extractall(root)
           PY
-      - name: Execute private-ingestion guard tests
-        run: node --test tools/queue1-stage-20260927/stage.test.mjs
       - name: Install existing locked backend image and storage dependencies
         run: npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
       - name: Ingest first 78 then remaining prepared sets into private staging
