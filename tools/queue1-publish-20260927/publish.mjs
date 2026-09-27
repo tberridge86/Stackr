@@ -34,16 +34,18 @@ export function assertConfig(env, execute) {
 export async function withCatalogueReaders(createClient, env, run) {
   const sourceDb = createClient(env.SUPABASE_STAGING_DB_URL, 'stackr-queue1-staging-read', { connectionTimeoutMillis: 15000 });
   const targetDb = createClient(env.SUPABASE_DB_URL, 'stackr-queue1-production-read', { connectionTimeoutMillis: 15000 });
+  const connected = new Set();
   try {
     for (const db of [sourceDb, targetDb]) {
       await db.connect();
+      connected.add(db);
       await db.query('begin read only');
       await db.query("set local statement_timeout='45s'");
     }
     return await run({ sourceDb, targetDb });
   } finally {
     await Promise.allSettled([sourceDb, targetDb].map(async db => {
-      try { await db.query('rollback'); } finally { await db.end(); }
+      try { if (connected.has(db)) await db.query('rollback'); } finally { await db.end(); }
     }));
   }
 }

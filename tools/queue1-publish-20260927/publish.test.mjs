@@ -64,6 +64,15 @@ test('metadata connections are read-only and close after successful or failed pr
     assert.ok(clients.every(db => db.closed && db.commands.at(-1) === 'rollback'));
   }
 });
+test('connection failure does not queue rollback on an unconnected reader', async () => {
+  const clients = [];
+  const createClient = () => {
+    const db = { connect: async () => { throw new Error('connection failed'); }, query: () => assert.fail('unconnected query'), end: async () => { db.closed = true; } };
+    clients.push(db); return db;
+  };
+  await assert.rejects(withCatalogueReaders(createClient, env, () => assert.fail('must not start preflight')), /connection failed/);
+  assert.ok(clients.every(db => db.closed));
+});
 const cards = rows.map(r => ({ game_code: 'pokemon', language_code: 'en', set_code: r.set_code, collector_number: r.collector_number, card_english_display_name: r.card_name, variant_code: r.variant_code, finish_code: r.finish_code, set_id: r.staging_set_id, printing_id: r.staging_printing_id, variant_id: r.staging_variant_id, same_artwork_as_variant_id: null, catalogue_version_id: 'version' }));
 const makePrivate = r => ({ id: r.staging_asset_id, set_id: r.staging_set_id, printing_id: r.staging_printing_id, variant_id: null, source_id: 'source', content_sha256: r.image_sha256, storage_bucket: 'stackr-catalogue-review', storage_provider: 'supabase_storage', storage_key: r.objects[0].key, publicly_servable: false, permission_status: 'under_review', rights_status: 'under_review', retention_status: 'active', derivative_list: r.objects.slice(1).map(o => ({ role: o.role, storageBucket: 'stackr-catalogue-review', storageKey: o.key, sha256: o.sha256, width: o.width, height: o.height })) });
 test('frozen approval binds exactly 348 unique images and 1392 objects', () => { assert.equal(rows.length, 348); assert.equal(rows.flatMap(r => r.objects).length, 1392); });
