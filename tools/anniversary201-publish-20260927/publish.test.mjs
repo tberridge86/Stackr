@@ -47,7 +47,8 @@ test('artwork stays at printing-front scope with three derivatives and no recogn
   }
 });
 test('public manifest rejects a cross-language version, conflict, or incomplete batch',()=>{
-  const found=rows.map(r=>({set_id:r.set_id,variant_id:null,printing_id:r.printing_id,language_code:r.language_code,catalogue_version_id:r.catalogue_version_id,asset_id:`${PREFIX}${r.printing_id}:${r.image_sha256}`,content_sha256:r.image_sha256}));
+  // Match the actual public view: there is no language_code field.
+  const found=rows.map(r=>({set_id:r.set_id,variant_id:null,printing_id:r.printing_id,catalogue_version_id:r.catalogue_version_id,asset_id:`${PREFIX}${r.printing_id}:${r.image_sha256}`,content_sha256:r.image_sha256}));
   validateManifest(rows,found,true);
   for(const bad of [found.slice(1),[{...found[0],catalogue_version_id:VERSIONS.ja}], [{...found[0],asset_id:'other'}]])assert.throws(()=>validateManifest(rows,bad,true));
 });
