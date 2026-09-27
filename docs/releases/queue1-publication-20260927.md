@@ -139,3 +139,6 @@ Production inspection showed five Storage API database connections. Storage
 concurrency is now three, with at most four attempts and short backoff for
 temporary read pressure/server failures. Access denials and hash/decode failures
 are not retried. No database connection limits or access controls are changed.
+Existing public-file revalidation uses the anonymous public delivery URL, the same
+path verified after commit, rather than authenticating reads of a public bucket.
+Private staging reads still require the verified server credential.

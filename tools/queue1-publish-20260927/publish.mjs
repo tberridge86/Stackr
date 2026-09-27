@@ -205,10 +205,18 @@ async function main() {
   const allObjects = prepared.flatMap(p => p.objects);
   const existingObjects = (await targetDb.query('select name from storage.objects where bucket_id=$1 and name=any($2::text[])', [PUBLIC_BUCKET, allObjects.map(o => o.key)])).rows;
   const readBytes = (storage, key) => retryStorageRead(async () => Buffer.from(await (await result(storage.download(key))).arrayBuffer()));
+  const readPublicBytes = o => retryStorageRead(async () => {
+    const response = await limitedFetch(`https://${PRODUCTION}.supabase.co/storage/v1/object/public/${PUBLIC_BUCKET}/${o.key}`);
+    if (!response.ok) {
+      await response.body?.cancel();
+      throw Object.assign(new Error('Public storage response failed'), { status: response.status });
+    }
+    return Buffer.from(await response.arrayBuffer());
+  });
   await prepareApprovedBytes(allObjects, {
     existingKeys: new Set(existingObjects.map(o => o.name)),
     readSource: o => readBytes(source.storage.from(REVIEW_BUCKET), o.sourceKey),
-    readTarget: o => readBytes(target.storage.from(PUBLIC_BUCKET), o.key), validate: validateBytes,
+    readTarget: readPublicBytes, validate: validateBytes,
   });
   journal.status = 'all_approved_bytes_verified'; await save();
   console.log(JSON.stringify({ phase: journal.status, images: 348, objects: allObjects.length }));
@@ -265,15 +273,7 @@ async function main() {
     // Verify anonymous public delivery of each derivative, not just HTTP success.
     for (let i = 0; i < allObjects.length; i += STORAGE_CONCURRENCY) {
       const outcomes = await Promise.allSettled(allObjects.slice(i, i + STORAGE_CONCURRENCY).map(async o => {
-        const response = await retryStorageRead(async () => {
-          const fetched = await limitedFetch(`https://${PRODUCTION}.supabase.co/storage/v1/object/public/${PUBLIC_BUCKET}/${o.key}`);
-          if (!fetched.ok) {
-            await fetched.body?.cancel();
-            throw Object.assign(new Error('Public storage response failed'), { status: fetched.status });
-          }
-          return fetched;
-        });
-        check(response.ok, 'Public image delivery failed'); await validateBytes(Buffer.from(await response.arrayBuffer()), o);
+        await validateBytes(await readPublicBytes(o), o);
       }));
       const failed = outcomes.find(o => o.status === 'rejected'); if (failed) throw failed.reason;
     }
