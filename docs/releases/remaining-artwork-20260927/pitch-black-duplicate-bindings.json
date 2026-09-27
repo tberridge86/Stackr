@@ -1,0 +1,1636 @@
+[
+  {
+    "duplicate_printing_id": "75b26568-0a7d-4147-ab9c-27d3398c533d",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "1",
+    "name": "Tropius",
+    "canonical_printing_id": "73eae6d2-d3ca-4144-939b-63e5ee8c5c64",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "4a679675-b120-418b-9f0c-cbe770074547",
+      "94e7b636-f6f9-4ae8-9260-4cc66a7d64aa"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "6b158deb-0718-4ad8-ba45-92020a13ae8b",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "10",
+    "name": "Centiskorch",
+    "canonical_printing_id": "58ed887b-9b06-46a9-9147-841875ede693",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "ebd43b6a-ca80-4cd3-87b9-85ae74bb9b9c",
+      "480664db-388d-4c65-8cfa-9516541ebaa8"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "47e743a8-7062-40ce-9c25-1ef76750ad99",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "100",
+    "name": "Rampardos ex",
+    "canonical_printing_id": "ea6ca4e1-d5a7-4e4a-8cd1-bf8ba166f12e",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "84e2aaee-579e-4bd2-a113-6fc5ba4e43e9"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "3d503140-bcb1-4bcc-9265-f31f88298910",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "101",
+    "name": "Mega Darkrai ex",
+    "canonical_printing_id": "490da247-37b9-4eba-9713-15c3656aee7e",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "cbceca00-4ae0-4b16-b3a9-158cab92295b"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "3460d74e-f895-4171-b97e-259489ab701d",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "102",
+    "name": "Morpeko ex",
+    "canonical_printing_id": "f34d100a-7184-4dec-9346-a79c821abef1",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "4490669f-d4fd-436f-8b54-f76dfd245145"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "0365af5f-2689-4369-b0f4-cd0062ae6c15",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "103",
+    "name": "Mega Excadrill ex",
+    "canonical_printing_id": "17894332-af96-4dc0-bb13-ed2a3b3b1549",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "32e26bd9-5a8d-474c-896e-67845a7d7431"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "bfeb7574-0891-4441-b1df-96b68a6eeffd",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "104",
+    "name": "Brave Bangle",
+    "canonical_printing_id": "3716486f-8ebd-47bc-89ed-f9364155d2c5",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "2ad96b64-0bb3-4e51-a1a9-dc879e9cab4c"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "e3e2d2f9-fbb6-4352-b099-aae9e9bf6e11",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "105",
+    "name": "Crushing Hammer",
+    "canonical_printing_id": "52b459c3-af2f-42dd-9a43-1a53b7e544c1",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "953b68ae-1fe2-4e7b-b50c-3c04c1e67035"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "e9327519-07be-4fff-978c-a99c74a58245",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "106",
+    "name": "Dark Bell",
+    "canonical_printing_id": "706c7e33-2cf7-4765-988b-753cf8907dc5",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "92e89a31-921a-48bb-9204-a3d932e548b0"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "f06b92f8-05dd-4b49-b302-03c20409e2b8",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "107",
+    "name": "Energy Switch",
+    "canonical_printing_id": "93f2456c-c439-49c5-9d5b-04081c4de5a1",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "ba344a5f-002f-4743-a758-1a8102211708"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "c3adca8d-706a-4571-b328-186ac3f80c86",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "108",
+    "name": "Gladion's Final Battle",
+    "canonical_printing_id": "2ce45aca-4c08-4b02-b7ab-51e5fb8e6961",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b06f7fd1-26fc-4ec6-b29c-259d48ba53ba"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "1e38d204-a3a8-47f0-8dbb-e7432ab81484",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "109",
+    "name": "Gwynn",
+    "canonical_printing_id": "057ffd51-00e0-4166-a206-245707ab711c",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b3bf7ce1-4031-421c-a2d8-c7e6234d1fc4"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "450193e7-8bd7-47f3-8551-dc192e895902",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "11",
+    "name": "Charcadet",
+    "canonical_printing_id": "e47d6459-1795-4bca-94be-0bd43d5f3cc3",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b46ab0b3-892e-4426-8657-0b62d34990b5",
+      "a5c11faf-9fed-46d5-8e8b-6de53b659d4a"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "4c187d0c-3425-45ab-9204-4cecc9bee1e5",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "110",
+    "name": "Iron Defender",
+    "canonical_printing_id": "b5e3e785-6d7a-4fda-96b2-dcbc4e895459",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b023cf61-08a6-4f46-adb1-49deffb52919"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "290139fe-c8cd-4a1a-a272-1a270c3abded",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "111",
+    "name": "Misty's Vitality",
+    "canonical_printing_id": "9a31f11d-7554-43db-a4b8-5323c205ef5a",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "38b5065e-1efd-4ac4-b324-da9a1e7eaea1"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "8c19061b-13af-46b8-a1b0-a29d977e4688",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "112",
+    "name": "Rust Syndicate Grunt",
+    "canonical_printing_id": "50f2200a-f709-40a7-8635-15cd6fd1eb11",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "38feac2e-b59c-40d6-8cf0-85b6f7aabf9f"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "6196e2c7-cfbb-49e9-b356-8021b46577e0",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "113",
+    "name": "Tremendous Bomb",
+    "canonical_printing_id": "8a9f850e-416d-4c8e-8e72-763109ad4f2e",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "7e70ca16-f6be-4141-a191-db946ea57eaa"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "5fea1294-2655-43ec-98c9-d6fd042e3a3f",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "114",
+    "name": "Mega Zeraora ex",
+    "canonical_printing_id": "8f8e5a41-4e4f-4c7e-bb97-04bffda1b881",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "baa2ec50-25d1-4f00-9090-20590c03998a"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "7c276cfc-68f1-43cd-a7d5-5331f7c91567",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "115",
+    "name": "Mega Chandelure ex",
+    "canonical_printing_id": "c5890667-5737-42b5-a3bd-24262fda2c5c",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "fda09078-472f-493e-8968-52a70e53c150"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "b507714e-a703-4319-8e2c-aaf30f4f31dc",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "116",
+    "name": "Mega Darkrai ex",
+    "canonical_printing_id": "8b28ee51-502b-4bca-93f1-0971204e2e9b",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b47a411f-da61-44bc-8b53-d4d5b0ccfd3b"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "4c495560-b6cd-4ede-8c4a-b6962bb183c2",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "117",
+    "name": "Morpeko ex",
+    "canonical_printing_id": "e16df79a-8964-4c6c-a393-50c80c6a8061",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "257fb3ec-1a8d-4c50-8537-56f2df82fff6"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "a2de3d96-50ea-4b30-aae5-ac40954269fe",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "118",
+    "name": "Gladion's Final Battle",
+    "canonical_printing_id": "1e9edeb4-618e-4766-8926-234414e23a07",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "e3d3cc55-0c0e-42cb-ac3b-79fe8436209e"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "2b538586-76bb-4d14-8996-e9b8c4f9dd42",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "119",
+    "name": "Gwynn",
+    "canonical_printing_id": "5599061a-2867-46ae-a75c-66bc0fe96606",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "7fef23f8-b116-4f96-8019-f067cc27f64b"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "5ef45a02-dd49-4ae6-bbe0-629807f99101",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "12",
+    "name": "Armarouge",
+    "canonical_printing_id": "ad56ef4b-1ead-4e98-8ecc-07dac1f461fb",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "c3c97f31-8bf7-4412-bbdc-25ed3b07f8ec"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "a3190de3-373c-4834-a3bf-4b8cb95d1786",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "120",
+    "name": "Mega Darkrai ex",
+    "canonical_printing_id": "d82ed85e-18ce-4a59-8815-4a1a30abcb8f",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "72710be6-cedc-4989-97a6-d44519bcc4ae"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "aa4c9f76-4aef-4056-9c11-e4023dde3c1d",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "13",
+    "name": "Goldeen",
+    "canonical_printing_id": "c91028b6-03ca-4346-a1d5-2b61e369c558",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "81bcb7a5-1b07-4822-a979-df1f64eac965",
+      "971f3925-defe-4f74-9112-dcca1ad3e0a2"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "af4355e2-bc99-4c0e-9cbb-3f86d68b9244",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "14",
+    "name": "Seaking",
+    "canonical_printing_id": "3bfc40ba-d909-407a-a3d8-e54e0498d966",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "fae25c40-33f4-44ef-be99-e07b47dfc6a4",
+      "6d923a13-6ab8-4d20-86df-2f390cd4fe58"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "1cf6ca2e-82a0-4289-8a66-e6a34bf9688b",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "15",
+    "name": "Wailmer",
+    "canonical_printing_id": "00001ac4-ec95-44f0-abbe-fc1b573c4b15",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "cbed9ee8-a9b6-4e0a-8b9b-f98e4352ebca",
+      "9ee0b33a-07ff-4301-9625-4c6bf4fa4ccd"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "29f5236f-8520-4201-b3d0-db9f43d64b34",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "16",
+    "name": "Wailord ex",
+    "canonical_printing_id": "81469942-6fbe-476c-84c4-68568bddceb2",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "51063893-a5fd-4dc0-b573-7471c10bf48f"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "abfa600a-5c57-4f15-8bac-2d8c4e1db902",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "17",
+    "name": "Relicanth",
+    "canonical_printing_id": "47da6e9c-83b8-483e-8535-d7303d82d5b0",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b601599e-3177-4e9a-a5da-20ef33baf949",
+      "9c33b4ff-7e94-41ae-8cf9-882677029096"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "c67978ee-218e-4356-b3ea-c0a620bf5e01",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "18",
+    "name": "Popplio",
+    "canonical_printing_id": "d0555123-ef77-4c36-bce3-f6fdd0d41ea5",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "2d665b5e-649d-4f97-a3f1-dd507f1ef9f3",
+      "157689ff-8df4-4ffb-acc6-4b508bfce0c9"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "a95fc061-4409-4801-9917-b8c35dcd14e6",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "19",
+    "name": "Brionne",
+    "canonical_printing_id": "69d97c76-1db5-45ce-ab39-6c8ca4f1f0f5",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "c969e112-5850-43b7-824d-ae6f857f83e2",
+      "8446ce6d-7b55-4acd-be6c-f027c6acd502"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "69a5dfdd-bc08-4281-b6db-d459bdd0d589",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "2",
+    "name": "Grubbin",
+    "canonical_printing_id": "3ec6affe-ca70-4ce3-9ca1-0744813241fd",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "c8dc7f73-a23f-4793-bf2b-b6865b7038be",
+      "cc6d685d-caf3-4492-b884-684b8a147308"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "b8b31a23-3f23-4bcb-bc98-8b84400f7c52",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "20",
+    "name": "Primarina",
+    "canonical_printing_id": "7daa9544-7e3b-43c6-84c8-202baab397dc",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "00bd811e-0f03-42b6-af54-8586fed3267d"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "b2415c8c-8e15-4247-a701-c5b9d56e063d",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "21",
+    "name": "Finizen",
+    "canonical_printing_id": "f88e8c08-6e45-4637-bdea-75effe2a1b53",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "2236890d-4954-4f33-86c5-d9893ae2f03a",
+      "068dc7f4-1ca3-469b-836f-a5ea4da8e024"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "fa496868-1ca8-496a-8a99-d8cc64a1bea7",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "22",
+    "name": "Palafin",
+    "canonical_printing_id": "46a79166-8b9a-4568-b5be-60d61e859f4c",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "beb8118f-c08c-41ad-ae39-1d006887b654",
+      "d076f893-5726-4ace-97ef-7eb3d36fac10"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "971bcb63-7227-4aa4-907a-b624bf076a2c",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "23",
+    "name": "Electrike",
+    "canonical_printing_id": "555a4a7f-fd41-4079-a4ab-f74609a55b32",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "d1de39e9-8d1f-4815-9763-c0fa010a91a6",
+      "20e55993-6706-492e-94dc-430a16c90f1e"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "c4227a0b-1eaf-4e1c-881b-447c1d83701a",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "24",
+    "name": "Manectric",
+    "canonical_printing_id": "756c74d9-9f39-42ef-bf10-ce91025161ea",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "4854dc9f-10bf-4dfb-ba58-a6cb35f25891",
+      "8628d414-8c0d-4376-a166-f0ad95ceedf5"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "e7144827-68ef-41fe-9f18-eb5e04101731",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "25",
+    "name": "Charjabug",
+    "canonical_printing_id": "87336da3-4353-4044-aee7-da448961641f",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "aeb93ccd-f9d8-4f0b-9106-54fb1775496a",
+      "9564811e-ad11-4796-870e-4f9de6056d05"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "a4db1697-a85f-4d74-8b50-629ceb7df1b6",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "26",
+    "name": "Vikavolt",
+    "canonical_printing_id": "003484c8-b3b7-4e09-9d9f-88d51dbeb568",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "90f28452-d26d-4f6b-9dc7-e7bb47a74f58",
+      "2ab0279c-6fac-4efd-9664-a368b70ea999"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "f051eb6f-ae63-4d35-ab2a-4ebb55d55394",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "27",
+    "name": "Mega Zeraora ex",
+    "canonical_printing_id": "06ef0f15-6d9e-4681-9b92-66fcc3adf649",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b55b4ba2-2eb1-4ba9-ba1e-a57414010545"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "74ad80a3-7750-401b-89a5-9769a9cd696a",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "28",
+    "name": "Miraidon",
+    "canonical_printing_id": "383c9297-2ef7-473f-a3bf-bea69f2f5aa7",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "f8b5beed-61c9-4e75-9faf-c2e579c28e20",
+      "3f6c533b-0cfe-4cd1-a3ba-534803047967",
+      "48c43c41-73af-480a-904d-8676bb04ef79"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "b11e5162-ef19-4041-897b-f15d09a1d50e",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "29",
+    "name": "Slowpoke",
+    "canonical_printing_id": "0392b11d-bfb4-4fea-96a2-c5216f827c9b",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "032dd848-f8fa-478f-abf6-e4d385c69412",
+      "bcc080cf-b8f0-454b-a9b3-80b503215dd0"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "57111d53-e53d-4743-afec-db1ed7a8037a",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "3",
+    "name": "Fomantis",
+    "canonical_printing_id": "0fde0f1e-e7f4-4fdd-846a-27fc99a36eee",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "01372de9-39f6-482e-aec6-cfd16b18ccab",
+      "12f8624c-6b5f-4337-9b73-90b48b64b2de"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "644105f2-e668-4140-be43-af741934b875",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "30",
+    "name": "Slowbro",
+    "canonical_printing_id": "828d2c4f-f468-4259-8dfb-a46d7736bcfc",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "bb372b85-7c8d-4c2d-866e-01e46e1fa018",
+      "eeffac81-1712-4b85-a99f-ea0884b72127"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "e1575b05-8766-41d9-9bc8-e5adcbd226f4",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "31",
+    "name": "Mega Slowbro ex",
+    "canonical_printing_id": "2eb279cc-1f84-4fa2-8422-7ea73b209d7e",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "6dc970cb-7b45-4f9d-b537-4aebc1e91d74"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "6e9b3673-a616-46ef-9cf5-e1ad86b85917",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "32",
+    "name": "Jynx",
+    "canonical_printing_id": "08308b8c-c555-4ce3-b18f-df04c6c525a7",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "c41cd737-a2c0-49fa-9564-b86137c798f8",
+      "6b4d1631-f842-48a0-a529-afdb8c02a50c"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "be159734-14f4-45a4-966d-9f42af480d0e",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "33",
+    "name": "Shuppet",
+    "canonical_printing_id": "942825dc-0a8e-4949-82ff-0782f1f32564",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "1eab34a2-dd92-41bf-bbdb-82f68a3a1879",
+      "a59e300e-0b65-4fa4-b9fb-5a5a269d6cd9"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "ff770378-712e-4b61-bf5b-5edbb88e9366",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "34",
+    "name": "Banette",
+    "canonical_printing_id": "dd3713d2-f608-4728-b1a3-3abca4279b25",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "3a785f97-2bb8-47f6-9102-b29988954576",
+      "a2dc5c97-dcf2-428d-9625-59d409e1a43f"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "b0761101-7a21-4644-85c0-3fa2ba396977",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "35",
+    "name": "Spiritomb",
+    "canonical_printing_id": "63ea1a48-15af-403d-9a00-2e5b2d9598f5",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "855d60cc-419f-423a-bd28-086f19a53598",
+      "b0cdd1b9-3994-491d-9b2e-c09add0565ce",
+      "1f9eed74-115b-49ea-a61e-1e1c2225258d"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "666471a5-916d-42a5-8d81-bc5655dc1c59",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "36",
+    "name": "Litwick",
+    "canonical_printing_id": "f235df62-b116-4701-b084-c0bbfc749a03",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "9bd49ce5-e5d6-4a03-8975-4de2fd199452",
+      "151e27e8-5c06-4740-9522-4e46362954ef"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "03ac3714-1542-453b-a2e6-0433a5594f6a",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "37",
+    "name": "Lampent",
+    "canonical_printing_id": "461c8423-c81e-4945-8837-69b3af8d8868",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "8008ea79-4bb2-4be9-a733-0028bcde2190",
+      "e7c7f65c-0946-4233-b487-c03654cb0d33"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "8ae7e492-ea8f-413f-bbb9-3166c1885f6a",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "38",
+    "name": "Mega Chandelure ex",
+    "canonical_printing_id": "9549fa93-1bac-454a-9617-9bfa2c291de3",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "a06d723d-856c-4e84-88ea-6c483120d22f"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "72dd2f86-9766-4d75-8d78-f89effb0648a",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "39",
+    "name": "Dhelmise",
+    "canonical_printing_id": "9c1cb071-34ee-48f8-b118-4501b63bb27b",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "0c6ab15c-a550-49df-9182-8980ab2648a8",
+      "3e1dd9c9-f5f7-4e7e-8b97-ec625fa08088"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "9c905d76-fa60-4d07-82b1-6b04999b2582",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "4",
+    "name": "Lurantis ex",
+    "canonical_printing_id": "6e7f1487-a98a-4cd7-9752-cf358f95bd84",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b9f3d91c-4107-43e0-835a-918653eadde1"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "8c5c3ab3-d6de-462d-9d7e-b1b88078215f",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "40",
+    "name": "Marshadow",
+    "canonical_printing_id": "63c55785-77f0-4658-ad7e-4b5fbab22844",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "71fefe46-4f1f-4613-bd7d-dd0ac9974767",
+      "f39f1d6c-fdbe-4120-b48e-3e4cd47982fe"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "14738f41-79e6-4aa6-b184-d95431235a80",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "41",
+    "name": "Annihilape",
+    "canonical_printing_id": "25e9b8fc-ce0c-4614-81a0-300717310f47",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "02bad7dd-2d06-44ce-946b-d315b8b6a759",
+      "3fd80020-d554-4f77-8f09-de105ef911f2"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "693908f3-44ab-440f-be58-b97f0cc1b70e",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "42",
+    "name": "Mankey",
+    "canonical_printing_id": "6a68e226-369e-478d-baa1-5b23b5115f7b",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "8f749e2b-eb91-4b24-b84f-7ffc9ff05ea0",
+      "63a74e08-a017-45de-a7e3-d9079a4fe052"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "e6041cd8-58ba-428a-86bc-40e391095a18",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "43",
+    "name": "Primeape",
+    "canonical_printing_id": "1a3e3ce7-87a5-46ef-85e9-cf70c095d487",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "2b51e39a-1af9-4b23-8919-9d45e73b5559",
+      "6095a1e0-c050-48f0-a055-0c8741f46a2f"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "f5686fe4-faee-42b3-815e-8f5c82454330",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "44",
+    "name": "Cranidos",
+    "canonical_printing_id": "caa1ec4e-558b-4322-960c-371eb54a7fbc",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "608261c1-2b17-4842-af92-8610f1607bea",
+      "da9dd4f9-bf07-4334-ba48-21b84c6616c9"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "fefa028e-6879-4e6c-bfd7-21eddf666637",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "45",
+    "name": "Rampardos ex",
+    "canonical_printing_id": "f62157ff-0256-4461-b465-be3013dd145f",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "e9500847-4bd5-49c5-89a0-005f77c52355"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "9675057b-a3d4-47bb-8ddf-9b72844d2430",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "46",
+    "name": "Drilbur",
+    "canonical_printing_id": "a8b489a4-bd52-4f2e-9e5a-a58c73d7e310",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "06c90a90-912a-4b5c-a53d-a2976b8d67c1",
+      "b3106fbc-6b53-4f31-a95a-438b1ccc8161"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "1c8908c1-ae65-4079-bcf6-d1be667f1f3b",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "47",
+    "name": "Koraidon",
+    "canonical_printing_id": "d91af8a0-0fb1-4f86-b62b-a018104647f9",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "4fd2c660-4000-4d17-951b-f7f432c2a336",
+      "ca3d1068-7128-4d96-beff-fa569e374b1a"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "d287af68-eb26-4059-bccb-4b6dd0ee15ff",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "48",
+    "name": "Mega Darkrai ex",
+    "canonical_printing_id": "a9c76cc7-de51-45ad-b6b0-dbb9cc82e700",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "3dd945cc-4491-453f-b6b8-04eec1e9be97"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "d59d6a92-7478-488f-b474-e503cd130522",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "49",
+    "name": "Vullaby",
+    "canonical_printing_id": "5c1ee31f-b2a9-442a-b036-a23034559cc7",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "c8e2ba5a-26a8-43b8-85c3-428ce44cebe4",
+      "22dfce22-cc75-4d57-9ecc-343148d043d5"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "327aeb51-317f-4fcb-95a9-f56efb4c9d99",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "5",
+    "name": "Poltchageist",
+    "canonical_printing_id": "c2da7c67-5cb5-47f4-bd92-9a453f26a241",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "34b749c4-7eab-4634-a714-62ed3ae4bcde",
+      "1c6b5cca-8929-43cf-839f-b2545a572ad9"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "36ee025c-db7f-4bea-b6c0-db1b056a45d5",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "50",
+    "name": "Mandibuzz",
+    "canonical_printing_id": "af4edf59-8499-4020-86eb-255d5e608600",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "f7c237bf-f3d0-4da4-97e5-3684f76667dd",
+      "0a0eac15-0f7b-48ef-9381-8d177d99bcee"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "878e45ff-09f6-4fd8-ba82-d48f4f35602f",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "51",
+    "name": "Inkay",
+    "canonical_printing_id": "31e1136d-efce-4dc7-a79c-76bd8a919259",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "d714f150-a361-4545-b57d-d5d8a6f87351",
+      "91881491-d9be-489e-90ae-9c92a810bfc9"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "61a62db1-57a2-49e2-95a7-be2ff789b971",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "52",
+    "name": "Malamar",
+    "canonical_printing_id": "b07be3a2-30ce-4042-90a3-af7b782b1d09",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "c44099aa-d174-4638-b9ae-7617b8b0603f",
+      "ef1dca56-cf42-4671-b2b4-1c9aca8d1564"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "0813c84e-7390-43e7-80e9-ea691596e019",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "53",
+    "name": "Nickit",
+    "canonical_printing_id": "586e35ef-5c78-4ea7-863c-76edea610daa",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "ca5ad96d-09a7-4850-8039-f3af065e6d44",
+      "58d65cbb-b889-404c-90f4-e9518a199c78"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "b968e220-dc3d-4640-a8d0-2d02ebd547a3",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "54",
+    "name": "Thievul",
+    "canonical_printing_id": "11b07fb4-212c-4602-941b-d4d0bff88bdc",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "dcef6208-32dc-4cd1-ae46-134ec0e190c1",
+      "253de8de-efd2-418e-851f-0b075e4c6949"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "8d75d6f9-fa85-454b-afbe-ec9b58ccd789",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "55",
+    "name": "Morpeko ex",
+    "canonical_printing_id": "e4c73919-d6a7-4c73-b9d3-af79c417f5aa",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "00445e46-616f-4777-a8ed-07deb4959525"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "0d8afce7-f394-47f4-9161-97001044dcc7",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "56",
+    "name": "Zarude",
+    "canonical_printing_id": "d3175cc7-1108-4ebe-83f3-5d7934f9892d",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "ea29fb90-de4f-46e3-b0b6-1c8fcb7d045d",
+      "dd8aa9e2-3312-4fc7-a3f9-275e1769b005",
+      "415a2c5b-43cb-4b08-adcc-7506b6905200"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "2f316dc1-68de-424e-81ae-b6dbed364816",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "57",
+    "name": "Maschiff",
+    "canonical_printing_id": "0b90661e-9c95-4e72-b4c2-9e63e09a09c2",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "cac78a39-1814-4b02-a311-555b1421a7a2",
+      "9e3c752c-8ca2-440c-ba41-6580dce93b15"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "f48d16ee-d5f9-4dbe-9250-2cf728852c89",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "58",
+    "name": "Mabosstiff",
+    "canonical_printing_id": "f23cd055-214a-41a3-916c-3528dc8c64be",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b10ea855-654b-4e19-8ae2-8e3807d488f8",
+      "f8c9e1b2-64ef-41a8-8237-c2e103bc03d6"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "3defe584-c449-4ce7-bf30-6f7e49362509",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "59",
+    "name": "Chi-Yu",
+    "canonical_printing_id": "8d184f0b-2f47-4a5f-8dac-615b23713310",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "c8c7b136-77b1-44e6-ae01-e674b379ed4e"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "22162e26-edf6-4590-a8d6-0dd856e7227d",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "6",
+    "name": "Sinistcha",
+    "canonical_printing_id": "a9831892-bf10-4ff5-85c9-9168831891ba",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "ac0603b6-2054-4c4a-a77c-8cf20452cc4b",
+      "eb1f689c-4cae-4b98-8b90-d2410fa3a27c"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "d040b089-0666-46f7-83dc-7f42b16f914f",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "60",
+    "name": "Skarmory",
+    "canonical_printing_id": "c8acba27-7c01-4e12-956c-550c085c4c91",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "2069b659-ba92-4e5f-84ea-b4d7fedc6770",
+      "d0711fc1-1906-4f39-8288-21cba62735c4"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "7295ee78-9e40-40a9-b1b7-e7679cb43943",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "61",
+    "name": "Shieldon",
+    "canonical_printing_id": "c90ddc5d-fa5e-49ab-8725-d91032e93939",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "07f3d4fe-b464-44eb-ad77-89d3e59ae31d",
+      "de19f586-6b6f-4159-b913-467be1abb946"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "422214a9-94ac-49fc-9664-ba07d823a518",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "62",
+    "name": "Bastiodon",
+    "canonical_printing_id": "f64df3f1-ab63-42e9-9453-8808bb8154a9",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "e212f588-d225-4fdd-81f2-5b00b6f67075",
+      "02f6d872-2d20-48fd-8b5a-fb4ba6cdb42c"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "8990616e-ac82-4855-82ae-bb0fe4ebbee5",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "63",
+    "name": "Bronzor",
+    "canonical_printing_id": "d3e766e8-9e2d-4d48-8bd0-c111f0e57882",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "5a9a33cd-bc5a-40b2-974b-d39afcc91e50",
+      "53f5f953-245e-4d92-8cf0-b4b907d3a880"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "d5cc7d11-f934-40ec-a2a9-1f643c4c3b50",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "64",
+    "name": "Bronzong",
+    "canonical_printing_id": "20bb24a3-c1cd-4f7d-8005-1ab4e42ebb93",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "610e91d5-49b4-4a8a-aedd-81fde2ec4167",
+      "8a614272-e1d9-4a40-be15-a2b1642f46a9"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "4127be32-c740-439b-955d-cff6db414b2d",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "65",
+    "name": "Mega Excadrill ex",
+    "canonical_printing_id": "5f2e65c7-1ced-4549-a41b-3cba98da3f72",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "401f322c-6403-4648-a003-79da95316bd7"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "a0314578-37a4-4e94-a263-f878adc5a610",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "66",
+    "name": "Pikipek",
+    "canonical_printing_id": "40a823ee-c4dd-404c-82ef-991550bd6108",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "9b1d577a-ef65-482f-ba1a-8ccfdc7c4255",
+      "c5d5b00c-1b86-4126-831d-417ad854fef7"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "7100858f-3844-4e47-98f6-b1c4b62eb13c",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "67",
+    "name": "Trumbeak",
+    "canonical_printing_id": "11705e5e-4092-4309-baec-dbd6bcd5659c",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "06e4fb93-69f9-4b67-bfe7-ca4de2708869",
+      "fe0ab3fa-a00c-433c-9247-ae8d6add94d5"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "1dade16f-e9da-4963-99d8-3a94cdd8b1af",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "68",
+    "name": "Toucannon",
+    "canonical_printing_id": "d3147db1-5af3-4f3b-ba76-41f574bf8a87",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "552d242b-1b3b-4741-8dc3-56983806601f",
+      "24f1dd4a-8428-4252-a6e5-5cb03cfb8ee2"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "c905dde2-294d-4a6b-aa21-31f6431f5fad",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "69",
+    "name": "Type: Null",
+    "canonical_printing_id": "a0996098-afc1-4477-bcd3-dc2eeb38749a",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "1caf0e4b-12ed-4bbf-8d62-768d53faff72",
+      "71076364-e3ba-4642-a0cb-64debe26a64a"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "2dfa9001-8ca6-4b3d-b68b-f7ad741375de",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "7",
+    "name": "Heatran",
+    "canonical_printing_id": "23fe58f0-5ce4-494e-8722-65b090338b6b",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "7c2854db-f873-41b3-a097-910c3ef6096f",
+      "7329e3b0-1f6d-4925-92d9-317a25586afc"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "245db03d-23e7-4eaf-b839-dc84a007046e",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "70",
+    "name": "Silvally",
+    "canonical_printing_id": "bebae858-3af4-473c-a1f8-3fc79fdc073d",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "45614ec6-463a-4aef-9ffc-6ebbde088ffa",
+      "843596fc-e69f-4d12-86e8-164580bac56b"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "1feaa926-16bf-4f99-8028-40609e7df016",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "71",
+    "name": "Bombirdier",
+    "canonical_printing_id": "566d9c19-561d-4a92-8d24-571cafe9c9cd",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "a6bcfac5-3107-4dd3-bac4-6a54e1aef874",
+      "7a9c3395-0b4a-4129-9d52-655964a06ffd"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "3a5925e9-1ec4-43df-b027-51e83614dba9",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "72",
+    "name": "Antique Armor Fossil",
+    "canonical_printing_id": "366f1287-1bde-40b2-be4a-208b9a665fc1",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "e07083e0-d716-45b3-a065-75e6e6f4e34f",
+      "2ca99254-a746-4a8d-8e23-34c0b134119a"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "9256de6e-149d-4ac2-9a92-37ba14b5a6b4",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "73",
+    "name": "Antique Skull Fossil",
+    "canonical_printing_id": "19040c69-3b62-4729-baf1-db58ffe02014",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b488c372-d975-4c0c-90a7-88ab7ea7a5b5",
+      "7b1b4b07-9230-44a4-bafe-468edcbeaa65"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "ce3d43a7-74ca-49d5-bd95-c2340413dbcc",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "74",
+    "name": "Backtrack Badge",
+    "canonical_printing_id": "2d7e177d-4d90-471f-b2a1-a61ffc1bd93b",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "87f0dcfc-6305-458b-a332-5f6c494b1a5b",
+      "c85ed8a5-d268-4293-b06e-1a4284afef97"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "7c745d49-2c37-4456-8b62-3a0ea33c529c",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "75",
+    "name": "Dark Bell",
+    "canonical_printing_id": "a5b4d09a-5511-45fa-a1e5-b970ba614a9f",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "c7b365b8-1c33-42ce-bdc4-85bf611def6d",
+      "42409acc-d7c6-401e-8126-89371fe7090e"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "2e9d20d8-ad10-405a-b0fb-4d167a60f86c",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "76",
+    "name": "Fossil Quarry",
+    "canonical_printing_id": "60ca7afd-731a-4fff-835c-63cc4c8eb41a",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "604fbd4a-293d-4cff-8c8f-17cd39a4ae34",
+      "07796852-7920-4aea-a731-35494381a588"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "f54a8624-096c-40ac-aee7-b7e313d98147",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "77",
+    "name": "Gladion's Final Battle",
+    "canonical_printing_id": "10048d20-4c04-4f8f-95e4-6a4238c96eba",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "8c5c9526-7015-4250-97a0-bfb8f4e6ae6e",
+      "92c946f7-1c35-412c-943c-c4275465760a"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "572faae1-69c7-40a0-bea2-440b0b6a7d8d",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "78",
+    "name": "Gwynn",
+    "canonical_printing_id": "963eebd0-b179-4800-87e1-ae05e5ad9e27",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b1b10885-49f3-418b-bcd3-35efd015ae16",
+      "a83dd6cd-79d0-4815-aac8-78eae7d0e771"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "02c26695-3032-4d84-a665-6a047bde105a",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "79",
+    "name": "Jett",
+    "canonical_printing_id": "9e05aec7-9a0a-40bf-9a48-f2ba3fec45ed",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "9a087a57-42ab-4fe6-bd5a-a8df74e4fa49",
+      "9d798cc1-a9e3-4499-9fc1-6f91b16949f5"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "bf225ca9-c804-4882-a9be-f83a02c9647a",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "8",
+    "name": "Mega Delphox ex",
+    "canonical_printing_id": "b6fa26cf-9b46-4a64-a310-0c9c74798f97",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "7635bdfa-dcb7-43a5-ade0-0cb9a57ff60b"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "7d72511c-6245-4488-b926-a0858dc60b43",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "80",
+    "name": "Misty's Vitality",
+    "canonical_printing_id": "52c683e5-1295-4c69-a8ea-b5e05426d561",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "1438952d-25b8-4b3b-8b21-12423ac0bb61",
+      "e0467ce7-81d3-41a5-907c-68e0a42b55fd"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "1098d795-f210-4175-b423-b9b893bf421c",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "81",
+    "name": "Rust Syndicate Grunt",
+    "canonical_printing_id": "6423ee1d-9c31-47b1-a072-70f6f4c78bba",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "593dfc6e-b8a9-4555-85ec-27055ac3b633",
+      "2e5b367a-a862-4250-babe-ba996395e149"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "e1ba03d0-76dc-4c15-96fa-5ae9485e1d54",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "82",
+    "name": "Tremendous Bomb",
+    "canonical_printing_id": "e92fd563-afe2-4e08-a79e-ac68c768fb91",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "22128bb9-0c46-4118-91f1-900fd34b4084",
+      "55e2176a-425f-47f5-aea4-1ecec8febe2d"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "acd43523-6937-47b2-a0bd-2260f72a9e11",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "83",
+    "name": "Shadowy Darkness Energy",
+    "canonical_printing_id": "b7ebb628-4a4d-4359-9d1a-5c5ece7708a1",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "e8e89647-0ea7-419f-8945-2e04b11af5c3",
+      "a1d7bb2f-a262-42c2-a373-23915a804d8e"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "e21cf39f-6e47-4cd7-a02f-dbd397063073",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "84",
+    "name": "Voltaic Lightning Energy",
+    "canonical_printing_id": "dda5806a-e461-4eba-b469-d0d16974fb2d",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b0c76834-a485-4698-86d0-0fc096b0301e",
+      "c9b6b997-e26b-41f7-9886-42a5173d9bcb"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "f4b41268-7ee1-4f0e-af84-4643095b7358",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "85",
+    "name": "Fomantis",
+    "canonical_printing_id": "38fb569b-62eb-495a-8d04-0cacc7b62b14",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "04fdd821-3c49-42b1-99e6-521fdf3d48ab"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "65a1c953-24f0-49ae-8693-d0ac3537a60d",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "86",
+    "name": "Armarouge",
+    "canonical_printing_id": "cccdf513-c8fd-4683-880c-f279b9749de2",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "d5e43d02-0c1d-48bc-b637-9efd2995516b"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "6df0f003-80f8-40a7-b57a-0be6ef008c43",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "87",
+    "name": "Goldeen",
+    "canonical_printing_id": "f3561cff-1779-4f51-b92c-d9d42484f621",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "8b0bc44e-430d-4e9d-ae10-d4c59746fafc"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "918c9ddf-3367-4dad-a883-c46e51daac43",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "88",
+    "name": "Primarina",
+    "canonical_printing_id": "b1630356-df63-4755-834b-f49b83d5f289",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "24cea1bf-1db0-4949-b070-b1c7035bfd1f"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "8a137788-6c3b-49bf-b4d4-7667eb87e151",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "89",
+    "name": "Manectric",
+    "canonical_printing_id": "f7204994-1356-4ba5-9ea8-028c7348ddd2",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "a28a52e9-26b1-4d78-99d7-bccfa1fe01c7"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "9b881e78-2ecd-450b-9357-6cd63886ff1a",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "9",
+    "name": "Sizzlipede",
+    "canonical_printing_id": "15a2c9f6-27af-478e-a50a-e2482c548d47",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "b9bb96a7-9fda-4a06-96d8-3e9c1ab26e6d",
+      "7a1b781c-e8e5-4eb0-8578-2d0f90ffcab4"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "6ac083b2-750d-4acf-9b95-d75e21ad9e97",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "90",
+    "name": "Slowbro",
+    "canonical_printing_id": "53c0b15d-641c-4941-9313-744769bab95c",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "4e9995dc-d10b-418a-b515-68089983f929"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "a43dbe44-293e-4dc2-a64e-b3bc7fdcfd45",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "91",
+    "name": "Dhelmise",
+    "canonical_printing_id": "cb8ed345-f5b2-4242-ae96-1ade4fbc4d9f",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "564e59d4-f3de-4231-95e2-291a32d2f9c1"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "a7a170fd-fcdd-48df-bbba-a01594655c13",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "92",
+    "name": "Thievul",
+    "canonical_printing_id": "df29ff7a-1bbb-4191-8409-13816b35de83",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "95c06e20-9e91-4385-b026-f6bae65d783b"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "80515255-7f32-4b43-985a-05ac0b46fe70",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "93",
+    "name": "Bastiodon",
+    "canonical_printing_id": "90ad5979-61fc-43f5-ad13-e24d796d570c",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "7dabfeb5-4048-4c94-a2f8-160a01206be1"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "5e7c96c9-eef1-4a30-b1cf-9c151a6e7781",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "94",
+    "name": "Toucannon",
+    "canonical_printing_id": "05ce8bee-a857-48fa-b58a-2735442c8879",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "770cbd61-3305-4752-9e55-5aaffc270603"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "e2ee1328-99d5-45fb-b156-0490aa9de1b9",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "95",
+    "name": "Silvally",
+    "canonical_printing_id": "5296dd1f-29b9-4666-8f20-c80322c61731",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "a3503182-3c1e-43c8-957c-625dcc8fc3ad"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "bb34950c-1335-4e78-9f61-84a0433f8a29",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "96",
+    "name": "Lurantis ex",
+    "canonical_printing_id": "a238e1f7-ff4f-486a-afc2-498accbfa333",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "5d5e63d2-fe12-4c99-92c7-a13406eab4d1"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "538d87f1-e15c-4fbc-b10d-46578a6d0b74",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "97",
+    "name": "Wailord ex",
+    "canonical_printing_id": "fc844fa0-202c-40ff-9236-2d20e48d74cf",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "e4ffb253-d1cd-4af6-9c2e-e5e3522b650b"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "ebe42177-5e7e-4ef4-ab2d-eed151327c33",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "98",
+    "name": "Mega Zeraora ex",
+    "canonical_printing_id": "4188c3a2-43af-4ab9-8c59-f0114dc62c85",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "9b0832a0-baf9-4cd3-88ea-cb4b6bfc8a6a"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  },
+  {
+    "duplicate_printing_id": "86975a73-f628-44af-96c7-b4a0e070d59b",
+    "duplicate_set_id": "2f77da8e-8199-4634-b30d-385565560731",
+    "collector_number": "99",
+    "name": "Mega Chandelure ex",
+    "canonical_printing_id": "ef1aab3a-520e-4904-96ab-a22a27688ce0",
+    "canonical_set_code": "me05",
+    "canonical_variant_ids": [
+      "68f04d0c-0d85-4a9a-8694-a16d8a28fd83"
+    ],
+    "status": "duplicate_record_primary_artwork_verified",
+    "exact_finish_verified": false
+  }
+]
