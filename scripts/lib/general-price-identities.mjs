@@ -1,5 +1,5 @@
 import { ownerIdentityLookupRows } from './owner-price-saved-references.mjs';
-import { verifiedLegacyEnglishMePair } from './owner-provider-price-refresh-core.mjs';
+import { legacyEnglishOwnerPair, verifiedLegacyEnglishMePair } from './owner-provider-price-refresh-core.mjs';
 import { generalPriceBaseCandidates, selectGeneralPriceBase } from '../../backend/lib/marketPricing/generalEstimate.js';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const LANGUAGE = new Set(['en', 'ja', 'ko', 'zh-cn', 'zh-tw']);
@@ -77,7 +77,16 @@ export function resolveGeneralPriceIdentity(unit, identifiers, catalogue) {
   const scope = scopedReferences(unit);
   if (!scope) return { ok: false, reason: 'general_identity_unproven' };
   const cardAliases = preferredAliases(identifiers ?? [], scope.card, 'card', scope.language);
-  const setAliases = preferredAliases(identifiers ?? [], scope.set, 'set', scope.language);
+  const hasLiteralCardAlias = (identifiers ?? []).some(row => row.source_entity_type === 'card'
+    && [token(scope.card.raw),token(scope.card.bare)].includes(token(row.external_id)));
+  const literalSets = preferredAliases(identifiers ?? [], scope.set, 'set', scope.language);
+  const hasLiteralSetAlias = (identifiers ?? []).some(row => row.source_entity_type === 'set'
+    && [token(scope.set.raw),token(scope.set.bare)].includes(token(row.external_id)));
+  const legacyPair = scope.language === 'en' ? legacyEnglishOwnerPair({ ...unit,
+    card_id: scope.card.bare, set_id: scope.set.bare, language: scope.language }) : null;
+  const setAliases = hasLiteralSetAlias ? literalSets : (identifiers ?? []).filter(row =>
+    row.source_entity_type === 'set' && row.language_code === 'en'
+    && legacyPair?.setAliases.includes(token(row.external_id)));
   const setIds = new Set([
     ...setAliases.map((row) => token(row?.set_id)).filter(uuid),
     ...(uuid(scope.set.bare) ? [token(scope.set.bare)] : []),
@@ -107,10 +116,24 @@ export function resolveGeneralPriceIdentity(unit, identifiers, catalogue) {
 
   let printingId = directPrintings[0] ?? null;
   let resolution = 'same_printing_base';
+  // The saved reference can already be a canonical printing ID. It must occur
+  // in this published set/language; it is never treated as an exact finish.
+  if (!printingId && !hasLiteralCardAlias && uuid(scope.card.bare) && setIds.size === 1) {
+    const printings = unique(constrained(allCards).filter(row => token(row.printing_id) === token(scope.card.bare)).map(row => token(row.printing_id)));
+    if (printings.length === 1) printingId = printings[0];
+  }
   if (!printingId && printingAliases.length) {
     const aliases = unique(printingAliases.map((row) => token(row?.printing_id)));
     if (aliases.length !== 1) return { ok: false, reason: 'general_identity_ambiguous' };
     printingId = aliases[0];
+  }
+  // Reuse the existing verified English legacy set/collector rule for general
+  // estimates too. A literal card alias always wins, including a bad alias.
+  if (!printingId && !hasLiteralCardAlias && legacyPair && setIds.size === 1) {
+    const matching = constrained(allCards).filter(row => sameCollectorNumber(row.collector_number, legacyPair.collectorNumber));
+    const printings = unique(matching.map(row => token(row.printing_id)));
+    if (printings.length > 1) return { ok: false, reason: 'general_identity_ambiguous' };
+    if (printings.length === 1) { printingId = printings[0]; resolution = 'verified_legacy_pair_general'; }
   }
   if (!printingId) return { ok: false, reason: 'general_identity_unproven' };
 

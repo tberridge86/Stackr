@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { PGlite } from '@electric-sql/pglite';
+import { prepareStoredPriceRead } from './deploy/prepare-stored-price-read.mjs';
+const db=new PGlite();
+await db.exec(`create schema api;create schema supabase_migrations;
+create role anon;create role authenticated;create role service_role;
+create table supabase_migrations.schema_migrations(version text,name text,statements text[]);
+insert into supabase_migrations.schema_migrations values('20260919100104','catalogue_pricing_cycles',null);
+create table api.catalogue_cards(variant_id uuid,printing_id uuid,set_id uuid,language_code text);
+create table api.market_price_estimates(variant_id uuid,product_kind text,condition_code text,display_currency_code text,fallback_identity_key text,calculated_at timestamptz);
+create table public.market_price_snapshots(id uuid,card_id text,user_id uuid,set_id text,language text,calculated_at timestamptz,pricing_identity_json jsonb,central_estimate numeric);
+create table public.user_card_variants(id uuid,quantity int);
+insert into public.user_card_variants values('10000000-0000-4000-8000-000000000001',3);`);
+const original=readFileSync(new URL('../supabase/migrations/20260919100104_catalogue_pricing_cycles.sql',import.meta.url),'utf8');
+await db.exec(original.slice(original.indexOf('create function api.latest_stored_exact_prices'),original.indexOf('create table public.catalogue_price_identity_leases')));
+const id='10000000-0000-4000-8000-000000000001',printing='20000000-0000-4000-8000-000000000001',set='30000000-0000-4000-8000-000000000001';
+await db.query('insert into api.catalogue_cards values($1,$2,$3,$4)',[id,printing,set,'en']);
+const identity={canonicalVariantId:id,canonicalPrintingId:printing,productType:'raw_card',rawCondition:'raw_near_mint'};
+for(const [n,language,user,price,scope]of [[1,'en',null,4,identity],[2,'ja',null,99,identity],[3,'en',id,999,identity],[4,'en',null,9999,{...identity,rawCondition:'raw_damaged'}]]){
+ await db.query('insert into public.market_price_snapshots values($1,$2,$3,$4,$5,$6,$7,$8)',[`40000000-0000-4000-8000-00000000000${n}`,id,user,set,language,`2026-09-${20+n}T00:00:00Z`,JSON.stringify(scope),price]);
+}
+const read=async(ids)=>(await db.query('select * from api.latest_stored_exact_prices($1::uuid[])',[ids])).rows;
+const batches=[[],[id],[id,id],Array(200).fill(id),Array(201).fill(id),['90000000-0000-4000-8000-000000000001']];
+const before=await Promise.all(batches.map(read));
+assert.equal(before[1][0].latest_stored_exact_prices.snapshot.central_estimate,4,'reject private, wrong-language and wrong-condition quotes');
+const client={connect:async()=>{},end:async()=>{},query:(sql,params)=>sql.includes('CREATE OR REPLACE FUNCTION')?db.exec(sql):db.query(sql,params)};
+const rehearsal=await prepareStoredPriceRead({client,apply:false,rehearse:true});
+assert.equal(rehearsal.mode,'rehearsed_rolled_back');
+assert.deepEqual(await Promise.all(batches.map(read)),before,'rehearsal restores exact read results');
+const applied=await prepareStoredPriceRead({client,apply:true,rehearse:false});
+assert.equal(applied.mode,'applied');
+assert.deepEqual(await Promise.all(batches.map(read)),before,'bounded lookup preserves duplicate, cap, missing-card and exact-identity semantics');
+assert.equal((await db.query('select quantity from public.user_card_variants')).rows[0].quantity,3);
+assert.equal((await prepareStoredPriceRead({client,apply:true,rehearse:false})).mode,'already_applied');
+assert.equal((await db.query("select has_function_privilege('anon','api.latest_stored_exact_prices(uuid[])','EXECUTE') as access")).rows[0].access,false);
+await db.close();
+console.log('Stored price read: exact result equivalence, privacy, bounds, holdings preservation and rehearsal restoration passed.');
