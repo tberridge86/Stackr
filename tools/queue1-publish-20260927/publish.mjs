@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
+import { resolveServerKey } from './credentials.mjs';
 
 export const STAGING = 'lmwfhvexfcoyeuoyrlco';
 export const PRODUCTION = 'oakdbbzdqwurpjnoqhmu';
@@ -109,7 +110,12 @@ async function main() {
   const { createVerifiedSupabasePostgresClient } = await import('../../scripts/deploy/verified-supabase-postgres.mjs');
   const limitedFetch = (url, opts = {}) => fetch(url, { ...opts, signal: AbortSignal.timeout(60000) });
   const client = (project, secret) => { check(secret, 'Missing credential'); return createClient(`https://${project}.supabase.co`, secret, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: limitedFetch } }); };
-  const source = client(STAGING, process.env.SUPABASE_STAGING_SECRET_KEY), target = client(PRODUCTION, process.env.SUPABASE_PRODUCTION_SECRET_KEY);
+  const serverKey = (project, configuredKey) => resolveServerKey({ project, configuredKey,
+    accessToken: process.env.SUPABASE_ACCESS_TOKEN,
+    mask: key => { if (process.env.GITHUB_ACTIONS === 'true') process.stdout.write(`::add-mask::${key}\n`); },
+  });
+  const source = client(STAGING, await serverKey(STAGING, process.env.SUPABASE_STAGING_SECRET_KEY));
+  const target = client(PRODUCTION, await serverKey(PRODUCTION, process.env.SUPABASE_PRODUCTION_SECRET_KEY));
   const result = async promise => { const { data, error } = await promise; if (error) throw new Error(error.message); return data; };
   const cards = c => result(c.schema('api').from('catalogue_cards').select('game_code,language_code,set_id,set_code,printing_id,collector_number,card_english_display_name,variant_id,variant_code,finish_code,same_artwork_as_variant_id,catalogue_version_id').eq('game_code', 'pokemon').eq('language_code', 'en').in('set_code', Object.keys(SCOPE)).limit(1000));
   const sourceRecord = async c => { const s = await result(c.schema('ingest').from('sources').select('id,code,active,licence_status').eq('code', 'pokemon_tcg_api').single()); check(s.active && ['under_review', 'approved'].includes(s.licence_status), 'Source revoked or unavailable'); return s; };

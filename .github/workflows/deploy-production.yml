@@ -333,6 +333,7 @@ jobs:
         env:
           STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
           STACKR_QUEUE1_CONFIRMATION: PUBLISH QUEUE1
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_STAGING_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
           SUPABASE_PRODUCTION_URL: https://oakdbbzdqwurpjnoqhmu.supabase.co
           SUPABASE_STAGING_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}

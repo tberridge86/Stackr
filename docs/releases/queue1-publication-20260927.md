@@ -78,3 +78,20 @@ These checks do not establish that the live transfer or publication has run.
 At preparation time: 348 staged, 0 published, 0 device-verified. Append live
 execution evidence after the protected run; do not treat this document as a
 successful publication receipt.
+
+## Credential repair after first release attempt
+
+Run [36309092033](https://github.com/tberridge86/Stackr/actions/runs/36309092033)
+at revision `d7da623ade27cded31ba07d62e64cf9c9481ece3` passed its protected
+production review but failed on the first Supabase source read with
+`Legacy API keys are disabled`. It reached no image or catalogue writes.
+
+The publisher now prefers the configured modern server secret. If the saved key
+is legacy, it uses the existing production environment's `SUPABASE_ACCESS_TOKEN`
+to read the exact project's existing modern server key through the
+[documented Management API](https://supabase.com/docs/reference/api/v1-get-project-api-keys).
+This requires existing `secrets:read` access; missing access or ambiguous keys
+stops before writes. It creates no keys, changes no key settings and never enables
+legacy keys. Fetched credentials stay in memory and are masked in GitHub logs.
+Five additional credential tests cover fixed projects, read-only lookup, modern
+key selection, failure handling and secret-free diagnostics.
