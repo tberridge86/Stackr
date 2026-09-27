@@ -7,7 +7,7 @@ import {
   parseLimit,
 } from '../stackrApiV1.js';
 import { buildCanonicalIdentity } from '../pricingV2/identity.js';
-import { fetchTcgdexNormalCardPrice } from '../tcgdex.js';
+import { fetchTcgdexNormalCardPrice, isUnambiguousJapaneseHolo } from '../tcgdex.js';
 import { generalPriceBaseCandidates, wrapGeneralEstimate } from './generalEstimate.js';
 
 export const MARKET_PRICING_VERSION = 'market-pricing-v1.0.0';
@@ -1101,11 +1101,13 @@ async function refreshExactLegacyProviderEstimate(supabase, variantId, input, pr
   if (!supportedLegacyInput(input)) throw new ApiError(422, 'unsupported_refresh_scope', 'Provider refresh supports only raw near-mint GBP cards.');
   const metadata = await catalogueRefreshMetadata(supabase, variantId);
   const identity = canonicalIdentityForMetadata(metadata, RAW_NEAR_MINT);
-  if (!metadata || !identity || !(isDefaultVariant(metadata) || metadata.language === 'en'
+  const japaneseHolo = metadata?.language === 'ja' && metadata.variantCode === 'holo' && metadata.finishCode === 'holo';
+  if (!metadata || !identity || !(isDefaultVariant(metadata) || japaneseHolo || metadata.language === 'en'
     && ['holo','reverse_holo'].includes(metadata.variantCode) && metadata.finishCode === metadata.variantCode)) throw new ApiError(422, 'unsupported_refresh_scope', 'This finish has no verified provider refresh mapping.');
   const alias = await exactTcgdexVariantAlias(supabase, variantId, metadata);
   const quote = await providerQuoteWithinTimeout(providerFetch, { cardId: alias, language: metadata.language, variantCode: isDefaultVariant(metadata) ? 'normal' : metadata.variantCode });
   if (!providerQuoteIsValid(quote, alias, metadata) || (!isDefaultVariant(metadata) && quote?.variantCode !== metadata.variantCode)) throw new ApiError(404, 'exact_provider_quote_unavailable', 'The exact provider card has no current matching-finish estimate.');
+  if (japaneseHolo && (quote.finishEvidence !== 'provider_single_holo_variant' || !isUnambiguousJapaneseHolo(quote.raw, 'ja'))) throw new ApiError(404, 'exact_provider_quote_unavailable', 'The Japanese provider record does not prove a unique holo finish.');
   const snapshotAt = new Date().toISOString();
   const providerUpdatedAt = new Date(quote.pricingUpdatedAt).toISOString();
   const staleAfter = new Date(Date.parse(providerUpdatedAt) + 6 * 60 * 60_000).toISOString();

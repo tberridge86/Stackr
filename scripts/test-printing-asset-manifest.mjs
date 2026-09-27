@@ -56,4 +56,26 @@ const final = await service.assetManifest({ ...query, limit: 1000, cursor: large
 assert.equal(final.assets.length, 1);
 assert.equal(final.assets[0].assetId, row(1001).asset_id);
 assert.equal(final.pagination.nextCursor, null);
-console.log('Printing image manifests use bounded reads, preserve cursors, and handle empty and maximum-size pages.');
+const variantId = '44444444-4444-4444-8444-444444444444';
+const variantDb = { schema: () => ({
+  from() { assert.fail('An exact variant must not scan the full manifest view.'); },
+  async rpc(name, args) {
+    assert.equal(name, 'card_image_manifest_for_identities');
+    assert.deepEqual(args.p_variant_ids, [variantId]);
+    assert.deepEqual(args.p_printing_ids, []);
+    return { data: available.filter(r => !args.p_after_asset_id || r.asset_row_id > args.p_after_asset_id)
+      .slice(0, args.p_limit).map(r => ({ ...r, variant_id: variantId })), error: null };
+  },
+}) };
+const variantService = createCatalogueV1Service({ supabase: variantDb, assetSupabase: variantDb, assetIdentityRpc: true });
+available = [row(1), row(2), row(3)];
+const variantFirst = await variantService.assetManifest({ assetType: 'card_image', variantId, limit: 2 });
+assert.equal(variantFirst.assets.length, 2);
+assert(variantFirst.assets.every(asset => asset.variantId === variantId));
+const variantLast = await variantService.assetManifest({ assetType: 'card_image', variantId, limit: 2, cursor: variantFirst.pagination.nextCursor });
+assert.equal(variantLast.assets.length, 1);
+assert.equal(variantLast.assets[0].assetId, row(3).asset_id);
+assert.equal(variantLast.pagination.nextCursor, null);
+available = [];
+assert.equal((await variantService.assetManifest({ assetType: 'card_image', variantId })).assets.length, 0);
+console.log('Printing and variant image manifests use bounded identity reads and preserve pagination and empty results.');

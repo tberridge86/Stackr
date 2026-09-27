@@ -1310,7 +1310,7 @@ async function assertExactEnglishFinishProviderRefresh() {
   }
 
   const nonEnglishMetadata = {
-    variant_id: '37373737-3737-4737-8737-373737373737', printing_id: printingId, language_code: 'ja',
+    variant_id: '37373737-3737-4737-8737-373737373737', printing_id: printingId, language_code: 'zh-tw',
     set_id: setId, set_code: 'S12a', set_english_display_name: 'VSTAR Universe', collector_number: '146',
     card_english_display_name: 'Mewtwo', rarity_code: 'AR', variant_code: 'holo', finish_code: 'holo',
   };
@@ -1341,6 +1341,46 @@ async function assertExactEnglishFinishProviderRefresh() {
     null,
     'Cardmarket holo-only data cannot establish an exact English holo estimate',
   );
+}
+
+async function assertJapaneseSingleHoloProviderRefresh() {
+  const variantId = '45454545-4545-4545-8545-454545454545';
+  const source = { id: '33333333-3333-4333-8333-333333333333', code: 'tcgdex', active: true, licence_status: 'approved', deprecated_at: null };
+  const version = { id: '34343434-3434-4434-8434-343434343434', status: 'published', language_code: 'ja', deprecated_at: null, superseded_by_version_id: null };
+  const metadata = { variant_id: variantId, printing_id: '32323232-3232-4232-8232-323232323232',
+    set_id: '31313131-3131-4313-8313-313131313131', set_code: 'S12a', collector_number: '012',
+    language_code: 'ja', variant_code: 'holo', finish_code: 'holo', card_english_display_name: 'Leafeon VSTAR' };
+  const aliases = [{ catalogue_version_id: version.id, source_id: source.id, source_entity_type: 'card', external_id: 'S12a-012', language_code: 'ja', variant_id: variantId }];
+  const updated = new Date(Date.now() - 8 * 60 * 60_000).toISOString();
+  const raw = { id: 'S12a-012', language: 'ja', set: { id: 'S12a' }, localId: '012',
+    variants: { holo: true, normal: false, reverse: false, firstEdition: false, wPromo: false },
+    pricing: { cardmarket: { unit: 'EUR', updated, trend: 1.37 } } };
+  const quote = summariseTcgdexExactVariantPricing(raw, 'ja', 'holo');
+  const input = { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' };
+  let fixtureIndex = 0;
+  for (const [label, candidate] of [
+    ['accepted', quote], ['missing proof', { ...quote, finishEvidence: null }],
+    ['wrong language', { ...quote, language: 'en' }], ['wrong number', { ...quote, number: '225' }],
+    ['competing finish', { ...quote, raw: { ...raw, variants: { ...raw.variants, normal: true } } }],
+  ]) {
+    const fixtureId = variantId.slice(0, -1) + fixtureIndex++;
+    const db = createSnapshotSupabase({ metadata: { ...metadata, variant_id: fixtureId }, tcgdexSource: source, publishedVersion: version,
+      approvedTcgdexAliases: aliases.map(alias => ({ ...alias, variant_id: fixtureId })) });
+    const service = createMarketPricingService({ supabase: db, fetchTcgdexNormalCardPrice: async request => {
+      assert.deepEqual(request, { cardId: 'S12a-012', language: 'ja', variantCode: 'holo' });
+      return candidate;
+    } });
+    if (label === 'accepted') {
+      const result = await service.refreshExactProviderEstimate(fixtureId, input);
+      assert.equal(result.estimates.central, quote.price);
+      assert.equal(db.inserted[0].tcgdex_price_updated_at, updated, 'refresh preserves original provider age');
+      assert.equal(db.inserted[0].card_id, fixtureId);
+      assert(Date.parse(db.inserted[0].stale_after) < Date.now(), 'an older provider quote stays older after refresh');
+    } else {
+      await assert.rejects(service.refreshExactProviderEstimate(fixtureId, input), error => error.code === 'exact_provider_quote_unavailable', label);
+      assert.equal(db.inserted.length, 0, label);
+    }
+  }
 }
 
 async function assertExactProviderDailySnapshotConflictHandling() {
@@ -1485,6 +1525,7 @@ await assertIdentityAwareDenseRangeHistory();
 await assertPagedRangeHistoryKeepsBaseline();
 await assertExactOwnerProviderRefresh();
 await assertExactEnglishFinishProviderRefresh();
+await assertJapaneseSingleHoloProviderRefresh();
 await assertExactProviderDailySnapshotConflictHandling();
 await assertNormalProviderFetchAbortsAndClearsInflight();
 

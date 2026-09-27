@@ -202,7 +202,17 @@ sources.catalogue_card_collectors = cards.map((card) => ({
   normalized_collector_number: normalizeCollectorNumber(card.collector_number),
   normalized_collector_base: normalizeCollectorNumber(card.collector_number).split('/')[0],
 }));
+const multipart = { ...makeCard('zh-cn', 9900), collector_number: '01 03' };
+cards.push(multipart);
+sources.catalogue_card_collectors.push({ ...multipart, normalized_collector_number: '103', normalized_collector_base: '103' });
 const indexedService = createCatalogueV1Service({ supabase: db, collectorIdentityLookup: true });
+for (const service of [indexedService, createCatalogueV1Service({ supabase: db })]) {
+  const found = await service.search({ q: '01 03', language: 'zh-cn', setId: cnSet });
+  assert.deepEqual(found.results.map(r => r.variantId), [multipart.variant_id]);
+  assert.equal(found.results[0].reason, 'exact_collector_number_in_set');
+  assert.equal((await service.search({ q: '01 03', language: 'en', setId: cnSet })).results.length, 0);
+  assert.equal((await service.search({ q: '01 03', language: 'zh-cn', setId: enSet })).results.length, 0);
+}
 cardQueryShapes.length = 0;
 const padded = await indexedService.search({ q: '000125', language: 'en', setId: megaSet });
 assert.deepEqual(padded.results.map((result) => result.variantId), [megaCharizard.variant_id]);

@@ -133,15 +133,18 @@ export function matchesIfNoneMatch(req, etag) {
     .includes(etag);
 }
 
-export function parseSearchQuery(query = '') {
+export function parseSearchQuery(query = '', options = {}) {
   const raw = String(query ?? '').normalize('NFKC').trim();
   const normalized = normalizeSearchText(raw);
   const tokens = raw.split(/\s+/).filter(Boolean);
   const compactTokens = normalized.split(/\s+/).filter(Boolean);
-  const collectorToken = [...tokens]
+  // Inside a selected set, a numeric multipart identifier such as Chinese
+  // Gem Pack "01 03" is one collector number, not set code 01 + number 03.
+  const multipartCollector = isUuid(options.setId) && /^\d+(?:\s+\d+)+$/.test(raw);
+  const collectorToken = multipartCollector ? raw : [...tokens]
     .reverse()
     .find((token) => /[0-9]/.test(token) && /^[\p{L}\p{N}./_-]+$/u.test(token));
-  const setCollector = raw.match(/^([A-Za-z0-9._-]{2,20})\s+([\p{L}\p{N}./_-]*\d[\p{L}\p{N}./_-]*)$/u);
+  const setCollector = multipartCollector ? null : raw.match(/^([A-Za-z0-9._-]{2,20})\s+([\p{L}\p{N}./_-]*\d[\p{L}\p{N}./_-]*)$/u);
 
   return {
     raw,
@@ -1021,7 +1024,7 @@ async function searchFuzzyName(supabase, parsed, limit, language) {
 }
 
 export function searchFixtureCatalogue(query, fixture, options = {}) {
-  const parsed = parseSearchQuery(query);
+  const parsed = parseSearchQuery(query, options);
   const limit = parseLimit(options.limit, 20, 100);
   const selectedSetId = clean(options.setId);
   const language = clean(options.language);
@@ -1395,18 +1398,21 @@ export function createCatalogueV1Service(options) {
       if (cursor && (!isUuid(cursor.catalogueVersionId) || !isUuid(cursor.assetRowId))) {
         throw new ApiError(400, 'invalid_cursor', 'cursor is not a valid Stackr asset manifest cursor.');
       }
-      // The printing predicate on the full manifest expands inherited
+      // Identity predicates on the full manifest expand inherited
       // identities across the catalogue. Card fallback requests can use the
       // existing bounded RPC without changing the generic manifest contract.
+      const printingOnly = isUuid(input.printingId) && !clean(input.variantId);
+      const variantOnly = isUuid(input.variantId) && !clean(input.printingId);
       if (assetUrlOptions.assetIdentityRpc && input.assetType === 'card_image'
-        && isUuid(input.printingId) && !clean(input.setId) && !clean(input.variantId)) {
+        && (printingOnly || variantOnly) && !clean(input.setId)) {
         const rows = [];
         let after = cursor;
         while (rows.length <= limit) {
           const pageSize = Math.min(1000, limit + 1 - rows.length);
           const batch = await queryRows(assetSupabase.schema('api').rpc(
             'card_image_manifest_for_identities', {
-              p_variant_ids: [], p_printing_ids: [clean(input.printingId)],
+              p_variant_ids: variantOnly ? [clean(input.variantId)] : [],
+              p_printing_ids: printingOnly ? [clean(input.printingId)] : [],
               p_after_version_id: after?.catalogueVersionId ?? null,
               p_after_asset_id: after?.assetRowId ?? null,
               p_limit: pageSize,
@@ -1477,7 +1483,7 @@ export function createCatalogueV1Service(options) {
       }
       const selectedSetId = clean(input.setId);
       if (selectedSetId && !isUuid(selectedSetId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
-      const parsed = parseSearchQuery(q);
+      const parsed = parseSearchQuery(q, { setId: selectedSetId });
 
       const strategies = [
         () => searchCanonicalId(searchSupabase, parsed, limit),
