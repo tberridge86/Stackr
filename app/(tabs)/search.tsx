@@ -945,6 +945,7 @@ export default function GlobalSearchScreen() {
     const cardResultLimit = category === 'all' || isRawCardCategory(category) ? 120 : 48;
 
     const correctionPromise = correctPokemonNameQuery(trimmed, { allowIndex: false }).catch(() => null);
+    let canonicalCards: SearchResults['cards'] | null = null;
     const cardsPromise = searchLocalPokemonCards<any>(primary, {
       language: selectedLanguage,
       limit: cardResultLimit,
@@ -953,6 +954,11 @@ export default function GlobalSearchScreen() {
       skipApiBackedSearch: true,
       skipIndexFallback: true,
       skipNameCorrection: true,
+      onCanonicalResults: (rows) => {
+        if (requestId !== requestRef.current) return;
+        canonicalCards = mapCardResults(rows);
+        setResults((current) => ({ ...current, cards: canonicalCards! }));
+      },
     });
     const setsPromise = searchSetsQuick(primary, normalisedTerms);
     const productsPromise = shouldSearchProducts
@@ -999,6 +1005,8 @@ export default function GlobalSearchScreen() {
 
     if (isFulfilled(cardsFirst)) {
       firstResults.cards = mapCardResults(cardsFirst.value ?? []);
+    } else if (canonicalCards !== null) {
+      firstResults.cards = canonicalCards;
     } else if (isRejected(cardsFirst)) {
       firstErrors.cards = 'Card results could not be loaded.';
     }
@@ -1049,7 +1057,7 @@ export default function GlobalSearchScreen() {
 
     // Keep same-query results while their source is still pending or has failed.
     const firstRetain = { ...firstErrors };
-    if (cardsFirst.status === 'pending') firstRetain.cards = 'pending';
+    if (cardsFirst.status === 'pending' && canonicalCards === null) firstRetain.cards = 'pending';
     if (setsFirst.status === 'pending') firstRetain.sets = 'pending';
     if (productsFirst.status === 'pending') firstRetain.sealed = 'pending';
     if (profilesFirst.status === 'pending') firstRetain.collectors = 'pending';
@@ -1092,6 +1100,8 @@ export default function GlobalSearchScreen() {
     if (cardsResult.status === 'fulfilled') {
       cardsForHydration = cardsResult.value ?? [];
       next.cards = mapCardResults(cardsForHydration);
+    } else if (canonicalCards !== null) {
+      next.cards = canonicalCards;
     } else {
       nextErrors.cards = 'Card results could not be loaded.';
     }
