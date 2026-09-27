@@ -1,4 +1,6 @@
 const PROJECTS = new Set(['lmwfhvexfcoyeuoyrlco', 'oakdbbzdqwurpjnoqhmu']);
+// Existing names verified in the owner's Supabase dashboard on 2026-09-27.
+const KEY_NAMES = { lmwfhvexfcoyeuoyrlco: 'stackr_catalogue_operator', oakdbbzdqwurpjnoqhmu: 'default' };
 const modernSecret = value => typeof value === 'string' && /^sb_secret_[A-Za-z0-9_-]+$/.test(value);
 
 // Read existing server credentials only. Never enable legacy keys or create keys.
@@ -20,9 +22,9 @@ export async function resolveServerKey({ project, configuredKey, accessToken, fe
   let keys;
   try { keys = await response.json(); } catch { throw new Error('Invalid server key response'); }
   if (!Array.isArray(keys)) throw new Error('Invalid server key response');
-  const candidates = keys.filter(key => key.type === 'secret' && modernSecret(key.api_key)
+  const candidates = keys.filter(key => key.name === KEY_NAMES[project] && key.type === 'secret' && modernSecret(key.api_key)
     && (!key.secret_jwt_template?.role || key.secret_jwt_template.role === 'service_role'));
-  if (candidates.length !== 1) throw new Error('Expected exactly one existing modern server key');
+  if (candidates.length !== 1) throw new Error(`Expected exactly one existing modern server key named ${KEY_NAMES[project]} for ${project}`);
   mask(candidates[0].api_key);
   return candidates[0].api_key;
 }
