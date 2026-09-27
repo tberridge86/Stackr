@@ -25,9 +25,27 @@ export function assertConfig(env, execute) {
   check(/^[a-f0-9]{40}$/.test(env.GITHUB_SHA ?? '') && env.GITHUB_SHA === env.STACKR_EXPECTED_MAIN_SHA, 'Exact main revision required');
   check(env.STACKR_QUEUE1_CONFIRMATION === 'PUBLISH QUEUE1', 'Publication confirmation required');
   check(env.SUPABASE_STAGING_URL === `https://${STAGING}.supabase.co` && env.SUPABASE_PRODUCTION_URL === `https://${PRODUCTION}.supabase.co`, 'Wrong project');
-  const u = new URL(env.SUPABASE_DB_URL);
-  check(['postgres:', 'postgresql:'].includes(u.protocol) && !u.search && !u.hash, 'Invalid database URL');
-  check(u.hostname === `db.${PRODUCTION}.supabase.co` || (u.hostname.endsWith('.pooler.supabase.com') && decodeURIComponent(u.username) === `postgres.${PRODUCTION}`), 'Wrong production database');
+  for (const [project, connection] of [[STAGING, env.SUPABASE_STAGING_DB_URL], [PRODUCTION, env.SUPABASE_DB_URL]]) {
+    const u = new URL(connection);
+    check(['postgres:', 'postgresql:'].includes(u.protocol) && !u.search && !u.hash, 'Invalid database URL');
+    check(u.hostname === `db.${project}.supabase.co` || (u.hostname.endsWith('.pooler.supabase.com') && decodeURIComponent(u.username) === `postgres.${project}`), 'Wrong catalogue database');
+  }
+}
+export async function withCatalogueReaders(createClient, env, run) {
+  const sourceDb = createClient(env.SUPABASE_STAGING_DB_URL, 'stackr-queue1-staging-read', { connectionTimeoutMillis: 15000 });
+  const targetDb = createClient(env.SUPABASE_DB_URL, 'stackr-queue1-production-read', { connectionTimeoutMillis: 15000 });
+  try {
+    for (const db of [sourceDb, targetDb]) {
+      await db.connect();
+      await db.query('begin read only');
+      await db.query("set local statement_timeout='45s'");
+    }
+    return await run({ sourceDb, targetDb });
+  } finally {
+    await Promise.allSettled([sourceDb, targetDb].map(async db => {
+      try { await db.query('rollback'); } finally { await db.end(); }
+    }));
+  }
 }
 export function validateEvidence(cohortBytes, approvalBytes) {
   check(digest(cohortBytes) === COHORT_SHA, 'Cohort bytes changed');
@@ -117,15 +135,16 @@ async function main() {
   const source = client(STAGING, await serverKey(STAGING, process.env.SUPABASE_STAGING_SECRET_KEY));
   const target = client(PRODUCTION, await serverKey(PRODUCTION, process.env.SUPABASE_PRODUCTION_SECRET_KEY));
   const result = async promise => { const { data, error } = await promise; if (error) throw new Error(error.message); return data; };
-  const cards = c => result(c.schema('api').from('catalogue_cards').select('game_code,language_code,set_id,set_code,printing_id,collector_number,card_english_display_name,variant_id,variant_code,finish_code,same_artwork_as_variant_id,catalogue_version_id').eq('game_code', 'pokemon').eq('language_code', 'en').in('set_code', Object.keys(SCOPE)).limit(1000));
-  const sourceRecord = async c => { const s = await result(c.schema('ingest').from('sources').select('id,code,active,licence_status').eq('code', 'pokemon_tcg_api').single()); check(s.active && ['under_review', 'approved'].includes(s.licence_status), 'Source revoked or unavailable'); return s; };
-  const ss = await sourceRecord(source), ts = await sourceRecord(target);
+  return withCatalogueReaders(createVerifiedSupabasePostgresClient, process.env, async ({ sourceDb, targetDb }) => {
+  const cards = async db => (await db.query("select game_code,language_code,set_id,set_code,printing_id,collector_number,card_english_display_name,variant_id,variant_code,finish_code,same_artwork_as_variant_id,catalogue_version_id from api.catalogue_cards where game_code='pokemon' and language_code='en' and set_code=any($1::text[]) limit 1000", [Object.keys(SCOPE)])).rows;
+  const sourceRecord = async db => { const records = (await db.query("select id,code,active,licence_status from ingest.sources where code='pokemon_tcg_api'")).rows; check(records.length === 1 && records[0].active && ['under_review', 'approved'].includes(records[0].licence_status), 'Source revoked or unavailable'); return records[0]; };
+  const ss = await sourceRecord(sourceDb), ts = await sourceRecord(targetDb);
   const reviewBucket = await result(source.storage.getBucket(REVIEW_BUCKET)), publicBucket = await result(target.storage.getBucket(PUBLIC_BUCKET));
   check(reviewBucket.public === false && publicBucket.public === true, 'Bucket policy mismatch');
-  bind(rows, await cards(source), true);
-  const plans = bind(rows, await cards(target));
+  bind(rows, await cards(sourceDb), true);
+  const plans = bind(rows, await cards(targetDb));
   check(new Set(plans.map(r => r.target.printing_id)).size === 348, 'Duplicate target printing');
-  const sourceAssets = await result(source.schema('catalog').from('assets').select('*').like('asset_id', 'queue1-private-20260927:%').limit(500));
+  const sourceAssets = (await sourceDb.query("select * from catalog.assets where asset_id like 'queue1-private-20260927:%' limit 500")).rows;
   check(sourceAssets.length === 348, 'Private asset cohort drift');
   for (const r of plans) assertPrivateAsset(sourceAssets.find(a => a.id === r.staging_asset_id), r, ss.id);
   const journal = { started_at: new Date().toISOString(), revision: process.env.GITHUB_SHA, run_id: process.env.GITHUB_RUN_ID, cohort_sha256: COHORT_SHA, approval_sha256: APPROVAL_SHA, status: 'preflight', objects: [], assets: [], links: [] };
@@ -136,9 +155,9 @@ async function main() {
   for (const r of plans) {
     const objects = r.objects.map(o => ({ ...o, key: contentHashStorageKey({ visibility: 'public', assetType: 'card_image', sha256: o.sha256, role: o.role, extension: o.role === 'original' ? 'png' : 'webp' }), sourceKey: o.key }));
     const payload = publicPayload(r, ts.id, objects);
-    const existing = await result(target.schema('catalog').from('assets').select('*').eq('asset_id', payload.asset_id).maybeSingle());
-    if (existing) assertExistingAsset(existing, payload);
-    const other = await result(target.schema('api').from('asset_manifest').select('asset_id').eq('printing_id', r.target.printing_id).eq('asset_type', 'card_image').neq('asset_id', payload.asset_id).limit(1));
+    const existing = (await targetDb.query('select * from catalog.assets where asset_id=$1', [payload.asset_id])).rows[0];
+    if (existing) { existing.byte_size = Number(existing.byte_size); assertExistingAsset(existing, payload); }
+    const other = (await targetDb.query("select asset_id from api.asset_manifest where printing_id=$1 and asset_type='card_image' and asset_id<>$2 limit 1", [r.target.printing_id, payload.asset_id])).rows;
     check(other.length === 0, 'Existing published artwork requires review');
     prepared.push({ r, objects, payload });
   }
@@ -171,7 +190,7 @@ async function main() {
       await save(); const failed = outcomes.find(o => o.status === 'rejected'); if (failed) throw failed.reason;
       if (i % 120 === 0) console.log(JSON.stringify({ phase: 'storage_verified', objects: Math.min(i + 6, allObjects.length) }));
     }
-    check(isDeepStrictEqual(await sourceRecord(source), ss) && isDeepStrictEqual(await sourceRecord(target), ts), 'Source changed during transfer');
+    check(isDeepStrictEqual(await sourceRecord(sourceDb), ss) && isDeepStrictEqual(await sourceRecord(targetDb), ts), 'Source changed during transfer');
     db = createVerifiedSupabasePostgresClient(process.env.SUPABASE_DB_URL, 'stackr-queue1-publication', { connectionTimeoutMillis: 15000 });
     await db.connect(); await db.query('begin isolation level serializable');
     await db.query("set local lock_timeout='5s'"); await db.query("set local statement_timeout='45s'");
@@ -202,7 +221,7 @@ async function main() {
     check(verify.rows[0].count === 348, 'Manifest publication incomplete');
     journal.status = 'commit_intent'; await save();
     commitAttempted = true; await db.query('commit'); committed = true; journal.status = 'published'; journal.published_at = new Date().toISOString(); await save();
-    const published = await result(target.schema('api').from('asset_manifest').select('asset_row_id,printing_id,content_sha256,derivative_list').like('asset_id', `${PREFIX}%`).limit(500));
+    const published = (await targetDb.query('select asset_row_id,printing_id,content_sha256,derivative_list from api.asset_manifest where asset_id like $1 limit 500', [`${PREFIX}%`])).rows;
     check(published.length === 348, 'Post-commit manifest count mismatch');
     for (const { r, payload } of prepared) {
       const hit = published.filter(p => p.printing_id === r.target.printing_id && p.content_sha256 === r.image_sha256);
@@ -222,5 +241,6 @@ async function main() {
     if (db && !committed) await db.query('rollback').catch(() => {});
     journal.status = committed ? 'published_verification_failed' : commitAttempted ? 'commit_outcome_unknown_reconcile_before_rollback' : 'failed_before_publication'; journal.error = error.message; await save(); throw error;
   } finally { if (db) await db.end(); }
+  });
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(error => { console.error(error.message); process.exitCode = 1; });

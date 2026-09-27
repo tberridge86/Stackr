@@ -104,3 +104,14 @@ resolver now selects staging's existing `stackr_catalogue_operator` key and
 production's existing `default` key by exact name and secret type. It still rejects
 missing, duplicate, malformed or restricted-role matching keys. No key was revealed
 in chat, created, rotated or enabled during that inspection.
+
+Run [36314163769](https://github.com/tberridge86/Stackr/actions/runs/36314163769)
+at revision `944e1c15b36a5e10ac5725e6b700f9b1e250531b` resolved the named keys,
+then stopped on `Invalid schema: ingest` before any writes. The source and asset
+tables are private and must not be exposed through PostgREST to make publication
+work. All catalogue metadata reads now use the existing project-bound, TLS-verified
+database connections in read-only sessions. Storage continues through its normal
+server API. The existing separate serializable write transaction is unchanged.
+Post-publication manifest verification reads the same `api.asset_manifest` view
+through the database; it does not prove the external Stackr HTTP route or phone UI.
+No exposed-schema, grant, RLS or bucket-policy changes are required.
