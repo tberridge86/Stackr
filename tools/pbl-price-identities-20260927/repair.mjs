@@ -5,6 +5,7 @@ import {pathToFileURL} from 'node:url';
 import {createVerifiedSupabasePostgresClient} from '../../scripts/deploy/verified-supabase-postgres.mjs';
 
 export const SOURCE='2e69af6e-4ff0-401b-8a3e-86572522f4e3';
+export const STAGING_SOURCE='a0bf02e4-b30c-4495-bd87-45102611c5fa';
 export const OLD_SET='2f77da8e-8199-4634-b30d-385565560731';
 export const SET='d6d58c17-5923-496e-94ef-5819f34ae10c';
 export const VERSION='d6bdab54-ec11-4b54-85a9-311d6ce3b2c8';
@@ -38,22 +39,23 @@ export function validateAliases(rows,pairs,after=false){
   const r=matches[0];assert.equal(r.set_id,null);assert.equal(r.printing_id,after?p.printing_id:null);assert.equal(r.variant_id,after?null:p.old_variant_id);
  }
 }
-export async function readAliases(db){
- const live=(await db.query("select * from ingest.external_identifiers where source_id=$1 and language_code='en' and is_current and deprecated_at is null and (external_id='me5' or external_id ~ '^me5-[0-9]+$') order by external_id",[SOURCE])).rows;
- const published=(await db.query("select * from catalog.catalogue_version_external_identifiers where catalogue_version_id=$1 and source_id=$2 and language_code='en' and (external_id='me5' or external_id ~ '^me5-[0-9]+$') order by external_id",[VERSION,SOURCE])).rows;
+export async function readAliases(db,source=SOURCE){
+ const live=(await db.query("select * from ingest.external_identifiers where source_id=$1 and language_code='en' and is_current and deprecated_at is null and (external_id='me5' or external_id ~ '^me5-[0-9]+$') order by external_id",[source])).rows;
+ const published=(await db.query("select * from catalog.catalogue_version_external_identifiers where catalogue_version_id=$1 and source_id=$2 and language_code='en' and (external_id='me5' or external_id ~ '^me5-[0-9]+$') order by external_id",[VERSION,source])).rows;
  return {live,published};
 }
-export async function repairAliases(db,pairs){
- const before=await readAliases(db);validateAliases(before.live,pairs);validateAliases(before.published,pairs);
+export async function repairAliases(db,pairs,source=SOURCE){
+ assert([SOURCE,STAGING_SOURCE].includes(source));
+ const before=await readAliases(db,source);validateAliases(before.live,pairs);validateAliases(before.published,pairs);
  for(const p of pairs){
-  const live=await db.query("update ingest.external_identifiers set printing_id=$1,variant_id=null,updated_at=now() where source_id=$2 and language_code='en' and source_entity_type='card' and external_id=$3 and variant_id=$4 and printing_id is null and set_id is null and is_current and deprecated_at is null returning id",[p.printing_id,SOURCE,p.external_id,p.old_variant_id]);
+  const live=await db.query("update ingest.external_identifiers set printing_id=$1,variant_id=null,updated_at=now() where source_id=$2 and language_code='en' and source_entity_type='card' and external_id=$3 and variant_id=$4 and printing_id is null and set_id is null and is_current and deprecated_at is null returning id",[p.printing_id,source,p.external_id,p.old_variant_id]);
   assert.equal(live.rows.length,1);
-  const published=await db.query("update catalog.catalogue_version_external_identifiers set printing_id=$1,variant_id=null where catalogue_version_id=$2 and source_id=$3 and language_code='en' and source_entity_type='card' and external_id=$4 and variant_id=$5 and printing_id is null and set_id is null returning external_id",[p.printing_id,VERSION,SOURCE,p.external_id,p.old_variant_id]);
+  const published=await db.query("update catalog.catalogue_version_external_identifiers set printing_id=$1,variant_id=null where catalogue_version_id=$2 and source_id=$3 and language_code='en' and source_entity_type='card' and external_id=$4 and variant_id=$5 and printing_id is null and set_id is null returning external_id",[p.printing_id,VERSION,source,p.external_id,p.old_variant_id]);
   assert.equal(published.rows.length,1);
  }
- assert.equal((await db.query("update ingest.external_identifiers set set_id=$1,updated_at=now() where source_id=$2 and language_code='en' and source_entity_type='set' and external_id='me5' and set_id=$3 and is_current and deprecated_at is null returning id",[SET,SOURCE,OLD_SET])).rows.length,1);
- assert.equal((await db.query("update catalog.catalogue_version_external_identifiers set set_id=$1 where catalogue_version_id=$2 and source_id=$3 and language_code='en' and source_entity_type='set' and external_id='me5' and set_id=$4 returning external_id",[SET,VERSION,SOURCE,OLD_SET])).rows.length,1);
- const after=await readAliases(db);validateAliases(after.live,pairs,true);validateAliases(after.published,pairs,true);
+ assert.equal((await db.query("update ingest.external_identifiers set set_id=$1,updated_at=now() where source_id=$2 and language_code='en' and source_entity_type='set' and external_id='me5' and set_id=$3 and is_current and deprecated_at is null returning id",[SET,source,OLD_SET])).rows.length,1);
+ assert.equal((await db.query("update catalog.catalogue_version_external_identifiers set set_id=$1 where catalogue_version_id=$2 and source_id=$3 and language_code='en' and source_entity_type='set' and external_id='me5' and set_id=$4 returning external_id",[SET,VERSION,source,OLD_SET])).rows.length,1);
+ const after=await readAliases(db,source);validateAliases(after.live,pairs,true);validateAliases(after.published,pairs,true);
  return {before,after};
 }
 async function preservation(db){
@@ -80,14 +82,16 @@ export async function main(){
  const save=()=>writeFile(`${output}/receipt.json`,JSON.stringify(journal,null,2));
  for(const [name,key,commit]of [['staging_rehearsal','SUPABASE_STAGING_DB_URL',false],['production_rehearsal','SUPABASE_DB_URL',false],...(journal.apply?[['production_publication','SUPABASE_DB_URL',true]]:[])]){
   const db=createVerifiedSupabasePostgresClient(process.env[key],'stackr-pbl-price-identities',{connectionTimeoutMillis:15000});let commitAttempted=false;
+  const source=name==='staging_rehearsal'?STAGING_SOURCE:SOURCE;
   try{
    await db.connect();await db.query('begin isolation level serializable');await db.query("set local statement_timeout='45s'");await db.query("set local lock_timeout='5s'");
+   assert.deepEqual((await db.query('select code from ingest.sources where id=$1',[source])).rows,[{code:'pokemon_tcg_api'}]);
    const cards=(await db.query('select * from api.catalogue_cards where set_id=any($1::uuid[])',[ [OLD_SET,SET] ])).rows;
    const pairs=validatePairs(cohort,cards,provider);const preserved=await preservation(db);
-   const aliases=await repairAliases(db,pairs);assert.deepEqual(await preservation(db),preserved);
+   const aliases=await repairAliases(db,pairs,source);assert.deepEqual(await preservation(db),preserved);
    const phase={name,status:commit?'commit_pending':'rollback_pending',aliasRecords:242,preserved,before:aliases.before,after:aliases.after};journal.phases.push(phase);await save();
    commitAttempted=commit;await db.query(commit?'commit':'rollback');phase.status=commit?'committed':'rolled_back';
-   const readback=await readAliases(db);assert.deepEqual(readback,commit?aliases.after:aliases.before);assert.deepEqual(await preservation(db),preserved);
+   const readback=await readAliases(db,source);assert.deepEqual(readback,commit?aliases.after:aliases.before);assert.deepEqual(await preservation(db),preserved);
    phase.status=commit?'committed_and_verified':'rehearsed_rolled_back_and_verified';await save();console.log(JSON.stringify({phase:name,status:phase.status,aliasRecords:242}));
   }catch(error){await db.query('rollback').catch(()=>{});journal.error={phase:name,commitAttempted,message:error.message};await save();throw error;}finally{await db.end();}
  }
