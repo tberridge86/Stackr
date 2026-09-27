@@ -1,9 +1,11 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
+import { validateReferences,verifyReferenceBytes,writeReferences,verifyReferences,REFERENCES_SHA } from './references.mjs';
 import { check, digest } from '../queue1-publish-20260927/publish.mjs';
 
-export const COHORT_SHA='2d1be403c9b1a64ffad508912e0e8dba1fd06c67c15d695306366c7c84312cae';
+export const COHORT_SHA='fb4d9669eab795fa941347d8775a4747f117208983a6bea16b0a406b3a4d1ca5';
 export const MIGRATION='20260927150826_catalogue_repeated_printed_number_identity';
 export const MIGRATION_SHA='6eaea4bc3f35c102d8d0a38c3cb225626da53ba79169022d95d1bd3a138907e7';
 export const PROJECTS={staging:'lmwfhvexfcoyeuoyrlco',production:'oakdbbzdqwurpjnoqhmu'};
@@ -132,28 +134,31 @@ export async function writeMetadata(db,c,environment,migration) {
   await bulk(db,'catalog.catalogue_version_external_identifiers',versionMappings,['catalogue_version_id','language_code','source_id','source_entity_type','external_id','external_uri','set_id','printing_id','variant_id','confidence']);
   return {counts,sets:await verify(db,c,environment),assets_imported:0,ownership_changes:0};
 }
-export async function rehearse(db,c,e,migration) {
+export async function rehearse(db,c,e,migration,refs=null) {
   await db.query('begin isolation level serializable');
-  try {await db.query("set local statement_timeout='45s'");await db.query("set local lock_timeout='5s'");return {status:'passed_and_rolled_back',...await writeMetadata(db,c,e,migration)};}
+  try {await db.query("set local statement_timeout='45s'");await db.query("set local lock_timeout='5s'");const metadata=await writeMetadata(db,c,e,migration);const images=refs?await writeReferences(db,refs,e,c.versions.ja):null;return {status:'passed_and_rolled_back',...metadata,images};}
   finally {await db.query('rollback');}
 }
 async function main() {
   assertConfig(process.env,process.argv.includes('--execute'));
   const {createVerifiedSupabasePostgresClient}=await import('../../scripts/deploy/verified-supabase-postgres.mjs');
   const c=validateCohort(await readFile(new URL('./cohort.json',import.meta.url))),migration=await readFile(new URL(`../../supabase/migrations/${MIGRATION}.sql`,import.meta.url),'utf8');
+  const refs=validateReferences(await readFile(new URL('./references.json',import.meta.url)),COHORT_SHA);
+  const require=createRequire(new URL('../../backend/package.json',import.meta.url)),sharp=require('sharp');
   const out=process.env.STACKR_NEWSETS480_OUTPUT;check(out,'Receipt directory required');await mkdir(out,{recursive:true});
-  const journal={status:'preflight',started_at:new Date().toISOString(),revision:process.env.GITHUB_SHA,run_id:process.env.GITHUB_RUN_ID,cohort_sha256:COHORT_SHA,migration_sha256:MIGRATION_SHA,device_verified:false};
+  const journal={status:'preflight',started_at:new Date().toISOString(),revision:process.env.GITHUB_SHA,run_id:process.env.GITHUB_RUN_ID,cohort_sha256:COHORT_SHA,migration_sha256:MIGRATION_SHA,references_sha256:REFERENCES_SHA,device_verified:false};
   const save=()=>writeFile(`${out}/receipt.json`,JSON.stringify(journal,null,2));await save();
   let db,committed=false,commitAttempted=false;
   try {
+    journal.reference_bytes_verified=await verifyReferenceBytes(refs,sharp);await save();
     for(const e of ['staging','production']) {
       db=createVerifiedSupabasePostgresClient(process.env[e==='staging'?'SUPABASE_STAGING_DB_URL':'SUPABASE_DB_URL'],`stackr-newsets480-${e}`,{connectionTimeoutMillis:15000});await db.connect();
-      journal[`${e}_rehearsal`]=await rehearse(db,c,e,migration);await save();console.log(`${e} complete metadata and migration rehearsal passed and rolled back`);
+      journal[`${e}_rehearsal`]=await rehearse(db,c,e,migration,refs);await save();console.log(`${e} complete metadata, references and migration rehearsal passed and rolled back`);
       if(e==='staging'){await db.end();db=null;}
     }
     await db.query('begin isolation level serializable');await db.query("set local statement_timeout='45s'");await db.query("set local lock_timeout='5s'");await db.query("select pg_advisory_xact_lock(hashtext('stackr-newsets480-20260927'))");
-    journal.publication=await writeMetadata(db,c,'production',migration);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
-    journal.published_at=new Date().toISOString();journal.sets=await verify(db,c,'production');journal.status='published_catalogue_verified';journal.verified_at=new Date().toISOString();await save();console.log(JSON.stringify({status:journal.status,printings:480,assets:0}));
+    journal.publication=await writeMetadata(db,c,'production',migration);journal.images=await writeReferences(db,refs,'production',c.versions.ja);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
+    journal.published_at=new Date().toISOString();journal.sets=await verify(db,c,'production');journal.image_verification=await verifyReferences(db,refs,'production',c.versions.ja);journal.post_commit_reference_bytes_verified=await verifyReferenceBytes(refs,sharp);journal.status='published_catalogue_and_references_verified';journal.verified_at=new Date().toISOString();await save();console.log(JSON.stringify({status:journal.status,printings:480,external_references:279,stored_images:0}));
   } catch(e) {if(db&&!committed)await db.query('rollback').catch(()=>{});journal.status=committed?'published_verification_failed':commitAttempted?'commit_outcome_unknown':'failed_before_publication';journal.error=e.message;await save();throw e;}
   finally {if(db)await db.end();}
 }
