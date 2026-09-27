@@ -1,0 +1,25 @@
+{
+  "observed_date": "2026-09-27",
+  "environment": "staging",
+  "project_ref": "lmwfhvexfcoyeuoyrlco",
+  "query_mode": "read_only",
+  "scope": "four-set Queue 1 physical English cohort only",
+  "matching_fields": ["game", "language", "set_code", "exact_collector_number", "variant_code", "finish_code"],
+  "targets": 348,
+  "unique_bindings": 348,
+  "missing_bindings": 0,
+  "ambiguous_bindings": 0,
+  "by_set": [
+    {"set_code": "sm3.5", "targets": 78, "unique_bindings": 78, "missing_bindings": 0, "ambiguous_bindings": 0},
+    {"set_code": "sm7.5", "targets": 78, "unique_bindings": 78, "missing_bindings": 0, "ambiguous_bindings": 0},
+    {"set_code": "swsh12.5gg", "targets": 70, "unique_bindings": 70, "missing_bindings": 0, "ambiguous_bindings": 0},
+    {"set_code": "swsh4.5sv", "targets": 122, "unique_bindings": 122, "missing_bindings": 0, "ambiguous_bindings": 0}
+  ],
+  "limitation": "This is a binding-cardinality census, not a complete persisted UUID/name export or ingestion. Recheck names, keys, current images and bindings immediately before any future writes.",
+  "database_writes": 0,
+  "assets_ingested": 0,
+  "published": 0,
+  "source_gate": "pokemon_tcg_api remains under_review in staging; no flags changed",
+  "acquisition_run_id": 36303082404,
+  "acquisition_commit": "497738138c1a6212e486fcc57e6d9f674d8b38ca"
+}
