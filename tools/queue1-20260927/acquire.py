@@ -56,6 +56,28 @@ def identity_sha(records):
     pairs = sorted([[str(c['number']),name_key(c['name'])] for c in records])
     return sha(json.dumps(pairs,ensure_ascii=False,separators=(',',':')).encode())
 
+def scoped_provider_records(config, records):
+    """Match the fixed target census; retain extra provider identities as out-of-scope evidence."""
+    code = config['set_code']
+    count = COUNTS[code]
+    if code in ('sm3.5', 'sm7.5'):
+        numbers = {str(i) for i in range(1, count + 1)}
+    elif code == 'swsh4.5sv':
+        numbers = {f'SV{i:03d}' for i in range(1, count + 1)}
+    else:
+        numbers = {f'GG{i:02d}' for i in range(1, count + 1)}
+    if not isinstance(records, list): raise ValueError('Fallback dataset is not a list')
+    if len({str(c['number']) for c in records}) != len(records):
+        raise ValueError('Duplicate source collector number')
+    if any(c['id'] != config['provider_dataset_id']+'-'+str(c['number']) for c in records):
+        raise ValueError('Source ID inconsistency')
+    selected = [c for c in records if str(c['number']) in numbers]
+    extra = [dict(id=c['id'],number=c['number'],name=c['name']) for c in records if str(c['number']) not in numbers]
+    digest = identity_sha(selected)
+    if len(selected) != config['expected_count'] or digest != config['identity_sha256']:
+        raise ValueError(f'Target identity census differs: count={len(selected)}, identity_sha256={digest}')
+    return selected, extra
+
 def load_manifest():
     configs = json.loads((ROOT / 'scope.json').read_text())
     if {c['set_code']:c['expected_count'] for c in configs} != COUNTS:
@@ -88,14 +110,10 @@ def source_data(config, output):
     try:
         url = config['dataset_url']; raw,_,_ = get(url, DATA_HOSTS)
         if blob_sha(raw) != config['provider_git_blob_sha1']: raise ValueError('Fallback dataset differs from audited Git blob')
-        records = json.loads(raw)
-        if not isinstance(records,list): raise ValueError('Fallback dataset is not a list')
-        if len(records)!=config['expected_count'] or identity_sha(records)!=config['identity_sha256']:
-            raise ValueError('Full provider identity census differs from the independently audited catalogue names/numbers')
-        if len({str(c['number']) for c in records})!=len(records): raise ValueError('Duplicate source collector number')
-        if any(c['id']!=config['provider_dataset_id']+'-'+str(c['number']) for c in records): raise ValueError('Source ID inconsistency')
         (folder / (config['provider_dataset_id']+'.json')).write_bytes(raw)
-        result['fallback'] = dict(records=records,url=url,sha256=sha(raw))
+        records, extra = scoped_provider_records(config, json.loads(raw))
+        (folder / (config['provider_dataset_id']+'-out-of-scope.json')).write_text(json.dumps(extra,ensure_ascii=False,indent=2))
+        result['fallback'] = dict(records=records,url=url,sha256=sha(raw),out_of_scope=extra)
     except Exception as exc: result['errors'].append({'url':config['dataset_url'],'error':str(exc)})
     (folder / f'{code}-fetch-evidence.json').write_text(json.dumps({'at':now(),'errors':result['errors']},indent=2))
     return result
@@ -195,7 +213,7 @@ def main():
         config=configs[code];data=source_data(config,output)
         if data['fallback'] is None:
             (output/'identity-blocker.json').write_text(json.dumps({'set':code,'errors':data['errors']},indent=2))
-            save(output,rows);print('Pinned identity census unavailable; stopping safely.',flush=True);return 2
+            save(output,rows);print(json.dumps(data['errors']),flush=True);print('Pinned identity census unavailable; stopping safely.',flush=True);return 2
         targets=[[str(c['number']),c['name'],config['variant_code'],config['finish_code']] for c in data['fallback']['records']]
         candidates=[resolve(target_row(config,t),config,data) for t in targets]
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:

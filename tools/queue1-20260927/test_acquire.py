@@ -51,4 +51,24 @@ class AcquisitionTests(unittest.TestCase):
         rows=[dict(self.row,status='downloaded_review_only',image_sha256='same'),dict(self.row,collector_number='SV002',status='downloaded_review_only',image_sha256='same')]
         with tempfile.TemporaryDirectory() as p:a.save(Path(p),rows)
         self.assertTrue(all(r['status']=='hold_identical_image_bytes' for r in rows))
+    def provider_fixture(self):
+        cfg=a.load_manifest()['sm3.5']
+        records=[dict(id=f'sm35-{i}',number=str(i),name=f'Fixture {i}') for i in range(1,79)]
+        cfg=dict(cfg,identity_sha256=a.identity_sha(records))
+        return cfg,records
+    def test_extra_provider_variant_not_target(self):
+        cfg,records=self.provider_fixture()
+        records.append(dict(id='sm35-68a',number='68a',name='Ultra Ball'))
+        selected,extra=a.scoped_provider_records(cfg,records)
+        self.assertEqual(len(selected),78);self.assertEqual([r['number'] for r in extra],['68a'])
+    def test_missing_target_not_replaced_by_extra(self):
+        cfg,records=self.provider_fixture();records.pop()
+        records.append(dict(id='sm35-68a',number='68a',name='Ultra Ball'))
+        with self.assertRaises(ValueError):a.scoped_provider_records(cfg,records)
+    def test_provider_target_name_mismatch_blocks(self):
+        cfg,records=self.provider_fixture();records[0]['name']='Different card'
+        with self.assertRaises(ValueError):a.scoped_provider_records(cfg,records)
+    def test_provider_duplicate_target_blocks(self):
+        cfg,records=self.provider_fixture();records.append(dict(records[0]))
+        with self.assertRaises(ValueError):a.scoped_provider_records(cfg,records)
 if __name__=='__main__':unittest.main()
