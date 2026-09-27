@@ -987,6 +987,13 @@ async function assertStrictForeignLanguageSafety() {
   assert.equal(foreignWithEnglishName.englishDisplayName, 'Test Card');
 
   const englishAdapter = new TcgdexSourceAdapter({ language: 'en', licenceStatus: 'approved' });
+  const classicRecord = {
+    ...providerRecord('en', '30th-c-001'),
+    payload: { id: '30th-c-001', localId: '001', name: 'Charizard', set: { id: '30th-c' } },
+  };
+  assert.equal(englishAdapter.validateRecord(classicRecord).ok, false, 'Classic list ordinals must not become printed collector numbers');
+  assert.ok(englishAdapter.validateRecord(classicRecord).issues.some(issue => issue.code === 'classic_collection_printed_identity_required'));
+  assert.equal(englishAdapter.validateRecord({ ...classicRecord, providerRecordId: '30th-001', payload: { ...classicRecord.payload, id: '30th-001', set: { id: '30th' } } }).ok, true, 'The ordinary anniversary set remains importable');
   const english = englishAdapter.normaliseRecord(providerRecord('en', 'en-name-1'));
   assert.equal(english.englishDisplayName, 'Test Card', 'English records may use their localized name as display name');
 

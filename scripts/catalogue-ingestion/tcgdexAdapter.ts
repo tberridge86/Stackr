@@ -550,7 +550,21 @@ export class TcgdexSourceAdapter implements SourceAdapter {
   }
 
   validateRecord(record: ProviderRecord) {
-    return validateProviderRecord(record);
+    const result = validateProviderRecord(record);
+    const payload = record.payload;
+    const set = payload?.set && typeof payload.set === 'object'
+      ? payload.set as Record<string, unknown> : {};
+    const sourceSetId = cleanText(record.recordType === 'set' ? payload?.id : set.id ?? payload?.setId);
+    if (sourceSetId === '30th-c' || /^30th-c(?:-|$)/i.test(record.providerRecordId)) {
+      result.issues.push({
+        code: 'classic_collection_printed_identity_required',
+        severity: 'error',
+        message: '30th Classic Collection localId values are list positions, not printed numbers. Use the reviewed printing-scoped import and exact provider mappings.',
+        path: 'payload.localId',
+      });
+      result.ok = false;
+    }
+    return result;
   }
 }
 
