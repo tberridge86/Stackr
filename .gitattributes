@@ -27,3 +27,6 @@ tools/queue1-pbl-relink-20260927/cohort.json text eol=lf
 
 /tools/anniversary201-publish-20260927/cohort.json text eol=lf
 /catalogue/rights-evidence/anniversary201-scrydex-owner-confirmation.2026-09-27.json text eol=lf
+
+/supabase/migrations/20260927162633_expose_printing_fronts_in_fast_set_cards.sql text eol=lf
+/tools/printing-front-api-20260927/baseline.json text eol=lf
