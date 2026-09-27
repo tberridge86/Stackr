@@ -2,7 +2,7 @@ import test from 'node:test';
 import { Buffer } from 'node:buffer';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { assertConfig, validateCohort, validatePair, relinkPayload, samePayload, SOURCE_SET, TARGET_SET, VERSION, PREFIX } from './relink.mjs';
+import { assertConfig, validateCohort, validatePair, validatePublicSources, relinkPayload, samePayload, SOURCE_SET, TARGET_SET, VERSION, PREFIX } from './relink.mjs';
 const rows=validateCohort(readFileSync(new URL('./cohort.json',import.meta.url)));
 const row=rows[0];
 function fixture(){
@@ -32,6 +32,10 @@ for(const [label,mutate] of [
 ])test(`rejects ${label}`,()=>{const f=fixture();mutate(f);assert.throws(()=>validatePair(row,f.cards,f.source));});
 test('retries accept the exact payload but reject storage or provenance changes',()=>{
   const {source}=fixture();const a=relinkPayload(row,source);assert.equal(samePayload({...a,id:'another',byte_size:100},a),true);assert.equal(samePayload({...a,storage_key:'other'},a),false);assert.equal(samePayload({...a,recognition_reference_eligible:true},a),false);
+});
+test('withdrawn, replaced or rebound public sources cannot be resurrected',()=>{
+  const m={asset_id:row.source_asset_id,printing_id:row.canonical_printing_id,content_sha256:row.sha256,derivative_list:row.derivative_list};
+  validatePublicSources([row],[m]);assert.throws(()=>validatePublicSources([row],[]));assert.throws(()=>validatePublicSources([row],[{...m,printing_id:row.duplicate_printing_id}]));assert.throws(()=>validatePublicSources([row],[{...m,content_sha256:'0'.repeat(64)}]));
 });
 test('execution forbids alternate refs, targets and URL overrides',()=>{
   const env={GITHUB_REF:'refs/heads/main',GITHUB_SHA:'a'.repeat(40),STACKR_EXPECTED_MAIN_SHA:'a'.repeat(40),STACKR_PBL_CONFIRMATION:'RELINK PBL',SUPABASE_STAGING_DB_URL:'postgres://postgres@db.lmwfhvexfcoyeuoyrlco.supabase.co/postgres',SUPABASE_DB_URL:'postgres://postgres@db.oakdbbzdqwurpjnoqhmu.supabase.co/postgres'};

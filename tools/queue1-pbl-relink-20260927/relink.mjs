@@ -63,6 +63,13 @@ export function samePayload(actual, expected) {
   return Object.keys(expected).filter(k => !['id', 'created_at', 'updated_at'].includes(k)).every(k =>
     k === 'byte_size' ? Number(actual[k]) === Number(expected[k]) : isDeepStrictEqual(actual[k], expected[k]));
 }
+export function validatePublicSources(rows, manifest) {
+  check(manifest.length === rows.length, 'Current canonical public manifest is incomplete');
+  for (const r of rows) {
+    const hits = manifest.filter(a => a.asset_id === r.source_asset_id && a.printing_id === r.canonical_printing_id);
+    check(hits.length === 1 && hits[0].content_sha256 === r.sha256 && isDeepStrictEqual(hits[0].derivative_list, r.derivative_list), 'Current public source changed or was withdrawn');
+  }
+}
 const CARDS = "select game_code,language_code,set_id,set_code,printing_id,collector_number,card_english_display_name,variant_id,variant_code,finish_code,catalogue_version_id from api.catalogue_cards where set_id=any($1::uuid[]) and language_code='en' limit 500";
 async function readState(db, rows) {
   const cards = (await db.query(CARDS, [[SOURCE_SET, TARGET_SET]])).rows.sort((a,b) => a.variant_id.localeCompare(b.variant_id));
@@ -74,6 +81,7 @@ async function readState(db, rows) {
   const source = (await db.query('select id,code,licence_status,active from ingest.sources where id=$1', sourceIds)).rows[0];
   check(source?.code === 'tcgdex' && source.active === true && source.licence_status === 'approved', 'Existing source is not eligible');
   for (const r of rows) validatePair(r, cards, sources.find(s => s.asset_id === r.source_asset_id));
+  validatePublicSources(rows, (await db.query("select asset_id,printing_id,content_sha256,derivative_list from api.asset_manifest where set_id=$1 and catalogue_version_id=$2 and asset_type='card_image'", [SOURCE_SET, VERSION])).rows);
   const published = (await db.query("select asset_id,printing_id,content_sha256,derivative_list from api.asset_manifest where set_id=$1 and asset_type='card_image'", [TARGET_SET])).rows;
   for (const a of published) {
     const r = rows.find(r => r.duplicate_printing_id === a.printing_id);
