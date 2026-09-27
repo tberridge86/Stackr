@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "stackr-owner-image-permission-attestation-v1",
+  "attestationId": "pocket131-scrydex-owner-confirmation:2026-09-27",
+  "recordedAt": "2026-09-27T15:05:51.011853+00:00",
+  "recordBasis": "Existing explicit Scrydex artwork permission, followed by the current request to continue the separate 131 Pocket records.",
+  "ownerStatement": "SCYDEX YES TOO.",
+  "continuationStatement": "Still outstanding: Storm Emeralda and 30th anniversary imports (0 imported so far), plus the separate 131 Pocket records.",
+  "interpretedScope": "Store, resize and display the exact 131 English Paldean Wonders Pocket fronts listed in the frozen cohort. Product remains Pokemon TCG Pocket.",
+  "decision": "Owner representation of existing permission; not an independently issued rights-holder licence.",
+  "sourceCode": "scrydex",
+  "languageCode": "en",
+  "targetCount": 131,
+  "cohortSha256": "71748dbe5ec202675660408c315e204c18b48b59e99e0c7d4125066fe3b73250",
+  "capabilities": {
+    "store": true,
+    "resize": true,
+    "displayInStackr": true
+  },
+  "excluded": [
+    "Other cohorts and languages",
+    "Model training or embeddings",
+    "Artwork resale or bulk export",
+    "Global source activation"
+  ],
+  "sourceWideApproval": false,
+  "retainsAttribution": true
+}
