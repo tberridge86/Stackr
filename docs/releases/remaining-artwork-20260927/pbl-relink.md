@@ -37,6 +37,19 @@ restricted to the exact created IDs in the receipt: remove only their
 the shared storage objects, canonical source assets, card identities or owner
 records. A precommit failure rolls back without an application-data change.
 
-Validation: 15 focused identity/retry/config/workflow checks; existing deployment
+The first protected attempt, run `36321928721` at revision
+`d2a50b73116afb08d72287b54e7d78d2bc2dfcad`, stopped in the read-only staging
+preflight: 40 current public assets are associated with reverse-holo variants.
+It created no assets, links or storage objects and never opened production.
+
+The follow-up independently reads all 120 current TCGdex card descriptors and
+requires their exact English set, collector number, name and generic `image`
+reference to match the frozen source asset URL. Only then may an existing
+normal, holo or reverse-holo association supply the printing front. Named
+stamps, unknown variants, withdrawn public assets, changed references and
+changed bytes remain rejected. The new binding has no variant and makes no
+exact-finish claim; unavailable historical assets are never restored.
+
+Validation: 19 focused identity/retry/config/workflow checks; existing deployment
 tooling checks; changed-file ESLint. The actual staging and production results
 will be appended to the matching PR and the owner-facing receipt.
