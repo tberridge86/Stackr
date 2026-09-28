@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   reconstruction-index:
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]')"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -119,7 +120,98 @@ jobs:
             package/prepared/summary.json
           retention-days: 90
           if-no-files-found: error
+  recover-supplement:
+    if: contains(github.event.head_commit.message, '[recover-supplement]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: type-null/PTCG-database
+          ref: bc5a2698eb9af858feb0280d579fd5fd0f0273e2
+          path: recovery-metadata
+          sparse-checkout: data_jp
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: python -m pip install Pillow==11.3.0 aiohttp==3.12.15
+      - run: npm ci --prefix backend --ignore-scripts
+      - name: Retrieve and verify saved evidence archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/10915501836/zip" > tw116.zip
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/10991792708/zip" > index.zip
+          echo '1013b9a1893f01d0eebf99677daf49a9eff96e57e2eef85aa4f50766e728ea67  tw116.zip' | sha256sum --check
+          echo '7734c841ef5f7ab92e3b2650c9523cc550b508b43e66648ae7e2eca17ccd6812  index.zip' | sha256sum --check
+          python - <<'PY'
+          import pathlib,zipfile
+          for archive,directory in [('tw116.zip','saved-tw116'),('index.zip','saved-index')]:
+              root=pathlib.Path(directory).resolve()
+              with zipfile.ZipFile(archive) as z:
+                  for member in z.namelist():
+                      if not (root/member).resolve().is_relative_to(root):raise ValueError('Unsafe archive member')
+                  z.extractall(root)
+          PY
+      - name: Restore and verify all 116 saved fronts and display images
+        env:
+          CODEX_PRIMARY_RUNTIME_NODE_MODULES: ${{ github.workspace }}/backend/node_modules
+        run: |
+          python tools/artwork-closeout-20260928/recover-tw116.py saved-tw116 tw116-package
+          node tools/artwork-closeout-20260928/prepare-local.mjs tw116-package/acquired tw116-package/prepared
+          python tools/artwork-closeout-20260928/verify-reconstruction.py tw116-package
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: artwork-recovered-tw116-${{ github.run_id }}
+          path: tw116-package
+          compression-level: 0
+          retention-days: 90
+          if-no-files-found: error
+      - name: Reconstruct exact PokeData candidates
+        run: python tools/artwork-closeout-20260928/reconstruct-pokedata.py saved-index recovery-metadata pokedata-evidence
+      - name: Recheck provider cards and live Japanese name anchors
+        env:
+          CODEX_PRIMARY_RUNTIME_NODE_MODULES: ${{ github.workspace }}/backend/node_modules
+        run: |
+          mkdir -p pokedata-package
+          cp pokedata-evidence/matching/candidates.json pokedata-package/candidates.json
+          python tools/artwork-closeout-20260928/acquire-pokedata.py --input pokedata-package/candidates.json --output pokedata-package/acquired
+          mkdir -p pokedata-package/acquired/results
+          node tools/artwork-closeout-20260928/prepare-local.mjs pokedata-package/acquired pokedata-package/prepared
+          python tools/artwork-closeout-20260928/verify-reconstruction.py pokedata-package
+          cp -R pokedata-evidence pokedata-package/source-evidence
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: artwork-reconstructed-pokedata-${{ github.run_id }}
+          path: pokedata-package
+          compression-level: 0
+          retention-days: 90
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: artwork-supplement-evidence-${{ github.run_id }}
+          path: |
+            tw116-package/verification.json
+            tw116-package/prepared/manifest.json
+            pokedata-evidence
+            pokedata-package/verification.json
+            pokedata-package/acquired/manifest.json
+            pokedata-package/acquired/summary.json
+            pokedata-package/prepared/manifest.json
+          retention-days: 90
+          if-no-files-found: error
   prepare:
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]')"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
