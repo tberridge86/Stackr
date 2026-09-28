@@ -7,8 +7,11 @@ including explicit same-artwork resolution. The final live count is unchanged.
 
 ## Result
 
-- 1,709 Japanese originals: pinned metadata plus exact live official-page name,
-  set, number, denominator, image URL, image MIME, full decode and SHA-256 checks.
+- 2,398 Japanese originals: 2,065 official-page images and 333 approved PokeData
+  Japanese images. Official images have pinned metadata plus live name, set,
+  number, denominator and exact URL checks. PokeData images have exact provider
+  set/card identities and live official name anchors or explicit visual review.
+  All originals have MIME, full decode and SHA-256 checks.
 - 424 English originals: exact pinned provider set, number and name, image MIME,
   full decode and SHA-256 checks. Three use the source's small rendition after a
   large-image 404. Fifty targets failed both available rendition requests.
@@ -18,7 +21,8 @@ including explicit same-artwork resolution. The final live count is unchanged.
   TW originals were recovered, checked against their frozen exact current
   identities, and prepared into 1,095 display derivatives. All were fully decoded
   and SHA-256 checked again after downloading the workflow output.
-- Total saved preparation: 2,614 original card fronts and 7,842 derivatives.
+- The afternoon continuation adds 689 Japanese originals and 2,067 derivatives.
+- Total saved preparation: 3,303 original card fronts and 9,909 derivatives.
 - 53 TCGdex references fetched and decoded without retaining image bytes.
   Six overlap acquired English images; the complete ledger counts 47 separately.
 
@@ -104,9 +108,9 @@ existing protected release lane; do not introduce a second production deployment
 system. Then measure API delivery and decoded files for the actual inserted
 cohort. Installed-app rendering still needs separate device evidence.
 
-The downloadable worklist keeps the 4,276 missing-source/download cases, 660
+The downloadable worklist keeps the 3,582 missing-source/download cases, 665
 identity/artwork reviews, 4,564 acquisition-gated TW pointers, 47 working
-references and 2,614 prepared files separate. No originals remain archive-only. Their sum
+references and 3,303 prepared files separate. No originals remain archive-only. Their sum
 is the same 12,161-printing baseline. No item was removed to improve coverage.
 
 `compose-ledger.py` reconstructs the initial acquisition-stage ledger. The saved
@@ -114,3 +118,41 @@ recovery evidence adds the 365-card preparation receipt and updates those rows
 from `Originals archived` to `Files prepared`, preserving every printing ID and
 the manual notes. Do not describe the initial generator's archived state as the
 current saved recovery state.
+
+## Afternoon acquisition continuation
+
+The newly inspected Japanese metadata snapshot is pinned to
+`bc5a2698eb9af858feb0280d579fd5fd0f0273e2`. Reconciliation found 356 further
+official images across M1L, M1S, M2, M2a, M3, M4 and SM5+. The Ultra Force
+`SM5+` to `SM5p` alias is supported by the source's Japanese product name.
+
+PokeData's public set/card APIs became accessible by ordinary direct requests.
+68 bounded Japanese set responses were retained with hashes and provider IDs.
+315 fronts passed exact provider set/number checks and live official Japanese
+name anchors. Same-set anchors take precedence; cross-set names must be unique
+across the observed pairings. Only the explicit ` Holofoil` name suffix is
+removed for comparison, with raw labels retained and no finish certification.
+Another 18 fronts were admitted after visual checks of Japanese name, set,
+number and denominator. Their exact decisions and image hashes are retained
+in the private recovery evidence, rather than generalized into name overrides.
+
+Five conflicts remain unattached: S8 126–129 and SM12a 217. Two `SM1+` images
+(064, 068) are below the 240×330 minimum. Vintage Japanese listings are now
+available, but no absent provider set codes, synthetic numbers, translated
+names or edition variants were guessed. The current Japanese source queue is
+2,184 vintage entries, eight unnumbered MC energies and two small thumbnails.
+
+The extra scripts only acquire metadata/images and prepare local evidence.
+`reconcile-additional-jp.py` creates official candidates;
+`fetch-pokedata-review.py` retains bounded provider metadata;
+`reconcile-pokedata.py` emits exact candidates with name evidence;
+`acquire-pokedata.py` rechecks provider records and live official anchors before
+downloading. Both cohorts use the existing `prepare-local.mjs` pipeline.
+The existing official identity tests and eight provider identity guards passed.
+All 2,756 additional original/derivative archive entries matched their hashes.
+The workbook's formulas, cell styles, tables, panes and manual notes were preserved.
+
+The final read-only production check still returned 12,161 missing printings.
+No source permission, catalogue identity, finish, ownership, deployment control
+or production data was changed. The owner has deferred the separate protected
+GitHub preflight review. This acquisition continuation does not bypass it.

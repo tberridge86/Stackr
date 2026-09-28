@@ -41,7 +41,7 @@ def main():
         r={**row,'status':'no_snapshot_match','production_writes':0,'exact_finish_verified':False,'artwork_scope':'printing_front'}
         lang=row['language_code'];number=row['collector_number'];code=row['set_code']
         if lang in indices:
-            code_aliases={'SM1+':'SM1p','SM2+':'SM2p','SM3+':'SM3p','SM4+':'SM4p'} if lang=='ja' else {}
+            code_aliases={'SM1+':'SM1p','SM2+':'SM2p','SM3+':'SM3p','SM4+':'SM4p','SM5+':'SM5p'} if lang=='ja' else {}
             lookup_code=code_aliases.get(code,code)
             hits=indices[lang].get((lookup_code,number),[])
             # Collector zeros are presentation only when both sides are all-digits.
