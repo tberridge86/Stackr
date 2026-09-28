@@ -14,9 +14,11 @@ including explicit same-artwork resolution. The final live count is unchanged.
   large-image 404. Fifty targets failed both available rendition requests.
 - 6,399 display derivatives: 240px grid, 96px search, up to 720px detail. No
   enlargement. Sharp 0.35.4 and the exact pipeline specification hash are recorded.
-- 116 earlier TW originals and 348 derivatives reverified; 365 earlier TW
-  previews and exact current identities reverified. The 365 full originals remain
-  in existing GitHub artifacts, not in this local workstream.
+- 116 earlier TW originals and 348 derivatives reverified. A further 365 earlier
+  TW originals were recovered, checked against their frozen exact current
+  identities, and prepared into 1,095 display derivatives. All were fully decoded
+  and SHA-256 checked again after downloading the workflow output.
+- Total saved preparation: 2,614 original card fronts and 7,842 derivatives.
 - 53 TCGdex references fetched and decoded without retaining image bytes.
   Six overlap acquired English images; the complete ledger counts 47 separately.
 
@@ -65,6 +67,20 @@ The workflow also preserves all 365 checksum-verified originals in two bounded
 90-day artifacts, so the existing source archives' expiry does not discard the
 recovered work. Preservation copies only the previously verified source bytes.
 
+Run [36405653464](https://github.com/tberridge86/Stackr/actions/runs/36405653464)
+completed successfully at source `92a6fc63cda4b7611d06b55c0436407b80594ccb`.
+Its 365 originals, 1,095 derivatives and two original archive parts were downloaded
+and independently checked. The original parts contain 247 and 118 cards.
+All three archives matched GitHub's reported SHA-256 digests. Their 90-day GitHub
+retention ends on 27 December 2026; separate durable recovery copies were saved.
+
+The seven standard Platform CI jobs passed in
+[run 36405657481](https://github.com/tberridge86/Stackr/actions/runs/36405657481).
+The release-candidate gate and local Supabase reset step were skipped.
+Owner Pricing Identity Tests also passed in run 36405657696. These checks do not
+establish production or device delivery. A read-only production recheck still
+returned 12,161 missing printings with unchanged per-language counts.
+
 The already-existing protected read-only TW preflight is still waiting:
 https://github.com/tberridge86/Stackr/actions/runs/36270453935
 
@@ -75,8 +91,8 @@ explicit authorization. The owner's reply, "I do approve this", resolved that
 blocker. The approved content is now published through the connected GitHub
 account. The separate protected production environment review remains in place.
 
-Continue the offline saved TW preparation and the existing catalogue release
-owner's protected production workflow. The newly acquired cohort still needs a bounded
+Offline saved TW preparation is complete. Continue the existing catalogue release
+owner's protected workflow. The newly acquired cohort still needs a bounded
 publication implementation and staging rehearsal. These prepared files are not
 an executed import or a deployment-ready assertion.
 
@@ -90,5 +106,11 @@ cohort. Installed-app rendering still needs separate device evidence.
 
 The downloadable worklist keeps the 4,276 missing-source/download cases, 660
 identity/artwork reviews, 4,564 acquisition-gated TW pointers, 47 working
-references, 365 archived originals and 2,249 prepared files separate. Their sum
+references and 2,614 prepared files separate. No originals remain archive-only. Their sum
 is the same 12,161-printing baseline. No item was removed to improve coverage.
+
+`compose-ledger.py` reconstructs the initial acquisition-stage ledger. The saved
+recovery evidence adds the 365-card preparation receipt and updates those rows
+from `Originals archived` to `Files prepared`, preserving every printing ID and
+the manual notes. Do not describe the initial generator's archived state as the
+current saved recovery state.
