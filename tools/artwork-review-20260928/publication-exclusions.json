@@ -1,0 +1,17 @@
+{
+  "records": [
+    {
+      "printing_id": "4501ce7e-9803-477b-b21c-754effc34e21",
+      "language_code": "zh-tw",
+      "set_code": "SCD",
+      "collector_number": "097",
+      "card_native_name": "不良蛙",
+      "image_sha256": "7003b0417eca23b61bfe4c6fbe66ebfad9e33910e99d1582a91d8c155a4c698a",
+      "source_url": "https://asia.pokemon-card.com/tw/card-img/tw00002206.png",
+      "reason": "The official source returns the exact Clobbopus image used for SCD 087. Direct visual inspection of the checksum-verified archived image confirms 拳拳蛸 and printed 087/159, not Croagunk 不良蛙 097.",
+      "action": "Supply the correct individual Traditional Chinese Croagunk SCD 097 front or a corrected authoritative source. Preserve the existing card metadata.",
+      "evidence_artifact_id": 10998022254,
+      "review_method": "Exact archived bytes downloaded with package SHA-256 verification, then directly viewed. Both original and all three derivative hashes are shared with SCD 087."
+    }
+  ]
+}

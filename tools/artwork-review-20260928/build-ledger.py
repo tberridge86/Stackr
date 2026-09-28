@@ -14,7 +14,10 @@ def main():
  old=packed(oldfile);oldids={r['printing_id'] for r in old}
  pending={r['printing_id']:r for name in ['tw4564','tcgdex47','vunion2'] for r in packed(repo/f'tools/artwork-closeout-20260928/{name}-candidates.json.gz')}
  replacements={r['printing_id']:r for r in read(repo/'tools/artwork-closeout-20260928/vunion2-review.json')['records']}
+ exclusions={r['printing_id']:r for r in read(repo/'tools/artwork-review-20260928/publication-exclusions.json')['records']}
  known={r['printing_id']:r for r in read(repo/'docs/releases/artwork3303-source-exceptions-20260928.json')['records']}
+ review_file=a.workspace/'additional-identity-exceptions/review.json'
+ identity_reviews={r['printing_id']:r for r in read(review_file)} if review_file.exists() else {}
  prepared={};failures={};archives=[]
  for f in sorted(a.evidence.glob('*/artifact-index.json')):
   index=read(f);archives.extend(index)
@@ -39,14 +42,21 @@ def main():
  for f in sorted(a.evidence.glob('*/artwork-*-evidence-*/acquired/manifest.json')):
   for r in read(f):
    if r['status']!='acquired_for_review':failures[r['printing_id']]=r
+ for pid,review in exclusions.items():
+  if pid in prepared:
+   assert prepared[pid]['sha256']==review['image_sha256'],'Excluded source bytes changed; review again'
+   del prepared[pid]
  rows=[]
  for b in base:
   pid=b['printing_id'];s=un.get(pid,{});r={**b,'publication_status':'NOT_PUBLISHED','production_writes':0,'artwork_scope':'printing_front','exact_finish_verified':False}
-  if pid in oldids and pid not in replacements:r.update(category='Prepared initial release',reason='Original and three derivatives archived, identity checked and staging rollback rehearsal passed.',action='Owner approval followed by the protected artwork3303 release lane.')
+  if pid in exclusions:r.update(category='Source image conflict',reason=exclusions[pid]['reason'],action=exclusions[pid]['action'],evidence=exclusions[pid])
+  elif pid in oldids and pid not in replacements:r.update(category='Prepared initial release',reason='Original and three derivatives archived, identity checked and staging rollback rehearsal passed.',action='Owner approval followed by the protected artwork3303 release lane.')
   elif pid in prepared:
    ev=prepared[pid];r.update(category='Prepared additional queue',reason='Original and three derivatives verified; fresh provider identity and production catalogue identity match.',action='Freeze the supplemental publication plan; retain source permission review before protected release.',source_code=ev['source_code'],permission_status=ev['permission_status'],source_url=ev['acquired_url'],sha256=ev['sha256'],archive=ev['archive'])
   elif pid in pending:
-   if pid in failures:r.update(category='Image acquisition exception',reason=failures[pid]['error'],action='Inspect exact source failure or supply the matching native-language front.',source_url=pending[pid]['image_url'])
+   if pid in failures and pid in identity_reviews:
+    review=identity_reviews[pid];r.update(category='Composite artwork review',reason='The official image page covers multiple physical cards: '+review['official_page_number']+'. This record is only '+r['collector_number']+'.',action='Supply the exact individual Traditional Chinese card front; do not attach the combined V-UNION image.',source_url=pending[pid]['image_url'],evidence=review)
+   elif pid in failures:r.update(category='Image acquisition exception',reason=failures[pid]['error'],action='Inspect exact source failure or supply the matching native-language front.',source_url=pending[pid]['image_url'])
    else:r.update(category='Preparation pending',reason='Exact identity matches; image preparation has not completed.',action='Complete the active preparation job.')
   elif pid in known:
    ev=known[pid];r.update(category=ev['classification'],reason=ev.get('reason',ev.get('error','Exact source exception')),action='Resolve identity against authoritative evidence.' if ev['classification']=='identity_conflict' else 'Supply a usable exact native-language front.',evidence=ev)

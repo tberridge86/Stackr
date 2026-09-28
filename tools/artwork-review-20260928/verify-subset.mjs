@@ -1,0 +1,25 @@
+// Prove the final plan retains exactly unchanged files from the completed full byte audit.
+import {readFile,writeFile} from 'node:fs/promises';
+import {gunzipSync} from 'node:zlib';
+import {createHash} from 'node:crypto';
+import {isDeepStrictEqual} from 'node:util';
+import {validatePlan} from '../artwork3303-publish-20260928/publish.mjs';
+const check=(x,message)=>{if(!x)throw Error(message);};
+const hash=b=>createHash('sha256').update(b).digest('hex');
+const [proofFile,output]=process.argv.slice(2);check(proofFile&&output,'Verified prior artifact and output required');
+const priorRoot=new URL('./superseded7912/',import.meta.url),currentRoot=new URL('../artwork3303-publish-20260928/',import.meta.url);
+const priorBytes=await readFile(new URL('cohort.json.gz',priorRoot));
+check(hash(priorBytes)==='430218e70febd06c8a22bccbc8c244b6d2c282a9aa3dec0cd9448578473d631e','Prior plan bytes changed');
+const prior=JSON.parse(gunzipSync(priorBytes)),priorReceipt=JSON.parse(await readFile(new URL('plan-receipt.json',priorRoot)));
+const proof=JSON.parse(await readFile(proofFile)),savedProof=JSON.parse(await readFile(new URL('full-file-verification.json',priorRoot)));
+check(isDeepStrictEqual(proof,savedProof.verification)&&proof.cohort_sha256===hash(priorBytes)&&proof.fronts===7912&&proof.verified_image_files===31648,'Independent full verification differs');
+const bytes=await readFile(new URL('cohort.json.gz',currentRoot)),receipt=JSON.parse(await readFile(new URL('plan-receipt.json',currentRoot))),rows=validatePlan(bytes,receipt);
+check(isDeepStrictEqual(receipt.artifacts,priorReceipt.artifacts),'Archive IDs or checksum bindings changed');
+const byId=new Map(prior.map(r=>[r.printing_id,r])),retained=new Set(rows.map(r=>r.printing_id));
+for(const r of rows)check(isDeepStrictEqual(r,byId.get(r.printing_id)),'Retained image, object path, hash, identity or evidence changed');
+const excluded=JSON.parse(await readFile(new URL('./publication-exclusions.json',import.meta.url))).records;
+const removed=prior.filter(r=>!retained.has(r.printing_id));
+check(removed.length===1&&excluded.length===1&&removed[0].printing_id===excluded[0].printing_id&&removed[0].objects[0].sha256===excluded[0].image_sha256,'Unexpected removal');
+check(rows.length===7911,'Wrong final population');
+const report={cohort_sha256:receipt.cohort_sha256,fronts:rows.length,derivatives:rows.length*3,verified_image_files:rows.length*4,verification_method:'Exact unchanged subset of the independently downloaded, checksummed and decoded 7912-front plan; only the documented wrong-card association was removed',prior_full_verification:{...savedProof,verification:proof},excluded_printing_ids:removed.map(r=>r.printing_id),unique_original_hashes:new Set(rows.map(r=>r.objects[0].sha256)).size,unique_storage_objects:new Set(rows.flatMap(r=>r.objects.map(o=>o.role+':'+o.sha256))).size,checked_at:new Date().toISOString(),production_writes:0};
+await writeFile(output,JSON.stringify(report,null,2));console.log(JSON.stringify({fronts:report.fronts,verified_image_files:report.verified_image_files,retained_rows_unchanged:true,removed:removed.length}));

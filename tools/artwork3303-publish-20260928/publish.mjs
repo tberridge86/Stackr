@@ -11,11 +11,11 @@ import { resolveServerKey } from '../queue1-publish-20260927/credentials.mjs';
 export const PROJECTS = { staging:'lmwfhvexfcoyeuoyrlco', production:'oakdbbzdqwurpjnoqhmu' };
 export const BUCKET = 'stackr-catalogue-public';
 export const PREFIX = 'artwork-recovered-20260928:';
-export const COHORT_SHA = '430218e70febd06c8a22bccbc8c244b6d2c282a9aa3dec0cd9448578473d631e';
-export const FRONTS = 7912;
+export const COHORT_SHA = '20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd';
+export const FRONTS = 7911;
 export const STAGE_JA = 'd560cd01-de2a-4713-9518-b967fb4c5ac9';
 export const STAGE_ALIASES = {'SM1+':'SM1p','SM2+':'SM2p','SM5+':'SM5p'};
-export const SOURCE_COUNTS = {"pokemon_card_tw_official":4927,"pokemon_card_jp_official":2063,"pokedata_japanese":335,"tcgdex":163,"pokemon_tcg_api":424};
+export const SOURCE_COUNTS = {"pokemon_card_tw_official":4926,"pokemon_card_jp_official":2063,"pokedata_japanese":335,"tcgdex":163,"pokemon_tcg_api":424};
 const approvalFile = new URL('./approval.json',import.meta.url);
 const publicUrl = key => `https://${PROJECTS.production}.supabase.co/storage/v1/object/public/${BUCKET}/${key}`;
 const normalize = x => String(x).normalize('NFKC');
@@ -25,6 +25,19 @@ export const chunks = (rows,size=100) => Array.from({length:Math.ceil(rows.lengt
 export function safePath(root,relative) {
   check(typeof relative==='string' && !relative.includes('\\') && !path.isAbsolute(relative),'Unsafe package path');
   const target=path.resolve(root,relative);check(target.startsWith(path.resolve(root)+path.sep),'Escaped package path');return target;
+}
+export function assertNoConflictingFronts(rows) {
+  const seen=new Map();
+  for(const r of rows) {
+    const hash=r.objects[0].sha256,prior=seen.get(hash);
+    if(prior) {
+      const sameName=normalize(prior.card_native_name).replace(/[【】]/g,'')===normalize(r.card_native_name).replace(/[【】]/g,'');
+      const sameLanguage=prior.language_code===r.language_code;
+      const sameIdentity=sameName&&sameLanguage&&prior.set_code===r.set_code&&prior.collector_number===r.collector_number;
+      const sharedEnergy=sameName&&sameLanguage&&/^[A-Z]{3}$/.test(r.collector_number)&&prior.collector_number===r.collector_number&&r.card_native_name.includes('能量');
+      check(sameIdentity||sharedEnergy,'One original image maps to conflicting card identities');
+    } else seen.set(hash,r);
+  }
 }
 export function validatePlan(bytes,receipt) {
   check(receipt.cohort_sha256===COHORT_SHA && digest(bytes)===COHORT_SHA,'Frozen cohort bytes changed');
@@ -45,6 +58,7 @@ export function validatePlan(bytes,receipt) {
       safePath('/packages',`${o.artifact_id}/${o.file}`);
     }
   }
+  assertNoConflictingFronts(rows);
   return rows;
 }
 export function validateApproval(approval,receipt) {

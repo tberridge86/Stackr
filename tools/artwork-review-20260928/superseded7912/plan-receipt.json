@@ -1,10 +1,10 @@
 {
-  "cohort_sha256": "20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd",
-  "fronts": 7911,
-  "derivatives": 23733,
-  "image_files": 31644,
+  "cohort_sha256": "430218e70febd06c8a22bccbc8c244b6d2c282a9aa3dec0cd9448578473d631e",
+  "fronts": 7912,
+  "derivatives": 23736,
+  "image_files": 31648,
   "source_counts": {
-    "pokemon_card_tw_official": 4926,
+    "pokemon_card_tw_official": 4927,
     "pokemon_card_jp_official": 2063,
     "pokedata_japanese": 335,
     "tcgdex": 163,
@@ -359,7 +359,7 @@
     }
   ],
   "original_cohort_sha256": "d047cb0475f5b676f2ee6e3bdab27352a3d5cad4c462b41e9acbf368014ee259",
-  "additional_cohort_sha256": "47105966d43a299c2a6235b48a17b05d39dbf1f174047c07a3036966a7dbd27e",
+  "additional_cohort_sha256": "425e5c0b4d57561465490d27dc6eeb0767b6ba4227b1484c4343a43a5fec0c8c",
   "preparation_runs": [
     36480589353,
     36482384653,
@@ -387,5 +387,5 @@
       "status": "single_card_front_visually_verified"
     }
   ],
-  "unresolved_records": 4250
+  "unresolved_records": 4249
 }

@@ -231,7 +231,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   validate-publication:
-    if: contains(github.event.head_commit.message, '[verify-publication]')
+    if: contains(github.event.head_commit.message, '[verify-publication]') || contains(github.event.head_commit.message, '[verify-subset]')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -246,11 +246,25 @@ jobs:
       - run: npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
       - run: node --test tools/artwork3303-publish-20260928/publish.test.mjs
       - name: Verify archived packages and every planned object
+        if: contains(github.event.head_commit.message, '[verify-publication]')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           python tools/artwork3303-publish-20260928/download-packages.py "$RUNNER_TEMP/artwork3303-packages"
           node tools/artwork3303-publish-20260928/verify-packages.mjs "$RUNNER_TEMP/artwork3303-packages" package-verification.json
+      - name: Verify unchanged retained files against the immutable full audit
+        if: contains(github.event.head_commit.message, '[verify-subset]')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/tberridge86/Stackr/actions/artifacts/10999922487/zip > prior-full-verification.zip
+          echo 'e83089dce0f70064291e4b0a44a19254c0a3e08edda9b39eb61473066c12ca4f  prior-full-verification.zip' | sha256sum --check
+          python - <<'PY'
+          import pathlib,zipfile
+          with zipfile.ZipFile('prior-full-verification.zip') as archive:
+              pathlib.Path('prior-full-verification.json').write_bytes(archive.read('package-verification.json'))
+          PY
+          node tools/artwork-review-20260928/verify-subset.mjs prior-full-verification.json package-verification.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: artwork3303-publication-readiness-${{ github.run_id }}
@@ -261,7 +275,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   reconstruction-index:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]') && !contains(github.event.head_commit.message, '[prepare-vunion]') && !contains(github.event.head_commit.message, '[prepare-tw-reviewed]')"
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[verify-subset]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]') && !contains(github.event.head_commit.message, '[prepare-vunion]') && !contains(github.event.head_commit.message, '[prepare-tw-reviewed]')"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -468,7 +482,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   prepare:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]') && !contains(github.event.head_commit.message, '[prepare-vunion]') && !contains(github.event.head_commit.message, '[prepare-tw-reviewed]')"
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[verify-subset]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]') && !contains(github.event.head_commit.message, '[prepare-vunion]') && !contains(github.event.head_commit.message, '[prepare-tw-reviewed]')"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
