@@ -1,0 +1,55 @@
+name: Prepare saved Traditional Chinese artwork for review
+on:
+  push:
+    branches: ['agent/catalogue/artwork-closeout-20260928']
+    paths: ['tools/artwork-closeout-20260928/prepare-saved-tw.mjs', 'tools/artwork-closeout-20260928/tw365-cohort.json', '.github/workflows/artwork-recovery-prep-20260928.yml']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: stackr-tw365-offline-preparation
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Recover existing originals by immutable artifact ID
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p saved-originals
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10917120115/zip" > first.zip
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/10916269076/zip" > final.zip
+          echo '097ff4745831222c6e20d3400a6cbed19b6cb5a4935403843bc9284882ce6b37  first.zip' | sha256sum --check
+          echo 'f7f4aae5f5d08c198df046f866916a3e7ac438f853720158f4c4970fa2b04c25  final.zip' | sha256sum --check
+          python3 - <<'PY'
+          import zipfile,pathlib
+          root=pathlib.Path('saved-originals').resolve()
+          for file in ['first.zip','final.zip']:
+              with zipfile.ZipFile(file) as z:
+                  for name in z.namelist():
+                      if not (root/name).resolve().is_relative_to(root): raise ValueError('Unsafe archive path')
+                  z.extractall(root)
+          PY
+      - name: Use the existing pinned image dependencies
+        run: npm ci --prefix backend --ignore-scripts
+      - name: Verify originals and prepare the standard display sizes offline
+        run: node tools/artwork-closeout-20260928/prepare-saved-tw.mjs saved-originals tw365-prepared
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw365-prepared-${{ github.run_id }}
+          path: tw365-prepared
+          retention-days: 90
+          if-no-files-found: error
+      - name: Record outcome
+        run: cat tw365-prepared/summary.json >> "$GITHUB_STEP_SUMMARY"
