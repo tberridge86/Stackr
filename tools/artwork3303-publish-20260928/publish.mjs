@@ -137,7 +137,7 @@ export async function rehearse(db,write) {
 export async function validateBytes(sharp,bytes,o) {
   check(bytes.length===o.byte_size&&digest(bytes)===o.sha256,'Object bytes changed');
   const m=await sharp(bytes).metadata(),decoded=await sharp(bytes).raw().toBuffer({resolveWithObject:true});
-  check(m.format===({'image/png':'png','image/jpeg':'jpeg','image/webp':'webp'}[o.mime_type])&&decoded.info.width===o.width&&decoded.info.height===o.height,'Decoded image changed');
+  check(m.format===({'image/png':'png','image/jpeg':'jpeg','image/webp':'webp'}[o.mime_type])&&decoded.info.width===o.width&&decoded.info.height===o.height,`Decoded image changed: ${o.sha256}/${o.role}; expected ${o.mime_type} ${o.width}x${o.height}; observed ${m.format} ${decoded.info.width}x${decoded.info.height}`);
 }
 async function main() {
   assertConfig(process.env);check(process.argv.includes('--execute'),'Explicit execution required');
