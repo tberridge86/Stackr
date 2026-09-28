@@ -1,9 +1,10 @@
 {
   "approved": false,
-  "cohort_sha256": "d047cb0475f5b676f2ee6e3bdab27352a3d5cad4c462b41e9acbf368014ee259",
-  "fronts": 3303,
-  "store_resize_display_official_tw_365": false,
+  "cohort_sha256": "430218e70febd06c8a22bccbc8c244b6d2c282a9aa3dec0cd9448578473d631e",
+  "fronts": 7912,
+  "official_tw_fronts": 4927,
+  "store_resize_display_official_tw": false,
   "owner_statement": null,
   "approved_at": null,
-  "status": "Awaiting final owner publication approval and bounded Taiwan source attestation; no production permission inferred from preparation"
+  "status": "Prepared combined queue; final owner publication approval and bounded official Taiwan source permission remain pending"
 }

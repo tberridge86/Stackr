@@ -11,10 +11,11 @@ import { resolveServerKey } from '../queue1-publish-20260927/credentials.mjs';
 export const PROJECTS = { staging:'lmwfhvexfcoyeuoyrlco', production:'oakdbbzdqwurpjnoqhmu' };
 export const BUCKET = 'stackr-catalogue-public';
 export const PREFIX = 'artwork-recovered-20260928:';
-export const COHORT_SHA = 'd047cb0475f5b676f2ee6e3bdab27352a3d5cad4c462b41e9acbf368014ee259';
+export const COHORT_SHA = '430218e70febd06c8a22bccbc8c244b6d2c282a9aa3dec0cd9448578473d631e';
+export const FRONTS = 7912;
 export const STAGE_JA = 'd560cd01-de2a-4713-9518-b967fb4c5ac9';
 export const STAGE_ALIASES = {'SM1+':'SM1p','SM2+':'SM2p','SM5+':'SM5p'};
-export const SOURCE_COUNTS = {pokemon_card_jp_official:2065,pokemon_tcg_api:424,pokedata_japanese:333,tcgdex:116,pokemon_card_tw_official:365};
+export const SOURCE_COUNTS = {"pokemon_card_tw_official":4927,"pokemon_card_jp_official":2063,"pokedata_japanese":335,"tcgdex":163,"pokemon_tcg_api":424};
 const approvalFile = new URL('./approval.json',import.meta.url);
 const publicUrl = key => `https://${PROJECTS.production}.supabase.co/storage/v1/object/public/${BUCKET}/${key}`;
 const normalize = x => String(x).normalize('NFKC');
@@ -28,12 +29,12 @@ export function safePath(root,relative) {
 export function validatePlan(bytes,receipt) {
   check(receipt.cohort_sha256===COHORT_SHA && digest(bytes)===COHORT_SHA,'Frozen cohort bytes changed');
   const rows=JSON.parse(gunzipSync(bytes));
-  check(rows.length===3303 && new Set(rows.map(r=>r.printing_id)).size===3303,'Wrong printing cohort');
+  check(rows.length===FRONTS && new Set(rows.map(r=>r.printing_id)).size===FRONTS,'Wrong printing cohort');
   for(const [code,count] of Object.entries(SOURCE_COUNTS)) check(rows.filter(r=>r.source_code===code).length===count,'Source cohort changed');
-  const allowed={pokemon_card_jp_official:['ja','www.pokemon-card.com'],pokedata_japanese:['ja','pokemoncardimages.pokedata.io'],pokemon_tcg_api:['en','images.pokemontcg.io'],tcgdex:['zh-tw','assets.tcgdex.net'],pokemon_card_tw_official:['zh-tw','asia.pokemon-card.com']};
+  const allowed={pokemon_card_jp_official:['ja','www.pokemon-card.com'],pokedata_japanese:['ja','pokemoncardimages.pokedata.io'],pokemon_tcg_api:['en','images.pokemontcg.io'],tcgdex:[['zh-tw','en'],'assets.tcgdex.net'],pokemon_card_tw_official:['zh-tw','asia.pokemon-card.com']};
   for(const r of rows) {
     const u=new URL(r.image_url),scope=allowed[r.source_code];
-    check(scope && r.language_code===scope[0] && u.protocol==='https:' && u.hostname===scope[1] && !u.username && !u.password,'Wrong source scope');
+    check(scope && (Array.isArray(scope[0])?scope[0].includes(r.language_code):r.language_code===scope[0]) && u.protocol==='https:' && u.hostname===scope[1] && !u.username && !u.password,'Wrong source scope');
     for(const key of ['printing_id','set_id','catalogue_version_id'])check(/^[a-f0-9-]{36}$/.test(r[key]),'Invalid catalogue identity');
     check(r.objects.length===4 && r.objects[0].role==='original' && new Set(r.objects.map(o=>o.role)).size===4,'Incomplete object cohort');
     for(const o of r.objects) {
@@ -47,8 +48,8 @@ export function validatePlan(bytes,receipt) {
   return rows;
 }
 export function validateApproval(approval,receipt) {
-  check(approval.approved===true && approval.cohort_sha256===receipt.cohort_sha256 && approval.fronts===3303,'Specific publication approval is pending');
-  check(approval.store_resize_display_official_tw_365===true,'Official Taiwanese source permission is pending');
+  check(approval.approved===true && approval.cohort_sha256===receipt.cohort_sha256 && approval.fronts===FRONTS,'Specific publication approval is pending');
+  check(approval.store_resize_display_official_tw===true && approval.official_tw_fronts===SOURCE_COUNTS.pokemon_card_tw_official,'Official Taiwanese source permission is pending');
   check(typeof approval.owner_statement==='string' && approval.owner_statement.trim().length>0 && approval.approved_at,'Owner evidence missing');
 }
 export function assertConfig(env) {
@@ -99,7 +100,7 @@ export function payload(r,sourceId,receipt,approval,environment) {
     licensing_review_notes:JSON.stringify({cohort_sha256:receipt.cohort_sha256,approval_sha256:digest(Buffer.from(JSON.stringify(approval))),artwork_scope:'printing_front',exact_finish_verified:false,recognition_approved:false,source_evidence:r.evidence})};
 }
 async function sourcesFor(db,receipt) {
-  const notes=`Provenance only; acquisition inactive. Exactly 365 Taiwanese fronts in artwork3303 cohort ${receipt.cohort_sha256}; no source-wide approval.`;
+  const notes=`Provenance only; acquisition inactive. Exactly ${SOURCE_COUNTS.pokemon_card_tw_official} Taiwanese fronts in the frozen recovered-artwork cohort ${receipt.cohort_sha256}; no source-wide approval.`;
   await db.query("insert into ingest.sources(code,display_name,source_type,base_url,licence_status,attribution_required,active,internal_notes) values('pokemon_card_tw_official','Pokémon Taiwan official artwork','image','https://asia.pokemon-card.com/tw','under_review',true,false,$1) on conflict(code) do nothing",[notes]);
   const sources=(await db.query('select * from ingest.sources where code=any($1::text[]) for share',[Object.keys(SOURCE_COUNTS)])).rows;
   check(sources.length===5,'Missing provenance source');
@@ -177,7 +178,7 @@ async function main() {
     await writeMetadata(db,rows,receipt,approval,'production',journal);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
     journal.status='published';await save();
     const cards=await cardsFor(db,rows);bind(rows,cards,'production');assertManifest(rows,await visibleAssets(db,rows,cards),true);
-    journal.status='published_manifest_and_public_bytes_verified';journal.fronts=3303;journal.derivatives=9909;journal.verified_at=new Date().toISOString();await save();
+    journal.status='published_manifest_and_public_bytes_verified';journal.fronts=FRONTS;journal.derivatives=FRONTS*3;journal.verified_at=new Date().toISOString();await save();
   } catch(e) {if(connected&&!committed)await db.query('rollback').catch(()=>{});journal.status=committed?'published_verification_failed':commitAttempted?'commit_outcome_unknown':'failed_before_publication';journal.error=e.message;await save();throw e;}
   finally {if(connected)await db.end();}
 }

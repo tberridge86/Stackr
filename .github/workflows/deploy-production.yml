@@ -451,7 +451,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python tools/artwork3303-publish-20260928/download-packages.py "$RUNNER_TEMP/artwork3303-packages"
-      - name: Rehearse and publish 3,303 approved recovered fronts
+      - name: Rehearse and publish the approved frozen artwork cohort
         env:
           STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
           STACKR_ARTWORK3303_CONFIRMATION: PUBLISH ARTWORK3303

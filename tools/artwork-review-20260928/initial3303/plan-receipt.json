@@ -1,0 +1,152 @@
+{
+  "prepared_at": "2026-09-28",
+  "cohort_sha256": "d047cb0475f5b676f2ee6e3bdab27352a3d5cad4c462b41e9acbf368014ee259",
+  "fronts": 3303,
+  "derivatives": 9909,
+  "image_files": 13212,
+  "source_counts": {
+    "pokemon_card_jp_official": 2065,
+    "pokedata_japanese": 333,
+    "pokemon_card_tw_official": 365,
+    "tcgdex": 116,
+    "pokemon_tcg_api": 424
+  },
+  "publication_status": "NOT_PUBLISHED",
+  "artifacts": [
+    {
+      "id": 10991878213,
+      "name": "artwork-reconstructed-ja-01-36472347221",
+      "size_in_bytes": 426358902,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "f6bdc38fb8b289a04dc2389f4b03e3a144ffcec972fc2ea1b78d991c3f75047b",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10991878213"
+    },
+    {
+      "id": 10992392293,
+      "name": "artwork-reconstructed-ja-02-36472347221",
+      "size_in_bytes": 247150542,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "fb3e0c2b91fa324144c7cd63756c6eb591e407ce041fe3c9d5f84253a68aba65",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992392293"
+    },
+    {
+      "id": 10992726926,
+      "name": "artwork-reconstructed-ja-03-36472347221",
+      "size_in_bytes": 225742552,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "f60d13452c331014444872a3e5d58e0d6b4c9d202450b6ebade5e0521dc97527",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992726926"
+    },
+    {
+      "id": 10992187938,
+      "name": "artwork-reconstructed-ja-04-36472347221",
+      "size_in_bytes": 443231346,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "1a1b9a11702c74540cee0d1f26857bcdae9ec4893db940f3be01e5176577ba3a",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992187938"
+    },
+    {
+      "id": 10991863955,
+      "name": "artwork-reconstructed-ja-05-36472347221",
+      "size_in_bytes": 72339060,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "9437b2c1f5e6fb81a098fc2f3cd5a12708d5ba074270bf86b720b8828439659a",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10991863955"
+    },
+    {
+      "id": 10991654454,
+      "name": "artwork-reconstructed-en-01-36472347221",
+      "size_in_bytes": 488482634,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "1a19a0176c205d06b4a8e83ca52c829f007f6bdab8cd338dd1dea7bc474f76a4",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10991654454"
+    },
+    {
+      "id": 10993932653,
+      "name": "artwork-recovered-tw116-36476757879",
+      "size_in_bytes": 33066925,
+      "expires_at": "2026-12-27T20:05:42Z",
+      "sha256": "468d3b4325c8ab859637087e788b6c5b5a18ee51979fd426c3199bbdaae44a4f",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36476757879/artifacts/10993932653"
+    },
+    {
+      "id": 10993872871,
+      "name": "artwork-reconstructed-pokedata-36476757879",
+      "size_in_bytes": 109074059,
+      "expires_at": "2026-12-27T20:05:42Z",
+      "sha256": "8e43c846ec1d5119de2c44e73c49b4215cb3db57d8a8fcf2da9df978060d6d09",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36476757879/artifacts/10993872871"
+    },
+    {
+      "id": 10992182277,
+      "name": "tw365-prepared-36472347221",
+      "size_in_bytes": 71813947,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "d4e4485aa3975ffe5fbe7c2cab146c299277d1ed7297b19328b12ae0baeb74a0",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992182277"
+    },
+    {
+      "id": 10992142291,
+      "name": "tw365-originals-part-01-36472347221",
+      "size_in_bytes": 450721151,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "fa12f91b7bdea10feaf6c1c45392f460aa338bf0083783ae38e262eff18a885a",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992142291"
+    },
+    {
+      "id": 10992397219,
+      "name": "tw365-originals-part-02-36472347221",
+      "size_in_bytes": 375575328,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "2a9cbb324303c93cebfbc311f81249ffbc4b9a47dec088e647672618b936819e",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992397219"
+    }
+  ],
+  "prepared_manifests": [
+    {
+      "artifact_id": 10991878213,
+      "manifest_file": "prepared/manifest.json",
+      "sha256": "dd3553268f467d0c811e96260e7089c41e3fb7f57a4e5a1c1d0ce540d01fdcec"
+    },
+    {
+      "artifact_id": 10992392293,
+      "manifest_file": "prepared/manifest.json",
+      "sha256": "d2f466df7e3cb4247c890287595c9d38f4dc4ebeebc9e50e5aba87342cf3021c"
+    },
+    {
+      "artifact_id": 10992726926,
+      "manifest_file": "prepared/manifest.json",
+      "sha256": "8f35b78c39ddf3079502b514f4eb7da9d494f888dd5d6a37ca4fd43f2156eb56"
+    },
+    {
+      "artifact_id": 10992187938,
+      "manifest_file": "prepared/manifest.json",
+      "sha256": "f2451342138f1257ea12ad62a82a96df9c95afb82b377464c0652991b265d0a4"
+    },
+    {
+      "artifact_id": 10991863955,
+      "manifest_file": "prepared/manifest.json",
+      "sha256": "e339e07ac7441bc0808c0346acd37a1c81cd8c2bfcf46cb4ed3ab67ec836527a"
+    },
+    {
+      "artifact_id": 10991654454,
+      "manifest_file": "prepared/manifest.json",
+      "sha256": "540203b106ff2e83cb1ab5bc7876440e43afdbad0e27453180e25217dd4dd76e"
+    },
+    {
+      "artifact_id": 10993932653,
+      "manifest_file": "prepared/manifest.json",
+      "sha256": "bf2ac5bce2a29101b527a2847d6ead133ba35ceeabdeb3706272e05841f4dd52"
+    },
+    {
+      "artifact_id": 10993872871,
+      "manifest_file": "prepared/manifest.json",
+      "sha256": "f3761acba58450a67374ac9c2b3a25faf76c62cb8c446f694924a3e64b3a3d49"
+    },
+    {
+      "artifact_id": 10992182277,
+      "manifest_file": "manifest.json",
+      "sha256": "e8eb7536c9529730e85545b6587af3abc217536ffccf869c1e67160751634c1e"
+    }
+  ]
+}
