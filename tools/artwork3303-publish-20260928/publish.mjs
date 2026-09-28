@@ -11,7 +11,7 @@ import { resolveServerKey } from '../queue1-publish-20260927/credentials.mjs';
 export const PROJECTS = { staging:'lmwfhvexfcoyeuoyrlco', production:'oakdbbzdqwurpjnoqhmu' };
 export const BUCKET = 'stackr-catalogue-public';
 export const PREFIX = 'artwork-recovered-20260928:';
-export const COHORT_SHA = '030c6aa9af188f2939a011ced9238ad3d608a37302a9ab6726b0df1af861c113';
+export const COHORT_SHA = 'd047cb0475f5b676f2ee6e3bdab27352a3d5cad4c462b41e9acbf368014ee259';
 export const STAGE_JA = 'd560cd01-de2a-4713-9518-b967fb4c5ac9';
 export const STAGE_ALIASES = {'SM1+':'SM1p','SM2+':'SM2p','SM5+':'SM5p'};
 export const SOURCE_COUNTS = {pokemon_card_jp_official:2065,pokemon_tcg_api:424,pokedata_japanese:333,tcgdex:116,pokemon_card_tw_official:365};
