@@ -1,0 +1,11 @@
+{
+  "source_url": "https://www.pokedata.io/sets/",
+  "observed_date": "2026-09-28",
+  "source_page_sha256": "abab90937b0ecd3a64d96697c59ff6cb2a24f6223d5bbc0e7b612505278d767e",
+  "source_field": "Public page data props.pageProps.setInfoArr",
+  "selection": "Japanese Pokemon sets with an exact code in the unresolved reconstruction ledger",
+  "selected_sets": 42,
+  "descriptors_sha256": "1a0a2be0dab2a1765aea5c320a5f3693fbc15bf71a2e71d4858b1011a46f7dd0",
+  "identity_rule": "No translated set-name matching or invented aliases; exact provider code, ID, name and language are rechecked in each fetched response",
+  "production_writes": 0
+}

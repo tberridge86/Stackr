@@ -151,17 +151,22 @@ jobs:
         run: |
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/10915501836/zip" > tw116.zip
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/10991792708/zip" > index.zip
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/10992668092/zip" > previous-pokedata.zip
           echo '1013b9a1893f01d0eebf99677daf49a9eff96e57e2eef85aa4f50766e728ea67  tw116.zip' | sha256sum --check
           echo '7734c841ef5f7ab92e3b2650c9523cc550b508b43e66648ae7e2eca17ccd6812  index.zip' | sha256sum --check
+          echo '8bc9cb09f7e5d0654376c05f12114ab48146e5f658f9c7faf91577247a8aeec1  previous-pokedata.zip' | sha256sum --check
           python - <<'PY'
           import pathlib,zipfile
-          for archive,directory in [('tw116.zip','saved-tw116'),('index.zip','saved-index')]:
+          for archive,directory in [('tw116.zip','saved-tw116'),('index.zip','saved-index'),('previous-pokedata.zip','previous-pokedata')]:
               root=pathlib.Path(directory).resolve()
               with zipfile.ZipFile(archive) as z:
                   for member in z.namelist():
                       if not (root/member).resolve().is_relative_to(root):raise ValueError('Unsafe archive member')
                   z.extractall(root)
           PY
+          mkdir -p pokedata-package
+          cp -R previous-pokedata/acquired pokedata-package/acquired
+          cp -R previous-pokedata/source-evidence pokedata-evidence
       - name: Restore and verify all 116 saved fronts and display images
         env:
           CODEX_PRIMARY_RUNTIME_NODE_MODULES: ${{ github.workspace }}/backend/node_modules
