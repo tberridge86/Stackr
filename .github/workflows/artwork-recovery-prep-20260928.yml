@@ -53,3 +53,19 @@ jobs:
           if-no-files-found: error
       - name: Record outcome
         run: cat tw365-prepared/summary.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve verified originals, first part
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw365-originals-part-01-${{ github.run_id }}
+          path: tw365-prepared-originals/part-01
+          retention-days: 90
+          compression-level: 0
+          if-no-files-found: error
+      - name: Preserve verified originals, second part
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tw365-originals-part-02-${{ github.run_id }}
+          path: tw365-prepared-originals/part-02
+          retention-days: 90
+          compression-level: 0
+          if-no-files-found: error

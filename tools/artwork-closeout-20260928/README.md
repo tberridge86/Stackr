@@ -55,23 +55,28 @@ The new workflow only retrieves artifacts `10917120115` and `10916269076`, verif
 their frozen archive hashes, prepares the 365 exact saved originals offline and
 retains a result artifact. Its token has only `contents: read` and `actions: read`.
 It uses no production environment, service credentials or database client.
-It is prepared locally, not pushed or run. The full-original archive exceeded
-the connector's 512 MiB download ceiling; that ceiling was not bypassed.
+The owner approved publishing this work on 28 September 2026. Branch
+`agent/catalogue/artwork-closeout-20260928` was published at
+`503bd440847e9218a2cf177563336419cff3b2de`, with an exact tree match to the saved
+local work, and draft PR #247 was opened. The first preparation run is
+https://github.com/tberridge86/Stackr/actions/runs/36405253060.
+
+The workflow also preserves all 365 checksum-verified originals in two bounded
+90-day artifacts, so the existing source archives' expiry does not discard the
+recovered work. Preservation copies only the previously verified source bytes.
 
 The already-existing protected read-only TW preflight is still waiting:
 https://github.com/tberridge86/Stackr/actions/runs/36270453935
 
 ## Delivery blocker and next release work
 
-Automatic approval review rejected pushing this new branch to
-`tberridge86/Stackr`: it did not find explicit authorization for disclosing the
-generated files and changing that remote branch. The remote and connected push
-permissions were subsequently verified, but the rejected write was not retried
-through another tool. The branch remains local. No PR was created or merged.
+An earlier automatic approval review rejected the branch write for missing
+explicit authorization. The owner's reply, "I do approve this", resolved that
+blocker. The approved content is now published through the connected GitHub
+account. The separate protected production environment review remains in place.
 
-After that write is explicitly approved, push this branch, run the offline saved
-TW preparation, and continue through the existing catalogue release owner and
-protected production workflow. The newly acquired cohort still needs a bounded
+Continue the offline saved TW preparation and the existing catalogue release
+owner's protected production workflow. The newly acquired cohort still needs a bounded
 publication implementation and staging rehearsal. These prepared files are not
 an executed import or a deployment-ready assertion.
 
