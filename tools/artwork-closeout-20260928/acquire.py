@@ -29,9 +29,11 @@ class Page(HTMLParser):
 def numeric_equal(a,b):
     a=str(a);b=str(b)
     return int(a)==int(b) if a.isdigit() and b.isdigit() else a==b
-def verify_page(raw,row):
+def verify_page(raw,row,*,name_anchor_only=False):
     p=Page();p.feed(raw.decode('utf-8'));name=' '.join(p.name).strip();sub=' '.join(p.subtext)
     m=re.search(r'([A-Za-z]*\d+[A-Za-z]*)\s*/\s*(\d+|[A-Za-z][A-Za-z0-9-]*)',sub)
+    numbers=re.findall(r'([A-Za-z]*\d+[A-Za-z]*)\s*/\s*(\d+|[A-Za-z][A-Za-z0-9-]*)',sub)
+    if len(numbers)>1 and not name_anchor_only:raise ValueError('Composite artwork covers multiple card numbers')
     expected=norm(row['source_name']);actual=norm(name)
     if row.get('name_match_rule')=='prism_symbol_spelling':
         if p.symbols!=['prismstar']:raise ValueError('Live official prism symbol missing or ambiguous')

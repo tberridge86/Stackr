@@ -9,18 +9,27 @@ def write(p,x):p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(json.dum
 def main():
  p=argparse.ArgumentParser();p.add_argument('workspace',type=Path);p.add_argument('evidence',type=Path);p.add_argument('output',type=Path);a=p.parse_args()
  repo=Path.cwd();base=read(a.workspace/'reconstruction-index/baseline.json');un={r['printing_id']:r for r in read(a.workspace/'reconstruction-index/unresolved.json')}
- old=packed(repo/'tools/artwork3303-publish-20260928/cohort.json.gz');oldids={r['printing_id'] for r in old}
- pending={r['printing_id']:r for name in ['tw4564','tcgdex47'] for r in packed(repo/f'tools/artwork-closeout-20260928/{name}-candidates.json.gz')}
+ oldfile=repo/'tools/artwork-review-20260928/initial3303/cohort.json.gz'
+ if not oldfile.exists():oldfile=repo/'tools/artwork3303-publish-20260928/cohort.json.gz'
+ old=packed(oldfile);oldids={r['printing_id'] for r in old}
+ pending={r['printing_id']:r for name in ['tw4564','tcgdex47','vunion2'] for r in packed(repo/f'tools/artwork-closeout-20260928/{name}-candidates.json.gz')}
+ replacements={r['printing_id']:r for r in read(repo/'tools/artwork-closeout-20260928/vunion2-review.json')['records']}
  known={r['printing_id']:r for r in read(repo/'docs/releases/artwork3303-source-exceptions-20260928.json')['records']}
  prepared={};failures={};archives=[]
  for f in sorted(a.evidence.glob('*/artifact-index.json')):
   index=read(f);archives.extend(index)
+  for item in index:
+   if '-evidence-' in item['name']:
+    package=f.parent/item['name']
+    for required in ['verification.json','acquired/manifest.json','prepared/manifest.json']:
+     assert (package/required).is_file(),'Evidence download is incomplete: '+str(package/required)
  for f in sorted(a.evidence.glob('*/artwork-*-evidence-*/prepared/manifest.json')):
   package=f.parent.parent;verification=read(package/'verification.json');manifest=read(f)
   assert set(verification['printing_ids'])=={r['printing_id'] for r in manifest}
   assert verification['verified_derivatives']==len(manifest)*3
   for r in manifest:
-   pid=r['printing_id'];assert pid in pending and pid not in oldids and pid not in prepared
+   pid=r['printing_id'];assert pid in pending and (pid not in oldids or pid in replacements) and pid not in prepared
+   if pid in replacements:assert r['sha256']==replacements[pid]['replacement_sha256']
    for k in ['language_code','set_id','set_code','collector_number','card_native_name','image_url','source_code']:assert r.get(k)==pending[pid].get(k)
    assert len(r['derivatives'])==3 and r['publication_status']=='NOT_PUBLISHED' and r['production_writes']==0
    run=int(package.name.rsplit('-',1)[-1]);name=package.name.replace('-evidence-','-')
@@ -33,7 +42,7 @@ def main():
  rows=[]
  for b in base:
   pid=b['printing_id'];s=un.get(pid,{});r={**b,'publication_status':'NOT_PUBLISHED','production_writes':0,'artwork_scope':'printing_front','exact_finish_verified':False}
-  if pid in oldids:r.update(category='Prepared initial release',reason='Original and three derivatives archived, identity checked and staging rollback rehearsal passed.',action='Owner approval followed by the protected artwork3303 release lane.')
+  if pid in oldids and pid not in replacements:r.update(category='Prepared initial release',reason='Original and three derivatives archived, identity checked and staging rollback rehearsal passed.',action='Owner approval followed by the protected artwork3303 release lane.')
   elif pid in prepared:
    ev=prepared[pid];r.update(category='Prepared additional queue',reason='Original and three derivatives verified; fresh provider identity and production catalogue identity match.',action='Freeze the supplemental publication plan; retain source permission review before protected release.',source_code=ev['source_code'],permission_status=ev['permission_status'],source_url=ev['acquired_url'],sha256=ev['sha256'],archive=ev['archive'])
   elif pid in pending:
@@ -49,7 +58,8 @@ def main():
   else:raise ValueError('Unaccounted printing '+pid)
   rows.append(r)
  assert len(rows)==12161 and len({r['printing_id'] for r in rows})==12161
- summary={'observed_at':datetime.now(timezone.utc).isoformat(),'scope':'Frozen 12,161 printing-level artwork gaps from 27 September; not a fresh whole-catalogue completeness census','total':len(rows),'categories':dict(collections.Counter(r['category'] for r in rows)),'prepared_originals':len(old)+len(prepared),'prepared_derivatives':(len(old)+len(prepared))*3,'newly_published':0,'production_writes':0,'installed_client_verified':False,'by_language':{l:dict(collections.Counter(r['category'] for r in rows if r['language_code']==l)) for l in sorted({r['language_code'] for r in rows})}}
+ count=sum(r['category'].startswith('Prepared') for r in rows)
+ summary={'observed_at':datetime.now(timezone.utc).isoformat(),'scope':'Frozen 12,161 printing-level artwork gaps from 27 September; not a fresh whole-catalogue completeness census','total':len(rows),'categories':dict(collections.Counter(r['category'] for r in rows)),'prepared_originals':count,'prepared_derivatives':count*3,'newly_published':0,'production_writes':0,'installed_client_verified':False,'by_language':{l:dict(collections.Counter(r['category'] for r in rows if r['language_code']==l)) for l in sorted({r['language_code'] for r in rows})}}
  write(a.output/'summary.json',summary);write(a.output/'card-ledger.json',rows);write(a.output/'additional-prepared-manifest.json',list(prepared.values()));write(a.output/'artifacts.json',archives)
  exceptions=[r for r in rows if not r['category'].startswith('Prepared')];write(a.output/'exceptions.json',exceptions)
  lines=['# Stackr artwork exceptions','',f'{len(exceptions):,} records outside the verified prepared queue. Each card retains its canonical identity; no metadata is changed.','']

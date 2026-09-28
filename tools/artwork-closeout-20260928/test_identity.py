@@ -6,6 +6,10 @@ class IdentityTests(unittest.TestCase):
         self.row={'source_name':'ミミッキュVMAX','source_set':'S8b','source_number':'077','source_total':'184','image_url':'https://www.pokemon-card.com/assets/card.jpg'}
         self.html='<h1 class="Heading1 mt20">ミミッキュVMAX</h1><img class="fit" src="/assets/card.jpg"><div class="subtext"><img class="img-regulation" alt="S8b">077&nbsp;/&nbsp;184</div>'.encode()
     def test_exact_live_identity(self):self.assertEqual(verify_page(self.html,self.row)['verified_number'],'077')
+    def test_composite_not_accepted_as_single_front(self):
+        composite=self.html.replace(b'</div>',b' 078/184 079/184 080/184</div>')
+        with self.assertRaisesRegex(ValueError,'Composite'):verify_page(composite,self.row)
+        self.assertEqual(verify_page(composite,self.row,name_anchor_only=True)['verified_number'],'077')
     def test_wrong_set_rejected(self):
         with self.assertRaises(ValueError):verify_page(self.html.replace(b'S8b',b'S8a'),self.row)
     def test_wrong_number_rejected(self):

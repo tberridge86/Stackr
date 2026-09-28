@@ -86,6 +86,51 @@ jobs:
             package/prepared/summary.json
           retention-days: 90
           if-no-files-found: error
+  prepare-vunion:
+    if: contains(github.event.head_commit.message, '[prepare-vunion]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - run: python -m pip install Pillow==11.3.0 aiohttp==3.12.15
+      - run: npm ci --prefix backend --ignore-scripts --no-audit --no-fund
+      - name: Prepare visually verified individual V-UNION fronts
+        env:
+          CODEX_PRIMARY_RUNTIME_NODE_MODULES: ${{ github.workspace }}/backend/node_modules
+        run: |
+          python tools/artwork-closeout-20260928/prepare-vunion2.py
+          node tools/artwork-closeout-20260928/prepare-local.mjs package/acquired package/prepared
+          python tools/artwork-closeout-20260928/verify-reconstruction.py package
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: artwork-vunion2-${{ github.run_id }}
+          path: package
+          compression-level: 0
+          retention-days: 90
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: artwork-vunion2-evidence-${{ github.run_id }}
+          path: |
+            package/candidates.json
+            package/source-evidence
+            package/visual-review.json
+            package/verification.json
+            package/acquired/manifest.json
+            package/acquired/summary.json
+            package/prepared/manifest.json
+            package/prepared/summary.json
+          retention-days: 90
+          if-no-files-found: error
   prepare-references:
     if: contains(github.event.head_commit.message, '[prepare-references]')
     runs-on: ubuntu-latest
@@ -171,7 +216,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   reconstruction-index:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]')"
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]') && !contains(github.event.head_commit.message, '[prepare-vunion]')"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -378,7 +423,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   prepare:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]')"
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]') && !contains(github.event.head_commit.message, '[prepare-vunion]')"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

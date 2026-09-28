@@ -5,8 +5,11 @@ root=Path(sys.argv[1]);out=Path(sys.argv[2]);out.mkdir(parents=True,exist_ok=Tru
 def read(p):return json.loads(p.read_text(encoding='utf8'))
 def encode(x):return (json.dumps(x,ensure_ascii=False,indent=2)+'\n').encode()
 rows=read(root/'additional-prepared-manifest.json');allarchives={a['id']:a for a in read(root/'artifacts.json')};selected={};plan=[]
-old=json.loads(gzip.decompress(Path('tools/artwork3303-publish-20260928/cohort.json.gz').read_bytes()))
-assert not {r['printing_id'] for r in old}&{r['printing_id'] for r in rows}
+oldfile=Path('tools/artwork-review-20260928/initial3303/cohort.json.gz')
+if not oldfile.exists():oldfile=Path('tools/artwork3303-publish-20260928/cohort.json.gz')
+old=json.loads(gzip.decompress(oldfile.read_bytes()))
+replacements={r['printing_id']:r for r in read(Path('tools/artwork-closeout-20260928/vunion2-review.json'))['records']}
+assert {r['printing_id'] for r in old}&{r['printing_id'] for r in rows}<=set(replacements)
 for r in rows:
  aid=r['archive']['id'];a=allarchives[aid]
  selected[aid]={**{k:a[k] for k in ['id','name','size_in_bytes','expires_at']},'sha256':a['digest'].removeprefix('sha256:'),'download_url':r['archive']['download_url']}

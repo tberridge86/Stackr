@@ -43,7 +43,10 @@ def acquire(row,out):
   if page.exists():raw=page.read_bytes()
   else:
    raw,_,_=get(anchor['identity_url'],{'www.pokemon-card.com'},limit=2*1024*1024);page.parent.mkdir(parents=True,exist_ok=True);page.write_bytes(raw)
-  evidence=verify_page(raw,anchor)
+  # This page corroborates the native name only; the acquired front is separately
+  # bound to its exact provider card ID/number, never the anchor's composite image.
+  evidence=verify_page(raw,anchor,name_anchor_only=True)
+  evidence['verification_scope']='native_name_anchor_only'
   b,mime,final=get(row['image_url'],{'pokemoncardimages.pokedata.io'},limit=12*1024*1024)
   info=image_info(b,mime);ext={'PNG':'png','JPEG':'jpg','WEBP':'webp'}[info['format']];image_file=Path('originals')/(info['sha256']+'.'+ext);(out/image_file).parent.mkdir(parents=True,exist_ok=True);(out/image_file).write_bytes(b)
   result={**row,**info,'official_name_anchor_verification':evidence,'image_file':str(image_file),'acquired_url':row['image_url'],'final_url':final,'source_rendition':'provider_original','checked_at':now(),'status':'acquired_for_review','publication_status':'NOT_PUBLISHED','source_approval_recheck_required':True,'exact_finish_verified':False,'production_writes':0}
