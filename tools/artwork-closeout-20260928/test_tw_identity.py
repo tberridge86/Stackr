@@ -13,7 +13,7 @@ class TaiwanIdentity(unittest.TestCase):
   self.assertEqual(verify(html.encode(),row)['verified_total'],'SV-P')
   with self.assertRaisesRegex(ValueError,'series'):verify(html.replace('021/SV-P','021/S-P').encode(),row)
  def test_official_symbol_filename_formats(self):
-  for symbol in ['s10aF_enp.png','S10aF @4x.png','S_mark_expantion_S10a_F_OL.png']:
+  for symbol in ['s10aF_enp.png','S10aF @4x.png','S10a F@4x.png','S_mark_expantion_S10a_F_OL.png']:
    self.assertEqual(verify(HTML.replace('S10a_F@4x.png',symbol).encode(),ROW)['verified_set'],'S10a')
  def test_symbol_other_set_rejected(self):
   for symbol in ['S10b_F@4x.png','S10ab_F@4x.png','S_mark_expantion_S10b_F_OL.png']:

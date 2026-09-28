@@ -11,14 +11,14 @@ concurrency:
   cancel-in-progress: false
 jobs:
   prepare-tw:
-    if: contains(github.event.head_commit.message, '[prepare-tw]') || contains(github.event.head_commit.message, '[prepare-tw-retry]')
+    if: contains(github.event.head_commit.message, '[prepare-tw]') || contains(github.event.head_commit.message, '[prepare-tw-retry]') || contains(github.event.head_commit.message, '[prepare-tw-final]')
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
-        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+        batch: ${{ fromJSON(contains(github.event.head_commit.message, '[prepare-tw-final]') && '[16,17]' || '[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]') }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -53,8 +53,9 @@ jobs:
           pathlib.Path('package/candidates.json').write_text(json.dumps(selected,ensure_ascii=False,indent=2))
           PY
       - name: Load only failed cards from preserved first-pass evidence
-        if: contains(github.event.head_commit.message, '[prepare-tw-retry]')
+        if: contains(github.event.head_commit.message, '[prepare-tw-retry]') || contains(github.event.head_commit.message, '[prepare-tw-final]')
         env:
+          SOURCE_RUN: ${{ contains(github.event.head_commit.message, '[prepare-tw-final]') && '36482384653' || '36480589353' }}
           BATCH_NUMBER: ${{ matrix.batch }}
           GH_TOKEN: ${{ github.token }}
         run: python tools/artwork-closeout-20260928/load-tw-retry.py
@@ -170,7 +171,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   reconstruction-index:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]')"
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]')"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -377,7 +378,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   prepare:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]')"
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]')"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

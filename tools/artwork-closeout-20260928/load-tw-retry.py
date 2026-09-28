@@ -1,7 +1,8 @@
 """Select only failed identities from the immutable first-pass evidence."""
 import hashlib,io,json,os,subprocess,zipfile
 from pathlib import Path
-run=36480589353
+run=int(os.environ.get('SOURCE_RUN','36480589353'))
+assert run in {36480589353,36482384653}
 batch=int(os.environ['BATCH_NUMBER'])
 assert 1<=batch<=19
 name=f'artwork-tw4564-evidence-{batch}-{run}'

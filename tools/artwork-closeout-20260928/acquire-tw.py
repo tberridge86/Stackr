@@ -37,7 +37,7 @@ def verify_page(raw,row):
  code=row['source_set']
  if p.codes!=[code] or norm(code)!=norm(row['set_code']):raise ValueError('Official expansion differs')
  # Official filenames also prefix older symbols or append a regulation letter.
- symbol_pattern=r'(?:S_mark_expantion_)?'+re.escape(code)+r'(?:[_\.@]|[D-J](?:[_\.@ ]))'
+ symbol_pattern=r'(?:S_mark_expantion_)?'+re.escape(code)+r'(?:[_\.@ ]|[D-J](?:[_\.@ ]))'
  promo=code in {'SV-P','S-P','SM-P'} and str(row['source_total'])==code and row['printed_total']==0
  symbol_ok=len(p.symbols)==1 and (re.match(symbol_pattern,p.symbols[0],re.IGNORECASE) or (promo and p.symbols[0]=='PROMO.MARK.png'))
  if not symbol_ok:raise ValueError('Printed set mark differs')
