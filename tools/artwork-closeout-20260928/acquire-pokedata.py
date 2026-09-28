@@ -37,7 +37,9 @@ def acquire(row,out):
    old=json.loads(cache.read_text());p=out/old.get('image_file','missing')
    unchanged=all(old.get(k)==row.get(k) for k in ['printing_id','collector_number','card_native_name','source_provider_card_id','image_url','provider_response_sha256','official_name_anchor'])
    if unchanged and old.get('status')=='acquired_for_review' and p.is_file() and hashlib.sha256(p.read_bytes()).hexdigest()==old['sha256']:return old
-  page=out/'identity-pages'/(row['printing_id']+'.html')
+  # A reconstructed candidate may select a different valid official name anchor.
+  # Bind cached HTML to the actual anchor URL, not the target printing alone.
+  page=out/'identity-pages'/(hashlib.sha256(anchor['identity_url'].encode()).hexdigest()+'.html')
   if page.exists():raw=page.read_bytes()
   else:
    raw,_,_=get(anchor['identity_url'],{'www.pokemon-card.com'},limit=2*1024*1024);page.parent.mkdir(parents=True,exist_ok=True);page.write_bytes(raw)

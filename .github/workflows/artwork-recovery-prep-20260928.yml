@@ -151,10 +151,10 @@ jobs:
         run: |
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/10915501836/zip" > tw116.zip
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/10991792708/zip" > index.zip
-          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/10992668092/zip" > previous-pokedata.zip
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/10993131439/zip" > previous-pokedata.zip
           echo '1013b9a1893f01d0eebf99677daf49a9eff96e57e2eef85aa4f50766e728ea67  tw116.zip' | sha256sum --check
           echo '7734c841ef5f7ab92e3b2650c9523cc550b508b43e66648ae7e2eca17ccd6812  index.zip' | sha256sum --check
-          echo '8bc9cb09f7e5d0654376c05f12114ab48146e5f658f9c7faf91577247a8aeec1  previous-pokedata.zip' | sha256sum --check
+          echo '0739252a553a9ea5ed6163f545879b9302307a212b88f9fe21f8eb434e8fd52a  previous-pokedata.zip' | sha256sum --check
           python - <<'PY'
           import pathlib,zipfile
           for archive,directory in [('tw116.zip','saved-tw116'),('index.zip','saved-index'),('previous-pokedata.zip','previous-pokedata')]:
@@ -190,6 +190,7 @@ jobs:
           mkdir -p pokedata-package
           cp pokedata-evidence/matching/candidates.json pokedata-package/candidates.json
           python tools/artwork-closeout-20260928/acquire-pokedata.py --input pokedata-package/candidates.json --output pokedata-package/acquired
+          python tools/artwork-closeout-20260928/recover-reviewed-pokedata.py pokedata-evidence/sources pokedata-package
           mkdir -p pokedata-package/acquired/results
           node tools/artwork-closeout-20260928/prepare-local.mjs pokedata-package/acquired pokedata-package/prepared
           python tools/artwork-closeout-20260928/verify-reconstruction.py pokedata-package
@@ -210,6 +211,7 @@ jobs:
             tw116-package/prepared/manifest.json
             pokedata-evidence
             pokedata-package/verification.json
+            pokedata-package/visual-review-decisions.json
             pokedata-package/acquired/manifest.json
             pokedata-package/acquired/summary.json
             pokedata-package/prepared/manifest.json
