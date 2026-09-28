@@ -38,10 +38,16 @@ def verify_page(raw,row):
  if p.codes!=[code] or norm(code)!=norm(row['set_code']):raise ValueError('Official expansion differs')
  # Official filenames also prefix older symbols or append a regulation letter.
  symbol_pattern=r'(?:S_mark_expantion_)?'+re.escape(code)+r'(?:[_\.@]|[D-J](?:[_\.@ ]))'
- if len(p.symbols)!=1 or not re.match(symbol_pattern,p.symbols[0],re.IGNORECASE):raise ValueError('Printed set mark differs')
+ promo=code in {'SV-P','S-P','SM-P'} and str(row['source_total'])==code and row['printed_total']==0
+ symbol_ok=len(p.symbols)==1 and (re.match(symbol_pattern,p.symbols[0],re.IGNORECASE) or (promo and p.symbols[0]=='PROMO.MARK.png'))
+ if not symbol_ok:raise ValueError('Printed set mark differs')
  parts=''.join(p.number).strip().split('/')
- if len(parts)!=2 or not numeric_equal(parts[0],row['collector_number']) or not numeric_equal(parts[0],row['source_number']):raise ValueError('Collector number differs')
- if not numeric_equal(parts[1],row['printed_total']) or not numeric_equal(parts[1],row['source_total']):raise ValueError('Printed denominator differs')
+ unnumbered=len(parts)==1 and str(row['source_total'])=='-1' and re.fullmatch('[A-Z]{3}',str(row['source_number']))
+ if (len(parts)!=2 and not unnumbered) or not numeric_equal(parts[0],row['collector_number']) or not numeric_equal(parts[0],row['source_number']):raise ValueError('Collector number differs')
+ if unnumbered:parts.append(None)
+ elif promo:
+  if parts[1]!=code:raise ValueError('Printed promo series differs')
+ elif not numeric_equal(parts[1],row['printed_total']) or not numeric_equal(parts[1],row['source_total']):raise ValueError('Printed denominator differs')
  if p.images!=[row['image_url']]:raise ValueError('Exact card-front URL differs')
  return {'identity_page_sha256':hashlib.sha256(raw).hexdigest(),'verified_name':name,'verified_set':code,'verified_number':parts[0],'verified_total':parts[1],'verified_set_mark':p.symbols[0],'checked_at':now()}
 
