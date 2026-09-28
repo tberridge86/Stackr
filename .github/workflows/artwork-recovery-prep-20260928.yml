@@ -2,7 +2,7 @@ name: Prepare saved Traditional Chinese artwork for review
 on:
   push:
     branches: ['agent/catalogue/artwork-closeout-20260928']
-    paths: ['tools/artwork-closeout-20260928/prepare-saved-tw.mjs', 'tools/artwork-closeout-20260928/tw365-cohort.json', '.github/workflows/artwork-recovery-prep-20260928.yml']
+    paths: ['tools/artwork-closeout-20260928/**', '.github/workflows/artwork-recovery-prep-20260928.yml']
 permissions:
   contents: read
   actions: read
@@ -10,6 +10,115 @@ concurrency:
   group: stackr-tw365-offline-preparation
   cancel-in-progress: false
 jobs:
+  reconstruction-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      matrix: ${{ steps.index.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: type-null/PTCG-database
+          ref: 90e28f12dde837353c3f4d231edfe236cfe9ba80
+          path: reconstruction/PTCG-metadata
+          sparse-checkout: |
+            data_jp
+            data_tc
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: type-null/PTCG-database
+          ref: bc5a2698eb9af858feb0280d579fd5fd0f0273e2
+          path: reconstruction/PTCG-new
+          sparse-checkout: data_jp
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: PokemonTCG/pokemon-tcg-data
+          ref: 39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11
+          path: reconstruction/PokemonTCG-data
+          sparse-checkout: |
+            cards/en
+            sets
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: python -m pip install Pillow==11.3.0 aiohttp==3.12.15
+      - name: Verify identity and file integrity guards
+        run: python -m unittest discover -s tools/artwork-closeout-20260928 -p 'test_*.py'
+      - id: index
+        name: Reconstruct exact candidates without production access
+        run: python tools/artwork-closeout-20260928/reconstruct-index.py reconstruction reconstruction-index
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: artwork-reconstruction-index-${{ github.run_id }}
+          path: reconstruction-index
+          retention-days: 90
+          if-no-files-found: error
+  reconstruct:
+    needs: reconstruction-index
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJson(needs.reconstruction-index.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: python -m pip install Pillow==11.3.0 aiohttp==3.12.15
+      - run: npm ci --prefix backend --ignore-scripts
+      - name: Retrieve the frozen candidate batch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BATCH_NAME: ${{ matrix.name }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "artwork-reconstruction-index-$GITHUB_RUN_ID" --dir reconstruction-index
+          mkdir -p package
+          cp "reconstruction-index/$BATCH_NAME.json" package/candidates.json
+      - name: Acquire only exact identities with live source checks
+        env:
+          LANGUAGE_CODE: ${{ matrix.language }}
+        run: python tools/artwork-closeout-20260928/acquire.py --input package/candidates.json --output package/acquired --language "$LANGUAGE_CODE" --workers 2
+      - name: Prepare standard display images with the existing locked encoder
+        env:
+          CODEX_PRIMARY_RUNTIME_NODE_MODULES: ${{ github.workspace }}/backend/node_modules
+        run: node tools/artwork-closeout-20260928/prepare-local.mjs package/acquired package/prepared
+      - name: Independently verify every saved image
+        run: python tools/artwork-closeout-20260928/verify-reconstruction.py package
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: artwork-reconstructed-${{ matrix.name }}-${{ github.run_id }}
+          path: package
+          compression-level: 0
+          retention-days: 90
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: artwork-reconstruction-evidence-${{ matrix.name }}-${{ github.run_id }}
+          path: |
+            package/candidates.json
+            package/verification.json
+            package/acquired/manifest.json
+            package/acquired/summary.json
+            package/prepared/manifest.json
+            package/prepared/summary.json
+          retention-days: 90
+          if-no-files-found: error
   prepare:
     runs-on: ubuntu-latest
     timeout-minutes: 30

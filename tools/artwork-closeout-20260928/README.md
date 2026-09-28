@@ -1,5 +1,29 @@
 # Artwork recovery, 28 September 2026
 
+## Recovery after local package loss
+
+The owner requested reconstruction after the originating chat became unavailable.
+The existing preparation workflow now also reconstructs exact Japanese/English
+candidates from the saved 12,161-printing baseline and the same pinned metadata
+revisions. The baseline retains original native/display names; set/version metadata
+was refreshed through read-only production queries. Current printing bindings must
+still be rechecked before publication.
+
+Each acquisition batch is limited to 500 candidates. Two concurrent jobs each use
+two source workers. Every success requires the existing source/identity checks,
+full image decoding and SHA-256 validation, followed by all three standard display
+sizes and a separate saved-file verifier. Failed acquisitions remain explicit.
+The locked backend encoder's version is recorded; reconstructed bytes must not be
+described as restored copies of inaccessible archives. Original and derivative
+files, identity pages and manifests are retained as 90-day GitHub artifacts.
+
+This continuation contains no production credentials or writes, does not change
+rights flags and does not certify foil/finish identity. It does not recover the
+18 private visual decisions by assumption. Existing TW365 archives remain usable;
+the earlier TW116 package and PokeData evidence need separate recovery. Publication
+implementation, staging rehearsal and the owner's final release approval remain
+separate from this acquisition workflow.
+
 This is a read-only acquisition and offline preparation workstream. It does not
 publish images, change rights records, alter canonical identities or certify foil
 finishes. The initial live baseline is 12,161 missing printings in 225 sets,
