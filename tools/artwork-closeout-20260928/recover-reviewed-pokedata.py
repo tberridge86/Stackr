@@ -5,7 +5,7 @@ from acquire import image_info
 from pooled_http import get
 from scan import now,save
 
-DECISIONS_SHA='88925f114b3862b6e812cb538d638432fab3fe2be56c00d13342e616fe6a911d'
+DECISIONS_SHA='0354e892685a7a64f47c204ddd9f446b29378bc2b3148d4c7924ec69b3901622'
 
 def verify_decisions(raw):
     if hashlib.sha256(raw).hexdigest()!=DECISIONS_SHA:raise ValueError('Visual decisions changed')
