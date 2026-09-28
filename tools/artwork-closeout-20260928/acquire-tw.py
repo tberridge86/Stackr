@@ -36,7 +36,9 @@ def verify_page(raw,row):
  if norm(name)!=norm(row['card_native_name']) or norm(title)!=norm(row['card_native_name']) or norm(row['source_name'])!=norm(row['card_native_name']):raise ValueError('Native card name differs')
  code=row['source_set']
  if p.codes!=[code] or norm(code)!=norm(row['set_code']):raise ValueError('Official expansion differs')
- if len(p.symbols)!=1 or not re.match(re.escape(code)+r'(?:_|\.|@)',p.symbols[0]):raise ValueError('Printed set mark differs')
+ # Official filenames also prefix older symbols or append a regulation letter.
+ symbol_pattern=r'(?:S_mark_expantion_)?'+re.escape(code)+r'(?:[_\.@]|[D-J](?:[_\.@ ]))'
+ if len(p.symbols)!=1 or not re.match(symbol_pattern,p.symbols[0],re.IGNORECASE):raise ValueError('Printed set mark differs')
  parts=''.join(p.number).strip().split('/')
  if len(parts)!=2 or not numeric_equal(parts[0],row['collector_number']) or not numeric_equal(parts[0],row['source_number']):raise ValueError('Collector number differs')
  if not numeric_equal(parts[1],row['printed_total']) or not numeric_equal(parts[1],row['source_total']):raise ValueError('Printed denominator differs')
@@ -60,7 +62,8 @@ def acquire(row,out):
 
 def main():
  p=argparse.ArgumentParser();p.add_argument('--input',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args();rows=json.loads(a.input.read_text(encoding='utf8'))
- if not 1<=len(rows)<=250 or len({r['printing_id'] for r in rows})!=len(rows):raise ValueError('Wrong bounded cohort')
+ if not 0<=len(rows)<=250 or len({r['printing_id'] for r in rows})!=len(rows):raise ValueError('Wrong bounded cohort')
+ (a.output/'results').mkdir(parents=True,exist_ok=True)
  results=[]
  with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
   for result in pool.map(lambda r:acquire(r,a.output),rows):
