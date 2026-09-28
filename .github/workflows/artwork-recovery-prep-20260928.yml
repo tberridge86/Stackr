@@ -2,7 +2,7 @@ name: Prepare saved Traditional Chinese artwork for review
 on:
   push:
     branches: ['agent/catalogue/artwork-closeout-20260928']
-    paths: ['tools/artwork-closeout-20260928/**', '.github/workflows/artwork-recovery-prep-20260928.yml']
+    paths: ['tools/artwork-closeout-20260928/**', 'tools/artwork3303-publish-20260928/**', '.github/workflows/artwork-recovery-prep-20260928.yml']
 permissions:
   contents: read
   actions: read
@@ -10,8 +10,38 @@ concurrency:
   group: stackr-tw365-offline-preparation
   cancel-in-progress: false
 jobs:
+  validate-publication:
+    if: contains(github.event.head_commit.message, '[verify-publication]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
+      - run: node --test tools/artwork3303-publish-20260928/publish.test.mjs
+      - name: Verify archived packages and every planned object
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python tools/artwork3303-publish-20260928/download-packages.py "$RUNNER_TEMP/artwork3303-packages"
+          node tools/artwork3303-publish-20260928/verify-packages.mjs "$RUNNER_TEMP/artwork3303-packages" package-verification.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: artwork3303-publication-readiness-${{ github.run_id }}
+          path: |
+            package-verification.json
+            tools/artwork3303-publish-20260928/plan-receipt.json
+            tools/artwork3303-publish-20260928/approval.json
+          retention-days: 90
+          if-no-files-found: error
   reconstruction-index:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]')"
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]')"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -218,7 +248,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   prepare:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]')"
+    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]')"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
