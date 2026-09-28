@@ -7,15 +7,16 @@ import collections,gzip,hashlib,json,shutil,subprocess,sys
 from pathlib import Path
 additional=Path(sys.argv[1]);ledger=Path(sys.argv[2]);target=Path('tools/artwork3303-publish-20260928');saved=Path('tools/artwork-review-20260928/initial3303')
 replacement_run=int(sys.argv[3]);assert replacement_run>36482868316
+reviewed_tw_run=int(sys.argv[4]);assert reviewed_tw_run>replacement_run
 def read(p):return json.loads(p.read_text(encoding='utf8'))
 def encoded(x):return (json.dumps(x,ensure_ascii=False,indent=2)+'\n').encode()
-for run in [36480589353,36482384653,36482868316,replacement_run]:
+for run in [36480589353,36482384653,36482868316,replacement_run,reviewed_tw_run]:
  state=json.loads(subprocess.check_output(['gh','run','view',str(run),'--repo','tberridge86/Stackr','--json','status,conclusion']))
  if state!={'conclusion':'success','status':'completed'}:raise ValueError('Preparation is not complete: '+str(run))
 summary=read(ledger/'summary.json')
 assert summary['total']==12161 and summary['categories'].get('Preparation pending',0)==0
 artifact_index=read(ledger/'artifacts.json')
-for run,expected in [(36480589353,38),(36482384653,40),(36482868316,4),(replacement_run,2)]:
+for run,expected in [(36480589353,38),(36482384653,40),(36482868316,4),(replacement_run,2),(reviewed_tw_run,2)]:
  actual=[a for a in artifact_index if a['workflow_run']['id']==run]
  assert len(actual)==expected and len({a['id'] for a in actual})==expected,'Incomplete downloaded evidence index'
 if not saved.exists():
@@ -44,7 +45,7 @@ for r in rows:
  assert len(r['objects'])==4
  for o in r['objects']:assert o['artifact_id'] in archives
 rows.sort(key=lambda r:r['printing_id']);b=gzip.compress(encoded(rows),mtime=0);digest=hashlib.sha256(b).hexdigest()
-receipt={'cohort_sha256':digest,'fronts':len(rows),'derivatives':len(rows)*3,'image_files':len(rows)*4,'source_counts':dict(collections.Counter(r['source_code'] for r in rows)),'publication_status':'NOT_PUBLISHED','production_writes':0,'artifacts':list(archives.values()),'original_cohort_sha256':original['cohort_sha256'],'additional_cohort_sha256':supplement['cohort_sha256'],'preparation_runs':[36480589353,36482384653,36482868316,replacement_run],'single_card_replacements':list(replacement_reviews.values()),'unresolved_records':12161-len(rows)}
+receipt={'cohort_sha256':digest,'fronts':len(rows),'derivatives':len(rows)*3,'image_files':len(rows)*4,'source_counts':dict(collections.Counter(r['source_code'] for r in rows)),'publication_status':'NOT_PUBLISHED','production_writes':0,'artifacts':list(archives.values()),'original_cohort_sha256':original['cohort_sha256'],'additional_cohort_sha256':supplement['cohort_sha256'],'preparation_runs':[36480589353,36482384653,36482868316,replacement_run,reviewed_tw_run],'single_card_replacements':list(replacement_reviews.values()),'unresolved_records':12161-len(rows)}
 (target/'cohort.json.gz').write_bytes(b);(target/'plan-receipt.json').write_bytes(encoded(receipt))
 (target/'approval.json').write_bytes(encoded({'approved':False,'cohort_sha256':digest,'fronts':len(rows),'official_tw_fronts':receipt['source_counts']['pokemon_card_tw_official'],'store_resize_display_official_tw':False,'owner_statement':None,'approved_at':None,'status':'Prepared combined queue; final owner publication approval and bounded official Taiwan source permission remain pending'}))
 print(json.dumps({k:v for k,v in receipt.items() if k!='artifacts'}))
