@@ -1,0 +1,22 @@
+{
+  "observed_at": "2026-09-28T21:52:27.940Z",
+  "cohort_sha256": "20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd",
+  "checks": [
+    {
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "saved_release_assets": 0,
+      "official_taiwan_source_rows": 0
+    },
+    {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "saved_release_assets": 0,
+      "official_taiwan_source_rows": 0
+    }
+  ],
+  "production_tcgdex_pocket_bindings": {
+    "checked": 47,
+    "exact_published_provider_bindings": 47,
+    "exceptions": []
+  },
+  "production_writes": 0
+}

@@ -1,3 +1,5 @@
+> Superseded checkpoint. All preparation runs are complete; use [the final 7,911-front approval packet](artwork7911-approval-ready-20260928.md) and its 4,250-record exception list.
+
 # Additional artwork preparation — active checkpoint
 
 Measured 28 September 2026 at 21:02 UTC. This is ongoing preparation, not a production delivery receipt.

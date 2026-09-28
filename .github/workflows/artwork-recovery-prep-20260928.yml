@@ -275,7 +275,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   reconstruction-index:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[verify-subset]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]') && !contains(github.event.head_commit.message, '[prepare-vunion]') && !contains(github.event.head_commit.message, '[prepare-tw-reviewed]')"
+    if: contains(github.event.head_commit.message, '[reconstruct-initial]')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -482,7 +482,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   prepare:
-    if: "!contains(github.event.head_commit.message, '[recover-supplement]') && !contains(github.event.head_commit.message, '[verify-publication]') && !contains(github.event.head_commit.message, '[verify-subset]') && !contains(github.event.head_commit.message, '[prepare-tw]') && !contains(github.event.head_commit.message, '[prepare-tw-retry]') && !contains(github.event.head_commit.message, '[prepare-references]') && !contains(github.event.head_commit.message, '[prepare-tw-final]') && !contains(github.event.head_commit.message, '[prepare-vunion]') && !contains(github.event.head_commit.message, '[prepare-tw-reviewed]')"
+    if: contains(github.event.head_commit.message, '[reconstruct-initial]')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

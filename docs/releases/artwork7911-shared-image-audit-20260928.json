@@ -1,0 +1,194 @@
+{
+  "cohort_sha256": "20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd",
+  "fronts": 7911,
+  "unique_original_hashes": 7902,
+  "shared_original_groups": [
+    {
+      "original_sha256": "2e5d9142479b16ef2e117ded3165e28d05bf6c5a50f68877814591810cabc1c8",
+      "classification": "matching basic energy front across official deck memberships",
+      "records": [
+        {
+          "printing_id": "079b09bc-9319-4b41-8eae-edbf44217634",
+          "language_code": "zh-tw",
+          "set_code": "SVB",
+          "collector_number": "MET",
+          "card_native_name": "基本【鋼】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00007846.png"
+        },
+        {
+          "printing_id": "58a23de7-2413-4608-9293-1d91285426de",
+          "language_code": "zh-tw",
+          "set_code": "SVD",
+          "collector_number": "MET",
+          "card_native_name": "基本【鋼】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00008480.png"
+        }
+      ]
+    },
+    {
+      "original_sha256": "0d4c266b61b2230989f7149f679f9626a0f38c75f8e92fb99c78392199ec2d17",
+      "classification": "matching basic energy front across official deck memberships",
+      "records": [
+        {
+          "printing_id": "09e5da38-e282-4bff-b8a3-d3642a322b76",
+          "language_code": "zh-tw",
+          "set_code": "SVD",
+          "collector_number": "GRA",
+          "card_native_name": "基本【草】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00008473.png"
+        },
+        {
+          "printing_id": "bf140180-6fb3-422f-9139-35087168de74",
+          "language_code": "zh-tw",
+          "set_code": "SVB",
+          "collector_number": "GRA",
+          "card_native_name": "基本【草】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00007839.png"
+        }
+      ]
+    },
+    {
+      "original_sha256": "130f18a1cdc1b3bc19ff76827dbe9e70a26d0079318adac50538881c3dccdf1f",
+      "classification": "matching basic energy front across official deck memberships",
+      "records": [
+        {
+          "printing_id": "0d016f30-8501-462c-bdc3-55839744af54",
+          "language_code": "zh-tw",
+          "set_code": "SVD",
+          "collector_number": "LIG",
+          "card_native_name": "基本【雷】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00008476.png"
+        },
+        {
+          "printing_id": "43d87258-90e3-442d-8b00-184c629d4ed5",
+          "language_code": "zh-tw",
+          "set_code": "SVC",
+          "collector_number": "LIG",
+          "card_native_name": "基本【雷】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00008111.png"
+        },
+        {
+          "printing_id": "a80441f2-6d32-42d3-85c4-20f687ee76a1",
+          "language_code": "zh-tw",
+          "set_code": "SVB",
+          "collector_number": "LIG",
+          "card_native_name": "基本【雷】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00007842.png"
+        }
+      ]
+    },
+    {
+      "original_sha256": "7431c13f077fb37dfd3ca32729328db160f3a95ed663fccf640fa04038d7ffac",
+      "classification": "matching basic energy front across official deck memberships",
+      "records": [
+        {
+          "printing_id": "1f4a2461-e36f-4d3c-9ddd-74851767a67c",
+          "language_code": "zh-tw",
+          "set_code": "SVB",
+          "collector_number": "FIG",
+          "card_native_name": "基本【鬥】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00007844.png"
+        },
+        {
+          "printing_id": "2feb5513-a3bd-4558-9fec-da6f12b08295",
+          "language_code": "zh-tw",
+          "set_code": "SVD",
+          "collector_number": "FIG",
+          "card_native_name": "基本【鬥】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00008478.png"
+        }
+      ]
+    },
+    {
+      "original_sha256": "f7b06cecd984d0f7071215992763f1192638554c9ab57a755831b082d888a7a5",
+      "classification": "matching basic energy front across official deck memberships",
+      "records": [
+        {
+          "printing_id": "558a2f12-24c9-47f9-9409-ebd400682364",
+          "language_code": "zh-tw",
+          "set_code": "SVD",
+          "collector_number": "DAR",
+          "card_native_name": "基本【惡】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00008479.png"
+        },
+        {
+          "printing_id": "ddcdd9db-5c14-4dff-b5ee-6527932b497c",
+          "language_code": "zh-tw",
+          "set_code": "SVB",
+          "collector_number": "DAR",
+          "card_native_name": "基本【惡】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00007845.png"
+        }
+      ]
+    },
+    {
+      "original_sha256": "b7a1c07304dd7325f54557c24bfe404d0a3d6b7605a48e4c89dd613d8708df5e",
+      "classification": "matching basic energy front across official deck memberships",
+      "records": [
+        {
+          "printing_id": "9cfe000b-4b78-4b6e-b06c-3871db9da9fd",
+          "language_code": "zh-tw",
+          "set_code": "SVD",
+          "collector_number": "FIR",
+          "card_native_name": "基本【火】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00008474.png"
+        },
+        {
+          "printing_id": "a7667b6e-3b4c-480c-93dd-da54fa1ecf00",
+          "language_code": "zh-tw",
+          "set_code": "SVB",
+          "collector_number": "FIR",
+          "card_native_name": "基本【火】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00007840.png"
+        }
+      ]
+    },
+    {
+      "original_sha256": "2786223344158fb003349fc98147086f2150d32f457a3794fb45abf1f23bb72a",
+      "classification": "matching basic energy front across official deck memberships",
+      "records": [
+        {
+          "printing_id": "9dbcda27-5f03-401f-b9e8-3e659188c9be",
+          "language_code": "zh-tw",
+          "set_code": "SVB",
+          "collector_number": "PSY",
+          "card_native_name": "基本【超】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00007843.png"
+        },
+        {
+          "printing_id": "b3e8614d-3a2e-475e-ae50-6466996fdaed",
+          "language_code": "zh-tw",
+          "set_code": "SVD",
+          "collector_number": "PSY",
+          "card_native_name": "基本【超】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00008477.png"
+        }
+      ]
+    },
+    {
+      "original_sha256": "1e916e824702b768adef1ff7398e50e57dd2969371597a6f1ded312bd7f724dc",
+      "classification": "matching basic energy front across official deck memberships",
+      "records": [
+        {
+          "printing_id": "ce5efa1b-b1bc-4438-a746-15ef8f778aae",
+          "language_code": "zh-tw",
+          "set_code": "SVB",
+          "collector_number": "WAT",
+          "card_native_name": "基本【水】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00007841.png"
+        },
+        {
+          "printing_id": "d89b4f4d-358d-4f0d-8172-65603df43e7f",
+          "language_code": "zh-tw",
+          "set_code": "SVD",
+          "collector_number": "WAT",
+          "card_native_name": "基本【水】能量",
+          "image_url": "https://asia.pokemon-card.com/tw/card-img/tw00008475.png"
+        }
+      ]
+    }
+  ],
+  "conflicting_original_images_in_final_plan": 0,
+  "excluded_wrong_image_printing": "4501ce7e-9803-477b-b21c-754effc34e21",
+  "production_writes": 0
+}
