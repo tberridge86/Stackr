@@ -27,7 +27,7 @@ export async function captureRows(db){
   // Snapshot only this already-public read model. No holdings, prices or image writes.
   await db.query('create temporary table release_card_details_before on commit drop as select * from api.catalogue_cards');
 }
-export async function verify(db){
+export async function verify(db,{allowMissingFastRpc=false}={}){
   const oldColumns=(await db.query("select attname from pg_attribute where attrelid='pg_temp.release_card_details_before'::regclass and attnum>0 and not attisdropped order by attnum")).rows.map(r=>r.attname);
   const columns=oldColumns.map(n=>'"'+n.replaceAll('"','""')+'"').join(',');
   const drift=(await db.query(`select count(*)::int as count from ((select ${columns} from release_card_details_before except all select ${columns} from api.catalogue_cards) union all (select ${columns} from api.catalogue_cards except all select ${columns} from release_card_details_before)) d`)).rows[0].count;
@@ -37,14 +37,19 @@ export async function verify(db){
     from api.catalogue_cards c join catalog.card_printings p on p.id=c.printing_id
     left join catalog.card_concepts cc on cc.id=p.card_concept_id and cc.deprecated_at is null group by c.language_code order by c.language_code`)).rows;
   check(checks.length>0&&checks.every(r=>r.mismatches===0),'Stored metadata parity failed');
+  const rpc=(await db.query("select to_regprocedure('api.catalogue_set_card_rows(uuid,text,uuid,integer)')::text as name")).rows[0]?.name;
+  if(!rpc){
+    check(allowMissingFastRpc,'Production fast set-card RPC is missing');
+    return {unchanged_existing_rows:true,metadata_parity:checks,fast_set_rpc_fields_present:false,fast_set_rpc_status:'not_present_in_staging'};
+  }
   const sample=(await db.query("select set_id,language_code from api.catalogue_cards order by variant_id limit 1")).rows[0];
   const bundle=(await db.query('select card_row from api.catalogue_set_card_rows($1,$2,null,1)',[sample.set_id,sample.language_code])).rows;
   check(bundle.length>0&&bundle.every(r=>['artist','supertype','subtypes','card_concept_id','concept_english_display_name'].every(k=>Object.hasOwn(r.card_row,k))),'Fast set-card RPC omits metadata');
   return {unchanged_existing_rows:true,metadata_parity:checks,fast_set_rpc_fields_present:true};
 }
-export async function rehearse(db,sql,baseline){
+export async function rehearse(db,sql,baseline,options={}){
   await db.query('begin isolation level repeatable read');
-  try{await db.query("set local statement_timeout='90s'");await db.query("set local lock_timeout='5s'");await captureRows(db);await apply(db,sql,baseline);return await verify(db);}finally{await db.query('rollback');}
+  try{await db.query("set local statement_timeout='90s'");await db.query("set local lock_timeout='5s'");await captureRows(db);await apply(db,sql,baseline);return await verify(db,options);}finally{await db.query('rollback');}
 }
 async function main(){
   assertConfig(process.env,process.argv.includes('--execute'));
@@ -57,7 +62,7 @@ async function main(){
   try{
     for(const environment of ['staging','production']){
       db=createVerifiedSupabasePostgresClient(process.env[environment==='staging'?'SUPABASE_STAGING_DB_URL':'SUPABASE_DB_URL'],`stackr-card-details-${environment}`,{connectionTimeoutMillis:15000});await db.connect();
-      journal[environment+'_rehearsal']={status:'passed_and_rolled_back',...await rehearse(db,sql,baseline[environment])};
+      journal[environment+'_rehearsal']={status:'passed_and_rolled_back',...await rehearse(db,sql,baseline[environment],{allowMissingFastRpc:environment==='staging'})};
       check(isDeepStrictEqual(await snapshot(db),baseline[environment]),'Rehearsal did not restore view');await save();
       if(environment==='staging'){await db.end();db=null;}
     }
