@@ -1,0 +1,643 @@
+﻿reference_id,language,name,entity_type,status,canonical_table,canonical_id,legacy_checklist_set_id,workbook_code,exceptions
+en-a0c246625f70,en,Base Set,Card set / collection,canonical,catalog.sets,97e3aeb6-2645-4c3a-9fd4-10d95a181b6e,97e3aeb6-2645-4c3a-9fd4-10d95a181b6e,BS,
+en-04f13cef08d5,en,Jungle,Card set / collection,canonical,catalog.sets,739d2f18-1dd0-45dc-ba58-2195d5760ed5,739d2f18-1dd0-45dc-ba58-2195d5760ed5,JU,
+en-aa7e14b7f0c8,en,Wizards Black Star Promos,Promo catalogue,canonical,catalog.sets,ce2eea9a-f1c5-4a8e-8ff2-e782fbd89927,ce2eea9a-f1c5-4a8e-8ff2-e782fbd89927,WP,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-1023534ac633,en,Fossil,Card set / collection,canonical,catalog.sets,85f8c1fc-874d-4b7a-892b-2137adc6647b,85f8c1fc-874d-4b7a-892b-2137adc6647b,FO,
+en-a8df9e98a90c,en,Base Set 2,Card set / collection,canonical,catalog.sets,ffdf2db0-7ff9-426f-95f4-ba4165be9824,ffdf2db0-7ff9-426f-95f4-ba4165be9824,B2,
+en-c60e2d562834,en,Team Rocket,Card set / collection,canonical,catalog.sets,87281266-72bb-4ece-8a82-2d9838fec89f,87281266-72bb-4ece-8a82-2d9838fec89f,TR,
+en-c5ce98007735,en,Gym Heroes,Card set / collection,canonical,catalog.sets,0f4ffa8e-12e1-4d3f-907c-74186a29bf1b,0f4ffa8e-12e1-4d3f-907c-74186a29bf1b,G1,
+en-02504fb70732,en,Gym Challenge,Card set / collection,canonical,catalog.sets,f43aed17-4a1d-49b7-9f98-fbf3f0e44c8d,f43aed17-4a1d-49b7-9f98-fbf3f0e44c8d,G2,
+en-20cc938f566a,en,Neo Genesis,Card set / collection,canonical,catalog.sets,d9a2e898-8c13-4ec3-a57e-7e27e33dec08,d9a2e898-8c13-4ec3-a57e-7e27e33dec08,N1,
+en-35d669d41542,en,Neo Discovery,Card set / collection,canonical,catalog.sets,0f227cc4-90c0-4e1b-b91f-811b3d13630d,0f227cc4-90c0-4e1b-b91f-811b3d13630d,N2,
+en-6cd59d2de3c3,en,Southern Islands,Card set / collection,canonical,catalog.sets,3a75eae6-7d72-4227-bf44-4068c80e01fd,3a75eae6-7d72-4227-bf44-4068c80e01fd,SI,
+en-4ebd136067f6,en,Neo Revelation,Card set / collection,canonical,catalog.sets,6594ca6d-beb9-4b02-91c4-c2f1d5765712,6594ca6d-beb9-4b02-91c4-c2f1d5765712,N3,
+en-c2856ff4149f,en,Neo Destiny,Card set / collection,canonical,catalog.sets,76866762-6684-44e1-bd7d-11a741f408d2,76866762-6684-44e1-bd7d-11a741f408d2,N4,
+en-cd4f85d44ef5,en,Legendary Collection,Card set / collection,canonical,catalog.sets,1f92f73d-c7ed-4f1b-b0cd-896ce13d2fab,1f92f73d-c7ed-4f1b-b0cd-896ce13d2fab,LC,
+en-5d6d8308391d,en,Expedition Base Set,Card set / collection,canonical,catalog.sets,7cdfd12a-41e8-4311-aa5b-b2b7cd58e398,7cdfd12a-41e8-4311-aa5b-b2b7cd58e398,EX,
+en-6b8ea434ff3c,en,Best of Game,Promo catalogue,canonical,catalog.sets,2fa71113-d1fe-4498-a69f-581cfdfc2f9e,2fa71113-d1fe-4498-a69f-581cfdfc2f9e,BOG,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-cc20a20022be,en,Aquapolis,Card set / collection,canonical,catalog.sets,2cd06c25-7efb-442d-b1ff-8f00979d5fe4,2cd06c25-7efb-442d-b1ff-8f00979d5fe4,AQ,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-97419826c195,en,Skyridge,Card set / collection,canonical,catalog.sets,c7e3d5ac-17b4-494e-b6af-53b6eeb75919,c7e3d5ac-17b4-494e-b6af-53b6eeb75919,SK,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-9fae739d1b50,en,EX Ruby & Sapphire,Card set / collection,canonical,catalog.sets,64aef6f8-1d6a-4279-9d48-b6540462f892,64aef6f8-1d6a-4279-9d48-b6540462f892,RS,
+en-2c8548f403ec,en,EX Sandstorm,Card set / collection,canonical,catalog.sets,a13f0885-b15c-4ad1-94b5-9902581273cb,a13f0885-b15c-4ad1-94b5-9902581273cb,SS,
+en-25a30d326497,en,Nintendo Black Star Promos,Promo catalogue,canonical,catalog.sets,e6a38c42-178e-4875-8090-fe559404207f,e6a38c42-178e-4875-8090-fe559404207f,NP,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-4136e90acfc5,en,EX Dragon,Card set / collection,canonical,catalog.sets,30914b3d-b822-4a86-98a7-64f043e4c3bf,30914b3d-b822-4a86-98a7-64f043e4c3bf,DR,
+en-2716fcc13469,en,EX Team Magma vs Team Aqua,Card set / collection,canonical,catalog.sets,5ec7db1f-74f3-4ad0-8e80-24a1712c1730,5ec7db1f-74f3-4ad0-8e80-24a1712c1730,MA,
+en-8b591b123a2d,en,EX Hidden Legends,Card set / collection,canonical,catalog.sets,d6412e14-45a5-48ed-81e0-70e09c56b9a3,d6412e14-45a5-48ed-81e0-70e09c56b9a3,HL,
+en-113c19d40966,en,Poké Card Creator Pack,Promo catalogue,canonical,catalog.sets,71bc9b69-e786-4972-b126-d1f7bbc1311f,71bc9b69-e786-4972-b126-d1f7bbc1311f,CC,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-f5ccf3069644,en,EX FireRed & LeafGreen,Card set / collection,canonical,catalog.sets,1f4123e5-329b-4d39-9d85-7a079593fbcf,1f4123e5-329b-4d39-9d85-7a079593fbcf,RG,
+en-3038f4c0a2b4,en,POP Series 1,Promo catalogue,canonical,catalog.sets,9ce6fbec-2f97-440d-bf13-4c6de2e4c174,9ce6fbec-2f97-440d-bf13-4c6de2e4c174,POP1,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-afe4a95f06f0,en,EX Team Rocket Returns,Card set / collection,canonical,catalog.sets,b80b1e71-5fdf-4c7b-b08e-2970af16c6f6,b80b1e71-5fdf-4c7b-b08e-2970af16c6f6,TRR,
+en-c9757869c465,en,EX Deoxys,Card set / collection,canonical,catalog.sets,3ef9a5ac-ff56-41e3-9c03-008368a5d58b,3ef9a5ac-ff56-41e3-9c03-008368a5d58b,DX,
+en-63dd78545f6b,en,EX Emerald,Card set / collection,canonical,catalog.sets,3c2cf854-99c6-4986-ae3f-92d7b64ca691,3c2cf854-99c6-4986-ae3f-92d7b64ca691,EM,
+en-2ae0ae63d6c6,en,POP Series 2,Promo catalogue,canonical,catalog.sets,698426c9-3d79-4cdd-8bf7-d33c50be9b39,698426c9-3d79-4cdd-8bf7-d33c50be9b39,POP2,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-d8fc5898f167,en,EX Unseen Forces,Card set / collection,canonical,catalog.sets,e29e51ac-ff0a-493a-9065-7e6705c6b044,e29e51ac-ff0a-493a-9065-7e6705c6b044,UF,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-54098c178e15,en,EX Delta Species,Card set / collection,canonical,catalog.sets,99249942-0d40-4681-89ef-ed4575e16313,99249942-0d40-4681-89ef-ed4575e16313,DS,
+en-9cb8c9f6e536,en,EX Legend Maker,Card set / collection,canonical,catalog.sets,bf4f4e5f-7f84-4c74-aba4-7a72e11a17b2,bf4f4e5f-7f84-4c74-aba4-7a72e11a17b2,LM,
+en-c3b6dc0be0f9,en,POP Series 3,Promo catalogue,canonical,catalog.sets,72847a6b-b6c1-4cbd-a0ec-d364297c9d4e,72847a6b-b6c1-4cbd-a0ec-d364297c9d4e,POP3,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-5b979908423c,en,EX Holon Phantoms,Card set / collection,canonical,catalog.sets,eadfaa16-b109-40b9-bdc9-e39bd7a81172,eadfaa16-b109-40b9-bdc9-e39bd7a81172,HP,
+en-fad17205363e,en,POP Series 4,Promo catalogue,canonical,catalog.sets,455ffff6-bd35-42a1-be69-082e9fafc01f,455ffff6-bd35-42a1-be69-082e9fafc01f,POP4,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-8e43e04c94fc,en,EX Crystal Guardians,Card set / collection,canonical,catalog.sets,17936dba-7b9a-4737-90a9-a0464d7a4919,17936dba-7b9a-4737-90a9-a0464d7a4919,CG,
+en-aaf4b3441b4d,en,EX Dragon Frontiers,Card set / collection,canonical,catalog.sets,22af0c58-645c-42b6-a7d8-3e77e6b1e032,22af0c58-645c-42b6-a7d8-3e77e6b1e032,DF,
+en-77949d1b2f91,en,EX Power Keepers,Card set / collection,canonical,catalog.sets,9703f44c-e45a-4bfb-952c-4e747357bd4e,9703f44c-e45a-4bfb-952c-4e747357bd4e,PK,
+en-d1e1c1c442b6,en,POP Series 5,Promo catalogue,canonical,catalog.sets,c0e878e4-e882-4736-a3fd-aba9efe393e4,c0e878e4-e882-4736-a3fd-aba9efe393e4,POP5,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-b35c8787199b,en,DP Black Star Promos,Promo catalogue,canonical,catalog.sets,145e94b6-56f3-4f63-bfc6-473a472b661d,145e94b6-56f3-4f63-bfc6-473a472b661d,DPP,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-c73b95bc6054,en,Diamond & Pearl,Card set / collection,canonical,catalog.sets,8ebfab70-e7bb-48d8-98e7-dd8b948d12e8,8ebfab70-e7bb-48d8-98e7-dd8b948d12e8,DP,
+en-8f4b9726b034,en,Mysterious Treasures,Card set / collection,canonical,catalog.sets,986caaf1-1f2b-4525-ae93-4d455cfee8c5,986caaf1-1f2b-4525-ae93-4d455cfee8c5,MT,
+en-e8f006b1fcdc,en,POP Series 6,Promo catalogue,canonical,catalog.sets,6f5ccfcc-bd4f-439e-aa9a-654afdbfc6f6,6f5ccfcc-bd4f-439e-aa9a-654afdbfc6f6,POP6,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-16dc73b3bf13,en,Secret Wonders,Card set / collection,canonical,catalog.sets,a9b641af-03cb-4a40-8b15-8a3b6ad01e48,a9b641af-03cb-4a40-8b15-8a3b6ad01e48,SW,
+en-c000628be18c,en,Great Encounters,Card set / collection,canonical,catalog.sets,d05cc70e-4db4-45cb-a831-1b74780b9772,d05cc70e-4db4-45cb-a831-1b74780b9772,GE,
+en-99c5bfa12ae2,en,POP Series 7,Promo catalogue,canonical,catalog.sets,bdf571e3-4ca9-40dc-87bd-e6c1952915bf,bdf571e3-4ca9-40dc-87bd-e6c1952915bf,POP7,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-e15ea065516f,en,Majestic Dawn,Card set / collection,canonical,catalog.sets,a0dc1218-59f9-45f7-841b-9e93ccfc3aea,a0dc1218-59f9-45f7-841b-9e93ccfc3aea,MD,
+en-70298cb313b5,en,Legends Awakened,Card set / collection,canonical,catalog.sets,3f0f07ff-6f30-4034-98db-02bf9182ab78,3f0f07ff-6f30-4034-98db-02bf9182ab78,LA,
+en-60734715037a,en,POP Series 8,Promo catalogue,canonical,catalog.sets,68fb188b-deb9-46ff-88a9-db0d1f5d34f6,68fb188b-deb9-46ff-88a9-db0d1f5d34f6,POP8,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-3494d0cab367,en,Stormfront,Card set / collection,canonical,catalog.sets,4b1e9001-6612-42bc-94ac-427b346006ee,4b1e9001-6612-42bc-94ac-427b346006ee,SF,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-58e94dab40f3,en,Platinum,Card set / collection,canonical,catalog.sets,772c70cd-95c5-4912-9468-3b5a3043f2cf,772c70cd-95c5-4912-9468-3b5a3043f2cf,PL,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-017662319683,en,POP Series 9,Promo catalogue,canonical,catalog.sets,fd0c8655-1296-4913-8d91-74783836cd59,fd0c8655-1296-4913-8d91-74783836cd59,POP9,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-dd8dcbc74555,en,Rising Rivals,Card set / collection,canonical,catalog.sets,7c7f44f6-750c-4035-8b59-55f6bc45e26d,7c7f44f6-750c-4035-8b59-55f6bc45e26d,RR,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-9802fa8c0788,en,Supreme Victors,Card set / collection,canonical,catalog.sets,3e60ee1c-a63d-4473-8315-da90535f25cb,3e60ee1c-a63d-4473-8315-da90535f25cb,SV,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-bb910b4803f9,en,Arceus,Card set / collection,canonical,catalog.sets,9b581912-773f-4599-a94f-ab01fe9e0f4d,9b581912-773f-4599-a94f-ab01fe9e0f4d,AR,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-dd1bed5a6c8f,en,Pokémon Rumble,Card set / collection,canonical,catalog.sets,a05be832-81a3-4f39-9fb2-0be6c0c73727,a05be832-81a3-4f39-9fb2-0be6c0c73727,RM,
+en-a33f6d494f98,en,HGSS Black Star Promos,Promo catalogue,canonical,catalog.sets,5de74297-bb54-4c56-8b1a-701f89e41bc4,5de74297-bb54-4c56-8b1a-701f89e41bc4,HSP,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-570eb4a7ff82,en,HeartGold & SoulSilver,Card set / collection,canonical,catalog.sets,15cacaa9-5700-4067-b731-ca2bc452d5b7,15cacaa9-5700-4067-b731-ca2bc452d5b7,HS,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-fdf7f2c10a8c,en,HS—Unleashed,Card set / collection,canonical,catalog.sets,3be0e25e-8dbf-4edd-a75c-aae48dd673a8,3be0e25e-8dbf-4edd-a75c-aae48dd673a8,UL,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-2c6142e8a65e,en,HS—Undaunted,Card set / collection,canonical,catalog.sets,d48bebfe-e9a9-4b0c-adc9-cec8e109d93c,d48bebfe-e9a9-4b0c-adc9-cec8e109d93c,UD,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-8391c36c39f9,en,HS—Triumphant,Card set / collection,canonical,catalog.sets,623e0960-fbbf-4803-af40-960f3e0bbf9d,623e0960-fbbf-4803-af40-960f3e0bbf9d,TM,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-768ff8b6c413,en,Call of Legends,Card set / collection,canonical,catalog.sets,969c83b1-1004-4af8-8ef8-d724656bdc35,969c83b1-1004-4af8-8ef8-d724656bdc35,CL,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-153f1e2973ab,en,BW Black Star Promos,Promo catalogue,canonical,catalog.sets,ba16466a-a048-4563-acf2-5507fa211b96,ba16466a-a048-4563-acf2-5507fa211b96,BWP,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-979394369192,en,Black & White,Card set / collection,canonical,catalog.sets,20459d78-825a-4dfa-b7ae-c0c97b8994f6,20459d78-825a-4dfa-b7ae-c0c97b8994f6,BLW,
+en-e2f82b622c38,en,McDonald's Collection 2011,Promo catalogue,canonical,catalog.sets,0a2d5c3e-9da1-4af5-acc6-584485d8777e,0a2d5c3e-9da1-4af5-acc6-584485d8777e,M11,
+en-010fbb1c4518,en,Emerging Powers,Card set / collection,canonical,catalog.sets,68e39d0d-c5de-4326-ae1b-51042e556edd,68e39d0d-c5de-4326-ae1b-51042e556edd,EPO,
+en-f282c6e506cc,en,Noble Victories,Card set / collection,canonical,catalog.sets,3b49aa99-9b03-4b32-bce4-1fb67f167345,3b49aa99-9b03-4b32-bce4-1fb67f167345,NVI,
+en-f9d9d3df62f9,en,Next Destinies,Card set / collection,canonical,catalog.sets,383cab7b-dbc3-4d4d-96e3-d07f4f1b6744,383cab7b-dbc3-4d4d-96e3-d07f4f1b6744,NXD,
+en-1b9e4a6a354e,en,Dark Explorers,Card set / collection,canonical,catalog.sets,62bc12c6-68e4-49a9-86b4-14db3025510f,62bc12c6-68e4-49a9-86b4-14db3025510f,DEX,
+en-4bc9e6055cd1,en,McDonald's Collection 2012,Promo catalogue,canonical,catalog.sets,56e5b9e8-80b4-4e23-ad0c-5f86afc6759c,56e5b9e8-80b4-4e23-ad0c-5f86afc6759c,M12,
+en-46bcbc7bd2cf,en,Dragons Exalted,Card set / collection,canonical,catalog.sets,ec087b67-2763-4b92-a34f-4183bc25649e,ec087b67-2763-4b92-a34f-4183bc25649e,DRX,
+en-91e1f1c33c0f,en,Dragon Vault,Card set / collection,canonical,catalog.sets,f0ca524e-701d-4ff4-b9cf-ea9eec7eec58,f0ca524e-701d-4ff4-b9cf-ea9eec7eec58,DRV,
+en-e09a110664e7,en,Boundaries Crossed,Card set / collection,canonical,catalog.sets,e0849e8a-ee89-4443-9ab9-639d31db4e85,e0849e8a-ee89-4443-9ab9-639d31db4e85,BCR,
+en-3016217292f6,en,Plasma Storm,Card set / collection,canonical,catalog.sets,42e19a74-eaac-4889-92bd-085e35f708ef,42e19a74-eaac-4889-92bd-085e35f708ef,PLS,
+en-5aa9e9a94aa6,en,Plasma Freeze,Card set / collection,canonical,catalog.sets,b78899e7-ea1a-442b-85af-041bd9609377,b78899e7-ea1a-442b-85af-041bd9609377,PLF,
+en-ad0a6da5fa67,en,Plasma Blast,Card set / collection,canonical,catalog.sets,07fafdb9-7130-41c5-a076-301d8ca5070e,07fafdb9-7130-41c5-a076-301d8ca5070e,PLB,
+en-de9597f8f5f1,en,XY Black Star Promos,Promo catalogue,canonical,catalog.sets,603fd3a2-e829-4ca3-bb6d-3c235cde5373,603fd3a2-e829-4ca3-bb6d-3c235cde5373,XYP,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-3cb54e9ce33e,en,McDonald's Collection 2013,Promo catalogue,canonical,catalog.sets,cc6cdd14-13e7-5e11-82ce-c8a5151994d8,,M13,
+en-d17b2d80e0a0,en,Legendary Treasures,Card set / collection,canonical,catalog.sets,276f194e-1d23-4d12-a13a-4ebf211588bd,276f194e-1d23-4d12-a13a-4ebf211588bd,LTR,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-8927672c1fc3,en,Kalos Starter Set,Card set / collection,canonical,catalog.sets,f5e20b43-349e-466d-a0d3-d9b8950c4281,f5e20b43-349e-466d-a0d3-d9b8950c4281,KSS,
+en-c2ca16153c2a,en,XY,Card set / collection,canonical,catalog.sets,5d30fc31-1040-4140-8c02-ea1dcdb57955,5d30fc31-1040-4140-8c02-ea1dcdb57955,XY,
+en-a430ca13ab89,en,Flashfire,Card set / collection,canonical,catalog.sets,cbfa835f-4cc7-466f-8945-91e25831a94e,cbfa835f-4cc7-466f-8945-91e25831a94e,FLF,
+en-915e707fe4c1,en,McDonald's Collection 2014,Promo catalogue,canonical,catalog.sets,19f359e2-c29f-498f-8bf6-fc19c122a361,19f359e2-c29f-498f-8bf6-fc19c122a361,M14,
+en-07be2898ea37,en,Furious Fists,Card set / collection,canonical,catalog.sets,2924aa8a-c471-4c3a-a98a-031ae26a8e1d,2924aa8a-c471-4c3a-a98a-031ae26a8e1d,FFI,
+en-2d7a46bf4f40,en,Phantom Forces,Card set / collection,canonical,catalog.sets,f382341d-5f76-40fe-8fe7-42e798790dc2,f382341d-5f76-40fe-8fe7-42e798790dc2,PHF,
+en-9eb9fce1de4b,en,Primal Clash,Card set / collection,canonical,catalog.sets,d309b26d-8418-4d8c-a8e1-4c028fe859cc,d309b26d-8418-4d8c-a8e1-4c028fe859cc,PRC,
+en-424245fcaa4d,en,Double Crisis,Card set / collection,canonical,catalog.sets,8fd3d411-bc40-44f6-a5e0-b69d45b57326,8fd3d411-bc40-44f6-a5e0-b69d45b57326,DCR,
+en-816bacadc3d6,en,Roaring Skies,Card set / collection,canonical,catalog.sets,7bb54d57-5eef-43b5-a632-ad4242cb2784,7bb54d57-5eef-43b5-a632-ad4242cb2784,ROS,
+en-94a46f468993,en,Ancient Origins,Card set / collection,canonical,catalog.sets,fedab5a7-4bc0-4a45-8423-3d3054cece6e,fedab5a7-4bc0-4a45-8423-3d3054cece6e,AOR,
+en-e7aad6d1fbb0,en,McDonald's Collection 2015,Promo catalogue,canonical,catalog.sets,f7706a1b-61bc-4ff9-900c-5841034a5be6,f7706a1b-61bc-4ff9-900c-5841034a5be6,M15,
+en-02f878472b36,en,BREAKthrough,Card set / collection,canonical,catalog.sets,85bda8bb-6ecf-444d-858b-1c2946a0427b,85bda8bb-6ecf-444d-858b-1c2946a0427b,BKT,
+en-62bf8ccf548c,en,BREAKpoint,Card set / collection,canonical,catalog.sets,2ba4eb07-8ffa-4e73-b9f3-78f8bd53d9e9,2ba4eb07-8ffa-4e73-b9f3-78f8bd53d9e9,BKP,
+en-a3e276f60a2a,en,Generations,Card set / collection,canonical,catalog.sets,63a759b9-e68f-481c-89ca-b77635a3f120,63a759b9-e68f-481c-89ca-b77635a3f120,GEN,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-b287631747bd,en,Fates Collide,Card set / collection,canonical,catalog.sets,e40d96fe-ebdb-4c92-9259-6d5086d079bb,e40d96fe-ebdb-4c92-9259-6d5086d079bb,FCO,
+en-8ba7f44ef156,en,Steam Siege,Card set / collection,canonical,catalog.sets,06f60708-8672-47d5-8dd2-4fa63b425efe,06f60708-8672-47d5-8dd2-4fa63b425efe,STS,
+en-c6947a8b9b91,en,McDonald's Collection 2016,Promo catalogue,canonical,catalog.sets,9722bbd8-e6d1-49ac-b080-ff9be30589bc,9722bbd8-e6d1-49ac-b080-ff9be30589bc,M16,
+en-920392a73db9,en,SM Black Star Promos,Promo catalogue,canonical,catalog.sets,c5bc0f58-c30c-4115-acc9-3a6d64420cda,c5bc0f58-c30c-4115-acc9-3a6d64420cda,SMP,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-85e873dafc55,en,Evolutions,Card set / collection,canonical,catalog.sets,be4122a9-7944-449b-af87-f53b14217fd7,be4122a9-7944-449b-af87-f53b14217fd7,EVO,
+en-8b72f8c8ec1f,en,Sun & Moon,Card set / collection,canonical,catalog.sets,ad42d9fa-77e8-4ea4-a591-0591acd4e853,ad42d9fa-77e8-4ea4-a591-0591acd4e853,SUM,
+en-f51be29044a7,en,Guardians Rising,Card set / collection,canonical,catalog.sets,84d8a262-794d-45ee-9d65-ba8528ed1f76,84d8a262-794d-45ee-9d65-ba8528ed1f76,GRI,
+en-c93c5824efe9,en,McDonald's Collection 2017,Promo catalogue,canonical,catalog.sets,d1eb29f2-3d49-447e-8f98-e3994b661350,d1eb29f2-3d49-447e-8f98-e3994b661350,M17,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-3116e68ab4e9,en,Burning Shadows,Card set / collection,canonical,catalog.sets,0fe827db-b417-4ff2-8506-536546338e74,0fe827db-b417-4ff2-8506-536546338e74,BUS,
+en-284cab91a1be,en,Shining Legends,Card set / collection,canonical,catalog.sets,944a1f4e-a7cd-4ff1-a8ec-cc8f35d3c6d0,944a1f4e-a7cd-4ff1-a8ec-cc8f35d3c6d0,SLG,
+en-2fbc7c4dc4aa,en,Crimson Invasion,Card set / collection,canonical,catalog.sets,cc5b8c70-db14-4fa9-af42-4c43a1bedbd0,cc5b8c70-db14-4fa9-af42-4c43a1bedbd0,CIN,
+en-07efccc9871c,en,Ultra Prism,Card set / collection,canonical,catalog.sets,eb6b35a6-91b3-4ff8-b739-a89f072646ef,eb6b35a6-91b3-4ff8-b739-a89f072646ef,UPR,
+en-6d3f72991ea4,en,Forbidden Light,Card set / collection,canonical,catalog.sets,d1bbf0dd-20e9-47f9-927f-7e7a7a555642,d1bbf0dd-20e9-47f9-927f-7e7a7a555642,FLI,
+en-a4e4b7afea78,en,Celestial Storm,Card set / collection,canonical,catalog.sets,01f1a9bb-9eda-4137-a544-c065bb920545,01f1a9bb-9eda-4137-a544-c065bb920545,CES,
+en-91440136da80,en,Dragon Majesty,Card set / collection,canonical,catalog.sets,702e4fd6-5396-43b5-a98f-a736e7dcd48c,702e4fd6-5396-43b5-a98f-a736e7dcd48c,DRM,
+en-b873bbf63462,en,McDonald's Collection 2018,Promo catalogue,canonical,catalog.sets,c770d934-a953-4923-a411-4a17b422bb96,c770d934-a953-4923-a411-4a17b422bb96,M18,
+en-cf9f952e6af6,en,Lost Thunder,Card set / collection,canonical,catalog.sets,d237001c-03b2-424f-8855-6c459ef57b43,d237001c-03b2-424f-8855-6c459ef57b43,LOT,
+en-b58c098ade79,en,Team Up,Card set / collection,canonical,catalog.sets,67484037-191a-4fd6-bf2e-8e2dbf46e36b,67484037-191a-4fd6-bf2e-8e2dbf46e36b,TEU,
+en-332317456664,en,Detective Pikachu,Card set / collection,canonical,catalog.sets,e7ecfeee-b142-47e3-ad78-6fad8841a0e0,e7ecfeee-b142-47e3-ad78-6fad8841a0e0,DET,
+en-2a74b03a3cd0,en,Unbroken Bonds,Card set / collection,canonical,catalog.sets,f77f15b5-a8c7-42be-8f28-297180da8ae3,f77f15b5-a8c7-42be-8f28-297180da8ae3,UNB,
+en-7801e741f632,en,Unified Minds,Card set / collection,canonical,catalog.sets,899893bc-ede1-4d5a-bb04-54bccf247110,899893bc-ede1-4d5a-bb04-54bccf247110,UNM,
+en-d2619d0c94c3,en,Hidden Fates,Card set / collection,canonical,catalog.sets,60749dc8-20cb-428f-a410-35e1200cea03,60749dc8-20cb-428f-a410-35e1200cea03,HIF,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-d02ad07cbaac,en,McDonald's Collection 2019,Promo catalogue,canonical,catalog.sets,0ca6f0b6-6971-4342-8d0b-9c9a44e195e3,0ca6f0b6-6971-4342-8d0b-9c9a44e195e3,M19,
+en-7ad5746df78d,en,SWSH Black Star Promos,Promo catalogue,canonical,catalog.sets,ef15c432-0542-4fee-ba25-b4719b9d4f84,ef15c432-0542-4fee-ba25-b4719b9d4f84,SWSD,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+en-e8cc4c8f7365,en,Cosmic Eclipse,Card set / collection,canonical,catalog.sets,b3e4c7e0-f614-4b04-929a-b8c1cfc8609e,b3e4c7e0-f614-4b04-929a-b8c1cfc8609e,CEC,
+en-0003d347854c,en,Sword & Shield,Card set / collection,canonical,catalog.sets,b6278586-87f3-46cd-8860-85df64612cfc,b6278586-87f3-46cd-8860-85df64612cfc,SSH,
+en-a6fa518f94e3,en,Rebel Clash,Card set / collection,canonical,catalog.sets,564ce799-f9bc-43a1-a70a-bd6d5b0dfe76,564ce799-f9bc-43a1-a70a-bd6d5b0dfe76,RCL,
+en-175e9a92fed7,en,Darkness Ablaze,Card set / collection,canonical,catalog.sets,fef7d309-9879-4639-9e4c-8d80122f0f3a,fef7d309-9879-4639-9e4c-8d80122f0f3a,DAA,
+en-ebcb2fa528a3,en,Pokémon Futsal,Promo catalogue,canonical,catalog.sets,106ceeb1-5af7-4d5d-99ba-d37af82193e8,106ceeb1-5af7-4d5d-99ba-d37af82193e8,FUT20,
+en-11376d4d5559,en,Champion's Path,Card set / collection,canonical,catalog.sets,317430c1-52e0-420f-a17e-2efbcc43dec6,317430c1-52e0-420f-a17e-2efbcc43dec6,CPA,
+en-e1af3cad7dfb,en,Vivid Voltage,Card set / collection,canonical,catalog.sets,c40a79a9-69f9-482b-aa3b-0867059eb66d,c40a79a9-69f9-482b-aa3b-0867059eb66d,VIV,
+en-e731bf8556f5,en,McDonald's Collection 2021,Promo catalogue,canonical,catalog.sets,e41708b6-e58e-4e98-970e-0bb97f4fd03e,e41708b6-e58e-4e98-970e-0bb97f4fd03e,M21,
+en-53c41bd0758e,en,Shining Fates,Card set / collection,canonical,catalog.sets,1b9afc9d-bce8-4cff-819a-884ddf2f8f76,1b9afc9d-bce8-4cff-819a-884ddf2f8f76,SHF,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-5b657a70e898,en,Battle Styles,Card set / collection,canonical,catalog.sets,04dc5049-cf3a-4e5e-ad1e-85c077d03cce,04dc5049-cf3a-4e5e-ad1e-85c077d03cce,BST,
+en-23b00a171eda,en,Chilling Reign,Card set / collection,canonical,catalog.sets,2fd9b10d-505e-44af-9ec6-b01e7da63c1f,2fd9b10d-505e-44af-9ec6-b01e7da63c1f,CRE,
+en-9b73c82bcf48,en,Evolving Skies,Card set / collection,canonical,catalog.sets,5534149f-25ec-4195-b873-7dfbe40e5aac,5534149f-25ec-4195-b873-7dfbe40e5aac,EVS,
+en-e56bf6e72454,en,Celebrations,Card set / collection,canonical,catalog.sets,d8804c74-d99d-4bea-a0ba-9c7a94caa4e2,d8804c74-d99d-4bea-a0ba-9c7a94caa4e2,CEL,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-34452d845f59,en,Fusion Strike,Card set / collection,canonical,catalog.sets,6032d5e3-a6c5-41a5-a2f2-0edb343e092b,6032d5e3-a6c5-41a5-a2f2-0edb343e092b,FST,
+en-6a335273a172,en,Brilliant Stars,Card set / collection,canonical,catalog.sets,c70da69d-57d8-4ea3-9952-b27882fef91e,c70da69d-57d8-4ea3-9952-b27882fef91e,BRS,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-e5998f2862b1,en,Astral Radiance,Card set / collection,canonical,catalog.sets,819d7be8-9fa9-4f20-975c-9328a7ffbd9c,819d7be8-9fa9-4f20-975c-9328a7ffbd9c,ASR,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-7d9965a1af2f,en,Pokémon GO,Card set / collection,canonical,catalog.sets,ffec8524-253a-4e66-884c-7e647a15d40d,ffec8524-253a-4e66-884c-7e647a15d40d,PGO,
+en-e10bc359ed58,en,McDonald's Collection 2022,Promo catalogue,canonical,catalog.sets,172317e0-1eb4-42a7-8624-532af705da6c,172317e0-1eb4-42a7-8624-532af705da6c,M22,
+en-3f3767d11463,en,Trick or Trade 2022,Promo catalogue,canonical,catalog.sets,88ddd26c-c12a-54d9-9e50-440446ce3d1f,,TT22,
+en-b7f9778c3458,en,Lost Origin,Card set / collection,canonical,catalog.sets,d91046d7-be79-4824-960a-4a0979f023a0,d91046d7-be79-4824-960a-4a0979f023a0,LOR,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-e10b0a22e149,en,Play! Pokémon Prize Pack Series One,Promo catalogue,canonical,catalog.sets,591184af-c1c9-5eb2-bf8f-43b2f7c5e08c,,PPS1,
+en-f753129c5e11,en,Silver Tempest,Card set / collection,canonical,catalog.sets,09351915-b132-4be6-b98e-aa773aac65ad,09351915-b132-4be6-b98e-aa773aac65ad,SIT,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-30019a75acfd,en,SVP Black Star Promos,Promo catalogue,canonical,catalog.sets,6700cb91-6deb-45ab-935a-0f262b32dd59,6700cb91-6deb-45ab-935a-0f262b32dd59,SVP,numbered_total_provisional_snapshot; partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-c42442301001,en,Play! Pokémon Prize Pack Series Two,Promo catalogue,canonical,catalog.sets,22991ce9-13bc-5c62-b4b1-69ce2c3a3001,,PPS2,
+en-1cb188ee356a,en,Crown Zenith,Card set / collection,canonical,catalog.sets,42096fc0-51f2-4805-a114-e6f2811a0c49,42096fc0-51f2-4805-a114-e6f2811a0c49,CRZ,aggregate_subset_count_retained_in_source; existing_total_scope_preserved
+en-44b8071286c1,en,SVE Basic Energies,Card set / collection,canonical,catalog.sets,dba20c6b-1ded-41d5-b44e-ad70bbf94ac8,dba20c6b-1ded-41d5-b44e-ad70bbf94ac8,SVE,
+en-ddfbd6b63b20,en,Scarlet & Violet,Card set / collection,canonical,catalog.sets,23addc10-7c42-4f3d-aa94-21a2a6ec6011,23addc10-7c42-4f3d-aa94-21a2a6ec6011,SVI,
+en-9dda3ec7c416,en,Paldea Evolved,Card set / collection,canonical,catalog.sets,33342e0c-da19-4d33-a5c3-df0ede2260f4,33342e0c-da19-4d33-a5c3-df0ede2260f4,PAL,
+en-0a95a524f39c,en,McDonald's Collection 2023,Promo catalogue,canonical,catalog.sets,fc4d1c92-a354-42c1-b4d0-031e4ff6cccc,fc4d1c92-a354-42c1-b4d0-031e4ff6cccc,M23,
+en-9d4845056c98,en,Obsidian Flames,Card set / collection,canonical,catalog.sets,8a4ba2ca-76e9-4f70-b0b4-7074bffe8c75,8a4ba2ca-76e9-4f70-b0b4-7074bffe8c75,OBF,
+en-83f78934a517,en,Play! Pokémon Prize Pack Series Three,Promo catalogue,canonical,catalog.sets,ec707b38-9549-5a8f-af44-58f6887c509b,,PPS3,
+en-2ce37163524d,en,Trick or Trade 2023,Promo catalogue,canonical,catalog.sets,eb3cb1c6-b52b-5877-b84c-d03d335f4f80,,TT23,
+en-c7c12c0f937d,en,151,Card set / collection,canonical,catalog.sets,f2d0385c-1aae-44a9-b301-bf13da9a131e,f2d0385c-1aae-44a9-b301-bf13da9a131e,MEW,
+en-302cbdce5dc6,en,Paradox Rift,Card set / collection,canonical,catalog.sets,5b81a847-50b5-410c-b6a2-c2a50bff76b6,5b81a847-50b5-410c-b6a2-c2a50bff76b6,PAR,
+en-479847d5d9d5,en,Pokémon Trading Card Game Classic,Card set / collection,canonical,catalog.sets,168249e2-376e-575b-8358-9dd8a517c71d,,PTCGC,
+en-5922e3c676f6,en,Paldean Fates,Card set / collection,canonical,catalog.sets,47e83522-7615-40cf-b62a-ffa3c0ad55a6,47e83522-7615-40cf-b62a-ffa3c0ad55a6,PAF,
+en-2b8243fd6d64,en,Play! Pokémon Prize Pack Series Four,Promo catalogue,canonical,catalog.sets,a464543c-f676-5f0e-ba4a-47247220d345,,PPS4,
+en-e482d4044311,en,Temporal Forces,Card set / collection,canonical,catalog.sets,d6df9ecd-74e4-434b-b28c-570fee69a9b9,d6df9ecd-74e4-434b-b28c-570fee69a9b9,TEF,
+en-7986d416b69e,en,Twilight Masquerade,Card set / collection,canonical,catalog.sets,fab8637c-da98-4be7-969e-3f558e71871f,fab8637c-da98-4be7-969e-3f558e71871f,TWM,
+en-e1fef072b77d,en,Shrouded Fable,Card set / collection,canonical,catalog.sets,10cc2b5d-b4e5-4c68-841b-b02b7cc4f06e,10cc2b5d-b4e5-4c68-841b-b02b7cc4f06e,SFA,
+en-a1202513aacb,en,Play! Pokémon Prize Pack Series Five,Promo catalogue,canonical,catalog.sets,3811078a-933c-5dec-9834-8ca0bbf7ee0d,,PPS5,
+en-df740e99a92d,en,Trick or Trade 2024,Promo catalogue,canonical,catalog.sets,f854068d-7eaf-5e9a-8239-0305b672ed22,,TT24,
+en-b8ef2c909f1e,en,Stellar Crown,Card set / collection,canonical,catalog.sets,2a6febb5-52ca-485d-885d-7d0adc094540,2a6febb5-52ca-485d-885d-7d0adc094540,SCR,
+en-33e34a4c782d,en,Surging Sparks,Card set / collection,canonical,catalog.sets,6203fef9-a8e6-4b20-b80a-68447b2166fc,6203fef9-a8e6-4b20-b80a-68447b2166fc,SSP,
+en-1e85d993e9e4,en,McDonald's Collection 2024,Promo catalogue,canonical,catalog.sets,824ba136-9796-464c-8869-b5e495014940,824ba136-9796-464c-8869-b5e495014940,M24,
+en-b86789f303e5,en,Prismatic Evolutions,Card set / collection,canonical,catalog.sets,fb3cd93c-9006-42f5-b026-96a9fedcf269,fb3cd93c-9006-42f5-b026-96a9fedcf269,PRE,
+en-dd51e73f9842,en,Play! Pokémon Prize Pack Series Six,Promo catalogue,canonical,catalog.sets,ef91e43c-206b-51b0-b485-f18662cb5379,,PPS6,
+en-7a6fbbd70315,en,Journey Together,Card set / collection,canonical,catalog.sets,4f3046f3-9ab7-4068-a7df-dbe2b08c263c,4f3046f3-9ab7-4068-a7df-dbe2b08c263c,JTG,
+en-84fa355e03ce,en,Destined Rivals,Card set / collection,canonical,catalog.sets,8794c18f-e977-4e4a-965e-a0cb712435be,8794c18f-e977-4e4a-965e-a0cb712435be,DRI,
+en-a459d84fe9e3,en,Black Bolt,Card set / collection,canonical,catalog.sets,ba4fbfd1-901d-4a00-b27f-a30eb8946bb2,ba4fbfd1-901d-4a00-b27f-a30eb8946bb2,BLK,
+en-a76544a31544,en,White Flare,Card set / collection,canonical,catalog.sets,e7196d4a-f97d-466a-853c-87c58d6456cd,e7196d4a-f97d-466a-853c-87c58d6456cd,WHT,
+en-f900154f1156,en,Play! Pokémon Prize Pack Series Seven,Promo catalogue,canonical,catalog.sets,8145a640-299d-5090-816c-5e707352e2c9,,PPS7,
+en-5e7baa43c285,en,MEP Black Star Promos,Promo catalogue,canonical,catalog.sets,36c13b17-0e5f-42aa-a7c9-9ff7acd71e01,36c13b17-0e5f-42aa-a7c9-9ff7acd71e01,MEP,numbered_total_provisional_snapshot; partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-4cea9dd34e60,en,MEE Basic Energies,Card set / collection,canonical,catalog.sets,6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061,6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061,MEE,
+en-ffa9ac4a086b,en,Mega Evolution,Card set / collection,canonical,catalog.sets,42d59aab-eccf-413f-8c19-d88f63664057,42d59aab-eccf-413f-8c19-d88f63664057,MEG,
+en-12b98e6f9204,en,Phantasmal Flames,Card set / collection,canonical,catalog.sets,977bf107-e10c-4d93-a7a4-3d7b775c5003,977bf107-e10c-4d93-a7a4-3d7b775c5003,PFL,
+en-737b1e423c62,en,Play! Pokémon Prize Pack Series Eight,Promo catalogue,canonical,catalog.sets,9a693e90-88fc-58ee-9f67-1ce7994c90c3,,PPS8,
+en-603ff366eb29,en,Ascended Heroes,Card set / collection,canonical,catalog.sets,ddc668c0-316e-4dab-8c51-625167508fd6,ddc668c0-316e-4dab-8c51-625167508fd6,ASC,
+en-04ad102367c4,en,Perfect Order,Card set / collection,canonical,catalog.sets,a6a2829a-c5e6-444f-8d92-d6e0de9fdf64,a6a2829a-c5e6-444f-8d92-d6e0de9fdf64,POR,
+en-8355779cb5d3,en,Chaos Rising,Card set / collection,canonical,catalog.sets,816ff627-a585-4953-99c4-a15c9b0b80e5,816ff627-a585-4953-99c4-a15c9b0b80e5,CRI,
+en-1d7b80eb920d,en,Play! Pokémon Prize Pack Series Nine,Promo catalogue,canonical,catalog.sets,84e70726-12db-5f91-bf56-be47f233444f,,PPS9,
+en-40b9f502f511,en,Pitch Black,Card set / collection,canonical,catalog.sets,2f77da8e-8199-4634-b30d-385565560731,2f77da8e-8199-4634-b30d-385565560731,PBL,
+en-ceccb90187e4,en,30th Celebration,Card set / collection,canonical,catalog.sets,258cb8e5-c769-540d-9e3c-40d4ed4dafdb,,30C,announced_lower_bound_not_asserted_as_final_total
+en-c2a4826cab63,en,Delta Reign,Card set / collection,canonical,catalog.sets,a1bde625-6996-5451-bcda-fb80fe5b428b,,DLR,numbered_total_minimum_pending_final_checklist
+en-21b02872eb20,en,Black & White Trainer Kit,Product / deck,canonical,catalog.sealed_products,e1093de3-e259-5e84-9044-00a1ae64f827,,TK5,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-6f8abbba436c,en,Diamond & Pearl Trainer Kit,Product / deck,canonical,catalog.sealed_products,ae9b8687-c143-532f-bb93-7e74605daea8,,DP-TK,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-e2138469cc4d,en,EX Trainer Kit,Product / deck,canonical,catalog.sealed_products,0b0ee451-67ea-5577-ac71-80e8396be7df,,EX-TK,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-f5c65c7b0a45,en,EX Trainer Kit 2,Product / deck,canonical,catalog.sealed_products,1a827193-7f30-5f3a-91c9-fc5cb1862c28,,EX-TK2,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-3b501faa2faf,en,HS Trainer Kit,Product / deck,canonical,catalog.sealed_products,4feb2ca7-2463-53b9-8838-5786489161eb,,HS-TK,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-ecc3b9bb3ca7,en,Sun & Moon Trainer Kit: Lycanroc & Alolan Raichu,Product / deck,canonical,catalog.sealed_products,10d63ccd-632f-5118-8f95-5dfddf09ec88,,SM-TK,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-07817e7127e4,en,XY Trainer Kit: Bisharp & Wigglytuff,Product / deck,canonical,catalog.sealed_products,fe589e4b-c6ce-50fe-8c3d-2df4e2e29406,,TK7,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-302071e0cf37,en,XY Trainer Kit: Pikachu Libre & Suicune,Product / deck,canonical,catalog.sealed_products,f1c90fe3-2174-55c8-9c9b-1a5928d7623f,,TK8,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+en-6acc5b28480e,en,XY Trainer Kit: Sylveon & Noivern,Product / deck,canonical,catalog.sealed_products,45b52f53-471a-5ac5-9484-b0c00d7c5bd5,,TK6,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-d722650df667,ja,Expansion Pack,Card set / collection,canonical,catalog.sets,46c7cd20-9ca5-4128-a244-9a04f9a4c9f7,46c7cd20-9ca5-4128-a244-9a04f9a4c9f7,PMCG1,
+ja-e7895419dae9,ja,Pokémon Jungle,Card set / collection,canonical,catalog.sets,241c45d9-b649-4243-8c3d-4524b4e9c74c,241c45d9-b649-4243-8c3d-4524b4e9c74c,PMCG2,
+ja-96cbc157b1b7,ja,Mystery of the Fossils,Card set / collection,canonical,catalog.sets,b53b7df1-df06-44dd-a931-b287efc9aec6,b53b7df1-df06-44dd-a931-b287efc9aec6,PMCG3,
+ja-f556d02e1e51,ja,Rocket Gang,Card set / collection,canonical,catalog.sets,e00ac7f7-8690-407d-a011-5bc5ced0ffca,e00ac7f7-8690-407d-a011-5bc5ced0ffca,PMCG4,
+ja-67f6283ec86c,ja,Expansion Sheet: Vending Series 1 (Blue),Card set / collection,canonical,catalog.sets,e8d5883b-f316-5d4c-8c5f-aad78fa79901,,Vending1,
+ja-9bd76242f73f,ja,Expansion Sheet: Vending Series 2 (Red),Card set / collection,canonical,catalog.sets,62edac7d-61c9-5e00-a9c0-559da144ac55,,Vending2,
+ja-f18120dbfa37,ja,Leaders' Stadium,Card set / collection,canonical,catalog.sets,c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f,c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f,PMCG5,
+ja-5bdb5008be38,ja,Expansion Sheet: Vending Series 3 (Green),Card set / collection,canonical,catalog.sets,9fb9dbe6-6b2f-5c25-b1e1-25bd8eef09f6,,Vending3,
+ja-f204abc8bf9b,ja,Challenge from the Darkness,Card set / collection,canonical,catalog.sets,b6e7c253-6790-49e5-8d54-34e6eb288e68,b6e7c253-6790-49e5-8d54-34e6eb288e68,PMCG6,
+ja-c8ebd015e6c7,ja,Southern Islands,Card set / collection,canonical,catalog.sets,304609ad-aac7-52e4-b4cc-7a8b3a374698,,JA-SI,
+ja-a532d3dde077,ja,"Gold, Silver, to a New World...",Card set / collection,canonical,catalog.sets,769fa22e-e603-41a8-b62b-920a4abc660b,769fa22e-e603-41a8-b62b-920a4abc660b,Neo1,
+ja-4c0b4b1b444a,ja,Crossing the Ruins...,Card set / collection,canonical,catalog.sets,e60f305b-5ad6-4964-b6c6-636788481ca5,e60f305b-5ad6-4964-b6c6-636788481ca5,Neo2,
+ja-14ecd336f6c4,ja,Awakening Legends,Card set / collection,canonical,catalog.sets,a15481a7-410b-4a98-8695-3bba0db9d226,a15481a7-410b-4a98-8695-3bba0db9d226,Neo3,
+ja-1ab5b2841927,ja,"Darkness, and to Light...",Card set / collection,canonical,catalog.sets,cdaacf04-0a7c-452d-acb0-e02ca3907106,cdaacf04-0a7c-452d-acb0-e02ca3907106,Neo4,
+ja-694d6a421da5,ja,P Promotional cards,Promo catalogue,canonical,catalog.sets,eadcc81a-f721-50d0-97aa-48aec299c4d2,,P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-6e4fae6e522b,ja,Pokémon Card★VS,Card set / collection,canonical,catalog.sets,f1b5f7cb-2472-496b-8587-1ceab0233632,f1b5f7cb-2472-496b-8587-1ceab0233632,VS,
+ja-ddb55a1b97e2,ja,J Promotional cards,Promo catalogue,canonical,catalog.sets,ca805a66-9a17-55a6-94e4-797b971e1b6e,,J,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-bd87aa858368,ja,Pokémon Card★web,Card set / collection,canonical,catalog.sets,cdb922a5-eaec-4696-ae6f-3ad4d263c66b,cdb922a5-eaec-4696-ae6f-3ad4d263c66b,Web,
+ja-19b0125d0ef2,ja,Base Expansion Pack,Card set / collection,canonical,catalog.sets,2d5f077d-14bb-4fb5-b565-1f4e10c078c9,2d5f077d-14bb-4fb5-b565-1f4e10c078c9,e1,
+ja-50f9d368a5bd,ja,T Promotional cards,Promo catalogue,canonical,catalog.sets,5983fbc3-fc89-5078-a5c5-be3bf73b59b7,,T,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-91f917868d08,ja,McDonald's Original Minimum★Pack,Promo catalogue,canonical,catalog.sets,056f5967-f391-5f94-9ed0-5e8f2c6d93c5,,MCD02,
+ja-1b38a138c59c,ja,The Town on No Map,Card set / collection,canonical,catalog.sets,c6c46c29-2f36-4586-b18f-af1269e684d2,c6c46c29-2f36-4586-b18f-af1269e684d2,e2,
+ja-61b293a47b88,ja,Wind from the Sea,Card set / collection,canonical,catalog.sets,82510bd3-e42d-40ca-b7a1-a4a384ab42fa,82510bd3-e42d-40ca-b7a1-a4a384ab42fa,e3,
+ja-6a862845aa36,ja,Split Earth,Card set / collection,canonical,catalog.sets,0ec33578-645f-4711-a3fe-8ea66090781e,0ec33578-645f-4711-a3fe-8ea66090781e,e4,
+ja-e4c00d42f6bb,ja,Mysterious Mountains,Card set / collection,canonical,catalog.sets,af405f2b-1a20-4234-a6f1-ad71711eb116,af405f2b-1a20-4234-a6f1-ad71711eb116,e5,
+ja-41afcbcca321,ja,ADV-P Promotional cards,Promo catalogue,canonical,catalog.sets,ed31ad69-fd9c-5138-bbe0-5498b6429a46,,ADV-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-d25bf55a9cb2,ja,PLAY Promotional cards,Promo catalogue,canonical,catalog.sets,0887772f-ed1b-50ac-ae83-6bb6282ca177,,PLAY,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-d5664388d43a,ja,ADV Expansion Pack,Card set / collection,canonical,catalog.sets,13ff8457-ce34-492d-b8a0-292fd59be9a7,13ff8457-ce34-492d-b8a0-292fd59be9a7,ADV1,
+ja-b1f20b82870a,ja,Miracle of the Desert,Card set / collection,canonical,catalog.sets,e75e6a35-beb5-4ced-a2c9-d146f471a3fd,e75e6a35-beb5-4ced-a2c9-d146f471a3fd,ADV2,
+ja-65c3523196a0,ja,Rulers of the Heavens,Card set / collection,canonical,catalog.sets,3ff19dd1-048a-49b1-ad15-6a07c7351a46,3ff19dd1-048a-49b1-ad15-6a07c7351a46,ADV3,
+ja-ac97c5a93e93,ja,Magma VS Aqua: Two Ambitions,Card set / collection,canonical,catalog.sets,ab5b47d9-7548-4f9f-96fe-30a12f041d78,ab5b47d9-7548-4f9f-96fe-30a12f041d78,ADV-MVA,
+ja-c2fcd6909311,ja,Undone Seal,Card set / collection,canonical,catalog.sets,2e6d5f2e-8528-439f-9506-e4c84df8f2dd,2e6d5f2e-8528-439f-9506-e4c84df8f2dd,ADV4,
+ja-69e99c848c8f,ja,PCG-P Promotional cards,Promo catalogue,canonical,catalog.sets,520b115f-4894-50d1-b6e8-5310288c2449,,PCG-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-f4ad1a5de8de,ja,Flight of Legends,Card set / collection,canonical,catalog.sets,8063eabc-362a-4f15-a4ec-4ed73824252d,8063eabc-362a-4f15-a4ec-4ed73824252d,PCG1,
+ja-fbdbd21d3497,ja,Clash of the Blue Sky,Card set / collection,canonical,catalog.sets,9fa08d47-d2cd-4829-85b6-819692a6850a,9fa08d47-d2cd-4829-85b6-819692a6850a,PCG2,
+ja-ad3e200bd99c,ja,Rocket Gang Strikes Back,Card set / collection,canonical,catalog.sets,12f2bb10-ec15-4783-bc9b-c946546a1abc,12f2bb10-ec15-4783-bc9b-c946546a1abc,PCG3,
+ja-9dd6c248531c,ja,"Golden Sky, Silvery Ocean",Card set / collection,canonical,catalog.sets,af6617ed-ed99-445f-8869-5a330740efc2,af6617ed-ed99-445f-8869-5a330740efc2,PCG4,
+ja-9b8346044725,ja,Mirage Forest,Card set / collection,canonical,catalog.sets,f8cb8c30-41dc-42a3-977a-23baba96fa69,f8cb8c30-41dc-42a3-977a-23baba96fa69,PCG5,
+ja-575fbe513ad9,ja,Holon Research Tower,Card set / collection,canonical,catalog.sets,8fdf462f-ca9c-47e7-a92d-1936b082a12d,8fdf462f-ca9c-47e7-a92d-1936b082a12d,PCG6,
+ja-ee699b245332,ja,Holon Phantom,Card set / collection,canonical,catalog.sets,421a8323-4094-4c7f-8622-fb6af390becc,421a8323-4094-4c7f-8622-fb6af390becc,PCG7,
+ja-18798a4981e5,ja,Miracle Crystal,Card set / collection,canonical,catalog.sets,d832f428-8d51-4ac0-a3cf-a5d38bddb88d,d832f428-8d51-4ac0-a3cf-a5d38bddb88d,PCG8,
+ja-8052362cd40f,ja,Offense and Defense of the Furthest Ends,Card set / collection,canonical,catalog.sets,b5ef438a-ddcb-4093-8c9b-572639565af5,b5ef438a-ddcb-4093-8c9b-572639565af5,PCG9,
+ja-ac539985be33,ja,Space-Time Creation: Diamond Collection,Card set / collection,canonical,catalog.sets,6a3122a8-9233-5488-94ea-a2c538451251,,DP1-D,
+ja-88bfb2a6b618,ja,Space-Time Creation: Pearl Collection,Card set / collection,canonical,catalog.sets,e360da33-32f4-5148-86d6-5a296132d4ab,,DP1-P,
+ja-4f36e9f81e8a,ja,DP-P Promotional cards,Promo catalogue,canonical,catalog.sets,9e5ea94d-e9a1-5237-8d50-ce6d0be6ec91,,DP-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-e5de102d35c9,ja,Secret of the Lakes,Card set / collection,canonical,catalog.sets,528e17b5-e457-5b1f-a6dd-9842ddb85681,,DP2,
+ja-8b06d2da9b06,ja,PPP Promotional cards,Promo catalogue,canonical,catalog.sets,1b15ebcf-80ed-50e9-8b6a-292ac2ffa19b,,PPP,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-9f086f3cb6b7,ja,Shining Darkness,Card set / collection,canonical,catalog.sets,cff4f0ae-5a54-5169-b2ef-a90ca807096a,,DP3,
+ja-f9484ea5a0db,ja,World Champions Pack,Card set / collection,canonical,catalog.sets,81c25448-8d94-4736-a1c6-608597bc9622,81c25448-8d94-4736-a1c6-608597bc9622,PCG10,
+ja-99455347bdc0,ja,Movie 10th Anniversary Premium Sheet,Card set / collection,canonical,catalog.sets,10679a32-808f-5e0e-be7c-f41d93be702c,,MOV10,
+ja-55740d850232,ja,Dawn Dash,Card set / collection,canonical,catalog.sets,f6ee83e1-e346-516a-833b-3ca5c3c6aa21,,DP4-Dawn,
+ja-366d4a2e5f45,ja,Moonlit Pursuit,Card set / collection,canonical,catalog.sets,04730c29-ba77-589f-9e42-16bbc2a6595f,,DP4-Moon,
+ja-f2ff12dfa982,ja,Cry from the Mysterious,Card set / collection,canonical,catalog.sets,2724955d-fd5a-5a3e-a343-cf47446c4f73,,DP5-Cry,
+ja-c285050d1f0d,ja,Temple of Anger,Card set / collection,canonical,catalog.sets,527e912a-0e90-5e78-96e9-79c02bb4c0c2,,DP5-Temple,
+ja-36bd2d9bbb54,ja,Intense Fight in the Destroyed Sky,Card set / collection,canonical,catalog.sets,83a27342-71ac-51e7-a5ed-406a2c313f01,,DP6,
+ja-6522461d7ad2,ja,Movie Commemoration Premium Sheet,Card set / collection,canonical,catalog.sets,3724b8b6-7cb6-54d8-a034-2262e1d25dfd,,MOV11,
+ja-7509d3f988ca,ja,DPt-P Promotional cards,Promo catalogue,canonical,catalog.sets,d471f3eb-dcff-5c6c-ad14-bb8c9b0876a8,,DPt-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-cd5d6efb8f68,ja,Galactic's Conquest,Card set / collection,canonical,catalog.sets,b364d4ca-e272-58ea-bd2c-c4bd554e95b5,,DPt1,
+ja-2305f796724b,ja,Bonds to the End of Time,Card set / collection,canonical,catalog.sets,14a8842a-2bcf-5f53-b280-b6cb95a46108,,DPt2,
+ja-1848e7ac2f76,ja,Beat of the Frontier,Card set / collection,canonical,catalog.sets,ea3514b6-7bec-59c4-94a1-a4e28d48aad7,,DPt3,
+ja-0b3474b08955,ja,Advent of Arceus,Card set / collection,canonical,catalog.sets,baf775b5-329b-534c-9c2c-9897687747e6,,DPt4,
+ja-6a0876b64cf1,ja,L-P Promotional cards,Promo catalogue,canonical,catalog.sets,cf0ca597-b60c-5940-94d9-2a9282c7efb0,,L-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-47b20ad63664,ja,HeartGold Collection,Card set / collection,canonical,catalog.sets,fa59f8a0-dac4-4de7-aad9-2c6efead8ed6,fa59f8a0-dac4-4de7-aad9-2c6efead8ed6,L1a,
+ja-d1b8743147a9,ja,SoulSilver Collection,Card set / collection,canonical,catalog.sets,e8e16a23-fc7a-4ec8-abfe-b74448fa5f27,e8e16a23-fc7a-4ec8-abfe-b74448fa5f27,L1b,
+ja-14fe79e19ee3,ja,Reviving Legends,Card set / collection,canonical,catalog.sets,5801c250-0aca-4282-bfce-28ecbe3b5ee0,5801c250-0aca-4282-bfce-28ecbe3b5ee0,L2,
+ja-0fdbb9b7ff7c,ja,Lost Link,Card set / collection,canonical,catalog.sets,7dbeff79-cfb7-4ac8-8a4f-d7c73a523349,7dbeff79-cfb7-4ac8-8a4f-d7c73a523349,LL,
+ja-6b4a3e2ee98a,ja,Clash at the Summit,Card set / collection,canonical,catalog.sets,2f857613-7720-426d-be33-d2b71d6304e2,2f857613-7720-426d-be33-d2b71d6304e2,L3,
+ja-7f31002fd758,ja,World Collection,Card set / collection,canonical,catalog.sets,2658c9dd-c602-5bdf-9659-fd83793f8ee9,,WC10,
+ja-375d68f5afb5,ja,Collection Sheet Journey Partners,Card set / collection,canonical,catalog.sets,5bd77301-aaa1-5193-9b26-a9d73bc6b93e,,CS1,
+ja-55ccb6ad65f9,ja,BW-P Promotional cards,Promo catalogue,canonical,catalog.sets,e611cdb3-ac1d-5b54-a81a-102b16b344e5,,BW-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-0792c3a06e5e,ja,Black Collection,Card set / collection,canonical,catalog.sets,9302cd52-ff03-5e93-bc91-59c1ece923d2,,BW1-Black,
+ja-343ee8958d6b,ja,White Collection,Card set / collection,canonical,catalog.sets,bab270a7-c0c1-5af0-a6d7-7fd044bb5883,,BW1-White,
+ja-ecb9396be7bc,ja,Red Collection,Card set / collection,canonical,catalog.sets,99461540-5406-54c4-960d-cfb9d169e7a2,,BW2,
+ja-56563c34a89e,ja,Hail Blizzard,Card set / collection,canonical,catalog.sets,9ac1c40a-55e0-52cb-9fd4-2915a6d1e4c7,,BW3-Hail,
+ja-aaca389707bd,ja,Psycho Drive,Card set / collection,canonical,catalog.sets,b407f0ce-3bc1-5c8a-a619-eb9e29c48931,,BW3-Psycho,
+ja-96ef806e2324,ja,Dark Rush,Card set / collection,canonical,catalog.sets,faa8fcf7-f84d-5661-818a-ed43511e35fd,,BW4,
+ja-344bb24cd8c0,ja,Dragon Selection,Card set / collection,canonical,catalog.sets,9f3a8601-340c-55a4-b57a-bc4f361539ed,,DS,
+ja-38d355385584,ja,Dragon Blade,Card set / collection,canonical,catalog.sets,f4c76708-6cfc-5925-b771-470a221ac494,,BW5-Blade,
+ja-cb452c3959d0,ja,Dragon Blast,Card set / collection,canonical,catalog.sets,b538c0b3-e525-5164-8b08-a1229226e00a,,BW5-Blast,
+ja-9d708a7a2d48,ja,Cold Flare,Card set / collection,canonical,catalog.sets,48a5d306-2be2-5833-8db3-3cc4d288f5e3,,BW6-Cold,
+ja-cf12abfb207a,ja,Freeze Bolt,Card set / collection,canonical,catalog.sets,198e3c12-b5c2-56eb-a3ae-eb819d7b7e9f,,BW6-Freeze,
+ja-344a8d566d5b,ja,Plasma Gale,Card set / collection,canonical,catalog.sets,26bc18f0-c8dc-5715-aeb8-cf5c258b0f37,,BW7,
+ja-2d2ccae25348,ja,Spiral Force,Card set / collection,canonical,catalog.sets,e83eaa0e-4027-5e0d-a880-a993075e0af6,,BW8-Spiral,
+ja-ca4ba12512ac,ja,Thunder Knuckle,Card set / collection,canonical,catalog.sets,3b7279f5-1697-59fb-a060-c4f1922fe992,,BW8-Thunder,
+ja-5ae629dc0d26,ja,Shiny Collection,Card set / collection,canonical,catalog.sets,631c9415-d848-5caf-a814-2098e8d91bb8,,SC,
+ja-595faa0ef482,ja,Megalo Cannon,Card set / collection,canonical,catalog.sets,c7213f94-5704-5368-a5e9-9a64534a1dbb,,BW9,
+ja-c52b489f0897,ja,EX Battle Boost,Card set / collection,canonical,catalog.sets,6cc98dde-ed2d-553b-acc0-ae938627e419,,EBB,
+ja-6abb84724d30,ja,XY-P Promotional cards,Promo catalogue,canonical,catalog.sets,27df62d8-ca66-5048-a7d6-065db8165509,,XY-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-89b882805fa9,ja,Collection X,Card set / collection,canonical,catalog.sets,80507fc7-d1db-433d-9374-4efa9ee190b4,80507fc7-d1db-433d-9374-4efa9ee190b4,XY1-X,
+ja-746fc064572f,ja,Collection Y,Card set / collection,canonical,catalog.sets,3ee8597c-8aef-4c8c-84a7-07b9870cb35c,3ee8597c-8aef-4c8c-84a7-07b9870cb35c,XY1-Y,
+ja-65fb81566e25,ja,Wild Blaze,Card set / collection,canonical,catalog.sets,08b708f9-3971-4219-926d-4f7accbecaf1,08b708f9-3971-4219-926d-4f7accbecaf1,XY2,
+ja-d7f21b942202,ja,Rising Fist,Card set / collection,canonical,catalog.sets,38994222-f21c-45b7-9546-8033947af026,38994222-f21c-45b7-9546-8033947af026,XY3,
+ja-c5f3e48649e7,ja,Phantom Gate,Card set / collection,canonical,catalog.sets,4456ff35-8059-4c89-bf32-72ee17974c9f,4456ff35-8059-4c89-bf32-72ee17974c9f,XY4,
+ja-9081f4c9a4f2,ja,Gaia Volcano,Card set / collection,canonical,catalog.sets,29935849-0eac-4671-b4d0-8bdee32d6cb4,29935849-0eac-4671-b4d0-8bdee32d6cb4,XY5-Gaia,
+ja-f78ca0230f1d,ja,Tidal Storm,Card set / collection,canonical,catalog.sets,a930e0e2-ed87-4a87-89ef-493b529eee93,a930e0e2-ed87-4a87-89ef-493b529eee93,XY5-Tidal,
+ja-3e831f8ff73d,ja,Magma Gang VS Aqua Gang: Double Crisis,Card set / collection,canonical,catalog.sets,309571d8-e64b-4859-87b1-692b7e1e8083,309571d8-e64b-4859-87b1-692b7e1e8083,CP1,
+ja-ed3ad6afcabe,ja,Emerald Break,Card set / collection,canonical,catalog.sets,1b5bed18-c3ec-4a9f-a022-caf94a6199f8,1b5bed18-c3ec-4a9f-a022-caf94a6199f8,XY6,
+ja-cb2aed7a9cd5,ja,Bandit Ring,Card set / collection,canonical,catalog.sets,ae0e96bd-371a-44ca-8090-e773a4f10d5e,ae0e96bd-371a-44ca-8090-e773a4f10d5e,XY7,
+ja-48a193b47fdc,ja,Legendary Shine Collection,Card set / collection,canonical,catalog.sets,92c2515d-e527-4909-8ecd-27b5bef5a4b6,92c2515d-e527-4909-8ecd-27b5bef5a4b6,CP2,
+ja-a9d8ad9a0436,ja,Blue Shock,Card set / collection,canonical,catalog.sets,13ef05bd-d69c-4a8f-aa8d-67b7d3cded50,13ef05bd-d69c-4a8f-aa8d-67b7d3cded50,XY8-Blue,
+ja-cd5a3e4dd99f,ja,Red Flash,Card set / collection,canonical,catalog.sets,dbd76042-7f79-4dae-bbf4-5a096bc58e12,dbd76042-7f79-4dae-bbf4-5a096bc58e12,XY8-Red,
+ja-53c995f90d44,ja,Rage of the Broken Heavens,Card set / collection,canonical,catalog.sets,9cacae59-fc63-4335-ade1-d5f81373c247,9cacae59-fc63-4335-ade1-d5f81373c247,XY9,
+ja-c41fc30a9d3b,ja,PokéKyun Collection,Card set / collection,canonical,catalog.sets,d9394254-48b4-4f36-8636-a9f358dd0742,d9394254-48b4-4f36-8636-a9f358dd0742,CP3,
+ja-42c1eb351264,ja,Awakening Psychic King,Card set / collection,canonical,catalog.sets,f2f1d254-4bf3-474f-8ac1-5302b66caadf,f2f1d254-4bf3-474f-8ac1-5302b66caadf,XY10,
+ja-425135e40e84,ja,Premium Champion Pack EX×M×BREAK,Card set / collection,canonical,catalog.sets,5e580651-2147-468d-840b-765882875199,5e580651-2147-468d-840b-765882875199,CP4,
+ja-3f66b633b386,ja,Cruel Traitor,Card set / collection,canonical,catalog.sets,9eaba296-0320-44ac-a684-004b5493703b,9eaba296-0320-44ac-a684-004b5493703b,XY11-Cruel,
+ja-d22d64184649,ja,Fever-Burst Fighter,Card set / collection,canonical,catalog.sets,25233d9e-6a9e-459e-83fd-cb2a27353955,25233d9e-6a9e-459e-83fd-cb2a27353955,XY11-Fever,
+ja-5bb7d768e695,ja,Mythical & Legendary Dream Shine Collection,Card set / collection,canonical,catalog.sets,e7f6c5dd-06a9-4b7b-a906-dab5dc4db302,e7f6c5dd-06a9-4b7b-a906-dab5dc4db302,CP5,
+ja-dceb8793c7f2,ja,Expansion Pack 20th Anniversary,Card set / collection,canonical,catalog.sets,68366d94-f72c-4025-b7e9-4b7fb8ad8071,68366d94-f72c-4025-b7e9-4b7fb8ad8071,CP6,
+ja-83fbd2dead73,ja,SM-P Promotional cards,Promo catalogue,canonical,catalog.sets,70e88cc9-2549-515e-9c73-e771203bd0ad,,SM-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-cb8792f6d286,ja,Pikachu's New Friends,Card set / collection,canonical,catalog.sets,24d8e1a3-0706-4be3-87e2-b2224f680eb9,24d8e1a3-0706-4be3-87e2-b2224f680eb9,SM0,
+ja-bc403e9d48e8,ja,Collection Moon,Card set / collection,canonical,catalog.sets,61ec9fe1-faa4-4d6b-a532-e8a44354a55e,61ec9fe1-faa4-4d6b-a532-e8a44354a55e,SM1M,
+ja-ca73b1e67c2d,ja,Collection Sun,Card set / collection,canonical,catalog.sets,eab5aeee-9eb0-4bbb-bac3-96f2da23b491,eab5aeee-9eb0-4bbb-bac3-96f2da23b491,SM1S,
+ja-8df82023a344,ja,Sun & Moon,Card set / collection,canonical,catalog.sets,151b0439-551d-49d6-bd35-32c4d3a2de4f,151b0439-551d-49d6-bd35-32c4d3a2de4f,SM1+,
+ja-55e6d097e410,ja,Alolan Moonlight,Card set / collection,canonical,catalog.sets,adc01317-eecf-4615-abaa-d6f6cd37bfb7,adc01317-eecf-4615-abaa-d6f6cd37bfb7,SM2L,
+ja-971cdfb65f2d,ja,Islands Await You,Card set / collection,canonical,catalog.sets,90d3234a-9c0c-4ccc-9f39-6584223e269b,90d3234a-9c0c-4ccc-9f39-6584223e269b,SM2K,
+ja-b6756f39f2c9,ja,Facing a New Trial,Card set / collection,canonical,catalog.sets,b5e09d26-0559-4d51-b6fb-09268a860a7e,b5e09d26-0559-4d51-b6fb-09268a860a7e,SM2+,
+ja-cde9902fee50,ja,THE BEST OF XY,Card set / collection,canonical,catalog.sets,d9d34649-2807-5bfe-92cd-a49ffd27940b,,XY,
+ja-67b1962747e8,ja,Darkness that Consumes Light,Card set / collection,canonical,catalog.sets,1201d6b1-fa7e-45ac-bc22-5b2ca0f9f3bc,1201d6b1-fa7e-45ac-bc22-5b2ca0f9f3bc,SM3N,
+ja-666ab116cab0,ja,To Have Seen the Battle Rainbow,Card set / collection,canonical,catalog.sets,7c4efad5-3391-4462-b911-f821c1f263dd,7c4efad5-3391-4462-b911-f821c1f263dd,SM3H,
+ja-a4a29f2d81f7,ja,Shining Legends,Card set / collection,canonical,catalog.sets,efeba6f7-0d4f-48ed-a6c9-e090bf0b4eda,efeba6f7-0d4f-48ed-a6c9-e090bf0b4eda,SM3+,
+ja-eada6233c89e,ja,Awakened Heroes,Card set / collection,canonical,catalog.sets,499d5b99-a6e2-47d5-ae7a-43c530430955,499d5b99-a6e2-47d5-ae7a-43c530430955,SM4S,
+ja-a60336de3244,ja,Ultradimensional Beasts,Card set / collection,canonical,catalog.sets,e67e975c-a112-4a8a-816d-8233cc779ee2,e67e975c-a112-4a8a-816d-8233cc779ee2,SM4A,
+ja-d804e36e664f,ja,GX Battle Boost,Card set / collection,canonical,catalog.sets,366d4855-590a-4d45-b2d4-836d06b43452,366d4855-590a-4d45-b2d4-836d06b43452,SM4+,
+ja-ef1513ab4f6e,ja,Ultra Moon,Card set / collection,canonical,catalog.sets,f5e90e91-1366-4e6e-bd42-02cf0ed84790,f5e90e91-1366-4e6e-bd42-02cf0ed84790,SM5M,
+ja-584b5e55b1bd,ja,Ultra Sun,Card set / collection,canonical,catalog.sets,b322af01-58cc-4e5a-8a82-b7ff829cb9c0,b322af01-58cc-4e5a-8a82-b7ff829cb9c0,SM5S,
+ja-83edef567ded,ja,Ultra Force,Card set / collection,canonical,catalog.sets,759e4007-8afe-41e1-9a61-68adb0a05c00,759e4007-8afe-41e1-9a61-68adb0a05c00,SM5+,
+ja-6a519d00febd,ja,Forbidden Light,Card set / collection,canonical,catalog.sets,04fe9fe1-7206-4215-b9ab-ccea25916593,04fe9fe1-7206-4215-b9ab-ccea25916593,SM6,
+ja-c0cc49fe109e,ja,Dragon Storm,Card set / collection,canonical,catalog.sets,29fb4725-1b4c-4f62-9737-0730fdcdadea,29fb4725-1b4c-4f62-9737-0730fdcdadea,SM6a,
+ja-5bae8fb35c26,ja,Champion Road,Card set / collection,canonical,catalog.sets,c7d02c37-c9b3-4d8b-ac5c-59adfe01424d,c7d02c37-c9b3-4d8b-ac5c-59adfe01424d,SM6b,
+ja-fd2cafa865f0,ja,Sky-Splitting Charisma,Card set / collection,canonical,catalog.sets,71a1e194-2c3d-46d0-9584-25987bde2841,71a1e194-2c3d-46d0-9584-25987bde2841,SM7,
+ja-571ae5dabd50,ja,Thunderclap Spark,Card set / collection,canonical,catalog.sets,728a72e3-7bf2-4436-8ea1-92b54a8d38f6,728a72e3-7bf2-4436-8ea1-92b54a8d38f6,SM7a,
+ja-4f05943164ce,ja,Fairy Rise,Card set / collection,canonical,catalog.sets,f34565be-80cb-47cb-914b-b4c20984cf79,f34565be-80cb-47cb-914b-b4c20984cf79,SM7b,
+ja-cdebc1c8262e,ja,Super-Burst Impact,Card set / collection,canonical,catalog.sets,3e80bfaf-77fd-4f5d-82ec-4e407a74d722,3e80bfaf-77fd-4f5d-82ec-4e407a74d722,SM8,
+ja-3eb2e555b4ff,ja,Dark Order,Card set / collection,canonical,catalog.sets,3466c5e7-e660-4467-a756-44f4d5f7a853,3466c5e7-e660-4467-a756-44f4d5f7a853,SM8a,
+ja-14c79248f8f3,ja,GX Ultra Shiny,Card set / collection,canonical,catalog.sets,eb72605f-506f-4ab5-87f7-1aafeb95a278,eb72605f-506f-4ab5-87f7-1aafeb95a278,SM8b,
+ja-44e48422e5bf,ja,Tag Bolt,Card set / collection,canonical,catalog.sets,428cd43a-548e-4482-a81f-0d06b2869835,428cd43a-548e-4482-a81f-0d06b2869835,SM9,
+ja-1492e357d239,ja,Night Unison,Card set / collection,canonical,catalog.sets,05f31b7b-957f-4b0d-a321-29ca7edde5d4,05f31b7b-957f-4b0d-a321-29ca7edde5d4,SM9a,
+ja-1d013958f902,ja,Full Metal Wall,Card set / collection,canonical,catalog.sets,30e027c6-8973-4b8a-93b8-682251f39f28,30e027c6-8973-4b8a-93b8-682251f39f28,SM9b,
+ja-8a5c47e5fb6a,ja,Double Blaze,Card set / collection,canonical,catalog.sets,520d745d-3f2d-4921-8ecd-4e4ff695493a,520d745d-3f2d-4921-8ecd-4e4ff695493a,SM10,
+ja-c4a139835b63,ja,GG End,Card set / collection,canonical,catalog.sets,d9378aeb-aa81-4cbe-b790-c8432b66aeb5,d9378aeb-aa81-4cbe-b790-c8432b66aeb5,SM10a,
+ja-30e4f6411a6b,ja,Movie Special Pack Great Detective Pikachu,Card set / collection,canonical,catalog.sets,59ec63a0-5a2a-452b-a03c-90d9264b90da,59ec63a0-5a2a-452b-a03c-90d9264b90da,SMP2,
+ja-817e33c42235,ja,Sky Legend,Card set / collection,canonical,catalog.sets,2e159940-3f5c-4ec9-8805-c53219263641,2e159940-3f5c-4ec9-8805-c53219263641,SM10b,
+ja-6c05c1b394e2,ja,Miracle Twin,Card set / collection,canonical,catalog.sets,d0dbab35-0a77-4dcf-a464-88bb0950bdc8,d0dbab35-0a77-4dcf-a464-88bb0950bdc8,SM11,
+ja-4567e4111ab9,ja,Remix Bout,Card set / collection,canonical,catalog.sets,54c662ed-8c6b-428c-b07d-1bb58e74f5a0,54c662ed-8c6b-428c-b07d-1bb58e74f5a0,SM11a,
+ja-b362201ebfc8,ja,Dream League,Card set / collection,canonical,catalog.sets,5249f6c6-8418-41fe-8283-af5948b26c63,5249f6c6-8418-41fe-8283-af5948b26c63,SM11b,
+ja-360585a4f68e,ja,Alter Genesis,Card set / collection,canonical,catalog.sets,80ffb692-f29d-450a-95eb-a3ddd60257b8,80ffb692-f29d-450a-95eb-a3ddd60257b8,SM12,
+ja-3470002c85af,ja,TAG TEAM GX: Tag All Stars,Card set / collection,canonical,catalog.sets,fe68fe5a-4e40-477a-8bcc-0fa35ef392ef,fe68fe5a-4e40-477a-8bcc-0fa35ef392ef,SM12a,
+ja-68e24f4b9e33,ja,S-P Promotional cards,Promo catalogue,canonical,catalog.sets,d45d21f2-6240-5584-9b01-4acf3e2297d9,,S-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-9a9a258e145f,ja,Shield,Card set / collection,canonical,catalog.sets,914a4e3c-d77c-4ac6-8b88-e38cd276d282,914a4e3c-d77c-4ac6-8b88-e38cd276d282,S1H,
+ja-6ca3924b3841,ja,Sword,Card set / collection,canonical,catalog.sets,5287277e-bcbe-4f21-b2d3-c7187bc752dc,5287277e-bcbe-4f21-b2d3-c7187bc752dc,S1W,
+ja-41bc1f260fcc,ja,VMAX Rising,Card set / collection,canonical,catalog.sets,41462e36-155b-40f1-92ee-29a94b4cb353,41462e36-155b-40f1-92ee-29a94b4cb353,S1a,
+ja-4b1b5f2dbf56,ja,Rebellion Crash,Card set / collection,canonical,catalog.sets,50370e02-5cc9-44ce-95bd-44743d477934,50370e02-5cc9-44ce-95bd-44743d477934,S2,
+ja-bc61668ecd97,ja,Explosive Walker,Card set / collection,canonical,catalog.sets,d64f8486-fa52-4f0d-be4d-be6dc27d1671,d64f8486-fa52-4f0d-be4d-be6dc27d1671,S2a,
+ja-fe67deb06caa,ja,Infinity Zone,Card set / collection,canonical,catalog.sets,fa32c0cb-7818-4123-ab6e-9f6cfe2a9950,fa32c0cb-7818-4123-ab6e-9f6cfe2a9950,S3,
+ja-5dec0101b162,ja,Legendary Heartbeat,Card set / collection,canonical,catalog.sets,36df02c6-0228-48fc-bb24-b1d73952cc94,36df02c6-0228-48fc-bb24-b1d73952cc94,S3a,
+ja-d6983c9293ae,ja,Amazing Volt Tackle,Card set / collection,canonical,catalog.sets,bc55a6dd-e9c1-4413-a5a7-a4c1d2a37a90,bc55a6dd-e9c1-4413-a5a7-a4c1d2a37a90,S4,
+ja-5c76d8bbd31d,ja,Shiny Star V,Card set / collection,canonical,catalog.sets,9bd12a10-0bc3-4f75-ba74-d62c50293184,9bd12a10-0bc3-4f75-ba74-d62c50293184,S4a,
+ja-ad7c897babc2,ja,Rapid Strike Master,Card set / collection,canonical,catalog.sets,d770730a-ab9c-4e53-acfa-aff8cbec8c0b,d770730a-ab9c-4e53-acfa-aff8cbec8c0b,S5R,
+ja-2b362d2b173a,ja,Single Strike Master,Card set / collection,canonical,catalog.sets,b4f065d4-9b38-4489-a055-cc6cc310784f,b4f065d4-9b38-4489-a055-cc6cc310784f,S5I,
+ja-828974f65bfc,ja,Peerless Fighters,Card set / collection,canonical,catalog.sets,84bcceee-6caf-4ca9-b3d9-883b42773dfc,84bcceee-6caf-4ca9-b3d9-883b42773dfc,S5a,
+ja-1dc54d0d52c9,ja,Jet-Black Spirit,Card set / collection,canonical,catalog.sets,bbb71d0a-367a-466e-970f-2f841fea6e98,bbb71d0a-367a-466e-970f-2f841fea6e98,S6K,
+ja-c54e31e73b73,ja,Silver Lance,Card set / collection,canonical,catalog.sets,60d3fc64-7e36-473b-ae5c-b071c5aa6c98,60d3fc64-7e36-473b-ae5c-b071c5aa6c98,S6H,
+ja-9ff3481acdf9,ja,Eevee Heroes,Card set / collection,canonical,catalog.sets,5659e6b4-48db-4a4c-8883-e26b64f2c41f,5659e6b4-48db-4a4c-8883-e26b64f2c41f,S6a,
+ja-2a45df0b3090,ja,Blue Sky Stream,Card set / collection,canonical,catalog.sets,60a21d2e-cfa7-4103-ba7c-8e35f1b42070,60a21d2e-cfa7-4103-ba7c-8e35f1b42070,S7R,
+ja-419a40449874,ja,Skyscraping Perfection,Card set / collection,canonical,catalog.sets,ff823ecc-020f-4804-9194-3671ce9a1a81,ff823ecc-020f-4804-9194-3671ce9a1a81,S7D,
+ja-d02fca79b23e,ja,Fusion Arts,Card set / collection,canonical,catalog.sets,5cbd3a81-6b24-4039-8559-eed8eac7877c,5cbd3a81-6b24-4039-8559-eed8eac7877c,S8,
+ja-190989f70989,ja,25th Anniversary Collection,Card set / collection,canonical,catalog.sets,8d718087-7c8e-4894-a938-2cd2a3210d2c,8d718087-7c8e-4894-a938-2cd2a3210d2c,S8a,
+ja-bfa6e28a825b,ja,Promo Card Pack 25th Anniversary Edition,Promo catalogue,canonical,catalog.sets,b4fb0193-c1e8-5a79-a024-a56764d3caed,,S8aP,
+ja-5df7e14f52c6,ja,VMAX Climax,Card set / collection,canonical,catalog.sets,41f64718-acd1-4c40-8a40-5c67daac2cb8,41f64718-acd1-4c40-8a40-5c67daac2cb8,S8b,
+ja-96e92be4b754,ja,Star Birth,Card set / collection,canonical,catalog.sets,43d798d9-3dbe-4997-a6eb-ed65af962403,43d798d9-3dbe-4997-a6eb-ed65af962403,S9,
+ja-49441998dfc5,ja,Battle Region,Card set / collection,canonical,catalog.sets,52d75bb6-e7a0-42a5-a847-923254ac906c,52d75bb6-e7a0-42a5-a847-923254ac906c,S9a,
+ja-930d500eb1d9,ja,Space Juggler,Card set / collection,canonical,catalog.sets,50caa26f-e963-4122-a83b-3399c3eea056,50caa26f-e963-4122-a83b-3399c3eea056,S10P,
+ja-ca6a213c93b9,ja,Time Gazer,Card set / collection,canonical,catalog.sets,50fc7442-25ac-4bfc-851b-7e7bf9b30c2d,50fc7442-25ac-4bfc-851b-7e7bf9b30c2d,S10D,
+ja-c83a71b0ee77,ja,Dark Phantasma,Card set / collection,canonical,catalog.sets,74fbb8bf-90ae-449f-9caa-725890af4617,74fbb8bf-90ae-449f-9caa-725890af4617,S10a,
+ja-ff2e38d6fae3,ja,Pokémon GO,Card set / collection,canonical,catalog.sets,baeee2c6-c600-422d-a4b2-6d84ac4baaba,baeee2c6-c600-422d-a4b2-6d84ac4baaba,S10b,
+ja-7f2bbdd801e4,ja,Lost Abyss,Card set / collection,canonical,catalog.sets,18813c1f-2394-468e-91d4-7a81cf6fb201,18813c1f-2394-468e-91d4-7a81cf6fb201,S11,
+ja-e7a3195eec67,ja,Incandescent Arcana,Card set / collection,canonical,catalog.sets,1d7afdcf-03bc-4e5e-a213-4b0439924ee9,1d7afdcf-03bc-4e5e-a213-4b0439924ee9,S11a,
+ja-e770f86aba36,ja,Paradigm Trigger,Card set / collection,canonical,catalog.sets,7f99a1ea-2a6b-4cdc-8ac5-c484716d164b,7f99a1ea-2a6b-4cdc-8ac5-c484716d164b,S12,
+ja-eeac9c4c185b,ja,SV-P Promotional cards,Promo catalogue,canonical,catalog.sets,c20234cb-c629-4383-b107-c49b38b682ae,c20234cb-c629-4383-b107-c49b38b682ae,SV-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null
+ja-3ae335269b5c,ja,VSTAR Universe,Card set / collection,canonical,catalog.sets,d6a23ad9-7d3d-482c-a477-304584a335e3,d6a23ad9-7d3d-482c-a477-304584a335e3,S12a,
+ja-9dba419ea2be,ja,Scarlet ex,Card set / collection,canonical,catalog.sets,cf6f4a09-69a3-4497-9c40-beb1221063ea,cf6f4a09-69a3-4497-9c40-beb1221063ea,SV1S,
+ja-b1fc33531199,ja,Violet ex,Card set / collection,canonical,catalog.sets,fffb3282-3442-41e4-b4a2-9be06199186f,fffb3282-3442-41e4-b4a2-9be06199186f,SV1V,
+ja-2169700da313,ja,Triplet Beat,Card set / collection,canonical,catalog.sets,ca01c7f7-c1b0-4a4a-8aa0-e2c0f617d306,ca01c7f7-c1b0-4a4a-8aa0-e2c0f617d306,SV1a,
+ja-0a61f0dd4a65,ja,Clay Burst,Card set / collection,canonical,catalog.sets,44906e0e-477b-4417-a71d-5330528d3d82,44906e0e-477b-4417-a71d-5330528d3d82,SV2D,
+ja-ac6fcae41357,ja,Snow Hazard,Card set / collection,canonical,catalog.sets,a6a65a33-74fa-48d5-bdc0-38d6eaa08ef3,a6a65a33-74fa-48d5-bdc0-38d6eaa08ef3,SV2P,
+ja-d0f14d808a91,ja,Pokémon Card 151,Card set / collection,canonical,catalog.sets,e42556b8-3e82-44bb-8c52-c06b893ee4a3,e42556b8-3e82-44bb-8c52-c06b893ee4a3,SV2a,
+ja-b5d3a493d7fc,ja,Ruler of the Black Flame,Card set / collection,canonical,catalog.sets,d1ce7f2b-1f52-452e-9d90-0155bbfdb6e6,d1ce7f2b-1f52-452e-9d90-0155bbfdb6e6,SV3,
+ja-826c95e68c4c,ja,Raging Surf,Card set / collection,canonical,catalog.sets,92afb596-5060-44b4-a53a-12d815e94f52,92afb596-5060-44b4-a53a-12d815e94f52,SV3a,
+ja-19e415254ef6,ja,Ancient Roar,Card set / collection,canonical,catalog.sets,be25b6d3-a750-48a3-b8af-804ddc355452,be25b6d3-a750-48a3-b8af-804ddc355452,SV4K,
+ja-a38ca556c129,ja,Future Flash,Card set / collection,canonical,catalog.sets,344551fb-6b1b-418a-8b59-680096d4c9bf,344551fb-6b1b-418a-8b59-680096d4c9bf,SV4M,
+ja-f3d64cdaf563,ja,Shiny Treasure ex,Card set / collection,canonical,catalog.sets,9e539009-b72c-43e2-8f25-f183aa4bc4b7,9e539009-b72c-43e2-8f25-f183aa4bc4b7,SV4a,
+ja-a9d3c3b46ca8,ja,Cyber Judge,Card set / collection,canonical,catalog.sets,987716a9-9030-4dc8-89c2-db2bdf1a409d,987716a9-9030-4dc8-89c2-db2bdf1a409d,SV5M,
+ja-f0a550785a60,ja,Wild Force,Card set / collection,canonical,catalog.sets,688851ac-3d75-4431-a008-664294279341,688851ac-3d75-4431-a008-664294279341,SV5K,
+ja-d25e1390fd8d,ja,Crimson Haze,Card set / collection,canonical,catalog.sets,5f94a6e3-99a2-4eba-b6c7-c689dd509da8,5f94a6e3-99a2-4eba-b6c7-c689dd509da8,SV5a,
+ja-6f8cea791535,ja,Transformation Mask,Card set / collection,canonical,catalog.sets,5b61106a-7ae7-4ee6-90cc-c101fb8738b8,5b61106a-7ae7-4ee6-90cc-c101fb8738b8,SV6,
+ja-2bfd313d693f,ja,Night Wanderer,Card set / collection,canonical,catalog.sets,6e698306-d093-44e9-8673-cc513e36bd8d,6e698306-d093-44e9-8673-cc513e36bd8d,SV6a,
+ja-ad526e9fc3de,ja,Stellar Miracle,Card set / collection,canonical,catalog.sets,f09d1e6a-c76e-4a2d-bb45-971e54983c2d,f09d1e6a-c76e-4a2d-bb45-971e54983c2d,SV7,
+ja-0cd79b1e89bd,ja,Paradise Dragona,Card set / collection,canonical,catalog.sets,98a82354-b058-4bda-ad66-359a7bd7c36f,98a82354-b058-4bda-ad66-359a7bd7c36f,SV7a,
+ja-887597e51882,ja,Super Electric Breaker,Card set / collection,canonical,catalog.sets,5f0817f3-5386-4a29-9391-0529c5fcb98b,5f0817f3-5386-4a29-9391-0529c5fcb98b,SV8,
+ja-401830040344,ja,Terastal Fest ex,Card set / collection,canonical,catalog.sets,a7459948-3544-4122-8fec-7fc6aecfd2e5,a7459948-3544-4122-8fec-7fc6aecfd2e5,SV8a,
+ja-c66f053aaf61,ja,Battle Partners,Card set / collection,canonical,catalog.sets,a65593d7-236b-4891-9c88-670650f4faaf,a65593d7-236b-4891-9c88-670650f4faaf,SV9,
+ja-46088b1e25d5,ja,Hot Wind Arena,Card set / collection,canonical,catalog.sets,ff9ddb2d-d5c3-4c2c-bc48-89e68ea03d96,ff9ddb2d-d5c3-4c2c-bc48-89e68ea03d96,SV9a,
+ja-6cc224cf3b12,ja,Glory of the Rocket Gang,Card set / collection,canonical,catalog.sets,db4076ae-7ab9-408d-988c-34aa33b7b906,db4076ae-7ab9-408d-988c-34aa33b7b906,SV10,
+ja-f2b4be41f5a8,ja,Black Bolt,Card set / collection,canonical,catalog.sets,9f85e389-ab18-4448-948c-fdc067aa188b,9f85e389-ab18-4448-948c-fdc067aa188b,SV11B,
+ja-cabe28faa7c7,ja,White Flare,Card set / collection,canonical,catalog.sets,316ec693-c6dc-408c-aaca-2b57afdb9249,316ec693-c6dc-408c-aaca-2b57afdb9249,SV11W,
+ja-201f35403317,ja,M-P Promotional cards,Promo catalogue,canonical,catalog.sets,f13ab591-e706-4f7c-b4c6-8fed5526ea87,f13ab591-e706-4f7c-b4c6-8fed5526ea87,M-P,numbered_total_provisional_snapshot; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-75c63791ecae,ja,Mega Brave,Card set / collection,canonical,catalog.sets,a05ee14c-d4fb-4598-8470-e677e3c06f22,a05ee14c-d4fb-4598-8470-e677e3c06f22,M1L,
+ja-736839987504,ja,Mega Symphonia,Card set / collection,canonical,catalog.sets,b94f87ff-5d32-436a-87e4-50149151dba0,b94f87ff-5d32-436a-87e4-50149151dba0,M1S,
+ja-f44e493607aa,ja,Inferno X,Card set / collection,canonical,catalog.sets,8822dd6b-6f88-4ea6-9c59-0f766b63fc2b,8822dd6b-6f88-4ea6-9c59-0f766b63fc2b,M2,
+ja-f8999c534ee8,ja,MEGA Dream ex,Card set / collection,canonical,catalog.sets,53abf462-8a8c-4f05-8e75-57726a38ce9e,53abf462-8a8c-4f05-8e75-57726a38ce9e,M2a,
+ja-ed06c96f7471,ja,Nihil Zero,Card set / collection,canonical,catalog.sets,4be18668-d39a-44a8-831c-98e250f10538,4be18668-d39a-44a8-831c-98e250f10538,M3,
+ja-ad8588bb85a3,ja,Ninja Spinner,Card set / collection,canonical,catalog.sets,c263caec-8234-4348-9ade-34d25ad4e6e7,c263caec-8234-4348-9ade-34d25ad4e6e7,M4,
+ja-53c96b5e509c,ja,Abyss Eye,Card set / collection,canonical,catalog.sets,91be8fc7-b2ed-4169-b41e-0d374e4d466a,91be8fc7-b2ed-4169-b41e-0d374e4d466a,M5,
+ja-ca7893199ddf,ja,Storm Emeralda,Card set / collection,canonical,catalog.sets,903d5baa-27c7-5690-b1d7-2395c770204a,,M6,
+ja-b1b5ce787164,ja,30th Celebration,Card set / collection,canonical,catalog.sets,88e351b5-8191-5ef4-854b-2978046cda53,,M6a,announced_lower_bound_not_asserted_as_final_total
+ja-b1764b4acecd,ja,Ash vs Team Rocket Battle Set,Product / deck,canonical,catalog.sealed_products,36db8808-53c0-599a-95de-61276b16398b,,SMD,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-08c1ac029230,ja,Aura Seeker,Unconfirmed candidate,quarantined,,,,JA-AURA,"release_date, official_set_code_pending, official_release_date_pending, reference_count_pending_official_checklist, numbered_total_pending_official_checklist; partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null"
+ja-ed85c17ec216,ja,Blastoise & Kyurem Combo Deck,Product / deck,canonical,catalog.sealed_products,2bd8f9c3-2214-5b0c-9fdb-39fe1d9638c1,,K+K,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-25e1785bd838,ja,Eevee Heroes VMAX Special Set,Product / deck,canonical,catalog.sealed_products,73c1ff3f-211c-51c7-a4fc-115bfc1d9f78,,SP4,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-fb8b80ed6a17,ja,Exciting Battle for Everyone,Product / deck,canonical,catalog.sealed_products,38d1f939-6cb5-5028-8a8c-41ac07f78327,,WAK,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-cc38166449ff,ja,Garchomp Half Deck,Product / deck,canonical,catalog.sealed_products,909e6328-4a66-5d62-89ea-84a3d5c58e23,,GBR,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-67342d154972,ja,Genesect Half Deck (Mewtwo vs Genesect),Product / deck,canonical,catalog.sealed_products,90894e28-1252-56b7-baba-add655338587,,MG-G,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-354378f4f0c7,ja,Golduck BREAK & Palkia-EX Combo Deck,Product / deck,canonical,catalog.sealed_products,551819c9-58f8-5057-a83a-7087f6ec3969,,XYF,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-b505cc9dc7df,ja,Hydreigon Half Deck,Product / deck,canonical,catalog.sealed_products,9b7d1993-1703-5053-b523-3344d6054183,,SZD,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-8fdc44f9f846,ja,Hyper Metal Chain Deck,Product / deck,canonical,catalog.sealed_products,909ff1ad-7534-5330-bd98-04a960bebf72,,XYB,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-1e32a0d9a484,ja,Keldeo Battle Strength Deck,Product / deck,canonical,catalog.sealed_products,cdb5e344-73a3-5583-bdce-ba9b4832fb4f,,KLD,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-4a0cce65985c,ja,M Charizard-EX Mega Battle Deck,Product / deck,canonical,catalog.sealed_products,afe48da1-6396-5c36-a409-a40196d47895,,XYA,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-3305a29da758,ja,Mega Audino-EX Mega Battle Deck,Product / deck,canonical,catalog.sealed_products,42d980e9-0b48-5a37-9762-362ac4c67858,,XYH,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-f552fe7fd0ba,ja,Mega Rayquaza-EX Battle Deck,Product / deck,canonical,catalog.sealed_products,184aa8d9-55ea-5183-8be8-f26c39c932f4,,XYD,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-e9c6c3a99efd,ja,Mewtwo Half Deck (Mewtwo vs Genesect),Product / deck,canonical,catalog.sealed_products,c7d23df7-6c0d-5f49-9fc7-b063fc328ba1,,MG-M,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-5f9ba7db5890,ja,Noivern BREAK Evolution Pack,Product / deck,canonical,catalog.sealed_products,3e2bebfe-23f3-52b9-b398-50aeef34964b,,SNPo,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-b6fd25eade16,ja,Premium Trainer Box,Product / deck,canonical,catalog.sealed_products,958f6c4a-13e0-5b37-9792-406008ac7b9d,,SMB,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-6ad21e162182,ja,Raichu BREAK Evolution Pack,Product / deck,canonical,catalog.sealed_products,4e981659-24d8-5e8f-a6f7-f9fcd8e8ed1f,,SNPr,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-0ee044c14656,ja,Rockruff Full Power Deck,Product / deck,canonical,catalog.sealed_products,4eae6212-0556-57a0-a604-f44a6407e7d7,,SMP1,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-6610d1bc091c,ja,Shaymin LV.X Collection Pack,Product / deck,canonical,catalog.sealed_products,8e895af8-7f9f-5d4f-9dfc-ef02c986536e,,DPtS,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-5e3231638035,ja,Silver Lance & Jet-Black Spirit Promo Set,Product / deck,canonical,catalog.sealed_products,2ab8f9c0-aecb-5d1f-a4f8-63461b16a86c,,SP3,
+ja-db1b40ed6128,ja,Start Deck 100,Product / deck,canonical,catalog.sealed_products,4517996f-c285-524e-a40f-01f464caa1c6,,SI,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-1d2fff8e3828,ja,Tapu Bulu-GX Enhanced Starter Set,Product / deck,canonical,catalog.sealed_products,f1970b1e-3d40-5706-b346-06b0925f1889,,SMC,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-6b114003e2b1,ja,Team Plasma Battle Gift Set,Product / deck,canonical,catalog.sealed_products,1af6199b-dd93-53eb-b317-6fbcd62f80d3,,PBG,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-dc7d8d809c94,ja,Unnumbered Promotional cards,Promo catalogue,canonical,catalog.sets,c79f4e3a-2550-5724-98b9-7aab524d6bfe,,JA-PROMO-UN,numbered_total_provisional_snapshot; partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-dd7a387ccc7e,ja,VMAX Special Set,Product / deck,canonical,catalog.sealed_products,c58ad65f-5fb0-5667-894c-a14f730305af,,SP2,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-f8a1666d0bc0,ja,XY Beginning Set,Product / deck,canonical,catalog.sealed_products,00f54a2d-4ed2-529c-bf7a-0d76a15089fa,,HXY,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-fed7090443ee,ja,Xerneas Half Deck,Product / deck,canonical,catalog.sealed_products,a93ed1f4-2de9-5bf4-b583-d0987441709b,,X30,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-647e29f1f683,ja,Yveltal Half Deck,Product / deck,canonical,catalog.sealed_products,cec96967-0f2f-50f8-bf19-cf3842b66910,,Y30,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+ja-5bd5bd4a3cbb,ja,Zygarde-EX Perfect Battle Deck,Product / deck,canonical,catalog.sealed_products,62d4c0ec-961f-5fa0-9ffc-67787b61e2fd,,XYG,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-cff2a96842bc,zh-cn,Storming Emergence: Abundant,Card set / collection,canonical,catalog.sets,195b9d09-dd64-4e41-9b7d-0c9fb7f2062c,195b9d09-dd64-4e41-9b7d-0c9fb7f2062c,CSM1c,
+zh-CN-67d0d50f4a30,zh-cn,Storming Emergence: Radiant,Card set / collection,canonical,catalog.sets,465f5ed6-b32e-4cf0-a890-c39bc812ca48,465f5ed6-b32e-4cf0-a890-c39bc812ca48,CSM1a,
+zh-CN-ddc368ed5a42,zh-cn,Storming Emergence: Verdant,Card set / collection,canonical,catalog.sets,64e14d7e-e9f0-49d1-9e43-f79eafc02f53,64e14d7e-e9f0-49d1-9e43-f79eafc02f53,CSM1b,
+zh-CN-7201f0f4adef,zh-cn,Battle Elite,Card set / collection,canonical,catalog.sets,06c44056-4885-486e-a343-d7069742a403,06c44056-4885-486e-a343-d7069742a403,CSM1.5,
+zh-CN-985b569834f5,zh-cn,Shining Synergy: Shower,Card set / collection,canonical,catalog.sets,1e70ad98-8533-4fd0-8d02-15dda333cce9,1e70ad98-8533-4fd0-8d02-15dda333cce9,CSM2a,
+zh-CN-e431181de676,zh-cn,Shining Synergy: Summon,Card set / collection,canonical,catalog.sets,a31177e5-6f44-4236-8d84-b8afaecd825f,a31177e5-6f44-4236-8d84-b8afaecd825f,CSM2c,
+zh-CN-d9a73eee6c51,zh-cn,Shining Synergy: Supreme,Card set / collection,canonical,catalog.sets,1c9493a2-e579-4007-89f2-c72fdc66a2d9,1c9493a2-e579-4007-89f2-c72fdc66a2d9,CSM2b,
+zh-CN-9a65c0b3e375,zh-cn,Striking Competition,Card set / collection,canonical,catalog.sets,7b9800e5-fbfd-4842-b4a0-998e53981f5c,7b9800e5-fbfd-4842-b4a0-998e53981f5c,CSM2.5C,
+zh-CN-278793c85063,zh-cn,Dynamax Clash: Flame,Card set / collection,canonical,catalog.sets,01859240-c3d3-4074-832f-782f61c4fcb6,01859240-c3d3-4074-832f-782f61c4fcb6,CS1b,
+zh-CN-3e2d274b4ab5,zh-cn,Dynamax Clash: Thunder,Card set / collection,canonical,catalog.sets,e98642e8-97ac-4a08-b013-c0b13b70a269,e98642e8-97ac-4a08-b013-c0b13b70a269,CS1a,
+zh-CN-07dcd02896a4,zh-cn,Dynamax Tactics,Card set / collection,canonical,catalog.sets,8fa6e9bb-57f0-41d9-a4dd-611af3e1daf8,8fa6e9bb-57f0-41d9-a4dd-611af3e1daf8,CS1.5,
+zh-CN-000aba863495,zh-cn,Vivid Portrayals: Indigo,Card set / collection,canonical,catalog.sets,7e37b0c3-bae5-4591-89c8-815b6cb4b80d,7e37b0c3-bae5-4591-89c8-815b6cb4b80d,CS2b,
+zh-CN-e3ed5d35db24,zh-cn,Vivid Portrayals: Obsidian,Card set / collection,canonical,catalog.sets,96cbe78b-6461-4875-a678-c2fc65b0d756,96cbe78b-6461-4875-a678-c2fc65b0d756,CS2a,
+zh-CN-dda220ef310e,zh-cn,Brilliant Counterattack,Card set / collection,canonical,catalog.sets,ad94757c-4ad8-43a2-848b-3ac6dd4ca89d,ad94757c-4ad8-43a2-848b-3ac6dd4ca89d,CS2.5,
+zh-CN-03b5c4fdbb4b,zh-cn,Primordial Arts: Overgrow,Card set / collection,canonical,catalog.sets,42e798dd-f171-4f0b-916e-2386fd2a353f,42e798dd-f171-4f0b-916e-2386fd2a353f,CS3a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-5d92ddb62f3d,zh-cn,Primordial Arts: Torrent,Card set / collection,canonical,catalog.sets,f9223984-d0cf-445e-9d9f-7d447855a904,f9223984-d0cf-445e-9d9f-7d447855a904,CS3b,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-9e170a241e41,zh-cn,Scorching Skies,Card set / collection,canonical,catalog.sets,c651409a-2274-445d-99b0-d1b8e325cbca,c651409a-2274-445d-99b0-d1b8e325cbca,CS3.5,
+zh-CN-f0b761b734c3,zh-cn,Polychromatic Gathering: Friends,Card set / collection,canonical,catalog.sets,210bbf2d-5f63-4e1b-8af0-a2e093c53746,210bbf2d-5f63-4e1b-8af0-a2e093c53746,CS4a,
+zh-CN-717687c74d70,zh-cn,Polychromatic Gathering: Origin,Card set / collection,canonical,catalog.sets,7846702c-18c4-4d74-9ac1-2932017fa467,7846702c-18c4-4d74-9ac1-2932017fa467,CS4b,
+zh-CN-06b75de401d9,zh-cn,Flame Dance of the End,Card set / collection,canonical,catalog.sets,cd9dbc9a-2f9b-46af-b94a-faaeeb026395,cd9dbc9a-2f9b-46af-b94a-faaeeb026395,CS4.5,
+zh-CN-26d69c463f17,zh-cn,Gallant Galaxy: Brave,Card set / collection,canonical,catalog.sets,a952240f-194f-45a1-bd38-e8f5827c1200,a952240f-194f-45a1-bd38-e8f5827c1200,CS5b,
+zh-CN-ef32f1cf698e,zh-cn,Gallant Galaxy: Charm,Card set / collection,canonical,catalog.sets,92ffa013-edb7-4c49-8ed1-c50f0162d41d,92ffa013-edb7-4c49-8ed1-c50f0162d41d,CS5a,
+zh-CN-805005bd58b7,zh-cn,Overshadowed Radiance,Card set / collection,canonical,catalog.sets,44f0abf2-b693-4d4f-8587-18106f976a3d,44f0abf2-b693-4d4f-8587-18106f976a3d,CS5.5,
+zh-CN-7830668b1cfa,zh-cn,Marine Shadow: Banish,Card set / collection,canonical,catalog.sets,3c74abe8-5236-4c84-ae5b-5a5f367b63d4,3c74abe8-5236-4c84-ae5b-5a5f367b63d4,CS6b,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-4e11f8df413a,zh-cn,Marine Shadow: Roar,Card set / collection,canonical,catalog.sets,786678a0-e593-4205-b391-b392f1e71592,786678a0-e593-4205-b391-b392f1e71592,CS6a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-2097f2637c37,zh-cn,Victory Lodestar,Card set / collection,canonical,catalog.sets,69be023a-df58-4cf2-913e-101d846b968e,69be023a-df58-4cf2-913e-101d846b968e,CS6.5,
+zh-CN-95c5eec4132c,zh-cn,"Ancient Times, Future Progress",Card set / collection,canonical,catalog.sets,31225f01-ead5-4e8d-83f8-c06978e706da,31225f01-ead5-4e8d-83f8-c06978e706da,CSV1,
+zh-CN-a61ae6f4afab,zh-cn,Collection 151 — shared numbered catalogue,Card set / collection,canonical,catalog.sets,8e3da79a-1d8d-40ae-9f09-0150728cfbd6,8e3da79a-1d8d-40ae-9f09-0150728cfbd6,151C,
+zh-CN-d1ae3e65a60e,zh-cn,Collection 151: Journey,Pack edition,canonical,catalog.sealed_products,40bf98d6-3faf-5000-bc1f-6a6df61d297e,,151C1,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-d9d612b88239,zh-cn,Gem Pack Vol. 1,Card set / collection,canonical,catalog.sets,6fddd811-836e-4304-8d28-f36caef0d044,6fddd811-836e-4304-8d28-f36caef0d044,CBB1,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-e26d5aa6bcba,zh-cn,Miracle Journey,Card set / collection,canonical,catalog.sets,dc879690-6576-4cde-99ed-1eb74096b96c,dc879690-6576-4cde-99ed-1eb74096b96c,CSV2,
+zh-CN-8e72634373e1,zh-cn,Collection 151: Hope,Pack edition,canonical,catalog.sealed_products,b2569078-27d0-580c-a1b3-da42e447e452,,151C2,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-5073a61bee4f,zh-cn,Fearless Terastal,Card set / collection,canonical,catalog.sets,1170881a-cba2-4979-acc8-e705d80b9894,1170881a-cba2-4979-acc8-e705d80b9894,CSV3,
+zh-CN-1adc23205ba3,zh-cn,Gem Pack Vol. 2,Card set / collection,canonical,catalog.sets,8a18b285-dbf1-4acb-8374-e693849d80e1,8a18b285-dbf1-4acb-8374-e693849d80e1,CBB2,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-5d61b9b8011b,zh-cn,Journey Theme Pack,Card set / collection,canonical,catalog.sets,3738516b-cd62-4541-aa2b-2cbfcb4197ce,3738516b-cd62-4541-aa2b-2cbfcb4197ce,CSVL1,
+zh-CN-399849ceb89b,zh-cn,Bonus Round,Card set / collection,canonical,catalog.sets,0a6e8d07-bd4b-4d06-abdc-a6f27e88eb1b,0a6e8d07-bd4b-4d06-abdc-a6f27e88eb1b,CSV4,
+zh-CN-06deae5bed81,zh-cn,Collection 151: Scare,Pack edition,canonical,catalog.sealed_products,cb7cbb86-ea25-50b6-9f76-fac72e4076f1,,151C3,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-7788e508be5a,zh-cn,Ardent Obsidian,Card set / collection,canonical,catalog.sets,9cc48fa9-3a36-4069-b58a-3f29854cca74,9cc48fa9-3a36-4069-b58a-3f29854cca74,CSV5,
+zh-CN-28f3f6b85300,zh-cn,Gem Pack Vol. 3,Card set / collection,canonical,catalog.sets,06ae8d84-49e1-4363-a97b-1f22ee392ed7,06ae8d84-49e1-4363-a97b-1f22ee392ed7,CBB3,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-18809c23b06f,zh-cn,Collection 151: Gather,Pack edition,canonical,catalog.sealed_products,b623236b-cec0-5f50-9c46-9ead569717ca,,151C4,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-109ac9dca3ab,zh-cn,Arcane Truth,Card set / collection,canonical,catalog.sets,b921de8d-c127-44c4-825b-bac5dd7e5661,b921de8d-c127-44c4-825b-bac5dd7e5661,CSV6,
+zh-CN-48747304f749,zh-cn,Travel Theme Pack,Card set / collection,canonical,catalog.sets,b00d2f30-2ef5-4a8c-9263-d2b337a053be,b00d2f30-2ef5-4a8c-9263-d2b337a053be,CSVL2,
+zh-CN-10c8789df3d3,zh-cn,Blade Awakening,Card set / collection,canonical,catalog.sets,1f37ca26-f79b-47b6-9ba8-87f6c14b03fa,1f37ca26-f79b-47b6-9ba8-87f6c14b03fa,CSV7,
+zh-CN-af2bb9712d74,zh-cn,Gem Pack Vol. 4,Card set / collection,canonical,catalog.sets,ceddde89-0705-4372-95f2-88c20b89fddd,ceddde89-0705-4372-95f2-88c20b89fddd,CBB4,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-b8243f986930,zh-cn,Sparkling Fable,Card set / collection,canonical,catalog.sets,488ef846-c6f3-42e6-8fc1-7bf2928b2bcf,488ef846-c6f3-42e6-8fc1-7bf2928b2bcf,CSV8,
+zh-CN-f8b98fe843c8,zh-cn,Gem Pack Vol. 5,Card set / collection,canonical,catalog.sets,67ae722c-a017-4446-a14e-50d70df1f98d,67ae722c-a017-4446-a14e-50d70df1f98d,CBB5,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-cad997c1ded1,zh-cn,Kitakami Theme Pack,Card set / collection,canonical,catalog.sets,5ee47c31-74b5-4648-9326-468a939e455d,5ee47c31-74b5-4648-9326-468a939e455d,CSVN,
+zh-CN-46cf9342eacb,zh-cn,Stellar Crystal,Card set / collection,canonical,catalog.sets,2034da87-a87d-40e9-a8f2-85ca06fb8b5f,2034da87-a87d-40e9-a8f2-85ca06fb8b5f,CSV9,
+zh-CN-4adaa70c78eb,zh-cn,Terastal Gathering,Card set / collection,canonical,catalog.sets,034890ae-726c-44ec-bae9-b3e7d1ffdf45,034890ae-726c-44ec-bae9-b3e7d1ffdf45,CSV9.5,
+zh-CN-952e1d8d027f,zh-cn,Together in Pursuit of Glory,Card set / collection,canonical,catalog.sets,8f5e256e-b756-4a9c-8aa4-80cb8fe6f5fe,8f5e256e-b756-4a9c-8aa4-80cb8fe6f5fe,CSV10,
+zh-CN-7f5295a2c6c4,zh-cn,Gem Pack Vol. 6,Card set / collection,canonical,catalog.sets,17de4b24-d0c6-59dc-a915-9ba30546df95,,CBB6,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-02c213890e59,zh-cn,30th Celebration,Card set / collection,canonical,catalog.sets,cce4cfb8-6a87-567f-96a0-0884827a1396,,30thC,base_count_not_asserted; existing_printed_total_preserved_or_new_null; announced_lower_bound_not_asserted_as_final_total
+zh-CN-6262f13e0152,zh-cn,30th-P Promotional cards,Promo catalogue,canonical,catalog.sets,b6d885e6-40de-4e3d-808d-fc2294af8ad4,b6d885e6-40de-4e3d-808d-fc2294af8ad4,30th-P,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-b9059c7402f0,zh-cn,Dynamax Clash V Starter Decks,Product / deck,canonical,catalog.sealed_products,ebe83739-797f-5b60-88a0-ad35a1bc99a2,e4149c4d-77fd-4d78-9ce5-1ffb33e7bc35,CS1D,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-754715d30142,zh-cn,Gallant Galaxy V Starter Decks,Product / deck,canonical,catalog.sealed_products,70ad1a81-0966-5f2a-85a7-9ea2c3dea45a,f872bb02-eb6b-4245-a13a-b5d72b36c5d9,CS5D,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-0b8024065063,zh-cn,M-P Promotional cards,Promo catalogue,canonical,catalog.sets,876d2425-4948-57c4-baa0-9da39a9cda53,,M-P,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-17407eca3331,zh-cn,Pokémon Card Game Battle Academy,Product / deck,canonical,catalog.sealed_products,8b13f39a-bea6-5090-bede-962380ae3972,0c923759-c6cc-4b69-b205-eda5a97d3629,CSVS,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-0f55490115e0,zh-cn,Primordial Arts V Starter Decks,Product / deck,canonical,catalog.sealed_products,360bfd89-b606-586e-8808-03593351a1bc,096afff5-a4ff-4084-b7be-ecf150e13b25,CS3D,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-a4ed9d742e92,zh-cn,S-P Promotional cards,Promo catalogue,canonical,catalog.sets,3858072b-8d5d-42d3-9c5c-4557c8ec6ddb,3858072b-8d5d-42d3-9c5c-4557c8ec6ddb,S-P,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-b0139dcd5a32,zh-cn,SM-P Promotional cards,Promo catalogue,canonical,catalog.sets,4aa930fc-35fa-4e68-a34b-624fc70fb2cb,4aa930fc-35fa-4e68-a34b-624fc70fb2cb,SM-P,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-b14492ebba16,zh-cn,SV-P Promotional cards,Promo catalogue,canonical,catalog.sets,9724f830-eb52-423f-a8ce-2feb4c2e91f1,9724f830-eb52-423f-a8ce-2feb4c2e91f1,SV-P,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-bbdfaf4b06d8,zh-cn,Shining Synergy GX Starter Decks,Product / deck,canonical,catalog.sealed_products,cb3c070f-152c-5836-989a-be715ff99e79,78341b8d-8fbc-4749-8619-ee7a3bdc2131,CSM2D,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-f17188026f82,zh-cn,Start Deck 100,Product / deck,canonical,catalog.sealed_products,fdcc5cde-0406-5181-8b5d-c6a32002d7f4,c9cdce5f-5238-4671-a1d4-af181a97dd47,CS4Da,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-CN-0fba1dd957df,zh-cn,Storming Emergence GX Starter Decks,Product / deck,canonical,catalog.sealed_products,a0defc2a-7d9a-5b0f-87f6-ee3d2d8d6543,d246467e-39b6-4b52-8b8e-abaef9094fb6,CSM1D,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-de875ceeabe3,zh-tw,Base Set,Card set / collection,canonical,catalog.sets,6e6cb5d1-d21b-5025-ba43-fc095d240687,,TW-BASE,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-e8c0625ae4df,zh-tw,Pikachu World Collection — Traditional Chinese card,Promo catalogue,canonical,catalog.sets,b2df11f8-269a-5f0e-8db6-428e98412a3f,,TW-PWC,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-174859e51cd4,zh-tw,EX Legend Maker,Card set / collection,canonical,catalog.sets,2f000f3d-7c3c-5282-930e-452629ebe9b6,,TW-EXLM,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-1d61985413dc,zh-tw,EX Trainer Kit 2,Product / deck,canonical,catalog.sealed_products,9e07cb58-27cb-5fe0-b6db-71b26d8ca73d,,TW-EXTK2,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-0a96f0a664ca,zh-tw,All Stars Collection: Set A,Card set / collection,canonical,catalog.sets,af975f66-4635-57a9-906f-aeeec6fc04d1,,AC1a,
+zh-TW-a95d29db02ae,zh-tw,All Stars Collection: Set B,Card set / collection,canonical,catalog.sets,aeab271d-301f-5d99-a7b7-0f5e1b6857d6,,AC1b,
+zh-TW-bbd57f4d265f,zh-tw,All Stars GX Starter Deck,Product / deck,canonical,catalog.sealed_products,ba87a589-f085-50d1-b169-a8562efadc44,,TW-GXSD-AS,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-72025093612f,zh-tw,Dreams Come True Collection: Set A,Card set / collection,canonical,catalog.sets,c497b580-834a-5367-9d63-fbed5cebeee8,,AC2a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-b2b8b4361d91,zh-tw,Dreams Come True Collection: Set B,Card set / collection,canonical,catalog.sets,05b2caa8-94ca-5f2c-b2dc-6d51a8384fe5,,AC2b,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-6f7e74c62ae7,zh-tw,Dreams Come True GX Starter Deck,Product / deck,canonical,catalog.sealed_products,b125cbf6-526b-51de-845a-1f1175f28478,,TW-GXSD-DCT,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-fa701929df73,zh-tw,Double Burst GX Starter Deck,Product / deck,canonical,catalog.sealed_products,ffba2c7b-2061-5bff-88df-81f949be824b,,TW-GXSD-DB,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-697dc026abac,zh-tw,Double Burst: Set A,Card set / collection,canonical,catalog.sets,bd23da5f-1d02-5009-9231-3d2850e1d1fe,,AS5a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-a1c2fff1a1ef,zh-tw,Double Burst: Set B,Card set / collection,canonical,catalog.sets,85dfa422-83fc-53d1-b306-41f179e3abf4,,AS5b,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-ffbc69fcb8f3,zh-tw,Legendary Clash GX Starter Deck,Product / deck,canonical,catalog.sealed_products,6a4acd2c-4370-50de-99c6-e73eaf47c152,,TW-GXSD-LC,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-a3f1035342ed,zh-tw,Legendary Clash: Set A,Card set / collection,canonical,catalog.sets,e3122a15-6f5a-5359-8fb9-2a4f36966e4d,,AS6a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-d8a28fa21e5b,zh-tw,Legendary Clash: Set B,Card set / collection,canonical,catalog.sets,c8f751d4-e01c-5b68-a539-c575f3f28940,,AS6b,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-7a214d78ab26,zh-tw,Sword & Shield V Starter Deck,Product / deck,canonical,catalog.sealed_products,621a9c05-9ab0-5c88-bdb2-225a696f439f,4b4beb82-d593-4c0b-850f-3197e7dd0ac5,TW-VSD-SS,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-08c3dcbf7c89,zh-tw,Sword & Shield: Set A,Card set / collection,canonical,catalog.sets,9ebab1ca-0ebf-429c-83ed-9fe6735f9832,9ebab1ca-0ebf-429c-83ed-9fe6735f9832,SC1a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-1d3647011297,zh-tw,Sword & Shield: Set B,Card set / collection,canonical,catalog.sets,205ab185-9052-4965-b9f0-20fe44b7b61f,205ab185-9052-4965-b9f0-20fe44b7b61f,SC1b,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-881ba9c7b206,zh-tw,Infinite Power V Starter Deck,Product / deck,canonical,catalog.sealed_products,e9d8177a-4945-5056-b41a-c54c8ea70c2e,d14fde0e-c786-41d0-93ef-6dc69cef94d0,TW-VSD-IP,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-b9871021b603,zh-tw,Infinite Power: Set A,Card set / collection,canonical,catalog.sets,8c05228d-e60d-46c6-888b-c13d4b51660d,8c05228d-e60d-46c6-888b-c13d4b51660d,SC2a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-b29b74d4c92f,zh-tw,Infinite Power: Set B,Card set / collection,canonical,catalog.sets,f3b1c12f-8002-41e4-b682-9109c6628a71,f3b1c12f-8002-41e4-b682-9109c6628a71,SC2b,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-4fe71a34ad45,zh-tw,Amazing Volt Tackle,Card set / collection,canonical,catalog.sets,ec980234-74f1-4b88-bafa-a8c84ab36d38,ec980234-74f1-4b88-bafa-a8c84ab36d38,S4,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-7c2698d8198c,zh-tw,Shiny Star V,Card set / collection,canonical,catalog.sets,e6feffca-611b-479c-bfb2-43b80374458f,e6feffca-611b-479c-bfb2-43b80374458f,S4a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-34fe73a731d5,zh-tw,V Starter Deck: Partner,Product / deck,canonical,catalog.sealed_products,7882f28c-1620-54e5-bb52-18e7f0906e15,41251d8a-6a1c-4f91-8e84-22e2fe7737fd,TW-VSD-PARTNER,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-22bafcb43c40,zh-tw,Rapid Strike Master,Card set / collection,canonical,catalog.sets,fa4fe313-ee43-4824-91bd-b3a6c16aaf7c,fa4fe313-ee43-4824-91bd-b3a6c16aaf7c,S5R,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-9097625c11de,zh-tw,Single Strike Master,Card set / collection,canonical,catalog.sets,384319e0-5887-4575-933c-5d05848e8e1f,384319e0-5887-4575-933c-5d05848e8e1f,S5I,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-4f37ed1f19a0,zh-tw,V Starter Deck: Challenge,Product / deck,canonical,catalog.sealed_products,a35e7688-9261-52f1-a5e3-a3cd2045583e,5578c7d0-f386-4945-b651-65dd2f3ee2d3,TW-VSD-CHALLENGE,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-4580c5755bb6,zh-tw,Peerless Fighters,Card set / collection,canonical,catalog.sets,8ee58e69-05d9-4aca-94be-9b1099f0aa3f,8ee58e69-05d9-4aca-94be-9b1099f0aa3f,S5a,
+zh-TW-948804025988,zh-tw,Jet-Black Spirit,Card set / collection,canonical,catalog.sets,565ca9b6-c3b7-4398-a96a-d0dfd1bc1886,565ca9b6-c3b7-4398-a96a-d0dfd1bc1886,S6K,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-1ce049c3e526,zh-tw,Silver Lance,Card set / collection,canonical,catalog.sets,631ac177-7fbc-4a0f-9ec5-85660f4009cd,631ac177-7fbc-4a0f-9ec5-85660f4009cd,S6H,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-0a24fa37675e,zh-tw,Eevee Heroes,Card set / collection,canonical,catalog.sets,b4dbdf8f-b0ec-4185-8e74-0c3b2b0e7648,b4dbdf8f-b0ec-4185-8e74-0c3b2b0e7648,S6a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-e025c97a3003,zh-tw,V Starter Deck: Evolution,Product / deck,canonical,catalog.sealed_products,981df187-9b9d-5563-afd3-afdd29392a51,c816b27f-f145-413b-b971-3f7b1542f24c,TW-VSD-EVOLUTION,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-0896e483a152,zh-tw,Blue Sky Stream,Card set / collection,canonical,catalog.sets,dfc21eb0-e33a-4cc8-b368-82e5bafa71da,dfc21eb0-e33a-4cc8-b368-82e5bafa71da,S7R,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-3c7f9a347753,zh-tw,Skyscraping Perfection,Card set / collection,canonical,catalog.sets,4a00009f-25a3-4dce-83dd-7bc6b757c046,4a00009f-25a3-4dce-83dd-7bc6b757c046,S7D,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-ea9bed1e2837,zh-tw,Family Pokémon Card Game,Product / deck,canonical,catalog.sealed_products,938d6c79-384c-5a7f-839d-d647fa6d9fea,929a6c13-5b43-4aba-b887-1f86cc94ce31,TW-FAMILY,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-1e56408052d8,zh-tw,Greninja V-UNION,Product / deck,canonical,catalog.sealed_products,985f0c95-1066-554d-86a3-906e48822b8b,,TW-VUN-GREN,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-4be3f10dba4e,zh-tw,Mewtwo V-UNION,Product / deck,canonical,catalog.sealed_products,d37c4642-9bb0-53cc-ad78-b10e5536e393,,TW-VUN-MEWTWO,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-fd587194a3dc,zh-tw,Zacian V-UNION,Product / deck,canonical,catalog.sealed_products,61495a2e-af1b-5fd0-ae68-0f5215b25617,,TW-VUN-ZACIAN,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-ed2b47d834a0,zh-tw,Fusion Arts,Card set / collection,canonical,catalog.sets,87c0562d-f7e7-4395-8a2a-a17705341951,87c0562d-f7e7-4395-8a2a-a17705341951,S8,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-b504d14277db,zh-tw,V Starter Deck: Power,Product / deck,canonical,catalog.sealed_products,d2c23a44-d1e0-546d-aa0d-6fb0997f8998,70184f97-2d37-457a-8ae4-21a4b40d270c,TW-VSD-POWER,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-0b27f7830bd5,zh-tw,25th Anniversary Collection,Card set / collection,canonical,catalog.sets,52d0226c-123a-4b62-bcc4-0433b5afb56f,52d0226c-123a-4b62-bcc4-0433b5afb56f,S8a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-3f0100ff734e,zh-tw,VMAX Climax,Card set / collection,canonical,catalog.sets,7201a603-407b-491c-b118-467f6549e400,7201a603-407b-491c-b118-467f6549e400,S8b,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-da84927efd3c,zh-tw,Premium Trainer Box VSTAR,Product / deck,canonical,catalog.sealed_products,2eff9b87-44c1-58c9-9e6d-56af9f3907b7,1217161f-69bf-4176-acce-93f23e475d04,TW-PTB-VSTAR,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-49aecb4f6801,zh-tw,Special Deck Set: Zacian & Zamazenta vs Eternatus,Product / deck,canonical,catalog.sealed_products,73473388-a38d-5ca7-afbb-e0a98d287b57,6c446b0c-155d-4926-b0ee-5369f6ac44d3,TW-SDS-ZZE,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-e2c3f070ae3a,zh-tw,Star Birth,Card set / collection,canonical,catalog.sets,ec704d48-6e26-4489-9063-4eb4f5924233,ec704d48-6e26-4489-9063-4eb4f5924233,S9,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-79452a9b4969,zh-tw,Start Deck 100,Product / deck,canonical,catalog.sealed_products,a7b9817d-6031-5ec1-b7f9-2bde86712a22,749e4fbd-3eda-46e3-8a89-c6244595e6a2,SI,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-ebfd52323273,zh-tw,Battle Region,Card set / collection,canonical,catalog.sets,834c9416-bd5e-4a1d-9170-d8e4ba817d20,834c9416-bd5e-4a1d-9170-d8e4ba817d20,S9a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-c1e632571ef2,zh-tw,Starter Set VSTAR: Darkrai,Product / deck,canonical,catalog.sealed_products,4acfbab0-027f-544f-8c27-196591388a36,99d2cff9-6664-4b0f-8e9a-f9c9ed4fd563,TW-SSV-DARKRAI,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-9b45ecdadbd5,zh-tw,Starter Set VSTAR: Lucario,Product / deck,canonical,catalog.sealed_products,625fd9bb-cb4d-5ead-a64e-3b59cacba546,c1a9f285-94bb-40a6-acef-547a5a0b0fb0,TW-SSV-LUCARIO,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-eaa598c96da0,zh-tw,Space Juggler,Card set / collection,canonical,catalog.sets,71a109c6-2c3a-4e6d-ae1b-4cdce9441c8c,71a109c6-2c3a-4e6d-ae1b-4cdce9441c8c,S10P,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-2fb8917a506c,zh-tw,Time Gazer,Card set / collection,canonical,catalog.sets,fd0c18a1-c4c3-451d-a43f-4593cd07804e,fd0c18a1-c4c3-451d-a43f-4593cd07804e,S10D,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-34c58ef32c27,zh-tw,Dark Phantasma,Card set / collection,canonical,catalog.sets,9a71e2aa-241a-4895-9224-959e6983c4a3,9a71e2aa-241a-4895-9224-959e6983c4a3,S10a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-e470539f39cb,zh-tw,Pokémon GO,Card set / collection,canonical,catalog.sets,ff1e5d11-3043-4137-a0a2-bc2b2da43d9e,ff1e5d11-3043-4137-a0a2-bc2b2da43d9e,S10b,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-94514bb5b58e,zh-tw,Lost Abyss,Card set / collection,canonical,catalog.sets,a7f84e96-a008-47f0-8b41-a05de3f23618,a7f84e96-a008-47f0-8b41-a05de3f23618,S11,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-b04e14397ea6,zh-tw,VSTAR & VMAX High-Class Deck: Deoxys,Product / deck,canonical,catalog.sealed_products,b9a9d951-ecda-5308-ac2a-cae0f9ed0f1a,2d2c36be-9511-4b30-9979-ad6af1a4f9ee,TW-HCD-DEOXYS,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-d5f405f1ae6f,zh-tw,VSTAR & VMAX High-Class Deck: Zeraora,Product / deck,canonical,catalog.sealed_products,053a8714-4d78-568f-8c53-af9e6150db5e,0dc7982d-2a45-4984-b930-0d4e688d4fa9,SPZ,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-c31260236d59,zh-tw,VSTAR Special Set,Product / deck,canonical,catalog.sealed_products,1f44f8c1-8c28-54dc-8387-ecdbaed65eb7,b29d2b28-f5a2-474a-9173-0d29fb5aeb55,TW-VSTAR-SS,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-0cda223fc777,zh-tw,Incandescent Arcana,Card set / collection,canonical,catalog.sets,545b8020-25d6-4e10-b380-1856f905956f,545b8020-25d6-4e10-b380-1856f905956f,S11a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-1d3741cdbc9b,zh-tw,Start Deck 100 Special Edition,Product / deck,canonical,catalog.sealed_products,b5d74eb6-1fec-5d56-8e31-35b5d5727704,9932f014-e867-49a3-8597-424386f59ba5,TW-SI-SP,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-5be09528cd62,zh-tw,Paradigm Trigger,Card set / collection,canonical,catalog.sets,eb834c9a-e8b3-474b-8ddb-6f57bf58d3d2,eb834c9a-e8b3-474b-8ddb-6f57bf58d3d2,S12,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-35e579fae35b,zh-tw,V Start Deck: Charizard,Product / deck,canonical,catalog.sealed_products,e8dd40fb-208b-5e01-8d77-7ea40b56adb1,86911534-c30a-4701-9443-2eb4916d2fe8,TW-VSD-CHARIZARD,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-a438f4fbf85e,zh-tw,V Start Deck: Mewtwo,Product / deck,canonical,catalog.sealed_products,6097516d-2402-5609-976d-07fb784641fb,1ff38683-60fc-448a-9e8e-f6096dd8608b,TW-VSD-MEWTWO,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-698096b84e15,zh-tw,V Start Deck: Pikachu,Product / deck,canonical,catalog.sealed_products,7c4b1936-b1ce-5104-a300-4e568ed8344c,8f6936bf-5b7c-4072-9331-e85f423ade80,TW-VSD-PIKACHU,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-f19bf711ab15,zh-tw,VSTAR Universe,Card set / collection,canonical,catalog.sets,eed3fcbd-fd4c-4b7f-9b75-a68e15d61476,eed3fcbd-fd4c-4b7f-9b75-a68e15d61476,S12a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-6213b9de84cd,zh-tw,Special Deck Set: Charizard VSTAR vs Rayquaza VMAX,Product / deck,canonical,catalog.sealed_products,b7a76b67-1167-5fbd-884d-969764fd2fa6,,SO,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-15c77b4e7ab4,zh-tw,Scarlet ex,Card set / collection,canonical,catalog.sets,92afdf21-b16e-4e85-b54f-5f0603cbf6fa,92afdf21-b16e-4e85-b54f-5f0603cbf6fa,SV1S,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-1431bed2cddd,zh-tw,Starter Set ex: Fuecoco & Ampharos ex,Product / deck,canonical,catalog.sealed_products,1eebd789-fa06-5d06-849f-e191fc49ab60,bb1ba963-5030-4f3f-8f06-dee6c668fb05,TW-SSEX-FUECOCO,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-0e91100f19e4,zh-tw,Starter Set ex: Quaxly & Mimikyu ex,Product / deck,canonical,catalog.sealed_products,4e985bae-663c-54b4-b67f-452607b82de6,2f9aa179-e91b-4643-84d6-968944833c66,TW-SSEX-QUAXLY,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-097b4570ee69,zh-tw,Starter Set ex: Sprigatito & Lucario ex,Product / deck,canonical,catalog.sealed_products,724ca71f-2d02-5888-87c1-75ff16c7e5fe,005e4850-7601-4765-b538-290882ded6d8,SVAM,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-88527930c211,zh-tw,Violet ex,Card set / collection,canonical,catalog.sets,496f02eb-5cda-4b1b-a5cf-e46816c6f834,496f02eb-5cda-4b1b-a5cf-e46816c6f834,SV1V,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-ad64ada63d4e,zh-tw,Premium Trainer Box ex,Product / deck,canonical,catalog.sealed_products,095b3f7f-1eef-5b1e-9fdf-cb5b21c45e06,88d9f4ce-d66f-46c6-9c98-cadcdbe617ff,SVB,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-a9afe84246a2,zh-tw,Triplet Beat,Card set / collection,canonical,catalog.sets,f3d6f626-76dc-40f6-b20c-f37f76de7a69,f3d6f626-76dc-40f6-b20c-f37f76de7a69,SV1a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-294bff0baa30,zh-tw,Clay Burst,Card set / collection,canonical,catalog.sets,8ea4465e-f94f-4cb8-af60-8b7e954400b9,8ea4465e-f94f-4cb8-af60-8b7e954400b9,SV2D,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-2d7f316f10e4,zh-tw,Snow Hazard,Card set / collection,canonical,catalog.sets,0c790038-ee1a-411f-bd9c-fed9238c1c42,0c790038-ee1a-411f-bd9c-fed9238c1c42,SV2P,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-51bdd451cf9e,zh-tw,Starter Set ex: Pikachu Special Set,Product / deck,canonical,catalog.sealed_products,f52f37eb-fa0e-55e8-80a1-af68eafca4ec,0c39417c-7e51-4c2e-83a4-e7180ff18ed1,SVC,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-2bde775c2fe4,zh-tw,ex Special Set,Product / deck,canonical,catalog.sealed_products,4480470a-6068-5aed-9840-5469908e0aa4,34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd,SVP1,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-0e83523e5e22,zh-tw,Pokémon Card 151,Card set / collection,canonical,catalog.sets,3c0c1ae1-7d62-4384-97f1-734ff9460162,3c0c1ae1-7d62-4384-97f1-734ff9460162,SV2a,
+zh-TW-16c34ed22967,zh-tw,ex Start Decks,Product / deck,canonical,catalog.sealed_products,5a828c23-efa5-5c20-ac0c-ab5fbbc2b40d,aeacc226-2669-41be-87af-adb0792b6a26,SVD,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-17bf7041d61f,zh-tw,Deck Build Box Ruler of the Black Flame,Product / deck,canonical,catalog.sealed_products,4d8ad425-e99a-53bc-8ea8-9c49e79c2ded,319b65a2-a424-4273-bfff-6c18965ab00a,SVF,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-97582d8a2d7c,zh-tw,Ruler of the Black Flame,Card set / collection,canonical,catalog.sets,0dbaa91f-c0c6-497d-8ef0-fc4370c5ed8a,0dbaa91f-c0c6-497d-8ef0-fc4370c5ed8a,SV3,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-a993463f10a7,zh-tw,Raging Surf,Card set / collection,canonical,catalog.sets,16b683e4-6270-4625-9fae-b2478a08c659,16b683e4-6270-4625-9fae-b2478a08c659,SV3a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-dd10ca3114e3,zh-tw,Starter Set: Tera Mewtwo ex,Product / deck,canonical,catalog.sealed_products,a920d51b-f71d-5c60-8f7a-477cb8b8b37d,afefc691-41e8-4ac7-97d8-776ded533215,SVEM,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-223009b1f580,zh-tw,Starter Set: Tera Skeledirge ex,Product / deck,canonical,catalog.sealed_products,421c8eab-ad3a-5479-9d1b-baba0de485da,471359a2-3314-463e-aea4-d5c302663333,SVEL,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-6b7f80cfa785,zh-tw,Ancient Roar,Card set / collection,canonical,catalog.sets,15442620-179d-4442-a040-d9fa0060c7e4,15442620-179d-4442-a040-d9fa0060c7e4,SV4K,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-f036e3380424,zh-tw,Future Flash,Card set / collection,canonical,catalog.sets,2abc3c6e-7715-4f79-900f-a2c567e4e1c9,2abc3c6e-7715-4f79-900f-a2c567e4e1c9,SV4M,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-e7000c380e86,zh-tw,Shiny Treasure ex,Card set / collection,canonical,catalog.sets,34f73eff-5db3-4617-bd57-73421edebb86,34f73eff-5db3-4617-bd57-73421edebb86,SV4a,
+zh-TW-59408e931538,zh-tw,Cyber Judge,Card set / collection,canonical,catalog.sets,6979a86e-8439-443d-b8b3-b9e2ebfb0bd3,6979a86e-8439-443d-b8b3-b9e2ebfb0bd3,SV5M,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-ce9c29c7e2f0,zh-tw,Starter Set: Ancient Koraidon ex,Product / deck,canonical,catalog.sealed_products,23b89b20-5403-5e4f-8e11-5c9da4ca5ef4,c1728b7e-684e-445f-a12b-4f7b2dcc8fba,SVHK,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-016cca521d10,zh-tw,Starter Set: Future Miraidon ex,Product / deck,canonical,catalog.sealed_products,500d7436-53d4-5dbf-b153-a33802d22b66,d72c9fe3-b3d5-4a4d-9fcc-eb7cca2a88bc,SVHM,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-b6835058e99c,zh-tw,Wild Force,Card set / collection,canonical,catalog.sets,2cc9e59f-b9d6-42db-9426-d5d18faab0c9,2cc9e59f-b9d6-42db-9426-d5d18faab0c9,SV5K,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-8fe572a829b0,zh-tw,Crimson Haze,Card set / collection,canonical,catalog.sets,8dc60098-a384-4259-88b9-d2efa74b5a1d,8dc60098-a384-4259-88b9-d2efa74b5a1d,SV5a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-98e99def19ee,zh-tw,Transformation Mask,Card set / collection,canonical,catalog.sets,b933f0ba-40ac-4846-80ee-74c4a2b1cf71,b933f0ba-40ac-4846-80ee-74c4a2b1cf71,SV6,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-04373519f7b5,zh-tw,Night Wanderer,Card set / collection,canonical,catalog.sets,adcb6f6c-95f3-4a55-b9e5-464ed79a1ac3,adcb6f6c-95f3-4a55-b9e5-464ed79a1ac3,SV6a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-4de816b05a4e,zh-tw,Tactical Deck: Gardevoir ex,Product / deck,canonical,catalog.sealed_products,f4b9dfa3-e38f-5af5-a14f-2e4c2112691a,,TW-TD-GARDEVOIR,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-c9078c8d0f32,zh-tw,Tactical Deck: Meowscarada ex,Product / deck,canonical,catalog.sealed_products,cfcd457f-0a22-5947-9126-007637c3f6c2,,TW-TD-MEOWSCARADA,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-558de9471c94,zh-tw,Tactical Deck: Miraidon ex,Product / deck,canonical,catalog.sealed_products,4e3ce582-1c5e-5092-b553-dcc8379358f5,,TW-TD-MIRAIDON,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-15708abcba22,zh-tw,Tactical Deck: Scizor ex,Product / deck,canonical,catalog.sealed_products,9499b9d8-6b5b-5ac3-ae11-d03a57908e68,,TW-TD-SCIZOR,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-d004bb41fcd7,zh-tw,Tactical Deck: Tera Charizard ex,Product / deck,canonical,catalog.sealed_products,79ef53a6-3dd0-5798-b150-ff36edd47366,,TW-TD-TCHAR,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-92dede729e8e,zh-tw,Tactical Deck: Tera Garchomp ex,Product / deck,canonical,catalog.sealed_products,654df417-dd34-5345-b02a-bfdc4a6d3546,,SVTG,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-2a8a58fea56e,zh-tw,Stellar Miracle,Card set / collection,canonical,catalog.sets,bf50694e-8be5-4fa4-a77e-6fdb73ec17ac,bf50694e-8be5-4fa4-a77e-6fdb73ec17ac,SV7,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-241fc26dea17,zh-tw,Trainers Camp,Event / teaching programme,source_only_not_a_set_or_sealed_product,,,,TW-TRAINERS-CAMP,"reference_count_not_applicable, numbered_total_not_applicable; base_count_not_asserted; existing_printed_total_preserved_or_new_null"
+zh-TW-7ed5d482e561,zh-tw,Deck Build Box Paradise Dragona,Product / deck,canonical,catalog.sealed_products,02a66121-7846-5a03-806f-e460b773edb5,,SVK,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-d3a71a0aa467,zh-tw,Paradise Dragona,Card set / collection,canonical,catalog.sets,e044ea13-4498-4aa8-b46c-71bcc203bc89,e044ea13-4498-4aa8-b46c-71bcc203bc89,SV7a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-c86b9b559cbe,zh-tw,Stellar Tera ex Special Set: Ceruledge ex,Product / deck,canonical,catalog.sealed_products,0e795955-205c-5e3e-b8b6-033089d67260,,TW-STEX-CERU,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-1afd1f797fa7,zh-tw,Stellar Tera ex Special Set: Sylveon ex,Product / deck,canonical,catalog.sealed_products,c2b61a4f-d6e0-5eec-83f4-e0f99035449f,,TW-STEX-SYLV,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-9fcaa17761b6,zh-tw,Super Electric Breaker,Card set / collection,canonical,catalog.sets,05597373-2080-4842-bb67-c314e884f856,05597373-2080-4842-bb67-c314e884f856,SV8,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-88100117b37e,zh-tw,Double ex Start Deck Generations,Product / deck,canonical,catalog.sealed_products,f41c8efb-8779-5c9e-be9f-d5a1efb3a4e0,,TW-SVC,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-49e639772529,zh-tw,Terastal Fest ex,Card set / collection,canonical,catalog.sets,d53eee17-75b8-48a8-bde5-50ac129a3558,d53eee17-75b8-48a8-bde5-50ac129a3558,SV8a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-ffcdd91b700e,zh-tw,Battle Partners,Card set / collection,canonical,catalog.sets,cd44897f-ea2e-4f63-b662-e4ddce1ac7e7,cd44897f-ea2e-4f63-b662-e4ddce1ac7e7,SV9,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-15f40046e9ad,zh-tw,Challenge Deck: Marnie's Morpeko & Grimmsnarl ex,Product / deck,canonical,catalog.sealed_products,99b49551-ca76-57aa-8ff2-9fb5ac85d767,,TW-SVF-M,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-2ffb668f198e,zh-tw,Challenge Deck: Steven's Beldum & Metagross ex,Product / deck,canonical,catalog.sealed_products,a0260dee-db0d-5565-ae6f-59e6d3a7da63,,TW-SVF-S,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-974fa735782e,zh-tw,Hot Wind Arena,Card set / collection,canonical,catalog.sets,664d717f-745d-4178-ae4f-5863ae558a2f,664d717f-745d-4178-ae4f-5863ae558a2f,TW-SV9a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-dd68ad1c0890,zh-tw,Glory of the Rocket Gang,Card set / collection,canonical,catalog.sets,4f84057b-edcf-4523-967c-5997ae696987,4f84057b-edcf-4523-967c-5997ae696987,SV10,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-77c7643aa5ed,zh-tw,Black Bolt,Card set / collection,canonical,catalog.sets,1d98735e-860e-57d3-bad3-dccd36de8db9,,TW-SV11B,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-f6512185fc4f,zh-tw,White Flare,Card set / collection,canonical,catalog.sets,64efbb7f-dc08-5d16-8bce-0ecb44073fbf,,SV11W,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-e124fcba7d1d,zh-tw,ex Start Deck: Charizard,Product / deck,canonical,catalog.sealed_products,4e204f60-9832-5e9a-8346-cd797ef479c4,,SVQL,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-949def28022a,zh-tw,ex Start Deck: Pikachu,Product / deck,canonical,catalog.sealed_products,b227b99d-6596-5eca-9a2f-fa1419a8a8ce,,SVQP,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-5cd724144f1f,zh-tw,Mega Brave,Card set / collection,canonical,catalog.sets,3dc56ff3-cdfc-573b-86d2-2f07d439d3a6,,M1L,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-0f37c5f8c336,zh-tw,Mega Symphonia,Card set / collection,canonical,catalog.sets,8bc2bb53-9c42-5b81-988c-7e3c9e029e5f,,M1S,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-a1a18e45b7d6,zh-tw,Challenge Deck: Mega Diancie ex,Product / deck,canonical,catalog.sealed_products,61771444-2ce2-5cf3-a8be-feebd95a610a,,MBD,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-4e5a9002b259,zh-tw,Challenge Deck: Mega Gengar ex,Product / deck,canonical,catalog.sealed_products,64b4074f-7b48-56c5-a102-ee753d54cd69,,MBG,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-46e6de88e93e,zh-tw,Inferno X,Card set / collection,canonical,catalog.sets,32828f7c-dc1e-5ca9-b2d8-123dce722591,,M2,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-cde90de02356,zh-tw,MEGA Dream ex,Card set / collection,canonical,catalog.sets,dc0cd156-0f26-5d40-9c31-572f9933a022,,M2a,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-3fe2b38c6ebe,zh-tw,Start Deck 100 Battle Collection,Product / deck,canonical,catalog.sealed_products,172fa5b2-4af4-5c60-afd1-4c8e6b2e6ed8,,TW-SD100-BC,numbered_total_provisional_snapshot; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-bc558463633d,zh-tw,Nihil Zero,Card set / collection,canonical,catalog.sets,e1a8f7a2-a981-5ddc-9ed4-4d45bad629ea,,M3,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-9c9e4a7b4d38,zh-tw,New Trainer Journey,Event / teaching programme,source_only_not_a_set_or_sealed_product,,,,TW-NTJ,"reference_count_not_applicable, numbered_total_not_applicable; base_count_not_asserted; existing_printed_total_preserved_or_new_null"
+zh-TW-6dd574732d59,zh-tw,Ninja Spinner,Card set / collection,canonical,catalog.sets,fddfe1f9-6ed5-55e2-8610-f8d2fd69ab4d,,M4,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-5d0f2c0fb6e0,zh-tw,Abyss Eye,Card set / collection,canonical,catalog.sets,41e9353b-bb1b-5965-9227-8cb0f804d1ac,,M5,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-860e5a5ea101,zh-tw,Tactical Deck: Mega Charizard X ex,Product / deck,canonical,catalog.sealed_products,794fc9f2-e4ca-5b12-93f4-b0acc102127b,,MTL,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-77c7d2bfb26b,zh-tw,Tactical Deck: Mega Dragonite ex,Product / deck,canonical,catalog.sealed_products,cd04b6b8-5dfc-5f1a-8224-44765fab60c0,,MTK,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-157f7b2ae355,zh-tw,Tactical Deck: Mega Gardevoir ex,Product / deck,canonical,catalog.sealed_products,e9d6d101-4e9d-5545-bbe7-342f56c125c6,,TW-MGEX-G,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-945a283ffa50,zh-tw,Tactical Deck: Mega Sharpedo ex,Product / deck,canonical,catalog.sealed_products,2200a18a-f4ff-5513-8a0b-139357b230e2,,TW-MGEX-S,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-e1227d8b54e9,zh-tw,Storm Emeralda,Card set / collection,canonical,catalog.sets,98b77caa-5114-5a1b-8214-b42971f9440b,,M6,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-3076e4f29fbe,zh-tw,30th Celebration,Card set / collection,canonical,catalog.sets,b01eef0a-7c02-5d1f-bd5c-ca4507944754,,M6a,base_count_not_asserted; existing_printed_total_preserved_or_new_null; announced_lower_bound_not_asserted_as_final_total
+zh-TW-9c14d01812fd,zh-tw,Premium Deck Set: Espeon & Umbreon,Product / deck,canonical,catalog.sealed_products,70a1a365-8d86-5995-9d47-5fbc2ad307e2,,TW-PDS-EU,base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-43aee0909785,zh-tw,Mega Evolution Promotional cards,Promo catalogue,canonical,catalog.sets,75e39f96-6bc1-5803-b905-ffec8306edd6,,M-P,numbered_total_provisional_snapshot; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-2906d27bb5d9,zh-tw,Scarlet & Violet Promotional cards,Promo catalogue,canonical,catalog.sets,25b5a960-6481-497d-86b8-b0845a504501,25b5a960-6481-497d-86b8-b0845a504501,SV-P,numbered_total_provisional_snapshot; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-a6040164d394,zh-tw,Sun & Moon Promotional cards,Promo catalogue,canonical,catalog.sets,83193f7e-959b-5ddf-a958-707885d9815c,,SM-P,partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null
+zh-TW-e5a8fb2a002d,zh-tw,Sword & Shield Promotional cards,Promo catalogue,canonical,catalog.sets,ecee23e0-5058-5f54-b39a-7147a17727d3,,S-P,numbered_total_provisional_snapshot; partial_date_retained_in_source; existing_exact_date_preserved_or_new_date_null; base_count_not_asserted; existing_printed_total_preserved_or_new_null

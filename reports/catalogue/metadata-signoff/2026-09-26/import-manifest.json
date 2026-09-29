@@ -1,0 +1,27 @@
+{
+  "version": "Canonical Metadata v1.0",
+  "workbook": "Stackr_Metadata_CANONICAL_SIGNED_OFF_2026-09-26.xlsx",
+  "workbookSha256": "add080a95d52e714e86fc4e6a43ec28892e647cabb79cd72412d9a6b2f353414",
+  "bytes": 289133,
+  "sourceConversation": "https://chatgpt.com/c/6ab779a1-0010-83ed-81b1-fcbd0428a93b",
+  "sourceId": "a23954d2-49ca-4f2e-8cee-ed628e179006",
+  "sourceCode": "stackr_manual",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "importRunId": "e061242a-7aa6-5fff-8dfe-ae3840a06651",
+  "runKey": "metadata-signoff-v1-2026-09-26-add080a95d52e714",
+  "referenceRecords": 642,
+  "appendixRecords": 13,
+  "languageCounts": {
+    "en": 192,
+    "ja": 246,
+    "zh-CN": 64,
+    "zh-TW": 140
+  },
+  "canonicalCandidateCount": 327,
+  "identityOrScopeReviewCount": 315,
+  "status": "source_intake_complete",
+  "canonicalPromotion": "pending",
+  "rawPayloadHashAlgorithm": "SHA-256 of UTF-8 canonical JSON (sorted keys, compact separators, Unicode preserved)",
+  "canonicalRowsUpdated": 0,
+  "reviewQueueRecords": 642
+}

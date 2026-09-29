@@ -1,0 +1,643 @@
+﻿Reference ID,Language,Name,Entity type,Mapping assessment,Candidate canonical UUIDs,Publication status
+en-a0c246625f70,en,Base Set,Card set / collection,matched_candidate,97e3aeb6-2645-4c3a-9fd4-10d95a181b6e,held_for_canonical_reconciliation
+en-04f13cef08d5,en,Jungle,Card set / collection,matched_candidate,739d2f18-1dd0-45dc-ba58-2195d5760ed5,held_for_canonical_reconciliation
+en-aa7e14b7f0c8,en,Wizards Black Star Promos,Promo catalogue,review,013aaf61-7b4f-4f79-b96f-285b53de2d41;ce2eea9a-f1c5-4a8e-8ff2-e782fbd89927,held_for_canonical_reconciliation
+en-1023534ac633,en,Fossil,Card set / collection,matched_candidate,85f8c1fc-874d-4b7a-892b-2137adc6647b,held_for_canonical_reconciliation
+en-a8df9e98a90c,en,Base Set 2,Card set / collection,matched_candidate,ffdf2db0-7ff9-426f-95f4-ba4165be9824,held_for_canonical_reconciliation
+en-c60e2d562834,en,Team Rocket,Card set / collection,matched_candidate,87281266-72bb-4ece-8a82-2d9838fec89f,held_for_canonical_reconciliation
+en-c5ce98007735,en,Gym Heroes,Card set / collection,matched_candidate,0f4ffa8e-12e1-4d3f-907c-74186a29bf1b,held_for_canonical_reconciliation
+en-02504fb70732,en,Gym Challenge,Card set / collection,matched_candidate,f43aed17-4a1d-49b7-9f98-fbf3f0e44c8d,held_for_canonical_reconciliation
+en-20cc938f566a,en,Neo Genesis,Card set / collection,matched_candidate,d9a2e898-8c13-4ec3-a57e-7e27e33dec08,held_for_canonical_reconciliation
+en-35d669d41542,en,Neo Discovery,Card set / collection,matched_candidate,0f227cc4-90c0-4e1b-b91f-811b3d13630d,held_for_canonical_reconciliation
+en-6cd59d2de3c3,en,Southern Islands,Card set / collection,matched_candidate,3a75eae6-7d72-4227-bf44-4068c80e01fd,held_for_canonical_reconciliation
+en-4ebd136067f6,en,Neo Revelation,Card set / collection,matched_candidate,6594ca6d-beb9-4b02-91c4-c2f1d5765712,held_for_canonical_reconciliation
+en-c2856ff4149f,en,Neo Destiny,Card set / collection,matched_candidate,76866762-6684-44e1-bd7d-11a741f408d2,held_for_canonical_reconciliation
+en-cd4f85d44ef5,en,Legendary Collection,Card set / collection,matched_candidate,1f92f73d-c7ed-4f1b-b0cd-896ce13d2fab,held_for_canonical_reconciliation
+en-5d6d8308391d,en,Expedition Base Set,Card set / collection,matched_candidate,7cdfd12a-41e8-4311-aa5b-b2b7cd58e398,held_for_canonical_reconciliation
+en-6b8ea434ff3c,en,Best of Game,Promo catalogue,review,2fa71113-d1fe-4498-a69f-581cfdfc2f9e,held_for_canonical_reconciliation
+en-cc20a20022be,en,Aquapolis,Card set / collection,matched_candidate,2cd06c25-7efb-442d-b1ff-8f00979d5fe4,held_for_canonical_reconciliation
+en-97419826c195,en,Skyridge,Card set / collection,matched_candidate,c7e3d5ac-17b4-494e-b6af-53b6eeb75919,held_for_canonical_reconciliation
+en-9fae739d1b50,en,EX Ruby & Sapphire,Card set / collection,review,,held_for_canonical_reconciliation
+en-2c8548f403ec,en,EX Sandstorm,Card set / collection,review,,held_for_canonical_reconciliation
+en-25a30d326497,en,Nintendo Black Star Promos,Promo catalogue,review,e6a38c42-178e-4875-8090-fe559404207f,held_for_canonical_reconciliation
+en-4136e90acfc5,en,EX Dragon,Card set / collection,review,,held_for_canonical_reconciliation
+en-2716fcc13469,en,EX Team Magma vs Team Aqua,Card set / collection,review,,held_for_canonical_reconciliation
+en-8b591b123a2d,en,EX Hidden Legends,Card set / collection,review,,held_for_canonical_reconciliation
+en-113c19d40966,en,Poké Card Creator Pack,Promo catalogue,review,71bc9b69-e786-4972-b126-d1f7bbc1311f,held_for_canonical_reconciliation
+en-f5ccf3069644,en,EX FireRed & LeafGreen,Card set / collection,review,,held_for_canonical_reconciliation
+en-3038f4c0a2b4,en,POP Series 1,Promo catalogue,review,9ce6fbec-2f97-440d-bf13-4c6de2e4c174,held_for_canonical_reconciliation
+en-afe4a95f06f0,en,EX Team Rocket Returns,Card set / collection,review,,held_for_canonical_reconciliation
+en-c9757869c465,en,EX Deoxys,Card set / collection,review,,held_for_canonical_reconciliation
+en-63dd78545f6b,en,EX Emerald,Card set / collection,review,,held_for_canonical_reconciliation
+en-2ae0ae63d6c6,en,POP Series 2,Promo catalogue,review,698426c9-3d79-4cdd-8bf7-d33c50be9b39,held_for_canonical_reconciliation
+en-d8fc5898f167,en,EX Unseen Forces,Card set / collection,review,,held_for_canonical_reconciliation
+en-54098c178e15,en,EX Delta Species,Card set / collection,review,,held_for_canonical_reconciliation
+en-9cb8c9f6e536,en,EX Legend Maker,Card set / collection,review,,held_for_canonical_reconciliation
+en-c3b6dc0be0f9,en,POP Series 3,Promo catalogue,review,72847a6b-b6c1-4cbd-a0ec-d364297c9d4e,held_for_canonical_reconciliation
+en-5b979908423c,en,EX Holon Phantoms,Card set / collection,review,,held_for_canonical_reconciliation
+en-fad17205363e,en,POP Series 4,Promo catalogue,review,455ffff6-bd35-42a1-be69-082e9fafc01f,held_for_canonical_reconciliation
+en-8e43e04c94fc,en,EX Crystal Guardians,Card set / collection,review,,held_for_canonical_reconciliation
+en-aaf4b3441b4d,en,EX Dragon Frontiers,Card set / collection,review,,held_for_canonical_reconciliation
+en-77949d1b2f91,en,EX Power Keepers,Card set / collection,review,,held_for_canonical_reconciliation
+en-d1e1c1c442b6,en,POP Series 5,Promo catalogue,review,c0e878e4-e882-4736-a3fd-aba9efe393e4,held_for_canonical_reconciliation
+en-b35c8787199b,en,DP Black Star Promos,Promo catalogue,review,145e94b6-56f3-4f63-bfc6-473a472b661d,held_for_canonical_reconciliation
+en-c73b95bc6054,en,Diamond & Pearl,Card set / collection,review,8ebfab70-e7bb-48d8-98e7-dd8b948d12e8,held_for_canonical_reconciliation
+en-8f4b9726b034,en,Mysterious Treasures,Card set / collection,review,986caaf1-1f2b-4525-ae93-4d455cfee8c5,held_for_canonical_reconciliation
+en-e8f006b1fcdc,en,POP Series 6,Promo catalogue,review,6f5ccfcc-bd4f-439e-aa9a-654afdbfc6f6,held_for_canonical_reconciliation
+en-16dc73b3bf13,en,Secret Wonders,Card set / collection,review,a9b641af-03cb-4a40-8b15-8a3b6ad01e48,held_for_canonical_reconciliation
+en-c000628be18c,en,Great Encounters,Card set / collection,review,d05cc70e-4db4-45cb-a831-1b74780b9772,held_for_canonical_reconciliation
+en-99c5bfa12ae2,en,POP Series 7,Promo catalogue,review,bdf571e3-4ca9-40dc-87bd-e6c1952915bf,held_for_canonical_reconciliation
+en-e15ea065516f,en,Majestic Dawn,Card set / collection,review,a0dc1218-59f9-45f7-841b-9e93ccfc3aea,held_for_canonical_reconciliation
+en-70298cb313b5,en,Legends Awakened,Card set / collection,review,3f0f07ff-6f30-4034-98db-02bf9182ab78,held_for_canonical_reconciliation
+en-60734715037a,en,POP Series 8,Promo catalogue,review,68fb188b-deb9-46ff-88a9-db0d1f5d34f6,held_for_canonical_reconciliation
+en-3494d0cab367,en,Stormfront,Card set / collection,review,4b1e9001-6612-42bc-94ac-427b346006ee,held_for_canonical_reconciliation
+en-58e94dab40f3,en,Platinum,Card set / collection,matched_candidate,772c70cd-95c5-4912-9468-3b5a3043f2cf,held_for_canonical_reconciliation
+en-017662319683,en,POP Series 9,Promo catalogue,review,fd0c8655-1296-4913-8d91-74783836cd59,held_for_canonical_reconciliation
+en-dd8dcbc74555,en,Rising Rivals,Card set / collection,matched_candidate,7c7f44f6-750c-4035-8b59-55f6bc45e26d,held_for_canonical_reconciliation
+en-9802fa8c0788,en,Supreme Victors,Card set / collection,matched_candidate,3e60ee1c-a63d-4473-8315-da90535f25cb,held_for_canonical_reconciliation
+en-bb910b4803f9,en,Arceus,Card set / collection,matched_candidate,9b581912-773f-4599-a94f-ab01fe9e0f4d,held_for_canonical_reconciliation
+en-dd1bed5a6c8f,en,Pokémon Rumble,Card set / collection,matched_candidate,a05be832-81a3-4f39-9fb2-0be6c0c73727,held_for_canonical_reconciliation
+en-a33f6d494f98,en,HGSS Black Star Promos,Promo catalogue,review,5de74297-bb54-4c56-8b1a-701f89e41bc4,held_for_canonical_reconciliation
+en-570eb4a7ff82,en,HeartGold & SoulSilver,Card set / collection,matched_candidate,15cacaa9-5700-4067-b731-ca2bc452d5b7,held_for_canonical_reconciliation
+en-fdf7f2c10a8c,en,HS—Unleashed,Card set / collection,review,,held_for_canonical_reconciliation
+en-2c6142e8a65e,en,HS—Undaunted,Card set / collection,review,,held_for_canonical_reconciliation
+en-8391c36c39f9,en,HS—Triumphant,Card set / collection,review,,held_for_canonical_reconciliation
+en-768ff8b6c413,en,Call of Legends,Card set / collection,matched_candidate,969c83b1-1004-4af8-8ef8-d724656bdc35,held_for_canonical_reconciliation
+en-153f1e2973ab,en,BW Black Star Promos,Promo catalogue,review,ba16466a-a048-4563-acf2-5507fa211b96,held_for_canonical_reconciliation
+en-979394369192,en,Black & White,Card set / collection,matched_candidate,20459d78-825a-4dfa-b7ae-c0c97b8994f6,held_for_canonical_reconciliation
+en-e2f82b622c38,en,McDonald's Collection 2011,Promo catalogue,review,0a2d5c3e-9da1-4af5-acc6-584485d8777e,held_for_canonical_reconciliation
+en-010fbb1c4518,en,Emerging Powers,Card set / collection,matched_candidate,68e39d0d-c5de-4326-ae1b-51042e556edd,held_for_canonical_reconciliation
+en-f282c6e506cc,en,Noble Victories,Card set / collection,matched_candidate,3b49aa99-9b03-4b32-bce4-1fb67f167345,held_for_canonical_reconciliation
+en-f9d9d3df62f9,en,Next Destinies,Card set / collection,matched_candidate,383cab7b-dbc3-4d4d-96e3-d07f4f1b6744,held_for_canonical_reconciliation
+en-1b9e4a6a354e,en,Dark Explorers,Card set / collection,matched_candidate,62bc12c6-68e4-49a9-86b4-14db3025510f,held_for_canonical_reconciliation
+en-4bc9e6055cd1,en,McDonald's Collection 2012,Promo catalogue,review,56e5b9e8-80b4-4e23-ad0c-5f86afc6759c,held_for_canonical_reconciliation
+en-46bcbc7bd2cf,en,Dragons Exalted,Card set / collection,matched_candidate,ec087b67-2763-4b92-a34f-4183bc25649e,held_for_canonical_reconciliation
+en-91e1f1c33c0f,en,Dragon Vault,Card set / collection,matched_candidate,f0ca524e-701d-4ff4-b9cf-ea9eec7eec58,held_for_canonical_reconciliation
+en-e09a110664e7,en,Boundaries Crossed,Card set / collection,matched_candidate,e0849e8a-ee89-4443-9ab9-639d31db4e85,held_for_canonical_reconciliation
+en-3016217292f6,en,Plasma Storm,Card set / collection,matched_candidate,42e19a74-eaac-4889-92bd-085e35f708ef,held_for_canonical_reconciliation
+en-5aa9e9a94aa6,en,Plasma Freeze,Card set / collection,matched_candidate,b78899e7-ea1a-442b-85af-041bd9609377,held_for_canonical_reconciliation
+en-ad0a6da5fa67,en,Plasma Blast,Card set / collection,matched_candidate,07fafdb9-7130-41c5-a076-301d8ca5070e,held_for_canonical_reconciliation
+en-de9597f8f5f1,en,XY Black Star Promos,Promo catalogue,review,603fd3a2-e829-4ca3-bb6d-3c235cde5373,held_for_canonical_reconciliation
+en-3cb54e9ce33e,en,McDonald's Collection 2013,Promo catalogue,review,,held_for_canonical_reconciliation
+en-d17b2d80e0a0,en,Legendary Treasures,Card set / collection,matched_candidate,276f194e-1d23-4d12-a13a-4ebf211588bd,held_for_canonical_reconciliation
+en-8927672c1fc3,en,Kalos Starter Set,Card set / collection,matched_candidate,f5e20b43-349e-466d-a0d3-d9b8950c4281,held_for_canonical_reconciliation
+en-c2ca16153c2a,en,XY,Card set / collection,matched_candidate,5d30fc31-1040-4140-8c02-ea1dcdb57955,held_for_canonical_reconciliation
+en-a430ca13ab89,en,Flashfire,Card set / collection,matched_candidate,cbfa835f-4cc7-466f-8945-91e25831a94e,held_for_canonical_reconciliation
+en-915e707fe4c1,en,McDonald's Collection 2014,Promo catalogue,review,19f359e2-c29f-498f-8bf6-fc19c122a361,held_for_canonical_reconciliation
+en-07be2898ea37,en,Furious Fists,Card set / collection,matched_candidate,2924aa8a-c471-4c3a-a98a-031ae26a8e1d,held_for_canonical_reconciliation
+en-2d7a46bf4f40,en,Phantom Forces,Card set / collection,matched_candidate,f382341d-5f76-40fe-8fe7-42e798790dc2,held_for_canonical_reconciliation
+en-9eb9fce1de4b,en,Primal Clash,Card set / collection,matched_candidate,d309b26d-8418-4d8c-a8e1-4c028fe859cc,held_for_canonical_reconciliation
+en-424245fcaa4d,en,Double Crisis,Card set / collection,matched_candidate,8fd3d411-bc40-44f6-a5e0-b69d45b57326,held_for_canonical_reconciliation
+en-816bacadc3d6,en,Roaring Skies,Card set / collection,matched_candidate,7bb54d57-5eef-43b5-a632-ad4242cb2784,held_for_canonical_reconciliation
+en-94a46f468993,en,Ancient Origins,Card set / collection,matched_candidate,fedab5a7-4bc0-4a45-8423-3d3054cece6e,held_for_canonical_reconciliation
+en-e7aad6d1fbb0,en,McDonald's Collection 2015,Promo catalogue,review,f7706a1b-61bc-4ff9-900c-5841034a5be6,held_for_canonical_reconciliation
+en-02f878472b36,en,BREAKthrough,Card set / collection,matched_candidate,85bda8bb-6ecf-444d-858b-1c2946a0427b,held_for_canonical_reconciliation
+en-62bf8ccf548c,en,BREAKpoint,Card set / collection,matched_candidate,2ba4eb07-8ffa-4e73-b9f3-78f8bd53d9e9,held_for_canonical_reconciliation
+en-a3e276f60a2a,en,Generations,Card set / collection,matched_candidate,63a759b9-e68f-481c-89ca-b77635a3f120,held_for_canonical_reconciliation
+en-b287631747bd,en,Fates Collide,Card set / collection,matched_candidate,e40d96fe-ebdb-4c92-9259-6d5086d079bb,held_for_canonical_reconciliation
+en-8ba7f44ef156,en,Steam Siege,Card set / collection,matched_candidate,06f60708-8672-47d5-8dd2-4fa63b425efe,held_for_canonical_reconciliation
+en-c6947a8b9b91,en,McDonald's Collection 2016,Promo catalogue,review,9722bbd8-e6d1-49ac-b080-ff9be30589bc,held_for_canonical_reconciliation
+en-920392a73db9,en,SM Black Star Promos,Promo catalogue,review,c5bc0f58-c30c-4115-acc9-3a6d64420cda,held_for_canonical_reconciliation
+en-85e873dafc55,en,Evolutions,Card set / collection,matched_candidate,be4122a9-7944-449b-af87-f53b14217fd7,held_for_canonical_reconciliation
+en-8b72f8c8ec1f,en,Sun & Moon,Card set / collection,matched_candidate,ad42d9fa-77e8-4ea4-a591-0591acd4e853,held_for_canonical_reconciliation
+en-f51be29044a7,en,Guardians Rising,Card set / collection,matched_candidate,84d8a262-794d-45ee-9d65-ba8528ed1f76,held_for_canonical_reconciliation
+en-c93c5824efe9,en,McDonald's Collection 2017,Promo catalogue,review,d1eb29f2-3d49-447e-8f98-e3994b661350,held_for_canonical_reconciliation
+en-3116e68ab4e9,en,Burning Shadows,Card set / collection,matched_candidate,0fe827db-b417-4ff2-8506-536546338e74,held_for_canonical_reconciliation
+en-284cab91a1be,en,Shining Legends,Card set / collection,matched_candidate,944a1f4e-a7cd-4ff1-a8ec-cc8f35d3c6d0,held_for_canonical_reconciliation
+en-2fbc7c4dc4aa,en,Crimson Invasion,Card set / collection,matched_candidate,cc5b8c70-db14-4fa9-af42-4c43a1bedbd0,held_for_canonical_reconciliation
+en-07efccc9871c,en,Ultra Prism,Card set / collection,matched_candidate,eb6b35a6-91b3-4ff8-b739-a89f072646ef,held_for_canonical_reconciliation
+en-6d3f72991ea4,en,Forbidden Light,Card set / collection,matched_candidate,d1bbf0dd-20e9-47f9-927f-7e7a7a555642,held_for_canonical_reconciliation
+en-a4e4b7afea78,en,Celestial Storm,Card set / collection,matched_candidate,01f1a9bb-9eda-4137-a544-c065bb920545,held_for_canonical_reconciliation
+en-91440136da80,en,Dragon Majesty,Card set / collection,matched_candidate,702e4fd6-5396-43b5-a98f-a736e7dcd48c,held_for_canonical_reconciliation
+en-b873bbf63462,en,McDonald's Collection 2018,Promo catalogue,review,c770d934-a953-4923-a411-4a17b422bb96,held_for_canonical_reconciliation
+en-cf9f952e6af6,en,Lost Thunder,Card set / collection,matched_candidate,d237001c-03b2-424f-8855-6c459ef57b43,held_for_canonical_reconciliation
+en-b58c098ade79,en,Team Up,Card set / collection,review,67484037-191a-4fd6-bf2e-8e2dbf46e36b,held_for_canonical_reconciliation
+en-332317456664,en,Detective Pikachu,Card set / collection,matched_candidate,e7ecfeee-b142-47e3-ad78-6fad8841a0e0,held_for_canonical_reconciliation
+en-2a74b03a3cd0,en,Unbroken Bonds,Card set / collection,matched_candidate,f77f15b5-a8c7-42be-8f28-297180da8ae3,held_for_canonical_reconciliation
+en-7801e741f632,en,Unified Minds,Card set / collection,matched_candidate,899893bc-ede1-4d5a-bb04-54bccf247110,held_for_canonical_reconciliation
+en-d2619d0c94c3,en,Hidden Fates,Card set / collection,matched_candidate,60749dc8-20cb-428f-a410-35e1200cea03,held_for_canonical_reconciliation
+en-d02ad07cbaac,en,McDonald's Collection 2019,Promo catalogue,review,0ca6f0b6-6971-4342-8d0b-9c9a44e195e3,held_for_canonical_reconciliation
+en-7ad5746df78d,en,SWSH Black Star Promos,Promo catalogue,review,ef15c432-0542-4fee-ba25-b4719b9d4f84,held_for_canonical_reconciliation
+en-e8cc4c8f7365,en,Cosmic Eclipse,Card set / collection,matched_candidate,b3e4c7e0-f614-4b04-929a-b8c1cfc8609e,held_for_canonical_reconciliation
+en-0003d347854c,en,Sword & Shield,Card set / collection,matched_candidate,b6278586-87f3-46cd-8860-85df64612cfc,held_for_canonical_reconciliation
+en-a6fa518f94e3,en,Rebel Clash,Card set / collection,matched_candidate,564ce799-f9bc-43a1-a70a-bd6d5b0dfe76,held_for_canonical_reconciliation
+en-175e9a92fed7,en,Darkness Ablaze,Card set / collection,matched_candidate,fef7d309-9879-4639-9e4c-8d80122f0f3a,held_for_canonical_reconciliation
+en-ebcb2fa528a3,en,Pokémon Futsal,Promo catalogue,review,,held_for_canonical_reconciliation
+en-11376d4d5559,en,Champion's Path,Card set / collection,matched_candidate,317430c1-52e0-420f-a17e-2efbcc43dec6,held_for_canonical_reconciliation
+en-e1af3cad7dfb,en,Vivid Voltage,Card set / collection,matched_candidate,c40a79a9-69f9-482b-aa3b-0867059eb66d,held_for_canonical_reconciliation
+en-e731bf8556f5,en,McDonald's Collection 2021,Promo catalogue,review,e41708b6-e58e-4e98-970e-0bb97f4fd03e,held_for_canonical_reconciliation
+en-53c41bd0758e,en,Shining Fates,Card set / collection,matched_candidate,1b9afc9d-bce8-4cff-819a-884ddf2f8f76,held_for_canonical_reconciliation
+en-5b657a70e898,en,Battle Styles,Card set / collection,matched_candidate,04dc5049-cf3a-4e5e-ad1e-85c077d03cce,held_for_canonical_reconciliation
+en-23b00a171eda,en,Chilling Reign,Card set / collection,matched_candidate,2fd9b10d-505e-44af-9ec6-b01e7da63c1f,held_for_canonical_reconciliation
+en-9b73c82bcf48,en,Evolving Skies,Card set / collection,matched_candidate,5534149f-25ec-4195-b873-7dfbe40e5aac,held_for_canonical_reconciliation
+en-e56bf6e72454,en,Celebrations,Card set / collection,matched_candidate,d8804c74-d99d-4bea-a0ba-9c7a94caa4e2,held_for_canonical_reconciliation
+en-34452d845f59,en,Fusion Strike,Card set / collection,matched_candidate,6032d5e3-a6c5-41a5-a2f2-0edb343e092b,held_for_canonical_reconciliation
+en-6a335273a172,en,Brilliant Stars,Card set / collection,matched_candidate,c70da69d-57d8-4ea3-9952-b27882fef91e,held_for_canonical_reconciliation
+en-e5998f2862b1,en,Astral Radiance,Card set / collection,matched_candidate,819d7be8-9fa9-4f20-975c-9328a7ffbd9c,held_for_canonical_reconciliation
+en-7d9965a1af2f,en,Pokémon GO,Card set / collection,matched_candidate,ffec8524-253a-4e66-884c-7e647a15d40d,held_for_canonical_reconciliation
+en-e10bc359ed58,en,McDonald's Collection 2022,Promo catalogue,review,172317e0-1eb4-42a7-8624-532af705da6c,held_for_canonical_reconciliation
+en-3f3767d11463,en,Trick or Trade 2022,Promo catalogue,review,,held_for_canonical_reconciliation
+en-b7f9778c3458,en,Lost Origin,Card set / collection,matched_candidate,d91046d7-be79-4824-960a-4a0979f023a0,held_for_canonical_reconciliation
+en-e10b0a22e149,en,Play! Pokémon Prize Pack Series One,Promo catalogue,review,,held_for_canonical_reconciliation
+en-f753129c5e11,en,Silver Tempest,Card set / collection,matched_candidate,09351915-b132-4be6-b98e-aa773aac65ad,held_for_canonical_reconciliation
+en-30019a75acfd,en,SVP Black Star Promos,Promo catalogue,review,6700cb91-6deb-45ab-935a-0f262b32dd59,held_for_canonical_reconciliation
+en-c42442301001,en,Play! Pokémon Prize Pack Series Two,Promo catalogue,review,,held_for_canonical_reconciliation
+en-1cb188ee356a,en,Crown Zenith,Card set / collection,matched_candidate,42096fc0-51f2-4805-a114-e6f2811a0c49,held_for_canonical_reconciliation
+en-44b8071286c1,en,SVE Basic Energies,Card set / collection,review,dba20c6b-1ded-41d5-b44e-ad70bbf94ac8,held_for_canonical_reconciliation
+en-ddfbd6b63b20,en,Scarlet & Violet,Card set / collection,matched_candidate,23addc10-7c42-4f3d-aa94-21a2a6ec6011,held_for_canonical_reconciliation
+en-9dda3ec7c416,en,Paldea Evolved,Card set / collection,matched_candidate,33342e0c-da19-4d33-a5c3-df0ede2260f4,held_for_canonical_reconciliation
+en-0a95a524f39c,en,McDonald's Collection 2023,Promo catalogue,review,fc4d1c92-a354-42c1-b4d0-031e4ff6cccc,held_for_canonical_reconciliation
+en-9d4845056c98,en,Obsidian Flames,Card set / collection,matched_candidate,8a4ba2ca-76e9-4f70-b0b4-7074bffe8c75,held_for_canonical_reconciliation
+en-83f78934a517,en,Play! Pokémon Prize Pack Series Three,Promo catalogue,review,,held_for_canonical_reconciliation
+en-2ce37163524d,en,Trick or Trade 2023,Promo catalogue,review,,held_for_canonical_reconciliation
+en-c7c12c0f937d,en,151,Card set / collection,matched_candidate,f2d0385c-1aae-44a9-b301-bf13da9a131e,held_for_canonical_reconciliation
+en-302cbdce5dc6,en,Paradox Rift,Card set / collection,matched_candidate,5b81a847-50b5-410c-b6a2-c2a50bff76b6,held_for_canonical_reconciliation
+en-479847d5d9d5,en,Pokémon Trading Card Game Classic,Card set / collection,review,,held_for_canonical_reconciliation
+en-5922e3c676f6,en,Paldean Fates,Card set / collection,matched_candidate,47e83522-7615-40cf-b62a-ffa3c0ad55a6,held_for_canonical_reconciliation
+en-2b8243fd6d64,en,Play! Pokémon Prize Pack Series Four,Promo catalogue,review,,held_for_canonical_reconciliation
+en-e482d4044311,en,Temporal Forces,Card set / collection,matched_candidate,d6df9ecd-74e4-434b-b28c-570fee69a9b9,held_for_canonical_reconciliation
+en-7986d416b69e,en,Twilight Masquerade,Card set / collection,matched_candidate,fab8637c-da98-4be7-969e-3f558e71871f,held_for_canonical_reconciliation
+en-e1fef072b77d,en,Shrouded Fable,Card set / collection,matched_candidate,10cc2b5d-b4e5-4c68-841b-b02b7cc4f06e,held_for_canonical_reconciliation
+en-a1202513aacb,en,Play! Pokémon Prize Pack Series Five,Promo catalogue,review,,held_for_canonical_reconciliation
+en-df740e99a92d,en,Trick or Trade 2024,Promo catalogue,review,,held_for_canonical_reconciliation
+en-b8ef2c909f1e,en,Stellar Crown,Card set / collection,matched_candidate,2a6febb5-52ca-485d-885d-7d0adc094540,held_for_canonical_reconciliation
+en-33e34a4c782d,en,Surging Sparks,Card set / collection,matched_candidate,6203fef9-a8e6-4b20-b80a-68447b2166fc,held_for_canonical_reconciliation
+en-1e85d993e9e4,en,McDonald's Collection 2024,Promo catalogue,review,824ba136-9796-464c-8869-b5e495014940,held_for_canonical_reconciliation
+en-b86789f303e5,en,Prismatic Evolutions,Card set / collection,matched_candidate,fb3cd93c-9006-42f5-b026-96a9fedcf269,held_for_canonical_reconciliation
+en-dd51e73f9842,en,Play! Pokémon Prize Pack Series Six,Promo catalogue,review,,held_for_canonical_reconciliation
+en-7a6fbbd70315,en,Journey Together,Card set / collection,matched_candidate,4f3046f3-9ab7-4068-a7df-dbe2b08c263c,held_for_canonical_reconciliation
+en-84fa355e03ce,en,Destined Rivals,Card set / collection,matched_candidate,8794c18f-e977-4e4a-965e-a0cb712435be,held_for_canonical_reconciliation
+en-a459d84fe9e3,en,Black Bolt,Card set / collection,review,ba4fbfd1-901d-4a00-b27f-a30eb8946bb2,held_for_canonical_reconciliation
+en-a76544a31544,en,White Flare,Card set / collection,review,e7196d4a-f97d-466a-853c-87c58d6456cd,held_for_canonical_reconciliation
+en-f900154f1156,en,Play! Pokémon Prize Pack Series Seven,Promo catalogue,review,,held_for_canonical_reconciliation
+en-5e7baa43c285,en,MEP Black Star Promos,Promo catalogue,review,36c13b17-0e5f-42aa-a7c9-9ff7acd71e01,held_for_canonical_reconciliation
+en-4cea9dd34e60,en,MEE Basic Energies,Card set / collection,review,6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061,held_for_canonical_reconciliation
+en-ffa9ac4a086b,en,Mega Evolution,Card set / collection,matched_candidate,42d59aab-eccf-413f-8c19-d88f63664057,held_for_canonical_reconciliation
+en-12b98e6f9204,en,Phantasmal Flames,Card set / collection,matched_candidate,977bf107-e10c-4d93-a7a4-3d7b775c5003,held_for_canonical_reconciliation
+en-737b1e423c62,en,Play! Pokémon Prize Pack Series Eight,Promo catalogue,review,,held_for_canonical_reconciliation
+en-603ff366eb29,en,Ascended Heroes,Card set / collection,matched_candidate,ddc668c0-316e-4dab-8c51-625167508fd6,held_for_canonical_reconciliation
+en-04ad102367c4,en,Perfect Order,Card set / collection,matched_candidate,a6a2829a-c5e6-444f-8d92-d6e0de9fdf64,held_for_canonical_reconciliation
+en-8355779cb5d3,en,Chaos Rising,Card set / collection,matched_candidate,816ff627-a585-4953-99c4-a15c9b0b80e5,held_for_canonical_reconciliation
+en-1d7b80eb920d,en,Play! Pokémon Prize Pack Series Nine,Promo catalogue,review,,held_for_canonical_reconciliation
+en-40b9f502f511,en,Pitch Black,Card set / collection,review,2f77da8e-8199-4634-b30d-385565560731;d6d58c17-5923-496e-94ef-5819f34ae10c,held_for_canonical_reconciliation
+en-ceccb90187e4,en,30th Celebration,Card set / collection,review,,held_for_canonical_reconciliation
+en-c2a4826cab63,en,Delta Reign,Card set / collection,review,,held_for_canonical_reconciliation
+en-21b02872eb20,en,Black & White Trainer Kit,Product / deck,review,,held_for_canonical_reconciliation
+en-6f8abbba436c,en,Diamond & Pearl Trainer Kit,Product / deck,review,,held_for_canonical_reconciliation
+en-e2138469cc4d,en,EX Trainer Kit,Product / deck,review,,held_for_canonical_reconciliation
+en-f5c65c7b0a45,en,EX Trainer Kit 2,Product / deck,review,,held_for_canonical_reconciliation
+en-3b501faa2faf,en,HS Trainer Kit,Product / deck,review,,held_for_canonical_reconciliation
+en-ecc3b9bb3ca7,en,Sun & Moon Trainer Kit: Lycanroc & Alolan Raichu,Product / deck,review,,held_for_canonical_reconciliation
+en-07817e7127e4,en,XY Trainer Kit: Bisharp & Wigglytuff,Product / deck,review,,held_for_canonical_reconciliation
+en-302071e0cf37,en,XY Trainer Kit: Pikachu Libre & Suicune,Product / deck,review,,held_for_canonical_reconciliation
+en-6acc5b28480e,en,XY Trainer Kit: Sylveon & Noivern,Product / deck,review,,held_for_canonical_reconciliation
+ja-d722650df667,ja,Expansion Pack,Card set / collection,matched_candidate,46c7cd20-9ca5-4128-a244-9a04f9a4c9f7,held_for_canonical_reconciliation
+ja-e7895419dae9,ja,Pokémon Jungle,Card set / collection,matched_candidate,241c45d9-b649-4243-8c3d-4524b4e9c74c,held_for_canonical_reconciliation
+ja-96cbc157b1b7,ja,Mystery of the Fossils,Card set / collection,matched_candidate,b53b7df1-df06-44dd-a931-b287efc9aec6,held_for_canonical_reconciliation
+ja-f556d02e1e51,ja,Rocket Gang,Card set / collection,matched_candidate,e00ac7f7-8690-407d-a011-5bc5ced0ffca,held_for_canonical_reconciliation
+ja-67f6283ec86c,ja,Expansion Sheet: Vending Series 1 (Blue),Card set / collection,review,,held_for_canonical_reconciliation
+ja-9bd76242f73f,ja,Expansion Sheet: Vending Series 2 (Red),Card set / collection,review,,held_for_canonical_reconciliation
+ja-f18120dbfa37,ja,Leaders' Stadium,Card set / collection,matched_candidate,c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f,held_for_canonical_reconciliation
+ja-5bdb5008be38,ja,Expansion Sheet: Vending Series 3 (Green),Card set / collection,review,,held_for_canonical_reconciliation
+ja-f204abc8bf9b,ja,Challenge from the Darkness,Card set / collection,matched_candidate,b6e7c253-6790-49e5-8d54-34e6eb288e68,held_for_canonical_reconciliation
+ja-c8ebd015e6c7,ja,Southern Islands,Card set / collection,review,,held_for_canonical_reconciliation
+ja-a532d3dde077,ja,"Gold, Silver, to a New World...",Card set / collection,matched_candidate,769fa22e-e603-41a8-b62b-920a4abc660b,held_for_canonical_reconciliation
+ja-4c0b4b1b444a,ja,Crossing the Ruins...,Card set / collection,matched_candidate,e60f305b-5ad6-4964-b6c6-636788481ca5,held_for_canonical_reconciliation
+ja-14ecd336f6c4,ja,Awakening Legends,Card set / collection,matched_candidate,a15481a7-410b-4a98-8695-3bba0db9d226,held_for_canonical_reconciliation
+ja-1ab5b2841927,ja,"Darkness, and to Light...",Card set / collection,matched_candidate,cdaacf04-0a7c-452d-acb0-e02ca3907106,held_for_canonical_reconciliation
+ja-694d6a421da5,ja,P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-6e4fae6e522b,ja,Pokémon Card★VS,Card set / collection,matched_candidate,f1b5f7cb-2472-496b-8587-1ceab0233632,held_for_canonical_reconciliation
+ja-ddb55a1b97e2,ja,J Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-bd87aa858368,ja,Pokémon Card★web,Card set / collection,review,cdb922a5-eaec-4696-ae6f-3ad4d263c66b,held_for_canonical_reconciliation
+ja-19b0125d0ef2,ja,Base Expansion Pack,Card set / collection,matched_candidate,2d5f077d-14bb-4fb5-b565-1f4e10c078c9,held_for_canonical_reconciliation
+ja-50f9d368a5bd,ja,T Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-91f917868d08,ja,McDonald's Original Minimum★Pack,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-1b38a138c59c,ja,The Town on No Map,Card set / collection,matched_candidate,c6c46c29-2f36-4586-b18f-af1269e684d2,held_for_canonical_reconciliation
+ja-61b293a47b88,ja,Wind from the Sea,Card set / collection,matched_candidate,82510bd3-e42d-40ca-b7a1-a4a384ab42fa,held_for_canonical_reconciliation
+ja-6a862845aa36,ja,Split Earth,Card set / collection,matched_candidate,0ec33578-645f-4711-a3fe-8ea66090781e,held_for_canonical_reconciliation
+ja-e4c00d42f6bb,ja,Mysterious Mountains,Card set / collection,matched_candidate,af405f2b-1a20-4234-a6f1-ad71711eb116,held_for_canonical_reconciliation
+ja-41afcbcca321,ja,ADV-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-d25bf55a9cb2,ja,PLAY Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-d5664388d43a,ja,ADV Expansion Pack,Card set / collection,matched_candidate,13ff8457-ce34-492d-b8a0-292fd59be9a7,held_for_canonical_reconciliation
+ja-b1f20b82870a,ja,Miracle of the Desert,Card set / collection,matched_candidate,e75e6a35-beb5-4ced-a2c9-d146f471a3fd,held_for_canonical_reconciliation
+ja-65c3523196a0,ja,Rulers of the Heavens,Card set / collection,matched_candidate,3ff19dd1-048a-49b1-ad15-6a07c7351a46,held_for_canonical_reconciliation
+ja-ac97c5a93e93,ja,Magma VS Aqua: Two Ambitions,Card set / collection,review,,held_for_canonical_reconciliation
+ja-c2fcd6909311,ja,Undone Seal,Card set / collection,matched_candidate,2e6d5f2e-8528-439f-9506-e4c84df8f2dd,held_for_canonical_reconciliation
+ja-69e99c848c8f,ja,PCG-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-f4ad1a5de8de,ja,Flight of Legends,Card set / collection,matched_candidate,8063eabc-362a-4f15-a4ec-4ed73824252d,held_for_canonical_reconciliation
+ja-fbdbd21d3497,ja,Clash of the Blue Sky,Card set / collection,matched_candidate,9fa08d47-d2cd-4829-85b6-819692a6850a,held_for_canonical_reconciliation
+ja-ad3e200bd99c,ja,Rocket Gang Strikes Back,Card set / collection,matched_candidate,12f2bb10-ec15-4783-bc9b-c946546a1abc,held_for_canonical_reconciliation
+ja-9dd6c248531c,ja,"Golden Sky, Silvery Ocean",Card set / collection,matched_candidate,af6617ed-ed99-445f-8869-5a330740efc2,held_for_canonical_reconciliation
+ja-9b8346044725,ja,Mirage Forest,Card set / collection,matched_candidate,f8cb8c30-41dc-42a3-977a-23baba96fa69,held_for_canonical_reconciliation
+ja-575fbe513ad9,ja,Holon Research Tower,Card set / collection,matched_candidate,8fdf462f-ca9c-47e7-a92d-1936b082a12d,held_for_canonical_reconciliation
+ja-ee699b245332,ja,Holon Phantom,Card set / collection,matched_candidate,421a8323-4094-4c7f-8622-fb6af390becc,held_for_canonical_reconciliation
+ja-18798a4981e5,ja,Miracle Crystal,Card set / collection,matched_candidate,d832f428-8d51-4ac0-a3cf-a5d38bddb88d,held_for_canonical_reconciliation
+ja-8052362cd40f,ja,Offense and Defense of the Furthest Ends,Card set / collection,matched_candidate,b5ef438a-ddcb-4093-8c9b-572639565af5,held_for_canonical_reconciliation
+ja-ac539985be33,ja,Space-Time Creation: Diamond Collection,Card set / collection,review,,held_for_canonical_reconciliation
+ja-88bfb2a6b618,ja,Space-Time Creation: Pearl Collection,Card set / collection,review,,held_for_canonical_reconciliation
+ja-4f36e9f81e8a,ja,DP-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-e5de102d35c9,ja,Secret of the Lakes,Card set / collection,review,,held_for_canonical_reconciliation
+ja-8b06d2da9b06,ja,PPP Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-9f086f3cb6b7,ja,Shining Darkness,Card set / collection,review,,held_for_canonical_reconciliation
+ja-f9484ea5a0db,ja,World Champions Pack,Card set / collection,matched_candidate,81c25448-8d94-4736-a1c6-608597bc9622,held_for_canonical_reconciliation
+ja-99455347bdc0,ja,Movie 10th Anniversary Premium Sheet,Card set / collection,review,,held_for_canonical_reconciliation
+ja-55740d850232,ja,Dawn Dash,Card set / collection,review,,held_for_canonical_reconciliation
+ja-366d4a2e5f45,ja,Moonlit Pursuit,Card set / collection,review,,held_for_canonical_reconciliation
+ja-f2ff12dfa982,ja,Cry from the Mysterious,Card set / collection,review,,held_for_canonical_reconciliation
+ja-c285050d1f0d,ja,Temple of Anger,Card set / collection,review,,held_for_canonical_reconciliation
+ja-36bd2d9bbb54,ja,Intense Fight in the Destroyed Sky,Card set / collection,review,,held_for_canonical_reconciliation
+ja-6522461d7ad2,ja,Movie Commemoration Premium Sheet,Card set / collection,review,,held_for_canonical_reconciliation
+ja-7509d3f988ca,ja,DPt-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-cd5d6efb8f68,ja,Galactic's Conquest,Card set / collection,review,,held_for_canonical_reconciliation
+ja-2305f796724b,ja,Bonds to the End of Time,Card set / collection,review,,held_for_canonical_reconciliation
+ja-1848e7ac2f76,ja,Beat of the Frontier,Card set / collection,review,,held_for_canonical_reconciliation
+ja-0b3474b08955,ja,Advent of Arceus,Card set / collection,review,,held_for_canonical_reconciliation
+ja-6a0876b64cf1,ja,L-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-47b20ad63664,ja,HeartGold Collection,Card set / collection,matched_candidate,fa59f8a0-dac4-4de7-aad9-2c6efead8ed6,held_for_canonical_reconciliation
+ja-d1b8743147a9,ja,SoulSilver Collection,Card set / collection,matched_candidate,e8e16a23-fc7a-4ec8-abfe-b74448fa5f27,held_for_canonical_reconciliation
+ja-14fe79e19ee3,ja,Reviving Legends,Card set / collection,matched_candidate,5801c250-0aca-4282-bfce-28ecbe3b5ee0,held_for_canonical_reconciliation
+ja-0fdbb9b7ff7c,ja,Lost Link,Card set / collection,review,7dbeff79-cfb7-4ac8-8a4f-d7c73a523349,held_for_canonical_reconciliation
+ja-6b4a3e2ee98a,ja,Clash at the Summit,Card set / collection,matched_candidate,2f857613-7720-426d-be33-d2b71d6304e2,held_for_canonical_reconciliation
+ja-7f31002fd758,ja,World Collection,Card set / collection,review,,held_for_canonical_reconciliation
+ja-375d68f5afb5,ja,Collection Sheet Journey Partners,Card set / collection,review,,held_for_canonical_reconciliation
+ja-55ccb6ad65f9,ja,BW-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-0792c3a06e5e,ja,Black Collection,Card set / collection,review,,held_for_canonical_reconciliation
+ja-343ee8958d6b,ja,White Collection,Card set / collection,review,,held_for_canonical_reconciliation
+ja-ecb9396be7bc,ja,Red Collection,Card set / collection,review,,held_for_canonical_reconciliation
+ja-56563c34a89e,ja,Hail Blizzard,Card set / collection,review,,held_for_canonical_reconciliation
+ja-aaca389707bd,ja,Psycho Drive,Card set / collection,review,,held_for_canonical_reconciliation
+ja-96ef806e2324,ja,Dark Rush,Card set / collection,review,,held_for_canonical_reconciliation
+ja-344bb24cd8c0,ja,Dragon Selection,Card set / collection,review,,held_for_canonical_reconciliation
+ja-38d355385584,ja,Dragon Blade,Card set / collection,review,,held_for_canonical_reconciliation
+ja-cb452c3959d0,ja,Dragon Blast,Card set / collection,review,,held_for_canonical_reconciliation
+ja-9d708a7a2d48,ja,Cold Flare,Card set / collection,review,,held_for_canonical_reconciliation
+ja-cf12abfb207a,ja,Freeze Bolt,Card set / collection,review,,held_for_canonical_reconciliation
+ja-344a8d566d5b,ja,Plasma Gale,Card set / collection,review,,held_for_canonical_reconciliation
+ja-2d2ccae25348,ja,Spiral Force,Card set / collection,review,,held_for_canonical_reconciliation
+ja-ca4ba12512ac,ja,Thunder Knuckle,Card set / collection,review,,held_for_canonical_reconciliation
+ja-5ae629dc0d26,ja,Shiny Collection,Card set / collection,review,,held_for_canonical_reconciliation
+ja-595faa0ef482,ja,Megalo Cannon,Card set / collection,review,,held_for_canonical_reconciliation
+ja-c52b489f0897,ja,EX Battle Boost,Card set / collection,review,,held_for_canonical_reconciliation
+ja-6abb84724d30,ja,XY-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-89b882805fa9,ja,Collection X,Card set / collection,matched_candidate,80507fc7-d1db-433d-9374-4efa9ee190b4,held_for_canonical_reconciliation
+ja-746fc064572f,ja,Collection Y,Card set / collection,matched_candidate,3ee8597c-8aef-4c8c-84a7-07b9870cb35c,held_for_canonical_reconciliation
+ja-65fb81566e25,ja,Wild Blaze,Card set / collection,matched_candidate,08b708f9-3971-4219-926d-4f7accbecaf1,held_for_canonical_reconciliation
+ja-d7f21b942202,ja,Rising Fist,Card set / collection,matched_candidate,38994222-f21c-45b7-9546-8033947af026,held_for_canonical_reconciliation
+ja-c5f3e48649e7,ja,Phantom Gate,Card set / collection,matched_candidate,4456ff35-8059-4c89-bf32-72ee17974c9f,held_for_canonical_reconciliation
+ja-9081f4c9a4f2,ja,Gaia Volcano,Card set / collection,matched_candidate,29935849-0eac-4671-b4d0-8bdee32d6cb4,held_for_canonical_reconciliation
+ja-f78ca0230f1d,ja,Tidal Storm,Card set / collection,matched_candidate,a930e0e2-ed87-4a87-89ef-493b529eee93,held_for_canonical_reconciliation
+ja-3e831f8ff73d,ja,Magma Gang VS Aqua Gang: Double Crisis,Card set / collection,matched_candidate,309571d8-e64b-4859-87b1-692b7e1e8083,held_for_canonical_reconciliation
+ja-ed3ad6afcabe,ja,Emerald Break,Card set / collection,matched_candidate,1b5bed18-c3ec-4a9f-a022-caf94a6199f8,held_for_canonical_reconciliation
+ja-cb2aed7a9cd5,ja,Bandit Ring,Card set / collection,matched_candidate,ae0e96bd-371a-44ca-8090-e773a4f10d5e,held_for_canonical_reconciliation
+ja-48a193b47fdc,ja,Legendary Shine Collection,Card set / collection,matched_candidate,92c2515d-e527-4909-8ecd-27b5bef5a4b6,held_for_canonical_reconciliation
+ja-a9d8ad9a0436,ja,Blue Shock,Card set / collection,matched_candidate,13ef05bd-d69c-4a8f-aa8d-67b7d3cded50,held_for_canonical_reconciliation
+ja-cd5a3e4dd99f,ja,Red Flash,Card set / collection,matched_candidate,dbd76042-7f79-4dae-bbf4-5a096bc58e12,held_for_canonical_reconciliation
+ja-53c995f90d44,ja,Rage of the Broken Heavens,Card set / collection,matched_candidate,9cacae59-fc63-4335-ade1-d5f81373c247,held_for_canonical_reconciliation
+ja-c41fc30a9d3b,ja,PokéKyun Collection,Card set / collection,matched_candidate,d9394254-48b4-4f36-8636-a9f358dd0742,held_for_canonical_reconciliation
+ja-42c1eb351264,ja,Awakening Psychic King,Card set / collection,matched_candidate,f2f1d254-4bf3-474f-8ac1-5302b66caadf,held_for_canonical_reconciliation
+ja-425135e40e84,ja,Premium Champion Pack EX×M×BREAK,Card set / collection,matched_candidate,5e580651-2147-468d-840b-765882875199,held_for_canonical_reconciliation
+ja-3f66b633b386,ja,Cruel Traitor,Card set / collection,matched_candidate,9eaba296-0320-44ac-a684-004b5493703b,held_for_canonical_reconciliation
+ja-d22d64184649,ja,Fever-Burst Fighter,Card set / collection,matched_candidate,25233d9e-6a9e-459e-83fd-cb2a27353955,held_for_canonical_reconciliation
+ja-5bb7d768e695,ja,Mythical & Legendary Dream Shine Collection,Card set / collection,review,e7f6c5dd-06a9-4b7b-a906-dab5dc4db302,held_for_canonical_reconciliation
+ja-dceb8793c7f2,ja,Expansion Pack 20th Anniversary,Card set / collection,review,68366d94-f72c-4025-b7e9-4b7fb8ad8071,held_for_canonical_reconciliation
+ja-83fbd2dead73,ja,SM-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-cb8792f6d286,ja,Pikachu's New Friends,Card set / collection,matched_candidate,24d8e1a3-0706-4be3-87e2-b2224f680eb9,held_for_canonical_reconciliation
+ja-bc403e9d48e8,ja,Collection Moon,Card set / collection,matched_candidate,61ec9fe1-faa4-4d6b-a532-e8a44354a55e,held_for_canonical_reconciliation
+ja-ca73b1e67c2d,ja,Collection Sun,Card set / collection,matched_candidate,eab5aeee-9eb0-4bbb-bac3-96f2da23b491,held_for_canonical_reconciliation
+ja-8df82023a344,ja,Sun & Moon,Card set / collection,matched_candidate,151b0439-551d-49d6-bd35-32c4d3a2de4f,held_for_canonical_reconciliation
+ja-55e6d097e410,ja,Alolan Moonlight,Card set / collection,matched_candidate,adc01317-eecf-4615-abaa-d6f6cd37bfb7,held_for_canonical_reconciliation
+ja-971cdfb65f2d,ja,Islands Await You,Card set / collection,matched_candidate,90d3234a-9c0c-4ccc-9f39-6584223e269b,held_for_canonical_reconciliation
+ja-b6756f39f2c9,ja,Facing a New Trial,Card set / collection,matched_candidate,b5e09d26-0559-4d51-b6fb-09268a860a7e,held_for_canonical_reconciliation
+ja-cde9902fee50,ja,THE BEST OF XY,Card set / collection,review,,held_for_canonical_reconciliation
+ja-67b1962747e8,ja,Darkness that Consumes Light,Card set / collection,matched_candidate,1201d6b1-fa7e-45ac-bc22-5b2ca0f9f3bc,held_for_canonical_reconciliation
+ja-666ab116cab0,ja,To Have Seen the Battle Rainbow,Card set / collection,matched_candidate,7c4efad5-3391-4462-b911-f821c1f263dd,held_for_canonical_reconciliation
+ja-a4a29f2d81f7,ja,Shining Legends,Card set / collection,matched_candidate,efeba6f7-0d4f-48ed-a6c9-e090bf0b4eda,held_for_canonical_reconciliation
+ja-eada6233c89e,ja,Awakened Heroes,Card set / collection,matched_candidate,499d5b99-a6e2-47d5-ae7a-43c530430955,held_for_canonical_reconciliation
+ja-a60336de3244,ja,Ultradimensional Beasts,Card set / collection,matched_candidate,e67e975c-a112-4a8a-816d-8233cc779ee2,held_for_canonical_reconciliation
+ja-d804e36e664f,ja,GX Battle Boost,Card set / collection,matched_candidate,366d4855-590a-4d45-b2d4-836d06b43452,held_for_canonical_reconciliation
+ja-ef1513ab4f6e,ja,Ultra Moon,Card set / collection,matched_candidate,f5e90e91-1366-4e6e-bd42-02cf0ed84790,held_for_canonical_reconciliation
+ja-584b5e55b1bd,ja,Ultra Sun,Card set / collection,matched_candidate,b322af01-58cc-4e5a-8a82-b7ff829cb9c0,held_for_canonical_reconciliation
+ja-83edef567ded,ja,Ultra Force,Card set / collection,matched_candidate,759e4007-8afe-41e1-9a61-68adb0a05c00,held_for_canonical_reconciliation
+ja-6a519d00febd,ja,Forbidden Light,Card set / collection,matched_candidate,04fe9fe1-7206-4215-b9ab-ccea25916593,held_for_canonical_reconciliation
+ja-c0cc49fe109e,ja,Dragon Storm,Card set / collection,matched_candidate,29fb4725-1b4c-4f62-9737-0730fdcdadea,held_for_canonical_reconciliation
+ja-5bae8fb35c26,ja,Champion Road,Card set / collection,matched_candidate,c7d02c37-c9b3-4d8b-ac5c-59adfe01424d,held_for_canonical_reconciliation
+ja-fd2cafa865f0,ja,Sky-Splitting Charisma,Card set / collection,matched_candidate,71a1e194-2c3d-46d0-9584-25987bde2841,held_for_canonical_reconciliation
+ja-571ae5dabd50,ja,Thunderclap Spark,Card set / collection,matched_candidate,728a72e3-7bf2-4436-8ea1-92b54a8d38f6,held_for_canonical_reconciliation
+ja-4f05943164ce,ja,Fairy Rise,Card set / collection,matched_candidate,f34565be-80cb-47cb-914b-b4c20984cf79,held_for_canonical_reconciliation
+ja-cdebc1c8262e,ja,Super-Burst Impact,Card set / collection,matched_candidate,3e80bfaf-77fd-4f5d-82ec-4e407a74d722,held_for_canonical_reconciliation
+ja-3eb2e555b4ff,ja,Dark Order,Card set / collection,matched_candidate,3466c5e7-e660-4467-a756-44f4d5f7a853,held_for_canonical_reconciliation
+ja-14c79248f8f3,ja,GX Ultra Shiny,Card set / collection,matched_candidate,eb72605f-506f-4ab5-87f7-1aafeb95a278,held_for_canonical_reconciliation
+ja-44e48422e5bf,ja,Tag Bolt,Card set / collection,matched_candidate,428cd43a-548e-4482-a81f-0d06b2869835,held_for_canonical_reconciliation
+ja-1492e357d239,ja,Night Unison,Card set / collection,matched_candidate,05f31b7b-957f-4b0d-a321-29ca7edde5d4,held_for_canonical_reconciliation
+ja-1d013958f902,ja,Full Metal Wall,Card set / collection,matched_candidate,30e027c6-8973-4b8a-93b8-682251f39f28,held_for_canonical_reconciliation
+ja-8a5c47e5fb6a,ja,Double Blaze,Card set / collection,matched_candidate,520d745d-3f2d-4921-8ecd-4e4ff695493a,held_for_canonical_reconciliation
+ja-c4a139835b63,ja,GG End,Card set / collection,matched_candidate,d9378aeb-aa81-4cbe-b790-c8432b66aeb5,held_for_canonical_reconciliation
+ja-30e4f6411a6b,ja,Movie Special Pack Great Detective Pikachu,Card set / collection,review,59ec63a0-5a2a-452b-a03c-90d9264b90da,held_for_canonical_reconciliation
+ja-817e33c42235,ja,Sky Legend,Card set / collection,matched_candidate,2e159940-3f5c-4ec9-8805-c53219263641,held_for_canonical_reconciliation
+ja-6c05c1b394e2,ja,Miracle Twin,Card set / collection,matched_candidate,d0dbab35-0a77-4dcf-a464-88bb0950bdc8,held_for_canonical_reconciliation
+ja-4567e4111ab9,ja,Remix Bout,Card set / collection,matched_candidate,54c662ed-8c6b-428c-b07d-1bb58e74f5a0,held_for_canonical_reconciliation
+ja-b362201ebfc8,ja,Dream League,Card set / collection,matched_candidate,5249f6c6-8418-41fe-8283-af5948b26c63,held_for_canonical_reconciliation
+ja-360585a4f68e,ja,Alter Genesis,Card set / collection,matched_candidate,80ffb692-f29d-450a-95eb-a3ddd60257b8,held_for_canonical_reconciliation
+ja-3470002c85af,ja,TAG TEAM GX: Tag All Stars,Card set / collection,matched_candidate,fe68fe5a-4e40-477a-8bcc-0fa35ef392ef,held_for_canonical_reconciliation
+ja-68e24f4b9e33,ja,S-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-9a9a258e145f,ja,Shield,Card set / collection,matched_candidate,914a4e3c-d77c-4ac6-8b88-e38cd276d282,held_for_canonical_reconciliation
+ja-6ca3924b3841,ja,Sword,Card set / collection,matched_candidate,5287277e-bcbe-4f21-b2d3-c7187bc752dc,held_for_canonical_reconciliation
+ja-41bc1f260fcc,ja,VMAX Rising,Card set / collection,matched_candidate,41462e36-155b-40f1-92ee-29a94b4cb353,held_for_canonical_reconciliation
+ja-4b1b5f2dbf56,ja,Rebellion Crash,Card set / collection,matched_candidate,50370e02-5cc9-44ce-95bd-44743d477934,held_for_canonical_reconciliation
+ja-bc61668ecd97,ja,Explosive Walker,Card set / collection,matched_candidate,d64f8486-fa52-4f0d-be4d-be6dc27d1671,held_for_canonical_reconciliation
+ja-fe67deb06caa,ja,Infinity Zone,Card set / collection,matched_candidate,fa32c0cb-7818-4123-ab6e-9f6cfe2a9950,held_for_canonical_reconciliation
+ja-5dec0101b162,ja,Legendary Heartbeat,Card set / collection,matched_candidate,36df02c6-0228-48fc-bb24-b1d73952cc94,held_for_canonical_reconciliation
+ja-d6983c9293ae,ja,Amazing Volt Tackle,Card set / collection,matched_candidate,bc55a6dd-e9c1-4413-a5a7-a4c1d2a37a90,held_for_canonical_reconciliation
+ja-5c76d8bbd31d,ja,Shiny Star V,Card set / collection,matched_candidate,9bd12a10-0bc3-4f75-ba74-d62c50293184,held_for_canonical_reconciliation
+ja-ad7c897babc2,ja,Rapid Strike Master,Card set / collection,matched_candidate,d770730a-ab9c-4e53-acfa-aff8cbec8c0b,held_for_canonical_reconciliation
+ja-2b362d2b173a,ja,Single Strike Master,Card set / collection,matched_candidate,b4f065d4-9b38-4489-a055-cc6cc310784f,held_for_canonical_reconciliation
+ja-828974f65bfc,ja,Peerless Fighters,Card set / collection,matched_candidate,84bcceee-6caf-4ca9-b3d9-883b42773dfc,held_for_canonical_reconciliation
+ja-1dc54d0d52c9,ja,Jet-Black Spirit,Card set / collection,matched_candidate,bbb71d0a-367a-466e-970f-2f841fea6e98,held_for_canonical_reconciliation
+ja-c54e31e73b73,ja,Silver Lance,Card set / collection,matched_candidate,60d3fc64-7e36-473b-ae5c-b071c5aa6c98,held_for_canonical_reconciliation
+ja-9ff3481acdf9,ja,Eevee Heroes,Card set / collection,matched_candidate,5659e6b4-48db-4a4c-8883-e26b64f2c41f,held_for_canonical_reconciliation
+ja-2a45df0b3090,ja,Blue Sky Stream,Card set / collection,matched_candidate,60a21d2e-cfa7-4103-ba7c-8e35f1b42070,held_for_canonical_reconciliation
+ja-419a40449874,ja,Skyscraping Perfection,Card set / collection,matched_candidate,ff823ecc-020f-4804-9194-3671ce9a1a81,held_for_canonical_reconciliation
+ja-d02fca79b23e,ja,Fusion Arts,Card set / collection,matched_candidate,5cbd3a81-6b24-4039-8559-eed8eac7877c,held_for_canonical_reconciliation
+ja-190989f70989,ja,25th Anniversary Collection,Card set / collection,review,8d718087-7c8e-4894-a938-2cd2a3210d2c,held_for_canonical_reconciliation
+ja-bfa6e28a825b,ja,Promo Card Pack 25th Anniversary Edition,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-5df7e14f52c6,ja,VMAX Climax,Card set / collection,matched_candidate,41f64718-acd1-4c40-8a40-5c67daac2cb8,held_for_canonical_reconciliation
+ja-96e92be4b754,ja,Star Birth,Card set / collection,matched_candidate,43d798d9-3dbe-4997-a6eb-ed65af962403,held_for_canonical_reconciliation
+ja-49441998dfc5,ja,Battle Region,Card set / collection,matched_candidate,52d75bb6-e7a0-42a5-a847-923254ac906c,held_for_canonical_reconciliation
+ja-930d500eb1d9,ja,Space Juggler,Card set / collection,matched_candidate,50caa26f-e963-4122-a83b-3399c3eea056,held_for_canonical_reconciliation
+ja-ca6a213c93b9,ja,Time Gazer,Card set / collection,matched_candidate,50fc7442-25ac-4bfc-851b-7e7bf9b30c2d,held_for_canonical_reconciliation
+ja-c83a71b0ee77,ja,Dark Phantasma,Card set / collection,matched_candidate,74fbb8bf-90ae-449f-9caa-725890af4617,held_for_canonical_reconciliation
+ja-ff2e38d6fae3,ja,Pokémon GO,Card set / collection,matched_candidate,baeee2c6-c600-422d-a4b2-6d84ac4baaba,held_for_canonical_reconciliation
+ja-7f2bbdd801e4,ja,Lost Abyss,Card set / collection,matched_candidate,18813c1f-2394-468e-91d4-7a81cf6fb201,held_for_canonical_reconciliation
+ja-e7a3195eec67,ja,Incandescent Arcana,Card set / collection,matched_candidate,1d7afdcf-03bc-4e5e-a213-4b0439924ee9,held_for_canonical_reconciliation
+ja-e770f86aba36,ja,Paradigm Trigger,Card set / collection,matched_candidate,7f99a1ea-2a6b-4cdc-8ac5-c484716d164b,held_for_canonical_reconciliation
+ja-eeac9c4c185b,ja,SV-P Promotional cards,Promo catalogue,review,c20234cb-c629-4383-b107-c49b38b682ae,held_for_canonical_reconciliation
+ja-3ae335269b5c,ja,VSTAR Universe,Card set / collection,matched_candidate,d6a23ad9-7d3d-482c-a477-304584a335e3,held_for_canonical_reconciliation
+ja-9dba419ea2be,ja,Scarlet ex,Card set / collection,matched_candidate,cf6f4a09-69a3-4497-9c40-beb1221063ea,held_for_canonical_reconciliation
+ja-b1fc33531199,ja,Violet ex,Card set / collection,matched_candidate,fffb3282-3442-41e4-b4a2-9be06199186f,held_for_canonical_reconciliation
+ja-2169700da313,ja,Triplet Beat,Card set / collection,matched_candidate,ca01c7f7-c1b0-4a4a-8aa0-e2c0f617d306,held_for_canonical_reconciliation
+ja-0a61f0dd4a65,ja,Clay Burst,Card set / collection,matched_candidate,44906e0e-477b-4417-a71d-5330528d3d82,held_for_canonical_reconciliation
+ja-ac6fcae41357,ja,Snow Hazard,Card set / collection,matched_candidate,a6a65a33-74fa-48d5-bdc0-38d6eaa08ef3,held_for_canonical_reconciliation
+ja-d0f14d808a91,ja,Pokémon Card 151,Card set / collection,matched_candidate,e42556b8-3e82-44bb-8c52-c06b893ee4a3,held_for_canonical_reconciliation
+ja-b5d3a493d7fc,ja,Ruler of the Black Flame,Card set / collection,matched_candidate,d1ce7f2b-1f52-452e-9d90-0155bbfdb6e6,held_for_canonical_reconciliation
+ja-826c95e68c4c,ja,Raging Surf,Card set / collection,matched_candidate,92afb596-5060-44b4-a53a-12d815e94f52,held_for_canonical_reconciliation
+ja-19e415254ef6,ja,Ancient Roar,Card set / collection,matched_candidate,be25b6d3-a750-48a3-b8af-804ddc355452,held_for_canonical_reconciliation
+ja-a38ca556c129,ja,Future Flash,Card set / collection,matched_candidate,344551fb-6b1b-418a-8b59-680096d4c9bf,held_for_canonical_reconciliation
+ja-f3d64cdaf563,ja,Shiny Treasure ex,Card set / collection,review,9e539009-b72c-43e2-8f25-f183aa4bc4b7,held_for_canonical_reconciliation
+ja-a9d3c3b46ca8,ja,Cyber Judge,Card set / collection,matched_candidate,987716a9-9030-4dc8-89c2-db2bdf1a409d,held_for_canonical_reconciliation
+ja-f0a550785a60,ja,Wild Force,Card set / collection,matched_candidate,688851ac-3d75-4431-a008-664294279341,held_for_canonical_reconciliation
+ja-d25e1390fd8d,ja,Crimson Haze,Card set / collection,matched_candidate,5f94a6e3-99a2-4eba-b6c7-c689dd509da8,held_for_canonical_reconciliation
+ja-6f8cea791535,ja,Transformation Mask,Card set / collection,matched_candidate,5b61106a-7ae7-4ee6-90cc-c101fb8738b8,held_for_canonical_reconciliation
+ja-2bfd313d693f,ja,Night Wanderer,Card set / collection,matched_candidate,6e698306-d093-44e9-8673-cc513e36bd8d,held_for_canonical_reconciliation
+ja-ad526e9fc3de,ja,Stellar Miracle,Card set / collection,matched_candidate,f09d1e6a-c76e-4a2d-bb45-971e54983c2d,held_for_canonical_reconciliation
+ja-0cd79b1e89bd,ja,Paradise Dragona,Card set / collection,matched_candidate,98a82354-b058-4bda-ad66-359a7bd7c36f,held_for_canonical_reconciliation
+ja-887597e51882,ja,Super Electric Breaker,Card set / collection,matched_candidate,5f0817f3-5386-4a29-9391-0529c5fcb98b,held_for_canonical_reconciliation
+ja-401830040344,ja,Terastal Fest ex,Card set / collection,matched_candidate,a7459948-3544-4122-8fec-7fc6aecfd2e5,held_for_canonical_reconciliation
+ja-c66f053aaf61,ja,Battle Partners,Card set / collection,matched_candidate,a65593d7-236b-4891-9c88-670650f4faaf,held_for_canonical_reconciliation
+ja-46088b1e25d5,ja,Hot Wind Arena,Card set / collection,matched_candidate,ff9ddb2d-d5c3-4c2c-bc48-89e68ea03d96,held_for_canonical_reconciliation
+ja-6cc224cf3b12,ja,Glory of the Rocket Gang,Card set / collection,matched_candidate,db4076ae-7ab9-408d-988c-34aa33b7b906,held_for_canonical_reconciliation
+ja-f2b4be41f5a8,ja,Black Bolt,Card set / collection,matched_candidate,9f85e389-ab18-4448-948c-fdc067aa188b,held_for_canonical_reconciliation
+ja-cabe28faa7c7,ja,White Flare,Card set / collection,matched_candidate,316ec693-c6dc-408c-aaca-2b57afdb9249,held_for_canonical_reconciliation
+ja-201f35403317,ja,M-P Promotional cards,Promo catalogue,review,f13ab591-e706-4f7c-b4c6-8fed5526ea87,held_for_canonical_reconciliation
+ja-75c63791ecae,ja,Mega Brave,Card set / collection,matched_candidate,a05ee14c-d4fb-4598-8470-e677e3c06f22,held_for_canonical_reconciliation
+ja-736839987504,ja,Mega Symphonia,Card set / collection,matched_candidate,b94f87ff-5d32-436a-87e4-50149151dba0,held_for_canonical_reconciliation
+ja-f44e493607aa,ja,Inferno X,Card set / collection,matched_candidate,8822dd6b-6f88-4ea6-9c59-0f766b63fc2b,held_for_canonical_reconciliation
+ja-f8999c534ee8,ja,MEGA Dream ex,Card set / collection,matched_candidate,53abf462-8a8c-4f05-8e75-57726a38ce9e,held_for_canonical_reconciliation
+ja-ed06c96f7471,ja,Nihil Zero,Card set / collection,matched_candidate,4be18668-d39a-44a8-831c-98e250f10538,held_for_canonical_reconciliation
+ja-ad8588bb85a3,ja,Ninja Spinner,Card set / collection,matched_candidate,c263caec-8234-4348-9ade-34d25ad4e6e7,held_for_canonical_reconciliation
+ja-53c96b5e509c,ja,Abyss Eye,Card set / collection,matched_candidate,91be8fc7-b2ed-4169-b41e-0d374e4d466a,held_for_canonical_reconciliation
+ja-ca7893199ddf,ja,Storm Emeralda,Card set / collection,review,,held_for_canonical_reconciliation
+ja-b1b5ce787164,ja,30th Celebration,Card set / collection,review,,held_for_canonical_reconciliation
+ja-b1764b4acecd,ja,Ash vs Team Rocket Battle Set,Product / deck,review,,held_for_canonical_reconciliation
+ja-08c1ac029230,ja,Aura Seeker,Unconfirmed candidate,review,,held_for_canonical_reconciliation
+ja-ed85c17ec216,ja,Blastoise & Kyurem Combo Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-25e1785bd838,ja,Eevee Heroes VMAX Special Set,Product / deck,review,,held_for_canonical_reconciliation
+ja-fb8b80ed6a17,ja,Exciting Battle for Everyone,Product / deck,review,,held_for_canonical_reconciliation
+ja-cc38166449ff,ja,Garchomp Half Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-67342d154972,ja,Genesect Half Deck (Mewtwo vs Genesect),Product / deck,review,,held_for_canonical_reconciliation
+ja-354378f4f0c7,ja,Golduck BREAK & Palkia-EX Combo Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-b505cc9dc7df,ja,Hydreigon Half Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-8fdc44f9f846,ja,Hyper Metal Chain Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-1e32a0d9a484,ja,Keldeo Battle Strength Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-4a0cce65985c,ja,M Charizard-EX Mega Battle Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-3305a29da758,ja,Mega Audino-EX Mega Battle Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-f552fe7fd0ba,ja,Mega Rayquaza-EX Battle Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-e9c6c3a99efd,ja,Mewtwo Half Deck (Mewtwo vs Genesect),Product / deck,review,,held_for_canonical_reconciliation
+ja-5f9ba7db5890,ja,Noivern BREAK Evolution Pack,Product / deck,review,,held_for_canonical_reconciliation
+ja-b6fd25eade16,ja,Premium Trainer Box,Product / deck,review,,held_for_canonical_reconciliation
+ja-6ad21e162182,ja,Raichu BREAK Evolution Pack,Product / deck,review,,held_for_canonical_reconciliation
+ja-0ee044c14656,ja,Rockruff Full Power Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-6610d1bc091c,ja,Shaymin LV.X Collection Pack,Product / deck,review,,held_for_canonical_reconciliation
+ja-5e3231638035,ja,Silver Lance & Jet-Black Spirit Promo Set,Product / deck,review,,held_for_canonical_reconciliation
+ja-db1b40ed6128,ja,Start Deck 100,Product / deck,review,,held_for_canonical_reconciliation
+ja-1d2fff8e3828,ja,Tapu Bulu-GX Enhanced Starter Set,Product / deck,review,,held_for_canonical_reconciliation
+ja-6b114003e2b1,ja,Team Plasma Battle Gift Set,Product / deck,review,,held_for_canonical_reconciliation
+ja-dc7d8d809c94,ja,Unnumbered Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+ja-dd7a387ccc7e,ja,VMAX Special Set,Product / deck,review,,held_for_canonical_reconciliation
+ja-f8a1666d0bc0,ja,XY Beginning Set,Product / deck,review,,held_for_canonical_reconciliation
+ja-fed7090443ee,ja,Xerneas Half Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-647e29f1f683,ja,Yveltal Half Deck,Product / deck,review,,held_for_canonical_reconciliation
+ja-5bd5bd4a3cbb,ja,Zygarde-EX Perfect Battle Deck,Product / deck,review,,held_for_canonical_reconciliation
+zh-CN-cff2a96842bc,zh-CN,Storming Emergence: Abundant,Card set / collection,matched_candidate,195b9d09-dd64-4e41-9b7d-0c9fb7f2062c,held_for_canonical_reconciliation
+zh-CN-67d0d50f4a30,zh-CN,Storming Emergence: Radiant,Card set / collection,matched_candidate,465f5ed6-b32e-4cf0-a890-c39bc812ca48,held_for_canonical_reconciliation
+zh-CN-ddc368ed5a42,zh-CN,Storming Emergence: Verdant,Card set / collection,matched_candidate,64e14d7e-e9f0-49d1-9e43-f79eafc02f53,held_for_canonical_reconciliation
+zh-CN-7201f0f4adef,zh-CN,Battle Elite,Card set / collection,matched_candidate,06c44056-4885-486e-a343-d7069742a403,held_for_canonical_reconciliation
+zh-CN-985b569834f5,zh-CN,Shining Synergy: Shower,Card set / collection,matched_candidate,1e70ad98-8533-4fd0-8d02-15dda333cce9,held_for_canonical_reconciliation
+zh-CN-e431181de676,zh-CN,Shining Synergy: Summon,Card set / collection,matched_candidate,a31177e5-6f44-4236-8d84-b8afaecd825f,held_for_canonical_reconciliation
+zh-CN-d9a73eee6c51,zh-CN,Shining Synergy: Supreme,Card set / collection,matched_candidate,1c9493a2-e579-4007-89f2-c72fdc66a2d9,held_for_canonical_reconciliation
+zh-CN-9a65c0b3e375,zh-CN,Striking Competition,Card set / collection,matched_candidate,7b9800e5-fbfd-4842-b4a0-998e53981f5c,held_for_canonical_reconciliation
+zh-CN-278793c85063,zh-CN,Dynamax Clash: Flame,Card set / collection,matched_candidate,01859240-c3d3-4074-832f-782f61c4fcb6,held_for_canonical_reconciliation
+zh-CN-3e2d274b4ab5,zh-CN,Dynamax Clash: Thunder,Card set / collection,matched_candidate,e98642e8-97ac-4a08-b013-c0b13b70a269,held_for_canonical_reconciliation
+zh-CN-07dcd02896a4,zh-CN,Dynamax Tactics,Card set / collection,matched_candidate,8fa6e9bb-57f0-41d9-a4dd-611af3e1daf8,held_for_canonical_reconciliation
+zh-CN-000aba863495,zh-CN,Vivid Portrayals: Indigo,Card set / collection,matched_candidate,7e37b0c3-bae5-4591-89c8-815b6cb4b80d,held_for_canonical_reconciliation
+zh-CN-e3ed5d35db24,zh-CN,Vivid Portrayals: Obsidian,Card set / collection,matched_candidate,96cbe78b-6461-4875-a678-c2fc65b0d756,held_for_canonical_reconciliation
+zh-CN-dda220ef310e,zh-CN,Brilliant Counterattack,Card set / collection,matched_candidate,ad94757c-4ad8-43a2-848b-3ac6dd4ca89d,held_for_canonical_reconciliation
+zh-CN-03b5c4fdbb4b,zh-CN,Primordial Arts: Overgrow,Card set / collection,review,42e798dd-f171-4f0b-916e-2386fd2a353f,held_for_canonical_reconciliation
+zh-CN-5d92ddb62f3d,zh-CN,Primordial Arts: Torrent,Card set / collection,review,f9223984-d0cf-445e-9d9f-7d447855a904,held_for_canonical_reconciliation
+zh-CN-9e170a241e41,zh-CN,Scorching Skies,Card set / collection,matched_candidate,c651409a-2274-445d-99b0-d1b8e325cbca,held_for_canonical_reconciliation
+zh-CN-f0b761b734c3,zh-CN,Polychromatic Gathering: Friends,Card set / collection,matched_candidate,210bbf2d-5f63-4e1b-8af0-a2e093c53746,held_for_canonical_reconciliation
+zh-CN-717687c74d70,zh-CN,Polychromatic Gathering: Origin,Card set / collection,matched_candidate,7846702c-18c4-4d74-9ac1-2932017fa467,held_for_canonical_reconciliation
+zh-CN-06b75de401d9,zh-CN,Flame Dance of the End,Card set / collection,matched_candidate,cd9dbc9a-2f9b-46af-b94a-faaeeb026395,held_for_canonical_reconciliation
+zh-CN-26d69c463f17,zh-CN,Gallant Galaxy: Brave,Card set / collection,matched_candidate,a952240f-194f-45a1-bd38-e8f5827c1200,held_for_canonical_reconciliation
+zh-CN-ef32f1cf698e,zh-CN,Gallant Galaxy: Charm,Card set / collection,matched_candidate,92ffa013-edb7-4c49-8ed1-c50f0162d41d,held_for_canonical_reconciliation
+zh-CN-805005bd58b7,zh-CN,Overshadowed Radiance,Card set / collection,review,,held_for_canonical_reconciliation
+zh-CN-7830668b1cfa,zh-CN,Marine Shadow: Banish,Card set / collection,review,3c74abe8-5236-4c84-ae5b-5a5f367b63d4,held_for_canonical_reconciliation
+zh-CN-4e11f8df413a,zh-CN,Marine Shadow: Roar,Card set / collection,review,786678a0-e593-4205-b391-b392f1e71592,held_for_canonical_reconciliation
+zh-CN-2097f2637c37,zh-CN,Victory Lodestar,Card set / collection,review,,held_for_canonical_reconciliation
+zh-CN-95c5eec4132c,zh-CN,"Ancient Times, Future Progress",Card set / collection,matched_candidate,31225f01-ead5-4e8d-83f8-c06978e706da,held_for_canonical_reconciliation
+zh-CN-a61ae6f4afab,zh-CN,Collection 151 — shared numbered catalogue,Card set / collection,review,8e3da79a-1d8d-40ae-9f09-0150728cfbd6,held_for_canonical_reconciliation
+zh-CN-d1ae3e65a60e,zh-CN,Collection 151: Journey,Pack edition,review,8e3da79a-1d8d-40ae-9f09-0150728cfbd6,held_for_canonical_reconciliation
+zh-CN-d9d612b88239,zh-CN,Gem Pack Vol. 1,Card set / collection,review,6fddd811-836e-4304-8d28-f36caef0d044,held_for_canonical_reconciliation
+zh-CN-e26d5aa6bcba,zh-CN,Miracle Journey,Card set / collection,matched_candidate,dc879690-6576-4cde-99ed-1eb74096b96c,held_for_canonical_reconciliation
+zh-CN-8e72634373e1,zh-CN,Collection 151: Hope,Pack edition,review,,held_for_canonical_reconciliation
+zh-CN-5073a61bee4f,zh-CN,Fearless Terastal,Card set / collection,matched_candidate,1170881a-cba2-4979-acc8-e705d80b9894,held_for_canonical_reconciliation
+zh-CN-1adc23205ba3,zh-CN,Gem Pack Vol. 2,Card set / collection,review,8a18b285-dbf1-4acb-8374-e693849d80e1,held_for_canonical_reconciliation
+zh-CN-5d61b9b8011b,zh-CN,Journey Theme Pack,Card set / collection,review,3738516b-cd62-4541-aa2b-2cbfcb4197ce,held_for_canonical_reconciliation
+zh-CN-399849ceb89b,zh-CN,Bonus Round,Card set / collection,matched_candidate,0a6e8d07-bd4b-4d06-abdc-a6f27e88eb1b,held_for_canonical_reconciliation
+zh-CN-06deae5bed81,zh-CN,Collection 151: Scare,Pack edition,review,,held_for_canonical_reconciliation
+zh-CN-7788e508be5a,zh-CN,Ardent Obsidian,Card set / collection,matched_candidate,9cc48fa9-3a36-4069-b58a-3f29854cca74,held_for_canonical_reconciliation
+zh-CN-28f3f6b85300,zh-CN,Gem Pack Vol. 3,Card set / collection,review,06ae8d84-49e1-4363-a97b-1f22ee392ed7,held_for_canonical_reconciliation
+zh-CN-18809c23b06f,zh-CN,Collection 151: Gather,Pack edition,review,,held_for_canonical_reconciliation
+zh-CN-109ac9dca3ab,zh-CN,Arcane Truth,Card set / collection,matched_candidate,b921de8d-c127-44c4-825b-bac5dd7e5661,held_for_canonical_reconciliation
+zh-CN-48747304f749,zh-CN,Travel Theme Pack,Card set / collection,review,b00d2f30-2ef5-4a8c-9263-d2b337a053be,held_for_canonical_reconciliation
+zh-CN-10c8789df3d3,zh-CN,Blade Awakening,Card set / collection,review,1f37ca26-f79b-47b6-9ba8-87f6c14b03fa,held_for_canonical_reconciliation
+zh-CN-af2bb9712d74,zh-CN,Gem Pack Vol. 4,Card set / collection,review,ceddde89-0705-4372-95f2-88c20b89fddd,held_for_canonical_reconciliation
+zh-CN-b8243f986930,zh-CN,Sparkling Fable,Card set / collection,matched_candidate,488ef846-c6f3-42e6-8fc1-7bf2928b2bcf,held_for_canonical_reconciliation
+zh-CN-f8b98fe843c8,zh-CN,Gem Pack Vol. 5,Card set / collection,review,67ae722c-a017-4446-a14e-50d70df1f98d,held_for_canonical_reconciliation
+zh-CN-cad997c1ded1,zh-CN,Kitakami Theme Pack,Card set / collection,review,5ee47c31-74b5-4648-9326-468a939e455d,held_for_canonical_reconciliation
+zh-CN-46cf9342eacb,zh-CN,Stellar Crystal,Card set / collection,matched_candidate,2034da87-a87d-40e9-a8f2-85ca06fb8b5f,held_for_canonical_reconciliation
+zh-CN-4adaa70c78eb,zh-CN,Terastal Gathering,Card set / collection,matched_candidate,034890ae-726c-44ec-bae9-b3e7d1ffdf45,held_for_canonical_reconciliation
+zh-CN-952e1d8d027f,zh-CN,Together in Pursuit of Glory,Card set / collection,review,,held_for_canonical_reconciliation
+zh-CN-7f5295a2c6c4,zh-CN,Gem Pack Vol. 6,Card set / collection,review,,held_for_canonical_reconciliation
+zh-CN-02c213890e59,zh-CN,30th Celebration,Card set / collection,review,,held_for_canonical_reconciliation
+zh-CN-6262f13e0152,zh-CN,30th-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+zh-CN-b9059c7402f0,zh-CN,Dynamax Clash V Starter Decks,Product / deck,review,,held_for_canonical_reconciliation
+zh-CN-754715d30142,zh-CN,Gallant Galaxy V Starter Decks,Product / deck,review,f872bb02-eb6b-4245-a13a-b5d72b36c5d9,held_for_canonical_reconciliation
+zh-CN-0b8024065063,zh-CN,M-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+zh-CN-17407eca3331,zh-CN,Pokémon Card Game Battle Academy,Product / deck,review,0c923759-c6cc-4b69-b205-eda5a97d3629,held_for_canonical_reconciliation
+zh-CN-0f55490115e0,zh-CN,Primordial Arts V Starter Decks,Product / deck,review,,held_for_canonical_reconciliation
+zh-CN-a4ed9d742e92,zh-CN,S-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+zh-CN-b0139dcd5a32,zh-CN,SM-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+zh-CN-b14492ebba16,zh-CN,SV-P Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+zh-CN-bbdfaf4b06d8,zh-CN,Shining Synergy GX Starter Decks,Product / deck,review,78341b8d-8fbc-4749-8619-ee7a3bdc2131,held_for_canonical_reconciliation
+zh-CN-f17188026f82,zh-CN,Start Deck 100,Product / deck,review,c9cdce5f-5238-4671-a1d4-af181a97dd47,held_for_canonical_reconciliation
+zh-CN-0fba1dd957df,zh-CN,Storming Emergence GX Starter Decks,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-de875ceeabe3,zh-TW,Base Set,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-e8c0625ae4df,zh-TW,Pikachu World Collection — Traditional Chinese card,Promo catalogue,review,,held_for_canonical_reconciliation
+zh-TW-174859e51cd4,zh-TW,EX Legend Maker,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-1d61985413dc,zh-TW,EX Trainer Kit 2,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-0a96f0a664ca,zh-TW,All Stars Collection: Set A,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-a95d29db02ae,zh-TW,All Stars Collection: Set B,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-bbd57f4d265f,zh-TW,All Stars GX Starter Deck,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-72025093612f,zh-TW,Dreams Come True Collection: Set A,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-b2b8b4361d91,zh-TW,Dreams Come True Collection: Set B,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-6f7e74c62ae7,zh-TW,Dreams Come True GX Starter Deck,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-fa701929df73,zh-TW,Double Burst GX Starter Deck,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-697dc026abac,zh-TW,Double Burst: Set A,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-a1c2fff1a1ef,zh-TW,Double Burst: Set B,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-ffbc69fcb8f3,zh-TW,Legendary Clash GX Starter Deck,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-a3f1035342ed,zh-TW,Legendary Clash: Set A,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-d8a28fa21e5b,zh-TW,Legendary Clash: Set B,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-7a214d78ab26,zh-TW,Sword & Shield V Starter Deck,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-08c3dcbf7c89,zh-TW,Sword & Shield: Set A,Card set / collection,matched_candidate,9ebab1ca-0ebf-429c-83ed-9fe6735f9832,held_for_canonical_reconciliation
+zh-TW-1d3647011297,zh-TW,Sword & Shield: Set B,Card set / collection,matched_candidate,205ab185-9052-4965-b9f0-20fe44b7b61f,held_for_canonical_reconciliation
+zh-TW-881ba9c7b206,zh-TW,Infinite Power V Starter Deck,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-b9871021b603,zh-TW,Infinite Power: Set A,Card set / collection,matched_candidate,8c05228d-e60d-46c6-888b-c13d4b51660d,held_for_canonical_reconciliation
+zh-TW-b29b74d4c92f,zh-TW,Infinite Power: Set B,Card set / collection,matched_candidate,f3b1c12f-8002-41e4-b682-9109c6628a71,held_for_canonical_reconciliation
+zh-TW-4fe71a34ad45,zh-TW,Amazing Volt Tackle,Card set / collection,matched_candidate,ec980234-74f1-4b88-bafa-a8c84ab36d38,held_for_canonical_reconciliation
+zh-TW-7c2698d8198c,zh-TW,Shiny Star V,Card set / collection,matched_candidate,e6feffca-611b-479c-bfb2-43b80374458f,held_for_canonical_reconciliation
+zh-TW-34fe73a731d5,zh-TW,V Starter Deck: Partner,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-22bafcb43c40,zh-TW,Rapid Strike Master,Card set / collection,matched_candidate,fa4fe313-ee43-4824-91bd-b3a6c16aaf7c,held_for_canonical_reconciliation
+zh-TW-9097625c11de,zh-TW,Single Strike Master,Card set / collection,matched_candidate,384319e0-5887-4575-933c-5d05848e8e1f,held_for_canonical_reconciliation
+zh-TW-4f37ed1f19a0,zh-TW,V Starter Deck: Challenge,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-4580c5755bb6,zh-TW,Peerless Fighters,Card set / collection,matched_candidate,8ee58e69-05d9-4aca-94be-9b1099f0aa3f,held_for_canonical_reconciliation
+zh-TW-948804025988,zh-TW,Jet-Black Spirit,Card set / collection,matched_candidate,565ca9b6-c3b7-4398-a96a-d0dfd1bc1886,held_for_canonical_reconciliation
+zh-TW-1ce049c3e526,zh-TW,Silver Lance,Card set / collection,matched_candidate,631ac177-7fbc-4a0f-9ec5-85660f4009cd,held_for_canonical_reconciliation
+zh-TW-0a24fa37675e,zh-TW,Eevee Heroes,Card set / collection,matched_candidate,b4dbdf8f-b0ec-4185-8e74-0c3b2b0e7648,held_for_canonical_reconciliation
+zh-TW-e025c97a3003,zh-TW,V Starter Deck: Evolution,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-0896e483a152,zh-TW,Blue Sky Stream,Card set / collection,matched_candidate,dfc21eb0-e33a-4cc8-b368-82e5bafa71da,held_for_canonical_reconciliation
+zh-TW-3c7f9a347753,zh-TW,Skyscraping Perfection,Card set / collection,matched_candidate,4a00009f-25a3-4dce-83dd-7bc6b757c046,held_for_canonical_reconciliation
+zh-TW-ea9bed1e2837,zh-TW,Family Pokémon Card Game,Product / deck,review,929a6c13-5b43-4aba-b887-1f86cc94ce31,held_for_canonical_reconciliation
+zh-TW-1e56408052d8,zh-TW,Greninja V-UNION,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-4be3f10dba4e,zh-TW,Mewtwo V-UNION,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-fd587194a3dc,zh-TW,Zacian V-UNION,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-ed2b47d834a0,zh-TW,Fusion Arts,Card set / collection,matched_candidate,87c0562d-f7e7-4395-8a2a-a17705341951,held_for_canonical_reconciliation
+zh-TW-b504d14277db,zh-TW,V Starter Deck: Power,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-0b27f7830bd5,zh-TW,25th Anniversary Collection,Card set / collection,matched_candidate,52d0226c-123a-4b62-bcc4-0433b5afb56f,held_for_canonical_reconciliation
+zh-TW-3f0100ff734e,zh-TW,VMAX Climax,Card set / collection,matched_candidate,7201a603-407b-491c-b118-467f6549e400,held_for_canonical_reconciliation
+zh-TW-da84927efd3c,zh-TW,Premium Trainer Box VSTAR,Product / deck,review,1217161f-69bf-4176-acce-93f23e475d04,held_for_canonical_reconciliation
+zh-TW-49aecb4f6801,zh-TW,Special Deck Set: Zacian & Zamazenta vs Eternatus,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-e2c3f070ae3a,zh-TW,Star Birth,Card set / collection,matched_candidate,ec704d48-6e26-4489-9063-4eb4f5924233,held_for_canonical_reconciliation
+zh-TW-79452a9b4969,zh-TW,Start Deck 100,Product / deck,review,749e4fbd-3eda-46e3-8a89-c6244595e6a2,held_for_canonical_reconciliation
+zh-TW-ebfd52323273,zh-TW,Battle Region,Card set / collection,matched_candidate,834c9416-bd5e-4a1d-9170-d8e4ba817d20,held_for_canonical_reconciliation
+zh-TW-c1e632571ef2,zh-TW,Starter Set VSTAR: Darkrai,Product / deck,review,99d2cff9-6664-4b0f-8e9a-f9c9ed4fd563,held_for_canonical_reconciliation
+zh-TW-9b45ecdadbd5,zh-TW,Starter Set VSTAR: Lucario,Product / deck,review,c1a9f285-94bb-40a6-acef-547a5a0b0fb0,held_for_canonical_reconciliation
+zh-TW-eaa598c96da0,zh-TW,Space Juggler,Card set / collection,matched_candidate,71a109c6-2c3a-4e6d-ae1b-4cdce9441c8c,held_for_canonical_reconciliation
+zh-TW-2fb8917a506c,zh-TW,Time Gazer,Card set / collection,matched_candidate,fd0c18a1-c4c3-451d-a43f-4593cd07804e,held_for_canonical_reconciliation
+zh-TW-34c58ef32c27,zh-TW,Dark Phantasma,Card set / collection,matched_candidate,9a71e2aa-241a-4895-9224-959e6983c4a3,held_for_canonical_reconciliation
+zh-TW-e470539f39cb,zh-TW,Pokémon GO,Card set / collection,matched_candidate,ff1e5d11-3043-4137-a0a2-bc2b2da43d9e,held_for_canonical_reconciliation
+zh-TW-94514bb5b58e,zh-TW,Lost Abyss,Card set / collection,review,a7f84e96-a008-47f0-8b41-a05de3f23618,held_for_canonical_reconciliation
+zh-TW-b04e14397ea6,zh-TW,VSTAR & VMAX High-Class Deck: Deoxys,Product / deck,review,2d2c36be-9511-4b30-9979-ad6af1a4f9ee,held_for_canonical_reconciliation
+zh-TW-d5f405f1ae6f,zh-TW,VSTAR & VMAX High-Class Deck: Zeraora,Product / deck,review,0dc7982d-2a45-4984-b930-0d4e688d4fa9,held_for_canonical_reconciliation
+zh-TW-c31260236d59,zh-TW,VSTAR Special Set,Product / deck,review,b29d2b28-f5a2-474a-9173-0d29fb5aeb55,held_for_canonical_reconciliation
+zh-TW-0cda223fc777,zh-TW,Incandescent Arcana,Card set / collection,matched_candidate,545b8020-25d6-4e10-b380-1856f905956f,held_for_canonical_reconciliation
+zh-TW-1d3741cdbc9b,zh-TW,Start Deck 100 Special Edition,Product / deck,review,9932f014-e867-49a3-8597-424386f59ba5,held_for_canonical_reconciliation
+zh-TW-5be09528cd62,zh-TW,Paradigm Trigger,Card set / collection,matched_candidate,eb834c9a-e8b3-474b-8ddb-6f57bf58d3d2,held_for_canonical_reconciliation
+zh-TW-35e579fae35b,zh-TW,V Start Deck: Charizard,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-a438f4fbf85e,zh-TW,V Start Deck: Mewtwo,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-698096b84e15,zh-TW,V Start Deck: Pikachu,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-f19bf711ab15,zh-TW,VSTAR Universe,Card set / collection,matched_candidate,eed3fcbd-fd4c-4b7f-9b75-a68e15d61476,held_for_canonical_reconciliation
+zh-TW-6213b9de84cd,zh-TW,Special Deck Set: Charizard VSTAR vs Rayquaza VMAX,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-15c77b4e7ab4,zh-TW,Scarlet ex,Card set / collection,matched_candidate,92afdf21-b16e-4e85-b54f-5f0603cbf6fa,held_for_canonical_reconciliation
+zh-TW-1431bed2cddd,zh-TW,Starter Set ex: Fuecoco & Ampharos ex,Product / deck,review,bb1ba963-5030-4f3f-8f06-dee6c668fb05,held_for_canonical_reconciliation
+zh-TW-0e91100f19e4,zh-TW,Starter Set ex: Quaxly & Mimikyu ex,Product / deck,review,2f9aa179-e91b-4643-84d6-968944833c66,held_for_canonical_reconciliation
+zh-TW-097b4570ee69,zh-TW,Starter Set ex: Sprigatito & Lucario ex,Product / deck,review,005e4850-7601-4765-b538-290882ded6d8,held_for_canonical_reconciliation
+zh-TW-88527930c211,zh-TW,Violet ex,Card set / collection,matched_candidate,496f02eb-5cda-4b1b-a5cf-e46816c6f834,held_for_canonical_reconciliation
+zh-TW-ad64ada63d4e,zh-TW,Premium Trainer Box ex,Product / deck,review,88d9f4ce-d66f-46c6-9c98-cadcdbe617ff,held_for_canonical_reconciliation
+zh-TW-a9afe84246a2,zh-TW,Triplet Beat,Card set / collection,matched_candidate,f3d6f626-76dc-40f6-b20c-f37f76de7a69,held_for_canonical_reconciliation
+zh-TW-294bff0baa30,zh-TW,Clay Burst,Card set / collection,matched_candidate,8ea4465e-f94f-4cb8-af60-8b7e954400b9,held_for_canonical_reconciliation
+zh-TW-2d7f316f10e4,zh-TW,Snow Hazard,Card set / collection,matched_candidate,0c790038-ee1a-411f-bd9c-fed9238c1c42,held_for_canonical_reconciliation
+zh-TW-51bdd451cf9e,zh-TW,Starter Set ex: Pikachu Special Set,Product / deck,review,0c39417c-7e51-4c2e-83a4-e7180ff18ed1,held_for_canonical_reconciliation
+zh-TW-2bde775c2fe4,zh-TW,ex Special Set,Product / deck,review,34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd,held_for_canonical_reconciliation
+zh-TW-0e83523e5e22,zh-TW,Pokémon Card 151,Card set / collection,matched_candidate,3c0c1ae1-7d62-4384-97f1-734ff9460162,held_for_canonical_reconciliation
+zh-TW-16c34ed22967,zh-TW,ex Start Decks,Product / deck,review,aeacc226-2669-41be-87af-adb0792b6a26,held_for_canonical_reconciliation
+zh-TW-17bf7041d61f,zh-TW,Deck Build Box Ruler of the Black Flame,Product / deck,review,319b65a2-a424-4273-bfff-6c18965ab00a,held_for_canonical_reconciliation
+zh-TW-97582d8a2d7c,zh-TW,Ruler of the Black Flame,Card set / collection,matched_candidate,0dbaa91f-c0c6-497d-8ef0-fc4370c5ed8a,held_for_canonical_reconciliation
+zh-TW-a993463f10a7,zh-TW,Raging Surf,Card set / collection,matched_candidate,16b683e4-6270-4625-9fae-b2478a08c659,held_for_canonical_reconciliation
+zh-TW-dd10ca3114e3,zh-TW,Starter Set: Tera Mewtwo ex,Product / deck,review,afefc691-41e8-4ac7-97d8-776ded533215,held_for_canonical_reconciliation
+zh-TW-223009b1f580,zh-TW,Starter Set: Tera Skeledirge ex,Product / deck,review,471359a2-3314-463e-aea4-d5c302663333,held_for_canonical_reconciliation
+zh-TW-6b7f80cfa785,zh-TW,Ancient Roar,Card set / collection,matched_candidate,15442620-179d-4442-a040-d9fa0060c7e4,held_for_canonical_reconciliation
+zh-TW-f036e3380424,zh-TW,Future Flash,Card set / collection,matched_candidate,2abc3c6e-7715-4f79-900f-a2c567e4e1c9,held_for_canonical_reconciliation
+zh-TW-e7000c380e86,zh-TW,Shiny Treasure ex,Card set / collection,matched_candidate,34f73eff-5db3-4617-bd57-73421edebb86,held_for_canonical_reconciliation
+zh-TW-59408e931538,zh-TW,Cyber Judge,Card set / collection,matched_candidate,6979a86e-8439-443d-b8b3-b9e2ebfb0bd3,held_for_canonical_reconciliation
+zh-TW-ce9c29c7e2f0,zh-TW,Starter Set: Ancient Koraidon ex,Product / deck,review,c1728b7e-684e-445f-a12b-4f7b2dcc8fba,held_for_canonical_reconciliation
+zh-TW-016cca521d10,zh-TW,Starter Set: Future Miraidon ex,Product / deck,review,d72c9fe3-b3d5-4a4d-9fcc-eb7cca2a88bc,held_for_canonical_reconciliation
+zh-TW-b6835058e99c,zh-TW,Wild Force,Card set / collection,matched_candidate,2cc9e59f-b9d6-42db-9426-d5d18faab0c9,held_for_canonical_reconciliation
+zh-TW-8fe572a829b0,zh-TW,Crimson Haze,Card set / collection,matched_candidate,8dc60098-a384-4259-88b9-d2efa74b5a1d,held_for_canonical_reconciliation
+zh-TW-98e99def19ee,zh-TW,Transformation Mask,Card set / collection,matched_candidate,b933f0ba-40ac-4846-80ee-74c4a2b1cf71,held_for_canonical_reconciliation
+zh-TW-04373519f7b5,zh-TW,Night Wanderer,Card set / collection,matched_candidate,adcb6f6c-95f3-4a55-b9e5-464ed79a1ac3,held_for_canonical_reconciliation
+zh-TW-4de816b05a4e,zh-TW,Tactical Deck: Gardevoir ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-c9078c8d0f32,zh-TW,Tactical Deck: Meowscarada ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-558de9471c94,zh-TW,Tactical Deck: Miraidon ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-15708abcba22,zh-TW,Tactical Deck: Scizor ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-d004bb41fcd7,zh-TW,Tactical Deck: Tera Charizard ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-92dede729e8e,zh-TW,Tactical Deck: Tera Garchomp ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-2a8a58fea56e,zh-TW,Stellar Miracle,Card set / collection,matched_candidate,bf50694e-8be5-4fa4-a77e-6fdb73ec17ac,held_for_canonical_reconciliation
+zh-TW-241fc26dea17,zh-TW,Trainers Camp,Event / teaching programme,review,,held_for_canonical_reconciliation
+zh-TW-7ed5d482e561,zh-TW,Deck Build Box Paradise Dragona,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-d3a71a0aa467,zh-TW,Paradise Dragona,Card set / collection,matched_candidate,e044ea13-4498-4aa8-b46c-71bcc203bc89,held_for_canonical_reconciliation
+zh-TW-c86b9b559cbe,zh-TW,Stellar Tera ex Special Set: Ceruledge ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-1afd1f797fa7,zh-TW,Stellar Tera ex Special Set: Sylveon ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-9fcaa17761b6,zh-TW,Super Electric Breaker,Card set / collection,matched_candidate,05597373-2080-4842-bb67-c314e884f856,held_for_canonical_reconciliation
+zh-TW-88100117b37e,zh-TW,Double ex Start Deck Generations,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-49e639772529,zh-TW,Terastal Fest ex,Card set / collection,matched_candidate,d53eee17-75b8-48a8-bde5-50ac129a3558,held_for_canonical_reconciliation
+zh-TW-ffcdd91b700e,zh-TW,Battle Partners,Card set / collection,matched_candidate,cd44897f-ea2e-4f63-b662-e4ddce1ac7e7,held_for_canonical_reconciliation
+zh-TW-15f40046e9ad,zh-TW,Challenge Deck: Marnie's Morpeko & Grimmsnarl ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-2ffb668f198e,zh-TW,Challenge Deck: Steven's Beldum & Metagross ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-974fa735782e,zh-TW,Hot Wind Arena,Card set / collection,review,664d717f-745d-4178-ae4f-5863ae558a2f,held_for_canonical_reconciliation
+zh-TW-dd68ad1c0890,zh-TW,Glory of the Rocket Gang,Card set / collection,matched_candidate,4f84057b-edcf-4523-967c-5997ae696987,held_for_canonical_reconciliation
+zh-TW-77c7643aa5ed,zh-TW,Black Bolt,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-f6512185fc4f,zh-TW,White Flare,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-e124fcba7d1d,zh-TW,ex Start Deck: Charizard,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-949def28022a,zh-TW,ex Start Deck: Pikachu,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-5cd724144f1f,zh-TW,Mega Brave,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-0f37c5f8c336,zh-TW,Mega Symphonia,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-a1a18e45b7d6,zh-TW,Challenge Deck: Mega Diancie ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-4e5a9002b259,zh-TW,Challenge Deck: Mega Gengar ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-46e6de88e93e,zh-TW,Inferno X,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-cde90de02356,zh-TW,MEGA Dream ex,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-3fe2b38c6ebe,zh-TW,Start Deck 100 Battle Collection,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-bc558463633d,zh-TW,Nihil Zero,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-9c9e4a7b4d38,zh-TW,New Trainer Journey,Event / teaching programme,review,,held_for_canonical_reconciliation
+zh-TW-6dd574732d59,zh-TW,Ninja Spinner,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-5d0f2c0fb6e0,zh-TW,Abyss Eye,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-860e5a5ea101,zh-TW,Tactical Deck: Mega Charizard X ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-77c7d2bfb26b,zh-TW,Tactical Deck: Mega Dragonite ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-157f7b2ae355,zh-TW,Tactical Deck: Mega Gardevoir ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-945a283ffa50,zh-TW,Tactical Deck: Mega Sharpedo ex,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-e1227d8b54e9,zh-TW,Storm Emeralda,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-3076e4f29fbe,zh-TW,30th Celebration,Card set / collection,review,,held_for_canonical_reconciliation
+zh-TW-9c14d01812fd,zh-TW,Premium Deck Set: Espeon & Umbreon,Product / deck,review,,held_for_canonical_reconciliation
+zh-TW-43aee0909785,zh-TW,Mega Evolution Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+zh-TW-2906d27bb5d9,zh-TW,Scarlet & Violet Promotional cards,Promo catalogue,review,25b5a960-6481-497d-86b8-b0845a504501,held_for_canonical_reconciliation
+zh-TW-a6040164d394,zh-TW,Sun & Moon Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
+zh-TW-e5a8fb2a002d,zh-TW,Sword & Shield Promotional cards,Promo catalogue,review,,held_for_canonical_reconciliation
