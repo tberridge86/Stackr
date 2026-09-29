@@ -200,7 +200,9 @@ async function main() {
     const client=require('@supabase/supabase-js').createClient(`https://${PROJECTS.production}.supabase.co`,secret,{auth:{persistSession:false,autoRefreshToken:false},global:{fetch:(u,o)=>fetch(u,{...o,signal:AbortSignal.timeout(60000),redirect:'error'})}});
     const bucket=await client.storage.getBucket(BUCKET);check(!bucket.error&&bucket.data?.public===true,'Wrong public bucket');
     const existing=new Set((await db.query('select name from storage.objects where bucket_id=$1 and name=any($2::text[])',[BUCKET,objects.map(objectKey)])).rows.map(r=>r.name));
-    for(const batch of chunks(objects,3)) {
+    // Six immutable transfers fit this cohort within the bounded runner window.
+    // Local validation remains at three; retry and post-upload byte checks are unchanged.
+    for(const batch of chunks(objects,6)) {
       const results=await Promise.allSettled(batch.map(async o=>{
         const key=objectKey(o),entry={key,sha256:o.sha256,created:false,verified:false};journal.objects.push(entry);
         if(!existing.has(key)) {const b=await source(o);await validateBytes(sharp,b,o);entry.created=await uploadImmutable(()=>client.storage.from(BUCKET).upload(key,b,{contentType:o.mime_type,cacheControl:'31536000',upsert:false}));}

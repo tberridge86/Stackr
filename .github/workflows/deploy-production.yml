@@ -413,7 +413,7 @@ jobs:
   artwork3303:
     if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope == 'artwork3303'
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 360
     environment: production
     permissions:
       contents: read
