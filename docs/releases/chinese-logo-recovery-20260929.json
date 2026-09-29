@@ -196,5 +196,52 @@
     }
   ],
   "publishedCardCountsObservedAt": "2026-09-29T20:58:07.427Z",
-  "runtimeRegeneration": "node --input-type=module -e \"import fs from 'node:fs'; import {buildRuntime} from './scripts/integrate-chinese-logo-pack.mjs'; const old=JSON.parse(fs.readFileSync('assets/rev2/12-chinese-set-logos/manifest.json')); const recovery=JSON.parse(fs.readFileSync('docs/releases/chinese-logo-recovery-20260929.json')); fs.writeFileSync('lib/simplifiedChineseSetLogos.ts',buildRuntime([...old.records,...recovery.records]));\""
+  "runtimeRegeneration": "node --input-type=module -e \"import fs from 'node:fs'; import {buildRuntime} from './scripts/integrate-chinese-logo-pack.mjs'; const old=JSON.parse(fs.readFileSync('assets/rev2/12-chinese-set-logos/manifest.json')); const recovery=JSON.parse(fs.readFileSync('docs/releases/chinese-logo-recovery-20260929.json')); fs.writeFileSync('lib/simplifiedChineseSetLogos.ts',buildRuntime([...old.records,...recovery.records]));\"",
+  "publicSetIdentityReadback": {
+    "observedAt": "2026-09-29T21:00:39.228Z",
+    "baseUrl": "https://api.stackrtcg.com",
+    "scope": "All five already-published sets in this seven-logo repair. Proves API identity/code agreement, not bundled rendering or API logo storage.",
+    "results": [
+      {
+        "setId": "b6d885e6-40de-4e3d-808d-fc2294af8ad4",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "promo-30th-p",
+        "expectedCode": "promo-30th-p",
+        "passed": true
+      },
+      {
+        "setId": "11f1bc35-2d54-4829-b26a-41184d498eb7",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "cs0lc",
+        "expectedCode": "cs0lc",
+        "passed": true
+      },
+      {
+        "setId": "d4992032-6cfd-4880-a091-bf324fea99e5",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "csec",
+        "expectedCode": "csec",
+        "passed": true
+      },
+      {
+        "setId": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "promo-s-p",
+        "expectedCode": "promo-s-p",
+        "passed": true
+      },
+      {
+        "setId": "4aa930fc-35fa-4e68-a34b-624fc70fb2cb",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "promo-sm-p",
+        "expectedCode": "promo-sm-p",
+        "passed": true
+      }
+    ]
+  }
 }
