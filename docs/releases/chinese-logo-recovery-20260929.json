@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-29T20:54:46.207Z",
+  "projectId": "oakdbbzdqwurpjnoqhmu",
+  "sourceRevisionReviewed": "b168e047a5927cc1ecbbfaefee9ac83e7dffa1ea",
+  "sourceIndex": "https://pikaqian.com/sets",
+  "sourceIndexSha256": "b54ce1d01c29169852364c6152d8059e180cc74cb1b9aacb2d9769bf06d029f2",
+  "officialIdentityEvidence": [
+    "https://www.pokemon.cn/tcg/product/15625.html",
+    "https://www.pokemon.cn/tcg/product/15977.html",
+    "https://www.pokemon.cn/products_category/products"
+  ],
+  "scope": "Additive bundled client logos only; no production database, catalogue membership, card fronts or holdings changed. Original 134-file manifest remains historical and unchanged.",
+  "newFiles": 3,
+  "newMappings": 7,
+  "originalMappings": 123,
+  "totalMappings": 130,
+  "stillUnmappedOriginalFiles": 7,
+  "stillMissingSource": [
+    "30thD"
+  ],
+  "releaseStatus": "prepared and locally verified; requires native release and phone checks",
+  "records": [
+    {
+      "assetId": "30thc__30th-celebration",
+      "language": "zh-cn",
+      "code": "30thc",
+      "sourceCode": "30thC",
+      "sourceName": "30th Celebration",
+      "canonicalSetId": "cce4cfb8-6a87-567f-96a0-0884827a1396",
+      "logoFile": "logos/30thc__30th-celebration.png",
+      "sha256": "6c95e4c011804d58943f9bec51b28649d7afe1cdb1581637b69a986848ecaa4a",
+      "width": 147,
+      "height": 92,
+      "status": "mapped",
+      "reason": "Exact new zh-cn catalogue identity and matching Chinese title; set remains unpublished with no checklist.",
+      "acquisition": "existing owner-supplied file preserved",
+      "cataloguePublished": false,
+      "sourcePage": "https://pikaqian.com/sets/30thc",
+      "publishedCardPrintings": 0
+    },
+    {
+      "assetId": "30thp__30th-celebration-promos",
+      "language": "zh-cn",
+      "code": "promo-30th-p",
+      "sourceCode": "30thP",
+      "sourceName": "30th Celebration Promos",
+      "canonicalSetId": "b6d885e6-40de-4e3d-808d-fc2294af8ad4",
+      "logoFile": "logos/30thp__30th-celebration-promos.png",
+      "sha256": "782629d294c79642d9a69bc011d98c674086e0b9fb64f82df28ad44f5e270ffc",
+      "width": 264,
+      "height": 78,
+      "status": "mapped",
+      "reason": "PikaQian explicitly associates promo-30th-p with Pokecardex 30THP.png; supplied logo visually matches.",
+      "acquisition": "existing owner-supplied file preserved",
+      "cataloguePublished": true,
+      "sourcePage": "https://pikaqian.com/sets/promo-30th-p",
+      "publishedCardPrintings": 18
+    },
+    {
+      "assetId": "csolc__quicksand-card-display-pendant-gift-box",
+      "language": "zh-cn",
+      "code": "cs0lc",
+      "sourceCode": "CSOLC",
+      "sourceName": "Quicksand Card Display Pendant Gift Box",
+      "canonicalSetId": "11f1bc35-2d54-4829-b26a-41184d498eb7",
+      "logoFile": "logos/csolc__quicksand-card-display-pendant-gift-box.png",
+      "sha256": "81502e7d7a8881c0f1b63a39896399e218f0891e4b69287ecb40deb3966e5f5b",
+      "width": 248,
+      "height": 94,
+      "status": "mapped",
+      "reason": "PikaQian explicitly associates cs0lc with CSOLC.png; Chinese product name matches the official product announcement. No global O/0 normalization.",
+      "acquisition": "existing owner-supplied file preserved",
+      "cataloguePublished": true,
+      "sourcePage": "https://pikaqian.com/sets/cs0lc",
+      "publishedCardPrintings": 4
+    },
+    {
+      "assetId": "csec__provider-logo",
+      "language": "zh-cn",
+      "code": "csec",
+      "sourceCode": "CSEC",
+      "sourceName": "Quadrilateral Connection Box Sets",
+      "canonicalSetId": "d4992032-6cfd-4880-a091-bf324fea99e5",
+      "logoFile": "logos/csec__provider-logo.png",
+      "sha256": "c577b3b03c96d0ff1afe4c8909c44e84af792a9f5aeed7dc8a13f10b13c4a300",
+      "width": 205,
+      "height": 77,
+      "status": "mapped",
+      "reason": "Exact PikaQian set-to-logo association, exact active zh-cn catalogue identity, decoded original PNG visually checked.",
+      "acquisition": "Original provider PNG; no crop, redraw or conversion",
+      "sourcePage": "https://pikaqian.com/sets/csec",
+      "sourceUrl": "https://pokecardex.b-cdn.net/assets/images/logos_chn/CSEC.png",
+      "visualClassification": "product logo",
+      "cataloguePublished": true,
+      "publishedCardPrintings": 20
+    },
+    {
+      "assetId": "promo-s-p__provider-logo",
+      "language": "zh-cn",
+      "code": "promo-s-p",
+      "sourceCode": "SPP",
+      "sourceName": "Sword & Shield Promos",
+      "canonicalSetId": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+      "logoFile": "logos/promo-s-p__provider-logo.png",
+      "sha256": "5b9746ad6cee57584c327e80b81edea58b73fb5fe739404fa7c3db82bd77c178",
+      "width": 545,
+      "height": 303,
+      "status": "mapped",
+      "reason": "Exact PikaQian set-to-logo association, exact active zh-cn catalogue identity, decoded original PNG visually checked.",
+      "acquisition": "Original provider PNG; no crop, redraw or conversion",
+      "sourcePage": "https://pikaqian.com/sets/promo-s-p",
+      "sourceUrl": "https://pokecardex.b-cdn.net/assets/images/logos_chn/SPP.png",
+      "visualClassification": "provider editorial promo-series mark; not an official dedicated set logo",
+      "cataloguePublished": true,
+      "publishedCardPrintings": 220
+    },
+    {
+      "assetId": "promo-sm-p__provider-logo",
+      "language": "zh-cn",
+      "code": "promo-sm-p",
+      "sourceCode": "SMP",
+      "sourceName": "Sun & Moon Promos",
+      "canonicalSetId": "4aa930fc-35fa-4e68-a34b-624fc70fb2cb",
+      "logoFile": "logos/promo-sm-p__provider-logo.png",
+      "sha256": "aeac6030775f33a19a962cb948cf31f98294e9a883e7b3e78104077fb24d85b9",
+      "width": 686,
+      "height": 184,
+      "status": "mapped",
+      "reason": "Exact PikaQian set-to-logo association, exact active zh-cn catalogue identity, decoded original PNG visually checked.",
+      "acquisition": "Original provider PNG; no crop, redraw or conversion",
+      "sourcePage": "https://pikaqian.com/sets/promo-sm-p",
+      "sourceUrl": "https://pokecardex.b-cdn.net/assets/images/logos_chn/SMP.png",
+      "visualClassification": "provider editorial promo-series mark; not an official dedicated set logo",
+      "cataloguePublished": true,
+      "publishedCardPrintings": 50
+    },
+    {
+      "assetId": "cbb6c__gem-pack-vol-6",
+      "language": "zh-cn",
+      "code": "cbb6",
+      "sourceCode": "CBB6C",
+      "sourceName": "Gem Pack Vol. 6",
+      "canonicalSetId": "17de4b24-d0c6-59dc-a915-9ba30546df95",
+      "logoFile": "logos/cbb6c__gem-pack-vol-6.png",
+      "sha256": "947f7314caf96b3548db0d0dc3ce84f02325914d2ecd4a5acbe31f32187e1549",
+      "width": 109,
+      "height": 91,
+      "status": "mapped",
+      "reason": "Exact Chinese Gem Pack VOL.6 product/logo, official product listing and existing reviewed zh-cn CBB6 identity agree; provider labels it cbb6c. Preserve operational code CBB6. Set remains unpublished with no checklist.",
+      "acquisition": "existing owner-supplied file preserved",
+      "cataloguePublished": false,
+      "sourcePage": "https://pikaqian.com/sets/cbb6c",
+      "officialSourcePage": "https://www.pokemon.cn/products_category/products",
+      "publishedCardPrintings": 0
+    }
+  ],
+  "providerAssociations": [
+    {
+      "canonicalCode": "30thc",
+      "sourceContext": "30thc.webp\\\",{\\\"_26\\\":74,\\\"_28\\\":75,\\\"_30\\\":76,\\\"_32\\\":77,\\\"_34\\\":-5,\\\"_36\\\":-5,\\\"_38\\\":78,\\\"_40\\\":79,\\\"_42\\\":80,\\\"_44\\\":80,\\\"_46\\\":81,\\\"_48\\\":82,\\\"_49\\\":20,\\\"_50\\\":-5,\\\"_51\\\":83,\\\"_53\\\":84,\\\"_55\\\":85},\\\"promo-m-p\\\",\\\"2026-09-07T20:49:54.137399+00:00\\\",\\\"特典卡·超级进化\\\",\\\"Mega Evolution Promos\\\",\\\"MegaEvolution\\\",\\\"te-dian-ka-·-chao-ji-jin-hua\\\",\\\"https://media.52poke.com/wiki/d/d6/TCG_%E6%9C%B1%26%E7%B4%AB_%E7%AE%80%E4%B8%AD%E4%BB%BB%E5%8A%A1%E5%A5%96%E8%B5%8F%E5%8C%85_%E5%9B%BE%E6%A0%87.png\\\",\\\"https://images.pikaqian.com/sets/versions/promo-m-p-mega.webp\\\",\\\"2026-08-07\\\",\\\"sets/packs/promo-m-p.webp\\\",\\\"sets/advertising/promo-m-p.webp\\\",\\\"sets/versions/promo-m-p-mega.webp\\\",{\\\"_26\\\":87,\\\"_28\\\":88,\\\"_30\\\":89,\\\"_32\\\":90,\\\"_34\\\":-5,\\\"_36\\\":-5,\\\"_38\\\":62,\\\"_40\\\":91,\\\"_42\\\":92,\\\"_44\\\":93,\\\"_46\\\":-"
+    },
+    {
+      "canonicalCode": "promo-30th-p",
+      "sourceContext": "promo-30th-p.webp\\\",{\\\"_26\\\":666,\\\"_28\\\":667,\\\"_30\\\":668,\\\"_32\\\":669,\\\"_34\\\":-5,\\\"_36\\\":-5,\\\"_38\\\":670,\\\"_40\\\":671,\\\"_42\\\":-5,\\\"_44\\\":-5,\\\"_46\\\":672,\\\"_48\\\":673,\\\"_49\\\":20,\\\"_50\\\":674,\\\"_51\\\":-5,\\\"_53\\\":-5,\\\"_55\\\":676},\\\"csxc\\\",\\\"2026-06-09T16:07:35.20264+00:00\\\",\\\"骑拉帝纳VSTAR卡组构筑进阶礼盒\\\",\\\"Giratina VSTAR Advanced Deck Building Gift Box\\\",\\\"SwordShield\\\",\\\"qi-la-di-na-VSTAR-ka-zu-gou-zhu-jin-jie-li-he\\\",\\\"https://pokecardex.b-cdn.net/assets/images/logos_chn/CSXC.png\\\",\\\"2024-12-21\\\",[675],232,\\\"sets/versions/csxc.webp\\\",{\\\"_26\\\":678,\\\"_28\\\":679,\\\"_30\\\":680,\\\"_32\\\":681,\\\"_34\\\":-5,\\\"_36\\\":-5,\\\"_38\\\":670,\\\"_40\\\":682,\\\"_42\\\":-5,\\\"_44\\\":-5,\\\"_46\\\":683,\\\"_48\\\":684,\\\"_49\\\":20,\\\"_50\\\":685,\\\"_51\\\":-5,\\\"_53\\\":-5,\\\"_55\\\":687},\\\"csyc\\\",\\\"2026-06-09T16:22:48.226935+00:00\\\",\\\"精灵球/等级球礼盒：宝可梦艺术插画庆典 聚\\\",\\\"Poké "
+    },
+    {
+      "canonicalCode": "cs0lc",
+      "sourceContext": "cs0lc.webp\\\",{\\\"_26\\\":699,\\\"_28\\\":700,\\\"_30\\\":701,\\\"_32\\\":702,\\\"_34\\\":-5,\\\"_36\\\":-5,\\\"_38\\\":670,\\\"_40\\\":703,\\\"_42\\\":-5,\\\"_44\\\":-5,\\\"_46\\\":704,\\\"_48\\\":705,\\\"_49\\\":20,\\\"_50\\\":706,\\\"_51\\\":-5,\\\"_53\\\":-5,\\\"_55\\\":708},\\\"cszc\\\",\\\"2026-06-09T16:53:11.746287+00:00\\\",\\\"收藏周边礼盒 百变宝盒\\\",\\\"Variety Treasure Box Collection\\\",\\\"shou-cang-zhou-bian-li-he- -bai-bian-bao-he\\\",\\\"https://pokecardex.b-cdn.net/assets/images/logos_chn/CSZC.png\\\",\\\"2024-11-15\\\",[707],224,\\\"sets/versions/cszc.webp\\\",{\\\"_26\\\":710,\\\"_28\\\":711,\\\"_30\\\":712,\\\"_32\\\":713,\\\"_34\\\":-5,\\\"_36\\\":-5,\\\"_38\\\":670,\\\"_40\\\":714,\\\"_42\\\":715,\\\"_44\\\":716,\\\"_46\\\":717,\\\"_48\\\":705,\\\"_49\\\":20,\\\"_50\\\":718,\\\"_51\\\":720,\\\"_53\\\":721,\\\"_55\\\":722},\\\"cs6.5c\\\",\\\"2026-06-08T21:54:33.455255+00:00\\\",\\\"强化包 胜象星引\\\",\\\"Victory Star Guide\\\",\\\"qiang-hua-bao- -sheng-xiang-xing-y"
+    },
+    {
+      "canonicalCode": "csec",
+      "sourceContext": "csec.webp\\\",{\\\"_26\\\":1009,\\\"_28\\\":1010,\\\"_30\\\":1011,\\\"_32\\\":1012,\\\"_34\\\":1013,\\\"_36\\\":1014,\\\"_38\\\":670,\\\"_40\\\":41,\\\"_42\\\":1015,\\\"_44\\\":1016,\\\"_46\\\":1017,\\\"_48\\\":1018,\\\"_49\\\":20,\\\"_50\\\":-5,\\\"_51\\\":1019,\\\"_53\\\":1020,\\\"_55\\\":1021},\\\"cs3.5c\\\",\\\"2025-02-22T16:32:47.74148+00:00\\\",\\\"怒炎灼天\\\",\\\"Scorching Skies\\\",66,90,\\\"https://media.52poke.com/wiki/8/8f/TCG_%E5%89%91%26%E7%9B%BE_%E6%80%92%E7%82%8E%E7%81%BC%E5%A4%A9_%E6%89%A9%E5%85%85%E5%8C%85.png\\\",\\\"https://media.52poke.com/wiki/2/27/TCG_%E5%89%91%26%E7%9B%BE_%E6%80%92%E7%82%8E%E7%81%BC%E5%A4%A9poster.jpg\\\",\\\"https://pokecardex.b-cdn.net/assets/images/logos_chn/CS35C.png\\\",\\\"2024-01-05\\\",\\\"sets/packs/cs3.5c.webp\\\",\\\"sets/advertising/cs3.5c.webp\\\",\\\"sets/versions/cs3.5c.webp\\\",{\\\"_26\\\":1023,\\\"_28\\\":1024,\\\"_30\\\":1025,\\\"_32\\\":1026,\\\"_34\\\":-5,\\\"_36\\\":"
+    },
+    {
+      "canonicalCode": "promo-s-p",
+      "sourceContext": "promo-s-p.webp\\\",{\\\"_26\\\":1318,\\\"_28\\\":1319,\\\"_30\\\":1320,\\\"_32\\\":1321,\\\"_34\\\":-5,\\\"_36\\\":-5,\\\"_38\\\":39,\\\"_40\\\":1322,\\\"_42\\\":-5,\\\"_44\\\":-5,\\\"_46\\\":1323,\\\"_48\\\":1324,\\\"_49\\\":20,\\\"_50\\\":1325,\\\"_51\\\":-5,\\\"_53\\\":-5,\\\"_55\\\":1327},\\\"csmpic\\\",\\\"2026-06-10T06:29:31.260829+00:00\\\",\\\"对战派对组合 奖赏包\\\",\\\"Battle Party Set Reward Pack\\\",\\\"dui-zhan-pai-dui-zu-he- -jiang-shang-bao\\\",\\\"https://pokecardex.b-cdn.net/assets/images/logos_chn/CSMPIC.png\\\",\\\"2023-04-15\\\",[1326],17,\\\"sets/versions/csmpic.webp\\\",{\\\"_26\\\":1329,\\\"_28\\\":1330,\\\"_30\\\":1331,\\\"_32\\\":1332,\\\"_34\\\":-5,\\\"_36\\\":-5,\\\"_38\\\":39,\\\"_40\\\":1333,\\\"_42\\\":-5,\\\"_44\\\":-5,\\\"_46\\\":1334,\\\"_48\\\":1324,\\\"_49\\\":20,\\\"_50\\\":1335,\\\"_51\\\":-5,\\\"_53\\\":-5,\\\"_55\\\":1337},\\\"csmphc\\\",\\\"2026-06-10T06:28:55.129955+00:00\\\",\\\"对战派对组合 钢\\\",\\\"Battle Party Set Metal Deck\\\",\\\"dui-zhan-p"
+    },
+    {
+      "canonicalCode": "promo-sm-p",
+      "sourceContext": "promo-sm-p.webp\\\",\\\"actionData\\\",\\\"errors\\\"]\\n\");</script><!--$--><script>window.__remixContext.streamController.close();</script><!--/$--><!--/$-->"
+    }
+  ],
+  "remaining": [
+    {
+      "code": "Gym Event Promo Pack Vol. 1–6",
+      "reason": "Six supplied images; exact catalogue identities not established."
+    },
+    {
+      "code": "Scarlet & Violet Energies",
+      "reason": "No exact distinct energy-set identity established."
+    },
+    {
+      "code": "30thD",
+      "reason": "Official deck products identified at https://www.pokemon.cn/tcg/product/21608.html; no verified dedicated logo or exact canonical set mapping yet. Do not substitute 30thC booster artwork."
+    }
+  ],
+  "publishedCardCountsObservedAt": "2026-09-29T20:58:07.427Z",
+  "runtimeRegeneration": "node --input-type=module -e \"import fs from 'node:fs'; import {buildRuntime} from './scripts/integrate-chinese-logo-pack.mjs'; const old=JSON.parse(fs.readFileSync('assets/rev2/12-chinese-set-logos/manifest.json')); const recovery=JSON.parse(fs.readFileSync('docs/releases/chinese-logo-recovery-20260929.json')); fs.writeFileSync('lib/simplifiedChineseSetLogos.ts',buildRuntime([...old.records,...recovery.records]));\"",
+  "publicSetIdentityReadback": {
+    "observedAt": "2026-09-29T21:00:39.228Z",
+    "baseUrl": "https://api.stackrtcg.com",
+    "scope": "All five already-published sets in this seven-logo repair. Proves API identity/code agreement, not bundled rendering or API logo storage.",
+    "results": [
+      {
+        "setId": "b6d885e6-40de-4e3d-808d-fc2294af8ad4",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "promo-30th-p",
+        "expectedCode": "promo-30th-p",
+        "passed": true
+      },
+      {
+        "setId": "11f1bc35-2d54-4829-b26a-41184d498eb7",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "cs0lc",
+        "expectedCode": "cs0lc",
+        "passed": true
+      },
+      {
+        "setId": "d4992032-6cfd-4880-a091-bf324fea99e5",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "csec",
+        "expectedCode": "csec",
+        "passed": true
+      },
+      {
+        "setId": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "promo-s-p",
+        "expectedCode": "promo-s-p",
+        "passed": true
+      },
+      {
+        "setId": "4aa930fc-35fa-4e68-a34b-624fc70fb2cb",
+        "httpStatus": 200,
+        "languageCode": "zh-cn",
+        "setCode": "promo-sm-p",
+        "expectedCode": "promo-sm-p",
+        "passed": true
+      }
+    ]
+  }
+}

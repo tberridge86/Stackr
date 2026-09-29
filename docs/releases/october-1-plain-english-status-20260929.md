@@ -6,7 +6,7 @@ Updated 29 September 2026, evening. This report separates card records, card pic
 
 [The active publication run](https://github.com/tberridge86/Stackr/actions/runs/36621263622) is processing the approved **7,911 card fronts and 23,733 display-size images**. It uses the recovered files already prepared, including earlier greeting-chat work. It does not collect those pictures again.
 
-The earlier run preserved **3,275 verified files** before a storage error. [PR255](https://github.com/tberridge86/Stackr/pull/255) fixed the missing retry for that error and passed all eight applicable checks, plus 63 focused tests. The resumed run must finish its file checks and publication before these pictures count as delivered through the API. At the 19:47 UTC database check, **zero of this batch's card-front associations were published**; the combined rehearsal/publication step was still running. This is a checkpoint, not a final outcome. Require the final receipt and API readback before release.
+The earlier run preserved **3,275 verified files** before a storage error. [PR255](https://github.com/tberridge86/Stackr/pull/255) fixed the missing retry for that error and passed all eight applicable checks, plus 63 focused tests. The resumed run must finish its file checks and publication before these pictures count as delivered through the API. At the 20:52 UTC database check, **4,633 new storage files** had been created since this run began, while **zero of this batch's card-front associations were published**; the combined rehearsal/publication step was still running. The storage count is a transfer-progress proxy, not a verified card count. This is a checkpoint, not a final outcome. Require the final receipt and API readback before release.
 
 ## Plain-English position
 
@@ -16,7 +16,7 @@ The earlier run preserved **3,275 verified files** before a storage error. [PR25
 | Storm Emeralda and anniversary cards | All **480 cards in the checked release group** passed identity, saved-detail and matching artwork-reference checks. | The new app still needs checking on the phone. This 480-card result is not a promise that every anniversary product in every language is complete. |
 | Recovered card pictures | **7,911 fronts** are prepared and approved; their publication has resumed. | Finish and verify that publication. Separately, **4,250 artwork cases** remain outside this batch; reasons are below. |
 | New sets and card lists | **102 new set records** exist; 8 have published cards. | **94 sets have no imported card checklist** and remain unpublished. Full names and codes are listed below. A set name being present does not mean its cards have been imported. |
-| Set logos | 134 supplied Chinese logo files are retained; **123 are linked to exact Simplified Chinese set identities in the release code**. Japanese crop corrections are included. | **11 supplied images are not yet assigned**, and **4 codes had no supplied logo image**. These are listed separately below. New-app rendering is unverified. |
+| Set logos | 134 supplied Chinese logo files are retained. Seven additional exact mappings now bring the release-code total to **130**: four retained files plus three newly sourced PNGs. Japanese crop corrections are included. | **7 supplied images still lack exact set links**; **30thD** still needs a verified logo and mapping. New-app rendering is unverified; these bundled logos are not a new API asset publication. |
 | CoroCoro covers | Checks passed for the **81 supplied covers** and the curated CoroCoro records. | Check the installed screens. This is not a count of every issue ever published. |
 | Set codes | Existing app IDs and routing codes have been preserved; signed-off source/printed codes remain recorded. | Confirm the specific logo/code aliases below rather than guessing. Two collector-code searches, English 30C/provider EN30C `R` and Japanese M6a `WAT`, need correction; the cards themselves exist and open from their set lists. |
 | Pricing | Existing pricing and valuation corrections are merged. | Newer backend/refresh-worker delivery and fresh collection totals remain unverified. The evening provider check still showed the older backend and failed old worker deployments. |
@@ -43,25 +43,27 @@ By language: **English 713; Japanese 2,221; Korean 239; Simplified Chinese 829; 
 
 ## Logos: the exact outstanding list
 
-### Images exist, but the correct set link is unresolved — 11
+### Seven entries resolved for the next app release
 
-| Supplied label/code | Remaining issue |
-|---|---|
-| 30thC — 30th Celebration | Confirm the matching Simplified Chinese published set; the supplied logo is not wired into the current resolver. |
-| CBB6C — Gem Pack Vol. 6 | Confirm the matching published set and link. |
-| 30thP — 30th Celebration Promos | Confirm its relationship to the app's `promo-30th-p` code. |
-| CSOLC — Quicksand Card Display Pendant Gift Box | Confirm letter **O** in the supplied label versus digit **0** in catalogue `cs0lc`. |
-| Gym Event Promo Pack Vol. 1 | Confirm the exact set identity; no printed code supplied. |
-| Gym Event Promo Pack Vol. 2 | Same identity check. |
-| Gym Event Promo Pack Vol. 3 | Same identity check. |
-| Gym Event Promo Pack Vol. 4 | Same identity check. |
-| Gym Event Promo Pack Vol. 5 | Same identity check. |
-| Gym Event Promo Pack Vol. 6 | Same identity check. |
-| Scarlet & Violet Energies | Confirm an actual energy-set identity; do not attach it to the promo set by guesswork. |
+| Previously outstanding | Exact catalogue code | Result |
+|---|---|---|
+| 30thC | 30thC | Existing supplied logo linked to the exact Chinese set; no imported cards yet. |
+| CBB6C | CBB6 | Existing Gem Pack Vol. 6 logo linked; operational code preserved; no imported cards yet. |
+| 30thP | promo-30th-p | Provider explicitly associates this promo set with the 30THP logo. |
+| CSOLC | cs0lc | Provider and official Chinese product identity confirm the letter-O/zero discrepancy. |
+| CSEC | csec | Original product logo sourced and checked. |
+| SP | promo-s-p | Original provider promo-series mark sourced and checked. |
+| SMP | promo-sm-p | Original provider promo-series mark sourced and checked. |
 
-### No logo image was supplied — 4 codes
+All 134 owner-supplied PNGs remain unchanged. The three new files retain their original bytes. Promo-series marks are provider artwork, not claimed as dedicated official expansion logos. The [source and checksum receipt](chinese-logo-recovery-20260929.json) records each exact identity. This is client-bundled presentation work: it needs the new native release and phone checks.
 
-**30thD, CSEC, SP and SMP.** The supplied pack contained placeholders for these. This is a statement about that pack; it does not prove no other existing fallback/source is available. The 11 assignment gaps and these four missing-source entries are not a catalogue-wide missing-logo census.
+### Images exist but still need an exact set link — 7
+
+**Gym Event Promo Pack Vol. 1, 2, 3, 4, 5 and 6**, plus **Scarlet & Violet Energies**. No code or language guessing has been applied.
+
+### Still missing a verified logo — 1
+
+**30thD**. The [official product announcement](https://www.pokemon.cn/tcg/product/21608.html) identifies the Espeon/Umbreon deluxe decks, but a dedicated logo and exact catalogue mapping are not yet verified. The 30thC booster logo is not substituted. These eight unresolved entries are from this supplied-pack review, not a catalogue-wide missing-logo census.
 
 ## New sets without imported card checklists — 94
 

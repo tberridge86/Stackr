@@ -43,7 +43,7 @@ export function buildRuntime(records) {
   const entries = records.filter((r) => r.status === 'mapped').map((r) =>
     `  ${JSON.stringify(r.canonicalSetId)}: { code: ${JSON.stringify(r.code)}, source: require(${JSON.stringify('../' + assetRoot + '/' + r.logoFile)}) as ImageSourcePropType },`
   ).join('\n');
-  return `// Generated from the owner's original transparent PNGs. Do not hand-edit.\n` +
+  return `// Generated from reviewed PNG manifests. Do not hand-edit.\n` +
     `import type { ImageSourcePropType } from 'react-native';\n\n` +
     `export type SimplifiedChineseSetLogoLookupInput = {\n` +
     `  id?: string | null; setId?: string | null; language?: string | null;\n` +
