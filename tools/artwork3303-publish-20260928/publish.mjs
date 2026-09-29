@@ -28,6 +28,17 @@ export function objectKey(o) {
   return `public/card_image/${o.sha256.slice(0,2)}/${o.sha256.slice(2,4)}/${o.sha256}/${o.role}.${extension}`;
 }
 export const publicationObjects = rows => [...new Map(rows.flatMap(r=>r.objects.map(o=>o.role==='original'?{...o,printing_id:r.printing_id}:o)).map(o=>[objectKey(o),o])).values()];
+export async function uploadImmutable(upload,wait) {
+  return retryStorageRead(async()=>{
+    const result=await upload();
+    if(!result.error)return true;
+    const error=result.error,status=Number(error.statusCode??error.status);
+    if(status===409||(status===400&&/already exists|duplicate/i.test(error.message??'')))return false;
+    const code=/^[A-Za-z0-9_]{1,80}$/.test(error.code??'')?error.code:'unspecified';
+    const transport=/fetch failed|ECONNRESET|timed? ?out|timeout/i.test(error.message??'');
+    throw Object.assign(new Error(`Storage upload failed (HTTP ${Number.isFinite(status)?status:'unknown'}, ${code}${transport?', fetch failed':''})`),{status});
+  },wait);
+}
 export const assetId = r => `${PREFIX}${r.printing_id}:${r.objects[0].sha256}`;
 export const chunks = (rows,size=100) => Array.from({length:Math.ceil(rows.length/size)},(_,i)=>rows.slice(i*size,(i+1)*size));
 export function safePath(root,relative) {
@@ -192,7 +203,7 @@ async function main() {
     for(const batch of chunks(objects,3)) {
       const results=await Promise.allSettled(batch.map(async o=>{
         const key=objectKey(o),entry={key,sha256:o.sha256,created:false,verified:false};journal.objects.push(entry);
-        if(!existing.has(key)) {const b=await source(o);await validateBytes(sharp,b,o);const r=await client.storage.from(BUCKET).upload(key,b,{contentType:o.mime_type,cacheControl:'31536000',upsert:false});if(r.error)check(Number(r.error.statusCode)===409||/already exists|duplicate/i.test(r.error.message),'Upload failed');else entry.created=true;}
+        if(!existing.has(key)) {const b=await source(o);await validateBytes(sharp,b,o);entry.created=await uploadImmutable(()=>client.storage.from(BUCKET).upload(key,b,{contentType:o.mime_type,cacheControl:'31536000',upsert:false}));}
         await validateBytes(sharp,await read(publicUrl(key)),o);entry.verified=true;
       }));await save();const bad=results.find(r=>r.status==='rejected');if(bad)throw bad.reason;
     }

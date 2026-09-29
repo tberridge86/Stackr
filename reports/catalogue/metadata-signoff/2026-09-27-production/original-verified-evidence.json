@@ -1,0 +1,7 @@
+{
+  "archive": "original-verified-evidence.zip",
+  "sha256": "0294654f709910dafcc524ec5cd8c89eb98a54e9f29c178ff553a2660ac4dfd6",
+  "bytes": 825249,
+  "verified_original_files": 10,
+  "purpose": "Preserve exact original evidence bytes and checksums independently of Git text line-ending normalization. Historical SQL is evidence, not queued execution."
+}
