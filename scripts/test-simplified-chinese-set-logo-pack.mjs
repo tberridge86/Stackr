@@ -6,12 +6,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
+import { buildRuntime } from './integrate-chinese-logo-pack.mjs';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 const root = process.cwd();
 const assetRoot = 'assets/rev2/12-chinese-set-logos';
 const receipt = JSON.parse(fs.readFileSync(path.join(root,assetRoot,'manifest.json'),'utf8'));
 const snapshot = JSON.parse(fs.readFileSync('docs/releases/chinese-logo-pack-20260917.json','utf8'));
+const recovery = JSON.parse(fs.readFileSync('docs/releases/chinese-logo-recovery-20260929.json','utf8'));
 assert.equal(receipt.records.length,134);
 assert.equal(receipt.mappedCount,123);
 assert.equal(receipt.unresolvedCount,11);
@@ -30,7 +32,19 @@ for (const r of receipt.records) {
   } else assert.equal(r.canonicalSetId,null);
 }
 assert.equal(canonicalIds.size,123);
+assert.equal(recovery.records.length,7);
+for (const r of recovery.records) {
+  assert.equal(r.language,'zh-cn');
+  assert.equal(r.status,'mapped');
+  assert.ok(!canonicalIds.has(r.canonicalSetId)); canonicalIds.add(r.canonicalSetId);
+  const bytes=fs.readFileSync(path.join(root,assetRoot,r.logoFile));
+  assert.equal(checksum(bytes),r.sha256);
+  assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  assert.equal(bytes.readUInt32BE(16),r.width); assert.equal(bytes.readUInt32BE(20),r.height);
+}
+assert.equal(canonicalIds.size,130);
 const source=fs.readFileSync('lib/simplifiedChineseSetLogos.ts','utf8');
+assert.equal(source.replace(/\r\n/g,'\n'),buildRuntime([...receipt.records,...recovery.records]));
 const result=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}});
 assert.equal((result.diagnostics??[]).filter(d=>d.category===ts.DiagnosticCategory.Error).length,0);
 const moduleBox={exports:{}};
@@ -41,7 +55,7 @@ vm.runInNewContext(result.outputText,{module:moduleBox,exports:moduleBox.exports
   assert.ok(fs.existsSync(filename));requiredPngs++;
   return filename;
 }});
-assert.equal(requiredPngs,123,'Metro requires a literal existing PNG per mapped identity.');
+assert.equal(requiredPngs,130,'Metro requires a literal existing PNG per mapped identity.');
 const get=moduleBox.exports.getSimplifiedChineseSetLogoSourceForSet;
 for(const r of receipt.records.filter(x=>x.status==='mapped')) {
   const expected=path.join(root,assetRoot,r.logoFile);
@@ -56,6 +70,17 @@ for(const r of receipt.records.filter(x=>x.status==='mapped')) {
   assert.equal(get({id:r.code,setCode:r.code,language:'zh-cn'}),null);
 }
 for(const r of receipt.records.filter(x=>x.status==='unresolved')) assert.equal(get({id:r.assetId,name:r.sourceName,setCode:r.code,language:'zh-cn'}),null);
+for(const r of recovery.records) {
+  const expected=path.join(root,assetRoot,r.logoFile);
+  assert.equal(get({id:r.canonicalSetId,language:'zh-cn',setCode:r.code.toUpperCase()}),expected);
+  assert.equal(get({setId:r.canonicalSetId},'zh-Hans'),expected);
+  for(const language of ['en','ja','ko','zh-tw','zh-Hant','']) assert.equal(get({id:r.canonicalSetId,language}),null);
+  assert.equal(get({id:r.canonicalSetId,setId:'other',language:'zh-cn'}),null);
+  assert.equal(get({id:r.canonicalSetId,language:'zh-cn',externalIds:{setCode:'wrong'}}),null);
+  assert.equal(get({id:'unknown',name:r.sourceName,language:'zh-cn',setCode:r.code}),null);
+  // A reviewed source-file label is not permission to normalize unrelated API codes.
+  if(r.sourceCode.toLowerCase()!==r.code) assert.equal(get({id:r.canonicalSetId,language:'zh-cn',setCode:r.sourceCode}),null);
+}
 for(const id of ['constructor','__proto__','prototype']) assert.equal(get({id,language:'zh-cn'}),null);
 const explore=fs.readFileSync('app/(tabs)/explore.tsx','utf8');
 assert.ok(explore.includes("from '../../lib/simplifiedChineseSetLogos'"));
@@ -68,4 +93,4 @@ assert.ok(visibleCodeStart >= 0 && visibleCodeEnd > visibleCodeStart, 'The print
 assert.ok(!/\bitem\.id\b/.test(explore.slice(visibleCodeStart, visibleCodeEnd)), 'UUIDs must not become visible printed set codes.');
 const sharedResolver=fs.readFileSync('lib/localSetArtwork.ts','utf8');
 assert.ok(sharedResolver.includes('getSimplifiedChineseSetLogoSourceForSet(input, fallbackLanguage)'), 'Discover Sets and Add Binder must share the exact Chinese resolver.');
-console.log('134 unchanged PNGs verified; 123 exact Simplified Chinese identities resolve; 11 unresolved entries remain unmapped. No release/device claim.');
+console.log('134 original PNGs unchanged; 3 new originals verified; 130 exact Simplified Chinese identities resolve. 7 original images still unmapped; 30thD still lacks a verified source. No release/device claim.');

@@ -1,4 +1,4 @@
-// Generated from the owner's original transparent PNGs. Do not hand-edit.
+// Generated from reviewed PNG manifests. Do not hand-edit.
 import type { ImageSourcePropType } from 'react-native';
 
 export type SimplifiedChineseSetLogoLookupInput = {
@@ -130,6 +130,13 @@ const LOGOS_BY_CANONICAL_ID: Record<string, { code: string; source: ImageSourceP
   "465f5ed6-b32e-4cf0-a890-c39bc812ca48": { code: "csm1ac", source: require("../assets/rev2/12-chinese-set-logos/logos/csm1ac__storming-emergence-radiant.png") as ImageSourcePropType },
   "64e14d7e-e9f0-49d1-9e43-f79eafc02f53": { code: "csm1bc", source: require("../assets/rev2/12-chinese-set-logos/logos/csm1bc__storming-emergence-verdant.png") as ImageSourcePropType },
   "d246467e-39b6-4b52-8b8e-abaef9094fb6": { code: "csm1dc", source: require("../assets/rev2/12-chinese-set-logos/logos/csm1dc__storming-emergence-gx-starter-deck.png") as ImageSourcePropType },
+  "cce4cfb8-6a87-567f-96a0-0884827a1396": { code: "30thc", source: require("../assets/rev2/12-chinese-set-logos/logos/30thc__30th-celebration.png") as ImageSourcePropType },
+  "b6d885e6-40de-4e3d-808d-fc2294af8ad4": { code: "promo-30th-p", source: require("../assets/rev2/12-chinese-set-logos/logos/30thp__30th-celebration-promos.png") as ImageSourcePropType },
+  "11f1bc35-2d54-4829-b26a-41184d498eb7": { code: "cs0lc", source: require("../assets/rev2/12-chinese-set-logos/logos/csolc__quicksand-card-display-pendant-gift-box.png") as ImageSourcePropType },
+  "d4992032-6cfd-4880-a091-bf324fea99e5": { code: "csec", source: require("../assets/rev2/12-chinese-set-logos/logos/csec__provider-logo.png") as ImageSourcePropType },
+  "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb": { code: "promo-s-p", source: require("../assets/rev2/12-chinese-set-logos/logos/promo-s-p__provider-logo.png") as ImageSourcePropType },
+  "4aa930fc-35fa-4e68-a34b-624fc70fb2cb": { code: "promo-sm-p", source: require("../assets/rev2/12-chinese-set-logos/logos/promo-sm-p__provider-logo.png") as ImageSourcePropType },
+  "17de4b24-d0c6-59dc-a915-9ba30546df95": { code: "cbb6", source: require("../assets/rev2/12-chinese-set-logos/logos/cbb6c__gem-pack-vol-6.png") as ImageSourcePropType },
 };
 
 function normalized(value: unknown): string {
