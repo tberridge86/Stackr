@@ -1,5 +1,7 @@
 # Stackr remaining work — 29 September evening
 
+For the owner-facing summary and the exact outstanding logo/set list, use the [plain-English report](october-1-plain-english-status-20260929.md). PR255 is merged; [run 36621263622](https://github.com/tberridge86/Stackr/actions/runs/36621263622) has resumed the frozen artwork batch. The older failed-run figures below are preserved evidence, not a current upload counter.
+
 ## Single publication owner
 
 The owner requested continuation in **Resume missing artwork list**, including reuse of work from **Greeting exchange** without duplication. Greeting exchange's available history contains a status audit of run 36540630666, not an additional publication or new prepared package. A coordination message has requested existing evidence only and no duplicate acquisition/publication. The separately mentioned **Casual greeting** chat is not visible in the available chat list; its link has been requested. Its work is not assumed stopped or imported.
