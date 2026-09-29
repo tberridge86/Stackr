@@ -3703,7 +3703,7 @@ assert.match(productionWorkflow, /STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED/);
 assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
-assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[backend_only, artwork3303, queue1_artwork, pbl_artwork_links, mep89_artwork, pocket131_artwork, newsets480_metadata, anniversary201_artwork, printing_front_api, card_detail_front, catalogue_assets, catalogue_api, full_platform\]/);
+assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[card_details, backend_only, artwork3303, queue1_artwork, pbl_artwork_links, mep89_artwork, pocket131_artwork, newsets480_metadata, anniversary201_artwork, printing_front_api, card_detail_front, catalogue_assets, catalogue_api, full_platform\]/);
 assert.match(productionWorkflow, /--require-catalogue-api-ready/);
 assert.match(
   productionWorkflow,
@@ -3826,3 +3826,12 @@ try {
 }
 
 console.log('Stage 13 deployment tooling tests passed.');
+
+const cardDetailsJob = productionWorkflow.match(/^  card_details:\r?\n[\s\S]*?(?=^  [a-zA-Z0-9_-]+:\r?$)/m)?.[0] ?? '';
+assert.match(cardDetailsJob, /environment: production/);
+assert.match(cardDetailsJob, /inputs.release_scope == 'card_details'/);
+assert.match(cardDetailsJob, /EXPOSE STORED CARD DETAILS/);
+assert.match(cardDetailsJob, /tools\/release-api-acceptance-20260929\/publish.mjs --execute/);
+assert.match(cardDetailsJob, /false false false false/);
+assert.doesNotMatch(cardDetailsJob, /railway.*up|eas.*build|wrangler.*deploy/);
+assert.match(productionWorkflow, /inputs.release_scope != 'card_details'/);

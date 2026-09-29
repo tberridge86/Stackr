@@ -40,6 +40,10 @@ The live backend still reports source `37817f2cb83b`, deployment `09193c47-1428-
 
 The original production metadata evidence is also retained in [an exact-byte ZIP](../../reports/catalogue/metadata-signoff/2026-09-27-production/original-verified-evidence.zip), with its [checksum receipt](../../reports/catalogue/metadata-signoff/2026-09-27-production/original-verified-evidence.json). All ten original file hashes match the original import manifest independently of Git text line-ending normalization.
 
+## Public API acceptance found during final review
+
+The [29 September API acceptance check](october-1-api-acceptance-20260929.md) matched all 480 Storm/anniversary identities and artwork references. It also found that production omits saved illustrator/type/subtype details from the published-card view. The focused `card_details` protected release must complete and its public re-probe must pass before metadata delivery is called complete. Two letter-only Energy collector searches remain classified exceptions. Repeat API requests were fast in the bounded sample, but first requests did not all meet 0.5 seconds; no universal speed or phone claim is made.
+
 ## Build and release sequence
 
 1. Merge the reviewed release queue after applicable CI. Record its exact main SHA and successful artwork receipt.

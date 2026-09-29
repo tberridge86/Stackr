@@ -1,0 +1,42 @@
+{
+  "observed_at": "2026-09-29T07:40:00Z",
+  "scope": "Published printing counts with existing stored details omitted from the production API view; not whole-card completeness",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "languages": [
+    {
+      "language_code": "en",
+      "published_printings": 23857,
+      "stored_artist": 23313,
+      "stored_supertype": 23857,
+      "stored_subtypes": 187
+    },
+    {
+      "language_code": "ja",
+      "published_printings": 12948,
+      "stored_artist": 10704,
+      "stored_supertype": 12908,
+      "stored_subtypes": 250
+    },
+    {
+      "language_code": "ko",
+      "published_printings": 239,
+      "stored_artist": 0,
+      "stored_supertype": 0,
+      "stored_subtypes": 0
+    },
+    {
+      "language_code": "zh-cn",
+      "published_printings": 12956,
+      "stored_artist": 854,
+      "stored_supertype": 12956,
+      "stored_subtypes": 0
+    },
+    {
+      "language_code": "zh-tw",
+      "published_printings": 7436,
+      "stored_artist": 7244,
+      "stored_supertype": 7436,
+      "stored_subtypes": 0
+    }
+  ]
+}

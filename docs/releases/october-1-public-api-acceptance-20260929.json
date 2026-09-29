@@ -1,0 +1,3653 @@
+{
+  "observed_at": "2026-09-29T07:32:35.088Z",
+  "base": "https://api.stackrtcg.com",
+  "scope": "All 480 frozen Storm/anniversary identities via paginated public set cards; 12 card-detail and exact set/number search cases. Full response body decoded before timing ends. First and repeat requests do not establish cold shared caches or device latency.",
+  "requests": [
+    {
+      "path": "/v1/sets/258cb8e5-c769-540d-9e3c-40d4ed4dafdb/cards?limit=100",
+      "phase": "first",
+      "status": 200,
+      "ms": 2628,
+      "ok": true
+    },
+    {
+      "path": "/v1/sets/258cb8e5-c769-540d-9e3c-40d4ed4dafdb/cards?limit=100&cursor=eyJ2YXJpYW50X2lkIjoiOGJjOTAxNGMtMTE5NC01YjU4LWIyMzctY2FiZTY3ZGJmODZkIn0",
+      "phase": "first",
+      "status": 200,
+      "ms": 663,
+      "ok": true
+    },
+    {
+      "path": "/v1/sets/258cb8e5-c769-540d-9e3c-40d4ed4dafdb/cards?limit=100",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 64,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/d5fa2fe8-540b-5e84-8736-8b77d8b04bb6",
+      "phase": "first",
+      "status": 200,
+      "ms": 538,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/d5fa2fe8-540b-5e84-8736-8b77d8b04bb6",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 58,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=001&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&language=en&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 753,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=001&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&language=en&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 62,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/87575ddb-1bc6-5224-910f-e94383de9821",
+      "phase": "first",
+      "status": 200,
+      "ms": 367,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/87575ddb-1bc6-5224-910f-e94383de9821",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 61,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=081&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&language=en&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 422,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=081&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&language=en&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 53,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/6161add3-c281-5729-92ef-46837983aaf4",
+      "phase": "first",
+      "status": 200,
+      "ms": 299,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/6161add3-c281-5729-92ef-46837983aaf4",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 57,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=R&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&language=en&limit=5",
+      "phase": "first",
+      "status": 400,
+      "ms": 18,
+      "ok": false
+    },
+    {
+      "path": "/v1/sets/903d5baa-27c7-5690-b1d7-2395c770204a/cards?limit=100",
+      "phase": "first",
+      "status": 200,
+      "ms": 1195,
+      "ok": true
+    },
+    {
+      "path": "/v1/sets/903d5baa-27c7-5690-b1d7-2395c770204a/cards?limit=100&cursor=eyJ2YXJpYW50X2lkIjoiZTE0ODljOGMtMmVkYS01MjBjLWJmNDktMjIwMDk3YTFjMmQ2In0",
+      "phase": "first",
+      "status": 200,
+      "ms": 309,
+      "ok": true
+    },
+    {
+      "path": "/v1/sets/903d5baa-27c7-5690-b1d7-2395c770204a/cards?limit=100",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 62,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/2a295d0a-cec3-56d4-a1ce-91f51c389801",
+      "phase": "first",
+      "status": 200,
+      "ms": 370,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/2a295d0a-cec3-56d4-a1ce-91f51c389801",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 53,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=001&setId=903d5baa-27c7-5690-b1d7-2395c770204a&language=ja&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 429,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=001&setId=903d5baa-27c7-5690-b1d7-2395c770204a&language=ja&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 49,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/cd00197c-a284-5227-8a53-e38f7969f90d",
+      "phase": "first",
+      "status": 200,
+      "ms": 280,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/cd00197c-a284-5227-8a53-e38f7969f90d",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 48,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=057&setId=903d5baa-27c7-5690-b1d7-2395c770204a&language=ja&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 455,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=057&setId=903d5baa-27c7-5690-b1d7-2395c770204a&language=ja&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 49,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+      "phase": "first",
+      "status": 200,
+      "ms": 297,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 50,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=113&setId=903d5baa-27c7-5690-b1d7-2395c770204a&language=ja&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 780,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=113&setId=903d5baa-27c7-5690-b1d7-2395c770204a&language=ja&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 56,
+      "ok": true
+    },
+    {
+      "path": "/v1/sets/88e351b5-8191-5ef4-854b-2978046cda53/cards?limit=100",
+      "phase": "first",
+      "status": 200,
+      "ms": 1284,
+      "ok": true
+    },
+    {
+      "path": "/v1/sets/88e351b5-8191-5ef4-854b-2978046cda53/cards?limit=100&cursor=eyJ2YXJpYW50X2lkIjoiOTM2NmJlNWMtYzgwMC01YzlhLThkMjYtNTZhYzk4Y2FhODI0In0",
+      "phase": "first",
+      "status": 200,
+      "ms": 439,
+      "ok": true
+    },
+    {
+      "path": "/v1/sets/88e351b5-8191-5ef4-854b-2978046cda53/cards?limit=100",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 65,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/35aed820-3a67-51b5-a39d-35bfb028b052",
+      "phase": "first",
+      "status": 200,
+      "ms": 344,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/35aed820-3a67-51b5-a39d-35bfb028b052",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 59,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=001&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 612,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=001&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 52,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/8be76192-b129-5222-b7d0-14ad7648c576",
+      "phase": "first",
+      "status": 200,
+      "ms": 352,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/8be76192-b129-5222-b7d0-14ad7648c576",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 48,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=089&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 504,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=089&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 49,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/6c131239-4552-570b-b517-c82728c86065",
+      "phase": "first",
+      "status": 200,
+      "ms": 333,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/6c131239-4552-570b-b517-c82728c86065",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 53,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=WAT&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 2214,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=WAT&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 53,
+      "ok": true
+    },
+    {
+      "path": "/v1/sets/07422e07-e2a2-5966-b0e1-008afc08d97c/cards?limit=100",
+      "phase": "first",
+      "status": 200,
+      "ms": 442,
+      "ok": true
+    },
+    {
+      "path": "/v1/sets/07422e07-e2a2-5966-b0e1-008afc08d97c/cards?limit=100",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 52,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/52c32dcb-5e36-5e1c-8c0b-c4697bbc0f78",
+      "phase": "first",
+      "status": 200,
+      "ms": 314,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/52c32dcb-5e36-5e1c-8c0b-c4697bbc0f78",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 107,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=58&setId=07422e07-e2a2-5966-b0e1-008afc08d97c&language=en&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 391,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=58&setId=07422e07-e2a2-5966-b0e1-008afc08d97c&language=en&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 54,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/2e4b7467-5058-5180-8d0f-9577865af700",
+      "phase": "first",
+      "status": 200,
+      "ms": 281,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/2e4b7467-5058-5180-8d0f-9577865af700",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 47,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=99&setId=07422e07-e2a2-5966-b0e1-008afc08d97c&language=en&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 376,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=99&setId=07422e07-e2a2-5966-b0e1-008afc08d97c&language=en&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 54,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/6b21dfd6-926e-5df9-87b0-815e1ee6e697",
+      "phase": "first",
+      "status": 200,
+      "ms": 284,
+      "ok": true
+    },
+    {
+      "path": "/v1/cards/6b21dfd6-926e-5df9-87b0-815e1ee6e697",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 54,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=203&setId=07422e07-e2a2-5966-b0e1-008afc08d97c&language=en&limit=5",
+      "phase": "first",
+      "status": 200,
+      "ms": 460,
+      "ok": true
+    },
+    {
+      "path": "/v1/search?q=203&setId=07422e07-e2a2-5966-b0e1-008afc08d97c&language=en&limit=5",
+      "phase": "repeat",
+      "status": 200,
+      "ms": 56,
+      "ok": true
+    }
+  ],
+  "sets": [
+    {
+      "set_code": "30C",
+      "language": "en",
+      "expected": 161,
+      "returned": 161,
+      "unique": 161,
+      "checks": [
+        {
+          "printing_id": "d5fa2fe8-540b-5e84-8736-8b77d8b04bb6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "00382ead-e74a-5d2d-8d2f-6ed58867b6a5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "de90e25f-78a7-597d-9b1d-a2a8a47f7216",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6d327dac-edb8-5bcc-9640-4610e9641ecb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "db96c953-36fb-5fd7-aa3c-b9369e8acaa0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3686b4d1-5298-500e-b43c-40bf58dae70d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ae255f67-c532-5a00-aa07-0e9d2391e36c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a8d017ae-a4b4-5c8a-95c6-fda6616c3017",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "cffa0da1-ab6a-5f1e-8aaf-a8057e859374",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1ff72e3b-4c0e-5bc2-94a8-8b5f5ff43ede",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ea169eb6-7c7d-59b0-82da-89284e9ab7e9",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bc282b77-51a8-524d-b5bf-1e289652d3a9",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "60f28f3b-2d26-5dc7-898e-53f97dfc68b1",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e8d7f86f-b06f-5d73-b2d0-48483ecdb14d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9b739aba-57a6-531c-88a6-97d7414d6f77",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "7fa473a2-bb27-5851-9303-933b774cd233",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3502025e-c7e2-5dd1-ac5d-b5e240fae85f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f930c244-e3c3-5207-afdf-72c9ceb7817d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5f0ae109-9c16-5d13-85a9-d38e40aaa206",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "56bc5dae-cddb-597c-98fd-90fc37eb7862",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3502d2e7-2649-5b12-a0fd-9e5fbd03f403",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1013e7ff-7524-5189-9c52-3e4969b3ae98",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2473980a-c6ae-5371-8632-0a2a4db91565",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "79a0d024-217e-574b-91c1-40a704f7f0cf",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "97c8e5b4-6a46-5017-84ab-c933d4556734",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "722426d0-4bae-558a-95ea-36f2a5f8ba46",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a77de186-c481-5a99-a606-bab812009aa8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4405b89b-24eb-55d4-9b31-59224f3d668e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "32c815f7-830f-5356-b799-51382ea0d18e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6d65b488-39ce-589c-924b-ed6b9c68a685",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "72f39244-4b33-5c76-8e2c-43be8ec9bbd7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "806d96cd-4ff7-5af0-9e91-2938ed3b2d51",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0dc54437-c0bd-5045-9f99-471d0ead8595",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3080ea05-b037-5e0f-a218-f0980105e2a8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "989dca03-a9da-5e7a-b4cb-d25f0a59891d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2b486314-6588-566e-9833-a33ed04fab77",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "66cf5552-1d7d-5760-9196-67d3ebb7753c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2eaa8c77-6378-51c2-a3a7-424b269d600d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a21660b5-3ce1-5c0b-865a-fac78a003949",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "baef72a8-2620-5d4f-9d6a-bc8613290e88",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "93749bdb-6b55-55ce-9cb5-d9850fdcf9f2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "70e6367c-c800-5be4-b152-787f333409c3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d08640d9-4c9f-575f-aef1-33f12f92aae5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "17a22369-632d-54ae-9733-f922ba7440a0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "eb04f219-65cf-5b3d-8016-07e53c4a1e73",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "11085ad5-4348-52cf-9abf-d2903d719b1a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4d8e180c-5087-5815-b75f-23826a9ddead",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3b6c3d5c-0227-588d-9e0e-49754daca7f4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "420b8671-ccf3-5def-a655-5f20316b8fc6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2e4c1dec-84d8-554d-acc5-59af82981c63",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "24572cc9-1a39-54c9-b3a9-c1afa29399da",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "706d2e11-816f-5f65-9935-addd1496ac3c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "dad1f878-d253-529b-827d-ae6134ea3547",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d8359a8f-3897-5a66-91ce-11e7a506aab5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ed5b2204-fe34-5239-81b4-089a4a4580a7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4c115ca5-778a-5c65-ab36-40bf55740d04",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4f413da6-52c5-5a31-a8d0-fe1d3f125178",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5d6d837c-4622-5f1b-b658-61be95f4f3d7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3c0dd931-e40c-573b-bcca-ac4373089f20",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "83ea2f66-199d-5eba-9d7a-9dfec90f7f0a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "98421222-08b5-51e7-96d9-7f2729cd26d0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8c23c110-fda2-5ceb-b4b6-8f312f8f8547",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2ce19fc0-e094-53b7-96a6-0a6afec350a2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0b573ed8-237e-5083-af88-33a688b8e90a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e21dd2c2-8c65-5a44-b72f-c5689349d538",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "847a1d34-7724-50f4-ba65-8616988e3809",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8a9b4fb5-4b02-5cb5-9a8e-19479cdc54eb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4bbad9c9-6cc2-5afd-b82f-ce42e9d13fdf",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4a6a2131-b0a2-5d22-a2e6-d23af3924859",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9e1e8426-3c0a-5264-a871-c74d989ff36c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a7609d63-05c9-513b-aa94-93cdc13780b7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a763225c-266c-59cc-a957-627d1ed66a2f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bb04c358-f354-53b4-9b2e-6807f26fa3aa",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "78d0bcf5-00a9-5ced-b433-587f0b8e4c7e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "58a52240-035c-5608-8ecd-4f763eaa070c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bf17adf3-b180-5c55-a5a5-fc9aaf785b1b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c941cfa5-5639-5cd1-bc24-c0b07cd75831",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ceb5e1ff-6cbb-57eb-b3b8-87ef9768a153",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "00f5ce9d-2964-5988-b50b-34f15b334152",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f4b70b53-647f-54ce-9ed2-5635b7c3891d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "87575ddb-1bc6-5224-910f-e94383de9821",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bce8d518-dd56-50a7-8c05-2a373dc56112",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a82411ad-d3b7-5443-a7f5-805b74bb43cc",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "7263f5ec-fdae-5adb-b295-5b965a3a49ae",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0a4b63da-0c81-53a3-89fe-9dea51027b66",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ebc908e6-e27a-5f4a-9db3-54056c25d975",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9fef8ccc-d235-5b15-8814-aabec953ea33",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "cfede168-c692-5d1a-bd78-af23b9d76e69",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4f7a29bb-ddde-5b64-9825-3c0066e9009c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "339aad97-0e9d-5af4-bb99-4909c6cc5fea",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bf03ae4e-ccb5-5945-ad11-243172ed87f7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0db82388-e63f-5687-9d40-9cd9cbbcb6c4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5ebfd695-eaf4-5ddf-9d4c-e8f72dd70a0e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "cc29934b-7aa0-533b-a9ef-176a9d71729e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "649e7124-79c9-5c9e-b29e-3c6247ab383e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "90228b6f-45eb-5e17-b78b-f541156f4d5a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "76a231ec-ef2a-5f92-9260-d779ced28433",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c1a86b79-cf1e-5fa3-ba33-f62ff53a215d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "32455d83-aef7-5ace-af3c-46ffab4a7655",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "171a3f73-bbb4-54f1-b585-30ba4f294837",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "27582b12-e5b9-5c00-9f05-576176f61bf7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0ec02839-c5ac-5159-ba08-8d676651bd7e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1c5dcda3-9753-513f-a632-52782c1067f3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "240ca0c2-d5fc-5c33-ab59-1321caa42ac2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "454d0fda-cfa3-5170-8efe-800397ffc5b5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2af01045-5577-50b3-b68b-6f83775254df",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "936082ab-df6a-5269-a529-510b3f923a40",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "499e19aa-8923-5f32-a563-6159c8f50168",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "201a6061-e6b4-5313-aea9-2de99370d9c8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b979108c-66f8-5830-b37b-c4c58048722e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "aefd4c43-d4c3-5a71-8251-aeadc8a8153d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1d05e5c6-77f6-5f95-8f9d-e4a4c725c2e3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "78661342-dda8-55be-9b94-e77587e29373",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2c8b87ef-3834-5613-86d3-be03100fe0f2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8ebdbf86-3687-569f-a336-6de2d1e0bf90",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d9db2688-a704-5beb-b7d2-207176c6ba44",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d1ebf4b9-eb10-580a-be31-15ab2a9e45d2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b072a9d6-befe-5bd2-932a-9fa82e990ff6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5bd2eff8-e89c-521b-beb8-067f04e7e8a0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3e07ef3d-abf4-583b-b8f0-c6653ae2ee8e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e47e1299-4098-59d7-88fc-1686f2ba4e4a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f5fc9d59-8f62-5d39-be43-ec170172e3fc",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f81796d4-4e8f-5416-af65-d7512a514720",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "029a77a9-6da0-5b8e-bda5-5c67dc82dc7a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "7521bc8b-bf51-524d-87de-637d4ecad3be",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "efec998f-b2dd-51de-91e5-72d3d4683f4e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "817b74c5-9b0a-5065-8a44-4ca406cdb4ea",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6d7e8a4c-2276-5ffa-b820-5f7930eff68e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bc815942-dd40-502d-bd6a-253dc2a306fc",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "12ab7f83-720b-5fd2-a599-a4856a4dddfb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "44ebc1f1-bea4-5101-92f0-26b208d50713",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3b67f8c5-4060-581c-afe0-73fe810da406",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "16c1845c-66af-5246-b29e-ba0d24af8bee",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "72edc67c-b53b-502e-886d-46ff44a333e5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "670e1f14-c78e-5ad6-aae0-162da9d0c3d6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1b1889a9-1dbb-53f1-a22f-500d2cdadf23",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "78618e4c-6a48-519c-8896-3181c76ffbbb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "023a4d8a-c971-5da6-ba4f-cde469c2693b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e936fe85-deb9-5360-8802-e38406b52e5b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "98787fa7-86e8-5a23-9a52-b03d96f59222",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "259b9f9a-59ca-5169-87e1-35dcd28cee56",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e75f16b5-34c5-580c-ab10-c50e674e287e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3c865047-5a5b-59c5-9053-55a27742437f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0a03b4c0-1511-5a86-b491-11bf265a89b8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "43f1917c-930e-5ce5-b073-04758abce278",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8ecaf82f-7e65-53cf-ac28-e8617865e5c7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "58452175-c9d1-5320-a302-1f0ce6ea0680",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9f008691-3ce0-5618-9ba6-1ea4288fb920",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b1300041-9af5-58fb-b087-bc7007cc3a1a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "72382987-c817-5088-9858-8b603ceb0d75",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "652408d5-87bc-5a1b-b7ea-13d6bafaaeb5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "73d79c89-43c8-54ca-9a06-542f6fefc99b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fea165ba-b50b-5da6-920e-61caf11ff521",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "74b4747d-b95a-531b-bc63-0399c6892ec7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "03b1e3a0-89c2-5d33-b416-87672eb506af",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e997f381-76f5-5930-9ad9-1130fc07f619",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e156c453-477d-5720-8bce-0beb543ea866",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "01f44468-5959-5caf-9ef2-39099c88b757",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4e72343c-9147-5e1e-aecf-3e600c68e4d0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1ab46829-8171-5770-9330-4b7868735be7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6161add3-c281-5729-92ef-46837983aaf4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        }
+      ],
+      "identity_passed": 161,
+      "artwork_passed": 161,
+      "details_passed": 0,
+      "error": "HTTP/API failure 400"
+    },
+    {
+      "set_code": "M6",
+      "language": "ja",
+      "expected": 113,
+      "returned": 113,
+      "unique": 113,
+      "checks": [
+        {
+          "printing_id": "2a295d0a-cec3-56d4-a1ce-91f51c389801",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4abd1072-726e-5044-bd3a-b50be909b53c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1cc9b8be-9e4c-5b65-93f4-75ca19aed713",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e7fa4cca-c739-585a-80af-924e696cae84",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a3877807-141b-5b85-b9c3-ea0990ac677b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d1b7de20-4579-5d2b-8922-e468b56291af",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "03c29735-47ae-5d5e-b148-6e3d4ae67070",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "194da455-984a-5963-927b-3f86c1e60aad",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "401c16cf-328b-55c2-9316-88834bb13651",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b2883c78-4536-5583-b2dc-1fd3c16aa090",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "df4c6ddc-4303-54f6-a4cc-89dd4c8a91b6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3c28be48-dc77-513b-ad14-0805e976544f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "322818ca-c6b3-53d3-8ff8-1e5fb73a024f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "584da230-a24f-51c4-881e-2638a2d99170",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "7b12c256-6350-5d33-93c9-130db93f6e11",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1ce27e0a-1b7f-598d-97d4-7fbf260cdb7e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0a9138c0-60d6-57cf-aa5f-1ff82923ea71",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bd9c9988-b8a2-59f3-9efb-66b7a4d95632",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "7b26d167-128a-5e10-aa8b-4bf05fb1943c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9f9972b2-52a7-55d2-8a51-7897a23e3870",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a1c348e6-6dd3-59f7-a699-cd3ee4e88a45",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "92cc133a-7c3e-556d-a056-e9083a231eb4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4f34417c-3edd-5b45-aeb3-80f97e8f2086",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2a21819a-44ae-5e11-a37f-4d8f9694bb0c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e82db140-f976-5e9d-a514-aa528b489262",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "eaad26fc-1427-5e30-9d7f-8416df5eb36e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d7414def-e882-5aa5-979d-d1a0d5081553",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6340bc4c-3bfd-5c34-a74b-e256e57d6f51",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "99c0a772-553c-567d-995f-9bbf27c8dfeb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "93bf8545-8a31-5e18-8f60-fa7aaaf9f6cb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "25fec205-a407-5ece-b080-59ee948ea99f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "62b9d33d-c577-5896-8fb6-7735842bde07",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4b3e0421-64d3-5015-90ec-fc511fbd9f55",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d1d867be-e2d1-5307-bd0a-bedbbd48c252",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ba80d253-945d-52c1-9e6a-102862031f21",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "72a57fe0-d682-5dd1-b5cc-2293bc1e5be1",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "cfd99411-ea73-582f-b0f9-502fd595af0f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "01a1f464-b1cf-5e60-a709-93ef63f4149f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6de49a8d-424f-52eb-ab40-969978970186",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0471ed40-44fe-578c-8dc3-a6dc1b1cad8d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e2399b41-68ee-5890-8edc-29b46768107e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d1febbb8-4a4d-5f41-b535-a0fc1e7d4533",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "65a81af1-3476-5463-b8d7-4e5305e241bb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "93be219a-cdff-5b2a-a8bc-e3db4487a3d0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1006b03b-7b7e-5645-9ef8-2b359eaefd0e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e53f2d7d-e27e-5547-9b39-4a5efc17cd89",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "11a87e6a-20f1-5f73-b2e1-e43cc8f946ef",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "14fe1f83-09a8-514c-aba1-345d414e703d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "aa2bde45-3240-5d79-91ef-f14b0806e504",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b1b5c158-a07f-578d-87e4-87950b3321fa",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "75f54fd8-d56d-576c-bef8-18cfdab856bd",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b827d9c6-afdb-5f79-b0db-f90f600f1eec",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0001c9fc-66ec-5f14-96e3-75c587f577e5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8c49ff55-d555-5b52-b487-22c9f9bd68ac",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c8437972-0b85-5d90-a21b-0426faf71c92",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fba61bf1-6088-52cf-a69d-43cf97c05eb8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "cd00197c-a284-5227-8a53-e38f7969f90d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4fc02b34-681e-5409-b2fa-dfcc3f5b7064",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3f03f211-e87d-5cdd-ba2b-2329cbba48ad",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3206341b-97a1-5c2c-a60d-67cf6fb42c55",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2c43427e-1419-55de-9221-cc44882b9d5e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1c6068a5-5ee8-569c-910c-2cd7ae95e790",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0aac5d8a-0c2d-5d3b-99f5-6d6ce9a4794c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "54914c5f-81fe-574f-ba94-8f8b3cf5e4f5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6055e30d-f7bc-5237-bd0a-4b625e2865ce",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "611e2ae9-6b3a-552a-97c0-8fd0bb536dfb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "03739a06-e0c7-5016-bdda-42e558110784",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "42ac84c6-8353-584c-ad7c-28a7be877a1e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2d9d237b-8329-579a-b87b-2b97477756f9",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2aeb34c8-4689-5b32-8f33-c25c6a732449",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ead6c9fe-d935-5674-965c-30b46ec8e9d3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a9a9826c-1bc5-5a75-b4e2-43dc79632edb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "57d06f28-92f7-5cee-bac3-10af5e72bf62",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "475fdd84-9b71-5b03-80ea-33f67e3e60bb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "01c5cbec-4083-52d3-95c5-6c7924f73c57",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5a30f563-62d0-5343-80b6-3e8ae4ff69fb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c7ad5594-cd00-5011-8a4e-0c1af90cacf4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9bc2a6dc-d783-53a9-a80c-3b67354e43d4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "45bbf6c7-7c07-5604-a94f-a6c18dc95ad4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "21ff2e04-11d5-55b6-a8ca-4ac43a0169b2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ae2eb048-9629-52c0-9cba-87523dec1a22",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f3286e6b-c62a-594e-812a-43f96fa59025",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "80bc0f31-2a9b-5f54-b85b-45884f60f43c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fd09baf3-843e-5129-9460-1c510f7b4d31",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3d694b45-9a08-597e-9677-889ae70ec1c3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9e523852-eb61-577f-9caa-b051d1b43b0a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e0f3c71e-55ab-5539-89df-88b6d706d12a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1ad9a2c2-c3a3-569a-8cb2-d909ed738172",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2c7ea8df-d77c-526d-875e-edf6e8d91a52",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "85a385d0-0ea5-5747-882c-b6e3bea51094",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "55ec0f00-eb2a-5401-8955-b42f837edf45",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "012c88af-f7cb-549f-bc9c-c39fc674e959",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3e2557da-6cd9-5bc3-81bc-6b7449933dad",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "da7f1bd3-d714-5f9c-b2d7-ddee5b15dc45",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b0a8d598-07d9-5a43-baaf-f057981dbd64",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c1556ef1-b294-5ce4-825d-2b9d2dcd6757",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "675b523a-7efe-5991-98d5-fa1a27c4b8fd",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4ffdd14a-6da8-5ddb-807c-9ba397c6caa7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "84049adb-017d-53d0-ae89-ff187671b830",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8dd12883-caeb-519c-aa00-922ded81983f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "61c383c9-1ce1-5b6a-8c74-fc90d859f328",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "34002608-4f4c-5f15-8a7e-5325a5238935",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "badfe954-928e-5ba6-86f5-0ff6c0227c14",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "60f1c44e-136b-5be6-b15e-11323d2701b9",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a3042e56-4daf-5c2f-9ff4-a1a035750bab",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f6e68699-a46f-56d2-9988-cf1f416ce8a1",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f7018733-51a3-5785-9174-8945b7bd8aac",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "55f14fb9-7493-5d85-9e4a-3c740c02cb49",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8ac8deed-12d0-566e-a59e-bf01d954a6a1",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "05534670-94ce-52e9-ad5f-2101796eeb03",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a322eaf4-1dc6-58b4-81f6-efb56ec808b3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8f060dbc-60a6-5774-8033-dd3a68409fd2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        }
+      ],
+      "identity_passed": 113,
+      "artwork_passed": 113,
+      "details_passed": 0
+    },
+    {
+      "set_code": "M6a",
+      "language": "ja",
+      "expected": 176,
+      "returned": 176,
+      "unique": 176,
+      "checks": [
+        {
+          "printing_id": "35aed820-3a67-51b5-a39d-35bfb028b052",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "11bd9ec1-fd7e-556e-8cf2-b418b985bd31",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4a5d47ba-33e9-56dd-98b7-64d80c29f7e6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c8556586-8d48-59cd-a5ee-02d7accd0be1",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "998c9b31-0afb-5939-a3d0-23d22df777e1",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "55b9c9c5-e92a-5545-9b2a-ae2d68707415",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0ceb73ae-3eb9-57a0-8776-28d89317f4f7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "334128ac-6c80-5605-a6ac-609e2fac6461",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e8ca667b-046f-5cda-86e5-fd58b9157bb5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "674fc6b3-37be-5e0a-821f-4ccedbecaef3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c8295184-512c-5e1d-8342-01715309cbc8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6e624d58-571c-578d-9cdc-856768242a21",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b1bd4377-060f-511c-86e3-61aee577fed3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0b1c5305-857a-5bdc-8704-93a50919c9e2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e5f4d120-a8d6-531b-a278-a82e207ececf",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "21a01893-1342-5838-bee6-80b3eafdb135",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "54533a5c-a47f-5c22-a42c-9f6aeea76958",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4e323f23-0850-53dd-907d-9c8038340010",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e5a1e51e-447e-5d59-b47b-2d41d71a46f9",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c9f3c4dc-0960-51dd-877b-2dac1c5ac559",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "66bcc0de-6aab-508e-a2d9-7b64d11e9aa8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1214fe54-b7f6-512b-8d02-1ad851fb6bec",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2e875c93-9cf5-5627-b872-d27a3dbacecb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "12813d67-4d3b-53b6-8791-16a57016e8a2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c30cb72e-991c-57eb-9ba8-27578b3cc574",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d2742191-7930-5564-bddf-bb0d8378752b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "68fb4d44-d2e2-5e0a-9e70-6e009deab6ad",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "61c715ed-1573-54a6-80a0-5a2f4e9f5117",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "7f622917-0407-5ee6-b13e-ea5938d725f3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9acdf2fe-726f-5386-ad27-e1f6dfc3c59b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d2758792-0128-581e-8cb1-44cfb97512b4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1509b379-d4aa-520a-a044-f1896fb7a802",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4983a4a6-2691-5cdb-a949-84864e8de100",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "de267213-019e-543f-a6e9-9aa7bb137bc4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2b430bf6-8838-5523-9518-83cb9c44c88b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d00d0333-c375-5ca2-96e2-265b48f80f19",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c3a0cf9c-1856-5652-bcbe-3b6648e0c79b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ab77e7a0-bcb3-5bc9-86cd-c5f3d51e4684",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "da868f58-bdae-59fe-9462-04f8896f0226",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "eaee134a-16f2-54ba-875b-a779e6a955cb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fa2e2d91-332b-53ca-912f-10bf9aae424e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "81b26392-9962-5b4f-a5fe-7f83a64333b8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "afc458c0-a30f-515a-b601-f4b7b97b1935",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a9a45f65-05bf-5872-b3be-42c9781683e8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "97fc44d5-b3af-51b6-937e-6993ce09a3fb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1d73b79d-8c6c-5109-adf3-28b5ff378261",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "548ddfb4-113b-56ab-b1ce-5c1a1594244b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2208a2ff-a296-5d97-b552-7a279fe1fc25",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "54b309e7-33ae-50d2-912c-6affc7d70e92",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f3291241-2c9e-5cf7-ae1d-e53d2c7aec34",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fc9cfcfb-cfb5-5445-a411-f6f8d6f2cdd9",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "454d5c14-3497-575e-b439-c15397007513",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8ef39381-a5ff-5ff6-8a2d-34a6087473f8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "7f27fead-217c-5416-ba84-f377d3355f94",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9e9b9a6b-0d54-5033-a731-cbb95555e77c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ad45bc0c-8a24-517b-9043-626ac46c8ed1",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2cbc0e61-042d-5ed9-bec1-5ff9ff935dd6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c53fcb1d-f7cb-5fbd-9005-4d66fc0cfe38",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0c39b352-6732-55ae-a2ad-a955f5273f5b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bf32d8ff-e44a-5e3c-b0f4-729827469a6d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9400b7c9-03f3-528b-ac32-22707df275b3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a12f549e-960c-53d6-8252-9d00f794a034",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9846c7a3-eb84-5483-8ad5-3fabf7eb7f59",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "150c4489-6d5a-5025-b954-6c4d16708ba2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "54c96e14-d985-5690-9df6-c3420ec88b76",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0fd4a418-89d9-5d26-8f68-1dc54de327a4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8be3a2b9-ce67-5378-85bc-b9326da3fed9",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "73fd7ad3-439d-5873-a5ad-ebebe27bae26",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5dd3dece-559d-50b3-b5e2-6d67daa43807",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8d9f459d-f554-5129-bea0-9b310a9c33bb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c542a4ae-26ef-56ef-91dd-e08aee53988e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "002c64e6-4aa9-592c-8ce0-7a5e7b27b0ff",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5b080500-94e5-534d-b8d4-f89c4245a6d6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "038338f0-e4c5-515f-99b2-372c14422050",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ce622036-253c-5a3b-a113-5cb4999fad7e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ac4b0139-a4f4-5ff2-8e98-aa250c69bd44",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "cd5d764d-fc0a-59e5-84b1-f70e00d49982",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "67bb2ceb-cb6a-5932-a533-4fa677d171a0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "01974be9-1c54-5383-a103-200334042065",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3a11bd7c-8369-5783-9928-c3e16f6b81d6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fb553d4e-d857-520a-9247-582b9ed9cc9f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "64d957ce-f6da-5999-b057-635945956410",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "779fe6a8-355f-56ac-b4e2-02cafe47b4a3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4cde40f2-08cc-510f-9375-b3807bccb795",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f5caa0e5-29a1-5164-92ac-2572c6e92be8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "25d3472e-6843-538d-8e12-b66b281c0556",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f86bfdcb-fcc5-5360-8179-f58ee9ba318a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "304056ee-74c4-51a8-a8c0-062811a0ac06",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8be76192-b129-5222-b7d0-14ad7648c576",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a2f25aaa-4204-54b4-8482-6530bffd6e5a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b4d6ca7a-a23c-5cf7-8979-ba80c1a652b5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0374d892-6321-51a5-8957-47f76c546e62",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bf17a874-3f5a-5e4b-842b-6d2567ebd033",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3f572cea-3510-55b0-aa10-ad80a10cc544",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5a4922bb-4023-5fd1-a75b-5709d480bb00",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f4efb0ac-eb42-5ef9-9e66-432d828f4d08",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ffb47e62-3d1f-59f4-a0e4-e935a36e3dc4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2737d561-906e-5934-8641-735ffedd352e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e2a0f73d-2189-5fb7-b042-70ed6ae3e2d1",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3d60c7ac-945d-57d4-b647-ce65181daa8c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "619c5b23-a36e-5d75-86e4-5fa8b41ccb78",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a0de71fa-ec16-5cd6-a145-f984bec8ba5e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5a25d8e0-a1ce-5f51-8ed3-b8ab56e8d6ee",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "65781095-4708-584f-bb8e-3e0b8834dfb1",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2c4d74ff-27c9-5e5d-8c74-903a65dbe947",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a6947f48-822a-59e5-bee9-ba2f933f44a2",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5ca38ced-dead-5aa3-8dc4-2432928a7eed",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "31881362-4a86-55eb-962e-917bf0ab12cc",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8747dcbf-1df7-543b-858d-2c7a433cf5b4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5c46e54b-cc15-51ce-ac37-fa1a103a4804",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c460a456-e57b-5d90-8144-e692a38763d6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d9f17fa2-e1c7-5857-be8a-90ccf12d1610",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2e997743-f3ae-5611-9aa9-f1540e07c27d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fcd5c4e9-1171-5321-a909-9861a7de4a38",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "79e29013-995f-5759-8794-9eaa0cc4e73a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "15bfc3a7-7267-508e-a411-fb037c9c5707",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "92ec6930-f229-53c3-9ee2-1237f1e943d8",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "8e6338fa-1510-5dd3-83da-83bdf3575cb5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f5a03b24-8f60-553c-bc9f-25bf1147606f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "84efc5ba-6150-54ef-926a-232c907ee3e6",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "75dea0b5-f5a0-5faf-a477-c61f44edf095",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "18e0ae5c-cc6a-5c59-b840-b7e8a487946e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "81ad21f7-6ba1-5a7f-89d4-f892dbcdf5a7",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "cf3e0267-d125-59c2-9089-5825c3803523",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "128b9196-cbd2-54b7-b3ed-833aea573995",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "536db3f9-ece6-57f2-b181-3adfc156d3dd",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "44b7e305-e52c-56c3-a44c-66631636e2dc",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "082ffbbe-0579-5c0d-bf49-c979a3738e6d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "cb744d8a-15b7-579c-a1cb-b0a0c69943f3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fca16f17-c350-534b-87ac-de1291f5b372",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "166a5d0a-43eb-5c25-907a-3d2b17ae6884",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "763382b4-7eb4-58f0-94d1-b072ff6d5cea",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "66221149-f4b1-5fa7-89d4-6deffee537f0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5f1bebaf-adc3-5580-905b-710c7c13263c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "496d85b4-b19c-544e-9f3f-544008fd95a4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ef356201-e31e-513e-87d2-6ae410e93213",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5d74d2a9-ffe3-5c45-a1ef-e2607eb207eb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "25d93bf8-853f-50f5-96a4-c6c8299d032c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c3bd5df0-2f8f-5d90-b2d8-547bc8c5d826",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2d208a3c-1344-5b29-b93b-8a7215d7d849",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "7bed87aa-83bf-5780-8d3e-ef51454ff045",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ad0c9003-7732-585d-8859-6260cd31e93e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "eb9d23e7-4e58-5b1f-9618-c63eb1da61b4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fd3eeee4-db03-5fa3-8ae2-c90f8892cec3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a58b8e9e-ec6d-525e-a91f-0977da47ec1f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "beedcdfc-dc45-5711-8b96-2369afd5012c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "37876e11-6774-5bb6-aff4-9f3e562b17f3",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "7af04645-ad3c-5b85-880e-54a1b6345d92",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5f3c9fa4-472b-5604-8f32-80399d0d60da",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "022800bf-7f11-56f0-ad91-6c6f4da60b2c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "10c70893-2000-5318-a6cc-18dad123b86a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "e457437f-e568-5606-87da-545a7b5703ad",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c508856a-a235-5e3a-a5c8-5e97203a514b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9b5745de-f41d-5551-b345-1fac8d683209",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b72cbf03-b347-5c2b-b2b0-46847b682e4b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "446e4d77-e713-5a2d-b1e1-794ad3490d80",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "733f5fe6-c154-55f1-a20b-613efcdb527c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bdb08e08-9f52-5751-8aa9-b920477de424",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2f06b5d5-c6eb-54e3-88fd-02f9011777d0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "a6da2147-423c-5a76-b9fd-db61b1c27850",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "16e1ddda-b6af-5b72-afe6-3285f166f44b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2be7a526-a520-573c-8e4c-5fc3c235aa12",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1910d127-664c-51b8-bf60-701d46ed3a3b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d7d80db1-5214-57c2-94e0-f134d808542a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4fa86332-3463-5de2-87b3-0d2661488951",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "db4b8a3a-b404-5241-9d8f-3b1d34c55e43",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f37c999d-1db1-5adf-960c-a301a0d16972",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "745136e0-2a0f-56cd-b775-9f781730a4fa",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bb129f68-1b3a-5afa-8152-eb49e1e239cb",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "33194924-ff8a-5d56-a565-9ed30fa07361",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "4193a9f9-b2cc-550c-a176-161e152bdba9",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6bc4c6f9-4d59-5599-a2bd-c21e783d792e",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5fbea512-7f89-5c67-92be-226a658e799c",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bb5d1953-81be-5b23-9bcb-7409847a8269",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "41390b00-5aed-5b22-9ae2-f288083588ca",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6c131239-4552-570b-b517-c82728c86065",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        }
+      ],
+      "identity_passed": 176,
+      "artwork_passed": 176,
+      "details_passed": 0
+    },
+    {
+      "set_code": "30C-CLASSIC",
+      "language": "en",
+      "expected": 30,
+      "returned": 30,
+      "unique": 30,
+      "checks": [
+        {
+          "printing_id": "52c32dcb-5e36-5e1c-8c0b-c4697bbc0f78",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "db5c95b3-b3dd-5bff-9b97-7867c1622025",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "3f084bc7-1d29-596b-9e95-cf5a1100daaa",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9dca1510-4591-5e70-b62d-56a77c44f2f0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "34dfd6ec-3cff-58f7-b553-0472655107c4",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "76503200-ecab-5fcb-81be-457474e0b971",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2f78f21b-ff28-5848-bfc6-d56cac5a214b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "5eb94d7c-d862-5937-a00b-21a8b49f865d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "0d0c85ea-ffc4-5b43-b6ea-3937e3180b77",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "901ae0e4-c174-57d9-8c17-541dff0c431f",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1440b518-6e2d-5e3d-84e0-43e265cbb686",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "d2a16a88-92b3-55bf-8b28-8bf42b8a4e32",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "45a38ba2-5976-50cb-a8db-7884f4068d17",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "06dd1720-fbce-55d4-a619-17056627cb31",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "46d11b11-f862-5e6c-bd3e-eaa2fd90ffb5",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "2e4b7467-5058-5180-8d0f-9577865af700",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "63b11827-7f97-570f-9b6c-9c9b961de00d",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "ff8abb4a-a1a0-5cbc-afdb-ac1d2e2bdc86",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "9b52cb43-aa83-5eca-a1c1-f559a1ee55dc",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c9440d19-5f93-5e5e-8fa3-957fa6038ebf",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "00886dc1-97da-516b-adb3-9cb12dcd5770",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fd07195f-f945-5775-bb1e-ea19c3a03d7b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "b47d0ed1-7784-5ffa-a882-9d9eba23d356",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "c2f4e57d-eb98-5932-83be-a85004e55d33",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "f2cf247f-900a-5e54-81c0-51dbdd8654f0",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "1c0d40a8-bf89-5499-abe3-931657f755ca",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "cdaafc2c-ca31-5d2d-96a8-0bc287e54aaa",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "bd8405df-9019-5867-a8e0-2004cac28b4b",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "fc18f142-6e9f-58bb-82be-78da7590e79a",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        },
+        {
+          "printing_id": "6b21dfd6-926e-5df9-87b0-815e1ee6e697",
+          "identity": true,
+          "artwork": true,
+          "details": false
+        }
+      ],
+      "identity_passed": 30,
+      "artwork_passed": 30,
+      "details_passed": 0
+    }
+  ],
+  "details": [
+    {
+      "printing_id": "d5fa2fe8-540b-5e84-8736-8b77d8b04bb6",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "d5fa2fe8-540b-5e84-8736-8b77d8b04bb6",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "87575ddb-1bc6-5224-910f-e94383de9821",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "87575ddb-1bc6-5224-910f-e94383de9821",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "6161add3-c281-5729-92ef-46837983aaf4",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "6161add3-c281-5729-92ef-46837983aaf4",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "2a295d0a-cec3-56d4-a1ce-91f51c389801",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "2a295d0a-cec3-56d4-a1ce-91f51c389801",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "cd00197c-a284-5227-8a53-e38f7969f90d",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "cd00197c-a284-5227-8a53-e38f7969f90d",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "35aed820-3a67-51b5-a39d-35bfb028b052",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "35aed820-3a67-51b5-a39d-35bfb028b052",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "8be76192-b129-5222-b7d0-14ad7648c576",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "8be76192-b129-5222-b7d0-14ad7648c576",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "6c131239-4552-570b-b517-c82728c86065",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "6c131239-4552-570b-b517-c82728c86065",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "52c32dcb-5e36-5e1c-8c0b-c4697bbc0f78",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "52c32dcb-5e36-5e1c-8c0b-c4697bbc0f78",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "2e4b7467-5058-5180-8d0f-9577865af700",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "2e4b7467-5058-5180-8d0f-9577865af700",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    },
+    {
+      "printing_id": "6b21dfd6-926e-5df9-87b0-815e1ee6e697",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "first"
+    },
+    {
+      "printing_id": "6b21dfd6-926e-5df9-87b0-815e1ee6e697",
+      "identity": true,
+      "artwork": true,
+      "details": false,
+      "phase": "repeat"
+    }
+  ],
+  "searches": [
+    {
+      "printing_id": "d5fa2fe8-540b-5e84-8736-8b77d8b04bb6",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "d5fa2fe8-540b-5e84-8736-8b77d8b04bb6",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "87575ddb-1bc6-5224-910f-e94383de9821",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "87575ddb-1bc6-5224-910f-e94383de9821",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "2a295d0a-cec3-56d4-a1ce-91f51c389801",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "2a295d0a-cec3-56d4-a1ce-91f51c389801",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "cd00197c-a284-5227-8a53-e38f7969f90d",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "cd00197c-a284-5227-8a53-e38f7969f90d",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "35aed820-3a67-51b5-a39d-35bfb028b052",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "35aed820-3a67-51b5-a39d-35bfb028b052",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "8be76192-b129-5222-b7d0-14ad7648c576",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "8be76192-b129-5222-b7d0-14ad7648c576",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "6c131239-4552-570b-b517-c82728c86065",
+      "phase": "first",
+      "top_one": false,
+      "top_five": false
+    },
+    {
+      "printing_id": "6c131239-4552-570b-b517-c82728c86065",
+      "phase": "repeat",
+      "top_one": false,
+      "top_five": false
+    },
+    {
+      "printing_id": "52c32dcb-5e36-5e1c-8c0b-c4697bbc0f78",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "52c32dcb-5e36-5e1c-8c0b-c4697bbc0f78",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "2e4b7467-5058-5180-8d0f-9577865af700",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "2e4b7467-5058-5180-8d0f-9577865af700",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "6b21dfd6-926e-5df9-87b0-815e1ee6e697",
+      "phase": "first",
+      "top_one": true,
+      "top_five": true
+    },
+    {
+      "printing_id": "6b21dfd6-926e-5df9-87b0-815e1ee6e697",
+      "phase": "repeat",
+      "top_one": true,
+      "top_five": true
+    }
+  ],
+  "finished_at": "2026-09-29T07:32:55.053Z",
+  "identity_passed": 480,
+  "artwork_passed": 480,
+  "details_passed": 0,
+  "expected": 480
+}
