@@ -1,0 +1,391 @@
+{
+  "cohort_sha256": "20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd",
+  "fronts": 7911,
+  "derivatives": 23733,
+  "image_files": 31644,
+  "source_counts": {
+    "pokemon_card_tw_official": 4926,
+    "pokemon_card_jp_official": 2063,
+    "pokedata_japanese": 335,
+    "tcgdex": 163,
+    "pokemon_tcg_api": 424
+  },
+  "publication_status": "NOT_PUBLISHED",
+  "production_writes": 0,
+  "artifacts": [
+    {
+      "id": 10991878213,
+      "name": "artwork-reconstructed-ja-01-36472347221",
+      "size_in_bytes": 426358902,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "f6bdc38fb8b289a04dc2389f4b03e3a144ffcec972fc2ea1b78d991c3f75047b",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10991878213"
+    },
+    {
+      "id": 10992392293,
+      "name": "artwork-reconstructed-ja-02-36472347221",
+      "size_in_bytes": 247150542,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "fb3e0c2b91fa324144c7cd63756c6eb591e407ce041fe3c9d5f84253a68aba65",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992392293"
+    },
+    {
+      "id": 10992726926,
+      "name": "artwork-reconstructed-ja-03-36472347221",
+      "size_in_bytes": 225742552,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "f60d13452c331014444872a3e5d58e0d6b4c9d202450b6ebade5e0521dc97527",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992726926"
+    },
+    {
+      "id": 10992187938,
+      "name": "artwork-reconstructed-ja-04-36472347221",
+      "size_in_bytes": 443231346,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "1a1b9a11702c74540cee0d1f26857bcdae9ec4893db940f3be01e5176577ba3a",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992187938"
+    },
+    {
+      "id": 10991863955,
+      "name": "artwork-reconstructed-ja-05-36472347221",
+      "size_in_bytes": 72339060,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "9437b2c1f5e6fb81a098fc2f3cd5a12708d5ba074270bf86b720b8828439659a",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10991863955"
+    },
+    {
+      "id": 10991654454,
+      "name": "artwork-reconstructed-en-01-36472347221",
+      "size_in_bytes": 488482634,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "1a19a0176c205d06b4a8e83ca52c829f007f6bdab8cd338dd1dea7bc474f76a4",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10991654454"
+    },
+    {
+      "id": 10993932653,
+      "name": "artwork-recovered-tw116-36476757879",
+      "size_in_bytes": 33066925,
+      "expires_at": "2026-12-27T20:05:42Z",
+      "sha256": "468d3b4325c8ab859637087e788b6c5b5a18ee51979fd426c3199bbdaae44a4f",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36476757879/artifacts/10993932653"
+    },
+    {
+      "id": 10993872871,
+      "name": "artwork-reconstructed-pokedata-36476757879",
+      "size_in_bytes": 109074059,
+      "expires_at": "2026-12-27T20:05:42Z",
+      "sha256": "8e43c846ec1d5119de2c44e73c49b4215cb3db57d8a8fcf2da9df978060d6d09",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36476757879/artifacts/10993872871"
+    },
+    {
+      "id": 10992182277,
+      "name": "tw365-prepared-36472347221",
+      "size_in_bytes": 71813947,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "d4e4485aa3975ffe5fbe7c2cab146c299277d1ed7297b19328b12ae0baeb74a0",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992182277"
+    },
+    {
+      "id": 10992142291,
+      "name": "tw365-originals-part-01-36472347221",
+      "size_in_bytes": 450721151,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "fa12f91b7bdea10feaf6c1c45392f460aa338bf0083783ae38e262eff18a885a",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992142291"
+    },
+    {
+      "id": 10992397219,
+      "name": "tw365-originals-part-02-36472347221",
+      "size_in_bytes": 375575328,
+      "expires_at": "2026-12-27T19:27:17Z",
+      "sha256": "2a9cbb324303c93cebfbc311f81249ffbc4b9a47dec088e647672618b936819e",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36472347221/artifacts/10992397219"
+    },
+    {
+      "id": 10995843477,
+      "name": "artwork-tw4564-1-36480589353",
+      "size_in_bytes": 49671774,
+      "expires_at": "2026-12-27T20:38:05Z",
+      "sha256": "50b9c47cd6e85bdac353407c486d72665f9aebdf4827f5193b7dbc8b386f3dd0",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36480589353/artifacts/10995843477"
+    },
+    {
+      "id": 10996538565,
+      "name": "artwork-tw4564-13-36480589353",
+      "size_in_bytes": 2703212,
+      "expires_at": "2026-12-27T20:38:05Z",
+      "sha256": "e302f3277e3e5b245bda9b98f36ee4921347dbdf4347b5fd5a8f03e87365b5ac",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36480589353/artifacts/10996538565"
+    },
+    {
+      "id": 10997215193,
+      "name": "artwork-tw4564-17-36480589353",
+      "size_in_bytes": 187181378,
+      "expires_at": "2026-12-27T20:38:05Z",
+      "sha256": "218e2c11e08a5ec972dac79afab59d981e03d75aef3dcfe8ad5c9443dfe17b38",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36480589353/artifacts/10997215193"
+    },
+    {
+      "id": 10996739470,
+      "name": "artwork-tw4564-18-36480589353",
+      "size_in_bytes": 201751264,
+      "expires_at": "2026-12-27T20:38:05Z",
+      "sha256": "3260e41d7c24e0b1408292aa9164ea5224d4f7b9c181c9033ae2221d743b4c65",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36480589353/artifacts/10996739470"
+    },
+    {
+      "id": 10997210322,
+      "name": "artwork-tw4564-19-36480589353",
+      "size_in_bytes": 23053060,
+      "expires_at": "2026-12-27T20:38:05Z",
+      "sha256": "404c53d17f0e41fc59069eb4c4f99e14e29fc3643a4f19be045868512274a754",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36480589353/artifacts/10997210322"
+    },
+    {
+      "id": 10996817236,
+      "name": "artwork-tw4564-2-36480589353",
+      "size_in_bytes": 191771103,
+      "expires_at": "2026-12-27T20:38:05Z",
+      "sha256": "ea5fe6a50b648152a066e03e0577fc3778c93bf20ce0afd1ed59b7fc74a63d8c",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36480589353/artifacts/10996817236"
+    },
+    {
+      "id": 10996158470,
+      "name": "artwork-tw4564-3-36480589353",
+      "size_in_bytes": 150338751,
+      "expires_at": "2026-12-27T20:38:05Z",
+      "sha256": "f977724e01bb0028f85fccb6660700a7cf687e0f4f094bcff95e35237004d53c",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36480589353/artifacts/10996158470"
+    },
+    {
+      "id": 10995754177,
+      "name": "artwork-tw4564-6-36480589353",
+      "size_in_bytes": 25844112,
+      "expires_at": "2026-12-27T20:38:05Z",
+      "sha256": "7f2df8ae748943fb0fff179ff33414dce9563bcd7ff0cbf1d144981f0cec59be",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36480589353/artifacts/10995754177"
+    },
+    {
+      "id": 10997645086,
+      "name": "artwork-tcgdex47-36482384653",
+      "size_in_bytes": 7979865,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "3b0dc5a156ff76117f4c1f3f973f73534c84bfdda6a89c39f98d4fb5b76a1009",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997645086"
+    },
+    {
+      "id": 10996884779,
+      "name": "artwork-tw4564-1-36482384653",
+      "size_in_bytes": 34952467,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "f958727895e6a312d4cec75b788a160e3447dc2f2cc568a4195d0c7f3af53b2d",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10996884779"
+    },
+    {
+      "id": 10997122639,
+      "name": "artwork-tw4564-10-36482384653",
+      "size_in_bytes": 75460215,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "7916604bd90df7937bd5745ce1c58ab8fdb55a1d965779a563ce47aa79d0df71",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997122639"
+    },
+    {
+      "id": 10997132609,
+      "name": "artwork-tw4564-11-36482384653",
+      "size_in_bytes": 73940676,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "0bd1848a686a0b80c23aa48e62b11bba831bec038f34bcc8905c31594a51575b",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997132609"
+    },
+    {
+      "id": 10997917304,
+      "name": "artwork-tw4564-12-36482384653",
+      "size_in_bytes": 74063706,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "09271e548149a079161a14c0a381d8426fd982a75fdb70d4713176132ac7a213",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997917304"
+    },
+    {
+      "id": 10998022254,
+      "name": "artwork-tw4564-13-36482384653",
+      "size_in_bytes": 70973560,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "4df31a9a76ccb05422e784974b98480529b8a6643bf9af4f9e80499fa7f1b3a8",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10998022254"
+    },
+    {
+      "id": 10997742670,
+      "name": "artwork-tw4564-14-36482384653",
+      "size_in_bytes": 84997463,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "4f0415cb35a0d95016eced2c0f1d643378e16dc3efbb2738834a91b02d90f226",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997742670"
+    },
+    {
+      "id": 10997928112,
+      "name": "artwork-tw4564-15-36482384653",
+      "size_in_bytes": 269517991,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "8ed496c3468e3f263ea2851050c7dbf83b47e82da67ba0e215b1941a1abef745",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997928112"
+    },
+    {
+      "id": 10997868155,
+      "name": "artwork-tw4564-16-36482384653",
+      "size_in_bytes": 373089905,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "0af5d5aa12ae25b12b16a7abcb86e4e4ae69e97e86b1bcbfa6d2638b738be80e",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997868155"
+    },
+    {
+      "id": 10998866084,
+      "name": "artwork-tw4564-17-36482384653",
+      "size_in_bytes": 39325497,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "dd31f4217d39bc58156b338495daf9757e1a29c209d5a3e99aa7f7ba96e2924a",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10998866084"
+    },
+    {
+      "id": 10998423153,
+      "name": "artwork-tw4564-18-36482384653",
+      "size_in_bytes": 65691886,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "40c7ca08cc5ed054245fc966aee80f4759997f5e6e8806913ee99eec4fb8dab2",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10998423153"
+    },
+    {
+      "id": 10998343203,
+      "name": "artwork-tw4564-19-36482384653",
+      "size_in_bytes": 30962518,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "3da5a9fca21f8d2e5539f20fd375be78a33fd1f38d2b95158a40b21e2226a969",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10998343203"
+    },
+    {
+      "id": 10996649575,
+      "name": "artwork-tw4564-2-36482384653",
+      "size_in_bytes": 15522563,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "541c2d82ab5334090a169e8cb9b6dc0b99675a6608086565c34b975ea057dea5",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10996649575"
+    },
+    {
+      "id": 10997875192,
+      "name": "artwork-tw4564-3-36482384653",
+      "size_in_bytes": 30043270,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "4f188c04a16a61a866b109c89d7d4aa630205dd2f11fcaf62f2c261eb24886e2",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997875192"
+    },
+    {
+      "id": 10997620359,
+      "name": "artwork-tw4564-4-36482384653",
+      "size_in_bytes": 77848936,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "89b199f2b91e7287907695d1d5362e951f21be0785e8aeff3a1b4aa022a6e078",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997620359"
+    },
+    {
+      "id": 10998410383,
+      "name": "artwork-tw4564-5-36482384653",
+      "size_in_bytes": 151569962,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "07b9b736796665c04fccb742acb9a3156e4a66f470664227cb9e2ec7c4f7b451",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10998410383"
+    },
+    {
+      "id": 10997241273,
+      "name": "artwork-tw4564-6-36482384653",
+      "size_in_bytes": 66736915,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "35f6d8bd40112aa061a7843fe277b36b08aa4e79f60e676cca5df3d6c1b50a8b",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997241273"
+    },
+    {
+      "id": 10997306423,
+      "name": "artwork-tw4564-7-36482384653",
+      "size_in_bytes": 100304687,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "c16cf60e6c6a571f5a26a6312544f1a61f574a61e5b92c088fb5f273b2596ee6",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997306423"
+    },
+    {
+      "id": 10997456802,
+      "name": "artwork-tw4564-8-36482384653",
+      "size_in_bytes": 80681230,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "5bfd8b28b875f0e36ff933cd0aeffb76a08f6ee3c23fcb6a935c0b90ed78df70",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997456802"
+    },
+    {
+      "id": 10997591990,
+      "name": "artwork-tw4564-9-36482384653",
+      "size_in_bytes": 186185771,
+      "expires_at": "2026-12-27T20:53:37Z",
+      "sha256": "74d07d0906fae68eb3eb945b798fc1e5bc45c7a113627a190a34637895ee64bd",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482384653/artifacts/10997591990"
+    },
+    {
+      "id": 11000095063,
+      "name": "artwork-tw4564-16-36482868316",
+      "size_in_bytes": 153991135,
+      "expires_at": "2026-12-27T20:57:50Z",
+      "sha256": "3923fc430a577bd506d1a3371a1674d18e4c7affdb1eaa0b52e6660e7ce0cb59",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482868316/artifacts/11000095063"
+    },
+    {
+      "id": 10999365474,
+      "name": "artwork-tw4564-17-36482868316",
+      "size_in_bytes": 284868833,
+      "expires_at": "2026-12-27T20:57:50Z",
+      "sha256": "3331b232bd3b23603198e6978e1130897232fe10b9986292b7b5b75dbdc5eb13",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36482868316/artifacts/10999365474"
+    },
+    {
+      "id": 10999175740,
+      "name": "artwork-vunion2-36485427908",
+      "size_in_bytes": 892947,
+      "expires_at": "2026-12-27T21:20:24Z",
+      "sha256": "edefe9de0240cfc9bf55320606f1e778230f341b97a1421d2d1944113ec69551",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36485427908/artifacts/10999175740"
+    },
+    {
+      "id": 10999430941,
+      "name": "artwork-tw-reviewed2-36485746545",
+      "size_in_bytes": 6140350,
+      "expires_at": "2026-12-27T21:23:16Z",
+      "sha256": "6d2835b0bfc2311bcd4dbcad7f567c7e819f0ee3f7d5c19043bdb9c714d72e80",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36485746545/artifacts/10999430941"
+    }
+  ],
+  "original_cohort_sha256": "d047cb0475f5b676f2ee6e3bdab27352a3d5cad4c462b41e9acbf368014ee259",
+  "additional_cohort_sha256": "47105966d43a299c2a6235b48a17b05d39dbf1f174047c07a3036966a7dbd27e",
+  "preparation_runs": [
+    36480589353,
+    36482384653,
+    36482868316,
+    36485427908,
+    36485746545
+  ],
+  "single_card_replacements": [
+    {
+      "printing_id": "a785ccea-aeb5-4992-9e5a-2c5998fd65d0",
+      "set_code": "S8b",
+      "collector_number": "056",
+      "old_composite_sha256": "5ddde3864c5f999fbb2de83825502f04b3926d78a79b525d1669295a379dfdab",
+      "replacement_sha256": "17a409ba3fa15b6c24aabe7be1165c50fa13680d2dfea8308f576635eba6d99d",
+      "replacement_url": "https://pokemoncardimages.pokedata.io/images/VMAX+Climax/056.webp",
+      "status": "single_card_front_visually_verified"
+    },
+    {
+      "printing_id": "91ff04f9-1c82-44cb-b48b-01629331456c",
+      "set_code": "S8b",
+      "collector_number": "226",
+      "old_composite_sha256": "5d9366c72eb808c9ef14be99f726e51e4b5e097f2db1473593f7205bd37290e2",
+      "replacement_sha256": "8679870d0d639865da6accc011b9a6e9ab3bd8f95d09d8bd71b0f130d68041b9",
+      "replacement_url": "https://pokemoncardimages.pokedata.io/images/VMAX+Climax/226.webp",
+      "status": "single_card_front_visually_verified"
+    }
+  ],
+  "unresolved_records": 4250
+}

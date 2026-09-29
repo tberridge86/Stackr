@@ -1,0 +1,36 @@
+{
+  "at": "2026-09-28T16:48:41.273263+00:00",
+  "new_originals": 689,
+  "new_derivatives": 2067,
+  "prepared_total": 3303,
+  "derivative_total": 9909,
+  "official_jp": 356,
+  "pokedata_jp": 333,
+  "pokedata_anchored": 315,
+  "pokedata_visually_admitted": 18,
+  "new_identity_conflicts": 5,
+  "low_resolution_rejected": 2,
+  "source_snapshot_revision": "bc5a2698eb9af858feb0280d579fd5fd0f0273e2",
+  "production_writes": 0,
+  "newly_published": 0,
+  "changed_worklist_rows": 2888,
+  "new_sets": 48,
+  "archives": [
+    {
+      "filename": "Stackr_Japanese_Additional_Originals_2026-09-28.zip",
+      "kind": "verified_originals",
+      "language": "ja",
+      "printings": 689,
+      "bytes": 221955510,
+      "sha256": "4801c40abed86c9cb282e93fd164b8a9f3edf784929b0f46883056e1c8834413"
+    },
+    {
+      "filename": "Stackr_Japanese_Additional_Display_Images_2026-09-28.zip",
+      "kind": "display_images",
+      "printings": 689,
+      "image_files": 2067,
+      "bytes": 144138030,
+      "sha256": "ee0122ab5c64983fc27de0bce0129c11891a2b36f16e9b261c7ec4f2032a5281"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "observed_at": "2026-09-28T21:28:25.435301+00:00",
+  "scope": "Frozen 12,161 printing-level artwork gaps from 27 September; not a fresh whole-catalogue completeness census",
+  "total": 12161,
+  "categories": {
+    "Prepared initial release": 3301,
+    "provider_image_unavailable": 50,
+    "Exact source needed": 3530,
+    "Prepared additional queue": 4611,
+    "identity_conflict": 5,
+    "insufficient_resolution": 2,
+    "Card name conflict": 2,
+    "Artwork choice": 20,
+    "Language identity conflict": 605,
+    "Composite artwork review": 2,
+    "Printed denominator conflict": 33
+  },
+  "prepared_originals": 7912,
+  "prepared_derivatives": 23736,
+  "newly_published": 0,
+  "production_writes": 0,
+  "installed_client_verified": false,
+  "by_language": {
+    "en": {
+      "Prepared initial release": 424,
+      "provider_image_unavailable": 50,
+      "Exact source needed": 663,
+      "Prepared additional queue": 47
+    },
+    "ja": {
+      "Prepared initial release": 2396,
+      "Exact source needed": 2192,
+      "identity_conflict": 5,
+      "Prepared additional queue": 2,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20
+    },
+    "ko": {
+      "Exact source needed": 239
+    },
+    "zh-cn": {
+      "Language identity conflict": 605,
+      "Exact source needed": 224
+    },
+    "zh-tw": {
+      "Prepared additional queue": 4562,
+      "Composite artwork review": 2,
+      "Printed denominator conflict": 33,
+      "Exact source needed": 212,
+      "Prepared initial release": 481
+    }
+  }
+}

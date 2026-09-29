@@ -1,0 +1,120 @@
+{
+  "observed_at": "2026-09-28",
+  "cohort_sha256": "d047cb0475f5b676f2ee6e3bdab27352a3d5cad4c462b41e9acbf368014ee259",
+  "production": {
+    "project": "oakdbbzdqwurpjnoqhmu",
+    "printing_identities_checked": 3303,
+    "printing_identities_matched": 3303,
+    "variant_rows": 3550,
+    "same_artwork_links": 0,
+    "existing_assets": [
+      {
+        "id": "0f50ee99-87f9-4381-a547-d903d478608f",
+        "printing_id": null,
+        "variant_id": "c368ca3a-74d7-4e25-adef-f62e3bd5505b",
+        "asset_id": null,
+        "asset_type": "card_image",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "publicly_servable": false,
+        "deprecated_at": null,
+        "deleted_at": null,
+        "unavailable_reason": "source_http_404",
+        "storage_key": null,
+        "url": "https://assets.tcgdex.net/en/xy/dc1/11/high.webp"
+      },
+      {
+        "id": "1c7ca768-08d0-4b7a-9fb2-3db98da6b92d",
+        "printing_id": null,
+        "variant_id": "5accb3cb-7e72-4e45-b10c-2ebb5cb82183",
+        "asset_id": null,
+        "asset_type": "card_image",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "publicly_servable": false,
+        "deprecated_at": null,
+        "deleted_at": null,
+        "unavailable_reason": "source_http_404",
+        "storage_key": null,
+        "url": "https://assets.tcgdex.net/en/xy/dc1/14/high.webp"
+      },
+      {
+        "id": "6b9bdaf9-cc61-41f8-b693-56f18360b23d",
+        "printing_id": null,
+        "variant_id": "486ffce0-ae71-4f67-8dd1-df6a49a2c6ce",
+        "asset_id": null,
+        "asset_type": "card_image",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "publicly_servable": false,
+        "deprecated_at": null,
+        "deleted_at": null,
+        "unavailable_reason": "source_http_404",
+        "storage_key": null,
+        "url": "https://assets.tcgdex.net/en/xy/dc1/1/high.webp"
+      },
+      {
+        "id": "8ea9fbbb-fcff-4b48-b49b-3e9969006951",
+        "printing_id": null,
+        "variant_id": "2a669834-f59a-464b-b5ac-cfca7c48d819",
+        "asset_id": null,
+        "asset_type": "card_image",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "publicly_servable": false,
+        "deprecated_at": null,
+        "deleted_at": null,
+        "unavailable_reason": "source_http_404",
+        "storage_key": null,
+        "url": "https://assets.tcgdex.net/en/xy/dc1/13/high.webp"
+      },
+      {
+        "id": "b5c5d2ed-6d32-4acd-9d06-b6fa7ed66242",
+        "printing_id": null,
+        "variant_id": "d0b1622a-944d-4c3a-a053-637ce9260196",
+        "asset_id": null,
+        "asset_type": "card_image",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "publicly_servable": false,
+        "deprecated_at": null,
+        "deleted_at": null,
+        "unavailable_reason": "source_http_404",
+        "storage_key": null,
+        "url": "https://assets.tcgdex.net/en/xy/dc1/12/high.webp"
+      },
+      {
+        "id": "feea5d98-af52-451b-9498-fa26503c4acb",
+        "printing_id": null,
+        "variant_id": "2e6f759b-dfd2-4341-be84-71d231e7f44c",
+        "asset_id": null,
+        "asset_type": "card_image",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "publicly_servable": false,
+        "deprecated_at": null,
+        "deleted_at": null,
+        "unavailable_reason": "source_http_404",
+        "storage_key": null,
+        "url": "https://assets.tcgdex.net/en/xy/dc1/10/high.webp"
+      }
+    ],
+    "currently_published_existing_assets": 0
+  },
+  "staging": {
+    "project": "lmwfhvexfcoyeuoyrlco",
+    "printing_identities_checked": 3303,
+    "printing_identities_matched": 3303,
+    "variant_rows": 3550,
+    "same_artwork_links": 0,
+    "observed_set_code_aliases": {
+      "SM1+": "SM1p",
+      "SM2+": "SM2p",
+      "SM5+": "SM5p"
+    },
+    "ja_version": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+    "existing_asset_count": 145,
+    "currently_published_existing_assets": 0
+  },
+  "method": "Bounded complete printing-ID queries against api.catalogue_cards. Compare printing, set UUID, native name, collector number, language and environment-specific published version; NFKC only for full-width glyphs. Existing candidate asset IDs queried first, then api.asset_manifest restricted to those IDs. No card metadata, ownership, price or production write."
+}

@@ -1,0 +1,25 @@
+{
+  "review_method": "Direct visual inspection of exact decoded source bytes: separate top-left physical front, Japanese Morpeko V-UNION name, S8b mark, printed 056/184 RRR or 226/184 CSR. The previously selected official files depict the four-card composite.",
+  "production_writes": 0,
+  "records": [
+    {
+      "printing_id": "a785ccea-aeb5-4992-9e5a-2c5998fd65d0",
+      "set_code": "S8b",
+      "collector_number": "056",
+      "old_composite_sha256": "5ddde3864c5f999fbb2de83825502f04b3926d78a79b525d1669295a379dfdab",
+      "replacement_sha256": "17a409ba3fa15b6c24aabe7be1165c50fa13680d2dfea8308f576635eba6d99d",
+      "replacement_url": "https://pokemoncardimages.pokedata.io/images/VMAX+Climax/056.webp",
+      "status": "single_card_front_visually_verified"
+    },
+    {
+      "printing_id": "91ff04f9-1c82-44cb-b48b-01629331456c",
+      "set_code": "S8b",
+      "collector_number": "226",
+      "old_composite_sha256": "5d9366c72eb808c9ef14be99f726e51e4b5e097f2db1473593f7205bd37290e2",
+      "replacement_sha256": "8679870d0d639865da6accc011b9a6e9ab3bd8f95d09d8bd71b0f130d68041b9",
+      "replacement_url": "https://pokemoncardimages.pokedata.io/images/VMAX+Climax/226.webp",
+      "status": "single_card_front_visually_verified"
+    }
+  ],
+  "recorded_at": "2026-09-28T21:13:54Z"
+}

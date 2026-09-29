@@ -1,0 +1,40 @@
+[
+  {
+    "printing_id": "8c9a9616-abf6-4a91-b091-d88392389f5d",
+    "language_code": "zh-tw",
+    "set_code": "S8a",
+    "collector_number": "025",
+    "card_native_name": "皮卡丘V-UNION",
+    "reason": "Collector number differs",
+    "official_page_number": "025/028 026/028 027/028 028/028",
+    "official_page_name": "皮卡丘V-UNION",
+    "official_page_set_codes": [
+      "S8a"
+    ],
+    "identity_url": "https://asia.pokemon-card.com/tw/card-search/detail/2095/",
+    "observed_url": "https://asia.pokemon-card.com/tw/card-search/detail/2095/",
+    "mime": "text/html",
+    "page_sha256": "0a69a66d744d763fe85cbe8d2bca879677a34d8bc8b4037f61275838275370d3",
+    "observed_at": "2026-09-28T21:09:56.688777+00:00",
+    "production_writes": 0
+  },
+  {
+    "printing_id": "25cda794-c695-4f29-9248-69137bc9c575",
+    "language_code": "zh-tw",
+    "set_code": "S8b",
+    "collector_number": "056",
+    "card_native_name": "莫魯貝可V-UNION",
+    "reason": "Collector number differs",
+    "official_page_number": "056/184 057/184 058/184 059/184",
+    "official_page_name": "莫魯貝可V-UNION",
+    "official_page_set_codes": [
+      "S8b"
+    ],
+    "identity_url": "https://asia.pokemon-card.com/tw/card-search/detail/5247/",
+    "observed_url": "https://asia.pokemon-card.com/tw/card-search/detail/5247/",
+    "mime": "text/html",
+    "page_sha256": "a785e9096450892e6f5f084ef018c52be33c66dceb1ad2ca0d477a940b789c14",
+    "observed_at": "2026-09-28T21:09:57.676518+00:00",
+    "production_writes": 0
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "workflow_run": 36486158190,
+  "source_revision": "2931a167990a2872a8d4330e33a2b86c946b3f20",
+  "artifact_id": 10999922487,
+  "artifact_sha256": "e83089dce0f70064291e4b0a44a19254c0a3e08edda9b39eb61473066c12ca4f",
+  "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36486158190/artifacts/10999922487",
+  "verification": {
+    "cohort_sha256": "430218e70febd06c8a22bccbc8c244b6d2c282a9aa3dec0cd9448578473d631e",
+    "fronts": 7912,
+    "derivatives": 23736,
+    "verified_image_files": 31648,
+    "production_writes": 0,
+    "checked_at": "2026-09-28T21:34:48.471Z"
+  }
+}

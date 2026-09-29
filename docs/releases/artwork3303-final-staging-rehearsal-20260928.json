@@ -1,0 +1,284 @@
+{
+  "observed_at": "2026-09-28",
+  "project": "lmwfhvexfcoyeuoyrlco",
+  "environment": "staging",
+  "cohort_sha256": "d047cb0475f5b676f2ee6e3bdab27352a3d5cad4c462b41e9acbf368014ee259",
+  "fronts": 3303,
+  "persistent_writes": 0,
+  "storage_uploads": 0,
+  "method": "Actual staging inserts and API manifest checks for every frozen front in 34 bounded subtransactions; repeated inserts create zero duplicates; deliberate subtransaction exception rolls back assets, links and temporary source; absence checked after each rollback. Production was not modified. Protected release repeats the executable publisher rehearsal before any upload.",
+  "batches": [
+    {
+      "batch": 1,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 2,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 3,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 4,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 5,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 6,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 7,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 8,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 9,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 10,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 11,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 12,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 13,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 14,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 15,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 16,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 17,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 18,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 19,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 20,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 21,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 22,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 23,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 24,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 25,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 26,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 27,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 28,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 29,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 30,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 31,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 32,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 33,
+      "rehearsed_fronts": 100,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    },
+    {
+      "batch": 34,
+      "rehearsed_fronts": 3,
+      "manifest_verified": true,
+      "idempotency_verified": true,
+      "rollback_verified": true,
+      "persistent_writes": 0
+    }
+  ]
+}

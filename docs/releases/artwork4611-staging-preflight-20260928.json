@@ -1,0 +1,83 @@
+{
+  "observed_at": "2026-09-28T20:54:23.022Z",
+  "staging_project": "lmwfhvexfcoyeuoyrlco",
+  "scope": "4564 Taiwanese exact pointers and 47 existing bound English TCGdex references",
+  "writes": 0,
+  "checked_printings": 4611,
+  "identities_match": 4611,
+  "variant_rows": 4889,
+  "same_artwork_links": 0,
+  "exceptions": [],
+  "batches": [
+    {
+      "checked_printings": 500,
+      "variant_rows": 600,
+      "identities_match": 500,
+      "same_artwork_links": 0,
+      "exceptions": []
+    },
+    {
+      "checked_printings": 500,
+      "variant_rows": 547,
+      "identities_match": 500,
+      "same_artwork_links": 0,
+      "exceptions": []
+    },
+    {
+      "checked_printings": 500,
+      "variant_rows": 549,
+      "identities_match": 500,
+      "same_artwork_links": 0,
+      "exceptions": []
+    },
+    {
+      "checked_printings": 500,
+      "variant_rows": 582,
+      "identities_match": 500,
+      "same_artwork_links": 0,
+      "exceptions": []
+    },
+    {
+      "checked_printings": 500,
+      "variant_rows": 500,
+      "identities_match": 500,
+      "same_artwork_links": 0,
+      "exceptions": []
+    },
+    {
+      "checked_printings": 500,
+      "variant_rows": 500,
+      "identities_match": 500,
+      "same_artwork_links": 0,
+      "exceptions": []
+    },
+    {
+      "checked_printings": 500,
+      "variant_rows": 500,
+      "identities_match": 500,
+      "same_artwork_links": 0,
+      "exceptions": []
+    },
+    {
+      "checked_printings": 500,
+      "variant_rows": 500,
+      "identities_match": 500,
+      "same_artwork_links": 0,
+      "exceptions": []
+    },
+    {
+      "checked_printings": 500,
+      "variant_rows": 500,
+      "identities_match": 500,
+      "same_artwork_links": 0,
+      "exceptions": []
+    },
+    {
+      "checked_printings": 111,
+      "variant_rows": 111,
+      "identities_match": 111,
+      "same_artwork_links": 0,
+      "exceptions": []
+    }
+  ]
+}

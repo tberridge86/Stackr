@@ -1,0 +1,36 @@
+{
+  "workflow_run": 36488119977,
+  "source_revision": "7ae82a9370cc63efe0c9053667ef9d89a5b53df0",
+  "artifact_id": 11000385068,
+  "artifact_sha256": "4dc39c2c5c454c0a530319dce785cfd92b403d3821f446a4417f15dd6ce902be",
+  "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36488119977/artifacts/11000385068",
+  "verification": {
+    "cohort_sha256": "20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd",
+    "fronts": 7911,
+    "derivatives": 23733,
+    "verified_image_files": 31644,
+    "verification_method": "Exact unchanged subset of the independently downloaded, checksummed and decoded 7912-front plan; only the documented wrong-card association was removed",
+    "prior_full_verification": {
+      "workflow_run": 36486158190,
+      "source_revision": "2931a167990a2872a8d4330e33a2b86c946b3f20",
+      "artifact_id": 10999922487,
+      "artifact_sha256": "e83089dce0f70064291e4b0a44a19254c0a3e08edda9b39eb61473066c12ca4f",
+      "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36486158190/artifacts/10999922487",
+      "verification": {
+        "cohort_sha256": "430218e70febd06c8a22bccbc8c244b6d2c282a9aa3dec0cd9448578473d631e",
+        "fronts": 7912,
+        "derivatives": 23736,
+        "verified_image_files": 31648,
+        "production_writes": 0,
+        "checked_at": "2026-09-28T21:34:48.471Z"
+      }
+    },
+    "excluded_printing_ids": [
+      "4501ce7e-9803-477b-b21c-754effc34e21"
+    ],
+    "unique_original_hashes": 7902,
+    "unique_storage_objects": 31581,
+    "checked_at": "2026-09-28T21:45:17.177Z",
+    "production_writes": 0
+  }
+}

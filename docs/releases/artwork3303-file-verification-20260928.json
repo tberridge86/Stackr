@@ -1,0 +1,13 @@
+{
+  "cohort_sha256": "d047cb0475f5b676f2ee6e3bdab27352a3d5cad4c462b41e9acbf368014ee259",
+  "fronts": 3303,
+  "derivatives": 9909,
+  "verified_image_files": 13212,
+  "production_writes": 0,
+  "checked_at": "2026-09-28T20:29:22.988Z",
+  "run_url": "https://github.com/tberridge86/Stackr/actions/runs/36479094244",
+  "source_revision": "5c47d9e69810d095e8fdae38d018fe1e8ca82fe4",
+  "artifact_id": 10997050110,
+  "artifact_sha256": "b713de22df88546fec9c1ff540a35796d5f09c481f07f092e17989f889c38535",
+  "download_url": "https://github.com/tberridge86/Stackr/actions/runs/36479094244/artifacts/10997050110"
+}

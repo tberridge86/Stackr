@@ -1,0 +1,48 @@
+{
+  "observed_at": "2026-09-28T21:00:53.423Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "scope": 4611,
+  "production_writes": 0,
+  "batches": [
+    {
+      "existing_asset_rows": 0,
+      "visible_assets": []
+    },
+    {
+      "existing_asset_rows": 0,
+      "visible_assets": []
+    },
+    {
+      "existing_asset_rows": 0,
+      "visible_assets": []
+    },
+    {
+      "existing_asset_rows": 0,
+      "visible_assets": []
+    },
+    {
+      "existing_asset_rows": 0,
+      "visible_assets": []
+    },
+    {
+      "existing_asset_rows": 0,
+      "visible_assets": []
+    },
+    {
+      "existing_asset_rows": 0,
+      "visible_assets": []
+    },
+    {
+      "existing_asset_rows": 0,
+      "visible_assets": []
+    },
+    {
+      "existing_asset_rows": 0,
+      "visible_assets": []
+    },
+    {
+      "existing_asset_rows": 47,
+      "visible_assets": []
+    }
+  ]
+}

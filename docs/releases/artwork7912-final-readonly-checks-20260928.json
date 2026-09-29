@@ -1,0 +1,21 @@
+{
+  "observed_at": "2026-09-28T21:35:35.756Z",
+  "release_assets_absent": [
+    {
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "saved_release_assets": 0,
+      "official_taiwan_source_rows": 0
+    },
+    {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "saved_release_assets": 0,
+      "official_taiwan_source_rows": 0
+    }
+  ],
+  "production_tcgdex_pocket_bindings": {
+    "checked": 47,
+    "exact_published_provider_bindings": 47,
+    "exceptions": []
+  },
+  "production_writes": 0
+}
