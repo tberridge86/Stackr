@@ -19,7 +19,15 @@ export const SOURCE_COUNTS = {"pokemon_card_tw_official":4926,"pokemon_card_jp_o
 const approvalFile = new URL('./approval.json',import.meta.url);
 const publicUrl = key => `https://${PROJECTS.production}.supabase.co/storage/v1/object/public/${BUCKET}/${key}`;
 const normalize = x => String(x).normalize('NFKC');
-export const objectKey = o => `public/card_image/${o.sha256.slice(0,2)}/${o.sha256.slice(2,4)}/${o.sha256}/${o.role}.${{'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[o.mime_type]}`;
+export function objectKey(o) {
+  const extension={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[o.mime_type];
+  if(o.role==='original') {
+    check(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(o.printing_id??''),'Original storage requires its exact printing identity');
+    return `public/card_image/printing/${o.printing_id}/${o.sha256}/original.${extension}`;
+  }
+  return `public/card_image/${o.sha256.slice(0,2)}/${o.sha256.slice(2,4)}/${o.sha256}/${o.role}.${extension}`;
+}
+export const publicationObjects = rows => [...new Map(rows.flatMap(r=>r.objects.map(o=>o.role==='original'?{...o,printing_id:r.printing_id}:o)).map(o=>[objectKey(o),o])).values()];
 export const assetId = r => `${PREFIX}${r.printing_id}:${r.objects[0].sha256}`;
 export const chunks = (rows,size=100) => Array.from({length:Math.ceil(rows.length/size)},(_,i)=>rows.slice(i*size,(i+1)*size));
 export function safePath(root,relative) {
@@ -104,7 +112,7 @@ export function assertManifest(rows,found,complete=false) {
   for(const a of found){const r=byId.get(a.printing_id);check(r&&a.asset_id===assetId(r)&&a.variant_id===null&&a.content_sha256===r.objects[0].sha256,'Existing artwork requires review');}
 }
 export function payload(r,sourceId,receipt,approval,environment) {
-  const o=r.objects[0],key=objectKey(o),url=`https://${PROJECTS[environment]}.supabase.co/storage/v1/object/public/${BUCKET}/${key}`;
+  const o=r.objects[0],key=objectKey({...o,printing_id:r.printing_id}),url=`https://${PROJECTS[environment]}.supabase.co/storage/v1/object/public/${BUCKET}/${key}`;
   return {asset_id:assetId(r),asset_type:'card_image',game_code:'pokemon',set_id:r.set_id,printing_id:r.printing_id,variant_id:null,source_id:sourceId,
     url,original_source_url:r.image_url,original_source_identifier:`${r.set_code}/${r.collector_number}`,storage_provider:'supabase_storage',storage_bucket:BUCKET,storage_key:key,storage_path:key,
     mime_type:o.mime_type,width:o.width,height:o.height,byte_size:o.byte_size,sha256:o.sha256,content_sha256:o.sha256,asset_visibility:'public_catalogue',publicly_servable:true,permission_status:'approved',rights_status:'approved',
@@ -162,7 +170,7 @@ async function main() {
   const journal={status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,assets:[],links:[],objects:[],ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false};
   const save=()=>writeFile(path.join(output,'receipt.json'),JSON.stringify(journal,null,2));await save();
   const require=createRequire(new URL('../../backend/package.json',import.meta.url)),sharp=require('sharp');sharp.concurrency(2);
-  const objects=[...new Map(rows.flatMap(r=>r.objects).map(o=>[objectKey(o),o])).values()];
+  const objects=publicationObjects(rows);
   const source=o=>readFile(safePath(root,`${o.artifact_id}/${o.file}`));
   const read=url=>retryStorageRead(async()=>{const r=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(60000)});if(!r.ok){await r.body?.cancel();throw Object.assign(new Error(`Public object read ${r.status}`),{status:r.status});}const b=Buffer.from(await r.arrayBuffer());check(b.length<12_000_000,'Oversized object');return b;});
   // Verify every frozen byte before opening a database or uploading anything.

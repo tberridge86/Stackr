@@ -1,12 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts} from './publish.mjs';
+import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts,objectKey,publicationObjects} from './publish.mjs';
 const bytes=readFileSync(new URL('./cohort.json.gz',import.meta.url));
 const receipt=JSON.parse(readFileSync(new URL('./plan-receipt.json',import.meta.url)));
 const rows=validatePlan(bytes,receipt);
 const card=r=>({...r,game_code:'pokemon',variant_id:'11111111-1111-4111-8111-111111111111',same_artwork_as_variant_id:null});
 test('frozen 7911 fronts have all 23733 display objects and immutable archives',()=>{assert.equal(rows.length,7911);assert.equal(rows.flatMap(r=>r.objects).length,31644);assert.equal(receipt.artifacts.length,43);});
+
+test('production unique storage index permits every printing including shared Energy fronts',()=>{
+  const plans=rows.map(r=>payload(r,'source',receipt,{approved:true},'production'));
+  assert.equal(new Set(plans.map(p=>p.storage_key)).size,7911);
+  const objects=publicationObjects(rows),keys=new Set(objects.map(objectKey));
+  assert.equal(objects.length,31590);
+  for(const p of plans){assert.ok(keys.has(p.storage_key));for(const d of p.derivative_list)assert.ok(keys.has(d.storageKey));}
+  const counts=new Map();for(const r of rows)counts.set(r.objects[0].sha256,(counts.get(r.objects[0].sha256)??0)+1);
+  const hash=[...counts].find(([,count])=>count>1)[0],shared=rows.filter(r=>r.objects[0].sha256===hash);
+  assert.ok(shared.length>1);
+  const a=plans.find(p=>p.printing_id===shared[0].printing_id),b=plans.find(p=>p.printing_id===shared[1].printing_id);
+  assert.notEqual(a.storage_key,b.storage_key);assert.equal(a.content_sha256,b.content_sha256);
+  assert.deepEqual(a.derivative_list,b.derivative_list);
+  assert.throws(()=>objectKey(shared[0].objects[0]),/printing identity/);
+});
 test('changed cohort bytes and changed digest fail',()=>{const bad=Buffer.from(bytes);bad[50]^=1;assert.throws(()=>validatePlan(bad,receipt),/Frozen/);assert.throws(()=>validatePlan(bytes,{...receipt,cohort_sha256:'0'.repeat(64)}),/Frozen/);});
 test('pending owner approval cannot publish',()=>{const a=JSON.parse(readFileSync(new URL('./approval.json',import.meta.url)));assert.throws(()=>validateApproval({...a,approved:false},receipt),/pending/);});
 test('Taiwan permission and exact cohort approval are both required',()=>{const a={approved:true,cohort_sha256:receipt.cohort_sha256,fronts:7911,owner_statement:'test only',approved_at:'test'};assert.throws(()=>validateApproval(a,receipt),/Taiwan/);validateApproval({...a,store_resize_display_official_tw:true,official_tw_fronts:4926},receipt);});
