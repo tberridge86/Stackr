@@ -1,0 +1,128 @@
+{
+  "observed_at": "2026-09-29T08:03:35.003Z",
+  "scope": "12 representative previously published Storm/anniversary original image bytes via API delivery URLs; not all-card or device rendering proof",
+  "images": [
+    {
+      "printing_id": "d5fa2fe8-540b-5e84-8736-8b77d8b04bb6",
+      "language": "en",
+      "expected_sha256": "567ab41020aba56a0a98e11ee13c4dc25de70731a10ff5fbaf93c3d9ced1037e",
+      "sha256": "567ab41020aba56a0a98e11ee13c4dc25de70731a10ff5fbaf93c3d9ced1037e",
+      "width": 652,
+      "height": 914,
+      "bytes": 815124,
+      "passed": true
+    },
+    {
+      "printing_id": "87575ddb-1bc6-5224-910f-e94383de9821",
+      "language": "en",
+      "expected_sha256": "5454e2e8d51a08c402d318370257e2b4ae44fd58439bf9bce35469e7bdbc858a",
+      "sha256": "5454e2e8d51a08c402d318370257e2b4ae44fd58439bf9bce35469e7bdbc858a",
+      "width": 652,
+      "height": 914,
+      "bytes": 894239,
+      "passed": true
+    },
+    {
+      "printing_id": "6161add3-c281-5729-92ef-46837983aaf4",
+      "language": "en",
+      "expected_sha256": "cee3802877b81b56564cf8a7160fe166909f6cda48d60dccdf8c86f44db08397",
+      "sha256": "cee3802877b81b56564cf8a7160fe166909f6cda48d60dccdf8c86f44db08397",
+      "width": 654,
+      "height": 914,
+      "bytes": 1602631,
+      "passed": true
+    },
+    {
+      "printing_id": "2a295d0a-cec3-56d4-a1ce-91f51c389801",
+      "language": "ja",
+      "expected_sha256": "bd588f787ad5816ca61eb049a350c7679e84729950dfc0126aea30d2661e1a12",
+      "sha256": "bd588f787ad5816ca61eb049a350c7679e84729950dfc0126aea30d2661e1a12",
+      "width": 868,
+      "height": 1212,
+      "bytes": 273485,
+      "passed": true
+    },
+    {
+      "printing_id": "cd00197c-a284-5227-8a53-e38f7969f90d",
+      "language": "ja",
+      "expected_sha256": "9e5a39a86a012edd5be4f7eba76f90ab446147cf809eff4c1c4543f552e7a7ed",
+      "sha256": "9e5a39a86a012edd5be4f7eba76f90ab446147cf809eff4c1c4543f552e7a7ed",
+      "width": 868,
+      "height": 1212,
+      "bytes": 246182,
+      "passed": true
+    },
+    {
+      "printing_id": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+      "language": "ja",
+      "expected_sha256": "dbbdc3b7e64c4a269490ad0c40cc53ec109337f8c8c59a347c5081cfb5e844b0",
+      "sha256": "dbbdc3b7e64c4a269490ad0c40cc53ec109337f8c8c59a347c5081cfb5e844b0",
+      "width": 868,
+      "height": 1212,
+      "bytes": 661607,
+      "passed": true
+    },
+    {
+      "printing_id": "35aed820-3a67-51b5-a39d-35bfb028b052",
+      "language": "ja",
+      "expected_sha256": "9e23f055e4cd12a3ad8407691f4baba1aaf5c8433a22ddf079b21442b0611cab",
+      "sha256": "9e23f055e4cd12a3ad8407691f4baba1aaf5c8433a22ddf079b21442b0611cab",
+      "width": 868,
+      "height": 1212,
+      "bytes": 241463,
+      "passed": true
+    },
+    {
+      "printing_id": "8be76192-b129-5222-b7d0-14ad7648c576",
+      "language": "ja",
+      "expected_sha256": "fa28c4caa89ff21fb10aed3c2624dd5c9d89dba31d46058127d4008ff24fc2f7",
+      "sha256": "fa28c4caa89ff21fb10aed3c2624dd5c9d89dba31d46058127d4008ff24fc2f7",
+      "width": 868,
+      "height": 1212,
+      "bytes": 224719,
+      "passed": true
+    },
+    {
+      "printing_id": "6c131239-4552-570b-b517-c82728c86065",
+      "language": "ja",
+      "expected_sha256": "e7947d3c65e98aa99e453f922434af04a4201529ce0a38649592a1022a80ee2f",
+      "sha256": "e7947d3c65e98aa99e453f922434af04a4201529ce0a38649592a1022a80ee2f",
+      "width": 800,
+      "height": 1117,
+      "bytes": 968186,
+      "passed": true
+    },
+    {
+      "printing_id": "52c32dcb-5e36-5e1c-8c0b-c4697bbc0f78",
+      "language": "en",
+      "expected_sha256": "48f484e2b7bf717448fcfacaec1765a41fdce10732a554b7fa1167dd4b424dd5",
+      "sha256": "48f484e2b7bf717448fcfacaec1765a41fdce10732a554b7fa1167dd4b424dd5",
+      "width": 654,
+      "height": 914,
+      "bytes": 943525,
+      "passed": true
+    },
+    {
+      "printing_id": "2e4b7467-5058-5180-8d0f-9577865af700",
+      "language": "en",
+      "expected_sha256": "60f8ff8c5530670476078d4cf0ba742ddd9487f51306a69476b56e5fc7afe02e",
+      "sha256": "60f8ff8c5530670476078d4cf0ba742ddd9487f51306a69476b56e5fc7afe02e",
+      "width": 654,
+      "height": 914,
+      "bytes": 962164,
+      "passed": true
+    },
+    {
+      "printing_id": "6b21dfd6-926e-5df9-87b0-815e1ee6e697",
+      "language": "en",
+      "expected_sha256": "66cee0330053f442900c2107fba1bf85736ec0ee898c712ad412cc2cc6baf7d7",
+      "sha256": "66cee0330053f442900c2107fba1bf85736ec0ee898c712ad412cc2cc6baf7d7",
+      "width": 654,
+      "height": 914,
+      "bytes": 1531914,
+      "passed": true
+    }
+  ],
+  "passed": 12,
+  "total": 12
+}
