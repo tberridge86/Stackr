@@ -1,0 +1,47 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {PGlite} from '@electric-sql/pglite';
+import {toCardSummary} from '../../backend/lib/stackrApiV1.js';
+import {MIGRATION,apply,snapshot,captureRows,verify,rehearse,assertConfig,assertSecurity} from './publish.mjs';
+const sql=readFileSync(new URL(`../../supabase/migrations/${MIGRATION}.sql`,import.meta.url),'utf8');
+const baseline=JSON.parse(readFileSync(new URL('./baseline.json',import.meta.url),'utf8'));
+const db=new PGlite();const id=n=>`00000000-0000-4000-a000-${String(n).padStart(12,'0')}`;
+const query=db.query.bind(db);
+db.query=(text,values)=>text===sql?db.exec(text).then(results=>results.at(-1)):query(text,values);
+await db.exec(`create schema api;create schema catalog;create role anon;create role authenticated;create role service_role;
+create table catalog.catalogue_versions(id uuid,status text,deprecated_at timestamptz,version_key text);
+create table catalog.catalogue_version_variants(catalogue_version_id uuid,variant_id uuid);
+create table catalog.card_variants(id uuid,printing_id uuid,canonical_key text,game_code text,language_code text,variant_code text,finish_code text,artwork_key text,updated_at timestamptz,native_image_status text,same_artwork_as_variant_id uuid,deprecated_at timestamptz);
+create table catalog.card_printings(id uuid,set_id uuid,collector_number text,collector_number_prefix text,collector_number_sort integer,collector_number_suffix text,collector_number_sort_key text,native_name text,english_display_name text,rarity_id uuid,updated_at timestamptz,deprecated_at timestamptz,card_concept_id uuid,supertype text,subtypes text[],artist text);
+create table catalog.sets(id uuid,set_code text,native_name text,english_display_name text,updated_at timestamptz,deprecated_at timestamptz);
+create table catalog.languages(code text,english_name text,native_name text);
+create table catalog.rarities(id uuid,code text,english_label text);
+create table catalog.variant_taxonomy(code text,english_label text);
+create table catalog.finishes(code text,english_label text);
+create table catalog.card_concepts(id uuid,default_english_name text,deprecated_at timestamptz);
+create view api.catalogue_cards with(security_invoker=true) as ${baseline.production.definition}
+grant select on api.catalogue_cards to anon,authenticated,service_role;
+create function api.catalogue_set_card_rows(uuid,text,uuid,integer) returns table(card_row jsonb) language sql stable as $$ select to_jsonb(c) from api.catalogue_cards c where c.set_id=$1 and c.language_code=$2 limit $4 $$;`);
+await db.query("insert into catalog.catalogue_versions values($1,'published',null,'published'),($2,'draft',null,'draft')",[id(1),id(2)]);
+await db.query("insert into catalog.sets(id,set_code,native_name) values($1,'TEST','Test')",[id(3)]);
+await db.query("insert into catalog.languages values('en','English','English')");
+await db.query("insert into catalog.card_concepts values($1,'Concept display',null),($2,'Deprecated display',now())",[id(4),id(5)]);
+for(const n of [10,11,12]){
+  await db.query("insert into catalog.card_printings(id,set_id,collector_number,native_name,card_concept_id,supertype,subtypes,artist) values($1,$2,$3,'Card',$4,'Pokemon',array['Basic'],'Nelnal')",[id(n),id(3),String(n),id(n===11?5:4)]);
+  await db.query("insert into catalog.card_variants(id,printing_id,game_code,language_code,variant_code,finish_code) values($1,$2,'pokemon','en','normal','normal')",[id(n+10),id(n)]);
+  await db.query('insert into catalog.catalogue_version_variants values($1,$2)',[id(n===12?2:1),id(n+10)]);
+}
+const before=await snapshot(db);
+assert.equal((await db.query('select * from api.catalogue_cards')).rows.length,2);
+const trial=await rehearse(db,sql,before);assert.equal(trial.metadata_parity[0].variants,2);assert.deepEqual(await snapshot(db),before);
+await db.query('begin');await captureRows(db);await apply(db,sql,before);const proof=await verify(db);assert.equal(proof.metadata_parity[0].mismatches,0);
+const rows=(await db.query('select * from api.catalogue_cards order by printing_id')).rows;
+assert.equal(rows.length,2,'draft stays hidden');assert.equal(rows[0].concept_english_display_name,'Concept display');assert.equal(rows[1].concept_english_display_name,null,'deprecated concept stays hidden');
+assert.deepEqual(toCardSummary([rows[0]]).details,{artist:'Nelnal',supertype:'Pokemon',subtypes:['Basic']});
+assertSecurity(before,await snapshot(db));await db.query('rollback');
+await assert.rejects(apply(db,sql,{...before,definition:'wrong'}),/baseline/);
+await assert.rejects(apply(db,sql+'-- drift',before),/migration changed/);
+assert.throws(()=>assertSecurity(before,{...before,reloptions:['security_invoker=false']}),/security/);
+assert.throws(()=>assertSecurity(before,{...before,acl:'other'}),/privileges/);
+assert.throws(()=>assertConfig({},true),/confirmation/);
+await db.close();console.log('Stored metadata, legacy row parity, publication filters, deprecated concepts, fast RPC, DTO, rollback and drift/security guards passed.');
