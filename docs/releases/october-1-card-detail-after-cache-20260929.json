@@ -1,0 +1,174 @@
+{
+  "observed_at": "2026-09-29T08:07:49.102Z",
+  "scope": "Public card-detail readback after normal stale-cache revalidation; same 12 printing identities, no shared cache flush",
+  "results": [
+    {
+      "printing_id": "d5fa2fe8-540b-5e84-8736-8b77d8b04bb6",
+      "status": 200,
+      "cache": "HIT",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokemon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "Nelnal"
+      }
+    },
+    {
+      "printing_id": "87575ddb-1bc6-5224-910f-e94383de9821",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokemon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "Fujimoto Gold"
+      }
+    },
+    {
+      "printing_id": "6161add3-c281-5729-92ef-46837983aaf4",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokemon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "YOSHIROTTEN"
+      }
+    },
+    {
+      "printing_id": "2a295d0a-cec3-56d4-a1ce-91f51c389801",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokemon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "Satoshi Ito"
+      }
+    },
+    {
+      "printing_id": "cd00197c-a284-5227-8a53-e38f7969f90d",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokemon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "Akira Komayama"
+      }
+    },
+    {
+      "printing_id": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokemon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "takuyoa"
+      }
+    },
+    {
+      "printing_id": "35aed820-3a67-51b5-a39d-35bfb028b052",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokemon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "Nelnal"
+      }
+    },
+    {
+      "printing_id": "8be76192-b129-5222-b7d0-14ad7648c576",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokemon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "miki kudo"
+      }
+    },
+    {
+      "printing_id": "6c131239-4552-570b-b517-c82728c86065",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Energy",
+        "subtypes": [],
+        "artist": null
+      }
+    },
+    {
+      "printing_id": "52c32dcb-5e36-5e1c-8c0b-c4697bbc0f78",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokémon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "Mitsuhiro Arita"
+      }
+    },
+    {
+      "printing_id": "2e4b7467-5058-5180-8d0f-9577865af700",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokémon",
+        "subtypes": [
+          "LEGEND"
+        ],
+        "artist": "Noriko Takaya,                   \n                    \n                      Shinji Higuchi"
+      }
+    },
+    {
+      "printing_id": "6b21dfd6-926e-5df9-87b0-815e1ee6e697",
+      "status": 200,
+      "cache": "STALE",
+      "identity": true,
+      "details": true,
+      "actual_details": {
+        "supertype": "Pokémon",
+        "subtypes": [
+          "Basic"
+        ],
+        "artist": "Shinji Kanda"
+      }
+    }
+  ],
+  "passed": 12,
+  "total": 12
+}

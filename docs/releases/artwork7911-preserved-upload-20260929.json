@@ -1,0 +1,25 @@
+{
+  "run_id": 36535188734,
+  "status": "cancelled_before_catalogue_publication_to_correct_capacity",
+  "receipt_status": "preflight",
+  "source": "f9688c6ff90fdc73f5aca8c3e7e1d21263d1d670",
+  "cohort_sha256": "20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd",
+  "verified_files": 2223,
+  "newly_created_files": 2111,
+  "catalogue_assets": 0,
+  "catalogue_links": 0,
+  "staging": {
+    "status": "passed_and_rolled_back",
+    "assets": 7911,
+    "links": 7911
+  },
+  "production": {
+    "status": "passed_and_rolled_back",
+    "assets": 7911,
+    "links": 7911
+  },
+  "artifact_id": 11019528110,
+  "artifact_sha256": "0def76e353cc7f92af5b8b15fdd09b372324ecb2f0817bae4c1cea9ceaefc789",
+  "resume_run_id": 36540630666,
+  "resume_source": "4b9c90ab232297f2f336c7548c63f18b08c64dba"
+}

@@ -1,0 +1,155 @@
+{
+  "status": "published_and_database_verified",
+  "revision": "4b9c90ab232297f2f336c7548c63f18b08c64dba",
+  "run_id": "36540251921",
+  "started_at": "2026-09-29T08:03:42.422Z",
+  "migration_sha256": "1198a53c9ef375563eb7e83e19422dcb99126b03cc735d0d61822780bedf3318",
+  "baseline": {
+    "production": {
+      "definition": " SELECT v.id AS variant_id,\n    cv.id AS catalogue_version_id,\n    cv.version_key AS catalogue_version,\n    v.canonical_key,\n    v.game_code,\n    v.language_code,\n    l.english_name AS language_english_name,\n    l.native_name AS language_native_name,\n    p.set_id,\n    s.set_code,\n    s.native_name AS set_native_name,\n    s.english_display_name AS set_english_display_name,\n    p.id AS printing_id,\n    p.collector_number,\n    p.collector_number_prefix,\n    p.collector_number_sort,\n    p.collector_number_suffix,\n    p.collector_number_sort_key,\n    p.native_name AS card_native_name,\n    p.english_display_name AS card_english_display_name,\n    r.code AS rarity_code,\n    r.english_label AS rarity_label,\n    v.variant_code,\n    vt.english_label AS variant_label,\n    v.finish_code,\n    f.english_label AS finish_label,\n    v.artwork_key,\n    p.updated_at,\n    GREATEST(p.updated_at, v.updated_at, s.updated_at) AS changed_at,\n    v.native_image_status,\n    v.same_artwork_as_variant_id\n   FROM catalog.catalogue_version_variants cvv\n     JOIN catalog.catalogue_versions cv ON cv.id = cvv.catalogue_version_id\n     JOIN catalog.card_variants v ON v.id = cvv.variant_id\n     JOIN catalog.card_printings p ON p.id = v.printing_id\n     JOIN catalog.sets s ON s.id = p.set_id\n     JOIN catalog.languages l ON l.code = v.language_code\n     LEFT JOIN catalog.rarities r ON r.id = p.rarity_id\n     LEFT JOIN catalog.variant_taxonomy vt ON vt.code = v.variant_code\n     LEFT JOIN catalog.finishes f ON f.code = v.finish_code\n  WHERE cv.status = 'published'::text AND cv.deprecated_at IS NULL AND v.deprecated_at IS NULL AND p.deprecated_at IS NULL AND s.deprecated_at IS NULL;",
+      "reloptions": [
+        "security_invoker=true"
+      ],
+      "acl": "{postgres=arwdDxtm/postgres,anon=r/postgres,authenticated=r/postgres,service_role=r/postgres,stackr_recognition=r/postgres}",
+      "owner": "postgres"
+    },
+    "staging": {
+      "definition": " SELECT v.id AS variant_id,\n    cv.id AS catalogue_version_id,\n    cv.version_key AS catalogue_version,\n    v.canonical_key,\n    v.game_code,\n    v.language_code,\n    l.english_name AS language_english_name,\n    l.native_name AS language_native_name,\n    p.set_id,\n    s.set_code,\n    s.native_name AS set_native_name,\n    s.english_display_name AS set_english_display_name,\n    p.id AS printing_id,\n    p.collector_number,\n    p.collector_number_prefix,\n    p.collector_number_sort,\n    p.collector_number_suffix,\n    p.collector_number_sort_key,\n    p.native_name AS card_native_name,\n    p.english_display_name AS card_english_display_name,\n    r.code AS rarity_code,\n    r.english_label AS rarity_label,\n    v.variant_code,\n    vt.english_label AS variant_label,\n    v.finish_code,\n    f.english_label AS finish_label,\n    v.artwork_key,\n    p.updated_at,\n    GREATEST(p.updated_at, v.updated_at, s.updated_at) AS changed_at,\n    v.native_image_status,\n    v.same_artwork_as_variant_id,\n    p.card_concept_id,\n    cc.default_english_name AS concept_english_display_name,\n    p.supertype,\n    p.subtypes,\n    p.artist\n   FROM catalog.catalogue_version_variants cvv\n     JOIN catalog.catalogue_versions cv ON cv.id = cvv.catalogue_version_id\n     JOIN catalog.card_variants v ON v.id = cvv.variant_id\n     JOIN catalog.card_printings p ON p.id = v.printing_id\n     JOIN catalog.sets s ON s.id = p.set_id\n     JOIN catalog.languages l ON l.code = v.language_code\n     LEFT JOIN catalog.card_concepts cc ON cc.id = p.card_concept_id AND cc.deprecated_at IS NULL\n     LEFT JOIN catalog.rarities r ON r.id = p.rarity_id\n     LEFT JOIN catalog.variant_taxonomy vt ON vt.code = v.variant_code\n     LEFT JOIN catalog.finishes f ON f.code = v.finish_code\n  WHERE cv.status = 'published'::text AND cv.deprecated_at IS NULL AND v.deprecated_at IS NULL AND p.deprecated_at IS NULL AND s.deprecated_at IS NULL;",
+      "reloptions": [
+        "security_invoker=true"
+      ],
+      "acl": "{postgres=arwdDxtm/postgres,anon=r/postgres,authenticated=r/postgres,service_role=r/postgres,stackr_recognition=r/postgres}",
+      "owner": "postgres"
+    }
+  },
+  "metadata_writes": 0,
+  "artwork_writes": 0,
+  "holdings_writes": 0,
+  "pricing_writes": 0,
+  "device_verified": false,
+  "staging_rehearsal": {
+    "status": "passed_and_rolled_back",
+    "unchanged_existing_rows": true,
+    "metadata_parity": [
+      {
+        "language_code": "en",
+        "variants": 32230,
+        "printings": 23666,
+        "mismatches": 0
+      },
+      {
+        "language_code": "ja",
+        "variants": 13629,
+        "printings": 12619,
+        "mismatches": 0
+      },
+      {
+        "language_code": "ko",
+        "variants": 239,
+        "printings": 239,
+        "mismatches": 0
+      },
+      {
+        "language_code": "zh-cn",
+        "variants": 20408,
+        "printings": 12956,
+        "mismatches": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "variants": 8166,
+        "printings": 7436,
+        "mismatches": 0
+      }
+    ],
+    "fast_set_rpc_fields_present": false,
+    "fast_set_rpc_status": "not_present_in_staging"
+  },
+  "production_rehearsal": {
+    "status": "passed_and_rolled_back",
+    "unchanged_existing_rows": true,
+    "metadata_parity": [
+      {
+        "language_code": "en",
+        "variants": 33359,
+        "printings": 23857,
+        "mismatches": 0
+      },
+      {
+        "language_code": "ja",
+        "variants": 14100,
+        "printings": 12948,
+        "mismatches": 0
+      },
+      {
+        "language_code": "ko",
+        "variants": 239,
+        "printings": 239,
+        "mismatches": 0
+      },
+      {
+        "language_code": "zh-cn",
+        "variants": 20408,
+        "printings": 12956,
+        "mismatches": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "variants": 8166,
+        "printings": 7436,
+        "mismatches": 0
+      }
+    ],
+    "fast_set_rpc_fields_present": true
+  },
+  "verification": {
+    "unchanged_existing_rows": true,
+    "metadata_parity": [
+      {
+        "language_code": "en",
+        "variants": 33359,
+        "printings": 23857,
+        "mismatches": 0
+      },
+      {
+        "language_code": "ja",
+        "variants": 14100,
+        "printings": 12948,
+        "mismatches": 0
+      },
+      {
+        "language_code": "ko",
+        "variants": 239,
+        "printings": 239,
+        "mismatches": 0
+      },
+      {
+        "language_code": "zh-cn",
+        "variants": 20408,
+        "printings": 12956,
+        "mismatches": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "variants": 8166,
+        "printings": 7436,
+        "mismatches": 0
+      }
+    ],
+    "fast_set_rpc_fields_present": true
+  },
+  "new_view": {
+    "definition": " SELECT v.id AS variant_id,\n    cv.id AS catalogue_version_id,\n    cv.version_key AS catalogue_version,\n    v.canonical_key,\n    v.game_code,\n    v.language_code,\n    l.english_name AS language_english_name,\n    l.native_name AS language_native_name,\n    p.set_id,\n    s.set_code,\n    s.native_name AS set_native_name,\n    s.english_display_name AS set_english_display_name,\n    p.id AS printing_id,\n    p.collector_number,\n    p.collector_number_prefix,\n    p.collector_number_sort,\n    p.collector_number_suffix,\n    p.collector_number_sort_key,\n    p.native_name AS card_native_name,\n    p.english_display_name AS card_english_display_name,\n    r.code AS rarity_code,\n    r.english_label AS rarity_label,\n    v.variant_code,\n    vt.english_label AS variant_label,\n    v.finish_code,\n    f.english_label AS finish_label,\n    v.artwork_key,\n    p.updated_at,\n    GREATEST(p.updated_at, v.updated_at, s.updated_at) AS changed_at,\n    v.native_image_status,\n    v.same_artwork_as_variant_id,\n    p.card_concept_id,\n    cc.default_english_name AS concept_english_display_name,\n    p.supertype,\n    p.subtypes,\n    p.artist\n   FROM catalog.catalogue_version_variants cvv\n     JOIN catalog.catalogue_versions cv ON cv.id = cvv.catalogue_version_id\n     JOIN catalog.card_variants v ON v.id = cvv.variant_id\n     JOIN catalog.card_printings p ON p.id = v.printing_id\n     JOIN catalog.sets s ON s.id = p.set_id\n     JOIN catalog.languages l ON l.code = v.language_code\n     LEFT JOIN catalog.card_concepts cc ON cc.id = p.card_concept_id AND cc.deprecated_at IS NULL\n     LEFT JOIN catalog.rarities r ON r.id = p.rarity_id\n     LEFT JOIN catalog.variant_taxonomy vt ON vt.code = v.variant_code\n     LEFT JOIN catalog.finishes f ON f.code = v.finish_code\n  WHERE cv.status = 'published'::text AND cv.deprecated_at IS NULL AND v.deprecated_at IS NULL AND p.deprecated_at IS NULL AND s.deprecated_at IS NULL;",
+    "reloptions": [
+      "security_invoker=true"
+    ],
+    "acl": "{postgres=arwdDxtm/postgres,anon=r/postgres,authenticated=r/postgres,service_role=r/postgres,stackr_recognition=r/postgres}",
+    "owner": "postgres"
+  },
+  "verified_at": "2026-09-29T08:04:49.901Z",
+  "artifact": {
+    "id": 11020361239,
+    "sha256": "21d6055e56b68a350e28f6c1e86744c963f2e286042152fcdd85b8da0791a12c",
+    "bytes": 1458
+  }
+}

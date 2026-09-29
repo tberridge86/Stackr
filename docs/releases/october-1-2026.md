@@ -42,7 +42,7 @@ The original production metadata evidence is also retained in [an exact-byte ZIP
 
 ## Public API acceptance found during final review
 
-The [29 September API acceptance check](october-1-api-acceptance-20260929.md) matched all 480 Storm/anniversary identities and artwork references. It also found that production omits saved illustrator/type/subtype details from the published-card view. The focused `card_details` protected release must complete and its public re-probe must pass before metadata delivery is called complete. Two letter-only Energy collector searches remain classified exceptions. Repeat API requests were fast in the bounded sample, but first requests did not all meet 0.5 seconds; no universal speed or phone claim is made.
+The [29 September API acceptance check](october-1-api-acceptance-20260929.md) matched all 480 Storm/anniversary identities and artwork references. It also found that production omits saved illustrator/type/subtype details from the published-card view. The focused `card_details` release has now succeeded in run 36540251921: 57,436 printings retain their existing rows and match stored details, all 480 imported cards match metadata/artwork through the public set API, and 12/12 card-detail reads passed after normal cache revalidation. This confirms delivery of stored fields, not universal field completeness. Two letter-only Energy collector searches remain classified exceptions. Repeat API requests were fast in the bounded sample, but first requests did not all meet 0.5 seconds; no universal speed or phone claim is made.
 
 ## Build and release sequence
 
@@ -61,3 +61,7 @@ The [29 September API acceptance check](october-1-api-acceptance-20260929.md) ma
 - Aura Seeker remains unresolved; provisional/date-precision exceptions and two source-only teaching programmes remain documented.
 - Historical cleanup PR #219 is not required for this release and is not silently merged. Do not replay stale scanner, inspector or Master Set branches over newer main changes.
 - No new native artifact has been built or submitted by this queue preparation. Installed build 46 cannot demonstrate the newer client fixes.
+
+## Current artwork delivery run
+
+Run 36535188734 was stopped before catalogue publication because its measured upload pace exceeded its original 180-minute window. Its receipt preserves 2,223 verified files and zero published assets/links. Run [36540630666](https://github.com/tberridge86/Stackr/actions/runs/36540630666) resumes the same approved cohort with six transfers and 360 minutes, re-verifying stored files before reuse. Require its successful final publication receipt and public readback before native release; a running job is not delivered artwork. See the [live API acceptance receipt](october-1-api-acceptance-20260929.md).
