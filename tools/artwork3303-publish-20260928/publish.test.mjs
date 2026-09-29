@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts,objectKey,publicationObjects} from './publish.mjs';
+import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts,objectKey,publicationObjects,uploadImmutable} from './publish.mjs';
 const bytes=readFileSync(new URL('./cohort.json.gz',import.meta.url));
 const receipt=JSON.parse(readFileSync(new URL('./plan-receipt.json',import.meta.url)));
 const rows=validatePlan(bytes,receipt);
@@ -23,6 +23,24 @@ test('production unique storage index permits every printing including shared En
   assert.throws(()=>objectKey(shared[0].objects[0]),/printing identity/);
 });
 test('changed cohort bytes and changed digest fail',()=>{const bad=Buffer.from(bytes);bad[50]^=1;assert.throws(()=>validatePlan(bad,receipt),/Frozen/);assert.throws(()=>validatePlan(bytes,{...receipt,cohort_sha256:'0'.repeat(64)}),/Frozen/);});
+
+test('transient storage rejection retries the immutable upload with bounded backoff',async()=>{
+  let calls=0;const waits=[];
+  assert.equal(await uploadImmutable(async()=>++calls<3?{error:{statusCode:'429',code:'DatabaseError'}}:{error:null},async ms=>waits.push(ms)),true);
+  assert.equal(calls,3);assert.deepEqual(waits,[1000,2000]);
+});
+test('retry can encounter an already-created object without overwriting it',async()=>{
+  let calls=0;
+  assert.equal(await uploadImmutable(async()=>++calls===1?{error:{statusCode:503}}:{error:{statusCode:409,message:'already exists'}},async()=>{}),false);
+  assert.equal(calls,2);
+});
+test('authentication, permanent errors and exhausted uploads stop before publication',async()=>{
+  for(const status of [401,403,400,413,429]){
+    let calls=0;const waits=[];
+    await assert.rejects(uploadImmutable(async()=>{calls++;return {error:{statusCode:status,message:status===403?'already exists':'provider detail not copied'}};},async ms=>waits.push(ms)),new RegExp(`HTTP ${status}`));
+    assert.equal(calls,status===429?4:1);assert.equal(waits.length,status===429?3:0);
+  }
+});
 test('pending owner approval cannot publish',()=>{const a=JSON.parse(readFileSync(new URL('./approval.json',import.meta.url)));assert.throws(()=>validateApproval({...a,approved:false},receipt),/pending/);});
 test('Taiwan permission and exact cohort approval are both required',()=>{const a={approved:true,cohort_sha256:receipt.cohort_sha256,fronts:7911,owner_statement:'test only',approved_at:'test'};assert.throws(()=>validateApproval(a,receipt),/Taiwan/);validateApproval({...a,store_resize_display_official_tw:true,official_tw_fronts:4926},receipt);});
 test('earlier 365-front Taiwan attestation cannot approve the expanded cohort',()=>{assert.throws(()=>validateApproval({approved:true,cohort_sha256:receipt.cohort_sha256,fronts:7911,store_resize_display_official_tw:true,official_tw_fronts:365,owner_statement:'test only',approved_at:'test'},receipt),/Taiwan/);});

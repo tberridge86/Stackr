@@ -25,6 +25,18 @@ Production has `assets_storage_object_uidx`, a unique active-asset storage-key i
 
 The protected artwork lane must re-run the full staging and production rollback rehearsals before any upload or catalogue publication. Existing assets are preserved; approval does not authorize replacing conflicting artwork.
 
+## 29 September delivery update
+
+PR #248 merged as `5c019b9d16816d7a702435b1df77d7c0927be2cc` after all ten applicable checks passed; the wider release-candidate gate was skipped. The corrected artwork run [36533384149](https://github.com/tberridge86/Stackr/actions/runs/36533384149) verified all 31,590 planned storage objects and successfully rehearsed all 7,911 assets/links in both staging and production, then rolled back both. It uploaded and verified 112 files before two storage POST requests received HTTP 429 `DatabaseError` responses (`08P01`). No catalogue asset/link publication occurred. The focused follow-up uses the existing bounded exponential-backoff policy for immutable uploads; permission/permanent errors still fail, duplicate responses require later byte verification, and existing files are never overwritten.
+
+Public API set-name checks passed for all four representative languages. Chinese/Japanese logo checks passed, as did the curated CoroCoro catalogue and all 81 supplied magazine-cover integrity, issue/language and presentation-surface checks. These are source/API checks, not phone rendering evidence.
+
+A one-off follow-up named `Stackr October 1 release` is active for 1 October at 09:00 Europe/London, attached to this chat. It continues the reviewed production-profile TestFlight sequence after rechecking capacity and delivery dependencies; it is not the previously removed recurring TestFlight checker.
+
+The live backend still reports source `37817f2cb83b`, deployment `09193c47-1428-4c6b-8dd1-6442d1172093`. The two pricing workers have no verified healthy replacement; their new main-triggered deployments are skipped. The last explicit upload rejection on 27 September reported an expired Railway trial. The owner has been asked whether access is restored; no paid-plan change has been made. Backend/worker promotion and actual recurring refresh remain required before claiming those server fixes delivered.
+
+The original production metadata evidence is also retained in [an exact-byte ZIP](../../reports/catalogue/metadata-signoff/2026-09-27-production/original-verified-evidence.zip), with its [checksum receipt](../../reports/catalogue/metadata-signoff/2026-09-27-production/original-verified-evidence.json). All ten original file hashes match the original import manifest independently of Git text line-ending normalization.
+
 ## Build and release sequence
 
 1. Merge the reviewed release queue after applicable CI. Record its exact main SHA and successful artwork receipt.

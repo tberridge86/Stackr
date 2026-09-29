@@ -1,0 +1,20 @@
+{
+  "status": "failed_before_publication",
+  "revision": "ed80419c7ee5d05926c899d6d98a76df91e1ebdd",
+  "started_at": "2026-09-29T06:35:45.652Z",
+  "cohort_sha256": "20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd",
+  "assets": [],
+  "links": [],
+  "objects": [],
+  "ownership_changes": 0,
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "device_verified": false,
+  "local_files_verified": 31581,
+  "staging_rehearsal": {
+    "status": "passed_and_rolled_back",
+    "assets": 7911,
+    "links": 7911
+  },
+  "error": "Asset insertion conflict"
+}

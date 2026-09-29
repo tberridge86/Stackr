@@ -1,0 +1,153 @@
+{
+  "observed_at": "2026-09-29T06:55:41.321Z",
+  "project": {
+    "id": "d205637b-5376-41aa-9169-1015ba88fec3",
+    "name": "pocketvault",
+    "workspaceName": "tberridge86's Projects"
+  },
+  "environment": {
+    "id": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+    "name": "production",
+    "unmergedChangesCount": null,
+    "stagedChanges": null
+  },
+  "services": [
+    {
+      "id": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "name": "pocketvault",
+      "cronSchedule": null,
+      "latestDeployment": {
+        "id": "09193c47-1428-4c6b-8dd1-6442d1172093",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-20T15:06:28.472Z",
+        "url": null
+      }
+    },
+    {
+      "id": "ff1e8d30-4307-45be-855c-5f83f092d8a5",
+      "name": "marvelous-surprise",
+      "cronSchedule": "0 6,18 * * *",
+      "latestDeployment": {
+        "id": "0402490f-3da1-48da-82d8-bf86c0511dcb",
+        "status": "FAILED",
+        "createdAt": "2026-08-18T21:52:04.445Z",
+        "url": null
+      }
+    },
+    {
+      "id": "c4c52418-b307-4c9f-9ffd-e67be163c366",
+      "name": "marvelous-surprise Copy",
+      "cronSchedule": "*/5 * * * *",
+      "latestDeployment": {
+        "id": "f9895e4f-3d33-45c1-b3d6-6b75d85d44c3",
+        "status": "FAILED",
+        "createdAt": "2026-08-18T21:41:17.875Z",
+        "url": null
+      }
+    },
+    {
+      "id": "ca7e7957-85ac-4597-ba20-4692e41c4c47",
+      "name": "stackr-owner-siglip",
+      "cronSchedule": null,
+      "latestDeployment": {
+        "id": "930b12b2-1a3e-4b0b-a01a-a79d95c6ad6f",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-05T19:30:19.978Z",
+        "url": null
+      }
+    },
+    {
+      "id": "8baf4d98-4605-4832-9d7e-65880e2a6b29",
+      "name": "stackr-api-perf-canary",
+      "cronSchedule": null,
+      "latestDeployment": {
+        "id": "7937ca4d-a625-41f5-9e38-58bdccf7614c",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-20T15:00:31.977Z",
+        "url": null
+      }
+    }
+  ],
+  "recent_deployments": [
+    [
+      {
+        "id": "09193c47-1428-4c6b-8dd1-6442d1172093",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-20T15:06:28.472Z",
+        "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+        "commitHash": null
+      },
+      {
+        "id": "02476c5a-d7fe-4673-a943-dbe5cfe31374",
+        "status": "REMOVED",
+        "createdAt": "2026-09-20T13:57:30.245Z",
+        "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+        "commitHash": null
+      },
+      {
+        "id": "14f1c678-511d-46af-b293-9c8d1ae1a8f9",
+        "status": "REMOVED",
+        "createdAt": "2026-09-20T09:58:26.417Z",
+        "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+        "commitHash": null
+      }
+    ],
+    [
+      {
+        "id": "3530fd94-db46-48d7-b8a8-ce08da766e58",
+        "status": "SKIPPED",
+        "createdAt": "2026-09-29T06:52:11.185Z",
+        "serviceId": "ff1e8d30-4307-45be-855c-5f83f092d8a5",
+        "commitHash": "5c019b9d16816d7a702435b1df77d7c0927be2cc"
+      },
+      {
+        "id": "49481a28-2ca4-4e1e-91ff-750465e1e7c6",
+        "status": "SKIPPED",
+        "createdAt": "2026-09-29T06:31:14.928Z",
+        "serviceId": "ff1e8d30-4307-45be-855c-5f83f092d8a5",
+        "commitHash": "ed80419c7ee5d05926c899d6d98a76df91e1ebdd"
+      },
+      {
+        "id": "71d588d7-a595-4a7b-b91d-ba9fcd3e30a7",
+        "status": "SKIPPED",
+        "createdAt": "2026-09-27T21:04:24.006Z",
+        "serviceId": "ff1e8d30-4307-45be-855c-5f83f092d8a5",
+        "commitHash": "fe1a28f66550ddc4a6fa265d2798aa29cef001b2"
+      }
+    ],
+    [
+      {
+        "id": "02d4b903-c5db-4a94-9cec-66665b01b477",
+        "status": "SKIPPED",
+        "createdAt": "2026-09-29T06:52:11.139Z",
+        "serviceId": "c4c52418-b307-4c9f-9ffd-e67be163c366",
+        "commitHash": "5c019b9d16816d7a702435b1df77d7c0927be2cc"
+      },
+      {
+        "id": "1e14b44a-3599-4173-a489-53385a119734",
+        "status": "SKIPPED",
+        "createdAt": "2026-09-29T06:31:15.206Z",
+        "serviceId": "c4c52418-b307-4c9f-9ffd-e67be163c366",
+        "commitHash": "ed80419c7ee5d05926c899d6d98a76df91e1ebdd"
+      },
+      {
+        "id": "555c908d-10e9-48f5-98d1-fba2f4a653e1",
+        "status": "SKIPPED",
+        "createdAt": "2026-09-27T21:04:23.984Z",
+        "serviceId": "c4c52418-b307-4c9f-9ffd-e67be163c366",
+        "commitHash": "fe1a28f66550ddc4a6fa265d2798aa29cef001b2"
+      }
+    ]
+  ],
+  "live_backend": {
+    "gitCommit": "37817f2cb83b",
+    "deploymentId": "09193c47-1428-4c6b-8dd1-6442d1172093",
+    "httpStatus": 200
+  },
+  "last_upload_rejection": {
+    "observed_at": "2026-09-27T19:01:55.943Z",
+    "message": "Your trial has expired. Please select a plan to continue using Railway.",
+    "source": "30544288a9398829feee126a920922b38c5d1d3a"
+  },
+  "scope": "Read-only release dependency check; no Railway changes; current billing state not independently queried"
+}

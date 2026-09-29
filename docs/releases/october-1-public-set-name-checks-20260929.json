@@ -1,0 +1,169 @@
+{
+  "observed_at": "2026-09-29T06:59:30.525Z",
+  "result": [
+    {
+      "language": "en",
+      "code": "base1",
+      "status": 200,
+      "expected": {
+        "id": "97e3aeb6-2645-4c3a-9fd4-10d95a181b6e",
+        "nativeName": "Base Set",
+        "englishDisplayName": "Base Set"
+      },
+      "body": {
+        "data": {
+          "set": {
+            "setId": "97e3aeb6-2645-4c3a-9fd4-10d95a181b6e",
+            "game": "pokemon",
+            "languageCode": "en",
+            "language": {
+              "englishName": "English",
+              "nativeName": "English"
+            },
+            "seriesId": null,
+            "seriesNativeName": null,
+            "seriesEnglishDisplayName": null,
+            "setCode": "base1",
+            "nativeName": "Base Set",
+            "englishDisplayName": "Base Set",
+            "releaseDate": "1999-01-09",
+            "printedTotal": 102,
+            "total": 102,
+            "regionCode": null,
+            "updatedAt": "2026-08-20T18:34:49.105+00:00",
+            "sourceUpdatedAt": "2026-08-06T19:35:48.961+00:00"
+          }
+        },
+        "meta": {
+          "requestId": "5e6bcc2a-8ae3-4d30-ac75-db85a276f73e",
+          "apiVersion": "1",
+          "generatedAt": "2026-09-29T06:59:28.452Z"
+        }
+      },
+      "identity_and_names_verified": true
+    },
+    {
+      "language": "ja",
+      "code": "PMCG1",
+      "status": 200,
+      "expected": {
+        "id": "46c7cd20-9ca5-4128-a244-9a04f9a4c9f7",
+        "nativeName": "拡張パック",
+        "englishDisplayName": "Expansion Pack"
+      },
+      "body": {
+        "data": {
+          "set": {
+            "setId": "46c7cd20-9ca5-4128-a244-9a04f9a4c9f7",
+            "game": "pokemon",
+            "languageCode": "ja",
+            "language": {
+              "englishName": "Japanese",
+              "nativeName": "日本語"
+            },
+            "seriesId": null,
+            "seriesNativeName": null,
+            "seriesEnglishDisplayName": null,
+            "setCode": "PMCG1",
+            "nativeName": "拡張パック",
+            "englishDisplayName": "Expansion Pack",
+            "releaseDate": "1996-10-20",
+            "printedTotal": 102,
+            "total": 102,
+            "regionCode": null,
+            "updatedAt": "2026-09-27T06:36:24.294582+00:00",
+            "sourceUpdatedAt": null
+          }
+        },
+        "meta": {
+          "requestId": "b0d3a821-508d-49ce-816e-69583a7d598a",
+          "apiVersion": "1",
+          "generatedAt": "2026-09-29T06:59:28.969Z"
+        }
+      },
+      "identity_and_names_verified": true
+    },
+    {
+      "language": "zh-cn",
+      "code": "csm1cc",
+      "status": 200,
+      "expected": {
+        "id": "195b9d09-dd64-4e41-9b7d-0c9fb7f2062c",
+        "nativeName": "横空出世 泽",
+        "englishDisplayName": "Storming Emergence: Abundant"
+      },
+      "body": {
+        "data": {
+          "set": {
+            "setId": "195b9d09-dd64-4e41-9b7d-0c9fb7f2062c",
+            "game": "pokemon",
+            "languageCode": "zh-cn",
+            "language": {
+              "englishName": "Chinese (Simplified)",
+              "nativeName": "Chinese (Simplified)"
+            },
+            "seriesId": null,
+            "seriesNativeName": null,
+            "seriesEnglishDisplayName": null,
+            "setCode": "csm1cc",
+            "nativeName": "横空出世 泽",
+            "englishDisplayName": "Storming Emergence: Abundant",
+            "releaseDate": "2022-10-28",
+            "printedTotal": 151,
+            "total": 212,
+            "regionCode": null,
+            "updatedAt": "2026-09-27T06:36:24.294582+00:00",
+            "sourceUpdatedAt": "2026-08-06T18:26:42.62+00:00"
+          }
+        },
+        "meta": {
+          "requestId": "f0b0b970-be68-466d-b068-10e5d6fd694e",
+          "apiVersion": "1",
+          "generatedAt": "2026-09-29T06:59:29.291Z"
+        }
+      },
+      "identity_and_names_verified": true
+    },
+    {
+      "language": "zh-tw",
+      "code": "SC1a",
+      "status": 200,
+      "expected": {
+        "id": "9ebab1ca-0ebf-429c-83ed-9fe6735f9832",
+        "nativeName": "劍&盾 SET A",
+        "englishDisplayName": "Sword & Shield: Set A"
+      },
+      "body": {
+        "data": {
+          "set": {
+            "setId": "9ebab1ca-0ebf-429c-83ed-9fe6735f9832",
+            "game": "pokemon",
+            "languageCode": "zh-tw",
+            "language": {
+              "englishName": "Chinese (Traditional)",
+              "nativeName": "Chinese (Traditional)"
+            },
+            "seriesId": null,
+            "seriesNativeName": null,
+            "seriesEnglishDisplayName": null,
+            "setCode": "SC1a",
+            "nativeName": "劍&盾 SET A",
+            "englishDisplayName": "Sword & Shield: Set A",
+            "releaseDate": "2020-06-19",
+            "printedTotal": 154,
+            "total": 187,
+            "regionCode": null,
+            "updatedAt": "2026-09-27T06:36:24.294582+00:00",
+            "sourceUpdatedAt": null
+          }
+        },
+        "meta": {
+          "requestId": "c73ff8b7-3e26-4f9b-a344-02033148de1d",
+          "apiVersion": "1",
+          "generatedAt": "2026-09-29T06:59:29.615Z"
+        }
+      },
+      "identity_and_names_verified": true
+    }
+  ]
+}
