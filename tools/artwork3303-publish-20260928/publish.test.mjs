@@ -34,11 +34,23 @@ test('retry can encounter an already-created object without overwriting it',asyn
   assert.equal(await uploadImmutable(async()=>++calls===1?{error:{statusCode:503}}:{error:{statusCode:409,message:'already exists'}},async()=>{}),false);
   assert.equal(calls,2);
 });
+
+test('edge 520 failures retry and recover an ambiguous immutable upload',async()=>{
+  let calls=0;const waits=[];
+  assert.equal(await uploadImmutable(async()=>++calls===1?{error:{statusCode:'520'}}:{error:null},async ms=>waits.push(ms)),true);
+  assert.equal(calls,2);assert.deepEqual(waits,[1000]);
+  calls=0;
+  // A failed response can follow a successful write. Never overwrite its bytes:
+  // the caller must still verify the public object's frozen hash and dimensions.
+  assert.equal(await uploadImmutable(async()=>++calls===1?{error:{statusCode:520}}:{error:{statusCode:409,message:'already exists'}},async()=>{}),false);
+  assert.equal(calls,2);
+});
 test('authentication, permanent errors and exhausted uploads stop before publication',async()=>{
-  for(const status of [401,403,400,413,429]){
+  for(const status of [401,403,400,413,429,520]){
     let calls=0;const waits=[];
     await assert.rejects(uploadImmutable(async()=>{calls++;return {error:{statusCode:status,message:status===403?'already exists':'provider detail not copied'}};},async ms=>waits.push(ms)),new RegExp(`HTTP ${status}`));
-    assert.equal(calls,status===429?4:1);assert.equal(waits.length,status===429?3:0);
+    const retries=status===429||status===520;
+    assert.equal(calls,retries?4:1);assert.deepEqual(waits,retries?[1000,2000,4000]:[]);
   }
 });
 test('pending owner approval cannot publish',()=>{const a=JSON.parse(readFileSync(new URL('./approval.json',import.meta.url)));assert.throws(()=>validateApproval({...a,approved:false},receipt),/pending/);});
