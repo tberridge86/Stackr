@@ -22,7 +22,7 @@ export async function retryStorageRead(read, wait = delay) {
   for (let attempt = 0; ; attempt++) {
     try { return await read(); } catch (error) {
       const status = Number(error.status ?? error.statusCode);
-      const transient = status !== 401 && status !== 403 && (status === 429 || (status >= 500 && status <= 504)
+      const transient = status !== 401 && status !== 403 && (status === 429 || (status >= 500 && status <= 599)
         || /too many connections issued to the database|remaining connection slots|fetch failed|ECONNRESET/i.test(error.message));
       if (!transient || attempt >= 3) throw error;
       await wait(1000 * (2 ** attempt));

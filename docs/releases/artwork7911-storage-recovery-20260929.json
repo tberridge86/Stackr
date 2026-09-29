@@ -1,0 +1,37 @@
+{
+  "run_id": 36540630666,
+  "source_revision": "4b9c90ab232297f2f336c7548c63f18b08c64dba",
+  "status": "failed_before_publication",
+  "artifact": {
+    "id": 11021386125,
+    "bytes": 167258,
+    "sha256": "902e84f9d934b49488ffa085937952f37bc01e5b263aa1c6fc63a6e0c6bf1548"
+  },
+  "objects_attempted": 3276,
+  "objects_verified": 3275,
+  "objects_created": 1049,
+  "assets": 0,
+  "links": 0,
+  "staging_rehearsal": {
+    "status": "passed_and_rolled_back",
+    "assets": 7911,
+    "links": 7911
+  },
+  "production_rehearsal": {
+    "status": "passed_and_rolled_back",
+    "assets": 7911,
+    "links": 7911
+  },
+  "failed_objects": [
+    {
+      "key": "public/card_image/printing/1b272510-cb84-4b57-b88d-e15ca9adc1e2/8197139cd395f3e6cfabd9a0eb27b5ad214fc43acb81156348a2a6ba6e27fdcc/original.jpg",
+      "sha256": "8197139cd395f3e6cfabd9a0eb27b5ad214fc43acb81156348a2a6ba6e27fdcc",
+      "created": false,
+      "verified": false
+    }
+  ],
+  "error": "Storage upload failed (HTTP 520, unspecified)",
+  "metadata_changes": 0,
+  "ownership_changes": 0,
+  "pricing_changes": 0
+}
