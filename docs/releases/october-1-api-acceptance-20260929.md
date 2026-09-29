@@ -34,3 +34,9 @@ Main includes the September 22–29 first-parent work in PRs #220–#249 and #25
 Artwork run [36535188734](https://github.com/tberridge86/Stackr/actions/runs/36535188734) is still uploading the approved 7,911 fronts/23,733 derivatives. Storage progress is not catalogue publication. The 4,250 excluded artwork cases and 94 sets without checklists remain unresolved. Railway backend/worker delivery and installed-device acceptance remain separate release gates.
 
 Evidence: [all public probe results](october-1-public-api-acceptance-20260929.json), [stored-detail impact by language](october-1-stored-details-impact-20260929.json), [release queue](october-1-2026.md). PostgreSQL's [CREATE OR REPLACE VIEW contract](https://www.postgresql.org/docs/current/sql-createview.html) permits appending columns while retaining privileges and ownership.
+
+## Preserved local checkout
+
+A read-only comparison of `D:/Stackr-1` (branch `chore/api-gateway-v1`, HEAD `392ec6d2bf9a457b34915c80fbc0b618a1f04d80`) found 257 tracked working-tree changes: 9 match reviewed main and 248 differ. Of those differences, only nine files have modification times in the September 22–29 window. Modification time is not proof of authored scope. Their diffs include a separate SQLite metadata-library prototype and older versions of API, pricing and client code that would remove newer guarded retrieval behavior. These files were preserved and not copied wholesale into the release. The signed-off workbook and its canonical production import were already recovered into #248/#249. The alternate metadata-library prototype is not the production catalogue source.
+
+The first PR CI run caught the deployment-scope allow-list assertion still listing the old scopes. The assertion now includes the explicit `card_details` lane, with additional checks for its production protection, bounded confirmation, disabled unrelated flags and exclusion from the general deploy job. No release check was disabled.
