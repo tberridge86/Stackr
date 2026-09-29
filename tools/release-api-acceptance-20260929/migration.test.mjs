@@ -38,7 +38,14 @@ await db.query('begin');await captureRows(db);await apply(db,sql,before);const p
 const rows=(await db.query('select * from api.catalogue_cards order by printing_id')).rows;
 assert.equal(rows.length,2,'draft stays hidden');assert.equal(rows[0].concept_english_display_name,'Concept display');assert.equal(rows[1].concept_english_display_name,null,'deprecated concept stays hidden');
 assert.deepEqual(toCardSummary([rows[0]]).details,{artist:'Nelnal',supertype:'Pokemon',subtypes:['Basic']});
-assertSecurity(before,await snapshot(db));await db.query('rollback');
+assertSecurity(before,await snapshot(db));
+await db.query('drop function api.catalogue_set_card_rows(uuid,text,uuid,integer)');
+await assert.rejects(verify(db),/Production fast set-card RPC is missing/);
+const absentStage=await verify(db,{allowMissingFastRpc:true});
+assert.equal(absentStage.fast_set_rpc_fields_present,false);
+assert.equal(absentStage.fast_set_rpc_status,'not_present_in_staging');
+assert.equal(absentStage.metadata_parity[0].mismatches,0);
+await db.query('rollback');
 await assert.rejects(apply(db,sql,{...before,definition:'wrong'}),/baseline/);
 await assert.rejects(apply(db,sql+'-- drift',before),/migration changed/);
 assert.throws(()=>assertSecurity(before,{...before,reloptions:['security_invoker=false']}),/security/);

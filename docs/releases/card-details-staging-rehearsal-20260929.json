@@ -1,0 +1,13 @@
+{
+  "run_id": 36539326768,
+  "source": "735928d5a206d6e989259b996914a687eb4c2f64",
+  "status": "failed_before_publication",
+  "error": "function api.catalogue_set_card_rows(unknown, unknown, unknown, integer) does not exist",
+  "staging_rpc_present": false,
+  "production_attempted": false,
+  "canonical_metadata_writes": 0,
+  "artwork_writes": 0,
+  "holdings_writes": 0,
+  "artifact_id": 11019762871,
+  "artifact_sha256": "b2b5178108ed2294f3642cb0fb78bebb01daf374f9852478008d3bb4c1e0b06f"
+}
