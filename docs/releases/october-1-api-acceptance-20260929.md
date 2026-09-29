@@ -1,8 +1,10 @@
 # October 1 catalogue and API acceptance
 
+**Current status:** the stored-metadata correction is live and verified. All 480 Storm/anniversary identities, saved detail payloads and artwork references pass; 12/12 settled card-detail samples and 12/12 image-byte samples pass. The separate 7,911-front artwork publication is still running. Production release sign-off remains open for that publication, recorded exceptions, server deployment and device acceptance. The failed measurements below are the retained pre-correction baseline.
+
 Source inspected: `66531fc9dced77cae90407b5a853bdcea12319aa`. Public probes ran on 29 September 2026 through `https://api.stackrtcg.com`; production database is `oakdbbzdqwurpjnoqhmu`. This receipt does not establish phone rendering or whole-catalogue completion.
 
-## Measured results
+## Pre-correction baseline (29 September, 07:32 UTC)
 
 - **480/480 Storm Emeralda and anniversary printings:** paginated public set-card responses retain the expected canonical ID, language, set, printed number and native name. All 480 carry the corresponding frozen image SHA-256 and printing identity. This checks the API image references, not a fresh visual inspection or image-byte download of all 480.
 - **12/12 individual detail identities and image references:** first and repeat requests agree. Artist/type/subtype comparison fails for all 480 set-card records, including the 12 details: production omits those fields even though the canonical records store them.

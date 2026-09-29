@@ -1,5 +1,7 @@
 # Stackr October 1 release queue
 
+**Current checkpoint, 29 September:** reviewed source changes are merged; stored metadata delivery through the Stackr API is live and verified. The 7,911-front artwork run is in progress. The October 1 normal TestFlight continuation is scheduled for 09:00 UK time; no new native build or public App Store release has been made. Remaining source/checklist exceptions, pricing-server delivery and physical-device verification remain open.
+
 Owner request, 29 September: queue and push the completed metadata, artwork, set-name and associated fixes together for the next release on 1 October 2026. Continue the normal production-profile TestFlight audience; do not dispatch the workflow's default owner-recognition profile. Public App Store release is not part of this request.
 
 ## Included source and data
