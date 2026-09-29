@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts,objectKey,publicationObjects} from './publish.mjs';
+import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts,objectKey,publicationObjects,retryArtworkStorage,uploadImmutableArtwork} from './publish.mjs';
 const bytes=readFileSync(new URL('./cohort.json.gz',import.meta.url));
 const receipt=JSON.parse(readFileSync(new URL('./plan-receipt.json',import.meta.url)));
 const rows=validatePlan(bytes,receipt);
@@ -36,3 +36,46 @@ test('payload preserves printing scope, provenance and all three roles',()=>{con
 test('rollback rehearsal rolls back on success and on insert failure',async()=>{for(const failure of [false,true]){const calls=[],db={query:async sql=>{calls.push(sql);}};const run=rehearse(db,async()=>{if(failure)throw Error('insert failure');});if(failure)await assert.rejects(run,/insert failure/);else await run;assert.equal(calls.at(-1),'rollback');assert.ok(!calls.includes('commit'));}});
 test('archive object paths cannot escape the package directory',()=>{assert.throws(()=>safePath('/packages','../outside'));assert.throws(()=>safePath('/packages','bad\\file'));assert.throws(()=>safePath('/packages','/absolute'));});
 test('publication rejects branch revisions and a wrong database',()=>{assert.throws(()=>assertConfig({GITHUB_REF:'refs/heads/topic'}),/Protected/);const env={GITHUB_REF:'refs/heads/main',GITHUB_SHA:'a'.repeat(40),STACKR_EXPECTED_MAIN_SHA:'a'.repeat(40),STACKR_ARTWORK3303_CONFIRMATION:'PUBLISH ARTWORK3303',SUPABASE_STAGING_DB_URL:'postgres://postgres@db.example.com/postgres'};assert.throws(()=>assertConfig(env),/Wrong database/);});
+
+test('storage pool exhaustion retries the same immutable upload before verifying it',async()=>{
+  const calls=[],waits=[],retries=[];
+  const created=await uploadImmutableArtwork(async()=>{
+    calls.push('upload');return calls.length===1?{error:{statusCode:'429',message:'database error, code: 08P01'}}:{error:null};
+  },async()=>{calls.push('verify');},{wait:async ms=>waits.push(ms),onRetry:r=>retries.push(r)});
+  assert.equal(created,true);assert.deepEqual(calls,['upload','upload','verify']);assert.deepEqual(waits,[2000]);assert.equal(retries[0].status,429);
+});
+test('an upload with a lost response can resume through 409 only after byte verification',async()=>{
+  let uploads=0,verified=0;
+  const created=await uploadImmutableArtwork(async()=>{
+    uploads++;if(uploads===1)throw new TypeError('fetch failed');return {error:{statusCode:'409'}};
+  },async()=>{verified++;},{wait:async()=>{}});
+  assert.equal(created,false);assert.equal(uploads,2);assert.equal(verified,1);
+  await assert.rejects(uploadImmutableArtwork(async()=>({error:{statusCode:409}}),async()=>{throw Error('Object bytes changed');}),/Object bytes changed/);
+});
+test('SDK-wrapped network failures retry without exposing upstream messages',async()=>{
+  let uploads=0;
+  const created=await uploadImmutableArtwork(async()=>{uploads++;return uploads===1?{error:{message:'fetch failed'}}:{error:null};},async()=>{},{wait:async()=>{}});
+  assert.equal(created,true);assert.equal(uploads,2);
+});
+test('a confirmed upload remains journalled if subsequent public verification fails',async()=>{
+  let created=false;
+  await assert.rejects(uploadImmutableArtwork(async()=>({error:null}),async uploaded=>{created=uploaded;throw Error('Public object read failed');}),/Public object read failed/);
+  assert.equal(created,true);
+});
+test('storage authorization and input failures never retry or reach verification',async()=>{
+  for(const status of [400,401,403,413]){
+    let uploads=0,verified=false;
+    await assert.rejects(uploadImmutableArtwork(async()=>{uploads++;return {error:{statusCode:status,message:'duplicate secret upstream response'}};},async()=>{verified=true;},{wait:async()=>assert.fail('must not retry')}),new RegExp(`HTTP ${status}`));
+    assert.equal(uploads,1);assert.equal(verified,false);
+  }
+});
+test('persistent storage throttling stops after bounded backoff',async()=>{
+  let uploads=0;const waits=[];
+  await assert.rejects(uploadImmutableArtwork(async()=>{uploads++;return {error:{statusCode:429}};},async()=>assert.fail('must not verify'),{wait:async ms=>waits.push(ms)}),/HTTP 429/);
+  assert.equal(uploads,8);assert.deepEqual(waits,[2000,4000,8000,16000,30000,30000,30000]);
+});
+test('storage reads recover from transient server failures but never accept invalid bytes',async()=>{
+  let calls=0;
+  assert.equal(await retryArtworkStorage(async()=>{if(calls++===0)throw Object.assign(Error('read failed'),{status:503});return 'bytes';},{wait:async()=>{}}),'bytes');
+  await assert.rejects(retryArtworkStorage(async()=>{throw Error('Object bytes changed');},{wait:async()=>assert.fail('must not retry')}),/Object bytes changed/);
+});

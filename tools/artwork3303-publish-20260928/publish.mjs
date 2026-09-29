@@ -5,7 +5,8 @@ import { createRequire } from 'node:module';
 import { isDeepStrictEqual } from 'node:util';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { check, digest, retryStorageRead } from '../queue1-publish-20260927/publish.mjs';
+import { setTimeout as delay } from 'node:timers/promises';
+import { check, digest } from '../queue1-publish-20260927/publish.mjs';
 import { resolveServerKey } from '../queue1-publish-20260927/credentials.mjs';
 
 export const PROJECTS = { staging:'lmwfhvexfcoyeuoyrlco', production:'oakdbbzdqwurpjnoqhmu' };
@@ -13,6 +14,39 @@ export const BUCKET = 'stackr-catalogue-public';
 export const PREFIX = 'artwork-recovered-20260928:';
 export const COHORT_SHA = '20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd';
 export const FRONTS = 7911;
+export const STORAGE_CONCURRENCY = 2;
+function transientStorageError(error) {
+  const status=Number(error.status ?? error.statusCode);
+  return status===408 || status===429 || (status>=500 && status<=504)
+    || ((!Number.isFinite(status) || status===0) && /fetch failed|ECONNRESET|ETIMEDOUT|timeout|no more connections allowed|max_client_conn|remaining connection slots/i.test(error.message));
+}
+export async function retryArtworkStorage(operation, { wait=delay, onRetry=()=>{} }={}) {
+  for(let attempt=0; ; attempt++) {
+    try { return await operation(); } catch(error) {
+      const status=Number(error.status ?? error.statusCode);
+      const transient=status!==401 && status!==403 && (transientStorageError(error) || error.retryable_storage_error===true);
+      if(!transient || attempt>=7)throw error;
+      const delayMs=Math.min(30_000,2_000*(2**attempt));
+      onRetry({attempt:attempt+1,status:Number.isFinite(status)?status:null,delay_ms:delayMs});
+      await wait(delayMs);
+    }
+  }
+}
+export async function uploadImmutableArtwork(upload, verify, retryOptions) {
+  let created=false;
+  await retryArtworkStorage(async()=>{
+    const result=await upload();
+    if(!result.error){created=true;return;}
+    const status=Number(result.error.status ?? result.error.statusCode);
+    const code=String(result.error.error ?? result.error.code ?? '');
+    if(status===409 || ((status===400 || !Number.isFinite(status)) && /^(ResourceAlreadyExists|KeyAlreadyExists|already_exists)$/.test(code)))return;
+    // Keep credentials and upstream response bodies out of logs and receipts.
+    throw Object.assign(new Error(`Storage upload failed (HTTP ${Number.isFinite(status)?status:'unknown'})`),{status,retryable_storage_error:transientStorageError(result.error)});
+  },retryOptions);
+  // A lost upload response can become a 409 on retry. Verify exact bytes before accepting it.
+  await verify(created);
+  return created;
+}
 export const STAGE_JA = 'd560cd01-de2a-4713-9518-b967fb4c5ac9';
 export const STAGE_ALIASES = {'SM1+':'SM1p','SM2+':'SM2p','SM5+':'SM5p'};
 export const SOURCE_COUNTS = {"pokemon_card_tw_official":4926,"pokemon_card_jp_official":2063,"pokedata_japanese":335,"tcgdex":163,"pokemon_tcg_api":424};
@@ -167,12 +201,13 @@ async function main() {
   const receipt=JSON.parse(await readFile(new URL('./plan-receipt.json',import.meta.url))),approval=JSON.parse(await readFile(approvalFile));
   validateApproval(approval,receipt);const rows=validatePlan(await readFile(new URL('./cohort.json.gz',import.meta.url)),receipt);
   const root=process.env.STACKR_ARTWORK3303_PACKAGES,output=process.env.STACKR_ARTWORK3303_OUTPUT;check(root&&output,'Package and receipt directories required');await mkdir(output,{recursive:true});
-  const journal={status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,assets:[],links:[],objects:[],ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false};
+  const journal={status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,assets:[],links:[],objects:[],storage_retries:0,ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false};
   const save=()=>writeFile(path.join(output,'receipt.json'),JSON.stringify(journal,null,2));await save();
   const require=createRequire(new URL('../../backend/package.json',import.meta.url)),sharp=require('sharp');sharp.concurrency(2);
   const objects=publicationObjects(rows);
   const source=o=>readFile(safePath(root,`${o.artifact_id}/${o.file}`));
-  const read=url=>retryStorageRead(async()=>{const r=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(60000)});if(!r.ok){await r.body?.cancel();throw Object.assign(new Error(`Public object read ${r.status}`),{status:r.status});}const b=Buffer.from(await r.arrayBuffer());check(b.length<12_000_000,'Oversized object');return b;});
+  const retryOptions={onRetry:info=>{journal.storage_retries++;journal.last_storage_retry=info;console.log(JSON.stringify({phase:'storage_retry',...info}));}};
+  const read=url=>retryArtworkStorage(async()=>{const r=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(60000)});if(!r.ok){await r.body?.cancel();throw Object.assign(new Error(`Public object read ${r.status}`),{status:r.status});}const b=Buffer.from(await r.arrayBuffer());check(b.length<12_000_000,'Oversized object');return b;},retryOptions);
   // Verify every frozen byte before opening a database or uploading anything.
   for(const batch of chunks(objects,3)){const results=await Promise.allSettled(batch.map(async o=>validateBytes(sharp,await source(o),o)));const bad=results.find(x=>x.status==='rejected');if(bad)throw bad.reason;}
   journal.local_files_verified=objects.length;await save();
@@ -189,13 +224,20 @@ async function main() {
     const client=require('@supabase/supabase-js').createClient(`https://${PROJECTS.production}.supabase.co`,secret,{auth:{persistSession:false,autoRefreshToken:false},global:{fetch:(u,o)=>fetch(u,{...o,signal:AbortSignal.timeout(60000),redirect:'error'})}});
     const bucket=await client.storage.getBucket(BUCKET);check(!bucket.error&&bucket.data?.public===true,'Wrong public bucket');
     const existing=new Set((await db.query('select name from storage.objects where bucket_id=$1 and name=any($2::text[])',[BUCKET,objects.map(objectKey)])).rows.map(r=>r.name));
-    for(const batch of chunks(objects,3)) {
+    // Storage uses the same finite connection pool. Do not retain an idle catalogue connection during uploads.
+    await db.end();connected=false;
+    for(const batch of chunks(objects,STORAGE_CONCURRENCY)) {
       const results=await Promise.allSettled(batch.map(async o=>{
         const key=objectKey(o),entry={key,sha256:o.sha256,created:false,verified:false};journal.objects.push(entry);
-        if(!existing.has(key)) {const b=await source(o);await validateBytes(sharp,b,o);const r=await client.storage.from(BUCKET).upload(key,b,{contentType:o.mime_type,cacheControl:'31536000',upsert:false});if(r.error)check(Number(r.error.statusCode)===409||/already exists|duplicate/i.test(r.error.message),'Upload failed');else entry.created=true;}
-        await validateBytes(sharp,await read(publicUrl(key)),o);entry.verified=true;
+        const verify=async(created=false)=>{entry.created=created;await validateBytes(sharp,await read(publicUrl(key)),o);entry.verified=true;};
+        if(!existing.has(key)) {
+          const b=await source(o);await validateBytes(sharp,b,o);
+          entry.created=await uploadImmutableArtwork(()=>client.storage.from(BUCKET).upload(key,b,{contentType:o.mime_type,cacheControl:'31536000',upsert:false}),verify,retryOptions);
+        } else await verify();
       }));await save();const bad=results.find(r=>r.status==='rejected');if(bad)throw bad.reason;
+      if(journal.objects.length%100===0)console.log(JSON.stringify({phase:'storage_verified',objects:journal.objects.length,total:objects.length,retries:journal.storage_retries}));
     }
+    db=createVerifiedSupabasePostgresClient(process.env.SUPABASE_DB_URL,'stackr-artwork3303-production',{connectionTimeoutMillis:15000});await db.connect();connected=true;
     await db.query('begin isolation level serializable');await db.query("set local statement_timeout='45s'");await db.query("set local lock_timeout='5s'");await db.query("select pg_advisory_xact_lock(hashtext('stackr-artwork3303-publication'))");
     await writeMetadata(db,rows,receipt,approval,'production',journal);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
     journal.status='published';await save();

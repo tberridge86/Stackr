@@ -25,6 +25,8 @@ Production has `assets_storage_object_uidx`, a unique active-asset storage-key i
 
 The protected artwork lane must re-run the full staging and production rollback rehearsals before any upload or catalogue publication. Existing assets are preserved; approval does not authorize replacing conflicting artwork.
 
+The next run, [36533384149](https://github.com/tberridge86/Stackr/actions/runs/36533384149), passed both complete rehearsals but stopped before catalogue publication after Storage returned HTTP 429 (`max_client_conn`). It uploaded and verified 112 objects without publishing any catalogue assets or links. The [upload recovery](artwork-upload-recovery-20260929.md) adds bounded transient retries, reduces upload concurrency and releases the idle database connection during storage work. Successful publication and API delivery are still required.
+
 ## Build and release sequence
 
 1. Merge the reviewed release queue after applicable CI. Record its exact main SHA and successful artwork receipt.
