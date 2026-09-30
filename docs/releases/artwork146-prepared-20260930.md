@@ -1,7 +1,7 @@
 # Next 146 verified artwork fronts — 30 September 2026
 
 This frozen batch contains **138 English and eight Traditional Chinese fronts**,
-with **438 display derivatives**. All 584 original/derivative objects were
+with **438 display derivatives**. All 584 original/derivative references (583 distinct storage objects) were
 independently downloaded from the retained GitHub archives and verified by
 checksum, byte size, format, dimensions and full image decoding. This document
 records preparation; production completion requires the protected workflow
