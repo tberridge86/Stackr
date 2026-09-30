@@ -1,8 +1,8 @@
 # Stackr: what is ready and what is still missing
 
-**Latest September 30 checkpoint:** [146 further fronts published and independently verified](artwork146-completion-20260930.md), following the earlier 49- and 278-front additions. Recovery total: **8,384 fronts / 25,152 display-size references**, with **3,777 artwork cases remaining**. Of the owner's 4,201-case follow-up, **424 are resolved**. [Railway, pricing-worker and R/WAT search delivery](railway-restored-20260930.md) also completed; pricing exceptions and installed-phone checks remain explicit.
+**Latest September 30 checkpoint:** [96 further native-language fronts published and independently verified](artwork96-completion-20260930.md), following the earlier 49-, 278- and 146-front additions. Recovery total: **8,480 fronts / 25,440 display-size references / 33,853 distinct stored objects**, with **3,681 artwork cases remaining**. Of the owner's 4,201-case follow-up, **520 are resolved**. [Run 36784820633](https://github.com/tberridge86/Stackr/actions/runs/36784820633) at source `8c456ee5c7335368accbafb54bce2c735999ff6e` passed 96/96 card and 384/384 object checks with zero first-attempt failures; the [downloadable receipt artifact](https://github.com/tberridge86/Stackr/actions/runs/36784820633/artifacts/11129082685) is checksum-verified. Measured public-read p95 times were 1,707 ms for card details, 1,526 ms for manifests and 1,643 ms for objects, not a universal sub-0.5-second claim. [Railway, pricing-worker and R/WAT search delivery](railway-restored-20260930.md) also completed; pricing exceptions and installed-phone checks remain explicit.
 
-Updated 30 September 2026 after the 146-front publication and independent verification. This report separates card records, card pictures, set checklists and set logos. They are different jobs and their outstanding counts must not be added together.
+Updated 30 September 2026 after the Native96 publication and independent verification. This report separates card records, card pictures, set checklists and set logos. They are different jobs and their outstanding counts must not be added together.
 
 ## Earlier 7,911-front publication
 
@@ -10,7 +10,7 @@ Updated 30 September 2026 after the 146-front publication and independent verifi
 
 All **31,590 unique storage files** passed the publisher's public-byte checks: **28,315 were created in this run**, and **3,275 existing files were reused and verified**. The final downloaded artifact checksum was independently verified. Its entire printing/set/language/version and file-key/hash inventory matches the frozen approved plan. A fresh production read confirms **7,911 assets and 7,911 links**; **30 of 30 independent live API checks** passed across English, Japanese and Traditional Chinese. See the [completion receipt and checksums](artwork7911-published-20260930.json) and [API results](artwork7911-api-canaries-20260930.json).
 
-This completed **100% of the original approved batch**, not every artwork gap in the catalogue. Subsequent verified publications closed 473 of the separate 4,250 artwork cases, leaving **3,777**. The **94 missing set checklists**, remaining logo identities, pricing exceptions and phone checks remain separate. No metadata, prices or holdings were changed by the original or latest 146-front publication. The SH33 batch corrected one verified printed denominator from 38 to 53, preserving all 59 existing card identities.
+This completed **100% of the original approved batch**, not every artwork gap in the catalogue. Subsequent verified publications closed 569 of the separate 4,250 artwork cases, leaving **3,681**. The **94 missing set checklists**, remaining logo identities, pricing exceptions and phone checks remain separate. No metadata, prices or holdings were changed by the original or Native96 publication. The SH33 batch corrected one verified printed denominator from 38 to 53, preserving all 59 existing card identities.
 
 ## Plain-English position
 
@@ -18,7 +18,7 @@ This completed **100% of the original approved batch**, not every artwork gap in
 |---|---|---|
 | Card details and set names | The signed-off import's 677 set/product operations are present. Stored card details now reach the API correctly; 57,436 published printings were retained with no differences from their stored values. | **Aura Seeker** is the one unresolved original metadata identity. Some dates/totals remain deliberately unknown or provisional where the source is incomplete. Matching stored values does not mean every optional card field is filled. |
 | Storm Emeralda and anniversary cards | All **480 cards in the checked release group** passed identity, saved-detail and matching artwork-reference checks. | The new app still needs checking on the phone. This 480-card result is not a promise that every anniversary product in every language is complete. |
-| Recovered card pictures | **8,384 fronts and 25,152 display-size references are published and verified**. The latest 146 card and 583 distinct image checks passed with zero first-attempt failures. Fresh database readback confirms all six cohorts remain present; earlier live evidence is retained. | **3,777 artwork cases** remain; reasons are below. Phone rendering still needs checking. |
+| Recovered card pictures | **8,480 fronts and 25,440 display-size references are published and verified**. The latest 96 card and 384 distinct image checks passed with zero first-attempt failures. Fresh database readback confirms all seven cohorts remain present; earlier live evidence is retained. | **3,681 artwork cases** remain; reasons are below. Phone rendering still needs checking. |
 | New sets and card lists | **102 new set records** exist; 8 have published cards. | **94 sets have no imported card checklist** and remain unpublished. Full names and codes are listed below. A set name being present does not mean its cards have been imported. |
 | Set logos | 134 supplied Chinese logo files are retained. Seven additional exact mappings now bring the release-code total to **130**: four retained files plus three newly sourced PNGs. Japanese crop corrections are included. | **7 supplied images still lack exact set links**; **30thD** still needs a verified logo and mapping. New-app rendering is unverified; these bundled logos are not a new API asset publication. |
 | CoroCoro covers | Checks passed for the **81 supplied covers** and the curated CoroCoro records. | Check the installed screens. This is not a count of every issue ever published. |
@@ -26,25 +26,25 @@ This completed **100% of the original approved batch**, not every artwork gap in
 | Pricing | Reviewed backend and both existing workers deployed; all 317 selected identities refreshed on the successful protected retry. All 204 server-side Home/binder comparisons passed; 360/366 copies had prices or labelled general estimates at the recorded readback. | Six copies remain unpriced, two providers returned credential errors, market observations remain older than the freshness policy, and the automatic worker's next scheduled execution plus signed-in/device values still need verification. See the [measured pricing handoff](railway-restored-20260930.md). |
 | Speed and phone release | Repeated API reads were fast in the recorded sample. October 1's normal TestFlight continuation is scheduled. | Some first reads exceed 0.5 seconds. The new build, installation, values, images, haptics, gyro and camera checks remain. |
 
-## The 3,777 artwork cases still needing work
+## The 3,681 artwork cases still needing work
 
-These are the remaining cases from the frozen 12,161-case artwork worklist, not 3,777 missing card records. A card can already be in the catalogue and still lack a verified picture. The original 7,911 publication plus 473 subsequent recoveries leave 3,777 cases. Some source files have now been recovered and are awaiting review/publication; the historical categories below preserve their original reason until completion.
+These are the remaining cases from the frozen 12,161-case artwork worklist, not 3,681 missing card records. A card can already be in the catalogue and still lack a verified picture. The original 7,911 publication plus 569 subsequent recoveries leave 3,681 cases. Some source files have now been recovered and are awaiting review/publication; the historical categories below preserve their original reason until completion.
 
 | Why it is unresolved | Cards | What is needed |
 |---|---:|---|
-| Exact-source work still unresolved | 3,139 | Source, independently verify and publish the exact card front. Some candidates are already recovered or prepared. |
+| Exact-source work still unresolved | 3,043 | Source, independently verify and publish the exact card front. Some candidates are already recovered or prepared. |
 | Known provider image is unavailable | 1 | Restore the source or obtain an approved alternative. |
 | Simplified/Traditional Chinese identity does not agree | 605 | Confirm the correct language and printing before attaching the picture. |
 | More than one possible artwork | 20 | Select the correct front using reliable printing evidence. |
-| Card name or identity conflicts | 7 | Resolve which card the record and picture represent. |
+| Card name or identity conflicts | 7 | Resolve the five identity conflicts and two card-name conflicts against the exact printing evidence. |
 | Image is too small | 2 | Obtain a sufficiently clear original. |
 | V-UNION needs individual card fronts | 2 | Obtain/verify the individual fronts rather than a combined picture. |
 | Supplier image is for a different card | 1 | Replace the incorrect source match with the correct card image. |
-| **Total** | **3,777** | |
+| **Total** | **3,681** | |
 
-By language: **English 481; Japanese 2,221; Korean 239; Simplified Chinese 829; Traditional Chinese 7.** The [current exception register](artwork3777-exceptions-20260930.json.gz) retains each card's exact identity and reason. The 33 SH denominator cases are resolved; production's separate declared total of 78 versus 59 canonical printings is retained as a metadata follow-up.
+By language: **English 465; Japanese 2,141; Korean 239; Simplified Chinese 829; Traditional Chinese 7.** The [current exception register](artwork3681-exceptions-20260930.json.gz) retains each card's exact identity and reason. The 33 SH denominator cases are resolved; production's separate declared total of 78 versus 59 canonical printings is retained as a metadata follow-up.
 
-The next independently checked group is **16 English + 80 Japanese fronts, not yet published**. Another Japanese candidate, E3/015, has a wrong saved native name and remains held. Earlier visual approval for a separate 57 Japanese candidates was invalidated after literal-title mismatches were found; those candidates are undergoing independent re-review. No incorrectly approved Japanese front has been published by this follow-up, and all source archives are retained. See the [review and publication evidence](artwork146-completion-20260930.md).
+Korean review has accepted **232 exact fronts** for a future package, but none is published in this checkpoint. Seven Korean identities remain held because their names are assigned to the wrong collectors: SV4K 091/092, SV4M 091/092 and SV5K 090/091/092. A separate, read-only 46-row Japanese native-name correction proposal is also pending; it does not alter the artwork result. See the [Native96 completion evidence](artwork96-completion-20260930.md).
 
 ## Logos: the exact outstanding list
 

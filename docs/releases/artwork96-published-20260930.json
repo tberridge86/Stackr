@@ -1,0 +1,107 @@
+{
+  "verified_at": "2026-09-30T22:35:46.985Z",
+  "status": "published_and_independently_verified",
+  "batch": {
+    "scope": "native96",
+    "fronts": 96,
+    "derivative_references": 288,
+    "distinct_storage_objects": 384
+  },
+  "production": {
+    "run_id": 36784820633,
+    "run_url": "https://github.com/tberridge86/Stackr/actions/runs/36784820633",
+    "source_revision": "8c456ee5c7335368accbafb54bce2c735999ff6e",
+    "cohort_sha256": "6c844ebe22b51ed3dc18a3c30486693e63768702008ac564a3cd980a5fbecd38",
+    "receipt_sha256": "8dcf59332adf3b6e2727aede4693de421cc7fdd9c7013f32bc143b6b1ff89314",
+    "receipt_artifact": {
+      "id": 11129082685,
+      "name": "native96-artwork-36784820633-1",
+      "createdAt": "2026-09-30T22:23:51Z",
+      "digest": "sha256:8623fa5603af2894f898bd473975e3038978b11409539a20fe70ddb0fb45ac0b",
+      "sha256": "8623fa5603af2894f898bd473975e3038978b11409539a20fe70ddb0fb45ac0b",
+      "bytes": 27221,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/36784820633/artifacts/11129082685"
+    }
+  },
+  "verification": {
+    "public_card_checks_passed": 96,
+    "public_image_checks_passed": 384,
+    "all_objects_sha256_format_dimensions_verified": true,
+    "first_attempt_card_failures": 0,
+    "first_attempt_object_failures": 0,
+    "timings": {
+      "card_detail": {
+        "samples": 96,
+        "min_ms": 337,
+        "median_ms": 1474,
+        "p95_ms": 1707,
+        "max_ms": 2414
+      },
+      "manifest": {
+        "samples": 96,
+        "min_ms": 345,
+        "median_ms": 1352,
+        "p95_ms": 1526,
+        "max_ms": 4208
+      },
+      "object": {
+        "samples": 384,
+        "min_ms": 399,
+        "median_ms": 1409,
+        "p95_ms": 1643,
+        "max_ms": 2590
+      }
+    }
+  },
+  "timing_scope": "Complete public API and public-storage responses from this Windows connection, with 700 ms pacing, two-request concurrency and no retries needed. This is not a device, cold-cache, database-only, or universal sub-0.5-second measurement.",
+  "preservation": {
+    "staging_rehearsal": {
+      "status": "passed_and_rolled_back",
+      "assets": 96,
+      "links": 96,
+      "catalogue_corrections": 0,
+      "metadata_changes": 0
+    },
+    "production_rehearsal": {
+      "status": "passed_and_rolled_back",
+      "assets": 96,
+      "links": 96,
+      "catalogue_corrections": 0,
+      "metadata_changes": 0
+    },
+    "metadata_changes": 0,
+    "pricing_changes": 0,
+    "holdings_changes": 0,
+    "ownership_changes": 0,
+    "source_activation_changes": 0
+  },
+  "all_recovery_cohorts": {
+    "fronts": 8480,
+    "derivative_references": 25440,
+    "distinct_storage_objects": 33853,
+    "production_readback_cohorts": 7
+  },
+  "progress_from_original_4201": {
+    "resolved": 520,
+    "remaining": 3681
+  },
+  "remaining": {
+    "artwork_cases": 3681,
+    "by_language": {
+      "en": 465,
+      "ja": 2141,
+      "ko": 239,
+      "zh-cn": 829,
+      "zh-tw": 7
+    },
+    "note": "Korean review has accepted 232 offline-prepared fronts, none published; seven name/collector identities remain held: SV4K 091/092, SV4M 091/092 and SV5K 090/091/092. The 46 Japanese native-name corrections are separately proposed and pending; no Japanese metadata was changed in this batch."
+  },
+  "release_context": {
+    "pr": 272,
+    "source_revision": "8c456ee5c7335368accbafb54bce2c735999ff6e",
+    "ci_checks_passed": 8,
+    "recovery_total_fronts": 8480,
+    "recovery_total_derivative_references": 25440
+  },
+  "device_verified": false
+}
