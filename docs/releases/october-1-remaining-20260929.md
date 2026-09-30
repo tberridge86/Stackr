@@ -1,5 +1,7 @@
 # Stackr remaining work — 30 September
 
+**New September 30 checkpoint:** [prepared 49-front batch, classified checklist/logo work, fresh valuation, deployment blockers and timings](october-1-progress-20260930.md). The completed 7,911-front publication remains intact; no additional fronts are yet published.
+
 For the owner-facing summary and the exact outstanding logo/set list, use the [plain-English report](october-1-plain-english-status-20260929.md). [Run 36621263622](https://github.com/tberridge86/Stackr/actions/runs/36621263622) completed the frozen artwork batch. The [independently verified final receipt](artwork7911-published-20260930.json) and 30/30 live API checks supersede the historical failed-run figures below.
 
 ## Single publication owner

@@ -1,0 +1,39 @@
+{
+  "observed_at": "2026-09-30T07:36:00.814Z",
+  "run_id": 36680646429,
+  "url": "https://github.com/tberridge86/Stackr/actions/runs/36680646429",
+  "source_sha": "2ef619c2f4b4761d7c4734c746d0d48192ca6af7",
+  "pr": 259,
+  "release_scope": "backend_only",
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "failed_before_new_deployment",
+      "error": "UPLOAD_FAILED: Failed to upload code with status code 502 Bad Gateway"
+    },
+    {
+      "attempt": 2,
+      "status": "failed_before_new_deployment",
+      "error": "UPLOAD_FAILED: Your trial has expired. Please select a plan to continue using Railway."
+    }
+  ],
+  "previous_healthy_deployment_id": "09193c47-1428-4c6b-8dd1-6442d1172093",
+  "live_backend_commit": "37817f2cb83b",
+  "automatic_worker": {
+    "service_id": "ff1e8d30-4307-45be-855c-5f83f092d8a5",
+    "observed_cron": "0 6,18 * * *",
+    "last_attempt_status": "FAILED",
+    "last_attempt_date": "2026-08-18"
+  },
+  "manual_worker": {
+    "service_id": "c4c52418-b307-4c9f-9ffd-e67be163c366",
+    "observed_cron": "*/5 * * * *",
+    "last_attempt_status": "FAILED",
+    "last_attempt_date": "2026-08-18"
+  },
+  "new_deployment_created": false,
+  "owner_action": "Restore Railway deployment entitlement and update invalid Scrydex/PikaQian secrets in service settings; do not post secrets in chat.",
+  "paid_plan_changes": 0,
+  "production_metadata_changes": 0,
+  "production_holdings_changes": 0
+}

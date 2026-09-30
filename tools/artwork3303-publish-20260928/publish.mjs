@@ -144,12 +144,12 @@ async function sourcesFor(db,receipt) {
   }
   return new Map(sources.map(s=>[s.code,s.id]));
 }
-export async function writeMetadata(db,rows,receipt,approval,environment,journal) {
+export async function writeMetadata(db,rows,receipt,approval,environment,journal,sourceResolver=sourcesFor) {
   const cards=await cardsFor(db,rows);bind(rows,cards,environment);
   const versions=[...new Set(cards.map(c=>c.catalogue_version_id))];
   check((await db.query("select id from catalog.catalogue_versions where id=any($1::uuid[]) and status='published' and deprecated_at is null for share",[versions])).rows.length===versions.length,'Catalogue version changed');
   assertManifest(rows,await visibleAssets(db,rows,cards));
-  const sources=await sourcesFor(db,receipt);
+  const sources=await sourceResolver(db,receipt);
   const plans=rows.map(r=>payload(r,sources.get(r.source_code),receipt,approval,environment));
   for(const batch of chunks(plans)) {
     const keys=Object.keys(batch[0]);
@@ -178,6 +178,11 @@ async function main() {
   const receipt=JSON.parse(await readFile(new URL('./plan-receipt.json',import.meta.url))),approval=JSON.parse(await readFile(approvalFile));
   validateApproval(approval,receipt);const rows=validatePlan(await readFile(new URL('./cohort.json.gz',import.meta.url)),receipt);
   const root=process.env.STACKR_ARTWORK3303_PACKAGES,output=process.env.STACKR_ARTWORK3303_OUTPUT;check(root&&output,'Package and receipt directories required');await mkdir(output,{recursive:true});
+  await publishFrozenCohort({rows,receipt,approval,root,output});
+}
+// Shared verified transfer/transaction path; callers retain their own frozen scope guards.
+export async function publishFrozenCohort({rows,receipt,approval,root,output,sourceResolver=sourcesFor}) {
+  check(root&&output&&rows.length>0,'Package, receipt and frozen rows required');await mkdir(output,{recursive:true});
   const journal={status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,assets:[],links:[],objects:[],ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false};
   const save=()=>writeFile(path.join(output,'receipt.json'),JSON.stringify(journal,null,2));await save();
   const require=createRequire(new URL('../../backend/package.json',import.meta.url)),sharp=require('sharp');sharp.concurrency(2);
@@ -192,7 +197,7 @@ async function main() {
   try {
     for(const environment of ['staging','production']) {
       db=createVerifiedSupabasePostgresClient(process.env[environment==='staging'?'SUPABASE_STAGING_DB_URL':'SUPABASE_DB_URL'],`stackr-artwork3303-${environment}`,{connectionTimeoutMillis:15000});await db.connect();connected=true;
-      const rehearsal={assets:[],links:[]};await rehearse(db,()=>writeMetadata(db,rows,receipt,approval,environment,rehearsal));
+      const rehearsal={assets:[],links:[]};await rehearse(db,()=>writeMetadata(db,rows,receipt,approval,environment,rehearsal,sourceResolver));
       journal[environment+'_rehearsal']={status:'passed_and_rolled_back',assets:rehearsal.assets.length,links:rehearsal.links.length};await save();
       if(environment==='staging'){await db.end();connected=false;}
     }
@@ -210,10 +215,10 @@ async function main() {
       }));await save();const bad=results.find(r=>r.status==='rejected');if(bad)throw bad.reason;
     }
     await db.query('begin isolation level serializable');await db.query("set local statement_timeout='45s'");await db.query("set local lock_timeout='5s'");await db.query("select pg_advisory_xact_lock(hashtext('stackr-artwork3303-publication'))");
-    await writeMetadata(db,rows,receipt,approval,'production',journal);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
+    await writeMetadata(db,rows,receipt,approval,'production',journal,sourceResolver);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
     journal.status='published';await save();
     const cards=await cardsFor(db,rows);bind(rows,cards,'production');assertManifest(rows,await visibleAssets(db,rows,cards),true);
-    journal.status='published_manifest_and_public_bytes_verified';journal.fronts=FRONTS;journal.derivatives=FRONTS*3;journal.verified_at=new Date().toISOString();await save();
+    journal.status='published_manifest_and_public_bytes_verified';journal.fronts=rows.length;journal.derivatives=rows.length*3;journal.verified_at=new Date().toISOString();await save();
   } catch(e) {if(connected&&!committed)await db.query('rollback').catch(()=>{});journal.status=committed?'published_verification_failed':commitAttempted?'commit_outcome_unknown':'failed_before_publication';journal.error=e.message;await save();throw e;}
   finally {if(connected)await db.end();}
 }

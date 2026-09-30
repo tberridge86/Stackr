@@ -1,0 +1,20 @@
+[
+  {
+    "project_id": "lmwfhvexfcoyeuoyrlco",
+    "distinct_printings": 49,
+    "conflicts": [],
+    "existing_visible_artwork": 0,
+    "existing_same_artwork_reference": 0,
+    "read_only": true,
+    "observed_at": "2026-09-30T07:36:53.245Z"
+  },
+  {
+    "project_id": "oakdbbzdqwurpjnoqhmu",
+    "distinct_printings": 49,
+    "conflicts": [],
+    "existing_visible_artwork": 0,
+    "existing_same_artwork_reference": 0,
+    "read_only": true,
+    "observed_at": "2026-09-30T07:37:18.625Z"
+  }
+]

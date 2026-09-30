@@ -13,4 +13,4 @@ Validation completed locally on September 30:
 - Existing Stackr API v1 suite passed.
 - TypeScript check and generated API contract check passed (40/40 routes).
 
-Delivery is pending a reviewed merge and the existing protected backend-only deployment. Client delivery remains part of the October 1 normal production-profile TestFlight build. Live identity and timing checks must be repeated against the deployed revision; these local checks do not establish production or phone performance.
+Merged in PR259 at `2ef619c2f4b4761d7c4734c746d0d48192ca6af7`, with 11 applicable CI checks passing. Protected backend-only run 36680646429 failed before creating a new deployment; its second attempt explicitly reported an expired Railway trial. Live delivery remains blocked. See [current evidence](backend-deployment-blocker-20260930.json). Client delivery remains part of the October 1 normal production-profile TestFlight build. Live identity and timing checks must be repeated against the deployed revision; these local checks do not establish production or phone performance.

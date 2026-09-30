@@ -1,0 +1,97 @@
+{
+  "observed_at": "2026-09-30T07:36:00.813Z",
+  "production_writes": 0,
+  "gym_packs": [
+    {
+      "volume": 1,
+      "source_url": "https://www.tcgcollector.com/sets/12139/gym-event-promo-pack-vol-1",
+      "language": "zh-cn",
+      "promo_series": "S-P",
+      "first_number": 1,
+      "last_number": 12,
+      "canonical_set_id": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+      "published_printings": 12,
+      "distinct_matched_numbers": 12,
+      "status": "12 existing S-P cards; supplied pack logo is available, but pack-group identity/display mapping remains. Do not duplicate cards or replace the S-P series logo with six different pack logos."
+    },
+    {
+      "volume": 2,
+      "source_url": "https://www.tcgcollector.com/sets/12140/gym-event-promo-pack-vol-2",
+      "language": "zh-cn",
+      "promo_series": "S-P",
+      "first_number": 39,
+      "last_number": 50,
+      "canonical_set_id": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+      "published_printings": 12,
+      "distinct_matched_numbers": 12,
+      "status": "12 existing S-P cards; supplied pack logo is available, but pack-group identity/display mapping remains. Do not duplicate cards or replace the S-P series logo with six different pack logos."
+    },
+    {
+      "volume": 3,
+      "source_url": "https://www.tcgcollector.com/sets/12141/gym-event-promo-pack-vol-3",
+      "language": "zh-cn",
+      "promo_series": "S-P",
+      "first_number": 91,
+      "last_number": 102,
+      "canonical_set_id": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+      "published_printings": 12,
+      "distinct_matched_numbers": 12,
+      "status": "12 existing S-P cards; supplied pack logo is available, but pack-group identity/display mapping remains. Do not duplicate cards or replace the S-P series logo with six different pack logos."
+    },
+    {
+      "volume": 4,
+      "source_url": "https://www.tcgcollector.com/sets/12142/gym-event-promo-pack-vol-4",
+      "language": "zh-cn",
+      "promo_series": "S-P",
+      "first_number": 113,
+      "last_number": 124,
+      "canonical_set_id": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+      "published_printings": 12,
+      "distinct_matched_numbers": 12,
+      "status": "12 existing S-P cards; supplied pack logo is available, but pack-group identity/display mapping remains. Do not duplicate cards or replace the S-P series logo with six different pack logos."
+    },
+    {
+      "volume": 5,
+      "source_url": "https://www.tcgcollector.com/sets/12143/gym-event-promo-pack-vol-5",
+      "language": "zh-cn",
+      "promo_series": "S-P",
+      "first_number": 145,
+      "last_number": 156,
+      "canonical_set_id": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+      "published_printings": 12,
+      "distinct_matched_numbers": 12,
+      "status": "12 existing S-P cards; supplied pack logo is available, but pack-group identity/display mapping remains. Do not duplicate cards or replace the S-P series logo with six different pack logos."
+    },
+    {
+      "volume": 6,
+      "source_url": "https://www.tcgcollector.com/sets/12144/gym-event-promo-pack-vol-6",
+      "language": "zh-cn",
+      "promo_series": "S-P",
+      "first_number": 176,
+      "last_number": 187,
+      "canonical_set_id": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
+      "published_printings": 12,
+      "distinct_matched_numbers": 12,
+      "status": "12 existing S-P cards; supplied pack logo is available, but pack-group identity/display mapping remains. Do not duplicate cards or replace the S-P series logo with six different pack logos."
+    }
+  ],
+  "scarlet_violet_energies": {
+    "source_url": "https://www.tcgcollector.com/sets/11801/scarlet-and-violet-energies",
+    "source_group_count": 8,
+    "language": "zh-cn",
+    "status": "Supplied energy-icon image exists. Source groups unnumbered energies; source No. 001–008 are ordering labels, not verified printed collector numbers. Exact canonical group mapping remains."
+  },
+  "anniversary_deck": {
+    "requested_code": "30thD",
+    "source_code": "30thDC",
+    "source_url": "https://www.tcgcollector.com/sets/111184/30th-celebration-premium-deck-set-espeon-and-umbreon",
+    "official_product_url": "https://www.pokemon.cn/tcg/product/21608.html",
+    "source_list_count": 45,
+    "printed_numbered_total": 40,
+    "unnumbered_energies": 5,
+    "symbol_url": "https://static.tcgcollector.com/content/images/f9/25/e7/f925e7b3bf2bbabdbd7b3fd69eff02ec1f0a69d90a36e9082c73cb527818c282.webp",
+    "symbol_width": 25,
+    "symbol_height": 14,
+    "status": "Exact product source found, only a tiny set symbol observed. Full logo/cover and canonical alias reconciliation remain; no artwork was guessed."
+  }
+}

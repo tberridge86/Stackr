@@ -1,0 +1,25 @@
+{
+  "observed_at": "2026-09-30T07:14:48.328914+00:00",
+  "status": "prepared_archived_not_published",
+  "fronts": 49,
+  "derivative_references": 147,
+  "objects": 196,
+  "archive": "stackr-english49-verified-20260930.zip",
+  "archive_sha256": "ac6bb248dee86f9c83b68b25fd9a184470cc717a2a44220fa2c4a71d0adea3d5",
+  "archive_bytes": 47144816,
+  "verified_archive_entries": 307,
+  "manifest_sha256": "9c03a7f566237e9200327f47f736d34a4cd3961f913068ef14615a562bfa1f9a",
+  "rejected_fronts": 1,
+  "production_writes": 0,
+  "preserved_7911_cohort": true,
+  "github": {
+    "release_url": "https://github.com/tberridge86/Stackr/releases/tag/untagged-1da139e4dd26884aa676",
+    "draft": true,
+    "asset_id": 600281085,
+    "api_url": "https://api.github.com/repos/tberridge86/Stackr/releases/assets/600281085",
+    "github_digest": "sha256:ac6bb248dee86f9c83b68b25fd9a184470cc717a2a44220fa2c4a71d0adea3d5",
+    "downloaded_again_sha256": "ac6bb248dee86f9c83b68b25fd9a184470cc717a2a44220fa2c4a71d0adea3d5",
+    "decoded_originals": 49,
+    "decoded_derivatives": 147
+  }
+}

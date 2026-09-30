@@ -1,5 +1,7 @@
 # Stackr: what is ready and what is still missing
 
+**New September 30 checkpoint:** [prepared 49-front batch, classified checklist/logo work, fresh valuation, deployment blockers and timings](october-1-progress-20260930.md). The completed 7,911-front publication remains intact; no additional fronts are yet published.
+
 Updated 30 September 2026, 02:50 UTC. This report separates card records, card pictures, set checklists and set logos. They are different jobs and their outstanding counts must not be added together.
 
 ## Approved artwork publication completed
