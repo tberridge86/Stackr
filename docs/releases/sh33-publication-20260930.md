@@ -1,5 +1,7 @@
 # SH33 exact artwork and printed-denominator repair
 
+**Completed:** [production run 36773609955](https://github.com/tberridge86/Stackr/actions/runs/36773609955) published all 33 fronts and 99 derivatives and corrected the printed denominator to 53. Independent checks passed for all 33 card responses and 132 image files. All 59 printing identities and production's separate `total: 78` were preserved. The normal public set endpoint now returns `printedTotal: 53`. See the [production receipt](sh33-production-receipt-20260930.json) and [combined completion evidence](artwork278-completion-20260930.md). The preparation narrative below is historical.
+
 The official Traditional Chinese Family Pokémon Card Game (`SH`) checklist
 contains collectors 001/053 through 053/053 and six separately named energies.
 Stackr's current `printed_total` is 38. This is a verified denominator error;

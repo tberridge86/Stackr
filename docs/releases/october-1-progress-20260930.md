@@ -1,4 +1,4 @@
-**Artwork completion:** [All 49 additional fronts are now published and verified](english49-publication-20260930.md), bringing this recovery to **7,960 fronts**. The 4,250-case worklist is now **49 resolved + 4,201 unresolved**. The morning approval/publication checkpoint below is superseded.
+**Latest artwork completion:** [278 further fronts are published and independently verified](artwork278-completion-20260930.md), bringing this recovery to **8,238 fronts / 24,714 derivative references**. The original 4,250-case worklist now contains **327 resolved + 3,923 unresolved**. The morning and earlier 49-front checkpoints below are historical; remaining checklist, logo and device work is separate.
 
 **Evening update:** [Railway restoration and measured live search/pricing delivery](railway-restored-20260930.md) supersedes this morning's Railway/deployment blockers. Historical measurements below are retained.
 

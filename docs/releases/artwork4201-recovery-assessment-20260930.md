@@ -1,13 +1,15 @@
 # Artwork recovery assessment — 30 September 2026
 
-This is the current factual assessment of the frozen
+**Publication completed after this assessment:** [TW200, English45 and SH33 are now published and independently verified](artwork278-completion-20260930.md). The worklist is **278 resolved + 3,923 remaining**; recovery totals are **8,238 fronts / 24,714 derivative references**. SH's printed denominator is now 53 with all 59 identities preserved. The preparation states and next steps below are retained as historical evidence, not current publication status. Use the [current exception register](artwork3923-exceptions-20260930.json.gz) for ongoing work.
+
+This is the pre-publication assessment of the frozen
 [4,250 exception ledger](https://github.com/tberridge86/Stackr/blob/main/docs/releases/artwork4250-exceptions-20260928.json.gz)
 after its 49 successfully published English fronts are deducted. It combines
 the saved Japanese, English and Chinese identity/source reviews. It is an
 evidence and handoff document, not a claim that every listed case is missing
 metadata or that an archive has reached production.
 
-## Current state
+## Historical preparation state
 
 The frozen worklist contains **4,201** printing-level cases. This is the 4,250
 exception ledger less the 49 fronts confirmed by the
