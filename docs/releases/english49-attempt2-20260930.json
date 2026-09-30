@@ -1,0 +1,15 @@
+{
+  "status": "failed_before_publication",
+  "revision": "33158370fe6961d02b79fecd40702debf54e49c4",
+  "started_at": "2026-09-30T19:05:29.305Z",
+  "cohort_sha256": "f7478efffa3f74a3e7e07fa768c3a7e34b894bd43693469812d697d9f34f68a8",
+  "assets": [],
+  "links": [],
+  "objects": [],
+  "ownership_changes": 0,
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "device_verified": false,
+  "local_files_verified": 196,
+  "error": "Existing inactive source provenance changed"
+}

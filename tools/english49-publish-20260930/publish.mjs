@@ -31,9 +31,12 @@ export function assertConfig(env){
   check(env.STACKR_ENGLISH49_CONFIRMATION==='PUBLISH ENGLISH49','49-front release confirmation required');
   baseConfig({...env,STACKR_ARTWORK3303_CONFIRMATION:'PUBLISH ARTWORK3303'});
 }
-export async function sourcesFor(db){
-  const rows=(await db.query("select * from ingest.sources where code='scrydex' for share")).rows;
+export async function sourcesFor(db,_receipt,environment){
   const notes=`Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; ${APPROVAL_PATH}; ${APPROVAL_SHA}. No source-wide approval.`;
+  // Staging lacks the production provenance row. This fixture is created only
+  // inside the shared staging rehearsal transaction, which always rolls back.
+  if(environment==='staging')await db.query("insert into ingest.sources(code,display_name,source_type,base_url,licence_status,attribution_required,active,internal_notes) values('scrydex','Scrydex','image','https://scrydex.com','under_review',true,false,$1) on conflict(code) do nothing",[notes]);
+  const rows=(await db.query("select * from ingest.sources where code='scrydex' for share")).rows;
   const s=rows[0];check(rows.length===1&&s.source_type==='image'&&s.base_url==='https://scrydex.com'&&s.active===false&&s.licence_status==='under_review'&&!s.deprecated_at&&s.internal_notes===notes,'Existing inactive source provenance changed');
   return new Map([['scrydex',s.id]]);
 }
