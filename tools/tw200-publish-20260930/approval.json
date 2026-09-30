@@ -1,0 +1,13 @@
+{
+  "approved": true,
+  "cohort_sha256": "e269a59d8665fa99d632b4c19470062cf29e554b3ee0c5445fd60665ca61b915",
+  "fronts": 200,
+  "source_code": "pokemon_card_tw_official",
+  "language_code": "zh-tw",
+  "store_resize_display_official_tw": true,
+  "source_wide_approval": false,
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-09-30",
+  "reason": "Operational attestation applying the owner's existing artwork permission and current request to this exact independently verified residual cohort. English Pokemon TCG API storing, resizing and displaying permission was also explicitly confirmed earlier in this chat. No independent licence verification is claimed. This approval authorizes these frozen printing fronts only; it does not activate a source, alter source access controls, approve exact finishes, or change metadata, prices or holdings."
+}

@@ -1,0 +1,18 @@
+{
+  "cohort_sha256": "e269a59d8665fa99d632b4c19470062cf29e554b3ee0c5445fd60665ca61b915",
+  "fronts": 200,
+  "derivative_references": 600,
+  "source": "pokemon_card_tw_official",
+  "language": "zh-tw",
+  "artifacts": [
+    {
+      "id": 601691025,
+      "kind": "github_release_asset",
+      "sha256": "739936977fb81f8802f37fb402eaf86358820f684fcf6481122f43d63cedfe71",
+      "size_in_bytes": 266005957
+    }
+  ],
+  "original_manifest_sha256": "947937da7e660558ea49941cde89ed1575900900a7ca0315214ab8d08b7c6ef8",
+  "archive_readback_verified_at": "2026-09-30T19:54:52.290172+00:00",
+  "status": "prepared_not_published"
+}

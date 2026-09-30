@@ -1,0 +1,21 @@
+{
+  "observed_date": "2026-09-30",
+  "status": "prepared_verified_not_published",
+  "frozen_starting_remainder": 4201,
+  "prepared_fronts": 245,
+  "prepared_derivative_references": 735,
+  "downloaded_from_github_and_independently_verified": true,
+  "image_objects_rehashed_and_decoded": 980,
+  "prior_published_fronts": 7960,
+  "cohorts": [
+    {"scope": "tw200", "fronts": 200, "derivative_references": 600, "archive_id": 601691025, "archive_sha256": "739936977fb81f8802f37fb402eaf86358820f684fcf6481122f43d63cedfe71", "cohort_sha256": "e269a59d8665fa99d632b4c19470062cf29e554b3ee0c5445fd60665ca61b915"},
+    {"scope": "english45", "fronts": 45, "derivative_references": 135, "archive_id": 601702110, "archive_sha256": "02eef8b377d576700d03a4a56b94fed57119c7e2aa912b19b8de14cf3b6d1bff", "cohort_sha256": "866c6ba24eca51385c5e6b6ca6aa8adef4a8d7b9a7f2edbce0ef27bf3c46ade4"}
+  ],
+  "checks": {"shared_and_bounded_publisher_tests": 36, "workflow_isolation_tests": 3, "taiwan_identity_tests": 13, "deployment_tooling": "passed", "independent_source_policy_review": "passed", "archive_checksums": "passed", "secret_scans": "passed"},
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "holdings_changes": 0,
+  "source_activation_changes": 0,
+  "production_writes": 0,
+  "device_verified": false
+}

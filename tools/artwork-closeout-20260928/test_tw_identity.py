@@ -3,6 +3,14 @@ verify=importlib.import_module('acquire-tw').verify_page
 ROW={'language_code':'zh-tw','permission_status':'REVIEW_REQUIRED','identity_url':'https://asia.pokemon-card.com/tw/card-search/detail/6387/','image_url':'https://asia.pokemon-card.com/tw/card-img/tw00006387.png','card_native_name':'鬼斯','source_name':'鬼斯','source_set':'S10a','set_code':'S10a','collector_number':'021','source_number':'021','source_total':'071','printed_total':71}
 HTML='''<title>鬼斯 | 訓練家網站</title><h1 class="cardDetail"><span class="evolveMarker">基礎</span>鬼斯</h1><div class="cardImage"><img src="https://asia.pokemon-card.com/tw/card-img/tw00006387.png"></div><span class="expansionSymbol"><img src="https://asia.pokemon-card.com/tw/card-img/mark/S10a_F@4x.png"></span><span class="collectorNumber">021/071</span><section class="expansionLinkColumn"><a href="/tw/card-search/list/?expansionCodes=S10a">黑暗亡靈</a></section>'''
 class TaiwanIdentity(unittest.TestCase):
+ def test_residual_official_set_marks_are_exact_and_do_not_accept_other_sets(self):
+  symbols={'SN':'SN-F@4x.png','SV4K':'exp_sv4K.png','SV4M':'exp_sv4M.png','SV5K':'expansion_mark_SV5K.png','SV5M':'expansion_mark_SV5M.png'}
+  for code,symbol in symbols.items():
+   row={**ROW,'source_set':code,'set_code':code}
+   text=HTML.replace('S10a_F@4x.png',symbol).replace('expansionCodes=S10a','expansionCodes='+code)
+   self.assertEqual(verify(text.encode(),row)['verified_set_mark'],symbol)
+   for wrong in set(symbols.values())-{symbol}:
+    with self.assertRaisesRegex(ValueError,'mark'):verify(text.replace(symbol,wrong).encode(),row)
  def test_unnumbered_energy_exact_native_page_code(self):
   row={**ROW,'collector_number':'DAR','source_number':'DAR','source_total':-1}
   self.assertIsNone(verify(HTML.replace('021/071','DAR').encode(),row)['verified_total'])

@@ -1,0 +1,18 @@
+{
+  "cohort_sha256": "866c6ba24eca51385c5e6b6ca6aa8adef4a8d7b9a7f2edbce0ef27bf3c46ade4",
+  "fronts": 45,
+  "derivative_references": 135,
+  "source": "pokemon_tcg_api",
+  "language": "en",
+  "artifacts": [
+    {
+      "id": 601702110,
+      "kind": "github_release_asset",
+      "sha256": "02eef8b377d576700d03a4a56b94fed57119c7e2aa912b19b8de14cf3b6d1bff",
+      "size_in_bytes": 44721112
+    }
+  ],
+  "original_manifest_sha256": "377e49744b222f91a6e5d1ff8c95c2a80617efa8023148ccff0d589cba7a5781",
+  "archive_readback_verified_at": "2026-09-30T19:57:28.266354+00:00",
+  "status": "prepared_not_published"
+}
