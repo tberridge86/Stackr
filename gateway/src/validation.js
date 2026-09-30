@@ -28,7 +28,7 @@ export function validatePath(pathname) {
   }
 }
 
-function validateQueryValue(name, value) {
+function validateQueryValue(name, value, allowShortSetCollector = false) {
   if (value.length > 2048) bad('invalid_query', `${name} is too long.`);
   if (name === 'legacyIds') {
     const ids = value.split(',');
@@ -78,8 +78,8 @@ function validateQueryValue(name, value) {
   if (['seriesId', 'setId', 'sourceId', 'printingId', 'variantId'].includes(name) && !UUID_PATTERN.test(value)) {
     bad('invalid_identifier', `${name} must be a UUID.`);
   }
-  if (name === 'q' && (value.trim().length < 2 || value.trim().length > 160)) {
-    bad('invalid_search_query', 'q must contain between 2 and 160 characters.');
+  if (name === 'q' && ((value.trim().length < 2 && !allowShortSetCollector) || value.trim().length > 160)) {
+    bad('invalid_search_query', 'q must contain between 2 and 160 characters, or a collector identifier within a selected set.');
   }
   if (name === 'cursor' && !/^[A-Za-z0-9_-]{1,2048}$/.test(value)) {
     bad('invalid_cursor', 'cursor is not a valid opaque Stackr cursor.');
@@ -91,13 +91,16 @@ function validateQueryValue(name, value) {
 
 export function validateQuery(route, url) {
   const seen = new Set();
+  const allowShortSetCollector = route.id === 'search'
+    && UUID_PATTERN.test(url.searchParams.get('setId') ?? '')
+    && /^[A-Za-z0-9]$/.test((url.searchParams.get('q') ?? '').trim());
   for (const [name, value] of url.searchParams) {
     if (!route.query?.has(name)) {
       bad('unsupported_query_parameter', `Query parameter ${name} is not supported on this route.`);
     }
     if (seen.has(name)) bad('duplicate_query_parameter', `Query parameter ${name} may only be supplied once.`);
     seen.add(name);
-    validateQueryValue(name, value);
+    validateQueryValue(name, value, allowShortSetCollector);
   }
   if (route.id === 'market_price_snapshots' && ['variantIds', 'printingIds', 'legacyIds'].filter((key) => seen.has(key)).length !== 1) {
     bad('variant_ids_required', 'Supply exactly one group of card references.');
