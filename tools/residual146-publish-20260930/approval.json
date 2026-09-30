@@ -1,0 +1,15 @@
+{
+  "approved": true,
+  "store_resize_display": true,
+  "fronts": 146,
+  "cohort_sha256": "842b879148d2fd22f7c95d9141b4aa22cb3cb1c14ec7a1cf6d2301c4fce8376c",
+  "source_wide_approval": false,
+  "source_counts": {
+    "tcgplayer_card_artwork": 138,
+    "pokemon_card_tw_official": 8
+  },
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-09-30",
+  "reason": "Operational attestation applying the existing owner artwork permission and current request to these exact verified English and Traditional Chinese fronts. No independent licence verification is claimed. No source-wide approval, source activation, exact-finish claim, metadata, price or holding change is authorized by this file. TCGplayer artwork provenance is separate from the existing TCGCSV pricing source."
+}

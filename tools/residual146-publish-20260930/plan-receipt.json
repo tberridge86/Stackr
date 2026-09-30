@@ -1,0 +1,51 @@
+{
+  "cohort_sha256": "842b879148d2fd22f7c95d9141b4aa22cb3cb1c14ec7a1cf6d2301c4fce8376c",
+  "artifacts": [
+    {
+      "id": 601817567,
+      "kind": "github_release_asset",
+      "sha256": "113743bd4ec5f4b1cf78f960c68fefcb43cf08ca5865f74b0d2f7ab911e74297",
+      "size_in_bytes": 47854352,
+      "source_code": "tcgplayer_card_artwork"
+    },
+    {
+      "id": 601817566,
+      "kind": "github_release_asset",
+      "sha256": "4ffdb3d8771e43fe1497308671b3ea21f9e3cb0dcaed0d9ad5829f4ad33d98f3",
+      "size_in_bytes": 5017164,
+      "source_code": "pokemon_card_tw_official"
+    }
+  ],
+  "source_counts": {
+    "tcgplayer_card_artwork": 138,
+    "pokemon_card_tw_official": 8
+  },
+  "set_counts": {
+    "svp": 8,
+    "tk-bw-z": 30,
+    "tk-bw-e": 30,
+    "exu": 28,
+    "2023sv": 15,
+    "tk-xy-sy": 1,
+    "2024sv": 14,
+    "swshp": 1,
+    "SV-P": 8,
+    "tk-sm-r": 1,
+    "ecard2": 4,
+    "tk-xy-n": 2,
+    "tk-xy-w": 1,
+    "tk-xy-latio": 1,
+    "tk-xy-b": 1,
+    "tk-xy-p": 1
+  },
+  "fronts": 146,
+  "derivative_references": 438,
+  "archive_readback_verified_at": "2026-09-30T21:23:52.036Z",
+  "status": "prepared_not_published",
+  "independent_verification": {
+    "originals": 146,
+    "derivatives": 438,
+    "archive_entries": 1157
+  },
+  "distinct_storage_objects": 583
+}
