@@ -197,6 +197,11 @@ const mixedChinese = await runAndReadCards({ q: 'Mixed Identity', language: 'zh-
 assert.equal(mixedChinese.cardResults.length, 0, 'Name identity hydration must preserve requested printing language.');
 assert.equal(mixedChinese.reads.length, 0);
 
+const energySet = '66666666-6666-4666-8666-666666666666';
+const fireEnergy = { ...makeCard('en', 9910), collector_number: 'R', card_native_name: 'Basic Fire Energy' };
+const waterEnergy = { ...makeCard('ja', 9911), set_id: energySet, collector_number: 'WAT', card_native_name: '基本水エネルギー' };
+const foreignFire = { ...makeCard('zh-cn', 9912), collector_number: 'R' };
+cards.push(fireEnergy, waterEnergy, foreignFire);
 sources.catalogue_card_collectors = cards.map((card) => ({
   ...card,
   normalized_collector_number: normalizeCollectorNumber(card.collector_number),
@@ -206,6 +211,23 @@ const multipart = { ...makeCard('zh-cn', 9900), collector_number: '01 03' };
 cards.push(multipart);
 sources.catalogue_card_collectors.push({ ...multipart, normalized_collector_number: '103', normalized_collector_base: '103' });
 const indexedService = createCatalogueV1Service({ supabase: db, collectorIdentityLookup: true });
+for (const service of [indexedService, createCatalogueV1Service({ supabase: db })]) {
+  for (const q of ['R', 'r']) {
+    const found = await service.search({ q, language: 'en', setId: enSet });
+    assert.deepEqual(found.results.map(r => r.variantId), [fireEnergy.variant_id]);
+    assert.equal(found.results[0].reason, 'exact_collector_number_in_set');
+  }
+  for (const q of ['WAT', 'wat']) {
+    const found = await service.search({ q, language: 'ja', setId: energySet });
+    assert.deepEqual(found.results.map(r => r.variantId), [waterEnergy.variant_id]);
+  }
+  assert.equal((await service.search({ q: 'R', language: 'en', setId: cnSet })).results.length, 0);
+  assert.equal((await service.search({ q: 'WAT', language: 'en', setId: energySet })).results.length, 0);
+  await assert.rejects(service.search({ q: 'R' }), error => error.code === 'invalid_search_query');
+  await assert.rejects(service.search({ q: '%', setId: enSet }), error => error.code === 'invalid_search_query');
+  assert.equal((await service.search({ q: 'WAT', language: 'ja' })).results.length, 0,
+    'Letter-only collector matching must not become a catalogue-wide scan.');
+}
 for (const service of [indexedService, createCatalogueV1Service({ supabase: db })]) {
   const found = await service.search({ q: '01 03', language: 'zh-cn', setId: cnSet });
   assert.deepEqual(found.results.map(r => r.variantId), [multipart.variant_id]);

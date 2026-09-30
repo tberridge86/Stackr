@@ -502,9 +502,10 @@ paths:
         - name: q
           in: query
           required: true
+          description: At least two characters for general search. A single letter or digit collector identifier is accepted with a canonical setId.
           schema:
             type: string
-            minLength: 2
+            minLength: 1
             maxLength: 160
         - $ref: "#/components/parameters/Language"
         - name: setId
