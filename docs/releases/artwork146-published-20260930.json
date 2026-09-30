@@ -1,0 +1,106 @@
+{
+  "observed_at": "2026-09-30T22:02:35.275Z",
+  "status": "published_and_independently_verified",
+  "environment": "production",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "api": "https://api.stackrtcg.com",
+  "source_revision": "fbd02c07eb323405606537698a21298ff0525389",
+  "pr": 270,
+  "run_url": "https://github.com/tberridge86/Stackr/actions/runs/36780361223",
+  "fronts": 146,
+  "by_language": {
+    "en": 138,
+    "zh-tw": 8
+  },
+  "derivative_references": 438,
+  "object_references": 584,
+  "distinct_storage_objects": 583,
+  "objects_created": 571,
+  "objects_reused": 12,
+  "cohort_sha256": "842b879148d2fd22f7c95d9141b4aa22cb3cb1c14ec7a1cf6d2301c4fce8376c",
+  "receipt_sha256": "2465cc194efa8a058bf5250abfc62ea058748424300529bf93175825bc9bed35",
+  "artifact": {
+    "id": 11127980894,
+    "name": "residual146-artwork-36780361223-1",
+    "createdAt": "2026-09-30T21:43:03Z",
+    "digest": "sha256:49fddf00d78f63392c0741603352f42f63aaaa9205a960fb85686bd20c1549bf",
+    "sha256": "49fddf00d78f63392c0741603352f42f63aaaa9205a960fb85686bd20c1549bf",
+    "bytes": 42951,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36780361223/artifacts/11127980894"
+  },
+  "verification": {
+    "finished_at": "2026-09-30T21:54:05.352Z",
+    "cards_passed": 146,
+    "cards_checked": 146,
+    "objects_passed": 583,
+    "objects_checked": 583,
+    "first_attempt_card_failures": 0,
+    "first_attempt_object_failures": 0,
+    "timings": {
+      "card_detail": {
+        "samples": 146,
+        "min_ms": 219,
+        "median_ms": 1459,
+        "p95_ms": 1889,
+        "max_ms": 4927
+      },
+      "manifest": {
+        "samples": 146,
+        "min_ms": 280,
+        "median_ms": 1355,
+        "p95_ms": 1507,
+        "max_ms": 4523
+      }
+    },
+    "timing_scope": "Complete JSON response on this Windows connection with two concurrent requests and pacing; not device or database-only time, not a universal sub-500ms guarantee."
+  },
+  "combined_recovery": {
+    "fronts": 8384,
+    "derivative_references": 25152,
+    "distinct_storage_objects": 33469
+  },
+  "requested4201": {
+    "resolved": 424,
+    "remaining": 3777
+  },
+  "remaining": {
+    "artwork_cases": 3777,
+    "by_language": {
+      "en": 481,
+      "ja": 2221,
+      "ko": 239,
+      "zh-cn": 829,
+      "zh-tw": 7
+    },
+    "historical_categories": {
+      "Exact source needed": 3139,
+      "provider_image_unavailable": 1,
+      "identity_conflict": 5,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20,
+      "Language identity conflict": 605,
+      "Composite artwork review": 2,
+      "Source image conflict": 1
+    },
+    "classification_note": "Historical source-needed categories do not mean all files are still absent: sourced and prepared files remain unresolved until independently verified and published.",
+    "checklist_sets": 94
+  },
+  "next_review": {
+    "english16": "Independently visually verified; not published",
+    "japanese81": {
+      "root_reviewed": 81,
+      "passed": 80,
+      "held": 1,
+      "excluded_printing": "9c2a3998-0250-4337-ac12-526484543921",
+      "reason": "E3/015 printed モンジャラ differs from frozen タンゲラ"
+    },
+    "additional_japanese57": "Prior visual QC invalidated after wrong literal titles; held for independent re-review; not published",
+    "archives": "All originals and archives preserved unchanged"
+  },
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "holdings_changes": 0,
+  "source_activation_changes": 0,
+  "device_verified": false
+}

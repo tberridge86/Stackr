@@ -1,6 +1,8 @@
 # Stackr October 1 release queue
 
-**Latest September 30 artwork completion:** [278 further fronts published and independently verified](artwork278-completion-20260930.md). Recovery total: **8,238 fronts / 24,714 derivative references**. All 278 new card checks and 1,112 image checks passed, with original failures and retries preserved. Earlier cohorts remain present. **3,923 artwork cases** remain: 3,285 exact-source gaps, 605 language-identity conflicts and 33 other reviews. SH's printed denominator is corrected from 38 to 53 with all 59 identities preserved. The **94 missing checklists**, logo, pricing and installed-device gates remain separate.
+**Latest September 30 artwork completion:** [146 further fronts published and independently verified](artwork146-completion-20260930.md). Recovery total: **8,384 fronts / 25,152 derivative references**. All 146 new card checks and 583 distinct image checks passed with zero first-attempt failures. All six cohorts remain present. **424 of the owner's 4,201 cases are resolved; 3,777 remain**. A further 16 English and 80 Japanese fronts are independently visually cleared but not published; name conflicts and unreliable earlier Japanese QC are explicitly held. The **94 missing checklists**, logo, pricing and installed-device gates remain separate.
+
+**Earlier September 30 completion:** [278 fronts published and independently verified](artwork278-completion-20260930.md), including the SH printed denominator correction from 38 to 53 with all 59 identities preserved. Its 8,238-front / 3,923-remaining checkpoint is superseded by the measured completion above.
 
 **Previous September 30 artwork completion:** [49 additional English fronts published and independently verified](english49-publication-20260930.md) brought the earlier recovery total to 7,960 fronts / 23,880 derivative references. This historical checkpoint is superseded by the measured completion above.
 
