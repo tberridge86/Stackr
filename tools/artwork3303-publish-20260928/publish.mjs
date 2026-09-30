@@ -149,7 +149,7 @@ export async function writeMetadata(db,rows,receipt,approval,environment,journal
   const versions=[...new Set(cards.map(c=>c.catalogue_version_id))];
   check((await db.query("select id from catalog.catalogue_versions where id=any($1::uuid[]) and status='published' and deprecated_at is null for share",[versions])).rows.length===versions.length,'Catalogue version changed');
   assertManifest(rows,await visibleAssets(db,rows,cards));
-  const sources=await sourceResolver(db,receipt);
+  const sources=await sourceResolver(db,receipt,environment);
   const plans=rows.map(r=>payload(r,sources.get(r.source_code),receipt,approval,environment));
   for(const batch of chunks(plans)) {
     const keys=Object.keys(batch[0]);

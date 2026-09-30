@@ -1,0 +1,11 @@
+# English 49-front publication
+
+The owner approved this exact cohort in PR261, merged as `33158370fe6961d02b79fecd40702debf54e49c4`. Publication is not yet complete at this checkpoint.
+
+Run [36762457639](https://github.com/tberridge86/Stackr/actions/runs/36762457639) attempt 1 stopped before publication because its read-only GitHub token could not download a draft release asset. The preserved, checksum-verified package was published as an [artwork prerelease](https://github.com/tberridge86/Stackr/releases/tag/artwork-english49-review-20260930), explicitly not an app build or the latest release. Archive asset ID, hash and bytes are unchanged. The extracted package passed the secret scan (108 evidence files).
+
+Attempt 2 verified all 196 local image objects, then stopped before uploads or asset/link changes. Its [receipt](english49-attempt2-20260930.json) and [independently verified artifact digest](english49-attempt2-download-20260930.json) preserve that failure. Read-only checks found the exact expected inactive Scrydex provenance in production, but no Scrydex row in staging. The source guard incorrectly assumed staging also contained the prior production-only MEP provenance.
+
+The bounded correction passes the target environment to the existing source resolver. In staging only, the rehearsal inserts an inactive, under-review provenance fixture if absent, checks it with the same strict guard, and rolls it back with the rehearsal. Existing rows are never updated; conflicting rows fail. Production remains read-only for source provenance and fails if that row is absent or changed. Neither source acquisition nor source-wide artwork permission is enabled. All 29 publisher tests pass, including missing staging source, rollback, conflicting source and unchanged production protections.
+
+Frozen scope remains 49 English fronts, 147 derivatives and 196 immutable objects: McDonald's 2014/2015/2017/2018 (12 each), plus Oddish SVP102. Cohort SHA256 `f7478efffa3f74a3e7e07fa768c3a7e34b894bd43693469812d697d9f34f68a8`; archive SHA256 `ac6bb248dee86f9c83b68b25fd9a184470cc717a2a44220fa2c4a71d0adea3d5`. The previous 7,911 cohort is excluded and preserved. No metadata, prices, holdings or existing artwork replacements are authorized by this lane.
