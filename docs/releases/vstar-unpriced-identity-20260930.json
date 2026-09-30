@@ -1,0 +1,27 @@
+{
+  "observed_date": "2026-09-30",
+  "production_project": "oakdbbzdqwurpjnoqhmu",
+  "production_writes": 0,
+  "saved_card_reference": "pokedata:57932",
+  "source_evidence_observed_at": "2026-09-27T21:13:37.439Z",
+  "source_url": "https://www.pokedata.io/api/cards?set_name=VSTAR+Universe&tcg=Pokemon&stats=kwan",
+  "source_record": {
+    "id": 57932,
+    "name": "Electric",
+    "language": "JAPANESE",
+    "set_code": "S12a",
+    "set_name": "VSTAR Universe",
+    "num": "254",
+    "secret": true,
+    "image_url": "https://pokemoncardimages.pokedata.io/images/VSTAR+Universe/254.webp"
+  },
+  "canonical_set_id": "d6a23ad9-7d3d-482c-a477-304584a335e3",
+  "set_declared_total": 262,
+  "published_printings": 258,
+  "missing_numbers_in_001_through_262": ["251", "252", "253", "254"],
+  "canonical_rows_for_four_numbers": 0,
+  "classification": "Saved provider identity points to S12a 254; the printing itself is absent, not just a missing price quote. Preserve holding; reconcile exact source metadata and finish, then prepare a bounded four-card catalogue repair and the saved-provider mapping through existing import/release controls.",
+  "exact_finish_verified": false,
+  "quote_imported": false,
+  "warning": "This is an additional incomplete existing-set finding, separate from the 94 entirely empty set identities and the artwork-only 4250 register. No whole-catalogue completeness claim is supported."
+}

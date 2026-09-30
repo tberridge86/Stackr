@@ -1,0 +1,18 @@
+{
+  "cohort_sha256": "f7478efffa3f74a3e7e07fa768c3a7e34b894bd43693469812d697d9f34f68a8",
+  "fronts": 49,
+  "derivative_references": 147,
+  "source": "scrydex",
+  "language": "en",
+  "artifacts": [
+    {
+      "id": 600281085,
+      "kind": "github_release_asset",
+      "sha256": "ac6bb248dee86f9c83b68b25fd9a184470cc717a2a44220fa2c4a71d0adea3d5",
+      "size_in_bytes": 47144816
+    }
+  ],
+  "original_manifest_sha256": "9c03a7f566237e9200327f47f736d34a4cd3961f913068ef14615a562bfa1f9a",
+  "archive_readback_verified_at": "2026-09-30T07:24:04.972Z",
+  "status": "prepared_not_published"
+}

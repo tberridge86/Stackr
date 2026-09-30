@@ -1,0 +1,1590 @@
+{
+  "observed_at": "2026-09-30T07:33:21.080Z",
+  "scope": "The frozen 94 empty set identities; fresh production api.catalogue_cards grouped by set_id still returns zero for every identity. Candidate links are not imports or verified complete checklists.",
+  "production_writes": 0,
+  "provider_access": "Scrydex and PikaQian configured credentials both returned 401; TCGdex exact-name comparison found no matches. TCG Collector browser index supplied the recorded leads.",
+  "counts": {
+    "future_release_no_checklist": 1,
+    "matching_name_checklist_lead": 46,
+    "grouping_boundary_requires_reconciliation": 4,
+    "name_alias_checklist_lead": 18,
+    "no_verified_source_in_available_indexes": 25
+  },
+  "sets": [
+    {
+      "id": "a1bde625-6996-5451-bcda-fb80fe5b428b",
+      "set_code": "DLR",
+      "language_code": "en",
+      "english_display_name": "Delta Reign",
+      "native_name": "Delta Reign",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/111247/delta-reign",
+          "basis": "Source index shows Coming soon, release date 2026-11-06; no released checklist at observation."
+        }
+      ],
+      "review_status": "future_release_no_checklist",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "cc6cdd14-13e7-5e11-82ce-c8a5151994d8",
+      "set_code": "M13",
+      "language_code": "en",
+      "english_display_name": "McDonald's Collection 2013",
+      "native_name": "McDonald's Collection 2013",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/1192/mcdonalds-collection-2013",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "591184af-c1c9-5eb2-bf8f-43b2f7c5e08c",
+      "set_code": "PPS1",
+      "language_code": "en",
+      "english_display_name": "Play! Pokémon Prize Pack Series One",
+      "native_name": "Play! Pokémon Prize Pack Series One",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/1217/play-pokemon-prize-pack-series-one",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "22991ce9-13bc-5c62-b4b1-69ce2c3a3001",
+      "set_code": "PPS2",
+      "language_code": "en",
+      "english_display_name": "Play! Pokémon Prize Pack Series Two",
+      "native_name": "Play! Pokémon Prize Pack Series Two",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/1218/play-pokemon-prize-pack-series-two",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "ec707b38-9549-5a8f-af44-58f6887c509b",
+      "set_code": "PPS3",
+      "language_code": "en",
+      "english_display_name": "Play! Pokémon Prize Pack Series Three",
+      "native_name": "Play! Pokémon Prize Pack Series Three",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/1219/play-pokemon-prize-pack-series-three",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "a464543c-f676-5f0e-ba4a-47247220d345",
+      "set_code": "PPS4",
+      "language_code": "en",
+      "english_display_name": "Play! Pokémon Prize Pack Series Four",
+      "native_name": "Play! Pokémon Prize Pack Series Four",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/1220/play-pokemon-prize-pack-series-four",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "3811078a-933c-5dec-9834-8ca0bbf7ee0d",
+      "set_code": "PPS5",
+      "language_code": "en",
+      "english_display_name": "Play! Pokémon Prize Pack Series Five",
+      "native_name": "Play! Pokémon Prize Pack Series Five",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/1221/play-pokemon-prize-pack-series-five",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "ef91e43c-206b-51b0-b485-f18662cb5379",
+      "set_code": "PPS6",
+      "language_code": "en",
+      "english_display_name": "Play! Pokémon Prize Pack Series Six",
+      "native_name": "Play! Pokémon Prize Pack Series Six",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/12114/play-pokemon-prize-pack-series-six",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "8145a640-299d-5090-816c-5e707352e2c9",
+      "set_code": "PPS7",
+      "language_code": "en",
+      "english_display_name": "Play! Pokémon Prize Pack Series Seven",
+      "native_name": "Play! Pokémon Prize Pack Series Seven",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/12125/play-pokemon-prize-pack-series-seven",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "9a693e90-88fc-58ee-9f67-1ce7994c90c3",
+      "set_code": "PPS8",
+      "language_code": "en",
+      "english_display_name": "Play! Pokémon Prize Pack Series Eight",
+      "native_name": "Play! Pokémon Prize Pack Series Eight",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/12138/play-pokemon-prize-pack-series-eight",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "84e70726-12db-5f91-bf56-be47f233444f",
+      "set_code": "PPS9",
+      "language_code": "en",
+      "english_display_name": "Play! Pokémon Prize Pack Series Nine",
+      "native_name": "Play! Pokémon Prize Pack Series Nine",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/12148/play-pokemon-prize-pack-series-nine",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "168249e2-376e-575b-8358-9dd8a517c71d",
+      "set_code": "PTCGC",
+      "language_code": "en",
+      "english_display_name": "Pokémon Trading Card Game Classic",
+      "native_name": "Pokémon Trading Card Game Classic",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11595/pokemon-tcg-classic-blastoise",
+          "basis": "Source groups or splits cards differently; do not import the whole source group into this set."
+        },
+        {
+          "url": "https://www.tcgcollector.com/sets/11594/pokemon-tcg-classic-charizard",
+          "basis": "Source groups or splits cards differently; do not import the whole source group into this set."
+        },
+        {
+          "url": "https://www.tcgcollector.com/sets/11596/pokemon-tcg-classic-venusaur",
+          "basis": "Source groups or splits cards differently; do not import the whole source group into this set."
+        }
+      ],
+      "review_status": "grouping_boundary_requires_reconciliation",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "88ddd26c-c12a-54d9-9e50-440446ce3d1f",
+      "set_code": "TT22",
+      "language_code": "en",
+      "english_display_name": "Trick or Trade 2022",
+      "native_name": "Trick or Trade 2022",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/122/trick-or-trade-2022",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "eb3cb1c6-b52b-5877-b84c-d03d335f4f80",
+      "set_code": "TT23",
+      "language_code": "en",
+      "english_display_name": "Trick or Trade 2023",
+      "native_name": "Trick or Trade 2023",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/123/trick-or-trade-2023",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "f854068d-7eaf-5e9a-8239-0305b672ed22",
+      "set_code": "TT24",
+      "language_code": "en",
+      "english_display_name": "Trick or Trade 2024",
+      "native_name": "Trick or Trade 2024",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/124/trick-or-trade-2024",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "ed31ad69-fd9c-5138-bbe0-5498b6429a46",
+      "set_code": "ADV-P",
+      "language_code": "ja",
+      "english_display_name": "ADV-P Promotional cards",
+      "native_name": "ADV-Pプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11262/adv-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "9302cd52-ff03-5e93-bc91-59c1ece923d2",
+      "set_code": "BW1-Black",
+      "language_code": "ja",
+      "english_display_name": "Black Collection",
+      "native_name": "ブラックコレクション",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11167/black-collection",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "bab270a7-c0c1-5af0-a6d7-7fd044bb5883",
+      "set_code": "BW1-White",
+      "language_code": "ja",
+      "english_display_name": "White Collection",
+      "native_name": "ホワイトコレクション",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11202/white-collection",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "99461540-5406-54c4-960d-cfb9d169e7a2",
+      "set_code": "BW2",
+      "language_code": "ja",
+      "english_display_name": "Red Collection",
+      "native_name": "レッドコレクション",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11166/red-collection",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "9ac1c40a-55e0-52cb-9fd4-2915a6d1e4c7",
+      "set_code": "BW3-Hail",
+      "language_code": "ja",
+      "english_display_name": "Hail Blizzard",
+      "native_name": "ヘイルブリザード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11209/hail-blizzard",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "b407f0ce-3bc1-5c8a-a619-eb9e29c48931",
+      "set_code": "BW3-Psycho",
+      "language_code": "ja",
+      "english_display_name": "Psycho Drive",
+      "native_name": "サイコドライブ",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11199/psycho-drive",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "faa8fcf7-f84d-5661-818a-ed43511e35fd",
+      "set_code": "BW4",
+      "language_code": "ja",
+      "english_display_name": "Dark Rush",
+      "native_name": "ダークラッシュ",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11230/dark-rush",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "f4c76708-6cfc-5925-b771-470a221ac494",
+      "set_code": "BW5-Blade",
+      "language_code": "ja",
+      "english_display_name": "Dragon Blade",
+      "native_name": "リューノブレード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11245/dragon-blade",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "b538c0b3-e525-5164-8b08-a1229226e00a",
+      "set_code": "BW5-Blast",
+      "language_code": "ja",
+      "english_display_name": "Dragon Blast",
+      "native_name": "リューズブラスト",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11274/dragon-blast",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "48a5d306-2be2-5833-8db3-3cc4d288f5e3",
+      "set_code": "BW6-Cold",
+      "language_code": "ja",
+      "english_display_name": "Cold Flare",
+      "native_name": "コールドフレア",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11307/cold-flare",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "198e3c12-b5c2-56eb-a3ae-eb819d7b7e9f",
+      "set_code": "BW6-Freeze",
+      "language_code": "ja",
+      "english_display_name": "Freeze Bolt",
+      "native_name": "フリーズボルト",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11215/freeze-bolt",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "26bc18f0-c8dc-5715-aeb8-cf5c258b0f37",
+      "set_code": "BW7",
+      "language_code": "ja",
+      "english_display_name": "Plasma Gale",
+      "native_name": "プラズマゲイル",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11207/plasma-gale",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "e83eaa0e-4027-5e0d-a880-a993075e0af6",
+      "set_code": "BW8-Spiral",
+      "language_code": "ja",
+      "english_display_name": "Spiral Force",
+      "native_name": "ラセンフォース",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11301/spiral-force",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "3b7279f5-1697-59fb-a060-c4f1922fe992",
+      "set_code": "BW8-Thunder",
+      "language_code": "ja",
+      "english_display_name": "Thunder Knuckle",
+      "native_name": "ライデンナックル",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11220/thunder-knuckle",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "c7213f94-5704-5368-a5e9-9a64534a1dbb",
+      "set_code": "BW9",
+      "language_code": "ja",
+      "english_display_name": "Megalo Cannon",
+      "native_name": "メガロキャノン",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11251/megalo-cannon",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "5bd77301-aaa1-5193-9b26-a9d73bc6b93e",
+      "set_code": "CS1",
+      "language_code": "ja",
+      "english_display_name": "Collection Sheet Journey Partners",
+      "native_name": "コレクションシート 旅立ちの仲間",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11275/journey-partners",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "6a3122a8-9233-5488-94ea-a2c538451251",
+      "set_code": "DP1-D",
+      "language_code": "ja",
+      "english_display_name": "Space-Time Creation: Diamond Collection",
+      "native_name": "時空の創造: ダイヤモンドコレクション",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11244/space-time-creation",
+          "basis": "Source groups or splits cards differently; do not import the whole source group into this set."
+        }
+      ],
+      "review_status": "grouping_boundary_requires_reconciliation",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "e360da33-32f4-5148-86d6-5a296132d4ab",
+      "set_code": "DP1-P",
+      "language_code": "ja",
+      "english_display_name": "Space-Time Creation: Pearl Collection",
+      "native_name": "時空の創造: パールコレクション",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11244/space-time-creation",
+          "basis": "Source groups or splits cards differently; do not import the whole source group into this set."
+        }
+      ],
+      "review_status": "grouping_boundary_requires_reconciliation",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "528e17b5-e457-5b1f-a6dd-9842ddb85681",
+      "set_code": "DP2",
+      "language_code": "ja",
+      "english_display_name": "Secret of the Lakes",
+      "native_name": "湖の秘密",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11210/secret-of-the-lakes",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "cff4f0ae-5a54-5169-b2ef-a90ca807096a",
+      "set_code": "DP3",
+      "language_code": "ja",
+      "english_display_name": "Shining Darkness",
+      "native_name": "ひかる闇",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11231/shining-darkness",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "f6ee83e1-e346-516a-833b-3ca5c3c6aa21",
+      "set_code": "DP4-Dawn",
+      "language_code": "ja",
+      "english_display_name": "Dawn Dash",
+      "native_name": "夜明けの疾走",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/12146/dawn-dash",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "04730c29-ba77-589f-9e42-16bbc2a6595f",
+      "set_code": "DP4-Moon",
+      "language_code": "ja",
+      "english_display_name": "Moonlit Pursuit",
+      "native_name": "月光の追跡",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/12145/moonlit-pursuit",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "2724955d-fd5a-5a3e-a343-cf47446c4f73",
+      "set_code": "DP5-Cry",
+      "language_code": "ja",
+      "english_display_name": "Cry from the Mysterious",
+      "native_name": "秘境の叫び",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11255/cry-from-the-mysterious",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "527e912a-0e90-5e78-96e9-79c02bb4c0c2",
+      "set_code": "DP5-Temple",
+      "language_code": "ja",
+      "english_display_name": "Temple of Anger",
+      "native_name": "怒りの神殿",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11200/temple-of-anger",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "83a27342-71ac-51e7-a5ed-406a2c313f01",
+      "set_code": "DP6",
+      "language_code": "ja",
+      "english_display_name": "Intense Fight in the Destroyed Sky",
+      "native_name": "破空の激闘",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11213/intense-fight-in-the-destroyed-sky",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "d471f3eb-dcff-5c6c-ad14-bb8c9b0876a8",
+      "set_code": "DPt-P",
+      "language_code": "ja",
+      "english_display_name": "DPt-P Promotional cards",
+      "native_name": "DPt-Pプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11189/platinum-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "b364d4ca-e272-58ea-bd2c-c4bd554e95b5",
+      "set_code": "DPt1",
+      "language_code": "ja",
+      "english_display_name": "Galactic's Conquest",
+      "native_name": "ギンガの覇道",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11221/galactics-conquest",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "14a8842a-2bcf-5f53-b280-b6cb95a46108",
+      "set_code": "DPt2",
+      "language_code": "ja",
+      "english_display_name": "Bonds to the End of Time",
+      "native_name": "時の果ての絆",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11261/bonds-to-the-end-of-time",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "ea3514b6-7bec-59c4-94a1-a4e28d48aad7",
+      "set_code": "DPt3",
+      "language_code": "ja",
+      "english_display_name": "Beat of the Frontier",
+      "native_name": "フロンティアの鼓動",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11169/beat-of-the-frontier",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "baf775b5-329b-534c-9c2c-9897687747e6",
+      "set_code": "DPt4",
+      "language_code": "ja",
+      "english_display_name": "Advent of Arceus",
+      "native_name": "アルセウス光臨",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11196/advent-of-arceus",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "9f3a8601-340c-55a4-b57a-bc4f361539ed",
+      "set_code": "DS",
+      "language_code": "ja",
+      "english_display_name": "Dragon Selection",
+      "native_name": "ドラゴンセレクション",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11304/dragon-selection",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "6cc98dde-ed2d-553b-acc0-ae938627e419",
+      "set_code": "EBB",
+      "language_code": "ja",
+      "english_display_name": "EX Battle Boost",
+      "native_name": "EXバトルブースト",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11246/ex-battle-boost",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "ca805a66-9a17-55a6-94e4-797b971e1b6e",
+      "set_code": "J",
+      "language_code": "ja",
+      "english_display_name": "J Promotional cards",
+      "native_name": "Jプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11478/j-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "c79f4e3a-2550-5724-98b9-7aab524d6bfe",
+      "set_code": "JA-PROMO-UN",
+      "language_code": "ja",
+      "english_display_name": "Unnumbered Promotional cards",
+      "native_name": "ナンバーなしプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11410/miscellaneous-promos",
+          "basis": "Source groups or splits cards differently; do not import the whole source group into this set."
+        }
+      ],
+      "review_status": "grouping_boundary_requires_reconciliation",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "304609ad-aac7-52e4-b4cc-7a8b3a374698",
+      "set_code": "JA-SI",
+      "language_code": "ja",
+      "english_display_name": "Southern Islands",
+      "native_name": "サザンアイランド",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11187/southern-islands",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "cf0ca597-b60c-5940-94d9-2a9282c7efb0",
+      "set_code": "L-P",
+      "language_code": "ja",
+      "english_display_name": "L-P Promotional cards",
+      "native_name": "L-Pプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11288/legend-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "056f5967-f391-5f94-9ed0-5e8f2c6d93c5",
+      "set_code": "MCD02",
+      "language_code": "ja",
+      "english_display_name": "McDonald's Original Minimum★Pack",
+      "native_name": "マクドナルドオリジナル ミニマム★パック",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11238/mcdonalds-pokemon-e-minimum-pack",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "10679a32-808f-5e0e-be7c-f41d93be702c",
+      "set_code": "MOV10",
+      "language_code": "ja",
+      "english_display_name": "Movie 10th Anniversary Premium Sheet",
+      "native_name": "映画10周年記念 プレミアムシート",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11327/10th-movie-commemoration-set",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "3724b8b6-7cb6-54d8-a034-2262e1d25dfd",
+      "set_code": "MOV11",
+      "language_code": "ja",
+      "english_display_name": "Movie Commemoration Premium Sheet",
+      "native_name": "映画公開記念 プレミアムシート",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11328/11th-movie-commemoration-set",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "eadcc81a-f721-50d0-97aa-48aec299c4d2",
+      "set_code": "P",
+      "language_code": "ja",
+      "english_display_name": "P Promotional cards",
+      "native_name": "Pプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11198/p-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "520b115f-4894-50d1-b6e8-5310288c2449",
+      "set_code": "PCG-P",
+      "language_code": "ja",
+      "english_display_name": "PCG-P Promotional cards",
+      "native_name": "PCG-Pプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11194/pcg-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "0887772f-ed1b-50ac-ae83-6bb6282ca177",
+      "set_code": "PLAY",
+      "language_code": "ja",
+      "english_display_name": "PLAY Promotional cards",
+      "native_name": "PLAYプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11270/play-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "1b15ebcf-80ed-50e9-8b6a-292ac2ffa19b",
+      "set_code": "PPP",
+      "language_code": "ja",
+      "english_display_name": "PPP Promotional cards",
+      "native_name": "PPPプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11264/ppp-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "b4fb0193-c1e8-5a79-a024-a56764d3caed",
+      "set_code": "S8aP",
+      "language_code": "ja",
+      "english_display_name": "Promo Card Pack 25th Anniversary Edition",
+      "native_name": "プロモカードパック 25th ANNIVERSARY edition",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11442/promo-card-pack-25th-anniversary-edition",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "631c9415-d848-5caf-a814-2098e8d91bb8",
+      "set_code": "SC",
+      "language_code": "ja",
+      "english_display_name": "Shiny Collection",
+      "native_name": "シャイニーコレクション",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11263/shiny-collection",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "5983fbc3-fc89-5078-a5c5-be3bf73b59b7",
+      "set_code": "T",
+      "language_code": "ja",
+      "english_display_name": "T Promotional cards",
+      "native_name": "Tプロモカード",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11479/t-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "e8d5883b-f316-5d4c-8c5f-aad78fa79901",
+      "set_code": "Vending1",
+      "language_code": "ja",
+      "english_display_name": "Expansion Sheet: Vending Series 1 (Blue)",
+      "native_name": "拡張シート 第1弾",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11470/vending-machine-series-1-blue",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "62edac7d-61c9-5e00-a9c0-559da144ac55",
+      "set_code": "Vending2",
+      "language_code": "ja",
+      "english_display_name": "Expansion Sheet: Vending Series 2 (Red)",
+      "native_name": "拡張シート 第2弾",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11471/vending-machine-series-2-red",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "9fb9dbe6-6b2f-5c25-b1e1-25bd8eef09f6",
+      "set_code": "Vending3",
+      "language_code": "ja",
+      "english_display_name": "Expansion Sheet: Vending Series 3 (Green)",
+      "native_name": "拡張シート 第3弾",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11472/vending-machine-series-3-green",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "2658c9dd-c602-5bdf-9659-fd83793f8ee9",
+      "set_code": "WC10",
+      "language_code": "ja",
+      "english_display_name": "World Collection",
+      "native_name": "ピカチュウ ワールド",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11618/pikachu-world-collection",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "d9d34649-2807-5bfe-92cd-a49ffd27940b",
+      "set_code": "XY",
+      "language_code": "ja",
+      "english_display_name": "THE BEST OF XY",
+      "native_name": "THE BEST OF XY",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11190/the-best-of-xy",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "cce4cfb8-6a87-567f-96a0-0884827a1396",
+      "set_code": "30thC",
+      "language_code": "zh-cn",
+      "english_display_name": "30th Celebration",
+      "native_name": "30周年庆典",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11824/30th-celebration",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "17de4b24-d0c6-59dc-a915-9ba30546df95",
+      "set_code": "CBB6",
+      "language_code": "zh-cn",
+      "english_display_name": "Gem Pack Vol. 6",
+      "native_name": "宝石包VOL.6",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11945/gem-pack-vol-6",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "matching_name_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "876d2425-4948-57c4-baa0-9da39a9cda53",
+      "set_code": "M-P",
+      "language_code": "zh-cn",
+      "english_display_name": "M-P Promotional cards",
+      "native_name": "M-P特典卡",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [
+        {
+          "url": "https://www.tcgcollector.com/sets/11950/mega-evolution-promos",
+          "basis": "Observed link on the source language-specific set index, 2026-09-30. Card-level identity, completeness and import still required."
+        }
+      ],
+      "review_status": "name_alias_checklist_lead",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "af975f66-4635-57a9-906f-aeeec6fc04d1",
+      "set_code": "AC1a",
+      "language_code": "zh-tw",
+      "english_display_name": "All Stars Collection: Set A",
+      "native_name": "眾星雲集組合篇 SET A",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "aeab271d-301f-5d99-a7b7-0f5e1b6857d6",
+      "set_code": "AC1b",
+      "language_code": "zh-tw",
+      "english_display_name": "All Stars Collection: Set B",
+      "native_name": "眾星雲集組合篇 SET B",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "c497b580-834a-5367-9d63-fbed5cebeee8",
+      "set_code": "AC2a",
+      "language_code": "zh-tw",
+      "english_display_name": "Dreams Come True Collection: Set A",
+      "native_name": "美夢成真組合篇 SET A",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "05b2caa8-94ca-5f2c-b2dc-6d51a8384fe5",
+      "set_code": "AC2b",
+      "language_code": "zh-tw",
+      "english_display_name": "Dreams Come True Collection: Set B",
+      "native_name": "美夢成真組合篇 SET B",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "bd23da5f-1d02-5009-9231-3d2850e1d1fe",
+      "set_code": "AS5a",
+      "language_code": "zh-tw",
+      "english_display_name": "Double Burst: Set A",
+      "native_name": "雙倍爆擊 SET A",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "85dfa422-83fc-53d1-b306-41f179e3abf4",
+      "set_code": "AS5b",
+      "language_code": "zh-tw",
+      "english_display_name": "Double Burst: Set B",
+      "native_name": "雙倍爆擊 SET B",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "e3122a15-6f5a-5359-8fb9-2a4f36966e4d",
+      "set_code": "AS6a",
+      "language_code": "zh-tw",
+      "english_display_name": "Legendary Clash: Set A",
+      "native_name": "傳說交鋒 SET A",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "c8f751d4-e01c-5b68-a539-c575f3f28940",
+      "set_code": "AS6b",
+      "language_code": "zh-tw",
+      "english_display_name": "Legendary Clash: Set B",
+      "native_name": "傳說交鋒 SET B",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "75e39f96-6bc1-5803-b905-ffec8306edd6",
+      "set_code": "M-P",
+      "language_code": "zh-tw",
+      "english_display_name": "Mega Evolution Promotional cards",
+      "native_name": "特典卡 超級進化",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "3dc56ff3-cdfc-573b-86d2-2f07d439d3a6",
+      "set_code": "M1L",
+      "language_code": "zh-tw",
+      "english_display_name": "Mega Brave",
+      "native_name": "超級勇氣",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "8bc2bb53-9c42-5b81-988c-7e3c9e029e5f",
+      "set_code": "M1S",
+      "language_code": "zh-tw",
+      "english_display_name": "Mega Symphonia",
+      "native_name": "超級交響樂",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "32828f7c-dc1e-5ca9-b2d8-123dce722591",
+      "set_code": "M2",
+      "language_code": "zh-tw",
+      "english_display_name": "Inferno X",
+      "native_name": "烈獄狂火X",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "dc0cd156-0f26-5d40-9c31-572f9933a022",
+      "set_code": "M2a",
+      "language_code": "zh-tw",
+      "english_display_name": "MEGA Dream ex",
+      "native_name": "超級進化夢想ex",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "e1a8f7a2-a981-5ddc-9ed4-4d45bad629ea",
+      "set_code": "M3",
+      "language_code": "zh-tw",
+      "english_display_name": "Nihil Zero",
+      "native_name": "虛無歸零",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "fddfe1f9-6ed5-55e2-8610-f8d2fd69ab4d",
+      "set_code": "M4",
+      "language_code": "zh-tw",
+      "english_display_name": "Ninja Spinner",
+      "native_name": "忍者飛旋",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "41e9353b-bb1b-5965-9227-8cb0f804d1ac",
+      "set_code": "M5",
+      "language_code": "zh-tw",
+      "english_display_name": "Abyss Eye",
+      "native_name": "深淵之瞳",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "98b77caa-5114-5a1b-8214-b42971f9440b",
+      "set_code": "M6",
+      "language_code": "zh-tw",
+      "english_display_name": "Storm Emeralda",
+      "native_name": "綠寶石風暴",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "b01eef0a-7c02-5d1f-bd5c-ca4507944754",
+      "set_code": "M6a",
+      "language_code": "zh-tw",
+      "english_display_name": "30th Celebration",
+      "native_name": "30th CELEBRATION",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "ecee23e0-5058-5f54-b39a-7147a17727d3",
+      "set_code": "S-P",
+      "language_code": "zh-tw",
+      "english_display_name": "Sword & Shield Promotional cards",
+      "native_name": "特典卡 劍&盾",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "83193f7e-959b-5ddf-a958-707885d9815c",
+      "set_code": "SM-P",
+      "language_code": "zh-tw",
+      "english_display_name": "Sun & Moon Promotional cards",
+      "native_name": "特典卡 太陽&月亮",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "64efbb7f-dc08-5d16-8bce-0ecb44073fbf",
+      "set_code": "SV11W",
+      "language_code": "zh-tw",
+      "english_display_name": "White Flare",
+      "native_name": "純白閃焰",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "6e6cb5d1-d21b-5025-ba43-fc095d240687",
+      "set_code": "TW-BASE",
+      "language_code": "zh-tw",
+      "english_display_name": "Base Set",
+      "native_name": "基本系列",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "2f000f3d-7c3c-5282-930e-452629ebe9b6",
+      "set_code": "TW-EXLM",
+      "language_code": "zh-tw",
+      "english_display_name": "EX Legend Maker",
+      "native_name": "傳說的締造者",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "b2df11f8-269a-5f0e-8db6-428e98412a3f",
+      "set_code": "TW-PWC",
+      "language_code": "zh-tw",
+      "english_display_name": "Pikachu World Collection — Traditional Chinese card",
+      "native_name": "皮卡丘世界收藏（繁體中文卡）",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    },
+    {
+      "id": "1d98735e-860e-57d3-bad3-dccd36de8db9",
+      "set_code": "TW-SV11B",
+      "language_code": "zh-tw",
+      "english_display_name": "Black Bolt",
+      "native_name": "漆黑伏特",
+      "canonical_printings": 0,
+      "published": false,
+      "source_candidates": [],
+      "review_status": "no_verified_source_in_available_indexes",
+      "fresh_published_printings": 0,
+      "imported_this_run": 0
+    }
+  ]
+}

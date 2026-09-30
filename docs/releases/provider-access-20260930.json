@@ -1,0 +1,22 @@
+{
+  "observedAt": "2026-09-30T06:49:32.928Z",
+  "scope": "One read-only set-list request per existing configured provider; stop on authentication/payment/quota errors; no retry, credential changes or purchases",
+  "results": [
+    {
+      "provider": "scrydex",
+      "url": "https://api.scrydex.com/pokemon/v1/expansions?page_size=1",
+      "status": 401,
+      "errorCode": "INVALID_CREDENTIALS",
+      "elapsedMs": 482,
+      "records": null
+    },
+    {
+      "provider": "pikaqian",
+      "url": "https://api.pikaqian.com/v1/sets?page_size=1",
+      "status": 401,
+      "errorCode": "invalid_api_key",
+      "elapsedMs": 779,
+      "records": null
+    }
+  ]
+}
