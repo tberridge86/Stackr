@@ -3714,6 +3714,8 @@ assert.match(english49Job, /test -z "\$OTHER_IDENTIFIERS"/);
 assert.match(english49Job, /STACKR_ENGLISH49_CONFIRMATION: PUBLISH ENGLISH49/);
 assert.match(english49Job, /tools\/english49-publish-20260930\/publish\.mjs --execute/);
 assert.doesNotMatch(english49Job, /railway.+up |wrangler.+deploy|eas.+build/);
+assert.match(productionWorkflow, /\r?\n  deploy:\r?\n    if: [^\r\n]*inputs\.release_scope != 'english49'/,
+  'the general platform job must never run for the 49-front-only scope');
 assert.match(productionWorkflow, /--require-catalogue-api-ready/);
 assert.match(
   productionWorkflow,

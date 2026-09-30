@@ -933,7 +933,7 @@ jobs:
           if-no-files-found: warn
 
   deploy:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope != 'card_details' && inputs.release_scope != 'artwork3303' && inputs.release_scope != 'backend_only' && inputs.release_scope != 'queue1_artwork' && inputs.release_scope != 'pbl_artwork_links' && inputs.release_scope != 'mep89_artwork' && inputs.release_scope != 'pocket131_artwork' && inputs.release_scope != 'newsets480_metadata' && inputs.release_scope != 'anniversary201_artwork' && inputs.release_scope != 'printing_front_api' && inputs.release_scope != 'card_detail_front'
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope != 'card_details' && inputs.release_scope != 'english49' && inputs.release_scope != 'artwork3303' && inputs.release_scope != 'backend_only' && inputs.release_scope != 'queue1_artwork' && inputs.release_scope != 'pbl_artwork_links' && inputs.release_scope != 'mep89_artwork' && inputs.release_scope != 'pocket131_artwork' && inputs.release_scope != 'newsets480_metadata' && inputs.release_scope != 'anniversary201_artwork' && inputs.release_scope != 'printing_front_api' && inputs.release_scope != 'card_detail_front'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     environment: production
