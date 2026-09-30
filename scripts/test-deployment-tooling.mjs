@@ -3703,7 +3703,17 @@ assert.match(productionWorkflow, /STACKR_CATALOGUE_RIGHTS_RELEASE_APPROVED/);
 assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
-assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[card_details, backend_only, artwork3303, queue1_artwork, pbl_artwork_links, mep89_artwork, pocket131_artwork, newsets480_metadata, anniversary201_artwork, printing_front_api, card_detail_front, catalogue_assets, catalogue_api, full_platform\]/);
+assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[card_details, backend_only, english49, artwork3303, queue1_artwork, pbl_artwork_links, mep89_artwork, pocket131_artwork, newsets480_metadata, anniversary201_artwork, printing_front_api, card_detail_front, catalogue_assets, catalogue_api, full_platform\]/);
+const english49Job = productionWorkflow.match(/\n  english49:\n([\s\S]*?)(?=\n  [a-zA-Z0-9_]+:)/)?.[1];
+assert.ok(english49Job, 'the recovered 49-front batch has its own bounded job');
+assert.match(english49Job, /github\.ref == 'refs\/heads\/main'.+inputs\.release_scope == 'english49'/);
+assert.match(english49Job, /environment: production/);
+assert.match(english49Job, /test "\$EXPECTED_SHA" = "\$GITHUB_SHA"/);
+assert.match(english49Job, /test "\$FORBIDDEN_FLAGS" = 'false false false false'/);
+assert.match(english49Job, /test -z "\$OTHER_IDENTIFIERS"/);
+assert.match(english49Job, /STACKR_ENGLISH49_CONFIRMATION: PUBLISH ENGLISH49/);
+assert.match(english49Job, /tools\/english49-publish-20260930\/publish\.mjs --execute/);
+assert.doesNotMatch(english49Job, /railway.+up |wrangler.+deploy|eas.+build/);
 assert.match(productionWorkflow, /--require-catalogue-api-ready/);
 assert.match(
   productionWorkflow,
