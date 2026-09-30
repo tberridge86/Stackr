@@ -1,0 +1,71 @@
+{
+  "status": "published_manifest_and_public_bytes_verified",
+  "run_id": 36764129972,
+  "run_url": "https://github.com/tberridge86/Stackr/actions/runs/36764129972",
+  "source_revision": "57502c11220e4bf6fb15ff124b1d322ade2f52bc",
+  "approval_pr": 261,
+  "repair_pr": 264,
+  "verified_at": "2026-09-30T19:16:33.651Z",
+  "independent_verification_finished_at": "2026-09-30T19:21:43.498Z",
+  "cohort_sha256": "f7478efffa3f74a3e7e07fa768c3a7e34b894bd43693469812d697d9f34f68a8",
+  "archive_sha256": "ac6bb248dee86f9c83b68b25fd9a184470cc717a2a44220fa2c4a71d0adea3d5",
+  "artifact": {
+    "id": 11119539937,
+    "name": "english49-artwork-36764129972-1",
+    "createdAt": "2026-09-30T19:16:34Z",
+    "digest": "sha256:2a7529fb7825395c1d934afc3680b1d456a7c10d5c9d7582b52d123b1fca4c07",
+    "sha256": "2a7529fb7825395c1d934afc3680b1d456a7c10d5c9d7582b52d123b1fca4c07",
+    "bytes": 13662,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36764129972/artifacts/11119539937"
+  },
+  "receipt_sha256": "aedf97f504291eab6101993b7e3f59109ed0628710b7c3a1f6c316f870afa114",
+  "fronts": 49,
+  "derivative_references": 147,
+  "unique_storage_objects": 196,
+  "objects_created": 196,
+  "public_objects_independently_verified": 196,
+  "public_cards_verified": 49,
+  "previous_cohort_canaries_verified": 30,
+  "first_read_exceptions": {
+    "new_card_connection_failures": 6,
+    "storage_http429": 16,
+    "previous_canary_connection_failure": 1,
+    "remaining_after_bounded_slow_retry": 0
+  },
+  "timings": {
+    "scope": "Successful complete JSON responses from this Windows connection, including failed-only retry results; neither cold-cache nor universal sub-500ms proof.",
+    "card_detail": {
+      "min_ms": 225,
+      "median_ms": 349,
+      "p95_ms": 2714,
+      "max_ms": 5187
+    },
+    "manifest": {
+      "min_ms": 179,
+      "median_ms": 298,
+      "p95_ms": 2643,
+      "max_ms": 5078
+    }
+  },
+  "combined_recovery": {
+    "fronts": 7960,
+    "derivative_references": 23880,
+    "unique_storage_objects": 31786,
+    "previous_cohort_fronts_retained": 7911
+  },
+  "remaining": {
+    "artwork_worklist": 4201,
+    "sets_without_published_checklists": 94,
+    "logo_cases": [
+      "Six Gym promo-pack grouping/display links",
+      "Scarlet & Violet Energies canonical grouping",
+      "30thD/30thDC alias and usable cover"
+    ],
+    "pricing_and_device_gates": "See Railway restoration receipt and October 1 device handoff; unchanged by this artwork release"
+  },
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "source_activation": false,
+  "device_verified": false
+}
