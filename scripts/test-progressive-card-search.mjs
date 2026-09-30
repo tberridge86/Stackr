@@ -35,6 +35,16 @@ assert.equal(calls, 1); assert.equal(settled, false, 'canonical rows arrive whil
 manifest.reject(new Error('optional image service offline'));
 assert.equal((await pending)[0].cardId, 'ja-printing', 'artwork failure cannot erase matched cards');
 
+const energyRequests = [];
+client.search = async input => { energyRequests.push(input); return { data: { results: [] } }; };
+const energySetId = '11111111-1111-4111-8111-111111111111';
+await search('R', { setId: energySetId, language: 'en' });
+assert.deepEqual(energyRequests, [{ q: 'R', language: 'en', setId: energySetId, limit: 40 }]);
+await search('R');
+await search('R', { setId: 'not-a-canonical-set' });
+await search('%', { setId: energySetId });
+assert.equal(energyRequests.length, 1, 'Only an exact selected set can enable a one-character collector search');
+
 // Execute the real search-row mapper; early and enriched rows keep the same identity.
 const images = deferred(); let firstRows;
 const card = { id: 'ja-printing', language: 'ja', name: 'Card', number: '157', images: {}, set: { id: 'sv2a', name: 'Set' }, raw_data: { stackr: { variants: ['finish'] } } };

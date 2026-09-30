@@ -1932,6 +1932,7 @@ export interface operations {
     searchCatalog: {
         parameters: {
             query: {
+                /** @description At least two characters for general search. A single letter or digit collector identifier is accepted with a canonical setId. */
                 q: string;
                 language?: components["parameters"]["Language"];
                 setId?: string;

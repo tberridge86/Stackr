@@ -1150,7 +1150,7 @@ export async function resolveStackrCard(
       // A UUID may be a variant ID; exact search resolves both printing and variant IDs.
     }
   }
-  if (value.length < 2) return null;
+  if (value.length < 2 && !(options.setId && UUID_PATTERN.test(options.setId) && /^[A-Za-z0-9]$/.test(value))) return null;
   const response = await client.search({
     q: value,
     language: toStackrApiLanguage(options.language) ?? undefined,
@@ -1393,7 +1393,7 @@ export async function searchStackrCards(
   client: StackrApiClient = stackrApiClient,
 ) {
   const value = String(query ?? '').trim();
-  if (value.length < 2) return [];
+  if (value.length < 2 && !(options.setId && UUID_PATTERN.test(options.setId) && /^[A-Za-z0-9]$/.test(value))) return [];
   if (!shouldUseStackrApi(client)) {
     const cards = await legacySearchCards(value, options.language, options.limit ?? 40);
     return options.setId ? cards.filter((card) => card.set.id === options.setId) : cards;

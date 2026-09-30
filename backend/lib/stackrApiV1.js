@@ -141,7 +141,8 @@ export function parseSearchQuery(query = '', options = {}) {
   // Inside a selected set, a numeric multipart identifier such as Chinese
   // Gem Pack "01 03" is one collector number, not set code 01 + number 03.
   const multipartCollector = isUuid(options.setId) && /^\d+(?:\s+\d+)+$/.test(raw);
-  const collectorToken = multipartCollector ? raw : [...tokens]
+  const alphabeticCollector = isUuid(options.setId) && /^[A-Za-z]{1,4}$/.test(raw);
+  const collectorToken = multipartCollector || alphabeticCollector ? raw : [...tokens]
     .reverse()
     .find((token) => /[0-9]/.test(token) && /^[\p{L}\p{N}./_-]+$/u.test(token));
   const setCollector = multipartCollector ? null : raw.match(/^([A-Za-z0-9._-]{2,20})\s+([\p{L}\p{N}./_-]*\d[\p{L}\p{N}./_-]*)$/u);
@@ -931,8 +932,12 @@ async function searchCollectorNumber(supabase, parsed, limit, language, selected
   }
   let exactQuery = table(supabase, 'api', 'catalogue_cards')
     .select('*')
-    .eq('collector_number', parsed.setCollectorNumber ?? parsed.raw)
     .limit(Math.max(limit * 4, 80));
+  // Letter-only Energy identifiers are case-insensitive within an exact set.
+  // Query the identifier directly instead of scanning a bounded set prefix.
+  exactQuery = selectedSetId && /^[A-Za-z]{1,4}$/.test(parsed.raw)
+    ? exactQuery.ilike('collector_number', parsed.raw)
+    : exactQuery.eq('collector_number', parsed.setCollectorNumber ?? parsed.raw);
   exactQuery = applyLanguageFilter(exactQuery, language);
   if (selectedSetId) exactQuery = exactQuery.eq('set_id', selectedSetId);
 
@@ -1474,7 +1479,8 @@ export function createCatalogueV1Service(options) {
 
     async search(input = {}) {
       const q = clean(input.q ?? input.query);
-      if (!q || q.length < 2) throw new ApiError(400, 'invalid_search_query', 'Search query must contain at least two characters.');
+      const shortSetCollector = isUuid(input.setId) && /^[A-Za-z0-9]$/.test(q ?? '');
+      if (!q || (q.length < 2 && !shortSetCollector)) throw new ApiError(400, 'invalid_search_query', 'Search query must contain at least two characters, or a collector identifier within a selected set.');
       if (q.length > 160) throw new ApiError(400, 'invalid_search_query', 'Search query is too long.');
       const limit = parseLimit(input.limit, 20, 100);
       const language = clean(input.language);
