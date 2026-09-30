@@ -1,0 +1,30 @@
+{
+  "cohort_sha256": "11510006cb9a6af38b1c2735f57e4906e1d19b9aee10fa10615f572eeebc4031",
+  "artifacts": [
+    {
+      "id": 601945434,
+      "kind": "github_release_asset",
+      "sha256": "b0ae19c658ddee8abf2a855c7ad3e7ee186933e45b0c466f17dd5c632877211c",
+      "size_in_bytes": 182095064,
+      "source_code": "pokemon_card_kr_official",
+      "language_code": "ko"
+    }
+  ],
+  "source_counts": {
+    "pokemon_card_kr_official": 232
+  },
+  "language_counts": {
+    "ko": 232
+  },
+  "set_counts": {
+    "ko/SV4M": 93,
+    "ko/SV5K": 46,
+    "ko/SV4K": 93
+  },
+  "fronts": 232,
+  "derivative_references": 696,
+  "object_references": 928,
+  "archive_readback_verified_at": "2026-09-30T22:54:10.502Z",
+  "independent_visual_review": "Root read all 239 faces; accepted 232 exact front identities and held seven name/collector conflicts",
+  "status": "prepared_not_published"
+}
