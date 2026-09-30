@@ -14,6 +14,29 @@ import { createGatewayOriginAuth } from '../../backend/lib/gatewayOriginAuth.js'
 const USER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const DEVICE_ID = 'device:test:00000001';
 
+test('selected-set collector searches reach the backend while unscoped and ambiguous queries stay rejected', async () => {
+  const forwarded = [];
+  const env = environment();
+  const deps = { cache: new MemoryCache(), fetchImpl: async (url) => {
+    forwarded.push(new URL(url));
+    return Response.json({ data: { cards: [{ cardId: USER_ID }] } });
+  } };
+  for (const q of ['R', 'r', '1', 'WAT']) {
+    const response = await handleRequest(request(`/v1/search?q=${q}&setId=${USER_ID}&language=en`), env, context(), deps);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).data.cards[0].cardId, USER_ID);
+    assert.equal(forwarded.at(-1).searchParams.get('q'), q);
+    assert.equal(forwarded.at(-1).searchParams.get('setId'), USER_ID);
+    assert.equal(forwarded.at(-1).searchParams.get('language'), 'en');
+  }
+  for (const query of ['q=R', 'q=R&setId=bad', `q=&setId=${USER_ID}`, `q=%20&setId=${USER_ID}`,
+    `q=%25&setId=${USER_ID}`, `q=_&setId=${USER_ID}`, `q=R&q=WAT&setId=${USER_ID}`,
+    `q=R&setId=${USER_ID}&setId=${USER_ID}`, `q=R&setId=${USER_ID}&language=bad`]) {
+    assert.equal((await handleRequest(request(`/v1/search?${query}`), env, context(), deps)).status, 400, query);
+  }
+  assert.equal(forwarded.length, 4, 'invalid searches must never reach the origin');
+});
+
 test('general price mode reaches the owner origin while retaining private access and strict validation', async () => {
   const env = environment({ STACKR_PRICING_OWNER_USER_ID: USER_ID });
   let forwarded = 0;
