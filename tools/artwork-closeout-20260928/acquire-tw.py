@@ -38,8 +38,11 @@ def verify_page(raw,row):
  if p.codes!=[code] or norm(code)!=norm(row['set_code']):raise ValueError('Official expansion differs')
  # Official filenames also prefix older symbols or append a regulation letter.
  symbol_pattern=r'(?:S_mark_expantion_)?'+re.escape(code)+r'(?:[_\.@ ]|[D-J](?:[_\.@ ]))'
+ # Exact official filenames observed on the frozen 2026-09-30 residual sets.
+ # Do not broadly accept a prefix that could also match another expansion.
+ residual_symbols={'SN':'SN-F@4x.png','SV4K':'exp_sv4K.png','SV4M':'exp_sv4M.png','SV5K':'expansion_mark_SV5K.png','SV5M':'expansion_mark_SV5M.png'}
  promo=code in {'SV-P','S-P','SM-P'} and str(row['source_total'])==code and row['printed_total']==0
- symbol_ok=len(p.symbols)==1 and (re.match(symbol_pattern,p.symbols[0],re.IGNORECASE) or (promo and p.symbols[0]=='PROMO.MARK.png'))
+ symbol_ok=len(p.symbols)==1 and (re.match(symbol_pattern,p.symbols[0],re.IGNORECASE) or (promo and p.symbols[0]=='PROMO.MARK.png') or p.symbols[0]==residual_symbols.get(code))
  if not symbol_ok:raise ValueError('Printed set mark differs')
  parts=''.join(p.number).strip().split('/')
  unnumbered=len(parts)==1 and str(row['source_total'])=='-1' and re.fullmatch('[A-Z]{3}',str(row['source_number']))
