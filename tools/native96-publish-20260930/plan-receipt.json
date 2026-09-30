@@ -1,0 +1,61 @@
+{
+  "cohort_sha256": "6c844ebe22b51ed3dc18a3c30486693e63768702008ac564a3cd980a5fbecd38",
+  "artifacts": [
+    {
+      "id": 601835903,
+      "kind": "github_release_asset",
+      "sha256": "d72de9f1a9c45f8f25826ec6d8a18894aa7a78159f4a44d1ddda06dcedfecaae",
+      "size_in_bytes": 3452273,
+      "source_code": "tcgplayer_card_artwork",
+      "language_code": "en"
+    },
+    {
+      "id": 601835898,
+      "kind": "github_release_asset",
+      "sha256": "b6c2526c0a1d87a563afb6a2e2b5821c495ef29d7c2ffe7d03a5f8d12f71c81c",
+      "size_in_bytes": 6298444,
+      "source_code": "tcgplayer_card_artwork",
+      "language_code": "ja"
+    },
+    {
+      "id": 601835899,
+      "kind": "github_release_asset",
+      "sha256": "6e64f63ec15bee1f7160909fe8f3bf8abdda4f28c67031c6392cd41464ec8910",
+      "size_in_bytes": 18092141,
+      "source_code": "tcgplayer_card_artwork",
+      "language_code": "ja"
+    }
+  ],
+  "source_counts": {
+    "tcgplayer_card_artwork": 96
+  },
+  "language_counts": {
+    "en": 16,
+    "ja": 80
+  },
+  "set_counts": {
+    "ja/E4": 18,
+    "en/xya": 4,
+    "ja/E2": 6,
+    "en/tk-sm-l": 2,
+    "ja/web1": 3,
+    "ja/E1": 9,
+    "ja/E3": 10,
+    "ja/PCG4": 4,
+    "ja/PCG2": 7,
+    "ja/PCG1": 11,
+    "ja/E5": 7,
+    "en/ex5.5": 5,
+    "ja/PCG3": 5,
+    "en/tk-sm-r": 1,
+    "en/tk-xy-latia": 2,
+    "en/tk-xy-su": 1,
+    "en/2024sv": 1
+  },
+  "fronts": 96,
+  "derivative_references": 288,
+  "object_references": 384,
+  "archive_readback_verified_at": "2026-09-30T21:38:20.306Z",
+  "independent_visual_review": "English16 root review and Japanese81 root review; exclude Japanese E3/015 mismatch; supersedes inherited QC",
+  "status": "prepared_not_published"
+}

@@ -5,7 +5,7 @@ import YAML from 'yaml';
 
 const workflow = YAML.parse(readFileSync(new URL('../../.github/workflows/deploy-production.yml', import.meta.url), 'utf8'));
 const jobs = workflow.jobs;
-const scopes = ['tw200', 'english45', 'sh33', 'residual146'];
+const scopes = ['tw200', 'english45', 'sh33', 'residual146', 'native96'];
 
 const matchingJobs = (scope) => Object.entries(jobs)
   .filter(([, job]) => String(job.if ?? '').includes(`inputs.release_scope == '${scope}'`))
