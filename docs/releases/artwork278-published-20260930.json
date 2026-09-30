@@ -1,0 +1,202 @@
+{
+  "verified_at": "2026-09-30T20:47:56.464Z",
+  "status": "published_and_independently_verified",
+  "fronts_published_this_pass": 278,
+  "derivative_references_this_pass": 834,
+  "unique_image_objects_this_pass": 1112,
+  "public_card_checks_passed": 278,
+  "public_image_checks_passed": 1112,
+  "previous_api_continuity": {
+    "passed": 79,
+    "total": 79,
+    "scope": "30 earlier multilingual canaries plus all49 English49 fronts"
+  },
+  "combined_recovery": {
+    "fronts": 8238,
+    "derivative_references": 24714,
+    "distinct_storage_objects": 32898
+  },
+  "lanes": [
+    {
+      "scope": "tw200",
+      "fronts": 200,
+      "run_id": 36770968764,
+      "run_url": "https://github.com/tberridge86/Stackr/actions/runs/36770968764",
+      "source_revision": "c1eaecb62f02e73c98cf3bd86801b67f90d9d536",
+      "cohort_sha256": "e269a59d8665fa99d632b4c19470062cf29e554b3ee0c5445fd60665ca61b915",
+      "archive_sha256": "739936977fb81f8802f37fb402eaf86358820f684fcf6481122f43d63cedfe71",
+      "receipt_sha256": "2d6bc7c275c26a4160a2fe42e48b7ba3f90065570691fc1c8ad4076b0533b24a",
+      "artifact": {
+        "id": 11124157336,
+        "name": "tw200-artwork-36770968764-1",
+        "createdAt": "2026-09-30T20:22:49Z",
+        "digest": "sha256:2ad4f173dabe6703a448363b11d754976bb6a66dbac618faac8ccfc8a7b62f27",
+        "sha256": "2ad4f173dabe6703a448363b11d754976bb6a66dbac618faac8ccfc8a7b62f27",
+        "bytes": 59286,
+        "url": "https://github.com/tberridge86/Stackr/actions/runs/36770968764/artifacts/11124157336"
+      },
+      "objects_created": 800,
+      "objects_reused": 0,
+      "first_attempt_card_failures": 0,
+      "first_attempt_object_failures": 50,
+      "timings": {
+        "card_detail": {
+          "samples": 200,
+          "min_ms": 238,
+          "median_ms": 471,
+          "p95_ms": 566,
+          "max_ms": 3711
+        },
+        "manifest": {
+          "samples": 200,
+          "min_ms": 171,
+          "median_ms": 341,
+          "p95_ms": 390,
+          "max_ms": 1314
+        }
+      }
+    },
+    {
+      "scope": "english45",
+      "fronts": 45,
+      "run_id": 36773167099,
+      "run_url": "https://github.com/tberridge86/Stackr/actions/runs/36773167099",
+      "source_revision": "a1e268dcb9fcfb5254c2f4587894ebc6d366e014",
+      "cohort_sha256": "866c6ba24eca51385c5e6b6ca6aa8adef4a8d7b9a7f2edbce0ef27bf3c46ade4",
+      "archive_sha256": "02eef8b377d576700d03a4a56b94fed57119c7e2aa912b19b8de14cf3b6d1bff",
+      "receipt_sha256": "b962f1352ef295f225295533921cd8475d63815b00faa09380794551bd17a87c",
+      "artifact": {
+        "id": 11123404891,
+        "name": "english45-artwork-36773167099-1",
+        "createdAt": "2026-09-30T20:34:00Z",
+        "digest": "sha256:2cc861a32c72eb029f4dd6028c66efb4a5a7643bcc459787b0b94e92946831bf",
+        "sha256": "2cc861a32c72eb029f4dd6028c66efb4a5a7643bcc459787b0b94e92946831bf",
+        "bytes": 12585,
+        "url": "https://github.com/tberridge86/Stackr/actions/runs/36773167099/artifacts/11123404891"
+      },
+      "objects_created": 174,
+      "objects_reused": 6,
+      "first_attempt_card_failures": 0,
+      "first_attempt_object_failures": 10,
+      "timings": {
+        "card_detail": {
+          "samples": 45,
+          "min_ms": 434,
+          "median_ms": 467,
+          "p95_ms": 565,
+          "max_ms": 1399
+        },
+        "manifest": {
+          "samples": 45,
+          "min_ms": 174,
+          "median_ms": 345,
+          "p95_ms": 389,
+          "max_ms": 402
+        }
+      }
+    },
+    {
+      "scope": "sh33",
+      "fronts": 33,
+      "run_id": 36773609955,
+      "run_url": "https://github.com/tberridge86/Stackr/actions/runs/36773609955",
+      "source_revision": "a1e268dcb9fcfb5254c2f4587894ebc6d366e014",
+      "cohort_sha256": "5371389f17e55296787b644338db0893944f1812e1db89a38666f458b1a7f598",
+      "archive_sha256": "628a56f3502eae5ee92d1f0ef6cb233b74cea4c428ea8a671b90eb7085fe8170",
+      "receipt_sha256": "df96a3e882110c1fb1b107abe3d2e965ff25a3c58d32ce18faf8f887b53bca98",
+      "artifact": {
+        "id": 11124767700,
+        "name": "sh33-artwork-36773609955-1",
+        "createdAt": "2026-09-30T20:37:23Z",
+        "digest": "sha256:506fb8ffa43e2e266709366cee461e5b4f8260567d79311ecd433046dc80a3eb",
+        "sha256": "506fb8ffa43e2e266709366cee461e5b4f8260567d79311ecd433046dc80a3eb",
+        "bytes": 9369,
+        "url": "https://github.com/tberridge86/Stackr/actions/runs/36773609955/artifacts/11124767700"
+      },
+      "objects_created": 132,
+      "objects_reused": 0,
+      "first_attempt_card_failures": 0,
+      "first_attempt_object_failures": 0,
+      "timings": {
+        "card_detail": {
+          "samples": 33,
+          "min_ms": 1374,
+          "median_ms": 1486,
+          "p95_ms": 2260,
+          "max_ms": 2261
+        },
+        "manifest": {
+          "samples": 33,
+          "min_ms": 291,
+          "median_ms": 1334,
+          "p95_ms": 1396,
+          "max_ms": 1454
+        }
+      }
+    }
+  ],
+  "timing_scope": "Complete JSON responses from this Windows connection, including request pacing and any retry/backoff. Not cold-cache, device, database-only, or universal sub-500ms proof.",
+  "english_first_attempt": {
+    "run_id": 36772336798,
+    "status": "failed_before_publication",
+    "error": "Public object read 429",
+    "associations_published": 0,
+    "immutable_files_preserved": 6,
+    "receipt_artifact": {
+      "id": 11124182982,
+      "name": "english45-artwork-36772336798-1",
+      "createdAt": "2026-09-30T20:26:13Z",
+      "digest": "sha256:ae916b92a4664c82eb4abc0e772c1e4ce4554c250bd7f4618beac6410151c97c",
+      "sha256": "ae916b92a4664c82eb4abc0e772c1e4ce4554c250bd7f4618beac6410151c97c",
+      "bytes": 927,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/36772336798/artifacts/11124182982"
+    }
+  },
+  "remaining": {
+    "artwork_cases": 3923,
+    "by_category": {
+      "Exact source needed": 3285,
+      "provider_image_unavailable": 1,
+      "identity_conflict": 5,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20,
+      "Language identity conflict": 605,
+      "Composite artwork review": 2,
+      "Source image conflict": 1
+    },
+    "by_language": {
+      "en": 619,
+      "ja": 2221,
+      "ko": 239,
+      "zh-cn": 829,
+      "zh-tw": 15
+    },
+    "sets_without_published_checklists": 94,
+    "logo_cases": [
+      "Six Gym promo-pack grouping/display links",
+      "Scarlet & Violet Energies canonical grouping",
+      "30thD/30thDC alias and usable cover"
+    ],
+    "separate_SH_total_discrepancy": {
+      "production": 78,
+      "staging": 59,
+      "canonical_printings": 59,
+      "changed": false
+    }
+  },
+  "metadata_changes": [
+    {
+      "set_code": "SH",
+      "field": "printed_total",
+      "before": 38,
+      "after": 53,
+      "preserved_printings": 59,
+      "preserved_total": 78
+    }
+  ],
+  "pricing_changes": 0,
+  "holdings_changes": 0,
+  "source_activation_changes": 0,
+  "device_verified": false
+}
