@@ -3704,7 +3704,7 @@ assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs -
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
 assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[card_details, backend_only, english49, artwork3303, queue1_artwork, pbl_artwork_links, mep89_artwork, pocket131_artwork, newsets480_metadata, anniversary201_artwork, printing_front_api, card_detail_front, catalogue_assets, catalogue_api, full_platform\]/);
-const english49Job = productionWorkflow.match(/\n  english49:\n([\s\S]*?)(?=\n  [a-zA-Z0-9_]+:)/)?.[1];
+const english49Job = productionWorkflow.match(/\r?\n  english49:\r?\n([\s\S]*?)(?=\r?\n  [a-zA-Z0-9_]+:)/)?.[1];
 assert.ok(english49Job, 'the recovered 49-front batch has its own bounded job');
 assert.match(english49Job, /github\.ref == 'refs\/heads\/main'.+inputs\.release_scope == 'english49'/);
 assert.match(english49Job, /environment: production/);
