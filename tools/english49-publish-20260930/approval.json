@@ -1,12 +1,12 @@
 {
-  "approved": false,
+  "approved": true,
   "cohort_sha256": "f7478efffa3f74a3e7e07fa768c3a7e34b894bd43693469812d697d9f34f68a8",
   "fronts": 49,
   "source_code": "scrydex",
   "language_code": "en",
-  "store_resize_display": false,
+  "store_resize_display": true,
   "source_wide_approval": false,
-  "owner_statement": null,
-  "approved_at": null,
-  "reason": "The existing recorded Scrydex attestation is bounded to the earlier 89 MEP fronts. The 49 additional originals are now frozen and reviewable; confirm coverage for storing, resizing and displaying this batch before production publication."
+  "owner_statement": "Also, I have sourced permission for everything",
+  "approved_at": "2026-09-30",
+  "reason": "Owner confirmation received in the September 30 release-planning conversation, directly following the reported source-permission blocker for these 49 prepared fronts. Recorded as the owner's attestation for storing, resizing and displaying this frozen batch, not an independent licence verification. This operational approval remains limited to the exact 49-front cohort; it does not activate source-wide acquisition, change earlier approvals, resolve other source/identity exceptions, or dispatch publication or an app build."
 }
