@@ -1,0 +1,17 @@
+{
+  "approved": true,
+  "store_resize_display": true,
+  "fronts": 232,
+  "cohort_sha256": "11510006cb9a6af38b1c2735f57e4906e1d19b9aee10fa10615f572eeebc4031",
+  "source_wide_approval": false,
+  "source_counts": {
+    "pokemon_card_kr_official": 232
+  },
+  "language_counts": {
+    "ko": 232
+  },
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-09-30",
+  "reason": "Operational attestation applying existing owner source permission and publication instruction to exactly 232 independently reviewed Korean fronts. Preserve official watermarks, originals, metadata, prices and holdings. Seven native-name conflicts are excluded. New provenance remains inactive; no source-wide acquisition approval or exact-finish claim."
+}
