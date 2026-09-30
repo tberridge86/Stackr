@@ -1,6 +1,6 @@
-# Stackr remaining work — 29 September evening
+# Stackr remaining work — 30 September
 
-For the owner-facing summary and the exact outstanding logo/set list, use the [plain-English report](october-1-plain-english-status-20260929.md). PR255 is merged; [run 36621263622](https://github.com/tberridge86/Stackr/actions/runs/36621263622) has resumed the frozen artwork batch. The older failed-run figures below are preserved evidence, not a current upload counter.
+For the owner-facing summary and the exact outstanding logo/set list, use the [plain-English report](october-1-plain-english-status-20260929.md). [Run 36621263622](https://github.com/tberridge86/Stackr/actions/runs/36621263622) completed the frozen artwork batch. The [independently verified final receipt](artwork7911-published-20260930.json) and 30/30 live API checks supersede the historical failed-run figures below.
 
 ## Single publication owner
 
@@ -19,7 +19,7 @@ Continue the existing protected `artwork3303` lane only. Its production-deployme
 
 | Work | Measured position | Completion evidence |
 |---|---|---|
-| Approved recovered artwork | 7,911 fronts / 23,733 derivative references prepared. Failed run has 3,275 verified files of 31,590 planned storage objects; **0 cohort assets/links published**. These are file counts, not card counts. | Recover the observed HTTP 520 retry gap, complete uploads, publish the associations atomically, verify final receipt and public API/manifest delivery. |
+| Approved recovered artwork | **Complete:** 7,911 fronts / 23,733 derivative references published; all 31,590 storage objects verified; 7,911 assets/links read back; 30/30 live API checks passed. | Retain the final receipt and existing immutable files; check rendering in the October native release. Do not republish this batch. |
 | Artwork outside that approved batch | 4,250 cases from the frozen 12,161-case artwork worklist. | Resolve each source/identity case before adding a separately verified cohort; do not mark these complete when the 7,911 publish. |
 | New set checklists | 94 of 102 newly created sets remain unpublished with zero canonical cards; 8 have published cards. | Source and reconcile real checklists; preserve set IDs/names and publication guards. |
 | Pricing delivery | Existing pricing/valuation fixes are merged; newer backend and refresh-worker delivery is not verified. Last known provider-account rejection was an expired Railway trial on September 27. | Confirm restored deployment access, deploy through existing lanes, verify worker persistence and reconcile owner totals. No paid-plan change is authorized. |

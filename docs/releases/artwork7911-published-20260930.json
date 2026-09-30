@@ -1,0 +1,76 @@
+{
+  "run_id": 36621263622,
+  "run_url": "https://github.com/tberridge86/Stackr/actions/runs/36621263622",
+  "source_revision": "f7199822d90eba83b2fb3b0b602b85a0ed2e3df2",
+  "status": "published_manifest_and_public_bytes_verified",
+  "started_at": "2026-09-29T19:45:54.337Z",
+  "verified_at": "2026-09-30T00:25:54.092Z",
+  "independent_verification_at": "2026-09-30T02:51:22.353Z",
+  "cohort_sha256": "20f4d3b1e5673f494c05c0330257296f78e3b35c21b06254523dfb066ea2f2cd",
+  "artifact": {
+    "id": 11070420891,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36621263622/artifacts/11070420891",
+    "bytes": 2388337,
+    "sha256": "4cca68cbda2db41af3f3665c994b55a748fcb0b14c1f4206257b4ea96e703b18",
+    "receipt_bytes": 12765444,
+    "receipt_sha256": "257545e9e5de25adf7c21be445602bc9faa01c7e808e49c106fab2aa8d088262"
+  },
+  "assets": 7911,
+  "links": 7911,
+  "fronts": 7911,
+  "derivative_references": 23733,
+  "unique_storage_objects": 31590,
+  "objects_verified": 31590,
+  "objects_created_this_run": 28315,
+  "objects_reused_and_verified": 3275,
+  "independent_receipt_checks": "Exact frozen cohort hash; all printing IDs, asset associations, set/language/version identities and 31,590 expected storage keys/hashes matched; every receipt object verified.",
+  "by_language": {
+    "en": 471,
+    "ja": 2398,
+    "zh-tw": 5042
+  },
+  "database_readback": {
+    "observed_at": "2026-09-30T02:49:53.677506Z",
+    "project": "oakdbbzdqwurpjnoqhmu",
+    "cohort_assets": 7911,
+    "cohort_printings": 7911,
+    "linked_assets": 7911,
+    "version_links": 7911
+  },
+  "api_canaries": {
+    "observed_at": "2026-09-30T02:49:26.320Z",
+    "finished_at": "2026-09-30T02:49:51.333Z",
+    "passed": 30,
+    "total": 30,
+    "by_language": {
+      "en": 10,
+      "ja": 10,
+      "zh-tw": 10
+    },
+    "evidence": "artwork7911-api-canaries-20260930.json",
+    "sha256": "0fb030c46ccbd947ba19dc2948ced74393093323cc0356e19b9b7c36edcedac2",
+    "scope": "Live card-detail identity/front hash and printing-specific manifest with three derivatives; not device or universal latency proof."
+  },
+  "staging_rehearsal": {
+    "status": "passed_and_rolled_back",
+    "assets": 7911,
+    "links": 7911
+  },
+  "production_rehearsal": {
+    "status": "passed_and_rolled_back",
+    "assets": 7911,
+    "links": 7911
+  },
+  "ownership_changes": 0,
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "device_verified": false,
+  "remaining": {
+    "separate_artwork_cases": 4250,
+    "unpublished_sets_without_checklists": 94,
+    "unassigned_supplied_logos": 7,
+    "missing_verified_logo": "30thD",
+    "pricing_backend_and_workers": "Delivery and fresh totals remain unverified",
+    "native_device": "October 1 normal TestFlight delivery and device acceptance remain pending"
+  }
+}

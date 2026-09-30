@@ -1,12 +1,14 @@
 # Stackr: what is ready and what is still missing
 
-Updated 29 September 2026, evening. This report separates card records, card pictures, set checklists and set logos. They are different jobs and their outstanding counts must not be added together.
+Updated 30 September 2026, 02:50 UTC. This report separates card records, card pictures, set checklists and set logos. They are different jobs and their outstanding counts must not be added together.
 
-## Artwork publication underway
+## Approved artwork publication completed
 
-[The active publication run](https://github.com/tberridge86/Stackr/actions/runs/36621263622) is processing the approved **7,911 card fronts and 23,733 display-size images**. It uses the recovered files already prepared, including earlier greeting-chat work. It does not collect those pictures again.
+[Run 36621263622](https://github.com/tberridge86/Stackr/actions/runs/36621263622) successfully published all **7,911 approved card fronts and 23,733 display-size image references**. Verification finished at **00:25:54 UTC on 30 September** (01:25 UK time).
 
-The earlier run preserved **3,275 verified files** before a storage error. [PR255](https://github.com/tberridge86/Stackr/pull/255) fixed the missing retry for that error and passed all eight applicable checks, plus 63 focused tests. The resumed run must finish its file checks and publication before these pictures count as delivered through the API. At the 20:52 UTC database check, **4,633 new storage files** had been created since this run began, while **zero of this batch's card-front associations were published**; the combined rehearsal/publication step was still running. The storage count is a transfer-progress proxy, not a verified card count. This is a checkpoint, not a final outcome. Require the final receipt and API readback before release.
+All **31,590 unique storage files** passed the publisher's public-byte checks: **28,315 were created in this run**, and **3,275 existing files were reused and verified**. The final downloaded artifact checksum was independently verified. Its entire printing/set/language/version and file-key/hash inventory matches the frozen approved plan. A fresh production read confirms **7,911 assets and 7,911 links**; **30 of 30 independent live API checks** passed across English, Japanese and Traditional Chinese. See the [completion receipt and checksums](artwork7911-published-20260930.json) and [API results](artwork7911-api-canaries-20260930.json).
+
+This completes **100% of this approved batch**, not every artwork gap in the catalogue. The separate **4,250 artwork exceptions**, **94 missing set checklists**, remaining logo identities, pricing delivery and phone checks remain open. No metadata, prices or holdings were changed by this publication.
 
 ## Plain-English position
 
@@ -14,7 +16,7 @@ The earlier run preserved **3,275 verified files** before a storage error. [PR25
 |---|---|---|
 | Card details and set names | The signed-off import's 677 set/product operations are present. Stored card details now reach the API correctly; 57,436 published printings were retained with no differences from their stored values. | **Aura Seeker** is the one unresolved original metadata identity. Some dates/totals remain deliberately unknown or provisional where the source is incomplete. Matching stored values does not mean every optional card field is filled. |
 | Storm Emeralda and anniversary cards | All **480 cards in the checked release group** passed identity, saved-detail and matching artwork-reference checks. | The new app still needs checking on the phone. This 480-card result is not a promise that every anniversary product in every language is complete. |
-| Recovered card pictures | **7,911 fronts** are prepared and approved; their publication has resumed. | Finish and verify that publication. Separately, **4,250 artwork cases** remain outside this batch; reasons are below. |
+| Recovered card pictures | **7,911 fronts and 23,733 display-size references are published and verified**, with 30/30 live API checks passing. | **4,250 separate artwork cases** remain outside this completed batch; reasons are below. Phone rendering still needs checking. |
 | New sets and card lists | **102 new set records** exist; 8 have published cards. | **94 sets have no imported card checklist** and remain unpublished. Full names and codes are listed below. A set name being present does not mean its cards have been imported. |
 | Set logos | 134 supplied Chinese logo files are retained. Seven additional exact mappings now bring the release-code total to **130**: four retained files plus three newly sourced PNGs. Japanese crop corrections are included. | **7 supplied images still lack exact set links**; **30thD** still needs a verified logo and mapping. New-app rendering is unverified; these bundled logos are not a new API asset publication. |
 | CoroCoro covers | Checks passed for the **81 supplied covers** and the curated CoroCoro records. | Check the installed screens. This is not a count of every issue ever published. |
