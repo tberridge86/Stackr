@@ -1,0 +1,158 @@
+{
+  "observedAt": "2026-09-30T18:43:10.756Z",
+  "scope": "Fresh read-only owner inputs, canonical mappings and stored prices; existing implementation replay; not phone or authenticated gateway acceptance",
+  "providerCalls": 0,
+  "exact": {
+    "total": 124.13,
+    "totalUnits": 366,
+    "distinctPriceIdentities": 165,
+    "pricedUnits": 179,
+    "freshUnits": 0,
+    "olderPriceUnits": 179,
+    "unpricedUnits": 187,
+    "pending": 0,
+    "retrying": 0,
+    "unsupported": 3,
+    "unresolved": 184,
+    "noProviderQuote": 0,
+    "currency": "GBP",
+    "oldestSourceAt": "2026-09-29T22:54:32.908+00:00",
+    "latestSourceAt": "2026-09-29T22:55:11.128+00:00",
+    "exactPricedUnits": 179,
+    "generalEstimateUnits": 0
+  },
+  "general": {
+    "total": 1142.79,
+    "totalUnits": 366,
+    "distinctPriceIdentities": 317,
+    "pricedUnits": 360,
+    "freshUnits": 0,
+    "olderPriceUnits": 360,
+    "unpricedUnits": 6,
+    "pending": 0,
+    "retrying": 0,
+    "unsupported": 3,
+    "unresolved": 3,
+    "noProviderQuote": 0,
+    "currency": "GBP",
+    "oldestSourceAt": "2026-09-29T22:54:32.896+00:00",
+    "latestSourceAt": "2026-09-29T22:55:11.128+00:00",
+    "exactPricedUnits": 179,
+    "generalEstimateUnits": 181,
+    "valuationBasis": "general_card_estimate"
+  },
+  "unpriced": [
+    {
+      "card_id": "sv10-193",
+      "set_id": "sv10",
+      "language": "en",
+      "quantity": 1,
+      "grade": "10",
+      "grade_company": "Ace",
+      "reason": "ambiguous_saved_identity",
+      "generalReason": "ambiguous_saved_identity"
+    },
+    {
+      "card_id": "svp-203",
+      "set_id": "svp",
+      "language": "en",
+      "quantity": 1,
+      "grade": "10",
+      "grade_company": "ACE",
+      "reason": "unsupported_scope",
+      "generalReason": "unsupported_scope"
+    },
+    {
+      "card_id": "swsh12pt5gg-GG10",
+      "set_id": "swsh12pt5gg",
+      "language": "en",
+      "quantity": 1,
+      "grade": "9",
+      "grade_company": "CGC",
+      "reason": "unsupported_scope",
+      "generalReason": "unsupported_scope"
+    },
+    {
+      "card_id": "pokedata:57932",
+      "set_id": "ja:S12a",
+      "language": "ja",
+      "quantity": 1,
+      "grade": null,
+      "grade_company": null,
+      "reason": "unresolved_saved_card",
+      "generalReason": "general_identity_unproven"
+    },
+    {
+      "card_id": "me3-120",
+      "set_id": "me3",
+      "language": "en",
+      "quantity": 1,
+      "grade": "10",
+      "grade_company": "ACE",
+      "reason": "unsupported_scope",
+      "generalReason": "unsupported_scope"
+    },
+    {
+      "card_id": "eba7766f-d371-475a-b714-97663f022fc1",
+      "set_id": "9724f830-eb52-423f-a8ce-2feb4c2e91f1",
+      "language": "zh-cn",
+      "quantity": 1,
+      "grade": null,
+      "grade_company": null,
+      "reason": "unsupported_or_unpublished_variant"
+    }
+  ],
+  "preparedAt": "2026-09-30T18:41:11.731395+00:00",
+  "collectionRevisionMatches": true,
+  "comparisons": {
+    "checks": 204,
+    "passed": true,
+    "mismatchCount": 0
+  },
+  "workerExecution": {
+    "observedAt": "2026-09-30T18:22:57.484Z",
+    "deploymentId": "38052a6f-fc4d-4308-b812-57e8ccedd3d0",
+    "status": "SUCCESS",
+    "sourceArchiveSHA256": "730c312c2824241e383ecf08453ec4a077a48d4565889ece69db807cbcaae345",
+    "scheduledStarts": [
+      "2026-09-30T18:15:19.343128962Z",
+      "2026-09-30T18:20:38.962769871Z"
+    ],
+    "valuationPublicationMessages": [
+      {
+        "timestamp": "2026-09-30T18:16:06.048704678Z",
+        "message": "    \"ownedPriceIdentities\": 165,"
+      },
+      {
+        "timestamp": "2026-09-30T18:16:06.048716916Z",
+        "message": "    \"storedPriceIdentities\": 3040,"
+      },
+      {
+        "timestamp": "2026-09-30T18:16:06.048721428Z",
+        "message": "  \"valuationPublished\": true,"
+      },
+      {
+        "timestamp": "2026-09-30T18:16:06.048749534Z",
+        "message": "  \"failed\": 0,"
+      },
+      {
+        "timestamp": "2026-09-30T18:21:30.382397041Z",
+        "message": "    \"storedPriceIdentities\": 3040,"
+      },
+      {
+        "timestamp": "2026-09-30T18:21:30.382406583Z",
+        "message": "  \"failed\": 0,"
+      },
+      {
+        "timestamp": "2026-09-30T18:21:30.382410078Z",
+        "message": "  \"valuationPublished\": true,"
+      },
+      {
+        "timestamp": "2026-09-30T18:21:30.382416512Z",
+        "message": "    \"ownedPriceIdentities\": 165,"
+      }
+    ],
+    "automaticDeployment": "6c75db1d-7f22-447e-80aa-b60823b59eda",
+    "automaticNewScheduledExecutionVerified": false
+  }
+}

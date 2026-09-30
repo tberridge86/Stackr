@@ -1,0 +1,508 @@
+{
+  "observedAt": "2026-09-30T18:15:59.569Z",
+  "backendRun": "https://github.com/tberridge86/Stackr/actions/runs/36680646429",
+  "attempt": 3,
+  "conclusion": "success",
+  "receipts": [
+    {
+      "name": "deployment.json",
+      "sha256": "be388d84b4d79096054fb7dea8a12021c5ec3174ea0b0546359d58cd674d4ea8",
+      "receipt": {
+        "deploymentId": "86f56722-c2ff-4f2f-afb7-f0c494e443c2",
+        "status": "SUCCESS",
+        "gitSha": "2ef619c2f4b4761d7c4734c746d0d48192ca6af7"
+      }
+    },
+    {
+      "name": "railway-up.json",
+      "sha256": "027a40f100f80c7b3c9fb29d2765f84ad670b9d3116eba9baaa1d2e3c0726132",
+      "receipt": {
+        "deploymentId": "86f56722-c2ff-4f2f-afb7-f0c494e443c2",
+        "logsUrl": "https://railway.com/project/d205637b-5376-41aa-9169-1015ba88fec3/service/299d7ad4-5ed8-4301-b609-ef99274078d0?id=86f56722-c2ff-4f2f-afb7-f0c494e443c2&"
+      }
+    },
+    {
+      "name": "rollback-target.json",
+      "sha256": "2c9598cdc1c325a0e1840a6c10589e18a7bb79e26189e688e8956ffbb2012c8c",
+      "receipt": {
+        "ok": true,
+        "projectId": "d205637b-5376-41aa-9169-1015ba88fec3",
+        "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+        "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+        "rollbackDeploymentId": "09193c47-1428-4c6b-8dd1-6442d1172093",
+        "healthGitCommit": "37817f2cb83b",
+        "attestationSource": "railway_http_request_logs",
+        "railwayRequestIds": [
+          "bL8FiIehQ7O2lXEqjUJq2g",
+          "xAZUM6-GRMOCQV6ns_GTAg"
+        ]
+      }
+    },
+    {
+      "name": "smoke.json",
+      "sha256": "b0f5719bfca5a4aec3669468b060407ab8b16e1b28914ac801c1483ca59282de",
+      "receipt": {
+        "ok": true,
+        "expectedBackendCommit": "2ef619c2f4b4761d7c4734c746d0d48192ca6af7",
+        "expectedBackendDeploymentId": "86f56722-c2ff-4f2f-afb7-f0c494e443c2",
+        "variantId": "c41cd737-a2c0-49fa-9564-b86137c798f8",
+        "ownerPricingValidated": false,
+        "checks": [
+          {
+            "name": "direct_backend_runtime_health",
+            "status": 200,
+            "requestId": "376ecb1f-57c8-4e4b-b746-5b746106669c",
+            "durationMs": 175
+          },
+          {
+            "name": "direct_backend_health",
+            "status": 200,
+            "requestId": "6d1eec62-d91e-46b8-9346-d4f7009bcb36",
+            "durationMs": 131
+          },
+          {
+            "name": "direct_backend_anonymous_exact_price",
+            "status": 401,
+            "requestId": "ebb1aae1-93ab-4d0a-b10b-3310e4087e3a",
+            "durationMs": 123
+          },
+          {
+            "name": "direct_backend_anonymous_price_history",
+            "status": 401,
+            "requestId": "a7734d68-d5ae-4c2b-aa5a-2f8ee0e26d39",
+            "durationMs": 108
+          },
+          {
+            "name": "direct_backend_anonymous_movers",
+            "status": 401,
+            "requestId": "29a305e5-cdc9-406f-b858-b3240e8fb33c",
+            "durationMs": 111
+          },
+          {
+            "name": "gateway_health",
+            "status": 200,
+            "requestId": "ca5be63a-8877-4e60-83d5-1709e0a3f5a9",
+            "durationMs": 433
+          },
+          {
+            "name": "gateway_anonymous_exact_price",
+            "status": 401,
+            "requestId": "c56de6b2-0cb9-40a1-a094-966a125f129e",
+            "durationMs": 251
+          },
+          {
+            "name": "gateway_anonymous_price_history",
+            "status": 401,
+            "requestId": "504aab53-8097-41e8-9402-67e8fdb1ea30",
+            "durationMs": 196
+          },
+          {
+            "name": "gateway_anonymous_movers",
+            "status": 401,
+            "requestId": "8423ff0f-ca26-4c29-b51d-eef5bed2c9a1",
+            "durationMs": 60
+          }
+        ]
+      }
+    }
+  ],
+  "publicRuntimeHealth": [
+    {
+      "url": "https://api.stackrtcg.com/v1/health",
+      "status": 200,
+      "body": {
+        "data": {
+          "status": "ok",
+          "service": "stackr-api-gateway",
+          "apiVersion": "1"
+        },
+        "meta": {
+          "requestId": "af0e35e4-07d9-4a76-8c5c-6ba63a229923",
+          "apiVersion": "1",
+          "generatedAt": "2026-09-30T18:11:26.387Z"
+        }
+      }
+    },
+    {
+      "url": "https://pocketvault-production.up.railway.app/health",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "stackr-api",
+        "time": "2026-09-30T18:11:26.085Z",
+        "runtime": {
+          "gitCommit": "2ef619c2f4b4",
+          "gitCommitSource": "bundled_workflow_sha",
+          "deploymentId": "86f56722-c2ff-4f2f-afb7-f0c494e443c2",
+          "railwayEnvironment": "production",
+          "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu"
+        }
+      }
+    }
+  ],
+  "initialPublicChecks": {
+    "observed_at": "2026-09-30T18:01:40.511Z",
+    "scope": "First and repeat public API responses, complete JSON body decoded before timer stops; shared cache state unknown; not device latency.",
+    "results": [
+      {
+        "label": "English Mew R detail",
+        "path": "/v1/cards/6161add3-c281-5729-92ef-46837983aaf4",
+        "id": "6161add3-c281-5729-92ef-46837983aaf4",
+        "kind": "detail",
+        "phase": "first",
+        "status": 200,
+        "ms": 1660,
+        "correct": true,
+        "image_present": true
+      },
+      {
+        "label": "English Mew R detail",
+        "path": "/v1/cards/6161add3-c281-5729-92ef-46837983aaf4",
+        "id": "6161add3-c281-5729-92ef-46837983aaf4",
+        "kind": "detail",
+        "phase": "repeat",
+        "status": 200,
+        "ms": 75,
+        "correct": true,
+        "image_present": true
+      },
+      {
+        "label": "Japanese Water WAT detail",
+        "path": "/v1/cards/6c131239-4552-570b-b517-c82728c86065",
+        "id": "6c131239-4552-570b-b517-c82728c86065",
+        "kind": "detail",
+        "phase": "first",
+        "status": 200,
+        "ms": 328,
+        "correct": true,
+        "image_present": true
+      },
+      {
+        "label": "Japanese Water WAT detail",
+        "path": "/v1/cards/6c131239-4552-570b-b517-c82728c86065",
+        "id": "6c131239-4552-570b-b517-c82728c86065",
+        "kind": "detail",
+        "phase": "repeat",
+        "status": 200,
+        "ms": 69,
+        "correct": true,
+        "image_present": true
+      },
+      {
+        "label": "R selected-set search",
+        "path": "/v1/search?q=R&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&language=en&limit=5",
+        "id": "6161add3-c281-5729-92ef-46837983aaf4",
+        "kind": "search",
+        "phase": "first",
+        "status": 400,
+        "ms": 19,
+        "correct": false,
+        "image_present": null
+      },
+      {
+        "label": "R selected-set search",
+        "path": "/v1/search?q=R&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&language=en&limit=5",
+        "id": "6161add3-c281-5729-92ef-46837983aaf4",
+        "kind": "search",
+        "phase": "repeat",
+        "status": 400,
+        "ms": 72,
+        "correct": false,
+        "image_present": null
+      },
+      {
+        "label": "WAT selected-set search",
+        "path": "/v1/search?q=WAT&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+        "id": "6c131239-4552-570b-b517-c82728c86065",
+        "kind": "search",
+        "phase": "first",
+        "status": 200,
+        "ms": 873,
+        "correct": true,
+        "image_present": null
+      },
+      {
+        "label": "WAT selected-set search",
+        "path": "/v1/search?q=WAT&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+        "id": "6c131239-4552-570b-b517-c82728c86065",
+        "kind": "search",
+        "phase": "repeat",
+        "status": 200,
+        "ms": 91,
+        "correct": true,
+        "image_present": null
+      }
+    ]
+  },
+  "providerAccess": {
+    "observedAt": "2026-09-30T17:56:50.006Z",
+    "scope": "One read-only set-list request per existing configured provider; stop on authentication/payment/quota errors; no retry, credential changes or purchases",
+    "results": [
+      {
+        "provider": "scrydex",
+        "url": "https://api.scrydex.com/pokemon/v1/expansions?page_size=1",
+        "status": 401,
+        "errorCode": "INVALID_CREDENTIALS",
+        "elapsedMs": 562,
+        "records": null
+      },
+      {
+        "provider": "pikaqian",
+        "url": "https://api.pikaqian.com/v1/sets?page_size=1",
+        "status": 401,
+        "errorCode": "invalid_api_key",
+        "elapsedMs": 754,
+        "records": null
+      }
+    ]
+  },
+  "ownerAuthenticatedPricingVerified": false,
+  "installedDeviceVerified": false,
+  "gateway": {
+    "run": "https://github.com/tberridge86/Stackr/actions/runs/36757020659",
+    "source": "6501a1d5647d2e5991bbd8503a2a0a0d1d970ddc",
+    "conclusion": "success",
+    "deployment": {
+      "id": "89e24dab-f9a9-4169-9027-9aae0ab6478e",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "annotations": {
+        "workers/message": "",
+        "workers/triggered_by": "deployment"
+      },
+      "versions": [
+        {
+          "version_id": "886f817c-424f-4427-9a34-a64a2266d86b",
+          "percentage": 100
+        }
+      ],
+      "created_on": "2026-09-30T18:18:32.519319Z"
+    },
+    "versionId": "886f817c-424f-4427-9a34-a64a2266d86b",
+    "tag": "gateway-privacy-6501a1d5647d2e5991bbd8503a2a0a0d1d970ddc",
+    "smoke": {
+      "ok": true,
+      "checks": [
+        {
+          "name": "gateway_health",
+          "status": 200,
+          "requestId": "9d42a22b-0040-4dd2-9955-f86f7a4e4620"
+        },
+        {
+          "name": "gateway_ready",
+          "status": 200,
+          "requestId": "3ca3e516-39ca-4539-870f-fad26c3ee9c9"
+        },
+        {
+          "name": "anonymous_exact_price",
+          "status": 401,
+          "requestId": "87c8da78-f87b-471b-b9b2-54b7928ab38a"
+        },
+        {
+          "name": "anonymous_price_history",
+          "status": 401,
+          "requestId": "299d0cd0-44d4-47c3-8958-246257ae72a5"
+        },
+        {
+          "name": "anonymous_market_movers",
+          "status": 401,
+          "requestId": "177172c6-6b6f-4404-947e-64ee053230b1"
+        },
+        {
+          "name": "anonymous_provider_refresh",
+          "status": 401,
+          "requestId": "a40c0a30-ee19-4677-acde-433394f781e2"
+        }
+      ]
+    },
+    "receiptHashes": [
+      {
+        "name": "deployments-after.json",
+        "sha256": "eddcc5f8a0b2fefad51d372e09291989f581156cc15b941a2bfff0a95d4068a0"
+      },
+      {
+        "name": "deployments-before.json",
+        "sha256": "e517c21d3c2db79312f591d6df09e121302ae7d64ed377263029c22662fe1a3e"
+      },
+      {
+        "name": "durable-object-after.json",
+        "sha256": "ee7c4a8c2772d7b37fdf7dff2d32e20d901b1aa2d347a6ee229127769aee2602"
+      },
+      {
+        "name": "durable-object-before.json",
+        "sha256": "6465c8f82f80ca91471186fcf7b688d5af8c36c034ea47618c79a6aa8c2b643b"
+      },
+      {
+        "name": "secrets-before.json",
+        "sha256": "f114a7609dcd2fd71fc22811db2c44672816122daaf242a1b09a4932c86750d8"
+      },
+      {
+        "name": "smoke.json",
+        "sha256": "517981aacbc8f98afb982dc15252bc26d10239af686853e69b516a3b37f15f64"
+      },
+      {
+        "name": "versions-after.json",
+        "sha256": "ce935439676b466a6ca3003990576be4e69d21e817e6f08dcd12a64f04634649"
+      },
+      {
+        "name": "versions-before.json",
+        "sha256": "e48b06b3a8b9e50ca99950439ee7063e8f39cdd7aaf823ae90300c3d615ebb34"
+      }
+    ]
+  },
+  "finalPublicChecks": {
+    "observed_at": "2026-09-30T18:19:08.203Z",
+    "scope": "First and repeat public API responses, complete JSON body decoded before timer stops; shared cache state unknown; not device latency.",
+    "results": [
+      {
+        "label": "English Mew R detail",
+        "path": "/v1/cards/6161add3-c281-5729-92ef-46837983aaf4",
+        "id": "6161add3-c281-5729-92ef-46837983aaf4",
+        "kind": "detail",
+        "phase": "first",
+        "status": 200,
+        "ms": 1738,
+        "correct": true,
+        "image_present": true
+      },
+      {
+        "label": "English Mew R detail",
+        "path": "/v1/cards/6161add3-c281-5729-92ef-46837983aaf4",
+        "id": "6161add3-c281-5729-92ef-46837983aaf4",
+        "kind": "detail",
+        "phase": "repeat",
+        "status": 200,
+        "ms": 1311,
+        "correct": true,
+        "image_present": true
+      },
+      {
+        "label": "Japanese Water WAT detail",
+        "path": "/v1/cards/6c131239-4552-570b-b517-c82728c86065",
+        "id": "6c131239-4552-570b-b517-c82728c86065",
+        "kind": "detail",
+        "phase": "first",
+        "status": 200,
+        "ms": 417,
+        "correct": true,
+        "image_present": true
+      },
+      {
+        "label": "Japanese Water WAT detail",
+        "path": "/v1/cards/6c131239-4552-570b-b517-c82728c86065",
+        "id": "6c131239-4552-570b-b517-c82728c86065",
+        "kind": "detail",
+        "phase": "repeat",
+        "status": 200,
+        "ms": 163,
+        "correct": true,
+        "image_present": true
+      },
+      {
+        "label": "R selected-set search",
+        "path": "/v1/search?q=R&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&language=en&limit=5",
+        "id": "6161add3-c281-5729-92ef-46837983aaf4",
+        "kind": "search",
+        "phase": "first",
+        "status": 200,
+        "ms": 767,
+        "correct": true,
+        "image_present": null
+      },
+      {
+        "label": "R selected-set search",
+        "path": "/v1/search?q=R&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&language=en&limit=5",
+        "id": "6161add3-c281-5729-92ef-46837983aaf4",
+        "kind": "search",
+        "phase": "repeat",
+        "status": 200,
+        "ms": 58,
+        "correct": true,
+        "image_present": null
+      },
+      {
+        "label": "WAT selected-set search",
+        "path": "/v1/search?q=WAT&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+        "id": "6c131239-4552-570b-b517-c82728c86065",
+        "kind": "search",
+        "phase": "first",
+        "status": 200,
+        "ms": 373,
+        "correct": true,
+        "image_present": null
+      },
+      {
+        "label": "WAT selected-set search",
+        "path": "/v1/search?q=WAT&setId=88e351b5-8191-5ef4-854b-2978046cda53&language=ja&limit=5",
+        "id": "6c131239-4552-570b-b517-c82728c86065",
+        "kind": "search",
+        "phase": "repeat",
+        "status": 200,
+        "ms": 56,
+        "correct": true,
+        "image_present": null
+      }
+    ]
+  },
+  "negativeSearchChecks": [
+    {
+      "query": "q=R",
+      "status": 400,
+      "code": "invalid_search_query"
+    },
+    {
+      "query": "q=R&setId=invalid",
+      "status": 400,
+      "code": "invalid_search_query"
+    },
+    {
+      "query": "q=%25&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb",
+      "status": 400,
+      "code": "invalid_search_query"
+    }
+  ],
+  "followUpCacheChecks": [
+    {
+      "iteration": 1,
+      "status": 200,
+      "ms": 330,
+      "correct": true,
+      "headers": {
+        "cache-control": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+        "cf-cache-status": "HIT",
+        "etag": "W/\"LbNu1M7G7Ba9sGK-BnmKLPgoosd_Oke35rOya6heWQU\"",
+        "x-railway-request-id": "kB54uREERw2yLCLsjUJq2g",
+        "x-request-id": "85ec9563-8974-4036-b8b1-c8445a39a7d9",
+        "x-stackr-cache": "HIT"
+      }
+    },
+    {
+      "iteration": 2,
+      "status": 200,
+      "ms": 177,
+      "correct": true,
+      "headers": {
+        "cache-control": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+        "cf-cache-status": "HIT",
+        "etag": "W/\"LbNu1M7G7Ba9sGK-BnmKLPgoosd_Oke35rOya6heWQU\"",
+        "x-railway-request-id": "kB54uREERw2yLCLsjUJq2g",
+        "x-request-id": "c0827a18-a72c-4fea-8d53-d1be5f4da82e",
+        "x-stackr-cache": "HIT"
+      }
+    },
+    {
+      "iteration": 3,
+      "status": 200,
+      "ms": 171,
+      "correct": true,
+      "headers": {
+        "cache-control": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+        "cf-cache-status": "HIT",
+        "etag": "W/\"LbNu1M7G7Ba9sGK-BnmKLPgoosd_Oke35rOya6heWQU\"",
+        "x-railway-request-id": "kB54uREERw2yLCLsjUJq2g",
+        "x-request-id": "c8481ab0-48e2-4483-b3a0-556e98d4cccd",
+        "x-stackr-cache": "HIT"
+      }
+    }
+  ]
+}

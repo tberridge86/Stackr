@@ -1,3 +1,5 @@
+**Evening update:** [Railway restoration and measured live search/pricing delivery](railway-restored-20260930.md) supersedes this morning's Railway/deployment blockers. Historical measurements below are retained.
+
 # October 1 release: progress and remaining work
 
 Checkpoint: September 30, 2026, 07:38 UTC. This report separates published work, prepared work and unresolved delivery. It does not claim catalogue-wide 99% completeness or phone acceptance.
