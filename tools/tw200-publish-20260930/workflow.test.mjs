@@ -5,7 +5,7 @@ import YAML from 'yaml';
 
 const workflow = YAML.parse(readFileSync(new URL('../../.github/workflows/deploy-production.yml', import.meta.url), 'utf8'));
 const jobs = workflow.jobs;
-const scopes = ['tw200', 'english45'];
+const scopes = ['tw200', 'english45', 'sh33'];
 
 const matchingJobs = (scope) => Object.entries(jobs)
   .filter(([, job]) => String(job.if ?? '').includes(`inputs.release_scope == '${scope}'`))
@@ -22,7 +22,7 @@ test('each bounded artwork scope can start exactly its matching release lane', (
   }
 });
 
-test('the broad deploy lane excludes both bounded artwork scopes', () => {
+test('the broad deploy lane excludes every bounded recovery scope', () => {
   const broad = jobs.deploy;
   for (const scope of scopes) {
     assert.match(broad.if, new RegExp(`inputs\\.release_scope != '${scope}'`));
@@ -30,7 +30,7 @@ test('the broad deploy lane excludes both bounded artwork scopes', () => {
   }
 });
 
-test('both bounded lanes retain the production and no-side-effect guards', () => {
+test('all bounded lanes retain the production and no-side-effect guards', () => {
   for (const scope of scopes) {
     const lane = jobs[scope];
     assert.equal(lane.environment, 'production');
