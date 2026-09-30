@@ -1,0 +1,18 @@
+{
+  "approved": true,
+  "store_resize_display": true,
+  "fronts": 96,
+  "cohort_sha256": "6c844ebe22b51ed3dc18a3c30486693e63768702008ac564a3cd980a5fbecd38",
+  "source_wide_approval": false,
+  "source_counts": {
+    "tcgplayer_card_artwork": 96
+  },
+  "language_counts": {
+    "en": 16,
+    "ja": 80
+  },
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-09-30",
+  "reason": "Operational attestation applying existing owner permission and publication instruction to this exact independently verified cohort. Preserves original source archives, image watermarks, metadata, prices and holdings. No source-wide activation, reacquisition, exact-finish claim or independent licence verification."
+}
