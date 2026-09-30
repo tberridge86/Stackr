@@ -1,0 +1,218 @@
+{
+  "observedAt": "2026-09-30T18:43:27.254Z",
+  "run": "https://github.com/tberridge86/Stackr/actions/runs/36757515707",
+  "source": "6501a1d5647d2e5991bbd8503a2a0a0d1d970ddc",
+  "firstAttempt": {
+    "worker": "owner-provider-price-refresh",
+    "scanned": 333,
+    "eligible": 327,
+    "skipped": 6,
+    "skipReasons": {
+      "ambiguous_saved_identity": 1,
+      "graded_card": 3,
+      "unresolved_saved_card": 1,
+      "unsupported_or_unpublished_variant": 1
+    },
+    "generalCandidates": 210,
+    "generalEstimatesEnabled": true,
+    "queueScanned": 0,
+    "queueEligible": 0,
+    "queueUnsupported": 0,
+    "queueTerminal": 0,
+    "queueClaimLost": 0,
+    "queueCompleted": 0,
+    "queueRetried": 0,
+    "selected": 317,
+    "refreshed": 169,
+    "unavailable": 0,
+    "failed": 5,
+    "dryRun": false,
+    "completeOwned": true,
+    "completeOwnedAttempted": 174,
+    "completeOwnedDeferred": 143,
+    "completeOwnedCompleted": false,
+    "failureDiagnostics": [
+      {
+        "variantId": "8c272266-a858-4682-acd4-7c4682c43ea6",
+        "code": "exact_provider_refresh_failed",
+        "source": "owned"
+      },
+      {
+        "variantId": "904b65d3-8f47-49a6-8230-26e651783861",
+        "code": "exact_provider_refresh_failed",
+        "source": "owned"
+      },
+      {
+        "variantId": "9065a5e9-01cb-4e57-bbb2-ba83310675b2",
+        "code": "exact_provider_refresh_failed",
+        "source": "owned"
+      },
+      {
+        "variantId": "90c3e4bc-942e-4080-a8b3-23752bf58903",
+        "code": "exact_provider_refresh_failed",
+        "source": "owned"
+      },
+      {
+        "variantId": "90cd64be-9557-46d7-a7ef-913e876d1f79",
+        "code": "exact_provider_refresh_failed",
+        "source": "owned"
+      }
+    ],
+    "valuationPublished": true,
+    "runId": 36757515707,
+    "attempt": 1,
+    "conclusion": "failure",
+    "receiptSHA256": "a6b3f2f05042b2129b8aac8e24409fe68cff52e0c3c1b1ea6e22a845cc04c83d"
+  },
+  "finalAttempt": {
+    "attempt": 2,
+    "conclusion": "success",
+    "worker": "owner-provider-price-refresh",
+    "scanned": 333,
+    "eligible": 327,
+    "skipped": 6,
+    "skipReasons": {
+      "ambiguous_saved_identity": 1,
+      "graded_card": 3,
+      "unresolved_saved_card": 1,
+      "unsupported_or_unpublished_variant": 1
+    },
+    "generalCandidates": 210,
+    "generalEstimatesEnabled": true,
+    "queueScanned": 0,
+    "queueEligible": 0,
+    "queueUnsupported": 0,
+    "queueTerminal": 0,
+    "queueClaimLost": 0,
+    "queueCompleted": 0,
+    "queueRetried": 0,
+    "selected": 317,
+    "refreshed": 317,
+    "unavailable": 0,
+    "failed": 0,
+    "dryRun": false,
+    "completeOwned": true,
+    "completeOwnedAttempted": 317,
+    "completeOwnedDeferred": 0,
+    "completeOwnedCompleted": true,
+    "failureDiagnostics": [],
+    "valuationPublished": true,
+    "valuationDiagnostics": {
+      "elapsedMs": 57537,
+      "ownedPriceIdentities": 165,
+      "storedPriceIdentities": 3040,
+      "stages": {
+        "claim_collection_valuation": {
+          "calls": 1,
+          "elapsedMs": 1181,
+          "maxMs": 1181
+        },
+        "published_price_catalogue_revision": {
+          "calls": 2,
+          "elapsedMs": 610,
+          "maxMs": 306
+        },
+        "saved_card_languages": {
+          "calls": 1,
+          "elapsedMs": 351,
+          "maxMs": 351
+        },
+        "catalogue_identifiers": {
+          "calls": 9,
+          "elapsedMs": 2115,
+          "maxMs": 308
+        },
+        "catalogue_members": {
+          "calls": 48,
+          "elapsedMs": 31418,
+          "maxMs": 2201
+        },
+        "catalogue_printings": {
+          "calls": 1,
+          "elapsedMs": 2611,
+          "maxMs": 2611
+        },
+        "stored_exact_prices": {
+          "calls": 16,
+          "elapsedMs": 12441,
+          "maxMs": 3548
+        },
+        "catalogue_price_state": {
+          "calls": 16,
+          "elapsedMs": 3860,
+          "maxMs": 291
+        },
+        "catalogue_price_cycle_status": {
+          "calls": 1,
+          "elapsedMs": 208,
+          "maxMs": 208
+        },
+        "collection_valuation_trend": {
+          "calls": 1,
+          "elapsedMs": 208,
+          "maxMs": 208
+        },
+        "publish_collection_valuation": {
+          "calls": 1,
+          "elapsedMs": 928,
+          "maxMs": 928
+        }
+      }
+    }
+  },
+  "download": {
+    "id": 11118985052,
+    "name": "owner-provider-price-refresh-36757515707",
+    "createdAt": "2026-09-30T18:41:13Z",
+    "digest": "sha256:41c2b27c661c6b3808a5e4f6a9e007d88870d471ea8ee7544386eb3a41f5f9fe",
+    "sha256": "41c2b27c661c6b3808a5e4f6a9e007d88870d471ea8ee7544386eb3a41f5f9fe",
+    "bytes": 7950
+  },
+  "summarySHA256": "dea056e7917d622ae1eeb0d226b1fc13388e1748f9436024c078d546ff5b7c8b",
+  "scheduledWorkers": {
+    "observedAt": "2026-09-30T18:22:57.484Z",
+    "deploymentId": "38052a6f-fc4d-4308-b812-57e8ccedd3d0",
+    "status": "SUCCESS",
+    "sourceArchiveSHA256": "730c312c2824241e383ecf08453ec4a077a48d4565889ece69db807cbcaae345",
+    "scheduledStarts": [
+      "2026-09-30T18:15:19.343128962Z",
+      "2026-09-30T18:20:38.962769871Z"
+    ],
+    "valuationPublicationMessages": [
+      {
+        "timestamp": "2026-09-30T18:16:06.048704678Z",
+        "message": "    \"ownedPriceIdentities\": 165,"
+      },
+      {
+        "timestamp": "2026-09-30T18:16:06.048716916Z",
+        "message": "    \"storedPriceIdentities\": 3040,"
+      },
+      {
+        "timestamp": "2026-09-30T18:16:06.048721428Z",
+        "message": "  \"valuationPublished\": true,"
+      },
+      {
+        "timestamp": "2026-09-30T18:16:06.048749534Z",
+        "message": "  \"failed\": 0,"
+      },
+      {
+        "timestamp": "2026-09-30T18:21:30.382397041Z",
+        "message": "    \"storedPriceIdentities\": 3040,"
+      },
+      {
+        "timestamp": "2026-09-30T18:21:30.382406583Z",
+        "message": "  \"failed\": 0,"
+      },
+      {
+        "timestamp": "2026-09-30T18:21:30.382410078Z",
+        "message": "  \"valuationPublished\": true,"
+      },
+      {
+        "timestamp": "2026-09-30T18:21:30.382416512Z",
+        "message": "    \"ownedPriceIdentities\": 165,"
+      }
+    ],
+    "automaticDeployment": "6c75db1d-7f22-447e-80aa-b60823b59eda",
+    "automaticNewScheduledExecutionVerified": false
+  }
+}
