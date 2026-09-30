@@ -1,0 +1,21 @@
+{
+  "approved": true,
+  "cohort_sha256": "5371389f17e55296787b644338db0893944f1812e1db89a38666f458b1a7f598",
+  "fronts": 33,
+  "source_code": "pokemon_card_tw_official",
+  "language_code": "zh-tw",
+  "store_resize_display_official_tw": true,
+  "source_wide_approval": false,
+  "metadata_correction": {
+    "table": "catalog.sets",
+    "id": "929a6c13-5b43-4aba-b887-1f86cc94ce31",
+    "column": "printed_total",
+    "before": 38,
+    "after": 53,
+    "preserve_total": true
+  },
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-09-30",
+  "reason": "Current instruction authorizes resolving verified artwork and catalogue exceptions. This bounded cohort requires the documented official SH printed denominator correction from38 to53, preserving every existing card identity, the total field, prior artwork, prices and holdings. The existing owner artwork permission covers storing, resizing and displaying these official fronts. No source activation, licence verification, finish certification or broader metadata correction is implied."
+}

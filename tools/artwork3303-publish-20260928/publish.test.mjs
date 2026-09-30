@@ -1,11 +1,42 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts,objectKey,publicationObjects,uploadImmutable} from './publish.mjs';
+import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts,objectKey,publicationObjects,uploadImmutable,writeMetadata} from './publish.mjs';
 const bytes=readFileSync(new URL('./cohort.json.gz',import.meta.url));
 const receipt=JSON.parse(readFileSync(new URL('./plan-receipt.json',import.meta.url)));
 const rows=validatePlan(bytes,receipt);
 const card=r=>({...r,game_code:'pokemon',variant_id:'11111111-1111-4111-8111-111111111111',same_artwork_as_variant_id:null});
+
+test('catalogue correction and artwork failure roll back in the same rehearsal transaction',async()=>{
+  let total=38;const calls=[];const journal={assets:[],links:[],metadata_changes:0};
+  const db={query:async(sql)=>{calls.push(sql);if(sql==='rollback')total=38;if(sql.startsWith('select game_code'))throw Error('asset binding unavailable');return {rows:[]};}};
+  const correction=async()=>{total=53;return [{table:'catalog.sets',column:'printed_total',changed:true,before:38,after:53}];};
+  await assert.rejects(rehearse(db,()=>writeMetadata(db,[rows[0]],receipt,{},'staging',journal,async()=>new Map(),correction)),/asset binding unavailable/);
+  assert.equal(total,38);assert.equal(calls.at(-1),'rollback');assert.equal(journal.metadata_changes,1);
+  assert.equal(journal.catalogue_corrections[0].environment,'staging');
+});
+
+test('omitted correction leaves the old metadata path unchanged',async()=>{
+  const journal={assets:[],links:[],metadata_changes:0},calls=[];
+  const db={query:async(sql)=>{calls.push(sql);return {rows:[]};}};
+  await writeMetadata(db,[],receipt,{},'production',journal,async()=>new Map());
+  assert.equal(journal.metadata_changes,0);assert.equal(journal.catalogue_corrections,undefined);
+  assert.ok(calls.every(sql=>sql.startsWith('select')));
+});
+
+test('idempotent correction records evidence without counting a metadata mutation',async()=>{
+  const journal={assets:[],links:[],metadata_changes:0};
+  const db={query:async()=>({rows:[]})};
+  await writeMetadata(db,[],receipt,{},'production',journal,async()=>new Map(),async()=>[{table:'catalog.sets',column:'printed_total',changed:false,before:53,after:53}]);
+  assert.equal(journal.metadata_changes,0);assert.equal(journal.catalogue_corrections.length,1);
+});
+
+test('unexpected correction audit stops before any asset query',async()=>{
+  for(const audit of [[],[{table:'catalog.sets',column:'total',changed:true}],[{table:'pricing.cards',column:'printed_total',changed:true}]]){
+    const db={query:async()=>{throw Error('must not reach asset queries');}};
+    await assert.rejects(writeMetadata(db,[],receipt,{},'production',{assets:[],links:[],metadata_changes:0},async()=>new Map(),async()=>audit),/Invalid bounded catalogue correction audit/);
+  }
+});
 test('frozen 7911 fronts have all 23733 display objects and immutable archives',()=>{assert.equal(rows.length,7911);assert.equal(rows.flatMap(r=>r.objects).length,31644);assert.equal(receipt.artifacts.length,43);});
 
 test('production unique storage index permits every printing including shared Energy fronts',()=>{
