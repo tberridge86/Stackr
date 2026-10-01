@@ -1,0 +1,107 @@
+{
+  "evidence_version": 1,
+  "purpose": "Immutable local evidence for Native97 third protected-publication failure; this is not a publication receipt.",
+  "run": {
+    "id": 36878902269,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36878902269",
+    "revision": "31f8c1cc5be68772f9a286bd76c25e06e53c5c3d",
+    "status": "failed_before_publication",
+    "started_at": "2026-10-01T14:48:12.950Z",
+    "error": "Public object read 429"
+  },
+  "artifact": {
+    "sha256": "d956156076744f0a5feac52b0647d3f4dfa043abc1dec7650edb7b8586f93c6c",
+    "bytes": 147649,
+    "artifact_sha256": "42515c488e5bb26e9cafca3416068af2aa206ec95d63381cb4e4a1014caec2be",
+    "artifact_bytes": 30826,
+    "artifact_id": 11171171508,
+    "artifact_url": "https://github.com/tberridge86/Stackr/actions/runs/36878902269/artifacts/11171171508"
+  },
+  "receipt": {
+    "path": "native97-third-failure-evidence-20261001/receipt.json",
+    "encoding": "raw JSON; exact downloaded artifact member bytes, intentionally not transformed",
+    "sha256": "d956156076744f0a5feac52b0647d3f4dfa043abc1dec7650edb7b8586f93c6c",
+    "bytes": 147649,
+    "artifact_member_matches_raw_receipt": true
+  },
+  "scope": {
+    "local_files_verified": 388,
+    "object_checks": 42,
+    "verified_object_checks": 41,
+    "new_objects_created": 0,
+    "assets": 0,
+    "links": 0,
+    "metadata_changes": 0,
+    "ownership_changes": 0,
+    "pricing_changes": 0
+  },
+  "retained_from_first_attempt": {
+    "run_id": 36860755298,
+    "created_objects": 114
+  },
+  "later_public_read": {
+    "status": 200,
+    "content_type": "image/webp",
+    "source_sha256": "dad5335895eee9ca59dbe88d0dc06a83806ffd29092913b5eadffe30cd6a6758",
+    "limitation": "A single later HTTP 200 confirms one retained public object was readable. It does not establish a sustained recovery and does not authorize a blind rerun."
+  },
+  "snapshot_comparison": {
+    "staging": {
+      "rows": 97,
+      "changed_rows": 0,
+      "before_sha256": "3abf01a8c1582102e9c0f83a09b90220ec6bf5e7a1098a8b47daa421fb25e45f",
+      "after_sha256": "cdaf1d4e830ee432caa1204950a24dd157f43cd2f8f6ebaed9dda5cb9d1dc686",
+      "gzip_sha256": "70ee5d59139aa2b687bdfedee6d397bbd5b4dd8ca0edc2b5e839be66b873cb42",
+      "gzip_bytes": 57967
+    },
+    "production": {
+      "rows": 97,
+      "changed_rows": 0,
+      "before_sha256": "9f6d037bd4d8b2786c8045843d1c96d5dc3a5a3adf8b332f4696dbe8640d2b8a",
+      "after_sha256": "a5b1fc65b50f8e2e9e1923ae7a6ac34ee6f2bf4704d37551b2ac4a221c6c32e8",
+      "gzip_sha256": "d4641f1e08d32e8849349af8f0ae39245b74f2a739bb507ef89d65a6389b6453",
+      "gzip_bytes": 56166
+    }
+  },
+  "files": {
+    "receipt.json": {
+      "path": "native97-third-failure-evidence-20261001/receipt.json",
+      "sha256": "d956156076744f0a5feac52b0647d3f4dfa043abc1dec7650edb7b8586f93c6c",
+      "bytes": 147649
+    },
+    "staging-after-rate-limit.json.gz": {
+      "path": "native97-third-failure-evidence-20261001/staging-after-rate-limit.json.gz",
+      "sha256": "70ee5d59139aa2b687bdfedee6d397bbd5b4dd8ca0edc2b5e839be66b873cb42",
+      "bytes": 57967
+    },
+    "production-after-rate-limit.json.gz": {
+      "path": "native97-third-failure-evidence-20261001/production-after-rate-limit.json.gz",
+      "sha256": "d4641f1e08d32e8849349af8f0ae39245b74f2a739bb507ef89d65a6389b6453",
+      "bytes": 56166
+    },
+    "public-object-rate-limit-readback.json": {
+      "path": "native97-third-failure-evidence-20261001/public-object-rate-limit-readback.json",
+      "sha256": "dad5335895eee9ca59dbe88d0dc06a83806ffd29092913b5eadffe30cd6a6758",
+      "bytes": 734
+    },
+    "receipt-artifact-download.json": {
+      "path": "native97-third-failure-evidence-20261001/receipt-artifact-download.json",
+      "sha256": "b261f3f28c3300c18981a174fd6427d8967fde23f8828c5e4520e02b441614ec",
+      "bytes": 389
+    },
+    "staging-preparation-snapshot.json.gz": {
+      "path": "native97-third-failure-evidence-20261001/staging-preparation-snapshot.json.gz",
+      "sha256": "63b594835ddcd108b96a6fc975f77380ecfe63ec7ac329b4ddb8562236e5b331",
+      "bytes": 57998,
+      "uncompressed_sha256": "3abf01a8c1582102e9c0f83a09b90220ec6bf5e7a1098a8b47daa421fb25e45f",
+      "uncompressed_bytes": 1022963
+    },
+    "production-preparation-snapshot.json.gz": {
+      "path": "native97-third-failure-evidence-20261001/production-preparation-snapshot.json.gz",
+      "sha256": "37c76ef4727d347c700c8ce069ef1d9f4b7ff5d3c1ccaa36240e8e66e2d4e1d3",
+      "bytes": 56203,
+      "uncompressed_sha256": "9f6d037bd4d8b2786c8045843d1c96d5dc3a5a3adf8b332f4696dbe8640d2b8a",
+      "uncompressed_bytes": 1198543
+    }
+  }
+}

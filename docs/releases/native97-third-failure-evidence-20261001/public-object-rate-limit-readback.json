@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-10-01T14:55:58.650Z",
+  "execution": "one ordinary public GET without cache-busting",
+  "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/5d/c0/5dc0fa4f948e78d6f765ce1baecf19ac85f7c9a48194f86e28ecb1a20f92cc09/card-grid.webp",
+  "key": "public/card_image/5d/c0/5dc0fa4f948e78d6f765ce1baecf19ac85f7c9a48194f86e28ecb1a20f92cc09/card-grid.webp",
+  "status": 200,
+  "status_text": "OK",
+  "headers": {
+    "date": "Thu, 01 Oct 2026 14:55:58 GMT",
+    "server": "cloudflare",
+    "cf-ray": "a43c4fb3aa4ad05c-LHR",
+    "cache-control": "public, max-age=31536000",
+    "content-type": "image/webp",
+    "content-length": "15050"
+  },
+  "body": null
+}
