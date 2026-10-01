@@ -144,11 +144,19 @@ async function sourcesFor(db,receipt) {
   }
   return new Map(sources.map(s=>[s.code,s.id]));
 }
-export async function writeMetadata(db,rows,receipt,approval,environment,journal,sourceResolver=sourcesFor,catalogueCorrection=null) {
+export async function writeMetadata(db,rows,receipt,approval,environment,journal,sourceResolver=sourcesFor,catalogueCorrection=null,nativeNameCorrections=null) {
   if(catalogueCorrection){
     const correction=await catalogueCorrection(db,environment);
     check(Array.isArray(correction)&&correction.length===1&&correction[0].table==='catalog.sets'&&correction[0].column==='printed_total'&&typeof correction[0].changed==='boolean','Invalid bounded catalogue correction audit');
     journal.catalogue_corrections??=[];journal.catalogue_corrections.push(...correction.map(a=>({...a,environment})));journal.metadata_changes+=correction.filter(a=>a.changed).length;
+  }
+  if(nativeNameCorrections){
+    const audit=await nativeNameCorrections(db,environment);
+    check(Array.isArray(audit)&&audit.length===53&&audit.every(a=>a.table==='catalog.card_printings'&&a.column==='native_name'&&typeof a.changed==='boolean'&&typeof a.id==='string'&&typeof a.native_name_row_id==='string'&&typeof a.before==='string'&&typeof a.after==='string'&&a.environment===environment),'Invalid native-name correction audit');
+    check(new Set(audit.map(a=>a.id)).size===53&&new Set(audit.map(a=>a.native_name_row_id)).size===53,'Native-name correction audit identities are not unique');
+    journal.native_name_corrections??=[];journal.native_name_corrections.push(...audit.map(a=>({...a,environment})));
+    const changed=audit.filter(a=>a.changed).length;
+    journal.native_name_correction_counts={total:journal.native_name_corrections.length,changed,printing_changes:changed,card_name_changes:changed};journal.metadata_changes+=changed;
   }
   const cards=await cardsFor(db,rows);bind(rows,cards,environment);
   const versions=[...new Set(cards.map(c=>c.catalogue_version_id))];
@@ -186,7 +194,7 @@ async function main() {
   await publishFrozenCohort({rows,receipt,approval,root,output});
 }
 // Shared verified transfer/transaction path; callers retain their own frozen scope guards.
-export async function publishFrozenCohort({rows,receipt,approval,root,output,sourceResolver=sourcesFor,catalogueCorrection=null}) {
+export async function publishFrozenCohort({rows,receipt,approval,root,output,sourceResolver=sourcesFor,catalogueCorrection=null,nativeNameCorrections=null}) {
   check(root&&output&&rows.length>0,'Package, receipt and frozen rows required');await mkdir(output,{recursive:true});
   const journal={status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,assets:[],links:[],objects:[],ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false};
   const save=()=>writeFile(path.join(output,'receipt.json'),JSON.stringify(journal,null,2));await save();
@@ -202,8 +210,8 @@ export async function publishFrozenCohort({rows,receipt,approval,root,output,sou
   try {
     for(const environment of ['staging','production']) {
       db=createVerifiedSupabasePostgresClient(process.env[environment==='staging'?'SUPABASE_STAGING_DB_URL':'SUPABASE_DB_URL'],`stackr-artwork3303-${environment}`,{connectionTimeoutMillis:15000});await db.connect();connected=true;
-      const rehearsal={assets:[],links:[],metadata_changes:0,catalogue_corrections:[]};await rehearse(db,()=>writeMetadata(db,rows,receipt,approval,environment,rehearsal,sourceResolver,catalogueCorrection));
-      journal[environment+'_rehearsal']={status:'passed_and_rolled_back',assets:rehearsal.assets.length,links:rehearsal.links.length,catalogue_corrections:rehearsal.catalogue_corrections.length,metadata_changes:rehearsal.metadata_changes};await save();
+      const rehearsal={assets:[],links:[],metadata_changes:0,catalogue_corrections:[],native_name_corrections:[]};await rehearse(db,()=>writeMetadata(db,rows,receipt,approval,environment,rehearsal,sourceResolver,catalogueCorrection,nativeNameCorrections));
+      journal[environment+'_rehearsal']={status:'passed_and_rolled_back',assets:rehearsal.assets.length,links:rehearsal.links.length,catalogue_corrections:rehearsal.catalogue_corrections.length,native_name_correction_counts:rehearsal.native_name_correction_counts??{total:0,changed:0},native_name_corrections:rehearsal.native_name_corrections,metadata_changes:rehearsal.metadata_changes};await save();
       if(environment==='staging'){await db.end();connected=false;}
     }
     const secret=await resolveServerKey({project:PROJECTS.production,configuredKey:process.env.SUPABASE_PRODUCTION_SECRET_KEY,accessToken:process.env.SUPABASE_ACCESS_TOKEN,mask:key=>{if(process.env.GITHUB_ACTIONS==='true')process.stdout.write(`::add-mask::${key}\n`);}});
@@ -220,7 +228,7 @@ export async function publishFrozenCohort({rows,receipt,approval,root,output,sou
       }));await save();const bad=results.find(r=>r.status==='rejected');if(bad)throw bad.reason;
     }
     await db.query('begin isolation level serializable');await db.query("set local statement_timeout='45s'");await db.query("set local lock_timeout='5s'");await db.query("select pg_advisory_xact_lock(hashtext('stackr-artwork3303-publication'))");
-    await writeMetadata(db,rows,receipt,approval,'production',journal,sourceResolver,catalogueCorrection);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
+    await writeMetadata(db,rows,receipt,approval,'production',journal,sourceResolver,catalogueCorrection,nativeNameCorrections);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
     journal.status='published';await save();
     const cards=await cardsFor(db,rows);bind(rows,cards,'production');assertManifest(rows,await visibleAssets(db,rows,cards),true);
     journal.status='published_manifest_and_public_bytes_verified';journal.fronts=rows.length;journal.derivatives=rows.length*3;journal.verified_at=new Date().toISOString();await save();

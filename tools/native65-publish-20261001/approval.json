@@ -1,0 +1,21 @@
+{
+  "approved": true,
+  "store_resize_display": true,
+  "fronts": 65,
+  "native_name_corrections": 53,
+  "cohort_sha256": "618b3edb22c5511a665a4adbcd7ed1ec4f2bf549fb340124173fd8ad499838f9",
+  "corrections_sha256": "f0b49a4bcd9c70e3127ab342f5c57074d99492f1795a46ccbff81b054cc7e9a9",
+  "source_wide_approval": false,
+  "source_counts": {
+    "tcgplayer_card_artwork": 58,
+    "pokemon_card_kr_official": 7
+  },
+  "language_counts": {
+    "ja": 58,
+    "ko": 7
+  },
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-10-01",
+  "reason": "Operational attestation of the owner-approved artwork recovery and precise identity corrections. Exactly these 65 root-reviewed fronts and 53 demonstrated native-name corrections, through the protected workflow. Preserve originals, source marks, aliases, card identity IDs, prices and holdings. No source activation or exact-finish claim."
+}

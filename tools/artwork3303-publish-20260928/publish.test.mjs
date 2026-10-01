@@ -16,6 +16,23 @@ test('catalogue correction and artwork failure roll back in the same rehearsal t
   assert.equal(journal.catalogue_corrections[0].environment,'staging');
 });
 
+test('all 53 native corrections are journalled and roll back when later artwork binding fails',async()=>{
+  let nativeWrites=0;const calls=[];const journal={assets:[],links:[],metadata_changes:0,native_name_corrections:[]};
+  const audit=Array.from({length:53},(_,index)=>({table:'catalog.card_printings',column:'native_name',id:`printing-${index}`,native_name_row_id:`name-${index}`,before:`old-${index}`,after:`new-${index}`,changed:true,environment:'staging'}));
+  const db={query:async(sql)=>{calls.push(sql);if(sql==='rollback')nativeWrites=0;if(sql.startsWith('select game_code'))throw Error('asset binding unavailable');return {rows:[]};}};
+  const nativeCorrection=async()=>{nativeWrites=53;return audit;};
+  await assert.rejects(rehearse(db,()=>writeMetadata(db,[rows[0]],receipt,{},'staging',journal,async()=>new Map(),null,nativeCorrection)),/asset binding unavailable/);
+  assert.equal(nativeWrites,0);assert.equal(calls.at(-1),'rollback');assert.equal(journal.metadata_changes,53);assert.deepEqual(journal.native_name_correction_counts,{total:53,changed:53,printing_changes:53,card_name_changes:53});assert.deepEqual(journal.native_name_corrections,audit);
+});
+
+test('native correction audits require 53 unique environment-scoped printing and name identities',async()=>{
+  const valid=Array.from({length:53},(_,index)=>({table:'catalog.card_printings',column:'native_name',id:`printing-${index}`,native_name_row_id:`name-${index}`,before:`old-${index}`,after:`new-${index}`,changed:false,environment:'production'}));
+  for(const audit of [valid.slice(1),valid.map((entry,index)=>index===52?{...entry,id:valid[0].id}:entry),valid.map((entry,index)=>index===52?{...entry,environment:'staging'}:entry)]){
+    const db={query:async()=>{throw Error('must not reach asset queries');}};
+    await assert.rejects(writeMetadata(db,[],receipt,{},'production',{assets:[],links:[],metadata_changes:0},async()=>new Map(),null,async()=>audit),/native-name correction audit/i);
+  }
+});
+
 test('omitted correction leaves the old metadata path unchanged',async()=>{
   const journal={assets:[],links:[],metadata_changes:0},calls=[];
   const db={query:async(sql)=>{calls.push(sql);return {rows:[]};}};
