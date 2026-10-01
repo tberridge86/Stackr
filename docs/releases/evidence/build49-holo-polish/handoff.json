@@ -1,0 +1,45 @@
+{
+  "createdAt": "2026-10-01T15:30:21.113Z",
+  "sourceBase": "97f69d3f0528fb22f37b31f68b1dcf4bce815aa4",
+  "state": "isolated tested patch; release integration and device acceptance pending",
+  "changes": {
+    "motion": "Existing shared calibrated gyro/drag engine unchanged; mounted only in enlarged inspector.",
+    "overlay": "Directional sheen uses existing tilt, mask and shader; no time uniform, extra image or renderer.",
+    "strength": "Generic confirmed-finish foil multiplier 0.6 to0.75; same per-profile material and opacity cap.",
+    "shadow": {
+      "color": "#160D23",
+      "opacity": 0.36,
+      "radius": 22,
+      "offsetY": 17,
+      "elevation": 10
+    },
+    "haptic": "New shared card_inspection event requests one Rigid impact,250ms cooldown; card_preview remains Medium."
+  },
+  "preserved": [
+    "Source artwork bytes and metadata",
+    "Exact printing/language/finish identity and mask precedence",
+    "Nonholo/unknown finish stays without colored foil",
+    "Reduce Motion, background suspension and sensor cleanup",
+    "Haptic off preference, web no-op, failures never block opening",
+    "Pricing, holdings, normal card navigation and scanner tactile vocabulary"
+  ],
+  "validation": {
+    "shaderCases": 28,
+    "lifecycleCases": 20,
+    "motionCases": 31,
+    "materialCases": 7,
+    "identityMaskAssertions": 27,
+    "hapticSuite": "passed including6 new inspection dispatch/cooldown/off/web/error assertions",
+    "inspectionInteractionSuite": "passed",
+    "hapticVocabularySuite": "passed",
+    "typeScriptDiagnostics": 0,
+    "visual": "Actual before/after shader and shadow rendered with Skia CPU/WASM on synthetic swatch, visually inspected for readable text bars and bounded shine"
+  },
+  "deviceRemaining": [
+    "Tilt smoothness and native GPU performance",
+    "Physical feel of Rigid impact on owner phone",
+    "iOS shadow/rendering and long-press behavior",
+    "Reduce Motion and disabled haptic setting on installed build"
+  ],
+  "release": "Release coordinator has been asked to include this request in49; no build or production action from this side conversation."
+}

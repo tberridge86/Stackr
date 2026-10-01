@@ -17,6 +17,7 @@ import {
 export type StackrHapticEvent =
   | 'selection'
   | 'card_preview'
+  | 'card_inspection'
   | 'scanner_frame_ready'
   | 'scanner_capture_locked'
   | 'scanner_exact_match'
@@ -34,6 +35,7 @@ export type StackrHapticEvent =
 const cooldowns: Partial<Record<StackrHapticEvent, number>> = {
   selection: 80,
   card_preview: 120,
+  card_inspection: 250,
   scanner_frame_ready: 650,
   scanner_capture_locked: 450,
   scanner_exact_match: 650,
@@ -130,6 +132,10 @@ export async function haptic(event: StackrHapticEvent) {
       case 'card_preview':
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         return;
+      case 'card_inspection':
+        // One crisp confirmation when inspection opens; never on tilt frames.
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
+        return;
       case 'scanner_frame_ready':
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         return;
@@ -167,6 +173,7 @@ export async function haptic(event: StackrHapticEvent) {
 export const stackrHaptics = {
   selection: () => haptic('selection'),
   cardPreview: () => haptic('card_preview'),
+  cardInspection: () => haptic('card_inspection'),
   scannerFrameReady: () => haptic('scanner_frame_ready'),
   scannerCaptureLocked: () => haptic('scanner_capture_locked'),
   scannerExactMatch: () => haptic('scanner_exact_match'),

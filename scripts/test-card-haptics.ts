@@ -47,7 +47,7 @@ function loadHaptics(options: { os?: string; rejectImpact?: boolean } = {}) {
   }, module, module.exports);
   return {
     api: module.exports as {
-      stackrHaptics: { cardPreview: () => Promise<void>; selection: () => Promise<void> };
+      stackrHaptics: { cardPreview: () => Promise<void>; cardInspection: () => Promise<void>; selection: () => Promise<void> };
       setStackrHapticsEnabled: (next: boolean) => void;
       preferenceAwareHaptics: { impactAsync: () => Promise<void>; selectionAsync: () => Promise<void>; notificationAsync: () => Promise<void> };
     },
@@ -135,6 +135,25 @@ async function main() {
   assert.equal(native.calls.length, 2, 'card preview must resume at its cooldown boundary');
   await native.api.stackrHaptics.selection();
   assert.equal(native.calls.at(-1)?.kind, 'selection', 'selection feedback must retain an independent cooldown');
+
+  const inspection = loadHaptics();
+  await inspection.api.stackrHaptics.cardInspection();
+  assert.deepEqual(inspection.calls, [{ kind: 'impact', style: 'rigid' }], 'inspection opens with one crisp impact');
+  inspection.advance(249);
+  await inspection.api.stackrHaptics.cardInspection();
+  assert.equal(inspection.calls.length, 1, 'repeated inspection inside 250ms is suppressed');
+  inspection.advance(1);
+  await inspection.api.stackrHaptics.cardInspection();
+  assert.equal(inspection.calls.length, 2, 'inspection feedback resumes at the cooldown boundary');
+  inspection.api.setStackrHapticsEnabled(false);
+  inspection.advance(250);
+  await inspection.api.stackrHaptics.cardInspection();
+  assert.equal(inspection.calls.length, 2, 'inspection respects the saved off switch');
+  const inspectionWeb = loadHaptics({ os: 'web' });
+  await inspectionWeb.api.stackrHaptics.cardInspection();
+  assert.equal(inspectionWeb.calls.length, 0, 'inspection has no web haptic side effect');
+  const inspectionFailure = loadHaptics({ rejectImpact: true });
+  await assert.doesNotReject(inspectionFailure.api.stackrHaptics.cardInspection(), 'failed inspection feedback cannot block opening');
 
   const disabled = loadHaptics();
   disabled.api.setStackrHapticsEnabled(false);

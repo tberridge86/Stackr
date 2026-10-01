@@ -17,7 +17,7 @@ export function CardInspectionProvider({ children }: { children: React.ReactNode
     if (!canInspectCatalogueCard(next)) return;
     afterClose.current = undefined;
     setRequest(next);
-    void stackrHaptics.cardPreview();
+    void stackrHaptics.cardInspection();
   }, []);
   const close = useCallback((action?: () => void) => {
     afterClose.current = action;

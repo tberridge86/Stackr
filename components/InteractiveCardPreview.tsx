@@ -78,6 +78,6 @@ export function InteractiveCardPreview({ children, active = true, resetKey = 0, 
 }
 const styles = StyleSheet.create({
   frame: { flex: 1, position: 'relative', overflow: 'visible' },
-  card: { flex: 1, shadowColor: '#211337', shadowOpacity: 0.28, shadowRadius: 24, shadowOffset: { width: 0, height: 16 }, elevation: 8 },
+  card: { flex: 1, shadowColor: '#160D23', shadowOpacity: 0.36, shadowRadius: 22, shadowOffset: { width: 0, height: 17 }, elevation: 10 },
   surface: { flex: 1, overflow: 'hidden', borderRadius: 14, backgroundColor: 'transparent' },
 });

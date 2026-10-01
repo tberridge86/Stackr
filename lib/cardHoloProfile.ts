@@ -190,7 +190,7 @@ export function resolveCardHoloProfile(rawData: unknown, options: ResolveCardHol
   // mask. Use restrained generic lighting, never invented artwork windows or
   // printed texture. Exact masks continue to take precedence above.
   const material = profile === 'textured' || profile === 'radiant' ? MATERIALS[profile]
-    : Object.freeze({ ...MATERIALS[profile], foilStrength: MATERIALS[profile].foilStrength * 0.6, textureStrength: 0 });
+    : Object.freeze({ ...MATERIALS[profile], foilStrength: MATERIALS[profile].foilStrength * 0.75, textureStrength: 0 });
   return Object.freeze({ profile, confidence: 'verified_finish_generic_mask', identity, material,
     mask: Object.freeze({ kind: 'full' as const, provenance: 'generic' as const, regions: FULL_CARD }) });
 }
