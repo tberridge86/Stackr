@@ -1,0 +1,122 @@
+{
+  "verified_at": "2026-10-01T04:37:33.988Z",
+  "status": "published_and_independently_verified",
+  "batch": {
+    "fronts": 70,
+    "derivative_references": 210,
+    "distinct_storage_objects": 280,
+    "created": 280,
+    "reused": 0
+  },
+  "production": {
+    "run_id": 36814725907,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36814725907",
+    "source": "f329a80853dee0222b3811d57f0c0e07fe3a453e",
+    "cohort_sha256": "d11e052241d63372089f5a3dc35ce8c04a5b58c2390ddc02edb4c3ebe37ce908",
+    "corrections_sha256": "00f108d7f2d1baaee63a5b408eb34d7d1f0ee9cacfe694f4728fc40ab5e3d046",
+    "receipt_sha256": "909e1d9f07ea82e308bdc5eeab8f27ee58844d40af9d0a60f3687efcf178bc00",
+    "receipt_artifact": {
+      "id": 11141565070,
+      "name": "native70-artwork-36814725907-1",
+      "createdAt": "2026-10-01T04:26:24Z",
+      "digest": "sha256:75b1719dfa45963d5ae5bc974b1b178284645a94d7fdb23fedae2e299497416c",
+      "sha256": "75b1719dfa45963d5ae5bc974b1b178284645a94d7fdb23fedae2e299497416c",
+      "bytes": 25995,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/36814725907/artifacts/11141565070"
+    }
+  },
+  "independent_verification": {
+    "cards_passed": 70,
+    "images_passed": 280,
+    "first_attempt_card_failures": 13,
+    "first_attempt_image_failures": 0,
+    "http_timings": {
+      "card_detail": {
+        "samples": 70,
+        "median_ms": 373,
+        "p95_ms": 3041,
+        "max_ms": 5186
+      },
+      "manifest": {
+        "samples": 70,
+        "median_ms": 288,
+        "p95_ms": 2702,
+        "max_ms": 5206
+      },
+      "image": {
+        "samples": 280,
+        "median_ms": 361,
+        "p95_ms": 3469,
+        "max_ms": 5135
+      }
+    },
+    "timing_contract": "HTTP byte counts and statuses are recorded before image decoding. request_complete_ms excludes deliberate queue spacing and includes the final HTTP response body; pacing_ms is retained per attempt.",
+    "request_failures": {
+      "api_attempts_without_http_response": 14,
+      "affected_card_checks": 13,
+      "all_recovered": true,
+      "causes": [
+        "{\"code\":\"ETIMEDOUT\",\"message\":\"\"}"
+      ],
+      "timing_scope": "Final successful HTTP response body; retries, backoff and deliberate pacing excluded from HTTP statistics and retained per attempt in the full evidence."
+    }
+  },
+  "preservation": {
+    "checked_at": "2026-10-01T04:33:20.324Z",
+    "unexpected_differences": [],
+    "staging": {
+      "cards": 70,
+      "printing_native_names_changed": 0,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true
+    },
+    "production": {
+      "cards": 70,
+      "printing_native_names_changed": 70,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true
+    }
+  },
+  "metadata_changes": {
+    "printing_native_names": 70,
+    "native_search_name_rows": 70,
+    "other_metadata": 0
+  },
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "recovery_total": {
+    "fronts": 8919,
+    "derivative_references": 26757,
+    "distinct_storage_objects": 35609,
+    "retained_cohorts": 11
+  },
+  "original_4201": {
+    "resolved": 959,
+    "remaining": 3242
+  },
+  "remaining": {
+    "by_language": {
+      "en": 465,
+      "ja": 1941,
+      "zh-cn": 829,
+      "zh-tw": 7
+    },
+    "by_category": {
+      "Exact source needed": 2524,
+      "provider_image_unavailable": 1,
+      "Source image conflict": 3,
+      "Verified front held for native-name correction": 74,
+      "Verified front ready for publication": 4,
+      "identity_conflict": 5,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20,
+      "Language identity conflict": 605,
+      "Composite artwork review": 2
+    },
+    "next_offline_prepared_fronts": 78
+  },
+  "device_verified": false
+}
