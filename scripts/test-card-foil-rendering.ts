@@ -57,6 +57,15 @@ async function main() {
   assert.equal(alphaAt(art, 90, 200), 0, 'artwork masks preserve text region'); cases++;
   assert.equal(alphaAt(reverse, 90, 80), 0, 'reverse masks preserve artwork interior'); cases++;
   assert.ok(alphaAt(reverse, 90, 200) > 0, 'reverse treatment appears outside artwork'); cases++;
+  const noFoil = pixels(0, 0.4, 0.4, 1, 0.3, 0);
+  assert.ok(noFoil.every(value => value === 0), 'the shared sheen cannot add foil to a plain finish'); cases++;
+  const bounds = pixels(3, 1, -1, 1, 0.12, 0);
+  for (let i = 0; i < bounds.length; i += 4) {
+    assert.ok(bounds[i] <= bounds[i + 3] && bounds[i + 1] <= bounds[i + 3] && bounds[i + 2] <= bounds[i + 3],
+      'polished reflection remains correctly premultiplied');
+  }
+  cases++;
+  assert.ok(alphaAt(bounds, 0, 0) <= 1, 'foil leaves the printed cut edge quiet'); cases++;
 
   if (process.argv.includes('--write-fixtures')) {
     const output = path.resolve('outputs/holographic-inspection'); mkdirSync(output, { recursive: true });

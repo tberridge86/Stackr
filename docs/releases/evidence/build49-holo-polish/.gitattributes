@@ -1,0 +1,2 @@
+# Preserve imported evidence bytes exactly; the referenced JSON digest is part of the release record.
+*.json -text

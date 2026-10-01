@@ -98,7 +98,7 @@ async function main() {
   const dependencies = {
     'expo-router': { usePathname: () => pathname },
     '../lib/cardInspection': contract,
-    '../lib/haptics': { stackrHaptics: { cardPreview: () => { haptics++; } } },
+    '../lib/haptics': { stackrHaptics: { cardInspection: () => { haptics++; } } },
     get './CardInspectionViewer'() { lazyLoads++; return { __esModule: true, default: Viewer }; },
   };
   const { CardInspectionProvider, useCardInspection } = load('components/CardInspectionProvider.tsx', dependencies);

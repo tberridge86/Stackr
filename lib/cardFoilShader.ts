@@ -80,7 +80,13 @@ half4 main(float2 xy) {
     response = (a + b) * (0.10 + facet * 0.95);
     tint = spectrum(phase * 0.82);
   }
-  float foilAlpha = clamp(mask * foil * response * (0.24 + broad * 0.76), 0.0, 0.40);
+  // A soft directional sheen ties the different verified finishes together.
+  // It follows the same calibrated light as the microfacets, with no timer,
+  // extra texture download or movement of the printed artwork itself.
+  float ribbonDistance = abs(uv.x * 0.72 + uv.y * 0.28 - (0.50 + lightPhase * 0.42));
+  float ribbon = pow(max(0.0, 1.0 - ribbonDistance / 0.22), 2.0);
+  float sheen = mode > 0.5 ? ribbon * 0.45 : 0.0;
+  float foilAlpha = clamp(mask * foil * (response * (0.24 + broad * 0.76) + sheen), 0.0, 0.40);
   float neutralAlpha = specular * (broad * 0.18 + highlight * 0.60) * edge;
   float alpha = min(0.44, foilAlpha + neutralAlpha);
   float3 premultiplied = tint * foilAlpha + float3(1.0) * neutralAlpha;
