@@ -1,0 +1,23 @@
+{
+  "cohort_sha256": "d11e052241d63372089f5a3dc35ce8c04a5b58c2390ddc02edb4c3ebe37ce908",
+  "corrections_sha256": "00f108d7f2d1baaee63a5b408eb34d7d1f0ee9cacfe694f4728fc40ab5e3d046",
+  "artifacts": [
+    {
+      "id": 602387380,
+      "kind": "github_release_asset",
+      "sha256": "befce0455eeb0c32fe0a5b6ded2b215bc96b4ccfe0a80f8eb8130c1e6ae4daad",
+      "size_in_bytes": 13592296
+    }
+  ],
+  "source_counts": {
+    "tcgplayer_card_artwork": 70
+  },
+  "language_counts": {
+    "ja": 70
+  },
+  "set_counts": {
+    "ja/E1": 19,
+    "ja/E2": 51
+  },
+  "native_name_corrections": 70
+}
