@@ -1,0 +1,26 @@
+{
+  "verified_at": "2026-10-01T08:54:04.018Z",
+  "status": "ARCHIVED_INDEPENDENTLY_VERIFIED_NOT_PUBLISHED",
+  "fronts": 99,
+  "derivative_references": 297,
+  "distinct_image_files": 396,
+  "native_name_corrections_required": 97,
+  "unchanged_native_names": 2,
+  "production_writes": 0,
+  "archive": {
+    "asset_id": 602830673,
+    "name": "stackr-native99-reviewed-20261001.zip",
+    "url": "https://github.com/tberridge86/Stackr/releases/download/artwork-residual-recovery-20260930/stackr-native99-reviewed-20261001.zip",
+    "sha256": "e43d7e41f72ba00d310ec56b7cefbc8f70479bbae2059b66ca33a132d052d587",
+    "bytes": 18455055,
+    "members": 402,
+    "manifest_sha256": "307197aebfa7f1f956a15ce7db58b1f10d7810a0b22bf3df0a46f48d687a6f08"
+  },
+  "root_roundtrip_verified": true,
+  "independent_github_download_verified": true,
+  "all_image_hashes_verified": true,
+  "all_image_mime_dimensions_full_decode_verified": true,
+  "source_bytes_reacquired": 0,
+  "prepared_review": "japanese-next99-reviewed-20261001.json",
+  "note": "All 99 remain in the 3,007-case register until protected publication. Source identities, images and literal names verified; exact finish coverage is not claimed."
+}
