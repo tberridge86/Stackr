@@ -1,0 +1,26 @@
+{
+  "downloaded_at": "2026-10-01T11:34:35.982Z",
+  "id": 603125015,
+  "name": "stackr-native97-reviewed-20261001.zip",
+  "sha256": "afc0f06595f6a2bb597584dc24d76fb3f8865d27e07fcf3dd8d9056b0653187e",
+  "digest": "sha256:afc0f06595f6a2bb597584dc24d76fb3f8865d27e07fcf3dd8d9056b0653187e",
+  "bytes": 22586572,
+  "url": "https://github.com/tberridge86/Stackr/releases/download/artwork-residual-recovery-20260930/stackr-native97-reviewed-20261001.zip",
+  "root_local_verification": {
+    "archive": "stackr-native97-reviewed-20261001.zip",
+    "sha256": "afc0f06595f6a2bb597584dc24d76fb3f8865d27e07fcf3dd8d9056b0653187e",
+    "bytes": 22586572,
+    "fronts": 97,
+    "derivative_references": 291,
+    "image_files": 388,
+    "archive_files": 394,
+    "metadata_corrections_required": 97,
+    "unchanged_native_names": 0,
+    "manifest_sha256": "cf59383d7f8b99ea085802b5c0ee22b3126e204e5a9028853749d85e3594e6b0",
+    "status": "OFFLINE_REVIEWED_NOT_PUBLISHED",
+    "root_independent_zip_and_image_binding_verified": true,
+    "production_writes": 0
+  },
+  "status": "ARCHIVED_AND_DOWNLOADED_NOT_PUBLISHED",
+  "production_writes": 0
+}
