@@ -11,26 +11,28 @@ const plan = () => Array.from({ length: 53 }, (_, index) => ({
 const clone = (value) => structuredClone(value);
 
 function fixture(rows = plan(), environment = 'staging') {
-  const printings = new Map(), names = new Map();
+  const printings = new Map(), names = new Map(), variantDeprecations = new Map();
   for (const row of rows) {
     printings.set(row.printing_id, { id: row.printing_id, game_code: 'pokemon', set_id: row.set_id, language_code: row.language_code, collector_number: row.collector_number, native_name: row.current_native_name, english_display_name: `English ${row.collector_number}`, deprecated_at: null, artist: 'Artist', source_updated_at: null, updated_at: 'before', printing_discriminator: '' });
+    const expected = row.expected_native_name_rows?.[environment] ?? [{ id: row.expected_native_name_row_id[environment], variant_id: id(500 + Number(row.collector_number)) }];
     names.set(row.printing_id, [
-      { id: row.expected_native_name_row_id[environment], printing_id: row.printing_id, variant_id: id(500 + Number(row.collector_number)), card_concept_id: null, language_code: row.language_code, name_type: 'native', name: row.current_native_name, normalized_name: normalizeNativeName(row.current_native_name), deprecated_at: null, source_confidence: 0.85, updated_at: 'before' },
+      ...expected.map((native) => ({ id: native.id, printing_id: row.printing_id, variant_id: native.variant_id, card_concept_id: null, language_code: row.language_code, name_type: 'native', name: row.current_native_name, normalized_name: normalizeNativeName(row.current_native_name), deprecated_at: null, source_confidence: 0.85, updated_at: 'before' })),
       { id: id(600 + Number(row.collector_number)), printing_id: row.printing_id, variant_id: null, card_concept_id: id(700 + Number(row.collector_number)), language_code: 'en', name_type: 'english_display', name: `English ${row.collector_number}`, normalized_name: `english ${row.collector_number}`, deprecated_at: null, source_confidence: 0.85, updated_at: 'before' },
       { id: id(800 + Number(row.collector_number)), printing_id: row.printing_id, variant_id: null, card_concept_id: id(900 + Number(row.collector_number)), language_code: 'en', name_type: 'alias', name: `Alias ${row.collector_number}`, normalized_name: `alias ${row.collector_number}`, deprecated_at: null, source_confidence: 0.85, updated_at: 'before' },
     ]);
   }
   let snapshot = null, updates = 0, mutateAliasOnUpdate = false, mutatePrintingOnNameUpdate = false;
   return {
-    printings, names, get updates() { return updates; }, set mutateAliasOnUpdate(value) { mutateAliasOnUpdate = value; }, set mutatePrintingOnNameUpdate(value) { mutatePrintingOnNameUpdate = value; },
+    printings, names, variantDeprecations, get updates() { return updates; }, set mutateAliasOnUpdate(value) { mutateAliasOnUpdate = value; }, set mutatePrintingOnNameUpdate(value) { mutatePrintingOnNameUpdate = value; },
     query: async (sql, args = []) => {
       if (sql.startsWith('begin')) { snapshot = clone({ printings: [...printings], names: [...names] }); return { rows: [], rowCount: null }; }
       if (sql === 'rollback') { if (snapshot) { printings.clear(); names.clear(); for (const [key, value] of snapshot.printings) printings.set(key, value); for (const [key, value] of snapshot.names) names.set(key, value); } return { rows: [], rowCount: null }; }
       if (sql.startsWith('set local')) return { rows: [], rowCount: null };
       if (sql.startsWith('select * from catalog.card_printings')) { const value = printings.get(args[0]); return { rows: value ? [clone(value)] : [], rowCount: value ? 1 : 0 }; }
+      if (sql.startsWith('select id, printing_id, deprecated_at from catalog.card_variants')) { const values = (names.get(args[0]) ?? []).filter((name) => args[1].includes(name.variant_id)).map((name) => ({ id: name.variant_id, printing_id: name.printing_id, deprecated_at: variantDeprecations.get(name.variant_id) ?? null })); return { rows: clone(values), rowCount: values.length }; }
       if (sql.startsWith('select * from catalog.card_names')) { const values = names.get(args[0]) ?? []; return { rows: clone(values), rowCount: values.length }; }
       if (sql.startsWith('update catalog.card_printings')) { const value = printings.get(args[0]); if (!value || value.native_name !== args[2]) return { rows: [], rowCount: 0 }; value.native_name = args[1]; value.updated_at = 'after'; updates += 1; return { rows: [clone(value)], rowCount: 1 }; }
-      if (sql.startsWith('update catalog.card_names')) { const value = [...names.values()].flat().find((name) => name.id === args[0]); if (!value || value.name !== args[3] || value.normalized_name !== args[4]) return { rows: [], rowCount: 0 }; value.name = args[1]; value.normalized_name = args[2]; value.updated_at = 'after'; if (mutateAliasOnUpdate) names.get(value.printing_id)[1].name = 'Tampered English alias'; if (mutatePrintingOnNameUpdate) printings.get(value.printing_id).artist = 'Tampered printing field'; updates += 1; return { rows: [clone(value)], rowCount: 1 }; }
+      if (sql.startsWith('update catalog.card_names')) { const value = [...names.values()].flat().find((name) => name.id === args[0]); if (!value || value.name !== args[3] || value.normalized_name !== args[4]) return { rows: [], rowCount: 0 }; value.name = args[1]; value.normalized_name = args[2]; value.updated_at = 'after'; if (mutateAliasOnUpdate) names.get(value.printing_id).find((name) => name.name_type === 'english_display').name = 'Tampered English alias'; if (mutatePrintingOnNameUpdate) printings.get(value.printing_id).artist = 'Tampered printing field'; updates += 1; return { rows: [clone(value)], rowCount: 1 }; }
       throw new Error(`Unexpected SQL: ${sql}`);
     },
   };
@@ -171,4 +173,70 @@ test('a caller rehearsal rolls back all native updates when a later operation fa
   const rows = plan(), db = fixture(rows), before = clone({ printings: [...db.printings], names: [...db.names] });
   await assert.rejects(rehearse(db, async () => { await createNativeNameCorrections(rows)(db, 'staging'); throw new Error('later asset failure'); }), /later asset failure/);
   assert.deepEqual({ printings: [...db.printings], names: [...db.names] }, before);
+});
+
+const multi97Plan = () => Array.from({ length: 97 }, (_, index) => {
+  const first = index + 1;
+  const rowsFor = (baseId, baseVariant) => [
+    { id: id(baseId + first * 2), variant_id: id(baseVariant + first * 2) },
+    ...(index < 96 ? [{ id: id(baseId + first * 2 + 1), variant_id: id(baseVariant + first * 2 + 1) }] : []),
+  ];
+  return {
+    printing_id: id(25000 + first), set_id: id(26000), language_code: 'ja', collector_number: String(first).padStart(3, '0'),
+    current_native_name: `旧97多 ${first}`, proposed_native_name: `新97多 ${first}`,
+    expected_native_name_rows: { staging: rowsFor(27000, 28000), production: rowsFor(29000, 30000) },
+  };
+});
+
+test('Native97 opt-in repairs exactly 193 variant-scoped native rows and is idempotent', async () => {
+  const rows = multi97Plan();
+  assert.doesNotThrow(() => createNativeNameCorrections(rows, { expectedCount: 97, expectedNameRowCount: 193 }));
+  assert.throws(() => createNativeNameCorrections(rows, { expectedCount: 97, expectedNameRowCount: 194 }), /Unsupported multi-row/);
+  assert.throws(() => createNativeNameCorrections(rows, { expectedCount: 97 }), /expected_native_name_row_id/);
+  const db = fixture(rows, 'production'), before = clone({ printings: [...db.printings], names: [...db.names] });
+  const repair = createNativeNameCorrections(rows, { expectedCount: 97, expectedNameRowCount: 193 });
+  const audit = await repair(db, 'production');
+  assert.equal(audit.length, 97); assert.equal(audit.flatMap((entry) => entry.native_name_rows).length, 193); assert.equal(audit.filter((entry) => entry.changed).length, 97); assert.equal(audit.flatMap((entry) => entry.native_name_rows).filter((entry) => entry.changed).length, 193); assert.equal(db.updates, 290);
+  for (const row of rows) {
+    const beforePrinting = before.printings.find(([key]) => key === row.printing_id)[1], afterPrinting = db.printings.get(row.printing_id);
+    assert.deepEqual({ ...afterPrinting, native_name: beforePrinting.native_name, updated_at: beforePrinting.updated_at }, beforePrinting);
+    const expectedIds = new Set(row.expected_native_name_rows.production.map((entry) => entry.id));
+    const beforeNames = new Map(before.names.find(([key]) => key === row.printing_id)[1].map((entry) => [entry.id, entry]));
+    for (const after of db.names.get(row.printing_id)) {
+      const old = beforeNames.get(after.id);
+      if (expectedIds.has(after.id)) assert.deepEqual({ ...after, name: old.name, normalized_name: old.normalized_name, updated_at: old.updated_at }, old);
+      else assert.deepEqual(after, old);
+    }
+  }
+  const afterFirst = clone({ printings: [...db.printings], names: [...db.names] });
+  const second = await repair(db, 'production');
+  assert.equal(second.filter((entry) => entry.changed).length, 0); assert.equal(second.flatMap((entry) => entry.native_name_rows).filter((entry) => entry.changed).length, 0); assert.equal(db.updates, 290); assert.deepEqual({ printings: [...db.printings], names: [...db.names] }, afterFirst);
+});
+
+test('Native97 multi-row mode rejects wrong inventory, variants, mixed state, and rolls back every name update', async () => {
+  const rows = multi97Plan();
+  const missing = clone(rows); missing[96].expected_native_name_rows.staging.pop();
+  assert.throws(() => createNativeNameCorrections(missing, { expectedCount: 97, expectedNameRowCount: 193 }), /Missing expected/);
+  const duplicate = clone(rows); duplicate[96].expected_native_name_rows.production[0].id = duplicate[0].expected_native_name_rows.production[0].id;
+  assert.throws(() => createNativeNameCorrections(duplicate, { expectedCount: 97, expectedNameRowCount: 193 }), /unique/);
+  for (const mutate of [
+    (db, row) => { db.names.get(row.printing_id)[0].variant_id = id(39000); },
+    (db, row) => db.names.get(row.printing_id).push({ ...db.names.get(row.printing_id)[0], id: id(39001) }),
+    (db, row) => { db.names.get(row.printing_id)[0].name = row.proposed_native_name; db.names.get(row.printing_id)[0].normalized_name = normalizeNativeName(row.proposed_native_name); },
+  ]) {
+    const db = fixture(rows, 'staging'); mutate(db, rows[0]); await assert.rejects(createNativeNameCorrections(rows, { expectedCount: 97, expectedNameRowCount: 193 })(db, 'staging')); assert.equal(db.updates, 0);
+  }
+  const db = fixture(rows, 'staging'), before = clone({ printings: [...db.printings], names: [...db.names] });
+  await assert.rejects(rehearse(db, async () => { await createNativeNameCorrections(rows, { expectedCount: 97, expectedNameRowCount: 193 })(db, 'staging'); throw new Error('later artwork failure'); }), /later artwork failure/);
+  assert.deepEqual({ printings: [...db.printings], names: [...db.names] }, before);
+});
+
+test('Native97 staging preserves historical variant deprecation while production requires active variants', async () => {
+  const rows = multi97Plan(), repair = createNativeNameCorrections(rows, { expectedCount: 97, expectedNameRowCount: 193 });
+  const variantId = rows[0].expected_native_name_rows.staging[0].variant_id;
+  const staging = fixture(rows, 'staging'); staging.variantDeprecations.set(variantId, '2026-09-01T00:00:00Z');
+  await repair(staging, 'staging');
+  assert.equal(staging.variantDeprecations.get(variantId), '2026-09-01T00:00:00Z');
+  const production = fixture(rows, 'production'); production.variantDeprecations.set(rows[0].expected_native_name_rows.production[0].variant_id, '2026-09-01T00:00:00Z');
+  await assert.rejects(repair(production, 'production'), /variant inventory/);
 });

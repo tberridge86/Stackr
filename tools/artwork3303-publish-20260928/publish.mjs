@@ -153,12 +153,19 @@ export async function writeMetadata(db,rows,receipt,approval,environment,journal
   if(nativeNameCorrections){
     const expectedNativeCorrections=receipt.native_name_corrections??53;
     check(Number.isInteger(expectedNativeCorrections)&&[53,70,71,72,74,81,97].includes(expectedNativeCorrections),'Unsupported native-name correction count');
+    const expectedNativeSearchRows=receipt.native_search_name_rows??expectedNativeCorrections;
+    const multiNativeRows=expectedNativeSearchRows!==expectedNativeCorrections;
+    check(Number.isInteger(expectedNativeSearchRows)&&(multiNativeRows?expectedNativeCorrections===97&&expectedNativeSearchRows===193:expectedNativeSearchRows===expectedNativeCorrections),'Unsupported native-search name row count');
     const audit=await nativeNameCorrections(db,environment);
-    check(Array.isArray(audit)&&audit.length===expectedNativeCorrections&&audit.every(a=>a.table==='catalog.card_printings'&&a.column==='native_name'&&typeof a.changed==='boolean'&&typeof a.id==='string'&&typeof a.native_name_row_id==='string'&&typeof a.before==='string'&&typeof a.after==='string'&&a.environment===environment),'Invalid native-name correction audit');
-    check(new Set(audit.map(a=>a.id)).size===expectedNativeCorrections&&new Set(audit.map(a=>a.native_name_row_id)).size===expectedNativeCorrections,'Native-name correction audit identities are not unique');
+    const common=a=>a.table==='catalog.card_printings'&&a.column==='native_name'&&typeof a.changed==='boolean'&&typeof a.id==='string'&&typeof a.before==='string'&&typeof a.after==='string'&&a.environment===environment;
+    check(Array.isArray(audit)&&audit.length===expectedNativeCorrections&&audit.every(a=>common(a)&&(!multiNativeRows?typeof a.native_name_row_id==='string'&&!Object.hasOwn(a,'native_name_rows'):Array.isArray(a.native_name_rows)&&a.native_name_rows.length>0&&a.native_name_rows.every(n=>n&&typeof n.id==='string'&&typeof n.variant_id==='string'&&typeof n.changed==='boolean'&&n.changed===a.changed)&&!Object.hasOwn(a,'native_name_row_id'))),'Invalid native-name correction audit');
+    check(new Set(audit.map(a=>a.id)).size===expectedNativeCorrections,'Native-name correction audit printing identities are not unique');
+    const auditNames=multiNativeRows?audit.flatMap(a=>a.native_name_rows):audit.map(a=>({id:a.native_name_row_id,changed:a.changed}));
+    check(auditNames.length===expectedNativeSearchRows&&new Set(auditNames.map(a=>a.id)).size===expectedNativeSearchRows,'Native-name correction audit identities are not unique');
+    if(multiNativeRows)check(audit.every(a=>new Set(a.native_name_rows.map(n=>n.variant_id)).size===a.native_name_rows.length),'Native-name correction audit variant identities are not unique');
     journal.native_name_corrections??=[];journal.native_name_corrections.push(...audit.map(a=>({...a,environment})));
-    const changed=audit.filter(a=>a.changed).length;
-    journal.native_name_correction_counts={total:journal.native_name_corrections.length,changed,printing_changes:changed,card_name_changes:changed};journal.metadata_changes+=changed;
+    const changed=audit.filter(a=>a.changed).length, cardNameChanges=auditNames.filter(a=>a.changed).length;
+    journal.native_name_correction_counts={total:journal.native_name_corrections.length,changed,printing_changes:changed,card_name_changes:cardNameChanges,...(multiNativeRows?{native_search_name_rows:auditNames.length}:{})};journal.metadata_changes+=changed;
   }
   const cards=await cardsFor(db,rows);bind(rows,cards,environment);
   const versions=[...new Set(cards.map(c=>c.catalogue_version_id))];

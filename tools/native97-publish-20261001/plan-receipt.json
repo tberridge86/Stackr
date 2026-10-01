@@ -1,0 +1,30 @@
+{
+  "cohort_sha256": "1d06acef9184b646097db2bed97c38f866f8684a2587dc59e42c252bfbb9adf5",
+  "corrections_sha256": "3b412784e86d6d6319d057c443107f0eb25bf6050d8a2bcd28f85943634bfcad",
+  "artifacts": [
+    {
+      "id": 603125015,
+      "kind": "github_release_asset",
+      "sha256": "afc0f06595f6a2bb597584dc24d76fb3f8865d27e07fcf3dd8d9056b0653187e",
+      "size_in_bytes": 22586572
+    }
+  ],
+  "source_counts": {
+    "tcgplayer_card_artwork": 97
+  },
+  "language_counts": {
+    "ja": 97
+  },
+  "set_counts": {
+    "ja/VS1": 97
+  },
+  "native_name_corrections": 97,
+  "native_search_name_rows": 193,
+  "fronts": 97,
+  "derivative_references": 291,
+  "object_references": 388,
+  "unchanged_native_names": 0,
+  "archive_readback_verified_at": "2026-10-01T11:54:37.091Z",
+  "status": "prepared_not_published",
+  "preservation": "Exactly 97 printing native names and 193 existing variant-scoped native search rows may change atomically with 97 front associations. Preserve row UUIDs, variant associations, aliases, identities, source provenance, prices, holdings and existing artwork. No row deletion or deduplication."
+}
