@@ -63,9 +63,9 @@ it is not the native Skia rendering.
   details were inspected. The fixture is original geometric study art with
   explicit synthetic identity; it performs no catalogue request or data write.
 
-![Portrait web development fixture](evidence/card-showcase-20261001/portrait-web.png)
+![Portrait web development fixture](evidence/card-showcase-20261001/portrait-web.jpg)
 
-![Landscape web development fixture](evidence/card-showcase-20261001/landscape-web.png)
+![Landscape web development fixture](evidence/card-showcase-20261001/landscape-web.jpg)
 
 The native shader's seven synthetic material columns and three tilt positions:
 
