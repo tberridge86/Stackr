@@ -152,7 +152,7 @@ export async function writeMetadata(db,rows,receipt,approval,environment,journal
   }
   if(nativeNameCorrections){
     const expectedNativeCorrections=receipt.native_name_corrections??53;
-    check(Number.isInteger(expectedNativeCorrections)&&[53,70,71,72,74].includes(expectedNativeCorrections),'Unsupported native-name correction count');
+    check(Number.isInteger(expectedNativeCorrections)&&[53,70,71,72,74,81].includes(expectedNativeCorrections),'Unsupported native-name correction count');
     const audit=await nativeNameCorrections(db,environment);
     check(Array.isArray(audit)&&audit.length===expectedNativeCorrections&&audit.every(a=>a.table==='catalog.card_printings'&&a.column==='native_name'&&typeof a.changed==='boolean'&&typeof a.id==='string'&&typeof a.native_name_row_id==='string'&&typeof a.before==='string'&&typeof a.after==='string'&&a.environment===environment),'Invalid native-name correction audit');
     check(new Set(audit.map(a=>a.id)).size===expectedNativeCorrections&&new Set(audit.map(a=>a.native_name_row_id)).size===expectedNativeCorrections,'Native-name correction audit identities are not unique');

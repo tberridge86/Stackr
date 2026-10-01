@@ -75,6 +75,16 @@ test('a 74-receipt rejects a truncated native correction audit before asset work
   await assert.rejects(writeMetadata(db,[],receipt74,{},'production',{assets:[],links:[],metadata_changes:0},async()=>new Map(),null,async()=>audit),/native-name correction audit/i);
 });
 
+test('receipt-bound 81 corrections roll back with artwork failure and reject a truncated audit',async()=>{
+  const receipt81={...receipt,native_name_corrections:81};let writes=0;const calls=[],journal={assets:[],links:[],metadata_changes:0};
+  const audit=Array.from({length:81},(_,i)=>({table:'catalog.card_printings',column:'native_name',id:`printing-${i}`,native_name_row_id:`name-${i}`,before:`old-${i}`,after:`new-${i}`,changed:true,environment:'staging'}));
+  const db={query:async(sql)=>{calls.push(sql);if(sql==='rollback')writes=0;if(sql.startsWith('select game_code'))throw Error('asset binding unavailable');return {rows:[]};}};
+  await assert.rejects(rehearse(db,()=>writeMetadata(db,[rows[0]],receipt81,{},'staging',journal,async()=>new Map(),null,async()=>{writes=81;return audit;})),/asset binding unavailable/);
+  assert.equal(writes,0);assert.equal(calls.at(-1),'rollback');assert.deepEqual(journal.native_name_correction_counts,{total:81,changed:81,printing_changes:81,card_name_changes:81});
+  const forbidden={query:async()=>{throw Error('must not reach asset queries');}};
+  await assert.rejects(writeMetadata(forbidden,[],receipt81,{},'staging',{assets:[],links:[],metadata_changes:0},async()=>new Map(),null,async()=>audit.slice(1)),/native-name correction audit/i);
+});
+
 test('omitted correction leaves the old metadata path unchanged',async()=>{
   const journal={assets:[],links:[],metadata_changes:0},calls=[];
   const db={query:async(sql)=>{calls.push(sql);return {rows:[]};}};
