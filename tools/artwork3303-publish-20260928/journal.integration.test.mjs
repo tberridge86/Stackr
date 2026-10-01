@@ -31,4 +31,3 @@ test('publisher persists an initialized transfer journal when guarded database s
     await rm(root,{recursive:true,force:true});
   }
 });
-
