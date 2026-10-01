@@ -1,0 +1,141 @@
+{
+  "verified_at": "2026-10-01T11:37:16.220Z",
+  "status": "published_and_independently_verified",
+  "batch": {
+    "fronts": 99,
+    "derivative_references": 297,
+    "distinct_storage_objects": 396,
+    "created": 396,
+    "reused": 0
+  },
+  "production": {
+    "run_id": "36841634031",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36841634031",
+    "source": "6b0cc68f270153daa223b397e10a9f6d92341a35",
+    "cohort_sha256": "5ec8cd18bd959382515b66e6eb7d9c7ec10c13f270d67a0c95e64cd41ef417ff",
+    "corrections_sha256": "c820554509619bcbdb022229f03c16c287d076fdea53b80b54771a415dab4017",
+    "receipt_sha256": "e7daf3a761caa9662e6f65d3244c9ecffc9f2da9b056612097d3597569695bc8",
+    "receipt_artifact": {
+      "id": 11151807688,
+      "name": "native99-artwork-36841634031-1",
+      "createdAt": "2026-10-01T09:27:21Z",
+      "digest": "sha256:facb7c216cf4e19963adda84d20aeefa75829fd42f23049cb438a04cc00c7099",
+      "sha256": "facb7c216cf4e19963adda84d20aeefa75829fd42f23049cb438a04cc00c7099",
+      "bytes": 44525,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/36841634031/artifacts/11151807688"
+    }
+  },
+  "independent_verification": {
+    "cards_passed": 99,
+    "images_passed": 396,
+    "first_attempt_card_failures": 3,
+    "first_attempt_image_failures": 0,
+    "http_timings": {
+      "card_detail": {
+        "samples": 99,
+        "median_ms": 382,
+        "p95_ms": 1301,
+        "max_ms": 4143
+      },
+      "manifest": {
+        "samples": 99,
+        "median_ms": 308,
+        "p95_ms": 537,
+        "max_ms": 732
+      },
+      "image": {
+        "samples": 396,
+        "median_ms": 354,
+        "p95_ms": 631,
+        "max_ms": 3754
+      }
+    },
+    "timing_contract": "HTTP byte counts and statuses are recorded before image decoding. request_complete_ms excludes deliberate queue spacing and includes the final HTTP response body; pacing_ms is retained per attempt.",
+    "request_failures": {
+      "initial_passed_cards": 99,
+      "initial_exhausted_card_checks": 0,
+      "follow_up_used": false,
+      "follow_up_passed_cards": 0,
+      "follow_up_finished_at": null,
+      "api_attempts_without_http_response": 6,
+      "non_200_http_attempts": {},
+      "all_recovered": true,
+      "causes": [
+        "{\"message\":\"The operation was aborted due to timeout\"}",
+        "{\"code\":\"ENOTFOUND\",\"message\":\"getaddrinfo ENOTFOUND api.stackrtcg.com\"}",
+        "{\"code\":\"ETIMEDOUT\",\"message\":\"\"}"
+      ],
+      "timing_scope": "Initial successful card checks only; no follow-up evidence was used."
+    }
+  },
+  "preservation": {
+    "checked_at": "2026-10-01T09:29:24.627Z",
+    "unexpected_differences": [],
+    "staging": {
+      "cards": 99,
+      "printing_native_names_changed": 0,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true,
+      "reviewed_correct_names_unchanged": 2
+    },
+    "production": {
+      "cards": 99,
+      "printing_native_names_changed": 97,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true,
+      "reviewed_correct_names_unchanged": 2
+    }
+  },
+  "metadata_changes": {
+    "printing_native_names": 97,
+    "native_search_name_rows": 97,
+    "other_metadata": 0
+  },
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "recovery_total": {
+    "fronts": 9253,
+    "derivative_references": 27759,
+    "distinct_storage_objects": 36945,
+    "retained_cohorts": 15
+  },
+  "original_4201": {
+    "resolved": 1293,
+    "remaining": 2908
+  },
+  "remaining": {
+    "by_language": {
+      "en": 465,
+      "ja": 1607,
+      "zh-cn": 829,
+      "zh-tw": 7
+    },
+    "by_category": {
+      "Exact source needed": 2171,
+      "provider_image_unavailable": 1,
+      "Source image conflict": 3,
+      "identity_conflict": 5,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20,
+      "Verified front held for native-name correction": 97,
+      "Language identity conflict": 605,
+      "Composite artwork review": 2
+    },
+    "next_candidate_note": "97 Japanese VS1 fronts and 291 derivatives independently prepared; all 97 require precise native-name repair and remain unpublished.",
+    "next_prepared": {
+      "fronts": 97,
+      "derivative_references": 291,
+      "files_verified": 388,
+      "native_name_corrections_required": 97,
+      "production_writes": 0
+    }
+  },
+  "device_verified": false,
+  "historical_4250": {
+    "resolved": 1342,
+    "remaining": 2908
+  }
+}
