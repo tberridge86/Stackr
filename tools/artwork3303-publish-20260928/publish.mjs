@@ -151,9 +151,11 @@ export async function writeMetadata(db,rows,receipt,approval,environment,journal
     journal.catalogue_corrections??=[];journal.catalogue_corrections.push(...correction.map(a=>({...a,environment})));journal.metadata_changes+=correction.filter(a=>a.changed).length;
   }
   if(nativeNameCorrections){
+    const expectedNativeCorrections=receipt.native_name_corrections??53;
+    check(Number.isInteger(expectedNativeCorrections)&&[53,72].includes(expectedNativeCorrections),'Unsupported native-name correction count');
     const audit=await nativeNameCorrections(db,environment);
-    check(Array.isArray(audit)&&audit.length===53&&audit.every(a=>a.table==='catalog.card_printings'&&a.column==='native_name'&&typeof a.changed==='boolean'&&typeof a.id==='string'&&typeof a.native_name_row_id==='string'&&typeof a.before==='string'&&typeof a.after==='string'&&a.environment===environment),'Invalid native-name correction audit');
-    check(new Set(audit.map(a=>a.id)).size===53&&new Set(audit.map(a=>a.native_name_row_id)).size===53,'Native-name correction audit identities are not unique');
+    check(Array.isArray(audit)&&audit.length===expectedNativeCorrections&&audit.every(a=>a.table==='catalog.card_printings'&&a.column==='native_name'&&typeof a.changed==='boolean'&&typeof a.id==='string'&&typeof a.native_name_row_id==='string'&&typeof a.before==='string'&&typeof a.after==='string'&&a.environment===environment),'Invalid native-name correction audit');
+    check(new Set(audit.map(a=>a.id)).size===expectedNativeCorrections&&new Set(audit.map(a=>a.native_name_row_id)).size===expectedNativeCorrections,'Native-name correction audit identities are not unique');
     journal.native_name_corrections??=[];journal.native_name_corrections.push(...audit.map(a=>({...a,environment})));
     const changed=audit.filter(a=>a.changed).length;
     journal.native_name_correction_counts={total:journal.native_name_corrections.length,changed,printing_changes:changed,card_name_changes:changed};journal.metadata_changes+=changed;

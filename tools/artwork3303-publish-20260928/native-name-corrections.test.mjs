@@ -48,6 +48,21 @@ test('requires the fully enriched fixed 53-row plan', () => {
   assert.throws(() => createNativeNameCorrections(unchanged), /old and new names match/);
 });
 
+test('accepts only an explicitly frozen 72-row cohort when requested', async () => {
+  const rows = Array.from({ length: 72 }, (_, index) => ({
+    printing_id: id(index + 1001), expected_native_name_row_id: { staging: id(index + 2001), production: id(index + 3001) }, current_native_name: `旧72 ${index + 1}`,
+    proposed_native_name: `新72 ${index + 1}`, language_code: 'ja', set_id: id(index + 4001), collector_number: String(index + 1).padStart(3, '0'),
+  }));
+  assert.throws(() => createNativeNameCorrections(rows), /Expected 53/);
+  assert.throws(() => createNativeNameCorrections(rows.slice(0, 71), { expectedCount: 72 }), /Expected 72/);
+  assert.throws(() => createNativeNameCorrections(rows, { expectedCount: 54 }), /Unsupported/);
+  const duplicate = structuredClone(rows); duplicate[71].printing_id = duplicate[0].printing_id;
+  assert.throws(() => createNativeNameCorrections(duplicate, { expectedCount: 72 }), /unique/);
+  const db = fixture(rows);
+  const audit = await createNativeNameCorrections(rows, { expectedCount: 72 })(db, 'staging');
+  assert.equal(audit.length, 72); assert.equal(db.updates, 144);
+});
+
 test('updates exactly all 53 printing/native pairs while preserving aliases and other columns', async () => {
   const rows = plan(), db = fixture(rows), before = clone({ printings: [...db.printings], names: [...db.names] });
   const audit = await createNativeNameCorrections(rows)(db, 'staging');

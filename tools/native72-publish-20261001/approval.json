@@ -1,0 +1,19 @@
+{
+  "approved": true,
+  "store_resize_display": true,
+  "fronts": 72,
+  "native_name_corrections": 72,
+  "cohort_sha256": "dbc66fb9bd8c926987e0644ced95eea56d1106bcefb086b117c7a8e340f12b0a",
+  "corrections_sha256": "da3e3c2f7a5660cf1d2838da271cd571a215dd69eab1334c543d2bb9d8e7b387",
+  "source_wide_approval": false,
+  "source_counts": {
+    "tcgplayer_card_artwork": 72
+  },
+  "language_counts": {
+    "ja": 72
+  },
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-10-01",
+  "reason": "Operational attestation of owner-approved artwork recovery and precise demonstrated identity corrections. Exactly these 72 root-reviewed E1 fronts and 72 native-name repairs, through the protected workflow. Preserve originals, source marks, aliases, card identity IDs, prices and holdings. No source activation or exact-finish claim."
+}

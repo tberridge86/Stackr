@@ -75,11 +75,14 @@ function assertNamesPreserved(beforeRows, afterRows, nativeId, row, changed) {
  * Builds the bounded hook invoked inside the caller's serializable transaction.
  * The wrapper must enrich the reviewed plan with environment-specific UUIDs.
  */
-export function createNativeNameCorrections(plan) {
-  check(Array.isArray(plan) && plan.length === 53, 'Expected 53 native-name corrections');
+export function createNativeNameCorrections(plan, { expectedCount = 53 } = {}) {
+  // The caller freezes its intended cohort cardinality. Do not derive this from
+  // plan.length: that would turn a truncated plan into an accepted release.
+  check(Number.isInteger(expectedCount) && [53, 72].includes(expectedCount), 'Unsupported native-name correction count');
+  check(Array.isArray(plan) && plan.length === expectedCount, `Expected ${expectedCount} native-name corrections`);
   const corrections = plan.map(requirePlanRow);
-  check(new Set(corrections.map((row) => row.printing_id)).size === 53, 'Expected 53 unique native correction printings');
-  for (const environment of ['staging', 'production']) check(new Set(corrections.map((row) => row.expected_native_name_row_id[environment])).size === 53, `Expected 53 unique ${environment} native correction name rows`);
+  check(new Set(corrections.map((row) => row.printing_id)).size === expectedCount, `Expected ${expectedCount} unique native correction printings`);
+  for (const environment of ['staging', 'production']) check(new Set(corrections.map((row) => row.expected_native_name_row_id[environment])).size === expectedCount, `Expected ${expectedCount} unique ${environment} native correction name rows`);
 
   return async function nativeNameCorrections(db, environment) {
     check(environment === 'staging' || environment === 'production', `Unsupported native correction environment: ${environment}`);
