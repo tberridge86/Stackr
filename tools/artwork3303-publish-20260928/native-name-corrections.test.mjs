@@ -106,6 +106,27 @@ test('an explicit 81-row production plan updates only native pairs and is idempo
   assert.deepEqual({ printings: [...db.printings], names: [...db.names] }, afterFirst);
 });
 
+test('an explicit 97-row production plan updates only native pairs and is idempotent', async () => {
+  const rows = Array.from({ length: 97 }, (_, i) => ({ printing_id: id(i + 17001), expected_native_name_row_id: { staging: id(i + 18001), production: id(i + 19001) }, current_native_name: `旧97 ${i}`, proposed_native_name: `新97 ${i}`, language_code: 'ja', set_id: id(20001), collector_number: String(i + 1) }));
+  assert.throws(() => createNativeNameCorrections(rows), /Expected 53/);
+  assert.throws(() => createNativeNameCorrections(rows.slice(1), { expectedCount: 97 }), /Expected 97/);
+  const duplicate = clone(rows); duplicate[96].expected_native_name_row_id.production = duplicate[0].expected_native_name_row_id.production;
+  assert.throws(() => createNativeNameCorrections(duplicate, { expectedCount: 97 }), /unique/);
+  const db = fixture(rows, 'production'), before = clone({ printings: [...db.printings], names: [...db.names] });
+  const repair = createNativeNameCorrections(rows, { expectedCount: 97 }), audit = await repair(db, 'production');
+  assert.equal(audit.length, 97); assert.equal(audit.filter(r => r.changed).length, 97); assert.equal(db.updates, 194);
+  for (const row of rows) {
+    const old = before.printings.find(([key]) => key === row.printing_id)[1], after = db.printings.get(row.printing_id);
+    assert.equal(after.native_name, row.proposed_native_name);
+    assert.deepEqual({ ...after, native_name: old.native_name, updated_at: old.updated_at }, old);
+    const oldNames = new Map(before.names.find(([key]) => key === row.printing_id)[1].map(n => [n.id, n]));
+    for (const n of db.names.get(row.printing_id).filter(n => n.id !== row.expected_native_name_row_id.production)) assert.deepEqual(n, oldNames.get(n.id));
+  }
+  const afterFirst = clone({ printings: [...db.printings], names: [...db.names] });
+  assert.equal((await repair(db, 'production')).filter(r => r.changed).length, 0); assert.equal(db.updates, 194);
+  assert.deepEqual({ printings: [...db.printings], names: [...db.names] }, afterFirst);
+});
+
 test('updates exactly all 53 printing/native pairs while preserving aliases and other columns', async () => {
   const rows = plan(), db = fixture(rows), before = clone({ printings: [...db.printings], names: [...db.names] });
   const audit = await createNativeNameCorrections(rows)(db, 'staging');

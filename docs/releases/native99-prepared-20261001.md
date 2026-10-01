@@ -1,0 +1,15 @@
+# 99 Japanese PCG4 fronts prepared for protected publication
+
+The frozen batch contains **99 Golden Sky, Silvery Ocean (PCG4) fronts, 297 display derivatives and 396 distinct image files**. Root directly reviewed all faces and literal Japanese titles and collector fractions. Exactly **97 printing/native-search name pairs require correction**; PCG4/105 and PCG4/106 already match and remain unchanged. Unown cards retain their distinct collector identities and literal printed title; existing aliases stay intact.
+
+The [immutable archive](https://github.com/tberridge86/Stackr/releases/download/artwork-residual-recovery-20260930/stackr-native99-reviewed-20261001.zip), asset **602830673**, is **18,455,055 bytes**, SHA-256 `e43d7e41f72ba00d310ec56b7cefbc8f70479bbae2059b66ca33a132d052d587`. Independent download, safe extraction, hash, MIME, dimensions and full-decode verification passed for all 396 image files. [Archive evidence](japanese-next99-archive-20261001.json), [visual and preparation evidence](japanese-next99-reviewed-20261001.json). Retained source bytes and marks are unchanged; no images were reacquired. Exact finish coverage is not claimed.
+
+The cohort SHA-256 is `5ec8cd18bd959382515b66e6eb7d9c7ec10c13f270d67a0c95e64cd41ef417ff`; correction-plan SHA-256 is `c820554509619bcbdb022229f03c16c287d076fdea53b80b54771a415dab4017`. All 99 IDs are in the current 3,007-case register and disjoint from all fourteen completed recovery cohorts. Source category 85/group 24103 and printed denominator 106 are bound to the canonical PCG4 set identity.
+
+Fresh full staging/production snapshots of all 99 printings, native names, aliases, variants and API rows match the earlier snapshots exactly. Each of the 97 correction pairs binds its existing native search-name UUID separately for staging and production. [Before evidence](native99-before-evidence-20261001.json.gz).
+
+The existing immutable publisher adds only this frozen `native99` scope and explicit 97-row correction cardinality. Both rollback rehearsals must pass before storage upload and atomic artwork/name publication. Protected production review, exact main revision, source-policy checks, conflicting-artwork rejection, byte verification and all existing deployment guards remain in force. No prices, holdings, aliases, other metadata, catalogue version, source activation, migrations, access controls or mobile build are changed.
+
+Validation: **88 focused tests passed**, including complete native-pair preservation/idempotence, full correction-audit cardinality and rollback, source/name/collector/archive guards, earlier Japanese scopes and protected workflow routing. The actual package verifier passed **99 fronts/396 images**; deployment-tooling checks also passed.
+
+These fronts are **prepared, not published**. Verified totals remain **9,154 recovered fronts, 1,194/4,201 resolved and 3,007 outstanding** until production and independent public verification succeed. TestFlight 1.0.4 (48) remains the delivered client. The separate 94 missing checklists, logos, pricing, speed and physical-device gates remain open.

@@ -1,0 +1,19 @@
+{
+  "approved": true,
+  "store_resize_display": true,
+  "fronts": 99,
+  "native_name_corrections": 97,
+  "cohort_sha256": "5ec8cd18bd959382515b66e6eb7d9c7ec10c13f270d67a0c95e64cd41ef417ff",
+  "corrections_sha256": "c820554509619bcbdb022229f03c16c287d076fdea53b80b54771a415dab4017",
+  "source_wide_approval": false,
+  "source_counts": {
+    "tcgplayer_card_artwork": 99
+  },
+  "language_counts": {
+    "ja": 99
+  },
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-10-01",
+  "reason": "Owner-approved artwork recovery and precise demonstrated native-name corrections. Exactly these 99 reviewed PCG4 fronts with 97 repairs and 2 correct names unchanged, through protected publication. Preserve originals, source marks, aliases, identities, prices and holdings. No source activation or exact-finish claim."
+}
