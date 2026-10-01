@@ -1,0 +1,1226 @@
+[
+  {
+    "printing_id": "00af95dc-f9e0-4f4c-b27c-2c9c840739bf",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "028",
+    "current_native_name": "クリーフ",
+    "proposed_native_name": "ピッピ",
+    "expected_native_name_row_id": {
+      "staging": "dfc34fc9-58c5-4c45-baf1-d5b161eb6630",
+      "production": "dfc34fc9-58c5-4c45-baf1-d5b161eb6630"
+    },
+    "observed_printed_number": "028/128",
+    "original_sha256": "c02c71e864d55cc70bcdbf3a09392fffe36d033abf3799bcc13f321db1eba0e6",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575964_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "03e51668-5eb1-4673-b25c-028b6481268b",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "071",
+    "current_native_name": "カリザード",
+    "proposed_native_name": "リザードン",
+    "expected_native_name_row_id": {
+      "staging": "c501198b-0c8d-4b38-855c-9edde390af94",
+      "production": "c501198b-0c8d-4b38-855c-9edde390af94"
+    },
+    "observed_printed_number": "071/128",
+    "original_sha256": "574f2f989da5c552a133b7806e84170f6ac87114ae20dff2552d1357cd5af3a5",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575960_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "0854032d-2529-4b73-8e66-c3710edfc259",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "090",
+    "current_native_name": "ゴーレム",
+    "proposed_native_name": "ゴローニャ",
+    "expected_native_name_row_id": {
+      "staging": "c663c476-6a6c-4ed1-8ec8-e000fdf48c4f",
+      "production": "c663c476-6a6c-4ed1-8ec8-e000fdf48c4f"
+    },
+    "observed_printed_number": "090/128",
+    "original_sha256": "9ed87997a2b03b6b1247b5df77fa49cf04558b206126dd21c3c3c0ea8cc6dda9",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575994_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "08d4de06-be47-415c-907e-9adaad40c544",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "052",
+    "current_native_name": "エネルギー除去2",
+    "proposed_native_name": "エネルギーリムーブ",
+    "expected_native_name_row_id": {
+      "staging": "d2c44f54-b832-4095-bb07-afb3bbdbdb61",
+      "production": "d2c44f54-b832-4095-bb07-afb3bbdbdb61"
+    },
+    "observed_printed_number": "052/128",
+    "original_sha256": "53ae76fdbacf3c1b95091dc2ca4548779f9fa7d4716cf4b0db7d18d6c1f1d0e5",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575980_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "0ae50e58-9ac0-4569-99f0-e6bd501eed75",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "094",
+    "current_native_name": "ドラゴナイト",
+    "proposed_native_name": "カイリュー",
+    "expected_native_name_row_id": {
+      "staging": "f195a38a-0de6-42bf-8142-58208e4ca5e6",
+      "production": "f195a38a-0de6-42bf-8142-58208e4ca5e6"
+    },
+    "observed_printed_number": "094/128",
+    "original_sha256": "c2d50f52731fdaaea635ac99ae1cd8337e601e8f4fa5c7a385eb8d139f6b819a",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575972_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "0f7aef04-a259-4f0e-a71b-4c0152dee6b6",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "051",
+    "current_native_name": "エネルギー電荷",
+    "proposed_native_name": "エネルギーチャージ",
+    "expected_native_name_row_id": {
+      "staging": "693c27be-6d3b-4e11-b9bc-f754b1a038f4",
+      "production": "693c27be-6d3b-4e11-b9bc-f754b1a038f4"
+    },
+    "observed_printed_number": "051/128",
+    "original_sha256": "f742a34dcdf5ec4257a5d5e3a48816198195073ed465567649b32c086d187302",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/577258_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "100f3e54-1d27-450c-813b-f114ab57ff37",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "095",
+    "current_native_name": "タイラニター",
+    "proposed_native_name": "バンギラス",
+    "expected_native_name_row_id": {
+      "staging": "6e2935fa-41ef-49a9-a0ed-76e1614a91b5",
+      "production": "6e2935fa-41ef-49a9-a0ed-76e1614a91b5"
+    },
+    "observed_printed_number": "095/128",
+    "original_sha256": "46e1ae1f98851c5e15420d0f3a616d0b75324862d7d746b0d070e352448950ff",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576063_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "1308af7d-407a-41fc-976c-4fe0d063d8c7",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "050",
+    "current_native_name": "エネルギー回復",
+    "proposed_native_name": "エネルギー再生",
+    "expected_native_name_row_id": {
+      "staging": "73a29f01-bca2-4757-835b-2d0ec4ac8d71",
+      "production": "73a29f01-bca2-4757-835b-2d0ec4ac8d71"
+    },
+    "observed_printed_number": "050/128",
+    "original_sha256": "21e0a0e417c5243aa53ec62cb9f4eb77a1ee27660dbf37a26317a9f73b21e79b",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575981_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "15b56607-ad61-409a-a4b3-8bc3cb306760",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "053",
+    "current_native_name": "オーク教授の研究",
+    "proposed_native_name": "オーキドはかせの研究",
+    "expected_native_name_row_id": {
+      "staging": "dfc009ad-d4e8-472d-9654-0c37e7e5bd47",
+      "production": "dfc009ad-d4e8-472d-9654-0c37e7e5bd47"
+    },
+    "observed_printed_number": "053/128",
+    "original_sha256": "d4743e1d3ccb825159a6c712a9332c3ff7fb328a065a33e1b1e9aa079583202a",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576046_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "1c20c341-e681-4859-a1be-0757df99b940",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "044",
+    "current_native_name": "Hitmonlee",
+    "proposed_native_name": "サワムラー",
+    "expected_native_name_row_id": {
+      "staging": "71ed795e-5ce3-4355-a502-3ea056c8f856",
+      "production": "71ed795e-5ce3-4355-a502-3ea056c8f856"
+    },
+    "observed_printed_number": "044/128",
+    "original_sha256": "789215d6b3bef112b3554ecd60b4cc4523d2fdb6f8061e5686a3c2aaf12e5b82",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575997_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "222fe209-6f59-4af1-bbd8-2f29b9d5f8d2",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "084",
+    "current_native_name": "アラカザム",
+    "proposed_native_name": "フーディン",
+    "expected_native_name_row_id": {
+      "staging": "16fbcd0a-d5dc-4e97-b707-0b78b44f5d58",
+      "production": "16fbcd0a-d5dc-4e97-b707-0b78b44f5d58"
+    },
+    "observed_printed_number": "084/128",
+    "original_sha256": "40da9168e1b3b9b8d8b9777d2e6c70cc08bf773ea808d3eb634e904ea493ab42",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575947_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "23636295-a836-4dfa-8599-5781378a875e",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "093",
+    "current_native_name": "Clefable",
+    "proposed_native_name": "ピクシー",
+    "expected_native_name_row_id": {
+      "staging": "4a41771b-2c02-4c1f-b32f-66894d417c26",
+      "production": "4a41771b-2c02-4c1f-b32f-66894d417c26"
+    },
+    "observed_printed_number": "093/128",
+    "original_sha256": "f2f9a9746fd61b9440934e64353516a9e526d23ab3a923c1e9ed516b142626c6",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575962_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "25442f9a-d985-4f51-8b46-df7aa065c733",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "020",
+    "current_native_name": "ディグレット",
+    "proposed_native_name": "ディグダ",
+    "expected_native_name_row_id": {
+      "staging": "a31788e2-a7af-4cb0-bffb-2d7bb093d214",
+      "production": "a31788e2-a7af-4cb0-bffb-2d7bb093d214"
+    },
+    "observed_printed_number": "020/128",
+    "original_sha256": "b61754642631a44d74aff068c6a0a985c80c07efd6ba9472d71540df3b3cc51f",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575970_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "288cfd3e-6147-4ca1-bf5c-f9f3a4e76112",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "092",
+    "current_native_name": "恐れて",
+    "proposed_native_name": "オニドリル",
+    "expected_native_name_row_id": {
+      "staging": "c1dce0c6-b0ed-489c-800e-e455f29afbd8",
+      "production": "c1dce0c6-b0ed-489c-800e-e455f29afbd8"
+    },
+    "observed_printed_number": "092/128",
+    "original_sha256": "002b3daa581691be9944945e3d7fc73a3845c67e21a618f4db8ec5767f109873",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575983_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "2e152514-d8ab-4124-9c0d-efc59f662dee",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "029",
+    "current_native_name": "meowth",
+    "proposed_native_name": "ニャース",
+    "expected_native_name_row_id": {
+      "staging": "a2c051ab-e1ff-4bc9-8431-bd59020708f3",
+      "production": "a2c051ab-e1ff-4bc9-8431-bd59020708f3"
+    },
+    "observed_printed_number": "029/128",
+    "original_sha256": "e8015337c0f101aca09bd08aa8b3c2b3051c7ae6c1ef6c631803646849d4ace1",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576021_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "2ed8b01b-77c9-4d9e-bd49-3631e6ebd74c",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "045",
+    "current_native_name": "Pupitar",
+    "proposed_native_name": "サナギラス",
+    "expected_native_name_row_id": {
+      "staging": "748e7f87-51d0-45b8-ad16-2dd49c75916a",
+      "production": "748e7f87-51d0-45b8-ad16-2dd49c75916a"
+    },
+    "observed_printed_number": "045/128",
+    "original_sha256": "a2d0f63f75830dc2a07235d8a64cfe944b16f21e536a4929253870e1ec3db798",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576047_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "3641baaf-9d86-496b-9b95-245cfc4e4ebd",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "026",
+    "current_native_name": "ラッタタ",
+    "proposed_native_name": "コラッタ",
+    "expected_native_name_row_id": {
+      "staging": "0dc17a33-020a-4eba-8799-f727d28aee49",
+      "production": "0dc17a33-020a-4eba-8799-f727d28aee49"
+    },
+    "observed_printed_number": "026/128",
+    "original_sha256": "7070e1fc7cd28ee6aca1259a3a8b2f840d5b829753d8d2927475e94989ead29b",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576053_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "3727eb7c-6380-4e38-98ba-8d0524f6fffc",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "038",
+    "current_native_name": "Electabuzz",
+    "proposed_native_name": "エレブー",
+    "expected_native_name_row_id": {
+      "staging": "18e6df8c-277a-401c-af22-97b38bc33a87",
+      "production": "18e6df8c-277a-401c-af22-97b38bc33a87"
+    },
+    "observed_printed_number": "038/128",
+    "original_sha256": "03dabdf00380286b88ba94cf88e991657bc1f41705219f748349d9af4d4ecdb2",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575979_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "3c973244-6831-43f4-b656-667d03829c3f",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "076",
+    "current_native_name": "爆風",
+    "proposed_native_name": "カメックス",
+    "expected_native_name_row_id": {
+      "staging": "49f71d79-3e2a-445a-af71-7129faffed68",
+      "production": "49f71d79-3e2a-445a-af71-7129faffed68"
+    },
+    "observed_printed_number": "076/128",
+    "original_sha256": "1595ed0bac65aa0d983f0b0a841c32012b7c11876827a8b08646a09a8d9fdcbb",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575955_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "3e19b18a-cdff-476b-a85c-a7f3f5ff9384",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "046",
+    "current_native_name": "ピッジット",
+    "proposed_native_name": "ピジョン",
+    "expected_native_name_row_id": {
+      "staging": "cbc0d3ca-405a-4a47-852b-1779b879ec99",
+      "production": "cbc0d3ca-405a-4a47-852b-1779b879ec99"
+    },
+    "observed_printed_number": "046/128",
+    "original_sha256": "4dafccd6789c3af988af4ea390253484852e1d87ccb56426d91a2fc35834fd16",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576035_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "3ed9546c-483f-47b8-885f-dac80592d4c9",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "043",
+    "current_native_name": "砂利",
+    "proposed_native_name": "ゴローン",
+    "expected_native_name_row_id": {
+      "staging": "eb5497ea-18be-42ed-9038-0e8815ad8886",
+      "production": "eb5497ea-18be-42ed-9038-0e8815ad8886"
+    },
+    "observed_printed_number": "043/128",
+    "original_sha256": "746f53d650deaafa62da6711e8f61302f2d328cf22d41afa5060560122cbdf85",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575995_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "43de7067-8ae4-42ba-8242-da4b37524add",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "091",
+    "current_native_name": "pidgeot",
+    "proposed_native_name": "ピジョット",
+    "expected_native_name_row_id": {
+      "staging": "dbb84d13-98e3-4832-bf38-dc07024ad46f",
+      "production": "dbb84d13-98e3-4832-bf38-dc07024ad46f"
+    },
+    "observed_printed_number": "091/128",
+    "original_sha256": "226ec43bcb5241dfe4fe3275619ab7ccca39c586cfe02d4bccffdf7fbc4d45af",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576033_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "46a8b2f0-244a-4e7f-a3da-1c66235b3852",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "100",
+    "current_native_name": "vileplume",
+    "proposed_native_name": "ラフレシア",
+    "expected_native_name_row_id": {
+      "staging": "cfa5d5fd-b191-4018-b7d2-c5d162cb175a",
+      "production": "cfa5d5fd-b191-4018-b7d2-c5d162cb175a"
+    },
+    "observed_printed_number": "100/128",
+    "original_sha256": "79832a3191983777d0c759077507bd7ec8da5bfa19e71a621fbae1747e5609ec",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576067_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "4dcde5b0-825e-4d91-8fa3-0a5012e942ca",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "042",
+    "current_native_name": "マチョーク",
+    "proposed_native_name": "ゴーリキー",
+    "expected_native_name_row_id": {
+      "staging": "5917a178-314c-4e08-bce7-38d4d0d75a75",
+      "production": "5917a178-314c-4e08-bce7-38d4d0d75a75"
+    },
+    "observed_printed_number": "042/128",
+    "original_sha256": "f010bc3c6a55eaf95dad9634e7937faee026ef116f30f25713d0c952c4a43fdc",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576009_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "4e5bde1b-68a1-4175-aa39-8b2343eb5518",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "040",
+    "current_native_name": "カダブラ",
+    "proposed_native_name": "ユンゲラー",
+    "expected_native_name_row_id": {
+      "staging": "00879784-c0b8-411e-9cd8-2816dcbbeb18",
+      "production": "00879784-c0b8-411e-9cd8-2816dcbbeb18"
+    },
+    "observed_printed_number": "040/128",
+    "original_sha256": "cd22e755a3e243f9c8fbb0d1639f845df3783c1d2fc63a8b7b1071c464db862b",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576001_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "4fa728a0-ac57-49dd-ad91-52c2c5a557f2",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "059",
+    "current_native_name": "ポケモン反転",
+    "proposed_native_name": "ポケモンリバース",
+    "expected_native_name_row_id": {
+      "staging": "e0e02bbb-4ac6-4c98-bd0f-f7330dd9a441",
+      "production": "e0e02bbb-4ac6-4c98-bd0f-f7330dd9a441"
+    },
+    "observed_printed_number": "059/128",
+    "original_sha256": "b407d29470caad7a5a8420636c2510c4b14d817ae250bc90e31e759003621eb6",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576039_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "50b46630-bbae-4250-bbb5-f5554f52bfb6",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "036",
+    "current_native_name": "PoliWhirl",
+    "proposed_native_name": "ニョロゾ",
+    "expected_native_name_row_id": {
+      "staging": "222e75d9-1361-484e-a6f4-14a5fd1622fd",
+      "production": "222e75d9-1361-484e-a6f4-14a5fd1622fd"
+    },
+    "observed_printed_number": "036/128",
+    "original_sha256": "8b93bbc7b16081b6f320940695e6e92bc40a3c141d353aa33ab04a62f2935657",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576041_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "5333f602-6bd2-4869-b26f-256c6fd72d54",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "069",
+    "current_native_name": "おしっこ",
+    "proposed_native_name": "マタドガス",
+    "expected_native_name_row_id": {
+      "staging": "e71fa2ce-07af-4ae0-9d23-ac011998dbef",
+      "production": "e71fa2ce-07af-4ae0-9d23-ac011998dbef"
+    },
+    "observed_printed_number": "069/128",
+    "original_sha256": "f0bfe030d0e1008c1f6cf08a00b5e4259961b6e20d8a0ab91a7e26de5d51846c",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576072_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "54eef594-b1a5-4e20-9c96-654bf71f4ceb",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "024",
+    "current_native_name": "幼虫",
+    "proposed_native_name": "ヨーギラス",
+    "expected_native_name_row_id": {
+      "staging": "46077610-acb1-41cb-a4e3-617915e1860e",
+      "production": "46077610-acb1-41cb-a4e3-617915e1860e"
+    },
+    "observed_printed_number": "024/128",
+    "original_sha256": "16cfcb644aba2d17e84953341cc9c29d3178dfc2a80684eafd39f35ff9d5843e",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576006_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "55ddac7b-a990-498b-b9b9-bb873c8f40b5",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "047",
+    "current_native_name": "チャンジー",
+    "proposed_native_name": "ラッキー",
+    "expected_native_name_row_id": {
+      "staging": "24f2535d-fb82-4494-9ec6-c917284cda68",
+      "production": "24f2535d-fb82-4494-9ec6-c917284cda68"
+    },
+    "observed_printed_number": "047/128",
+    "original_sha256": "c5455e7890a1cd30768cf35cc4d791b2092572376bba13a59c7811f16240ed15",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575959_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "5a7dd7fb-44d2-43c3-b8ed-d98598f812f5",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "078",
+    "current_native_name": "クロイスター",
+    "proposed_native_name": "パルシェン",
+    "expected_native_name_row_id": {
+      "staging": "535351d7-ccec-40a0-bfaa-b88a257fe7ed",
+      "production": "535351d7-ccec-40a0-bfaa-b88a257fe7ed"
+    },
+    "observed_printed_number": "078/128",
+    "original_sha256": "11637c15ad2cfa5f318ff3974355bb53fcd5deb494e908df1f8d919da96d7f34",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575965_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "5b5c98d4-ef52-4740-bd5a-996c82ba66ad",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "074",
+    "current_native_name": "染色",
+    "proposed_native_name": "バクフーン",
+    "expected_native_name_row_id": {
+      "staging": "6cd10b77-6938-488b-9405-cd69c964b4f8",
+      "production": "6cd10b77-6938-488b-9405-cd69c964b4f8"
+    },
+    "observed_printed_number": "074/128",
+    "original_sha256": "e7fdccaadee787d98f699209b054e8a6a2f5de6e79ba941ac4e269fedc392b77",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576061_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "5df80c36-be20-4c98-b314-15174b44f63a",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "031",
+    "current_native_name": "ドラチーニ",
+    "proposed_native_name": "ミニリュウ",
+    "expected_native_name_row_id": {
+      "staging": "2aaf1b0c-a241-4497-b197-94d5709ba16a",
+      "production": "2aaf1b0c-a241-4497-b197-94d5709ba16a"
+    },
+    "observed_printed_number": "031/128",
+    "original_sha256": "440d05e25a1c497776062d76bb59cabab4ba602d73278a5520550971e201cf7f",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575974_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "60b363d3-84ad-4b3b-bf14-3846cd385136",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "023",
+    "current_native_name": "キューボン",
+    "proposed_native_name": "カラカラ",
+    "expected_native_name_row_id": {
+      "staging": "b49b87c5-29f0-4c2b-bee5-2b5f4dd42cec",
+      "production": "b49b87c5-29f0-4c2b-bee5-2b5f4dd42cec"
+    },
+    "observed_printed_number": "023/128",
+    "original_sha256": "fd0aede5e32a9c8c06e322012ba7ec69dace745af6129aaba29cd087380d7c9e",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575969_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "66d6d117-d9cb-41c3-9207-728fea5d5111",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "006",
+    "current_native_name": "Vulpix",
+    "proposed_native_name": "ロコン",
+    "expected_native_name_row_id": {
+      "staging": "f6630e5d-c374-450b-a2a7-ce1c6d9a7d91",
+      "production": "f6630e5d-c374-450b-a2a7-ce1c6d9a7d91"
+    },
+    "observed_printed_number": "006/128",
+    "original_sha256": "f9f698b38a0295eca01ad6379ab4f50cc96726e93562e3d5eb2de0caa920f03b",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576069_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6723275c-46d9-4006-9aa6-f4329cf4353f",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "008",
+    "current_native_name": "poliwag",
+    "proposed_native_name": "ニョロモ",
+    "expected_native_name_row_id": {
+      "staging": "fda84959-9f33-4472-9cb7-1ba4f8d4f939",
+      "production": "fda84959-9f33-4472-9cb7-1ba4f8d4f939"
+    },
+    "observed_printed_number": "008/128",
+    "original_sha256": "02551740ffa3429b87951715aabfd92ff416517349e1c6dc5ee8fd26737fce86",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576040_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6a0ee22c-9783-4e35-afc8-41af9a609b49",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "032",
+    "current_native_name": "猟犬",
+    "proposed_native_name": "デルビル",
+    "expected_native_name_row_id": {
+      "staging": "00db809a-0071-4e78-92da-a5b6a180485d",
+      "production": "00db809a-0071-4e78-92da-a5b6a180485d"
+    },
+    "observed_printed_number": "032/128",
+    "original_sha256": "5ab413ba1668fe97809272344815777bfc15b581b41e59c2c174704178437c8d",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575999_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6bc8a7f8-a776-4264-8d2e-2b23eb92a515",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "005",
+    "current_native_name": "奇妙な",
+    "proposed_native_name": "ナゾノクサ",
+    "expected_native_name_row_id": {
+      "staging": "dd1ef136-6d6e-4dce-acee-b78dd786d60c",
+      "production": "dd1ef136-6d6e-4dce-acee-b78dd786d60c"
+    },
+    "observed_printed_number": "005/128",
+    "original_sha256": "93a8fb5cb105cba82ebbb64ef48a4bb23722d491d417e3815b8533b25611118d",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576030_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6db9d62e-a228-4ea1-b3a4-9fe9c81532f5",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "012",
+    "current_native_name": "Magikarp",
+    "proposed_native_name": "コイキング",
+    "expected_native_name_row_id": {
+      "staging": "0024ba9a-ac40-41dd-b928-b1d3b8da9ea4",
+      "production": "0024ba9a-ac40-41dd-b928-b1d3b8da9ea4"
+    },
+    "observed_printed_number": "012/128",
+    "original_sha256": "d2a4c5acde63a5d9b86bddbff5df964cfb08be30c854792641ff5c569ac6240c",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576013_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "702c1eca-9675-4230-9d8c-02f22f79f2e2",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "019",
+    "current_native_name": "ガストリー",
+    "proposed_native_name": "ゴース",
+    "expected_native_name_row_id": {
+      "staging": "65f09956-74ca-4d7c-a011-409411e9a099",
+      "production": "65f09956-74ca-4d7c-a011-409411e9a099"
+    },
+    "observed_printed_number": "019/128",
+    "original_sha256": "70e127dc5bef331af50b0c41d00aef593e86af5375943d3eaa27a6fc3a8ff5a5",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575987_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7189f30a-80fc-431b-9c70-c1260cdaa60f",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "073",
+    "current_native_name": "Rapidash",
+    "proposed_native_name": "ギャロップ",
+    "expected_native_name_row_id": {
+      "staging": "4985ba1c-63e2-49ed-aa16-b69071301e52",
+      "production": "4985ba1c-63e2-49ed-aa16-b69071301e52"
+    },
+    "observed_printed_number": "073/128",
+    "original_sha256": "e39ff35991bb2a6597e7c35f23e033617a981f9be597502736f060a69213d0f3",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576052_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "73686a09-7b7b-41fe-824f-cb844fbf7805",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "027",
+    "current_native_name": "槍",
+    "proposed_native_name": "オニスズメ",
+    "expected_native_name_row_id": {
+      "staging": "e290d3e2-bd7b-4974-bc2c-b8a944782891",
+      "production": "e290d3e2-bd7b-4974-bc2c-b8a944782891"
+    },
+    "observed_printed_number": "027/128",
+    "original_sha256": "051d210032f501d60ee00a6fabad454368431686a9147afb45b1e2446f3e485b",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576057_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7606b9d8-6f8a-4d1f-be5a-770a27ccb86f",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "041",
+    "current_native_name": "ハンター",
+    "proposed_native_name": "ゴースト",
+    "expected_native_name_row_id": {
+      "staging": "51320c3a-8b86-4ab9-821d-3b652d0cfbe4",
+      "production": "51320c3a-8b86-4ab9-821d-3b652d0cfbe4"
+    },
+    "observed_printed_number": "041/128",
+    "original_sha256": "1b987ef35744cbaef5fe1f67e30a30afce7d318658db278414419e50cbc64847",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575996_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "76cefba1-fa46-4259-afd3-218bd4ba8b32",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "030",
+    "current_native_name": "タウロス",
+    "proposed_native_name": "ケンタロス",
+    "expected_native_name_row_id": {
+      "staging": "16d13401-8679-4d1d-b0df-3fab0253121e",
+      "production": "16d13401-8679-4d1d-b0df-3fab0253121e"
+    },
+    "observed_printed_number": "030/128",
+    "original_sha256": "86fbc419afeed2b6770577aefe7306b5baa34f2820ddeb1ea74e7c6e5d2f90b2",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576060_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7935ed12-4979-4713-9b45-da6e604aac7e",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "080",
+    "current_native_name": "feraligatr",
+    "proposed_native_name": "オーダイル",
+    "expected_native_name_row_id": {
+      "staging": "eda79b5a-da97-444c-a65b-d10c3d3e634a",
+      "production": "eda79b5a-da97-444c-a65b-d10c3d3e634a"
+    },
+    "observed_printed_number": "080/128",
+    "original_sha256": "af7777e45ee1f1de85547babf537cc905ae7b19d53818b87da50dbc4f98a9f77",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575984_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7b3d319a-67f4-419b-aea9-307bdf712511",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "039",
+    "current_native_name": "フラフィー",
+    "proposed_native_name": "モココ",
+    "expected_native_name_row_id": {
+      "staging": "f63887f3-ece2-474d-833d-193b2ed42c06",
+      "production": "f63887f3-ece2-474d-833d-193b2ed42c06"
+    },
+    "observed_printed_number": "039/128",
+    "original_sha256": "a5c1a032643fa1423d2fda176d81500c017e034f67ed61d7f060486625151c55",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575986_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7b7e8a02-4d4e-4411-871f-2123cdee2b76",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "065",
+    "current_native_name": "金星",
+    "proposed_native_name": "フシギバナ",
+    "expected_native_name_row_id": {
+      "staging": "5ccdbb59-2366-483a-910e-66d76c18e82c",
+      "production": "5ccdbb59-2366-483a-910e-66d76c18e82c"
+    },
+    "observed_printed_number": "065/128",
+    "original_sha256": "344e993dd92ae134f7f6a3dab522ba282cb897ba758ee8828020419e5f9aab98",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576066_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7bd01a25-4e46-43d8-83e5-a53278273f9e",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "048",
+    "current_native_name": "ドラゴンエア",
+    "proposed_native_name": "ハクリュー",
+    "expected_native_name_row_id": {
+      "staging": "dbdac3a7-c566-4e06-834e-9054e3a029d1",
+      "production": "dbdac3a7-c566-4e06-834e-9054e3a029d1"
+    },
+    "observed_printed_number": "048/128",
+    "original_sha256": "765089bde77c2d0b2f3a743aa7674e0922133e594f31eefee7b2b3c616782ba9",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575971_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "80b880e3-e9d9-4a43-9b5d-d8617b2aecb3",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "086",
+    "current_native_name": "mewtwo",
+    "proposed_native_name": "ミュウツー",
+    "expected_native_name_row_id": {
+      "staging": "c8964b0f-878b-44b6-beac-0b3e7ec283ba",
+      "production": "c8964b0f-878b-44b6-beac-0b3e7ec283ba"
+    },
+    "observed_printed_number": "086/128",
+    "original_sha256": "7465567b00a17d0683fbb4e1df39cddd0ad6ab5b74aadfb207f883641209d3e9",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576026_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "88be2498-1715-4903-8dae-0dc1378405f5",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "098",
+    "current_native_name": "蝶",
+    "proposed_native_name": "バタフリー",
+    "expected_native_name_row_id": {
+      "staging": "cd62004e-85e7-42d0-afcb-df9e5197334a",
+      "production": "cd62004e-85e7-42d0-afcb-df9e5197334a"
+    },
+    "observed_printed_number": "098/128",
+    "original_sha256": "fe90816e2bfa5b17d96c7c77b9a531b0d50605345d7582855947a0f67ab63256",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575957_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "8b023c9f-1519-46f1-a3fe-213191eacde4",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "083",
+    "current_native_name": "アンファロス",
+    "proposed_native_name": "デンリュウ",
+    "expected_native_name_row_id": {
+      "staging": "5619ca0f-4337-41ed-bf9d-de077b441f1d",
+      "production": "5619ca0f-4337-41ed-bf9d-de077b441f1d"
+    },
+    "observed_printed_number": "083/128",
+    "original_sha256": "18dbf93a28b93603a7e469997df076083c38d08b64004415f73d77f457ec0092",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575949_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "8c206ea0-fca3-48ef-8586-975bbea75af0",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "089",
+    "current_native_name": "マチャンプ",
+    "proposed_native_name": "カイリキー",
+    "expected_native_name_row_id": {
+      "staging": "66fc156d-e552-4754-9ff5-1cb34193971d",
+      "production": "66fc156d-e552-4754-9ff5-1cb34193971d"
+    },
+    "observed_printed_number": "089/128",
+    "original_sha256": "9d19f67ec98dbc5a1be7397aed21d76ca304d4ad1cd52df6214836e41d4305cc",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576007_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "918a49af-1b5a-455f-b398-ade3844daf96",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "034",
+    "current_native_name": "暗闇",
+    "proposed_native_name": "クサイハナ",
+    "expected_native_name_row_id": {
+      "staging": "e79ce088-a236-4098-9c53-6826c9180b0d",
+      "production": "e79ce088-a236-4098-9c53-6826c9180b0d"
+    },
+    "observed_printed_number": "034/128",
+    "original_sha256": "a28364305e1ecb03ad81d1442536b7dde4766437af1c77fc2808d44902a07994",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575991_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "9248b60d-9385-4401-8806-0377ecfa2054",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "021",
+    "current_native_name": "マチョップ",
+    "proposed_native_name": "ワンリキー",
+    "expected_native_name_row_id": {
+      "staging": "4b2075d1-b155-44bf-ad0a-d2c0d5f7359f",
+      "production": "4b2075d1-b155-44bf-ad0a-d2c0d5f7359f"
+    },
+    "observed_printed_number": "021/128",
+    "original_sha256": "060497d07e809f716215903d6470a3f0d5d3fe2a34138ff945e78ced5140c590",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576010_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "9589e3fb-f88c-45ff-8412-375c037d2318",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "022",
+    "current_native_name": "ジオドード",
+    "proposed_native_name": "イシツブテ",
+    "expected_native_name_row_id": {
+      "staging": "159fc5ff-7622-4c64-a488-f52110e6d1b9",
+      "production": "159fc5ff-7622-4c64-a488-f52110e6d1b9"
+    },
+    "observed_printed_number": "022/128",
+    "original_sha256": "0a90ff5fd2044d80a43872c6c0cc7e3620d9c9ecc4588d2a7b70c47ba5b7e9f1",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575990_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "96cd7bc4-107c-45c7-8ba7-9c05e753e88c",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "010",
+    "current_native_name": "クラビー",
+    "proposed_native_name": "クラブ",
+    "expected_native_name_row_id": {
+      "staging": "09aaa712-5d26-4676-ac68-4cf76631643f",
+      "production": "09aaa712-5d26-4676-ac68-4cf76631643f"
+    },
+    "observed_printed_number": "010/128",
+    "original_sha256": "08e50620d48bec7ad63bdb1340a3371ed4fab3685b21c23f3047de8777ce1fde",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576005_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "9d060d9c-60d0-40b6-aaea-5cc4a1d8b5b6",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "033",
+    "current_native_name": "メタポッド",
+    "proposed_native_name": "トランセル",
+    "expected_native_name_row_id": {
+      "staging": "50587b86-dbb8-4ebc-87ee-cf342e2750ae",
+      "production": "50587b86-dbb8-4ebc-87ee-cf342e2750ae"
+    },
+    "observed_printed_number": "033/128",
+    "original_sha256": "0ddd61b309b5ba4454fc35dfb0f655bf196cf4d4dba84ca00323db7d696f7a81",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576022_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "a82b805e-919d-4eb3-865d-40687972e05f",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "035",
+    "current_native_name": "マグマー",
+    "proposed_native_name": "ブーバー",
+    "expected_native_name_row_id": {
+      "staging": "49c0cc5e-6e90-493c-8781-2bd6f3399c54",
+      "production": "49c0cc5e-6e90-493c-8781-2bd6f3399c54"
+    },
+    "observed_printed_number": "035/128",
+    "original_sha256": "96a6f858b150992d99e4be45cfb0df10c521551e5413ef09e43822df7ebd2066",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576014_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "ae5ed634-ca37-459c-a9a0-4a85a42d3a9f",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "096",
+    "current_native_name": "スカルモリー",
+    "proposed_native_name": "エアームド",
+    "expected_native_name_row_id": {
+      "staging": "1551beed-aae8-4063-810e-8a2bbfad21b9",
+      "production": "1551beed-aae8-4063-810e-8a2bbfad21b9"
+    },
+    "observed_printed_number": "096/128",
+    "original_sha256": "498d0b07c95ab44dc21763b8aea65d97eb5c534642b30950e2a7bae8b1b5b943",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576056_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "b4b1d56c-44ec-41cf-9180-8f6d157be9ad",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "011",
+    "current_native_name": "ゴールデン",
+    "proposed_native_name": "トサキント",
+    "expected_native_name_row_id": {
+      "staging": "f9ecad8e-a5c8-4dd4-bf9d-1ecc8f7ed681",
+      "production": "f9ecad8e-a5c8-4dd4-bf9d-1ecc8f7ed681"
+    },
+    "observed_printed_number": "011/128",
+    "original_sha256": "0714eb7ee6ff78dc1030692f37a63b3b2bad023cbd78dedcdf6dbad329002dcf",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575992_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "b92c6662-9e08-4805-9880-52c8e43c8eba",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "066",
+    "current_native_name": "蝶",
+    "proposed_native_name": "バタフリー",
+    "expected_native_name_row_id": {
+      "staging": "578483df-f826-479f-8b20-d60ecbd8432d",
+      "production": "578483df-f826-479f-8b20-d60ecbd8432d"
+    },
+    "observed_printed_number": "066/128",
+    "original_sha256": "6bd98de95192446b70365d3ba9c3c8bd9ba4732edc088b5d10fef3f5bfe60b3e",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575956_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "cded6b5b-3164-444d-a398-99c2cc9a30de",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "017",
+    "current_native_name": "Mareep",
+    "proposed_native_name": "メリープ",
+    "expected_native_name_row_id": {
+      "staging": "b562f0a8-d997-41a5-81d6-63d7e87c82f0",
+      "production": "b562f0a8-d997-41a5-81d6-63d7e87c82f0"
+    },
+    "observed_printed_number": "017/128",
+    "original_sha256": "6c7803af23d1d284747b7f7ae935e4710c02c6039cd1a17aff43f3bb880e7397",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576015_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "cfc03006-2b64-498c-a859-59d8f7efa717",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "037",
+    "current_native_name": "ジンクス",
+    "proposed_native_name": "ルージュラ",
+    "expected_native_name_row_id": {
+      "staging": "5b4cccbd-0a33-478e-9c07-37d88aed678a",
+      "production": "5b4cccbd-0a33-478e-9c07-37d88aed678a"
+    },
+    "observed_printed_number": "037/128",
+    "original_sha256": "67c5d6a708dadaba87e8302e32f80252ab5fd8184e12805a0724280d7ca37702",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576000_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "d1e11612-ae4e-4695-96ef-a01491be98bf",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "025",
+    "current_native_name": "ピッジー",
+    "proposed_native_name": "ポッポ",
+    "expected_native_name_row_id": {
+      "staging": "cea86d31-4b10-47aa-b61a-e503115c763d",
+      "production": "cea86d31-4b10-47aa-b61a-e503115c763d"
+    },
+    "observed_printed_number": "025/128",
+    "original_sha256": "3eb2109c7a7b68516a5f8cb76264a24e9b6291a23ecaee6f41506fb1d8133414",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576036_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "e13092ec-de4b-4a16-9981-8834c7f13074",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "088",
+    "current_native_name": "Dugtrio",
+    "proposed_native_name": "ダグトリオ",
+    "expected_native_name_row_id": {
+      "staging": "e7db5784-ef4c-4dc8-b5c2-6ddbfac74c8b",
+      "production": "e7db5784-ef4c-4dc8-b5c2-6ddbfac74c8b"
+    },
+    "observed_printed_number": "088/128",
+    "original_sha256": "b108b347bb689684ea2c007bcc72ac5e11fd1e1cd2e2769c52401061bc4175e4",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575976_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "e43b74e0-d100-4070-b825-e669ad4ba2f1",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "049",
+    "current_native_name": "エルム教授のトレーニング方法",
+    "proposed_native_name": "ウツギはかせの育てかた",
+    "expected_native_name_row_id": {
+      "staging": "84c46a88-69a0-4327-a158-5ce4a825c56c",
+      "production": "84c46a88-69a0-4327-a158-5ce4a825c56c"
+    },
+    "observed_printed_number": "049/128",
+    "original_sha256": "0644dab972cbadecfabf302868e5eb7d023cf9d63efb1fde0eb6bf40df6b6b97",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576045_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "efba5156-5515-47dc-9606-daa94910734d",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "068",
+    "current_native_name": "vileplume",
+    "proposed_native_name": "ラフレシア",
+    "expected_native_name_row_id": {
+      "staging": "2a8c9cc5-694b-49d2-9cc7-ce8fc43e21bf",
+      "production": "2a8c9cc5-694b-49d2-9cc7-ce8fc43e21bf"
+    },
+    "observed_printed_number": "068/128",
+    "original_sha256": "8afe09516932903d09a33c3bec6d47dcb8e5e8c05b91830a6ecec8ae57b00f65",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576068_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "f12c9692-8993-4a65-a5da-b65c2eef9d31",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "015",
+    "current_native_name": "コルサラ",
+    "proposed_native_name": "サニーゴ",
+    "expected_native_name_row_id": {
+      "staging": "78bc2e1c-fbfc-4b8f-a640-3c3c0401b286",
+      "production": "78bc2e1c-fbfc-4b8f-a640-3c3c0401b286"
+    },
+    "observed_printed_number": "015/128",
+    "original_sha256": "051d18ff6e5212777e806cf8378ed84639b7f318e2209fd2ffe0d58326312202",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575968_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "f49e0a21-fe85-4679-981b-dfd104ec0941",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "018",
+    "current_native_name": "アブラ",
+    "proposed_native_name": "ケーシィ",
+    "expected_native_name_row_id": {
+      "staging": "4a41db08-e835-41d8-b91c-04bd9b6aaf07",
+      "production": "4a41db08-e835-41d8-b91c-04bd9b6aaf07"
+    },
+    "observed_printed_number": "018/128",
+    "original_sha256": "9c33a528519762c8123e5a3988cfc2017366d8facf73101c81faa631b8248271",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575946_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "f5c22b77-428a-4c7c-ad43-9bfb63a2b768",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "014",
+    "current_native_name": "qwilfish",
+    "proposed_native_name": "ハリーセン",
+    "expected_native_name_row_id": {
+      "staging": "fcf9a132-4643-4663-b4f2-d98335a27747",
+      "production": "fcf9a132-4643-4663-b4f2-d98335a27747"
+    },
+    "observed_printed_number": "014/128",
+    "original_sha256": "a684affe6254363d16b06a02e7009a6dd527a3d7a5035c1552c9ba932f83e637",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576048_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "f6a44523-ee15-42c6-8570-1af3e7d70f7b",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "004",
+    "current_native_name": "エカン",
+    "proposed_native_name": "アーボ",
+    "expected_native_name_row_id": {
+      "staging": "925c0432-d69d-4111-810e-0c330642a0a8",
+      "production": "925c0432-d69d-4111-810e-0c330642a0a8"
+    },
+    "observed_printed_number": "004/128",
+    "original_sha256": "9dc177e3098a8fa960ce3aabe2985460e9ca90dfca0e2153939162e1feda9825",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/575978_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "ff723b31-3cc3-4b5d-8f5f-4b22b91b697f",
+    "set_id": "2d5f077d-14bb-4fb5-b565-1f4e10c078c9",
+    "set_code": "E1",
+    "language_code": "ja",
+    "collector_number": "072",
+    "current_native_name": "ニネタール",
+    "proposed_native_name": "キュウコン",
+    "expected_native_name_row_id": {
+      "staging": "9f712c85-766b-4d32-aef5-7dde95631d9d",
+      "production": "9f712c85-766b-4d32-aef5-7dde95631d9d"
+    },
+    "observed_printed_number": "072/128",
+    "original_sha256": "2f6882867ae2dd04439c206c59c52086e3545567c8de3b64db6a3cd68aaf7cd6",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/576029_in_1000x1000.jpg",
+    "reviewer": "root"
+  }
+]

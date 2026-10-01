@@ -33,6 +33,20 @@ test('native correction audits require 53 unique environment-scoped printing and
   }
 });
 
+test('receipt-bound 72 correction audit journals and rolls back with later artwork failure',async()=>{
+  const receipt72={...receipt,native_name_corrections:72};let writes=0;const calls=[];const journal={assets:[],links:[],metadata_changes:0};
+  const audit=Array.from({length:72},(_,index)=>({table:'catalog.card_printings',column:'native_name',id:`printing-${index}`,native_name_row_id:`name-${index}`,before:`old-${index}`,after:`new-${index}`,changed:true,environment:'staging'}));
+  const db={query:async(sql)=>{calls.push(sql);if(sql==='rollback')writes=0;if(sql.startsWith('select game_code'))throw Error('asset binding unavailable');return {rows:[]};}};
+  await assert.rejects(rehearse(db,()=>writeMetadata(db,[rows[0]],receipt72,{},'staging',journal,async()=>new Map(),null,async()=>{writes=72;return audit;})),/asset binding unavailable/);
+  assert.equal(writes,0);assert.equal(calls.at(-1),'rollback');assert.deepEqual(journal.native_name_correction_counts,{total:72,changed:72,printing_changes:72,card_name_changes:72});
+});
+
+test('a 72-receipt rejects a truncated native correction audit before asset work',async()=>{
+  const receipt72={...receipt,native_name_corrections:72};const audit=Array.from({length:71},(_,index)=>({table:'catalog.card_printings',column:'native_name',id:`printing-${index}`,native_name_row_id:`name-${index}`,before:`old-${index}`,after:`new-${index}`,changed:false,environment:'production'}));
+  const db={query:async()=>{throw Error('must not reach asset queries');}};
+  await assert.rejects(writeMetadata(db,[],receipt72,{},'production',{assets:[],links:[],metadata_changes:0},async()=>new Map(),null,async()=>audit),/native-name correction audit/i);
+});
+
 test('omitted correction leaves the old metadata path unchanged',async()=>{
   const journal={assets:[],links:[],metadata_changes:0},calls=[];
   const db={query:async(sql)=>{calls.push(sql);return {rows:[]};}};
