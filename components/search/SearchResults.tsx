@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
+  FlatList,
   Image,
   type ImageSourcePropType,
   ScrollView,
@@ -9,6 +10,7 @@ import {
 } from 'react-native';
 import { Text } from '../Text';
 import { StackrImage } from '../StackrImage';
+import { useCardImagePreload } from '../../hooks/useCardImagePreload';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import { StackrCardActionIcon } from '../StackrScreen';
 import { useTheme } from '../theme-context';
@@ -120,18 +122,24 @@ export function SearchResultSection({
   );
 }
 
+const SearchCardRailSeparator = () => <View style={{ width: 10 }} />;
+
 export function SearchRailSection({
   title,
   count,
   children,
   onViewAll,
+  cardImageUris,
 }: {
   title: string;
   count?: number;
   children: React.ReactNode;
   onViewAll?: () => void;
+  cardImageUris?: readonly (string | null | undefined)[];
 }) {
   const { theme } = useTheme();
+  const onImagesViewable = useCardImagePreload(cardImageUris ?? [], 4);
+  const imageViewabilityConfig = React.useRef({ itemVisiblePercentThreshold: 25 }).current;
   return (
     <View style={{ gap: 10, marginBottom: 20 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
@@ -151,13 +159,26 @@ export function SearchRailSection({
           </TouchableOpacity>
         ) : null}
       </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 10, paddingRight: 12 }}
-      >
-        {children}
-      </ScrollView>
+      {cardImageUris ? (
+        <FlatList
+          horizontal
+          data={React.Children.toArray(children)}
+          keyExtractor={(item, index) => React.isValidElement(item) && item.key != null ? String(item.key) : String(index)}
+          renderItem={({ item }) => <>{item}</>}
+          ItemSeparatorComponent={SearchCardRailSeparator}
+          initialNumToRender={4}
+          maxToRenderPerBatch={4}
+          windowSize={3}
+          onViewableItemsChanged={onImagesViewable}
+          viewabilityConfig={imageViewabilityConfig}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingRight: 12 }}
+        />
+      ) : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingRight: 12 }}>
+          {children}
+        </ScrollView>
+      )}
     </View>
   );
 }

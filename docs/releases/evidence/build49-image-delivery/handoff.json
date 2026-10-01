@@ -1,0 +1,138 @@
+{
+  "createdAt": "2026-10-01T15:05:57.610Z",
+  "sourceBase": "4b191ecb1092975aafcb3ca3ac9f41dbd2d7df5e",
+  "state": "isolated local patch, not applied to release checkout; reviewed runtime integration and phone acceptance pending",
+  "checked": {
+    "cards": 40,
+    "detailIdentities": 40,
+    "associations": 40,
+    "canonicalIdentities": 40,
+    "searchExactVariantAssets": 39,
+    "preparedImagesVerified": 117,
+    "externalOriginals": 1,
+    "visualChecks": 4,
+    "remainingCases": [
+      {
+        "cardId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+        "language": "ja",
+        "setCode": "M5",
+        "number": "002",
+        "issues": [
+          "external-original-only-no-prepared-derivatives"
+        ]
+      },
+      {
+        "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+        "language": "zh-tw",
+        "setCode": "SVAM",
+        "number": "GRA",
+        "issues": [
+          "search-exact-variant-asset-unverified"
+        ]
+      }
+    ]
+  },
+  "readTimings": {
+    "imageRepeats": {
+      "count": 12,
+      "min": 32,
+      "median": 37,
+      "max": 64,
+      "over500ms": 0
+    },
+    "searchRepeats": {
+      "count": 12,
+      "min": 55,
+      "median": 65,
+      "max": 3184,
+      "over500ms": 1
+    },
+    "cardDetailRepeats": {
+      "count": 12,
+      "min": 161,
+      "median": 170,
+      "max": 3293,
+      "over500ms": 1
+    }
+  },
+  "initialFailures": [
+    {
+      "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+      "issues": [
+        "HTTP 504 after 8123ms"
+      ]
+    },
+    {
+      "cardId": "5888e3ff-3022-47b0-9753-bcbaf63a7560",
+      "issues": [
+        "HTTP 504 after 8156ms"
+      ]
+    }
+  ],
+  "letterSearch": [
+    {
+      "query": "GRA",
+      "status": 200,
+      "elapsedMs": 1154,
+      "expectedFound": true,
+      "returned": 1,
+      "requestId": "6c2f2a7e-2f7f-48b7-bd7c-0c35b77b5893"
+    },
+    {
+      "query": "gra",
+      "status": 200,
+      "elapsedMs": 538,
+      "expectedFound": true,
+      "returned": 1,
+      "requestId": "b627089a-5947-4392-af8f-e027343d2e26"
+    },
+    {
+      "query": "基本【草】能量",
+      "status": 200,
+      "elapsedMs": 5350,
+      "expectedFound": true,
+      "returned": 1,
+      "requestId": "7a851c76-023e-4078-ae6b-98febdbf4910"
+    },
+    {
+      "query": "SVAM GRA",
+      "status": 200,
+      "elapsedMs": 411,
+      "expectedFound": false,
+      "returned": 0,
+      "requestId": "4e1a5b3f-29c6-4510-81c3-ebcc67caf0dd"
+    }
+  ],
+  "implementation": {
+    "files": 6,
+    "tests": 25,
+    "typeScriptDiagnostics": 0,
+    "applyCheck": "passes against 4b191ecb1092975aafcb3ca3ac9f41dbd2d7df5e",
+    "changes": [
+      "Virtualize only the card rail: four initial items and four per rendering batch; preserve non-card rail layouts.",
+      "Warm currently visible thumbnail URLs plus up to six upcoming cards, at most eighteen distinct URLs per scheduling event.",
+      "Connect binder viewability to warming while preserving existing pricing and retrieval callbacks.",
+      "Cancel queued obsolete work on query/reference changes, blur, unmount; preserve printing-specific URLs and existing image policy.",
+      "Do not request fullImageUri/large fields during warming; existing detail/inspection still loads larger artwork on demand. Existing original-only fallbacks still render normally."
+    ]
+  },
+  "limitations": [
+    "40 sampled cards across seven sets and four languages, not full catalogue coverage.",
+    "CPU/WASM image decode and four visual source checks do not establish phone rendering or scrolling.",
+    "URL preloading uses the existing shared cache and its existing provider restrictions.",
+    "First/repeat HTTP calls are desktop requests, not guaranteed cold cache or native phone cache.",
+    "Initial pilot compared only first finish search row and treated uppercase GRA canonical spelling literally. classified.json corrects those measurement errors by checking all matching finish rows and normalized collector identity; initial receipt preserved.",
+    "Two initial search HTTP504 failures remain part of measured reliability evidence even though follow-up succeeded.",
+    "Native first-open/reopen, rail height/layout, swipe smoothness, memory use, long-press and offline cache need integrated-device tests."
+  ],
+  "checksums": {
+    "preloading.patch": "e9c3e27e4b16e12f021813366e5f5eabc4b461d2e8325c53b1b992fd49b03a18",
+    "evidence.json": "dbde98c659a12ee3945caa7dd32004aed4abd900d28b972760d6fa8fbdb12988",
+    "classified.json": "85fab808e6d990e2725e0c9ad56ae99fa9e7c36c982856f4a56f811dda2fffb7",
+    "search-exceptions.json": "e9de1eb2879a7971a952a1776fc911e6537935931f4e522de13d5380f68fb946",
+    "audit.mjs": "bf4242344d1582d8b7a99ae1a43622c2dbb265d01a58ec9807c2f739e24fd1a0",
+    "classify.mjs": "e6c7eeb7756b263c8ed657bdc24a6ce9d07e4756d4ab3d3902e7fde7ebd0d671",
+    "test-preloading.cjs": "74d594cb7908cdd9a74288c27f20762dde2b86172e3993f1fc9a99f2314c3c62",
+    "typecheck.cjs": "42ab465fd0e5b5b79012587faca0df219e4be52cf26bd6851b01139603a3a73f"
+  }
+}

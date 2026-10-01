@@ -62,7 +62,8 @@ import { StackrActionButton } from '../../components/StackrActionButton';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import { StackrButtonPattern } from '../../components/StackrEmboss';
 import { StackrBottomSheet, StackrQuickActionSheet, type StackrQuickAction } from '../../components/StackrModalSystem';
-import { StackrImage, prefetchStackrImagesAfterInteractions } from '../../components/StackrImage';
+import { StackrImage } from '../../components/StackrImage';
+import { useCardImagePreload } from '../../hooks/useCardImagePreload';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 import { ScrollToEndButton } from '../../components/ScrollToEndButton';
 import {
@@ -843,7 +844,9 @@ export default function BinderDetailScreen() {
   const retrievalTraceRef = useRef<ReturnType<typeof beginBinderRetrieval> | null>(null);
   const visiblePriceReaderRef = useRef<VisibleBinderPriceReader | null>(null);
   const visiblePriceIdsRef = useRef<string[]>([]);
-  const onBinderViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: { item: BinderCardWithDetails; isViewable: boolean }[] }) => {
+  const imageViewableRef = useRef<ReturnType<typeof useCardImagePreload> | null>(null);
+  const onBinderViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: { item: BinderCardWithDetails; index: number | null; isViewable: boolean }[] }) => {
+    imageViewableRef.current?.({ viewableItems });
     const visible = viewableItems.filter((item) => item.isViewable).map((item) => item.item);
     retrievalTraceRef.current?.visible(visible);
     visiblePriceIdsRef.current = visible.map((item) => item.id);
@@ -1558,18 +1561,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const showBinderEndButton = sortedCards.length > Math.max(18, numColumns * 8);
   const showAddCardsEndButton = !addSearchLoading && addSearchResults.length > 12;
 
-  useEffect(() => {
-    if (!sortedCards.length) return;
-    const firstWindowSize = Math.max(12, numColumns * 6);
-    const cancelPrefetch = prefetchStackrImagesAfterInteractions(
-      sortedCards
-        .slice(0, firstWindowSize)
-        .map((card) => getBinderCardImageUri(card)),
-      firstWindowSize
-    );
-
-    return cancelPrefetch;
-  }, [numColumns, sortedCards]);
+  const preloadThumbnails = useMemo(
+    () => sortedCards.map(card => getBinderCardImageUri(card)), [sortedCards]
+  );
+  imageViewableRef.current = useCardImagePreload(preloadThumbnails, Math.max(6, numColumns * 3));
 
   let ownedCount = 0;
   let countedSlotTotal = 0;

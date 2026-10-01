@@ -1,0 +1,39 @@
+{
+  "startedAt": "2026-10-01T15:04:40.323Z",
+  "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+  "cases": [
+    {
+      "query": "GRA",
+      "status": 200,
+      "elapsedMs": 1154,
+      "expectedFound": true,
+      "returned": 1,
+      "requestId": "6c2f2a7e-2f7f-48b7-bd7c-0c35b77b5893"
+    },
+    {
+      "query": "gra",
+      "status": 200,
+      "elapsedMs": 538,
+      "expectedFound": true,
+      "returned": 1,
+      "requestId": "b627089a-5947-4392-af8f-e027343d2e26"
+    },
+    {
+      "query": "基本【草】能量",
+      "status": 200,
+      "elapsedMs": 5350,
+      "expectedFound": true,
+      "returned": 1,
+      "requestId": "7a851c76-023e-4078-ae6b-98febdbf4910"
+    },
+    {
+      "query": "SVAM GRA",
+      "status": 200,
+      "elapsedMs": 411,
+      "expectedFound": false,
+      "returned": 0,
+      "requestId": "4e1a5b3f-29c6-4510-81c3-ebcc67caf0dd"
+    }
+  ],
+  "completedAt": "2026-10-01T15:04:47.789Z"
+}

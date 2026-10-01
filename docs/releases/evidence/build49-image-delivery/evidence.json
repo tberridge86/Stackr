@@ -1,0 +1,3444 @@
+{
+  "startedAt": "2026-10-01T14:53:58.924Z",
+  "base": "https://api.stackrtcg.com/v1",
+  "candidateRevision": "00cfb527dfb5b2b76fac480632c91b07a4269f5b",
+  "method": "Read-only public API and existing delivered image bytes; up to two concurrent requests. CPU/WASM decode, SHA256 and declared identity checks. No production changes or upstream acquisition.",
+  "limitations": [
+    "Bounded 40-card sample, not a whole-catalogue audit.",
+    "API identity/link integrity does not prove every printed face visually matches; four saved detail samples are for separate visual review.",
+    "First requests are first in this process, not guaranteed cold CDN/server cache.",
+    "HTTP repeat timings are not phone cache, scrolling, decode-to-screen or installed-build evidence.",
+    "Live backend revision and installed phone identity unverified."
+  ],
+  "pages": [
+    {
+      "setId": "98a82354-b058-4bda-ad66-359a7bd7c36f",
+      "code": "SV7a",
+      "language": "ja",
+      "elapsedMs": 3007,
+      "rows": 94,
+      "distinctCards": 94,
+      "nextCursor": null,
+      "requestId": "9683ef53-a25e-4501-a3c1-7cef41454747"
+    },
+    {
+      "setId": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+      "code": "SV4a",
+      "language": "ja",
+      "elapsedMs": 2762,
+      "rows": 95,
+      "distinctCards": 95,
+      "nextCursor": "eyJ2YXJpYW50X2lkIjoiM2E2ZmVlMzItOGMyYi00ZWI3LWE3MzItOTczMDdiNDY1Zjc2In0",
+      "requestId": "1ceef5c9-24c4-4089-9d6f-0ee87aea66d0"
+    },
+    {
+      "setId": "a7459948-3544-4122-8fec-7fc6aecfd2e5",
+      "code": "SV8a",
+      "language": "ja",
+      "elapsedMs": 2185,
+      "rows": 92,
+      "distinctCards": 92,
+      "nextCursor": "eyJ2YXJpYW50X2lkIjoiNDU2NjA5MmYtZDllZS00OTRlLWFkMjgtOWEwYmIzOTcwOTE2In0",
+      "requestId": "ee4b986e-6051-4050-bd1d-373be4307f57"
+    },
+    {
+      "setId": "91be8fc7-b2ed-4169-b41e-0d374e4d466a",
+      "code": "M5",
+      "language": "ja",
+      "elapsedMs": 1262,
+      "rows": 100,
+      "distinctCards": 100,
+      "nextCursor": "eyJ2YXJpYW50X2lkIjoiZTFiYWZhMDEtNDA2OS00NzAxLWI2ODUtMmVmOWRjNTBhMjRkIn0",
+      "requestId": "8c3d74d7-3a6f-4d4d-83ed-b4eb5cec9e85"
+    },
+    {
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "code": "me04",
+      "language": "en",
+      "elapsedMs": 1456,
+      "rows": 80,
+      "distinctCards": 80,
+      "nextCursor": "eyJ2YXJpYW50X2lkIjoiNzc2M2I1NzMtZmQxNi00NzAwLWFkZDUtYTJiOGJiN2ZhNzYyIn0",
+      "requestId": "83ba97ff-a525-4edd-bf93-ec64102e9598"
+    },
+    {
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "code": "cs1bc",
+      "language": "zh-cn",
+      "elapsedMs": 1628,
+      "rows": 88,
+      "distinctCards": 88,
+      "nextCursor": "eyJ2YXJpYW50X2lkIjoiNTczNGE3YWMtZmQ3ZS00YTdiLThkNzYtNDc4YTdiMTBhOGRhIn0",
+      "requestId": "0c5370ea-6816-4347-bc26-9ab33db53e36"
+    },
+    {
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "code": "SVAM",
+      "language": "zh-tw",
+      "elapsedMs": 6473,
+      "rows": 25,
+      "distinctCards": 25,
+      "nextCursor": null,
+      "requestId": "99ddd52c-7419-4ec7-b2a9-3e0c9f94d926"
+    }
+  ],
+  "cases": [
+    {
+      "cardId": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "language": "ja",
+      "setId": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+      "setCode": "SV4a",
+      "number": "001",
+      "name": "ナゾノクサ",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/40/ea/40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3/search-result.webp",
+          "elapsedMs": 353,
+          "bytes": 4074,
+          "sha256": "40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=public, max-age=31536000, immutable",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/73/fd/73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac/card-grid.webp",
+          "elapsedMs": 323,
+          "bytes": 23394,
+          "sha256": "73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=public, max-age=31536000, immutable",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/eb/93/eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0/detail-page.webp",
+          "elapsedMs": 374,
+          "bytes": 107406,
+          "sha256": "eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=public, max-age=31536000, immutable",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 3000,
+      "detailIdentityMatches": true,
+      "variantId": "0400e020-87fc-42e5-9053-d98e7c04baba",
+      "imageVariantId": "0400e020-87fc-42e5-9053-d98e7c04baba",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "SV4a 001",
+        "elapsedMs": 3311,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "2481dcd7-f3c4-4850-97cf-0dce483eb96b",
+      "language": "ja",
+      "setId": "98a82354-b058-4bda-ad66-359a7bd7c36f",
+      "setCode": "SV7a",
+      "number": "001",
+      "name": "タマタマ",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/90/aa/90aab06176d6fecb543ff929b83961dddaaf9f49f335e0a941aae49dc0ee68e1/search-result.webp",
+          "elapsedMs": 1242,
+          "bytes": 3650,
+          "sha256": "90aab06176d6fecb543ff929b83961dddaaf9f49f335e0a941aae49dc0ee68e1",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/44/a1/44a1ed7b703ce077eb8da37af06a7c2227b41c1dc8755e5bb3a2e8d12594c9e5/card-grid.webp",
+          "elapsedMs": 305,
+          "bytes": 20468,
+          "sha256": "44a1ed7b703ce077eb8da37af06a7c2227b41c1dc8755e5bb3a2e8d12594c9e5",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/31/2a/312a548b6e4c6e3953fa90f7d049281f1eeaf0aebd47446763620561e23d4df0/detail-page.webp",
+          "elapsedMs": 532,
+          "bytes": 111186,
+          "sha256": "312a548b6e4c6e3953fa90f7d049281f1eeaf0aebd47446763620561e23d4df0",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 2940,
+      "detailIdentityMatches": true,
+      "variantId": "4b0e8a1d-9d8c-4bf2-9eb0-33d9193f92e1",
+      "imageVariantId": "4b0e8a1d-9d8c-4bf2-9eb0-33d9193f92e1",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "タマタマ",
+        "elapsedMs": 1630,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      },
+      "visualSample": "visual-ja-2481dcd7-f3c4-4850-97cf-0dce483eb96b.webp"
+    },
+    {
+      "cardId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "language": "ja",
+      "setId": "91be8fc7-b2ed-4169-b41e-0d374e4d466a",
+      "setCode": "M5",
+      "number": "002",
+      "name": "アゴジムシ",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "error": "prepared-rendition-missing"
+        },
+        {
+          "role": "card-grid",
+          "error": "prepared-rendition-missing"
+        },
+        {
+          "role": "detail-page",
+          "error": "prepared-rendition-missing"
+        }
+      ],
+      "issues": [
+        "search-result-missing",
+        "card-grid-missing",
+        "detail-page-missing"
+      ],
+      "detailMs": 415,
+      "detailIdentityMatches": true,
+      "variantId": "134b24e5-ad9e-419b-b69a-8b4ce82c09cc",
+      "imageVariantId": "134b24e5-ad9e-419b-b69a-8b4ce82c09cc",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "M5 002",
+        "elapsedMs": 861,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "6feee464-40b1-4afa-80d3-d04f266f349e",
+      "language": "ja",
+      "setId": "a7459948-3544-4122-8fec-7fc6aecfd2e5",
+      "setCode": "SV8a",
+      "number": "001",
+      "name": "スボミー",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ab/b9/abb9a4e55fea9c6df9ecb8f86ab6aa4e4de8d8f33c242c93fca67edb1ce458d0/search-result.webp",
+          "elapsedMs": 446,
+          "bytes": 3860,
+          "sha256": "abb9a4e55fea9c6df9ecb8f86ab6aa4e4de8d8f33c242c93fca67edb1ce458d0",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/7a/98/7a9890dcddea8be1f437c32a56008495325076bd08ac0ee2cd8c37cc0ad6e014/card-grid.webp",
+          "elapsedMs": 342,
+          "bytes": 20544,
+          "sha256": "7a9890dcddea8be1f437c32a56008495325076bd08ac0ee2cd8c37cc0ad6e014",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/2e/2b/2e2b181ec39f8d5da263aa2d13fdaedfd39dbc1eb91485e029c1dd927b023861/detail-page.webp",
+          "elapsedMs": 322,
+          "bytes": 121704,
+          "sha256": "2e2b181ec39f8d5da263aa2d13fdaedfd39dbc1eb91485e029c1dd927b023861",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 380,
+      "detailIdentityMatches": true,
+      "variantId": "16794f3b-511d-4331-b681-cffb0e1f172f",
+      "imageVariantId": "705395e8-fa44-4c40-8623-6c21dc2d6189",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "スボミー",
+        "elapsedMs": 393,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "9f63e386-403f-477f-884e-0ba570dcdb9c",
+      "language": "ja",
+      "setId": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+      "setCode": "SV4a",
+      "number": "183",
+      "name": "タウンデパート",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/b9/68/b9686133e345468bd619852a0d4398dcb5fdca9b47231b75c9b586ab5057a0ea/search-result.webp",
+          "elapsedMs": 295,
+          "bytes": 4108,
+          "sha256": "b9686133e345468bd619852a0d4398dcb5fdca9b47231b75c9b586ab5057a0ea",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/47/0f/470f1c22276396cfb8d60539e391ed4e2c691630c976641e4aa155460cf3de61/card-grid.webp",
+          "elapsedMs": 372,
+          "bytes": 23714,
+          "sha256": "470f1c22276396cfb8d60539e391ed4e2c691630c976641e4aa155460cf3de61",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/58/6f/586f8e4c66f356fc09e1724ac0acc16bf1a9166acb8f7a781f63f6b1e54d7a2d/detail-page.webp",
+          "elapsedMs": 331,
+          "bytes": 94734,
+          "sha256": "586f8e4c66f356fc09e1724ac0acc16bf1a9166acb8f7a781f63f6b1e54d7a2d",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 423,
+      "detailIdentityMatches": true,
+      "variantId": "123961fd-6882-4dbb-ac3a-651baa8e6797",
+      "imageVariantId": "123961fd-6882-4dbb-ac3a-651baa8e6797",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "SV4a 183",
+        "elapsedMs": 382,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "0d0cd09b-8061-499e-8c64-35b7e0dd9fb3",
+      "language": "ja",
+      "setId": "98a82354-b058-4bda-ad66-359a7bd7c36f",
+      "setCode": "SV7a",
+      "number": "048",
+      "name": "チルット",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/31/02/3102806455e84c0b22eb5efbf6ff94d43bd4c7994af9b04173576f2dd4fd33af/search-result.webp",
+          "elapsedMs": 307,
+          "bytes": 3100,
+          "sha256": "3102806455e84c0b22eb5efbf6ff94d43bd4c7994af9b04173576f2dd4fd33af",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/0c/4e/0c4eb5af0afcc810af09f874f349508a2ab8549bb1ca557d09e728b0e39f894c/card-grid.webp",
+          "elapsedMs": 444,
+          "bytes": 16994,
+          "sha256": "0c4eb5af0afcc810af09f874f349508a2ab8549bb1ca557d09e728b0e39f894c",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/47/e5/47e55a75f89b1d6e975b96dc85484a1e98bd6d3abf6f4559571cdc6d65aa4acf/detail-page.webp",
+          "elapsedMs": 317,
+          "bytes": 85526,
+          "sha256": "47e55a75f89b1d6e975b96dc85484a1e98bd6d3abf6f4559571cdc6d65aa4acf",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 375,
+      "detailIdentityMatches": true,
+      "variantId": "08781c89-9731-4006-8510-04021a063a86",
+      "imageVariantId": "08781c89-9731-4006-8510-04021a063a86",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "チルット",
+        "elapsedMs": 505,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "7ee0a48c-b213-4e2c-87a9-31d997324c95",
+      "language": "ja",
+      "setId": "a7459948-3544-4122-8fec-7fc6aecfd2e5",
+      "setCode": "SV8a",
+      "number": "109",
+      "name": "ヒトツキ",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/c5/2f/c52f174e74447359c1175ac035c9e64d43a9673df158f547cdb76bb0c66991d1/search-result.webp",
+          "elapsedMs": 244,
+          "bytes": 4082,
+          "sha256": "c52f174e74447359c1175ac035c9e64d43a9673df158f547cdb76bb0c66991d1",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/b8/4d/b84d34f2e23cab9316a612aaa96dd313670877595e2e2a855c3a0810b1ba80c7/card-grid.webp",
+          "elapsedMs": 279,
+          "bytes": 21168,
+          "sha256": "b84d34f2e23cab9316a612aaa96dd313670877595e2e2a855c3a0810b1ba80c7",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/44/c0/44c046c250188a065c4f4a541ea0d03636f4b14f4a0cab44615bbb27e8dd1b1b/detail-page.webp",
+          "elapsedMs": 247,
+          "bytes": 126960,
+          "sha256": "44c046c250188a065c4f4a541ea0d03636f4b14f4a0cab44615bbb27e8dd1b1b",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 455,
+      "detailIdentityMatches": true,
+      "variantId": "370d1020-8d3c-4119-83ec-588361a200f6",
+      "imageVariantId": "370d1020-8d3c-4119-83ec-588361a200f6",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "ヒトツキ",
+        "elapsedMs": 510,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "e2dd04cd-9fba-405a-a7dc-71103bca801f",
+      "language": "ja",
+      "setId": "91be8fc7-b2ed-4169-b41e-0d374e4d466a",
+      "setCode": "M5",
+      "number": "063",
+      "name": "メガドリュウズex",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/a3/c7/a3c781a9e887e27519ca312bab827230082d4005c9d450eae3a90fec514ed80c/search-result.webp",
+          "elapsedMs": 222,
+          "bytes": 5364,
+          "sha256": "a3c781a9e887e27519ca312bab827230082d4005c9d450eae3a90fec514ed80c",
+          "width": 96,
+          "height": 134,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/e6/dd/e6dd7eba0c00e3813f8ec0710aae64fcb695a687bba732f9d27534fd7018dd70/card-grid.webp",
+          "elapsedMs": 106,
+          "bytes": 26566,
+          "sha256": "e6dd7eba0c00e3813f8ec0710aae64fcb695a687bba732f9d27534fd7018dd70",
+          "width": 240,
+          "height": 335,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "HIT",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/98/50/98509aedeef817b0aa235caeb5149fb07ca0783e944099aa54baa7a2f2f97b0e/detail-page.webp",
+          "elapsedMs": 325,
+          "bytes": 235256,
+          "sha256": "98509aedeef817b0aa235caeb5149fb07ca0783e944099aa54baa7a2f2f97b0e",
+          "width": 716,
+          "height": 1000,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 411,
+      "detailIdentityMatches": true,
+      "variantId": "d3df39b7-7fe3-479c-a496-c01973226427",
+      "imageVariantId": "d3df39b7-7fe3-479c-a496-c01973226427",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "M5 063",
+        "elapsedMs": 802,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "440b6bef-61e7-430d-9101-9d400655bf45",
+      "language": "ja",
+      "setId": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+      "setCode": "SV4a",
+      "number": "358",
+      "name": "ミライドンex",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ac/a2/aca2e6c5ca17dcf6801b0322570e280ebe3727a257ab8872404dfc4c3dc7eab4/search-result.webp",
+          "elapsedMs": 279,
+          "bytes": 4598,
+          "sha256": "aca2e6c5ca17dcf6801b0322570e280ebe3727a257ab8872404dfc4c3dc7eab4",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/de/22/de22fe206979819076a1aec286c5dd6a326da0ad8b56edc36cba2136209af91d/card-grid.webp",
+          "elapsedMs": 361,
+          "bytes": 29010,
+          "sha256": "de22fe206979819076a1aec286c5dd6a326da0ad8b56edc36cba2136209af91d",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/2f/2e/2f2e3e42b66522ebab3c71bdc872a3bd19ef72845df9632a637e7f1ed7141783/detail-page.webp",
+          "elapsedMs": 330,
+          "bytes": 202638,
+          "sha256": "2f2e3e42b66522ebab3c71bdc872a3bd19ef72845df9632a637e7f1ed7141783",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 451,
+      "detailIdentityMatches": true,
+      "variantId": "002eb3ef-a85e-4fa6-9782-ea5b3d12b8e0",
+      "imageVariantId": "002eb3ef-a85e-4fa6-9782-ea5b3d12b8e0",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "SV4a 358",
+        "elapsedMs": 342,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "d25a708c-3c55-45f0-b16a-a6bc4643487b",
+      "language": "ja",
+      "setId": "98a82354-b058-4bda-ad66-359a7bd7c36f",
+      "setCode": "SV7a",
+      "number": "094",
+      "name": "ジェットエネルギー",
+      "catalogueVersion": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/19/a1/19a18547938c0b1f69873285c8195be42b9a20ed6d387c83e5b953e13d394b98/search-result.webp",
+          "elapsedMs": 343,
+          "bytes": 4160,
+          "sha256": "19a18547938c0b1f69873285c8195be42b9a20ed6d387c83e5b953e13d394b98",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/8d/4b/8d4bef54397f26d629c67aef74c3560681a6e3ee5e757bf93f35161c3315a173/card-grid.webp",
+          "elapsedMs": 707,
+          "bytes": 20408,
+          "sha256": "8d4bef54397f26d629c67aef74c3560681a6e3ee5e757bf93f35161c3315a173",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/56/14/56148218c58cc5e1e1ff243a577fe9e81920392130a2e3009f539f0e0eed2f6e/detail-page.webp",
+          "elapsedMs": 335,
+          "bytes": 142744,
+          "sha256": "56148218c58cc5e1e1ff243a577fe9e81920392130a2e3009f539f0e0eed2f6e",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 398,
+      "detailIdentityMatches": true,
+      "variantId": "c8c19700-e0df-42ce-97eb-8ee463539da2",
+      "imageVariantId": "c8c19700-e0df-42ce-97eb-8ee463539da2",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "ジェットエネルギー",
+        "elapsedMs": 382,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "14bac4a2-8a7b-4e65-87b9-c13e8303e84b",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "053",
+      "name": "Stunky",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/bf/7d/bf7d0966f871e816f9858007f2fbb40ffc73ee284206ffd01acf15ba2242d239/search-result.webp",
+          "elapsedMs": 268,
+          "bytes": 3382,
+          "sha256": "bf7d0966f871e816f9858007f2fbb40ffc73ee284206ffd01acf15ba2242d239",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/2c/02/2c0235d19bab7a436d87abad540dfa62d06e1b79719da23e66891045f290e624/card-grid.webp",
+          "elapsedMs": 355,
+          "bytes": 16848,
+          "sha256": "2c0235d19bab7a436d87abad540dfa62d06e1b79719da23e66891045f290e624",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/82/75/82756a045f4dd4db97da42dccb5e7dcfee905ae0ba757461d11a616f0c866a61/detail-page.webp",
+          "elapsedMs": 454,
+          "bytes": 90256,
+          "sha256": "82756a045f4dd4db97da42dccb5e7dcfee905ae0ba757461d11a616f0c866a61",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 380,
+      "detailIdentityMatches": true,
+      "variantId": "c3af3b29-ec12-45cf-b29e-a4fa24dc2f5d",
+      "imageVariantId": "39a65aed-b0e6-4899-a945-9a3cdaa599d6",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "me04 053",
+        "elapsedMs": 778,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "eda91360-8fc4-4577-88e6-738b388603c1",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "001",
+      "name": "Weedle",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/2a/37/2a372cfee23036c60fd432832192c681004853dc15bda3b8d850611c0a02b2d4/search-result.webp",
+          "elapsedMs": 224,
+          "bytes": 3066,
+          "sha256": "2a372cfee23036c60fd432832192c681004853dc15bda3b8d850611c0a02b2d4",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/d2/8d/d28db28a98acd50aa7b8c29efe963277564ddcfa58c49568c00bd05b7212d655/card-grid.webp",
+          "elapsedMs": 298,
+          "bytes": 15600,
+          "sha256": "d28db28a98acd50aa7b8c29efe963277564ddcfa58c49568c00bd05b7212d655",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/c1/32/c132d1f1267111fd5d537637c710e9914dc8bbe8f0ecb9d23242136e57b90e9d/detail-page.webp",
+          "elapsedMs": 404,
+          "bytes": 74372,
+          "sha256": "c132d1f1267111fd5d537637c710e9914dc8bbe8f0ecb9d23242136e57b90e9d",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 386,
+      "detailIdentityMatches": true,
+      "variantId": "6ec0f11a-68ad-4fc0-868b-4b595d760dea",
+      "imageVariantId": "6ec0f11a-68ad-4fc0-868b-4b595d760dea",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "Weedle",
+        "elapsedMs": 736,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      },
+      "visualSample": "visual-en-eda91360-8fc4-4577-88e6-738b388603c1.webp"
+    },
+    {
+      "cardId": "00cec4ad-9294-4857-ac62-951a89f5cf70",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "122",
+      "name": "Mega Greninja ex",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/d7/2e/d72e1e7d052efa62f85145297f4d1846069cb2e237b9f2520c640e1d43666d66/search-result.webp",
+          "elapsedMs": 312,
+          "bytes": 3382,
+          "sha256": "d72e1e7d052efa62f85145297f4d1846069cb2e237b9f2520c640e1d43666d66",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ba/72/ba72f515f94add3b4a8abb5bee670e160397b6c46a9ec75d812435ec98a07187/card-grid.webp",
+          "elapsedMs": 282,
+          "bytes": 17466,
+          "sha256": "ba72f515f94add3b4a8abb5bee670e160397b6c46a9ec75d812435ec98a07187",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/b6/0a/b60ab7f790dc3885e17570703bec0caab1521e9078cb786fd374d3f8ee7d88ea/detail-page.webp",
+          "elapsedMs": 331,
+          "bytes": 72688,
+          "sha256": "b60ab7f790dc3885e17570703bec0caab1521e9078cb786fd374d3f8ee7d88ea",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 377,
+      "detailIdentityMatches": true,
+      "variantId": "527abbf7-25a2-4a98-ac08-348257dafda0",
+      "imageVariantId": "527abbf7-25a2-4a98-ac08-348257dafda0",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "Mega Greninja ex",
+        "elapsedMs": 456,
+        "returnedCards": 4,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "cb4dc5c6-4f86-4d0f-923e-c32d546f9e41",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "002",
+      "name": "Kakuna",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f1/9e/f19e8e38976598de437502d1e2aada148f313a6437bd2f6065b63af2f8febd75/search-result.webp",
+          "elapsedMs": 255,
+          "bytes": 3576,
+          "sha256": "f19e8e38976598de437502d1e2aada148f313a6437bd2f6065b63af2f8febd75",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/82/0a/820a11c497d82f22f0490a8f7c8e9c7a650eed82c1f1277ac7e33d3027300a1a/card-grid.webp",
+          "elapsedMs": 458,
+          "bytes": 20894,
+          "sha256": "820a11c497d82f22f0490a8f7c8e9c7a650eed82c1f1277ac7e33d3027300a1a",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/4b/b4/4bb4ace6c65405a4d4acfd4832bdd6bb6581818692a0edcff55948d317ae620d/detail-page.webp",
+          "elapsedMs": 247,
+          "bytes": 102306,
+          "sha256": "4bb4ace6c65405a4d4acfd4832bdd6bb6581818692a0edcff55948d317ae620d",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 485,
+      "detailIdentityMatches": true,
+      "variantId": "be9cad03-51a5-4886-b62f-f037968c00f2",
+      "imageVariantId": "be9cad03-51a5-4886-b62f-f037968c00f2",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "me04 002",
+        "elapsedMs": 703,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "b1f85e7a-b174-44ad-8140-8faff6f65604",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "005",
+      "name": "Chespin",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/fc/4d/fc4dc520ae8c703c98e65ce12743720d4110dc8c13e4dce43c08acc668a1c22f/search-result.webp",
+          "elapsedMs": 275,
+          "bytes": 3476,
+          "sha256": "fc4dc520ae8c703c98e65ce12743720d4110dc8c13e4dce43c08acc668a1c22f",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/63/4b/634bc4fe88b5fea6113cc6a2fe1cff9a0895d8c86e49d801f68d336577bf7c81/card-grid.webp",
+          "elapsedMs": 367,
+          "bytes": 18226,
+          "sha256": "634bc4fe88b5fea6113cc6a2fe1cff9a0895d8c86e49d801f68d336577bf7c81",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/e8/a7/e8a7083efc542ef33e8c6cc41a4dc6e35a9ddaee45aeea0b8a49829d89983eb7/detail-page.webp",
+          "elapsedMs": 313,
+          "bytes": 85964,
+          "sha256": "e8a7083efc542ef33e8c6cc41a4dc6e35a9ddaee45aeea0b8a49829d89983eb7",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 390,
+      "detailIdentityMatches": true,
+      "variantId": "75c1aaf9-5f91-48cb-8346-e18b4e5cc9a0",
+      "imageVariantId": "f7d52194-e1c6-4e86-b96e-68b04b68018d",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "Chespin",
+        "elapsedMs": 430,
+        "returnedCards": 3,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "375a10b0-41df-4cdb-adcb-ad9cad23790a",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "006",
+      "name": "Quilladin",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/e1/05/e10585fdcdbc8d4cdbf8184efe0e5fbf5b359d5740fa142db12dad630daf25df/search-result.webp",
+          "elapsedMs": 236,
+          "bytes": 3916,
+          "sha256": "e10585fdcdbc8d4cdbf8184efe0e5fbf5b359d5740fa142db12dad630daf25df",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/b5/b6/b5b6fcb00f7e8db1cca9e198e4a3501dda24f4d450101a345b89b66b9e9822fa/card-grid.webp",
+          "elapsedMs": 257,
+          "bytes": 20600,
+          "sha256": "b5b6fcb00f7e8db1cca9e198e4a3501dda24f4d450101a345b89b66b9e9822fa",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ec/eb/eceb06b984b6b6f657896294e8e45e7b55c028c5c6286339d8baa48ae0dd0dff/detail-page.webp",
+          "elapsedMs": 379,
+          "bytes": 93040,
+          "sha256": "eceb06b984b6b6f657896294e8e45e7b55c028c5c6286339d8baa48ae0dd0dff",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 435,
+      "detailIdentityMatches": true,
+      "variantId": "b8c22d72-4362-4dd3-8edd-e4a201f17b26",
+      "imageVariantId": "31c84947-247f-4224-8dc6-715cff596c7c",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "me04 006",
+        "elapsedMs": 640,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "42f7cf04-aadd-4bc4-8bc4-144ff6aa23e3",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "008",
+      "name": "Vulpix",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/9b/7c/9b7c4134704576618eac23be67d381c766533db64e08b02e11a3aa9b371e0756/search-result.webp",
+          "elapsedMs": 285,
+          "bytes": 3068,
+          "sha256": "9b7c4134704576618eac23be67d381c766533db64e08b02e11a3aa9b371e0756",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/17/90/17907e92c1a24da7c5245f437e718bc3500e413eba2c341c68bc3605dc903f5c/card-grid.webp",
+          "elapsedMs": 297,
+          "bytes": 15580,
+          "sha256": "17907e92c1a24da7c5245f437e718bc3500e413eba2c341c68bc3605dc903f5c",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/5a/de/5ade0f1f894b98f2d09ac8991bcffd5ddd966435ddfb558bf6feab2aa6e42fd0/detail-page.webp",
+          "elapsedMs": 248,
+          "bytes": 76862,
+          "sha256": "5ade0f1f894b98f2d09ac8991bcffd5ddd966435ddfb558bf6feab2aa6e42fd0",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 370,
+      "detailIdentityMatches": true,
+      "variantId": "87397e6b-acb6-459c-b282-825c2bce0dbe",
+      "imageVariantId": "87397e6b-acb6-459c-b282-825c2bce0dbe",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "Vulpix",
+        "elapsedMs": 811,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "cdd4f63c-2a90-4163-a419-d9bf84e8a3da",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "009",
+      "name": "Ninetales",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/30/6f/306f1873e0bee6147cb79c97e2c6c91da2470dee31f91175b3e136b82e74dc05/search-result.webp",
+          "elapsedMs": 287,
+          "bytes": 3844,
+          "sha256": "306f1873e0bee6147cb79c97e2c6c91da2470dee31f91175b3e136b82e74dc05",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/88/28/88286737e6223868109d22ba76f38b6634040646868feda5b2a1ba8f9849a7cc/card-grid.webp",
+          "elapsedMs": 313,
+          "bytes": 20120,
+          "sha256": "88286737e6223868109d22ba76f38b6634040646868feda5b2a1ba8f9849a7cc",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/3d/11/3d11521414048d003873df388a07cac95ed8e8713dac70d39f7831ad5e3f8b72/detail-page.webp",
+          "elapsedMs": 335,
+          "bytes": 97784,
+          "sha256": "3d11521414048d003873df388a07cac95ed8e8713dac70d39f7831ad5e3f8b72",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 410,
+      "detailIdentityMatches": true,
+      "variantId": "ada21568-2685-408c-9b8d-c6c0e61b478b",
+      "imageVariantId": "ada21568-2685-408c-9b8d-c6c0e61b478b",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "me04 009",
+        "elapsedMs": 683,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "5c78dab6-8ab7-48de-ab81-ea8038c13b69",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "011",
+      "name": "Fennekin",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/77/d3/77d3c12b810f23bfa77d52a100844db5f8b8c92143b71808f6849d8d9069ab97/search-result.webp",
+          "elapsedMs": 279,
+          "bytes": 3780,
+          "sha256": "77d3c12b810f23bfa77d52a100844db5f8b8c92143b71808f6849d8d9069ab97",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/94/e0/94e08bbf2075a009aa4e2ce05e808890f30cbc5e27953da21d9bee01f12505f7/card-grid.webp",
+          "elapsedMs": 234,
+          "bytes": 20202,
+          "sha256": "94e08bbf2075a009aa4e2ce05e808890f30cbc5e27953da21d9bee01f12505f7",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/88/76/887650a8b0e2de5a58f0f0a5149a01e27a6ed36ff6f1d8f9f3e29d636981cfba/detail-page.webp",
+          "elapsedMs": 345,
+          "bytes": 102998,
+          "sha256": "887650a8b0e2de5a58f0f0a5149a01e27a6ed36ff6f1d8f9f3e29d636981cfba",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 458,
+      "detailIdentityMatches": true,
+      "variantId": "cb8f092c-00c8-4a5a-811e-71ef4554c0ab",
+      "imageVariantId": "184a15fc-6163-4114-9841-0f2aa7e97fa8",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "me04 011",
+        "elapsedMs": 676,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "26476c3c-a0f6-403e-bbb6-360413467151",
+      "language": "en",
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "setCode": "me04",
+      "number": "010",
+      "name": "Ho-Oh",
+      "catalogueVersion": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/62/ef/62ef18afa0a9bd42db51f3706e580b4a721cfbee11e7be4cc143200fa9797695/search-result.webp",
+          "elapsedMs": 285,
+          "bytes": 4176,
+          "sha256": "62ef18afa0a9bd42db51f3706e580b4a721cfbee11e7be4cc143200fa9797695",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/16/a6/16a651cc5a55a447ed58f65be047ffce1faa7a48a8247ff4850b663b765133ba/card-grid.webp",
+          "elapsedMs": 401,
+          "bytes": 21910,
+          "sha256": "16a651cc5a55a447ed58f65be047ffce1faa7a48a8247ff4850b663b765133ba",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/41/54/41548d8cba34f3c1f18e7f06e77cc75b4f41a4e48370ee0b765ce140e8fcd6cd/detail-page.webp",
+          "elapsedMs": 353,
+          "bytes": 107974,
+          "sha256": "41548d8cba34f3c1f18e7f06e77cc75b4f41a4e48370ee0b765ce140e8fcd6cd",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 470,
+      "detailIdentityMatches": true,
+      "variantId": "dd354ff2-7e8b-415c-a490-71bd22f98c3b",
+      "imageVariantId": "56ecac1c-eeb2-4008-9a7f-cff546e02953",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "Ho-Oh",
+        "elapsedMs": 536,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "a9160ee2-62f0-4450-97ea-c582c8aafb8d",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "097",
+      "name": "铜象",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/94/ac/94acce08a905875771a79ed81c6162f646a1ea042f799ac1cd5d69c64b4d27f0/search-result.webp",
+          "elapsedMs": 244,
+          "bytes": 3846,
+          "sha256": "94acce08a905875771a79ed81c6162f646a1ea042f799ac1cd5d69c64b4d27f0",
+          "width": 96,
+          "height": 133,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/77/f7/77f763cb31f50711a2eb5830f17b9cb1b7a3b00dd262812672cdc0e34395f01a/card-grid.webp",
+          "elapsedMs": 322,
+          "bytes": 18198,
+          "sha256": "77f763cb31f50711a2eb5830f17b9cb1b7a3b00dd262812672cdc0e34395f01a",
+          "width": 240,
+          "height": 334,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/d4/85/d48537cecd1cbc827dc0871bc1c257ee1ec00c140076ddda90a910deb7238771/detail-page.webp",
+          "elapsedMs": 247,
+          "bytes": 30774,
+          "sha256": "d48537cecd1cbc827dc0871bc1c257ee1ec00c140076ddda90a910deb7238771",
+          "width": 300,
+          "height": 417,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 362,
+      "detailIdentityMatches": true,
+      "variantId": "18cb073a-f4e8-406e-be49-62336507e322",
+      "imageVariantId": "18cb073a-f4e8-406e-be49-62336507e322",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "cs1bc 097",
+        "elapsedMs": 803,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      },
+      "visualSample": "visual-zh-cn-a9160ee2-62f0-4450-97ea-c582c8aafb8d.webp"
+    },
+    {
+      "cardId": "ea8c4d85-db94-4b1a-be55-812fc5588d65",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "003",
+      "name": "巴大蝶",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/db/28/db2819f35393583554dcb5a6090a19dd6e22b207edebb7e31172af0f9dc72ab9/search-result.webp",
+          "elapsedMs": 194,
+          "bytes": 3940,
+          "sha256": "db2819f35393583554dcb5a6090a19dd6e22b207edebb7e31172af0f9dc72ab9",
+          "width": 96,
+          "height": 133,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/13/dc/13dcecea643445aca08d56a995ae28a850574eb92d0781d81b0c02c393b21607/card-grid.webp",
+          "elapsedMs": 343,
+          "bytes": 17696,
+          "sha256": "13dcecea643445aca08d56a995ae28a850574eb92d0781d81b0c02c393b21607",
+          "width": 240,
+          "height": 334,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/2d/4b/2d4bc7b32b737ffad613a1e22aeb43bf4184d9089bafa5eb325796386c32af67/detail-page.webp",
+          "elapsedMs": 342,
+          "bytes": 28480,
+          "sha256": "2d4bc7b32b737ffad613a1e22aeb43bf4184d9089bafa5eb325796386c32af67",
+          "width": 300,
+          "height": 417,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 401,
+      "detailIdentityMatches": true,
+      "variantId": "9eff1ebb-a7e8-40b3-acc7-ce0fdfc109e5",
+      "imageVariantId": "9eff1ebb-a7e8-40b3-acc7-ce0fdfc109e5",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "巴大蝶",
+        "elapsedMs": 3642,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "98eeb78a-26b8-4269-9c2f-547b563082b0",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "198",
+      "name": "草路竞技场",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/78/9c/789c660e483ee87f3409705f7a0087b6d12d618a32534ce47ed538ec769379f7/search-result.webp",
+          "elapsedMs": 252,
+          "bytes": 4550,
+          "sha256": "789c660e483ee87f3409705f7a0087b6d12d618a32534ce47ed538ec769379f7",
+          "width": 96,
+          "height": 134,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/08/58/0858e5f7688d4be45e42181068786a9410f57de9a1f537dd249c633aa208913b/card-grid.webp",
+          "elapsedMs": 276,
+          "bytes": 30466,
+          "sha256": "0858e5f7688d4be45e42181068786a9410f57de9a1f537dd249c633aa208913b",
+          "width": 240,
+          "height": 335,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/c2/c9/c2c97320788c0a7c2368163fdcc4ad11fbcb5b05251d2422e7f3abbc4fcd8d1e/detail-page.webp",
+          "elapsedMs": 343,
+          "bytes": 54758,
+          "sha256": "c2c97320788c0a7c2368163fdcc4ad11fbcb5b05251d2422e7f3abbc4fcd8d1e",
+          "width": 300,
+          "height": 419,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 362,
+      "detailIdentityMatches": true,
+      "variantId": "43168a39-2062-4284-9642-751cd7b09671",
+      "imageVariantId": "43168a39-2062-4284-9642-751cd7b09671",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "草路竞技场",
+        "elapsedMs": 575,
+        "returnedCards": 3,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "94f0fdee-4159-492c-99ae-e072e3a72858",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "011",
+      "name": "乐天河童",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ef/36/ef368282ce19617e62f1675b17989280b89060771f98cee0418ff2cf7dbc1504/search-result.webp",
+          "elapsedMs": 348,
+          "bytes": 3818,
+          "sha256": "ef368282ce19617e62f1675b17989280b89060771f98cee0418ff2cf7dbc1504",
+          "width": 96,
+          "height": 133,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/d5/d7/d5d76ca2f4e425b08a44d96d08122327f32d200bf3fffef146e9a31f1f4ebc57/card-grid.webp",
+          "elapsedMs": 304,
+          "bytes": 16958,
+          "sha256": "d5d76ca2f4e425b08a44d96d08122327f32d200bf3fffef146e9a31f1f4ebc57",
+          "width": 240,
+          "height": 334,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/a1/f7/a1f74db5bf7f6a69e774de1b76271f4fe63c7040061abafe4731612afcaf595e/detail-page.webp",
+          "elapsedMs": 344,
+          "bytes": 26854,
+          "sha256": "a1f74db5bf7f6a69e774de1b76271f4fe63c7040061abafe4731612afcaf595e",
+          "width": 300,
+          "height": 417,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 377,
+      "detailIdentityMatches": true,
+      "variantId": "cf6b4bdf-770f-4cb7-8860-3a8ef64444fd",
+      "imageVariantId": "cf6b4bdf-770f-4cb7-8860-3a8ef64444fd",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "cs1bc 011",
+        "elapsedMs": 936,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "9a5dd5c6-7900-4058-9689-6e6c7cef96c8",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "014",
+      "name": "毒蔷薇",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/78/6a/786a8fedbd744d0700d919c5b9b4402565c21c05139323ecacf5f5d0a6d2199d/search-result.webp",
+          "elapsedMs": 342,
+          "bytes": 3510,
+          "sha256": "786a8fedbd744d0700d919c5b9b4402565c21c05139323ecacf5f5d0a6d2199d",
+          "width": 96,
+          "height": 133,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/71/b5/71b59109e9442b5a94155b1aa6ff1dc301dbff82925926da46978943572bf88a/card-grid.webp",
+          "elapsedMs": 417,
+          "bytes": 16438,
+          "sha256": "71b59109e9442b5a94155b1aa6ff1dc301dbff82925926da46978943572bf88a",
+          "width": 240,
+          "height": 334,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/4d/d3/4dd3a8031a09a7a6a36021dc0830fa74a883bbf7900fd77e46ca555fc6d9cca8/detail-page.webp",
+          "elapsedMs": 250,
+          "bytes": 25942,
+          "sha256": "4dd3a8031a09a7a6a36021dc0830fa74a883bbf7900fd77e46ca555fc6d9cca8",
+          "width": 300,
+          "height": 417,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 428,
+      "detailIdentityMatches": true,
+      "variantId": "930ea97a-0041-4194-b1d7-703eb974267c",
+      "imageVariantId": "930ea97a-0041-4194-b1d7-703eb974267c",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "毒蔷薇",
+        "elapsedMs": 567,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "16d4811b-ce21-4abf-8634-13808d0944ad",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "015",
+      "name": "罗丝雷朵",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/2c/4d/2c4df9d4698b8f6ed472ffee24f28e50e7af0acf16290a0e4674bd8bf2013d48/search-result.webp",
+          "elapsedMs": 326,
+          "bytes": 4106,
+          "sha256": "2c4df9d4698b8f6ed472ffee24f28e50e7af0acf16290a0e4674bd8bf2013d48",
+          "width": 96,
+          "height": 133,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ed/a2/eda2b548a262354ea39f10006d432d7e2df97d3ede415fc64edb742cf253cd49/card-grid.webp",
+          "elapsedMs": 426,
+          "bytes": 18286,
+          "sha256": "eda2b548a262354ea39f10006d432d7e2df97d3ede415fc64edb742cf253cd49",
+          "width": 240,
+          "height": 334,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/5b/31/5b31a3b4c838cf78880d581f142db0ad3859cbf2baf3a6593a1d6ab1437dbd35/detail-page.webp",
+          "elapsedMs": 255,
+          "bytes": 28284,
+          "sha256": "5b31a3b4c838cf78880d581f142db0ad3859cbf2baf3a6593a1d6ab1437dbd35",
+          "width": 300,
+          "height": 417,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 389,
+      "detailIdentityMatches": true,
+      "variantId": "191f0841-7288-43ce-b1cd-1c990609c6ad",
+      "imageVariantId": "191f0841-7288-43ce-b1cd-1c990609c6ad",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "cs1bc 015",
+        "elapsedMs": 908,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "a121f9a6-231d-46b5-9322-d5d662b08989",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "016",
+      "name": "沙铃仙人掌",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f2/9e/f29e68d2e5c8d39af9501ffbde0b74a2e9d5c4384ada11770cf3181fd7e398a9/search-result.webp",
+          "elapsedMs": 264,
+          "bytes": 3542,
+          "sha256": "f29e68d2e5c8d39af9501ffbde0b74a2e9d5c4384ada11770cf3181fd7e398a9",
+          "width": 96,
+          "height": 133,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/b3/45/b3458f7e26b91d4df66eb234fd2fdee15e0afbfae42a987889c34606d0519cca/card-grid.webp",
+          "elapsedMs": 356,
+          "bytes": 14448,
+          "sha256": "b3458f7e26b91d4df66eb234fd2fdee15e0afbfae42a987889c34606d0519cca",
+          "width": 240,
+          "height": 334,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ea/f1/eaf1e21a8f80f05239281859e9a2f97e17e08ad070b7b0ef4ea62b790a5d9819/detail-page.webp",
+          "elapsedMs": 272,
+          "bytes": 21890,
+          "sha256": "eaf1e21a8f80f05239281859e9a2f97e17e08ad070b7b0ef4ea62b790a5d9819",
+          "width": 300,
+          "height": 417,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 392,
+      "detailIdentityMatches": true,
+      "variantId": "62a9ce4d-62d4-4a60-9e74-c2ef01aef84a",
+      "imageVariantId": "62a9ce4d-62d4-4a60-9e74-c2ef01aef84a",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "沙铃仙人掌",
+        "elapsedMs": 452,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "2c340d32-bece-4dc6-b961-8853419c0a27",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "017",
+      "name": "盖盖虫",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/fd/df/fddf90e97e339eaa6197e848567e5f111285f9de83bd97c9e57f79ad9b595a23/search-result.webp",
+          "elapsedMs": 276,
+          "bytes": 3192,
+          "sha256": "fddf90e97e339eaa6197e848567e5f111285f9de83bd97c9e57f79ad9b595a23",
+          "width": 96,
+          "height": 133,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/88/a6/88a61c109bca1c4b37d35b2efae90dafc67c4f9c30ef8bba02f1f330384d1f14/card-grid.webp",
+          "elapsedMs": 195,
+          "bytes": 13018,
+          "sha256": "88a61c109bca1c4b37d35b2efae90dafc67c4f9c30ef8bba02f1f330384d1f14",
+          "width": 240,
+          "height": 334,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/07/54/07548aac9b77deb96571ef13ba257e4ca78e7e43054fb847319e5b17b5dd4b78/detail-page.webp",
+          "elapsedMs": 261,
+          "bytes": 20462,
+          "sha256": "07548aac9b77deb96571ef13ba257e4ca78e7e43054fb847319e5b17b5dd4b78",
+          "width": 300,
+          "height": 417,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 499,
+      "detailIdentityMatches": true,
+      "variantId": "49120164-c7c3-4a90-89aa-3f21b04d884c",
+      "imageVariantId": "49120164-c7c3-4a90-89aa-3f21b04d884c",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "cs1bc 017",
+        "elapsedMs": 903,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "7c4d8049-2b9e-45d8-b5fd-5aa7ed7fc03a",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "020",
+      "name": "小木灵",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/4c/f8/4cf86c7d601226e8e236707e0df472b15b15d3b1cef31696114288752c67a082/search-result.webp",
+          "elapsedMs": 246,
+          "bytes": 3612,
+          "sha256": "4cf86c7d601226e8e236707e0df472b15b15d3b1cef31696114288752c67a082",
+          "width": 96,
+          "height": 133,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/71/a0/71a082bc52d3fb356cfede498e305afe0ad6c6f6ce8702f115e0b74644ed0080/card-grid.webp",
+          "elapsedMs": 225,
+          "bytes": 14604,
+          "sha256": "71a082bc52d3fb356cfede498e305afe0ad6c6f6ce8702f115e0b74644ed0080",
+          "width": 240,
+          "height": 334,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/38/68/3868f4ce0b00ba40d7968a2255b830d107e76603511f392f045d87f4c24eba25/detail-page.webp",
+          "elapsedMs": 349,
+          "bytes": 22482,
+          "sha256": "3868f4ce0b00ba40d7968a2255b830d107e76603511f392f045d87f4c24eba25",
+          "width": 300,
+          "height": 417,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 406,
+      "detailIdentityMatches": true,
+      "variantId": "ce06cac5-848a-4d9d-b644-c8d5c8caf700",
+      "imageVariantId": "ce06cac5-848a-4d9d-b644-c8d5c8caf700",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "cs1bc 020",
+        "elapsedMs": 704,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "efb19bbf-bee4-4b83-b036-44422c4121e6",
+      "language": "zh-cn",
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "setCode": "cs1bc",
+      "number": "019",
+      "name": "敏捷虫",
+      "catalogueVersion": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/c0/13/c01372bb7c0a9fdd4d4a928aaa0ee6463bae4147c4bc5ba988fd36fdb2dec99a/search-result.webp",
+          "elapsedMs": 227,
+          "bytes": 3752,
+          "sha256": "c01372bb7c0a9fdd4d4a928aaa0ee6463bae4147c4bc5ba988fd36fdb2dec99a",
+          "width": 96,
+          "height": 133,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/06/d2/06d22fac52afef7f6f76b5e1e47dd1a77d67f1e8ed98934c5e0d0f19effd8a82/card-grid.webp",
+          "elapsedMs": 421,
+          "bytes": 15874,
+          "sha256": "06d22fac52afef7f6f76b5e1e47dd1a77d67f1e8ed98934c5e0d0f19effd8a82",
+          "width": 240,
+          "height": 334,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/8f/96/8f969fc71c3db79ffccb5bfbc0e3bfa121b7aba7d90436208f33f809b30455a0/detail-page.webp",
+          "elapsedMs": 360,
+          "bytes": 24700,
+          "sha256": "8f969fc71c3db79ffccb5bfbc0e3bfa121b7aba7d90436208f33f809b30455a0",
+          "width": 300,
+          "height": 417,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [
+        "search-image-or-identity-mismatch"
+      ],
+      "detailMs": 405,
+      "detailIdentityMatches": true,
+      "variantId": "c14281b3-cfce-4255-8177-e2d6accfceb3",
+      "imageVariantId": "c14281b3-cfce-4255-8177-e2d6accfceb3",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "敏捷虫",
+        "elapsedMs": 3662,
+        "returnedCards": 2,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": false,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "ccb7c095-8103-4a10-b205-eb9a23725c10",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "013",
+      "name": "能量輸送",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/b5/b8/b5b89fb7dace0360db76a43483a673f8b429a837ee72702aed7a026b2d4a6c1e/search-result.webp",
+          "elapsedMs": 262,
+          "bytes": 2894,
+          "sha256": "b5b89fb7dace0360db76a43483a673f8b429a837ee72702aed7a026b2d4a6c1e",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/d0/ab/d0ab9b0727da0ac87ff005064aa5153536c1f16f3932bc0e2e1968d2270c65dd/card-grid.webp",
+          "elapsedMs": 401,
+          "bytes": 13198,
+          "sha256": "d0ab9b0727da0ac87ff005064aa5153536c1f16f3932bc0e2e1968d2270c65dd",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/08/e0/08e001fbc3dd92d7da5ab93eebdf2de14e850c96fe4823a5fbd758ec91b928bb/detail-page.webp",
+          "elapsedMs": 384,
+          "bytes": 44608,
+          "sha256": "08e001fbc3dd92d7da5ab93eebdf2de14e850c96fe4823a5fbd758ec91b928bb",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 406,
+      "detailIdentityMatches": true,
+      "variantId": "90488b19-f147-46ce-b32b-5925fbeacc94",
+      "imageVariantId": "90488b19-f147-46ce-b32b-5925fbeacc94",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "SVAM 013",
+        "elapsedMs": 655,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "43c30db8-5d44-4664-b523-2a55696a0a32",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "001",
+      "name": "蘑蘑菇",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/cf/d7/cfd71e4beb50768526c15f44ae503feea9f085821681d577cf5e3de3b77a24e9/search-result.webp",
+          "elapsedMs": 405,
+          "bytes": 3740,
+          "sha256": "cfd71e4beb50768526c15f44ae503feea9f085821681d577cf5e3de3b77a24e9",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/7f/49/7f49e9b51473fd2b430f9cc6ce2d553e63ac272ca645dabba3d3f47e5c792a7d/card-grid.webp",
+          "elapsedMs": 274,
+          "bytes": 16690,
+          "sha256": "7f49e9b51473fd2b430f9cc6ce2d553e63ac272ca645dabba3d3f47e5c792a7d",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ef/b8/efb830f02f17b8eba0f56f174e20f3c1ca7e1441a25f580283a56549ecca6861/detail-page.webp",
+          "elapsedMs": 264,
+          "bytes": 60310,
+          "sha256": "efb830f02f17b8eba0f56f174e20f3c1ca7e1441a25f580283a56549ecca6861",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 405,
+      "detailIdentityMatches": true,
+      "variantId": "ed39cadc-e9a5-4152-8d9a-d988dc783a71",
+      "imageVariantId": "ed39cadc-e9a5-4152-8d9a-d988dc783a71",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "蘑蘑菇",
+        "elapsedMs": 501,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      },
+      "visualSample": "visual-zh-tw-43c30db8-5d44-4664-b523-2a55696a0a32.webp"
+    },
+    {
+      "cardId": "b6e560f3-226a-49a2-a88b-ee04fd9edb0c",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "002",
+      "name": "斗笠菇",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/e3/a0/e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567/search-result.webp",
+          "elapsedMs": 278,
+          "bytes": 3446,
+          "sha256": "e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=public, max-age=31536000, immutable",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/fa/84/fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387/card-grid.webp",
+          "elapsedMs": 221,
+          "bytes": 15886,
+          "sha256": "fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=public, max-age=31536000, immutable",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/af/dd/afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6/detail-page.webp",
+          "elapsedMs": 391,
+          "bytes": 60442,
+          "sha256": "afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=public, max-age=31536000, immutable",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 363,
+      "detailIdentityMatches": true,
+      "variantId": "40a096ea-7c1f-4387-8670-5c6027e946cd",
+      "imageVariantId": "40a096ea-7c1f-4387-8670-5c6027e946cd",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "SVAM 002",
+        "elapsedMs": 609,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "GRA",
+      "name": "基本【草】能量",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [],
+      "issues": [
+        "canonical-identity-mismatch",
+        "HTTP 504 after 8123ms"
+      ],
+      "detailMs": 393,
+      "detailIdentityMatches": true,
+      "variantId": "5621ec0a-f335-49af-8975-b91215653e85",
+      "imageVariantId": "5621ec0a-f335-49af-8975-b91215653e85",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": false
+    },
+    {
+      "cardId": "9a110a95-ffe2-4e9a-bf9a-a6b0dcc3633f",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "003",
+      "name": "熱帶龍",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/47/d4/47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f/search-result.webp",
+          "elapsedMs": 873,
+          "bytes": 3288,
+          "sha256": "47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=public, max-age=31536000, immutable",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/3c/f8/3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a/card-grid.webp",
+          "elapsedMs": 293,
+          "bytes": 15802,
+          "sha256": "3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=public, max-age=31536000, immutable",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/9e/13/9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd/detail-page.webp",
+          "elapsedMs": 322,
+          "bytes": 63358,
+          "sha256": "9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=public, max-age=31536000, immutable",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 4017,
+      "detailIdentityMatches": true,
+      "variantId": "64c3e818-f0e5-49b3-89b7-d36addc2fdb6",
+      "imageVariantId": "64c3e818-f0e5-49b3-89b7-d36addc2fdb6",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "熱帶龍",
+        "elapsedMs": 1572,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "9859723f-9662-40ac-90c9-6510861342fd",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "004",
+      "name": "新葉喵",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/59/d8/59d8cf872e6e37b2b4ddd58741e34187b525ec22f3008a0011e6685a7c845e80/search-result.webp",
+          "elapsedMs": 342,
+          "bytes": 3382,
+          "sha256": "59d8cf872e6e37b2b4ddd58741e34187b525ec22f3008a0011e6685a7c845e80",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/cd/34/cd34549676c86512e64554490bf1d5b2dbe7dc66c62c90943db957b0b1ca479b/card-grid.webp",
+          "elapsedMs": 261,
+          "bytes": 15774,
+          "sha256": "cd34549676c86512e64554490bf1d5b2dbe7dc66c62c90943db957b0b1ca479b",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/3b/43/3b434efe4e90a402262d54f40ab79002e44e69f5a524dd83ce441f4ee355f31e/detail-page.webp",
+          "elapsedMs": 503,
+          "bytes": 57402,
+          "sha256": "3b434efe4e90a402262d54f40ab79002e44e69f5a524dd83ce441f4ee355f31e",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 3893,
+      "detailIdentityMatches": true,
+      "variantId": "8c214e7e-5cb5-4934-a4bf-5d3be55e51e8",
+      "imageVariantId": "8c214e7e-5cb5-4934-a4bf-5d3be55e51e8",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "SVAM 004",
+        "elapsedMs": 2385,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "17c975d4-96e3-41c5-a0b8-89c0138e79b7",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "006",
+      "name": "魔幻假面喵",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/9d/14/9d1494369c0bc42b00ef27dc51f5c87406993a55c5f958aa1b251a95bb35781c/search-result.webp",
+          "elapsedMs": 245,
+          "bytes": 3840,
+          "sha256": "9d1494369c0bc42b00ef27dc51f5c87406993a55c5f958aa1b251a95bb35781c",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/99/bc/99bc4c04cb9e19a3bc62d1a361513b3efb59408401362e7815b71163a6c85261/card-grid.webp",
+          "elapsedMs": 393,
+          "bytes": 18620,
+          "sha256": "99bc4c04cb9e19a3bc62d1a361513b3efb59408401362e7815b71163a6c85261",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ab/56/ab5607307414f5aa9fc0ab52e0dccbb8fcc9884557e6204a4feb1bdc83b4dec4/detail-page.webp",
+          "elapsedMs": 275,
+          "bytes": 75846,
+          "sha256": "ab5607307414f5aa9fc0ab52e0dccbb8fcc9884557e6204a4feb1bdc83b4dec4",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 682,
+      "detailIdentityMatches": true,
+      "variantId": "a89a8ab7-eea6-431f-a943-3129d4e082fe",
+      "imageVariantId": "a89a8ab7-eea6-431f-a943-3129d4e082fe",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "SVAM 006",
+        "elapsedMs": 932,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "f4459bfa-0202-426b-8ae6-9efe1db268ca",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "005",
+      "name": "蒂蕾喵",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/41/ff/41ff01b5d64a7a5d749671ac5afd600e5916cf934c64a088603280550a8d6756/search-result.webp",
+          "elapsedMs": 376,
+          "bytes": 3682,
+          "sha256": "41ff01b5d64a7a5d749671ac5afd600e5916cf934c64a088603280550a8d6756",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/af/eb/afeb8dbcd18b9cba724ffa0b2d2d4050c775c91641be182521ea2b264b485420/card-grid.webp",
+          "elapsedMs": 335,
+          "bytes": 17992,
+          "sha256": "afeb8dbcd18b9cba724ffa0b2d2d4050c775c91641be182521ea2b264b485420",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/28/bc/28bc2ee78ea79dbaeddce36b5f80fbbd3edc92a9993894c9931324fd4c0de22d/detail-page.webp",
+          "elapsedMs": 437,
+          "bytes": 69586,
+          "sha256": "28bc2ee78ea79dbaeddce36b5f80fbbd3edc92a9993894c9931324fd4c0de22d",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 681,
+      "detailIdentityMatches": true,
+      "variantId": "80e32e90-e7e6-45c2-99d5-a06dd87a9fd1",
+      "imageVariantId": "80e32e90-e7e6-45c2-99d5-a06dd87a9fd1",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "蒂蕾喵",
+        "elapsedMs": 800,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    },
+    {
+      "cardId": "5888e3ff-3022-47b0-9753-bcbaf63a7560",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "008",
+      "name": "利歐路",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [],
+      "issues": [
+        "HTTP 504 after 8156ms"
+      ],
+      "detailMs": 2471,
+      "detailIdentityMatches": true,
+      "variantId": "493fb4f8-9399-4788-ba9d-51b48331eeaa",
+      "imageVariantId": "493fb4f8-9399-4788-ba9d-51b48331eeaa",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true
+    },
+    {
+      "cardId": "52317ef9-e450-45b9-ab51-f4ab0d6e31a8",
+      "language": "zh-tw",
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "number": "007",
+      "name": "團珠蛛",
+      "catalogueVersion": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "images": [
+        {
+          "role": "search-result",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/71/64/7164bf8abe003ebb1c6bd53943cdcde8b67faeee7b2a11f89457524726477b89/search-result.webp",
+          "elapsedMs": 1076,
+          "bytes": 3374,
+          "sha256": "7164bf8abe003ebb1c6bd53943cdcde8b67faeee7b2a11f89457524726477b89",
+          "width": 96,
+          "height": 132,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "card-grid",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/e2/df/e2df93074099ac80be41942e4f492528135817d3577b6a6270328317b5f1ade1/card-grid.webp",
+          "elapsedMs": 427,
+          "bytes": 16858,
+          "sha256": "e2df93074099ac80be41942e4f492528135817d3577b6a6270328317b5f1ade1",
+          "width": 240,
+          "height": 330,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        },
+        {
+          "role": "detail-page",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/d4/ce/d4cea7b87968d0b959ac6de95a23fc05fd4fc61d6299c9b5195ce1ae352fcf66/detail-page.webp",
+          "elapsedMs": 359,
+          "bytes": 69844,
+          "sha256": "d4cea7b87968d0b959ac6de95a23fc05fd4fc61d6299c9b5195ce1ae352fcf66",
+          "width": 600,
+          "height": 825,
+          "decoded": true,
+          "verified": true,
+          "headers": {
+            "contentType": "image/webp",
+            "cacheControl": "public, max-age=31536000",
+            "cacheStatus": "MISS",
+            "age": null
+          }
+        }
+      ],
+      "issues": [],
+      "detailMs": 1757,
+      "detailIdentityMatches": true,
+      "variantId": "d697ae3e-ef41-4584-9663-15fcc5ebe9d2",
+      "imageVariantId": "d697ae3e-ef41-4584-9663-15fcc5ebe9d2",
+      "embeddedDetailImage": true,
+      "associationMatches": true,
+      "canonicalIdentityMatches": true,
+      "search": {
+        "query": "團珠蛛",
+        "elapsedMs": 7575,
+        "returnedCards": 1,
+        "expectedFound": true,
+        "embeddedImage": true,
+        "sameVariantAsset": true,
+        "exactIdentity": true
+      }
+    }
+  ],
+  "timings": [
+    {
+      "language": "ja",
+      "cardId": "2481dcd7-f3c4-4850-97cf-0dce483eb96b",
+      "first": {
+        "detailMs": 2940,
+        "searchMs": 1630,
+        "detailImageMs": 532
+      },
+      "repeat": [
+        {
+          "detailMs": 164,
+          "searchMs": 146,
+          "detailImageMs": 64,
+          "sameImageBytes": true
+        },
+        {
+          "detailMs": 176,
+          "searchMs": 65,
+          "detailImageMs": 47,
+          "sameImageBytes": true
+        },
+        {
+          "detailMs": 171,
+          "searchMs": 61,
+          "detailImageMs": 37,
+          "sameImageBytes": true
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "cardId": "eda91360-8fc4-4577-88e6-738b388603c1",
+      "first": {
+        "detailMs": 386,
+        "searchMs": 736,
+        "detailImageMs": 404
+      },
+      "repeat": [
+        {
+          "detailMs": 187,
+          "searchMs": 61,
+          "detailImageMs": 42,
+          "sameImageBytes": true
+        },
+        {
+          "detailMs": 199,
+          "searchMs": 3184,
+          "detailImageMs": 36,
+          "sameImageBytes": true
+        },
+        {
+          "detailMs": 3293,
+          "searchMs": 67,
+          "detailImageMs": 37,
+          "sameImageBytes": true
+        }
+      ]
+    },
+    {
+      "language": "zh-cn",
+      "cardId": "a9160ee2-62f0-4450-97ea-c582c8aafb8d",
+      "first": {
+        "detailMs": 362,
+        "searchMs": 803,
+        "detailImageMs": 247
+      },
+      "repeat": [
+        {
+          "detailMs": 167,
+          "searchMs": 84,
+          "detailImageMs": 34,
+          "sameImageBytes": true
+        },
+        {
+          "detailMs": 165,
+          "searchMs": 57,
+          "detailImageMs": 32,
+          "sameImageBytes": true
+        },
+        {
+          "detailMs": 161,
+          "searchMs": 55,
+          "detailImageMs": 47,
+          "sameImageBytes": true
+        }
+      ]
+    },
+    {
+      "language": "zh-tw",
+      "cardId": "43c30db8-5d44-4664-b523-2a55696a0a32",
+      "first": {
+        "detailMs": 405,
+        "searchMs": 501,
+        "detailImageMs": 264
+      },
+      "repeat": [
+        {
+          "detailMs": 166,
+          "searchMs": 81,
+          "detailImageMs": 42,
+          "sameImageBytes": true
+        },
+        {
+          "detailMs": 170,
+          "searchMs": 64,
+          "detailImageMs": 33,
+          "sameImageBytes": true
+        },
+        {
+          "detailMs": 174,
+          "searchMs": 70,
+          "detailImageMs": 37,
+          "sameImageBytes": true
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "completedAt": "2026-10-01T14:55:40.181Z",
+  "summary": {
+    "cards": 40,
+    "languages": [
+      "ja",
+      "en",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "sets": 7,
+    "detailIdentityMatches": 40,
+    "associationMatches": 40,
+    "embeddedDetailImages": 40,
+    "searchExpectedFound": 38,
+    "searchEmbeddedImages": 38,
+    "imagesVerified": 111,
+    "imageChecks": 114,
+    "caseExceptions": [
+      {
+        "cardId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+        "language": "ja",
+        "setCode": "M5",
+        "number": "002",
+        "issues": [
+          "search-result-missing",
+          "card-grid-missing",
+          "detail-page-missing"
+        ]
+      },
+      {
+        "cardId": "7ee0a48c-b213-4e2c-87a9-31d997324c95",
+        "language": "ja",
+        "setCode": "SV8a",
+        "number": "109",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "14bac4a2-8a7b-4e65-87b9-c13e8303e84b",
+        "language": "en",
+        "setCode": "me04",
+        "number": "053",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "eda91360-8fc4-4577-88e6-738b388603c1",
+        "language": "en",
+        "setCode": "me04",
+        "number": "001",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "cb4dc5c6-4f86-4d0f-923e-c32d546f9e41",
+        "language": "en",
+        "setCode": "me04",
+        "number": "002",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "375a10b0-41df-4cdb-adcb-ad9cad23790a",
+        "language": "en",
+        "setCode": "me04",
+        "number": "006",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "42f7cf04-aadd-4bc4-8bc4-144ff6aa23e3",
+        "language": "en",
+        "setCode": "me04",
+        "number": "008",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "cdd4f63c-2a90-4163-a419-d9bf84e8a3da",
+        "language": "en",
+        "setCode": "me04",
+        "number": "009",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "5c78dab6-8ab7-48de-ab81-ea8038c13b69",
+        "language": "en",
+        "setCode": "me04",
+        "number": "011",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "26476c3c-a0f6-403e-bbb6-360413467151",
+        "language": "en",
+        "setCode": "me04",
+        "number": "010",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "a9160ee2-62f0-4450-97ea-c582c8aafb8d",
+        "language": "zh-cn",
+        "setCode": "cs1bc",
+        "number": "097",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "ea8c4d85-db94-4b1a-be55-812fc5588d65",
+        "language": "zh-cn",
+        "setCode": "cs1bc",
+        "number": "003",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "94f0fdee-4159-492c-99ae-e072e3a72858",
+        "language": "zh-cn",
+        "setCode": "cs1bc",
+        "number": "011",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "9a5dd5c6-7900-4058-9689-6e6c7cef96c8",
+        "language": "zh-cn",
+        "setCode": "cs1bc",
+        "number": "014",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "a121f9a6-231d-46b5-9322-d5d662b08989",
+        "language": "zh-cn",
+        "setCode": "cs1bc",
+        "number": "016",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "7c4d8049-2b9e-45d8-b5fd-5aa7ed7fc03a",
+        "language": "zh-cn",
+        "setCode": "cs1bc",
+        "number": "020",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "efb19bbf-bee4-4b83-b036-44422c4121e6",
+        "language": "zh-cn",
+        "setCode": "cs1bc",
+        "number": "019",
+        "issues": [
+          "search-image-or-identity-mismatch"
+        ]
+      },
+      {
+        "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+        "language": "zh-tw",
+        "setCode": "SVAM",
+        "number": "GRA",
+        "issues": [
+          "canonical-identity-mismatch",
+          "HTTP 504 after 8123ms"
+        ]
+      },
+      {
+        "cardId": "5888e3ff-3022-47b0-9753-bcbaf63a7560",
+        "language": "zh-tw",
+        "setCode": "SVAM",
+        "number": "008",
+        "issues": [
+          "HTTP 504 after 8156ms"
+        ]
+      }
+    ]
+  }
+}
