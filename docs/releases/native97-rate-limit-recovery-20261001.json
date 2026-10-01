@@ -1,0 +1,37 @@
+{
+  "observed_at": "2026-10-01T12:32:45.650Z",
+  "run": "https://github.com/tberridge86/Stackr/actions/runs/36860755298",
+  "revision": "aa03a1ea26dee995d8353f49d7313ceec7810dd8",
+  "cohort_sha256": "1d06acef9184b646097db2bed97c38f866f8684a2587dc59e42c252bfbb9adf5",
+  "status": "failed_before_publication",
+  "error": "Public object read 429",
+  "receipt_artifact": {
+    "id": 11161383683,
+    "name": "native97-artwork-36860755298-1",
+    "createdAt": "2026-10-01T12:22:37Z",
+    "digest": "sha256:70b5241233856a0029103dbb6f3a94a8bf5560f572fa48fc5bcc55515c5349e8",
+    "sha256": "70b5241233856a0029103dbb6f3a94a8bf5560f572fa48fc5bcc55515c5349e8",
+    "bytes": 34247,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36860755298/artifacts/11161383683"
+  },
+  "receipt_sha256": "10a21407dadbcd7f268f50fe82fa423b93ad3517ae98bb91f4e60b091e719f99",
+  "local_files_verified": 388,
+  "uploaded_objects": 114,
+  "byte_verified_objects": 113,
+  "published_fronts": 0,
+  "asset_associations": 0,
+  "links": 0,
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "rehearsals": {
+    "staging": "passed_and_rolled_back",
+    "production": "passed_and_rolled_back"
+  },
+  "fresh_readback": {
+    "staging_full_rows_unchanged": 97,
+    "production_full_rows_unchanged": 97,
+    "published_assets_for_cohort": 0
+  },
+  "recovery": "Preserve all114 uploaded immutable objects. Native97-only pacing and shared rate-limit cooldown; resume same frozen97/388 scope through protected reviewed workflow; verify existing bytes again."
+}
