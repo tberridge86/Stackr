@@ -1344,6 +1344,8 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
           npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Verify persisted publisher failure receipt
+        run: node --test tools/artwork3303-publish-20260928/journal.integration.test.mjs
       - name: Retrieve exact archived images
         env:
           GH_TOKEN: ${{ github.token }}
