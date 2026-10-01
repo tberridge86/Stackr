@@ -1,6 +1,6 @@
 # Normal TestFlight build 49 — delivery checkpoint
 
-> **Delivery pending.** EAS has finished the final normal-production iOS build and its submission is queued, but Apple processing, TestFlight availability, OTA state, and phone acceptance are not yet recorded.
+> **Delivery pending.** EAS has finished the final normal-production iOS build and its submission is queued. Apple processing, TestFlight availability, and phone acceptance remain pending. Read-only production-channel checks found no OTA update groups.
 
 ## Frozen source and review state
 
@@ -14,7 +14,7 @@
 | Final production review attempt | [Run 36885846750](https://github.com/tberridge86/Stackr/actions/runs/36885846750) was approved, then stopped before EAS dispatch because `EXPO_TOKEN` was unavailable. No approval was bypassed and no credential was changed. |
 | Current delivery lane | `feedback49-final` produced the exact finished EAS build and one queued submission recorded below. Apple and device evidence remain required before delivery is claimed. |
 
-The earlier request from source `83394561744ac7d4031b029d8bfe13290ab4622f` created EAS build `03492deb-7227-48d0-8d07-cf597274c6ad`, then reached `CANCELED` before submission. Official EAS and Apple checks found zero build-49 submissions and zero Apple build-49 records. The unused remote counter reservation was restored to build 48. This preserved history is not proof that the final pending candidate exists remotely.
+The earlier request from source `83394561744ac7d4031b029d8bfe13290ab4622f` created EAS build `03492deb-7227-48d0-8d07-cf597274c6ad`, then reached `CANCELED` before submission. At that checkpoint, official EAS and Apple checks found zero build-49 submissions and zero Apple build-49 records. The unused remote counter reservation was restored to build 48 before requesting the final build recorded below. No earlier candidate was uploaded to Apple.
 
 ## Accepted EAS build and queued submission
 
@@ -30,7 +30,7 @@ The earlier request from source `83394561744ac7d4031b029d8bfe13290ab4622f` creat
 | Offline bundle/provisioning check | Bundle `com.tommo86.Stackr`; team `K82N877J3F` verified |
 | Embedded update | `d47d7809-7632-4269-bf3d-6c9711e5fd38`; its manifest carries no source SHA, so source attribution remains the EAS receipt and exact source evidence |
 
-The single submission is `3811f063-edfb-4f01-870e-1227fe49ba8f`, accepted and `IN_QUEUE` at 15:58 UTC. There is no Apple availability or tester-group result yet. The existing `production-owner` submit profile contributes only Apple app `6772118450` and existing group metadata; the immutable normal-production build ID above is the selected archive.
+The single submission is `3811f063-edfb-4f01-870e-1227fe49ba8f`, accepted at 15:57 UTC and still `IN_QUEUE` at 16:17:56 UTC. A separate Apple read at 16:09 found no build-49 record yet. The [sanitized upload checkpoint](testflight49-upload-checkpoint-20261001.json) preserves the exact build, archive, submission and channel checks; it is not Apple availability or tester-group proof. The existing `production-owner` submit profile contributes only Apple app `6772118450` and existing group metadata; the immutable normal-production build ID above is the selected archive.
 
 Expo Doctor passed 17 of 18 checks. Its four patch-version advisories are unchanged from build 48; no dependency or lockfile change was made to suppress them. The sanitized result is retained with the final local build evidence at `outputs/releases/feedback49-final/expo-doctor-advisory.json`. One read-only `build:view` dry run failed once and recovered after a single retry; it did not create a duplicate native build or upload request.
 
@@ -69,15 +69,15 @@ Separate outstanding work remains outside this client build:
 
 See the [plain-English catalogue status](october-1-plain-english-status-20260929.md) for the current denominators and exception categories.
 
-## Delivery evidence to fill after the normal build finishes
+## Delivery verification
 
 | Required evidence | Pending value |
 | --- | --- |
 | EAS build ID, platform, build number, app/runtime version, profile and channel | Finished: build `c7ddf691-b730-481f-85de-f8a117d9a2c1`; iOS normal production; `1.0.4` / `1.0.4` / 49 |
 | Completed-build time, source attestation, fingerprint, IPA checksum and bundle inspection | Finished; recorded above |
 | Apple upload/submission, processing, beta review and existing tester-group availability | One submission `IN_QUEUE`; Apple processing, review and group availability pending |
-| Existing production OTA channel/branch and served-update check | Pending read-only evidence |
-| Exact CI/review links for the frozen source | Pending receipt links |
+| Existing production OTA channel/branch and served-update check | Read-only checks confirm active production channel, production branch, and no update groups; no OTA was published |
+| Exact CI/review links for the frozen source | PR #296 and its eight passed checks, plus the skipped release-candidate gate, are bound in the upload checkpoint; protected review run is linked above |
 | Physical phone model, iOS version, installed build and acceptance observations | Pending |
 
 ## Phone acceptance checklist

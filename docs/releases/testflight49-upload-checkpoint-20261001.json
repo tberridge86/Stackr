@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-01T16:18:33.022Z",
+  "purpose": "Upload checkpoint only; Apple availability and physical device acceptance are not verified.",
+  "records": {
+    "current-normal-ios-build49-status.json": {
+      "sha256": "8551f9449ce2aa1ca4335fa94ed6e66ed683326a70da603dbda25f752397173c",
+      "value": {
+        "observedAtUtc": "2026-10-01T16:17:56.132Z",
+        "buildId": "c7ddf691-b730-481f-85de-f8a117d9a2c1",
+        "status": "FINISHED",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "appVersion": "1.0.4",
+        "buildNumber": "49",
+        "profile": "production",
+        "channel": "production",
+        "runtime": "1.0.4",
+        "fingerprint": "0472b48fd6b16074463050a95b682a6aebe6f069",
+        "createdAt": "2026-10-01T15:44:55.437Z",
+        "updatedAt": "2026-10-01T15:53:51.629Z",
+        "completedAt": "2026-10-01T15:53:51.321Z",
+        "error": null,
+        "associatedSubmissionIds": [
+          {
+            "id": "3811f063-edfb-4f01-870e-1227fe49ba8f",
+            "status": "IN_QUEUE"
+          }
+        ],
+        "submission": {
+          "id": "3811f063-edfb-4f01-870e-1227fe49ba8f",
+          "status": "IN_QUEUE",
+          "appleAppId": "6772118450",
+          "createdAt": "2026-10-01T15:57:22.699Z",
+          "completedAt": null,
+          "error": null
+        }
+      }
+    },
+    "normal-ios-build49-ipa-verification.json": {
+      "sha256": "944b933d42bd8a7e63cc3bc815f98a69e7db1c556d0e897c74ab1d4ec3d48200",
+      "value": {
+        "schemaVersion": 1,
+        "verifiedAt": "2026-10-01T15:55:33.562Z",
+        "ipa": {
+          "sha256": "2a04cd826133fe2e7c610667dd80aa9bc3ca28bea1e5767cc1780a0e75830a05"
+        },
+        "expected": {
+          "bundleIdentifier": "com.tommo86.Stackr",
+          "version": "1.0.4",
+          "buildNumber": "49",
+          "runtimeVersion": "1.0.4",
+          "channel": "production",
+          "sourceCommit": "c6795069c57e32c7ea53f11326f9206379b48d1e"
+        },
+        "app": {
+          "bundleIdentifier": "com.tommo86.Stackr",
+          "version": "1.0.4",
+          "buildNumber": "49",
+          "runtimeVersion": "1.0.4",
+          "channel": "production"
+        },
+        "expoUpdates": {
+          "embeddedManifestPresent": true,
+          "sourceProof": "unavailable_no_embedded_manifest_source",
+          "id": "d47d7809-7632-4269-bf3d-6c9711e5fd38",
+          "createdAt": null,
+          "runtimeVersion": null,
+          "channel": null,
+          "source": null,
+          "sourceMatchesExpected": null
+        },
+        "provisioning": {
+          "present": true,
+          "parsed": true,
+          "teamIdentifier": "K82N877J3F",
+          "applicationIdentifier": "K82N877J3F.com.tommo86.Stackr"
+        }
+      }
+    },
+    "standard-ios-submission-request.json": {
+      "sha256": "31e8f4873028787012314d18122f3fa5d1fe2ab071a876f984f8c2b4e092aac6",
+      "value": {
+        "requestedAtUtc": "2026-10-01T15:57:01.7115701Z",
+        "buildId": "c7ddf691-b730-481f-85de-f8a117d9a2c1",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "status": "accepted-reconcile-submission-id",
+        "submissionId": "3811f063-edfb-4f01-870e-1227fe49ba8f"
+      }
+    },
+    "production-channel-readback.json": {
+      "sha256": "066f19d16819a944c5822cf5e4d474f7fbd5fa753f5d1525d8489a0674a74313",
+      "value": {
+        "currentPage": {
+          "id": "01a0378f-1bd1-78e6-a009-9d55f65268a5",
+          "isPaused": false,
+          "name": "production",
+          "updatedAt": "2026-08-25T06:15:20.785Z",
+          "createdAt": "2026-08-25T06:15:20.785Z",
+          "branchMapping": "{\"data\":[{\"branchId\":\"01a0378f-1b0f-7ccf-bc18-3fa7b76643cc\",\"branchMappingLogic\":\"true\"}],\"version\":0}",
+          "updateBranches": [
+            {
+              "id": "01a0378f-1b0f-7ccf-bc18-3fa7b76643cc",
+              "name": "production",
+              "updateGroups": []
+            }
+          ]
+        }
+      }
+    },
+    "production-update-readback.json": {
+      "sha256": "835f5e9d4f4a595f6da75d2d7a0fdb3d30f8f9ffeac1ebd1bd7944f73454fa16",
+      "value": {
+        "name": "production",
+        "id": "N/A",
+        "currentPage": []
+      }
+    },
+    "reviewed-pr-checks.json": {
+      "sha256": "e72eb2d16447628877cfb4f4e5596ae49c0107a22789c679c3c0b2586b63afe7",
+      "value": {
+        "observedAtUtc": "2026-10-01T15:43:17.4402648Z",
+        "pullRequest": {
+          "headRefOid": "82d9352416bf0eabe3af12dc80b668b0f4753fd0",
+          "mergeCommit": {
+            "oid": "c6795069c57e32c7ea53f11326f9206379b48d1e"
+          },
+          "number": 296,
+          "state": "MERGED",
+          "statusCheckRollup": [
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:34:04Z",
+              "conclusion": "SKIPPED",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446849490",
+              "name": "release-candidate-gate",
+              "startedAt": "2026-10-01T15:34:04Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:29Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266176/job/110446847410",
+              "name": "owner-pricing-identity-regression",
+              "startedAt": "2026-10-01T15:34:06Z",
+              "status": "COMPLETED",
+              "workflowName": "Owner Pricing Identity Tests"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:37:03Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847119",
+              "name": "lint-type-unit",
+              "startedAt": "2026-10-01T15:34:07Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:21Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446848844",
+              "name": "database-migration-tests",
+              "startedAt": "2026-10-01T15:34:08Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:13Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847650",
+              "name": "openapi-and-generated-client",
+              "startedAt": "2026-10-01T15:34:08Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:15Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446849005",
+              "name": "recognition-container",
+              "startedAt": "2026-10-01T15:34:07Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:32Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847753",
+              "name": "dependency-and-secret-scan",
+              "startedAt": "2026-10-01T15:34:07Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:12Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847670",
+              "name": "integration-tests",
+              "startedAt": "2026-10-01T15:34:06Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:37:08Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847632",
+              "name": "benchmark-smoke-tests",
+              "startedAt": "2026-10-01T15:34:10Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            }
+          ],
+          "url": "https://github.com/tberridge86/Stackr/pull/296"
+        }
+      }
+    },
+    "expo-doctor-advisory.json": {
+      "sha256": "90e1dd6003f138ab911c8369d0ac63a5bcf6f621aa6d6c0ad03534153d971491",
+      "value": {
+        "observedAtUtc": "2026-10-01T15:48:21.888Z",
+        "buildId": "c7ddf691-b730-481f-85de-f8a117d9a2c1",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "passed": 17,
+        "total": 18,
+        "remaining": "Expo SDK package patch-version advisory",
+        "messages": [
+          "17/18 checks passed. 1 checks failed. Possible issues detected:",
+          "expo              ~54.0.37  54.0.36  ",
+          "expo-constants    ~18.0.14  18.0.13  ",
+          "expo-file-system  ~19.0.24  19.0.23  ",
+          "expo-updates      ~29.0.20  29.0.19  "
+        ],
+        "nativeDependencyAndLockfileChangesFromBuild48": false,
+        "checksSuppressed": false
+      }
+    }
+  },
+  "artworkRecovery": {
+    "publishedFronts": 9253,
+    "remainingOfOriginal4201": 2908,
+    "native97Published": false
+  }
+}
