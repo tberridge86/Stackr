@@ -2,6 +2,14 @@
 
 This implementation uses no third-party card-effect source or art assets.
 
+**1 October showcase update:** The findings below describe the initial inspection
+candidate. Build 49 already permits explicitly disclosed generic foil lighting
+for recorded finishes without printing-specific masks. The subsequent
+[card showcase](releases/card-showcase-20261001.md) adds original directional
+glints, bounded tactile cues and viewing controls on that foundation. The mask
+registry remains empty; neither change verifies physical foil boundaries. No
+reference code or textures were incorporated.
+
 The public [pokemon-cards-css](https://github.com/simeydotme/pokemon-cards-css/tree/acb1197633e749a1fba4412231db2f6581586d00) repository is GPL-3.0 under its [pinned licence](https://github.com/simeydotme/pokemon-cards-css/blob/acb1197633e749a1fba4412231db2f6581586d00/LICENSE), and its README credits additional third-party background material. Its code and textures are excluded. [Pokebox](https://github.com/selop/pokebox/tree/7f6b1b4b6bb4684f80b49d1318b2a1c90a357b80) is MIT under its [pinned licence](https://github.com/selop/pokebox/blob/7f6b1b4b6bb4684f80b49d1318b2a1c90a357b80/LICENSE), but its README identifies Pokémon/card data and an effect lineage outside its licence; its GLSL and assets are excluded. [TiltHologramCard](https://github.com/DongGukMon/TiltHologramCard/tree/d18fa0600e820c84569d7a348b0afdd8b971ce2a) had no repository licence at the pinned audit revision, so its code and assets are excluded.
 
 ## Reference findings

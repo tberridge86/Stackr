@@ -9,7 +9,7 @@ type NativeCall = {
   style?: string;
 };
 
-function loadHaptics(options: { os?: string; rejectImpact?: boolean } = {}) {
+function loadHaptics(options: { os?: string; rejectImpact?: boolean; beforeHydrateComplete?: () => void } = {}) {
   const calls: NativeCall[] = [];
   let now = 10_000;
   const source = readFileSync('lib/haptics.ts', 'utf8');
@@ -30,7 +30,7 @@ function loadHaptics(options: { os?: string; rejectImpact?: boolean } = {}) {
   const preference = {
     getStoredHapticsEnabled: () => enabled,
     setTransientHapticsEnabled: (next: boolean) => { enabled = next; },
-    hydrateStoredHapticsPreference: async () => enabled,
+    hydrateStoredHapticsPreference: async () => { options.beforeHydrateComplete?.(); return enabled; },
     saveStoredHapticsEnabled: async (next: boolean) => {
       enabled = next;
       return enabled;
@@ -47,7 +47,7 @@ function loadHaptics(options: { os?: string; rejectImpact?: boolean } = {}) {
   }, module, module.exports);
   return {
     api: module.exports as {
-      stackrHaptics: { cardPreview: () => Promise<void>; cardInspection: () => Promise<void>; selection: () => Promise<void> };
+      stackrHaptics: { cardPreview: () => Promise<void>; cardInspection: () => Promise<void>; cardFoilCrossing: (isCurrent?: () => boolean) => Promise<void>; selection: () => Promise<void> };
       setStackrHapticsEnabled: (next: boolean) => void;
       preferenceAwareHaptics: { impactAsync: () => Promise<void>; selectionAsync: () => Promise<void>; notificationAsync: () => Promise<void> };
     },
@@ -154,6 +154,19 @@ async function main() {
   assert.equal(inspectionWeb.calls.length, 0, 'inspection has no web haptic side effect');
   const inspectionFailure = loadHaptics({ rejectImpact: true });
   await assert.doesNotReject(inspectionFailure.api.stackrHaptics.cardInspection(), 'failed inspection feedback cannot block opening');
+  const foil = loadHaptics();
+  await foil.api.stackrHaptics.cardFoilCrossing();
+  assert.deepEqual(foil.calls, [{ kind: 'impact', style: 'soft' }], 'a foil crossing uses one restrained soft impact');
+  foil.advance(799);
+  await foil.api.stackrHaptics.cardFoilCrossing();
+  assert.equal(foil.calls.length, 1, 'foil crossings remain bounded for at least 800ms');
+  foil.advance(1);
+  await foil.api.stackrHaptics.cardFoilCrossing();
+  assert.equal(foil.calls.length, 2, 'a later deliberate sweep can request another cue');
+  let foilViewerLive = true;
+  const expiredFoil = loadHaptics({ beforeHydrateComplete: () => { foilViewerLive = false; } });
+  await expiredFoil.api.stackrHaptics.cardFoilCrossing(() => foilViewerLive);
+  assert.equal(expiredFoil.calls.length, 0, 'a queued foil crossing expires if its viewer closes while preferences hydrate');
 
   const disabled = loadHaptics();
   disabled.api.setStackrHapticsEnabled(false);

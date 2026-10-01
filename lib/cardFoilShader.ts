@@ -29,8 +29,14 @@ half4 main(float2 xy) {
   float2 p = uv * float2(1.0, 1.388889);
   float2 light = float2(0.52 - tilt.x * 0.42, 0.40 + tilt.y * 0.42);
   float2 d = (uv - light) * float2(1.0, 1.12);
-  float broad = exp(-dot(d, d) * 6.5);
-  float highlight = exp(-dot(d, d) * 32.0);
+  // Three hand-driven lobes make a material response: a broad sheen, a
+  // directional foil band and a small glint. Nothing moves without input.
+  float broad = exp(-dot(d, d) * 5.8);
+  float sweep = dot(d, float2(0.74, -0.68));
+  float crossSweep = dot(d, float2(0.68, 0.74));
+  float directional = exp(-(sweep * sweep * 94.0 + crossSweep * crossSweep * 4.5));
+  float glint = exp(-dot(d, d) * 54.0);
+  float tiltEnergy = clamp(length(tilt), 0.0, 1.35);
   float mask = 0.0;
   for (int i = 0; i < 4; i++) {
     if (float(i) < regionCount) mask = max(mask, region(uv, regions[i]));
@@ -56,38 +62,52 @@ half4 main(float2 xy) {
     float crossStar = exp(-abs(local.x) * 95.0) * exp(-abs(local.y) * 9.0)
                     + exp(-abs(local.y) * 95.0) * exp(-abs(local.x) * 9.0);
     float facet = pow(max(0.0, cos(seed * 19.0 + lightPhase * 8.0)), 8.0);
-    response = step(0.69, seed) * (dotStar + crossStar * 0.3) * (0.10 + facet * 2.1);
+    response = step(0.69, seed) * (dotStar + crossStar * 0.3) * (0.10 + facet * 2.1 + directional * 0.35);
     tint = spectrum(seed + lightPhase * 0.65);
   } else if (mode > 1.5 && mode < 2.5) {
     float etched = pow(0.5 + 0.5 * sin((p.x - p.y) * 155.0 * patternScale), 12.0);
-    response = 0.16 + etched * 0.42 + grain * 0.10;
+    float crossEtch = pow(0.5 + 0.5 * sin((p.x + p.y * 0.42) * 91.0 * patternScale), 17.0);
+    response = 0.10 + etched * 0.38 + crossEtch * 0.18 + grain * 0.08 + directional * 0.22;
     tint = mix(float3(0.83, 0.87, 0.91), tint, 0.60);
   } else if (mode > 2.5 && mode < 3.5) {
     float groove = pow(0.5 + 0.5 * sin((p.x + p.y * 0.72) * 170.0 * patternScale + lightPhase * 13.0), 9.0);
     float beam = pow(0.5 + 0.5 * cos(phase * 14.0), 5.0);
-    response = 0.14 + groove * 0.30 + beam * 0.62;
+    response = 0.10 + groove * 0.27 + beam * 0.48 + directional * 0.35;
   } else if (mode > 3.5 && mode < 4.5) {
     // Fine engraved contours perturb the lobe. This is a generic texture,
     // never described as the printing's actual embossed contour map.
     float contour = sin(p.x * 140.0 + sin(p.y * 68.0) * 2.3);
     float facet = pow(max(0.0, cos(contour * 0.85 + lightPhase * 4.8)), 12.0);
-    response = 0.08 + texture * (facet * 0.85 + grain * 0.18);
+    float contourBand = pow(0.5 + 0.5 * sin(p.y * 84.0 + p.x * 17.0), 18.0);
+    response = 0.06 + texture * (facet * 0.65 + contourBand * 0.30 + grain * 0.15) + directional * 0.12;
     tint = mix(float3(0.91, 0.93, 0.95), spectrum(phase * 0.70), 0.26);
   } else if (mode > 4.5) {
     float a = pow(0.5 + 0.5 * sin((p.x + p.y) * 112.0 * patternScale), 14.0);
     float b = pow(0.5 + 0.5 * sin((p.x - p.y) * 112.0 * patternScale), 14.0);
     float facet = pow(0.5 + 0.5 * cos(phase * 9.0), 4.0);
-    response = (a + b) * (0.10 + facet * 0.95);
+    response = (a + b) * (0.08 + facet * 0.72 + directional * 0.24);
     tint = spectrum(phase * 0.82);
+  }
+  // A narrow, spectral crest only appears where the hand-driven directional
+  // lobe catches. Its colour shift is local, avoiding an all-over rainbow
+  // wash while making a deliberate tilt visibly different from resting.
+  float crestGrain = pow(0.5 + 0.5 * cos((p.x - p.y * 0.63) * 39.0 + lightPhase * 7.0), 9.0);
+  float deliberateTilt = smoothstep(0.10, 0.90, tiltEnergy);
+  float crest = directional * (0.18 + deliberateTilt * 0.82) * (0.62 + crestGrain * 0.38);
+  if (mode > 0.5) {
+    tint = mix(tint, spectrum(lightPhase * 0.92 + p.x * 0.22 - p.y * 0.16), clamp(crest * 0.92, 0.0, 0.92));
   }
   // A soft directional sheen ties the different verified finishes together.
   // It follows the same calibrated light as the microfacets, with no timer,
   // extra texture download or movement of the printed artwork itself.
   float ribbonDistance = abs(uv.x * 0.72 + uv.y * 0.28 - (0.50 + lightPhase * 0.42));
   float ribbon = pow(max(0.0, 1.0 - ribbonDistance / 0.22), 2.0);
-  float sheen = mode > 0.5 ? ribbon * 0.45 : 0.0;
-  float foilAlpha = clamp(mask * foil * (response * (0.24 + broad * 0.76) + sheen), 0.0, 0.40);
-  float neutralAlpha = specular * (broad * 0.18 + highlight * 0.60) * edge;
+  float sheen = mode > 0.5 ? (ribbon * 0.14 + crest * 0.82 + broad * 0.04) : 0.0;
+  // Mild angle gain rewards deliberate inspection without making a resting
+  // card look wet or obscuring type and rules text.
+  float angleGain = 0.88 + tiltEnergy * 0.16;
+  float foilAlpha = clamp(mask * foil * angleGain * (response * (0.20 + broad * 0.68) + sheen), 0.0, 0.40);
+  float neutralAlpha = specular * (broad * 0.14 + directional * 0.24 + glint * 0.52) * edge;
   float alpha = min(0.44, foilAlpha + neutralAlpha);
   float3 premultiplied = tint * foilAlpha + float3(1.0) * neutralAlpha;
   return half4(min(premultiplied, float3(alpha)), alpha);

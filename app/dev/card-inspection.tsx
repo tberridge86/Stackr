@@ -23,6 +23,7 @@ export default function CardInspectionDevelopmentScreen() {
   const { inspectCard } = useCardInspection();
   const [detailsCount, setDetailsCount] = useState(0);
   const [actionsCount, setActionsCount] = useState(0);
+  const [finish, setFinish] = useState('normal');
 
   const openStudy = useCallback(() => {
     if (!IS_DEVELOPMENT) return;
@@ -32,14 +33,19 @@ export default function CardInspectionDevelopmentScreen() {
         id: 'synthetic-material-study-card',
         name: 'Material study',
         language: 'en',
+        raw_data: { language: 'en', stackr: {
+          canonical: true, cardId: 'synthetic-material-study-card', defaultVariantId: `study-${finish}`,
+          variants: [{ variantId: `study-${finish}`, variantCode: finish, finishCode: finish }],
+        } },
       },
       imageUri: MATERIAL_STUDY_ART,
       fullImageUri: MATERIAL_STUDY_ART,
+      selectedVariantId: `study-${finish}`,
       subtitle: 'Synthetic fixture • not a catalogue card',
       onDetails: () => setDetailsCount(value => value + 1),
       onQuickActions: () => setActionsCount(value => value + 1),
     });
-  }, [inspectCard]);
+  }, [finish, inspectCard]);
 
   return <View style={styles.screen}>
     <Stack.Screen options={{ title: 'Card material study' }} />
@@ -50,6 +56,12 @@ export default function CardInspectionDevelopmentScreen() {
       <Text style={styles.eyebrow}>DEVELOPMENT ONLY</Text>
       <Text style={styles.title}>Material study</Text>
       <Text style={styles.copy}>Synthetic fixture • not a catalogue card</Text>
+      <View style={styles.finishes}>{[
+        ['normal', 'Plain'], ['holo', 'Holo'], ['cosmos', 'Cosmos'], ['reverse_holo', 'Reverse'],
+        ['textured', 'Textured'], ['radiant', 'Radiant'],
+      ].map(([code, label]) => <Pressable key={code} accessibilityRole="radio" accessibilityLabel={`${label} study`}
+        accessibilityState={{ checked: finish === code }} onPress={() => setFinish(code)}
+        style={[styles.finish, finish === code && styles.selectedFinish]}><Text style={styles.finishLabel}>{label}</Text></Pressable>)}</View>
       <Pressable accessibilityRole="button" accessibilityLabel="Open material study inspection" onPress={openStudy} style={styles.primary}>
         <Text style={styles.primaryLabel}>Open inspection</Text>
       </Pressable>
@@ -68,6 +80,10 @@ const styles = StyleSheet.create({
   eyebrow: { color: '#7A3D85', fontSize: 12, fontWeight: '800', letterSpacing: 1.2, marginTop: 12 },
   title: { color: '#433650', fontSize: 30, fontWeight: '900', marginTop: 10, textAlign: 'center' },
   copy: { color: '#696373', fontSize: 15, lineHeight: 22, marginTop: 7, textAlign: 'center' },
+  finishes: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 18, maxWidth: 500 },
+  finish: { paddingHorizontal: 14, minHeight: 44, justifyContent: 'center', borderRadius: 22, borderWidth: 1, borderColor: '#D5C9E6' },
+  selectedFinish: { backgroundColor: '#E0D5F6', borderColor: '#6938F5' },
+  finishLabel: { color: '#433650', fontSize: 13 },
   primary: { backgroundColor: '#6938F5', borderRadius: 24, marginTop: 24, minHeight: 48, paddingHorizontal: 22, alignItems: 'center', justifyContent: 'center' },
   primaryLabel: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   studyCard: { backgroundColor: '#34245A', borderRadius: 20, height: 280, marginTop: 26, overflow: 'hidden', padding: 24, width: 200, alignItems: 'center', justifyContent: 'flex-end', borderWidth: 2, borderColor: '#F9E7B9' },
