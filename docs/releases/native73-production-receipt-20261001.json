@@ -1,0 +1,5035 @@
+{
+  "status": "published_manifest_and_public_bytes_verified",
+  "revision": "f7c40666aa7d54c32328e99fdaa1aafb56997aaa",
+  "started_at": "2026-10-01T07:55:29.813Z",
+  "cohort_sha256": "3e39c1a3e6a67d20bb773067d92c364adcafb0e2bc849ea6198932a909c50943",
+  "assets": [
+    {
+      "id": "d0037cf4-e356-48f8-8399-ce7b597b1461",
+      "printing_id": "00126c81-8a35-407f-82d1-cce25ba0d095",
+      "created": true
+    },
+    {
+      "id": "f028b140-8e42-4069-bf70-1891b9ff29da",
+      "printing_id": "00886842-ce42-4a59-8809-48ba691f12eb",
+      "created": true
+    },
+    {
+      "id": "1891683a-e8b6-4a93-9ff7-fb6aeb3c58a2",
+      "printing_id": "03b916f4-5aac-4401-bd86-00a3ff2b8c15",
+      "created": true
+    },
+    {
+      "id": "6539691e-1a26-46ef-ab2e-eb5a0cee607f",
+      "printing_id": "0adb9a6b-5629-4dcf-8381-158299f28cf1",
+      "created": true
+    },
+    {
+      "id": "3316b6a5-9d7d-48ef-bcec-f7a9e6cbee8b",
+      "printing_id": "0d0da704-09a6-4802-bb55-bf14cc9eced7",
+      "created": true
+    },
+    {
+      "id": "65c0c263-63a8-491d-b7f4-e190517017e3",
+      "printing_id": "1229d2ee-2bc1-422b-ba56-f6dd2a0ed3de",
+      "created": true
+    },
+    {
+      "id": "a3362f68-92a9-492b-8155-b781292733fa",
+      "printing_id": "13a342d1-7607-4075-b4ac-61e629cad8dd",
+      "created": true
+    },
+    {
+      "id": "87ed247e-4eb8-4f71-a04b-8847e50f7491",
+      "printing_id": "140f498e-d156-467d-9853-37dfcab2f106",
+      "created": true
+    },
+    {
+      "id": "e7e2a9ed-9104-4c01-8690-b5f4e0511f00",
+      "printing_id": "146155be-3852-4448-9249-8da63709fccc",
+      "created": true
+    },
+    {
+      "id": "2b18dbee-87db-4d9c-bf2f-57935c7c5aeb",
+      "printing_id": "17ace795-6b75-46bd-96bd-0cc83bcc2540",
+      "created": true
+    },
+    {
+      "id": "209014ed-0685-4022-ad90-cc0e878849e6",
+      "printing_id": "1cb401f0-e82f-4497-a666-3db67dbe838b",
+      "created": true
+    },
+    {
+      "id": "076c5185-d277-4db5-8195-b9db0bc57fb8",
+      "printing_id": "1dd25298-29da-4aa0-8cbc-27679b02aad2",
+      "created": true
+    },
+    {
+      "id": "9d1c5d53-a033-43d1-8daf-8bb607d0267b",
+      "printing_id": "1dee191b-642a-4e97-a1df-c346b7800ce6",
+      "created": true
+    },
+    {
+      "id": "ff70015c-a5a3-48c9-8839-26607be8bfe5",
+      "printing_id": "1e6cc23a-d277-4f79-9d4a-4edeafed690e",
+      "created": true
+    },
+    {
+      "id": "f85dee66-9a55-4690-b34b-3c34bbf6389d",
+      "printing_id": "1ed8f671-7f36-4a5e-9443-22eae61788b5",
+      "created": true
+    },
+    {
+      "id": "1eddd589-2b9b-43e2-9b4a-ad9631915357",
+      "printing_id": "206d7bb8-ffee-4287-991f-817ad29caf63",
+      "created": true
+    },
+    {
+      "id": "12f8e1fa-c4ab-4519-89da-8d49137797fe",
+      "printing_id": "2412a12d-7294-45b7-ba6a-c7575edc83a2",
+      "created": true
+    },
+    {
+      "id": "e33a7173-8072-4dca-acbc-0de4c3cddca1",
+      "printing_id": "278c5428-a108-4c62-a578-ecb01405c547",
+      "created": true
+    },
+    {
+      "id": "0cc1ca8a-964c-40c7-b356-50c73d371e7d",
+      "printing_id": "2a96ef6b-c962-40e5-a9c8-ab1ff200f55a",
+      "created": true
+    },
+    {
+      "id": "3f8efcef-8fad-468a-8c67-d29f50c37ceb",
+      "printing_id": "2dea0b61-5198-462e-89f4-45bf5554bca5",
+      "created": true
+    },
+    {
+      "id": "7f622f44-3945-4649-9082-7ef49746692a",
+      "printing_id": "2f97e688-f937-474f-8b06-3ca11d4ed563",
+      "created": true
+    },
+    {
+      "id": "1374a33e-3798-4bb5-b4e4-a31922a48e36",
+      "printing_id": "301fad2a-d7d7-41f1-8a96-f4ec7906b540",
+      "created": true
+    },
+    {
+      "id": "1fe2a0d9-5610-4fb9-b441-7c653ec7c4bb",
+      "printing_id": "345405e4-9ff9-4764-9981-bc14055cc2ed",
+      "created": true
+    },
+    {
+      "id": "a547f3e7-f288-4b4f-92cc-5aa5bb2fd099",
+      "printing_id": "3ca2c8ff-473c-4596-ac24-573450bbf724",
+      "created": true
+    },
+    {
+      "id": "56ff7ca7-3a93-4916-94b7-da197c45cc35",
+      "printing_id": "3cf0c74f-ffe8-453f-bf2d-acbc99e075dd",
+      "created": true
+    },
+    {
+      "id": "7cbc6d26-5d11-47bf-b5aa-a4229527ae6d",
+      "printing_id": "40eb5e6d-6304-40eb-acc9-9faf8eb5dafa",
+      "created": true
+    },
+    {
+      "id": "5bd4a1bc-8fb7-4835-a6d9-fe2797429edb",
+      "printing_id": "42a594d6-6804-4d80-8e50-7b294e70c0ce",
+      "created": true
+    },
+    {
+      "id": "45dbf5d1-0f76-41c3-a0ef-89766e5ed946",
+      "printing_id": "43df0e4e-53fc-413b-90fd-1d0ab660bcb6",
+      "created": true
+    },
+    {
+      "id": "735ad68f-d7ba-4ea1-becf-c496c41ebd35",
+      "printing_id": "46479a5f-fdb5-4245-ba7f-b2bc9cd3176a",
+      "created": true
+    },
+    {
+      "id": "bc48ee0d-9811-42e6-94aa-4f915edfb60a",
+      "printing_id": "49a12850-588e-41f6-b00e-87ec00e71cc0",
+      "created": true
+    },
+    {
+      "id": "4f892967-bb80-49d8-b735-a74f6bb78901",
+      "printing_id": "4c841090-7730-4eba-9193-a01abeb07ff8",
+      "created": true
+    },
+    {
+      "id": "8fdbd73f-8a99-4924-be04-d6a33e8b6b18",
+      "printing_id": "5182d501-d22e-4dac-a235-accc993c13f0",
+      "created": true
+    },
+    {
+      "id": "a459e936-d7f3-421f-88a9-0fbba98ada69",
+      "printing_id": "52c7c8d4-23ae-4471-bb4d-b66f8265292f",
+      "created": true
+    },
+    {
+      "id": "6569be7b-1882-4aa7-8688-e32d3704b42b",
+      "printing_id": "54ee4782-1238-48c8-90eb-dd7ca8b3d42e",
+      "created": true
+    },
+    {
+      "id": "3fdd45e1-2826-41a9-a5f4-a7b6f35be5b9",
+      "printing_id": "59a73d43-8f09-4c54-a94d-3850c58e93b5",
+      "created": true
+    },
+    {
+      "id": "2b719f1d-1c61-4ab6-93fa-62663e25080d",
+      "printing_id": "5c846373-4415-4b33-b9c6-cc59cc36c38e",
+      "created": true
+    },
+    {
+      "id": "04cd247d-9831-4f2c-a762-2e688481ff73",
+      "printing_id": "66e9057f-b906-49c0-a79d-b2f0e7c32afe",
+      "created": true
+    },
+    {
+      "id": "e0d2c4c4-a015-46ec-88e3-58a68dcca42a",
+      "printing_id": "6850213a-70e5-405e-b074-ba74181b6679",
+      "created": true
+    },
+    {
+      "id": "707d0edb-0cb1-4381-8f77-f4e94a71b13c",
+      "printing_id": "6913ccf2-efb2-40b2-bf02-807853f46654",
+      "created": true
+    },
+    {
+      "id": "849ca141-96c7-4521-babc-3f3e47f2727a",
+      "printing_id": "6ab84cc4-1679-481f-8d6c-81f084d2b01e",
+      "created": true
+    },
+    {
+      "id": "105ae6c9-560c-4936-9530-2bacab1b5bc9",
+      "printing_id": "6cbf7c35-b9e5-42b2-970d-b76bd1b0d805",
+      "created": true
+    },
+    {
+      "id": "4ea05375-e8f6-47c3-9403-ba6307beb28d",
+      "printing_id": "716ccd50-6f3f-4f77-84e5-2d329485cb98",
+      "created": true
+    },
+    {
+      "id": "a9c6580c-19fe-4842-8dab-15012cb472ef",
+      "printing_id": "7249f98b-aa82-4162-aaf9-ba1963a7c692",
+      "created": true
+    },
+    {
+      "id": "1792dd57-8393-4665-bf17-f4524404b63b",
+      "printing_id": "743502e7-3bfb-4671-a79a-17bef12e11df",
+      "created": true
+    },
+    {
+      "id": "3a897243-f946-43a0-ac9a-6b8fa1ab4c89",
+      "printing_id": "7756cca2-e1c9-481d-87cc-bf20752cc452",
+      "created": true
+    },
+    {
+      "id": "6a858a18-c139-419e-be22-51675ffc8d47",
+      "printing_id": "796afaf8-a8b7-4df2-8c62-b66dc11f992c",
+      "created": true
+    },
+    {
+      "id": "f7604e27-c7cc-4270-9a21-cd2586a1161c",
+      "printing_id": "7cc0dcdb-2431-497c-a7e9-c920f0e7d32e",
+      "created": true
+    },
+    {
+      "id": "688d5c0a-7e23-488a-ae2f-a6a010c07f3b",
+      "printing_id": "8ef74ea9-ead6-4d79-aab8-51c49916837a",
+      "created": true
+    },
+    {
+      "id": "f4239f4c-dc14-4fde-82c1-cd70737ecd07",
+      "printing_id": "90c5d3b6-585e-46c8-b0a6-fc57482a55d3",
+      "created": true
+    },
+    {
+      "id": "fe11aab3-d43f-44e8-b419-6409ebdfa143",
+      "printing_id": "9144da81-c7d1-4137-9549-ddc162bb1f04",
+      "created": true
+    },
+    {
+      "id": "afec29f7-ac78-44e0-8b61-c8af0d8e808b",
+      "printing_id": "9384d0e5-54b2-48b1-8189-190198c4b850",
+      "created": true
+    },
+    {
+      "id": "87103580-cc3b-42ae-ae58-3ed2bce64bde",
+      "printing_id": "9427f895-4982-475b-a11e-0bdcf6506a95",
+      "created": true
+    },
+    {
+      "id": "93d96f6a-37bd-4d45-8b9d-47f07d8879c1",
+      "printing_id": "994dcbfa-5dfb-46ce-9e3c-e27ee1e767cd",
+      "created": true
+    },
+    {
+      "id": "7f7b0eb9-eedf-4a27-a58b-3b9e2eab85e3",
+      "printing_id": "9b694c58-cecd-4c43-823f-fd6b0f80ce9e",
+      "created": true
+    },
+    {
+      "id": "38319470-d5a4-4169-bda5-0a08f2101a27",
+      "printing_id": "a1c1feb6-6f1f-4151-a4c7-e95b9189d305",
+      "created": true
+    },
+    {
+      "id": "fd5e568b-8518-4f55-96a6-9141919f79f5",
+      "printing_id": "a2d0e7de-8104-494a-9b2c-d6307482530c",
+      "created": true
+    },
+    {
+      "id": "07e5195d-d5b6-4a13-ae7b-9de417fc8ce8",
+      "printing_id": "adc1fa02-eea6-4ed6-9434-6016dcae85bd",
+      "created": true
+    },
+    {
+      "id": "ffd2ce9d-f9af-43a0-90b1-fbd9f0c4bfb4",
+      "printing_id": "af546e22-c53c-4aee-a07f-502ff9d6cfd8",
+      "created": true
+    },
+    {
+      "id": "5053c8b8-f3b3-46e5-99cb-ee842127ac4f",
+      "printing_id": "b0a5cb27-af06-4636-86d5-1d5783303d36",
+      "created": true
+    },
+    {
+      "id": "9152de32-bd2d-4372-b869-195e681093a6",
+      "printing_id": "b4c1f0c6-6441-4065-9332-e53aced91ce1",
+      "created": true
+    },
+    {
+      "id": "bf4e1173-9e04-43b7-a7d3-47fedbc75ec3",
+      "printing_id": "b9b5be27-08c9-4851-b021-58014bcaa4f0",
+      "created": true
+    },
+    {
+      "id": "ac908c90-4162-44f6-8ab2-997230f85469",
+      "printing_id": "bae18b10-00a3-4a40-b614-0924311492ca",
+      "created": true
+    },
+    {
+      "id": "dc4a9abe-c7e8-4d31-a3eb-8642b7d084ee",
+      "printing_id": "bdcd65d9-86bb-42bb-a222-b9fc59f727c0",
+      "created": true
+    },
+    {
+      "id": "f09c36a5-33a8-4927-b88e-160eca7b4cba",
+      "printing_id": "c282c6a3-3d15-4830-8976-1a838f2454da",
+      "created": true
+    },
+    {
+      "id": "7f010c0c-8d7a-4c94-b03b-99306672c0de",
+      "printing_id": "cace4bf4-43d3-4dc1-b165-dcc4a6fd6035",
+      "created": true
+    },
+    {
+      "id": "655bab1c-3f9a-4d99-8424-533afb26edb1",
+      "printing_id": "d9e10f15-5587-4d55-804d-c4f03cfbd8e4",
+      "created": true
+    },
+    {
+      "id": "3e0c36e3-4174-4f3f-b0ae-011ec64a0b20",
+      "printing_id": "de3d2096-7550-45c6-bbbc-d55732664ba4",
+      "created": true
+    },
+    {
+      "id": "074b23ad-6eb6-4cbc-93e1-cd97101e7c4d",
+      "printing_id": "dff0de51-f35c-40b4-9025-c9870d8efd1a",
+      "created": true
+    },
+    {
+      "id": "256af8e3-60ca-4e48-8ad7-544620996c09",
+      "printing_id": "e00d2d1f-ce0b-4861-993f-ec1424868a65",
+      "created": true
+    },
+    {
+      "id": "3def86d6-216b-4e8b-bb56-a7e8e0ef9871",
+      "printing_id": "e3a71ede-92f5-4baa-9674-681043ccf097",
+      "created": true
+    },
+    {
+      "id": "6ff8ccf7-3789-458f-9ebc-69bb630e9ceb",
+      "printing_id": "e511e504-4251-4f8d-a18a-0675d0ff8602",
+      "created": true
+    },
+    {
+      "id": "6ba07f7d-9996-4e2a-afa1-e63253b2525a",
+      "printing_id": "ea3877c6-c235-4f64-856b-9a6c12e7fe89",
+      "created": true
+    },
+    {
+      "id": "2ddd85d3-60be-4d35-80b1-e1bc59677c7e",
+      "printing_id": "fe7ab4cc-6650-412d-9695-942ef84a67d0",
+      "created": true
+    }
+  ],
+  "links": [
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "00126c81-8a35-407f-82d1-cce25ba0d095",
+      "variant_id": null,
+      "asset_id": "d0037cf4-e356-48f8-8399-ce7b597b1461",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "00886842-ce42-4a59-8809-48ba691f12eb",
+      "variant_id": null,
+      "asset_id": "f028b140-8e42-4069-bf70-1891b9ff29da",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "03b916f4-5aac-4401-bd86-00a3ff2b8c15",
+      "variant_id": null,
+      "asset_id": "1891683a-e8b6-4a93-9ff7-fb6aeb3c58a2",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "0adb9a6b-5629-4dcf-8381-158299f28cf1",
+      "variant_id": null,
+      "asset_id": "6539691e-1a26-46ef-ab2e-eb5a0cee607f",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "0d0da704-09a6-4802-bb55-bf14cc9eced7",
+      "variant_id": null,
+      "asset_id": "3316b6a5-9d7d-48ef-bcec-f7a9e6cbee8b",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "1229d2ee-2bc1-422b-ba56-f6dd2a0ed3de",
+      "variant_id": null,
+      "asset_id": "65c0c263-63a8-491d-b7f4-e190517017e3",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "13a342d1-7607-4075-b4ac-61e629cad8dd",
+      "variant_id": null,
+      "asset_id": "a3362f68-92a9-492b-8155-b781292733fa",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "140f498e-d156-467d-9853-37dfcab2f106",
+      "variant_id": null,
+      "asset_id": "87ed247e-4eb8-4f71-a04b-8847e50f7491",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "146155be-3852-4448-9249-8da63709fccc",
+      "variant_id": null,
+      "asset_id": "e7e2a9ed-9104-4c01-8690-b5f4e0511f00",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "17ace795-6b75-46bd-96bd-0cc83bcc2540",
+      "variant_id": null,
+      "asset_id": "2b18dbee-87db-4d9c-bf2f-57935c7c5aeb",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "1cb401f0-e82f-4497-a666-3db67dbe838b",
+      "variant_id": null,
+      "asset_id": "209014ed-0685-4022-ad90-cc0e878849e6",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "1dd25298-29da-4aa0-8cbc-27679b02aad2",
+      "variant_id": null,
+      "asset_id": "076c5185-d277-4db5-8195-b9db0bc57fb8",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "1dee191b-642a-4e97-a1df-c346b7800ce6",
+      "variant_id": null,
+      "asset_id": "9d1c5d53-a033-43d1-8daf-8bb607d0267b",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "1e6cc23a-d277-4f79-9d4a-4edeafed690e",
+      "variant_id": null,
+      "asset_id": "ff70015c-a5a3-48c9-8839-26607be8bfe5",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "1ed8f671-7f36-4a5e-9443-22eae61788b5",
+      "variant_id": null,
+      "asset_id": "f85dee66-9a55-4690-b34b-3c34bbf6389d",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "206d7bb8-ffee-4287-991f-817ad29caf63",
+      "variant_id": null,
+      "asset_id": "1eddd589-2b9b-43e2-9b4a-ad9631915357",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "2412a12d-7294-45b7-ba6a-c7575edc83a2",
+      "variant_id": null,
+      "asset_id": "12f8e1fa-c4ab-4519-89da-8d49137797fe",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "278c5428-a108-4c62-a578-ecb01405c547",
+      "variant_id": null,
+      "asset_id": "e33a7173-8072-4dca-acbc-0de4c3cddca1",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "2a96ef6b-c962-40e5-a9c8-ab1ff200f55a",
+      "variant_id": null,
+      "asset_id": "0cc1ca8a-964c-40c7-b356-50c73d371e7d",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "2dea0b61-5198-462e-89f4-45bf5554bca5",
+      "variant_id": null,
+      "asset_id": "3f8efcef-8fad-468a-8c67-d29f50c37ceb",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "2f97e688-f937-474f-8b06-3ca11d4ed563",
+      "variant_id": null,
+      "asset_id": "7f622f44-3945-4649-9082-7ef49746692a",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "301fad2a-d7d7-41f1-8a96-f4ec7906b540",
+      "variant_id": null,
+      "asset_id": "1374a33e-3798-4bb5-b4e4-a31922a48e36",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "345405e4-9ff9-4764-9981-bc14055cc2ed",
+      "variant_id": null,
+      "asset_id": "1fe2a0d9-5610-4fb9-b441-7c653ec7c4bb",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "3ca2c8ff-473c-4596-ac24-573450bbf724",
+      "variant_id": null,
+      "asset_id": "a547f3e7-f288-4b4f-92cc-5aa5bb2fd099",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "3cf0c74f-ffe8-453f-bf2d-acbc99e075dd",
+      "variant_id": null,
+      "asset_id": "56ff7ca7-3a93-4916-94b7-da197c45cc35",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "40eb5e6d-6304-40eb-acc9-9faf8eb5dafa",
+      "variant_id": null,
+      "asset_id": "7cbc6d26-5d11-47bf-b5aa-a4229527ae6d",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "42a594d6-6804-4d80-8e50-7b294e70c0ce",
+      "variant_id": null,
+      "asset_id": "5bd4a1bc-8fb7-4835-a6d9-fe2797429edb",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "43df0e4e-53fc-413b-90fd-1d0ab660bcb6",
+      "variant_id": null,
+      "asset_id": "45dbf5d1-0f76-41c3-a0ef-89766e5ed946",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "46479a5f-fdb5-4245-ba7f-b2bc9cd3176a",
+      "variant_id": null,
+      "asset_id": "735ad68f-d7ba-4ea1-becf-c496c41ebd35",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "49a12850-588e-41f6-b00e-87ec00e71cc0",
+      "variant_id": null,
+      "asset_id": "bc48ee0d-9811-42e6-94aa-4f915edfb60a",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "4c841090-7730-4eba-9193-a01abeb07ff8",
+      "variant_id": null,
+      "asset_id": "4f892967-bb80-49d8-b735-a74f6bb78901",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "5182d501-d22e-4dac-a235-accc993c13f0",
+      "variant_id": null,
+      "asset_id": "8fdbd73f-8a99-4924-be04-d6a33e8b6b18",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "52c7c8d4-23ae-4471-bb4d-b66f8265292f",
+      "variant_id": null,
+      "asset_id": "a459e936-d7f3-421f-88a9-0fbba98ada69",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "54ee4782-1238-48c8-90eb-dd7ca8b3d42e",
+      "variant_id": null,
+      "asset_id": "6569be7b-1882-4aa7-8688-e32d3704b42b",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "59a73d43-8f09-4c54-a94d-3850c58e93b5",
+      "variant_id": null,
+      "asset_id": "3fdd45e1-2826-41a9-a5f4-a7b6f35be5b9",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "5c846373-4415-4b33-b9c6-cc59cc36c38e",
+      "variant_id": null,
+      "asset_id": "2b719f1d-1c61-4ab6-93fa-62663e25080d",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "66e9057f-b906-49c0-a79d-b2f0e7c32afe",
+      "variant_id": null,
+      "asset_id": "04cd247d-9831-4f2c-a762-2e688481ff73",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "6850213a-70e5-405e-b074-ba74181b6679",
+      "variant_id": null,
+      "asset_id": "e0d2c4c4-a015-46ec-88e3-58a68dcca42a",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "6913ccf2-efb2-40b2-bf02-807853f46654",
+      "variant_id": null,
+      "asset_id": "707d0edb-0cb1-4381-8f77-f4e94a71b13c",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "6ab84cc4-1679-481f-8d6c-81f084d2b01e",
+      "variant_id": null,
+      "asset_id": "849ca141-96c7-4521-babc-3f3e47f2727a",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "6cbf7c35-b9e5-42b2-970d-b76bd1b0d805",
+      "variant_id": null,
+      "asset_id": "105ae6c9-560c-4936-9530-2bacab1b5bc9",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "716ccd50-6f3f-4f77-84e5-2d329485cb98",
+      "variant_id": null,
+      "asset_id": "4ea05375-e8f6-47c3-9403-ba6307beb28d",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "7249f98b-aa82-4162-aaf9-ba1963a7c692",
+      "variant_id": null,
+      "asset_id": "a9c6580c-19fe-4842-8dab-15012cb472ef",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "743502e7-3bfb-4671-a79a-17bef12e11df",
+      "variant_id": null,
+      "asset_id": "1792dd57-8393-4665-bf17-f4524404b63b",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "7756cca2-e1c9-481d-87cc-bf20752cc452",
+      "variant_id": null,
+      "asset_id": "3a897243-f946-43a0-ac9a-6b8fa1ab4c89",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "796afaf8-a8b7-4df2-8c62-b66dc11f992c",
+      "variant_id": null,
+      "asset_id": "6a858a18-c139-419e-be22-51675ffc8d47",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "7cc0dcdb-2431-497c-a7e9-c920f0e7d32e",
+      "variant_id": null,
+      "asset_id": "f7604e27-c7cc-4270-9a21-cd2586a1161c",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "8ef74ea9-ead6-4d79-aab8-51c49916837a",
+      "variant_id": null,
+      "asset_id": "688d5c0a-7e23-488a-ae2f-a6a010c07f3b",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "90c5d3b6-585e-46c8-b0a6-fc57482a55d3",
+      "variant_id": null,
+      "asset_id": "f4239f4c-dc14-4fde-82c1-cd70737ecd07",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "9144da81-c7d1-4137-9549-ddc162bb1f04",
+      "variant_id": null,
+      "asset_id": "fe11aab3-d43f-44e8-b419-6409ebdfa143",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "9384d0e5-54b2-48b1-8189-190198c4b850",
+      "variant_id": null,
+      "asset_id": "afec29f7-ac78-44e0-8b61-c8af0d8e808b",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "9427f895-4982-475b-a11e-0bdcf6506a95",
+      "variant_id": null,
+      "asset_id": "87103580-cc3b-42ae-ae58-3ed2bce64bde",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "994dcbfa-5dfb-46ce-9e3c-e27ee1e767cd",
+      "variant_id": null,
+      "asset_id": "93d96f6a-37bd-4d45-8b9d-47f07d8879c1",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "9b694c58-cecd-4c43-823f-fd6b0f80ce9e",
+      "variant_id": null,
+      "asset_id": "7f7b0eb9-eedf-4a27-a58b-3b9e2eab85e3",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "a1c1feb6-6f1f-4151-a4c7-e95b9189d305",
+      "variant_id": null,
+      "asset_id": "38319470-d5a4-4169-bda5-0a08f2101a27",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "a2d0e7de-8104-494a-9b2c-d6307482530c",
+      "variant_id": null,
+      "asset_id": "fd5e568b-8518-4f55-96a6-9141919f79f5",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "adc1fa02-eea6-4ed6-9434-6016dcae85bd",
+      "variant_id": null,
+      "asset_id": "07e5195d-d5b6-4a13-ae7b-9de417fc8ce8",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "af546e22-c53c-4aee-a07f-502ff9d6cfd8",
+      "variant_id": null,
+      "asset_id": "ffd2ce9d-f9af-43a0-90b1-fbd9f0c4bfb4",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "b0a5cb27-af06-4636-86d5-1d5783303d36",
+      "variant_id": null,
+      "asset_id": "5053c8b8-f3b3-46e5-99cb-ee842127ac4f",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "b4c1f0c6-6441-4065-9332-e53aced91ce1",
+      "variant_id": null,
+      "asset_id": "9152de32-bd2d-4372-b869-195e681093a6",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "b9b5be27-08c9-4851-b021-58014bcaa4f0",
+      "variant_id": null,
+      "asset_id": "bf4e1173-9e04-43b7-a7d3-47fedbc75ec3",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "bae18b10-00a3-4a40-b614-0924311492ca",
+      "variant_id": null,
+      "asset_id": "ac908c90-4162-44f6-8ab2-997230f85469",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "bdcd65d9-86bb-42bb-a222-b9fc59f727c0",
+      "variant_id": null,
+      "asset_id": "dc4a9abe-c7e8-4d31-a3eb-8642b7d084ee",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "c282c6a3-3d15-4830-8976-1a838f2454da",
+      "variant_id": null,
+      "asset_id": "f09c36a5-33a8-4927-b88e-160eca7b4cba",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "cace4bf4-43d3-4dc1-b165-dcc4a6fd6035",
+      "variant_id": null,
+      "asset_id": "7f010c0c-8d7a-4c94-b03b-99306672c0de",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "d9e10f15-5587-4d55-804d-c4f03cfbd8e4",
+      "variant_id": null,
+      "asset_id": "655bab1c-3f9a-4d99-8424-533afb26edb1",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "de3d2096-7550-45c6-bbbc-d55732664ba4",
+      "variant_id": null,
+      "asset_id": "3e0c36e3-4174-4f3f-b0ae-011ec64a0b20",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "dff0de51-f35c-40b4-9025-c9870d8efd1a",
+      "variant_id": null,
+      "asset_id": "074b23ad-6eb6-4cbc-93e1-cd97101e7c4d",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "e00d2d1f-ce0b-4861-993f-ec1424868a65",
+      "variant_id": null,
+      "asset_id": "256af8e3-60ca-4e48-8ad7-544620996c09",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "e3a71ede-92f5-4baa-9674-681043ccf097",
+      "variant_id": null,
+      "asset_id": "3def86d6-216b-4e8b-bb56-a7e8e0ef9871",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "e511e504-4251-4f8d-a18a-0675d0ff8602",
+      "variant_id": null,
+      "asset_id": "6ff8ccf7-3789-458f-9ebc-69bb630e9ceb",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "ea3877c6-c235-4f64-856b-9a6c12e7fe89",
+      "variant_id": null,
+      "asset_id": "6ba07f7d-9996-4e2a-afa1-e63253b2525a",
+      "asset_type": "card_image",
+      "created": true
+    },
+    {
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language_code": "ja",
+      "set_id": "0ec33578-645f-4711-a3fe-8ea66090781e",
+      "printing_id": "fe7ab4cc-6650-412d-9695-942ef84a67d0",
+      "variant_id": null,
+      "asset_id": "2ddd85d3-60be-4d35-80b1-e1bc59677c7e",
+      "asset_type": "card_image",
+      "created": true
+    }
+  ],
+  "objects": [
+    {
+      "key": "public/card_image/printing/00126c81-8a35-407f-82d1-cce25ba0d095/3840e9be11aba9c6abded16162fbcd648b0067da1f592b0082c68b5922bc2b1b/original.jpg",
+      "sha256": "3840e9be11aba9c6abded16162fbcd648b0067da1f592b0082c68b5922bc2b1b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/fc/2d/fc2d0ea63ec0bee91b5206906a2c86d98b204a27a5f9f5121be9485562ef86eb/card-grid.webp",
+      "sha256": "fc2d0ea63ec0bee91b5206906a2c86d98b204a27a5f9f5121be9485562ef86eb",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/06/d3/06d3ec43beb6055d2557d16f685f6c35d156953da5e5160cfd394a2bc1013e27/search-result.webp",
+      "sha256": "06d3ec43beb6055d2557d16f685f6c35d156953da5e5160cfd394a2bc1013e27",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e2/d1/e2d194197fb6a5760dcdee3ea7744d8de597033885daaac19fea53d70ffe02c1/detail-page.webp",
+      "sha256": "e2d194197fb6a5760dcdee3ea7744d8de597033885daaac19fea53d70ffe02c1",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/00886842-ce42-4a59-8809-48ba691f12eb/5f11b27c985c534191776970c1b7d5f983c39458e978101ffd53f7bee1f290a6/original.jpg",
+      "sha256": "5f11b27c985c534191776970c1b7d5f983c39458e978101ffd53f7bee1f290a6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/5e/ae/5eae34e583af732752ea09f696c88761817077ab01ba7443c93b09b07c761fae/card-grid.webp",
+      "sha256": "5eae34e583af732752ea09f696c88761817077ab01ba7443c93b09b07c761fae",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/19/d0/19d09991ae83fdbd835c4b94bfc1c882e03b6064387fdb91853b5a221263a524/search-result.webp",
+      "sha256": "19d09991ae83fdbd835c4b94bfc1c882e03b6064387fdb91853b5a221263a524",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/99/d1/99d19e0e19ed5fec49003470776d6f9a0da0169fc37dd0817c805c2e5d268dd5/detail-page.webp",
+      "sha256": "99d19e0e19ed5fec49003470776d6f9a0da0169fc37dd0817c805c2e5d268dd5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/03b916f4-5aac-4401-bd86-00a3ff2b8c15/d5f9e32356ae1c25c3e2b3f61f29a5d01654eb35e440286aeea18c6d79f91a35/original.jpg",
+      "sha256": "d5f9e32356ae1c25c3e2b3f61f29a5d01654eb35e440286aeea18c6d79f91a35",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/35/64/3564cc6c5f0ddcea940eab627cb493407c5865fafb1074accd2ee800d0866cbe/card-grid.webp",
+      "sha256": "3564cc6c5f0ddcea940eab627cb493407c5865fafb1074accd2ee800d0866cbe",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b0/f5/b0f5004659e74587b18f2e639c0f63d7ad5b5a35ab8f88f646bb090abf567a7b/search-result.webp",
+      "sha256": "b0f5004659e74587b18f2e639c0f63d7ad5b5a35ab8f88f646bb090abf567a7b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/a0/1b/a01b958c53484a435eb0372df7d80ae9c5f24432a68b021403b1ee66f5feaa64/detail-page.webp",
+      "sha256": "a01b958c53484a435eb0372df7d80ae9c5f24432a68b021403b1ee66f5feaa64",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/0adb9a6b-5629-4dcf-8381-158299f28cf1/7268ac0a901456418911b5b3dfc4fb2fe2ed9cc7f2b702ff68e2324dc822c07a/original.jpg",
+      "sha256": "7268ac0a901456418911b5b3dfc4fb2fe2ed9cc7f2b702ff68e2324dc822c07a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/7c/c0/7cc063dd8793a1b3a740d6b1adafe2a3458176405bdf50b79ef101337751c62b/card-grid.webp",
+      "sha256": "7cc063dd8793a1b3a740d6b1adafe2a3458176405bdf50b79ef101337751c62b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/cc/d1/ccd124825c87d57a12c714f887f9ce2fd90753782fe1bf528316f682c50945bb/search-result.webp",
+      "sha256": "ccd124825c87d57a12c714f887f9ce2fd90753782fe1bf528316f682c50945bb",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/13/66/136657108953642f779d4f1966ab7a26cd57ecb8df3c694f1c6b1dbe9b562edf/detail-page.webp",
+      "sha256": "136657108953642f779d4f1966ab7a26cd57ecb8df3c694f1c6b1dbe9b562edf",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/0d0da704-09a6-4802-bb55-bf14cc9eced7/59755b049850da677a7a8137498f4ba3fe4ccbefee3904d36c1114dbb716896a/original.jpg",
+      "sha256": "59755b049850da677a7a8137498f4ba3fe4ccbefee3904d36c1114dbb716896a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/9b/f0/9bf0102435c19eeb851bf3b62a9d76bdd7073e9a232adccf58c98e37b5d18d96/card-grid.webp",
+      "sha256": "9bf0102435c19eeb851bf3b62a9d76bdd7073e9a232adccf58c98e37b5d18d96",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b1/fa/b1fabeaf60e446c9e525cc3952d00782a045f2a73b3f44a66c8f84c6407d2834/search-result.webp",
+      "sha256": "b1fabeaf60e446c9e525cc3952d00782a045f2a73b3f44a66c8f84c6407d2834",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ee/cc/eecc6b05f147be9a0c50a576a8081ff41b023f69301bfbcba58b19fa2f4668e0/detail-page.webp",
+      "sha256": "eecc6b05f147be9a0c50a576a8081ff41b023f69301bfbcba58b19fa2f4668e0",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/1229d2ee-2bc1-422b-ba56-f6dd2a0ed3de/eb142e6b6ce0dbc949b8acac79a6d9fc625e76846b07c0ae8a5cdd94276c713c/original.jpg",
+      "sha256": "eb142e6b6ce0dbc949b8acac79a6d9fc625e76846b07c0ae8a5cdd94276c713c",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/f6/3e/f63e9d7fbbed3cbd049098439807fc59e0fa8476593e0bd725caf18b5aa213dc/card-grid.webp",
+      "sha256": "f63e9d7fbbed3cbd049098439807fc59e0fa8476593e0bd725caf18b5aa213dc",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/17/19/17199d27fd7c5e652208940bff379e5c54edc79d68d29f5b2a0a27cc0663f458/search-result.webp",
+      "sha256": "17199d27fd7c5e652208940bff379e5c54edc79d68d29f5b2a0a27cc0663f458",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/f4/c3/f4c3635589599b78dabebd4bdc234da2199229ee63d920dfc0cf1b0fd5a1767b/detail-page.webp",
+      "sha256": "f4c3635589599b78dabebd4bdc234da2199229ee63d920dfc0cf1b0fd5a1767b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/13a342d1-7607-4075-b4ac-61e629cad8dd/be0f3be22276a236ec6b1b42d7afab5eb99cc3b74083ba7b90c217d2f328ea15/original.jpg",
+      "sha256": "be0f3be22276a236ec6b1b42d7afab5eb99cc3b74083ba7b90c217d2f328ea15",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/58/32/583226dd6d1bf5ae701ab174ee5085a048125290e656cd7153b617e70129c743/card-grid.webp",
+      "sha256": "583226dd6d1bf5ae701ab174ee5085a048125290e656cd7153b617e70129c743",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/51/68/5168aed6ed2734d52c7abccc712c4699154297d3a5fc1ce2d0757d29ec8c21fe/search-result.webp",
+      "sha256": "5168aed6ed2734d52c7abccc712c4699154297d3a5fc1ce2d0757d29ec8c21fe",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/58/ea/58ea6dc3b6b948c07a1c849ab44df7c5c8b59b4bd78d3e1d5cc576b169b26ab8/detail-page.webp",
+      "sha256": "58ea6dc3b6b948c07a1c849ab44df7c5c8b59b4bd78d3e1d5cc576b169b26ab8",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/140f498e-d156-467d-9853-37dfcab2f106/c41e8b5ae179f1e659e04fbdb9aece5053ec7c8acab89bf2373aa54cdc5a7023/original.jpg",
+      "sha256": "c41e8b5ae179f1e659e04fbdb9aece5053ec7c8acab89bf2373aa54cdc5a7023",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/0e/53/0e53e28f11c94076f7ccc1dfa4cb7190be750046e8ff48402a4b573560558d3d/card-grid.webp",
+      "sha256": "0e53e28f11c94076f7ccc1dfa4cb7190be750046e8ff48402a4b573560558d3d",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/71/62/7162213d18df951f84b2a50cd7d4a4b3078be77e0d3fb5ca93d7677fc22c2e00/search-result.webp",
+      "sha256": "7162213d18df951f84b2a50cd7d4a4b3078be77e0d3fb5ca93d7677fc22c2e00",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/26/ee/26ee535bfd51794dd5ca76c779f41bc6ccdde8ba1267f976eee3a222e520a61a/detail-page.webp",
+      "sha256": "26ee535bfd51794dd5ca76c779f41bc6ccdde8ba1267f976eee3a222e520a61a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/146155be-3852-4448-9249-8da63709fccc/d9a0a68ee387658e3691361e6ab32e7df2924c0a5728eee61017a29ac42434df/original.jpg",
+      "sha256": "d9a0a68ee387658e3691361e6ab32e7df2924c0a5728eee61017a29ac42434df",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/2d/16/2d161e416c2a7996f3cd96ef91e935be34c07fd42956b8b767ed5438faf2dcb5/card-grid.webp",
+      "sha256": "2d161e416c2a7996f3cd96ef91e935be34c07fd42956b8b767ed5438faf2dcb5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b4/e3/b4e3b1a8c69901b8be3ca01f351fcdb4f005588e5eac33ee51e546f7ee8a8571/search-result.webp",
+      "sha256": "b4e3b1a8c69901b8be3ca01f351fcdb4f005588e5eac33ee51e546f7ee8a8571",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/cc/c7/ccc72b6c66173471b73b12579fea33c33ba4998e5bf243712f0e4b20c9121e10/detail-page.webp",
+      "sha256": "ccc72b6c66173471b73b12579fea33c33ba4998e5bf243712f0e4b20c9121e10",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/17ace795-6b75-46bd-96bd-0cc83bcc2540/1df6dd6c2d699f6a1f3498d709ca5530d4f8dd5bec1b9568b28b7195f2e6cb28/original.jpg",
+      "sha256": "1df6dd6c2d699f6a1f3498d709ca5530d4f8dd5bec1b9568b28b7195f2e6cb28",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/97/52/975294c2cd3fa4d73dafe11d5e27771fa6143ccaa96986aaf16f82b6cb9b684d/card-grid.webp",
+      "sha256": "975294c2cd3fa4d73dafe11d5e27771fa6143ccaa96986aaf16f82b6cb9b684d",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/14/28/14289b5e8c24c00d1153b3d00327d3db29f1ccc81aed38be9a6c99b1bb2f54f5/search-result.webp",
+      "sha256": "14289b5e8c24c00d1153b3d00327d3db29f1ccc81aed38be9a6c99b1bb2f54f5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ab/f7/abf722c809dd78128ccf99782a74a1412cbb7165f7ec4254ad82e0ae394205a8/detail-page.webp",
+      "sha256": "abf722c809dd78128ccf99782a74a1412cbb7165f7ec4254ad82e0ae394205a8",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/1cb401f0-e82f-4497-a666-3db67dbe838b/b6c8f8fd255f98d24097a6e498ec5df447a85c81b28118b720edc696a4642596/original.jpg",
+      "sha256": "b6c8f8fd255f98d24097a6e498ec5df447a85c81b28118b720edc696a4642596",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/0b/64/0b649493edbbf92e708792987c55624a1acdf40398a465ac8ff9153c0e14d952/card-grid.webp",
+      "sha256": "0b649493edbbf92e708792987c55624a1acdf40398a465ac8ff9153c0e14d952",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/9a/b9/9ab968314043f926cc0cda8e8de1d742d8b4dd7c15edbe7baa967611fc1d9d3f/search-result.webp",
+      "sha256": "9ab968314043f926cc0cda8e8de1d742d8b4dd7c15edbe7baa967611fc1d9d3f",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/6c/e9/6ce9a7fefc2a8ec3602bd3825643e500c40c20db0b08d6dcad2c3e2588d25a6a/detail-page.webp",
+      "sha256": "6ce9a7fefc2a8ec3602bd3825643e500c40c20db0b08d6dcad2c3e2588d25a6a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/1dd25298-29da-4aa0-8cbc-27679b02aad2/0bf92c4b68e50dafca87512015a3a355b86976002c31c3c2a04cfb7eb06f141c/original.jpg",
+      "sha256": "0bf92c4b68e50dafca87512015a3a355b86976002c31c3c2a04cfb7eb06f141c",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c4/da/c4da51e41a49aeab1e060fc6ada981115d29e1ae20db087653041220c173d8a5/card-grid.webp",
+      "sha256": "c4da51e41a49aeab1e060fc6ada981115d29e1ae20db087653041220c173d8a5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e4/9f/e49f14db45cf814297081605bf499105587b39827c344991b24f2f2a37969583/search-result.webp",
+      "sha256": "e49f14db45cf814297081605bf499105587b39827c344991b24f2f2a37969583",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/18/e4/18e4542e83f41ceb99b322e7b4a3e82059f113ebb5a3edd7862b8bf4a0c0730a/detail-page.webp",
+      "sha256": "18e4542e83f41ceb99b322e7b4a3e82059f113ebb5a3edd7862b8bf4a0c0730a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/1dee191b-642a-4e97-a1df-c346b7800ce6/f92305da1a136e00b174753a6f179e77b95e2ed9e6a3a39b8e88d6a0c7ff601f/original.jpg",
+      "sha256": "f92305da1a136e00b174753a6f179e77b95e2ed9e6a3a39b8e88d6a0c7ff601f",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/5e/32/5e32a2e255963c46aa9368a29bc2a108b2442c09c599240aeaa0f90e2ea41a1b/card-grid.webp",
+      "sha256": "5e32a2e255963c46aa9368a29bc2a108b2442c09c599240aeaa0f90e2ea41a1b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/47/e4/47e40d2705fe80268e7ad0ba2ae651012059549f84e6381531d93c5e8fb6d897/search-result.webp",
+      "sha256": "47e40d2705fe80268e7ad0ba2ae651012059549f84e6381531d93c5e8fb6d897",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e5/db/e5dbc4796f754d3346d4d1b9b12980622b30f9eab3fb47dd525de140b2e3ae20/detail-page.webp",
+      "sha256": "e5dbc4796f754d3346d4d1b9b12980622b30f9eab3fb47dd525de140b2e3ae20",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/1e6cc23a-d277-4f79-9d4a-4edeafed690e/ca9a9a885a700158f73ef458c65572a93f2a201147c08606daa7cd8f68bacb7e/original.jpg",
+      "sha256": "ca9a9a885a700158f73ef458c65572a93f2a201147c08606daa7cd8f68bacb7e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/16/58/16581c0b2df3892518975f5f98c5ab20cb5850bc07497f7905a748dd3ec0f29c/card-grid.webp",
+      "sha256": "16581c0b2df3892518975f5f98c5ab20cb5850bc07497f7905a748dd3ec0f29c",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/5f/e9/5fe96ef8841eb1f125939ae6c47397ef72b0e875821c71cf80573354c08439fb/search-result.webp",
+      "sha256": "5fe96ef8841eb1f125939ae6c47397ef72b0e875821c71cf80573354c08439fb",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/3c/9a/3c9a5e01c5e53681a7d47cd7144e178c3dbb809291a2c5fea4634fcf33884f79/detail-page.webp",
+      "sha256": "3c9a5e01c5e53681a7d47cd7144e178c3dbb809291a2c5fea4634fcf33884f79",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/1ed8f671-7f36-4a5e-9443-22eae61788b5/7df89c0a95a7ce4bb8d134c64bbc3bcde0d72a9d571d1cdedb966a44558014cb/original.jpg",
+      "sha256": "7df89c0a95a7ce4bb8d134c64bbc3bcde0d72a9d571d1cdedb966a44558014cb",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/d1/bb/d1bb59600717f232fdcb2beac752e1ec655ae78339d3f63057c3442cd381d0ba/card-grid.webp",
+      "sha256": "d1bb59600717f232fdcb2beac752e1ec655ae78339d3f63057c3442cd381d0ba",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/6d/c8/6dc8b2fcb3441175ba81e7912bf9f15333285c9926bb31ae4a2318e3f46b008c/search-result.webp",
+      "sha256": "6dc8b2fcb3441175ba81e7912bf9f15333285c9926bb31ae4a2318e3f46b008c",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/3c/b6/3cb67eb839c9709beae8f51f4ed0daee7ca4ce3e362f9b5abde3628707e0a966/detail-page.webp",
+      "sha256": "3cb67eb839c9709beae8f51f4ed0daee7ca4ce3e362f9b5abde3628707e0a966",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/206d7bb8-ffee-4287-991f-817ad29caf63/1ce7e4a6af0b9d88d23c29447c9314b7f5e77a48a655806a7f6790446263ee30/original.jpg",
+      "sha256": "1ce7e4a6af0b9d88d23c29447c9314b7f5e77a48a655806a7f6790446263ee30",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/4b/42/4b4253df18910de31b191ca9fcacab04ab4ec40d2e7faa16cb279d28ba52e6cf/card-grid.webp",
+      "sha256": "4b4253df18910de31b191ca9fcacab04ab4ec40d2e7faa16cb279d28ba52e6cf",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/61/75/6175b70b581192d01238376d254fbd0884b9ef01a083dfd1efb41c79745fd132/search-result.webp",
+      "sha256": "6175b70b581192d01238376d254fbd0884b9ef01a083dfd1efb41c79745fd132",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/96/8b/968b411c0be8a5c0c560fd7bcae5636bff3bda503e968e3571c746ff77e45fc6/detail-page.webp",
+      "sha256": "968b411c0be8a5c0c560fd7bcae5636bff3bda503e968e3571c746ff77e45fc6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/2412a12d-7294-45b7-ba6a-c7575edc83a2/5fa003d7e85169f6948cdd28ef87532a7d3bc51ead25069dd1fe36119fd49c18/original.jpg",
+      "sha256": "5fa003d7e85169f6948cdd28ef87532a7d3bc51ead25069dd1fe36119fd49c18",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/11/c4/11c4445a2a8b1e2761f09daa4542628e0a7583b8591ca51ab03ca0af259bbd3a/card-grid.webp",
+      "sha256": "11c4445a2a8b1e2761f09daa4542628e0a7583b8591ca51ab03ca0af259bbd3a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ae/9c/ae9cf145fde5e9c2732ada0a802b43b7d4f75855edc36555f6d8bb64bb80bf06/search-result.webp",
+      "sha256": "ae9cf145fde5e9c2732ada0a802b43b7d4f75855edc36555f6d8bb64bb80bf06",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/9b/c7/9bc76a6c301b714784835c0d435c2bdb9117771972a59b46870705468946e117/detail-page.webp",
+      "sha256": "9bc76a6c301b714784835c0d435c2bdb9117771972a59b46870705468946e117",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/278c5428-a108-4c62-a578-ecb01405c547/d62ecccb38f69fa6573513e70acae67173979ddfe6ec31315ff24ce47975f0a6/original.jpg",
+      "sha256": "d62ecccb38f69fa6573513e70acae67173979ddfe6ec31315ff24ce47975f0a6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/9a/45/9a4583ccdad193d81b6a53c7271b62e6a98c5f491c8779bb641d314216b2977b/card-grid.webp",
+      "sha256": "9a4583ccdad193d81b6a53c7271b62e6a98c5f491c8779bb641d314216b2977b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/fd/0a/fd0a532b7e09d466313ff24b21d9ee34b0c4877c351ad77e27c427ce9f44dde2/search-result.webp",
+      "sha256": "fd0a532b7e09d466313ff24b21d9ee34b0c4877c351ad77e27c427ce9f44dde2",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e8/13/e8136fccad4aaaa0eb00f1f7c9ec436c438ddd8ba347629334cefbeb0337c472/detail-page.webp",
+      "sha256": "e8136fccad4aaaa0eb00f1f7c9ec436c438ddd8ba347629334cefbeb0337c472",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/2a96ef6b-c962-40e5-a9c8-ab1ff200f55a/9c0e0aa6427c0234d68e794076a043c50ba39b5e5661b19c258d4d5820d577b7/original.jpg",
+      "sha256": "9c0e0aa6427c0234d68e794076a043c50ba39b5e5661b19c258d4d5820d577b7",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/2c/64/2c64d41020de314c5678634f77ddb74fd009301e260d756ae6f0f1f317f5b9cd/card-grid.webp",
+      "sha256": "2c64d41020de314c5678634f77ddb74fd009301e260d756ae6f0f1f317f5b9cd",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b7/17/b717474e686efc304d0eca3f1a6475a89c4329922d166c16a93ff8f8d1afe89d/search-result.webp",
+      "sha256": "b717474e686efc304d0eca3f1a6475a89c4329922d166c16a93ff8f8d1afe89d",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/77/8b/778bec48b58230cea71dc40a9babc854a1c6df42714599fe483391379789299c/detail-page.webp",
+      "sha256": "778bec48b58230cea71dc40a9babc854a1c6df42714599fe483391379789299c",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/2dea0b61-5198-462e-89f4-45bf5554bca5/f4c8c25dfaee244e49b643ffbc1fa597b4f04793de39917842f236d8a3be4d2a/original.jpg",
+      "sha256": "f4c8c25dfaee244e49b643ffbc1fa597b4f04793de39917842f236d8a3be4d2a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/98/c7/98c712ae0e8e9a99d230d3d2a28c537842a39ab909876d41da6e3c758179d2e7/card-grid.webp",
+      "sha256": "98c712ae0e8e9a99d230d3d2a28c537842a39ab909876d41da6e3c758179d2e7",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/31/c2/31c2f708ef3f9848faa99e2995829ecae1a25aee689f330959d30cb7f068af29/search-result.webp",
+      "sha256": "31c2f708ef3f9848faa99e2995829ecae1a25aee689f330959d30cb7f068af29",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/bd/10/bd10e7e3c259cd0e91e9f4e0d276a2e1bb4c21c29867973c23029caefc782ba3/detail-page.webp",
+      "sha256": "bd10e7e3c259cd0e91e9f4e0d276a2e1bb4c21c29867973c23029caefc782ba3",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/2f97e688-f937-474f-8b06-3ca11d4ed563/925f8cd3be3d7e54b23fa9f2869ea3fdbb4a98718a22e52058d6547658edd93e/original.jpg",
+      "sha256": "925f8cd3be3d7e54b23fa9f2869ea3fdbb4a98718a22e52058d6547658edd93e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/a9/1e/a91ecfd2dd07dfeb9c5b7b4f3b0b1b30733ee7c2be900395ae7667fafb2ff960/card-grid.webp",
+      "sha256": "a91ecfd2dd07dfeb9c5b7b4f3b0b1b30733ee7c2be900395ae7667fafb2ff960",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/d1/8e/d18e2f78c5d58b13d860acbfd9a522b25ad08c99b94dce4e1592be954ed4e203/search-result.webp",
+      "sha256": "d18e2f78c5d58b13d860acbfd9a522b25ad08c99b94dce4e1592be954ed4e203",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/52/5d/525d7f36de08cffc44660aa06a8ed6339c72ff6f8f825af94007a4d5cd9a7c88/detail-page.webp",
+      "sha256": "525d7f36de08cffc44660aa06a8ed6339c72ff6f8f825af94007a4d5cd9a7c88",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/301fad2a-d7d7-41f1-8a96-f4ec7906b540/20a7d6fde23f93fd5cda67e49915dfca54dbfcdfdee76023ef440a11e5460d7b/original.jpg",
+      "sha256": "20a7d6fde23f93fd5cda67e49915dfca54dbfcdfdee76023ef440a11e5460d7b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/75/d9/75d9ecc4b9bb25830b4949eb354afc5ec5c3b2942e90431c3c6c173b97442ce3/card-grid.webp",
+      "sha256": "75d9ecc4b9bb25830b4949eb354afc5ec5c3b2942e90431c3c6c173b97442ce3",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/9f/e6/9fe68c201beec6ea84c991680bc5a56fb6f6d9e2fbfcafd9add570aa6ed99698/search-result.webp",
+      "sha256": "9fe68c201beec6ea84c991680bc5a56fb6f6d9e2fbfcafd9add570aa6ed99698",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ad/77/ad77b72002ab10271ae22d6dc5659b1b372bb540166921b4709f3d3865dc5ad8/detail-page.webp",
+      "sha256": "ad77b72002ab10271ae22d6dc5659b1b372bb540166921b4709f3d3865dc5ad8",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/345405e4-9ff9-4764-9981-bc14055cc2ed/26ba034a089eeb4d21ed7732396d4e06c2841768a5ef357595699fcfaa585e1b/original.jpg",
+      "sha256": "26ba034a089eeb4d21ed7732396d4e06c2841768a5ef357595699fcfaa585e1b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/6b/fc/6bfca2365f7b3faeb38451de7376342f9652628179a8cd6360ed83e561e38d0b/card-grid.webp",
+      "sha256": "6bfca2365f7b3faeb38451de7376342f9652628179a8cd6360ed83e561e38d0b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/4e/6f/4e6f531c61a68afc0aa040a4ff14aeabbb4fc8c67a100b674181aa0edacab41b/search-result.webp",
+      "sha256": "4e6f531c61a68afc0aa040a4ff14aeabbb4fc8c67a100b674181aa0edacab41b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/fb/a1/fba1882e0d08c73d749fc97cb95424f1e58f6a5c7782e329f5f7b54f63826b90/detail-page.webp",
+      "sha256": "fba1882e0d08c73d749fc97cb95424f1e58f6a5c7782e329f5f7b54f63826b90",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/3ca2c8ff-473c-4596-ac24-573450bbf724/0d0d7f3cde705b07f2be1ebb484e92717ac42128bbab7a9659b0d47852e12f88/original.jpg",
+      "sha256": "0d0d7f3cde705b07f2be1ebb484e92717ac42128bbab7a9659b0d47852e12f88",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/12/9d/129da03438045e24dd69bd435d97beceda5b618dcc239c34bc0e3dd6b50222f9/card-grid.webp",
+      "sha256": "129da03438045e24dd69bd435d97beceda5b618dcc239c34bc0e3dd6b50222f9",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/bd/94/bd948ad8b74e1fdd6f2af4be2ac494885d193ad126831a8c9111bbc8862c5248/search-result.webp",
+      "sha256": "bd948ad8b74e1fdd6f2af4be2ac494885d193ad126831a8c9111bbc8862c5248",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/09/b8/09b83b7f50d5f85497ad98c9e0eca800dd9fd6ec358bbd8546390c7c12fc8c90/detail-page.webp",
+      "sha256": "09b83b7f50d5f85497ad98c9e0eca800dd9fd6ec358bbd8546390c7c12fc8c90",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/3cf0c74f-ffe8-453f-bf2d-acbc99e075dd/e6bd6e9fd26e7a3d066a0a1ec296abdc52cd6e96f08825cdabb701f958c2481d/original.jpg",
+      "sha256": "e6bd6e9fd26e7a3d066a0a1ec296abdc52cd6e96f08825cdabb701f958c2481d",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/9b/06/9b068019dfb6a3907ddacde11e56d4171e35b6376653ae730ede8f73fbf919ba/card-grid.webp",
+      "sha256": "9b068019dfb6a3907ddacde11e56d4171e35b6376653ae730ede8f73fbf919ba",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/1a/05/1a05f52d086d9943c7de32c56af865255d0bc73f770278e152bc48d6e2b39f1b/search-result.webp",
+      "sha256": "1a05f52d086d9943c7de32c56af865255d0bc73f770278e152bc48d6e2b39f1b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b4/17/b4170864d88758510835f0af5b1eb9fce57d8db6125f524b0f2f1c5e72d25f40/detail-page.webp",
+      "sha256": "b4170864d88758510835f0af5b1eb9fce57d8db6125f524b0f2f1c5e72d25f40",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/40eb5e6d-6304-40eb-acc9-9faf8eb5dafa/6a6acf22ffbaea4b560715c7484aadb5323334eb16ac0f2eef6ea8f6171fc234/original.jpg",
+      "sha256": "6a6acf22ffbaea4b560715c7484aadb5323334eb16ac0f2eef6ea8f6171fc234",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/11/34/1134be92ed2c59bcc15edee46e827e6ff5144de451e5f0461a9785b301520ac8/card-grid.webp",
+      "sha256": "1134be92ed2c59bcc15edee46e827e6ff5144de451e5f0461a9785b301520ac8",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ff/fe/fffea2cda82acb25263db8e85fb8d0bf418f60c3ebe9c5da82b96b68310659d0/search-result.webp",
+      "sha256": "fffea2cda82acb25263db8e85fb8d0bf418f60c3ebe9c5da82b96b68310659d0",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b4/14/b4142c268ce5fb422ebc4ba512b0f5fab2f3da66e8633e52a79e3bb2740b9b3a/detail-page.webp",
+      "sha256": "b4142c268ce5fb422ebc4ba512b0f5fab2f3da66e8633e52a79e3bb2740b9b3a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/42a594d6-6804-4d80-8e50-7b294e70c0ce/693e86be5d97cf15f9484b8e60d973ac781413dd6937af821523edb4674347c2/original.jpg",
+      "sha256": "693e86be5d97cf15f9484b8e60d973ac781413dd6937af821523edb4674347c2",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/8b/51/8b51c779213611ab8d02fbd79fcf05df7f2a04d3511751f8e11ba79e52beecb2/card-grid.webp",
+      "sha256": "8b51c779213611ab8d02fbd79fcf05df7f2a04d3511751f8e11ba79e52beecb2",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/aa/32/aa3295b7f86504766c5e586e9e1817fe36fe14ab08aa9e7c48954957f670fb47/search-result.webp",
+      "sha256": "aa3295b7f86504766c5e586e9e1817fe36fe14ab08aa9e7c48954957f670fb47",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/36/c6/36c641f9949420f5f9e904d1cb83001fc0c905fbfc290e42a62e82b1f6219ba8/detail-page.webp",
+      "sha256": "36c641f9949420f5f9e904d1cb83001fc0c905fbfc290e42a62e82b1f6219ba8",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/43df0e4e-53fc-413b-90fd-1d0ab660bcb6/29376937505910a8f09e5a03db403b1fb9c79bb34b95d745e20520fdd0131691/original.jpg",
+      "sha256": "29376937505910a8f09e5a03db403b1fb9c79bb34b95d745e20520fdd0131691",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/63/3f/633fac69b82f31eeec68c380c99f7b1838dad5e0b30b00e77caaafecfebf9436/card-grid.webp",
+      "sha256": "633fac69b82f31eeec68c380c99f7b1838dad5e0b30b00e77caaafecfebf9436",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c4/98/c4983620f811c528e36261d6161115dbd4bcc333586a51d31094f2715d08d32a/search-result.webp",
+      "sha256": "c4983620f811c528e36261d6161115dbd4bcc333586a51d31094f2715d08d32a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/7b/3f/7b3ffadaf4a4e058dd63702d6a071bd40dfc167f538699d28f12dc6de170b9cf/detail-page.webp",
+      "sha256": "7b3ffadaf4a4e058dd63702d6a071bd40dfc167f538699d28f12dc6de170b9cf",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/46479a5f-fdb5-4245-ba7f-b2bc9cd3176a/f36f7f2e4a211fb49234edd7eb0993c845df087f3a2ff5630ff4e340f6c5ce12/original.jpg",
+      "sha256": "f36f7f2e4a211fb49234edd7eb0993c845df087f3a2ff5630ff4e340f6c5ce12",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/66/9a/669ac35476fb515c9d8eb3a5ee39be876389114342c79008aa0dabecf8bca288/card-grid.webp",
+      "sha256": "669ac35476fb515c9d8eb3a5ee39be876389114342c79008aa0dabecf8bca288",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ee/19/ee19b3ce5255cca8dc85b00ca5b40fc22f0c4488a85f4d927b00bb2e14d49259/search-result.webp",
+      "sha256": "ee19b3ce5255cca8dc85b00ca5b40fc22f0c4488a85f4d927b00bb2e14d49259",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/72/06/7206fd207a1513156c2850b6cd4e7e7f9d40ed81eeb37aea45414b7a4774b0ab/detail-page.webp",
+      "sha256": "7206fd207a1513156c2850b6cd4e7e7f9d40ed81eeb37aea45414b7a4774b0ab",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/49a12850-588e-41f6-b00e-87ec00e71cc0/d17f4a08ec26c4fc9a3af3c4d08941d9a95b5b580ad07479d98ef15915207c72/original.jpg",
+      "sha256": "d17f4a08ec26c4fc9a3af3c4d08941d9a95b5b580ad07479d98ef15915207c72",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/37/f2/37f2473cb43c6f5d43d4519e0744210bf0bc843355e9173b5628b4aa5de22498/card-grid.webp",
+      "sha256": "37f2473cb43c6f5d43d4519e0744210bf0bc843355e9173b5628b4aa5de22498",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/97/13/9713f8dde2be5962b397d1555178ff7a26e63fe0ea8fda7f750fe7c5e3e9522a/search-result.webp",
+      "sha256": "9713f8dde2be5962b397d1555178ff7a26e63fe0ea8fda7f750fe7c5e3e9522a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/4b/29/4b2981e4e86813aa9370f728628866d078f78e264757de8a5c9eb2692af9b833/detail-page.webp",
+      "sha256": "4b2981e4e86813aa9370f728628866d078f78e264757de8a5c9eb2692af9b833",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/4c841090-7730-4eba-9193-a01abeb07ff8/5ffe0b43dfdf9ada1adcd5c88ed8ffa7a063b8db5dcd71605dcd299c55fc143d/original.jpg",
+      "sha256": "5ffe0b43dfdf9ada1adcd5c88ed8ffa7a063b8db5dcd71605dcd299c55fc143d",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/5b/52/5b52020dcd3ab7d5bd895ee9b7ad7939752bb2112b04285d67a2c6431ff7b9fc/card-grid.webp",
+      "sha256": "5b52020dcd3ab7d5bd895ee9b7ad7939752bb2112b04285d67a2c6431ff7b9fc",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/31/16/31167b516409e9987549576e1b05a2165350d674e70ce561c3551ed6a28853fa/search-result.webp",
+      "sha256": "31167b516409e9987549576e1b05a2165350d674e70ce561c3551ed6a28853fa",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/99/bd/99bdeb232acc493d72814245a281a96edecece31a5f2959aedc0c0ec28ef29be/detail-page.webp",
+      "sha256": "99bdeb232acc493d72814245a281a96edecece31a5f2959aedc0c0ec28ef29be",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/5182d501-d22e-4dac-a235-accc993c13f0/55440d1550dfa398a04481d177fa47e06f921c7303bbbf4a52d79df078c6337a/original.jpg",
+      "sha256": "55440d1550dfa398a04481d177fa47e06f921c7303bbbf4a52d79df078c6337a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/31/83/3183e7a78b4fde0076535f4de2225c6e1010f3f05ff69785f568dc7bb6525965/card-grid.webp",
+      "sha256": "3183e7a78b4fde0076535f4de2225c6e1010f3f05ff69785f568dc7bb6525965",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b9/8b/b98b2ceae676f7cc22035f5dd8a8cb71aa8b233ce102615e3ea9b30d52a0474a/search-result.webp",
+      "sha256": "b98b2ceae676f7cc22035f5dd8a8cb71aa8b233ce102615e3ea9b30d52a0474a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/77/02/77028701e4111f7807eb7bbcbb501b68b74de543a24dbf1d600f88eb75c40052/detail-page.webp",
+      "sha256": "77028701e4111f7807eb7bbcbb501b68b74de543a24dbf1d600f88eb75c40052",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/52c7c8d4-23ae-4471-bb4d-b66f8265292f/3b503a671427a3e184f6edb1e16a3fa6793a56be0f363c509aebf9391cfdb61f/original.jpg",
+      "sha256": "3b503a671427a3e184f6edb1e16a3fa6793a56be0f363c509aebf9391cfdb61f",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/dc/5a/dc5ace788bdfa4fe33a2ff9f952a9f74bb5bb59c3cf1b0deae3c7f954f89baae/card-grid.webp",
+      "sha256": "dc5ace788bdfa4fe33a2ff9f952a9f74bb5bb59c3cf1b0deae3c7f954f89baae",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c4/03/c403fb526d222097b062b67eb226a70fa64aac95a27729b765654f84780d9ec5/search-result.webp",
+      "sha256": "c403fb526d222097b062b67eb226a70fa64aac95a27729b765654f84780d9ec5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/da/4b/da4bb52ddf1df6b7eecb75c614a764001692c7df309674cffc7802880e386f6a/detail-page.webp",
+      "sha256": "da4bb52ddf1df6b7eecb75c614a764001692c7df309674cffc7802880e386f6a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/54ee4782-1238-48c8-90eb-dd7ca8b3d42e/c53c1c496d41532fe10ee6767f22080d619b1d8642e5ecc7462f3cebe88fb672/original.jpg",
+      "sha256": "c53c1c496d41532fe10ee6767f22080d619b1d8642e5ecc7462f3cebe88fb672",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/61/94/61946a170f9650dd94ad94bc8e9397ae61060f25be34edf4f0d13d4b76cd9e50/card-grid.webp",
+      "sha256": "61946a170f9650dd94ad94bc8e9397ae61060f25be34edf4f0d13d4b76cd9e50",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/09/46/09469c24c10f4b1abb669dccaf170a1ec2c7fe1b57c6fb4d1be8c4bc83ff0ef6/search-result.webp",
+      "sha256": "09469c24c10f4b1abb669dccaf170a1ec2c7fe1b57c6fb4d1be8c4bc83ff0ef6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ae/de/aede664a6830d90373c983825ec9341070cbc45ec727f1e551cc05efd9655ea7/detail-page.webp",
+      "sha256": "aede664a6830d90373c983825ec9341070cbc45ec727f1e551cc05efd9655ea7",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/59a73d43-8f09-4c54-a94d-3850c58e93b5/d0972dd751f99c6302a3f74f8276686089c02b19f1606c1bec8715b517831328/original.jpg",
+      "sha256": "d0972dd751f99c6302a3f74f8276686089c02b19f1606c1bec8715b517831328",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/d1/0d/d10d05978f41f5754a4108cb8b270315298fbb56317901969aecfe5d137b4d34/card-grid.webp",
+      "sha256": "d10d05978f41f5754a4108cb8b270315298fbb56317901969aecfe5d137b4d34",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ba/8b/ba8b04b52a9c949a9f14e1368c3f897e6e757efc4b622a5a5f68438489011440/search-result.webp",
+      "sha256": "ba8b04b52a9c949a9f14e1368c3f897e6e757efc4b622a5a5f68438489011440",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e2/ec/e2ec8f4004594d527f45de07808cc5bfb52a59b7e817ea92ac9f21f9cc40236a/detail-page.webp",
+      "sha256": "e2ec8f4004594d527f45de07808cc5bfb52a59b7e817ea92ac9f21f9cc40236a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/5c846373-4415-4b33-b9c6-cc59cc36c38e/734ffb71a4f9408ac592f373e0db113d7d604df2aea95d21a7ec56754ed912a6/original.jpg",
+      "sha256": "734ffb71a4f9408ac592f373e0db113d7d604df2aea95d21a7ec56754ed912a6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/3e/66/3e6621c4b82243b1321af2d8b8467c0584edf28260acfdc205fbfd39f8a412f3/card-grid.webp",
+      "sha256": "3e6621c4b82243b1321af2d8b8467c0584edf28260acfdc205fbfd39f8a412f3",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b9/c3/b9c313170cf110fa2a8e84a0bdfa1c1148c7aa56d93670896edb37e7a62ced1e/search-result.webp",
+      "sha256": "b9c313170cf110fa2a8e84a0bdfa1c1148c7aa56d93670896edb37e7a62ced1e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/74/38/7438ed8637bf478a15049cc52fcb51c080ee6fe61e9e35bf2c4f5fff8d758905/detail-page.webp",
+      "sha256": "7438ed8637bf478a15049cc52fcb51c080ee6fe61e9e35bf2c4f5fff8d758905",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/66e9057f-b906-49c0-a79d-b2f0e7c32afe/dc87ab89e68a087358195d1efbc280705843f23f1cb8dd2521fd9787613d6d21/original.jpg",
+      "sha256": "dc87ab89e68a087358195d1efbc280705843f23f1cb8dd2521fd9787613d6d21",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/a9/34/a934e3e16f2f6a76706a45c672d40327daa8fed169f740ca36c7baab2c98bc1c/card-grid.webp",
+      "sha256": "a934e3e16f2f6a76706a45c672d40327daa8fed169f740ca36c7baab2c98bc1c",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/d8/db/d8dbe68f4c54ebbadb08e2a7857f3c52f6f03fbb6a049dc286a11a4945cdc81e/search-result.webp",
+      "sha256": "d8dbe68f4c54ebbadb08e2a7857f3c52f6f03fbb6a049dc286a11a4945cdc81e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/8b/66/8b66a6e55d01f463844faa66518e33f6c68c107949d7d38ffda040bf2d32ff51/detail-page.webp",
+      "sha256": "8b66a6e55d01f463844faa66518e33f6c68c107949d7d38ffda040bf2d32ff51",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/6850213a-70e5-405e-b074-ba74181b6679/a1d31876073ad7c18b836ab6b5b8277ee33cb414b3d5dd608fd35cbb68161fa5/original.jpg",
+      "sha256": "a1d31876073ad7c18b836ab6b5b8277ee33cb414b3d5dd608fd35cbb68161fa5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/5f/8c/5f8c05d282638e0f93e704627b98ebdba2983db79c6ae0544767c82c4a5092ce/card-grid.webp",
+      "sha256": "5f8c05d282638e0f93e704627b98ebdba2983db79c6ae0544767c82c4a5092ce",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/28/ae/28aee33804667a0a7812122750f7747b00c97a18c63de8c2c6264f5cfd4536f9/search-result.webp",
+      "sha256": "28aee33804667a0a7812122750f7747b00c97a18c63de8c2c6264f5cfd4536f9",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c4/31/c431734333831e180213601f0b21577ef9eb92bb1cc3190cf9532505e0784117/detail-page.webp",
+      "sha256": "c431734333831e180213601f0b21577ef9eb92bb1cc3190cf9532505e0784117",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/6913ccf2-efb2-40b2-bf02-807853f46654/5e8aeaa39ca7339e86a4f62f6e8bc3ee1901829f564f5ffb3570ac1a6ba9f913/original.jpg",
+      "sha256": "5e8aeaa39ca7339e86a4f62f6e8bc3ee1901829f564f5ffb3570ac1a6ba9f913",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/58/6d/586d12024d5fcb64968c7aebefd57fa277e53d84babb435ad8042ba5318ce1c3/card-grid.webp",
+      "sha256": "586d12024d5fcb64968c7aebefd57fa277e53d84babb435ad8042ba5318ce1c3",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/40/c9/40c9bda921ca7071c9dac0df0fa476e67ff05898738dd0c75c227779a4c92f40/search-result.webp",
+      "sha256": "40c9bda921ca7071c9dac0df0fa476e67ff05898738dd0c75c227779a4c92f40",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/6c/46/6c46d662e214e83015b665c42c7cf2082905c06b8a8f5df21a5981deb10198a4/detail-page.webp",
+      "sha256": "6c46d662e214e83015b665c42c7cf2082905c06b8a8f5df21a5981deb10198a4",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/6ab84cc4-1679-481f-8d6c-81f084d2b01e/2551082f7a0887dfa4576ef50c9423cce8a9d0b25ac90025aeea826cfe7034f0/original.jpg",
+      "sha256": "2551082f7a0887dfa4576ef50c9423cce8a9d0b25ac90025aeea826cfe7034f0",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b1/29/b1290682a46e90ae7c1a31d2922bdcd0b03ecb3fd049c56a1f5032db8e58f901/card-grid.webp",
+      "sha256": "b1290682a46e90ae7c1a31d2922bdcd0b03ecb3fd049c56a1f5032db8e58f901",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/11/50/1150073d432de62cb6a9aefe127ae9e579e4af04b407406c5e73ebe31fd57c9c/search-result.webp",
+      "sha256": "1150073d432de62cb6a9aefe127ae9e579e4af04b407406c5e73ebe31fd57c9c",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/87/b3/87b3041cab6e1527515042530a2b28ace5b9164b13e3d8001b90d973919ed886/detail-page.webp",
+      "sha256": "87b3041cab6e1527515042530a2b28ace5b9164b13e3d8001b90d973919ed886",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/6cbf7c35-b9e5-42b2-970d-b76bd1b0d805/7cefe5e52cad95f3911ba2c4d7f2607e29066bc08aec755d0df240cf02f00aec/original.jpg",
+      "sha256": "7cefe5e52cad95f3911ba2c4d7f2607e29066bc08aec755d0df240cf02f00aec",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/52/9c/529cfb5459bedc0701b2229756dc74ad2d059d5c477e7af210ca40afeb26fd41/card-grid.webp",
+      "sha256": "529cfb5459bedc0701b2229756dc74ad2d059d5c477e7af210ca40afeb26fd41",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ad/bc/adbc03c88d0c92ffafdf1a30aa9d8896fe401b478e4ecf62bab578a736b048fe/search-result.webp",
+      "sha256": "adbc03c88d0c92ffafdf1a30aa9d8896fe401b478e4ecf62bab578a736b048fe",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/83/3f/833f1b0dd50fc46a2ca3b42c899cef38aeee36f56a3dbb764a232cc66c717a81/detail-page.webp",
+      "sha256": "833f1b0dd50fc46a2ca3b42c899cef38aeee36f56a3dbb764a232cc66c717a81",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/716ccd50-6f3f-4f77-84e5-2d329485cb98/055ae266ae5e73ede41914cf96e57af2e26318471e467c9aaf02a51e8d27b39e/original.jpg",
+      "sha256": "055ae266ae5e73ede41914cf96e57af2e26318471e467c9aaf02a51e8d27b39e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/5c/77/5c7771d5f4f01338238d334b5a4e6c82330c7019661a99ef1e90e2d67a0a6855/card-grid.webp",
+      "sha256": "5c7771d5f4f01338238d334b5a4e6c82330c7019661a99ef1e90e2d67a0a6855",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/42/74/4274eb80341e20e694daadc9791cae4fb5bcd2c56f981041d1c3538ad4c7f085/search-result.webp",
+      "sha256": "4274eb80341e20e694daadc9791cae4fb5bcd2c56f981041d1c3538ad4c7f085",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/23/5d/235dc95992f8595b8f705112ee8972d27ed7ed693319accb550459843c597f1a/detail-page.webp",
+      "sha256": "235dc95992f8595b8f705112ee8972d27ed7ed693319accb550459843c597f1a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/7249f98b-aa82-4162-aaf9-ba1963a7c692/13a55b703d47537e946c923a20072407f6e2bcd3ae1cbf3b91e20e2f52a539ef/original.jpg",
+      "sha256": "13a55b703d47537e946c923a20072407f6e2bcd3ae1cbf3b91e20e2f52a539ef",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b0/44/b0442a336635fea253b2c754c657497d300f9a85ce5c99bb9abbc28bfe953450/card-grid.webp",
+      "sha256": "b0442a336635fea253b2c754c657497d300f9a85ce5c99bb9abbc28bfe953450",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/78/65/7865c2da58b4d0ca379ac15043d4d2b14c1284a589499c298758a55ee0a3239a/search-result.webp",
+      "sha256": "7865c2da58b4d0ca379ac15043d4d2b14c1284a589499c298758a55ee0a3239a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/2e/1e/2e1e752ac24e2192a4a194f11eefdad76fa28fefb977da3812aa16765ed1f7f2/detail-page.webp",
+      "sha256": "2e1e752ac24e2192a4a194f11eefdad76fa28fefb977da3812aa16765ed1f7f2",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/743502e7-3bfb-4671-a79a-17bef12e11df/9b5aee4f02e8e500f645e65c6b769ecdfc829f4c4c027f80e6531709aa536c55/original.jpg",
+      "sha256": "9b5aee4f02e8e500f645e65c6b769ecdfc829f4c4c027f80e6531709aa536c55",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/fa/c7/fac776be5dde78819cc40358e92574512a53dfddf514f4929eaf5a633374b035/card-grid.webp",
+      "sha256": "fac776be5dde78819cc40358e92574512a53dfddf514f4929eaf5a633374b035",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/64/32/643220753bb4406ae2746d9215274fea3976933997748ac1f1000c531dc46316/search-result.webp",
+      "sha256": "643220753bb4406ae2746d9215274fea3976933997748ac1f1000c531dc46316",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ba/42/ba421b2cddd1d4f5314bbb7a987582020f4baa12805652796c75594d29c269f6/detail-page.webp",
+      "sha256": "ba421b2cddd1d4f5314bbb7a987582020f4baa12805652796c75594d29c269f6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/7756cca2-e1c9-481d-87cc-bf20752cc452/cd8d0886fc3e20935d25b343fdc5fb80aba3e3b8302ca123a764a09acebca8be/original.jpg",
+      "sha256": "cd8d0886fc3e20935d25b343fdc5fb80aba3e3b8302ca123a764a09acebca8be",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/6e/30/6e30d3a519c65b94ab1e9ed98920a055a1926ba30811bc9871a55b5e3976ab62/card-grid.webp",
+      "sha256": "6e30d3a519c65b94ab1e9ed98920a055a1926ba30811bc9871a55b5e3976ab62",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/93/1c/931c9c1073d95b2f2494477caef4b89e83b49553f0ab9845ddfda8573f6a7e2d/search-result.webp",
+      "sha256": "931c9c1073d95b2f2494477caef4b89e83b49553f0ab9845ddfda8573f6a7e2d",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/23/f4/23f415d80c8b9fa6f298a4277d7aa7042035b025934958e436503433165b27a7/detail-page.webp",
+      "sha256": "23f415d80c8b9fa6f298a4277d7aa7042035b025934958e436503433165b27a7",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/796afaf8-a8b7-4df2-8c62-b66dc11f992c/6e6727a3722c12a77b587ccc52aed4b740f3736d46901391a020b0e75b078104/original.jpg",
+      "sha256": "6e6727a3722c12a77b587ccc52aed4b740f3736d46901391a020b0e75b078104",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/93/a8/93a87f6517bb9fda91778b271341517ad80107542a57b7ca1a95e61f0f1a2440/card-grid.webp",
+      "sha256": "93a87f6517bb9fda91778b271341517ad80107542a57b7ca1a95e61f0f1a2440",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/f2/54/f2545adaf400c7b440cc9eea14b1b650df42dc046a34d0620b4c3c6907c7b8c8/search-result.webp",
+      "sha256": "f2545adaf400c7b440cc9eea14b1b650df42dc046a34d0620b4c3c6907c7b8c8",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/f2/31/f231fe0e060e44c302f180022e1ddf9d2779006604941da51858b431d26bcb56/detail-page.webp",
+      "sha256": "f231fe0e060e44c302f180022e1ddf9d2779006604941da51858b431d26bcb56",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/7cc0dcdb-2431-497c-a7e9-c920f0e7d32e/f749ea7e2dcb329f3944cb67ad3fb8ed90fc62a80c77d03a6778a44e45d5f7ac/original.jpg",
+      "sha256": "f749ea7e2dcb329f3944cb67ad3fb8ed90fc62a80c77d03a6778a44e45d5f7ac",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c3/78/c3784c6a66c6e9a62255a3af614118fed2263769f6d9a495725d152eafe19e9b/card-grid.webp",
+      "sha256": "c3784c6a66c6e9a62255a3af614118fed2263769f6d9a495725d152eafe19e9b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/8e/41/8e41611240b0cd12c5589025299b17ccae230d335d4c840ef8449b3b3e347018/search-result.webp",
+      "sha256": "8e41611240b0cd12c5589025299b17ccae230d335d4c840ef8449b3b3e347018",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/34/12/34128677eed4568bd4bafd3456d249281ee35b6504e1cd0c6d2317c1d48830bc/detail-page.webp",
+      "sha256": "34128677eed4568bd4bafd3456d249281ee35b6504e1cd0c6d2317c1d48830bc",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/8ef74ea9-ead6-4d79-aab8-51c49916837a/036c643723743c3edea58a3040656afe38988b87cf22216cb9ef49b724bc00a6/original.jpg",
+      "sha256": "036c643723743c3edea58a3040656afe38988b87cf22216cb9ef49b724bc00a6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ef/8e/ef8e7ad515d04dc7b9e04b457c79485388f15a6a7b9fb123bbf8384c47b9b83f/card-grid.webp",
+      "sha256": "ef8e7ad515d04dc7b9e04b457c79485388f15a6a7b9fb123bbf8384c47b9b83f",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/2b/3e/2b3ee83003d59049d3350feb040138c6f2ebd4a01a374c59a5bb38a6ede2d357/search-result.webp",
+      "sha256": "2b3ee83003d59049d3350feb040138c6f2ebd4a01a374c59a5bb38a6ede2d357",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/0d/42/0d421b53c38995cf01284417a8610e341d686a8eab148f8dfe53c405fca928f8/detail-page.webp",
+      "sha256": "0d421b53c38995cf01284417a8610e341d686a8eab148f8dfe53c405fca928f8",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/90c5d3b6-585e-46c8-b0a6-fc57482a55d3/e427f975810f3ad5c70408da636c529525390785ae07d2dc77ece58a5ef33fc5/original.jpg",
+      "sha256": "e427f975810f3ad5c70408da636c529525390785ae07d2dc77ece58a5ef33fc5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e6/1a/e61ad3ecc71b67051cd6632e29e459f95442f4efe3153517087b7501980d1236/card-grid.webp",
+      "sha256": "e61ad3ecc71b67051cd6632e29e459f95442f4efe3153517087b7501980d1236",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/7a/a1/7aa10453a4a97233c250a3c5af00ad3de24ed51b1aa94f11cb9ef2089856538a/search-result.webp",
+      "sha256": "7aa10453a4a97233c250a3c5af00ad3de24ed51b1aa94f11cb9ef2089856538a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/d6/b0/d6b02af9fa7b830a316ae946cca63717a7ecddf5e9a05513cea64b0b87da10fd/detail-page.webp",
+      "sha256": "d6b02af9fa7b830a316ae946cca63717a7ecddf5e9a05513cea64b0b87da10fd",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/9144da81-c7d1-4137-9549-ddc162bb1f04/fadec16951a4af73bbafdcc3f74b68c1265923e6e4749a754c0bc2c655fe0434/original.jpg",
+      "sha256": "fadec16951a4af73bbafdcc3f74b68c1265923e6e4749a754c0bc2c655fe0434",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/7e/d0/7ed0cc7e4827ce7288067b8ca0de7b0911bf1c1308f4bbf1d8a9fc7271828b25/card-grid.webp",
+      "sha256": "7ed0cc7e4827ce7288067b8ca0de7b0911bf1c1308f4bbf1d8a9fc7271828b25",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e2/69/e2696c3a0404a9b9042ed49a544031d90b00155c4d51da052d78ea09e420af65/search-result.webp",
+      "sha256": "e2696c3a0404a9b9042ed49a544031d90b00155c4d51da052d78ea09e420af65",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/63/8b/638b0827821ead2188a1fe776bc4b996437fe9ac527dad04e0b920855eaad705/detail-page.webp",
+      "sha256": "638b0827821ead2188a1fe776bc4b996437fe9ac527dad04e0b920855eaad705",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/9384d0e5-54b2-48b1-8189-190198c4b850/af142d47b9d5de081ac92305820db9410e2bb27b3b7a7ef161293c5c305d1488/original.jpg",
+      "sha256": "af142d47b9d5de081ac92305820db9410e2bb27b3b7a7ef161293c5c305d1488",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/66/f7/66f76ddd7e931b6c0372d7e05498f1cfda9d1d237b0c0abd9a9abb4a500a9004/card-grid.webp",
+      "sha256": "66f76ddd7e931b6c0372d7e05498f1cfda9d1d237b0c0abd9a9abb4a500a9004",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c7/36/c736f4c4bf546f235c7feb4386e1f38f3340d8cd63f1d3f61896b3348db30c34/search-result.webp",
+      "sha256": "c736f4c4bf546f235c7feb4386e1f38f3340d8cd63f1d3f61896b3348db30c34",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/44/9a/449ada516a2c7c58b0b221e439462b6d872bb2358260d326760222d6b95bb7c0/detail-page.webp",
+      "sha256": "449ada516a2c7c58b0b221e439462b6d872bb2358260d326760222d6b95bb7c0",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/9427f895-4982-475b-a11e-0bdcf6506a95/61ac4794ad7c880a8bab78482cd4f49ef768d175aa81d621082922563d2d72d6/original.jpg",
+      "sha256": "61ac4794ad7c880a8bab78482cd4f49ef768d175aa81d621082922563d2d72d6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/21/9d/219df8674bfd7783b34a85ec96698a4ee769af530192fa384abf02879d65d3a9/card-grid.webp",
+      "sha256": "219df8674bfd7783b34a85ec96698a4ee769af530192fa384abf02879d65d3a9",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/38/63/3863b55fc1ca413341073ce048365d46f2dcfb8b431e12cb5d284f92bc514d4b/search-result.webp",
+      "sha256": "3863b55fc1ca413341073ce048365d46f2dcfb8b431e12cb5d284f92bc514d4b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/da/2d/da2d44886f797500af5c49bfa32f3b1ef82d2672f7fe40e932d2fd0c5bee0e10/detail-page.webp",
+      "sha256": "da2d44886f797500af5c49bfa32f3b1ef82d2672f7fe40e932d2fd0c5bee0e10",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/994dcbfa-5dfb-46ce-9e3c-e27ee1e767cd/4672970ce10f93f73d4c6211ce3ef93278475ee9b0f39e71b046d0bf7c55fb83/original.jpg",
+      "sha256": "4672970ce10f93f73d4c6211ce3ef93278475ee9b0f39e71b046d0bf7c55fb83",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/1c/97/1c97a73f61ffbffa50b923327c599d406251abd8bae4ba53e82eb176451cba8f/card-grid.webp",
+      "sha256": "1c97a73f61ffbffa50b923327c599d406251abd8bae4ba53e82eb176451cba8f",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b5/ce/b5ce7223dac7e5812dcd76eb9cfa15dc0d36124d4fc05a5c8369ad31a54075ad/search-result.webp",
+      "sha256": "b5ce7223dac7e5812dcd76eb9cfa15dc0d36124d4fc05a5c8369ad31a54075ad",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/91/bc/91bc6ebb3e0133fe0eb7eb2fa7ad005ff33ddc2fc3016828a4b9644a0272b0ce/detail-page.webp",
+      "sha256": "91bc6ebb3e0133fe0eb7eb2fa7ad005ff33ddc2fc3016828a4b9644a0272b0ce",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/9b694c58-cecd-4c43-823f-fd6b0f80ce9e/407352ff00ccc3e0712f2880062ed9966b9e85a651f643fa70658f1cc15c2259/original.jpg",
+      "sha256": "407352ff00ccc3e0712f2880062ed9966b9e85a651f643fa70658f1cc15c2259",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/9d/ec/9dec58b28a93bc5afe88f67ea411e74103523cc60e58e25780e68140a669af9e/card-grid.webp",
+      "sha256": "9dec58b28a93bc5afe88f67ea411e74103523cc60e58e25780e68140a669af9e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/a2/fe/a2fe67a874ee99583bc174be30539392d3ec20bae205f4243dcddf185133cbfe/search-result.webp",
+      "sha256": "a2fe67a874ee99583bc174be30539392d3ec20bae205f4243dcddf185133cbfe",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/73/1e/731ea85cf4fcc5a1768c81e3e51e129fc2402e916ba56b25f3bbeb9c8ade19d5/detail-page.webp",
+      "sha256": "731ea85cf4fcc5a1768c81e3e51e129fc2402e916ba56b25f3bbeb9c8ade19d5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/a1c1feb6-6f1f-4151-a4c7-e95b9189d305/fd416a07fdefba4e420eeec76915dffdc2084f3fa287d69560409cc2b93dfadb/original.jpg",
+      "sha256": "fd416a07fdefba4e420eeec76915dffdc2084f3fa287d69560409cc2b93dfadb",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ec/17/ec178f727691f31d1a946fc9728559a8a7f22e3b4d5885c7f29c0f2bebbf9a2d/card-grid.webp",
+      "sha256": "ec178f727691f31d1a946fc9728559a8a7f22e3b4d5885c7f29c0f2bebbf9a2d",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ae/83/ae83a6e76f7cc12ec28e98663e5d174a43322e0b3736de5d7aed38d197e7c707/search-result.webp",
+      "sha256": "ae83a6e76f7cc12ec28e98663e5d174a43322e0b3736de5d7aed38d197e7c707",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c3/32/c3326bb496447aca48d7369600b8bf73a2c590dc0a60ef8c7ae298dd02bd491b/detail-page.webp",
+      "sha256": "c3326bb496447aca48d7369600b8bf73a2c590dc0a60ef8c7ae298dd02bd491b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/a2d0e7de-8104-494a-9b2c-d6307482530c/a8375bd78f651bb5c7acf5e0d6a31cd1603f03690f7142f7d0dc0033a03add59/original.jpg",
+      "sha256": "a8375bd78f651bb5c7acf5e0d6a31cd1603f03690f7142f7d0dc0033a03add59",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c6/5a/c65a8b010eb635fb21d10bfb3eead3ce82d564962ab884bbb7e9c99e4f16d6cd/card-grid.webp",
+      "sha256": "c65a8b010eb635fb21d10bfb3eead3ce82d564962ab884bbb7e9c99e4f16d6cd",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/60/b6/60b63ef0550a84ff44d2c09246e764239a6e3eb08df906534640cf26ecb6a358/search-result.webp",
+      "sha256": "60b63ef0550a84ff44d2c09246e764239a6e3eb08df906534640cf26ecb6a358",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/a6/ad/a6ad41b5e4342bb7f48d6243426aa09ff6e1e0457c6d50da92ef1bd230fb4bff/detail-page.webp",
+      "sha256": "a6ad41b5e4342bb7f48d6243426aa09ff6e1e0457c6d50da92ef1bd230fb4bff",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/adc1fa02-eea6-4ed6-9434-6016dcae85bd/1fdfe25d469b7f64260689d3dd0abb9d3ad0ebfcf01d2f30e6b7ded331052a9e/original.jpg",
+      "sha256": "1fdfe25d469b7f64260689d3dd0abb9d3ad0ebfcf01d2f30e6b7ded331052a9e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/db/b5/dbb588b049e1e32bf8090082610b91567d2cfff7bd5287adde26a88b54dd85a4/card-grid.webp",
+      "sha256": "dbb588b049e1e32bf8090082610b91567d2cfff7bd5287adde26a88b54dd85a4",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e2/37/e23782ee394893e9381463f59446c0e1548a76dde36796bf0b947352531f668f/search-result.webp",
+      "sha256": "e23782ee394893e9381463f59446c0e1548a76dde36796bf0b947352531f668f",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/21/30/2130f9ad817326c731e202cb8f1af26eca1f56615c2f4ef6626b4a46e190b8e6/detail-page.webp",
+      "sha256": "2130f9ad817326c731e202cb8f1af26eca1f56615c2f4ef6626b4a46e190b8e6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/af546e22-c53c-4aee-a07f-502ff9d6cfd8/82d939f0c40a8fbdde85f726a9b78e0acd6adc0223a683aa2c13bb98fcea58c9/original.jpg",
+      "sha256": "82d939f0c40a8fbdde85f726a9b78e0acd6adc0223a683aa2c13bb98fcea58c9",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/78/1e/781e1c7d3f494c6bb1369f396543a3fceb8bc968ddc0329362afe553e7b8a3fd/card-grid.webp",
+      "sha256": "781e1c7d3f494c6bb1369f396543a3fceb8bc968ddc0329362afe553e7b8a3fd",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/d6/3e/d63e8b0975f333c0c921b493f6c1f8be04ddd9b03f805da9780a6bfbd574c800/search-result.webp",
+      "sha256": "d63e8b0975f333c0c921b493f6c1f8be04ddd9b03f805da9780a6bfbd574c800",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/97/fc/97fc9b1fb2059f11339fa345804bac9a4dfac8123f16ec03df7e317fb969557f/detail-page.webp",
+      "sha256": "97fc9b1fb2059f11339fa345804bac9a4dfac8123f16ec03df7e317fb969557f",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/b0a5cb27-af06-4636-86d5-1d5783303d36/492948ab89bf0c0364839c7149ed1caf5e097eaad04faed7e23032e134aa4021/original.jpg",
+      "sha256": "492948ab89bf0c0364839c7149ed1caf5e097eaad04faed7e23032e134aa4021",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/51/98/519876e8f66a64c70fbb7670bdf0f983356c71e746b9d7aa2b85c58138907ce4/card-grid.webp",
+      "sha256": "519876e8f66a64c70fbb7670bdf0f983356c71e746b9d7aa2b85c58138907ce4",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/7a/79/7a79b5b3c1caa3aef84d43d38f0e99fae8f4f45292c8cd2824dc14520562eb22/search-result.webp",
+      "sha256": "7a79b5b3c1caa3aef84d43d38f0e99fae8f4f45292c8cd2824dc14520562eb22",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/f9/ef/f9ef4ce11c4e834620537d1614d85113c6d52aa6b61e7a5986f8d3b31fd7c3f1/detail-page.webp",
+      "sha256": "f9ef4ce11c4e834620537d1614d85113c6d52aa6b61e7a5986f8d3b31fd7c3f1",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/b4c1f0c6-6441-4065-9332-e53aced91ce1/0354b42b659fbca92a47b5e49a10050a5cca2c8079c6913baa73b6680365cc28/original.jpg",
+      "sha256": "0354b42b659fbca92a47b5e49a10050a5cca2c8079c6913baa73b6680365cc28",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/bd/b3/bdb34f9f8041fb451a8844f35dbfdf032f25a7313db1c725f5e4bca3f765b932/card-grid.webp",
+      "sha256": "bdb34f9f8041fb451a8844f35dbfdf032f25a7313db1c725f5e4bca3f765b932",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/66/f5/66f564c3121d943250063023afe972c3ff90259b2188237e90b3b5af0f5c9a56/search-result.webp",
+      "sha256": "66f564c3121d943250063023afe972c3ff90259b2188237e90b3b5af0f5c9a56",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/39/ec/39ec60522b01dc07dd6e41bd9d35a33017820991618d391dbb30ace144a81fc1/detail-page.webp",
+      "sha256": "39ec60522b01dc07dd6e41bd9d35a33017820991618d391dbb30ace144a81fc1",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/b9b5be27-08c9-4851-b021-58014bcaa4f0/c73639b5d95f4bd500444fdc7fb0bb0bf79fb12b38a48acd6f95828e28bdc1e6/original.jpg",
+      "sha256": "c73639b5d95f4bd500444fdc7fb0bb0bf79fb12b38a48acd6f95828e28bdc1e6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c0/58/c058c9ebe356f9dc99f1d5c618ef06ab24d25f89617bc0fbbf9c2a1f90f3a542/card-grid.webp",
+      "sha256": "c058c9ebe356f9dc99f1d5c618ef06ab24d25f89617bc0fbbf9c2a1f90f3a542",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/32/26/32269e7b12509531a557db07272f7fc4d236f9fe2b58bd3ba0137c93cd3d69c0/search-result.webp",
+      "sha256": "32269e7b12509531a557db07272f7fc4d236f9fe2b58bd3ba0137c93cd3d69c0",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/bf/d8/bfd88bf559da634407fc5e260db06a1d2bb3b1b685afa4f3f2edfdb6a289fc17/detail-page.webp",
+      "sha256": "bfd88bf559da634407fc5e260db06a1d2bb3b1b685afa4f3f2edfdb6a289fc17",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/bae18b10-00a3-4a40-b614-0924311492ca/1a7583d31329f3de432d7ec3f4f90ef1a2bacbdd1b3ea04d5c9c62f3602e899e/original.jpg",
+      "sha256": "1a7583d31329f3de432d7ec3f4f90ef1a2bacbdd1b3ea04d5c9c62f3602e899e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b3/f4/b3f4a0234103a30560a01337b3b71d45e1967c7237a673e730aaf0aa514f6d8a/card-grid.webp",
+      "sha256": "b3f4a0234103a30560a01337b3b71d45e1967c7237a673e730aaf0aa514f6d8a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/f6/fe/f6fee7abb5e67e2dc7881f0e10c71af8697121ad374b5048e869a1b045e61d51/search-result.webp",
+      "sha256": "f6fee7abb5e67e2dc7881f0e10c71af8697121ad374b5048e869a1b045e61d51",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/57/4f/574f7ba620c520a1ee127e6f1abb7c9d7e3a605de5552b4b807eeaa4f6f2acd6/detail-page.webp",
+      "sha256": "574f7ba620c520a1ee127e6f1abb7c9d7e3a605de5552b4b807eeaa4f6f2acd6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/bdcd65d9-86bb-42bb-a222-b9fc59f727c0/a63fe909da1458338df28ffd2680b023778f10f38785647b0ac61cd5f0c95d95/original.jpg",
+      "sha256": "a63fe909da1458338df28ffd2680b023778f10f38785647b0ac61cd5f0c95d95",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/fc/9f/fc9f26440757454ad5ab91cb61bff340c968422551254518ae8f7ff2a075c60b/card-grid.webp",
+      "sha256": "fc9f26440757454ad5ab91cb61bff340c968422551254518ae8f7ff2a075c60b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/2e/50/2e50351f5a4321c0da8867ca74c838cd5105288921aa464078ca0a4b1563d3d5/search-result.webp",
+      "sha256": "2e50351f5a4321c0da8867ca74c838cd5105288921aa464078ca0a4b1563d3d5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/32/d6/32d6fa1f1d7ce974066852748ed2759f847111607af989da3842eaadb601e7b3/detail-page.webp",
+      "sha256": "32d6fa1f1d7ce974066852748ed2759f847111607af989da3842eaadb601e7b3",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/c282c6a3-3d15-4830-8976-1a838f2454da/cccc03cad75ddeae325b30d07c078385e3c57474432ee23afc5103e1bdbc0b0a/original.jpg",
+      "sha256": "cccc03cad75ddeae325b30d07c078385e3c57474432ee23afc5103e1bdbc0b0a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/7e/67/7e67c4dc1c545c33e7e567e4d553950b62b34d6e80375d1609f8d247307e0747/card-grid.webp",
+      "sha256": "7e67c4dc1c545c33e7e567e4d553950b62b34d6e80375d1609f8d247307e0747",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b1/c6/b1c6eecca2f258f5229bab0049bb7e8de59f5345f3ef7bfee9ef459cb1023ac5/search-result.webp",
+      "sha256": "b1c6eecca2f258f5229bab0049bb7e8de59f5345f3ef7bfee9ef459cb1023ac5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b9/83/b983d252a63652ac2f1227efc0a860dd9c3eaed8f9a2781ceb50ca3713b52da6/detail-page.webp",
+      "sha256": "b983d252a63652ac2f1227efc0a860dd9c3eaed8f9a2781ceb50ca3713b52da6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/cace4bf4-43d3-4dc1-b165-dcc4a6fd6035/cc63fb3898c0db4e269a01b8730e5141061e2bb858dfddee477dc759d401b49a/original.jpg",
+      "sha256": "cc63fb3898c0db4e269a01b8730e5141061e2bb858dfddee477dc759d401b49a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/24/ed/24ed43ba98f5feea9e2fc83eb5ac93b75becb0e7c4ac1af27a2c3dfb24b55056/card-grid.webp",
+      "sha256": "24ed43ba98f5feea9e2fc83eb5ac93b75becb0e7c4ac1af27a2c3dfb24b55056",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/7f/47/7f47193dbb08569efecf7b62e72a1757a3086fc37f82a2038ed2536777b60412/search-result.webp",
+      "sha256": "7f47193dbb08569efecf7b62e72a1757a3086fc37f82a2038ed2536777b60412",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/75/bf/75bff2dc50f0123c4109a24e8838ed8db8dbd0bcd00bcbd4811fc4f456bc0a0a/detail-page.webp",
+      "sha256": "75bff2dc50f0123c4109a24e8838ed8db8dbd0bcd00bcbd4811fc4f456bc0a0a",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/d9e10f15-5587-4d55-804d-c4f03cfbd8e4/eb95cffd91ba383a4b6ca577c0629f95d528fea69987ae989f802f378036580b/original.jpg",
+      "sha256": "eb95cffd91ba383a4b6ca577c0629f95d528fea69987ae989f802f378036580b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e9/ee/e9ee218e4ab8150c57d0c48451b086ca3155cc54f357991acef0c241ca7743b1/card-grid.webp",
+      "sha256": "e9ee218e4ab8150c57d0c48451b086ca3155cc54f357991acef0c241ca7743b1",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/c4/1a/c41a3edf5e5d87e516fc31a862cf8d34af9f0c1488fbdeaef866e6d571f8dae2/search-result.webp",
+      "sha256": "c41a3edf5e5d87e516fc31a862cf8d34af9f0c1488fbdeaef866e6d571f8dae2",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/a9/4a/a94aac03629bbb1e6f6bda4e93f0dbffd4e04468d6ed2b2dfff8bd021b4d9a5e/detail-page.webp",
+      "sha256": "a94aac03629bbb1e6f6bda4e93f0dbffd4e04468d6ed2b2dfff8bd021b4d9a5e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/de3d2096-7550-45c6-bbbc-d55732664ba4/87437ab593fc6a847b0cbaebfcc9dc6e2543c466acc8a98666abb06a51f69774/original.jpg",
+      "sha256": "87437ab593fc6a847b0cbaebfcc9dc6e2543c466acc8a98666abb06a51f69774",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/ae/38/ae386dcb14b6ab970ae15392421d602e0ab6b3ec382904b64c95f85eaed46640/card-grid.webp",
+      "sha256": "ae386dcb14b6ab970ae15392421d602e0ab6b3ec382904b64c95f85eaed46640",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/37/8d/378d0d0db3a6c787f3473f97b55ee90450ba771c3291b1eaeb8280be8a80a6e8/search-result.webp",
+      "sha256": "378d0d0db3a6c787f3473f97b55ee90450ba771c3291b1eaeb8280be8a80a6e8",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/0f/05/0f055a9016d5b876d8863e1912f8e87866333d97bde6cf4ce1adce0322056c09/detail-page.webp",
+      "sha256": "0f055a9016d5b876d8863e1912f8e87866333d97bde6cf4ce1adce0322056c09",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/dff0de51-f35c-40b4-9025-c9870d8efd1a/4082e31aab8110afe2fa7693db00f575907722360d0922e03238dc460a1cce37/original.jpg",
+      "sha256": "4082e31aab8110afe2fa7693db00f575907722360d0922e03238dc460a1cce37",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b3/0b/b30b278d0bb6704ba988a6c947db393ee1fe5a7aae645dd52585f730e73f093b/card-grid.webp",
+      "sha256": "b30b278d0bb6704ba988a6c947db393ee1fe5a7aae645dd52585f730e73f093b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/f6/d3/f6d3c5d19c027ff41dca3dda938681efcfab03221c3a5eb3f83e161873d64a1b/search-result.webp",
+      "sha256": "f6d3c5d19c027ff41dca3dda938681efcfab03221c3a5eb3f83e161873d64a1b",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/6a/b8/6ab85e591399ac71d4abeda4871450b7d00a3aa04d9d5bae7263c26d88a1a184/detail-page.webp",
+      "sha256": "6ab85e591399ac71d4abeda4871450b7d00a3aa04d9d5bae7263c26d88a1a184",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/e00d2d1f-ce0b-4861-993f-ec1424868a65/3a48780a406125efff2f9a5ec128e6d43a0f33dc2219d8c5fddf2713fa27d944/original.jpg",
+      "sha256": "3a48780a406125efff2f9a5ec128e6d43a0f33dc2219d8c5fddf2713fa27d944",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/36/bd/36bd626ffeae0f47efc880b39f493ac1d64b238936129cc65b4bf569b1e0e69d/card-grid.webp",
+      "sha256": "36bd626ffeae0f47efc880b39f493ac1d64b238936129cc65b4bf569b1e0e69d",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/5c/bd/5cbd402be5cc643150a3ad89f581c0fde83e140995c93718168a90131ee8117f/search-result.webp",
+      "sha256": "5cbd402be5cc643150a3ad89f581c0fde83e140995c93718168a90131ee8117f",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e7/af/e7af1bce2682abadadbc50f9f87a755971e0a95b5ff0054a918b5ef9c2edab89/detail-page.webp",
+      "sha256": "e7af1bce2682abadadbc50f9f87a755971e0a95b5ff0054a918b5ef9c2edab89",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/e3a71ede-92f5-4baa-9674-681043ccf097/de1523dbe3d858c664bd94ffe280ac191fb9f77307d8af24f50a0340393327c7/original.jpg",
+      "sha256": "de1523dbe3d858c664bd94ffe280ac191fb9f77307d8af24f50a0340393327c7",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/38/27/3827f6746fe6b2681e6152024004e02d4d455f865ac697b2bb241b44839b152e/card-grid.webp",
+      "sha256": "3827f6746fe6b2681e6152024004e02d4d455f865ac697b2bb241b44839b152e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b3/3e/b33ec9d0902c7b6ebfce980385f8a55e2fcebd05f4082d548ca9a3350e1f29a6/search-result.webp",
+      "sha256": "b33ec9d0902c7b6ebfce980385f8a55e2fcebd05f4082d548ca9a3350e1f29a6",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/eb/91/eb91fcd421adef7273f711244b06e4d6086220302db7f5d5bda028cebbae0e42/detail-page.webp",
+      "sha256": "eb91fcd421adef7273f711244b06e4d6086220302db7f5d5bda028cebbae0e42",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/e511e504-4251-4f8d-a18a-0675d0ff8602/e9a35934ad9e3e36cd3dc6863b20f19743efdf210bd60954d2c30528e894788c/original.jpg",
+      "sha256": "e9a35934ad9e3e36cd3dc6863b20f19743efdf210bd60954d2c30528e894788c",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/65/d4/65d45f8cc18e86b1f1d369c732080ea03e305ad9a23de117a4778e36e6b0a43d/card-grid.webp",
+      "sha256": "65d45f8cc18e86b1f1d369c732080ea03e305ad9a23de117a4778e36e6b0a43d",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/f5/8b/f58b07c667906daddf7303b96b6731706b7f5b8c4ff9617dc066c2373c26358c/search-result.webp",
+      "sha256": "f58b07c667906daddf7303b96b6731706b7f5b8c4ff9617dc066c2373c26358c",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/b8/ed/b8ed9d644398a8fa8dfa317c2f0b19842194e89af9d46ef300b37fe2d44ed861/detail-page.webp",
+      "sha256": "b8ed9d644398a8fa8dfa317c2f0b19842194e89af9d46ef300b37fe2d44ed861",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/ea3877c6-c235-4f64-856b-9a6c12e7fe89/a711390596aac9846d1126dd8d43d8f16eae06393e5803689aaaff412c7011b5/original.jpg",
+      "sha256": "a711390596aac9846d1126dd8d43d8f16eae06393e5803689aaaff412c7011b5",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/5a/1d/5a1da38275370010cfc661825af4e2f32d538dac161b41659a9fe84b743fac70/card-grid.webp",
+      "sha256": "5a1da38275370010cfc661825af4e2f32d538dac161b41659a9fe84b743fac70",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/0c/98/0c98221bd221f7d3d6fb24848639a1050a7310dd1c707bf93677e12d06696c1e/search-result.webp",
+      "sha256": "0c98221bd221f7d3d6fb24848639a1050a7310dd1c707bf93677e12d06696c1e",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/e0/b9/e0b9607b09e6979c9944ba9c9769c32fba81ed40c2ad31891c5777ec6c3f0722/detail-page.webp",
+      "sha256": "e0b9607b09e6979c9944ba9c9769c32fba81ed40c2ad31891c5777ec6c3f0722",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/printing/fe7ab4cc-6650-412d-9695-942ef84a67d0/d8275ddc2a4d108ac432442f1212c15bf10276fb71a0dd618c3879639fe10a47/original.jpg",
+      "sha256": "d8275ddc2a4d108ac432442f1212c15bf10276fb71a0dd618c3879639fe10a47",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/eb/2b/eb2b4ee9d54fd01af06ef07bc7e3212345d81ea730aa04a8a9b8570efbcfdbcf/card-grid.webp",
+      "sha256": "eb2b4ee9d54fd01af06ef07bc7e3212345d81ea730aa04a8a9b8570efbcfdbcf",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/d5/29/d52908830ec12ecd59ae1eb4b17af85a199e6fac4309beccb62f662fa886fc32/search-result.webp",
+      "sha256": "d52908830ec12ecd59ae1eb4b17af85a199e6fac4309beccb62f662fa886fc32",
+      "created": true,
+      "verified": true
+    },
+    {
+      "key": "public/card_image/7c/23/7c23ebfc717abf84f958bf730966f4f29941f787e5ebdc19c6c03444bb427a98/detail-page.webp",
+      "sha256": "7c23ebfc717abf84f958bf730966f4f29941f787e5ebdc19c6c03444bb427a98",
+      "created": true,
+      "verified": true
+    }
+  ],
+  "ownership_changes": 0,
+  "metadata_changes": 71,
+  "pricing_changes": 0,
+  "device_verified": false,
+  "local_files_verified": 292,
+  "staging_rehearsal": {
+    "status": "passed_and_rolled_back",
+    "assets": 73,
+    "links": 73,
+    "catalogue_corrections": 0,
+    "native_name_correction_counts": {
+      "total": 71,
+      "changed": 71,
+      "printing_changes": 71,
+      "card_name_changes": 71
+    },
+    "native_name_corrections": [
+      {
+        "table": "catalog.card_printings",
+        "id": "00126c81-8a35-407f-82d1-cce25ba0d095",
+        "column": "native_name",
+        "before": "スカルモリー",
+        "after": "エアームド",
+        "changed": true,
+        "native_name_row_id": "d872c8e7-5a73-411b-929a-e9ec8bc50f1a",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "00886842-ce42-4a59-8809-48ba691f12eb",
+        "column": "native_name",
+        "before": "forretress",
+        "after": "フォレトス",
+        "changed": true,
+        "native_name_row_id": "984b7a11-986e-4578-9f0f-21339d3c3d39",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "0adb9a6b-5629-4dcf-8381-158299f28cf1",
+        "column": "native_name",
+        "before": "ミステリープレートb",
+        "after": "ミステリープレートβ",
+        "changed": true,
+        "native_name_row_id": "1aedb4cf-eacb-448e-a836-5ecaa532463f",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "0d0da704-09a6-4802-bb55-bf14cc9eced7",
+        "column": "native_name",
+        "before": "サンドシュー",
+        "after": "サンド",
+        "changed": true,
+        "native_name_row_id": "8688aea3-b2c4-4848-af8f-caa5b84ce50d",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1229d2ee-2bc1-422b-ba56-f6dd2a0ed3de",
+        "column": "native_name",
+        "before": "ライチュ",
+        "after": "ライチュウ",
+        "changed": true,
+        "native_name_row_id": "858b9200-6bc9-4268-bbb3-44dcaf52f2d2",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "13a342d1-7607-4075-b4ac-61e629cad8dd",
+        "column": "native_name",
+        "before": "ラッタタ",
+        "after": "コラッタ",
+        "changed": true,
+        "native_name_row_id": "0be4e1dc-6e19-422c-a11f-67d67897709e",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "140f498e-d156-467d-9853-37dfcab2f106",
+        "column": "native_name",
+        "before": "Vaporeon",
+        "after": "シャワーズ",
+        "changed": true,
+        "native_name_row_id": "c41f7a11-8150-44f5-b27c-d8cba1cfcfa9",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "146155be-3852-4448-9249-8da63709fccc",
+        "column": "native_name",
+        "before": "ジョルテオン",
+        "after": "サンダース",
+        "changed": true,
+        "native_name_row_id": "18735198-05d3-4851-ab32-3fe945e49d73",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "17ace795-6b75-46bd-96bd-0cc83bcc2540",
+        "column": "native_name",
+        "before": "ミスレアヴァス",
+        "after": "ムウマ",
+        "changed": true,
+        "native_name_row_id": "2887c305-ed3a-4156-b583-cb9f69b83b00",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1cb401f0-e82f-4497-a666-3db67dbe838b",
+        "column": "native_name",
+        "before": "slugma",
+        "after": "マグマッグ",
+        "changed": true,
+        "native_name_row_id": "28f61ef6-c69f-411b-87ba-249683e91d3f",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1dd25298-29da-4aa0-8cbc-27679b02aad2",
+        "column": "native_name",
+        "before": "政治",
+        "after": "ニョロトノ",
+        "changed": true,
+        "native_name_row_id": "e1d8f1b9-60a3-4605-9fd0-cd7cbad4457b",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1dee191b-642a-4e97-a1df-c346b7800ce6",
+        "column": "native_name",
+        "before": "ライドン",
+        "after": "サイドン",
+        "changed": true,
+        "native_name_row_id": "84340d56-e4fc-45e6-9329-a8bdba1ad080",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1ed8f671-7f36-4a5e-9443-22eae61788b5",
+        "column": "native_name",
+        "before": "カブトップス",
+        "after": "カブトプス",
+        "changed": true,
+        "native_name_row_id": "1f5fb08b-612c-40ca-b79f-7219b368d7f2",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "206d7bb8-ffee-4287-991f-817ad29caf63",
+        "column": "native_name",
+        "before": "PoliWhirl",
+        "after": "ニョロゾ",
+        "changed": true,
+        "native_name_row_id": "138cf776-7a0b-49e8-9548-f261d2851b1f",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "2412a12d-7294-45b7-ba6a-c7575edc83a2",
+        "column": "native_name",
+        "before": "政治",
+        "after": "ニョロトノ",
+        "changed": true,
+        "native_name_row_id": "6acb6a31-b52c-4e57-be11-76e858bc2990",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "278c5428-a108-4c62-a578-ecb01405c547",
+        "column": "native_name",
+        "before": "フレアロン",
+        "after": "ブースター",
+        "changed": true,
+        "native_name_row_id": "0a404246-8c9d-407d-82e3-e2625b48a8eb",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "2a96ef6b-c962-40e5-a9c8-ab1ff200f55a",
+        "column": "native_name",
+        "before": "地下遠征",
+        "after": "地底探険隊",
+        "changed": true,
+        "native_name_row_id": "c2179afd-23fe-4743-9dff-d44588714c7c",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "2dea0b61-5198-462e-89f4-45bf5554bca5",
+        "column": "native_name",
+        "before": "同上",
+        "after": "メタモン",
+        "changed": true,
+        "native_name_row_id": "4d674c97-24d1-4a6f-8049-e44f78ba8baf",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "2f97e688-f937-474f-8b06-3ca11d4ed563",
+        "column": "native_name",
+        "before": "ゴーレム",
+        "after": "ゴローニャ",
+        "changed": true,
+        "native_name_row_id": "2c77bbef-3dbc-41cd-8d00-0cb5786a950a",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "301fad2a-d7d7-41f1-8a96-f4ec7906b540",
+        "column": "native_name",
+        "before": "staryu",
+        "after": "ヒトデマン",
+        "changed": true,
+        "native_name_row_id": "1c3f112c-3ebe-4a8d-a9f2-75b460b6b838",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "345405e4-9ff9-4764-9981-bc14055cc2ed",
+        "column": "native_name",
+        "before": "Snubbull",
+        "after": "ブルー",
+        "changed": true,
+        "native_name_row_id": "c6b269f5-1ba0-4f1f-b9e0-acccb88fd746",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "3ca2c8ff-473c-4596-ac24-573450bbf724",
+        "column": "native_name",
+        "before": "Zubat",
+        "after": "ズバット",
+        "changed": true,
+        "native_name_row_id": "43a7397f-c1fd-4df0-addf-10a32a22e889",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "3cf0c74f-ffe8-453f-bf2d-acbc99e075dd",
+        "column": "native_name",
+        "before": "ミステリープレートY",
+        "after": "ミステリープレートγ",
+        "changed": true,
+        "native_name_row_id": "a55d08c1-5e53-427b-9bea-3cdad99d147f",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "40eb5e6d-6304-40eb-acc9-9faf8eb5dafa",
+        "column": "native_name",
+        "before": "Girafarig",
+        "after": "キリンリキ",
+        "changed": true,
+        "native_name_row_id": "eebd3df3-09b2-45b3-8880-cf017729908a",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "42a594d6-6804-4d80-8e50-7b294e70c0ce",
+        "column": "native_name",
+        "before": "Poliwrath",
+        "after": "ニョロボン",
+        "changed": true,
+        "native_name_row_id": "809c65ef-d5d4-4778-9250-bc5284af1278",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "43df0e4e-53fc-413b-90fd-1d0ab660bcb6",
+        "column": "native_name",
+        "before": "meowth",
+        "after": "ニャース",
+        "changed": true,
+        "native_name_row_id": "ec318dc2-25a5-45a3-afdd-b35cf0e71ca6",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "46479a5f-fdb5-4245-ba7f-b2bc9cd3176a",
+        "column": "native_name",
+        "before": "アエロダクチル",
+        "after": "プテラ",
+        "changed": true,
+        "native_name_row_id": "4bef5cb9-e368-4bcd-be2f-013871e23b62",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "49a12850-588e-41f6-b00e-87ec00e71cc0",
+        "column": "native_name",
+        "before": "アラカザム",
+        "after": "フーディン",
+        "changed": true,
+        "native_name_row_id": "a7850bc3-a46a-4ecc-a9d7-bcd2228ec8cc",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "4c841090-7730-4eba-9193-a01abeb07ff8",
+        "column": "native_name",
+        "before": "フレアロン",
+        "after": "ブースター",
+        "changed": true,
+        "native_name_row_id": "8b2f633b-8ae9-4607-9f76-0f12e6d1f427",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "5182d501-d22e-4dac-a235-accc993c13f0",
+        "column": "native_name",
+        "before": "クレファ",
+        "after": "ピィ",
+        "changed": true,
+        "native_name_row_id": "17768cea-b038-40da-b8a6-a714b089070b",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "52c7c8d4-23ae-4471-bb4d-b66f8265292f",
+        "column": "native_name",
+        "before": "ライドン",
+        "after": "サイドン",
+        "changed": true,
+        "native_name_row_id": "06db71f7-6a90-4af5-8301-e9c991a5a31c",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "54ee4782-1238-48c8-90eb-dd7ca8b3d42e",
+        "column": "native_name",
+        "before": "地下湖",
+        "after": "地底湖",
+        "changed": true,
+        "native_name_row_id": "165516e7-1d62-4ef2-8de0-a116ac8293ae",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "59a73d43-8f09-4c54-a94d-3850c58e93b5",
+        "column": "native_name",
+        "before": "カダブラ",
+        "after": "ユンゲラー",
+        "changed": true,
+        "native_name_row_id": "d00c8a9b-2b04-45a2-903d-9a92920f196b",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "5c846373-4415-4b33-b9c6-cc59cc36c38e",
+        "column": "native_name",
+        "before": "Eevee",
+        "after": "イーブイ",
+        "changed": true,
+        "native_name_row_id": "7a13d660-f757-41ac-9ef3-307892419c14",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "66e9057f-b906-49c0-a79d-b2f0e7c32afe",
+        "column": "native_name",
+        "before": "サンドスラッシュ",
+        "after": "サンドパン",
+        "changed": true,
+        "native_name_row_id": "2be571d1-8101-4a60-998e-76e294dd6c37",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "6850213a-70e5-405e-b074-ba74181b6679",
+        "column": "native_name",
+        "before": "poliwag",
+        "after": "ニョロモ",
+        "changed": true,
+        "native_name_row_id": "efc57364-7a1d-4b52-8dc2-7c172712b053",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "6913ccf2-efb2-40b2-bf02-807853f46654",
+        "column": "native_name",
+        "before": "ho-oh",
+        "after": "ホウオウ",
+        "changed": true,
+        "native_name_row_id": "9064a5b0-5763-4c52-b606-116ef8a565f4",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "6ab84cc4-1679-481f-8d6c-81f084d2b01e",
+        "column": "native_name",
+        "before": "マンティン",
+        "after": "マンタイン",
+        "changed": true,
+        "native_name_row_id": "c63fdca2-fa18-4719-a105-455cb95a4d64",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "6cbf7c35-b9e5-42b2-970d-b76bd1b0d805",
+        "column": "native_name",
+        "before": "Poliwrath",
+        "after": "ニョロボン",
+        "changed": true,
+        "native_name_row_id": "384980d6-5304-431e-9f32-5cd7af170624",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "716ccd50-6f3f-4f77-84e5-2d329485cb98",
+        "column": "native_name",
+        "before": "オマニテ",
+        "after": "オムナイト",
+        "changed": true,
+        "native_name_row_id": "2d6f39d7-f47a-4023-91fa-5eeb5b96a2f7",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "7249f98b-aa82-4162-aaf9-ba1963a7c692",
+        "column": "native_name",
+        "before": "ペルシャ語",
+        "after": "ペルシアン",
+        "changed": true,
+        "native_name_row_id": "9c1d2636-8413-421a-b07e-01c04fc8a00e",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "743502e7-3bfb-4671-a79a-17bef12e11df",
+        "column": "native_name",
+        "before": "クリスタルシャード",
+        "after": "水晶のかけら",
+        "changed": true,
+        "native_name_row_id": "c8cb56f2-f518-4eb0-bef5-afbac81606f3",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "7756cca2-e1c9-481d-87cc-bf20752cc452",
+        "column": "native_name",
+        "before": "ミステリープレートo",
+        "after": "ミステリープレートδ",
+        "changed": true,
+        "native_name_row_id": "dd66f10a-115f-4e8b-927f-e70f7d15bdf0",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "796afaf8-a8b7-4df2-8c62-b66dc11f992c",
+        "column": "native_name",
+        "before": "ウォブバフェット",
+        "after": "ソーナンス",
+        "changed": true,
+        "native_name_row_id": "597ac755-6121-41e7-9c7a-a615b115e2b2",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "7cc0dcdb-2431-497c-a7e9-c920f0e7d32e",
+        "column": "native_name",
+        "before": "マークロウ",
+        "after": "ヤミカラス",
+        "changed": true,
+        "native_name_row_id": "adff0e50-54c5-4901-9ab6-80d6137d83d0",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "8ef74ea9-ead6-4d79-aab8-51c49916837a",
+        "column": "native_name",
+        "before": "ライチュ",
+        "after": "ライチュウ",
+        "changed": true,
+        "native_name_row_id": "97857a7f-5e91-4228-ba7d-0a02a345f344",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "90c5d3b6-585e-46c8-b0a6-fc57482a55d3",
+        "column": "native_name",
+        "before": "ミステリープレートa",
+        "after": "ミステリープレートα",
+        "changed": true,
+        "native_name_row_id": "35d55831-159e-42f6-ad7d-1af837fc495b",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "9144da81-c7d1-4137-9549-ddc162bb1f04",
+        "column": "native_name",
+        "before": "カブトップス",
+        "after": "カブトプス",
+        "changed": true,
+        "native_name_row_id": "6e379b55-4094-4beb-bf1d-5895af9e0fd5",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "9384d0e5-54b2-48b1-8189-190198c4b850",
+        "column": "native_name",
+        "before": "Zubat",
+        "after": "ズバット",
+        "changed": true,
+        "native_name_row_id": "0562bcf1-7f19-4be9-be10-09d60920c2f7",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "9427f895-4982-475b-a11e-0bdcf6506a95",
+        "column": "native_name",
+        "before": "Vaporeon",
+        "after": "シャワーズ",
+        "changed": true,
+        "native_name_row_id": "b907fc6c-095b-4539-9fc5-584cb57686b2",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "994dcbfa-5dfb-46ce-9e3c-e27ee1e767cd",
+        "column": "native_name",
+        "before": "アブラ",
+        "after": "ケーシィ",
+        "changed": true,
+        "native_name_row_id": "a5766753-62cc-434f-aa65-2e9e02fb0a6b",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "9b694c58-cecd-4c43-823f-fd6b0f80ce9e",
+        "column": "native_name",
+        "before": "Pineco",
+        "after": "クヌギダマ",
+        "changed": true,
+        "native_name_row_id": "7a8282fc-a8ba-49f0-82b6-c90e4cf9f1ae",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "a1c1feb6-6f1f-4151-a4c7-e95b9189d305",
+        "column": "native_name",
+        "before": "ジョルテオン",
+        "after": "サンダース",
+        "changed": true,
+        "native_name_row_id": "f6e84ac1-72ec-448e-a121-8feaf21aa02d",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "a2d0e7de-8104-494a-9b2c-d6307482530c",
+        "column": "native_name",
+        "before": "Rhyhorn",
+        "after": "サイホーン",
+        "changed": true,
+        "native_name_row_id": "2e7015be-9ab5-4e88-9566-ccf7f5359085",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "adc1fa02-eea6-4ed6-9434-6016dcae85bd",
+        "column": "native_name",
+        "before": "Pineco",
+        "after": "クヌギダマ",
+        "changed": true,
+        "native_name_row_id": "dc8bf7bc-3d3d-49af-919f-8859ed63edeb",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "af546e22-c53c-4aee-a07f-502ff9d6cfd8",
+        "column": "native_name",
+        "before": "Umbreon",
+        "after": "ブラッキー",
+        "changed": true,
+        "native_name_row_id": "b59c189e-3e58-4eb6-b606-5cfb570807ca",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "b0a5cb27-af06-4636-86d5-1d5783303d36",
+        "column": "native_name",
+        "before": "ダンズパース",
+        "after": "ノコッチ",
+        "changed": true,
+        "native_name_row_id": "f6d721fd-2f11-4245-ac42-677c2e79f811",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "b4c1f0c6-6441-4065-9332-e53aced91ce1",
+        "column": "native_name",
+        "before": "Umbreon",
+        "after": "ブラッキー",
+        "changed": true,
+        "native_name_row_id": "f8770abc-4b6d-4af6-b735-028e144a8284",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "b9b5be27-08c9-4851-b021-58014bcaa4f0",
+        "column": "native_name",
+        "before": "forretress",
+        "after": "フォレトス",
+        "changed": true,
+        "native_name_row_id": "dd86c87f-0e92-48cf-9a63-f3006d804ce7",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "bae18b10-00a3-4a40-b614-0924311492ca",
+        "column": "native_name",
+        "before": "スターピース",
+        "after": "ほしのかけら",
+        "changed": true,
+        "native_name_row_id": "f038bbc5-03fa-4749-bfbd-c9eaa1bbb9b5",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "bdcd65d9-86bb-42bb-a222-b9fc59f727c0",
+        "column": "native_name",
+        "before": "埋もれた化石",
+        "after": "ちていのかせき",
+        "changed": true,
+        "native_name_row_id": "0353b559-4968-43b6-9d15-c320ff05a58f",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "c282c6a3-3d15-4830-8976-1a838f2454da",
+        "column": "native_name",
+        "before": "staryu",
+        "after": "ヒトデマン",
+        "changed": true,
+        "native_name_row_id": "86acfcf6-5bf5-408e-abac-602d3c77a93e",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "cace4bf4-43d3-4dc1-b165-dcc4a6fd6035",
+        "column": "native_name",
+        "before": "ラティテート",
+        "after": "ラッタ",
+        "changed": true,
+        "native_name_row_id": "a3416174-bcc9-4415-99f7-d80ca760136a",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "d9e10f15-5587-4d55-804d-c4f03cfbd8e4",
+        "column": "native_name",
+        "before": "Omastar",
+        "after": "オムスター",
+        "changed": true,
+        "native_name_row_id": "aa766cb0-2fa1-4a2f-a0a0-abdadecaef2c",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "de3d2096-7550-45c6-bbbc-d55732664ba4",
+        "column": "native_name",
+        "before": "シャックル",
+        "after": "ツボツボ",
+        "changed": true,
+        "native_name_row_id": "0ea83d89-5093-4196-a2bb-f40232ef6b3e",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "dff0de51-f35c-40b4-9025-c9870d8efd1a",
+        "column": "native_name",
+        "before": "ヤンマ",
+        "after": "ヤンヤンマ",
+        "changed": true,
+        "native_name_row_id": "d730568f-598d-422e-bd45-3dbc6fe29490",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "e00d2d1f-ce0b-4861-993f-ec1424868a65",
+        "column": "native_name",
+        "before": "forretress",
+        "after": "フォレトス",
+        "changed": true,
+        "native_name_row_id": "f23fe6c9-6d0a-4eec-99e2-b23fff3cb5a8",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "e3a71ede-92f5-4baa-9674-681043ccf097",
+        "column": "native_name",
+        "before": "アラカザム",
+        "after": "フーディン",
+        "changed": true,
+        "native_name_row_id": "4ca95234-d5bd-4e4d-b848-1f9345f6ae5d",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "e511e504-4251-4f8d-a18a-0675d0ff8602",
+        "column": "native_name",
+        "before": "オラクル",
+        "after": "預言者",
+        "changed": true,
+        "native_name_row_id": "d01bda44-e1a1-4f3d-a607-3299d15d0c7f",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "ea3877c6-c235-4f64-856b-9a6c12e7fe89",
+        "column": "native_name",
+        "before": "ハイパーポーション",
+        "after": "すごいきずぐすり",
+        "changed": true,
+        "native_name_row_id": "5637e36e-c105-47f5-8533-2472d373d0c7",
+        "environment": "staging"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "fe7ab4cc-6650-412d-9695-942ef84a67d0",
+        "column": "native_name",
+        "before": "カブトップス",
+        "after": "カブトプス",
+        "changed": true,
+        "native_name_row_id": "6d2a567c-b3d0-4b17-a29e-9b56c782422a",
+        "environment": "staging"
+      }
+    ],
+    "metadata_changes": 71
+  },
+  "production_rehearsal": {
+    "status": "passed_and_rolled_back",
+    "assets": 73,
+    "links": 73,
+    "catalogue_corrections": 0,
+    "native_name_correction_counts": {
+      "total": 71,
+      "changed": 71,
+      "printing_changes": 71,
+      "card_name_changes": 71
+    },
+    "native_name_corrections": [
+      {
+        "table": "catalog.card_printings",
+        "id": "00126c81-8a35-407f-82d1-cce25ba0d095",
+        "column": "native_name",
+        "before": "スカルモリー",
+        "after": "エアームド",
+        "changed": true,
+        "native_name_row_id": "d872c8e7-5a73-411b-929a-e9ec8bc50f1a",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "00886842-ce42-4a59-8809-48ba691f12eb",
+        "column": "native_name",
+        "before": "forretress",
+        "after": "フォレトス",
+        "changed": true,
+        "native_name_row_id": "984b7a11-986e-4578-9f0f-21339d3c3d39",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "0adb9a6b-5629-4dcf-8381-158299f28cf1",
+        "column": "native_name",
+        "before": "ミステリープレートb",
+        "after": "ミステリープレートβ",
+        "changed": true,
+        "native_name_row_id": "1aedb4cf-eacb-448e-a836-5ecaa532463f",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "0d0da704-09a6-4802-bb55-bf14cc9eced7",
+        "column": "native_name",
+        "before": "サンドシュー",
+        "after": "サンド",
+        "changed": true,
+        "native_name_row_id": "8688aea3-b2c4-4848-af8f-caa5b84ce50d",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1229d2ee-2bc1-422b-ba56-f6dd2a0ed3de",
+        "column": "native_name",
+        "before": "ライチュ",
+        "after": "ライチュウ",
+        "changed": true,
+        "native_name_row_id": "858b9200-6bc9-4268-bbb3-44dcaf52f2d2",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "13a342d1-7607-4075-b4ac-61e629cad8dd",
+        "column": "native_name",
+        "before": "ラッタタ",
+        "after": "コラッタ",
+        "changed": true,
+        "native_name_row_id": "0be4e1dc-6e19-422c-a11f-67d67897709e",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "140f498e-d156-467d-9853-37dfcab2f106",
+        "column": "native_name",
+        "before": "Vaporeon",
+        "after": "シャワーズ",
+        "changed": true,
+        "native_name_row_id": "c41f7a11-8150-44f5-b27c-d8cba1cfcfa9",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "146155be-3852-4448-9249-8da63709fccc",
+        "column": "native_name",
+        "before": "ジョルテオン",
+        "after": "サンダース",
+        "changed": true,
+        "native_name_row_id": "18735198-05d3-4851-ab32-3fe945e49d73",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "17ace795-6b75-46bd-96bd-0cc83bcc2540",
+        "column": "native_name",
+        "before": "ミスレアヴァス",
+        "after": "ムウマ",
+        "changed": true,
+        "native_name_row_id": "2887c305-ed3a-4156-b583-cb9f69b83b00",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1cb401f0-e82f-4497-a666-3db67dbe838b",
+        "column": "native_name",
+        "before": "slugma",
+        "after": "マグマッグ",
+        "changed": true,
+        "native_name_row_id": "28f61ef6-c69f-411b-87ba-249683e91d3f",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1dd25298-29da-4aa0-8cbc-27679b02aad2",
+        "column": "native_name",
+        "before": "政治",
+        "after": "ニョロトノ",
+        "changed": true,
+        "native_name_row_id": "e1d8f1b9-60a3-4605-9fd0-cd7cbad4457b",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1dee191b-642a-4e97-a1df-c346b7800ce6",
+        "column": "native_name",
+        "before": "ライドン",
+        "after": "サイドン",
+        "changed": true,
+        "native_name_row_id": "84340d56-e4fc-45e6-9329-a8bdba1ad080",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "1ed8f671-7f36-4a5e-9443-22eae61788b5",
+        "column": "native_name",
+        "before": "カブトップス",
+        "after": "カブトプス",
+        "changed": true,
+        "native_name_row_id": "1f5fb08b-612c-40ca-b79f-7219b368d7f2",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "206d7bb8-ffee-4287-991f-817ad29caf63",
+        "column": "native_name",
+        "before": "PoliWhirl",
+        "after": "ニョロゾ",
+        "changed": true,
+        "native_name_row_id": "138cf776-7a0b-49e8-9548-f261d2851b1f",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "2412a12d-7294-45b7-ba6a-c7575edc83a2",
+        "column": "native_name",
+        "before": "政治",
+        "after": "ニョロトノ",
+        "changed": true,
+        "native_name_row_id": "6acb6a31-b52c-4e57-be11-76e858bc2990",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "278c5428-a108-4c62-a578-ecb01405c547",
+        "column": "native_name",
+        "before": "フレアロン",
+        "after": "ブースター",
+        "changed": true,
+        "native_name_row_id": "0a404246-8c9d-407d-82e3-e2625b48a8eb",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "2a96ef6b-c962-40e5-a9c8-ab1ff200f55a",
+        "column": "native_name",
+        "before": "地下遠征",
+        "after": "地底探険隊",
+        "changed": true,
+        "native_name_row_id": "c2179afd-23fe-4743-9dff-d44588714c7c",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "2dea0b61-5198-462e-89f4-45bf5554bca5",
+        "column": "native_name",
+        "before": "同上",
+        "after": "メタモン",
+        "changed": true,
+        "native_name_row_id": "4d674c97-24d1-4a6f-8049-e44f78ba8baf",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "2f97e688-f937-474f-8b06-3ca11d4ed563",
+        "column": "native_name",
+        "before": "ゴーレム",
+        "after": "ゴローニャ",
+        "changed": true,
+        "native_name_row_id": "2c77bbef-3dbc-41cd-8d00-0cb5786a950a",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "301fad2a-d7d7-41f1-8a96-f4ec7906b540",
+        "column": "native_name",
+        "before": "staryu",
+        "after": "ヒトデマン",
+        "changed": true,
+        "native_name_row_id": "1c3f112c-3ebe-4a8d-a9f2-75b460b6b838",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "345405e4-9ff9-4764-9981-bc14055cc2ed",
+        "column": "native_name",
+        "before": "Snubbull",
+        "after": "ブルー",
+        "changed": true,
+        "native_name_row_id": "c6b269f5-1ba0-4f1f-b9e0-acccb88fd746",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "3ca2c8ff-473c-4596-ac24-573450bbf724",
+        "column": "native_name",
+        "before": "Zubat",
+        "after": "ズバット",
+        "changed": true,
+        "native_name_row_id": "43a7397f-c1fd-4df0-addf-10a32a22e889",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "3cf0c74f-ffe8-453f-bf2d-acbc99e075dd",
+        "column": "native_name",
+        "before": "ミステリープレートY",
+        "after": "ミステリープレートγ",
+        "changed": true,
+        "native_name_row_id": "a55d08c1-5e53-427b-9bea-3cdad99d147f",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "40eb5e6d-6304-40eb-acc9-9faf8eb5dafa",
+        "column": "native_name",
+        "before": "Girafarig",
+        "after": "キリンリキ",
+        "changed": true,
+        "native_name_row_id": "eebd3df3-09b2-45b3-8880-cf017729908a",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "42a594d6-6804-4d80-8e50-7b294e70c0ce",
+        "column": "native_name",
+        "before": "Poliwrath",
+        "after": "ニョロボン",
+        "changed": true,
+        "native_name_row_id": "809c65ef-d5d4-4778-9250-bc5284af1278",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "43df0e4e-53fc-413b-90fd-1d0ab660bcb6",
+        "column": "native_name",
+        "before": "meowth",
+        "after": "ニャース",
+        "changed": true,
+        "native_name_row_id": "ec318dc2-25a5-45a3-afdd-b35cf0e71ca6",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "46479a5f-fdb5-4245-ba7f-b2bc9cd3176a",
+        "column": "native_name",
+        "before": "アエロダクチル",
+        "after": "プテラ",
+        "changed": true,
+        "native_name_row_id": "4bef5cb9-e368-4bcd-be2f-013871e23b62",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "49a12850-588e-41f6-b00e-87ec00e71cc0",
+        "column": "native_name",
+        "before": "アラカザム",
+        "after": "フーディン",
+        "changed": true,
+        "native_name_row_id": "a7850bc3-a46a-4ecc-a9d7-bcd2228ec8cc",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "4c841090-7730-4eba-9193-a01abeb07ff8",
+        "column": "native_name",
+        "before": "フレアロン",
+        "after": "ブースター",
+        "changed": true,
+        "native_name_row_id": "8b2f633b-8ae9-4607-9f76-0f12e6d1f427",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "5182d501-d22e-4dac-a235-accc993c13f0",
+        "column": "native_name",
+        "before": "クレファ",
+        "after": "ピィ",
+        "changed": true,
+        "native_name_row_id": "17768cea-b038-40da-b8a6-a714b089070b",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "52c7c8d4-23ae-4471-bb4d-b66f8265292f",
+        "column": "native_name",
+        "before": "ライドン",
+        "after": "サイドン",
+        "changed": true,
+        "native_name_row_id": "06db71f7-6a90-4af5-8301-e9c991a5a31c",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "54ee4782-1238-48c8-90eb-dd7ca8b3d42e",
+        "column": "native_name",
+        "before": "地下湖",
+        "after": "地底湖",
+        "changed": true,
+        "native_name_row_id": "165516e7-1d62-4ef2-8de0-a116ac8293ae",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "59a73d43-8f09-4c54-a94d-3850c58e93b5",
+        "column": "native_name",
+        "before": "カダブラ",
+        "after": "ユンゲラー",
+        "changed": true,
+        "native_name_row_id": "d00c8a9b-2b04-45a2-903d-9a92920f196b",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "5c846373-4415-4b33-b9c6-cc59cc36c38e",
+        "column": "native_name",
+        "before": "Eevee",
+        "after": "イーブイ",
+        "changed": true,
+        "native_name_row_id": "7a13d660-f757-41ac-9ef3-307892419c14",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "66e9057f-b906-49c0-a79d-b2f0e7c32afe",
+        "column": "native_name",
+        "before": "サンドスラッシュ",
+        "after": "サンドパン",
+        "changed": true,
+        "native_name_row_id": "2be571d1-8101-4a60-998e-76e294dd6c37",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "6850213a-70e5-405e-b074-ba74181b6679",
+        "column": "native_name",
+        "before": "poliwag",
+        "after": "ニョロモ",
+        "changed": true,
+        "native_name_row_id": "efc57364-7a1d-4b52-8dc2-7c172712b053",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "6913ccf2-efb2-40b2-bf02-807853f46654",
+        "column": "native_name",
+        "before": "ho-oh",
+        "after": "ホウオウ",
+        "changed": true,
+        "native_name_row_id": "9064a5b0-5763-4c52-b606-116ef8a565f4",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "6ab84cc4-1679-481f-8d6c-81f084d2b01e",
+        "column": "native_name",
+        "before": "マンティン",
+        "after": "マンタイン",
+        "changed": true,
+        "native_name_row_id": "c63fdca2-fa18-4719-a105-455cb95a4d64",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "6cbf7c35-b9e5-42b2-970d-b76bd1b0d805",
+        "column": "native_name",
+        "before": "Poliwrath",
+        "after": "ニョロボン",
+        "changed": true,
+        "native_name_row_id": "384980d6-5304-431e-9f32-5cd7af170624",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "716ccd50-6f3f-4f77-84e5-2d329485cb98",
+        "column": "native_name",
+        "before": "オマニテ",
+        "after": "オムナイト",
+        "changed": true,
+        "native_name_row_id": "2d6f39d7-f47a-4023-91fa-5eeb5b96a2f7",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "7249f98b-aa82-4162-aaf9-ba1963a7c692",
+        "column": "native_name",
+        "before": "ペルシャ語",
+        "after": "ペルシアン",
+        "changed": true,
+        "native_name_row_id": "9c1d2636-8413-421a-b07e-01c04fc8a00e",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "743502e7-3bfb-4671-a79a-17bef12e11df",
+        "column": "native_name",
+        "before": "クリスタルシャード",
+        "after": "水晶のかけら",
+        "changed": true,
+        "native_name_row_id": "c8cb56f2-f518-4eb0-bef5-afbac81606f3",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "7756cca2-e1c9-481d-87cc-bf20752cc452",
+        "column": "native_name",
+        "before": "ミステリープレートo",
+        "after": "ミステリープレートδ",
+        "changed": true,
+        "native_name_row_id": "dd66f10a-115f-4e8b-927f-e70f7d15bdf0",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "796afaf8-a8b7-4df2-8c62-b66dc11f992c",
+        "column": "native_name",
+        "before": "ウォブバフェット",
+        "after": "ソーナンス",
+        "changed": true,
+        "native_name_row_id": "597ac755-6121-41e7-9c7a-a615b115e2b2",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "7cc0dcdb-2431-497c-a7e9-c920f0e7d32e",
+        "column": "native_name",
+        "before": "マークロウ",
+        "after": "ヤミカラス",
+        "changed": true,
+        "native_name_row_id": "adff0e50-54c5-4901-9ab6-80d6137d83d0",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "8ef74ea9-ead6-4d79-aab8-51c49916837a",
+        "column": "native_name",
+        "before": "ライチュ",
+        "after": "ライチュウ",
+        "changed": true,
+        "native_name_row_id": "97857a7f-5e91-4228-ba7d-0a02a345f344",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "90c5d3b6-585e-46c8-b0a6-fc57482a55d3",
+        "column": "native_name",
+        "before": "ミステリープレートa",
+        "after": "ミステリープレートα",
+        "changed": true,
+        "native_name_row_id": "35d55831-159e-42f6-ad7d-1af837fc495b",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "9144da81-c7d1-4137-9549-ddc162bb1f04",
+        "column": "native_name",
+        "before": "カブトップス",
+        "after": "カブトプス",
+        "changed": true,
+        "native_name_row_id": "6e379b55-4094-4beb-bf1d-5895af9e0fd5",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "9384d0e5-54b2-48b1-8189-190198c4b850",
+        "column": "native_name",
+        "before": "Zubat",
+        "after": "ズバット",
+        "changed": true,
+        "native_name_row_id": "0562bcf1-7f19-4be9-be10-09d60920c2f7",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "9427f895-4982-475b-a11e-0bdcf6506a95",
+        "column": "native_name",
+        "before": "Vaporeon",
+        "after": "シャワーズ",
+        "changed": true,
+        "native_name_row_id": "b907fc6c-095b-4539-9fc5-584cb57686b2",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "994dcbfa-5dfb-46ce-9e3c-e27ee1e767cd",
+        "column": "native_name",
+        "before": "アブラ",
+        "after": "ケーシィ",
+        "changed": true,
+        "native_name_row_id": "a5766753-62cc-434f-aa65-2e9e02fb0a6b",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "9b694c58-cecd-4c43-823f-fd6b0f80ce9e",
+        "column": "native_name",
+        "before": "Pineco",
+        "after": "クヌギダマ",
+        "changed": true,
+        "native_name_row_id": "7a8282fc-a8ba-49f0-82b6-c90e4cf9f1ae",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "a1c1feb6-6f1f-4151-a4c7-e95b9189d305",
+        "column": "native_name",
+        "before": "ジョルテオン",
+        "after": "サンダース",
+        "changed": true,
+        "native_name_row_id": "f6e84ac1-72ec-448e-a121-8feaf21aa02d",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "a2d0e7de-8104-494a-9b2c-d6307482530c",
+        "column": "native_name",
+        "before": "Rhyhorn",
+        "after": "サイホーン",
+        "changed": true,
+        "native_name_row_id": "2e7015be-9ab5-4e88-9566-ccf7f5359085",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "adc1fa02-eea6-4ed6-9434-6016dcae85bd",
+        "column": "native_name",
+        "before": "Pineco",
+        "after": "クヌギダマ",
+        "changed": true,
+        "native_name_row_id": "dc8bf7bc-3d3d-49af-919f-8859ed63edeb",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "af546e22-c53c-4aee-a07f-502ff9d6cfd8",
+        "column": "native_name",
+        "before": "Umbreon",
+        "after": "ブラッキー",
+        "changed": true,
+        "native_name_row_id": "b59c189e-3e58-4eb6-b606-5cfb570807ca",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "b0a5cb27-af06-4636-86d5-1d5783303d36",
+        "column": "native_name",
+        "before": "ダンズパース",
+        "after": "ノコッチ",
+        "changed": true,
+        "native_name_row_id": "f6d721fd-2f11-4245-ac42-677c2e79f811",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "b4c1f0c6-6441-4065-9332-e53aced91ce1",
+        "column": "native_name",
+        "before": "Umbreon",
+        "after": "ブラッキー",
+        "changed": true,
+        "native_name_row_id": "f8770abc-4b6d-4af6-b735-028e144a8284",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "b9b5be27-08c9-4851-b021-58014bcaa4f0",
+        "column": "native_name",
+        "before": "forretress",
+        "after": "フォレトス",
+        "changed": true,
+        "native_name_row_id": "dd86c87f-0e92-48cf-9a63-f3006d804ce7",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "bae18b10-00a3-4a40-b614-0924311492ca",
+        "column": "native_name",
+        "before": "スターピース",
+        "after": "ほしのかけら",
+        "changed": true,
+        "native_name_row_id": "f038bbc5-03fa-4749-bfbd-c9eaa1bbb9b5",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "bdcd65d9-86bb-42bb-a222-b9fc59f727c0",
+        "column": "native_name",
+        "before": "埋もれた化石",
+        "after": "ちていのかせき",
+        "changed": true,
+        "native_name_row_id": "0353b559-4968-43b6-9d15-c320ff05a58f",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "c282c6a3-3d15-4830-8976-1a838f2454da",
+        "column": "native_name",
+        "before": "staryu",
+        "after": "ヒトデマン",
+        "changed": true,
+        "native_name_row_id": "86acfcf6-5bf5-408e-abac-602d3c77a93e",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "cace4bf4-43d3-4dc1-b165-dcc4a6fd6035",
+        "column": "native_name",
+        "before": "ラティテート",
+        "after": "ラッタ",
+        "changed": true,
+        "native_name_row_id": "a3416174-bcc9-4415-99f7-d80ca760136a",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "d9e10f15-5587-4d55-804d-c4f03cfbd8e4",
+        "column": "native_name",
+        "before": "Omastar",
+        "after": "オムスター",
+        "changed": true,
+        "native_name_row_id": "aa766cb0-2fa1-4a2f-a0a0-abdadecaef2c",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "de3d2096-7550-45c6-bbbc-d55732664ba4",
+        "column": "native_name",
+        "before": "シャックル",
+        "after": "ツボツボ",
+        "changed": true,
+        "native_name_row_id": "0ea83d89-5093-4196-a2bb-f40232ef6b3e",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "dff0de51-f35c-40b4-9025-c9870d8efd1a",
+        "column": "native_name",
+        "before": "ヤンマ",
+        "after": "ヤンヤンマ",
+        "changed": true,
+        "native_name_row_id": "d730568f-598d-422e-bd45-3dbc6fe29490",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "e00d2d1f-ce0b-4861-993f-ec1424868a65",
+        "column": "native_name",
+        "before": "forretress",
+        "after": "フォレトス",
+        "changed": true,
+        "native_name_row_id": "f23fe6c9-6d0a-4eec-99e2-b23fff3cb5a8",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "e3a71ede-92f5-4baa-9674-681043ccf097",
+        "column": "native_name",
+        "before": "アラカザム",
+        "after": "フーディン",
+        "changed": true,
+        "native_name_row_id": "4ca95234-d5bd-4e4d-b848-1f9345f6ae5d",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "e511e504-4251-4f8d-a18a-0675d0ff8602",
+        "column": "native_name",
+        "before": "オラクル",
+        "after": "預言者",
+        "changed": true,
+        "native_name_row_id": "d01bda44-e1a1-4f3d-a607-3299d15d0c7f",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "ea3877c6-c235-4f64-856b-9a6c12e7fe89",
+        "column": "native_name",
+        "before": "ハイパーポーション",
+        "after": "すごいきずぐすり",
+        "changed": true,
+        "native_name_row_id": "5637e36e-c105-47f5-8533-2472d373d0c7",
+        "environment": "production"
+      },
+      {
+        "table": "catalog.card_printings",
+        "id": "fe7ab4cc-6650-412d-9695-942ef84a67d0",
+        "column": "native_name",
+        "before": "カブトップス",
+        "after": "カブトプス",
+        "changed": true,
+        "native_name_row_id": "6d2a567c-b3d0-4b17-a29e-9b56c782422a",
+        "environment": "production"
+      }
+    ],
+    "metadata_changes": 71
+  },
+  "native_name_corrections": [
+    {
+      "table": "catalog.card_printings",
+      "id": "00126c81-8a35-407f-82d1-cce25ba0d095",
+      "column": "native_name",
+      "before": "スカルモリー",
+      "after": "エアームド",
+      "changed": true,
+      "native_name_row_id": "d872c8e7-5a73-411b-929a-e9ec8bc50f1a",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "00886842-ce42-4a59-8809-48ba691f12eb",
+      "column": "native_name",
+      "before": "forretress",
+      "after": "フォレトス",
+      "changed": true,
+      "native_name_row_id": "984b7a11-986e-4578-9f0f-21339d3c3d39",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "0adb9a6b-5629-4dcf-8381-158299f28cf1",
+      "column": "native_name",
+      "before": "ミステリープレートb",
+      "after": "ミステリープレートβ",
+      "changed": true,
+      "native_name_row_id": "1aedb4cf-eacb-448e-a836-5ecaa532463f",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "0d0da704-09a6-4802-bb55-bf14cc9eced7",
+      "column": "native_name",
+      "before": "サンドシュー",
+      "after": "サンド",
+      "changed": true,
+      "native_name_row_id": "8688aea3-b2c4-4848-af8f-caa5b84ce50d",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "1229d2ee-2bc1-422b-ba56-f6dd2a0ed3de",
+      "column": "native_name",
+      "before": "ライチュ",
+      "after": "ライチュウ",
+      "changed": true,
+      "native_name_row_id": "858b9200-6bc9-4268-bbb3-44dcaf52f2d2",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "13a342d1-7607-4075-b4ac-61e629cad8dd",
+      "column": "native_name",
+      "before": "ラッタタ",
+      "after": "コラッタ",
+      "changed": true,
+      "native_name_row_id": "0be4e1dc-6e19-422c-a11f-67d67897709e",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "140f498e-d156-467d-9853-37dfcab2f106",
+      "column": "native_name",
+      "before": "Vaporeon",
+      "after": "シャワーズ",
+      "changed": true,
+      "native_name_row_id": "c41f7a11-8150-44f5-b27c-d8cba1cfcfa9",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "146155be-3852-4448-9249-8da63709fccc",
+      "column": "native_name",
+      "before": "ジョルテオン",
+      "after": "サンダース",
+      "changed": true,
+      "native_name_row_id": "18735198-05d3-4851-ab32-3fe945e49d73",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "17ace795-6b75-46bd-96bd-0cc83bcc2540",
+      "column": "native_name",
+      "before": "ミスレアヴァス",
+      "after": "ムウマ",
+      "changed": true,
+      "native_name_row_id": "2887c305-ed3a-4156-b583-cb9f69b83b00",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "1cb401f0-e82f-4497-a666-3db67dbe838b",
+      "column": "native_name",
+      "before": "slugma",
+      "after": "マグマッグ",
+      "changed": true,
+      "native_name_row_id": "28f61ef6-c69f-411b-87ba-249683e91d3f",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "1dd25298-29da-4aa0-8cbc-27679b02aad2",
+      "column": "native_name",
+      "before": "政治",
+      "after": "ニョロトノ",
+      "changed": true,
+      "native_name_row_id": "e1d8f1b9-60a3-4605-9fd0-cd7cbad4457b",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "1dee191b-642a-4e97-a1df-c346b7800ce6",
+      "column": "native_name",
+      "before": "ライドン",
+      "after": "サイドン",
+      "changed": true,
+      "native_name_row_id": "84340d56-e4fc-45e6-9329-a8bdba1ad080",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "1ed8f671-7f36-4a5e-9443-22eae61788b5",
+      "column": "native_name",
+      "before": "カブトップス",
+      "after": "カブトプス",
+      "changed": true,
+      "native_name_row_id": "1f5fb08b-612c-40ca-b79f-7219b368d7f2",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "206d7bb8-ffee-4287-991f-817ad29caf63",
+      "column": "native_name",
+      "before": "PoliWhirl",
+      "after": "ニョロゾ",
+      "changed": true,
+      "native_name_row_id": "138cf776-7a0b-49e8-9548-f261d2851b1f",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "2412a12d-7294-45b7-ba6a-c7575edc83a2",
+      "column": "native_name",
+      "before": "政治",
+      "after": "ニョロトノ",
+      "changed": true,
+      "native_name_row_id": "6acb6a31-b52c-4e57-be11-76e858bc2990",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "278c5428-a108-4c62-a578-ecb01405c547",
+      "column": "native_name",
+      "before": "フレアロン",
+      "after": "ブースター",
+      "changed": true,
+      "native_name_row_id": "0a404246-8c9d-407d-82e3-e2625b48a8eb",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "2a96ef6b-c962-40e5-a9c8-ab1ff200f55a",
+      "column": "native_name",
+      "before": "地下遠征",
+      "after": "地底探険隊",
+      "changed": true,
+      "native_name_row_id": "c2179afd-23fe-4743-9dff-d44588714c7c",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "2dea0b61-5198-462e-89f4-45bf5554bca5",
+      "column": "native_name",
+      "before": "同上",
+      "after": "メタモン",
+      "changed": true,
+      "native_name_row_id": "4d674c97-24d1-4a6f-8049-e44f78ba8baf",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "2f97e688-f937-474f-8b06-3ca11d4ed563",
+      "column": "native_name",
+      "before": "ゴーレム",
+      "after": "ゴローニャ",
+      "changed": true,
+      "native_name_row_id": "2c77bbef-3dbc-41cd-8d00-0cb5786a950a",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "301fad2a-d7d7-41f1-8a96-f4ec7906b540",
+      "column": "native_name",
+      "before": "staryu",
+      "after": "ヒトデマン",
+      "changed": true,
+      "native_name_row_id": "1c3f112c-3ebe-4a8d-a9f2-75b460b6b838",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "345405e4-9ff9-4764-9981-bc14055cc2ed",
+      "column": "native_name",
+      "before": "Snubbull",
+      "after": "ブルー",
+      "changed": true,
+      "native_name_row_id": "c6b269f5-1ba0-4f1f-b9e0-acccb88fd746",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "3ca2c8ff-473c-4596-ac24-573450bbf724",
+      "column": "native_name",
+      "before": "Zubat",
+      "after": "ズバット",
+      "changed": true,
+      "native_name_row_id": "43a7397f-c1fd-4df0-addf-10a32a22e889",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "3cf0c74f-ffe8-453f-bf2d-acbc99e075dd",
+      "column": "native_name",
+      "before": "ミステリープレートY",
+      "after": "ミステリープレートγ",
+      "changed": true,
+      "native_name_row_id": "a55d08c1-5e53-427b-9bea-3cdad99d147f",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "40eb5e6d-6304-40eb-acc9-9faf8eb5dafa",
+      "column": "native_name",
+      "before": "Girafarig",
+      "after": "キリンリキ",
+      "changed": true,
+      "native_name_row_id": "eebd3df3-09b2-45b3-8880-cf017729908a",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "42a594d6-6804-4d80-8e50-7b294e70c0ce",
+      "column": "native_name",
+      "before": "Poliwrath",
+      "after": "ニョロボン",
+      "changed": true,
+      "native_name_row_id": "809c65ef-d5d4-4778-9250-bc5284af1278",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "43df0e4e-53fc-413b-90fd-1d0ab660bcb6",
+      "column": "native_name",
+      "before": "meowth",
+      "after": "ニャース",
+      "changed": true,
+      "native_name_row_id": "ec318dc2-25a5-45a3-afdd-b35cf0e71ca6",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "46479a5f-fdb5-4245-ba7f-b2bc9cd3176a",
+      "column": "native_name",
+      "before": "アエロダクチル",
+      "after": "プテラ",
+      "changed": true,
+      "native_name_row_id": "4bef5cb9-e368-4bcd-be2f-013871e23b62",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "49a12850-588e-41f6-b00e-87ec00e71cc0",
+      "column": "native_name",
+      "before": "アラカザム",
+      "after": "フーディン",
+      "changed": true,
+      "native_name_row_id": "a7850bc3-a46a-4ecc-a9d7-bcd2228ec8cc",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "4c841090-7730-4eba-9193-a01abeb07ff8",
+      "column": "native_name",
+      "before": "フレアロン",
+      "after": "ブースター",
+      "changed": true,
+      "native_name_row_id": "8b2f633b-8ae9-4607-9f76-0f12e6d1f427",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "5182d501-d22e-4dac-a235-accc993c13f0",
+      "column": "native_name",
+      "before": "クレファ",
+      "after": "ピィ",
+      "changed": true,
+      "native_name_row_id": "17768cea-b038-40da-b8a6-a714b089070b",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "52c7c8d4-23ae-4471-bb4d-b66f8265292f",
+      "column": "native_name",
+      "before": "ライドン",
+      "after": "サイドン",
+      "changed": true,
+      "native_name_row_id": "06db71f7-6a90-4af5-8301-e9c991a5a31c",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "54ee4782-1238-48c8-90eb-dd7ca8b3d42e",
+      "column": "native_name",
+      "before": "地下湖",
+      "after": "地底湖",
+      "changed": true,
+      "native_name_row_id": "165516e7-1d62-4ef2-8de0-a116ac8293ae",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "59a73d43-8f09-4c54-a94d-3850c58e93b5",
+      "column": "native_name",
+      "before": "カダブラ",
+      "after": "ユンゲラー",
+      "changed": true,
+      "native_name_row_id": "d00c8a9b-2b04-45a2-903d-9a92920f196b",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "5c846373-4415-4b33-b9c6-cc59cc36c38e",
+      "column": "native_name",
+      "before": "Eevee",
+      "after": "イーブイ",
+      "changed": true,
+      "native_name_row_id": "7a13d660-f757-41ac-9ef3-307892419c14",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "66e9057f-b906-49c0-a79d-b2f0e7c32afe",
+      "column": "native_name",
+      "before": "サンドスラッシュ",
+      "after": "サンドパン",
+      "changed": true,
+      "native_name_row_id": "2be571d1-8101-4a60-998e-76e294dd6c37",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "6850213a-70e5-405e-b074-ba74181b6679",
+      "column": "native_name",
+      "before": "poliwag",
+      "after": "ニョロモ",
+      "changed": true,
+      "native_name_row_id": "efc57364-7a1d-4b52-8dc2-7c172712b053",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "6913ccf2-efb2-40b2-bf02-807853f46654",
+      "column": "native_name",
+      "before": "ho-oh",
+      "after": "ホウオウ",
+      "changed": true,
+      "native_name_row_id": "9064a5b0-5763-4c52-b606-116ef8a565f4",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "6ab84cc4-1679-481f-8d6c-81f084d2b01e",
+      "column": "native_name",
+      "before": "マンティン",
+      "after": "マンタイン",
+      "changed": true,
+      "native_name_row_id": "c63fdca2-fa18-4719-a105-455cb95a4d64",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "6cbf7c35-b9e5-42b2-970d-b76bd1b0d805",
+      "column": "native_name",
+      "before": "Poliwrath",
+      "after": "ニョロボン",
+      "changed": true,
+      "native_name_row_id": "384980d6-5304-431e-9f32-5cd7af170624",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "716ccd50-6f3f-4f77-84e5-2d329485cb98",
+      "column": "native_name",
+      "before": "オマニテ",
+      "after": "オムナイト",
+      "changed": true,
+      "native_name_row_id": "2d6f39d7-f47a-4023-91fa-5eeb5b96a2f7",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "7249f98b-aa82-4162-aaf9-ba1963a7c692",
+      "column": "native_name",
+      "before": "ペルシャ語",
+      "after": "ペルシアン",
+      "changed": true,
+      "native_name_row_id": "9c1d2636-8413-421a-b07e-01c04fc8a00e",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "743502e7-3bfb-4671-a79a-17bef12e11df",
+      "column": "native_name",
+      "before": "クリスタルシャード",
+      "after": "水晶のかけら",
+      "changed": true,
+      "native_name_row_id": "c8cb56f2-f518-4eb0-bef5-afbac81606f3",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "7756cca2-e1c9-481d-87cc-bf20752cc452",
+      "column": "native_name",
+      "before": "ミステリープレートo",
+      "after": "ミステリープレートδ",
+      "changed": true,
+      "native_name_row_id": "dd66f10a-115f-4e8b-927f-e70f7d15bdf0",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "796afaf8-a8b7-4df2-8c62-b66dc11f992c",
+      "column": "native_name",
+      "before": "ウォブバフェット",
+      "after": "ソーナンス",
+      "changed": true,
+      "native_name_row_id": "597ac755-6121-41e7-9c7a-a615b115e2b2",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "7cc0dcdb-2431-497c-a7e9-c920f0e7d32e",
+      "column": "native_name",
+      "before": "マークロウ",
+      "after": "ヤミカラス",
+      "changed": true,
+      "native_name_row_id": "adff0e50-54c5-4901-9ab6-80d6137d83d0",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "8ef74ea9-ead6-4d79-aab8-51c49916837a",
+      "column": "native_name",
+      "before": "ライチュ",
+      "after": "ライチュウ",
+      "changed": true,
+      "native_name_row_id": "97857a7f-5e91-4228-ba7d-0a02a345f344",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "90c5d3b6-585e-46c8-b0a6-fc57482a55d3",
+      "column": "native_name",
+      "before": "ミステリープレートa",
+      "after": "ミステリープレートα",
+      "changed": true,
+      "native_name_row_id": "35d55831-159e-42f6-ad7d-1af837fc495b",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "9144da81-c7d1-4137-9549-ddc162bb1f04",
+      "column": "native_name",
+      "before": "カブトップス",
+      "after": "カブトプス",
+      "changed": true,
+      "native_name_row_id": "6e379b55-4094-4beb-bf1d-5895af9e0fd5",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "9384d0e5-54b2-48b1-8189-190198c4b850",
+      "column": "native_name",
+      "before": "Zubat",
+      "after": "ズバット",
+      "changed": true,
+      "native_name_row_id": "0562bcf1-7f19-4be9-be10-09d60920c2f7",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "9427f895-4982-475b-a11e-0bdcf6506a95",
+      "column": "native_name",
+      "before": "Vaporeon",
+      "after": "シャワーズ",
+      "changed": true,
+      "native_name_row_id": "b907fc6c-095b-4539-9fc5-584cb57686b2",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "994dcbfa-5dfb-46ce-9e3c-e27ee1e767cd",
+      "column": "native_name",
+      "before": "アブラ",
+      "after": "ケーシィ",
+      "changed": true,
+      "native_name_row_id": "a5766753-62cc-434f-aa65-2e9e02fb0a6b",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "9b694c58-cecd-4c43-823f-fd6b0f80ce9e",
+      "column": "native_name",
+      "before": "Pineco",
+      "after": "クヌギダマ",
+      "changed": true,
+      "native_name_row_id": "7a8282fc-a8ba-49f0-82b6-c90e4cf9f1ae",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "a1c1feb6-6f1f-4151-a4c7-e95b9189d305",
+      "column": "native_name",
+      "before": "ジョルテオン",
+      "after": "サンダース",
+      "changed": true,
+      "native_name_row_id": "f6e84ac1-72ec-448e-a121-8feaf21aa02d",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "a2d0e7de-8104-494a-9b2c-d6307482530c",
+      "column": "native_name",
+      "before": "Rhyhorn",
+      "after": "サイホーン",
+      "changed": true,
+      "native_name_row_id": "2e7015be-9ab5-4e88-9566-ccf7f5359085",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "adc1fa02-eea6-4ed6-9434-6016dcae85bd",
+      "column": "native_name",
+      "before": "Pineco",
+      "after": "クヌギダマ",
+      "changed": true,
+      "native_name_row_id": "dc8bf7bc-3d3d-49af-919f-8859ed63edeb",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "af546e22-c53c-4aee-a07f-502ff9d6cfd8",
+      "column": "native_name",
+      "before": "Umbreon",
+      "after": "ブラッキー",
+      "changed": true,
+      "native_name_row_id": "b59c189e-3e58-4eb6-b606-5cfb570807ca",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "b0a5cb27-af06-4636-86d5-1d5783303d36",
+      "column": "native_name",
+      "before": "ダンズパース",
+      "after": "ノコッチ",
+      "changed": true,
+      "native_name_row_id": "f6d721fd-2f11-4245-ac42-677c2e79f811",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "b4c1f0c6-6441-4065-9332-e53aced91ce1",
+      "column": "native_name",
+      "before": "Umbreon",
+      "after": "ブラッキー",
+      "changed": true,
+      "native_name_row_id": "f8770abc-4b6d-4af6-b735-028e144a8284",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "b9b5be27-08c9-4851-b021-58014bcaa4f0",
+      "column": "native_name",
+      "before": "forretress",
+      "after": "フォレトス",
+      "changed": true,
+      "native_name_row_id": "dd86c87f-0e92-48cf-9a63-f3006d804ce7",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "bae18b10-00a3-4a40-b614-0924311492ca",
+      "column": "native_name",
+      "before": "スターピース",
+      "after": "ほしのかけら",
+      "changed": true,
+      "native_name_row_id": "f038bbc5-03fa-4749-bfbd-c9eaa1bbb9b5",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "bdcd65d9-86bb-42bb-a222-b9fc59f727c0",
+      "column": "native_name",
+      "before": "埋もれた化石",
+      "after": "ちていのかせき",
+      "changed": true,
+      "native_name_row_id": "0353b559-4968-43b6-9d15-c320ff05a58f",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "c282c6a3-3d15-4830-8976-1a838f2454da",
+      "column": "native_name",
+      "before": "staryu",
+      "after": "ヒトデマン",
+      "changed": true,
+      "native_name_row_id": "86acfcf6-5bf5-408e-abac-602d3c77a93e",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "cace4bf4-43d3-4dc1-b165-dcc4a6fd6035",
+      "column": "native_name",
+      "before": "ラティテート",
+      "after": "ラッタ",
+      "changed": true,
+      "native_name_row_id": "a3416174-bcc9-4415-99f7-d80ca760136a",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "d9e10f15-5587-4d55-804d-c4f03cfbd8e4",
+      "column": "native_name",
+      "before": "Omastar",
+      "after": "オムスター",
+      "changed": true,
+      "native_name_row_id": "aa766cb0-2fa1-4a2f-a0a0-abdadecaef2c",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "de3d2096-7550-45c6-bbbc-d55732664ba4",
+      "column": "native_name",
+      "before": "シャックル",
+      "after": "ツボツボ",
+      "changed": true,
+      "native_name_row_id": "0ea83d89-5093-4196-a2bb-f40232ef6b3e",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "dff0de51-f35c-40b4-9025-c9870d8efd1a",
+      "column": "native_name",
+      "before": "ヤンマ",
+      "after": "ヤンヤンマ",
+      "changed": true,
+      "native_name_row_id": "d730568f-598d-422e-bd45-3dbc6fe29490",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "e00d2d1f-ce0b-4861-993f-ec1424868a65",
+      "column": "native_name",
+      "before": "forretress",
+      "after": "フォレトス",
+      "changed": true,
+      "native_name_row_id": "f23fe6c9-6d0a-4eec-99e2-b23fff3cb5a8",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "e3a71ede-92f5-4baa-9674-681043ccf097",
+      "column": "native_name",
+      "before": "アラカザム",
+      "after": "フーディン",
+      "changed": true,
+      "native_name_row_id": "4ca95234-d5bd-4e4d-b848-1f9345f6ae5d",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "e511e504-4251-4f8d-a18a-0675d0ff8602",
+      "column": "native_name",
+      "before": "オラクル",
+      "after": "預言者",
+      "changed": true,
+      "native_name_row_id": "d01bda44-e1a1-4f3d-a607-3299d15d0c7f",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "ea3877c6-c235-4f64-856b-9a6c12e7fe89",
+      "column": "native_name",
+      "before": "ハイパーポーション",
+      "after": "すごいきずぐすり",
+      "changed": true,
+      "native_name_row_id": "5637e36e-c105-47f5-8533-2472d373d0c7",
+      "environment": "production"
+    },
+    {
+      "table": "catalog.card_printings",
+      "id": "fe7ab4cc-6650-412d-9695-942ef84a67d0",
+      "column": "native_name",
+      "before": "カブトップス",
+      "after": "カブトプス",
+      "changed": true,
+      "native_name_row_id": "6d2a567c-b3d0-4b17-a29e-9b56c782422a",
+      "environment": "production"
+    }
+  ],
+  "native_name_correction_counts": {
+    "total": 71,
+    "changed": 71,
+    "printing_changes": 71,
+    "card_name_changes": 71
+  },
+  "fronts": 73,
+  "derivatives": 219,
+  "verified_at": "2026-10-01T08:01:33.782Z"
+}

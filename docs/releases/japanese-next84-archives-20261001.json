@@ -1,0 +1,37 @@
+{
+  "status": "ARCHIVED_AND_INDEPENDENTLY_DOWNLOADED_NOT_PUBLISHED",
+  "fronts": 84,
+  "derivative_references": 252,
+  "image_files": 336,
+  "native_name_corrections_required": 81,
+  "unchanged_native_names": 3,
+  "production_writes": 0,
+  "archives": [
+    {
+      "asset_id": 602733163,
+      "archive_sha256": "72286f093f9924508d359530d7af6e155d9b56c23dbe6b5e055eb1d0887e56ca",
+      "archive_bytes": 11118256,
+      "archive_entries": 326,
+      "image_files": 320,
+      "fronts": 80,
+      "derivative_references": 240,
+      "metadata_corrections_required": 77,
+      "production_writes": 0,
+      "status": "INDEPENDENT_DOWNLOAD_CHECKSUM_VERIFIED",
+      "url": "https://github.com/tberridge86/Stackr/releases/download/artwork-residual-recovery-20260930/stackr-native80-reviewed-20261001.zip"
+    },
+    {
+      "asset_id": 602759320,
+      "sha256": "f7f550123bc87b5839411ac73f7a08f12cce279d3c35769400822cff5e928f44",
+      "bytes": 582470,
+      "fronts": 4,
+      "derivative_references": 12,
+      "image_files": 16,
+      "archive_entries": 22,
+      "metadata_corrections_required": 4,
+      "production_writes": 0,
+      "status": "INDEPENDENT_DOWNLOAD_CHECKSUM_VERIFIED",
+      "url": "https://github.com/tberridge86/Stackr/releases/download/artwork-residual-recovery-20260930/stackr-native4-reviewed-20261001.zip"
+    }
+  ]
+}

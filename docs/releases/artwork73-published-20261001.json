@@ -1,0 +1,130 @@
+{
+  "verified_at": "2026-10-01T08:07:44.986Z",
+  "status": "published_and_independently_verified",
+  "batch": {
+    "fronts": 73,
+    "derivative_references": 219,
+    "distinct_storage_objects": 292,
+    "created": 292,
+    "reused": 0
+  },
+  "production": {
+    "run_id": "36833026506",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36833026506",
+    "source": "f7c40666aa7d54c32328e99fdaa1aafb56997aaa",
+    "cohort_sha256": "3e39c1a3e6a67d20bb773067d92c364adcafb0e2bc849ea6198932a909c50943",
+    "corrections_sha256": "dd60505aa7e1ac35ed38df452ffc322d8e41a238634658c68d99adaade5465f6",
+    "receipt_sha256": "11d79110933ffc61966323025b86802164762d0bf2277eb7fd814b51c58c7594",
+    "receipt_artifact": {
+      "id": 11147663086,
+      "name": "native73-artwork-36833026506-1",
+      "createdAt": "2026-10-01T08:01:35Z",
+      "digest": "sha256:f0f03737556df8d39eac5b16ddd3dbdbb846a8ff722b89269fb9e90a833f6a77",
+      "sha256": "f0f03737556df8d39eac5b16ddd3dbdbb846a8ff722b89269fb9e90a833f6a77",
+      "bytes": 26662,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/36833026506/artifacts/11147663086"
+    }
+  },
+  "independent_verification": {
+    "cards_passed": 73,
+    "images_passed": 292,
+    "first_attempt_card_failures": 0,
+    "first_attempt_image_failures": 0,
+    "http_timings": {
+      "card_detail": {
+        "samples": 73,
+        "median_ms": 417,
+        "p95_ms": 577,
+        "max_ms": 1470
+      },
+      "manifest": {
+        "samples": 73,
+        "median_ms": 295,
+        "p95_ms": 501,
+        "max_ms": 643
+      },
+      "image": {
+        "samples": 292,
+        "median_ms": 310,
+        "p95_ms": 513,
+        "max_ms": 1038
+      }
+    },
+    "timing_contract": "HTTP byte counts and statuses are recorded before image decoding. request_complete_ms excludes deliberate queue spacing and includes the final HTTP response body; pacing_ms is retained per attempt.",
+    "request_failures": {
+      "initial_passed_cards": 73,
+      "initial_exhausted_card_checks": 0,
+      "follow_up_used": false,
+      "follow_up_passed_cards": 0,
+      "follow_up_finished_at": null,
+      "api_attempts_without_http_response": 0,
+      "non_200_http_attempts": {},
+      "all_recovered": true,
+      "causes": [],
+      "timing_scope": "Initial successful card checks only; no follow-up evidence was used."
+    }
+  },
+  "preservation": {
+    "checked_at": "2026-10-01T08:03:21.922Z",
+    "unexpected_differences": [],
+    "staging": {
+      "cards": 73,
+      "printing_native_names_changed": 0,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true,
+      "reviewed_correct_names_unchanged": 2
+    },
+    "production": {
+      "cards": 73,
+      "printing_native_names_changed": 71,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true,
+      "reviewed_correct_names_unchanged": 2
+    }
+  },
+  "metadata_changes": {
+    "printing_native_names": 71,
+    "native_search_name_rows": 71,
+    "other_metadata": 0
+  },
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "recovery_total": {
+    "fronts": 9070,
+    "derivative_references": 27210,
+    "distinct_storage_objects": 36213,
+    "retained_cohorts": 13
+  },
+  "original_4201": {
+    "resolved": 1110,
+    "remaining": 3091
+  },
+  "remaining": {
+    "by_language": {
+      "en": 465,
+      "ja": 1790,
+      "zh-cn": 829,
+      "zh-tw": 7
+    },
+    "by_category": {
+      "Exact source needed": 2367,
+      "provider_image_unavailable": 1,
+      "Source image conflict": 3,
+      "Verified front held for native-name correction": 81,
+      "Verified front ready for publication": 3,
+      "identity_conflict": 5,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20,
+      "Language identity conflict": 605,
+      "Composite artwork review": 2
+    },
+    "next_offline_prepared_fronts": 84,
+    "next_archived_fronts": 84,
+    "additional_four_preparation": "Four reviewed originals and 12 derivatives archived and independently downloaded; protected publication pending.",
+    "archive_evidence": "japanese-next84-archives-20261001.json"
+  },
+  "device_verified": false
+}
