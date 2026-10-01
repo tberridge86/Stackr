@@ -1,0 +1,3 @@
+# Preserve exact bytes for the linked build49 receipt and public audit summary.
+testflight49-evidence-20261001.json -text
+build49-preflight-summary-20261001.json -text

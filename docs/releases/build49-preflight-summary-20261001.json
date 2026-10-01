@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-01T17:59:25.743Z",
+  "evidence_scope": "Public aggregate-only summary. The complete preflight packet remains local and is deliberately not copied to this public repository because it contains detailed infrastructure, stored-price and holding-reference evidence.",
+  "source": {
+    "native_source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+    "tested_local_source": "82d9352416bf0eabe3af12dc80b668b0f4753fd0",
+    "service_source_equivalence": "unverified: deployment metadata did not expose an API source SHA"
+  },
+  "provenance": {
+    "local_report_sha256": "e000ab821e999909894ecb3f0e3a61729267573019cf5bdd8d00e88287cacbc2",
+    "local_sha256sums_sha256": "09ad2a15afec270f3e3ca755854bf75fde307d61008cd9cd6101cc98b005639d",
+    "local_packet_file_hashes": [
+      {
+        "file": "classify-public.mjs",
+        "sha256": "0bfda37c1b9166a997f75e279b0ab53eeac97806770f57fbc9a3cd134bf46813"
+      },
+      {
+        "file": "handoff.json",
+        "sha256": "ef19b8457ff2329d2c3d8c271033552c7b106642e7d7a91601ae662feaf1be80"
+      },
+      {
+        "file": "infrastructure-evidence.json",
+        "sha256": "3e828e97bb37ad96d73023d6e542f0b44bc4fa05d5a59dedfdc352de26ecb082"
+      },
+      {
+        "file": "preflight-report.txt",
+        "sha256": "e000ab821e999909894ecb3f0e3a61729267573019cf5bdd8d00e88287cacbc2"
+      },
+      {
+        "file": "pricing-evidence.json",
+        "sha256": "db956a6b3506761bd78e84c6384d448eeb4afff0521bc2d334ead2897df9c6b1"
+      },
+      {
+        "file": "public-classification.json",
+        "sha256": "50e5cbc62633d0cc9d11dc049506761aba4e83bf7e7378ca509a4eb853cb1717"
+      },
+      {
+        "file": "public-evidence.json",
+        "sha256": "e53f04f9b186dd05736b7f7d1834af7e71363f08369fa4098314813ae05378d4"
+      },
+      {
+        "file": "verify-images.mjs",
+        "sha256": "9636b097e5354fd3fbbbd0fb9bb7f13c5a904806b56424a47eba61de2c26bbd1"
+      },
+      {
+        "file": "verify-prices.mjs",
+        "sha256": "bb7dd43f5634d0dc41c6bd686f314fe56f657a288acbf76992e2fe5d972b5a91"
+      },
+      {
+        "file": "visual-en.webp",
+        "sha256": "c132d1f1267111fd5d537637c710e9914dc8bbe8f0ecb9d23242136e57b90e9d"
+      },
+      {
+        "file": "visual-ja.webp",
+        "sha256": "312a548b6e4c6e3953fa90f7d049281f1eeaf0aebd47446763620561e23d4df0"
+      },
+      {
+        "file": "visual-zh-cn.webp",
+        "sha256": "2d4bc7b32b737ffad613a1e22aeb43bf4184d9089bafa5eb325796386c32af67"
+      },
+      {
+        "file": "visual-zh-tw.webp",
+        "sha256": "efb830f02f17b8eba0f56f174e20f3c1ca7e1441a25f580283a56549ecca6861"
+      }
+    ]
+  },
+  "safety": {
+    "production_database_writes": 0,
+    "provider_calls": 0,
+    "authenticated_owner_flow_proof": false,
+    "raw_packet_published": false
+  },
+  "catalogue_pricing": {
+    "full_catalogue_worker": {
+      "implementation_present": true,
+      "enabled": false,
+      "collection_scoped": true,
+      "schedule_utc": [
+        "06:00",
+        "18:00"
+      ],
+      "capacity_verification_unset": true,
+      "request_budget_unset": true,
+      "tracking_cycles": 0,
+      "tracking_state_rows": 0
+    },
+    "stored_price_sample": {
+      "general_cases": 16,
+      "controls": 3,
+      "cases_with_value": 5,
+      "cases_unavailable": 14,
+      "all_returned_values_stale": true,
+      "nonmatching_saved_reference_cases": 13,
+      "nonmatching_saved_reference_cases_unpriced": 13,
+      "limitation": "The 13-reference finding is a bounded alias/reference diagnostic, not a catalogue-wide pricing percentage or proof that every historical alias is unresolved."
+    }
+  },
+  "artwork_and_search": {
+    "detail_identity_and_image_association": {
+      "passed": 40,
+      "total": 40
+    },
+    "prepared_renditions": {
+      "passed": 117,
+      "total": 117
+    },
+    "external_originals_decoded": 1,
+    "search_identity_and_image": {
+      "passed": 39,
+      "total": 40
+    },
+    "diagnostic_reconciliation": {
+      "variant_differences_resolved": 16,
+      "sha_field_diagnostics_resolved": 3
+    },
+    "core_public_http_requests": {
+      "passed": 234,
+      "total": 234
+    },
+    "image_cache_header_exceptions": {
+      "count": 9,
+      "observed_value": "public, max-age=public, max-age=31536000, immutable"
+    }
+  },
+  "desktop_timings_ms": {
+    "method": "Windows desktop full-response-body reads; first request in process is not a guaranteed cold server/CDN or phone measurement.",
+    "first_card_detail": {
+      "n": 40,
+      "median": 374,
+      "p95": 505,
+      "max": 1959,
+      "under_500_ms": 37
+    },
+    "first_search": {
+      "n": 40,
+      "median": 528,
+      "p95": 904,
+      "max": 1801,
+      "under_500_ms": 18
+    },
+    "images": {
+      "n": 130,
+      "median": 70,
+      "p95": 110,
+      "max": 207
+    },
+    "repeated_card_detail": {
+      "n": 12,
+      "median": 163,
+      "max": 171
+    },
+    "repeated_search": {
+      "n": 12,
+      "median": 59,
+      "max": 78
+    },
+    "repeated_images": {
+      "n": 12,
+      "median": 34,
+      "max": 46
+    },
+    "universal_sub_500_ms_verified": false
+  },
+  "local_regression_checks": [
+    "market pricing service suite",
+    "personal pricing access suite",
+    "25 image preloading/window/lifecycle/rail checks",
+    "build48 delivery regression suite"
+  ],
+  "open_limitations": [
+    "No signed-in Home/binder/card proof",
+    "No installed-phone acceptance",
+    "No complete catalogue pricing sign-off",
+    "SVAM GRA direct search remains unresolved; scoped GRA and the native name work",
+    "Japanese M5 #002 external original lacks prepared display renditions",
+    "Nine malformed image cache headers remain"
+  ]
+}
