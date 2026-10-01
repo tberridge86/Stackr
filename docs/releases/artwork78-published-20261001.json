@@ -1,0 +1,129 @@
+{
+  "verified_at": "2026-10-01T05:27:53.462Z",
+  "status": "published_and_independently_verified",
+  "batch": {
+    "fronts": 78,
+    "derivative_references": 234,
+    "distinct_storage_objects": 312,
+    "created": 312,
+    "reused": 0
+  },
+  "production": {
+    "run_id": 36818475522,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36818475522",
+    "source": "74240e85be853680b56d9bd23247e93088e88fde",
+    "cohort_sha256": "68147cc93c87177542f8a2085f55582f6a9d2cf62bf6c1543eaa2444a6df751a",
+    "corrections_sha256": "323f1059ad90ce54b2349023c587bd25a9461a697797fed41972a40835bae3d1",
+    "receipt_sha256": "8c6579c4e87d720b5033326b38e7ebf62d4443038970fd4ec4978ef57646d0ad",
+    "receipt_artifact": {
+      "id": 11142418367,
+      "name": "native78-artwork-36818475522-1",
+      "createdAt": "2026-10-01T05:18:09Z",
+      "digest": "sha256:8311670fe5ce4bba8bd7da8c6a487ac9e82608489537fe6ddf3c850269f0df0d",
+      "sha256": "8311670fe5ce4bba8bd7da8c6a487ac9e82608489537fe6ddf3c850269f0df0d",
+      "bytes": 28411,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/36818475522/artifacts/11142418367"
+    }
+  },
+  "independent_verification": {
+    "cards_passed": 78,
+    "images_passed": 312,
+    "first_attempt_card_failures": 3,
+    "first_attempt_image_failures": 0,
+    "http_timings": {
+      "card_detail": {
+        "samples": 78,
+        "median_ms": 410,
+        "p95_ms": 1661,
+        "max_ms": 2673
+      },
+      "manifest": {
+        "samples": 78,
+        "median_ms": 344,
+        "p95_ms": 1073,
+        "max_ms": 4259
+      },
+      "image": {
+        "samples": 312,
+        "median_ms": 304,
+        "p95_ms": 488,
+        "max_ms": 1376
+      }
+    },
+    "timing_contract": "HTTP byte counts and statuses are recorded before image decoding. request_complete_ms excludes deliberate queue spacing and includes the final HTTP response body; pacing_ms is retained per attempt.",
+    "request_failures": {
+      "initial_passed_cards": 76,
+      "initial_exhausted_card_checks": 2,
+      "follow_up_passed_cards": 2,
+      "follow_up_finished_at": "2026-10-01T05:27:12.045Z",
+      "api_attempts_without_http_response": 0,
+      "non_200_http_attempts": {
+        "503": 4,
+        "504": 6
+      },
+      "all_recovered": true,
+      "causes": [],
+      "timing_scope": "Final successful card checks, substituting only the two failed checks with their separate follow-up results. Final HTTP response body excludes retries, backoff and deliberate pacing; full initial failures and follow-up observations retained."
+    }
+  },
+  "preservation": {
+    "checked_at": "2026-10-01T05:21:12.841Z",
+    "unexpected_differences": [],
+    "staging": {
+      "cards": 78,
+      "printing_native_names_changed": 0,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true,
+      "reviewed_correct_names_unchanged": 4
+    },
+    "production": {
+      "cards": 78,
+      "printing_native_names_changed": 74,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true,
+      "reviewed_correct_names_unchanged": 4
+    }
+  },
+  "metadata_changes": {
+    "printing_native_names": 74,
+    "native_search_name_rows": 74,
+    "other_metadata": 0
+  },
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "recovery_total": {
+    "fronts": 8997,
+    "derivative_references": 26991,
+    "distinct_storage_objects": 35921,
+    "retained_cohorts": 12
+  },
+  "original_4201": {
+    "resolved": 1037,
+    "remaining": 3164
+  },
+  "remaining": {
+    "by_language": {
+      "en": 465,
+      "ja": 1863,
+      "zh-cn": 829,
+      "zh-tw": 7
+    },
+    "by_category": {
+      "Exact source needed": 2451,
+      "provider_image_unavailable": 1,
+      "Source image conflict": 3,
+      "Verified front held for native-name correction": 71,
+      "Verified front ready for publication": 2,
+      "identity_conflict": 5,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20,
+      "Language identity conflict": 605,
+      "Composite artwork review": 2
+    },
+    "next_offline_prepared_fronts": 73
+  },
+  "device_verified": false
+}
