@@ -1,0 +1,19 @@
+{
+  "approved": true,
+  "store_resize_display": true,
+  "fronts": 73,
+  "native_name_corrections": 71,
+  "cohort_sha256": "3e39c1a3e6a67d20bb773067d92c364adcafb0e2bc849ea6198932a909c50943",
+  "corrections_sha256": "dd60505aa7e1ac35ed38df452ffc322d8e41a238634658c68d99adaade5465f6",
+  "source_wide_approval": false,
+  "source_counts": {
+    "tcgplayer_card_artwork": 73
+  },
+  "language_counts": {
+    "ja": 73
+  },
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-10-01",
+  "reason": "Owner-approved artwork recovery and precise demonstrated native-name corrections. Exactly these 73 reviewed E4 fronts, with 71 repairs and 2 correct names unchanged, through protected publication. Preserve originals, source marks, aliases, identities, prices and holdings. No source activation or exact-finish claim."
+}
