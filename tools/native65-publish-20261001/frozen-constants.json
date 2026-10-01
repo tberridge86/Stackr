@@ -1,0 +1,29 @@
+{
+  "cohort_sha256": "618b3edb22c5511a665a4adbcd7ed1ec4f2bf549fb340124173fd8ad499838f9",
+  "corrections_sha256": "f0b49a4bcd9c70e3127ab342f5c57074d99492f1795a46ccbff81b054cc7e9a9",
+  "artifacts": [
+    {
+      "id": 602279940,
+      "kind": "github_release_asset",
+      "sha256": "d45475488fb64603bb15abc3ed9c68a9de65672a18d16d1cfecd96d5c1b0dd7b",
+      "size_in_bytes": 16416458
+    }
+  ],
+  "source_counts": {
+    "tcgplayer_card_artwork": 58,
+    "pokemon_card_kr_official": 7
+  },
+  "language_counts": {
+    "ja": 58,
+    "ko": 7
+  },
+  "set_counts": {
+    "ja/E2": 29,
+    "ko/SV4M": 2,
+    "ja/E1": 23,
+    "ja/E3": 6,
+    "ko/SV5K": 3,
+    "ko/SV4K": 2
+  },
+  "native_name_corrections": 53
+}
