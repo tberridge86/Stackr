@@ -5,7 +5,7 @@ import YAML from 'yaml';
 
 const workflow = YAML.parse(readFileSync(new URL('../../.github/workflows/deploy-production.yml', import.meta.url), 'utf8'));
 const jobs = workflow.jobs;
-const scopes = ['tw200', 'english45', 'sh33', 'residual146', 'native96', 'korean232', 'native65', 'native72', 'native70', 'native78', 'native73', 'native84', 'native99'];
+const scopes = ['tw200', 'english45', 'sh33', 'residual146', 'native96', 'korean232', 'native65', 'native72', 'native70', 'native78', 'native73', 'native84', 'native99', 'native97'];
 
 const matchingJobs = (scope) => Object.entries(jobs)
   .filter(([, job]) => String(job.if ?? '').includes(`inputs.release_scope == '${scope}'`))
@@ -46,6 +46,6 @@ test('all bounded lanes retain the production and no-side-effect guards', () => 
       'test -z "$OTHER_IDENTIFIERS"',
       'git diff --exit-code',
     ]) assert.ok(guard.run.includes(text), `${scope} guard lost: ${text}`);
-    assert.ok(lane.steps.some((step) => String(step.run ?? '').includes(`tools/${scope}-publish-${['native65', 'native72', 'native70', 'native78', 'native73', 'native84', 'native99'].includes(scope) ? '20261001' : '20260930'}/publish.mjs --execute`)));
+    assert.ok(lane.steps.some((step) => String(step.run ?? '').includes(`tools/${scope}-publish-${['native65', 'native72', 'native70', 'native78', 'native73', 'native84', 'native99', 'native97'].includes(scope) ? '20261001' : '20260930'}/publish.mjs --execute`)));
   }
 });
