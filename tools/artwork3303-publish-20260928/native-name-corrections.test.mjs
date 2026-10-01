@@ -70,6 +70,13 @@ test('accepts an explicitly frozen 70-row cohort and rejects cardinality drift',
   rows[69].printing_id = rows[0].printing_id; assert.throws(() => createNativeNameCorrections(rows, { expectedCount: 70 }), /unique/);
 });
 
+test('accepts an explicitly frozen 74-row cohort and rejects cardinality or duplicate drift', () => {
+  const rows = Array.from({ length: 74 }, (_, index) => ({ printing_id: id(index + 9001), expected_native_name_row_id: { staging: id(index + 10001), production: id(index + 11001) }, current_native_name: `old74 ${index}`, proposed_native_name: `new74 ${index}`, language_code: 'ja', set_id: id(index + 12001), collector_number: String(index) }));
+  assert.doesNotThrow(() => createNativeNameCorrections(rows, { expectedCount: 74 }));
+  assert.throws(() => createNativeNameCorrections(rows.slice(1), { expectedCount: 74 }), /Expected 74/);
+  rows[73].expected_native_name_row_id.staging = rows[0].expected_native_name_row_id.staging; assert.throws(() => createNativeNameCorrections(rows, { expectedCount: 74 }), /unique/);
+});
+
 test('updates exactly all 53 printing/native pairs while preserving aliases and other columns', async () => {
   const rows = plan(), db = fixture(rows), before = clone({ printings: [...db.printings], names: [...db.names] });
   const audit = await createNativeNameCorrections(rows)(db, 'staging');
