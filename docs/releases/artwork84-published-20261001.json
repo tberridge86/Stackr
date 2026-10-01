@@ -1,0 +1,131 @@
+{
+  "verified_at": "2026-10-01T08:47:45.617Z",
+  "status": "published_and_independently_verified",
+  "batch": {
+    "fronts": 84,
+    "derivative_references": 252,
+    "distinct_storage_objects": 336,
+    "created": 336,
+    "reused": 0
+  },
+  "production": {
+    "run_id": "36836610892",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36836610892",
+    "source": "645f567a30d52f756143624a306574411e146871",
+    "cohort_sha256": "aebd6a7cfddb25a7d00e5b2f3a579eec84fd963380e4c553d37a19fc06757d26",
+    "corrections_sha256": "e7da42da31bda12eb289ad119c9e58690178a3880ddd66cb39ddc62f37a35530",
+    "receipt_sha256": "44866d88652af9d2ada2c1006e212ea48fa424cc38f9436cb24d60de26feb1eb",
+    "receipt_artifact": {
+      "id": 11149547959,
+      "name": "native84-artwork-36836610892-1",
+      "createdAt": "2026-10-01T08:37:34Z",
+      "digest": "sha256:62b6f56d364cfe43163757071923d09e3f7858cc7b20f2d31982542d3e486063",
+      "sha256": "62b6f56d364cfe43163757071923d09e3f7858cc7b20f2d31982542d3e486063",
+      "bytes": 30514,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/36836610892/artifacts/11149547959"
+    }
+  },
+  "independent_verification": {
+    "cards_passed": 84,
+    "images_passed": 336,
+    "first_attempt_card_failures": 0,
+    "first_attempt_image_failures": 0,
+    "http_timings": {
+      "card_detail": {
+        "samples": 84,
+        "median_ms": 422,
+        "p95_ms": 693,
+        "max_ms": 3170
+      },
+      "manifest": {
+        "samples": 84,
+        "median_ms": 316,
+        "p95_ms": 527,
+        "max_ms": 1100
+      },
+      "image": {
+        "samples": 336,
+        "median_ms": 353,
+        "p95_ms": 613,
+        "max_ms": 1113
+      }
+    },
+    "timing_contract": "HTTP byte counts and statuses are recorded before image decoding. request_complete_ms excludes deliberate queue spacing and includes the final HTTP response body; pacing_ms is retained per attempt.",
+    "request_failures": {
+      "initial_passed_cards": 84,
+      "initial_exhausted_card_checks": 0,
+      "follow_up_used": false,
+      "follow_up_passed_cards": 0,
+      "follow_up_finished_at": null,
+      "api_attempts_without_http_response": 0,
+      "non_200_http_attempts": {},
+      "all_recovered": true,
+      "causes": [],
+      "timing_scope": "Initial successful card checks only; no follow-up evidence was used."
+    }
+  },
+  "preservation": {
+    "checked_at": "2026-10-01T08:39:35.051Z",
+    "unexpected_differences": [],
+    "staging": {
+      "cards": 84,
+      "printing_native_names_changed": 0,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true,
+      "reviewed_correct_names_unchanged": 3
+    },
+    "production": {
+      "cards": 84,
+      "printing_native_names_changed": 81,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true,
+      "reviewed_correct_names_unchanged": 3
+    }
+  },
+  "metadata_changes": {
+    "printing_native_names": 81,
+    "native_search_name_rows": 81,
+    "other_metadata": 0
+  },
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "recovery_total": {
+    "fronts": 9154,
+    "derivative_references": 27462,
+    "distinct_storage_objects": 36549,
+    "retained_cohorts": 14
+  },
+  "original_4201": {
+    "resolved": 1194,
+    "remaining": 3007
+  },
+  "remaining": {
+    "by_language": {
+      "en": 465,
+      "ja": 1706,
+      "zh-cn": 829,
+      "zh-tw": 7
+    },
+    "by_category": {
+      "Exact source needed": 2268,
+      "provider_image_unavailable": 1,
+      "Source image conflict": 3,
+      "Verified front held for native-name correction": 97,
+      "Verified front ready for publication": 2,
+      "identity_conflict": 5,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20,
+      "Language identity conflict": 605,
+      "Composite artwork review": 2
+    },
+    "next_offline_prepared_fronts": 99,
+    "next_offline_prepared_objects": 396,
+    "next_offline_prepared_native_name_corrections": 97,
+    "next_offline_prepared_unchanged_native_names": 2,
+    "next_candidate_note": "The 99-front PCG4 package is reviewed separately and remains unpublished."
+  },
+  "device_verified": false
+}
