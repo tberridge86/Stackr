@@ -1,0 +1,614 @@
+{
+  "schemaVersion": 1,
+  "assembledAtUtc": "2026-10-01T18:06:52.447Z",
+  "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+  "buildId": "c7ddf691-b730-481f-85de-f8a117d9a2c1",
+  "records": {
+    "standard-ios-build-request.json": {
+      "fileSha256": "7a016bb9f2b58dbbf896cf7d2691562f695799dbf604a66f8994c51af644c391",
+      "value": {
+        "requestedAtUtc": "2026-10-01T15:41:18.5967240Z",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "platform": "ios",
+        "profile": "production",
+        "channel": "production",
+        "runtime": "1.0.4",
+        "expectedNextBuildNumber": "49",
+        "intendedAudience": "Existing TestFlight audience; standard camera acceptance",
+        "status": "accepted"
+      }
+    },
+    "standard-ios-build-receipt.json": {
+      "fileSha256": "f7303ddeb5c97c59ee66ea52d022011c132eebf245a2e0d4e7be5c07964d578c",
+      "value": {
+        "observedAtUtc": "2026-10-01T15:44:56.0427807Z",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "id": "c7ddf691-b730-481f-85de-f8a117d9a2c1",
+        "status": "NEW",
+        "platform": "IOS",
+        "profile": "production",
+        "appVersion": "1.0.4",
+        "buildNumber": "49",
+        "channel": "production",
+        "runtime": "1.0.4",
+        "submitted": false
+      }
+    },
+    "current-normal-ios-build49-status.json": {
+      "fileSha256": "180f076c32e4cefacb70a6d76c53c82a74436266d4768bb98a6f8d0a50bee10c",
+      "value": {
+        "observedAtUtc": "2026-10-01T18:04:42.878Z",
+        "buildId": "c7ddf691-b730-481f-85de-f8a117d9a2c1",
+        "status": "FINISHED",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "appVersion": "1.0.4",
+        "buildNumber": "49",
+        "profile": "production",
+        "channel": "production",
+        "runtime": "1.0.4",
+        "fingerprint": "0472b48fd6b16074463050a95b682a6aebe6f069",
+        "createdAt": "2026-10-01T15:44:55.437Z",
+        "updatedAt": "2026-10-01T15:53:51.629Z",
+        "completedAt": "2026-10-01T15:53:51.321Z",
+        "error": null,
+        "associatedSubmissionIds": [
+          {
+            "id": "3811f063-edfb-4f01-870e-1227fe49ba8f",
+            "status": "ERRORED"
+          }
+        ],
+        "submission": {
+          "id": "3811f063-edfb-4f01-870e-1227fe49ba8f",
+          "status": "ERRORED",
+          "appleAppId": "6772118450",
+          "createdAt": "2026-10-01T15:57:22.699Z",
+          "completedAt": "2026-10-01T18:00:56.485Z",
+          "error": null
+        }
+      }
+    },
+    "runtime-preflight.json": {
+      "fileSha256": "826cb719a7157ed3bc31cf305a141f55588ee76c913a5198f8f609728759cdc9",
+      "value": {
+        "ok": true,
+        "appVariant": "production",
+        "environment": "production",
+        "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
+        "priceApiHost": "pocketvault-production.up.railway.app",
+        "stackrApiHost": "api.stackrtcg.com",
+        "scheme": "stackr",
+        "runtimeVersion": {
+          "policy": "appVersion"
+        },
+        "iosBundleIdentifier": "com.tommo86.Stackr",
+        "androidPackage": "com.tommo86.Stackr"
+      }
+    },
+    "local-request-evidence.json": {
+      "fileSha256": "e3a7d5833f56c6c5d7426e270d5171a3c07ac448ac873b999e06ae8be45d4725",
+      "value": {
+        "recordedAtUtc": "2026-10-01T15:41:18.3263379Z",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "reviewedPrs": [
+          293,
+          295,
+          296
+        ],
+        "reviewedHead": "82d9352416bf0eabe3af12dc80b668b0f4753fd0",
+        "exactTreeMatch": true,
+        "applicableChecksPassed": 8,
+        "skippedChecks": [
+          "release-candidate-gate"
+        ],
+        "priorPreloadingHeadApplicableChecksPassed": 10,
+        "protectedWorkflowRun": "36885846750",
+        "productionReview": "approved",
+        "workflowFailure": "EXPO_TOKEN absent before any EAS request; build step skipped",
+        "deliveryRoute": "Existing authenticated EAS local route after normal protected review",
+        "profile": "production",
+        "version": "1.0.4",
+        "expectedNumber": "49",
+        "prior49Build": "03492deb-7227-48d0-8d07-cf597274c6ad",
+        "prior49Status": "CANCELED",
+        "prior49Submissions": 0,
+        "apple49Before": 0,
+        "activeNativeBuilds": 0,
+        "remoteCounterBefore": "48",
+        "runtimePreflight": "PASS",
+        "nativeDependenciesConfigurationUnchangedFrom48": true,
+        "audience": [
+          "Team (Expo)",
+          "Stackr Beta Testers"
+        ],
+        "ownerRecognition": false,
+        "publicStoreRelease": false,
+        "ota": false,
+        "dataChanges": false,
+        "physicalDeviceAcceptance": "pending"
+      }
+    },
+    "normal-ios-build49-ipa-verification.json": {
+      "fileSha256": "944b933d42bd8a7e63cc3bc815f98a69e7db1c556d0e897c74ab1d4ec3d48200",
+      "value": {
+        "schemaVersion": 1,
+        "verifiedAt": "2026-10-01T15:55:33.562Z",
+        "ipa": {
+          "sha256": "2a04cd826133fe2e7c610667dd80aa9bc3ca28bea1e5767cc1780a0e75830a05"
+        },
+        "expected": {
+          "bundleIdentifier": "com.tommo86.Stackr",
+          "version": "1.0.4",
+          "buildNumber": "49",
+          "runtimeVersion": "1.0.4",
+          "channel": "production",
+          "sourceCommit": "c6795069c57e32c7ea53f11326f9206379b48d1e"
+        },
+        "app": {
+          "bundleIdentifier": "com.tommo86.Stackr",
+          "version": "1.0.4",
+          "buildNumber": "49",
+          "runtimeVersion": "1.0.4",
+          "channel": "production"
+        },
+        "expoUpdates": {
+          "embeddedManifestPresent": true,
+          "sourceProof": "unavailable_no_embedded_manifest_source",
+          "id": "d47d7809-7632-4269-bf3d-6c9711e5fd38",
+          "createdAt": null,
+          "runtimeVersion": null,
+          "channel": null,
+          "source": null,
+          "sourceMatchesExpected": null
+        },
+        "provisioning": {
+          "present": true,
+          "parsed": true,
+          "teamIdentifier": "K82N877J3F",
+          "applicationIdentifier": "K82N877J3F.com.tommo86.Stackr"
+        }
+      }
+    },
+    "standard-ios-submission-plan.json": {
+      "fileSha256": "8a6dc21652e0794bc95ef04f5fd566c780ef556dd6ee19f07a6f1baf7ad4497b",
+      "value": {
+        "checkedAtUtc": "2026-10-01T15:57:00.3163070Z",
+        "buildId": "c7ddf691-b730-481f-85de-f8a117d9a2c1",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "status": "FINISHED",
+        "appVersion": "1.0.4",
+        "buildNumber": "49",
+        "profile": "production",
+        "channel": "production",
+        "runtime": "1.0.4",
+        "appleAppId": "6772118450",
+        "submissionTargetProfile": "production-owner",
+        "submissionTargetNote": "Existing Apple app/group metadata only; the immutable normal production archive is selected by exact build ID.",
+        "group": "Team (Expo)",
+        "dryRun": false
+      }
+    },
+    "standard-ios-submission-request.json": {
+      "fileSha256": "31e8f4873028787012314d18122f3fa5d1fe2ab071a876f984f8c2b4e092aac6",
+      "value": {
+        "requestedAtUtc": "2026-10-01T15:57:01.7115701Z",
+        "buildId": "c7ddf691-b730-481f-85de-f8a117d9a2c1",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "status": "accepted-reconcile-submission-id",
+        "submissionId": "3811f063-edfb-4f01-870e-1227fe49ba8f"
+      }
+    },
+    "production-channel-readback.json": {
+      "fileSha256": "066f19d16819a944c5822cf5e4d474f7fbd5fa753f5d1525d8489a0674a74313",
+      "value": {
+        "currentPage": {
+          "id": "01a0378f-1bd1-78e6-a009-9d55f65268a5",
+          "isPaused": false,
+          "name": "production",
+          "updatedAt": "2026-08-25T06:15:20.785Z",
+          "createdAt": "2026-08-25T06:15:20.785Z",
+          "branchMapping": "{\"data\":[{\"branchId\":\"01a0378f-1b0f-7ccf-bc18-3fa7b76643cc\",\"branchMappingLogic\":\"true\"}],\"version\":0}",
+          "updateBranches": [
+            {
+              "id": "01a0378f-1b0f-7ccf-bc18-3fa7b76643cc",
+              "name": "production",
+              "updateGroups": []
+            }
+          ]
+        }
+      }
+    },
+    "production-update-readback.json": {
+      "fileSha256": "835f5e9d4f4a595f6da75d2d7a0fdb3d30f8f9ffeac1ebd1bd7944f73454fa16",
+      "value": {
+        "name": "production",
+        "id": "N/A",
+        "currentPage": []
+      }
+    },
+    "apple-build49-notes.json": {
+      "fileSha256": "9d5dd3a1e76aafca1d89e0423c9e5f91e5c1fa8b8624b4460b946d24ed9ec949",
+      "value": {
+        "observedAtUtc": "2026-10-01T18:02:49.100Z",
+        "mode": "exact-build-action",
+        "expected": {
+          "appId": "6772118450",
+          "bundleId": "com.tommo86.Stackr",
+          "appVersion": "1.0.4",
+          "buildNumber": "49",
+          "externalGroup": "Stackr Beta Testers",
+          "internalGroup": "Team (Expo)"
+        },
+        "sourceIdentity": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "apple": {
+          "buildId": "76395981-49f6-43b0-80e5-28031ce15f95",
+          "processingState": "VALID",
+          "internalBuildState": "IN_BETA_TESTING",
+          "externalBuildState": "READY_FOR_BETA_SUBMISSION",
+          "externalGroupBound": false,
+          "internalGroupBound": true,
+          "betaReviewId": null,
+          "betaReviewState": null
+        },
+        "action": "verified-en-GB-tester-notes"
+      }
+    },
+    "apple-build49-attach.json": {
+      "fileSha256": "63e83ae0a0a0b4c334690c6faac057ded34ce87fcc35397d7d952b1a6f7ff2f5",
+      "value": {
+        "observedAtUtc": "2026-10-01T18:03:36.270Z",
+        "mode": "exact-build-action",
+        "expected": {
+          "appId": "6772118450",
+          "bundleId": "com.tommo86.Stackr",
+          "appVersion": "1.0.4",
+          "buildNumber": "49",
+          "externalGroup": "Stackr Beta Testers",
+          "internalGroup": "Team (Expo)"
+        },
+        "sourceIdentity": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "apple": {
+          "buildId": "76395981-49f6-43b0-80e5-28031ce15f95",
+          "processingState": "VALID",
+          "internalBuildState": "IN_BETA_TESTING",
+          "externalBuildState": "READY_FOR_BETA_SUBMISSION",
+          "externalGroupBound": true,
+          "internalGroupBound": true,
+          "betaReviewId": null,
+          "betaReviewState": null
+        },
+        "action": "attached-existing-external-group"
+      }
+    },
+    "apple-build49-review.json": {
+      "fileSha256": "821e51827024f24376b1f67dabaab2902e2c3792c7dc29a4e4044056efa0d845",
+      "value": {
+        "observedAtUtc": "2026-10-01T18:04:23.774Z",
+        "mode": "exact-build-action",
+        "expected": {
+          "appId": "6772118450",
+          "bundleId": "com.tommo86.Stackr",
+          "appVersion": "1.0.4",
+          "buildNumber": "49",
+          "externalGroup": "Stackr Beta Testers",
+          "internalGroup": "Team (Expo)"
+        },
+        "sourceIdentity": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "apple": {
+          "buildId": "76395981-49f6-43b0-80e5-28031ce15f95",
+          "processingState": "VALID",
+          "internalBuildState": "IN_BETA_TESTING",
+          "externalBuildState": "IN_BETA_TESTING",
+          "externalGroupBound": true,
+          "internalGroupBound": true,
+          "betaReviewId": "76395981-49f6-43b0-80e5-28031ce15f95",
+          "betaReviewState": "APPROVED"
+        },
+        "action": "submitted-for-testflight-beta-review"
+      }
+    },
+    "apple-build49-availability.json": {
+      "fileSha256": "8662c24aeb4cfec04a40c9e79d4592ea301f3cf057e7ccf6bcb798bf9754fd57",
+      "value": {
+        "observedAtUtc": "2026-10-01T18:05:23.881Z",
+        "mode": "status",
+        "expected": {
+          "appId": "6772118450",
+          "bundleId": "com.tommo86.Stackr",
+          "appVersion": "1.0.4",
+          "buildNumber": "49",
+          "externalGroup": "Stackr Beta Testers",
+          "internalGroup": "Team (Expo)"
+        },
+        "sourceIdentity": "not evaluated in read-only status mode; Apple does not expose the EAS source SHA",
+        "apple": {
+          "buildId": "76395981-49f6-43b0-80e5-28031ce15f95",
+          "processingState": "VALID",
+          "internalBuildState": "IN_BETA_TESTING",
+          "externalBuildState": "IN_BETA_TESTING",
+          "externalGroupBound": true,
+          "internalGroupBound": true,
+          "betaReviewId": "76395981-49f6-43b0-80e5-28031ce15f95",
+          "betaReviewState": "APPROVED"
+        },
+        "action": "none"
+      }
+    },
+    "inventory-before-sanitized.json": {
+      "fileSha256": "3bfe1834bf4d2a6c258c149b42021b4a78c1507f16b8d73c3abe979f3ba04fd1",
+      "value": {
+        "observedAtUtc": "2026-10-01T15:39:55.494Z",
+        "remoteVersion": {
+          "id": "4cc84182-d5f2-4424-a1c6-682c00c2b0ac",
+          "storeVersion": "1.0.4",
+          "buildVersion": "48",
+          "__typename": "AppVersion"
+        },
+        "activeBuilds": [],
+        "latestBuild": {
+          "id": "03492deb-7227-48d0-8d07-cf597274c6ad",
+          "status": "CANCELED",
+          "platform": "IOS",
+          "profile": "production",
+          "source": "83394561744ac7d4031b029d8bfe13290ab4622f",
+          "version": "1.0.4",
+          "number": "49",
+          "channel": "production",
+          "runtime": "1.0.4",
+          "createdAt": "2026-10-01T15:25:44.932Z"
+        },
+        "iosUsage": {
+          "value": 1,
+          "limit": 15,
+          "__typename": "EstimatedUsagePlatformDetail"
+        }
+      }
+    },
+    "reviewed-pr-checks.json": {
+      "fileSha256": "e72eb2d16447628877cfb4f4e5596ae49c0107a22789c679c3c0b2586b63afe7",
+      "value": {
+        "observedAtUtc": "2026-10-01T15:43:17.4402648Z",
+        "pullRequest": {
+          "headRefOid": "82d9352416bf0eabe3af12dc80b668b0f4753fd0",
+          "mergeCommit": {
+            "oid": "c6795069c57e32c7ea53f11326f9206379b48d1e"
+          },
+          "number": 296,
+          "state": "MERGED",
+          "statusCheckRollup": [
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:34:04Z",
+              "conclusion": "SKIPPED",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446849490",
+              "name": "release-candidate-gate",
+              "startedAt": "2026-10-01T15:34:04Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:29Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266176/job/110446847410",
+              "name": "owner-pricing-identity-regression",
+              "startedAt": "2026-10-01T15:34:06Z",
+              "status": "COMPLETED",
+              "workflowName": "Owner Pricing Identity Tests"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:37:03Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847119",
+              "name": "lint-type-unit",
+              "startedAt": "2026-10-01T15:34:07Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:21Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446848844",
+              "name": "database-migration-tests",
+              "startedAt": "2026-10-01T15:34:08Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:13Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847650",
+              "name": "openapi-and-generated-client",
+              "startedAt": "2026-10-01T15:34:08Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:15Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446849005",
+              "name": "recognition-container",
+              "startedAt": "2026-10-01T15:34:07Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:32Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847753",
+              "name": "dependency-and-secret-scan",
+              "startedAt": "2026-10-01T15:34:07Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:35:12Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847670",
+              "name": "integration-tests",
+              "startedAt": "2026-10-01T15:34:06Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            },
+            {
+              "__typename": "CheckRun",
+              "completedAt": "2026-10-01T15:37:08Z",
+              "conclusion": "SUCCESS",
+              "detailsUrl": "https://github.com/tberridge86/Stackr/actions/runs/36885266153/job/110446847632",
+              "name": "benchmark-smoke-tests",
+              "startedAt": "2026-10-01T15:34:10Z",
+              "status": "COMPLETED",
+              "workflowName": "Stackr Platform CI"
+            }
+          ],
+          "url": "https://github.com/tberridge86/Stackr/pull/296"
+        }
+      }
+    },
+    "expo-doctor-advisory.json": {
+      "fileSha256": "90e1dd6003f138ab911c8369d0ac63a5bcf6f621aa6d6c0ad03534153d971491",
+      "value": {
+        "observedAtUtc": "2026-10-01T15:48:21.888Z",
+        "buildId": "c7ddf691-b730-481f-85de-f8a117d9a2c1",
+        "source": "c6795069c57e32c7ea53f11326f9206379b48d1e",
+        "passed": 17,
+        "total": 18,
+        "remaining": "Expo SDK package patch-version advisory",
+        "messages": [
+          "17/18 checks passed. 1 checks failed. Possible issues detected:",
+          "expo              ~54.0.37  54.0.36  ",
+          "expo-constants    ~18.0.14  18.0.13  ",
+          "expo-file-system  ~19.0.24  19.0.23  ",
+          "expo-updates      ~29.0.20  29.0.19  "
+        ],
+        "nativeDependencyAndLockfileChangesFromBuild48": false,
+        "checksSuppressed": false
+      }
+    },
+    "submission-terminal-diagnostics.json": {
+      "fileSha256": "8a56fb3b6c4c8129672e2edfb798b79222798292a110835926674e8d8be27d3c",
+      "value": {
+        "observedAtUtc": "2026-10-01T18:05:46.022Z",
+        "submissionId": "3811f063-edfb-4f01-870e-1227fe49ba8f",
+        "status": "ERRORED",
+        "appleAppId": "6772118450",
+        "error": null,
+        "availableLogFiles": 0,
+        "source": "Official EAS CLI SubmissionQuery.byIdAsync; no mutation"
+      }
+    }
+  },
+  "earlierAttempts": {
+    "preloadingConsolidationStop": {
+      "fileSha256": "185dd8d36dd8b6ef5600090036e1a8324b20274a3f5746f4c7b41ca0a2e79220",
+      "value": {
+        "observedAtUtc": "2026-10-01T15:13:12.9123021Z",
+        "requestSource": "dfdc1ddf4df3ad04d3d288a2f6b80a8113a4ff29",
+        "reason": "Owner requested consolidation of the reviewed thumbnail-preloading addition into49 before TestFlight delivery",
+        "terminatedProcessId": 38748,
+        "processIdentityVerified": true,
+        "childProcessesAtStop": 0,
+        "stoppedAtStage": "330MB source archive transfer, before EAS build mutation",
+        "originalSessionExit": -1,
+        "remoteCounterReserved": "49",
+        "latestAcceptedBuild": "48",
+        "acceptedBuild49Count": 0,
+        "activeBuildCount": 0,
+        "appleRead": "Expected exactly one Apple build1.0.4(49); found0",
+        "appleUploaded": false,
+        "counterChangedBack": false,
+        "nextAction": "Review patch and CI; independently reconcile again before reusing unsubmitted49 through existing EAS version controls",
+        "earlierRequestPreserved": true
+      }
+    },
+    "firstUnusedNumberRestoration": {
+      "fileSha256": "5717a89ee0c8ed1d37395312f9b262a7cc4ea7ec5077fa87fbdecf518cff9275",
+      "value": {
+        "observedAtUtc": "2026-10-01T15:19:53.906Z",
+        "tool": "EAS CLI23.2.0 build:version:set --platform ios --profile production",
+        "fromReserved": "49",
+        "toLastAccepted": "48",
+        "acceptedBuild49Count": 0,
+        "activeBuildCount": 0,
+        "appleBuild49Count": 0,
+        "purpose": "Undo unused pre-build reservation; next normal auto-increment produces consolidated49",
+        "remoteVersion": {
+          "id": "e27acb1c-5159-4619-8cce-2d4712f5469c",
+          "storeVersion": "1.0.4",
+          "buildVersion": "48",
+          "__typename": "AppVersion"
+        }
+      }
+    },
+    "holoConsolidationCancellation": {
+      "fileSha256": "991ebcad9b2c6ee64197b1acaedded68bfe1c653c04f94eed4585f3d2a4c7b71",
+      "value": {
+        "recordedAtUtc": "2026-10-01T15:27:27.6900144Z",
+        "reason": "Owner-requested shared holo, gyro, haptic and shadow polish before final49",
+        "cancelledBuild": {
+          "observedAtUtc": "2026-10-01T15:26:56.011Z",
+          "buildId": "03492deb-7227-48d0-8d07-cf597274c6ad",
+          "status": "CANCELED",
+          "source": "83394561744ac7d4031b029d8bfe13290ab4622f",
+          "appVersion": "1.0.4",
+          "buildNumber": "49",
+          "profile": "production",
+          "channel": "production",
+          "runtime": "1.0.4",
+          "fingerprint": "0472b48fd6b16074463050a95b682a6aebe6f069",
+          "createdAt": "2026-10-01T15:25:44.932Z",
+          "updatedAt": "2026-10-01T15:26:32.752Z",
+          "completedAt": "2026-10-01T15:26:32.469Z",
+          "error": null,
+          "associatedSubmissionIds": []
+        },
+        "apple49Count": 0,
+        "appleRead": "Official helper returned exactly0 Apple builds for1.0.4(49)",
+        "sourcePreserved": "83394561744ac7d4031b029d8bfe13290ab4622f",
+        "requestArtifactsPreserved": true,
+        "remoteCounterCurrently": "49",
+        "remoteCounterRestored": false,
+        "nextAction": "Wait for narrow isolated polish candidate, review and CI before new native request",
+        "submitted": false
+      }
+    },
+    "cancelledNumberRestoration": {
+      "fileSha256": "42a93489d1dc07f113a60ba21cebb7e913e962dbcb10ae448d0f8c24eddd9d01",
+      "value": {
+        "observedAtUtc": "2026-10-01T15:39:55.494Z",
+        "tool": "Official EAS CLI23.2.0 build:version:set",
+        "from": "49",
+        "to": "48",
+        "cancelledBuild": "03492deb-7227-48d0-8d07-cf597274c6ad",
+        "cancelledSource": "83394561744ac7d4031b029d8bfe13290ab4622f",
+        "cancelledStatus": "CANCELED",
+        "submissionCount": 0,
+        "apple49Count": 0,
+        "activeBuilds": 0,
+        "reason": "Preserve requested49 for the final reviewed holo-inclusive source; no completed/Apple49 reused"
+      }
+    }
+  },
+  "preflight": {
+    "path": "build49-preflight-summary-20261001.json",
+    "fileSha256": "fbcd936ff58c99c084a2f9a3792c5a578fdf3294dc1d13012776d03717675841"
+  },
+  "submissionReconciliation": "EAS terminal ERRORED has no exposed error details or log files. Independent Apple VALID/APPROVED and both existing groups IN_BETA_TESTING establish TestFlight availability; no repeat upload. Root cause of EAS status is unverified.",
+  "testerNotes": "Stackr 1.0.4 (49)\n\nThis update addresses feedback on build 48. It restores the original startup artwork, removes unnecessary startup waiting, shows useful search matches sooner, and adds retry options when discovery or pricing requests fail. Card inspection opens with one long press, with improved image corners. Search and binder scrolling preload visible thumbnails and a small nearby window. Inspection adds a darker shadow, directional simulated foil lighting on verified holo finishes, and one firmer opening haptic. Your motion and haptic settings remain respected.\n\nPlease check Mew search, Japanese and Chinese set browsing, Morpeko and Froakie inspection, image corners, motion and haptic preferences, and Home/binder/card values for the same holdings. Reduce Motion stays still while its setting is loading.\n\nArtwork recovery continues through the API. The SV4a 40-card gap, missing English/descriptive metadata, provider freshness and unpriced holdings remain separate work. Catalogue-wide price preloading is not active; cards without stored quotes will show unavailable, and stored estimates may be labelled stale. This build does not claim complete card data, prices, exact foil masks or universal sub-0.5-second loading.\n\nPlease report your phone model, iOS version, build 49 and the card/set or action tested. Phone testing remains pending.",
+  "physicalDeviceAcceptance": "pending",
+  "artworkRecovery": {
+    "fronts": 9253,
+    "derivativeReferences": 27759,
+    "distinctObjects": 36945,
+    "originalCases": 4201,
+    "resolved": 1293,
+    "remaining": 2908,
+    "native97Published": false
+  },
+  "additionalScope": "No public App Store release, OTA, metadata/pricing/holdings mutation, new tester group or access-control change"
+}
