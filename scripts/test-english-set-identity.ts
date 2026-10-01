@@ -192,6 +192,15 @@ async function main() {
   ]);
   assert.ok(firstResolved && secondResolved);
   assert.equal(resolutionSearches, 1, 'same client/reference/language/set context shares one in-flight resolution');
+  const variantCard = { ...cardRows[0], variants: [...cardRows[0].variants,
+    { ...cardRows[0].variants[0], variantId: 'exact-reverse', variantCode: 'reverse_holo', finishCode: 'reverse_holo' }] };
+  const variantClient: any = { ...resolutionClient,
+    search: async () => ({ data: { results: [{ type: 'card', reason: 'canonical_uuid', card: variantCard, variantId: 'exact-reverse' }] } }),
+  };
+  const selected = await exports.fetchStackrCard('Reverse:Exact', { language: 'en', setId: PRISMATIC_ID }, variantClient);
+  assert.equal(selected.externalIds.stackrVariant, 'exact-reverse', 'detail/inspection retains the exact selected finish');
+  assert.equal(selected.raw_data.stackr.defaultVariantId, 'exact-reverse');
+  assert.equal(variantCard.defaultVariantId, cardRows[0].defaultVariantId, 'cached printing defaults are never mutated');
   await exports.fetchStackrCard('Provider:Exact', { language: 'ja', setId: PRISMATIC_ID }, resolutionClient);
   assert.equal(resolutionSearches, 2, 'language remains part of the cache identity');
   exports.clearStackrCatalogueCaches(resolutionClient);

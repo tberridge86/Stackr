@@ -14,7 +14,7 @@ export type VisibleBinderPriceReaderOptions<Row> = TimerApi & {
   onError?: (error: unknown) => void;
 };
 
-export type VisibleBinderPriceReader = { request: (ids: string[]) => void; dispose: () => void };
+export type VisibleBinderPriceReader = { request: (ids: string[]) => void; resumeAfterAuthentication: () => void; dispose: () => void };
 
 const BATCH_SIZE = 12;
 const MAX_REQUESTS_PER_MINUTE = 60;
@@ -44,7 +44,7 @@ export function createVisibleBinderPriceReader<Row>(
   const setTimer = options.setTimeout ?? ((callback, delayMs) => setTimeout(callback, delayMs));
   const clearTimer = options.clearTimeout ?? ((timer) => clearTimeout(timer as ReturnType<typeof setTimeout>));
   let disposed = false;
-  let authBlocked = false;
+  let authBlocked: 401 | 403 | null = null;
   let inFlight = false;
   let timer: unknown = null;
   let blockedUntil = 0;
@@ -104,11 +104,13 @@ export function createVisibleBinderPriceReader<Row>(
     }
     const status = failureStatus(result);
     if (status === 401 || status === 403) {
-      authBlocked = true;
+      authBlocked = status;
       pending.clear();
       return;
     }
-    const cooldown = cooldownFor(status);
+    // A transport failure has no HTTP status. It is not a successful no-quote
+    // answer and must receive the same bounded retry as a service failure.
+    const cooldown = cooldownFor(status) ?? (result && result.failure && status == null ? 30_000 : null);
     if (cooldown != null) {
       const retryIds = ids.filter((id) => currentVisible.has(id) && (retries.get(id) ?? 0) < 1);
       retryIds.forEach((id) => retries.set(id, (retries.get(id) ?? 0) + 1));
@@ -125,9 +127,17 @@ export function createVisibleBinderPriceReader<Row>(
   };
 
   return {
+    resumeAfterAuthentication() {
+      // A refreshed credential can repair 401, never a permission denial (403).
+      if (disposed || authBlocked !== 401) return;
+      authBlocked = null;
+      refreshPending();
+      void pump();
+    },
     request(ids) {
-      if (disposed || authBlocked) return;
+      if (disposed) return;
       currentVisible = new Set(ids.filter((id) => byId.has(id)));
+      if (authBlocked) return;
       // `blockedUntil` is absolute: viewability events never bypass a retry.
       refreshPending();
       void pump();

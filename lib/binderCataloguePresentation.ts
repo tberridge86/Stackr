@@ -1,13 +1,16 @@
 import { enforceTcgdexRuntimeImagePolicy } from './tcgdexControlledCardReference';
 
+type BinderCatalogueData = {
+  images?: { small?: string | null; large?: string | null } | null;
+  stackr?: { canonical?: boolean | null; cardId?: string | null } | null;
+};
+
 type BinderCardDisplay = {
   image_url?: string | null;
   card?: {
     images?: { small?: string | null; large?: string | null } | null;
-    raw_data?: {
-      images?: { small?: string | null; large?: string | null } | null;
-      stackr?: { canonical?: boolean | null; cardId?: string | null } | null;
-    } | null;
+    rawData?: BinderCatalogueData | null;
+    raw_data?: BinderCatalogueData | null;
   } | null;
 };
 
@@ -31,15 +34,20 @@ export function getBinderSavedCardImageUri(row: BinderCardDisplay) {
 
 /** Inspection is decorative catalogue art only; never fall back to a saved capture. */
 export function getBinderCatalogueInspectionImages(row: BinderCardDisplay) {
-  const raw = row.card?.raw_data;
+  const raw = row.card?.raw_data ?? row.card?.rawData;
   const canonicalId = String(raw?.stackr?.cardId ?? '').trim();
   if (raw?.stackr?.canonical !== true && !canonicalId) return null;
+  // Progressive catalogue hydration can put the exact catalogue rendition on
+  // card.images before raw_data.images arrives. Never use a saved capture.
   const images = raw?.images;
-  const imageUri = enforceTcgdexRuntimeImagePolicy(images?.small) ?? enforceTcgdexRuntimeImagePolicy(images?.large);
+  const catalogueSmall = row.card?.images?.small !== row.image_url ? row.card?.images?.small : null;
+  const catalogueLarge = row.card?.images?.large !== row.image_url ? row.card?.images?.large : null;
+  const imageUri = enforceTcgdexRuntimeImagePolicy(images?.small) ?? enforceTcgdexRuntimeImagePolicy(images?.large)
+    ?? enforceTcgdexRuntimeImagePolicy(catalogueSmall) ?? enforceTcgdexRuntimeImagePolicy(catalogueLarge);
   if (!imageUri) return null;
   return {
     imageUri,
-    fullImageUri: enforceTcgdexRuntimeImagePolicy(images?.large) ?? imageUri,
+    fullImageUri: enforceTcgdexRuntimeImagePolicy(images?.large) ?? enforceTcgdexRuntimeImagePolicy(catalogueLarge) ?? imageUri,
   };
 }
 

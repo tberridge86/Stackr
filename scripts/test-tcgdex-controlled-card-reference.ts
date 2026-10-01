@@ -549,7 +549,9 @@ assert.match(scanHydrationSource, /defineTcgdexRuntimeImageOverlay\(displayRow, 
 assert.match(scanHydrationSource, /defineTcgdexRuntimeImageOverlay\(displayRow, 'image_large', newLarge\)/);
 
 const cardSearchSource = readFileSync('lib/cardSearch.ts', 'utf8');
-assert.match(cardSearchSource, /attachLiveTcgdexCardReferences\(await searchStackrCards/);
+assert.match(cardSearchSource, /const cards = await searchStackrCards/);
+assert.match(cardSearchSource, /readOptionalCatalogueEnrichment\(\(\) => attachLiveTcgdexCardReferences\(cards\)\)/,
+  'optional search images must still use the existing controlled provider overlay and bounded read');
 
 const listingSource = readFileSync('features/listing/CreateListingScreen.tsx', 'utf8');
 assert.match(

@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import ts from 'typescript';
 import * as candidates from '../lib/stackrImageCandidates';
 import * as policy from '../lib/tcgdexControlledCardReference';
+import * as sizing from '../lib/stackrSizing';
 
 // Render the actual component with minimal host/hooks doubles, then deliver
 // image errors and changed props. This is component logic, not a native decode.
@@ -20,10 +21,11 @@ const React = {
 };
 const modules: Record<string, any> = {
   react: { ...React, default: React, __esModule: true },
-  'react-native': { View: 'View', Text: 'Text', StyleSheet: { create: (v: any) => v }, InteractionManager: { runAfterInteractions: () => ({ cancel() {} }) } },
+  'react-native': { View: 'View', Text: 'Text', StyleSheet: { create: (v: any) => v, absoluteFillObject: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 } }, InteractionManager: { runAfterInteractions: () => ({ cancel() {} }) } },
   'expo-image': { Image: 'ExpoImage' }, '@expo/vector-icons': { Ionicons: 'Icon' },
   './theme-context': { useTheme: () => ({ theme: { colors: { surface: 'white', textSoft: 'gray' } } }) },
   '../lib/stackrImageCandidates': candidates, '../lib/tcgdexControlledCardReference': policy,
+  '../lib/stackrSizing': sizing,
 };
 const compiled = ts.transpileModule(fs.readFileSync('components/StackrImage.tsx', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
@@ -49,4 +51,18 @@ tree = render({ ...props, uri: 'https://approved.example/new-grid.webp' });
 assert.equal(find(tree, 'ExpoImage').props.source.uri, 'https://approved.example/new-grid.webp');
 staleError(); tree = render({ ...props, uri: 'https://approved.example/new-grid.webp' });
 assert.equal(find(tree, 'ExpoImage').props.source.uri, 'https://approved.example/new-grid.webp', 'late errors cannot poison corrected artwork');
+const shapedProps = { ...props, uri: 'https://approved.example/new-grid.webp', cardShape: true, contentFit: 'contain' };
+tree = render(shapedProps);
+tree.props.onLayout({ nativeEvent: { layout: { width: 200, height: 250 } } });
+tree = render(shapedProps);
+const shapedImage = find(tree, 'ExpoImage');
+const frame = shapedImage.props.style[1];
+assert.equal(frame.width, 180); assert.equal(frame.height, 250); assert.equal(frame.left, 10);
+assert.equal(shapedImage.props.style[0].right, 0); assert.equal(shapedImage.props.style[0].bottom, 0);
+assert.equal(frame.right, undefined); assert.equal(frame.bottom, undefined, 'card face dimensions override absolute-fill opposing edges');
+const mergedFrame = Object.assign({}, ...shapedImage.props.style.filter(Boolean));
+assert.deepEqual({ width: mergedFrame.width, height: mergedFrame.height, left: mergedFrame.left, top: mergedFrame.top, right: mergedFrame.right, bottom: mergedFrame.bottom }, { width: 180, height: 250, left: 10, top: 0, right: undefined, bottom: undefined });
+assert.equal(frame.overflow, 'hidden'); assert.equal(frame.borderRadius, 8.1);
+assert.equal(shapedImage.props.contentFit, 'contain', 'card edges preserve printed borders');
+assert.equal(shapedImage.props.source.uri, shapedProps.uri, 'silhouette clipping does not replace source artwork');
 console.log('Actual StackrImage component advances through three renditions, stops at a placeholder and recovers on corrected props without remount/reinstall.');

@@ -31,7 +31,9 @@ assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'reverse' }).profi
 assert.equal(resolveCardHoloProfile({ ...raw, language: undefined }, { selectedVariantId: 'reverse', languageCode: 'en' }).profile, 'reverse', 'viewer language can complete a legacy payload');
 assert.equal(resolveCardHoloProfile(raw, { languageCode: 'ja' }).confidence, 'invalid_identity', 'a conflicting viewer language cannot retag a card');
 assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'deleted-variant' }).confidence, 'invalid_identity', 'a stale selection cannot inherit the default finish');
-assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos' }).material.foilStrength, 0, 'an unverified art window suppresses colour');
+assert.ok(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos' }).material.foilStrength > 0, 'a verified holo finish gets restrained generic lighting without inventing an artwork window');
+assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos' }).confidence, 'verified_finish_generic_mask');
+assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos' }).material.textureStrength, 0, 'missing geometry must not invent a printed texture');
 const masked = resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos', masks: [templateMask, printingMask] });
 assert.equal(masked.mask.provenance, 'printing-specific', 'an exact printing mask overrides an exact template');
 assert.equal(masked.mask.kind, 'regions');
@@ -39,12 +41,12 @@ assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'reverse', masks: 
 assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'textured' }).mask.kind, 'full', 'explicit textured material may use restrained generic coverage');
 assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'radiant' }).mask.kind, 'full', 'explicit radiant material may use restrained generic coverage');
 assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'diagonal' }).profile, 'diagonal');
-assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos' }).material.specularStrength, 0.06, 'missing masks keep neutral reflection only');
+assert.ok(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos' }).material.specularStrength > 0.06, 'known holo remains visibly reflective');
 const malformed: CardHoloMaskDescriptor = { ...printingMask, regions: [{ x: 0.5, y: 0.5, width: 0.7, height: 0.2 }] };
-assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos', masks: [malformed] }).mask.kind, 'none', 'out-of-bounds geometry is rejected');
+assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos', masks: [malformed] }).mask.provenance, 'generic', 'out-of-bounds geometry is rejected without claiming exact geometry');
 assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos', masks: [malformed, printingMask, templateMask] }).mask.provenance, 'printing-specific', 'an invalid printing record cannot hide a later valid printing record');
-assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos', masks: {} as any }).mask.kind, 'none', 'non-array mask metadata cannot crash inspection');
-assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos', masks: [{ languageCode: 99 }] as any }).mask.kind, 'none', 'malformed language metadata is ignored');
+assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos', masks: {} as any }).mask.provenance, 'generic', 'non-array mask metadata cannot crash inspection without claiming exact geometry');
+assert.equal(resolveCardHoloProfile(raw, { selectedVariantId: 'cosmos', masks: [{ languageCode: 99 }] as any }).mask.provenance, 'generic', 'malformed language metadata is ignored without claiming exact geometry');
 assert.equal(resolveCardHoloProfile({ ...raw, rarity: 'Radiant Rare', condition: 'Damaged' }).profile, 'plain', 'condition and rarity are not finish evidence');
 assert.equal(resolveCardHoloProfile({ ...raw, stackr: { ...raw.stackr, variants: [{ variantId: 'x', variantCode: 'mystery', finishCode: 'mystery' }], defaultVariantId: 'x' } }).confidence, 'unknown_finish');
 assert.equal(resolveCardHoloProfile({ ...raw, stackr: { ...raw.stackr, variants: [{ variantId: 'x', variantCode: 'holo', finishCode: 99 }], defaultVariantId: 'x' } }).confidence, 'invalid_identity', 'non-string finish code cannot inherit a variant finish');

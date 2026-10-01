@@ -553,11 +553,12 @@ function normalizeCanonicalSetCards(cards: StackrCard[]) {
 async function fetchStackrAssetsForPrinting(
   client: StackrApiClient,
   printingId: string,
+  signal?: AbortSignal,
 ) {
-  return allPages<StackrCatalogueAsset>(async (cursor) => {
-    const response = await client.assetManifest({ printingId, assetType: 'card_image', cursor, limit: 250 });
+  return allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
+    const response = await client.assetManifest({ printingId, assetType: 'card_image', cursor, limit: 250 }, { signal: pageSignal });
     return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
-  });
+  }, signal);
 }
 
 export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsset[] = []): StackrLegacySet {
@@ -1218,12 +1219,17 @@ export async function fetchStackrCard(
   }
   const resolved = await resolveCachedStackrCard(reference, options, client);
   if (!resolved) return null;
-  const embeddedAssets = embeddedCardImageAssets(resolved.card);
-  if (primaryCardImageAsset(resolved.card, embeddedAssets)) {
-    return stackrCardToLegacyCard(resolved.card, embeddedAssets);
+  if (!resolved.card.variants.some(variant => variant.variantId === resolved.variantId)) return null;
+  // Exact variant lookup must not reopen the printing's default finish. Clone
+  // only the presentation selection; cached catalogue facts remain unchanged.
+  const selectedCard = resolved.variantId === resolved.card.defaultVariantId ? resolved.card
+    : { ...resolved.card, defaultVariantId: resolved.variantId };
+  const embeddedAssets = embeddedCardImageAssets(selectedCard);
+  if (primaryCardImageAsset(selectedCard, embeddedAssets)) {
+    return stackrCardToLegacyCard(selectedCard, embeddedAssets);
   }
-  const assets = await fetchStackrAssetsForPrinting(client, resolved.card.cardId);
-  return stackrCardToLegacyCard(resolved.card, assets);
+  const assets = await readOptionalCatalogueEnrichment(signal => fetchStackrAssetsForPrinting(client, selectedCard.cardId, signal));
+  return stackrCardToLegacyCard(selectedCard, assets ?? []);
 }
 
 export function stackrLegacyCardToRow(card: StackrLegacyCard) {
@@ -1412,10 +1418,18 @@ export async function searchStackrCards(
     .map((result) => result.card!)
     .filter((card) => !primaryCardImageAsset(card, embeddedCardImageAssets(card)))
     .map((card) => card.cardId))];
-  const assets = await Promise.all(printingIds.map((printingId) => (
-    fetchStackrAssetsForPrinting(client, printingId).catch(() => [])
-  )));
-  const assetsByPrinting = new Map(printingIds.map((id, index) => [id, assets[index]]));
+  const assetsByPrinting = new Map<string, StackrCatalogueAsset[]>();
+  if (printingIds.length) await readOptionalCatalogueEnrichment(async (signal) => {
+    // One slow missing image cannot keep search busy indefinitely or create a
+    // hundred simultaneous manifest requests. Retain every canonical match.
+    for (let index = 0; index < printingIds.length; index += 4) {
+      throwIfOptionalCatalogueReadAborted(signal);
+      await Promise.all(printingIds.slice(index, index + 4).map(async (printingId) => {
+        const assets = await fetchStackrAssetsForPrinting(client, printingId, signal).catch(() => []);
+        if (!signal?.aborted) assetsByPrinting.set(printingId, assets);
+      }));
+    }
+  });
   return cards.map((result) => stackrCardToLegacyCard(result.card!, assetsByPrinting.get(result.card!.cardId) ?? []));
 }
 

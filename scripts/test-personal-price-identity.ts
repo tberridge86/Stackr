@@ -8,6 +8,7 @@ import { URL } from 'node:url';
 async function main() {
   let account: string | null = 'owner-a';
   let priceReads = 0;
+  let failure: Error | null = null;
   const id = '91be8fc7-b2ed-4169-b41e-0d374e4d466a';
   const dependencies: Record<string, unknown> = {
     './graderRegistry': graderRegistry,
@@ -17,6 +18,7 @@ async function main() {
       fetchStackrPrice: async (reference: string) => {
         assert.equal(reference, id);
         priceReads += 1;
+        if (failure) throw failure;
         return { resolved: { variantId: id, card: { names: { englishDisplay: 'Test', native: 'テスト' },
           set: { setId: 'set', nativeName: 'セット' }, collectorNumber: { value: '1' } } },
           price: { currency: 'GBP', estimates: { central: priceReads, low: null, high: null },
@@ -37,6 +39,13 @@ async function main() {
   assert.equal((await exports.fetchPokeTraceCardPrice(input)).stackr_central, 3, 'private caches are isolated between accounts');
   account = null;
   assert.equal(await exports.fetchPokeTraceCardPrice(input), null, 'sign-out cannot read the previous private price cache');
+  account = 'owner-c';
+  failure = Object.assign(new Error('Authenticated pricing unavailable'), { status: 401 });
+  await assert.rejects(exports.fetchPokeTraceCardPrice(input), /Authenticated pricing unavailable/,
+    'an API/auth failure must not appear as a successful no-quote result');
+  failure = null;
+  assert.equal((await exports.fetchPokeTraceCardPrice(input)).stackr_central, 5,
+    'a restored session retries immediately instead of reading a cached null error');
   console.log('Canonical price identity, explicit rereads and account cache isolation passed.');
 }
 void main();

@@ -35,6 +35,11 @@ assert.equal(
 );
 
 async function verifyReadFallback() {
+  await assert.rejects(() => preferNonEmptyCatalogueRows(
+    async () => { throw new Error('Catalogue timed out'); }, async () => [],
+  ), /Catalogue timed out/, 'a failed catalogue and empty fallback cannot claim the language has no sets');
+  assert.deepEqual(await preferNonEmptyCatalogueRows(async () => [], async () => []), [],
+    'two successful empty responses remain a legitimate empty catalogue');
   const attemptedCandidates: string[] = [];
   const candidateRows = await firstNonEmptyCatalogueRows(
     ['zh-cn:CSV1C', 'CSV1C'],

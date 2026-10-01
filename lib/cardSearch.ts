@@ -3,6 +3,7 @@ import { getLocalCardIndex } from './localCardIndex';
 import { findCuratedPokemonSearchRows } from './curatedPokemonCatalogue';
 import { correctPokemonNameQuery } from './pokemonNameAutocorrect';
 import { searchStackrCards } from './stackrDomainAdapter';
+import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';
 import { parseCardSearchIntent } from './cardSearchIntent';
 import {
   getEnglishCardDisplayName,
@@ -897,11 +898,13 @@ export async function searchLocalPokemonCards<T extends SearchRow = SearchRow>(
     external_ids: card.externalIds,
     raw_data: card.raw_data,
   }));
-  const cards = await attachLiveTcgdexCardReferences(await searchStackrCards(catalogueQuery, {
+  const cards = await searchStackrCards(catalogueQuery, {
     language: isAllLanguageSearch(options.language) ? null : options.language,
     limit,
     onCanonicalResults: options.onCanonicalResults
       ? (matches) => options.onCanonicalResults?.(toRows(matches)) : undefined,
-  }));
-  return toRows(cards) as unknown as T[];
+  });
+  const enriched = cards.some(card => !card.images.small && !card.images.large)
+    ? await readOptionalCatalogueEnrichment(() => attachLiveTcgdexCardReferences(cards)) : cards;
+  return toRows(enriched ?? cards) as unknown as T[];
 }

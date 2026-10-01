@@ -473,6 +473,7 @@ const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity, o
         <StackrImage
           uri={card.images?.small ?? null}
           fullUri={card.images?.large ?? null}
+          cardShape
           style={StyleSheet.absoluteFill}
           contentFit="contain"
           rounded={10}

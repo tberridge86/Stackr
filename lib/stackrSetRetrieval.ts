@@ -245,6 +245,11 @@ export function mergeBinderArtwork<T extends { id: string; card_id: string; set_
       ...row.card?.raw_data?.presentation, artwork: artworkMetadata,
       selected_image_variant_id: artworkMetadata.sourceVariantId,
     } };
+    if (artworkMetadata && Object.getOwnPropertyDescriptor(enriched.card, 'images')?.enumerable !== false) {
+      // The inspector and the tile must see the same proven catalogue image.
+      // Display-only provider overlays remain nonserializable below.
+      card.raw_data = { ...card.raw_data, images: card.images };
+    }
     // Preserve display-only provider overlays instead of making them serializable.
     if (Object.getOwnPropertyDescriptor(enriched.card, 'images')?.enumerable === false) {
       Object.defineProperty(card, 'images', { value: card.images, enumerable: false, configurable: true, writable: false });

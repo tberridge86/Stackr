@@ -5,12 +5,13 @@ import { isCompleteBinderSnapshot, type BinderReopenSnapshot } from '../../lib/b
 import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
 import { loadLatestSnapshotBinderPrices } from '../../lib/binderPricing';
 import { createVisibleBinderPriceReader, type VisibleBinderPriceReader } from '../../lib/binderVisiblePrices';
+import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
 import { stackrApiClient } from '../../lib/stackrApiV1';
 import { attachBinderCatalogueArtwork, attachBinderSetArtwork } from '../../lib/binders';
 import { StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { binderCardRarity, binderRarityChoices } from '../../lib/binderRarityFilter';
 import { useTheme } from '../../components/theme-context';
-import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
+import { getCatalogueVariantKeys, getCatalogueVariantIdForKey, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { getCanonicalMasterSetVariants } from '../../lib/masterSetProgress';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueInspectionImages, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
@@ -897,6 +898,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const addSearchRequestRef = useRef(0);
   const addResultLongPressRef = useRef<string | null>(null);
+  const inspectionRequestRef = useRef(0);
+  const [inspectionLoading, setInspectionLoading] = useState(false);
   const detailImageRequestRef = useRef(0);
   const binderListRef = useRef<FlatList<BinderCardWithDetails>>(null);
   const addCardListRef = useRef<FlatList<CardPreviewResult>>(null);
@@ -1385,7 +1388,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const nextAccountId = session?.user.id ?? null;
-      if (activeAccountIdRef.current === nextAccountId) return;
+      if (activeAccountIdRef.current === nextAccountId) {
+        if (_event === 'TOKEN_REFRESHED' && nextAccountId) {
+          const reader = visiblePriceReaderRef.current;
+          setTimeout(() => reader?.resumeAfterAuthentication(), 0);
+        }
+        return;
+      }
 
       activeAccountIdRef.current = nextAccountId;
       accountGenerationRef.current += 1;
@@ -2094,7 +2103,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         id: item.card?.raw_data?.stackr?.cardId ?? (item.card as any)?.rawData?.stackr?.cardId ?? item.card?.id ?? item.card_id,
         name: getBinderCardDisplayName(item, item.card_id),
         setId: item.set_id,
-        language: item.language ?? binder?.language ?? null,
+        language: item.card?.raw_data?.language ?? item.card?.language ?? item.language ?? binder?.language ?? null,
         raw_data: item.card?.raw_data ?? (item.card as any)?.rawData ?? null,
       },
       imageUri: catalogueImages.imageUri,
@@ -2105,6 +2114,41 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       onDetails: () => openCardDetail(item),
     });
     return true;
+  };
+
+  const requestBinderInspection = async (item: BinderCardWithDetails, variantKey?: string) => {
+    const request = ++inspectionRequestRef.current;
+    const loadGeneration = loadRequestRef.current;
+    const current = () => inspectionRequestRef.current === request && loadRequestRef.current === loadGeneration;
+    const savedVariantId = getBinderCanonicalVariantId(item);
+    const variantId = variantKey ? getCatalogueVariantIdForKey(item.card, variantKey) : savedVariantId;
+    if ((!variantKey || variantId === savedVariantId) && inspectBinderCard(item)) {
+      setInspectionLoading(false);
+      return;
+    }
+    const expectedLanguage = normalizePokemonCardLanguage(item.card?.raw_data?.language ?? item.card?.language ?? item.language ?? binder?.language);
+    const reference = variantId ?? item.card?.raw_data?.stackr?.cardId ?? item.card_id;
+    if (!reference || (variantKey && !variantId)) {
+      setInspectionLoading(false);
+      Alert.alert('Card inspection unavailable', 'The exact catalogue card or finish has not loaded. Refresh this binder and try again.');
+      return;
+    }
+    setInspectionLoading(true);
+    try {
+      const resolved = await readOptionalCatalogueEnrichment(
+        () => fetchStackrCard(reference, { language: expectedLanguage, setId: item.set_id }), undefined, 7_000,
+      );
+      if (!current()) return;
+      if (!resolved || (expectedLanguage && normalizePokemonCardLanguage(resolved.language) !== expectedLanguage)
+        || (variantId && resolved.externalIds.stackrVariant !== variantId)
+        || !inspectBinderCard({ ...item, card: resolved })) {
+        Alert.alert('Artwork not available for inspection', 'The exact catalogue artwork could not be loaded. Your saved card and quantity are unchanged.');
+      }
+    } catch {
+      if (current()) Alert.alert('Couldn’t open card inspection', 'Check your connection and try the long press again.');
+    } finally {
+      if (inspectionRequestRef.current === request) setInspectionLoading(false);
+    }
   };
 
   const handleSetVariantQuantity = useCallback(async (
@@ -2666,17 +2710,16 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const isGradedBinder = binder?.card_mode === 'graded';
     const ownedQuantity = getOwnedQuantity(item);
-    const inspectionAvailable = Boolean(getBinderCatalogueInspectionImages(item));
 
     return (
       <TouchableOpacity
         onPress={() => runAfterBinderOptionsClose(() => openCardDetail(item))}
-        onLongPress={() => runAfterBinderOptionsClose(() => { if (!inspectBinderCard(item)) handleCardLongPress(item); })}
+        onLongPress={() => runAfterBinderOptionsClose(() => { void requestBinderInspection(item); })}
         delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
         accessibilityRole="button"
-        accessibilityLabel={`${getBinderCardDisplayName(item, item.card_id)}. ${inspectionAvailable ? 'Hold to inspect.' : 'Hold for actions.'}`}
-        accessibilityActions={inspectionAvailable ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
-        onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect') runAfterBinderOptionsClose(() => { if (!inspectBinderCard(item)) handleCardLongPress(item); }); }}
+        accessibilityLabel={`${getBinderCardDisplayName(item, item.card_id)}. Hold to inspect.`}
+        accessibilityActions={[{ name: 'inspect', label: 'Inspect card' }]}
+        onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect') runAfterBinderOptionsClose(() => { void requestBinderInspection(item); }); }}
         activeOpacity={0.9}
         style={{ width: 120, marginRight: 14, opacity: isActive ? 0.75 : 1 }}
       >
@@ -2905,7 +2948,6 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const cardName = getBinderCardDisplayName(item, item.card_id);
     const forTrade = isForTrade(item.card_id, item.set_id);
     const isGradedBinder = binder?.card_mode === 'graded';
-    const inspectionAvailable = Boolean(getBinderCatalogueInspectionImages(item));
 
     const variants = masterSetEnabled ? getVariants(item.card, item.set_id) : ['card'];
     const multiVariant = variants.length > 1;
@@ -2949,13 +2991,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     return (
       <TouchableOpacity
         onPress={() => handleCardTileTap(item)}
-        onLongPress={() => { if (!inspectBinderCard(item)) openCardDetail(item); }}
+        onLongPress={() => { void requestBinderInspection(item); }}
         delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
         activeOpacity={0.85}
         accessibilityRole="button"
-        accessibilityLabel={`${cardName}. Tap to mark collected or missing. ${inspectionAvailable ? 'Hold to inspect.' : 'Hold for details.'}`}
-        accessibilityActions={inspectionAvailable ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
-        onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect' && !inspectBinderCard(item)) openCardDetail(item); }}
+        accessibilityLabel={`${cardName}. Tap to mark collected or missing. Hold to inspect.`}
+        accessibilityActions={[{ name: 'inspect', label: 'Inspect card' }]}
+        onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect') void requestBinderInspection(item); }}
         style={{
           width: cardWidth,
           marginBottom: 8,
@@ -3015,10 +3057,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                   <Pressable
                     key={variant}
                     onPress={() => handleCardTileTap(item, variant)}
-                    onLongPress={() => openCardDetail(item)}
-                    delayLongPress={400}
+                    onLongPress={() => { void requestBinderInspection(item, variant); }}
+                    delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
                     accessibilityRole="button"
-                    accessibilityLabel={`${cardName} ${variant}. Tap to toggle this variant. Hold for details.`}
+                    accessibilityLabel={`${cardName} ${variant}. Tap to toggle this variant. Hold to inspect.`}
                     style={({ pressed }) => ({
                       flex: 1,
                       opacity: owned ? 1 : 0.62,
@@ -3640,6 +3682,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             {catalogueReadIncomplete || totalNeedsSync ? (
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', marginTop: 2, textAlign: 'center' }}>
                 {heroHelperText}
+              </Text>
+            ) : null}
+            {inspectionLoading ? <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft, marginTop: 6 }}>Opening card inspection…</Text> : null}
+            {binder.type === 'official' && normalizePokemonCardLanguage(binder.language) === 'ja' && !masterSetEnabled && cards.length > displayCards.length ? (
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 6, textAlign: 'center' }}>
+                Standard set view · {cards.length - displayCards.length} additional cards hidden. Enable Master set in binder options to include them.
               </Text>
             ) : null}
 

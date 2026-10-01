@@ -107,7 +107,7 @@ const showcaseEvents: string[] = [];
 const showcaseHold = runAttribute(inspectableBinderCards[0], 'onLongPress', {
   item: { id: 'showcase-card' },
   runAfterBinderOptionsClose: (action: () => void) => { afterOptionsClose = action; },
-  inspectBinderCard: () => { showcaseEvents.push('inspect'); return true; },
+  requestBinderInspection: () => { showcaseEvents.push('inspect'); return true; },
   handleCardLongPress: () => showcaseEvents.push('actions'),
 });
 showcaseHold();

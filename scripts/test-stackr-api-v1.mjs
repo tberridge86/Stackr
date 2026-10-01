@@ -1223,7 +1223,8 @@ assert.match(domainAdapter, /resolveCardArtwork\(card, assets\)/);
 const artworkPresentation = await readFile(new URL('../lib/cardArtworkPresentation.ts', import.meta.url), 'utf8');
 assert.match(artworkPresentation, /!asset\.variantId && asset\.cardId === card\.cardId/);
 assert.match(domainAdapter, /const needsManifestFallback = cards\.some/);
-assert.match(domainAdapter, /fetchStackrAssetsForPrinting\(client, printingId\)/);
+assert.match(domainAdapter, /fetchStackrAssetsForPrinting\(client, printingId, signal\)/,
+  'optional search manifests retain the printing identity and bounded child cancellation');
 assert.doesNotMatch(domainAdapter, /const hasEmbeddedImages = cards\.some/);
 for (const method of [
   'health',

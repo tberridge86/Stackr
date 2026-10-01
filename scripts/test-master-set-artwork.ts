@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { resolveCardArtwork } from '../lib/cardArtworkPresentation';
-import { getCatalogueVariantKeys } from '../lib/catalogueVariantPresentation';
+import { getCatalogueVariantKeys, getCatalogueVariantIdForKey } from '../lib/catalogueVariantPresentation';
 import { mergeBinderArtwork } from '../lib/stackrSetRetrieval';
 import { nextStackrImageCandidate, stackrImageCandidates } from '../lib/stackrImageCandidates';
 import type { StackrCard, StackrCatalogueAsset } from '../lib/stackrApiV1';
@@ -29,6 +29,8 @@ for (const language of ['en', 'ja', 'zh-cn', 'zh-tw'] as const) {
   c.variants[0].image = asset(c);
   const original = structuredClone(c);
   assert.deepEqual(getCatalogueVariantKeys({ raw_data: { stackr: { canonical: true, variants: c.variants } } }), ['normal', 'reverseHolofoil']);
+  assert.equal(getCatalogueVariantIdForKey({ raw_data: { stackr: { canonical: true, variants: c.variants } } }, 'reverseHolofoil'), c.variants[1].variantId);
+  assert.equal(getCatalogueVariantIdForKey({ raw_data: { stackr: { canonical: true, variants: [...c.variants, c.variants[1]] } } }, 'reverseHolofoil'), null, 'ambiguous finish identity cannot be guessed');
   assert.equal(resolveCardArtwork(c).kind, 'exact');
   assert.equal(resolveCardArtwork(c, [], c.variants[1].variantId).kind, 'shared');
   assert.equal(resolveCardArtwork(c, [], 'nonexistent-holo').kind, 'missing');
@@ -74,6 +76,8 @@ const incoming = { ...row, owned_quantity: 1, notes: 'wrong', ebay_price: 0,
 const [recovered] = mergeBinderArtwork([row], [incoming]);
 assert.equal(recovered.owned_quantity, 4); assert.equal(recovered.notes, 'keep note'); assert.equal(recovered.ebay_price, 27);
 assert.equal((recovered.card.images as { small?: string }).small, artwork.small); assert.equal(recovered.card.raw_data.stackr.defaultVariantId, missing.defaultVariantId);
+assert.equal((recovered.card.raw_data as any).images.small, artwork.small,
+  'inspection and display receive the same verified progressive artwork');
 const candidates = stackrImageCandidates(artwork.candidates.map(c => ({ uri: c.uri })));
 const failures: string[] = [];
 while (nextStackrImageCandidate(candidates, failures)) failures.push(nextStackrImageCandidate(candidates, failures)!.key);

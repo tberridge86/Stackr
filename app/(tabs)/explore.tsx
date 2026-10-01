@@ -2,7 +2,7 @@ import { getSimplifiedChineseSetLogoSourceForSet } from '../../lib/simplifiedChi
 import { StackrBrowseToolbar, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { groupDiscoverSets as groupSetsBySeries, isDiscoverDateGroup } from '../../lib/discoverSetGroups';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -370,6 +370,8 @@ export default function ExploreScreen() {
   const [simplifiedChineseSets, setSimplifiedChineseSets] = useState<PokemonSet[]>([]);
   const [traditionalChineseSets, setTraditionalChineseSets] = useState<PokemonSet[]>([]);
   const [loading, setLoading] = useState(true);
+  const loadRequestRef = useRef(0);
+  const [pendingLanguages, setPendingLanguages] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [hasLoadedCatalogue, setHasLoadedCatalogue] = useState(false);
@@ -389,28 +391,38 @@ export default function ExploreScreen() {
   // ===============================
 
   const load = useCallback(async (isRefresh = false) => {
-    try {
-      if (isRefresh) setRefreshing(true);
-      else setLoading(true);
-
-      const [englishData, japaneseData, simplifiedChineseData, traditionalChineseData, existingBinders] = await Promise.all([
-        fetchAllSets({ language: 'en' }),
-        fetchAllSets({ language: 'ja', preferCanonicalApi: true }),
-        fetchAllSets({ language: 'zh-cn', preferCanonicalApi: true }),
-        fetchAllSets({ language: 'zh-tw', preferCanonicalApi: true }),
-        fetchExistingSetBinders(),
-      ]);
-      setEnglishSets(englishData);
-      setJapaneseSets(japaneseData);
-      setSimplifiedChineseSets(simplifiedChineseData);
-      setTraditionalChineseSets(traditionalChineseData);
-      setExistingBindersBySet(existingBinders);
-      setHasLoadedCatalogue(true);
-      setLoadError(null);
-    } catch (error) {
-      console.log('Failed to load sets', error);
-      setLoadError('Sets are unavailable right now. Check your connection and try again.');
-    } finally {
+    const request = ++loadRequestRef.current;
+    const current = () => request === loadRequestRef.current;
+    const languages = [
+      { code: 'en', label: 'English', receive: setEnglishSets },
+      { code: 'ja', label: 'Japanese', receive: setJapaneseSets },
+      { code: 'zh-cn', label: 'Simplified Chinese', receive: setSimplifiedChineseSets },
+      { code: 'zh-tw', label: 'Traditional Chinese', receive: setTraditionalChineseSets },
+    ];
+    setRefreshing(isRefresh);
+    setLoadError(null);
+    setPendingLanguages(languages.map(language => language.label));
+    const failed: string[] = [];
+    // Ownership is optional and must not hold public catalogue results.
+    void fetchExistingSetBinders().then(value => {
+      if (current()) setExistingBindersBySet(value);
+    }).catch(() => {});
+    await Promise.allSettled(languages.map(async language => {
+      try {
+        const sets = await fetchAllSets({ language: language.code, preferCanonicalApi: true });
+        if (!current()) return;
+        language.receive(sets);
+        setHasLoadedCatalogue(true);
+        setLoading(false);
+      } catch {
+        if (!current()) return;
+        failed.push(language.label);
+        setLoadError(failed.join(', ') + ' sets could not be loaded. Retry to complete the catalogue.');
+      } finally {
+        if (current()) setPendingLanguages(previous => previous.filter(label => label !== language.label));
+      }
+    }));
+    if (current()) {
       setLoading(false);
       setRefreshing(false);
     }
@@ -418,7 +430,8 @@ export default function ExploreScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      load();
+      void load();
+      return () => { loadRequestRef.current += 1; };
     }, [load])
   );
 
@@ -702,6 +715,7 @@ export default function ExploreScreen() {
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 18 }}>
 
         <StackrPageTitle title="Discover Sets" accentText="Sets" style={{ marginBottom: 8 }} />
+        {pendingLanguages.length ? <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft, marginBottom: 8 }}>Loading {pendingLanguages.join(', ')} sets…</Text> : null}
         {loadError ? (
           <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingLeft: 12, marginBottom: 12 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, flex: 1 }}>{loadError}</Text>
@@ -848,7 +862,7 @@ export default function ExploreScreen() {
           ListEmptyComponent={
             <View style={{ alignItems: 'center', paddingVertical: 40 }}>
               <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
-                No sets found
+                {pendingLanguages.length ? 'More sets are loading…' : loadError ? 'Catalogue loading is incomplete. Please retry.' : 'No sets match your filters.'}
               </Text>
               <Text style={{ color: theme.colors.textSoft, marginTop: 8, textAlign: 'center' }}>
                 Try a different search term.
