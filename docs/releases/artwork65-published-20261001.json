@@ -1,0 +1,108 @@
+{
+  "verified_at": "2026-10-01T03:19:46.767Z",
+  "status": "published_and_independently_verified",
+  "batch": {
+    "fronts": 65,
+    "derivative_references": 195,
+    "distinct_storage_objects": 260,
+    "created": 260,
+    "reused": 0
+  },
+  "production": {
+    "run_id": 36808289201,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36808289201",
+    "source": "fbbe5f3ad17dc675f89cb785e64757590e431981",
+    "cohort_sha256": "618b3edb22c5511a665a4adbcd7ed1ec4f2bf549fb340124173fd8ad499838f9",
+    "corrections_sha256": "f0b49a4bcd9c70e3127ab342f5c57074d99492f1795a46ccbff81b054cc7e9a9",
+    "receipt_sha256": "1227f24c203f12e591bc7f40d0befa95769deaad718cbe6a6162c1484de9bbb9",
+    "receipt_artifact": {
+      "id": 11138975625,
+      "name": "native65-artwork-36808289201-1",
+      "createdAt": "2026-10-01T03:03:59Z",
+      "digest": "sha256:8d5b4ed4da72cddee8c1bedf376794d20f27e80e5608d47e6011342dc58f4458",
+      "sha256": "8d5b4ed4da72cddee8c1bedf376794d20f27e80e5608d47e6011342dc58f4458",
+      "bytes": 23315,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/36808289201/artifacts/11138975625"
+    }
+  },
+  "independent_verification": {
+    "cards_passed": 65,
+    "images_passed": 260,
+    "first_attempt_card_failures": 0,
+    "first_attempt_image_failures": 0,
+    "http_timings": {
+      "card_detail": {
+        "samples": 65,
+        "median_ms": 285,
+        "p95_ms": 3606,
+        "max_ms": 4798
+      },
+      "manifest": {
+        "samples": 65,
+        "median_ms": 204,
+        "p95_ms": 2663,
+        "max_ms": 5795
+      },
+      "image": {
+        "samples": 260,
+        "median_ms": 370,
+        "p95_ms": 3397,
+        "max_ms": 5143
+      }
+    },
+    "timing_contract": "HTTP byte counts and statuses are recorded before image decoding. request_complete_ms excludes deliberate queue spacing and includes the final HTTP response body; pacing_ms is retained per attempt."
+  },
+  "preservation": {
+    "staging": {
+      "cards": 65,
+      "printing_native_names_changed": 0,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variant_and_api_identity_fields_preserved": true
+    },
+    "production": {
+      "cards": 65,
+      "printing_native_names_changed": 53,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variant_and_api_identity_fields_preserved": true
+    }
+  },
+  "metadata_changes": {
+    "printing_native_names": 53,
+    "native_search_name_rows": 53,
+    "other_metadata": 0
+  },
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "recovery_total": {
+    "fronts": 8777,
+    "derivative_references": 26331,
+    "distinct_storage_objects": 35041,
+    "retained_cohorts": 9
+  },
+  "original_4201": {
+    "resolved": 817,
+    "remaining": 3384
+  },
+  "remaining": {
+    "by_language": {
+      "en": 465,
+      "ja": 2083,
+      "zh-cn": 829,
+      "zh-tw": 7
+    },
+    "by_category": {
+      "Exact source needed": 2674,
+      "provider_image_unavailable": 1,
+      "Verified front held for native-name correction": 72,
+      "identity_conflict": 5,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20,
+      "Language identity conflict": 605,
+      "Composite artwork review": 2,
+      "Source image conflict": 1
+    },
+    "next_offline_prepared_fronts": 72
+  },
+  "device_verified": false
+}
