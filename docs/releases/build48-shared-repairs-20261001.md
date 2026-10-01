@@ -7,6 +7,7 @@
 - Installed 1.0.4 (48): `f8bf3a7c99ab1c5d4ef4420d558c4ba36d78678a`.
 - Initial repair base: `f541ab797f5e0320e99152958ec4aff18b448de5`.
 - Branch: `agent/release/build48-shared-repairs-20261001`.
+- [Draft PR293](https://github.com/tberridge86/Stackr/pull/293). Reconciled through main `ff187ae560f5481125eacf37b75c6472895dd06a` (PR292); clean merge, publication changes preserved.
 - Owner authorized coordination with **Resume missing artwork list**, which is actively publishing Native97 and owns production integration. Ownership proposals, findings and the exact SV4a gap were successfully messaged. Acknowledgment of additional server metadata/pricing work is still pending.
 - PR209 already documents inspection's empty mask registry/device limitations; PR219 is search cleanup without installed speed evidence. Neither was replayed. Main's PR291 touches publication tooling, not these client files.
 - No production data, verified source image, card identity, holding, quantity, saved binder setting or pricing history was changed. No competing pricing system, provider or publication workflow was added.
@@ -70,6 +71,8 @@ Reproduce with `node scripts/audit-build48-set-delivery.mjs`.
 Locally passed: TypeScript; lint (0 errors, 10 existing warnings in unchanged files); startup; complete card-inspection suite including 31 motion cases, 20 lifecycle cases and 25 Skia rendering cases; personal loading/search and new build48 delivery controls; binder image/fallback, variant/artwork, foreign picker, visible-price and personal-price identity; foreign/native display; preferred artwork; 13 facts-first retrieval, 18 reopen/SQLite and 12 parallel-read checks; collection-pricing UI and Home release suites. New delivery tests are in the existing CI-invoked personal-loading script.
 
 Lifecycle native boundaries are mocked; Skia runs CPU/WASM. Review/CI, actual deployed/build identity and physical device acceptance are separate gates. No mobile or production release was launched here. The release owner should integrate through the existing PR/release process, choose the next build number and record exact served source/update identities.
+
+Initial CI run36864067257 found an outdated source assertion expecting the two-argument manifest call. The call now includes the cancellation signal. Updated that assertion without removing the identity check; the complete API integration/transport/cache suite passes locally. The replacement GitHub run must pass before integration. Independently verified all three committed JSON receipts against the SHA256 manifest.
 
 ## Phone test sequence for the integrated candidate
 

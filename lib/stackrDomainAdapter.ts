@@ -1424,9 +1424,9 @@ export async function searchStackrCards(
     // hundred simultaneous manifest requests. Retain every canonical match.
     for (let index = 0; index < printingIds.length; index += 4) {
       throwIfOptionalCatalogueReadAborted(signal);
-      await Promise.all(printingIds.slice(index, index + 4).map(async (id) => {
-        const assets = await fetchStackrAssetsForPrinting(client, id, signal).catch(() => []);
-        if (!signal?.aborted) assetsByPrinting.set(id, assets);
+      await Promise.all(printingIds.slice(index, index + 4).map(async (printingId) => {
+        const assets = await fetchStackrAssetsForPrinting(client, printingId, signal).catch(() => []);
+        if (!signal?.aborted) assetsByPrinting.set(printingId, assets);
       }));
     }
   });
