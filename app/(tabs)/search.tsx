@@ -1516,7 +1516,7 @@ export default function GlobalSearchScreen() {
   const renderGroup = (group: keyof SearchResults) => {
     if (group === 'cards' && visibleResults.cards.length) {
       return (
-        <SearchRailSection key="cards" title="Cards" count={visibleResults.cards.length}>
+        <SearchRailSection key="cards" title="Cards" count={visibleResults.cards.length} cardImageUris={visibleResults.cards.map(card => card.imageUri)}>
           {visibleResults.cards.map((card) => (
             <SearchCardRailItem
               key={card.id}
