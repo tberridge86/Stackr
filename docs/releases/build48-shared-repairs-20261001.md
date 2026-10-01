@@ -7,7 +7,7 @@
 - Installed 1.0.4 (48): `f8bf3a7c99ab1c5d4ef4420d558c4ba36d78678a`.
 - Initial repair base: `f541ab797f5e0320e99152958ec4aff18b448de5`.
 - Branch: `agent/release/build48-shared-repairs-20261001`.
-- [Draft PR293](https://github.com/tberridge86/Stackr/pull/293). Reconciled through main `ff187ae560f5481125eacf37b75c6472895dd06a` (PR292); clean merge, publication changes preserved.
+- [PR293](https://github.com/tberridge86/Stackr/pull/293). Reconciled through main `ff187ae560f5481125eacf37b75c6472895dd06a` (PR292); publication changes must remain preserved during final integration.
 - Owner authorized coordination with **Resume missing artwork list**, which is actively publishing Native97 and owns production integration. Ownership proposals, findings and the exact SV4a gap were successfully messaged. Acknowledgment of additional server metadata/pricing work is still pending.
 - PR209 already documents inspection's empty mask registry/device limitations; PR219 is search cleanup without installed speed evidence. Neither was replayed. Main's PR291 touches publication tooling, not these client files.
 - No production data, verified source image, card identity, holding, quantity, saved binder setting or pricing history was changed. No competing pricing system, provider or publication workflow was added.
@@ -75,6 +75,8 @@ Lifecycle native boundaries are mocked; Skia runs CPU/WASM. Review/CI, actual de
 Initial CI run36864067257 found an outdated source assertion expecting the two-argument manifest call. The call now includes the cancellation signal. Updated that assertion without removing the identity check; the complete API integration/transport/cache suite passes locally. The following CI run exposed an image-test dependency mock missing the shared sizing module; corrected it and added actual component layout/source-preservation checks. Updated the controlled-image source assertion to retain the existing approved overlay inside the new bounded read. Both full artwork recovery and controlled-image suites pass locally. The replacement GitHub run must pass before integration. Independently verified all three committed JSON receipts against the SHA256 manifest.
 
 ## Phone test sequence for the integrated candidate
+
+Release-owner review found and corrected a startup accessibility regression before the next build: animations now wait until the system explicitly reports that Reduce Motion is off. A pending, enabled or unreadable preference keeps the loading artwork static. The CI-wired asynchronous component test covers each path. The card-shaped image override also explicitly clears inherited opposing edges; its merged-style test verifies the intended dimensions and position. This is layout-source evidence, not a claim of a reproduced physical-phone failure. Existing restored bitmap artwork, readiness dismissal, saved preferences and original card image bytes are preserved. These reviewed changes require replacement CI at the final PR head before the next normal TestFlight candidate is built.
 
 1. Record build/update identity, phone/iOS and network. Five force-closed opens and five normal opens: original S/animation, time to usable Home, no wait after readiness.
 2. Search **Mew** for individual cards; open **SV7a, SV4a, SV8a** and both Chinese discovery filters. Record first/repeat time and counts. SV4a must remain explicitly incomplete until repaired.

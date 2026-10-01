@@ -21,7 +21,7 @@ const React = {
 };
 const modules: Record<string, any> = {
   react: { ...React, default: React, __esModule: true },
-  'react-native': { View: 'View', Text: 'Text', StyleSheet: { create: (v: any) => v }, InteractionManager: { runAfterInteractions: () => ({ cancel() {} }) } },
+  'react-native': { View: 'View', Text: 'Text', StyleSheet: { create: (v: any) => v, absoluteFillObject: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 } }, InteractionManager: { runAfterInteractions: () => ({ cancel() {} }) } },
   'expo-image': { Image: 'ExpoImage' }, '@expo/vector-icons': { Ionicons: 'Icon' },
   './theme-context': { useTheme: () => ({ theme: { colors: { surface: 'white', textSoft: 'gray' } } }) },
   '../lib/stackrImageCandidates': candidates, '../lib/tcgdexControlledCardReference': policy,
@@ -58,6 +58,10 @@ tree = render(shapedProps);
 const shapedImage = find(tree, 'ExpoImage');
 const frame = shapedImage.props.style[1];
 assert.equal(frame.width, 180); assert.equal(frame.height, 250); assert.equal(frame.left, 10);
+assert.equal(shapedImage.props.style[0].right, 0); assert.equal(shapedImage.props.style[0].bottom, 0);
+assert.equal(frame.right, undefined); assert.equal(frame.bottom, undefined, 'card face dimensions override absolute-fill opposing edges');
+const mergedFrame = Object.assign({}, ...shapedImage.props.style.filter(Boolean));
+assert.deepEqual({ width: mergedFrame.width, height: mergedFrame.height, left: mergedFrame.left, top: mergedFrame.top, right: mergedFrame.right, bottom: mergedFrame.bottom }, { width: 180, height: 250, left: 10, top: 0, right: undefined, bottom: undefined });
 assert.equal(frame.overflow, 'hidden'); assert.equal(frame.borderRadius, 8.1);
 assert.equal(shapedImage.props.contentFit, 'contain', 'card edges preserve printed borders');
 assert.equal(shapedImage.props.source.uri, shapedProps.uri, 'silhouette clipping does not replace source artwork');

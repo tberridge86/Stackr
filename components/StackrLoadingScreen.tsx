@@ -39,7 +39,8 @@ export function StackrLoadingScreen({
   }, []);
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
-  const [reduceMotion, setReduceMotion] = useState(false);
+  // Stay still until the system setting is known: a Reduce Motion user must not see a first-frame animation.
+  const [reduceMotion, setReduceMotion] = useState<boolean | null>(null);
   const reveal = useRef(new Animated.Value(0)).current;
   const twinkle = useRef(new Animated.Value(0)).current;
   const blobFloat = useRef(new Animated.Value(0)).current;
@@ -50,13 +51,13 @@ export function StackrLoadingScreen({
     let mounted = true;
     AccessibilityInfo.isReduceMotionEnabled()
       .then(value => { if (mounted) setReduceMotion(value); })
-      .catch(() => undefined);
+      .catch(() => { if (mounted) setReduceMotion(true); });
     const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
     return () => { mounted = false; subscription.remove(); };
   }, []);
 
   useEffect(() => {
-    if (reduceMotion || !busy || !animate) {
+    if (reduceMotion === null || reduceMotion || !busy || !animate) {
       reveal.setValue(1);
       twinkle.setValue(0);
       float.setValue(0);
@@ -66,8 +67,8 @@ export function StackrLoadingScreen({
     }
     Animated.spring(reveal, {
       toValue: 1,
-      tension: reduceMotion ? 80 : 58,
-      friction: reduceMotion ? 12 : 8,
+      tension: 58,
+      friction: 8,
       useNativeDriver: true,
       isInteraction: false,
     }).start();

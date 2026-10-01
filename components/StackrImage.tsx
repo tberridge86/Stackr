@@ -196,6 +196,9 @@ function StackrImageBase({
           style={[styles.image, cardShape && cardFrame ? {
             width: faceWidth, height: faceHeight,
             left: (cardFrame.width - faceWidth) / 2, top: (cardFrame.height - faceHeight) / 2,
+            // styles.image is absolute-fill. Clear its opposing edges so Yoga
+            // uses this card face's explicit width and height in wide frames.
+            right: undefined, bottom: undefined,
             borderRadius: faceWidth * 0.045, overflow: 'hidden',
           } : undefined, imageStyle]}
           contentFit={contentFit}
