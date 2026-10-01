@@ -5,7 +5,7 @@ import { gunzipSync } from 'node:zlib';
 import { pathToFileURL } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 import { check, digest } from '../queue1-publish-20260927/publish.mjs';
-import { assertConfig as baseConfig, assertNoConflictingFronts, publicationObjects, publishFrozenCohort, safePath } from '../artwork3303-publish-20260928/publish.mjs';
+import { assertConfig as baseConfig, assertNoConflictingFronts, createTransferPolicy, publicationObjects, publishFrozenCohort, safePath } from '../artwork3303-publish-20260928/publish.mjs';
 import { createNativeNameCorrections } from '../artwork3303-publish-20260928/native-name-corrections.mjs';
 import { TCGPLAYER_SOURCE } from '../native96-publish-20260930/publish.mjs';
 const HERE = new URL('.', import.meta.url);
@@ -17,6 +17,7 @@ export const FRONTS=97;
 export const LANGUAGE_COUNTS=Object.freeze({ja:97});
 export const SOURCE_COUNTS=Object.freeze({tcgplayer_card_artwork:97});
 export const ARCHIVE=Object.freeze({id:603125015,kind:'github_release_asset',sha256:'afc0f06595f6a2bb597584dc24d76fb3f8865d27e07fcf3dd8d9056b0653187e',size_in_bytes:22586572});
+export const TRANSFER_POLICY=Object.freeze({concurrency:2,minIntervalMs:700});
 const prior=['artwork3303-publish-20260928','english49-publish-20260930','tw200-publish-20260930','english45-publish-20260930','sh33-publish-20260930','residual146-publish-20260930','native96-publish-20260930','korean232-publish-20260930','native65-publish-20261001','native72-publish-20261001','native70-publish-20261001','native78-publish-20261001','native73-publish-20261001','native84-publish-20261001','native99-publish-20261001'];
 export function frozenConstants(){
  const c=read('./frozen-constants.json');
@@ -90,5 +91,5 @@ export async function sourcesFor(db,_receipt,environment){
  return new Map(rows.map(r=>[r.code,r.id]));
 }
 export function assertConfig(env){check(env.STACKR_NATIVE97_CONFIRMATION==='PUBLISH NATIVE97','Native97 confirmation required');baseConfig({...env,STACKR_ARTWORK3303_CONFIRMATION:'PUBLISH ARTWORK3303'});}
-async function main(){assertConfig(process.env);check(process.argv.includes('--execute'),'Explicit execution required');const receipt=read('./plan-receipt.json'),approval=read('./approval.json');validateApproval(approval);const rows=validatePlan(readFileSync(new URL('./cohort.json.gz',HERE)),receipt);await publishFrozenCohort({rows,receipt,approval,root:process.env.STACKR_NATIVE97_PACKAGES,output:process.env.STACKR_NATIVE97_OUTPUT,sourceResolver:sourcesFor,nativeNameCorrections:createNativeNameCorrections(correctionPlan(),{expectedCount:97,expectedNameRowCount:193})});}
+async function main(){assertConfig(process.env);check(process.argv.includes('--execute'),'Explicit execution required');const receipt=read('./plan-receipt.json'),approval=read('./approval.json');validateApproval(approval);const rows=validatePlan(readFileSync(new URL('./cohort.json.gz',HERE)),receipt);await publishFrozenCohort({rows,receipt,approval,root:process.env.STACKR_NATIVE97_PACKAGES,output:process.env.STACKR_NATIVE97_OUTPUT,sourceResolver:sourcesFor,nativeNameCorrections:createNativeNameCorrections(correctionPlan(),{expectedCount:97,expectedNameRowCount:193}),transferPolicy:createTransferPolicy(TRANSFER_POLICY)});}
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)main().catch(e=>{console.error(e.message);process.exitCode=1;});

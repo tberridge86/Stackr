@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs';
 import {gunzipSync} from 'node:zlib';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validatePlan,validateRow,correctionPlan,frozenConstants,exceptionLedger,validateApproval,sourcesFor,assertConfig} from './publish.mjs';
+import {validatePlan,validateRow,correctionPlan,frozenConstants,exceptionLedger,validateApproval,sourcesFor,assertConfig,TRANSFER_POLICY} from './publish.mjs';
 import {TCGPLAYER_SOURCE} from '../native96-publish-20260930/publish.mjs';
 
 const read=n=>JSON.parse(readFileSync(new URL(n,import.meta.url)));
@@ -22,6 +22,7 @@ test('frozen VS1 scope is exactly 97 fronts, 97 repairs, no unchanged names, and
   assert.equal(rows.filter(r=>r.metadata_correction_required).length,97);
   assert.deepEqual(rows.filter(r=>!r.metadata_correction_required),[]);
   assert.equal(rows.flatMap(r=>r.objects).length,388);
+  assert.deepEqual(TRANSFER_POLICY,{concurrency:2,minIntervalMs:700});
   for(const d of [{fronts:96},{native_name_corrections:96},{derivative_references:290},{object_references:387},{unchanged_native_names:1}]) assert.throws(()=>validatePlan(bytes,{...receipt,...d}));
 });
 

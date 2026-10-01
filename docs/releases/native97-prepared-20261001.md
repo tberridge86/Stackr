@@ -11,4 +11,10 @@ This is a prepared, unpublished bounded recovery lane for 97 Japanese VS1 fronts
 
 The protected lane validates the frozen archive, the complete 15-cohort exclusion set through Native99, source and visual-review bindings, exact printing and variant-native row IDs for staging and production, and all object paths and hashes. It changes only `card_printings.native_name` and the approved existing native `card_names.name` and `normalized_name` fields. It preserves aliases, row IDs, variant associations and states, provenance, prices, holdings, and existing artwork. Staging historical variant deprecations are read and preserved; production requires every bound variant to be active.
 
-No database write, publication, upload, or deployment has occurred from this preparation.
+Initial preparation was unpublished. The first protected run and bounded recovery are recorded below.
+
+## Publication attempt and rate-limit recovery
+
+[Run 36860755298](https://github.com/tberridge86/Stackr/actions/runs/36860755298), source `aa03a1ea26dee995d8353f49d7313ceec7810dd8`, stopped before publication after a public image read exhausted four attempts with HTTP 429. It uploaded 114 immutable files and verified 113 of those files; it published **zero fronts**. Both metadata rehearsals passed and rolled back. A fresh readback confirms all 97 full printing/name/variant/API snapshots remain unchanged in each environment and zero production assets carry this cohort. [Receipt and recovery evidence](native97-rate-limit-recovery-20261001.json).
+
+The bounded repair opts only Native97 into two concurrent transfers spaced by at least 700 ms, with a shared cooldown honoring valid `Retry-After` headers. The successor will reuse and reverify previously uploaded objects, then continue the same frozen 97 fronts and 388 image objects. Archive, cohort, correction plan, approvals, access controls and transaction boundaries remain unchanged. Publication is not complete until its successor receipt and independent API/file checks pass.
