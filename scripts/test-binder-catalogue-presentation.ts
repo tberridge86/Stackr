@@ -1,6 +1,17 @@
 import assert from 'node:assert/strict';
 import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal, preserveUnmatchedBinderRows } from '../lib/binderCataloguePresentation';
 import { nextStackrImageCandidate, stackrImageCandidates } from '../lib/stackrImageCandidates';
+import { getBinderCatalogueInspectionImages } from '../lib/binderCataloguePresentation';
+
+const displayedCanonical = { image_url: 'https://seller.example/photo.jpg', card: {
+  images: { small: 'https://catalogue.stackr.test/grid.webp', large: 'https://catalogue.stackr.test/detail.webp' },
+  raw_data: { stackr: { canonical: true, cardId: 'exact-card' }, images: {} },
+} };
+assert.equal(getBinderCatalogueInspectionImages(displayedCanonical)?.fullImageUri, displayedCanonical.card.images.large,
+  'approved artwork displayed after facts-first loading must also be inspectable');
+assert.equal(getBinderCatalogueInspectionImages({ ...displayedCanonical, card: {
+  ...displayedCanonical.card, images: { small: displayedCanonical.image_url, large: displayedCanonical.image_url },
+} }), null, 'a captured photo must never become decorative catalogue inspection');
 
 const saved = {
   image_url: 'https://catalogue.stackr.test/ja/S12a/001.webp',

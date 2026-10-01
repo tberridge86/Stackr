@@ -88,7 +88,39 @@ async function main() {
   auth.request(['row-1', 'row-2']); await tick(); await tick();
   auth.request(['row-3']); await tick();
   assert.equal(authCalls, 1, 'access denial terminally stops queued and future reads');
+  auth.resumeAfterAuthentication(); await tick();
+  assert.equal(authCalls, 1, 'token refresh must not bypass a 403 permission denial');
   auth.dispose();
+
+  const renewedClock = clock();
+  const renewedCalls: string[][] = [];
+  const renewed = createVisibleBinderPriceReader(rows, {
+    ...renewedClock,
+    loader: async batch => {
+      renewedCalls.push(batch.map(row => row.id));
+      if (renewedCalls.length === 1) return { failure: { status: 401 } };
+    },
+  });
+  renewed.request(['row-1']); await tick();
+  renewed.request(['row-2']);
+  renewed.resumeAfterAuthentication(); await tick();
+  assert.deepEqual(renewedCalls, [['row-1'], ['row-2']], 'fresh credentials resume only currently visible rows');
+  renewed.resumeAfterAuthentication(); await tick();
+  assert.equal(renewedCalls.length, 2, 'refresh events do not duplicate completed reads');
+  renewed.dispose();
+
+  const offlineClock = clock();
+  let offlineCalls = 0;
+  const offline = createVisibleBinderPriceReader(rows, {
+    ...offlineClock,
+    loader: async () => { offlineCalls += 1; throw new Error('Network disconnected'); },
+  });
+  offline.request(['row-1']); await tick();
+  assert.deepEqual(offlineClock.delays(), [30_000], 'network interruption is retryable, not a completed no-price result');
+  offlineClock.advance(30_000); offlineClock.runOne(); await tick();
+  offlineClock.advance(30_000); offlineClock.runOne(); await tick();
+  assert.equal(offlineCalls, 2, 'network retries remain bounded to one');
+  offline.dispose();
 
   const budgetClock = clock();
   const budgetCalls: string[][] = [];

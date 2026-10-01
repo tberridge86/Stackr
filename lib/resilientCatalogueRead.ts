@@ -113,7 +113,11 @@ export async function preferNonEmptyCatalogueRows<T>(
   }
 
   try {
-    return await fallbackRead();
+    const fallbackRows = await fallbackRead();
+    // A failed authoritative request plus an empty legacy mirror is not proof
+    // that this language/set has no cards. Let the screen retain data and retry.
+    if (!fallbackRows.length && preferredError) throw preferredError;
+    return fallbackRows;
   } catch (fallbackError) {
     if (preferredRows) return preferredRows;
     throw preferredError ?? fallbackError;

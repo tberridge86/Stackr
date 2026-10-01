@@ -134,6 +134,7 @@ function EditionAwareCardImageBase({
           priority={sourceSize === 'small' ? 'low' : 'normal'}
           transition={sourceSize === 'small' ? 140 : 220}
           showFallbackIcon
+          cardShape
         />
       ) : (
         <View style={styles.fallback} />

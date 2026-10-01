@@ -443,7 +443,7 @@ export async function fetchPokeTraceCardPrice(
       currency: 'GBP',
       grader: input.gradingCompany,
       grade: input.grade ?? input.gradeLabel,
-    }).catch(() => null);
+    });
     if (!result) {
       if (pokeTracePriceInflight.get(cacheKey) === request) pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_ERROR_CACHE_TTL_MS, value: null });
       return null;

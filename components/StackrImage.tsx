@@ -12,6 +12,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useTheme } from './theme-context';
+import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { nextStackrImageCandidate, stackrImageCandidates } from '../lib/stackrImageCandidates';
 import {
   enforceTcgdexRuntimeImagePolicy,
@@ -36,6 +37,8 @@ type StackrImageProps = {
   prefetch?: boolean;
   cacheKey?: string | null;
   rounded?: number;
+  /** Clip catalogue card faces to their silhouette inside a contain frame. */
+  cardShape?: boolean;
   placeholderColor?: string;
   showFallbackIcon?: boolean;
   accessibilityLabel?: string;
@@ -117,6 +120,7 @@ function StackrImageBase({
   prefetch = false,
   cacheKey,
   rounded,
+  cardShape = false,
   placeholderColor,
   showFallbackIcon = true,
   accessibilityLabel,
@@ -124,6 +128,9 @@ function StackrImageBase({
   onError,
   onSourceChange,
 }: StackrImageProps) {
+  const [cardFrame, setCardFrame] = React.useState<{ width: number; height: number } | null>(null);
+  const faceWidth = cardFrame ? Math.min(cardFrame.width, cardFrame.height * stackrCardImageSizes.cardAspectRatio) : 0;
+  const faceHeight = faceWidth / stackrCardImageSizes.cardAspectRatio;
   const { theme } = useTheme();
   const candidates = stackrImageCandidates([
     sanitizeImageSource(source),
@@ -173,6 +180,9 @@ function StackrImageBase({
 
   return (
     <View
+      onLayout={cardShape ? ({ nativeEvent: { layout } }) => setCardFrame(previous =>
+        previous?.width === layout.width && previous.height === layout.height ? previous
+          : { width: layout.width, height: layout.height }) : undefined}
       style={[
         styles.container,
         { backgroundColor, borderRadius: rounded },
@@ -183,7 +193,11 @@ function StackrImageBase({
         <ExpoImage
           key={candidate?.key}
           source={imageSource}
-          style={[styles.image, imageStyle]}
+          style={[styles.image, cardShape && cardFrame ? {
+            width: faceWidth, height: faceHeight,
+            left: (cardFrame.width - faceWidth) / 2, top: (cardFrame.height - faceHeight) / 2,
+            borderRadius: faceWidth * 0.045, overflow: 'hidden',
+          } : undefined, imageStyle]}
           contentFit={contentFit}
           placeholder={isRemoteImage ? { blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' } : undefined}
           placeholderContentFit={contentFit}

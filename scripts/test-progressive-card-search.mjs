@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import ts from 'typescript';
 import vm from 'node:vm';
+const optionalExports = {};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/optionalCatalogueEnrichment.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, { exports: optionalExports, AbortController, setTimeout, clearTimeout });
 
 const tick = () => new Promise(setImmediate);
 function deferred() { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; }
@@ -23,6 +25,7 @@ function extract(file, name, scope) {
 const manifest = deferred(); let early, calls = 0, settled = false;
 const client = { search: async () => ({ data: { results: [{ type: 'card', card: { cardId: 'ja-printing', language: 'ja' } }] } }) };
 const search = extract('lib/stackrDomainAdapter.ts', 'searchStackrCards', {
+  ...optionalExports,
   stackrApiClient: client, shouldUseStackrApi: () => true, toStackrApiLanguage: x => x,
   UUID_PATTERN: /^[0-9a-f-]{36}$/,
   stackrCardToLegacyCard: (card, assets = []) => ({ ...card, assets }),
@@ -34,6 +37,19 @@ await tick(); assert.equal(early[0].cardId, 'ja-printing'); assert.equal(early[0
 assert.equal(calls, 1); assert.equal(settled, false, 'canonical rows arrive while artwork is pending');
 manifest.reject(new Error('optional image service offline'));
 assert.equal((await pending)[0].cardId, 'ja-printing', 'artwork failure cannot erase matched cards');
+
+let activeManifests = 0;
+const stalledClient = { search: async () => ({ data: { results: Array.from({ length: 20 }, (_, i) => ({ type: 'card', card: { cardId: `card-${i}` } })) } }) };
+const stalledSearch = extract('lib/stackrDomainAdapter.ts', 'searchStackrCards', {
+  ...optionalExports, stackrApiClient: stalledClient, shouldUseStackrApi: () => true, toStackrApiLanguage: x => x,
+  UUID_PATTERN: /^[0-9a-f-]{36}$/, stackrCardToLegacyCard: card => card,
+  primaryCardImageAsset: () => null, embeddedCardImageAssets: () => [],
+  fetchStackrAssetsForPrinting: () => { activeManifests++; return new Promise(() => {}); },
+});
+const boundedStarted = Date.now();
+assert.equal((await stalledSearch('Mew')).length, 20, 'stalled optional artwork cannot erase or indefinitely hold card search matches');
+assert.ok(Date.now() - boundedStarted < 3_000, 'optional images respect the shared two-second deadline');
+assert.equal(activeManifests, 4, 'missing images are fetched in bounded batches, not twenty simultaneous requests');
 
 const energyRequests = [];
 client.search = async input => { energyRequests.push(input); return { data: { results: [] } }; };
@@ -51,6 +67,7 @@ const card = { id: 'ja-printing', language: 'ja', name: 'Card', number: '157', i
 const exports = {};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/cardSearch.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, {
   exports, require: name => ({
+    './optionalCatalogueEnrichment': optionalExports,
     './cardSearchIntent': { parseCardSearchIntent: q => ({ catalogueQuery: q }) },
     './stackrDomainAdapter': { searchStackrCards: async (_q, options) => { options.onCanonicalResults?.([card]); return [card]; } },
     './pokemonTcg': { attachLiveTcgdexCardReferences: () => images.promise, normalizePokemonCardLanguage: x => x },

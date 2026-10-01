@@ -1,0 +1,663 @@
+{
+  "startedAt": "2026-10-01T12:35:19.480Z",
+  "completedAt": "2026-10-01T12:35:43.664Z",
+  "environment": "Windows desktop public HTTPS; sequential requests; no authenticated phone session",
+  "limitations": [
+    "First request is first in this process, not guaranteed server cold cache.",
+    "Public endpoint samples do not measure app startup, decoding/rendering, owner pricing, Home/binder totals or device latency.",
+    "Repeated samples can hit normal server/CDN caches; no universal sub-500ms claim."
+  ],
+  "results": [
+    {
+      "name": "Mew card search",
+      "url": "https://api.stackrtcg.com/v1/search?q=Mew&limit=100",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 675,
+      "p50Ms": 239,
+      "p95Ms": 675,
+      "repeatP50Ms": 239,
+      "repeatP95Ms": 265,
+      "samples": [
+        {
+          "elapsedMs": 675,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 237,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 252,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 264,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 265,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 261,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 239,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 239,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 215,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 218,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "Simplified Chinese discovery first page",
+      "url": "https://api.stackrtcg.com/v1/sets?language=zh-cn&limit=250",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 325,
+      "p50Ms": 325,
+      "p95Ms": 369,
+      "repeatP50Ms": 326,
+      "repeatP95Ms": 369,
+      "samples": [
+        {
+          "elapsedMs": 325,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 313,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 318,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 334,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 369,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 348,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 320,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 323,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 326,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 327,
+          "bytes": 72273,
+          "observed": {
+            "rows": 136,
+            "nextCursor": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "SV7a first card page",
+      "url": "https://api.stackrtcg.com/v1/sets/98a82354-b058-4bda-ad66-359a7bd7c36f/cards?limit=100",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 359,
+      "p50Ms": 359,
+      "p95Ms": 396,
+      "repeatP50Ms": 366,
+      "repeatP95Ms": 396,
+      "samples": [
+        {
+          "elapsedMs": 359,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        },
+        {
+          "elapsedMs": 375,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        },
+        {
+          "elapsedMs": 338,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        },
+        {
+          "elapsedMs": 350,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        },
+        {
+          "elapsedMs": 352,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        },
+        {
+          "elapsedMs": 356,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        },
+        {
+          "elapsedMs": 385,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        },
+        {
+          "elapsedMs": 366,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        },
+        {
+          "elapsedMs": 378,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        },
+        {
+          "elapsedMs": 396,
+          "bytes": 420898,
+          "observed": {
+            "rows": 94,
+            "missingEnglishNames": 94,
+            "hasNextPage": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "SV4a first card page",
+      "url": "https://api.stackrtcg.com/v1/sets/9e539009-b72c-43e2-8f25-f183aa4bc4b7/cards?limit=100",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 450,
+      "p50Ms": 376,
+      "p95Ms": 450,
+      "repeatP50Ms": 376,
+      "repeatP95Ms": 393,
+      "samples": [
+        {
+          "elapsedMs": 450,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 387,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 381,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 358,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 368,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 375,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 393,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 351,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 377,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 376,
+          "bytes": 445967,
+          "observed": {
+            "rows": 95,
+            "missingEnglishNames": 95,
+            "hasNextPage": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "SV8a first card page",
+      "url": "https://api.stackrtcg.com/v1/sets/a7459948-3544-4122-8fec-7fc6aecfd2e5/cards?limit=100",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 334,
+      "p50Ms": 354,
+      "p95Ms": 385,
+      "repeatP50Ms": 356,
+      "repeatP95Ms": 385,
+      "samples": [
+        {
+          "elapsedMs": 334,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 385,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 354,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 340,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 344,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 350,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 374,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 368,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 358,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        },
+        {
+          "elapsedMs": 356,
+          "bytes": 444673,
+          "observed": {
+            "rows": 92,
+            "missingEnglishNames": 92,
+            "hasNextPage": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Froakie Chaos Rising card detail",
+      "url": "https://api.stackrtcg.com/v1/cards/72126e8e-63e5-4d73-99d9-e88fc119a164",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 324,
+      "p50Ms": 336,
+      "p95Ms": 350,
+      "repeatP50Ms": 337,
+      "repeatP95Ms": 350,
+      "samples": [
+        {
+          "elapsedMs": 324,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        },
+        {
+          "elapsedMs": 334,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        },
+        {
+          "elapsedMs": 332,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        },
+        {
+          "elapsedMs": 339,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        },
+        {
+          "elapsedMs": 337,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        },
+        {
+          "elapsedMs": 332,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        },
+        {
+          "elapsedMs": 336,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        },
+        {
+          "elapsedMs": 338,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        },
+        {
+          "elapsedMs": 338,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        },
+        {
+          "elapsedMs": 350,
+          "bytes": 4610,
+          "observed": {
+            "cardId": "72126e8e-63e5-4d73-99d9-e88fc119a164",
+            "variants": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Froakie delivered grid image bytes",
+      "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f5/13/f51303bbfcde40cb68977bb2fb1eb3f497214a24b8c3f0ce82eb61ee79f0cac8/card-grid.webp",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 1778,
+      "p50Ms": 74,
+      "p95Ms": 1778,
+      "repeatP50Ms": 74,
+      "repeatP95Ms": 156,
+      "samples": [
+        {
+          "elapsedMs": 1778,
+          "bytes": 30148,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 156,
+          "bytes": 30148,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 78,
+          "bytes": 30148,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 66,
+          "bytes": 30148,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 74,
+          "bytes": 30148,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 62,
+          "bytes": 30148,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 76,
+          "bytes": 30148,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 60,
+          "bytes": 30148,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 72,
+          "bytes": 30148,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 78,
+          "bytes": 30148,
+          "observed": {}
+        }
+      ]
+    }
+  ]
+}

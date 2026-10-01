@@ -220,6 +220,7 @@ export function SearchCardRailItem({
         <StackrImage
           uri={imageUri}
           contentFit="contain"
+          cardShape
           rounded={13}
           style={{ width: '100%', height: '100%', borderRadius: 13, backgroundColor: theme.colors.surface }}
         />
@@ -504,6 +505,7 @@ export function SearchCardResult({
           <StackrImage
             uri={imageUri}
             contentFit="contain"
+            cardShape
             rounded={9}
             style={{ width: '100%', height: '100%', borderRadius: 9, backgroundColor: theme.colors.surface }}
           />

@@ -93,8 +93,8 @@ function profileForFinish(finish: string): CardHoloProfileName | null {
   if (['normal', 'non_holo', 'non_foil', 'regular', 'base'].includes(finish)) return 'plain';
   if (['cosmos', 'cosmos_holo'].includes(finish)) return 'cosmos';
   if (['reverse', 'reverse_holo', 'reverse_holofoil', 'reverse_holo_energy'].includes(finish)) return 'reverse';
-  // Generic holo is deliberately neutral until an identity-bound mask/recipe
-  // confirms where an effect belongs. This profile keeps the renderer stable.
+  // Finish comes from the exact variant. A generic simulated reflection does
+  // not establish the physical card's printed foil geometry.
   if (['holo', 'holofoil', 'regular_holo', 'line_holo', 'line_holofoil', 'diagonal_holo'].includes(finish)) return 'diagonal';
   if (['textured', 'texture_holo', 'textured_holo'].includes(finish)) return 'textured';
   if (['radiant', 'radiant_holo', 'radiant_holofoil'].includes(finish)) return 'radiant';
@@ -175,10 +175,6 @@ function resolvedMask(identity: CardHoloIdentity, masks: readonly CardHoloMaskDe
   return EMPTY_MASK;
 }
 
-function colourSuppressed(material: CardHoloMaterial): CardHoloMaterial {
-  return Object.freeze({ ...material, foilStrength: 0, specularStrength: 0.06, textureStrength: 0 });
-}
-
 /** Pure resolver for a canonical Stackr raw_data payload. */
 export function resolveCardHoloProfile(rawData: unknown, options: ResolveCardHoloProfileOptions = {}): CardHoloProfile {
   const identity = identityFrom(rawData, options);
@@ -190,9 +186,11 @@ export function resolveCardHoloProfile(rawData: unknown, options: ResolveCardHol
   if (mask.kind !== 'none') {
     return Object.freeze({ profile, confidence: 'verified_finish', identity, material: MATERIALS[profile], mask });
   }
-  // Only explicitly full-card material types may use a restrained generic mask.
-  if (profile === 'textured' || profile === 'radiant') {
-    return Object.freeze({ profile, confidence: 'verified_finish_generic_mask', identity, material: MATERIALS[profile], mask: Object.freeze({ kind: 'full' as const, provenance: 'generic' as const, regions: FULL_CARD }) });
-  }
-  return Object.freeze({ profile, confidence: 'verified_finish', identity, material: colourSuppressed(MATERIALS[profile]), mask });
+  // A verified holo finish remains visibly interactive without a per-printing
+  // mask. Use restrained generic lighting, never invented artwork windows or
+  // printed texture. Exact masks continue to take precedence above.
+  const material = profile === 'textured' || profile === 'radiant' ? MATERIALS[profile]
+    : Object.freeze({ ...MATERIALS[profile], foilStrength: MATERIALS[profile].foilStrength * 0.6, textureStrength: 0 });
+  return Object.freeze({ profile, confidence: 'verified_finish_generic_mask', identity, material,
+    mask: Object.freeze({ kind: 'full' as const, provenance: 'generic' as const, regions: FULL_CARD }) });
 }

@@ -232,15 +232,8 @@ renderStartup({
   auth: { user: { id: 'collector-a' }, loading: false, error: null, refreshAuth: noAuthError },
   profile: { profile: { collector_name: 'Avery' }, loading: false, error: null, refreshProfile: noProfileError },
 });
-assert.deepEqual(routedTo, [], 'A ready collector keeps the calm opening animation visible briefly.');
-assert.ok(introTimer, 'The initial route must schedule a bounded opening animation floor.');
-const completeIntro: () => void = introTimer ?? (() => { throw new Error('Missing opening animation timer.'); });
-completeIntro();
-renderStartup({
-  auth: { user: { id: 'collector-a' }, loading: false, error: null, refreshAuth: noAuthError },
-  profile: { profile: { collector_name: 'Avery' }, loading: false, error: null, refreshProfile: noProfileError },
-});
-assert.deepEqual(routedTo, ['/(tabs)'], 'A ready collector routes once the bounded opening animation has completed.');
+assert.deepEqual(routedTo, ['/(tabs)'], 'A ready collector routes immediately without a decorative animation floor.');
+assert.equal(introTimer, null, 'Ready navigation does not schedule another presentation wait.');
 
 renderStartup({
   auth: { user: { id: 'collector-a' }, loading: false, error: null, refreshAuth: noAuthError },

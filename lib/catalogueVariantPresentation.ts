@@ -6,6 +6,14 @@ const COLLECTION_VARIANT_KEYS: Record<string, string> = {
   master_ball: 'masterBallPatternHolofoil',
 };
 
+export function getCatalogueVariantIdForKey(card: { raw_data?: Record<string, any> | null } | null | undefined, key: string): string | null {
+  const catalogue = card?.raw_data?.stackr;
+  if (catalogue?.canonical !== true || !Array.isArray(catalogue.variants)) return null;
+  const matches = catalogue.variants.filter((variant: any) => variant.variantId
+    && (COLLECTION_VARIANT_KEYS[variant.variantCode] ?? variant.variantCode) === key);
+  return matches.length === 1 ? String(matches[0].variantId) : null;
+}
+
 export function getCatalogueVariantKeys(card: { raw_data?: Record<string, any> | null } | null | undefined): string[] | null {
   const catalogue = card?.raw_data?.stackr;
   if (!catalogue?.canonical || !Array.isArray(catalogue.variants)) return null;

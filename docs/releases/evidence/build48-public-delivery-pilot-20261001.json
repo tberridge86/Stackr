@@ -1,0 +1,384 @@
+{
+  "startedAt": "2026-10-01T12:33:35.280Z",
+  "completedAt": "2026-10-01T12:34:05.503Z",
+  "environment": "Windows desktop public HTTPS; sequential requests; no authenticated phone session",
+  "limitations": [
+    "First request is first in this process, not guaranteed server cold cache.",
+    "Public endpoint samples do not measure app startup, decoding/rendering, owner pricing, Home/binder totals or device latency.",
+    "Repeated samples can hit normal server/CDN caches; no universal sub-500ms claim."
+  ],
+  "results": [
+    {
+      "name": "Mew card search",
+      "url": "https://api.stackrtcg.com/v1/search?q=Mew&limit=100",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 3732,
+      "p50Ms": 265,
+      "p95Ms": 3732,
+      "repeatP50Ms": 265,
+      "repeatP95Ms": 283,
+      "samples": [
+        {
+          "elapsedMs": 3732,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 255,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 264,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 270,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 283,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 283,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 268,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 265,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 243,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        },
+        {
+          "elapsedMs": 220,
+          "bytes": 213376,
+          "observed": {
+            "cards": 43,
+            "sets": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "Simplified Chinese discovery first page",
+      "url": "https://api.stackrtcg.com/v1/sets?language=zh-cn&limit=250",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 744,
+      "p50Ms": 338,
+      "p95Ms": 744,
+      "repeatP50Ms": 338,
+      "repeatP95Ms": 360,
+      "samples": [
+        {
+          "elapsedMs": 744,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 360,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 333,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 319,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 339,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 332,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 347,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 338,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 332,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        },
+        {
+          "elapsedMs": 350,
+          "bytes": 72273,
+          "observed": {
+            "nextCursor": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "SV7a first card page",
+      "url": "https://api.stackrtcg.com/v1/sets/98a82354-b058-4bda-ad66-359a7bd7c36f/cards?limit=100",
+      "attempted": 10,
+      "successful": 0,
+      "firstRequestMs": null,
+      "p50Ms": null,
+      "p95Ms": null,
+      "repeatP50Ms": null,
+      "repeatP95Ms": null,
+      "samples": [
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        }
+      ]
+    },
+    {
+      "name": "SV4a first card page",
+      "url": "https://api.stackrtcg.com/v1/sets/9e539009-b72c-43e2-8f25-f183aa4bc4b7/cards?limit=100",
+      "attempted": 10,
+      "successful": 0,
+      "firstRequestMs": null,
+      "p50Ms": null,
+      "p95Ms": null,
+      "repeatP50Ms": null,
+      "repeatP95Ms": null,
+      "samples": [
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        }
+      ]
+    },
+    {
+      "name": "SV8a first card page",
+      "url": "https://api.stackrtcg.com/v1/sets/a7459948-3544-4122-8fec-7fc6aecfd2e5/cards?limit=100",
+      "attempted": 10,
+      "successful": 0,
+      "firstRequestMs": null,
+      "p50Ms": null,
+      "p95Ms": null,
+      "repeatP50Ms": null,
+      "repeatP95Ms": null,
+      "samples": [
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        },
+        {
+          "error": "j.data.filter is not a function"
+        }
+      ]
+    },
+    {
+      "name": "Froakie Chaos Rising card detail",
+      "url": "https://api.stackrtcg.com/v1/cards/72126e8e-63e5-4d73-99d9-e88fc119a164",
+      "attempted": 10,
+      "successful": 10,
+      "firstRequestMs": 492,
+      "p50Ms": 244,
+      "p95Ms": 492,
+      "repeatP50Ms": 244,
+      "repeatP95Ms": 262,
+      "samples": [
+        {
+          "elapsedMs": 492,
+          "bytes": 4610,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 236,
+          "bytes": 4610,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 242,
+          "bytes": 4610,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 234,
+          "bytes": 4610,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 244,
+          "bytes": 4610,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 262,
+          "bytes": 4610,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 254,
+          "bytes": 4610,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 250,
+          "bytes": 4610,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 230,
+          "bytes": 4610,
+          "observed": {}
+        },
+        {
+          "elapsedMs": 250,
+          "bytes": 4610,
+          "observed": {}
+        }
+      ]
+    },
+    {
+      "name": "Froakie delivered grid image bytes",
+      "error": "No embedded grid image found"
+    }
+  ]
+}
