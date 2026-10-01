@@ -1,0 +1,40 @@
+{
+  "observed_at": "2026-10-01T12:57:36.173Z",
+  "run": "https://github.com/tberridge86/Stackr/actions/runs/36863609488",
+  "revision": "ff187ae560f5481125eacf37b75c6472895dd06a",
+  "cohort_sha256": "1d06acef9184b646097db2bed97c38f866f8684a2587dc59e42c252bfbb9adf5",
+  "status": "failed_before_publication",
+  "error": "Cannot read properties of undefined (reading 'push')",
+  "receipt_artifact": {
+    "id": 11162198473,
+    "name": "native97-artwork-36863609488-1",
+    "createdAt": "2026-10-01T12:48:27Z",
+    "digest": "sha256:11f3164f933933e508eebe8842c17b8f9200617ffdfd082fbac42b5b9ca31741",
+    "sha256": "11f3164f933933e508eebe8842c17b8f9200617ffdfd082fbac42b5b9ca31741",
+    "bytes": 28661,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36863609488/artifacts/11162198473"
+  },
+  "receipt_sha256": "74d6dd25c7c2d72bc7df2fe644ed9ded21432898063ad43b22534a82fadc58aa",
+  "local_files_verified": 388,
+  "published_fronts": 0,
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "transfer_counts": "Not recorded: the transfer journal was missing. Code review places the exception before any transfer in the first batch.",
+  "fresh_readback": {
+    "staging_full_rows_unchanged": 97,
+    "production_full_rows_unchanged": 97,
+    "published_assets_for_cohort": 0
+  },
+  "repair": "Restore the missing objects array in the shared journal initializer. Preserve the original114 uploaded files; the successor must verify existing bytes and publish only the same frozen97 fronts.",
+  "validation": {
+    "focused_tests_passed": 46,
+    "deployment_tooling": "passed",
+    "diff_whitespace": "passed"
+  },
+  "baseline": {
+    "published_fronts": 9253,
+    "remaining_original_4201": 2908
+  },
+  "testflight": "1.0.4 (48) was already made available to both existing tester groups; no rebuild or new submission."
+}

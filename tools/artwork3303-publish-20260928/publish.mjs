@@ -266,9 +266,12 @@ async function main() {
   await publishFrozenCohort({rows,receipt,approval,root,output});
 }
 // Shared verified transfer/transaction path; callers retain their own frozen scope guards.
+export function createPublicationJournal(receipt,transferPolicy=null) {
+  return {status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,objects:[],assets:[],links:[],ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false,...(transferPolicy?{transfer_policy:transferPolicy.receipt}: {})};
+}
 export async function publishFrozenCohort({rows,receipt,approval,root,output,sourceResolver=sourcesFor,catalogueCorrection=null,nativeNameCorrections=null,transferPolicy=null}) {
   check(root&&output&&rows.length>0,'Package, receipt and frozen rows required');await mkdir(output,{recursive:true});
-  const journal={status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,assets:[],links:[],ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false,...(transferPolicy?{transfer_policy:transferPolicy.receipt}: {})};
+  const journal=createPublicationJournal(receipt,transferPolicy);
   const save=()=>writeFile(path.join(output,'receipt.json'),JSON.stringify(journal,null,2));await save();
   const require=createRequire(new URL('../../backend/package.json',import.meta.url)),sharp=require('sharp');sharp.concurrency(2);
   const objects=publicationObjects(rows);
