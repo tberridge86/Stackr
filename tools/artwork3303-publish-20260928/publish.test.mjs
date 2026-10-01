@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts,objectKey,publicationObjects,uploadImmutable,writeMetadata} from './publish.mjs';
+import {validatePlan,validateApproval,bind,assertManifest,assetId,payload,rehearse,safePath,STAGE_JA,assertConfig,assertNoConflictingFronts,objectKey,publicationObjects,uploadImmutable,writeMetadata,createTransferPolicy,readPublicObject,retryAfterMilliseconds} from './publish.mjs';
 const bytes=readFileSync(new URL('./cohort.json.gz',import.meta.url));
 const receipt=JSON.parse(readFileSync(new URL('./plan-receipt.json',import.meta.url)));
 const rows=validatePlan(bytes,receipt);
@@ -176,3 +176,68 @@ test('payload preserves printing scope, provenance and all three roles',()=>{con
 test('rollback rehearsal rolls back on success and on insert failure',async()=>{for(const failure of [false,true]){const calls=[],db={query:async sql=>{calls.push(sql);}};const run=rehearse(db,async()=>{if(failure)throw Error('insert failure');});if(failure)await assert.rejects(run,/insert failure/);else await run;assert.equal(calls.at(-1),'rollback');assert.ok(!calls.includes('commit'));}});
 test('archive object paths cannot escape the package directory',()=>{assert.throws(()=>safePath('/packages','../outside'));assert.throws(()=>safePath('/packages','bad\\file'));assert.throws(()=>safePath('/packages','/absolute'));});
 test('publication rejects branch revisions and a wrong database',()=>{assert.throws(()=>assertConfig({GITHUB_REF:'refs/heads/topic'}),/Protected/);const env={GITHUB_REF:'refs/heads/main',GITHUB_SHA:'a'.repeat(40),STACKR_EXPECTED_MAIN_SHA:'a'.repeat(40),STACKR_ARTWORK3303_CONFIRMATION:'PUBLISH ARTWORK3303',SUPABASE_STAGING_DB_URL:'postgres://postgres@db.example.com/postgres'};assert.throws(()=>assertConfig(env),/Wrong database/);});
+
+test('receipt-bound Native97 variant-name audit journals 193 rows and rolls back with later artwork failure',async()=>{
+  const receipt97={...receipt,native_name_corrections:97,native_search_name_rows:193};let writes=0;const calls=[],journal={assets:[],links:[],metadata_changes:0};
+  const audit=Array.from({length:97},(_,i)=>({table:'catalog.card_printings',column:'native_name',id:`printing-${i}`,before:`old-${i}`,after:`new-${i}`,changed:true,environment:'staging',native_name_rows:[{id:`name-${i}-a`,variant_id:`variant-${i}-a`,changed:true},...(i<96?[{id:`name-${i}-b`,variant_id:`variant-${i}-b`,changed:true}]:[])]}));
+  const db={query:async(sql)=>{calls.push(sql);if(sql==='rollback')writes=0;if(sql.startsWith('select game_code'))throw Error('asset binding unavailable');return {rows:[]};}};
+  await assert.rejects(rehearse(db,()=>writeMetadata(db,[rows[0]],receipt97,{},'staging',journal,async()=>new Map(),null,async()=>{writes=193;return audit;})),/asset binding unavailable/);
+  assert.equal(writes,0);assert.equal(calls.at(-1),'rollback');assert.deepEqual(journal.native_name_correction_counts,{total:97,changed:97,printing_changes:97,card_name_changes:193,native_search_name_rows:193});assert.equal(journal.metadata_changes,97);assert.equal(journal.native_name_corrections.flatMap(a=>a.native_name_rows).length,193);
+});
+
+test('Native97 multi-row audit rejects truncated, extra, wrong-variant, mixed-change, and lossy entries before asset work',async()=>{
+  const receipt97={...receipt,native_name_corrections:97,native_search_name_rows:193};
+  const audit=Array.from({length:97},(_,i)=>({table:'catalog.card_printings',column:'native_name',id:`printing-${i}`,before:`old-${i}`,after:`new-${i}`,changed:false,environment:'production',native_name_rows:[{id:`name-${i}-a`,variant_id:`variant-${i}-a`,changed:false},...(i<96?[{id:`name-${i}-b`,variant_id:`variant-${i}-b`,changed:false}]:[])]}));
+  const invalid=[audit.slice(1),audit.map((entry,i)=>i===0?{...entry,native_name_rows:entry.native_name_rows.slice(1)}:entry),audit.map((entry,i)=>i===0?{...entry,native_name_rows:[{...entry.native_name_rows[0],variant_id:entry.native_name_rows[1]?.variant_id??'duplicate'}]}:entry),audit.map((entry,i)=>i===0?{...entry,native_name_rows:[{...entry.native_name_rows[0],changed:true},entry.native_name_rows[1]]}:entry),audit.map((entry,i)=>i===0?{...entry,native_name_row_id:'lossy'}:entry)];
+  for(const bad of invalid){const db={query:async()=>{throw Error('must not reach asset queries');}};await assert.rejects(writeMetadata(db,[],receipt97,{},'production',{assets:[],links:[],metadata_changes:0},async()=>new Map(),null,async()=>bad),/native-name correction audit/i);}
+});
+
+test('Native97 transfer policy globally spaces starts while allowing two in-flight transfers',async()=>{
+  let now=0;const waits=[],starts=[];let firstResolve,secondResolve;
+  const turn=()=>new Promise(resolve=>setImmediate(resolve));
+  const policy=createTransferPolicy({concurrency:2,minIntervalMs:700,now:()=>now,wait:async ms=>{waits.push(ms);now+=ms;}});
+  const first=policy.run(async()=>{starts.push(now);await new Promise(resolve=>{firstResolve=resolve;});});
+  const second=policy.run(async()=>{starts.push(now);await new Promise(resolve=>{secondResolve=resolve;});});
+  await turn();
+  assert.deepEqual(starts,[0,700]);assert.deepEqual(waits,[700]);
+  firstResolve();secondResolve();await Promise.all([first,second]);
+});
+
+test('paced public-read 429 honors shared Retry-After cooldown, including an already-waiting request',async()=>{
+  let now=0, responseResolve;const waits=[],starts=[];
+  const turn=()=>new Promise(resolve=>setImmediate(resolve));
+  const wait=ms=>new Promise(resolve=>waits.push({ms,resolve:()=>{now+=ms;resolve();}}));
+  const policy=createTransferPolicy({concurrency:2,minIntervalMs:700,now:()=>now,wait});
+  let firstCalls=0;const first=readPublicObject('first',{transferPolicy:policy,wait,fetchImpl:async()=>{starts.push(now);if(++firstCalls===1)return await new Promise(resolve=>{responseResolve=resolve;});return {ok:true,arrayBuffer:async()=>Buffer.from('first')};}});
+  await turn();
+  const second=policy.run(async()=>{starts.push(now);return 'second';});
+  await turn();
+  responseResolve({ok:false,status:429,headers:{get:()=> '2'},body:{cancel:async()=>{}}});
+  await turn();
+  assert.equal(waits[0].ms,700);waits[0].resolve();await Promise.resolve();await Promise.resolve();
+  await turn();assert.equal(waits[1].ms,1300);waits[1].resolve();await second;
+  await turn();const retryWait=waits[2];assert.equal(retryWait.ms,700);retryWait.resolve();
+  assert.equal((await first).toString(),'first');
+  assert.deepEqual(starts,[0,2000,2700]);
+});
+
+test('paced public reads retain bounded transient retry and reject permanent or exhausted responses',async()=>{
+  let now=0;const waits=[];const policy=createTransferPolicy({concurrency:2,minIntervalMs:700,now:()=>now,wait:async ms=>{waits.push(ms);now+=ms;}});
+  let calls=0;const bytes=Buffer.from('ok');
+  const result=await readPublicObject('retry',{transferPolicy:policy,wait:async ms=>{waits.push(ms);now+=ms;},fetchImpl:async()=>++calls===1?{ok:false,status:500,headers:{get:()=>null},body:{cancel:async()=>{}}}:{ok:true,arrayBuffer:async()=>bytes}});
+  assert.equal(result.toString(),'ok');assert.equal(calls,2);assert.deepEqual(waits,[1000]);
+  for(const status of [401,403]){calls=0;await assert.rejects(readPublicObject('permanent',{transferPolicy:policy,fetchImpl:async()=>{calls++;return {ok:false,status,headers:{get:()=>null},body:{cancel:async()=>{}}};}}),new RegExp(`Public object read ${status}`));assert.equal(calls,1);}
+  calls=0;await assert.rejects(readPublicObject('exhausted',{transferPolicy:createTransferPolicy({concurrency:2,minIntervalMs:700,now:()=>now,wait:async ms=>{now+=ms;}}),wait:async ms=>{now+=ms;},fetchImpl:async()=>{calls++;return {ok:false,status:429,headers:{get:()=>null},body:{cancel:async()=>{}}};}}),/Public object read 429/);assert.equal(calls,4);
+  calls=0;const legacyWaits=[];await readPublicObject('legacy-connection',{wait:async ms=>legacyWaits.push(ms),fetchImpl:async()=>{if(++calls===1)throw Error('remaining connection slots are reserved');return {ok:true,arrayBuffer:async()=>bytes};}});assert.equal(calls,2);assert.deepEqual(legacyWaits,[1000]);
+  assert.equal(retryAfterMilliseconds('2',()=>0),2000);assert.equal(retryAfterMilliseconds('Wed, 21 Oct 2015 07:28:00 GMT',()=>Date.parse('Wed, 21 Oct 2015 07:27:57 GMT')),3000);
+  for(const invalid of ['', '   ', '0x10', '1.5', '-1', 'not-a-date'])assert.equal(retryAfterMilliseconds(invalid,()=>0),null);
+});
+
+test('a final paced 429 publishes its cooldown before later queued work begins',async()=>{
+  let now=0,calls=0;const waits=[];
+  const policy=createTransferPolicy({concurrency:2,minIntervalMs:700,now:()=>now,wait:async ms=>{waits.push(ms);now+=ms;}});
+  await assert.rejects(readPublicObject('exhausted-with-cooldown',{transferPolicy:policy,fetchImpl:async()=>{calls++;return {ok:false,status:429,headers:{get:()=> '2'},body:{cancel:async()=>{}}};}}),/Public object read 429/);
+  assert.equal(calls,4);
+  const starts=[];await policy.run(async()=>starts.push(now));
+  assert.deepEqual(starts,[8000]);assert.deepEqual(waits,[2000,2000,2000,2000]);
+});

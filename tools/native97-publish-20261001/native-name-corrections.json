@@ -1,0 +1,3389 @@
+[
+  {
+    "printing_id": "056a8832-19ff-400d-b7fd-4be442b076a9",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "043",
+    "current_native_name": "プライスのスニーエル",
+    "proposed_native_name": "ヤナギのニューラ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "33b342fd-5e4b-4887-8915-f5e61d5ebda2",
+          "variant_id": "2d9c4c9b-27fd-48fd-87af-d666d05aa5f5"
+        },
+        {
+          "id": "7091de9a-d515-4d61-be51-72ad69fa1f45",
+          "variant_id": "cbad53bd-12e0-42e0-9b5a-18ab5d7b82cc"
+        }
+      ],
+      "production": [
+        {
+          "id": "33b342fd-5e4b-4887-8915-f5e61d5ebda2",
+          "variant_id": "2d9c4c9b-27fd-48fd-87af-d666d05aa5f5"
+        },
+        {
+          "id": "7091de9a-d515-4d61-be51-72ad69fa1f45",
+          "variant_id": "cbad53bd-12e0-42e0-9b5a-18ab5d7b82cc"
+        }
+      ]
+    },
+    "observed_printed_number": "043/141",
+    "original_sha256": "3629883c0902ad1ac852c082bc8cef1a54dabf4c630afd2c7982fbb1820d1889",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630797_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "08f41c68-73f6-484b-b686-9fc0c15a5d48",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "049",
+    "current_native_name": "クレアのドラゴナイト",
+    "proposed_native_name": "イブキのカイリュー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "63df595a-6cc7-4b7e-85f8-0501b393783f",
+          "variant_id": "bbbfb7bf-37d0-4776-b0db-be3f77909c4f"
+        },
+        {
+          "id": "e8642d21-8301-4ecb-85de-4d8ae2343187",
+          "variant_id": "699fcb0a-3c43-4d55-919d-6b8878a20ef7"
+        }
+      ],
+      "production": [
+        {
+          "id": "63df595a-6cc7-4b7e-85f8-0501b393783f",
+          "variant_id": "bbbfb7bf-37d0-4776-b0db-be3f77909c4f"
+        },
+        {
+          "id": "e8642d21-8301-4ecb-85de-4d8ae2343187",
+          "variant_id": "699fcb0a-3c43-4d55-919d-6b8878a20ef7"
+        }
+      ]
+    },
+    "observed_printed_number": "049/141",
+    "original_sha256": "afff7d495e63f6acbb42bf4ce6acc0d7c6f450fd77e31e5cc25d1521630ff1db",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630832_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "1478613a-7629-4c09-bdee-de40e8971de0",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "011",
+    "current_native_name": "BugsyのLedian",
+    "proposed_native_name": "ツクシのレディアン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "200edaeb-c760-4ff3-a51b-951960e1ad95",
+          "variant_id": "0cf7a96d-f3e8-4c14-930e-4ef8a960e968"
+        },
+        {
+          "id": "c5942836-6323-40f4-b71e-f6475b6d9182",
+          "variant_id": "850df4e2-b4f7-4fb3-b59c-da5d54fa7cc6"
+        }
+      ],
+      "production": [
+        {
+          "id": "200edaeb-c760-4ff3-a51b-951960e1ad95",
+          "variant_id": "0cf7a96d-f3e8-4c14-930e-4ef8a960e968"
+        },
+        {
+          "id": "c5942836-6323-40f4-b71e-f6475b6d9182",
+          "variant_id": "850df4e2-b4f7-4fb3-b59c-da5d54fa7cc6"
+        }
+      ]
+    },
+    "observed_printed_number": "011/141",
+    "original_sha256": "cafc966a12fbdae169711f200c4ee896f92fd4d6bb8ae1c16747ada8bf835716",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618742_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "1493dd02-1d02-4744-8f49-7eb80389475f",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "072",
+    "current_native_name": "ウィルのスローブロ",
+    "proposed_native_name": "イツキのヤドラン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "279ef5c0-0eab-4bdc-8e77-61c4eef90107",
+          "variant_id": "ef0324d2-2430-4ff8-bdb0-6e45729b41c8"
+        },
+        {
+          "id": "9e199aca-a766-4052-8fbf-10898779a672",
+          "variant_id": "715e188a-eb9c-49fa-868f-f6a9b08e4535"
+        }
+      ],
+      "production": [
+        {
+          "id": "279ef5c0-0eab-4bdc-8e77-61c4eef90107",
+          "variant_id": "ef0324d2-2430-4ff8-bdb0-6e45729b41c8"
+        },
+        {
+          "id": "9e199aca-a766-4052-8fbf-10898779a672",
+          "variant_id": "715e188a-eb9c-49fa-868f-f6a9b08e4535"
+        }
+      ]
+    },
+    "observed_printed_number": "072/141",
+    "original_sha256": "3234e6b4eb7d4605fe3f4dd5f765884e40f52c10e1c65e25a2dcdf13517e9f68",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631783_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "19fd5536-6609-4bcb-b6a0-50c2bcb0abdb",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "037",
+    "current_native_name": "チャックのグランブル",
+    "proposed_native_name": "シジマのグランブル",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "2fe127b9-c830-4eaf-9bc3-978d9ee2b386",
+          "variant_id": "8e265149-4847-49e0-859c-d49df3dbb19c"
+        },
+        {
+          "id": "e7cafc07-842a-4c87-9d65-445e7c75186a",
+          "variant_id": "fdb6bfd5-7bd3-4aa4-a5ee-8933d3d11928"
+        }
+      ],
+      "production": [
+        {
+          "id": "2fe127b9-c830-4eaf-9bc3-978d9ee2b386",
+          "variant_id": "8e265149-4847-49e0-859c-d49df3dbb19c"
+        },
+        {
+          "id": "e7cafc07-842a-4c87-9d65-445e7c75186a",
+          "variant_id": "fdb6bfd5-7bd3-4aa4-a5ee-8933d3d11928"
+        }
+      ]
+    },
+    "observed_printed_number": "037/141",
+    "original_sha256": "41ef89923a60305639ac1190f12fbd712944a86403fdba4f917f1737e3e2e229",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630789_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "1c3d943d-bc1c-4576-b12a-5b81ac894f6c",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "069",
+    "current_native_name": "ブロックのカブトップ",
+    "proposed_native_name": "タケシのカブトプス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "599dd138-0cf7-42aa-b1b6-c35136f16468",
+          "variant_id": "7a58d5c8-2c0c-47cf-8476-1fcdc257977c"
+        },
+        {
+          "id": "6bdd563b-088e-4aef-9c3a-9513e869665c",
+          "variant_id": "14986758-052c-47db-9e03-49fb01d95eda"
+        }
+      ],
+      "production": [
+        {
+          "id": "599dd138-0cf7-42aa-b1b6-c35136f16468",
+          "variant_id": "7a58d5c8-2c0c-47cf-8476-1fcdc257977c"
+        },
+        {
+          "id": "6bdd563b-088e-4aef-9c3a-9513e869665c",
+          "variant_id": "14986758-052c-47db-9e03-49fb01d95eda"
+        }
+      ]
+    },
+    "observed_printed_number": "069/141",
+    "original_sha256": "1cb4f5dd6fe96f1e9b8bd3a16e9bc25ef46bfd4d1b27d1cd588c54c8055c2520",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631778_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "1c8743f1-cd23-4aeb-b9b3-8269be2cccb9",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "033",
+    "current_native_name": "チャックの入門",
+    "proposed_native_name": "シジマのオコリザル",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "22269e0c-4b04-419b-a1c6-3cad4638413a",
+          "variant_id": "a6ce395b-60ad-43c3-919d-675d5eb56d34"
+        },
+        {
+          "id": "d40c91d7-0ac4-4fe9-9d9a-e3e047e2cb05",
+          "variant_id": "6a3209cd-5b37-46b3-bd7c-619b560c676f"
+        }
+      ],
+      "production": [
+        {
+          "id": "22269e0c-4b04-419b-a1c6-3cad4638413a",
+          "variant_id": "a6ce395b-60ad-43c3-919d-675d5eb56d34"
+        },
+        {
+          "id": "d40c91d7-0ac4-4fe9-9d9a-e3e047e2cb05",
+          "variant_id": "6a3209cd-5b37-46b3-bd7c-619b560c676f"
+        }
+      ]
+    },
+    "observed_printed_number": "033/141",
+    "original_sha256": "0463d0f5dd5b513913112d1d2b44f82e1eda737117c8a7315bed129aa5ec6ba2",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630782_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "1cd1798d-a42d-4f9d-b5bf-d7f0862d987d",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "008",
+    "current_native_name": "Bugsyの蝶",
+    "proposed_native_name": "ツクシのバタフリー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "ed827ec0-b603-4b3d-aa71-fe3a5a94f23e",
+          "variant_id": "33166acb-ab44-4ed1-8f48-4286982380ff"
+        },
+        {
+          "id": "fb89df3f-00ed-4d6b-ab92-6fa17f21ca03",
+          "variant_id": "944f1e52-3943-4baa-8d5f-e49f3d1e0c78"
+        }
+      ],
+      "production": [
+        {
+          "id": "ed827ec0-b603-4b3d-aa71-fe3a5a94f23e",
+          "variant_id": "33166acb-ab44-4ed1-8f48-4286982380ff"
+        },
+        {
+          "id": "fb89df3f-00ed-4d6b-ab92-6fa17f21ca03",
+          "variant_id": "944f1e52-3943-4baa-8d5f-e49f3d1e0c78"
+        }
+      ]
+    },
+    "observed_printed_number": "008/141",
+    "original_sha256": "3ab2862bf2d4cd988cf61971eccfd0efafc1d2b0fe8851f67fd20f75fdb491fe",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618739_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "1d877b9f-b799-44d7-a235-cd78f77b1953",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "073",
+    "current_native_name": "ウィルのexeggutor",
+    "proposed_native_name": "イツキのナッシー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "4d2fa43f-c617-4964-a08f-aac55197624a",
+          "variant_id": "6d217bbf-6b4c-4534-8e14-dc25af7f1abf"
+        },
+        {
+          "id": "d5dac669-b11f-4b5f-b02c-5faf1425ac2b",
+          "variant_id": "3c7ff96f-5b90-4d70-86a0-9987d33e4b65"
+        }
+      ],
+      "production": [
+        {
+          "id": "4d2fa43f-c617-4964-a08f-aac55197624a",
+          "variant_id": "6d217bbf-6b4c-4534-8e14-dc25af7f1abf"
+        },
+        {
+          "id": "d5dac669-b11f-4b5f-b02c-5faf1425ac2b",
+          "variant_id": "3c7ff96f-5b90-4d70-86a0-9987d33e4b65"
+        }
+      ]
+    },
+    "observed_printed_number": "073/141",
+    "original_sha256": "65f63e1cf940c3efbb2822cb972a23e1886b0471a9f1a8c528e78f9e244b91e5",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631831_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "2183cf74-593d-4792-8a6e-95e5edb79b6d",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "088",
+    "current_native_name": "カレンのマグマー",
+    "proposed_native_name": "カリンのブーバー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "79337403-e240-4f48-8e9d-3319a8ae3c21",
+          "variant_id": "b1276680-e259-49cb-ac64-dcee2f290162"
+        },
+        {
+          "id": "f38364b9-cbda-4d8a-ad69-d399ce524ce6",
+          "variant_id": "37a1717e-2603-45f1-8498-9b53c16e64cc"
+        }
+      ],
+      "production": [
+        {
+          "id": "79337403-e240-4f48-8e9d-3319a8ae3c21",
+          "variant_id": "b1276680-e259-49cb-ac64-dcee2f290162"
+        },
+        {
+          "id": "f38364b9-cbda-4d8a-ad69-d399ce524ce6",
+          "variant_id": "37a1717e-2603-45f1-8498-9b53c16e64cc"
+        }
+      ]
+    },
+    "observed_printed_number": "088/141",
+    "original_sha256": "bba14b993e8d1d2c60d052f3ab8717bd27f9e32b62e010da02e62381879346be",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631874_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "2943f3e8-e63f-4180-a22c-90bee926ee02",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "084",
+    "current_native_name": "ブルーノのスチールス",
+    "proposed_native_name": "シバのハガネール",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "5791eb82-4a62-4eea-88cb-f4cd775d4401",
+          "variant_id": "da555ef1-a1e1-4497-aa21-3a914aa5c150"
+        },
+        {
+          "id": "eece2243-64ba-4978-b72e-1dabccd98d7f",
+          "variant_id": "b47c89b9-694e-416d-acad-5d77195faedf"
+        }
+      ],
+      "production": [
+        {
+          "id": "5791eb82-4a62-4eea-88cb-f4cd775d4401",
+          "variant_id": "da555ef1-a1e1-4497-aa21-3a914aa5c150"
+        },
+        {
+          "id": "eece2243-64ba-4978-b72e-1dabccd98d7f",
+          "variant_id": "b47c89b9-694e-416d-acad-5d77195faedf"
+        }
+      ]
+    },
+    "observed_printed_number": "084/141",
+    "original_sha256": "6bde8bd1b2d9c69d4679b41259f4ac45d80cdb522f2406ea9e3dfe98de7a8f55",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631858_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "2bbd1451-b5b8-4f6d-b415-9d5ffea31a64",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "081",
+    "current_native_name": "ブルーノのマチャンプ",
+    "proposed_native_name": "シバのカイリキー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "d169b0bb-2330-4cb9-8932-16cfbc29010b",
+          "variant_id": "eb9db83d-f8bf-4e42-bf6f-20f9ec34e027"
+        },
+        {
+          "id": "fe1ed439-fc66-4fc5-828d-7f0166d4f40a",
+          "variant_id": "8907f11e-0647-4079-854c-139c6adeafd9"
+        }
+      ],
+      "production": [
+        {
+          "id": "d169b0bb-2330-4cb9-8932-16cfbc29010b",
+          "variant_id": "eb9db83d-f8bf-4e42-bf6f-20f9ec34e027"
+        },
+        {
+          "id": "fe1ed439-fc66-4fc5-828d-7f0166d4f40a",
+          "variant_id": "8907f11e-0647-4079-854c-139c6adeafd9"
+        }
+      ]
+    },
+    "observed_printed_number": "081/141",
+    "original_sha256": "0b2591791f96dfe7f63f257c5806e350d3b25121878f81381d2e70bb3b2ed4aa",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631850_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "2e9c1e9b-6213-40c5-9310-c7632e8c7b9a",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "047",
+    "current_native_name": "クレアのジンクス",
+    "proposed_native_name": "イブキのルージュラ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "8adb0dd3-5549-4aae-a183-ae6e7c1dc930",
+          "variant_id": "0c8b0a86-9e9f-4a62-be1c-90cf0fe83139"
+        },
+        {
+          "id": "963073b7-ea25-4085-af75-0d50349e98ad",
+          "variant_id": "d9b4f4ac-491c-44a8-a1c4-e4926de9d951"
+        }
+      ],
+      "production": [
+        {
+          "id": "8adb0dd3-5549-4aae-a183-ae6e7c1dc930",
+          "variant_id": "0c8b0a86-9e9f-4a62-be1c-90cf0fe83139"
+        },
+        {
+          "id": "963073b7-ea25-4085-af75-0d50349e98ad",
+          "variant_id": "d9b4f4ac-491c-44a8-a1c4-e4926de9d951"
+        }
+      ]
+    },
+    "observed_printed_number": "047/141",
+    "original_sha256": "c057253d6987e44ccbc499a53bc938cf10e0ed69088c5694cc10ebfc0efe12d3",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630801_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "2ea581be-8ee6-47d1-97ca-34b74489e3b7",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "070",
+    "current_native_name": "ブレインの染色",
+    "proposed_native_name": "カツラのバクフーン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "66d919ee-90a1-49ee-aa5f-e183d818637a",
+          "variant_id": "b3e12f39-06de-498b-8110-9ddcb4f8dbb3"
+        },
+        {
+          "id": "6f63949c-04fb-4bad-bae7-3bb708f4c4ed",
+          "variant_id": "98947090-9322-48c6-8b14-acc4fe0f7354"
+        }
+      ],
+      "production": [
+        {
+          "id": "66d919ee-90a1-49ee-aa5f-e183d818637a",
+          "variant_id": "b3e12f39-06de-498b-8110-9ddcb4f8dbb3"
+        },
+        {
+          "id": "6f63949c-04fb-4bad-bae7-3bb708f4c4ed",
+          "variant_id": "98947090-9322-48c6-8b14-acc4fe0f7354"
+        }
+      ]
+    },
+    "observed_printed_number": "070/141",
+    "original_sha256": "6eb46484c894bcb47b1aef06aedb87a49d164203ff65d5bdbb4a711dae29e0b5",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631779_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "31e05a53-9875-40b5-b10f-f82637b63004",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "019",
+    "current_native_name": "ホイットニーのミルタンク",
+    "proposed_native_name": "アカネのミルタンク",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "3c7aa136-3a2d-4e4b-87f6-02ad86fd8079",
+          "variant_id": "e2fbee13-0180-4e0f-98e8-3e14b6623710"
+        },
+        {
+          "id": "6198a10a-7c15-4093-a525-aa7b28a16f0e",
+          "variant_id": "3b3ac0f6-ecaa-43c1-9757-0920358af25e"
+        }
+      ],
+      "production": [
+        {
+          "id": "3c7aa136-3a2d-4e4b-87f6-02ad86fd8079",
+          "variant_id": "e2fbee13-0180-4e0f-98e8-3e14b6623710"
+        },
+        {
+          "id": "6198a10a-7c15-4093-a525-aa7b28a16f0e",
+          "variant_id": "3b3ac0f6-ecaa-43c1-9757-0920358af25e"
+        }
+      ]
+    },
+    "observed_printed_number": "019/141",
+    "original_sha256": "62da3cc6133398987d4e927c8aba9a70e5ca58fdc1664065476fc22765f03a7c",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622601_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "3394d654-909f-402c-9b32-57a1c26cbbb4",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "095",
+    "current_native_name": "ロケットのentei",
+    "proposed_native_name": "R団のエンテイ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "bd0b4ed5-45e5-4a71-8bab-f512f388e710",
+          "variant_id": "10c6744c-3f8c-4066-b09c-d03bd70b1534"
+        },
+        {
+          "id": "d9d06da2-1beb-4d6a-935b-4d19ee2c8c4f",
+          "variant_id": "bfd880da-efd8-4cce-b17a-d03f0f5b9893"
+        }
+      ],
+      "production": [
+        {
+          "id": "bd0b4ed5-45e5-4a71-8bab-f512f388e710",
+          "variant_id": "10c6744c-3f8c-4066-b09c-d03bd70b1534"
+        },
+        {
+          "id": "d9d06da2-1beb-4d6a-935b-4d19ee2c8c4f",
+          "variant_id": "bfd880da-efd8-4cce-b17a-d03f0f5b9893"
+        }
+      ]
+    },
+    "observed_printed_number": "095/141",
+    "original_sha256": "1db7b9c249ef4a91bf22f2c4b216b48ee7e58c1e18a9f993aeffb92c6eb1a340",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631897_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "3580a7e7-91fb-47a6-9b20-abfd807fb4ef",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "101",
+    "current_native_name": "ランスのアンファロス",
+    "proposed_native_name": "ワタルのデンリュウ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "8a7ec6a8-83a1-4351-8597-2b7fa7aaa91c",
+          "variant_id": "6096adc1-b6cc-4054-8c9e-e1697d700081"
+        },
+        {
+          "id": "a2e8a1b0-da50-423e-b1d5-7cce95ef7b35",
+          "variant_id": "d2088012-51ef-42f0-9acd-c661b4ae9fa5"
+        }
+      ],
+      "production": [
+        {
+          "id": "8a7ec6a8-83a1-4351-8597-2b7fa7aaa91c",
+          "variant_id": "6096adc1-b6cc-4054-8c9e-e1697d700081"
+        },
+        {
+          "id": "a2e8a1b0-da50-423e-b1d5-7cce95ef7b35",
+          "variant_id": "d2088012-51ef-42f0-9acd-c661b4ae9fa5"
+        }
+      ]
+    },
+    "observed_printed_number": "101/141",
+    "original_sha256": "4e83c58cd90862133540cbc0b8715e44c7e3e8ce8aceba08a5d3431706271837",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631903_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "3ef67576-767d-4093-afa7-6338ecff76a8",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "020",
+    "current_native_name": "モーティのニネタール",
+    "proposed_native_name": "マツバのキュウコン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "0286d8f3-de01-4ab5-b216-7253eef7517e",
+          "variant_id": "14c2e161-9751-4cd9-8de3-4d424622b19b"
+        },
+        {
+          "id": "993e9988-daa0-4734-9147-0dff10c7eeed",
+          "variant_id": "a488f93e-5b54-4a96-9127-7a3739234768"
+        }
+      ],
+      "production": [
+        {
+          "id": "0286d8f3-de01-4ab5-b216-7253eef7517e",
+          "variant_id": "14c2e161-9751-4cd9-8de3-4d424622b19b"
+        },
+        {
+          "id": "993e9988-daa0-4734-9147-0dff10c7eeed",
+          "variant_id": "a488f93e-5b54-4a96-9127-7a3739234768"
+        }
+      ]
+    },
+    "observed_printed_number": "020/141",
+    "original_sha256": "958d0925713bfe61663919bac3d0caebecb0d926afbbe0e15417d9a600172219",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622609_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "41130bb8-d2a1-4054-b936-248e1d79e4a0",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "039",
+    "current_native_name": "プライスのデューゴン",
+    "proposed_native_name": "ヤナギのジュゴン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "8d8a4e35-952d-43a9-8f72-9032b959f2b8",
+          "variant_id": "0d6967fa-7a8d-4045-9bb4-0af2c69d36a7"
+        },
+        {
+          "id": "986ca2c4-0987-4857-b6f1-d0ffcacf3eb3",
+          "variant_id": "d57fdde8-b6f9-4102-ad80-4ad5d3b29b09"
+        }
+      ],
+      "production": [
+        {
+          "id": "8d8a4e35-952d-43a9-8f72-9032b959f2b8",
+          "variant_id": "0d6967fa-7a8d-4045-9bb4-0af2c69d36a7"
+        },
+        {
+          "id": "986ca2c4-0987-4857-b6f1-d0ffcacf3eb3",
+          "variant_id": "d57fdde8-b6f9-4102-ad80-4ad5d3b29b09"
+        }
+      ]
+    },
+    "observed_printed_number": "039/141",
+    "original_sha256": "868d68b024f30415997eb180071bb600d54928669d00f29991af7ab5df0948c4",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630791_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "43c9c054-099c-4e3a-934d-be8d6999ffac",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "048",
+    "current_native_name": "クレアのギャラドス",
+    "proposed_native_name": "イブキのギャラドス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "2fadd849-204e-4b6f-aa87-3dc6ef642022",
+          "variant_id": "7b20a06e-d4a3-42f8-9484-1f9c26a6c7d9"
+        },
+        {
+          "id": "73ba368c-0d82-4185-9f51-540b694e4450",
+          "variant_id": "e0991036-e81e-4b4a-9887-8495b9a46bd6"
+        }
+      ],
+      "production": [
+        {
+          "id": "2fadd849-204e-4b6f-aa87-3dc6ef642022",
+          "variant_id": "7b20a06e-d4a3-42f8-9484-1f9c26a6c7d9"
+        },
+        {
+          "id": "73ba368c-0d82-4185-9f51-540b694e4450",
+          "variant_id": "e0991036-e81e-4b4a-9887-8495b9a46bd6"
+        }
+      ]
+    },
+    "observed_printed_number": "048/141",
+    "original_sha256": "a6c0542bdb1f31c9b4fa84f228221bb19553f5a0307139882ec3f39e1365c1e1",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630802_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "44fa2d4a-96cf-4cbd-8ae3-8de925a46f10",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "085",
+    "current_native_name": "ブルーノのウルサリング",
+    "proposed_native_name": "シバのリングマ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "5a4207ae-3abd-4aed-8ac2-2580d6c79c55",
+          "variant_id": "d52ff819-70a7-4da7-87d1-e833cbaa28a2"
+        },
+        {
+          "id": "b39a14ea-686f-4398-97ac-3a8fc1475b3b",
+          "variant_id": "23765ff2-94b9-446d-bcf6-fe76d2ad2f32"
+        }
+      ],
+      "production": [
+        {
+          "id": "5a4207ae-3abd-4aed-8ac2-2580d6c79c55",
+          "variant_id": "d52ff819-70a7-4da7-87d1-e833cbaa28a2"
+        },
+        {
+          "id": "b39a14ea-686f-4398-97ac-3a8fc1475b3b",
+          "variant_id": "23765ff2-94b9-446d-bcf6-fe76d2ad2f32"
+        }
+      ]
+    },
+    "observed_printed_number": "085/141",
+    "original_sha256": "8e2f32050d0816c6fa3f67e2ced55cc8452d4601f63dde07dd842041010348bf",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631859_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "493c5ca8-b131-4f27-a903-5ddf828e0785",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "021",
+    "current_native_name": "モーティのジェンガー",
+    "proposed_native_name": "マツバのゲンガー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "33597d4b-4f1b-4439-863e-d1e9996019d4",
+          "variant_id": "2486a830-e151-4935-8d61-e6f532da89ff"
+        }
+      ],
+      "production": [
+        {
+          "id": "33597d4b-4f1b-4439-863e-d1e9996019d4",
+          "variant_id": "2486a830-e151-4935-8d61-e6f532da89ff"
+        }
+      ]
+    },
+    "observed_printed_number": "021/141",
+    "original_sha256": "ef7cbb70f6d579d0e7a24e46a77421cf055bbf7e343aa11825dcad265fa6f84d",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622613_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "496db550-429b-4406-a22f-865f8747ddb5",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "053",
+    "current_native_name": "Surge's Raichu中t",
+    "proposed_native_name": "マチスのライチュウ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "1f4cca37-5428-4d6e-b76a-906cd6d95bfb",
+          "variant_id": "7febbc5a-d40f-4d9b-b751-edd4075b7082"
+        },
+        {
+          "id": "f3c916ab-776d-4a2f-af06-446c49580efa",
+          "variant_id": "1c0a84b0-d2e1-4d4f-a875-1e61bb078f78"
+        }
+      ],
+      "production": [
+        {
+          "id": "1f4cca37-5428-4d6e-b76a-906cd6d95bfb",
+          "variant_id": "7febbc5a-d40f-4d9b-b751-edd4075b7082"
+        },
+        {
+          "id": "f3c916ab-776d-4a2f-af06-446c49580efa",
+          "variant_id": "1c0a84b0-d2e1-4d4f-a875-1e61bb078f78"
+        }
+      ]
+    },
+    "observed_printed_number": "053/141",
+    "original_sha256": "6cf1f99592f3d320daea2902d2527f56c83a18893e719bcc14b9cdae3b042779",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630838_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "4dfbc54e-6865-47b5-b5ed-c1ad313c0976",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "066",
+    "current_native_name": "ジャニーンのクロバット",
+    "proposed_native_name": "アンズのクロバット",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "1bc16023-aa03-457d-aff2-aaf32c7ed986",
+          "variant_id": "8e7687eb-c16c-4175-b355-e175d758d55c"
+        },
+        {
+          "id": "d905b7e9-47a8-4319-bbf4-6aee74ce5d01",
+          "variant_id": "398af8a5-4649-402a-b805-b9361ebc2cd8"
+        }
+      ],
+      "production": [
+        {
+          "id": "1bc16023-aa03-457d-aff2-aaf32c7ed986",
+          "variant_id": "8e7687eb-c16c-4175-b355-e175d758d55c"
+        },
+        {
+          "id": "d905b7e9-47a8-4319-bbf4-6aee74ce5d01",
+          "variant_id": "398af8a5-4649-402a-b805-b9361ebc2cd8"
+        }
+      ]
+    },
+    "observed_printed_number": "066/141",
+    "original_sha256": "cf9ea7764b1e67ae792eb96e43357259aad46c89e3bd15e139444498bdd4c3a7",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631774_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "5158bc02-212e-4494-ba9d-9de53178d0dd",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "029",
+    "current_native_name": "ジャスミンのエレクトアバズ",
+    "proposed_native_name": "ミカンのエレブー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "380684af-f3f6-4e03-a005-2d13eec18556",
+          "variant_id": "cff5aab3-6b45-4980-bb22-3e2fe3fa80e0"
+        },
+        {
+          "id": "835ae075-2499-4e7d-95cc-a25398f11c94",
+          "variant_id": "40a4ad3e-c703-4e6f-a3bd-ac4d4fec5cab"
+        }
+      ],
+      "production": [
+        {
+          "id": "380684af-f3f6-4e03-a005-2d13eec18556",
+          "variant_id": "cff5aab3-6b45-4980-bb22-3e2fe3fa80e0"
+        },
+        {
+          "id": "835ae075-2499-4e7d-95cc-a25398f11c94",
+          "variant_id": "40a4ad3e-c703-4e6f-a3bd-ac4d4fec5cab"
+        }
+      ]
+    },
+    "observed_printed_number": "029/141",
+    "original_sha256": "c86f92974386b34f76127e4a4b39d724aca4e978b233ffa8da6db94503ca8ad9",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622689_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "529a130e-39f2-46ac-98d0-1baf32e6d314",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "056",
+    "current_native_name": "サブリナのエスペオン",
+    "proposed_native_name": "ナツメのエーフィ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "6e82b0a7-5d6d-492e-9610-6a91011b9781",
+          "variant_id": "e433a6ef-ae66-4f61-aa70-7cedd5d29dd7"
+        },
+        {
+          "id": "9053c09d-c438-4ec0-8b5a-58ef5de217af",
+          "variant_id": "674d2471-28bf-42a7-867b-2c6cb7fd8f69"
+        }
+      ],
+      "production": [
+        {
+          "id": "6e82b0a7-5d6d-492e-9610-6a91011b9781",
+          "variant_id": "e433a6ef-ae66-4f61-aa70-7cedd5d29dd7"
+        },
+        {
+          "id": "9053c09d-c438-4ec0-8b5a-58ef5de217af",
+          "variant_id": "674d2471-28bf-42a7-867b-2c6cb7fd8f69"
+        }
+      ]
+    },
+    "observed_printed_number": "056/141",
+    "original_sha256": "ff912fd52d4261cd9e4eb7caa48ea05e5df32c107d1d6dedd7857f1ceaf39894",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630841_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "589908af-2079-4b6d-bf89-05532c2eacea",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "014",
+    "current_native_name": "ホイットニーのクレファー",
+    "proposed_native_name": "アカネのピクシー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "85ac6281-18c1-4f1a-8e1c-c4e43afedb27",
+          "variant_id": "0811f36e-431d-4201-bcf9-cd7f69807258"
+        },
+        {
+          "id": "b62f17e8-8eac-40cf-b3c7-e4de7c298b4e",
+          "variant_id": "1bc7389a-1158-4b15-a2d9-2e16aca3c5ab"
+        }
+      ],
+      "production": [
+        {
+          "id": "85ac6281-18c1-4f1a-8e1c-c4e43afedb27",
+          "variant_id": "0811f36e-431d-4201-bcf9-cd7f69807258"
+        },
+        {
+          "id": "b62f17e8-8eac-40cf-b3c7-e4de7c298b4e",
+          "variant_id": "1bc7389a-1158-4b15-a2d9-2e16aca3c5ab"
+        }
+      ]
+    },
+    "observed_printed_number": "014/141",
+    "original_sha256": "bde6743242fb5c3de5ec63a93855479dba6e1eb99a8705e4e23a726b88013df9",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/615324_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "5a19afc8-8b21-4860-8b6e-4fd711bc4bb5",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "096",
+    "current_native_name": "Rocket's Suicune",
+    "proposed_native_name": "R団のスイクン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "5b1dae82-e907-422f-ac9b-88be1709b1cf",
+          "variant_id": "e13db0d7-0c25-4b68-8afd-b0101a3131f8"
+        },
+        {
+          "id": "69950a78-8e7a-40d1-81fe-2cc77e4a382f",
+          "variant_id": "76a34513-5b5e-4176-ab4e-8773c609dcea"
+        }
+      ],
+      "production": [
+        {
+          "id": "5b1dae82-e907-422f-ac9b-88be1709b1cf",
+          "variant_id": "e13db0d7-0c25-4b68-8afd-b0101a3131f8"
+        },
+        {
+          "id": "69950a78-8e7a-40d1-81fe-2cc77e4a382f",
+          "variant_id": "76a34513-5b5e-4176-ab4e-8773c609dcea"
+        }
+      ]
+    },
+    "observed_printed_number": "096/141",
+    "original_sha256": "1e8c1962433ada7f82c29f4e2523fcb3b6898d300e3d2229737aef7f56b5cb2d",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631898_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "60895e34-76a3-419c-b9ac-a52f5fe370f4",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "102",
+    "current_native_name": "ランスのキングドラ",
+    "proposed_native_name": "ワタルのキングドラ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "436ff434-9a67-4c40-8d94-fb1e7c978624",
+          "variant_id": "7f8c768d-4082-4895-876a-ffb90e66be80"
+        },
+        {
+          "id": "85f07baa-5322-428c-b441-672d243d13a5",
+          "variant_id": "c95acee6-bd7d-4c37-9b58-19db0b4cbba6"
+        }
+      ],
+      "production": [
+        {
+          "id": "436ff434-9a67-4c40-8d94-fb1e7c978624",
+          "variant_id": "7f8c768d-4082-4895-876a-ffb90e66be80"
+        },
+        {
+          "id": "85f07baa-5322-428c-b441-672d243d13a5",
+          "variant_id": "c95acee6-bd7d-4c37-9b58-19db0b4cbba6"
+        }
+      ]
+    },
+    "observed_printed_number": "102/141",
+    "original_sha256": "59a723a2a4baab05763ab6eab0baba6b83469a70cc581df723e7497cb5728fc2",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631904_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "619fa17f-491f-4b2d-912c-fe82230b6db7",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "068",
+    "current_native_name": "ブロックのomastar",
+    "proposed_native_name": "タケシのオムスター",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "006d874d-12b7-4e54-951d-6e15a1b77ad3",
+          "variant_id": "5c4960fd-fba0-4524-9e0d-6fc6fcff91ae"
+        },
+        {
+          "id": "1322837c-a6b3-41fa-8e10-66f510e9593a",
+          "variant_id": "65dd77f7-41ce-4d7c-a2c3-7e8cdfceff84"
+        }
+      ],
+      "production": [
+        {
+          "id": "006d874d-12b7-4e54-951d-6e15a1b77ad3",
+          "variant_id": "5c4960fd-fba0-4524-9e0d-6fc6fcff91ae"
+        },
+        {
+          "id": "1322837c-a6b3-41fa-8e10-66f510e9593a",
+          "variant_id": "65dd77f7-41ce-4d7c-a2c3-7e8cdfceff84"
+        }
+      ]
+    },
+    "observed_printed_number": "068/141",
+    "original_sha256": "b4a09185cb55b739e084088808074588dd27d6580ad931cdf92f69ed9f304d47",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631777_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "671bc5d7-f958-4bb6-a787-1d80a308ca16",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "030",
+    "current_native_name": "ジャスミンのジョルテオン",
+    "proposed_native_name": "ミカンのサンダース",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "8c6f6732-4dd9-4274-ab1b-bf76fc312654",
+          "variant_id": "e2b94ba6-87c0-4572-b67d-78008ff469e0"
+        },
+        {
+          "id": "a6201aec-512b-4a19-bda9-3ec431511a47",
+          "variant_id": "a845ae5c-6d42-4a3b-a17a-e613aaf9bf13"
+        }
+      ],
+      "production": [
+        {
+          "id": "8c6f6732-4dd9-4274-ab1b-bf76fc312654",
+          "variant_id": "e2b94ba6-87c0-4572-b67d-78008ff469e0"
+        },
+        {
+          "id": "a6201aec-512b-4a19-bda9-3ec431511a47",
+          "variant_id": "a845ae5c-6d42-4a3b-a17a-e613aaf9bf13"
+        }
+      ]
+    },
+    "observed_printed_number": "030/141",
+    "original_sha256": "438490c293f4271ac1c4f199095185f59ee4cd3a9846a2e43e512d8c0ff46f98",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622694_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "683f1a69-94d6-42a6-a536-10ecc81cf2cd",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "023",
+    "current_native_name": "モーティのマロワック",
+    "proposed_native_name": "マツバのガラガラ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "58266dfa-dbad-43ea-a123-e30ad4300111",
+          "variant_id": "03cceb9e-c97d-45b3-bf0d-e983fcd0d837"
+        },
+        {
+          "id": "ea357438-f0aa-4e32-ab80-7c08979aaf97",
+          "variant_id": "0ccb2207-ee2a-48d0-9406-b635dbe32c3d"
+        }
+      ],
+      "production": [
+        {
+          "id": "58266dfa-dbad-43ea-a123-e30ad4300111",
+          "variant_id": "03cceb9e-c97d-45b3-bf0d-e983fcd0d837"
+        },
+        {
+          "id": "ea357438-f0aa-4e32-ab80-7c08979aaf97",
+          "variant_id": "0ccb2207-ee2a-48d0-9406-b635dbe32c3d"
+        }
+      ]
+    },
+    "observed_printed_number": "023/141",
+    "original_sha256": "cfa37b816e0a9d44514e443bbf32b9ae52b45d3fd3821e538d82cda7a0c91652",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622634_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "688838f8-840f-486e-a1a6-65c7e0bb4523",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "076",
+    "current_native_name": "ウィルのエスペオン",
+    "proposed_native_name": "イツキのエーフィ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "2c7fa200-2d95-4de6-bc8b-11435980b3a0",
+          "variant_id": "469e9a74-57ce-48da-b040-18a84c82d4cb"
+        },
+        {
+          "id": "777e3be6-5bb6-4501-b33b-5836c012a1ef",
+          "variant_id": "a8c5fc65-c34b-4120-aba4-03ec275376b3"
+        }
+      ],
+      "production": [
+        {
+          "id": "2c7fa200-2d95-4de6-bc8b-11435980b3a0",
+          "variant_id": "469e9a74-57ce-48da-b040-18a84c82d4cb"
+        },
+        {
+          "id": "777e3be6-5bb6-4501-b33b-5836c012a1ef",
+          "variant_id": "a8c5fc65-c34b-4120-aba4-03ec275376b3"
+        }
+      ]
+    },
+    "observed_printed_number": "076/141",
+    "original_sha256": "f08255d196cbadf795dcbc485ac23c35db84a3b9b6dc1f0afeaed4371a9622c6",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631841_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "692d137f-e42f-44f5-8d37-166a829e5e27",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "042",
+    "current_native_name": "プライスのarticuno",
+    "proposed_native_name": "ヤナギのフリーザー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "6b680e74-3579-4526-9c19-b1fb2713ce6e",
+          "variant_id": "a20f6f83-160b-4b77-8c67-2fe022cbdbe8"
+        },
+        {
+          "id": "aaee7ac8-c662-4791-805b-bc2ee30f15b0",
+          "variant_id": "e3375dd4-503b-46cc-965c-7d10630655f0"
+        }
+      ],
+      "production": [
+        {
+          "id": "6b680e74-3579-4526-9c19-b1fb2713ce6e",
+          "variant_id": "a20f6f83-160b-4b77-8c67-2fe022cbdbe8"
+        },
+        {
+          "id": "aaee7ac8-c662-4791-805b-bc2ee30f15b0",
+          "variant_id": "e3375dd4-503b-46cc-965c-7d10630655f0"
+        }
+      ]
+    },
+    "observed_printed_number": "042/141",
+    "original_sha256": "35485698be3fd612b4a300c0fc3253e9a3bc701861577aa68b5da36579300862",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630796_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "69d21a12-883c-4a80-aeff-5efaff107c25",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "052",
+    "current_native_name": "クレアのキングドラ",
+    "proposed_native_name": "イブキのキングドラ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "28cd8c8b-15aa-41a4-9fe1-3a026927284d",
+          "variant_id": "92eeed6d-620e-4964-9401-2cd186a57fb9"
+        },
+        {
+          "id": "2fd7b1cf-55dc-4791-8063-21f6db75a73c",
+          "variant_id": "27e77f8d-d9b6-47a0-b8f0-70ecd983e541"
+        }
+      ],
+      "production": [
+        {
+          "id": "28cd8c8b-15aa-41a4-9fe1-3a026927284d",
+          "variant_id": "92eeed6d-620e-4964-9401-2cd186a57fb9"
+        },
+        {
+          "id": "2fd7b1cf-55dc-4791-8063-21f6db75a73c",
+          "variant_id": "27e77f8d-d9b6-47a0-b8f0-70ecd983e541"
+        }
+      ]
+    },
+    "observed_printed_number": "052/141",
+    "original_sha256": "55e0c26273add850e86889bcd0503fddfa3c73abda66c1fe2391d88f3f2f82a1",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630842_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6a65986c-96bd-458b-9984-f2a46a79aca2",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "026",
+    "current_native_name": "モーティのミスレアバス",
+    "proposed_native_name": "マツバのムウマ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "05062922-b52b-4441-82c1-f315da91368a",
+          "variant_id": "1faa8ec9-07ef-4fe7-8261-64f2d0365d72"
+        },
+        {
+          "id": "9d8a1ce0-620e-46d6-ab97-3098b24af90c",
+          "variant_id": "26e8bc58-ddc4-4d8a-b251-da08a8d55938"
+        }
+      ],
+      "production": [
+        {
+          "id": "05062922-b52b-4441-82c1-f315da91368a",
+          "variant_id": "1faa8ec9-07ef-4fe7-8261-64f2d0365d72"
+        },
+        {
+          "id": "9d8a1ce0-620e-46d6-ab97-3098b24af90c",
+          "variant_id": "26e8bc58-ddc4-4d8a-b251-da08a8d55938"
+        }
+      ]
+    },
+    "observed_printed_number": "026/141",
+    "original_sha256": "71c6bc94c6c6b8203003af9345a3489281669a957c87e8acc3f3d01cbe807d9f",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622648_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6b87ed4c-84e9-468a-abe5-fac28ce1474b",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "079",
+    "current_native_name": "コガのクロバット",
+    "proposed_native_name": "キョウのクロバット",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "2599a51a-23aa-469f-9408-30bbdc29df61",
+          "variant_id": "5cc51f3b-75a9-4974-a20d-07fdb670958b"
+        },
+        {
+          "id": "d37c5006-b5e3-4c73-8dbc-2e764d6aff45",
+          "variant_id": "422f5bb5-5ff4-4daf-a5aa-1941449ed92a"
+        }
+      ],
+      "production": [
+        {
+          "id": "2599a51a-23aa-469f-9408-30bbdc29df61",
+          "variant_id": "5cc51f3b-75a9-4974-a20d-07fdb670958b"
+        },
+        {
+          "id": "d37c5006-b5e3-4c73-8dbc-2e764d6aff45",
+          "variant_id": "422f5bb5-5ff4-4daf-a5aa-1941449ed92a"
+        }
+      ]
+    },
+    "observed_printed_number": "079/141",
+    "original_sha256": "b14ca2bf2aedf043e30c3eaf991ee428e5a54af795efadf8f4cbdb39329836ff",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631846_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6bcfaa5d-d2cd-4eea-9f53-1a4ac13a38ec",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "078",
+    "current_native_name": "ウィルのギラファリグ",
+    "proposed_native_name": "イツキのキリンリキ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "0e4aefcd-8c04-4b71-b408-6b22e23925c7",
+          "variant_id": "2a6fe639-676d-468d-8b91-cac1edcae901"
+        },
+        {
+          "id": "d4d3d434-71f5-475d-a993-e3ce466f3d57",
+          "variant_id": "bcb5b779-2dce-4413-8c53-e8c691f1bebc"
+        }
+      ],
+      "production": [
+        {
+          "id": "0e4aefcd-8c04-4b71-b408-6b22e23925c7",
+          "variant_id": "2a6fe639-676d-468d-8b91-cac1edcae901"
+        },
+        {
+          "id": "d4d3d434-71f5-475d-a993-e3ce466f3d57",
+          "variant_id": "bcb5b779-2dce-4413-8c53-e8c691f1bebc"
+        }
+      ]
+    },
+    "observed_printed_number": "078/141",
+    "original_sha256": "d61c6bd9bfcddb11d3aacc1a790e7acb4d697d5e859ab3ae509ddb006e6996c0",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631844_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6cc7457e-193b-4e80-b108-98b67a02c5c5",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "061",
+    "current_native_name": "ジャニーンのビードリル",
+    "proposed_native_name": "アンズのスピアー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "2ebe4ce9-9cb2-4751-8552-cd9f733f4699",
+          "variant_id": "83ca2b6d-3c4d-4ee4-aae7-9aeaa1cd2115"
+        },
+        {
+          "id": "dd770274-0bdd-493b-b4a6-279055e96ef9",
+          "variant_id": "2c23bb5a-7dea-4c82-84fe-45da411b407b"
+        }
+      ],
+      "production": [
+        {
+          "id": "2ebe4ce9-9cb2-4751-8552-cd9f733f4699",
+          "variant_id": "83ca2b6d-3c4d-4ee4-aae7-9aeaa1cd2115"
+        },
+        {
+          "id": "dd770274-0bdd-493b-b4a6-279055e96ef9",
+          "variant_id": "2c23bb5a-7dea-4c82-84fe-45da411b407b"
+        }
+      ]
+    },
+    "observed_printed_number": "061/141",
+    "original_sha256": "9df1607c8533282833b213c34a141ff6fc9f25db3aa8c0570f77ff67ed27d8ad",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630847_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6d9b1cb9-c30d-43ef-b809-27a93cbecff1",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "024",
+    "current_native_name": "MortyのNoctowl",
+    "proposed_native_name": "マツバのヨルノズク",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "546a9676-ac2b-45c4-85d6-846faa4b152d",
+          "variant_id": "b81e080f-18ba-41c7-8728-59ab3936e2da"
+        },
+        {
+          "id": "f401b96f-552a-48c0-94f8-eb2d71703b5b",
+          "variant_id": "211cb213-204c-476e-b50f-32d5d430a041"
+        }
+      ],
+      "production": [
+        {
+          "id": "546a9676-ac2b-45c4-85d6-846faa4b152d",
+          "variant_id": "b81e080f-18ba-41c7-8728-59ab3936e2da"
+        },
+        {
+          "id": "f401b96f-552a-48c0-94f8-eb2d71703b5b",
+          "variant_id": "211cb213-204c-476e-b50f-32d5d430a041"
+        }
+      ]
+    },
+    "observed_printed_number": "024/141",
+    "original_sha256": "8e0059cf9eca607deb01319292433259e01cdc3d01f36fd12f6067fac693edcd",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622638_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6dcb2d85-0606-4d0d-9756-fc6162801f52",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "064",
+    "current_native_name": "ジャニーンのおしっこ",
+    "proposed_native_name": "アンズのマタドガス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "59c6c604-c9ae-4e11-b66e-64a272c181dd",
+          "variant_id": "55944675-ac67-4a5c-a3c2-d19c9a90e6cd"
+        },
+        {
+          "id": "dcbc5c44-2eda-4483-a683-1885ea0de8ae",
+          "variant_id": "307e07ea-fadf-4a2e-bda1-0e4e989307c1"
+        }
+      ],
+      "production": [
+        {
+          "id": "59c6c604-c9ae-4e11-b66e-64a272c181dd",
+          "variant_id": "55944675-ac67-4a5c-a3c2-d19c9a90e6cd"
+        },
+        {
+          "id": "dcbc5c44-2eda-4483-a683-1885ea0de8ae",
+          "variant_id": "307e07ea-fadf-4a2e-bda1-0e4e989307c1"
+        }
+      ]
+    },
+    "observed_printed_number": "064/141",
+    "original_sha256": "1f69c25a8c948a31dabb658ab0c35ea73602db62ca100b747c78cc3f630c8533",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631769_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6e35e44f-b9be-4187-a545-c7633dd66306",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "094",
+    "current_native_name": "ロケットのライコウ",
+    "proposed_native_name": "R団のライコウ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "37599d90-65b8-4583-843e-47e8a7d571bf",
+          "variant_id": "6cf9463f-9f8a-4294-b981-dc1ba117430f"
+        },
+        {
+          "id": "f8535713-35f0-4ead-826e-ef59287fab89",
+          "variant_id": "fd0c2d87-e037-4f22-a3cd-4591a629f2c1"
+        }
+      ],
+      "production": [
+        {
+          "id": "37599d90-65b8-4583-843e-47e8a7d571bf",
+          "variant_id": "6cf9463f-9f8a-4294-b981-dc1ba117430f"
+        },
+        {
+          "id": "f8535713-35f0-4ead-826e-ef59287fab89",
+          "variant_id": "fd0c2d87-e037-4f22-a3cd-4591a629f2c1"
+        }
+      ]
+    },
+    "observed_printed_number": "094/141",
+    "original_sha256": "1ccfea687f5613fb8d02a79cd5e3e54d62cf07b8f5bda28652eb31fd707d02f1",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631883_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6e46098a-96d4-4e4b-9e72-4016bb53d386",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "097",
+    "current_native_name": "ランスのカリザード",
+    "proposed_native_name": "ワタルのリザードン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "44917fb2-3646-451b-9c67-69e9fa78d60a",
+          "variant_id": "865fb4c3-cbd5-4fb7-a7ec-94717181aaed"
+        },
+        {
+          "id": "b9ecf4e9-4746-4f2a-9089-e5dbad6fc0bc",
+          "variant_id": "ee3343f1-bad6-465f-a7b6-92a9997f7e78"
+        }
+      ],
+      "production": [
+        {
+          "id": "44917fb2-3646-451b-9c67-69e9fa78d60a",
+          "variant_id": "865fb4c3-cbd5-4fb7-a7ec-94717181aaed"
+        },
+        {
+          "id": "b9ecf4e9-4746-4f2a-9089-e5dbad6fc0bc",
+          "variant_id": "ee3343f1-bad6-465f-a7b6-92a9997f7e78"
+        }
+      ]
+    },
+    "observed_printed_number": "097/141",
+    "original_sha256": "5eaa3ad8549c18979ecdb9a5d64c142cd4cf35dcf342feb61887334f2101e312",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631899_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "6fe2bfa8-0069-421d-bd17-e5743fc16778",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "055",
+    "current_native_name": "サブリナのXatu",
+    "proposed_native_name": "ナツメのネイティオ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "4e94c09d-1b5b-41a6-8fbd-b59db0751c26",
+          "variant_id": "5bd01ed3-9612-4bf9-93be-d861dad71d8f"
+        },
+        {
+          "id": "d03d9134-07be-44d9-81ff-6bfd6b5fc9de",
+          "variant_id": "c8066e03-e711-4969-9a55-58b0dff899c4"
+        }
+      ],
+      "production": [
+        {
+          "id": "4e94c09d-1b5b-41a6-8fbd-b59db0751c26",
+          "variant_id": "5bd01ed3-9612-4bf9-93be-d861dad71d8f"
+        },
+        {
+          "id": "d03d9134-07be-44d9-81ff-6bfd6b5fc9de",
+          "variant_id": "c8066e03-e711-4969-9a55-58b0dff899c4"
+        }
+      ]
+    },
+    "observed_printed_number": "055/141",
+    "original_sha256": "8b4e14af4d6ab68a8cc689a2d9fe57eb09870bcc7dff7879613f6202b97f7286",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630840_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "71489507-5d74-4302-9846-6d61ffa181e6",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "092",
+    "current_native_name": "カレンの猟犬",
+    "proposed_native_name": "カリンのヘルガー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "269d3ed9-a160-437b-8940-409b61556598",
+          "variant_id": "91176b1b-45cc-4fc0-b555-d9372b2887d6"
+        },
+        {
+          "id": "b667fa89-5f54-4ff8-974a-b251db660c6e",
+          "variant_id": "12a33881-a556-455f-b627-b211a68d9971"
+        }
+      ],
+      "production": [
+        {
+          "id": "269d3ed9-a160-437b-8940-409b61556598",
+          "variant_id": "91176b1b-45cc-4fc0-b555-d9372b2887d6"
+        },
+        {
+          "id": "b667fa89-5f54-4ff8-974a-b251db660c6e",
+          "variant_id": "12a33881-a556-455f-b627-b211a68d9971"
+        }
+      ]
+    },
+    "observed_printed_number": "092/141",
+    "original_sha256": "bb346a8a61c544f7d5110b13b05c925856978a4dcf78bcdbaa713efda565a62e",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631879_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "73b9bebe-4b44-4c29-9611-395a6f57d831",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "035",
+    "current_native_name": "チャックのライドン",
+    "proposed_native_name": "シジマのサイドン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "6763b09b-9eb2-401b-a621-3917c9b7b960",
+          "variant_id": "4762cd63-96e1-4bec-8ca1-6724a7705860"
+        },
+        {
+          "id": "a96eb703-c22e-4944-8993-1bd780a3fdf5",
+          "variant_id": "d807a0a1-0bb5-46f4-97dc-47e364691e9a"
+        }
+      ],
+      "production": [
+        {
+          "id": "6763b09b-9eb2-401b-a621-3917c9b7b960",
+          "variant_id": "4762cd63-96e1-4bec-8ca1-6724a7705860"
+        },
+        {
+          "id": "a96eb703-c22e-4944-8993-1bd780a3fdf5",
+          "variant_id": "d807a0a1-0bb5-46f4-97dc-47e364691e9a"
+        }
+      ]
+    },
+    "observed_printed_number": "035/141",
+    "original_sha256": "5495a7e9e6c6f663291a4b45ada74e42b3146377e33f2bf7c034aee29e7a4a78",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630787_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "756e8f58-e6a1-461c-ad49-a906ee6bd31d",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "036",
+    "current_native_name": "チャックのタウロス",
+    "proposed_native_name": "シジマのケンタロス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "24c54d62-f9da-4efb-80f7-07bfb4e033d8",
+          "variant_id": "2e049813-60fa-42a6-8407-b75bef53c2f4"
+        },
+        {
+          "id": "85d23ee2-7da3-48ff-bd50-9944076f2b24",
+          "variant_id": "350c2d32-f6c7-4ae0-9729-f222a7743f21"
+        }
+      ],
+      "production": [
+        {
+          "id": "24c54d62-f9da-4efb-80f7-07bfb4e033d8",
+          "variant_id": "2e049813-60fa-42a6-8407-b75bef53c2f4"
+        },
+        {
+          "id": "85d23ee2-7da3-48ff-bd50-9944076f2b24",
+          "variant_id": "350c2d32-f6c7-4ae0-9729-f222a7743f21"
+        }
+      ]
+    },
+    "observed_printed_number": "036/141",
+    "original_sha256": "d9b2a4c0a4e495cd8172d32fa23a45bf093f750c1dac8bbc97e67b178c7df7de",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630788_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7599d09b-ff45-4aea-921f-67694a61777d",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "041",
+    "current_native_name": "プライスのラプラ",
+    "proposed_native_name": "ヤナギのラプラス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "1638a3f6-b2a0-4b71-b9fc-4aebe2168fdd",
+          "variant_id": "ccb96ee9-c7fc-47a4-83e9-1b2f31218ede"
+        },
+        {
+          "id": "b8f2b9db-df72-4547-b2a8-9e9c4e136dd4",
+          "variant_id": "57f75283-7fb8-40a5-88b8-3d73fd743a10"
+        }
+      ],
+      "production": [
+        {
+          "id": "1638a3f6-b2a0-4b71-b9fc-4aebe2168fdd",
+          "variant_id": "ccb96ee9-c7fc-47a4-83e9-1b2f31218ede"
+        },
+        {
+          "id": "b8f2b9db-df72-4547-b2a8-9e9c4e136dd4",
+          "variant_id": "57f75283-7fb8-40a5-88b8-3d73fd743a10"
+        }
+      ]
+    },
+    "observed_printed_number": "041/141",
+    "original_sha256": "62ca8077a8417d75ff01475f99e72370669faec34ec616ed2b8171af9ca90a61",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630795_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7923bc81-b2c6-4f2c-8d8c-5a26cfcd8344",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "075",
+    "current_native_name": "ウィルのxatu",
+    "proposed_native_name": "イツキのネイティオ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "75b0d68b-080e-4308-85b2-a252b6c8876a",
+          "variant_id": "cdaffe67-f66d-4d4f-87cf-96363eed596a"
+        },
+        {
+          "id": "e8105028-51b0-4955-82f6-2afefaf8e04f",
+          "variant_id": "831cb980-1a53-4140-80aa-4d476cca0a5c"
+        }
+      ],
+      "production": [
+        {
+          "id": "75b0d68b-080e-4308-85b2-a252b6c8876a",
+          "variant_id": "cdaffe67-f66d-4d4f-87cf-96363eed596a"
+        },
+        {
+          "id": "e8105028-51b0-4955-82f6-2afefaf8e04f",
+          "variant_id": "831cb980-1a53-4140-80aa-4d476cca0a5c"
+        }
+      ]
+    },
+    "observed_printed_number": "075/141",
+    "original_sha256": "b5600305dfcb00b61042c05425bcc7278d514d1725b82ef1c2eb0a18325775ea",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631838_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7ba63fe5-3340-48b0-ac4d-f3594d79d6cd",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "012",
+    "current_native_name": "Bugsy's Yanma",
+    "proposed_native_name": "ツクシのヤンヤンマ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "57b1b3cc-7d82-49d7-a6d6-1201d546cb1c",
+          "variant_id": "6b9f8b0b-7963-49d5-a9f9-00f724eb09ba"
+        },
+        {
+          "id": "fb5e4dbb-2138-42e1-9502-bd62d49400c8",
+          "variant_id": "9e484bfd-c804-491b-9199-4a0f3b631adf"
+        }
+      ],
+      "production": [
+        {
+          "id": "57b1b3cc-7d82-49d7-a6d6-1201d546cb1c",
+          "variant_id": "6b9f8b0b-7963-49d5-a9f9-00f724eb09ba"
+        },
+        {
+          "id": "fb5e4dbb-2138-42e1-9502-bd62d49400c8",
+          "variant_id": "9e484bfd-c804-491b-9199-4a0f3b631adf"
+        }
+      ]
+    },
+    "observed_printed_number": "012/141",
+    "original_sha256": "3c8c87ab2101a29619c2271fd5e4b3ca6d92b79e06bda94abe55ed8e94a1045c",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618743_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7f64a2d7-c4a9-44b1-96d8-438a36573792",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "063",
+    "current_native_name": "ジャニーンの毒",
+    "proposed_native_name": "アンズのモルフォン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "aae02b1e-29b4-46fb-9b8d-ac74d2e38020",
+          "variant_id": "7797be4a-0087-4fbe-9f8f-2b64637fefb6"
+        },
+        {
+          "id": "ed5130e4-082d-48b0-afbf-dae4bc0885e8",
+          "variant_id": "c327fe1c-8530-460f-a3bc-c79a6a8b8901"
+        }
+      ],
+      "production": [
+        {
+          "id": "aae02b1e-29b4-46fb-9b8d-ac74d2e38020",
+          "variant_id": "7797be4a-0087-4fbe-9f8f-2b64637fefb6"
+        },
+        {
+          "id": "ed5130e4-082d-48b0-afbf-dae4bc0885e8",
+          "variant_id": "c327fe1c-8530-460f-a3bc-c79a6a8b8901"
+        }
+      ]
+    },
+    "observed_printed_number": "063/141",
+    "original_sha256": "1dc4744b9b901e57f351fda928614a62627d851bbf15bb39e3e500929a9d712e",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631767_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "7f6505ce-0319-486d-9335-2abf46dbf690",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "080",
+    "current_native_name": "Koga's Forretress",
+    "proposed_native_name": "キョウのフォレトス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "5b98583c-f928-4b62-a87e-91e922d08f72",
+          "variant_id": "0b9e120c-219f-4ff0-bdf9-a8377f3ec7a0"
+        },
+        {
+          "id": "a9aad63d-f614-496a-b225-5293fb1d12b8",
+          "variant_id": "05f97592-b0fc-4f41-9a05-be070d29cf39"
+        }
+      ],
+      "production": [
+        {
+          "id": "5b98583c-f928-4b62-a87e-91e922d08f72",
+          "variant_id": "0b9e120c-219f-4ff0-bdf9-a8377f3ec7a0"
+        },
+        {
+          "id": "a9aad63d-f614-496a-b225-5293fb1d12b8",
+          "variant_id": "05f97592-b0fc-4f41-9a05-be070d29cf39"
+        }
+      ]
+    },
+    "observed_printed_number": "080/141",
+    "original_sha256": "b6147371470f33f01bc8630d23605fb06eedb31c76ac170e057e27dc5ddd1817",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631848_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "825a79b3-c855-4fe6-99eb-1ea0a863a714",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "025",
+    "current_native_name": "モーティのマークロー",
+    "proposed_native_name": "マツバのヤミカラス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "39f39269-d083-456b-8769-45e948f3e219",
+          "variant_id": "368dd11d-c943-4377-8799-589fdb188f8a"
+        },
+        {
+          "id": "fed2f0fd-efbd-4b40-8b2b-3d7c2dc3fa32",
+          "variant_id": "05bb0306-a494-41e9-8f08-2f80b75bf7d6"
+        }
+      ],
+      "production": [
+        {
+          "id": "39f39269-d083-456b-8769-45e948f3e219",
+          "variant_id": "368dd11d-c943-4377-8799-589fdb188f8a"
+        },
+        {
+          "id": "fed2f0fd-efbd-4b40-8b2b-3d7c2dc3fa32",
+          "variant_id": "05bb0306-a494-41e9-8f08-2f80b75bf7d6"
+        }
+      ]
+    },
+    "observed_printed_number": "025/141",
+    "original_sha256": "e65892034557cb7daa6e37b7b521398196a0ede96fdcc2737a59052eb711dac4",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622645_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "8b3020f5-974a-43ed-b18a-2fe5cd60e3b7",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "086",
+    "current_native_name": "ブルーノのヒットモントップ",
+    "proposed_native_name": "シバのカポエラー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "29b8a64b-7f35-45ed-8a06-8ce171370089",
+          "variant_id": "1ac9a4b5-f9c0-4b30-bd5c-66adad1b7dd8"
+        },
+        {
+          "id": "a4e1e2b3-b314-458b-84c7-5f1d8e0fda21",
+          "variant_id": "d3a8a2d3-aff6-40bf-ae9d-15135de9752c"
+        }
+      ],
+      "production": [
+        {
+          "id": "29b8a64b-7f35-45ed-8a06-8ce171370089",
+          "variant_id": "1ac9a4b5-f9c0-4b30-bd5c-66adad1b7dd8"
+        },
+        {
+          "id": "a4e1e2b3-b314-458b-84c7-5f1d8e0fda21",
+          "variant_id": "d3a8a2d3-aff6-40bf-ae9d-15135de9752c"
+        }
+      ]
+    },
+    "observed_printed_number": "086/141",
+    "original_sha256": "85e265368da2081623cc4cb93555d808ed4e1ec9d3d59f0c37a8bde219f25939",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631867_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "8f3511db-d5b1-4cdc-be33-1c08b21c3f54",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "054",
+    "current_native_name": "Surge's Lanturn中t",
+    "proposed_native_name": "マチスのランターン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "5cf8c8a2-f23c-4f5d-880c-31f652df6cb0",
+          "variant_id": "6b947b65-df29-4626-b67c-5dc211d662b6"
+        },
+        {
+          "id": "d1530b7b-27f2-4ffd-8228-f3a43b997407",
+          "variant_id": "929cbcd3-59cc-4496-b402-2954597c83c8"
+        }
+      ],
+      "production": [
+        {
+          "id": "5cf8c8a2-f23c-4f5d-880c-31f652df6cb0",
+          "variant_id": "6b947b65-df29-4626-b67c-5dc211d662b6"
+        },
+        {
+          "id": "d1530b7b-27f2-4ffd-8228-f3a43b997407",
+          "variant_id": "929cbcd3-59cc-4496-b402-2954597c83c8"
+        }
+      ]
+    },
+    "observed_printed_number": "054/141",
+    "original_sha256": "c9693eda3ed1b502da3aeaecc73d94442c1b024f4b3fe5b8a22184c757a43469",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630839_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "913f0d7c-6a2b-45c3-9927-f8d828b264d8",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "100",
+    "current_native_name": "ランスのドラゴナイト",
+    "proposed_native_name": "ワタルのカイリュー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "7311e9f2-3486-44e1-b962-f8754aa44428",
+          "variant_id": "fe2fb8f2-df3f-41ff-99d1-2e2bb923e67a"
+        },
+        {
+          "id": "7eef5a3d-0b2c-4e55-aaee-557ce0d7dbfd",
+          "variant_id": "0bc7b9e4-7fde-422e-907d-0b0d7ea6e927"
+        }
+      ],
+      "production": [
+        {
+          "id": "7311e9f2-3486-44e1-b962-f8754aa44428",
+          "variant_id": "fe2fb8f2-df3f-41ff-99d1-2e2bb923e67a"
+        },
+        {
+          "id": "7eef5a3d-0b2c-4e55-aaee-557ce0d7dbfd",
+          "variant_id": "0bc7b9e4-7fde-422e-907d-0b0d7ea6e927"
+        }
+      ]
+    },
+    "observed_printed_number": "100/141",
+    "original_sha256": "a5bd2f173119d50482ac4932d890f8f0a612a4f72fc5e7ae827aa53f95de806b",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631902_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "933ce598-c3b1-4cf6-8f94-088de09e420c",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "093",
+    "current_native_name": "ロケットのウォブバッフェット",
+    "proposed_native_name": "R団のソーナンス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "06ce131c-f42f-42ae-85c4-c22c66ef8c46",
+          "variant_id": "60a0db3a-5dfa-4a2f-8e75-7dd8d8e4cc39"
+        },
+        {
+          "id": "5bbf7c90-aa08-470f-b0cb-b68f882d1b8e",
+          "variant_id": "0532aaf6-2c7b-4c7a-ac40-b9b309c44ee7"
+        }
+      ],
+      "production": [
+        {
+          "id": "06ce131c-f42f-42ae-85c4-c22c66ef8c46",
+          "variant_id": "60a0db3a-5dfa-4a2f-8e75-7dd8d8e4cc39"
+        },
+        {
+          "id": "5bbf7c90-aa08-470f-b0cb-b68f882d1b8e",
+          "variant_id": "0532aaf6-2c7b-4c7a-ac40-b9b309c44ee7"
+        }
+      ]
+    },
+    "observed_printed_number": "093/141",
+    "original_sha256": "a31404442036943833001f87e1ab4d83a81bc7c42fc0c39211dde0ebf0c3307f",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631881_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "93d5fb51-8365-4e86-adf8-893fbe7a9927",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "034",
+    "current_native_name": "チャックのpoliwrath",
+    "proposed_native_name": "シジマのニョロボン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "731b5f8f-672e-468a-bc6c-d84689d6d1fa",
+          "variant_id": "8e7e71b1-2e55-45a7-898a-385f6ac1e0e8"
+        },
+        {
+          "id": "f39c06ef-e935-4ab6-afb0-c6d686bb9bf6",
+          "variant_id": "96dd5c42-75ac-4907-bcc5-b9fd4dd624ce"
+        }
+      ],
+      "production": [
+        {
+          "id": "731b5f8f-672e-468a-bc6c-d84689d6d1fa",
+          "variant_id": "8e7e71b1-2e55-45a7-898a-385f6ac1e0e8"
+        },
+        {
+          "id": "f39c06ef-e935-4ab6-afb0-c6d686bb9bf6",
+          "variant_id": "96dd5c42-75ac-4907-bcc5-b9fd4dd624ce"
+        }
+      ]
+    },
+    "observed_printed_number": "034/141",
+    "original_sha256": "2d9917cefada9bd406d0c507c1be3dc852263bd9444284549388654967218105",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630785_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "94f3eace-f5b3-474e-a1e9-a3e4f1bc42eb",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "015",
+    "current_native_name": "ホイットニーのウィッグライツ",
+    "proposed_native_name": "アカネのプクリン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "584ed7bc-10e8-48d4-91a2-9a35254d259d",
+          "variant_id": "a75faf9e-9e2c-4ba7-ae26-5b08a0cd65ac"
+        },
+        {
+          "id": "d8af4803-c2d2-47f5-bd29-d4d093abd156",
+          "variant_id": "9bad9a2d-31a0-4451-9c4a-c25c7c1bbfee"
+        }
+      ],
+      "production": [
+        {
+          "id": "584ed7bc-10e8-48d4-91a2-9a35254d259d",
+          "variant_id": "a75faf9e-9e2c-4ba7-ae26-5b08a0cd65ac"
+        },
+        {
+          "id": "d8af4803-c2d2-47f5-bd29-d4d093abd156",
+          "variant_id": "9bad9a2d-31a0-4451-9c4a-c25c7c1bbfee"
+        }
+      ]
+    },
+    "observed_printed_number": "015/141",
+    "original_sha256": "5ecf47024ad0251764bfde7936974ebad06f3e17de7d2880c5e8f048f590d2a4",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618334_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "95027406-08e0-4222-b509-bf97fd1e8032",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "082",
+    "current_native_name": "ブルーノのヒットモンリー",
+    "proposed_native_name": "シバのサワムラー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "08f3dc45-d68a-4bf6-8df2-f481e3be3c81",
+          "variant_id": "c8023b31-6000-4310-b275-96c2d5c8f23e"
+        },
+        {
+          "id": "b3a24c4b-3d9a-4cc8-8177-8264a1298ea5",
+          "variant_id": "c776ab45-e8e9-4fe6-b496-1c6104a60f12"
+        }
+      ],
+      "production": [
+        {
+          "id": "08f3dc45-d68a-4bf6-8df2-f481e3be3c81",
+          "variant_id": "c8023b31-6000-4310-b275-96c2d5c8f23e"
+        },
+        {
+          "id": "b3a24c4b-3d9a-4cc8-8177-8264a1298ea5",
+          "variant_id": "c776ab45-e8e9-4fe6-b496-1c6104a60f12"
+        }
+      ]
+    },
+    "observed_printed_number": "082/141",
+    "original_sha256": "242cee30db1ff7592e80814f94d08386d4604f85bfacf0d8a2088286a227e00b",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631853_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "964be861-12d9-427a-ab67-23050a05b3e9",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "083",
+    "current_native_name": "ブルーノのヒットモンチャン",
+    "proposed_native_name": "シバのエビワラー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "7893fa37-f62f-4c51-b5ff-2bab64909902",
+          "variant_id": "e1b65319-de61-433f-944b-6c2bc77f248c"
+        },
+        {
+          "id": "84065d3f-e261-419c-9f78-eb8bcc7c1011",
+          "variant_id": "5a6259c5-5a90-4494-a2c5-eaa34e2cac2d"
+        }
+      ],
+      "production": [
+        {
+          "id": "7893fa37-f62f-4c51-b5ff-2bab64909902",
+          "variant_id": "e1b65319-de61-433f-944b-6c2bc77f248c"
+        },
+        {
+          "id": "84065d3f-e261-419c-9f78-eb8bcc7c1011",
+          "variant_id": "5a6259c5-5a90-4494-a2c5-eaa34e2cac2d"
+        }
+      ]
+    },
+    "observed_printed_number": "083/141",
+    "original_sha256": "a358b8350b393ea146258af8172048146c2a6c599ed032fed9cfce11c7f56aad",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631856_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "97967386-0eef-4591-806d-313a16e7a85d",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "051",
+    "current_native_name": "クレアのマンティン",
+    "proposed_native_name": "イブキのマンタイン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "af8d3d56-d16c-477c-b861-b6533cbb55a7",
+          "variant_id": "984c2c78-9b74-4d44-9277-8d043a592159"
+        },
+        {
+          "id": "fd46c2a8-4c06-4dec-902d-b810e90a4d51",
+          "variant_id": "574bcfb2-6de6-400b-b7ce-2b6173ac963c"
+        }
+      ],
+      "production": [
+        {
+          "id": "af8d3d56-d16c-477c-b861-b6533cbb55a7",
+          "variant_id": "984c2c78-9b74-4d44-9277-8d043a592159"
+        },
+        {
+          "id": "fd46c2a8-4c06-4dec-902d-b810e90a4d51",
+          "variant_id": "574bcfb2-6de6-400b-b7ce-2b6173ac963c"
+        }
+      ]
+    },
+    "observed_printed_number": "051/141",
+    "original_sha256": "a991423f8c4dbfab82889ea25b06bcbaa96f2cfe97da7cb4eda368019350958a",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630836_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "9885e058-f902-41b2-b8e2-975e837a112f",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "018",
+    "current_native_name": "ホイットニーのフレット",
+    "proposed_native_name": "アカネのオオタチ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "6f22cf9f-bf39-40eb-8364-b40aab474ec6",
+          "variant_id": "14c4ce75-8024-46cd-9ace-008da01e7e6e"
+        },
+        {
+          "id": "786ffc22-72d1-49c0-94fc-2899e1f2feee",
+          "variant_id": "74fee6d2-b858-4e02-83cf-1eb6a85fcc16"
+        }
+      ],
+      "production": [
+        {
+          "id": "6f22cf9f-bf39-40eb-8364-b40aab474ec6",
+          "variant_id": "14c4ce75-8024-46cd-9ace-008da01e7e6e"
+        },
+        {
+          "id": "786ffc22-72d1-49c0-94fc-2899e1f2feee",
+          "variant_id": "74fee6d2-b858-4e02-83cf-1eb6a85fcc16"
+        }
+      ]
+    },
+    "observed_printed_number": "018/141",
+    "original_sha256": "efe168486e125f043f4ba0c3ff6fb9c6e759a7fbe5566d26de7f477fefcf7824",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622600_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "9bbd0f83-f524-4840-a51d-f91d724bbde4",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "016",
+    "current_native_name": "ホイットニーのペルシャ",
+    "proposed_native_name": "アカネのペルシアン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "1026d131-6e5e-4833-a693-7e9db81c119b",
+          "variant_id": "e5474842-cd58-4937-82e3-0b0f35a64bd3"
+        },
+        {
+          "id": "6c8af978-4b7b-4b3e-be33-941b93d263f7",
+          "variant_id": "cb17a009-1269-47bb-97fd-1af6af08fe1c"
+        }
+      ],
+      "production": [
+        {
+          "id": "1026d131-6e5e-4833-a693-7e9db81c119b",
+          "variant_id": "e5474842-cd58-4937-82e3-0b0f35a64bd3"
+        },
+        {
+          "id": "6c8af978-4b7b-4b3e-be33-941b93d263f7",
+          "variant_id": "cb17a009-1269-47bb-97fd-1af6af08fe1c"
+        }
+      ]
+    },
+    "observed_printed_number": "016/141",
+    "original_sha256": "0bca5ea15baf06110f83f6249e2869abfc320066615443a6c4ad3df8cedf2e1a",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622575_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "a4852505-955a-4ddb-8e8a-c655102de5d4",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "028",
+    "current_native_name": "ジャスミンのマグネトン",
+    "proposed_native_name": "ミカンのレアコイル",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "d6cadcd7-61de-4e0c-b2f5-e6ffd8b00cea",
+          "variant_id": "3fdf6207-9186-45f4-9efe-4d86c0d2abd9"
+        },
+        {
+          "id": "ef088720-870b-43a5-a02e-07134b1bdfee",
+          "variant_id": "e96f61db-c690-4f24-8245-50198dfb5d58"
+        }
+      ],
+      "production": [
+        {
+          "id": "d6cadcd7-61de-4e0c-b2f5-e6ffd8b00cea",
+          "variant_id": "3fdf6207-9186-45f4-9efe-4d86c0d2abd9"
+        },
+        {
+          "id": "ef088720-870b-43a5-a02e-07134b1bdfee",
+          "variant_id": "e96f61db-c690-4f24-8245-50198dfb5d58"
+        }
+      ]
+    },
+    "observed_printed_number": "028/141",
+    "original_sha256": "36839af258c0c3e6e4c5dfe7f2dbb87db89236413fb64e727a35b33cb7cfd037",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622684_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "a699a743-288c-4189-af24-b511f45d9a0f",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "027",
+    "current_native_name": "ジャスミンのライチュ",
+    "proposed_native_name": "ミカンのライチュウ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "86b4d82b-b0e0-4fa9-9ab5-2a1f5b9e1f34",
+          "variant_id": "492a6cf7-8264-4166-82b8-3c90880c0859"
+        },
+        {
+          "id": "9042c41b-e8a1-4126-8fec-f1454da7f784",
+          "variant_id": "dbecb560-cb98-47aa-b91b-4fe3c0266851"
+        }
+      ],
+      "production": [
+        {
+          "id": "86b4d82b-b0e0-4fa9-9ab5-2a1f5b9e1f34",
+          "variant_id": "492a6cf7-8264-4166-82b8-3c90880c0859"
+        },
+        {
+          "id": "9042c41b-e8a1-4126-8fec-f1454da7f784",
+          "variant_id": "dbecb560-cb98-47aa-b91b-4fe3c0266851"
+        }
+      ]
+    },
+    "observed_printed_number": "027/141",
+    "original_sha256": "7f6fbf031a38193bd468b48d57790b4184f7decc3d5524a2e16e9ed46c27c6cd",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622683_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "a915cc21-8f65-464f-baed-98b431704939",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "038",
+    "current_native_name": "チャックのドンファン",
+    "proposed_native_name": "シジマのドンファン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "8b10d6a9-8fce-4b51-a4cf-792406788574",
+          "variant_id": "ceac7006-8618-4fc3-ab3e-28580a2ea6c7"
+        },
+        {
+          "id": "fe3c5546-3141-4ecd-aa25-9514e65b1423",
+          "variant_id": "7b737030-443a-489c-bd46-41b632a24a50"
+        }
+      ],
+      "production": [
+        {
+          "id": "8b10d6a9-8fce-4b51-a4cf-792406788574",
+          "variant_id": "ceac7006-8618-4fc3-ab3e-28580a2ea6c7"
+        },
+        {
+          "id": "fe3c5546-3141-4ecd-aa25-9514e65b1423",
+          "variant_id": "7b737030-443a-489c-bd46-41b632a24a50"
+        }
+      ]
+    },
+    "observed_printed_number": "038/141",
+    "original_sha256": "229e623413b944f2e536e01c9efd4be4f3a9ed779715b90c210648f30347cae7",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630790_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "b2e7d8ba-4878-4a25-9b65-d230303a876b",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "058",
+    "current_native_name": "ミスティのquagsire",
+    "proposed_native_name": "カスミのヌオー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "a155823d-92be-4e98-ab81-dc9d01f0782d",
+          "variant_id": "d9460254-b040-4abc-b9af-5178ccf223bf"
+        },
+        {
+          "id": "ae2ac085-9b06-4f40-a9a5-b629d1548dcc",
+          "variant_id": "bd249995-d6c4-4a84-b2d4-ba78bf4c2075"
+        }
+      ],
+      "production": [
+        {
+          "id": "a155823d-92be-4e98-ab81-dc9d01f0782d",
+          "variant_id": "d9460254-b040-4abc-b9af-5178ccf223bf"
+        },
+        {
+          "id": "ae2ac085-9b06-4f40-a9a5-b629d1548dcc",
+          "variant_id": "bd249995-d6c4-4a84-b2d4-ba78bf4c2075"
+        }
+      ]
+    },
+    "observed_printed_number": "058/141",
+    "original_sha256": "465806abc6ca976b507de751c91fc7e32de3c28968657a1dbd551d84f7f80e8a",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630844_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "b64c2aed-0af1-4057-933e-d8761445761f",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "005",
+    "current_native_name": "フォークナーはトイッチです",
+    "proposed_native_name": "ハヤトのトゲチック",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "9af96f48-6d43-4b94-8d68-c8ae58517687",
+          "variant_id": "e6c6d3a3-3cda-4f4a-8969-fd313566818f"
+        },
+        {
+          "id": "e0b55553-f039-42f1-9b82-02bd6bd798aa",
+          "variant_id": "07194fe0-3996-4a8f-b943-c5ce4691d54f"
+        }
+      ],
+      "production": [
+        {
+          "id": "9af96f48-6d43-4b94-8d68-c8ae58517687",
+          "variant_id": "e6c6d3a3-3cda-4f4a-8969-fd313566818f"
+        },
+        {
+          "id": "e0b55553-f039-42f1-9b82-02bd6bd798aa",
+          "variant_id": "07194fe0-3996-4a8f-b943-c5ce4691d54f"
+        }
+      ]
+    },
+    "observed_printed_number": "005/141",
+    "original_sha256": "6fa596b415bc44d26bfc1d2b89b1737fb9efaec08e4306e9fa6a736b0f1429e4",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618734_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "b70e94bb-9910-414e-802d-219d37bbefca",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "089",
+    "current_native_name": "カレンのフレレオン",
+    "proposed_native_name": "カリンのブースター",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "20332b58-4d7c-4fdd-83f1-923df0f4cbc4",
+          "variant_id": "94c021db-b4f1-47d5-a9d3-65e8465870fd"
+        },
+        {
+          "id": "58391294-b0c7-4606-a55a-3cb58ea06431",
+          "variant_id": "47dd9774-bceb-4f07-8bd2-a78e5c847bf8"
+        }
+      ],
+      "production": [
+        {
+          "id": "20332b58-4d7c-4fdd-83f1-923df0f4cbc4",
+          "variant_id": "94c021db-b4f1-47d5-a9d3-65e8465870fd"
+        },
+        {
+          "id": "58391294-b0c7-4606-a55a-3cb58ea06431",
+          "variant_id": "47dd9774-bceb-4f07-8bd2-a78e5c847bf8"
+        }
+      ]
+    },
+    "observed_printed_number": "089/141",
+    "original_sha256": "581a54c1e1f9809e9d9ab9758dc6e8269fe7195d0cedf2f01d8dd6772ab26e76",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631877_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "ba348d4e-0bd7-455e-81bc-8261b3daf059",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "091",
+    "current_native_name": "カレンのウンブレオン",
+    "proposed_native_name": "カリンのブラッキー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "06a73bc1-3571-4508-be3f-48c30f74d50c",
+          "variant_id": "e5f17405-16ef-4063-b65a-164943ba90f0"
+        },
+        {
+          "id": "b2237e49-e211-44cb-9b71-2c36ae159076",
+          "variant_id": "88a694c5-bb63-4659-97b1-28ac71f690e6"
+        }
+      ],
+      "production": [
+        {
+          "id": "06a73bc1-3571-4508-be3f-48c30f74d50c",
+          "variant_id": "e5f17405-16ef-4063-b65a-164943ba90f0"
+        },
+        {
+          "id": "b2237e49-e211-44cb-9b71-2c36ae159076",
+          "variant_id": "88a694c5-bb63-4659-97b1-28ac71f690e6"
+        }
+      ]
+    },
+    "observed_printed_number": "091/141",
+    "original_sha256": "2df485d167946c4281c9de17388571a6b88999582cc8f32346c24f6804f7bc4e",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631878_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "bc7dd2dc-665d-4eed-8be5-dee29a33ba84",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "006",
+    "current_native_name": "フォークナーのデリビード",
+    "proposed_native_name": "ハヤトのデリバード",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "147f6172-bce1-4fd8-9405-a723c0266993",
+          "variant_id": "35471952-42d4-4603-a1a0-c9ad2804fd8b"
+        },
+        {
+          "id": "214dae5e-3179-47d4-8121-f40507b44a34",
+          "variant_id": "618745ed-c4b4-4380-929e-40841eecfe24"
+        }
+      ],
+      "production": [
+        {
+          "id": "147f6172-bce1-4fd8-9405-a723c0266993",
+          "variant_id": "35471952-42d4-4603-a1a0-c9ad2804fd8b"
+        },
+        {
+          "id": "214dae5e-3179-47d4-8121-f40507b44a34",
+          "variant_id": "618745ed-c4b4-4380-929e-40841eecfe24"
+        }
+      ]
+    },
+    "observed_printed_number": "006/141",
+    "original_sha256": "0d77bb9461d924c81d2d95614c86c857a4d16e2bd3b6e0bdaba133857e7e1e9c",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618736_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "c02d2929-f9d4-41f7-95ac-3d7001c888ee",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "007",
+    "current_native_name": "フォークナーのスカルモリー",
+    "proposed_native_name": "ハヤトのエアームド",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "111a9439-52cf-4acf-a6ce-80b07f3391e4",
+          "variant_id": "70b11b26-c39b-4957-9d1d-a6d7bbddf693"
+        },
+        {
+          "id": "eff9f808-1c0d-4f54-9982-456bee98679d",
+          "variant_id": "1222888e-70d1-46f8-8415-1551e9a01c31"
+        }
+      ],
+      "production": [
+        {
+          "id": "111a9439-52cf-4acf-a6ce-80b07f3391e4",
+          "variant_id": "70b11b26-c39b-4957-9d1d-a6d7bbddf693"
+        },
+        {
+          "id": "eff9f808-1c0d-4f54-9982-456bee98679d",
+          "variant_id": "1222888e-70d1-46f8-8415-1551e9a01c31"
+        }
+      ]
+    },
+    "observed_printed_number": "007/141",
+    "original_sha256": "3634410a9f44fcbe821b83d83d8e2ad28eda6dbc2aec6f0327954321e6a087d1",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618738_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "c0fe3ae9-7bdd-4832-bae9-b18938acc487",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "046",
+    "current_native_name": "クレアの爆風",
+    "proposed_native_name": "イブキのカメックス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "5bb69672-df76-456a-9c73-d7e49b6622f8",
+          "variant_id": "74566d33-66d6-43c7-9704-f91567502585"
+        },
+        {
+          "id": "fdab36e8-d4be-4289-9321-950e642c4c99",
+          "variant_id": "9b155af8-cef4-4fe6-b637-f9184fbada6d"
+        }
+      ],
+      "production": [
+        {
+          "id": "5bb69672-df76-456a-9c73-d7e49b6622f8",
+          "variant_id": "74566d33-66d6-43c7-9704-f91567502585"
+        },
+        {
+          "id": "fdab36e8-d4be-4289-9321-950e642c4c99",
+          "variant_id": "9b155af8-cef4-4fe6-b637-f9184fbada6d"
+        }
+      ]
+    },
+    "observed_printed_number": "046/141",
+    "original_sha256": "475b92fc218d69edcfd261a6b62724e6afac9ba55ed3d841be78d73059272d94",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630800_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "c228fab5-eb42-4480-9cb6-783fc9041859",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "057",
+    "current_native_name": "ミスティのラプラ",
+    "proposed_native_name": "カスミのラプラス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "6d896d66-45c7-485e-87d5-ee27bd973b57",
+          "variant_id": "dd8e6a6d-14d0-427e-8e9d-9b7879d976ea"
+        },
+        {
+          "id": "b52d9efd-471c-44d4-a47e-30866134ea18",
+          "variant_id": "ec05b51b-2e5b-4c60-abfd-a6fd4ba2ce28"
+        }
+      ],
+      "production": [
+        {
+          "id": "6d896d66-45c7-485e-87d5-ee27bd973b57",
+          "variant_id": "dd8e6a6d-14d0-427e-8e9d-9b7879d976ea"
+        },
+        {
+          "id": "b52d9efd-471c-44d4-a47e-30866134ea18",
+          "variant_id": "ec05b51b-2e5b-4c60-abfd-a6fd4ba2ce28"
+        }
+      ]
+    },
+    "observed_printed_number": "057/141",
+    "original_sha256": "ae0f7f2fdcb72d9740e6e284ff8779ad8131af7a9de7f970d7e7533677566254",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630843_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "c977002d-5187-468f-973a-31b895955e82",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "032",
+    "current_native_name": "JasmineのSteelix",
+    "proposed_native_name": "ミカンのハガネール",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "0e0c7c9a-3cb5-4f78-bdc5-c14366f021fc",
+          "variant_id": "8167bcf8-ba40-4743-b894-8a90f617dff6"
+        },
+        {
+          "id": "6f7ed740-0f63-469c-9871-ff97033ff284",
+          "variant_id": "4667c08a-9f29-46c8-9e91-81db4abd57fd"
+        }
+      ],
+      "production": [
+        {
+          "id": "0e0c7c9a-3cb5-4f78-bdc5-c14366f021fc",
+          "variant_id": "8167bcf8-ba40-4743-b894-8a90f617dff6"
+        },
+        {
+          "id": "6f7ed740-0f63-469c-9871-ff97033ff284",
+          "variant_id": "4667c08a-9f29-46c8-9e91-81db4abd57fd"
+        }
+      ]
+    },
+    "observed_printed_number": "032/141",
+    "original_sha256": "e050ee0623051b0180c2640f01e59f687344c7ded6c31b20512c9e785ca693de",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622701_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "cc212466-65f0-420f-9f2f-521dc7251ae0",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "050",
+    "current_native_name": "クレアの政治",
+    "proposed_native_name": "イブキのニョロトノ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "2c8bd49b-2f84-4a3f-8154-ce9e46eb68d9",
+          "variant_id": "c00c551b-c773-4419-9a45-fb2794953e3f"
+        },
+        {
+          "id": "bb2df6c1-97c2-4f5b-84f6-d61e9b2286e3",
+          "variant_id": "d00a7048-af6b-4ffb-942c-88b42e15b7f8"
+        }
+      ],
+      "production": [
+        {
+          "id": "2c8bd49b-2f84-4a3f-8154-ce9e46eb68d9",
+          "variant_id": "c00c551b-c773-4419-9a45-fb2794953e3f"
+        },
+        {
+          "id": "bb2df6c1-97c2-4f5b-84f6-d61e9b2286e3",
+          "variant_id": "d00a7048-af6b-4ffb-942c-88b42e15b7f8"
+        }
+      ]
+    },
+    "observed_printed_number": "050/141",
+    "original_sha256": "bb324de128571befcbe0390008d7672ccaefdd8fe2af882a3005764f27cf7f85",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630833_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "cdeffc28-a553-4e86-808e-f63035d27c54",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "045",
+    "current_native_name": "プライスのデリビード",
+    "proposed_native_name": "ヤナギのデリバード",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "10ed41fb-07f3-44a0-8da1-171cca2a3eba",
+          "variant_id": "9eec54b7-5b47-4f77-ba7c-5cb2464b1775"
+        },
+        {
+          "id": "278db7d5-edc2-4f59-82be-450a324c3ab0",
+          "variant_id": "9f791a13-3739-4d3b-a6e7-e5b67e02db5e"
+        }
+      ],
+      "production": [
+        {
+          "id": "10ed41fb-07f3-44a0-8da1-171cca2a3eba",
+          "variant_id": "9eec54b7-5b47-4f77-ba7c-5cb2464b1775"
+        },
+        {
+          "id": "278db7d5-edc2-4f59-82be-450a324c3ab0",
+          "variant_id": "9f791a13-3739-4d3b-a6e7-e5b67e02db5e"
+        }
+      ]
+    },
+    "observed_printed_number": "045/141",
+    "original_sha256": "403b92f50649e568148e8191e98c282d9d55e92efff338888ce9211d5e3bbf1a",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630799_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "d07413be-558c-47ac-a10f-ab841a37eba7",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "009",
+    "current_native_name": "BugsyのBeedrill",
+    "proposed_native_name": "ツクシのスピアー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "21a67cf5-9b61-456e-aad7-9c00a63612a4",
+          "variant_id": "e762c21c-432c-4cbe-9d01-2664d044d802"
+        },
+        {
+          "id": "28ac0068-39b8-4a04-8f22-b5e96a347de8",
+          "variant_id": "205e7c93-b74e-4d9a-bde1-85c62736fcfe"
+        }
+      ],
+      "production": [
+        {
+          "id": "21a67cf5-9b61-456e-aad7-9c00a63612a4",
+          "variant_id": "e762c21c-432c-4cbe-9d01-2664d044d802"
+        },
+        {
+          "id": "28ac0068-39b8-4a04-8f22-b5e96a347de8",
+          "variant_id": "205e7c93-b74e-4d9a-bde1-85c62736fcfe"
+        }
+      ]
+    },
+    "observed_printed_number": "009/141",
+    "original_sha256": "6cf32d576d6f3cee9d1e3766b7a312285aca8c439a35fbcd71ee6e02dd92e6ab",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618740_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "d3106a1e-be9b-4eff-977e-52ea31d2e6c4",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "065",
+    "current_native_name": "ジャニーンのアリアドス",
+    "proposed_native_name": "アンズのアリアドス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "8035bf4f-c05a-43d5-9118-f1acdb1cc596",
+          "variant_id": "d379a7a9-dfe1-487b-91a8-0ce5a11a3db7"
+        },
+        {
+          "id": "ff38017d-f618-4fb1-b150-0320eb6d4397",
+          "variant_id": "8a80c0fd-5308-4fbb-be0b-805f0f100aef"
+        }
+      ],
+      "production": [
+        {
+          "id": "8035bf4f-c05a-43d5-9118-f1acdb1cc596",
+          "variant_id": "d379a7a9-dfe1-487b-91a8-0ce5a11a3db7"
+        },
+        {
+          "id": "ff38017d-f618-4fb1-b150-0320eb6d4397",
+          "variant_id": "8a80c0fd-5308-4fbb-be0b-805f0f100aef"
+        }
+      ]
+    },
+    "observed_printed_number": "065/141",
+    "original_sha256": "f3440cadca7be47f676f62786b9dc5c5b5d3b0541ea4dbd9bcd7cde5de6bc164",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631771_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "d5e7c9bd-10e4-495b-9f5b-3a0b39684e98",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "059",
+    "current_native_name": "エリカのベロッソム",
+    "proposed_native_name": "エリカのキレイハナ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "6c6b2311-c8fb-47cb-921b-f8c224d9d4ea",
+          "variant_id": "dca57a3f-1eb8-476a-935c-d1ba2e0e855c"
+        },
+        {
+          "id": "fd0f01ad-102f-4129-af0c-709903bc91f7",
+          "variant_id": "78a5bb37-6543-4fc5-9cbc-de86bb42c440"
+        }
+      ],
+      "production": [
+        {
+          "id": "6c6b2311-c8fb-47cb-921b-f8c224d9d4ea",
+          "variant_id": "dca57a3f-1eb8-476a-935c-d1ba2e0e855c"
+        },
+        {
+          "id": "fd0f01ad-102f-4129-af0c-709903bc91f7",
+          "variant_id": "78a5bb37-6543-4fc5-9cbc-de86bb42c440"
+        }
+      ]
+    },
+    "observed_printed_number": "059/141",
+    "original_sha256": "147ecd15d8190c07f3fd18153e355d2d54fef0299c2ae53af2300ccbb5c6d285",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630845_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "d727e66e-e588-44d8-9805-97c59499019b",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "099",
+    "current_native_name": "ランスのアエロダクチル",
+    "proposed_native_name": "ワタルのプテラ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "07c76254-2f50-425f-a358-4330ea372784",
+          "variant_id": "718dd7d8-dc7a-4235-9737-9c5aedf811be"
+        },
+        {
+          "id": "35d6e839-ea1f-41d7-82c4-fd68757304b5",
+          "variant_id": "d62f1838-dd0b-4db2-8788-6bbbb1998bfb"
+        }
+      ],
+      "production": [
+        {
+          "id": "07c76254-2f50-425f-a358-4330ea372784",
+          "variant_id": "718dd7d8-dc7a-4235-9737-9c5aedf811be"
+        },
+        {
+          "id": "35d6e839-ea1f-41d7-82c4-fd68757304b5",
+          "variant_id": "d62f1838-dd0b-4db2-8788-6bbbb1998bfb"
+        }
+      ]
+    },
+    "observed_printed_number": "099/141",
+    "original_sha256": "92700e1500e032084139e3de5a8e54249acdddfd6fd3be063950281a4f04193d",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631901_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "d7bbdf36-5ccb-4733-a5da-dd1773276935",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "010",
+    "current_native_name": "Bugsy's Pinsir",
+    "proposed_native_name": "ツクシのカイロス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "15bac091-856f-47ca-8fec-5d83362f063e",
+          "variant_id": "a61f823e-905c-4c00-94e1-143b12293535"
+        },
+        {
+          "id": "c29dc737-bfb5-453e-a4c5-d323b6e3009f",
+          "variant_id": "9a72310c-54d0-4550-9cce-f3e7b71fb744"
+        }
+      ],
+      "production": [
+        {
+          "id": "15bac091-856f-47ca-8fec-5d83362f063e",
+          "variant_id": "a61f823e-905c-4c00-94e1-143b12293535"
+        },
+        {
+          "id": "c29dc737-bfb5-453e-a4c5-d323b6e3009f",
+          "variant_id": "9a72310c-54d0-4550-9cce-f3e7b71fb744"
+        }
+      ]
+    },
+    "observed_printed_number": "010/141",
+    "original_sha256": "6662bce1f423337f8f83191f645747c162a7049770fcbd638ee4c01be05a0d87",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618741_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "d9ad70d8-6d3f-4a05-8b0b-46ff3efa42a4",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "017",
+    "current_native_name": "ホイットニーのリキトゥン",
+    "proposed_native_name": "アカネのベロリンガ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "014f51ff-0344-4a5a-b596-5e840388905a",
+          "variant_id": "ef8dfab8-d961-4dc6-9ada-7b849fb5c230"
+        },
+        {
+          "id": "e7be2b51-1f97-450d-9d24-57eb227441dd",
+          "variant_id": "1866bfc7-9e15-415f-8de3-904ed053a528"
+        }
+      ],
+      "production": [
+        {
+          "id": "014f51ff-0344-4a5a-b596-5e840388905a",
+          "variant_id": "ef8dfab8-d961-4dc6-9ada-7b849fb5c230"
+        },
+        {
+          "id": "e7be2b51-1f97-450d-9d24-57eb227441dd",
+          "variant_id": "1866bfc7-9e15-415f-8de3-904ed053a528"
+        }
+      ]
+    },
+    "observed_printed_number": "017/141",
+    "original_sha256": "0017ed1523ce85d1f207ba4ce4dc78c5fb46a50e30eb363613168ee0017167a2",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622599_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "e4ef873a-5d62-4e18-b60d-14d816517f8d",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "098",
+    "current_native_name": "ランスのギャラドス",
+    "proposed_native_name": "ワタルのギャラドス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "749a2979-6200-4e14-858e-1cda695bb0c3",
+          "variant_id": "87b50d0a-7438-4c34-b9e9-ad0a87444642"
+        },
+        {
+          "id": "d442dc68-0837-449c-af71-ee0791b3cd6e",
+          "variant_id": "3dd4c528-e6a9-4a28-bf8a-04da586205f1"
+        }
+      ],
+      "production": [
+        {
+          "id": "749a2979-6200-4e14-858e-1cda695bb0c3",
+          "variant_id": "87b50d0a-7438-4c34-b9e9-ad0a87444642"
+        },
+        {
+          "id": "d442dc68-0837-449c-af71-ee0791b3cd6e",
+          "variant_id": "3dd4c528-e6a9-4a28-bf8a-04da586205f1"
+        }
+      ]
+    },
+    "observed_printed_number": "098/141",
+    "original_sha256": "fe8e10f438a1b7e9f978f47de2d2bd6da6adf046678f6983f9a9dc2ed6e149c6",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631900_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "e7a92932-0a95-4e2b-bff5-b92270defe99",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "044",
+    "current_native_name": "プライスのピロスワイン",
+    "proposed_native_name": "ヤナギのイノムー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "273e9d5d-4661-4001-9d1e-4158ee6b2fe2",
+          "variant_id": "9ac44e48-4c8f-4e7b-af63-3050776005d9"
+        },
+        {
+          "id": "ca352463-f060-40cf-8c4a-29b4c876446b",
+          "variant_id": "9f2ecdfa-3021-4821-aa07-52d089c765f3"
+        }
+      ],
+      "production": [
+        {
+          "id": "273e9d5d-4661-4001-9d1e-4158ee6b2fe2",
+          "variant_id": "9ac44e48-4c8f-4e7b-af63-3050776005d9"
+        },
+        {
+          "id": "ca352463-f060-40cf-8c4a-29b4c876446b",
+          "variant_id": "9f2ecdfa-3021-4821-aa07-52d089c765f3"
+        }
+      ]
+    },
+    "observed_printed_number": "044/141",
+    "original_sha256": "27148dbd754b02fb59b27cc4098073a3eaac4af2ff1ecf2d9994d0e15237433d",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630798_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "e91cd2ea-e702-450a-be25-620b929a014c",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "071",
+    "current_native_name": "ブレインのマグカルゴ",
+    "proposed_native_name": "カツラのマグカルゴ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "169e1fb7-8877-4f71-b63a-6e875dbec233",
+          "variant_id": "9bf1c37b-b35e-4536-81cf-69af62760a5c"
+        },
+        {
+          "id": "60142dc0-290a-4de9-a9a4-e9934e705e3e",
+          "variant_id": "ed542cdd-e37f-4689-a01a-cb17f1536ad5"
+        }
+      ],
+      "production": [
+        {
+          "id": "169e1fb7-8877-4f71-b63a-6e875dbec233",
+          "variant_id": "9bf1c37b-b35e-4536-81cf-69af62760a5c"
+        },
+        {
+          "id": "60142dc0-290a-4de9-a9a4-e9934e705e3e",
+          "variant_id": "ed542cdd-e37f-4689-a01a-cb17f1536ad5"
+        }
+      ]
+    },
+    "observed_printed_number": "071/141",
+    "original_sha256": "4c6b7bcb28877eaaef6bf1f319a0edbdfb0ef9d391e202b4df103ff53c0d6d7b",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631781_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "e9d238e5-811c-4647-8e35-3d7cf69bda56",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "040",
+    "current_native_name": "プライスのクロイスター",
+    "proposed_native_name": "ヤナギのパルシェン",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "1abea87a-6f9f-436f-851e-a2e65713b412",
+          "variant_id": "7091a1f4-49cb-4f89-b08e-b67da233b5c2"
+        },
+        {
+          "id": "270d17ee-bde7-4b83-aa4e-4115c589b1d6",
+          "variant_id": "be6329ca-7a18-44f2-84dd-e9d948b91bc5"
+        }
+      ],
+      "production": [
+        {
+          "id": "1abea87a-6f9f-436f-851e-a2e65713b412",
+          "variant_id": "7091a1f4-49cb-4f89-b08e-b67da233b5c2"
+        },
+        {
+          "id": "270d17ee-bde7-4b83-aa4e-4115c589b1d6",
+          "variant_id": "be6329ca-7a18-44f2-84dd-e9d948b91bc5"
+        }
+      ]
+    },
+    "observed_printed_number": "040/141",
+    "original_sha256": "44bf64677da6a69a00ec10e5730e28a53a0f9d1d3847a36f5d630e2980bdb10c",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630794_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "ea4562a2-04e9-4417-ab94-f23f3a67ae12",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "090",
+    "current_native_name": "カレンのタイラニター",
+    "proposed_native_name": "カリンのバンギラス",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "8c540119-c892-4ee8-b276-8d60fc002383",
+          "variant_id": "0e9e6a48-885c-4350-92ed-627b4a7921fe"
+        },
+        {
+          "id": "c298ef63-8e42-4d70-88d1-c97a2b3af141",
+          "variant_id": "620bcb45-1186-42a5-918d-f584552d633c"
+        }
+      ],
+      "production": [
+        {
+          "id": "8c540119-c892-4ee8-b276-8d60fc002383",
+          "variant_id": "0e9e6a48-885c-4350-92ed-627b4a7921fe"
+        },
+        {
+          "id": "c298ef63-8e42-4d70-88d1-c97a2b3af141",
+          "variant_id": "620bcb45-1186-42a5-918d-f584552d633c"
+        }
+      ]
+    },
+    "observed_printed_number": "090/141",
+    "original_sha256": "e6337512d26c50520a80db02a99148c3c652ccbf23cacd4d3f6f7e3e31f4362b",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/628138_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "ec733e0b-a64f-41b8-b8d6-1cfabdd0e016",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "022",
+    "current_native_name": "モーティの催眠",
+    "proposed_native_name": "マツバのスリーパー",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "4da664b7-a4f7-4dc3-b20c-6dca377fe203",
+          "variant_id": "e50d4cb0-500f-4a1f-8f2f-9ce6b82eff4e"
+        },
+        {
+          "id": "f2953402-f94e-41e0-82ef-3ba0d7cabff6",
+          "variant_id": "a3c611ec-dce5-4c80-a425-0114d9d312e2"
+        }
+      ],
+      "production": [
+        {
+          "id": "4da664b7-a4f7-4dc3-b20c-6dca377fe203",
+          "variant_id": "e50d4cb0-500f-4a1f-8f2f-9ce6b82eff4e"
+        },
+        {
+          "id": "f2953402-f94e-41e0-82ef-3ba0d7cabff6",
+          "variant_id": "a3c611ec-dce5-4c80-a425-0114d9d312e2"
+        }
+      ]
+    },
+    "observed_printed_number": "022/141",
+    "original_sha256": "032910939756430d93ef60224482efb4c0294bb9a6b24a4bb1748521cd388855",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622619_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "ee4a9d7f-2487-45df-99a0-49258fccc5f5",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "067",
+    "current_native_name": "ジャニーンのシャックル",
+    "proposed_native_name": "アンズのツボツボ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "6e6f070c-5307-405f-a74e-4f65213b54a4",
+          "variant_id": "5f0956a8-6641-4d04-a0de-d0d197d11066"
+        },
+        {
+          "id": "7878c908-3430-4130-aac4-535eab68af9e",
+          "variant_id": "7bbb66fe-e787-42ea-ad26-4d294e72939e"
+        }
+      ],
+      "production": [
+        {
+          "id": "6e6f070c-5307-405f-a74e-4f65213b54a4",
+          "variant_id": "5f0956a8-6641-4d04-a0de-d0d197d11066"
+        },
+        {
+          "id": "7878c908-3430-4130-aac4-535eab68af9e",
+          "variant_id": "7bbb66fe-e787-42ea-ad26-4d294e72939e"
+        }
+      ]
+    },
+    "observed_printed_number": "067/141",
+    "original_sha256": "1f752d585269d544df6ff59fb824f0ed71e9c4c2ff0869003799605d57668df0",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631776_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "eeccc96e-894f-420d-b899-c8eb7b293cb6",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "004",
+    "current_native_name": "フォークナーのドドリオ",
+    "proposed_native_name": "ハヤトのドードリオ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "09008a3c-5911-482f-8c66-261804cf8500",
+          "variant_id": "faa8cebd-873b-475f-a91b-a50f27be659d"
+        },
+        {
+          "id": "9849ab3b-1159-4d60-884a-e94653e8786e",
+          "variant_id": "7bf358f0-1ddd-474f-a2ba-9187cde8fa9d"
+        }
+      ],
+      "production": [
+        {
+          "id": "09008a3c-5911-482f-8c66-261804cf8500",
+          "variant_id": "faa8cebd-873b-475f-a91b-a50f27be659d"
+        },
+        {
+          "id": "9849ab3b-1159-4d60-884a-e94653e8786e",
+          "variant_id": "7bf358f0-1ddd-474f-a2ba-9187cde8fa9d"
+        }
+      ]
+    },
+    "observed_printed_number": "004/141",
+    "original_sha256": "7f2407d619b73a6a0bf2ffa4ea7f031478f268b463f83915af37347eaf98c320",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618731_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "f1cf3662-b53a-435f-9389-29ae657d8c52",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "087",
+    "current_native_name": "カレンズラピダッシュ",
+    "proposed_native_name": "カリンのギャロップ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "090748ee-cf1c-448a-859f-11cc8f073ffe",
+          "variant_id": "b1e96887-dd05-4cd0-bd97-ce7e99da5ba0"
+        },
+        {
+          "id": "53b4c8a5-485d-4253-a40a-b8bc7b851c0d",
+          "variant_id": "fdb7c8eb-995f-4ed5-9b6b-2d04db5e9a80"
+        }
+      ],
+      "production": [
+        {
+          "id": "090748ee-cf1c-448a-859f-11cc8f073ffe",
+          "variant_id": "b1e96887-dd05-4cd0-bd97-ce7e99da5ba0"
+        },
+        {
+          "id": "53b4c8a5-485d-4253-a40a-b8bc7b851c0d",
+          "variant_id": "fdb7c8eb-995f-4ed5-9b6b-2d04db5e9a80"
+        }
+      ]
+    },
+    "observed_printed_number": "087/141",
+    "original_sha256": "1f46b254b4bccda7ca124c2348da0aeec1dcb99e122a708e4203081c0ea5d639",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631872_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "f48c9f48-3e2f-49ee-98fc-4c5630f306bd",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "074",
+    "current_native_name": "ウィルのジンクス",
+    "proposed_native_name": "イツキのルージュラ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "986e8c3a-499b-4d11-b5de-c767c359d2a1",
+          "variant_id": "779ae239-9bdb-4a3a-bed1-287816b0062f"
+        },
+        {
+          "id": "9c232dc1-7621-4bcc-a312-d33ae1161780",
+          "variant_id": "72f48116-04a0-4a40-ac6e-0dfa1126fca1"
+        }
+      ],
+      "production": [
+        {
+          "id": "986e8c3a-499b-4d11-b5de-c767c359d2a1",
+          "variant_id": "779ae239-9bdb-4a3a-bed1-287816b0062f"
+        },
+        {
+          "id": "9c232dc1-7621-4bcc-a312-d33ae1161780",
+          "variant_id": "72f48116-04a0-4a40-ac6e-0dfa1126fca1"
+        }
+      ]
+    },
+    "observed_printed_number": "074/141",
+    "original_sha256": "940687df9c151b44ee045f5dd32e287a071aa8f789a3b64c8265c3f89d5bf0e0",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/631835_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "f8e3f3c2-ac44-4fb7-a452-071158495c40",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "060",
+    "current_native_name": "エリカのジャンプラフ",
+    "proposed_native_name": "エリカのワタッコ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "29d1601d-7fba-4420-a240-ccbd7ec1ca2e",
+          "variant_id": "ceda95f3-153e-4437-a3c4-19078557106b"
+        },
+        {
+          "id": "3b0ccad8-bffc-43c6-8d41-87b5ecc51088",
+          "variant_id": "8d7a749f-364d-435b-a13a-938d39d37ac7"
+        }
+      ],
+      "production": [
+        {
+          "id": "29d1601d-7fba-4420-a240-ccbd7ec1ca2e",
+          "variant_id": "ceda95f3-153e-4437-a3c4-19078557106b"
+        },
+        {
+          "id": "3b0ccad8-bffc-43c6-8d41-87b5ecc51088",
+          "variant_id": "8d7a749f-364d-435b-a13a-938d39d37ac7"
+        }
+      ]
+    },
+    "observed_printed_number": "060/141",
+    "original_sha256": "13c101926f1bb3d0aebdbbfc5c3abbb6c58aaa47eb2bd89392d3ee0e4cd84447",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/630846_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "f95cf982-0195-44ef-9125-9974d1a9b5a0",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "031",
+    "current_native_name": "ジャスミンのアンファロス",
+    "proposed_native_name": "ミカンのデンリュウ",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "164e0710-c6e0-4dd3-b1e8-418c93aa2105",
+          "variant_id": "b7c62c5f-218d-4cce-a73e-6074396420fa"
+        },
+        {
+          "id": "6328b137-655b-4116-a335-298e5b982f0a",
+          "variant_id": "8b7a8db9-28ce-4394-bb00-543c352da10c"
+        }
+      ],
+      "production": [
+        {
+          "id": "164e0710-c6e0-4dd3-b1e8-418c93aa2105",
+          "variant_id": "b7c62c5f-218d-4cce-a73e-6074396420fa"
+        },
+        {
+          "id": "6328b137-655b-4116-a335-298e5b982f0a",
+          "variant_id": "8b7a8db9-28ce-4394-bb00-543c352da10c"
+        }
+      ]
+    },
+    "observed_printed_number": "031/141",
+    "original_sha256": "d65edf77fa7994d93c264c177d60d313217488122c7a546d6b5ed029f632544a",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/622697_in_1000x1000.jpg",
+    "reviewer": "root"
+  },
+  {
+    "printing_id": "fb9029c4-8829-4837-8ab4-efeb2c12c376",
+    "set_id": "f1b5f7cb-2472-496b-8587-1ceab0233632",
+    "set_code": "VS1",
+    "language_code": "ja",
+    "collector_number": "013",
+    "current_native_name": "Bugsy's Scizor",
+    "proposed_native_name": "ツクシのハッサム",
+    "expected_native_name_rows": {
+      "staging": [
+        {
+          "id": "05b0c4a9-4408-44c4-ad8e-b6b58c03cff0",
+          "variant_id": "e31f6d51-776a-490a-b118-ee288e9dfe8b"
+        },
+        {
+          "id": "0bf50874-ad32-43bb-98dc-be0e51127041",
+          "variant_id": "37b3b2d5-ed46-4ee7-ad9a-a0524e0de180"
+        }
+      ],
+      "production": [
+        {
+          "id": "05b0c4a9-4408-44c4-ad8e-b6b58c03cff0",
+          "variant_id": "e31f6d51-776a-490a-b118-ee288e9dfe8b"
+        },
+        {
+          "id": "0bf50874-ad32-43bb-98dc-be0e51127041",
+          "variant_id": "37b3b2d5-ed46-4ee7-ad9a-a0524e0de180"
+        }
+      ]
+    },
+    "observed_printed_number": "013/141",
+    "original_sha256": "3f34d55e91bb9bee334ad56bb5c9cf3a953b9a3896ba4b8ba8b0fe5a09215910",
+    "source_url": "https://tcgplayer-cdn.tcgplayer.com/product/618747_in_1000x1000.jpg",
+    "reviewer": "root"
+  }
+]

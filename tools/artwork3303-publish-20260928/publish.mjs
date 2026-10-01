@@ -39,6 +39,69 @@ export async function uploadImmutable(upload,wait) {
     throw Object.assign(new Error(`Storage upload failed (HTTP ${Number.isFinite(status)?status:'unknown'}, ${code}${transport?', fetch failed':''})`),{status});
   },wait);
 }
+export function retryAfterMilliseconds(value, now = Date.now) {
+  if (typeof value !== 'string') return null;
+  const input = value.trim();
+  if (input === '') return null;
+  if (/^\d+$/u.test(input)) return Number(input) * 1000;
+  const when = Date.parse(input);
+  // Date.parse accepts non-HTTP values such as "1.5"; accept only a canonical
+  // IMF-fixdate after the explicit delta-seconds case above.
+  if (!Number.isFinite(when) || new Date(when).toUTCString() !== input) return null;
+  const milliseconds = when - now();
+  return Number.isFinite(milliseconds) && milliseconds >= 0 ? milliseconds : null;
+}
+export function createTransferPolicy({ concurrency = 2, minIntervalMs = 700, now = Date.now, wait = (milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds))) } = {}) {
+  check(Number.isInteger(concurrency) && concurrency > 0 && concurrency <= 2, 'Invalid paced transfer concurrency');
+  check(Number.isInteger(minIntervalMs) && minIntervalMs >= 700 && minIntervalMs <= 1000, 'Invalid paced transfer interval');
+  let active = 0, nextStart = 0, cooldownUntil = 0, gate = Promise.resolve();
+  const available = [];
+  const acquire = async () => { while (active >= concurrency) await new Promise(resolve => available.push(resolve)); active += 1; };
+  const run = async (operation) => {
+    await acquire();
+    let releaseGate; const previous = gate; gate = new Promise(resolve => { releaseGate = resolve; });
+    try {
+      await previous;
+      for (;;) {
+        const pause = Math.max(nextStart, cooldownUntil) - now();
+        if (pause <= 0) break;
+        await wait(pause);
+      }
+      const started = now(); nextStart = Math.max(nextStart, started) + minIntervalMs;
+      releaseGate(); releaseGate = null;
+      return await operation();
+    } finally {
+      if (releaseGate) releaseGate();
+      active -= 1; available.shift()?.();
+    }
+  };
+  return { receipt: { concurrency, min_interval_ms: minIntervalMs }, run, cooldown: (milliseconds) => { if (Number.isFinite(milliseconds) && milliseconds >= 0) cooldownUntil = Math.max(cooldownUntil, now() + milliseconds); } };
+}
+export async function readPublicObject(url, { fetchImpl = fetch, transferPolicy = null, wait = (milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds))) } = {}) {
+  const read = async () => {
+    const response = await fetchImpl(url, { redirect: 'error', signal: AbortSignal.timeout(60000) });
+    if (!response.ok) {
+      const retryAfter = retryAfterMilliseconds(response.headers?.get?.('retry-after'));
+      // Announce rate limiting before the response releases its paced slot.
+      if (transferPolicy && response.status === 429 && Number.isFinite(retryAfter)) transferPolicy.cooldown(retryAfter);
+      await response.body?.cancel();
+      throw Object.assign(new Error(`Public object read ${response.status}`), { status: response.status, retryAfter });
+    }
+    const bytes = Buffer.from(await response.arrayBuffer()); check(bytes.length < 12_000_000, 'Oversized object'); return bytes;
+  };
+  // Retain the exact legacy retry classification when a caller does not opt in.
+  if (!transferPolicy) return retryStorageRead(read, wait);
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await transferPolicy.run(read);
+    } catch (error) {
+      const status = Number(error.status ?? error.statusCode);
+      const transient = status !== 401 && status !== 403 && (status === 429 || (status >= 500 && status <= 599) || /too many connections issued to the database|remaining connection slots|fetch failed|ECONNRESET/i.test(error.message));
+      if (!transient || attempt >= 3) throw error;
+      if (!(status === 429 && Number.isFinite(error.retryAfter))) await wait(1000 * (2 ** attempt));
+    }
+  }
+}
 export const assetId = r => `${PREFIX}${r.printing_id}:${r.objects[0].sha256}`;
 export const chunks = (rows,size=100) => Array.from({length:Math.ceil(rows.length/size)},(_,i)=>rows.slice(i*size,(i+1)*size));
 export function safePath(root,relative) {
@@ -153,12 +216,19 @@ export async function writeMetadata(db,rows,receipt,approval,environment,journal
   if(nativeNameCorrections){
     const expectedNativeCorrections=receipt.native_name_corrections??53;
     check(Number.isInteger(expectedNativeCorrections)&&[53,70,71,72,74,81,97].includes(expectedNativeCorrections),'Unsupported native-name correction count');
+    const expectedNativeSearchRows=receipt.native_search_name_rows??expectedNativeCorrections;
+    const multiNativeRows=expectedNativeSearchRows!==expectedNativeCorrections;
+    check(Number.isInteger(expectedNativeSearchRows)&&(multiNativeRows?expectedNativeCorrections===97&&expectedNativeSearchRows===193:expectedNativeSearchRows===expectedNativeCorrections),'Unsupported native-search name row count');
     const audit=await nativeNameCorrections(db,environment);
-    check(Array.isArray(audit)&&audit.length===expectedNativeCorrections&&audit.every(a=>a.table==='catalog.card_printings'&&a.column==='native_name'&&typeof a.changed==='boolean'&&typeof a.id==='string'&&typeof a.native_name_row_id==='string'&&typeof a.before==='string'&&typeof a.after==='string'&&a.environment===environment),'Invalid native-name correction audit');
-    check(new Set(audit.map(a=>a.id)).size===expectedNativeCorrections&&new Set(audit.map(a=>a.native_name_row_id)).size===expectedNativeCorrections,'Native-name correction audit identities are not unique');
+    const common=a=>a.table==='catalog.card_printings'&&a.column==='native_name'&&typeof a.changed==='boolean'&&typeof a.id==='string'&&typeof a.before==='string'&&typeof a.after==='string'&&a.environment===environment;
+    check(Array.isArray(audit)&&audit.length===expectedNativeCorrections&&audit.every(a=>common(a)&&(!multiNativeRows?typeof a.native_name_row_id==='string'&&!Object.hasOwn(a,'native_name_rows'):Array.isArray(a.native_name_rows)&&a.native_name_rows.length>0&&a.native_name_rows.every(n=>n&&typeof n.id==='string'&&typeof n.variant_id==='string'&&typeof n.changed==='boolean'&&n.changed===a.changed)&&!Object.hasOwn(a,'native_name_row_id'))),'Invalid native-name correction audit');
+    check(new Set(audit.map(a=>a.id)).size===expectedNativeCorrections,'Native-name correction audit printing identities are not unique');
+    const auditNames=multiNativeRows?audit.flatMap(a=>a.native_name_rows):audit.map(a=>({id:a.native_name_row_id,changed:a.changed}));
+    check(auditNames.length===expectedNativeSearchRows&&new Set(auditNames.map(a=>a.id)).size===expectedNativeSearchRows,'Native-name correction audit identities are not unique');
+    if(multiNativeRows)check(audit.every(a=>new Set(a.native_name_rows.map(n=>n.variant_id)).size===a.native_name_rows.length),'Native-name correction audit variant identities are not unique');
     journal.native_name_corrections??=[];journal.native_name_corrections.push(...audit.map(a=>({...a,environment})));
-    const changed=audit.filter(a=>a.changed).length;
-    journal.native_name_correction_counts={total:journal.native_name_corrections.length,changed,printing_changes:changed,card_name_changes:changed};journal.metadata_changes+=changed;
+    const changed=audit.filter(a=>a.changed).length, cardNameChanges=auditNames.filter(a=>a.changed).length;
+    journal.native_name_correction_counts={total:journal.native_name_corrections.length,changed,printing_changes:changed,card_name_changes:cardNameChanges,...(multiNativeRows?{native_search_name_rows:auditNames.length}:{})};journal.metadata_changes+=changed;
   }
   const cards=await cardsFor(db,rows);bind(rows,cards,environment);
   const versions=[...new Set(cards.map(c=>c.catalogue_version_id))];
@@ -196,14 +266,14 @@ async function main() {
   await publishFrozenCohort({rows,receipt,approval,root,output});
 }
 // Shared verified transfer/transaction path; callers retain their own frozen scope guards.
-export async function publishFrozenCohort({rows,receipt,approval,root,output,sourceResolver=sourcesFor,catalogueCorrection=null,nativeNameCorrections=null}) {
+export async function publishFrozenCohort({rows,receipt,approval,root,output,sourceResolver=sourcesFor,catalogueCorrection=null,nativeNameCorrections=null,transferPolicy=null}) {
   check(root&&output&&rows.length>0,'Package, receipt and frozen rows required');await mkdir(output,{recursive:true});
-  const journal={status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,assets:[],links:[],objects:[],ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false};
+  const journal={status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,assets:[],links:[],ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false,...(transferPolicy?{transfer_policy:transferPolicy.receipt}: {})};
   const save=()=>writeFile(path.join(output,'receipt.json'),JSON.stringify(journal,null,2));await save();
   const require=createRequire(new URL('../../backend/package.json',import.meta.url)),sharp=require('sharp');sharp.concurrency(2);
   const objects=publicationObjects(rows);
   const source=o=>readFile(safePath(root,`${o.artifact_id}/${o.file}`));
-  const read=url=>retryStorageRead(async()=>{const r=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(60000)});if(!r.ok){await r.body?.cancel();throw Object.assign(new Error(`Public object read ${r.status}`),{status:r.status});}const b=Buffer.from(await r.arrayBuffer());check(b.length<12_000_000,'Oversized object');return b;});
+  const read=url=>readPublicObject(url,{transferPolicy});
   // Verify every frozen byte before opening a database or uploading anything.
   for(const batch of chunks(objects,3)){const results=await Promise.allSettled(batch.map(async o=>validateBytes(sharp,await source(o),o)));const bad=results.find(x=>x.status==='rejected');if(bad)throw bad.reason;}
   journal.local_files_verified=objects.length;await save();
@@ -220,12 +290,12 @@ export async function publishFrozenCohort({rows,receipt,approval,root,output,sou
     const client=require('@supabase/supabase-js').createClient(`https://${PROJECTS.production}.supabase.co`,secret,{auth:{persistSession:false,autoRefreshToken:false},global:{fetch:(u,o)=>fetch(u,{...o,signal:AbortSignal.timeout(60000),redirect:'error'})}});
     const bucket=await client.storage.getBucket(BUCKET);check(!bucket.error&&bucket.data?.public===true,'Wrong public bucket');
     const existing=new Set((await db.query('select name from storage.objects where bucket_id=$1 and name=any($2::text[])',[BUCKET,objects.map(objectKey)])).rows.map(r=>r.name));
-    // Six immutable transfers fit this cohort within the bounded runner window.
-    // Local validation remains at three; retry and post-upload byte checks are unchanged.
+    // Legacy callers retain batches of six. An opted-in transfer policy governs
+    // every network attempt inside each batch without changing immutable writes.
     for(const batch of chunks(objects,6)) {
       const results=await Promise.allSettled(batch.map(async o=>{
         const key=objectKey(o),entry={key,sha256:o.sha256,created:false,verified:false};journal.objects.push(entry);
-        if(!existing.has(key)) {const b=await source(o);await validateBytes(sharp,b,o);entry.created=await uploadImmutable(()=>client.storage.from(BUCKET).upload(key,b,{contentType:o.mime_type,cacheControl:'31536000',upsert:false}));}
+        if(!existing.has(key)) {const b=await source(o);await validateBytes(sharp,b,o);entry.created=await uploadImmutable(()=>transferPolicy?transferPolicy.run(()=>client.storage.from(BUCKET).upload(key,b,{contentType:o.mime_type,cacheControl:'31536000',upsert:false})):client.storage.from(BUCKET).upload(key,b,{contentType:o.mime_type,cacheControl:'31536000',upsert:false}));}
         await validateBytes(sharp,await read(publicUrl(key)),o);entry.verified=true;
       }));await save();const bad=results.find(r=>r.status==='rejected');if(bad)throw bad.reason;
     }

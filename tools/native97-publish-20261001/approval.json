@@ -1,0 +1,20 @@
+{
+  "approved": true,
+  "store_resize_display": true,
+  "fronts": 97,
+  "native_name_corrections": 97,
+  "cohort_sha256": "1d06acef9184b646097db2bed97c38f866f8684a2587dc59e42c252bfbb9adf5",
+  "corrections_sha256": "3b412784e86d6d6319d057c443107f0eb25bf6050d8a2bcd28f85943634bfcad",
+  "source_wide_approval": false,
+  "source_counts": {
+    "tcgplayer_card_artwork": 97
+  },
+  "language_counts": {
+    "ja": 97
+  },
+  "owner_statement": "Also, I have sourced permission for everything",
+  "current_instruction": "lets tackle 4201",
+  "approved_at": "2026-10-01",
+  "reason": "Owner-approved artwork recovery and precise demonstrated native-name corrections. Exactly these 97 reviewed VS1 fronts with 97 printing names and 193 existing variant-scoped native search names repaired through protected publication. Preserve original image bytes, source marks, all row UUIDs and variant associations, aliases, identities, prices and holdings. No deletion, deduplication, source activation or exact-finish claim.",
+  "native_search_name_rows": 193
+}
