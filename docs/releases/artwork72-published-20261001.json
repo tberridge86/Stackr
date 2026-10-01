@@ -1,0 +1,119 @@
+{
+  "verified_at": "2026-10-01T03:54:23.001Z",
+  "status": "published_and_independently_verified",
+  "batch": {
+    "fronts": 72,
+    "derivative_references": 216,
+    "distinct_storage_objects": 288,
+    "created": 288,
+    "reused": 0
+  },
+  "production": {
+    "run_id": 36811389122,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/36811389122",
+    "source": "9802dbc99082d3c9c4a8e5c4c3d81ac99e090347",
+    "cohort_sha256": "dbc66fb9bd8c926987e0644ced95eea56d1106bcefb086b117c7a8e340f12b0a",
+    "corrections_sha256": "da3e3c2f7a5660cf1d2838da271cd571a215dd69eab1334c543d2bb9d8e7b387",
+    "receipt_sha256": "3e69ae3c53cac7fffc8444030c1d1475c8bcffdd89d3b227d4f2d85cf7319b25",
+    "receipt_artifact": {
+      "id": 11138779839,
+      "name": "native72-artwork-36811389122-1",
+      "createdAt": "2026-10-01T03:42:45Z",
+      "digest": "sha256:3e0bf71465bca9e2059e57b1a2c9470790f01e0decac3f2eb674cc37ae0e0da2",
+      "sha256": "3e0bf71465bca9e2059e57b1a2c9470790f01e0decac3f2eb674cc37ae0e0da2",
+      "bytes": 26798,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/36811389122/artifacts/11138779839"
+    }
+  },
+  "independent_verification": {
+    "cards_passed": 72,
+    "images_passed": 288,
+    "first_attempt_card_failures": 17,
+    "first_attempt_image_failures": 0,
+    "http_timings": {
+      "card_detail": {
+        "samples": 72,
+        "median_ms": 390,
+        "p95_ms": 2842,
+        "max_ms": 5377
+      },
+      "manifest": {
+        "samples": 72,
+        "median_ms": 289,
+        "p95_ms": 2727,
+        "max_ms": 5069
+      },
+      "image": {
+        "samples": 288,
+        "median_ms": 363,
+        "p95_ms": 3500,
+        "max_ms": 5191
+      }
+    },
+    "timing_contract": "HTTP byte counts and statuses are recorded before image decoding. request_complete_ms excludes deliberate queue spacing and includes the final HTTP response body; pacing_ms is retained per attempt.",
+    "request_failures": {
+      "api_attempts_without_http_response": 19,
+      "affected_card_checks": 17,
+      "all_recovered": true,
+      "cause": "fetch failed; low-level connection cause was not captured by this verifier",
+      "timing_scope": "Final successful HTTP response body; retries, backoff and deliberate pacing excluded from HTTP statistics and retained per attempt in the full evidence."
+    }
+  },
+  "preservation": {
+    "checked_at": "2026-10-01T03:46:28.824Z",
+    "unexpected_differences": [],
+    "staging": {
+      "cards": 72,
+      "printing_native_names_changed": 0,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true
+    },
+    "production": {
+      "cards": 72,
+      "printing_native_names_changed": 72,
+      "other_printing_fields_and_aliases_preserved": true,
+      "variants_and_api_identity_fields_preserved": true,
+      "native_search_names_verified": true
+    }
+  },
+  "metadata_changes": {
+    "printing_native_names": 72,
+    "native_search_name_rows": 72,
+    "other_metadata": 0
+  },
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "recovery_total": {
+    "fronts": 8849,
+    "derivative_references": 26547,
+    "distinct_storage_objects": 35329,
+    "retained_cohorts": 10
+  },
+  "original_4201": {
+    "resolved": 889,
+    "remaining": 3312
+  },
+  "remaining": {
+    "by_language": {
+      "en": 465,
+      "ja": 2011,
+      "zh-cn": 829,
+      "zh-tw": 7
+    },
+    "by_category": {
+      "Exact source needed": 2602,
+      "provider_image_unavailable": 1,
+      "Verified front held for native-name correction": 70,
+      "Source image conflict": 3,
+      "identity_conflict": 5,
+      "insufficient_resolution": 2,
+      "Card name conflict": 2,
+      "Artwork choice": 20,
+      "Language identity conflict": 605,
+      "Composite artwork review": 2
+    },
+    "next_offline_prepared_fronts": 70
+  },
+  "device_verified": false
+}
