@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { isDeepStrictEqual } from 'node:util';
+import { createVerifiedSupabasePostgresClient } from '../../scripts/deploy/verified-supabase-postgres.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const requireBackend = createRequire(new URL('../../backend/package.json', import.meta.url));
@@ -120,11 +121,11 @@ export async function applyAssociations(db, plan, saveBefore) {
 
 async function publish(plan) {
   assertExecutionEnvironment(process.env, execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim());
-  const { Client } = requireBackend('pg');
   const { createClient } = requireBackend('@supabase/supabase-js');
   const storage = createClient(`https://${PROJECT}.supabase.co`, process.env.SUPABASE_PRODUCTION_SECRET_KEY,
     { auth: { persistSession: false, autoRefreshToken: false } }).storage.from(BUCKET);
-  const db = new Client({ connectionString: process.env.SUPABASE_DB_URL });
+  const db = createVerifiedSupabasePostgresClient(process.env.SUPABASE_DB_URL, 'stackr_retrieval_repair_20261002',
+    { connectionTimeoutMillis: 20000, statement_timeout: 30000 });
   const output = process.env.STACKR_RETRIEVAL_OUTPUT;
   assert.ok(output, 'Receipt directory required');
   await fs.mkdir(output, { recursive: true });
