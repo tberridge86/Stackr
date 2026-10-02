@@ -81,7 +81,8 @@ export default function CardInspectionViewer({ request, onClose }: {
               foilHaptics={hasFoil && lightingEnabled}
               renderMaterial={light => lightingEnabled ? <MaterialBoundary onUnavailable={onUnavailable}>
                 <Suspense fallback={null}><CardFoilSurface {...light} source="catalogue" profile={profile}
-                  width={cardWidth} height={cardHeight} onUnavailable={onUnavailable} /></Suspense>
+                  width={cardWidth} height={cardHeight} onUnavailable={onUnavailable}
+                  artworkUri={fullLoaded ? request.fullImageUri ?? request.imageUri : request.imageUri} /></Suspense>
               </MaterialBoundary> : null}>
               <StackrImage cardShape uri={request.imageUri} fullUri={request.fullImageUri} contentFit="contain"
                 rounded={14} placeholderColor="transparent" priority="high" transition={0} style={StyleSheet.absoluteFill}

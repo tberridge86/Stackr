@@ -4,6 +4,9 @@ import { Canvas, Fill, Shader, Skia } from '@shopify/react-native-skia';
 import { useDerivedValue } from 'react-native-reanimated';
 import { CARD_FOIL_MODES, CARD_FOIL_SHADER } from '../lib/cardFoilShader';
 import type { CardFoilSurfaceProps } from './CardFoilSurface.types';
+import CardPrintingMaterial from './CardPrintingMaterial.native';
+import { resolvePrintingMaterial } from '../lib/cardPrintingMaterial';
+import { REVIEWED_PRINTING_MATERIALS } from '../lib/cardPrintingMaterialRegistry';
 
 function CatalogueMaterial({ x, y, width, height, profile, onUnavailable }: CardFoilSurfaceProps) {
   const effect = useMemo(() => {
@@ -33,6 +36,11 @@ function CatalogueMaterial({ x, y, width, height, profile, onUnavailable }: Card
 }
 
 export default function CardFoilSurface(props: CardFoilSurfaceProps) {
-  // Defence in depth for untyped callers: condition evidence never reaches Skia.
-  return props.source === 'catalogue' ? <CatalogueMaterial {...props} /> : null;
+  const material = useMemo(() => props.source === 'catalogue'
+    ? resolvePrintingMaterial(props.profile, props.artworkUri, REVIEWED_PRINTING_MATERIALS) : null,
+  [props.source, props.profile, props.artworkUri]);
+  // Defence in depth: seller condition evidence never enters either renderer.
+  if (props.source !== 'catalogue') return null;
+  const fallback = <CatalogueMaterial {...props} />;
+  return material ? <CardPrintingMaterial {...props} material={material} fallback={fallback} /> : fallback;
 }
