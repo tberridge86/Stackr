@@ -84,13 +84,13 @@ export default function CardInspectionViewer({ request, onClose }: {
                   width={cardWidth} height={cardHeight} onUnavailable={onUnavailable} /></Suspense>
               </MaterialBoundary> : null}>
               <StackrImage cardShape uri={request.imageUri} fullUri={request.fullImageUri} contentFit="contain"
-                rounded={14} priority="high" transition={0} style={StyleSheet.absoluteFill}
+                rounded={14} placeholderColor="transparent" priority="high" transition={0} style={StyleSheet.absoluteFill}
                 accessibilityLabel={`${request.card.name ?? 'Pokémon card'}, catalogue artwork`}
                 onLoad={() => setImageLoaded(true)} onError={() => setImageLoaded(false)} />
               {imageLoaded && request.fullImageUri && request.fullImageUri !== request.imageUri ?
                 <View pointerEvents="none" accessible={false} style={[StyleSheet.absoluteFill, { opacity: fullLoaded ? 1 : 0 }]}>
                   <StackrImage cardShape uri={request.fullImageUri} contentFit="contain" rounded={14} priority="high" transition={0}
-                    style={StyleSheet.absoluteFill} showFallbackIcon={false} onLoad={() => setFullLoaded(true)} />
+                    placeholderColor="transparent" style={StyleSheet.absoluteFill} showFallbackIcon={false} onLoad={() => setFullLoaded(true)} />
                 </View> : null}
             </InteractiveCardPreview>
           </View>

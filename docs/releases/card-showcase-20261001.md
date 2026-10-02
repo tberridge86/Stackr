@@ -73,6 +73,19 @@ The native shader's seven synthetic material columns and three tilt positions:
 
 ## Remaining device acceptance
 
+### 2 October: remove the white frame at the card edge
+
+Both preview and full-resolution artwork now use a transparent image-frame
+background in this viewer. The previous theme surface showed through the rounded
+corners and contain-fit side gutters as a white rim. The original artwork, its
+printed border and contain-fit sizing are preserved. The development web fixture
+was visually checked after reload; all 13 existing viewer behavior cases pass.
+This is a client source correction, not a new TestFlight delivery.
+
+![Transparent card edge in the web fixture](evidence/card-showcase-20261001/transparent-card-edge-web.jpg)
+
+### Phone checks
+
 Install the next reviewed native/compatible client candidate and test a recorded
 holo printing, a plain printing, an unknown finish, saved-language variants and a
 condition photograph. Confirm tilt direction in portrait/landscape, artwork
