@@ -211,6 +211,19 @@ const multipart = { ...makeCard('zh-cn', 9900), collector_number: '01 03' };
 cards.push(multipart);
 sources.catalogue_card_collectors.push({ ...multipart, normalized_collector_number: '103', normalized_collector_base: '103' });
 const indexedService = createCatalogueV1Service({ supabase: db, collectorIdentityLookup: true });
+const grassEnergy = { ...makeCard('zh-tw', 9920), set_id: energySet, collector_number: 'GRA' };
+cards.push(grassEnergy);
+sources.catalogue_sets.push({ set_id: energySet, set_code: 'SVAM', language_code: 'zh-tw' });
+for (const q of ['SVAM GRA', 'svam gra', 'ＳＶＡＭ　ＧＲＡ']) {
+  const found = await service.search({ q, language: 'zh-tw' });
+  assert.deepEqual(found.results.map(r => r.variantId), [grassEnergy.variant_id]);
+  assert.equal(found.results[0].reason, 'exact_set_code_collector_number');
+}
+assert.equal((await service.search({ q: 'SVAM GRA', language: 'ja' })).results.length, 0);
+assert.equal((await service.search({ q: 'SVAM GRA', setId: enSet })).results.length, 0);
+assert.equal((await service.search({ q: 'SVAM GR', language: 'zh-tw' })).results.length, 0,
+  'Alphabetic numbers must be exact, never a prefix match.');
+assert.equal((await service.search({ q: 'MISSING GRA', language: 'zh-tw' })).results.length, 0);
 for (const service of [indexedService, createCatalogueV1Service({ supabase: db })]) {
   for (const q of ['R', 'r']) {
     const found = await service.search({ q, language: 'en', setId: enSet });

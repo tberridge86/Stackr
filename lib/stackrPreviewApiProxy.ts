@@ -41,8 +41,9 @@ function isLoopbackHostname(hostname: string) {
 }
 
 function isAllowedReadPath(pathname: string) {
-  if (pathname === '/v1/sets' || pathname === '/v1/assets/manifest') return true;
-  return /^\/v1\/sets\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?:\/cards)?$/i.test(pathname);
+  if (pathname === '/v1/search' || pathname === '/v1/sets' || pathname === '/v1/assets/manifest') return true;
+  return /^\/v1\/sets\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?:\/cards)?$/i.test(pathname)
+    || /^\/v1\/cards\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?:\/variants)?$/i.test(pathname);
 }
 
 function defaultRuntime(): StackrPreviewProxyRuntime {

@@ -1,0 +1,437 @@
+{
+  "schemaVersion": 1,
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "bucket": "stackr-catalogue-public",
+  "originalObjectsPreserved": true,
+  "cacheAssets": [
+    {
+      "id": "0b6ef394-4083-4d30-b319-18a3f2b29efe",
+      "derivative_list": [
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "byteSize": 23394,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/73/fd/73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac/card-grid.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "byteSize": 4074,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/40/ea/40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3/search-result.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "byteSize": 107406,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/eb/93/eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0/detail-page.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        }
+      ],
+      "permission_status": "approved",
+      "rights_status": "approved",
+      "updated_at": "2026-08-12 18:14:40.182+00",
+      "after": [
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "byteSize": 23394,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/73/fd/73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac/card-grid-cache-v2.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "byteSize": 4074,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/40/ea/40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3/search-result-cache-v2.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "byteSize": 107406,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/eb/93/eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0/detail-page-cache-v2.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        }
+      ],
+      "variantId": "0400e020-87fc-42e5-9053-d98e7c04baba"
+    },
+    {
+      "id": "1e6a3fc1-f85c-4c88-bb9b-d03e2c966817",
+      "derivative_list": [
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "byteSize": 15886,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/fa/84/fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387/card-grid.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "byteSize": 3446,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/e3/a0/e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567/search-result.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "byteSize": 60442,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/af/dd/afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6/detail-page.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        }
+      ],
+      "permission_status": "approved",
+      "rights_status": "approved",
+      "updated_at": "2026-08-12 18:14:40.182+00",
+      "after": [
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "byteSize": 15886,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/fa/84/fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387/card-grid-cache-v2.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "byteSize": 3446,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/e3/a0/e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567/search-result-cache-v2.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "byteSize": 60442,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/af/dd/afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6/detail-page-cache-v2.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        }
+      ],
+      "variantId": "40a096ea-7c1f-4387-8670-5c6027e946cd"
+    },
+    {
+      "id": "3ebc1c95-0bc4-482f-978d-ab37d846fbdb",
+      "derivative_list": [
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "byteSize": 15802,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/3c/f8/3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a/card-grid.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "byteSize": 3288,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/47/d4/47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f/search-result.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "byteSize": 63358,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/9e/13/9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd/detail-page.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        }
+      ],
+      "permission_status": "approved",
+      "rights_status": "approved",
+      "updated_at": "2026-08-12 18:14:40.182+00",
+      "after": [
+        {
+          "role": "card-grid",
+          "width": 240,
+          "height": 330,
+          "byteSize": 15802,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/3c/f8/3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a/card-grid-cache-v2.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "search-result",
+          "width": 96,
+          "height": 132,
+          "byteSize": 3288,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/47/d4/47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f/search-result-cache-v2.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        },
+        {
+          "role": "detail-page",
+          "width": 600,
+          "height": 825,
+          "byteSize": 63358,
+          "mimeType": "image/webp",
+          "storageKey": "public/card_image/9e/13/9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd/detail-page-cache-v2.webp",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentSha256": "9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd",
+          "storageBucket": "stackr-catalogue-public",
+          "storageProvider": "supabase_storage"
+        }
+      ],
+      "variantId": "64c3e818-f0e5-49b3-89b7-d36addc2fdb6"
+    }
+  ],
+  "objects": [
+    {
+      "key": "public/card_image/40/ea/40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3/search-result-cache-v2.webp",
+      "oldKey": "public/card_image/40/ea/40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3/search-result.webp",
+      "file": "40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3.webp",
+      "sha256": "40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3",
+      "bytes": 4074,
+      "mimeType": "image/webp"
+    },
+    {
+      "key": "public/card_image/73/fd/73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac/card-grid-cache-v2.webp",
+      "oldKey": "public/card_image/73/fd/73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac/card-grid.webp",
+      "file": "73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac.webp",
+      "sha256": "73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac",
+      "bytes": 23394,
+      "mimeType": "image/webp"
+    },
+    {
+      "key": "public/card_image/eb/93/eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0/detail-page-cache-v2.webp",
+      "oldKey": "public/card_image/eb/93/eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0/detail-page.webp",
+      "file": "eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0.webp",
+      "sha256": "eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0",
+      "bytes": 107406,
+      "mimeType": "image/webp"
+    },
+    {
+      "key": "public/card_image/e3/a0/e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567/search-result-cache-v2.webp",
+      "oldKey": "public/card_image/e3/a0/e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567/search-result.webp",
+      "file": "e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567.webp",
+      "sha256": "e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567",
+      "bytes": 3446,
+      "mimeType": "image/webp"
+    },
+    {
+      "key": "public/card_image/fa/84/fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387/card-grid-cache-v2.webp",
+      "oldKey": "public/card_image/fa/84/fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387/card-grid.webp",
+      "file": "fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387.webp",
+      "sha256": "fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387",
+      "bytes": 15886,
+      "mimeType": "image/webp"
+    },
+    {
+      "key": "public/card_image/af/dd/afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6/detail-page-cache-v2.webp",
+      "oldKey": "public/card_image/af/dd/afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6/detail-page.webp",
+      "file": "afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6.webp",
+      "sha256": "afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6",
+      "bytes": 60442,
+      "mimeType": "image/webp"
+    },
+    {
+      "key": "public/card_image/47/d4/47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f/search-result-cache-v2.webp",
+      "oldKey": "public/card_image/47/d4/47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f/search-result.webp",
+      "file": "47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f.webp",
+      "sha256": "47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f",
+      "bytes": 3288,
+      "mimeType": "image/webp"
+    },
+    {
+      "key": "public/card_image/3c/f8/3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a/card-grid-cache-v2.webp",
+      "oldKey": "public/card_image/3c/f8/3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a/card-grid.webp",
+      "file": "3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a.webp",
+      "sha256": "3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a",
+      "bytes": 15802,
+      "mimeType": "image/webp"
+    },
+    {
+      "key": "public/card_image/9e/13/9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd/detail-page-cache-v2.webp",
+      "oldKey": "public/card_image/9e/13/9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd/detail-page.webp",
+      "file": "9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd.webp",
+      "sha256": "9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd",
+      "bytes": 63358,
+      "mimeType": "image/webp"
+    },
+    {
+      "key": "public/card_image/83/c1/83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71/original.jpg",
+      "filename": "original.jpg",
+      "sha256": "83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71",
+      "bytes": 300642,
+      "mimeType": "image/jpeg",
+      "file": "83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71.jpg"
+    },
+    {
+      "key": "public/card_image/e4/d8/e4d82b7b3f041339775197c82f87dedfba42360854389f57c610ed33ca877d71/card-grid.webp",
+      "filename": "card-grid.webp",
+      "sha256": "e4d82b7b3f041339775197c82f87dedfba42360854389f57c610ed33ca877d71",
+      "bytes": 22798,
+      "mimeType": "image/webp",
+      "file": "e4d82b7b3f041339775197c82f87dedfba42360854389f57c610ed33ca877d71.webp"
+    },
+    {
+      "key": "public/card_image/30/85/308575b941f031c8654d6bdcb9aa9bdbb54ac6db47d1a085b038cb92958b9920/search-result.webp",
+      "filename": "search-result.webp",
+      "sha256": "308575b941f031c8654d6bdcb9aa9bdbb54ac6db47d1a085b038cb92958b9920",
+      "bytes": 4032,
+      "mimeType": "image/webp",
+      "file": "308575b941f031c8654d6bdcb9aa9bdbb54ac6db47d1a085b038cb92958b9920.webp"
+    },
+    {
+      "key": "public/card_image/aa/71/aa713c4c363a027ac4fb1360646342f99f9a8a7c7414915e75d16c7e5bd26f11/detail-page.webp",
+      "filename": "detail-page.webp",
+      "sha256": "aa713c4c363a027ac4fb1360646342f99f9a8a7c7414915e75d16c7e5bd26f11",
+      "bytes": 157448,
+      "mimeType": "image/webp",
+      "file": "aa713c4c363a027ac4fb1360646342f99f9a8a7c7414915e75d16c7e5bd26f11.webp"
+    }
+  ],
+  "m5": {
+    "id": "9b33b68d-9451-445e-b6a8-8ec594209e3c",
+    "printingId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+    "variantId": "134b24e5-ad9e-419b-b69a-8b4ce82c09cc",
+    "beforeUpdatedAt": "2026-09-26T18:46:05.751571+00:00",
+    "sourceSha256": "9c169c1c596c23646e6ba60be3540a1a28910b8c18161c56739898ce55b4cd64",
+    "asset": {
+      "asset_id": "9b33b68d-9451-445e-b6a8-8ec594209e3c",
+      "asset_type": "card_image",
+      "asset_visibility": "public_catalogue",
+      "storage_provider": "supabase_storage",
+      "storage_bucket": "stackr-catalogue-public",
+      "storage_key": "public/card_image/83/c1/83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71/original.jpg",
+      "storage_path": "public/card_image/83/c1/83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71/original.jpg",
+      "url": "https://www.pokemon-card.com/assets/images/card_images/large/M5/050221_P_AGOJIMUSHI.jpg",
+      "original_source_url": "https://www.pokemon-card.com/assets/images/card_images/large/M5/050221_P_AGOJIMUSHI.jpg",
+      "original_source_identifier": null,
+      "source_attribution": "pokemon_card_jp_official",
+      "permission_status": "approved",
+      "rights_status": "approved",
+      "content_sha256": "83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71",
+      "sha256": "83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71",
+      "perceptual_hash": "00000081ffffffff",
+      "mime_type": "image/jpeg",
+      "width": 868,
+      "height": 1212,
+      "byte_size": 300642,
+      "derivative_list": [
+        {
+          "role": "card-grid",
+          "storageProvider": "supabase_storage",
+          "storageBucket": "stackr-catalogue-public",
+          "storageKey": "public/card_image/e4/d8/e4d82b7b3f041339775197c82f87dedfba42360854389f57c610ed33ca877d71/card-grid.webp",
+          "mimeType": "image/webp",
+          "width": 240,
+          "height": 335,
+          "byteSize": 22798,
+          "contentSha256": "e4d82b7b3f041339775197c82f87dedfba42360854389f57c610ed33ca877d71",
+          "cacheControl": "public, max-age=31536000, immutable"
+        },
+        {
+          "role": "search-result",
+          "storageProvider": "supabase_storage",
+          "storageBucket": "stackr-catalogue-public",
+          "storageKey": "public/card_image/30/85/308575b941f031c8654d6bdcb9aa9bdbb54ac6db47d1a085b038cb92958b9920/search-result.webp",
+          "mimeType": "image/webp",
+          "width": 96,
+          "height": 134,
+          "byteSize": 4032,
+          "contentSha256": "308575b941f031c8654d6bdcb9aa9bdbb54ac6db47d1a085b038cb92958b9920",
+          "cacheControl": "public, max-age=31536000, immutable"
+        },
+        {
+          "role": "detail-page",
+          "storageProvider": "supabase_storage",
+          "storageBucket": "stackr-catalogue-public",
+          "storageKey": "public/card_image/aa/71/aa713c4c363a027ac4fb1360646342f99f9a8a7c7414915e75d16c7e5bd26f11/detail-page.webp",
+          "mimeType": "image/webp",
+          "width": 720,
+          "height": 1005,
+          "byteSize": 157448,
+          "contentSha256": "aa713c4c363a027ac4fb1360646342f99f9a8a7c7414915e75d16c7e5bd26f11",
+          "cacheControl": "public, max-age=31536000, immutable"
+        }
+      ],
+      "cache_control": "public, max-age=31536000, immutable",
+      "archival_storage_key": "public/card_image/83/c1/83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71/original.jpg",
+      "publicly_servable": true,
+      "externally_referenced": false,
+      "retention_status": "active",
+      "last_verified_at": "2026-10-02T07:14:51.113Z"
+    }
+  },
+  "preservedUnavailableAssetId": "4c6bf875-e836-432f-8b72-7b044a5e23a1"
+}

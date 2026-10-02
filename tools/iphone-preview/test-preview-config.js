@@ -5,11 +5,15 @@ const appJson = require('../../app.json').expo;
 const eas = require('../../eas.json');
 const { resolveMobileRuntimeConfig, targets } = require('../../config/mobile-runtime.cjs');
 const {
+  buildLocalExpoEnvironment,
   buildProductionExpoEnvironment,
   isLocalUrl,
   isPreviewExpoAlive,
   isVerifiedExpoUrl,
 } = require('./server.js');
+
+assert.equal(buildLocalExpoEnvironment({}).EXPO_PUBLIC_STACKR_API_ENABLED, 'true');
+assert.equal(buildLocalExpoEnvironment({ EXPO_PUBLIC_STACKR_API_ENABLED: 'false' }).EXPO_PUBLIC_STACKR_API_ENABLED, 'false');
 
 const inherited = {
   PATH: process.env.PATH,
