@@ -31,3 +31,4 @@ tools/queue1-pbl-relink-20260927/cohort.json text eol=lf
 /supabase/migrations/20260927162633_expose_printing_fronts_in_fast_set_cards.sql text eol=lf
 /tools/printing-front-api-20260927/baseline.json text eol=lf
 /tools/retrieval-assets-20261002/plan.json text eol=lf
+/docs/releases/evidence/retrieval-20261002/published-receipt.json text eol=lf

@@ -1,0 +1,41 @@
+{
+  "observedAt": "2026-10-02T20:46:09.976Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "method": "Read-only EXPLAIN ANALYZE via SQL connector; independent of API HTTP timings and service-role transport",
+  "query": "select printing_id, variant_id from api.catalogue_card_collectors where set_id = '91be8fc7-b2ed-4169-b41e-0d374e4d466a' and language_code = 'ja' and normalized_collector_base = '2' limit 80",
+  "planningMs": 149.823,
+  "executionMs": 11.731,
+  "rows": 1,
+  "indexes": [
+    {
+      "relation": "card_printings",
+      "index": "card_printings_collector_normalized_base_lookup_idx",
+      "condition": "((split_part(catalog.normalise_stackr_collector_number(collector_number), '/'::text, 1) = '2'::text) AND (set_id = '91be8fc7-b2ed-4169-b41e-0d374e4d466a'::uuid))"
+    },
+    {
+      "relation": "card_variants",
+      "index": "card_variants_printing_idx",
+      "condition": "(printing_id = p.id)"
+    },
+    {
+      "relation": "catalogue_version_variants",
+      "index": "catalogue_version_variants_variant_lookup_idx",
+      "condition": "(variant_id = v.id)"
+    },
+    {
+      "relation": "catalogue_versions",
+      "index": "catalogue_versions_pkey",
+      "condition": "(id = cvv.catalogue_version_id)"
+    },
+    {
+      "relation": "sets",
+      "index": "sets_pkey",
+      "condition": "(id = '91be8fc7-b2ed-4169-b41e-0d374e4d466a'::uuid)"
+    },
+    {
+      "relation": "languages",
+      "index": "languages_pkey",
+      "condition": "(code = 'ja'::text)"
+    }
+  ]
+}
