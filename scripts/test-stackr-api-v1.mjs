@@ -293,8 +293,8 @@ async function assertAssetManifestServerClientIsolation() {
   const searchEnd = searchService.indexOf('\n  };', searchStart);
   assert.ok(searchStart >= 0 && searchEnd > searchStart, 'v1 search service is missing');
   const search = searchService.slice(searchStart, searchEnd);
-  assert.match(search, /searchSetCodeCollector\(searchSupabase, parsed, limit, language\)/);
-  assert.doesNotMatch(search, /searchSetCodeCollector\(supabase, parsed, limit, language\)/);
+  assert.match(search, /searchSetCodeCollector\(searchSupabase, parsed, limit, language,\s*options\.collectorIdentityLookup === true, requestedSetIds\)/);
+  assert.doesNotMatch(search, /searchSetCodeCollector\(supabase,/);
 
   const manifestView = await readFile(
     new URL('../supabase/migrations/20260810071807_add_stable_asset_manifest_cursor.sql', import.meta.url),

@@ -1,0 +1,149 @@
+{
+  "observedAt": "2026-10-02T20:20:55.202Z",
+  "surface": "Windows desktop Node HTTP client",
+  "phoneMeasured": false,
+  "source": "29a07d02feca336091c1452ccc4e8dc5b5bbc3e9",
+  "objects": [
+    {
+      "key": "public/card_image/40/ea/40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3/search-result-cache-v2.webp",
+      "sha256": "40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3",
+      "bytes": 4074,
+      "cache": "public, max-age=31536000",
+      "width": 96,
+      "height": 132,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/73/fd/73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac/card-grid-cache-v2.webp",
+      "sha256": "73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac",
+      "bytes": 23394,
+      "cache": "public, max-age=31536000",
+      "width": 240,
+      "height": 330,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/eb/93/eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0/detail-page-cache-v2.webp",
+      "sha256": "eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0",
+      "bytes": 107406,
+      "cache": "public, max-age=31536000",
+      "width": 600,
+      "height": 825,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/e3/a0/e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567/search-result-cache-v2.webp",
+      "sha256": "e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567",
+      "bytes": 3446,
+      "cache": "public, max-age=31536000",
+      "width": 96,
+      "height": 132,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/fa/84/fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387/card-grid-cache-v2.webp",
+      "sha256": "fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387",
+      "bytes": 15886,
+      "cache": "public, max-age=31536000",
+      "width": 240,
+      "height": 330,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/af/dd/afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6/detail-page-cache-v2.webp",
+      "sha256": "afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6",
+      "bytes": 60442,
+      "cache": "public, max-age=31536000",
+      "width": 600,
+      "height": 825,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/47/d4/47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f/search-result-cache-v2.webp",
+      "sha256": "47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f",
+      "bytes": 3288,
+      "cache": "public, max-age=31536000",
+      "width": 96,
+      "height": 132,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/3c/f8/3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a/card-grid-cache-v2.webp",
+      "sha256": "3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a",
+      "bytes": 15802,
+      "cache": "public, max-age=31536000",
+      "width": 240,
+      "height": 330,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/9e/13/9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd/detail-page-cache-v2.webp",
+      "sha256": "9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd",
+      "bytes": 63358,
+      "cache": "public, max-age=31536000",
+      "width": 600,
+      "height": 825,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/83/c1/83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71/original.jpg",
+      "sha256": "83c1ff76c6b7658233b53886b87ca1c94a354e8cfa0a5d22b19c5095be53ef71",
+      "bytes": 300642,
+      "cache": "public, max-age=31536000",
+      "width": 868,
+      "height": 1212,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/e4/d8/e4d82b7b3f041339775197c82f87dedfba42360854389f57c610ed33ca877d71/card-grid.webp",
+      "sha256": "e4d82b7b3f041339775197c82f87dedfba42360854389f57c610ed33ca877d71",
+      "bytes": 22798,
+      "cache": "public, max-age=31536000",
+      "width": 240,
+      "height": 335,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/30/85/308575b941f031c8654d6bdcb9aa9bdbb54ac6db47d1a085b038cb92958b9920/search-result.webp",
+      "sha256": "308575b941f031c8654d6bdcb9aa9bdbb54ac6db47d1a085b038cb92958b9920",
+      "bytes": 4032,
+      "cache": "public, max-age=31536000",
+      "width": 96,
+      "height": 134,
+      "decoded": true
+    },
+    {
+      "key": "public/card_image/aa/71/aa713c4c363a027ac4fb1360646342f99f9a8a7c7414915e75d16c7e5bd26f11/detail-page.webp",
+      "sha256": "aa713c4c363a027ac4fb1360646342f99f9a8a7c7414915e75d16c7e5bd26f11",
+      "bytes": 157448,
+      "cache": "public, max-age=31536000",
+      "width": 720,
+      "height": 1005,
+      "decoded": true
+    }
+  ],
+  "bindings": [
+    {
+      "assetId": "0b6ef394-4083-4d30-b319-18a3f2b29efe",
+      "variantId": "0400e020-87fc-42e5-9053-d98e7c04baba",
+      "verifiedDerivatives": 3
+    },
+    {
+      "assetId": "1e6a3fc1-f85c-4c88-bb9b-d03e2c966817",
+      "variantId": "40a096ea-7c1f-4387-8670-5c6027e946cd",
+      "verifiedDerivatives": 3
+    },
+    {
+      "assetId": "3ebc1c95-0bc4-482f-978d-ab37d846fbdb",
+      "variantId": "64c3e818-f0e5-49b3-89b7-d36addc2fdb6",
+      "verifiedDerivatives": 3
+    },
+    {
+      "assetId": "9b33b68d-9451-445e-b6a8-8ec594209e3c",
+      "variantId": "134b24e5-ad9e-419b-b69a-8b4ce82c09cc",
+      "verifiedDerivatives": 3
+    }
+  ],
+  "searches": [],
+  "success": true
+}
