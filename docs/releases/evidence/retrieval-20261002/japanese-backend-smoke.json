@@ -1,0 +1,63 @@
+{
+  "ok": true,
+  "expectedBackendCommit": "3bbff56bf94f23b003901ad565dd4d4ea61f00d0",
+  "expectedBackendDeploymentId": "2d0ad3f2-9e79-4dcb-8ef7-c60bb5b7425b",
+  "variantId": "134b24e5-ad9e-419b-b69a-8b4ce82c09cc",
+  "ownerPricingValidated": false,
+  "checks": [
+    {
+      "name": "direct_backend_runtime_health",
+      "status": 200,
+      "requestId": "68015d8a-972b-4baf-8337-62b0ad2df4e7",
+      "durationMs": 267
+    },
+    {
+      "name": "direct_backend_health",
+      "status": 200,
+      "requestId": "d8dddce7-3a5c-4f13-8d9e-df96c57e3800",
+      "durationMs": 205
+    },
+    {
+      "name": "direct_backend_anonymous_exact_price",
+      "status": 401,
+      "requestId": "26084aaf-242b-482d-b266-514ef0f1dcd1",
+      "durationMs": 165
+    },
+    {
+      "name": "direct_backend_anonymous_price_history",
+      "status": 401,
+      "requestId": "831b892c-d7b1-45ce-9753-92a542d6b477",
+      "durationMs": 159
+    },
+    {
+      "name": "direct_backend_anonymous_movers",
+      "status": 401,
+      "requestId": "df5aa9ed-6d91-4105-b78a-e95277d7c20e",
+      "durationMs": 173
+    },
+    {
+      "name": "gateway_health",
+      "status": 200,
+      "requestId": "70ec14c4-6d28-437f-9906-79409e989eea",
+      "durationMs": 449
+    },
+    {
+      "name": "gateway_anonymous_exact_price",
+      "status": 401,
+      "requestId": "d41ef347-78a1-40cf-81c6-f3dfec1d3556",
+      "durationMs": 370
+    },
+    {
+      "name": "gateway_anonymous_price_history",
+      "status": 401,
+      "requestId": "c50de262-9da7-44ca-bf0c-42e834148a87",
+      "durationMs": 124
+    },
+    {
+      "name": "gateway_anonymous_movers",
+      "status": 401,
+      "requestId": "7eee2e7e-7aa3-4a86-bf2d-6e396af327fc",
+      "durationMs": 73
+    }
+  ]
+}

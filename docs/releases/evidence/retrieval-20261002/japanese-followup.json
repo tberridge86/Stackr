@@ -1,0 +1,57 @@
+{
+  "observedAt": "2026-10-02T20:45:27.980Z",
+  "source": "3bbff56bf94f23b003901ad565dd4d4ea61f00d0",
+  "surface": "Windows desktop Node HTTP client",
+  "purpose": "Bounded follow-up for first-request latency; alternate valid queries, shared cache not reset",
+  "phoneMeasured": false,
+  "samples": [
+    {
+      "q": "m5 0002",
+      "expected": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "status": 200,
+      "ms": 1293,
+      "cache": "DYNAMIC",
+      "actualId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "setCode": "M5",
+      "correct": true
+    },
+    {
+      "q": "SV4a 1",
+      "expected": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "status": 200,
+      "ms": 589,
+      "cache": "DYNAMIC",
+      "actualId": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "setCode": "SV4a",
+      "correct": true
+    },
+    {
+      "q": "M5-002",
+      "expected": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "status": 200,
+      "ms": 452,
+      "cache": "DYNAMIC",
+      "actualId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "setCode": "M5",
+      "correct": true
+    },
+    {
+      "cardId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "status": 200,
+      "ms": 1044,
+      "cache": "DYNAMIC",
+      "actualId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "setCode": "M5",
+      "correct": true
+    },
+    {
+      "cardId": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "status": 200,
+      "ms": 413,
+      "cache": "DYNAMIC",
+      "actualId": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "setCode": "SV4a",
+      "correct": true
+    }
+  ]
+}

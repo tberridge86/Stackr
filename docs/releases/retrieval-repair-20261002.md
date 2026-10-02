@@ -1,6 +1,6 @@
 # Retrieval repairs — 2 October 2026
 
-Image repairs published and independently verified; backend search publication and physical iPhone acceptance pending.
+Image and backend search repairs published and independently verified through the production API. Physical iPhone acceptance is pending; some first API reads still exceed 0.5 seconds. See measured results below.
 Base: main 3faf8edf4602258cef36ca08b7abd96cabcc3cc6. This work does not rebuild build 49 or publish an OTA.
 
 ## Search
@@ -33,7 +33,7 @@ Physical phone timings are unmeasured. Need installed build/OTA identity, phone/
 
 Passed: search printing/language checks, full API v1 tests, personal-loading group, preview proxy and iPhone preview tests, deployment tooling checks, TypeScript, six publisher tests (including rollback/idempotency/header/hash rejection), payload decode/hash verification and YAML parse. Scoped lint: zero errors, one pre-existing require-style warning in the proxy test.
 
-Publish through normal GitHub checks; run backend_only for the search fix and retrieval_assets for the images, sequentially. Independently verify deployed SVAM GRA identity, nine new cache headers and all three M5 sizes, then save receipts here. Phone search failure beyond the reproduced preview defect remains unverified until the actual installation is checked.
+Publication completed through normal GitHub checks in the separate retrieval_assets and backend_only lanes. Deployed SVAM GRA identity, nine new cache headers and all three M5 sizes are independently verified in the receipts below. Phone search failure beyond the reproduced preview defect remains unverified until the actual installation is checked.
 
 Separate backlog unchanged: 2,908 artwork cases, 94 missing checklists, SV4a missing 40 cards, logo gaps, pricing/valuation exceptions and device acceptance. Native97 stays held after its third HTTP429; this repair does not retry it.
 
@@ -54,4 +54,28 @@ Each row is one observation, including full response decoding, with shared cache
 
 The set-number path removed leading zeros then compared against unnormalized stored numbers. After missing the exact set it tried additional strategies and could return an unrelated set's matching number. The repair reuses the deployed `api.catalogue_card_collectors` normalized identity view, applies set and language filters before the bounded limit, then hydrates matching variant identities only. Recognized explicit set-number queries stop after that lookup, including honest no-match results. The existing fallback path also retains a supplied padded number. No migration, price, holding, metadata or rights change is required.
 
-Local validation passed: API v1 integration, the personal-loading regression group, the existing 12-case five-language fixture benchmark and backend type checking. Added controls cover padded/unpadded/fullwidth/hyphenated numbers, wrong-set siblings, no match in a known set, selected-set isolation and indexed SVAM GRA matching. Fixture benchmark timings are not production speed measurements. Production backend run 36985046706 at the prior source is waiting; replace it with one reviewed deployment including this follow-through rather than deploying competing revisions. Live post-deployment correctness/timing and physical-phone acceptance remain pending.
+Local validation passed: API v1 integration, the personal-loading regression group, the existing 12-case five-language fixture benchmark and backend type checking. Added controls cover padded/unpadded/fullwidth/hyphenated numbers, wrong-set siblings, no match in a known set, selected-set isolation and indexed SVAM GRA matching. Fixture benchmark timings are not production speed measurements. Scoped lint had zero errors and one pre-existing import warning.
+
+## Verified production delivery at 20:44 UTC
+
+[PR301](https://github.com/tberridge86/Stackr/pull/301) passed all eight applicable checks; the separate release-candidate gate was skipped by its existing condition. It merged as 3bbff56bf94f23b003901ad565dd4d4ea61f00d0. The earlier waiting backend run 36985046706 was [cancelled before deployment](evidence/retrieval-20261002/superseded-backend-cancelled.json). One replacement [protected production run 37061882832](https://github.com/tberridge86/Stackr/actions/runs/37061882832) was approved using the owner's explicit authorization and completed successfully. No approval setting was changed.
+
+[Railway deployment receipt](evidence/retrieval-20261002/japanese-backend-deployment.json): 2d0ad3f2-9e79-4dcb-8ef7-c60bb5b7425b, source 3bbff56bf94f23b003901ad565dd4d4ea61f00d0. The workflow re-ran release checks, preserved the prior rollback target, and [verified runtime/source identity and access controls](evidence/retrieval-20261002/japanese-backend-smoke.json). Anonymous pricing requests correctly remained unauthorized; authenticated owner prices were not validated by this smoke run. No native build, OTA, gateway configuration or database migration was published.
+
+[Live API verification](evidence/retrieval-20261002/japanese-live-verification.json), Windows desktop Node HTTP client, 20:44 UTC on 2 October:
+
+| Search | Before: first observed | After: first observed | After: four repeats | Exact identity |
+| --- | ---: | ---: | ---: | --- |
+| M5 002 (ja) | 6,783 ms; wrong set | 2,607 ms | 61–66 ms | Correct M5 #002 |
+| SV4a 001 (ja) | 2,247 ms; wrong set | 772 ms | 63–71 ms | Correct SV4a #001 |
+| SV2a 157 (ja) | 346 ms | 497 ms | 56–64 ms | Correct SV2a #157 |
+| base1 4 (en) | 406 ms | 457 ms | 53–73 ms | Correct Base Set #4 |
+| SVAM GRA (zh-tw) | Earlier empty result | 458 ms | 59–72 ms | Correct Grass Energy |
+
+All 25/25 positive responses had the expected top-one printing, set and language. The separate M5 99999999 negative control correctly returned zero results. First-observed responses reported DYNAMIC and repeats HIT; shared production caches were not reset. Four repeats per case and five unique cases are diagnostic observations, not a population p95/SLA or phone-performance claim. The non-padded controls did not improve on this small first-request sample.
+
+A [bounded follow-up](evidence/retrieval-20261002/japanese-followup.json) returned correct identities for m5 0002 (1,293 ms), SV4a 1 (589 ms) and M5-002 (452 ms); direct card reads took 1,044 ms for M5 #002 and 413 ms for SV4a #001. All five reported DYNAMIC. First-load latency above 0.5 seconds therefore remains a real exception, despite fast cached repeats and repaired wrong-set fallback. End-to-end internal latency attribution remains unmeasured; do not infer a provider/database/network split from these requests.
+
+The [read-only database plan](evidence/retrieval-20261002/japanese-query-plan.json) independently confirms the M5 normalized-number lookup uses the existing card_printings_collector_normalized_base_lookup_idx, constrained by number and set. This one SQL-connector observation used 149.823 ms planning and 11.731 ms execution; it is not an API service-role timing or a claim that the entire database is optimally designed. No schema/index change was needed for the demonstrated correctness repair.
+
+Remaining acceptance: the installed phone's build/OTA identity, network and search/binder/card first-render timings are still unavailable. The browser preview used earlier is not phone evidence. Catalogue/checklist/logo/pricing exceptions above remain separate and unchanged. All repaired active image bytes/associations and search cases are verified; universal artwork completeness and universal sub-0.5-second retrieval are not claimed.

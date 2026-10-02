@@ -1,0 +1,899 @@
+{
+  "source": "3bbff56bf94f23b003901ad565dd4d4ea61f00d0",
+  "observedAt": "2026-10-02T20:44:08.881Z",
+  "surface": "Windows desktop Node HTTP client",
+  "phoneMeasured": false,
+  "cachePolicy": "First observed in this client; shared caches not reset. Repeats sequential with default public API cache policy.",
+  "samples": [
+    {
+      "q": "M5 002",
+      "language": "ja",
+      "attempt": 1,
+      "cacheState": "first observed",
+      "observedAt": "2026-10-02T20:44:11.490Z",
+      "ms": 2607,
+      "status": 200,
+      "count": 1,
+      "cardId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "setCode": "M5",
+      "languageCode": "ja",
+      "cache": "DYNAMIC",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 22798,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 4032,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 157448,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "M5 002",
+      "language": "ja",
+      "attempt": 2,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:11.557Z",
+      "ms": 66,
+      "status": 200,
+      "count": 1,
+      "cardId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "setCode": "M5",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 22798,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 4032,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 157448,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "M5 002",
+      "language": "ja",
+      "attempt": 3,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:11.623Z",
+      "ms": 65,
+      "status": 200,
+      "count": 1,
+      "cardId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "setCode": "M5",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 22798,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 4032,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 157448,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "M5 002",
+      "language": "ja",
+      "attempt": 4,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:11.687Z",
+      "ms": 62,
+      "status": 200,
+      "count": 1,
+      "cardId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "setCode": "M5",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 22798,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 4032,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 157448,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "M5 002",
+      "language": "ja",
+      "attempt": 5,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:11.748Z",
+      "ms": 61,
+      "status": 200,
+      "count": 1,
+      "cardId": "d8bd6e96-a51e-4b2b-b71a-031ec159820e",
+      "setCode": "M5",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 22798,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 4032,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 157448,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV4a 001",
+      "language": "ja",
+      "attempt": 1,
+      "cacheState": "first observed",
+      "observedAt": "2026-10-02T20:44:12.521Z",
+      "ms": 772,
+      "status": 200,
+      "count": 1,
+      "cardId": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "setCode": "SV4a",
+      "languageCode": "ja",
+      "cache": "DYNAMIC",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 23394,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4074,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 107406,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV4a 001",
+      "language": "ja",
+      "attempt": 2,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:12.593Z",
+      "ms": 71,
+      "status": 200,
+      "count": 1,
+      "cardId": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "setCode": "SV4a",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 23394,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4074,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 107406,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV4a 001",
+      "language": "ja",
+      "attempt": 3,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:12.663Z",
+      "ms": 69,
+      "status": 200,
+      "count": 1,
+      "cardId": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "setCode": "SV4a",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 23394,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4074,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 107406,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV4a 001",
+      "language": "ja",
+      "attempt": 4,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:12.727Z",
+      "ms": 63,
+      "status": 200,
+      "count": 1,
+      "cardId": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "setCode": "SV4a",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 23394,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4074,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 107406,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV4a 001",
+      "language": "ja",
+      "attempt": 5,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:12.798Z",
+      "ms": 67,
+      "status": 200,
+      "count": 1,
+      "cardId": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
+      "setCode": "SV4a",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 23394,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4074,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 107406,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV2a 157",
+      "language": "ja",
+      "attempt": 1,
+      "cacheState": "first observed",
+      "observedAt": "2026-10-02T20:44:13.299Z",
+      "ms": 497,
+      "status": 200,
+      "count": 1,
+      "cardId": "ba65f365-abcb-40dd-9486-ba24014f33d5",
+      "setCode": "SV2a",
+      "languageCode": "ja",
+      "cache": "DYNAMIC",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 18850,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 3454,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 76988,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV2a 157",
+      "language": "ja",
+      "attempt": 2,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:13.356Z",
+      "ms": 56,
+      "status": 200,
+      "count": 1,
+      "cardId": "ba65f365-abcb-40dd-9486-ba24014f33d5",
+      "setCode": "SV2a",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 18850,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 3454,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 76988,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV2a 157",
+      "language": "ja",
+      "attempt": 3,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:13.421Z",
+      "ms": 64,
+      "status": 200,
+      "count": 1,
+      "cardId": "ba65f365-abcb-40dd-9486-ba24014f33d5",
+      "setCode": "SV2a",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 18850,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 3454,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 76988,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV2a 157",
+      "language": "ja",
+      "attempt": 4,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:13.484Z",
+      "ms": 61,
+      "status": 200,
+      "count": 1,
+      "cardId": "ba65f365-abcb-40dd-9486-ba24014f33d5",
+      "setCode": "SV2a",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 18850,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 3454,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 76988,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SV2a 157",
+      "language": "ja",
+      "attempt": 5,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:13.549Z",
+      "ms": 63,
+      "status": 200,
+      "count": 1,
+      "cardId": "ba65f365-abcb-40dd-9486-ba24014f33d5",
+      "setCode": "SV2a",
+      "languageCode": "ja",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 18850,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 3454,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 76988,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "base1 4",
+      "language": "en",
+      "attempt": 1,
+      "cacheState": "first observed",
+      "observedAt": "2026-10-02T20:44:14.007Z",
+      "ms": 457,
+      "status": 200,
+      "count": 1,
+      "cardId": "7377315f-51f6-4e90-ac1b-4312509cfe0a",
+      "setCode": "base1",
+      "languageCode": "en",
+      "cache": "DYNAMIC",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 21266,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4148,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 84160,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "base1 4",
+      "language": "en",
+      "attempt": 2,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:14.082Z",
+      "ms": 73,
+      "status": 200,
+      "count": 1,
+      "cardId": "7377315f-51f6-4e90-ac1b-4312509cfe0a",
+      "setCode": "base1",
+      "languageCode": "en",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 21266,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4148,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 84160,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "base1 4",
+      "language": "en",
+      "attempt": 3,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:14.150Z",
+      "ms": 66,
+      "status": 200,
+      "count": 1,
+      "cardId": "7377315f-51f6-4e90-ac1b-4312509cfe0a",
+      "setCode": "base1",
+      "languageCode": "en",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 21266,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4148,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 84160,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "base1 4",
+      "language": "en",
+      "attempt": 4,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:14.210Z",
+      "ms": 57,
+      "status": 200,
+      "count": 1,
+      "cardId": "7377315f-51f6-4e90-ac1b-4312509cfe0a",
+      "setCode": "base1",
+      "languageCode": "en",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 21266,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4148,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 84160,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "base1 4",
+      "language": "en",
+      "attempt": 5,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:14.266Z",
+      "ms": 53,
+      "status": 200,
+      "count": 1,
+      "cardId": "7377315f-51f6-4e90-ac1b-4312509cfe0a",
+      "setCode": "base1",
+      "languageCode": "en",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 21266,
+          "width": 240,
+          "height": 330
+        },
+        {
+          "role": "search-result",
+          "bytes": 4148,
+          "width": 96,
+          "height": 132
+        },
+        {
+          "role": "detail-page",
+          "bytes": 84160,
+          "width": 600,
+          "height": 825
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SVAM GRA",
+      "language": "zh-tw",
+      "attempt": 1,
+      "cacheState": "first observed",
+      "observedAt": "2026-10-02T20:44:14.725Z",
+      "ms": 458,
+      "status": 200,
+      "count": 1,
+      "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+      "setCode": "SVAM",
+      "languageCode": "zh-tw",
+      "cache": "DYNAMIC",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 8332,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 2358,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 36646,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SVAM GRA",
+      "language": "zh-tw",
+      "attempt": 2,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:14.800Z",
+      "ms": 72,
+      "status": 200,
+      "count": 1,
+      "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+      "setCode": "SVAM",
+      "languageCode": "zh-tw",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 8332,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 2358,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 36646,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SVAM GRA",
+      "language": "zh-tw",
+      "attempt": 3,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:14.860Z",
+      "ms": 59,
+      "status": 200,
+      "count": 1,
+      "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+      "setCode": "SVAM",
+      "languageCode": "zh-tw",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 8332,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 2358,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 36646,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SVAM GRA",
+      "language": "zh-tw",
+      "attempt": 4,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:14.924Z",
+      "ms": 61,
+      "status": 200,
+      "count": 1,
+      "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+      "setCode": "SVAM",
+      "languageCode": "zh-tw",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 8332,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 2358,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 36646,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    },
+    {
+      "q": "SVAM GRA",
+      "language": "zh-tw",
+      "attempt": 5,
+      "cacheState": "repeat",
+      "observedAt": "2026-10-02T20:44:14.993Z",
+      "ms": 66,
+      "status": 200,
+      "count": 1,
+      "cardId": "ff38c18b-d0a7-4baf-8a2a-1b6faf4aa17e",
+      "setCode": "SVAM",
+      "languageCode": "zh-tw",
+      "cache": "HIT",
+      "imageRoles": [
+        {
+          "role": "card-grid",
+          "bytes": 8332,
+          "width": 240,
+          "height": 335
+        },
+        {
+          "role": "search-result",
+          "bytes": 2358,
+          "width": 96,
+          "height": 134
+        },
+        {
+          "role": "detail-page",
+          "bytes": 36646,
+          "width": 720,
+          "height": 1005
+        }
+      ],
+      "correct": true
+    }
+  ],
+  "negativeControls": [
+    {
+      "q": "M5 99999999",
+      "language": "ja",
+      "attempt": 1,
+      "cacheState": "first observed",
+      "observedAt": "2026-10-02T20:44:15.286Z",
+      "ms": 293,
+      "status": 200,
+      "count": 0,
+      "cache": "DYNAMIC",
+      "correct": true
+    }
+  ],
+  "success": true
+}
