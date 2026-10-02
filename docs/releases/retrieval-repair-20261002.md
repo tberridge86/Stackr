@@ -1,6 +1,6 @@
 # Retrieval repairs — 2 October 2026
 
-Implemented and locally verified; production publication and physical iPhone acceptance pending.
+Image repairs published and independently verified; backend search publication and physical iPhone acceptance pending.
 Base: main 3faf8edf4602258cef36ca08b7abd96cabcc3cc6. This work does not rebuild build 49 or publish an OTA.
 
 ## Search
@@ -36,3 +36,22 @@ Passed: search printing/language checks, full API v1 tests, personal-loading gro
 Publish through normal GitHub checks; run backend_only for the search fix and retrieval_assets for the images, sequentially. Independently verify deployed SVAM GRA identity, nine new cache headers and all three M5 sizes, then save receipts here. Phone search failure beyond the reproduced preview defect remains unverified until the actual installation is checked.
 
 Separate backlog unchanged: 2,908 artwork cases, 94 missing checklists, SV4a missing 40 cards, logo gaps, pricing/valuation exceptions and device acceptance. Native97 stays held after its third HTTP429; this repair does not retry it.
+
+## Japanese padded-number follow-through
+
+On 2 October the owner explicitly authorized fixing Japanese retrieval and recording production approval through the logged-in GitHub account. Production asset run [36983406958](https://github.com/tberridge86/Stackr/actions/runs/36983406958), source 29a07d02feca336091c1452ccc4e8dc5b5bbc3e9, passed after normal environment approval. The downloaded [publisher receipt](evidence/retrieval-20261002/published-receipt.json) independently hashes to SHA256 f91f55cbe17a6b9cb4e41f829b972c11a7f354b648be5f17b3f9bffca4d3fd7a, matching its artifact checksum. [Independent public verification](evidence/retrieval-20261002/published-live-verification.json) confirms all 13 files' bytes, hashes, decodability and valid one-year cache headers, plus all four API asset associations. M5 #002 now exposes all three sizes; its search thumbnail is 4,032 bytes. Existing originals and the unavailable mirror record were preserved.
+
+Fresh desktop API [diagnostic observations](evidence/retrieval-20261002/japanese-baseline.json) reproduced a separate correctness and latency defect:
+
+| Requested card | First observed API time | Actual returned set | Correct? |
+| --- | ---: | --- | --- |
+| Japanese M5 002 | 6,783 ms | S11 | No |
+| Japanese SV4a 001 | 2,247 ms | SV11B | No |
+| Japanese SV2a 157 | 346 ms | SV2a | Yes |
+| English base1 4 | 406 ms | base1 | Yes |
+
+Each row is one observation, including full response decoding, with shared cache state unknown. These are not phone timings or an SLA sample. The SV11B external-original image in the second response belongs to the wrong returned card; it does not establish that all Japanese cards use external artwork.
+
+The set-number path removed leading zeros then compared against unnormalized stored numbers. After missing the exact set it tried additional strategies and could return an unrelated set's matching number. The repair reuses the deployed `api.catalogue_card_collectors` normalized identity view, applies set and language filters before the bounded limit, then hydrates matching variant identities only. Recognized explicit set-number queries stop after that lookup, including honest no-match results. The existing fallback path also retains a supplied padded number. No migration, price, holding, metadata or rights change is required.
+
+Local validation passed: API v1 integration, the personal-loading regression group, the existing 12-case five-language fixture benchmark and backend type checking. Added controls cover padded/unpadded/fullwidth/hyphenated numbers, wrong-set siblings, no match in a known set, selected-set isolation and indexed SVAM GRA matching. Fixture benchmark timings are not production speed measurements. Production backend run 36985046706 at the prior source is waiting; replace it with one reviewed deployment including this follow-through rather than deploying competing revisions. Live post-deployment correctness/timing and physical-phone acceptance remain pending.

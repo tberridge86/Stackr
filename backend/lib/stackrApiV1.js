@@ -834,12 +834,12 @@ async function fetchSetIdsByCode(supabase, setCode, language) {
   return aliasRows.map((row) => row.set_id);
 }
 
-async function searchProviderCardReference(supabase, parsed, limit, language) {
+async function searchProviderCardReference(supabase, parsed, limit, language, useIndexedCollectors = false) {
   const match = parsed.raw.match(/^([a-z][a-z0-9._-]{1,19})-([a-z]{0,4}\d+[a-z]?(?:\/\d+)?)$/i);
   if (!match) return [];
   return searchSetCodeCollector(supabase, {
     ...parsed, setCode: match[1], setCollectorNumber: match[2],
-  }, limit, language);
+  }, limit, language, useIndexedCollectors);
 }
 
 function sortCardsForDisplay(rows) {
@@ -889,12 +889,28 @@ async function searchExternalId(supabase, parsed, limit, language) {
   ].slice(0, limit);
 }
 
-async function searchSetCodeCollector(supabase, parsed, limit, language) {
+async function searchSetCodeCollector(supabase, parsed, limit, language, useIndexedCollectors = false, knownSetIds = null) {
   if (!parsed.setCode || !parsed.setCollectorNumber) return [];
   const collector = normalizeCollectorNumber(parsed.setCollectorNumber);
   if (!collector) return [];
-  const setIds = await fetchSetIdsByCode(supabase, parsed.setCode, language);
+  const setIds = knownSetIds ?? await fetchSetIdsByCode(supabase, parsed.setCode, language);
   if (!setIds.length) return [];
+  if (useIndexedCollectors) {
+    // The published identity view normalizes 002 and 2 alike. Stay inside the
+    // requested set: missing padded numbers must never fall into a global scan.
+    let query = table(supabase, 'api', 'catalogue_card_collectors')
+      .select('printing_id,variant_id')
+      .in('set_id', setIds)
+      .eq(collector.includes('/') ? 'normalized_collector_number' : 'normalized_collector_base', collector)
+      .limit(Math.max(limit * 4, 80));
+    query = applyLanguageFilter(query, language);
+    const rows = await fetchCardRowsForIdentities(supabase, await queryRows(query));
+    return dedupeByVariant(rows)
+      .filter(row => setIds.includes(row.set_id) && (!language || row.language_code === language)
+        && collectorMatches(row.collector_number, collector))
+      .slice(0, limit)
+      .map(row => toSearchResult(row, 'exact_set_code_collector_number', { matchedSetCode: parsed.setCode }));
+  }
   const buildQuery = () => {
     let query = table(supabase, 'api', 'catalogue_cards')
       .select('*')
@@ -906,7 +922,9 @@ async function searchSetCodeCollector(supabase, parsed, limit, language) {
   const letterOnly = /^[a-z]{1,4}$/.test(collector);
   const exactRows = await queryRows(letterOnly
     ? buildQuery().ilike('collector_number', collector)
-    : buildQuery().eq('collector_number', collector));
+    : parsed.setCollectorNumber === collector
+      ? buildQuery().eq('collector_number', collector)
+      : buildQuery().in('collector_number', [parsed.setCollectorNumber, collector]));
   // A collector number may also be recorded as "157/165". Only run the
   // broader published-view lookup when the cheaper exact lookup misses.
   const rows = exactRows.length || letterOnly
@@ -1495,14 +1513,18 @@ export function createCatalogueV1Service(options) {
       const selectedSetId = clean(input.setId);
       if (selectedSetId && !isUuid(selectedSetId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
       const parsed = parseSearchQuery(q, { setId: selectedSetId });
+      const requestedSetIds = parsed.setCode && parsed.setCollectorNumber
+        ? await fetchSetIdsByCode(searchSupabase, parsed.setCode, language) : null;
+      const exactSetCollector = () => searchSetCodeCollector(searchSupabase, parsed, limit, language,
+        options.collectorIdentityLookup === true, requestedSetIds);
 
-      const strategies = [
+      const strategies = requestedSetIds?.length ? [exactSetCollector] : [
         () => searchCanonicalId(searchSupabase, parsed, limit),
-        () => searchSetCodeCollector(searchSupabase, parsed, limit, language),
+        exactSetCollector,
         () => searchExternalId(searchSupabase, parsed, limit, language),
         // Keep exact provider/finish identities ahead of inferred set-number
         // references such as the legacy English ID "me2-125".
-        () => searchProviderCardReference(searchSupabase, parsed, limit, language),
+        () => searchProviderCardReference(searchSupabase, parsed, limit, language, options.collectorIdentityLookup === true),
         // A set code containing digits is also a possible collector token.
         // Resolve the exact name/set pair before attempting a catalogue-wide
         // collector fallback for queries such as "Pinsir sv08.5".

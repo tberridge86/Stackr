@@ -55,6 +55,7 @@ names.push(
 );
 const cardInReads = [];
 const cardQueryShapes = [];
+const allQueryShapes = [];
 const sources = { catalogue_cards: cards, catalogue_card_names: names, catalogue_sets: [{
   set_id: enSet, set_code: 'SVX1', language_code: 'en', game_code: 'pokemon', native_name: 'Scoped Set', english_display_name: 'Scoped Set',
 }, {
@@ -83,6 +84,7 @@ const db = { schema: () => ({ from: (table) => {
       filters.push((row) => expression.test(String(row[key] ?? ''))); return this;
     },
     then(resolve, reject) {
+      allQueryShapes.push({ table, clauses: [...clauses] });
       if (table === 'catalogue_cards') cardQueryShapes.push({ clauses: [...clauses] });
       return Promise.resolve({ data: sources[table].filter((row) => filters.every((filter) => filter(row))).slice(0, limit), error: null }).then(resolve, reject);
     },
@@ -213,11 +215,14 @@ sources.catalogue_card_collectors.push({ ...multipart, normalized_collector_numb
 const indexedService = createCatalogueV1Service({ supabase: db, collectorIdentityLookup: true });
 const grassEnergy = { ...makeCard('zh-tw', 9920), set_id: energySet, collector_number: 'GRA' };
 cards.push(grassEnergy);
+sources.catalogue_card_collectors.push({ ...grassEnergy, normalized_collector_number: 'gra', normalized_collector_base: 'gra' });
 sources.catalogue_sets.push({ set_id: energySet, set_code: 'SVAM', language_code: 'zh-tw' });
 for (const q of ['SVAM GRA', 'svam gra', 'ＳＶＡＭ　ＧＲＡ']) {
-  const found = await service.search({ q, language: 'zh-tw' });
-  assert.deepEqual(found.results.map(r => r.variantId), [grassEnergy.variant_id]);
-  assert.equal(found.results[0].reason, 'exact_set_code_collector_number');
+  for (const reader of [service, indexedService]) {
+    const found = await reader.search({ q, language: 'zh-tw' });
+    assert.deepEqual(found.results.map(r => r.variantId), [grassEnergy.variant_id]);
+    assert.equal(found.results[0].reason, 'exact_set_code_collector_number');
+  }
 }
 assert.equal((await service.search({ q: 'SVAM GRA', language: 'ja' })).results.length, 0);
 assert.equal((await service.search({ q: 'SVAM GRA', setId: enSet })).results.length, 0);
@@ -254,5 +259,32 @@ assert.deepEqual(padded.results.map((result) => result.variantId), [megaCharizar
 assert.ok(cardQueryShapes.every(({ clauses }) => clauses.some(({ key }) => key === 'variant_id')),
   'Tolerant collector queries must select matching identities before hydrating card rows.');
 assert.equal((await indexedService.search({ q: '000125', language: 'ja', setId: megaSet })).results.length, 0);
+
+const japaneseSet = '77777777-7777-4777-8777-777777777777';
+const paddedJapanese = { ...makeCard('ja', 9930), set_id: japaneseSet, set_code: 'M5', collector_number: '002' };
+const unrelatedJapanese = { ...makeCard('ja', 9931), set_id: cnSet, set_code: 'S11', collector_number: '002' };
+const missingInM5 = { ...makeCard('ja', 9932), set_id: cnSet, set_code: 'S11', collector_number: '003' };
+cards.push(paddedJapanese, unrelatedJapanese, missingInM5);
+sources.catalogue_sets.push({ set_id: japaneseSet, set_code: 'M5', language_code: 'ja' });
+for (const card of [paddedJapanese, unrelatedJapanese, missingInM5]) sources.catalogue_card_collectors.push({
+  ...card, normalized_collector_number: normalizeCollectorNumber(card.collector_number),
+  normalized_collector_base: normalizeCollectorNumber(card.collector_number),
+});
+for (const q of ['M5 002', 'M5 2', 'm5 0002', 'Ｍ５　００２', 'M5-002']) {
+  allQueryShapes.length = 0;
+  const found = await indexedService.search({ q, language: 'ja', limit: 1 });
+  assert.deepEqual(found.results.map(r => r.variantId), [paddedJapanese.variant_id]);
+  assert.equal(found.results[0].reason, 'exact_set_code_collector_number');
+  const lookups = allQueryShapes.filter(x => x.table === 'catalogue_card_collectors');
+  assert.equal(lookups.length, 1, 'One indexed collector lookup must resolve padded set numbers.');
+  assert.ok(lookups[0].clauses.some(x => x.key === 'set_id' && x.values?.includes(japaneseSet)));
+  assert.ok(allQueryShapes.filter(x => x.table === 'catalogue_cards').every(x => x.clauses.some(c => c.key === 'variant_id')));
+}
+allQueryShapes.length = 0;
+assert.equal((await indexedService.search({ q: 'M5 003', language: 'ja' })).results.length, 0,
+  'A known set with no matching number must not return that number from an unrelated set.');
+assert.deepEqual(allQueryShapes.map(x => x.table), ['catalogue_sets', 'catalogue_card_collectors']);
+assert.equal((await indexedService.search({ q: 'M5 002', language: 'ja', setId: cnSet })).results.length, 0);
+assert.deepEqual((await service.search({ q: 'M5 002', language: 'ja' })).results.map(r => r.variantId), [paddedJapanese.variant_id]);
 
 console.log('Search selects card language before limiting, preserves translated lookup, constrains UUID matches, and keeps variant identities from expanding to sibling finishes.');
