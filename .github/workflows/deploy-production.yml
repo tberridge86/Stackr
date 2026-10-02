@@ -12,7 +12,7 @@ on:
         required: true
         default: catalogue_assets
         type: choice
-        options: [card_details, backend_only, english49, tw200, english45, sh33, residual146, native96, korean232, native65, native72, native70, native78, native73, native84, native99, native97, artwork3303, queue1_artwork, pbl_artwork_links, mep89_artwork, pocket131_artwork, newsets480_metadata, anniversary201_artwork, printing_front_api, card_detail_front, catalogue_assets, catalogue_api, full_platform]
+        options: [retrieval_assets, card_details, backend_only, english49, tw200, english45, sh33, residual146, native96, korean232, native65, native72, native70, native78, native73, native84, native99, native97, artwork3303, queue1_artwork, pbl_artwork_links, mep89_artwork, pocket131_artwork, newsets480_metadata, anniversary201_artwork, printing_front_api, card_detail_front, catalogue_assets, catalogue_api, full_platform]
       expected_main_sha:
         description: Exact 40-character main SHA approved for backend-only or Queue 1 artwork deployment
         required: false
@@ -88,6 +88,55 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  retrieval_assets:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope == 'retrieval_assets'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Validate exact bounded retrieval release
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_main_sha }}
+          FORBIDDEN_FLAGS: ${{ inputs.gateway_bootstrap }} ${{ inputs.apply_migrations }} ${{ inputs.publish_mobile_update }} ${{ inputs.promote_gateway }}
+          OTHER_IDENTIFIERS: ${{ inputs.catalogue_release_label }}${{ inputs.catalogue_version_id }}${{ inputs.index_version_id }}${{ inputs.previous_catalogue_version_id }}${{ inputs.previous_index_version_id }}${{ inputs.previous_recognition_deployment_id }}${{ inputs.previous_gateway_tag }}${{ inputs.pricing_smoke_variant_id }}
+        run: |
+          test "$EXPECTED_SHA" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$FORBIDDEN_FLAGS" = 'false false false false'
+          test -z "$OTHER_IDENTIFIERS"
+          git diff --exit-code
+      - name: Install locked image and storage dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Verify frozen bytes and execution guards
+        run: node --test tools/retrieval-assets-20261002/publish.test.mjs
+      - name: Publish only the reviewed retrieval assets
+        env:
+          STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+          STACKR_RETRIEVAL_CONFIRMATION: PUBLISH RETRIEVAL REPAIRS
+          SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          STACKR_RETRIEVAL_OUTPUT: ${{ runner.temp }}/retrieval-assets
+        run: node tools/retrieval-assets-20261002/publish.mjs --execute
+      - name: Scan publication receipt
+        id: receipt_scan
+        if: always()
+        run: node scripts/deploy/secret-scan.mjs --directory="$RUNNER_TEMP/retrieval-assets"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always() && steps.receipt_scan.outcome == 'success'
+        with:
+          name: retrieval-assets-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/retrieval-assets
+          retention-days: 90
+          if-no-files-found: warn
+
   backend_only:
     if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope == 'backend_only'
     runs-on: ubuntu-latest
@@ -1832,7 +1881,7 @@ jobs:
           if-no-files-found: warn
 
   deploy:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope != 'card_details' && inputs.release_scope != 'english49' && inputs.release_scope != 'tw200' && inputs.release_scope != 'english45' && inputs.release_scope != 'sh33' && inputs.release_scope != 'residual146' && inputs.release_scope != 'native96' && inputs.release_scope != 'korean232' && inputs.release_scope != 'native65' && inputs.release_scope != 'native72' && inputs.release_scope != 'native70' && inputs.release_scope != 'native78' && inputs.release_scope != 'native73' && inputs.release_scope != 'native84' && inputs.release_scope != 'native99' && inputs.release_scope != 'native97' && inputs.release_scope != 'artwork3303' && inputs.release_scope != 'backend_only' && inputs.release_scope != 'queue1_artwork' && inputs.release_scope != 'pbl_artwork_links' && inputs.release_scope != 'mep89_artwork' && inputs.release_scope != 'pocket131_artwork' && inputs.release_scope != 'newsets480_metadata' && inputs.release_scope != 'anniversary201_artwork' && inputs.release_scope != 'printing_front_api' && inputs.release_scope != 'card_detail_front'
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION' && inputs.release_scope != 'retrieval_assets' && inputs.release_scope != 'card_details' && inputs.release_scope != 'english49' && inputs.release_scope != 'tw200' && inputs.release_scope != 'english45' && inputs.release_scope != 'sh33' && inputs.release_scope != 'residual146' && inputs.release_scope != 'native96' && inputs.release_scope != 'korean232' && inputs.release_scope != 'native65' && inputs.release_scope != 'native72' && inputs.release_scope != 'native70' && inputs.release_scope != 'native78' && inputs.release_scope != 'native73' && inputs.release_scope != 'native84' && inputs.release_scope != 'native99' && inputs.release_scope != 'native97' && inputs.release_scope != 'artwork3303' && inputs.release_scope != 'backend_only' && inputs.release_scope != 'queue1_artwork' && inputs.release_scope != 'pbl_artwork_links' && inputs.release_scope != 'mep89_artwork' && inputs.release_scope != 'pocket131_artwork' && inputs.release_scope != 'newsets480_metadata' && inputs.release_scope != 'anniversary201_artwork' && inputs.release_scope != 'printing_front_api' && inputs.release_scope != 'card_detail_front'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     environment: production

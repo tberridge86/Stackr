@@ -126,6 +126,18 @@ assert.equal(
 );
 assert.equal(isAuthorizedPreviewRead({ ...loopbackRequest, method: 'POST' }, configuredGateway, '/sets'), false);
 assert.equal(isAuthorizedPreviewRead(loopbackRequest, configuredGateway, '/cards/unapproved'), false);
+for (const pathname of ['/search', '/cards/11111111-1111-4111-8111-111111111111', '/cards/11111111-1111-4111-8111-111111111111/variants']) {
+  assert.equal(isAuthorizedPreviewRead(loopbackRequest, configuredGateway, pathname), true);
+  assert.equal(rewriteStackrApiUrlForLoopbackPreview(`https://gateway.stackr.test/v1${pathname}`, 'GET', loopback),
+    `${loopback.location.origin}${STACKR_PREVIEW_PROXY_PREFIX}${pathname}`);
+  assert.equal(isAuthorizedPreviewRead({ ...loopbackRequest, method: 'POST' }, configuredGateway, pathname), false);
+  assert.equal(isAuthorizedPreviewRead({ ...loopbackRequest, socket: { remoteAddress: '203.0.113.7' } }, configuredGateway, pathname), false);
+}
+for (const pathname of ['/prices', '/cards/11111111-1111-4111-8111-111111111111/price', '/search/refresh']) {
+  assert.equal(isAuthorizedPreviewRead(loopbackRequest, configuredGateway, pathname), false);
+  assert.equal(rewriteStackrApiUrlForLoopbackPreview(`https://gateway.stackr.test/v1${pathname}`, 'GET', loopback),
+    `https://gateway.stackr.test/v1${pathname}`);
+}
 const worker = readFileSync('scripts/stackr-preview-proxy-worker.cjs', 'utf8');
 assert.match(worker, /https\.request/);
 assert.match(worker, /agent: false/);

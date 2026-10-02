@@ -145,7 +145,9 @@ export function parseSearchQuery(query = '', options = {}) {
   const collectorToken = multipartCollector || alphabeticCollector ? raw : [...tokens]
     .reverse()
     .find((token) => /[0-9]/.test(token) && /^[\p{L}\p{N}./_-]+$/u.test(token));
-  const setCollector = multipartCollector ? null : raw.match(/^([A-Za-z0-9._-]{2,20})\s+([\p{L}\p{N}./_-]*\d[\p{L}\p{N}./_-]*)$/u);
+  // Letter-only Energy numbers are meaningful only after an exact set lookup.
+  // Do not turn the final word of an ordinary name into a global collector scan.
+  const setCollector = multipartCollector ? null : raw.match(/^([A-Za-z0-9._-]{2,20})\s+([\p{L}\p{N}./_-]*\d[\p{L}\p{N}./_-]*|[A-Za-z]{1,4})$/u);
 
   return {
     raw,
@@ -901,10 +903,13 @@ async function searchSetCodeCollector(supabase, parsed, limit, language) {
     query = applyLanguageFilter(query, language);
     return query;
   };
-  const exactRows = await queryRows(buildQuery().eq('collector_number', collector));
+  const letterOnly = /^[a-z]{1,4}$/.test(collector);
+  const exactRows = await queryRows(letterOnly
+    ? buildQuery().ilike('collector_number', collector)
+    : buildQuery().eq('collector_number', collector));
   // A collector number may also be recorded as "157/165". Only run the
   // broader published-view lookup when the cheaper exact lookup misses.
-  const rows = exactRows.length
+  const rows = exactRows.length || letterOnly
     ? exactRows
     : await queryRows(buildQuery().ilike('collector_number', `${escapeLikePattern(collector)}%`));
   return dedupeByVariant(rows)

@@ -1,0 +1,65 @@
+[
+  {
+    "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/40/ea/40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3/search-result.webp",
+    "status": 200,
+    "cache": "public, max-age=public, max-age=31536000, immutable",
+    "sha256": "40eae82b63d241def132a692699354407b049848296ee0d0b55838f4c645abb3",
+    "bytes": 4074
+  },
+  {
+    "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/73/fd/73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac/card-grid.webp",
+    "status": 200,
+    "cache": "public, max-age=public, max-age=31536000, immutable",
+    "sha256": "73fd647f680080e8b3f33c9524fba73b5787a3099e3658e5f0a3ea9278f998ac",
+    "bytes": 23394
+  },
+  {
+    "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/eb/93/eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0/detail-page.webp",
+    "status": 200,
+    "cache": "public, max-age=public, max-age=31536000, immutable",
+    "sha256": "eb93d9343786809ed8e054eaf2b7c9e4fd4e717752ad83dff5deceaaa75d61d0",
+    "bytes": 107406
+  },
+  {
+    "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/e3/a0/e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567/search-result.webp",
+    "status": 200,
+    "cache": "public, max-age=public, max-age=31536000, immutable",
+    "sha256": "e3a0310ea68dc1325acec95389f20639af223ef3549ed8f4915047cd77713567",
+    "bytes": 3446
+  },
+  {
+    "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/fa/84/fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387/card-grid.webp",
+    "status": 200,
+    "cache": "public, max-age=public, max-age=31536000, immutable",
+    "sha256": "fa845b751e2e4631fecc5dc05d7f8e5dda3af4226b7fa00ba94eccecc8e1c387",
+    "bytes": 15886
+  },
+  {
+    "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/af/dd/afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6/detail-page.webp",
+    "status": 200,
+    "cache": "public, max-age=public, max-age=31536000, immutable",
+    "sha256": "afdd9cd8268bf7b6e71695449ae8176fdb473389ec91b505feb25c4421fe59c6",
+    "bytes": 60442
+  },
+  {
+    "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/47/d4/47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f/search-result.webp",
+    "status": 200,
+    "cache": "public, max-age=public, max-age=31536000, immutable",
+    "sha256": "47d428fd0f7c815781013d53bc911a6ea6adeb8bbf6a96be3d50030b39da738f",
+    "bytes": 3288
+  },
+  {
+    "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/3c/f8/3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a/card-grid.webp",
+    "status": 200,
+    "cache": "public, max-age=public, max-age=31536000, immutable",
+    "sha256": "3cf8c8a5397abc0e3749db73f204c369dcde736080bef1f2150ed977453abc4a",
+    "bytes": 15802
+  },
+  {
+    "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/9e/13/9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd/detail-page.webp",
+    "status": 200,
+    "cache": "public, max-age=public, max-age=31536000, immutable",
+    "sha256": "9e131750c839154479ea8e324cef73de6d7431f7a3a5e4dcbb786865855090fd",
+    "bytes": 63358
+  }
+]

@@ -146,7 +146,7 @@ function buildProductionExpoEnvironment(productionEnv, inheritedEnvironment = pr
 }
 
 function expoEnvironment(environment) {
-  if (environment === 'local') return process.env;
+  if (environment === 'local') return buildLocalExpoEnvironment(process.env);
 
   const easPath = path.join(PROJECT_ROOT, 'eas.json');
   let productionEnv;
@@ -157,6 +157,12 @@ function expoEnvironment(environment) {
   }
 
   return buildProductionExpoEnvironment(productionEnv);
+}
+
+function buildLocalExpoEnvironment(inherited) {
+  // Match the current API-backed catalogue while keeping an explicit legacy
+  // override available for development. An unset flag used to yield empty search.
+  return { ...inherited, EXPO_PUBLIC_STACKR_API_ENABLED: inherited.EXPO_PUBLIC_STACKR_API_ENABLED ?? 'true' };
 }
 
 function sourceLabel() {
@@ -390,6 +396,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildLocalExpoEnvironment,
   buildProductionExpoEnvironment,
   isLocalUrl,
   isPreviewExpoAlive,
