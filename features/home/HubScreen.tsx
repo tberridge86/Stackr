@@ -95,11 +95,7 @@ import {
   type CollectionPricingSummary,
 } from '../../lib/collectionPricingState';
 import { stackrApiClient } from '../../lib/stackrApiV1';
-import {
-  buildVerifiedHomeSnapshotTrend,
-  selectComparableHomeSnapshotEntries,
-  supportsHomeSnapshotScope,
-} from '../../lib/homePriceRefreshCore';
+import { supportsHomeSnapshotScope } from '../../lib/homePriceRefreshCore';
 import { hydrateCardReferenceRowMapWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 import type { CardInspectionRequest } from '../../lib/cardInspection';
 
@@ -1760,58 +1756,9 @@ export default function HubScreen() {
       priceResults = nextPriceEvidence.map((entry) => entry.result);
       const nextPricingSummary = pricingSummaryForResults(priceResults);
       const identitySignature = collectionIdentitySignature(priceResults);
-      const snapshotScope = selectComparableHomeSnapshotEntries(ownedUnits.map((unit, index) => ({
-        productType: unit.productType,
-        condition: unit.condition,
-        variantId: priceResults[index]?.variantId,
-        central: priceResults[index]?.central,
-        status: priceResults[index]?.status,
-        quantity: unit.quantity,
-      })));
-      const refreshableVariantIds = [...new Set(
-        priceResults.flatMap((price, index) => (
-          supportsHomeSnapshotScope(ownedUnits[index]?.productType, ownedUnits[index]?.condition) && price.variantId ? [price.variantId] : []
-        )),
-      )].sort();
-      refreshableVariantIdsRef.current = refreshableVariantIds;
-
-      let nextChartData: number[] = [];
-      let nextTrendCoverageLabel: string | null = null;
-      let nextTrendProvenanceLabel: string | null = null;
-      let nextTrendIsSubset = false;
-      if (snapshotScope.entries.length && snapshotScope.variantIds.length) {
-        const rangeDays = chartRange === '7D' ? 7 : 30;
-        const nowMs = Date.now();
-        try {
-          const responses = await Promise.all(
-            Array.from({ length: Math.ceil(snapshotScope.variantIds.length / 24) }, (_, index) => (
-              stackrApiClient.marketPriceSnapshots({
-                variantIds: snapshotScope.variantIds.slice(index * 24, (index + 1) * 24),
-                rangeDays,
-              })
-            )),
-          );
-          if (!await confirmCurrentRequest()) return;
-          nextChartData = buildVerifiedHomeSnapshotTrend(
-            snapshotScope.entries,
-            responses.flatMap((response) => response.data.snapshots),
-            {
-              rangeStartMs: nowMs - rangeDays * 24 * 60 * 60 * 1000,
-              nowMs,
-              bucketMs: chartRange === '7D' ? 30 * 60 * 1000 : 24 * 60 * 60 * 1000,
-            },
-          );
-          if (nextChartData.length >= 2) {
-            nextTrendIsSubset = snapshotScope.eligibleUnits < ownedUnitCount;
-            nextTrendCoverageLabel = nextTrendIsSubset
-              ? `Trend covers ${snapshotScope.eligibleUnits} of ${ownedUnitCount} cards with comparable stored prices.`
-              : `Trend covers all ${ownedUnitCount} cards with comparable stored prices.`;
-            nextTrendProvenanceLabel = 'Provider snapshot trend';
-          }
-        } catch (historyError) {
-          console.log('Home stored price history unavailable', historyError);
-        }
-      }
+      // Do not reconstruct collection history by applying today's holdings to
+      // old per-card market snapshots. Only recorded collection valuations or
+      // same-identity saved collection reads are valid history.
       const currentValueRead: CollectionValueRead | null = nextPricingSummary.total != null
         ? {
           capturedAt: new Date().toISOString(),
@@ -1824,21 +1771,25 @@ export default function HubScreen() {
       const nextValueReads = currentValueRead
         ? [...collectionValueReadsRef.current, currentValueRead].slice(-MAX_COLLECTION_VALUE_READS)
         : collectionValueReadsRef.current;
-      // Saved owner reads are a truthful fallback only when the same collection
-      // identity and priced coverage were recorded at least twice. Provider
-      // snapshot history remains preferred whenever it is available.
+      // Saved owner reads are truthful only when the exact owned identity and
+      // priced coverage match. Additions, removals and coverage changes start a
+      // new comparable series instead of being projected backwards.
       if (!nextChartData.length && currentValueRead) {
         nextChartData = getComparableCollectionValueReads(
           nextValueReads,
           currentValueRead,
           chartRange === '7D' ? 7 : 30,
         );
+        nextTrendIsSubset = nextPricingSummary.pricedUnits < nextPricingSummary.totalUnits;
         if (nextChartData.length >= 2) {
-          nextTrendIsSubset = nextPricingSummary.pricedUnits < nextPricingSummary.totalUnits;
           nextTrendCoverageLabel = nextTrendIsSubset
-            ? `Saved collection reads cover prices for ${nextPricingSummary.pricedUnits} of ${nextPricingSummary.totalUnits} cards.`
-            : `Saved collection reads cover all ${nextPricingSummary.totalUnits} cards.`;
-          nextTrendProvenanceLabel = 'Saved collection-read trend';
+            ? `Comparable history covers ${nextPricingSummary.pricedUnits} of ${nextPricingSummary.totalUnits} cards; unpriced cards are excluded, not £0.`
+            : `Comparable history covers all ${nextPricingSummary.totalUnits} cards.`;
+          nextTrendProvenanceLabel = 'Persisted collection reads';
+        } else {
+          nextTrendCoverageLabel = nextPricingSummary.pricedUnits
+            ? `One genuine collection valuation is recorded with ${nextPricingSummary.pricedUnits} of ${nextPricingSummary.totalUnits} cards priced. Another comparable valuation is needed for a graph.`
+            : 'No comparable collection valuation has been recorded yet.';
         }
       }
       const chartChange = nextChartData.length >= 2
