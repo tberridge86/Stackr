@@ -5,7 +5,6 @@ import {
   StyleProp,
   TextStyle,
   TouchableOpacity,
-  View,
   ViewStyle,
 } from 'react-native';
 import { Text } from './Text';
