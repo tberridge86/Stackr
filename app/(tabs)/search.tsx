@@ -44,6 +44,7 @@ import { useTheme } from '../../components/theme-context';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchOwnedCardRows } from '../../lib/ownership';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import { readCachedCanonicalSearch, writeCachedCanonicalSearch } from '../../lib/searchCardResultCache';
 import {
   fetchCachedCardListingStats,
   fetchCachedProductListingStatsByName,
@@ -946,6 +947,14 @@ export default function GlobalSearchScreen() {
 
     const correctionPromise = correctPokemonNameQuery(trimmed, { allowIndex: false }).catch(() => null);
     let canonicalCards: SearchResults['cards'] | null = null;
+    const cachedCardsPromise = force
+      ? Promise.resolve(null)
+      : readCachedCanonicalSearch(primary, selectedLanguage).catch(() => null);
+    void cachedCardsPromise.then((cachedRows) => {
+      if (requestId !== requestRef.current || canonicalCards !== null || !cachedRows?.length) return;
+      canonicalCards = mapCardResults(cachedRows);
+      setResults((current) => ({ ...current, cards: canonicalCards! }));
+    });
     const cardsPromise = searchLocalPokemonCards<any>(primary, {
       language: selectedLanguage,
       limit: cardResultLimit,
@@ -958,6 +967,7 @@ export default function GlobalSearchScreen() {
         if (requestId !== requestRef.current) return;
         canonicalCards = mapCardResults(rows);
         setResults((current) => ({ ...current, cards: canonicalCards! }));
+        void writeCachedCanonicalSearch(primary, selectedLanguage, rows).catch(() => {});
       },
     });
     const setsPromise = searchSetsQuick(primary, normalisedTerms);
