@@ -120,6 +120,61 @@ $$;
 revoke all on function api.catalogue_price_coverage_status() from public, anon, authenticated;
 grant execute on function api.catalogue_price_coverage_status() to service_role;
 
+-- Missing exact prices are claimed first, then stale prices, then already-fresh
+-- identities. Attempts remains ahead of ordinal inside each class so a retrying
+-- identity cannot monopolise the worker ahead of untouched catalogue rows.
+create or replace function api.claim_catalogue_prices(p_cycle uuid,p_limit integer default 12)
+returns setof public.catalogue_price_items
+language sql
+security invoker
+set search_path = ''
+as $
+  with candidates as (
+    select
+      i.cycle_id,
+      i.variant_id,
+      i.attempts,
+      i.ordinal,
+      case
+        when p.market_value is null then 0
+        when p.stale_after is null or p.stale_after <= now() then 1
+        else 2
+      end as price_priority
+    from public.catalogue_price_items i
+    left join lateral (
+      select
+        snap.stale_after,
+        coalesce(snap.tcg_mid,snap.tcgdex_price,snap.cardmarket_trend,snap.ebay_average) as market_value
+      from public.market_price_snapshots snap
+      where snap.user_id is null
+        and snap.card_id=i.variant_id::text
+        and coalesce(
+          snap.pricing_identity_json->>'canonicalVariantId',
+          snap.pricing_identity_json->>'canonical_variant_id'
+        )=i.variant_id::text
+      order by snap.calculated_at desc nulls last,snap.id desc
+      limit 1
+    ) p on true
+    where i.cycle_id=p_cycle
+      and i.outcome in ('pending','retrying')
+      and i.next_attempt_at<=now()
+      and (i.lease_until is null or i.lease_until<=now())
+    order by price_priority,i.attempts,i.ordinal
+    for update of i skip locked
+    limit greatest(0,least(p_limit,100))
+  ), selected as (
+    select cycle_id,variant_id from candidates
+  )
+  update public.catalogue_price_items i
+  set lease_token=gen_random_uuid(),lease_until=now()+interval '5 minutes',attempts=i.attempts+1
+  from selected s
+  where i.cycle_id=s.cycle_id and i.variant_id=s.variant_id
+  returning i.*;
+$;
+
+revoke all on function api.claim_catalogue_prices(uuid,integer) from public,anon,authenticated;
+grant execute on function api.claim_catalogue_prices(uuid,integer) to service_role;
+
 create or replace function api.publish_collection_valuation(
   p_owner uuid,
   p_lease uuid,
