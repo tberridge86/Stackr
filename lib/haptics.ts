@@ -18,6 +18,7 @@ export type StackrHapticEvent =
   | 'selection'
   | 'card_preview'
   | 'card_inspection'
+  | 'card_foil_crossing'
   | 'scanner_frame_ready'
   | 'scanner_capture_locked'
   | 'scanner_exact_match'
@@ -36,6 +37,7 @@ const cooldowns: Partial<Record<StackrHapticEvent, number>> = {
   selection: 80,
   card_preview: 120,
   card_inspection: 250,
+  card_foil_crossing: 800,
   scanner_frame_ready: 650,
   scanner_capture_locked: 450,
   scanner_exact_match: 650,
@@ -120,8 +122,14 @@ async function doubleImpact(
   if (getStackrHapticsEnabled()) await Haptics.impactAsync(second);
 }
 
-export async function haptic(event: StackrHapticEvent) {
+/**
+ * `isCurrent` lets delayed UI-thread crossings expire when their viewer has
+ * closed, paused or reset while the saved preference is being hydrated.
+ */
+export async function haptic(event: StackrHapticEvent, isCurrent: () => boolean = () => true) {
+  if (!isCurrent()) return;
   if (Platform.OS !== 'web') await hydrateStackrHapticsPreference();
+  if (!isCurrent()) return;
   if (!shouldPlay(event)) return;
 
   await safe(async () => {
@@ -135,6 +143,11 @@ export async function haptic(event: StackrHapticEvent) {
       case 'card_inspection':
         // One crisp confirmation when inspection opens; never on tilt frames.
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
+        return;
+      case 'card_foil_crossing':
+        // A rare, soft cue for a deliberate tilt through the simulated foil.
+        // The motion engine adds hysteresis, so this facade is never called per frame.
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         return;
       case 'scanner_frame_ready':
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
@@ -174,6 +187,7 @@ export const stackrHaptics = {
   selection: () => haptic('selection'),
   cardPreview: () => haptic('card_preview'),
   cardInspection: () => haptic('card_inspection'),
+  cardFoilCrossing: (isCurrent?: () => boolean) => haptic('card_foil_crossing', isCurrent),
   scannerFrameReady: () => haptic('scanner_frame_ready'),
   scannerCaptureLocked: () => haptic('scanner_capture_locked'),
   scannerExactMatch: () => haptic('scanner_exact_match'),

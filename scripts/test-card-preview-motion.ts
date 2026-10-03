@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { boundedCardTilt, calibratedCardSensor, cardDragTilt, cardInspectionMotionEnabled, cardFloatOffset, cardMotionIntensity, relativeCardTilt, isFoilPreview } from '../lib/cardPreviewMotion';
+import { boundedCardTilt, calibratedCardSensor, cardDragTilt, cardInspectionMotionEnabled, cardFloatOffset, cardMotionIntensity, nextCardFoilHapticState, relativeCardTilt, isFoilPreview } from '../lib/cardPreviewMotion';
 
 assert.equal(boundedCardTilt(Infinity), 0);
 assert.equal(boundedCardTilt(NaN), 0);
@@ -42,4 +42,20 @@ assert.equal(cardInspectionMotionEnabled(true, true, false), true);
 assert.equal(cardInspectionMotionEnabled(false, true, false), false, 'closed viewer has no sensor/GPU work');
 assert.equal(cardInspectionMotionEnabled(true, false, false), false, 'backgrounded viewer has no sensor/GPU work');
 assert.equal(cardInspectionMotionEnabled(true, true, true), false, 'Reduce Motion removes perspective, sensors and material');
-console.log('Card preview motion: 31 cases passed, 0 failed.');
+let foilState = { armed: false, above: false, lastTriggeredAt: -Infinity };
+let foil = nextCardFoilHapticState(foilState, 0.2, 0.1, 1000);
+assert.equal(foil.trigger, false, 'resting after open arms the foil cue without feedback');
+foilState = foil.state;
+foil = nextCardFoilHapticState(foilState, 1, 0, 1001);
+assert.equal(foil.trigger, true, 'a deliberate tilt through the foil band produces one cue');
+foilState = foil.state;
+foil = nextCardFoilHapticState(foilState, 0.9, 0, 2000);
+assert.equal(foil.trigger, false, 'holding the card at an angle never repeats feedback');
+foil = nextCardFoilHapticState(foilState, 0.1, 0, 2001);
+foilState = foil.state;
+foil = nextCardFoilHapticState(foilState, 0.9, 0, 2200);
+assert.equal(foil.trigger, true, 'a new sweep after hysteresis and cooldown can feel textured again');
+foilState = { armed: false, above: false, lastTriggeredAt: -Infinity };
+foil = nextCardFoilHapticState(foilState, 0.9, 0, 3000);
+assert.equal(foil.trigger, false, 'opening at a tilted angle cannot create an initialization pulse');
+console.log('Card preview motion: 37 cases passed, 0 failed.');

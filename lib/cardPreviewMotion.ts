@@ -32,6 +32,45 @@ export function cardInspectionMotionEnabled(active: boolean, foreground: boolean
   return active && foreground && !reduceMotion;
 }
 
+export type CardFoilHapticState = { armed: boolean; above: boolean; lastTriggeredAt: number };
+
+export const CARD_FOIL_HAPTIC_HIGH = 0.58;
+export const CARD_FOIL_HAPTIC_LOW = 0.3;
+export const CARD_FOIL_HAPTIC_COOLDOWN_MS = 800;
+
+/**
+ * Turns continuous sensor readings into one bounded tactile event per sweep.
+ * A card must first settle close to neutral, then cross the high threshold;
+ * this prevents an opening, recenter or suspended preview from vibrating.
+ */
+export function nextCardFoilHapticState(
+  state: CardFoilHapticState,
+  x: number,
+  y: number,
+  now: number,
+) {
+  'worklet';
+  const intensity = cardMotionIntensity(x, y);
+  if (!Number.isFinite(now)) return { state, trigger: false };
+  if (!state.armed) {
+    return intensity <= CARD_FOIL_HAPTIC_LOW
+      ? { state: { ...state, armed: true, above: false }, trigger: false }
+      : { state, trigger: false };
+  }
+  if (state.above) {
+    return intensity <= CARD_FOIL_HAPTIC_LOW
+      ? { state: { ...state, above: false }, trigger: false }
+      : { state, trigger: false };
+  }
+  if (intensity < CARD_FOIL_HAPTIC_HIGH) return { state, trigger: false };
+  // Mark the band as crossed even when its shared cooldown rejects the event.
+  // Holding a card at one angle must never turn into a delayed vibration.
+  if (now - state.lastTriggeredAt < CARD_FOIL_HAPTIC_COOLDOWN_MS) {
+    return { state: { ...state, above: true }, trigger: false };
+  }
+  return { state: { armed: true, above: true, lastTriggeredAt: now }, trigger: true };
+}
+
 export function cardDragTilt(dx: number, dy: number) {
   'worklet';
   return { x: boundedCardTilt(dx / 140), y: boundedCardTilt(-dy / 180) };

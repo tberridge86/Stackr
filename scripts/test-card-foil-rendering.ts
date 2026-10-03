@@ -66,6 +66,24 @@ async function main() {
   }
   cases++;
   assert.ok(alphaAt(bounds, 0, 0) <= 1, 'foil leaves the printed cut edge quiet'); cases++;
+  const peakAlpha = (data: Uint8Array) => {
+    let peak = 0;
+    for (let i = 3; i < data.length; i += 4) peak = Math.max(peak, data[i]);
+    return peak;
+  };
+  const showcaseCrest = (mode: number, foil: number) => {
+    const resting = pixels(mode, 0, 0, 1, foil, 0);
+    const caughtLight = pixels(mode, 0.82, -0.64, 1, foil, 0);
+    return { resting: peakAlpha(resting), caughtLight: peakAlpha(caughtLight) };
+  };
+  const diagonalCrest = showcaseCrest(CARD_FOIL_MODES.diagonal, 0.16);
+  const texturedCrest = showcaseCrest(CARD_FOIL_MODES.textured, 0.12);
+  assert.ok(diagonalCrest.caughtLight >= diagonalCrest.resting + 14,
+    `diagonal foil gains a visible localized crest when tilted (${diagonalCrest.resting} -> ${diagonalCrest.caughtLight})`); cases++;
+  assert.ok(texturedCrest.caughtLight >= texturedCrest.resting + 8,
+    `textured foil gains a visible localized crest when tilted (${texturedCrest.resting} -> ${texturedCrest.caughtLight})`); cases++;
+  assert.ok(diagonalCrest.caughtLight <= 113 && texturedCrest.caughtLight <= 113,
+    'showcase crests remain inside the shared 0.44 opacity ceiling'); cases++;
 
   if (process.argv.includes('--write-fixtures')) {
     const output = path.resolve('outputs/holographic-inspection'); mkdirSync(output, { recursive: true });
@@ -108,6 +126,6 @@ async function main() {
     snapshot.delete(); sheet.delete(); base.delete();
   }
   surface.delete(); effect.delete();
-  console.log(`Card foil rendering: ${cases} cases passed, 0 failed (Skia CPU/WASM, not native GPU).`);
+  console.log(`Card foil rendering: ${cases} cases passed, 0 failed; localized crest alpha diagonal ${diagonalCrest.resting}->${diagonalCrest.caughtLight}, textured ${texturedCrest.resting}->${texturedCrest.caughtLight} (Skia CPU/WASM, not native GPU).`);
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

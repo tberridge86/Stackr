@@ -24,11 +24,13 @@ function load(file: string, dependencies: Record<string, unknown>) {
 }
 
 async function main() {
-  let cases = 0, sensors = 0, gpuSurfaces = 0, cancellations = 0;
+  let cases = 0, sensors = 0, gpuSurfaces = 0, cancellations = 0, foilHapticCalls = 0;
   let appListener: (state: string) => void = () => {};
   let motionListener: (reduced: boolean) => void = () => {};
   let appListeners = 0, preferenceListeners = 0;
   let gesture: any;
+  const reactions: Array<{ prepare: () => any; react: (value: any) => void }> = [];
+  const queuedUiToJs: Array<() => void> = [];
   let userReduced = false;
   const useShared = (value: unknown) => React.useMemo(() => ({ value }), []);
   const { InteractiveCardPreview } = load('components/InteractiveCardPreview.tsx', {
@@ -47,7 +49,8 @@ async function main() {
       useSharedValue: useShared,
       useDerivedValue: (fn: () => unknown) => ({ get value() { return fn(); } }),
       useAnimatedStyle: (fn: () => unknown) => fn(),
-      useAnimatedReaction: () => {},
+      useAnimatedReaction: (prepare: () => any, react: (value: any) => void) => { reactions.push({ prepare, react }); },
+      runOnJS: (fn: (...args: any[]) => void) => (...args: any[]) => { queuedUiToJs.push(() => fn(...args)); },
       cancelAnimation: () => { cancellations++; },
       withTiming: (value: number) => value, withSpring: (value: number) => value,
       useAnimatedSensor: () => {
@@ -57,16 +60,46 @@ async function main() {
     },
     '../lib/cardPreviewMotion': motion,
     '../lib/cardMotionPreference': { useCardMotionPreference: () => ({ reduced: userReduced, loaded: true }) },
+    '../lib/haptics': { stackrHaptics: { cardFoilCrossing: (isCurrent?: () => boolean) => {
+      if (isCurrent?.() ?? true) foilHapticCalls++;
+    } } },
   });
   function Material() { React.useEffect(() => { gpuSurfaces++; return () => { gpuSurfaces--; }; }, []); return null; }
   let root!: ReactTestRenderer;
-  const preview = (active: boolean) => React.createElement(InteractiveCardPreview, { active,
+  const preview = (active: boolean, motionPaused = false, foilHaptics = false, resetKey = 0) => React.createElement(InteractiveCardPreview, { active, motionPaused, foilHaptics, resetKey,
     renderMaterial: () => React.createElement(Material),
   }, React.createElement('Artwork'));
   await act(async () => { root = create(preview(false)); });
   assert.equal(sensors, 0); assert.equal(gpuSurfaces, 0); cases++;
   await act(async () => { root.update(preview(true)); });
   assert.equal(sensors, 1); assert.equal(gpuSurfaces, 1); cases++;
+  const foilReaction = () => reactions.map(reaction => ({ reaction, sample: reaction.prepare() }))
+    .filter(({ sample }) => sample && 'allowed' in sample).at(-1)!;
+  const queueFoilCrossing = () => {
+    const { reaction, sample } = foilReaction();
+    reaction.react({ ...sample, x: 0, y: 0, allowed: true });
+    reaction.react({ ...sample, x: 1, y: 0, allowed: true });
+    assert.equal(queuedUiToJs.length, 1, 'only the threshold crossing queues a JS haptic callback');
+  };
+  await act(async () => { root.update(preview(true, false, true)); });
+  queueFoilCrossing();
+  await act(async () => { root.update(preview(true, true, true)); });
+  queuedUiToJs.shift()!();
+  assert.equal(foilHapticCalls, 0, 'a delayed foil callback expires after pause'); cases++;
+  await act(async () => { root.update(preview(true, false, true)); });
+  queueFoilCrossing();
+  await act(async () => { root.update(preview(true, false, true, 1)); });
+  queuedUiToJs.shift()!();
+  assert.equal(foilHapticCalls, 0, 'a delayed foil callback expires after recenter'); cases++;
+  await act(async () => { root.update(preview(false, false, true)); });
+  queuedUiToJs.length = 0;
+  assert.equal(sensors, 0); assert.equal(gpuSurfaces, 0); cases++;
+  await act(async () => { root.update(preview(true, false, true)); });
+  queueFoilCrossing();
+  await act(async () => { root.update(preview(false, false, true)); });
+  queuedUiToJs.shift()!();
+  assert.equal(foilHapticCalls, 0, 'a delayed foil callback expires after viewer close'); cases++;
+  await act(async () => { root.update(preview(true)); });
   assert.equal(gesture.onMoveShouldSetPanResponder(null, { numberActiveTouches: 1, dx: 8, dy: 0 }), true); cases++;
   assert.equal(gesture.onMoveShouldSetPanResponder(null, { numberActiveTouches: 2, dx: 80, dy: 0 }), false); cases++;
   await act(async () => { appListener('background'); });
