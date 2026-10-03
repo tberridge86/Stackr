@@ -830,7 +830,35 @@ const EMPTY_BINDER_LIBRARY_SUMMARY: BinderLibrarySummarySnapshot = {
 };
 
 const BINDER_SUMMARY_COUNT_VERSION = 'set-total-known-state-v3';
+const BINDER_OVERVIEW_CACHE_VERSION = 1;
+const BINDER_OVERVIEW_CACHE_PREFIX = 'stackr:binder-library-overview:v1:';
 const getMasterSetStorageKey = (binderId: string) => `stackr:binder-master-set:${binderId}`;
+const getBinderOverviewStorageKey = (userId: string) => `${BINDER_OVERVIEW_CACHE_PREFIX}${encodeURIComponent(userId)}`;
+
+async function readPersistedBinderOverview(userId: string): Promise<BinderLibraryOverviewSnapshot | null> {
+  try {
+    const raw = await AsyncStorage.getItem(getBinderOverviewStorageKey(userId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { version?: number; snapshot?: BinderLibraryOverviewSnapshot };
+    if (parsed?.version !== BINDER_OVERVIEW_CACHE_VERSION || !Array.isArray(parsed.snapshot?.binders)) return null;
+    return parsed.snapshot ?? null;
+  } catch (error) {
+    console.log('Failed to read persisted binder overview', error);
+    return null;
+  }
+}
+
+async function writePersistedBinderOverview(userId: string, snapshot: BinderLibraryOverviewSnapshot) {
+  try {
+    await AsyncStorage.setItem(getBinderOverviewStorageKey(userId), JSON.stringify({
+      version: BINDER_OVERVIEW_CACHE_VERSION,
+      cachedAt: Date.now(),
+      snapshot,
+    }));
+  } catch (error) {
+    console.log('Failed to persist binder overview', error);
+  }
+}
 
 const getBinderLibrarySignature = (data: BinderRecord[]) =>
   [BINDER_SUMMARY_COUNT_VERSION, data
@@ -1253,32 +1281,45 @@ export default function BinderLibraryScreen() {
     const accountId = accountUser?.id ?? null;
     const isCurrent = () => loadRequestRef.current === requestId && accountIdRef.current === accountId;
     try {
+      if (!accountId) {
+        if (isCurrent()) setLoading(false);
+        return;
+      }
+
+      const queryKey = stackrQueryKeys.binderLibrary(accountId);
+      let displayedCachedOverview = false;
+
+      if (!shouldForceRefresh) {
+        const memoryCached = stackrQueryClient.getQueryData<BinderLibraryOverviewSnapshot>(queryKey);
+        const persistedCached = memoryCached ?? await readPersistedBinderOverview(accountId);
+        if (!isCurrent()) return;
+        if (persistedCached) {
+          stackrQueryClient.setQueryData(queryKey, persistedCached);
+          applyBinderOverviewSnapshot(persistedCached);
+          loadedOnceRef.current = true;
+          displayedCachedOverview = true;
+          setLoading(false);
+          loadBinderSummaries(persistedCached.binders, accountId, false, isCurrent).catch((summaryError) => {
+            console.log('Failed to load cached binder summaries', summaryError);
+          });
+        }
+      }
+
+      if (!displayedCachedOverview && !loadedOnceRef.current) setLoading(true);
+
+      // Verify the active session after the private, account-keyed cache has
+      // painted. Authentication must protect refreshes without serialising the
+      // first useful render behind a network round trip.
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error) throw error;
       const user = session?.user;
-      if (!isCurrent() || (user?.id ?? null) !== accountId) return;
-      const queryKey = stackrQueryKeys.binderLibrary(user?.id ?? null);
+      if (!isCurrent() || user?.id !== accountId) return;
 
       if (shouldForceRefresh) {
         invalidateBinderCaches();
         await stackrQueryClient.invalidateQueries({ queryKey: stackrQueryKeys.binderLibraryRoot });
       }
       if (!isCurrent()) return;
-
-      const cached = shouldForceRefresh
-        ? null
-        : stackrQueryClient.getQueryData<BinderLibraryOverviewSnapshot>(queryKey);
-
-      if (cached) {
-        applyBinderOverviewSnapshot(cached);
-        loadedOnceRef.current = true;
-        setLoading(false);
-        loadBinderSummaries(cached.binders, user?.id ?? null, false, isCurrent).catch((summaryError) => {
-          console.log('Failed to load cached binder summaries', summaryError);
-        });
-      } else if (!loadedOnceRef.current) {
-        setLoading(true);
-      }
 
       const snapshot = await stackrQueryClient.fetchQuery({
         queryKey,
@@ -1288,6 +1329,8 @@ export default function BinderLibraryScreen() {
 
       if (!isCurrent()) return;
       applyBinderOverviewSnapshot(snapshot);
+      stackrQueryClient.setQueryData(queryKey, snapshot);
+      void writePersistedBinderOverview(accountId, snapshot);
       loadedOnceRef.current = true;
       setLoading(false);
 
@@ -1298,7 +1341,8 @@ export default function BinderLibraryScreen() {
         const enriched = { ...snapshot, binders: enrichedBinders };
         stackrQueryClient.setQueryData(queryKey, enriched);
         applyBinderOverviewSnapshot(enriched);
-        await loadBinderSummaries(enrichedBinders, user?.id ?? null, shouldForceRefresh, isCurrent);
+        void writePersistedBinderOverview(accountId, enriched);
+        await loadBinderSummaries(enrichedBinders, accountId, shouldForceRefresh, isCurrent);
       }).catch((summaryError) => {
         console.log('Failed to load binder summaries', summaryError);
       });
