@@ -28,6 +28,8 @@ const dependencies: Record<string, unknown> = {
   '../lib/cardInspection': inspection,
   '../lib/cardHoloProfile': profiles,
   '../lib/cardHoloMaskRegistry': { VERIFIED_CARD_HOLO_MASKS: [] },
+  '../lib/cardPrintingMaterial': { resolvePrintingMaterial: () => null },
+  '../lib/cardPrintingMaterialRegistry': { REVIEWED_PRINTING_MATERIALS: [] },
   '../lib/stackrSizing': { stackrCardImageSizes: { cardAspectRatio: 630 / 880 } },
   '../lib/haptics': { stackrHaptics: { selection: () => { selections++; } } },
   './StackrImage': { StackrImage: 'Image' },
@@ -64,19 +66,16 @@ async function main() {
   assert.equal(preview.motionPaused, true, 'no sensor work before the card image loads');
   assert.equal(preview.foilHaptics, false); cases++;
   await act(async () => root.root.findByType('Image' as React.ElementType).props.onLoad());
-  assert.equal(preview.motionPaused, false); assert.equal(preview.foilHaptics, true); cases++;
-  assert.equal(control('Simulated lighting').props.accessibilityState.checked, true); cases++;
-  await click('Simulated lighting');
-  assert.equal(preview.foilHaptics, false, 'turning off simulated light silences foil cues');
-  assert.equal(preview.renderMaterial({}), null, 'light off leaves original artwork only'); cases++;
-  await click('Simulated lighting');
+  assert.equal(preview.motionPaused, false); assert.equal(preview.foilHaptics, false, 'known finish without a reviewed pack must not gain foil haptics'); cases++;
+  assert.equal(control('Simulated lighting').props.disabled, true, 'material control is unavailable without an exact reviewed pack'); cases++;
+  assert.equal(preview.renderMaterial({}), null, 'unverified finish leaves original artwork only'); cases++;
   await click('Card motion');
   assert.equal(preview.motionPaused, true);
   assert.equal(control('Recenter card and light').props.disabled, true);
   assert.equal(control('Simulated lighting').props.disabled, true); cases++;
   await click('Card motion');
   await click('Recenter card and light');
-  assert.equal(preview.resetKey, 1); assert.equal(selections, 5); cases++;
+  assert.equal(preview.resetKey, 1); assert.equal(selections, 3); cases++;
   await act(async () => root.root.findByType('Image' as React.ElementType).props.onError());
   assert.equal(preview.motionPaused, true); assert.equal(preview.foilHaptics, false); cases++;
   await act(async () => root.root.findByType('Image' as React.ElementType).props.onLoad());
