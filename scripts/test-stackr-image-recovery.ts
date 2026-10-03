@@ -42,8 +42,12 @@ const props = { uri: 'https://approved.example/grid.webp', fullUri: 'https://app
   fallbackUris: ['https://approved.example/original.jpg'], cacheKey: 'printing' };
 let tree = render(props); const staleError = find(tree, 'ExpoImage').props.onError;
 for (const expected of [props.uri, props.fullUri, props.fallbackUris[0]]) {
-  const image = find(tree, 'ExpoImage'); assert.equal(image.props.source.uri, expected);
-  assert.equal(image.props.source.cacheKey, `printing:${expected}`, 'each rendition has a distinct cache entry');
+  let image = find(tree, 'ExpoImage'); assert.equal(image.props.source.uri, expected);
+  assert.equal(image.props.source.cacheKey, `printing:${expected}:retry-0`, 'each rendition has a distinct first-attempt cache entry');
+  image.props.onError(); tree = render(props);
+  image = find(tree, 'ExpoImage');
+  assert.equal(image.props.source.uri, expected, 'a transient failure retries the same exact rendition before fallback');
+  assert.equal(image.props.source.cacheKey, `printing:${expected}:retry-1`);
   image.props.onError(); tree = render(props);
 }
 assert.equal(find(tree, 'ExpoImage'), null); assert(find(tree, 'Icon'), 'exhaustion has an honest image placeholder');
@@ -65,4 +69,4 @@ assert.deepEqual({ width: mergedFrame.width, height: mergedFrame.height, left: m
 assert.equal(frame.overflow, 'hidden'); assert.equal(frame.borderRadius, 8.1);
 assert.equal(shapedImage.props.contentFit, 'contain', 'card edges preserve printed borders');
 assert.equal(shapedImage.props.source.uri, shapedProps.uri, 'silhouette clipping does not replace source artwork');
-console.log('Actual StackrImage component advances through three renditions, stops at a placeholder and recovers on corrected props without remount/reinstall.');
+console.log('Actual StackrImage retries each exact rendition once, advances only through vetted same-printing candidates, stops honestly, and recovers on corrected props.');
