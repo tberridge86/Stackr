@@ -79,6 +79,12 @@ const getPokemonCardSearchTerms = (pokemonName: string) => {
 const uniqueUrls = (urls: (string | null | undefined)[]) =>
   Array.from(new Set(urls.filter((url): url is string => Boolean(url))));
 
+const POKEDEX_CARD_SEARCH_LANGUAGES = ['en', 'ja', 'zh-cn', 'zh-tw', 'ko'] as const;
+
+type FetchCardsForPokemonOptions = {
+  onCanonicalCards?: (cards: PokedexCard[]) => void;
+};
+
 const buildPokedexImageUrls = (card: any) => {
   return uniqueUrls([
     card.raw_data?.images?.large,
@@ -174,35 +180,15 @@ async function fetchPokemonTcgApiCardsForPokemon(pokemonName: string): Promise<P
   return Array.from(cardsById.values());
 }
 
-export async function fetchCardsForPokemon(pokemonName: string): Promise<PokedexCard[]> {
+export async function fetchCardsForPokemon(
+  pokemonName: string,
+  options: FetchCardsForPokemonOptions = {},
+): Promise<PokedexCard[]> {
   const displayName = formatPokedexName(pokemonName);
   const searchTerms = getPokemonCardSearchTerms(pokemonName);
   const rowsById = new Map<string, any>();
 
-  for (const term of searchTerms) {
-    const data = await searchLocalPokemonCards<any>(term, {
-      language: 'all',
-      limit: 100,
-      skipSetDetection: true,
-    });
-    for (const row of data) {
-      rowsById.set(row.id, row);
-    }
-  }
-
-  if (rowsById.size === 0) {
-    const fallbackRows = await searchLocalPokemonCards<any>(displayName, {
-      limit: 1000,
-      skipSetDetection: true,
-      select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
-    });
-
-    for (const row of fallbackRows) {
-      rowsById.set(row.id, row);
-    }
-  }
-
-  let cards = Array.from(rowsById.values())
+  const sortedCards = () => Array.from(rowsById.values())
     .filter((card) => pokemonNameMatchesCardName(displayName, card.name ?? ''))
     .map(mapCardRow)
     .sort((a, b) => {
@@ -212,8 +198,39 @@ export async function fetchCardsForPokemon(pokemonName: string): Promise<Pokedex
       return String(a.number ?? '').localeCompare(String(b.number ?? ''), undefined, { numeric: true });
     });
 
+  const emitCanonicalCards = (rows: any[]) => {
+    let changed = false;
+    for (const row of rows) {
+      if (!row?.id || !pokemonNameMatchesCardName(displayName, row.name ?? '')) continue;
+      rowsById.set(row.id, row);
+      changed = true;
+    }
+    if (changed) options.onCanonicalCards?.(sortedCards());
+  };
+
+  // Search each supported catalogue language independently. One unavailable
+  // shard must not erase another language, and all requests begin together so
+  // Pokédex does not serialise five API round trips before showing cards.
+  const searches = searchTerms.flatMap((term) => POKEDEX_CARD_SEARCH_LANGUAGES.map(async (language) => {
+    try {
+      const rows = await searchLocalPokemonCards<any>(term, {
+        language,
+        limit: 100,
+        skipSetDetection: true,
+        onCanonicalResults: emitCanonicalCards,
+      });
+      emitCanonicalCards(rows);
+    } catch (error) {
+      console.log('Pokédex catalogue language search failed', { pokemonName, language, error });
+    }
+  }));
+
+  await Promise.all(searches);
+
+  let cards = sortedCards();
   if (cards.length === 0) {
     cards = await fetchPokemonTcgApiCardsForPokemon(pokemonName);
+    if (cards.length) options.onCanonicalCards?.(cards);
   }
 
   return enrichPokedexCards(cards);
