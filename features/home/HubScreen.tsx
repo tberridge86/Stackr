@@ -162,7 +162,7 @@ type HomeBinderCardGroup = {
 };
 
 type HomeCollectionCacheSnapshot = {
-  pricingContractVersion: 3;
+  pricingContractVersion: 4;
   priceEvidence?: StoredCollectionPrice[];
   cachedAt: number;
   mintyDataRefreshedAt?: string | null;
@@ -1403,7 +1403,7 @@ export default function HubScreen() {
       );
       if (
         !snapshot
-        || snapshot.pricingContractVersion !== 3
+        || snapshot.pricingContractVersion !== 4
         || (snapshot.collectionTotal !== null && typeof snapshot.collectionTotal !== 'number')
         || !snapshot.collectionPricingSummary
       ) {
@@ -1441,10 +1441,11 @@ export default function HubScreen() {
       collectionValueReadsRef.current = Array.isArray(snapshot.collectionValueReads)
         ? snapshot.collectionValueReads.slice(-MAX_COLLECTION_VALUE_READS)
         : [];
-      setChartData([]);
-      setTrendCoverageLabel(null);
-      setTrendProvenanceLabel(null);
-      setTrendIsSubset(false);
+      const cachedChartData = Array.isArray(snapshot.chartData) ? snapshot.chartData.filter((value) => Number.isFinite(value)) : [];
+      setChartData(cachedChartData);
+      setTrendCoverageLabel(cachedChartData.length >= 2 ? 'Restored comparable collection history.' : 'No comparable collection history recorded yet.');
+      setTrendProvenanceLabel(cachedChartData.length >= 2 ? 'Persisted collection valuation history' : null);
+      setTrendIsSubset(Boolean(snapshot.collectionPricingSummary && snapshot.collectionPricingSummary.pricedUnits < snapshot.collectionPricingSummary.totalUnits));
       hasLoadedCollectionValueRef.current = true;
       hasSuccessfulCollectionPricingRef.current = snapshot.collectionTotal != null;
       setCollectionValueLoading(false);
@@ -1676,7 +1677,7 @@ export default function HubScreen() {
         hasSuccessfulCollectionPricingRef.current = pricing.total != null;
         cachedHomeSnapshotUserIdRef.current = trustedUserId;
         setMintyDataRefreshedAt(pricing.latestCalculatedAt);
-        void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 3,
+        void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 4,
           mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: trend.values, collectionValueReads: [],
           collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: trend.change,
           collectionChangePercent: trend.percent, ownedCardCount: summary.totalUnits, activeBinder: preparedBinder,
@@ -1860,7 +1861,7 @@ export default function HubScreen() {
       hasSuccessfulCollectionPricingRef.current = nextPricingSummary.total != null;
 
       void saveHomeCollectionCache(trustedUserId, {
-        pricingContractVersion: 3,
+        pricingContractVersion: 4,
         priceEvidence: nextPriceEvidence,
         mintyDataRefreshedAt: refreshedAt,
         chartRange,
