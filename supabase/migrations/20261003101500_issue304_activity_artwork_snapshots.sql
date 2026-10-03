@@ -36,6 +36,27 @@ where a.card_id=c.id
     or a.card_image_large_snapshot is null
   );
 
+-- Older events may already have an exact durable movement snapshot even when
+-- the current catalogue/holding no longer resolves. Reuse only same-user,
+-- same-card-id evidence; never infer by title, set name or collector number.
+with exact_movement as (
+  select distinct on (a.id)
+    a.id as activity_id,
+    m.card_name,
+    m.image_small
+  from public.activity_feed a
+  join public.inventory_movements m
+    on m.user_id=a.user_id and m.card_id=a.card_id
+  where a.card_id is not null
+    and (a.card_image_small_snapshot is null or a.card_name_snapshot is null)
+  order by a.id, abs(extract(epoch from (m.created_at-a.created_at))) asc, m.created_at desc
+)
+update public.activity_feed a
+set card_name_snapshot=coalesce(a.card_name_snapshot,m.card_name),
+    card_image_small_snapshot=coalesce(a.card_image_small_snapshot,m.image_small)
+from exact_movement m
+where a.id=m.activity_id;
+
 create index if not exists activity_feed_canonical_printing_idx
   on public.activity_feed(canonical_printing_id)
   where canonical_printing_id is not null;
