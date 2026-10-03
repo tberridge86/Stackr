@@ -20,8 +20,8 @@ function run() {
   }
   assert.match(
     badgeSource,
-    /POKEMON_CATALOGUE_LANGUAGE_CODES = \[\s*'en', 'ja', 'zh-cn', 'zh-tw',\s*\]/s,
-    'shared catalogue options must include English, Japanese, Simplified Chinese, and Traditional Chinese',
+    /POKEMON_CATALOGUE_LANGUAGE_CODES = \[\s*'en', 'ja', 'zh-cn', 'zh-tw', 'ko',\s*\]/s,
+    'shared catalogue options must include English, Japanese, Simplified Chinese, Traditional Chinese, and Korean',
   );
 
   const flaggedControls = [
