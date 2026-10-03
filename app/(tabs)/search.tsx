@@ -11,11 +11,9 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Keyboard,
   type ImageSourcePropType,
   RefreshControl,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -466,38 +464,6 @@ function mapCardResults(
       raw: card,
     };
   });
-}
-
-function mapSetRow(row: any): SetResult {
-  const raw = row.raw_data ?? {};
-  const name = getPreferredSetDisplayName({
-    id: row.id,
-    sourceId: row.external_ids?.tcgdex ?? row.provider_id ?? row.id,
-    setCode: row.external_ids?.setCode ?? row.id,
-    language: row.language ?? raw.language ?? null,
-    region: row.region ?? raw.region ?? null,
-    localName: raw.local_name ?? raw.name ?? null,
-    englishDisplayName: raw.english_display_name ?? raw.englishDisplayName ?? null,
-    canonicalName: row.name,
-    raw,
-  });
-  return {
-    id: row.id,
-    name,
-    series: row.series ?? '',
-    printedTotal: row.printed_total ?? 0,
-    total: row.total ?? 0,
-    releaseDate: row.release_date ?? '',
-    language: row.language ?? 'en',
-    region: row.region ?? null,
-    externalIds: row.external_ids ?? {},
-    images: {
-      symbol: row.symbol_url ?? getPokemonSetSymbolUrl(row.id, row.language ?? raw.language),
-      logo: row.logo_url ?? getPokemonSetLogoUrl(row.id, row.language ?? raw.language),
-      cover: raw.cover_image_url ?? raw.images?.cover ?? raw.images?.artwork ?? undefined,
-      artwork: raw.cover_image_url ?? raw.images?.artwork ?? raw.images?.cover ?? undefined,
-    },
-  };
 }
 
 async function searchSetsQuick(primary: string, terms: string[], language: SearchLanguageFilter = 'all') {
