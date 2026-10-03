@@ -665,6 +665,7 @@ const priceSchedules = [...priceRefreshWorkflow.matchAll(/- cron: '([^']+)'/g)].
 assert.deepEqual(priceSchedules, [
   '*/5 * * * *', '*/30 * * * *', '2 */6 * * *',
   '17 */6 * * *', '32 */6 * * *', '47 */12 * * *',
+  '8 2 * * *', '13 * * * *',
 ]);
 for (const [lane, schedule] of [
   ['queued', '*/30 * * * *'],
@@ -677,6 +678,33 @@ for (const [lane, schedule] of [
     .find((block) => block.includes(`run: npm run price-refresh:${lane}`));
   assert.ok(step?.includes(`github.event.schedule == '${schedule}'`), `${lane} must use its own scheduled cadence`);
 }
+for (const [name, schedule] of [
+  ['Refresh full catalogue price guide', '8 2 * * *'],
+  ['Resume catalogue price guide checkpoint', '13 * * * *'],
+]) {
+  const step = priceRefreshWorkflow.split(/\r?\n      - name:/).find((block) => block.trimStart().startsWith(name));
+  assert.ok(step?.includes(`github.event.schedule == '${schedule}'`), `${name} must use its own clock`);
+  assert.ok(step?.includes("vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED == 'true'"), `${name} must remain explicitly gated`);
+}
+const priceJobGuard = priceRefreshWorkflow.match(/refresh-prices:\r?\n[\s\S]*?    if: >-\r?\n([\s\S]*?)\r?\n    runs-on:/)?.[1];
+assert.ok(priceJobGuard, 'Price refresh job must have an activation guard');
+const acceptsPriceLane = new Function('github', 'vars', `return (${priceJobGuard});`);
+for (const schedule of ['8 2 * * *', '13 * * * *']) {
+  for (const scheduler of ['railway_catalogue', 'github']) {
+    const github = { event_name: 'schedule', event: { schedule } };
+    const vars = { STACKR_PRICING_SCHEDULER: scheduler, STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'false' };
+    assert.equal(acceptsPriceLane(github, vars), false, 'Disabled guide schedules must not install dependencies or refresh prices');
+    assert.equal(acceptsPriceLane(github, { ...vars, STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'true' }), true,
+      'Whole-guide schedules must remain independent of the owner-worker scheduler');
+  }
+}
+assert.equal(acceptsPriceLane({ event_name: 'schedule', event: { schedule: '47 */12 * * *' } },
+  { STACKR_PRICING_SCHEDULER: 'railway_catalogue', STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'true' }), false,
+  'Enabling the guide must not start a competing owner-price lane');
+const manualGuideStep = priceRefreshWorkflow.indexOf('- name: Run manual full catalogue guide');
+const priceDependencyStep = priceRefreshWorkflow.indexOf('- name: Install dependencies');
+assert.ok(priceDependencyStep >= 0 && manualGuideStep > priceDependencyStep, 'Manual guide requires installed dependencies');
+assert.match(priceRefreshWorkflow, /Block disabled full universe sync[\s\S]*?exit 1/);
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
@@ -1022,12 +1050,15 @@ assert.doesNotMatch(priceRefreshWorkflow, /SUPABASE_URL: \$\{\{ secrets\.SUPABAS
 assert.doesNotMatch(priceRefreshWorkflow, /PRICE_API_URL: \$\{\{ secrets\.PRICE_API_URL \}\}/);
 assert.doesNotMatch(
   priceRefreshWorkflow,
-  /cron: '8 2 \* \* \*'|npm run daily-tcgcsv-sync/,
-  'the broken full-universe Node lane must not run on a schedule or invoke its mobile pricing import',
+  /npm run daily-tcgcsv-sync/,
+  'scheduled guide work must not invoke the old mobile pricing import path',
 );
+const catalogueGuideWorker = readFileSync('scripts/refresh-catalogue-bulk-prices.mjs', 'utf8');
+assert.doesNotMatch(catalogueGuideWorker, /from\s+['"](?:react-native|expo(?:-|\/)|.*stackrDomainAdapter)/,
+  'the scheduled guide worker must keep a Node-only provider boundary');
 assert.match(
   priceRefreshWorkflow,
-  /Block disabled full universe sync[\s\S]*full-universe lane is disabled until a reviewed Node-only provider boundary exists[\s\S]*exit 1/,
+  /Block disabled full universe sync[\s\S]*full-universe lane is disabled until the price-guide readiness gates pass[\s\S]*exit 1/,
 );
 assert.equal(productionBackendHardeningApproval.status, 'approved');
 assert.equal(productionBackendHardeningApproval.scope, 'production_backend_hardening_only');
