@@ -530,76 +530,8 @@ export default function MarketScreen() {
     setSearchResults(cards);
     setLastSuccessfulSearch({ query: trimmed, lookupType: activeLookupType });
     await loadSearchResultPrices(cards.map((card) => card.id), () => searchRequestRef.current.isCurrent(requestId));
-    // Legacy direct-table fallback is unreachable and retained only until rollback gates pass.
-    if (false) {
-    const words = trimmed.split(/\s+/).filter(Boolean);
-    let cardTerm = trimmed;
-    let matchedSetIds: string[] = [];
-
-    // Start at i=1 so at least one word is always kept as the card term.
-    // Starting at i=0 would let a single word like "pikachu" be consumed
-    // entirely by set detection (matching "Detective Pikachu" set) with no
-    // name filter left to apply.
-    if (!skipSetFilter) for (let i = 1; i < words.length; i++) {
-        const possibleCardTerm = words.slice(0, i).join(' ');
-        const possibleSetTerm = words.slice(i).join(' ');
-        if (!possibleSetTerm) continue;
-
-        const { data: matchingSets, error: setError } = await supabase
-          .from('pokemon_sets')
-          .select('id, name')
-          .or(`name.ilike.%${possibleSetTerm}%,id.ilike.%${possibleSetTerm}%`)
-          .limit(20);
-
-        if (setError) { console.log('Set search error:', setError); continue; }
-
-        const filteredSets = (matchingSets ?? []).filter((set: any) => {
-          const setName = normalise(set.name ?? '');
-          const setId = normalise(set.id ?? '');
-          const searchText = normalise(possibleSetTerm);
-          return setName.includes(searchText) || setId.includes(searchText);
-        });
-
-        if (filteredSets.length > 0) {
-          cardTerm = possibleCardTerm;
-          matchedSetIds = filteredSets.map((set: any) => set.id);
-          break;
-        }
-      }
-
-      let dbQuery = supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .limit(500);
-
-      if (cardTerm) {
-        // Normalise apostrophes and map plain-ascii "pokemon" to the accented
-        // form stored in the DB ("Pokémon") so ilike matches correctly.
-        const normalised = cardTerm
-          .replace(/[''ʼ]/g, "'")
-          .replace(/\bpokemon\b/gi, 'Pokémon');
-        const searchWords = normalised.split(/\s+/).filter(Boolean);
-        for (const word of searchWords) {
-          // "Mistys" → also try "Misty_s" so the _ wildcard matches the apostrophe
-          if (!word.includes("'") && /[a-z]s$/i.test(word)) {
-            const wildcardForm = `${word.slice(0, -1)}_s`;
-            dbQuery = dbQuery.or(`name.ilike.%${word}%,name.ilike.%${wildcardForm}%`);
-          } else {
-            dbQuery = dbQuery.ilike('name', `%${word}%`);
-          }
-        }
-      }
-      if (!skipSetFilter && matchedSetIds.length > 0) dbQuery = dbQuery.in('set_id', matchedSetIds);
-
-      const { data, error } = await dbQuery;
-      if (error) throw error;
-
-      const fallbackCards = (data ?? []).map(mapCard);
-      if (!searchRequestRef.current.isCurrent(requestId)) return;
-      setSearchResults(fallbackCards);
-      setLastSuccessfulSearch({ query: trimmed, lookupType: activeLookupType });
-      await loadSearchResultPrices(fallbackCards.map((card) => card.id), () => searchRequestRef.current.isCurrent(requestId));
-    }
+    // Canonical Stackr search is the only card-search route. Rollback lives in
+    // the shared domain adapter rather than a second screen-local SQL search.
     } catch (err) {
       if (!searchRequestRef.current.isCurrent(requestId)) return;
       console.log('Search error:', err);
