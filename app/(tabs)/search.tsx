@@ -59,6 +59,7 @@ import {
 } from '../../lib/pokemonTcg';
 import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
+import { getCardArtworkPresentation } from '../../lib/cardArtworkPresentation';
 import { searchMarketProducts, productLookupLabel, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
 import { expandSearchQuery, normaliseSearchText } from '../../lib/searchNormalisation';
 import {
@@ -97,6 +98,9 @@ type CardResult = {
   number: string | null;
   rarity: string | null;
   imageUri: string | null;
+  fullImageUri: string | null;
+  imageFallbackUris: string[];
+  imageCacheKey: string | null;
   estimatedValue: number | null;
   listingCount: number;
   ownedQuantity: number;
@@ -421,6 +425,7 @@ function mapCardResults(
     const language = card.language ?? raw.language ?? raw.set?.language ?? null;
     const number = card.number ?? raw.number ?? raw.collector_number ?? null;
     const setId = getCardSetId(card);
+    const artwork = getCardArtworkPresentation(raw);
     return {
       id: card.id,
       name: getPreferredCardDisplayName({
@@ -441,7 +446,10 @@ function mapCardResults(
       language,
       number,
       rarity: card.rarity ?? raw.rarity ?? null,
-      imageUri: card.image_small ?? card.image_large ?? raw.images?.small ?? null,
+      imageUri: card.image_small ?? card.image_large ?? raw.images?.small ?? raw.images?.large ?? null,
+      fullImageUri: card.image_large ?? raw.images?.large ?? null,
+      imageFallbackUris: artwork?.candidates.map((candidate) => candidate.uri) ?? [],
+      imageCacheKey: artwork?.assetId ?? raw.stackr?.defaultVariantId ?? card.id,
       estimatedValue: getBestCardValue(card),
       listingCount: listingStats.get(card.id)?.count ?? 0,
       ownedQuantity: ownedMap.get(card.id) ?? 0,
@@ -1522,6 +1530,9 @@ export default function GlobalSearchScreen() {
               key={card.id}
               name={card.name}
               imageUri={card.imageUri}
+              fullImageUri={card.fullImageUri}
+              imageFallbackUris={card.imageFallbackUris}
+              imageCacheKey={card.imageCacheKey}
               setName={card.setName}
               setLogoUri={getPokemonSetLogoUrl(card.setId)}
               setLogoSource={getLocalSetArtworkSourceForSet({
@@ -1543,7 +1554,7 @@ export default function GlobalSearchScreen() {
                 source: 'catalogue',
                 card: { id: card.raw?.raw_data?.stackr?.cardId ?? card.id, name: card.name, language: card.language, raw_data: card.raw?.raw_data },
                 imageUri: card.imageUri,
-                fullImageUri: card.raw?.images?.large ?? null,
+                fullImageUri: card.fullImageUri,
                 selectedVariantId: card.raw?.raw_data?.stackr?.defaultVariantId ?? null,
                 subtitle: [card.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · '),
               } : undefined}
