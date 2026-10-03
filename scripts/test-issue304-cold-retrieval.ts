@@ -104,7 +104,11 @@ function testScreenOrdering() {
   assert.match(search, /requestId !== requestRef\.current/, 'late search results remain guarded by request identity');
 }
 
-await testPersistedSearchCache();
-await testPokedexLanguageFanout();
-testScreenOrdering();
-console.log('Issue #304 cold retrieval checks passed: persisted Search/Binders, parallel Pokédex shards, retry and stale-request guards.');
+async function main() {
+  await testPersistedSearchCache();
+  await testPokedexLanguageFanout();
+  testScreenOrdering();
+  console.log('Issue #304 cold retrieval checks passed: persisted Search/Binders, parallel Pokédex shards, retry and stale-request guards.');
+}
+
+void main();
