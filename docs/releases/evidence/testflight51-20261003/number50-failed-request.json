@@ -1,0 +1,11 @@
+{
+  "requestedAtUtc": "2026-10-03T07:02:02.5734235Z",
+  "source": "650cbad73340ba74453c7c1ec757bbcdd91364e1",
+  "platform": "ios",
+  "profile": "production",
+  "channel": "production",
+  "runtime": "1.0.4",
+  "expectedNextBuildNumber": "50",
+  "intendedAudience": "Existing TestFlight audience; standard camera acceptance",
+  "status": "request-command-failed-reconcile-before-retry"
+}

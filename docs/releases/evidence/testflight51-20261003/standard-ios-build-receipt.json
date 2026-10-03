@@ -1,0 +1,13 @@
+{
+  "observedAtUtc": "2026-10-03T07:10:16.9320459Z",
+  "source": "650cbad73340ba74453c7c1ec757bbcdd91364e1",
+  "id": "f883f337-b258-4209-940f-536193e3f526",
+  "status": "NEW",
+  "platform": "IOS",
+  "profile": "production",
+  "appVersion": "1.0.4",
+  "buildNumber": "51",
+  "channel": "production",
+  "runtime": "1.0.4",
+  "submitted": false
+}

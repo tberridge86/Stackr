@@ -1,0 +1,37 @@
+{
+  "recordedAtUtc": "2026-10-03T07:10:24.825Z",
+  "source": "650cbad73340ba74453c7c1ec757bbcdd91364e1",
+  "reviewedPrs": [
+    298,
+    299,
+    301
+  ],
+  "showcaseReviewedHead": "19a58c946cd038c98cb9e4d631c0440346e5ade7",
+  "showcaseApplicableChecksPassed": 8,
+  "skippedChecks": [
+    "release-candidate-gate"
+  ],
+  "combinedInspectionTests": "PASS",
+  "combinedTypecheck": "PASS",
+  "runtimePreflight": "PASS",
+  "nativeDependenciesAndConfigurationChangedFrom49": false,
+  "protectedWorkflowRun": "37104862525",
+  "productionReview": "approved",
+  "workflowFailure": "EXPO_TOKEN absent before EAS dispatch; build step skipped",
+  "deliveryRoute": "Existing authenticated EAS local route after normal protected review",
+  "profile": "production",
+  "version": "1.0.4",
+  "expectedNumber": "51",
+  "reservedButNotBuiltNumber": "50",
+  "number50Failure": "Credential-service GraphQL transport failed before source upload/build creation; subsequent EAS inventory still ends at build49 and Apple reports no 50",
+  "counterReset": false,
+  "audience": [
+    "Team (Expo)",
+    "Stackr Beta Testers"
+  ],
+  "ownerRecognition": false,
+  "publicStoreRelease": false,
+  "ota": false,
+  "dataChanges": false,
+  "physicalDeviceAcceptance": "pending"
+}

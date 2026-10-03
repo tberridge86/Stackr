@@ -1,0 +1,30 @@
+{
+  "observedAtUtc": "2026-10-03T07:27:24.525Z",
+  "buildId": "f883f337-b258-4209-940f-536193e3f526",
+  "status": "FINISHED",
+  "source": "650cbad73340ba74453c7c1ec757bbcdd91364e1",
+  "appVersion": "1.0.4",
+  "buildNumber": "51",
+  "profile": "production",
+  "channel": "production",
+  "runtime": "1.0.4",
+  "fingerprint": "c986831e881058454d219cce9272ea3634cd01fd",
+  "createdAt": "2026-10-03T07:10:15.624Z",
+  "updatedAt": "2026-10-03T07:18:58.429Z",
+  "completedAt": "2026-10-03T07:18:58.126Z",
+  "error": null,
+  "associatedSubmissionIds": [
+    {
+      "id": "5fff33af-c64b-4ed6-b51b-82bfd557664d",
+      "status": "FINISHED"
+    }
+  ],
+  "submission": {
+    "id": "5fff33af-c64b-4ed6-b51b-82bfd557664d",
+    "status": "FINISHED",
+    "appleAppId": "6772118450",
+    "createdAt": "2026-10-03T07:21:15.527Z",
+    "completedAt": "2026-10-03T07:26:24.416Z",
+    "error": null
+  }
+}
