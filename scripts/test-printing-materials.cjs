@@ -126,12 +126,14 @@ try {
   });
   test('native integration preserves catalogue-only boundary', () => {
     const code = fs.readFileSync(path.join(root, 'components/CardFoilSurface.native.tsx'), 'utf8');
-    assert.ok(code.includes("if (props.source !== 'catalogue') return null;"));
+    assert.ok(code.includes("if (props.source !== 'catalogue' || !material) return null;"));
     assert.ok(code.includes('resolvePrintingMaterial(props.profile, props.artworkUri, REVIEWED_PRINTING_MATERIALS)'));
   });
   test('viewer supplies current configured artwork source', () => {
     const code = fs.readFileSync(path.join(root, 'components/CardInspectionViewer.tsx'), 'utf8');
-    assert.ok(code.includes('artworkUri={fullLoaded ? request.fullImageUri ?? request.imageUri : request.imageUri}'));
+    assert.ok(code.includes('onSourceChange={setBaseArtworkUri}'));
+    assert.ok(code.includes('artworkUri={displayedArtworkUri}'));
+    assert.ok(code.includes('resolvePrintingMaterial(profile, displayedArtworkUri, REVIEWED_PRINTING_MATERIALS)'));
   });
   console.log(JSON.stringify({ passed, failed: 0, scope: 'synthetic local intake, identity, PNG decode and source/syntax checks', nativeShaderCompile: 'not run', physicalCardsVerified: 0 }));
 } finally { fs.rmSync(temp, { recursive: true, force: true }); }
