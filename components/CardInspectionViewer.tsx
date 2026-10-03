@@ -8,6 +8,8 @@ import { StatusBar } from 'expo-status-bar';
 import { canInspectCatalogueCard, type CardInspectionRequest } from '../lib/cardInspection';
 import { resolveCardHoloProfile } from '../lib/cardHoloProfile';
 import { VERIFIED_CARD_HOLO_MASKS } from '../lib/cardHoloMaskRegistry';
+import { resolvePrintingMaterial } from '../lib/cardPrintingMaterial';
+import { REVIEWED_PRINTING_MATERIALS } from '../lib/cardPrintingMaterialRegistry';
 import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { stackrHaptics } from '../lib/haptics';
 import { InteractiveCardPreview } from './InteractiveCardPreview';
@@ -35,6 +37,7 @@ export default function CardInspectionViewer({ request, onClose }: {
   const [unavailable, setUnavailable] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [fullLoaded, setFullLoaded] = useState(false);
+  const [baseArtworkUri, setBaseArtworkUri] = useState<string | null>(request.imageUri);
   const [motionPaused, setMotionPaused] = useState(false);
   const [lighting, setLighting] = useState(true);
   const onUnavailable = useCallback(() => setUnavailable(true), []);
@@ -42,12 +45,14 @@ export default function CardInspectionViewer({ request, onClose }: {
     cardId: request.card.id, selectedVariantId: request.selectedVariantId,
     languageCode: request.card.language, masks: VERIFIED_CARD_HOLO_MASKS,
   }), [request]);
-  const availableHeight = height - insets.top - insets.bottom - (landscape ? 108 : Math.min(480, 382 * fontScale));
-  const cardWidth = Math.max(Math.min(200, width - 64), Math.min(420, landscape ? width * 0.43 : width - 64, availableHeight * stackrCardImageSizes.cardAspectRatio));
+  const availableHeight = height - insets.top - insets.bottom - (landscape ? 88 : Math.min(360, 292 * fontScale));
+  const cardWidth = Math.max(1, Math.min(460, landscape ? width * 0.48 : width - 32, availableHeight * stackrCardImageSizes.cardAspectRatio));
   const cardHeight = cardWidth / stackrCardImageSizes.cardAspectRatio;
+  const displayedArtworkUri = fullLoaded && request.fullImageUri ? request.fullImageUri : baseArtworkUri;
+  const printingMaterial = useMemo(() => resolvePrintingMaterial(profile, displayedArtworkUri, REVIEWED_PRINTING_MATERIALS), [profile, displayedArtworkUri]);
   const motionEnabled = !reduced && !motionPaused && imageLoaded;
-  const hasFoil = profile.profile !== 'plain' && profile.material.foilStrength > 0;
-  const lightingEnabled = lighting && imageLoaded && !unavailable;
+  const hasVerifiedMaterial = Boolean(printingMaterial);
+  const lightingEnabled = lighting && imageLoaded && !unavailable && hasVerifiedMaterial;
   const hint = reduced ? 'Motion is off with Reduce Motion.'
     : motionPaused ? 'Motion paused. Take in every detail.'
       : Platform.OS === 'web' ? 'Drag slowly to turn the card in the light.'
@@ -58,7 +63,7 @@ export default function CardInspectionViewer({ request, onClose }: {
     <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]} accessibilityViewIsModal
       onAccessibilityEscape={() => onClose()}>
       <StatusBar style="light" />
-      <LinearGradient pointerEvents="none" colors={['#39304D', '#211C31', '#171522']} locations={[0, 0.48, 1]}
+      <LinearGradient pointerEvents="none" colors={['#17161A', '#0E0E11', '#09090B']} locations={[0, 0.48, 1]}
         start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={StyleSheet.absoluteFill} />
       <View style={styles.header}>
         <View style={styles.headingGroup}><Ionicons name="layers-outline" size={19} color="#D5C6F3" />
@@ -75,17 +80,17 @@ export default function CardInspectionViewer({ request, onClose }: {
       </View>
       <ScrollView contentContainerStyle={[styles.content, landscape && styles.landscapeContent]} bounces={false}>
         <View style={[styles.stage, landscape && styles.landscapeStage, { minHeight: cardHeight + 32 }]}>
-          <View pointerEvents="none" accessible={false} style={[styles.stageLight, { width: cardWidth * 0.84, height: cardHeight * 0.82 }]} />
           <View style={{ width: cardWidth, height: cardHeight }}>
             <InteractiveCardPreview resetKey={resetKey} onMotionPreference={setReduced} motionPaused={motionPaused || !imageLoaded}
-              foilHaptics={hasFoil && lightingEnabled}
+              foilHaptics={hasVerifiedMaterial && lightingEnabled}
               renderMaterial={light => lightingEnabled ? <MaterialBoundary onUnavailable={onUnavailable}>
                 <Suspense fallback={null}><CardFoilSurface {...light} source="catalogue" profile={profile}
-                  width={cardWidth} height={cardHeight} onUnavailable={onUnavailable} /></Suspense>
+                  artworkUri={displayedArtworkUri} width={cardWidth} height={cardHeight} onUnavailable={onUnavailable} /></Suspense>
               </MaterialBoundary> : null}>
               <StackrImage cardShape uri={request.imageUri} fullUri={request.fullImageUri} contentFit="contain"
                 rounded={14} placeholderColor="transparent" priority="high" transition={0} style={StyleSheet.absoluteFill}
                 accessibilityLabel={`${request.card.name ?? 'Pokémon card'}, catalogue artwork`}
+                onSourceChange={setBaseArtworkUri}
                 onLoad={() => setImageLoaded(true)} onError={() => setImageLoaded(false)} />
               {imageLoaded && request.fullImageUri && request.fullImageUri !== request.imageUri ?
                 <View pointerEvents="none" accessible={false} style={[StyleSheet.absoluteFill, { opacity: fullLoaded ? 1 : 0 }]}>
@@ -114,18 +119,19 @@ export default function CardInspectionViewer({ request, onClose }: {
             <Ionicons name={motionEnabled ? 'phone-portrait-outline' : 'pause-outline'} size={21} color="#E1D5F6" />
             <Text style={styles.controlLabel}>{motionEnabled ? 'Motion on' : 'Motion off'}</Text>
           </Pressable>
-          <Pressable accessibilityRole="switch" accessibilityLabel="Simulated lighting" disabled={!motionEnabled || unavailable || !imageLoaded}
-            accessibilityState={{ checked: lightingEnabled && motionEnabled, disabled: !motionEnabled || unavailable || !imageLoaded }}
+          <Pressable accessibilityRole="switch" accessibilityLabel="Simulated lighting" disabled={!motionEnabled || unavailable || !imageLoaded || !hasVerifiedMaterial}
+            accessibilityState={{ checked: lightingEnabled && motionEnabled, disabled: !motionEnabled || unavailable || !imageLoaded || !hasVerifiedMaterial }}
             onPress={() => { setLighting(value => !value); void stackrHaptics.selection(); }}
             style={({ pressed }) => [styles.control, lightingEnabled && motionEnabled && styles.controlActive,
-              (!motionEnabled || unavailable || !imageLoaded) && styles.disabled, pressed && styles.pressed]}>
+              (!motionEnabled || unavailable || !imageLoaded || !hasVerifiedMaterial) && styles.disabled, pressed && styles.pressed]}>
             <Ionicons name="sunny-outline" size={21} color="#E1D5F6" />
-            <Text style={styles.controlLabel}>{lightingEnabled && motionEnabled ? 'Light on' : 'Light off'}</Text>
+            <Text style={styles.controlLabel}>{hasVerifiedMaterial ? (lightingEnabled && motionEnabled ? 'Material on' : 'Material off') : 'Material unavailable'}</Text>
           </Pressable>
         </View>
-        <Text style={styles.disclosure}>{unavailable ? 'Lighting is unavailable. Your artwork is still here.'
-          : profile.confidence === 'verified_finish_generic_mask' ? 'Simulated foil · pattern may differ from the physical card'
-            : 'Catalogue artwork · simulated lighting'}</Text>
+        <Text style={styles.disclosure}>{unavailable ? 'Material rendering is unavailable. The catalogue artwork is unchanged.'
+          : printingMaterial ? `Reference-reviewed ${profile.identity?.finishCode ?? 'foil'} material · printing-level representation`
+            : profile.profile === 'plain' ? 'Catalogue artwork · non-foil printing'
+              : 'Catalogue artwork · no verified material pack for this printing yet'}</Text>
         <View style={styles.actions}>
           {request.onDetails ? <Pressable accessibilityRole="button" onPress={() => onClose(request.onDetails)} style={[styles.action, styles.primaryAction]}>
             <Text style={styles.primaryLabel}>Card details</Text><Ionicons name="chevron-forward" size={17} color="#29203A" /></Pressable> : null}
@@ -140,7 +146,7 @@ export default function CardInspectionViewer({ request, onClose }: {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#211C31' },
+  screen: { flex: 1, backgroundColor: '#09090B' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingLeft: 24, paddingRight: 12, minHeight: 56 },
   headingGroup: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 9 },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
@@ -150,9 +156,7 @@ const styles = StyleSheet.create({
   landscapeContent: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
   landscapeStage: { paddingHorizontal: 24, flexShrink: 0 },
   landscapeDetails: { flex: 1, maxWidth: 440 },
-  stage: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16 },
-  stageLight: { position: 'absolute', borderRadius: 140, backgroundColor: '#443557', opacity: 0.32,
-    shadowColor: '#A68AC5', shadowOpacity: 0.22, shadowRadius: 70, shadowOffset: { width: 0, height: 0 } },
+  stage: { alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
   caption: { alignItems: 'center', paddingHorizontal: 24, marginTop: 12, gap: 5 },
   name: { fontSize: 25, lineHeight: 31, fontWeight: '700', textAlign: 'center', color: '#F4F0FA' },
   subtitle: { fontSize: 13, lineHeight: 18, color: '#C2B5D2', textAlign: 'center' },
