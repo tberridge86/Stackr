@@ -209,6 +209,15 @@ const SEARCH_PRICE_BUCKETS: { key: SearchPriceBucket; label: string }[] = [
   { key: '100plus', label: '£100+' },
 ];
 
+const DISCOVER_SET_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string; flag: string; flagLanguage?: PokemonCatalogueLanguageCode }[] = [
+  { key: 'all', label: 'All', flag: '🌐' },
+  { key: 'en', label: 'English', flag: '🇬🇧', flagLanguage: 'en' },
+  { key: 'ja', label: 'Japanese', flag: '🇯🇵', flagLanguage: 'ja' },
+  { key: 'zh-cn', label: 'Simplified Chinese', flag: '🇨🇳', flagLanguage: 'zh-cn' },
+  { key: 'zh-tw', label: 'Traditional Chinese', flag: '🇹🇼', flagLanguage: 'zh-tw' },
+  { key: 'ko', label: 'Korean', flag: '🇰🇷', flagLanguage: 'ko' },
+];
+
 const SEARCH_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string; flagLanguage?: PokemonCatalogueLanguageCode }[] = [
   { key: 'all', label: 'Any language' },
   ...POKEMON_CATALOGUE_LANGUAGE_OPTIONS.map((option) => ({
@@ -482,11 +491,11 @@ function mapSetRow(row: any): SetResult {
   };
 }
 
-async function searchSetsQuick(primary: string, terms: string[]) {
+async function searchSetsQuick(primary: string, terms: string[], language: SearchLanguageFilter = 'all') {
   const safePrimary = primary.trim();
-  if (safePrimary.length < 2) return [];
+  const mappedSets = await fetchAllSets({ language });
+  if (safePrimary.length < 2) return mappedSets;
 
-  const mappedSets = await fetchAllSets({ language: 'all' });
   return mappedSets
     .map((set) => ({ set, score: rankSet(set, terms) }))
     .filter((entry) => entry.score > 0)
@@ -914,13 +923,33 @@ export default function GlobalSearchScreen() {
     const trimmed = searchText.trim();
     const requestId = ++requestRef.current;
 
-    if (trimmed.length < 2) {
+    if (trimmed.length < 2 && category !== 'sets') {
       previousSearchRef.current = null;
       setResults(EMPTY_RESULTS);
       setErrors({});
       setSuggestion(null);
       setLoading(false);
       setRefreshing(false);
+      return;
+    }
+
+    if (trimmed.length < 2 && category === 'sets') {
+      previousSearchRef.current = null;
+      setResults(EMPTY_RESULTS);
+      setErrors({});
+      setSuggestion(null);
+      setLoading(!force);
+      setRefreshing(force);
+      try {
+        const sets = await searchSetsQuick('', [], selectedLanguage);
+        if (requestId !== requestRef.current) return;
+        setResults({ ...EMPTY_RESULTS, sets });
+      } catch {
+        if (requestId !== requestRef.current) return;
+        setErrors({ sets: 'Set results could not be loaded.' });
+      } finally {
+        if (requestId === requestRef.current) { setLoading(false); setRefreshing(false); }
+      }
       return;
     }
 
@@ -960,7 +989,7 @@ export default function GlobalSearchScreen() {
         setResults((current) => ({ ...current, cards: canonicalCards! }));
       },
     });
-    const setsPromise = searchSetsQuick(primary, normalisedTerms);
+    const setsPromise = searchSetsQuick(primary, normalisedTerms, selectedLanguage);
     const productsPromise = shouldSearchProducts
       ? searchMarketProducts(trimmed, catalogueProductTypeFilter, catalogueProductTypeFilter || productTypeMatchesIntent(trimmed) ? 24 : 10, { throwOnError: true })
       : Promise.resolve([]);
@@ -1387,7 +1416,7 @@ export default function GlobalSearchScreen() {
     return ['cards', 'sets', 'sealed', 'graded', 'listings', 'collectors'] as const;
   }, [category, debouncedQuery]);
 
-  const hasQuery = debouncedQuery.trim().length >= 2;
+  const hasQuery = debouncedQuery.trim().length >= 2 || category === 'sets';
   const resultCount = filteredGroups.reduce((total, group) => total + results[group].length, 0);
   const visibleResultCount = filteredGroups.reduce((total, group) => total + visibleResults[group].length, 0);
   const failureSummary = getSearchFailureSummary(errors, filteredGroups);
@@ -1412,7 +1441,7 @@ export default function GlobalSearchScreen() {
     setFocusedResultLimit(searchResultWindow.initialCount);
   }, [activeSearchFilterCount, category, debouncedQuery, visibleResultCount, searchResultWindow.initialCount]);
 
-  const hasMoreFocusedResults = false;
+  const hasMoreFocusedResults = category === 'sets' && visibleResults.sets.length > focusedResultLimit;
 
   const renderMoreFocusedResults = useCallback(() => {
     setFocusedResultLimit((current) => current + searchResultWindow.pageSize);
@@ -1564,7 +1593,7 @@ export default function GlobalSearchScreen() {
     if (group === 'sets' && visibleResults.sets.length) {
       return (
         <SearchRailSection key="sets" title="Sets" count={visibleResults.sets.length}>
-          {visibleResults.sets.map((set) => (
+          {visibleResults.sets.slice(0, category === 'sets' ? focusedResultLimit : visibleResults.sets.length).map((set) => (
             <SearchSetRailItem
               key={set.id}
               name={set.name}
@@ -1589,7 +1618,7 @@ export default function GlobalSearchScreen() {
                   return;
                 }
                 void rememberSearch();
-                router.push({ pathname: '/set/[id]', params: { id: set.id } });
+                router.push({ pathname: '/set/[id]', params: { id: set.id, language: set.language ?? selectedLanguage } });
               }}
             />
           ))}
@@ -1754,6 +1783,28 @@ export default function GlobalSearchScreen() {
                 activeFilterCount={activeSearchFilterCount}
                 resultLabel={hasQuery ? `${searchResultSummary} · ${currentSearchSortLabel}` : undefined}
               />
+              {category === 'sets' ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }} accessibilityRole="tablist">
+                  {DISCOVER_SET_LANGUAGE_FILTERS.map((language) => {
+                    const active = selectedLanguage === language.key;
+                    return <TouchableOpacity
+                      key={language.key}
+                      accessibilityRole="tab"
+                      accessibilityLabel={language.key === 'all' ? 'All set languages' : `${language.label} sets`}
+                      accessibilityState={{ selected: active }}
+                      onPress={() => { requestRef.current += 1; setFocusedResultLimit(searchResultWindow.initialCount); setSelectedLanguage(language.key); }}
+                      activeOpacity={0.8}
+                      style={{ minHeight: 42, paddingHorizontal: 12, borderRadius: 21, borderWidth: 1,
+                        borderColor: active ? theme.colors.primary : theme.colors.border,
+                        backgroundColor: active ? theme.colors.primary + '18' : theme.colors.surface,
+                        flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+                      <Text accessibilityElementsHidden style={{ fontSize: 18 }}>{language.flag}</Text>
+                      <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontSize: 12, fontWeight: active ? '900' : '700' }}>{language.label}</Text>
+                    </TouchableOpacity>;
+                  })}
+                </ScrollView>
+              ) : null}
+
               {suggestion ? (
                 <TouchableOpacity onPress={() => setQuery(suggestion)} activeOpacity={0.82} style={{ alignSelf: 'flex-start' }}>
                   <Text style={{ color: theme.colors.primary, fontSize: 11.5, lineHeight: 15, fontWeight: '900' }}>
