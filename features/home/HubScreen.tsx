@@ -40,6 +40,7 @@ import { ValueTrackerCard } from '../../components/ValueTrackerCard';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrLoadingScreen } from '../../components/StackrLoadingScreen';
 import { attachLiveTcgdexCardReferences, getPokemonCardImageUrls } from '../../lib/pokemonTcg';
+import { getCardArtworkPresentation } from '../../lib/cardArtworkPresentation';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { getStackrHomeWordmarkWidth, stackrLogoSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
@@ -849,7 +850,7 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
   try {
     const officialCards = await fetchHomeDisplayCardRows(cardIds);
 
-    const activityImageByCardId = new Map<string, string>();
+    const activityImageByCardId = new Map<string, { small: string | null; large: string | null; candidates: string[]; cacheKey: string | null }>();
     const cardNameByCardId = new Map<string, string>();
     const cardMetadataByCardId = new Map<string, ReturnType<typeof getHomeCardDisplayMetadata>>();
 
@@ -867,7 +868,13 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
         officialImages.large ??
         null;
 
-      if (imageUrl) activityImageByCardId.set(cardId, imageUrl);
+      const artwork = getCardArtworkPresentation(card.raw_data);
+      if (imageUrl) activityImageByCardId.set(cardId, {
+        small: imageUrl,
+        large: card.image_large ?? rawImages?.large ?? officialImages.large ?? null,
+        candidates: artwork?.candidates.map((candidate) => candidate.uri) ?? [],
+        cacheKey: artwork?.assetId ?? cardId,
+      });
       if (card.name) cardNameByCardId.set(cardId, card.name);
       cardMetadataByCardId.set(cardId, getHomeCardDisplayMetadata({
         id: cardId,
@@ -882,12 +889,16 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
       const cardId = item.cardId ?? null;
       if (!cardId) return item;
 
-      const resolvedName = cardNameByCardId.get(cardId) ?? null;
+      const resolvedName = cardNameByCardId.get(cardId) ?? item.cardName ?? null;
+      const image = activityImageByCardId.get(cardId);
       return {
         ...item,
         cardName: resolvedName,
         ...cardMetadataByCardId.get(cardId),
-        imageUrl: item.imageUrl ?? activityImageByCardId.get(cardId) ?? null,
+        imageUrl: item.imageUrl ?? image?.small ?? null,
+        fullImageUrl: item.fullImageUrl ?? image?.large ?? null,
+        imageFallbackUrls: item.imageFallbackUrls?.length ? item.imageFallbackUrls : image?.candidates ?? [],
+        imageCacheKey: item.imageCacheKey ?? image?.cacheKey ?? cardId,
         title: resolvedName && item.title.includes('Unknown item')
           ? item.title.replace('Unknown item', resolvedName)
           : item.title,
@@ -2260,7 +2271,7 @@ export default function HubScreen() {
 
       const feedResult = await supabase
         .from('activity_feed')
-        .select('id, type, title, subtitle, card_id, set_id, value_change, is_positive, created_at')
+        .select('id, type, title, subtitle, card_id, set_id, value_change, is_positive, created_at, card_name_snapshot, card_number_snapshot, card_language_snapshot, card_image_small_snapshot, card_image_large_snapshot, canonical_printing_id, canonical_variant_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -2282,7 +2293,11 @@ export default function HubScreen() {
         icon: activityIconForType(post.type),
         cardId: post.card_id ?? null,
         setId: post.set_id ?? null,
-        imageUrl: null,
+        cardName: post.card_name_snapshot ?? null,
+        language: post.card_language_snapshot ?? null,
+        imageUrl: post.card_image_small_snapshot ?? post.card_image_large_snapshot ?? null,
+        fullImageUrl: post.card_image_large_snapshot ?? null,
+        imageCacheKey: post.canonical_variant_id ?? post.canonical_printing_id ?? post.card_id ?? post.id,
         activityType: activityTypeForFeedType(post.type),
       }));
 
