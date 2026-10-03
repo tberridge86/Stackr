@@ -9,6 +9,7 @@ import {
 import { buildCanonicalIdentity } from '../pricingV2/identity.js';
 import { fetchTcgdexNormalCardPrice, isUnambiguousHolo } from '../tcgdex.js';
 import { generalPriceBaseCandidates, wrapGeneralEstimate } from './generalEstimate.js';
+import { createCataloguePriceRead } from './cataloguePriceRead.js';
 
 export const MARKET_PRICING_VERSION = 'market-pricing-v1.0.0';
 export const MARKET_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -1175,8 +1176,32 @@ export function createMarketPricingService(options) {
   const supabase = options.supabase;
   const refreshEnabled = options.refreshEnabled ?? process.env.MARKET_PRICE_REFRESH_ENABLED === 'true';
   const providerFetch = options.fetchTcgdexNormalCardPrice ?? fetchTcgdexNormalCardPrice;
+  const cataloguePrices = createCataloguePriceRead({
+    supabase,
+    toEstimatePrice: toPriceResponse,
+    unavailablePrice,
+    toSnapshotPrice: (row, variantId) => {
+      const snapshot = toSnapshotHistoryItem(row, variantId, 'exact_variant');
+      if (!snapshot || snapshot.marketCentral == null) return null;
+      const unavailable = unavailablePrice(variantId, { productType: 'raw_card', currency: 'GBP' });
+      return {
+        ...unavailable,
+        status: 'market_estimate',
+        priceType: 'market_estimate',
+        unavailableReason: null,
+        estimates: { low: snapshot.marketLow, central: snapshot.marketCentral, high: snapshot.marketHigh },
+        calculatedAt: snapshot.calculatedAt ?? snapshot.snapshotAt,
+        staleAfter: snapshot.staleAfter,
+        freshness: snapshot.freshness,
+        confidence: snapshot.confidence,
+        sample: { ...unavailable.sample, total: snapshot.sampleCount },
+        sourceBreakdown: [{ provider: snapshot.primarySource, evidenceType: 'market_estimate' }],
+      };
+    },
+  });
 
   return {
+    cataloguePrices,
     async collectionValuation(userId, refresh = false) {
       if (!isUuid(userId)) throw new ApiError(401, 'authentication_required', 'Sign in to read your collection.');
       const { data, error } = await supabase.schema('api').rpc('request_collection_valuation', { p_owner: userId, p_refresh: refresh });

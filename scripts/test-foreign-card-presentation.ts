@@ -22,6 +22,7 @@ const japanese = buildForeignCardPresentation({
     english_display_name: 'Charizard ex',
     translations: {
       en: {
+        provenance: 'reviewed_translation',
         attacks: [{ name: 'Brave Wing', damage: '60', text: 'English effect text.' }],
       },
     },
@@ -125,3 +126,12 @@ async function assertNativeImageBoundary() {
 void assertNativeImageBoundary().then(() => {
   console.log('Foreign-card English presentation checks passed');
 });
+
+const unprovenEnglishDetails = buildForeignCardPresentation({
+  id: 'ja:unproven:001', name: '未検証', localName: '未検証', language: 'ja',
+  set: { id: 'ja:unproven', name: '未検証セット', localName: '未検証セット' },
+  attacks: [{ name: '技', text: '日本語' }],
+  raw_data: { translations: { en: { attacks: [{ name: 'Unproven Attack', text: 'Unproven text.' }] } } },
+});
+assert.equal(unprovenEnglishDetails.details.attacks, undefined, 'unproven Latin-script payload must not be displayed as an English translation');
+assert.equal(unprovenEnglishDetails.withheldNativeDetails, true);

@@ -1,0 +1,329 @@
+{
+  "observedAt": "2026-10-03T23:46:39.377Z",
+  "sourceBase": "9044564e109eb77a244a9e511999f7d4e3ae817e",
+  "stagingProject": "lmwfhvexfcoyeuoyrlco",
+  "productionProject": "oakdbbzdqwurpjnoqhmu",
+  "productionWritesPerformed": false,
+  "appliedMigrations": [
+    {
+      "version": "20261003224016",
+      "name": "catalogue_price_bulk_cache"
+    },
+    {
+      "version": "20261003224031",
+      "name": "restore_full_catalogue_price_guide"
+    },
+    {
+      "version": "20261003224558",
+      "name": "catalogue_price_feed_access_indexes"
+    },
+    {
+      "version": "20261003225316",
+      "name": "catalogue_price_repair_reads"
+    },
+    {
+      "version": "20261003225832",
+      "name": "cardmarket_general_price_backup"
+    },
+    {
+      "version": "20261003231006",
+      "name": "batch_catalogue_price_identity_reads"
+    },
+    {
+      "version": "20261003232812",
+      "name": "japanese_exact_price_identities"
+    },
+    {
+      "version": "20261003234257",
+      "name": "bounded_published_price_read"
+    },
+    {
+      "version": "20261003234442",
+      "name": "cover_general_price_foreign_keys"
+    }
+  ],
+  "coverage": {
+    "runId": "0ff92cbb-e32a-48b6-9b3a-4610dbb257c3",
+    "datasetAt": "2026-10-03T20:05:38+0000",
+    "runStatus": "needs_mapping",
+    "groups": [
+      {
+        "total": 87,
+        "status": "complete",
+        "category_id": 3
+      },
+      {
+        "total": 133,
+        "status": "unmapped",
+        "category_id": 3
+      },
+      {
+        "total": 113,
+        "status": "complete",
+        "category_id": 85
+      },
+      {
+        "total": 346,
+        "status": "unmapped",
+        "category_id": 85
+      }
+    ],
+    "openRepairs": 46950,
+    "languages": {
+      "en": {
+        "sets": 215,
+        "total": 32230,
+        "supported": 32110,
+        "mapped": 11026,
+        "unmapped": 21084,
+        "priced": 9937,
+        "stale": 0,
+        "missing_quote": 1089,
+        "retry": 0,
+        "unsupported": 120
+      },
+      "ja": {
+        "sets": 115,
+        "total": 13629,
+        "supported": 13629,
+        "mapped": 7895,
+        "unmapped": 5734,
+        "priced": 6720,
+        "stale": 0,
+        "missing_quote": 1175,
+        "retry": 0,
+        "unsupported": 0
+      },
+      "ko": {
+        "sets": 3,
+        "total": 239,
+        "supported": 0,
+        "mapped": 0,
+        "unmapped": 0,
+        "priced": 0,
+        "stale": 0,
+        "missing_quote": 0,
+        "retry": 0,
+        "unsupported": 239
+      },
+      "zh-cn": {
+        "sets": 136,
+        "total": 20408,
+        "supported": 0,
+        "mapped": 0,
+        "unmapped": 0,
+        "priced": 0,
+        "stale": 0,
+        "missing_quote": 0,
+        "retry": 0,
+        "unsupported": 20408
+      },
+      "zh-tw": {
+        "sets": 83,
+        "total": 8166,
+        "supported": 0,
+        "mapped": 0,
+        "unmapped": 0,
+        "priced": 0,
+        "stale": 0,
+        "missing_quote": 0,
+        "retry": 0,
+        "unsupported": 8166
+      }
+    },
+    "unit": "published canonical card variants, not unique printings or provider products",
+    "totalPublishedVariants": 74672,
+    "providerSupportedVariants": 45739,
+    "storedPricedVariants": 16657,
+    "allPublishedPriceCoveragePercent": 22.31,
+    "providerSupportedPriceCoveragePercent": 36.42
+  },
+  "retainedFeeds": {
+    "retained_feed_rows": 1361,
+    "retained_product_files": 679,
+    "retained_price_files": 679,
+    "retained_group_manifests": 2
+  },
+  "storedQuoteFreshness": [
+    {
+      "language_code": "en",
+      "quotes": 9937,
+      "earliest_dataset_at": "2026-10-03 20:05:38+00",
+      "latest_dataset_at": "2026-10-03 20:05:38+00",
+      "earliest_recorded_at": "2026-10-03 22:46:46.781462+00",
+      "latest_recorded_at": "2026-10-03 23:05:07.647318+00",
+      "stale_quotes": 0,
+      "earliest_fx_at": "2026-10-02 00:00:00+00",
+      "latest_fx_at": "2026-10-02 00:00:00+00"
+    },
+    {
+      "language_code": "ja",
+      "quotes": 6720,
+      "earliest_dataset_at": "2026-10-03 20:05:38+00",
+      "latest_dataset_at": "2026-10-03 20:05:38+00",
+      "earliest_recorded_at": "2026-10-03 23:28:42.277405+00",
+      "latest_recorded_at": "2026-10-03 23:34:04.359872+00",
+      "stale_quotes": 0,
+      "earliest_fx_at": "2026-10-02 00:00:00+00",
+      "latest_fx_at": "2026-10-02 00:00:00+00"
+    }
+  ],
+  "retrieval": {
+    "scope": "Real service-role staging PostgREST RPC, 100 known priced references per language; no gateway, owner UI or phone; first request is not a guaranteed cold database cache",
+    "englishBefore": {
+      "observedAt": "2026-10-03T23:10:34.739Z",
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "evidence": "real service-role PostgREST RPC; not gateway, owner UI or phone",
+      "measurements": [
+        {
+          "pass": 1,
+          "references": 100,
+          "rows": 100,
+          "elapsedMs": 7662,
+          "pricedRows": 100
+        },
+        {
+          "pass": 2,
+          "references": 100,
+          "rows": 100,
+          "elapsedMs": 293,
+          "pricedRows": 100
+        }
+      ],
+      "repairPage": 100,
+      "cardmarketStoredRows": 0
+    },
+    "japaneseBefore": {
+      "observedAt": "2026-10-03T23:34:49.624Z",
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "evidence": "real service-role PostgREST RPC; not gateway, owner UI or phone",
+      "measurements": [
+        {
+          "pass": 1,
+          "references": 100,
+          "rows": 100,
+          "elapsedMs": 1038,
+          "pricedRows": 100
+        },
+        {
+          "pass": 2,
+          "references": 100,
+          "rows": 100,
+          "elapsedMs": 392,
+          "pricedRows": 100
+        }
+      ],
+      "repairPage": 100,
+      "cardmarketStoredRows": 0
+    },
+    "englishAfter": {
+      "observedAt": "2026-10-03T23:43:26.696Z",
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "evidence": "real service-role PostgREST RPC; not gateway, owner UI or phone",
+      "measurements": [
+        {
+          "pass": 1,
+          "references": 100,
+          "rows": 100,
+          "elapsedMs": 2775,
+          "pricedRows": 100
+        },
+        {
+          "pass": 2,
+          "references": 100,
+          "rows": 100,
+          "elapsedMs": 108,
+          "pricedRows": 100
+        }
+      ],
+      "repairPage": 100,
+      "cardmarketStoredRows": 0
+    },
+    "japaneseAfter": {
+      "observedAt": "2026-10-03T23:43:28.311Z",
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "evidence": "real service-role PostgREST RPC; not gateway, owner UI or phone",
+      "measurements": [
+        {
+          "pass": 1,
+          "references": 100,
+          "rows": 100,
+          "elapsedMs": 747,
+          "pricedRows": 100
+        },
+        {
+          "pass": 2,
+          "references": 100,
+          "rows": 100,
+          "elapsedMs": 116,
+          "pricedRows": 100
+        }
+      ],
+      "repairPage": 100,
+      "cardmarketStoredRows": 0
+    },
+    "boundedFiveVariantDatabasePlan": {
+      "executionMs": 55.105,
+      "planningMs": 210.485,
+      "sharedHitBlocks": 94,
+      "sharedReadBlocks": 0
+    }
+  },
+  "backupProviders": {
+    "ebay": {
+      "oauthAndBrowse": "passed",
+      "observedAt": "2026-10-03T22:58:29.813Z",
+      "scope": "Bounded live access probe using existing Railway credentials; active listing asking prices, not completed sales",
+      "candidateDeployed": false
+    },
+    "cardmarket": {
+      "dailyFilesValidated": true,
+      "rawPayloadsRetained": false,
+      "stagingFeedRevisions": 0,
+      "stagingReviewedMappings": 0,
+      "stagingStoredPrices": 0,
+      "operational": false
+    }
+  },
+  "schedule": {
+    "configuredDailyUtc": "02:08",
+    "configuredHourlyResumeMinute": 13,
+    "enabled": false,
+    "deployed": false,
+    "actualScheduleExecutionVerified": false,
+    "reason": "Coverage and backup acceptance gates remain open"
+  },
+  "acl": {
+    "readCataloguePrices": {
+      "anon": false,
+      "authenticated": false,
+      "serviceRole": true
+    }
+  },
+  "advisors": {
+    "newPriceSecurityFindings": 0,
+    "newPriceUncoveredForeignKeys": 0,
+    "existingSecurityWarnings": {
+      "authenticatedSecurityDefinerFunctions": 10,
+      "leakedPasswordProtectionDisabled": true
+    },
+    "newUnusedIndexInformationalFindings": "Expected on newly created indexes and empty Cardmarket tables; retained for future feed/maintenance use"
+  },
+  "testFlight": {
+    "decision": "held",
+    "newBuildUploaded": false,
+    "existingRecordedVersion": "1.0.4",
+    "existingRecordedBuild": "51",
+    "existingAppleReadbackAt": "2026-10-03T07:30:40.779Z",
+    "existingAvailability": "VALID, APPROVED, internal and external IN_BETA_TESTING",
+    "existingEvidence": "evidence/testflight51-20261003/apple-build51-availability.json",
+    "nativeDeviceAcceptance": "unverified"
+  },
+  "releaseBlockers": [
+    "479 provider groups lack safe mappings; 46,950 open repair records; unsupported languages/finishes and missing provider quotes remain",
+    "Cardmarket has no retained live import, reviewed mappings or stored backup prices",
+    "Complete authoritative English counterpart/translation ingestion and Korean native-art provenance remain unproven",
+    "Signed-in deployed gateway/API and installed-device cold/warm/offline/expiry/error acceptance remain unverified",
+    "Dependency/security review and native binary/runtime release checks remain open"
+  ]
+}

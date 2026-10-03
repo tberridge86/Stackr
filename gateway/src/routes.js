@@ -65,6 +65,7 @@ export const ROUTES = [
     query: query('productType', 'currency', 'condition', 'grader', 'grade', 'observationType', 'cursor', 'limit'),
   },
   { id: 'market_movers', pattern: /^\/v1\/market\/movers$/, ...publicGet, pricing: true, cache: 'market', rate: 'pricing', query: query('productType', 'currency', 'limit') },
+  { id: 'catalogue_prices', pattern: /^\/v1\/market\/catalogue-prices$/, methods: ['POST'], auth: 'user', target: 'backend', pricing: true, cache: 'none', rate: 'pricing', body: 'cataloguePrices', maxBodyBytes: 48 * 1024, timeoutMs: 12000, forwardUserJwt: true, query: query() },
   { id: 'collection_valuation', pattern: /^\/v1\/market\/collection-valuation$/, methods: ['GET'], auth: 'user', target: 'backend', pricing: true, cache: 'none', rate: 'pricing', forwardUserJwt: true, query: query() },
   { id: 'collection_valuation_refresh', pattern: /^\/v1\/market\/collection-valuation\/refresh$/, methods: ['POST'], auth: 'user', target: 'backend', pricing: true, cache: 'none', rate: 'priceRefresh', maxBodyBytes: 1024, timeoutMs: 12000, idempotent: true, forwardUserJwt: true, query: query() },
   { id: 'market_price_snapshots', pattern: /^\/v1\/market\/price-snapshots$/, ...publicGet, pricing: true, cache: 'none', rate: 'pricing', query: query('variantIds', 'printingIds', 'legacyIds', 'legacySetId', 'language', 'rangeDays', 'latestOnly') },

@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import { downloadCardmarketPublicGuide, toCardmarketAskingPrice, toCardmarketGeneralEstimate, validateCardmarketPublicGuide } from './cardmarket-public-guide.mjs';
+
+const guide = { version: 1, createdAt: '2026-10-03T02:41:55+0200', priceGuides: [{ idProduct: 6, idCategory: 51, avg: 1.2, low: 0.5, trend: 1.4, avg1: null, avg7: null, avg30: null, 'avg-holo': null, 'low-holo': null, 'trend-holo': null, 'avg1-holo': null, 'avg7-holo': null, 'avg30-holo': null }] };
+const products = { version: 1, createdAt: '2026-10-03T11:44:53+0200', products: [{ idProduct: 6, idCategory: 51, name: 'Pikachu', categoryName: 'Pokémon Single', idExpansion: 2 }] };
+const product = products.products[0];
+assert.equal(validateCardmarketPublicGuide('priceGuide', guide)[0].idProduct, 6);
+assert.throws(() => validateCardmarketPublicGuide('products', { ...products, createdAt: '', products: [product] }));
+assert.throws(() => validateCardmarketPublicGuide('products', { ...products, products: [] }));
+assert.throws(() => validateCardmarketPublicGuide('products', { ...products, products: [{ ...product, idProduct: 0 }] }));
+const market = toCardmarketGeneralEstimate(product, guide.priceGuides[0], { sourceCreatedAt: guide.createdAt });
+assert.equal(market.priceType, 'general_market_estimate'); assert.equal(market.selectedField, 'trend'); assert.equal(market.condition, null);
+const askingGuide = { ...guide.priceGuides[0], trend: null, avg30: null, avg: null };
+assert.equal(toCardmarketGeneralEstimate(product, askingGuide), null);
+assert.deepEqual(toCardmarketAskingPrice(product, askingGuide).priceType, 'asking_price');
+assert.equal(toCardmarketGeneralEstimate({ ...product, idCategory: 52 }, guide.priceGuides[0]), null);
+let attempts = 0; const delays = [];
+const response = await downloadCardmarketPublicGuide('priceGuide', { retryDelayMs: 1, sleepImpl: async ms => delays.push(ms), fetchImpl: async () => { attempts += 1; return attempts === 1 ? new Response('', { status: 429, headers: { 'retry-after': '2' } }) : new Response(JSON.stringify(guide), { status: 200, headers: { etag: '"revision"' } }); } });
+assert.equal(attempts, 2); assert.deepEqual(delays, [2000]); assert.equal(response.etag, '"revision"'); assert.equal(response.rows.length, 1);
+let networkAttempts = 0;
+await downloadCardmarketPublicGuide('products', { retryDelayMs: 1, sleepImpl: async () => {}, fetchImpl: async () => { networkAttempts += 1; if (networkAttempts === 1) throw new TypeError('offline'); return new Response(JSON.stringify(products)); } });
+assert.equal(networkAttempts, 2);
+await assert.rejects(() => downloadCardmarketPublicGuide('products', { maxBytes: 10, fetchImpl: async () => new Response(JSON.stringify(products), { headers: { 'content-length': '999' } }) }), /exceeds/);
+let malformedAttempts = 0;
+await assert.rejects(() => downloadCardmarketPublicGuide('products', { retries: 2, fetchImpl: async () => { malformedAttempts += 1; return new Response(JSON.stringify({ version: 1, createdAt: '', products: [] })); } }), /Invalid/);
+assert.equal(malformedAttempts, 1);
+await assert.rejects(() => downloadCardmarketPublicGuide('products', { retries: 0, timeoutMs: 5, fetchImpl: async (_, { signal }) => new Promise((resolve, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true })) }), /deadline/);
+console.log('Cardmarket public guide validates deadlines, size, revisions, retry-after, malformed data, and market-versus-asking price basis.');

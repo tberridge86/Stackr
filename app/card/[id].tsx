@@ -43,6 +43,7 @@ import { refreshPersonalProviderEstimate } from '../../lib/personalPriceRefresh'
 import { StackrApiV1Error } from '../../lib/stackrApiV1';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { buildForeignCardPresentation } from '../../lib/foreignCardPresentation';
+import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 
 type PokemonCard = {
   id: string;
@@ -186,6 +187,8 @@ export default function CardDetailScreen() {
   const [priceRefreshNotice, setPriceRefreshNotice] = useState<string | null>(null);
 
   const [latestSnapshotPrice, setLatestSnapshotPrice] = useState<LatestSnapshotPrice | null>(null);
+  const cataloguePriceCards = useCataloguePriceOverlay(card ? [card] : []);
+  const catalogueGuidePricing = cataloguePriceCards[0]?.runtimeCataloguePricing;
 
   // ===============================
   // LOAD CARD
@@ -549,6 +552,7 @@ export default function CardDetailScreen() {
               <EditionAwareCardImage
               uri={card.images?.large || card.images?.small}
               cardId={card.id}
+              language={card.language ?? card.raw_data?.language ?? null}
               rawData={card.raw_data}
               editionHint={editionHint}
               sourceSize="large"
@@ -671,6 +675,16 @@ export default function CardDetailScreen() {
         </View>
 
         <View style={styles.infoCard}>
+          {catalogueGuidePricing ? (
+            <View style={{ marginBottom: 12 }}>
+              <Text style={styles.priceSourceLabel}>{catalogueGuidePricing.sourceLabel} (GBP)</Text>
+              <Text style={styles.marketHint}>
+                {catalogueGuidePricing.displayPrice != null
+                  ? `£${catalogueGuidePricing.displayPrice.toFixed(2)}${catalogueGuidePricing.updatedAt ? ` · updated ${new Date(catalogueGuidePricing.updatedAt).toLocaleDateString('en-GB')}` : ''}`
+                  : catalogueGuidePricing.unavailableReason ?? 'General market estimate unavailable.'}
+              </Text>
+            </View>
+          ) : null}
           <PricingV2Summary
             cardId={card.id}
             language={card.language ?? (card as any).raw_data?.language ?? null}

@@ -72,6 +72,9 @@ export async function fetchStackrPricingV2(cardId: string, options: PricingV2Opt
     condition: options.condition,
     grader: options.gradingCompany,
     grade: options.grade,
+    // A user-requested refresh must bypass both this short-lived presentation
+    // cache and the adapter's persisted exact-price entry.
+    force: options.forceRefresh === true,
   });
   if (!result) throw new Error('Stackr API could not resolve an exact canonical variant for pricing.');
   const price = result.price;

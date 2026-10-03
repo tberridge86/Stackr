@@ -153,21 +153,21 @@ export function StackrPermissionState({
   );
 }
 
-export function StackrSkeleton({ height = 96, style }: { height?: number; style?: StyleProp<ViewStyle> }) {
+export function StackrSkeleton({ style }: { height?: number; style?: StyleProp<ViewStyle> }) {
   const { theme } = useTheme();
   return (
     <View
       accessibilityLabel="Loading content"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
       style={[
         {
-          height,
-          borderRadius: stackrRadii.lg,
-          backgroundColor: theme.colors.surface,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          opacity: 0.82,
+          height: 3,
+          borderRadius: 2,
+          backgroundColor: theme.colors.primary,
         },
         style,
+        { height: 3 },
       ]}
     />
   );

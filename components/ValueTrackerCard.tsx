@@ -13,7 +13,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import type { DimensionValue, LayoutChangeEvent } from 'react-native';
+import type { LayoutChangeEvent } from 'react-native';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Path, Stop } from 'react-native-svg';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
@@ -203,19 +203,7 @@ function getSparklinePath(values: number[], width: number, height: number) {
   return { linePath, fillPath, lastPoint };
 }
 
-function SkeletonBar({ width, height }: { width: DimensionValue; height: number }) {
-  return (
-    <View
-      style={[
-        styles.skeletonBar,
-        {
-          width,
-          height,
-        },
-      ]}
-    />
-  );
-}
+
 
 function ValueMovement({
   icon,
@@ -478,18 +466,7 @@ export function ValueTrackerCard({
 
   const renderState = () => {
     if (isLoading) {
-      return (
-        <View style={styles.vaultStateContent}>
-          <View style={{ flex: 1, gap: 10 }}>
-            <SkeletonBar width="68%" height={16} />
-            <SkeletonBar width="92%" height={42} />
-            <SkeletonBar width="56%" height={30} />
-          </View>
-          <View style={styles.vaultLoadingChart}>
-            <ActivityIndicator color={theme.colors.primary} />
-          </View>
-        </View>
-      );
+      return <View style={{ paddingVertical: 32, alignItems: 'center' }}><ActivityIndicator color={theme.colors.primary} accessibilityLabel="Loading collection value" /></View>;
     }
 
     if (error && !hasValue) {
@@ -1952,11 +1929,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 16,
     marginTop: 22,
-  },
-  skeletonBar: {
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    marginBottom: 12,
   },
   loadingSparkline: {
     width: CARD_WIDTH,

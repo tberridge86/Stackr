@@ -12,6 +12,8 @@ import {
   stripStackrPreviewProxyAuthorization,
 } from './stackrPreviewApiProxy';
 import { supabase } from './supabase';
+import { Buffer } from 'buffer';
+import { sha256Text } from './cataloguePriceHash';
 
 const STACKR_CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -261,7 +263,7 @@ export type StackrSearchResult = {
 
 export type StackrMarketProductType = 'raw_card' | 'graded_card' | 'sealed_product';
 /** A labelled general estimate may use the same printing when no exact quote exists. */
-export type StackrPriceEstimateMode = 'general';
+export type StackrPriceEstimateMode = 'exact' | 'general';
 export type StackrMarketEvidenceStatus =
   | 'legacy_cached_market_estimate'
   | 'recent_sold_market_estimate'
@@ -313,6 +315,24 @@ export type StackrCardPrice = {
   calculatedAt: string | null;
   staleAfter: string | null;
   estimateVersion: string;
+};
+
+export type StackrCataloguePriceRow = {
+  reference: string;
+  cardId: string | null;
+  variantId: string | null;
+  language: string | null;
+  price: StackrCardPrice | null;
+  unavailableReason: string | null;
+  nextRetryAt: string | null;
+  revision: string;
+};
+
+export type StackrCataloguePricePage = {
+  prices: StackrCataloguePriceRow[];
+  unchangedReferences: string[];
+  priceRevision: string;
+  estimateMode: 'exact' | 'general';
 };
 
 export type StackrPriceHistoryObservation = {
@@ -708,6 +728,18 @@ function assertNoImagePayload(value: unknown) {
 
 export class StackrApiClient {
   private readonly baseUrl: string;
+
+  /** Cache keys use a stable account fingerprint and never retain a bearer token. */
+  async getPricingCacheScope() {
+    const token = await this.getAccessToken();
+    if (!token) throw new Error('Sign in to read saved prices.');
+    let identity = token;
+    try {
+      const claims = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf8'));
+      if (typeof claims.sub === 'string' && typeof claims.iss === 'string') identity = JSON.stringify([claims.iss, claims.sub]);
+    } catch { /* Opaque credentials receive their own fingerprint. */ }
+    return `${this.baseUrl}|account:${sha256Text(identity)}`;
+  }
   private readonly fetchImpl: StackrApiFetch;
   private readonly headers: Record<string, string>;
   private readonly getAccessToken: () => Promise<string | null>;
@@ -973,6 +1005,16 @@ export class StackrApiClient {
     limit?: number;
   } = {}, init: RequestInit = {}) {
     return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', query, init);
+  }
+
+  cataloguePrices(input: {
+    references: string[];
+    language?: string;
+    estimateMode?: 'exact' | 'general';
+    knownRevisions?: Record<string, string>;
+  }) {
+    if (!input.references.length || input.references.length > 100) throw new Error('cataloguePrices requires 1..100 references.');
+    return this.authenticatedPost<StackrCataloguePricePage>('/market/catalogue-prices', input);
   }
 
   cardPrice(variantId: string, query: {

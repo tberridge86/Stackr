@@ -22,7 +22,7 @@ import { StackrBackButton } from '../components/StackrBackButton';
 import { StackrButton, StackrIconButton } from '../components/StackrControls';
 import { StackrImage } from '../components/StackrImage';
 import { StackrPageTitle } from '../components/StackrScreen';
-import { StackrEmptyState, StackrErrorState, StackrSkeleton } from '../components/StackrStates';
+import { StackrEmptyState, StackrErrorState } from '../components/StackrStates';
 import { Text } from '../components/Text';
 import { useAppMode } from '../components/app-mode-context';
 import { useTheme } from '../components/theme-context';
@@ -446,17 +446,10 @@ function DuplicateListRow({
 }
 
 function DuplicatesSkeleton() {
-  const { width } = useWindowDimensions();
-  const tileWidth = Math.floor((width - 36 - 12) / 2);
+  const { theme } = useTheme();
   return (
     <View style={styles.loadingWrap}>
-      <StackrSkeleton height={96} style={styles.summarySkeleton} />
-      <StackrSkeleton height={44} style={styles.utilitySkeleton} />
-      <View style={styles.skeletonGrid}>
-        {Array.from({ length: 6 }).map((_, index) => (
-          <StackrSkeleton key={index} height={272} style={[styles.tileSkeleton, { width: tileWidth }]} />
-        ))}
-      </View>
+      <ActivityIndicator color={theme.colors.primary} accessibilityLabel="Loading duplicates" />
     </View>
   );
 }

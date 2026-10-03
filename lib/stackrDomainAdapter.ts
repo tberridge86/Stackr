@@ -36,6 +36,7 @@ import {
   readOptionalCatalogueEnrichment,
   throwIfOptionalCatalogueReadAborted,
 } from './optionalCatalogueEnrichment';
+import { fetchCachedRawDetailPrice, fetchCataloguePrices, isUnavailableCataloguePriceRoute } from './cataloguePrices';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PREFERRED_CATALOGUE_READ_TIMEOUT_MS = 7000;
@@ -1310,11 +1311,14 @@ export type StackrLegacyPriceSnapshot = {
   snapshot_at: string | null;
   snapshot_date: string | null;
   stale_after: string | null;
+  price_basis?: 'exact' | 'general';
+  freshness?: StackrCardPrice['freshness'];
+  unavailable_reason?: string | null;
 };
 
 export async function fetchStackrPriceSnapshots(
   references: string[],
-  options: { language?: string | null; concurrency?: number } = {},
+  options: { language?: string | null; concurrency?: number; estimateMode?: 'exact' | 'general'; force?: boolean } = {},
   client: StackrApiClient = stackrApiClient,
 ) {
   const unique = [...new Set(references.map((value) => String(value ?? '').trim()).filter(Boolean))];
@@ -1358,6 +1362,35 @@ export async function fetchStackrPriceSnapshots(
     return byReference;
   }
   const byReference = new Map<string, StackrLegacyPriceSnapshot>();
+  if (!unique.length) return byReference;
+  // New servers read a complete visible page in one request. Keep the legacy
+  // bounded path while an older deployed backend does not expose this route.
+  try {
+    const rows = await fetchCataloguePrices(unique, options, client);
+    const aliases = new Map<string, StackrLegacyPriceSnapshot | null>();
+    for (const [reference, row] of rows) {
+      const price = row.price;
+      if (!price || !row.cardId || !row.variantId) continue;
+      const snapshot: StackrLegacyPriceSnapshot = {
+        card_id: row.cardId, variant_id: row.variantId, currency: price.currency,
+        market_central: price.estimates.central, market_low: price.estimates.low, market_high: price.estimates.high,
+        evidence_status: price.status, confidence: price.confidence, sample_count: price.sample.total,
+        source_breakdown: price.sourceBreakdown, snapshot_at: price.calculatedAt,
+        snapshot_date: price.calculatedAt?.slice(0, 10) ?? null, stale_after: price.staleAfter,
+        price_basis: price.fallbackEstimate?.reason === 'general_card_estimate' ? 'general' : 'exact',
+        freshness: price.freshness, unavailable_reason: row.unavailableReason,
+      };
+      byReference.set(reference, snapshot);
+      for (const alias of [row.cardId, row.variantId]) {
+        const previous = aliases.get(alias);
+        aliases.set(alias, aliases.has(alias) && previous?.variant_id !== snapshot.variant_id ? null : snapshot);
+      }
+    }
+    for (const [alias, snapshot] of aliases) if (snapshot && !byReference.has(alias)) byReference.set(alias, snapshot);
+    return byReference;
+  } catch (error) {
+    if (!isUnavailableCataloguePriceRoute(error)) throw error;
+  }
   const concurrency = Math.max(1, Math.min(10, options.concurrency ?? 6));
   for (let index = 0; index < unique.length; index += concurrency) {
     const batch = unique.slice(index, index + concurrency);
@@ -1445,6 +1478,7 @@ export async function fetchStackrPrice(
     grade?: string | number | null;
     /** Exact evidence remains preferred; this asks the API for its labelled general estimate when absent. */
     estimateMode?: 'general';
+    force?: boolean;
   } = {},
   client: StackrApiClient = stackrApiClient,
 ): Promise<{ resolved: StackrResolvedCard; price: StackrCardPrice } | null> {
@@ -1489,14 +1523,20 @@ export async function fetchStackrPrice(
       },
     };
   }
-  const response = await client.cardPrice(resolved.variantId, {
+  const query = {
     productType: options.productType,
     currency: options.currency ?? 'GBP',
     condition: clean(options.condition) ?? undefined,
     grader: clean(options.grader) ?? undefined,
     grade: clean(options.grade) ?? undefined,
     estimateMode: options.estimateMode ?? 'general',
-  });
+  };
+  if ((!options.productType || options.productType === 'raw_card') && query.currency === 'GBP' && !query.grader && !query.grade) {
+    const price = await fetchCachedRawDetailPrice({ variantId: resolved.variantId,
+      cardId: resolved.card.cardId, language: resolved.card.languageCode }, query, client, options.force);
+    return { resolved, price };
+  }
+  const response = await client.cardPrice(resolved.variantId, query);
   return { resolved, price: response.data };
 }
 

@@ -35,6 +35,7 @@ import { stackrTabBarSizes } from '../lib/stackrSizing';
 import { installRuntimeFetchDiagnostics } from '../lib/runtimeFetchDiagnostics';
 import { hydrateStackrHapticsPreference, stackrHaptics } from '../lib/haptics';
 import { StackrLoadingScreen } from '../components/StackrLoadingScreen';
+import { StackrStartupVideo, STARTUP_VIDEO_TIMEOUT_MS } from '../components/StackrStartupVideo';
 import { CardInspectionProvider } from '../components/CardInspectionProvider';
 import { FONT_LOAD_TIMEOUT_MS } from '../lib/startup';
 import { lightTheme } from '../lib/theme';
@@ -377,6 +378,7 @@ export default function RootLayout() {
   const pathname = usePathname();
   const [fontWaitExpired, setFontWaitExpired] = useState(false);
   const [showStartupScreen, setShowStartupScreen] = useState(true);
+  const [startupVideoFinished, setStartupVideoFinished] = useState(false);
   const startupOpacity = useRef(new Animated.Value(1)).current;
   const startupDismissing = useRef(false);
   const startupOverlayVisible = showStartupScreen && pathname !== '/splash-preview';
@@ -393,6 +395,8 @@ export default function RootLayout() {
     const timeout = setTimeout(() => setFontWaitExpired(true), FONT_LOAD_TIMEOUT_MS);
     return () => clearTimeout(timeout);
   }, [fontError, fontsLoaded]);
+
+  const fontsReady = Boolean(fontsLoaded || fontError || fontWaitExpired);
 
   useEffect(() => {
     if (fontsLoaded) configureNativeTypographyDefaults();
@@ -421,13 +425,20 @@ export default function RootLayout() {
   }, [startupOpacity]);
 
   useEffect(() => {
-    if (!fontsLoaded && !fontError && !fontWaitExpired) return;
-    const timeout = setTimeout(forceFinishStartup, 6_000);
+    const timeout = setTimeout(forceFinishStartup, STARTUP_VIDEO_TIMEOUT_MS + 500);
     return () => {
       clearTimeout(timeout);
       startupOpacity.stopAnimation();
     };
-  }, [fontError, fontWaitExpired, fontsLoaded, forceFinishStartup, startupOpacity]);
+  }, [forceFinishStartup, startupOpacity]);
+
+  useEffect(() => {
+    if (fontsReady && startupVideoFinished) finishStartup();
+  }, [finishStartup, fontsReady, startupVideoFinished]);
+
+  useEffect(() => {
+    if (pathname === '/splash-preview') setStartupVideoFinished(true);
+  }, [pathname]);
 
   return (
     <ThemeProvider>
@@ -435,9 +446,6 @@ export default function RootLayout() {
         style={{ flex: 1, backgroundColor: lightTheme.colors.bg }}
         onLayout={() => { void SplashScreen.hideAsync().catch(() => {}); }}
       >
-        {!fontsLoaded && !fontError && !fontWaitExpired ? (
-          <StackrLoadingScreen message="Opening Stackr" />
-        ) : (
           <StackrSafeAreaBoundary>
             <View
               style={{ flex: 1 }}
@@ -448,7 +456,7 @@ export default function RootLayout() {
                 importantForAccessibility={startupOverlayVisible ? 'no-hide-descendants' : 'auto'}
               >
                 <StackrQueryProvider>
-                  <AppShell />
+                  {fontsReady ? <AppShell /> : <StackrLoadingScreen message="Opening Stackr" />}
                 </StackrQueryProvider>
               </View>
               {startupOverlayVisible ? (
@@ -468,12 +476,11 @@ export default function RootLayout() {
                   }}
                 >
                   <StatusBar hidden />
-                  <StackrLoadingScreen onReadyForDismiss={finishStartup} />
+                  <StackrStartupVideo onComplete={() => setStartupVideoFinished(true)} />
                 </Animated.View>
               ) : null}
             </View>
           </StackrSafeAreaBoundary>
-        )}
       </View>
     </ThemeProvider>
   );
