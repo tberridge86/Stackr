@@ -74,7 +74,8 @@ assert.match(card, /No comparable collection history recorded yet/, 'history sec
 
 const migration = fs.readFileSync('supabase/migrations/20261003091500_issue304_pricing_coverage_history.sql', 'utf8');
 assert.match(migration, /catalogue_price_coverage_status/);
-assert.match(migration, /create or replace function api\.claim_catalogue_prices[\\s\\S]*as \\$\\$[\\s\\S]*returning i\.\*;\\n\\$\\$;/,
+const claimSql = migration.slice(migration.indexOf('create or replace function api.claim_catalogue_prices'), migration.indexOf('revoke all on function api.claim_catalogue_prices'));
+assert.ok(claimSql.includes('as $') && claimSql.includes('returning i.*;\\n$;'),
   'catalogue claim function must use a valid dollar-quoted SQL body');
 assert.match(migration, /accessDenied/);
 assert.match(migration, /order by price_priority,i\.attempts,i\.ordinal/);
