@@ -10,11 +10,12 @@ type Props = CardFoilSurfaceProps & { material: PrintingMaterial; fallback: Reac
 type Loaded = { material: PrintingMaterial; images: SkImage[] };
 
 /** Only mounted inside the existing single-card inspector, never in card lists. */
-export default function CardPrintingMaterial({ material, fallback, width, height, x, y }: Props) {
+export default function CardPrintingMaterial({ material, fallback, width, height, x, y, onUnavailable }: Props) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const effect = useMemo(() => {
     try { return Skia.RuntimeEffect.Make(CARD_PRINTING_MATERIAL_SHADER); } catch { return null; }
   }, []);
+  useEffect(() => { if (!effect) onUnavailable?.(); }, [effect, onUnavailable]);
   useEffect(() => {
     const images: SkImage[] = [];
     try {
@@ -30,10 +31,11 @@ export default function CardPrintingMaterial({ material, fallback, width, height
       // A bad optional material never hides the already loaded catalogue image.
       images.forEach(image => image.dispose());
       setLoaded(null);
+      onUnavailable?.();
       return;
     }
     return () => { images.forEach(image => image.dispose()); };
-  }, [material]);
+  }, [material, onUnavailable]);
   const rect = containedMaterialRect(width, height, material.artwork.width, material.artwork.height);
   const uniforms = useDerivedValue(() => ({
     origin: [rect?.x ?? 0, rect?.y ?? 0], extent: [rect?.width ?? 1, rect?.height ?? 1],
