@@ -113,3 +113,8 @@ for (const query of ['', ' ', 'x', 'PSA 10']) {
 }
 
 void main();
+
+const prices = fs.readFileSync('app/prices/index.tsx','utf8');
+assert.doesNotMatch(prices,/if \(false\)/,'Prices screen must not retain an unreachable competing search implementation');
+assert.doesNotMatch(prices,/from\(['"]pokemon_sets['"]\)[\s\S]{0,1200}from\(['"]pokemon_cards['"]\)/,
+  'Prices card search must not carry its own public-catalogue SQL fallback');
