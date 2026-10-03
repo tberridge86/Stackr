@@ -314,7 +314,7 @@ export function SearchSetRailItem({
       accessibilityLabel={`Open set ${name}`}
       style={{
         width: 176,
-        minHeight: 176,
+        minHeight: 218,
         borderRadius: 17,
         borderWidth: 1,
         borderColor: theme.colors.border,
@@ -323,7 +323,7 @@ export function SearchSetRailItem({
         gap: 8,
       }}
     >
-      <View style={{ height: 76, borderRadius: 13, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <View style={{ height: 116, borderRadius: 13, backgroundColor: 'transparent', borderWidth: 0, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         {artworkSource ? (
           <Image source={artworkSource} resizeMode="contain" style={{ width: '100%', height: '100%' }} />
         ) : (
