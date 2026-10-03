@@ -1,6 +1,6 @@
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { PlatformPressable } from '@react-navigation/elements';
-import { preferenceAwareHaptics as Haptics } from '../lib/haptics';
+import { stackrHaptics } from '../lib/haptics';
 
 export function HapticTab(props: BottomTabBarButtonProps) {
   return (
@@ -9,7 +9,7 @@ export function HapticTab(props: BottomTabBarButtonProps) {
       onPressIn={(ev) => {
         if (process.env.EXPO_OS === 'ios') {
           // Add a soft haptic feedback when pressing down on the tabs.
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          void stackrHaptics.selection();
         }
         props.onPressIn?.(ev);
       }}
