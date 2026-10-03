@@ -652,7 +652,9 @@ export function ValueTrackerCard({
         ) : (
           <View style={[styles.vaultHistoryBuilding, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
             <Ionicons name="pulse-outline" size={15} color={theme.colors.primary} />
-            <Text style={[styles.vaultHistoryBuildingText, { color: theme.colors.textSoft }]}>History building</Text>
+            <Text style={[styles.vaultHistoryBuildingText, { color: theme.colors.textSoft }]} numberOfLines={3}>
+              {trendCoverageLabel ?? 'No comparable collection history recorded yet'}
+            </Text>
           </View>
         )}
       </View>
@@ -1318,8 +1320,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   vaultHistoryBuilding: {
-    width: 108,
-    minHeight: 42,
+    flex: 1,
+    minHeight: 52,
     borderRadius: 14,
     borderWidth: 1,
     paddingHorizontal: 8,
@@ -1333,6 +1335,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     lineHeight: 12,
     fontWeight: '800',
+    flexShrink: 1,
   },
   vaultInsightRow: {
     minHeight: 64,
