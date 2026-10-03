@@ -68,7 +68,8 @@ const card = (overrides: Record<string, any> = {}) => ({
 async function main() {
 for (const query of ['', ' ', 'x', 'PSA 10']) {
     calls.length = 0;
-    assert.deepEqual(await searchLocalPokemonCards(query), []);
+    const emptyResult = await searchLocalPokemonCards(query);
+    assert.equal(emptyResult.length, 0);
     assert.equal(calls.length, 0, `${query || '<empty>'} must not create a catalogue request`);
 }
 
