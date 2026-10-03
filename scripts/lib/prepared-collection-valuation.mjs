@@ -329,6 +329,7 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
   const evidence=valuationTrendEvidence(resolved,prices,summary);
   const history=await rpc('collection_valuation_trend',{p_owner:ownerId,p_scope:evidence.scope});
   summary.trend={scope:evidence.scope,evidence:evidence.evidence,eligible:evidence.eligible,
+    pricedUnits:evidence.pricedUnits,totalUnits:evidence.totalUnits,staleUnits:evidence.staleUnits,coverage:evidence.coverage,
     points:mergeValuationTrend(history??[],{at:summary.calculatedAt,total:summary.total,evidence:evidence.evidence},evidence.eligible)};
   const published=await rpc('publish_collection_valuation',{p_owner:ownerId,p_lease:claim.lease,p_revision:inputs.collectionRevision,
     p_summary:summary,p_refresh_completed:needsRefresh&&refreshComplete?claim.refreshRequestedAt:null});
@@ -343,7 +344,13 @@ export function valuationTrendEvidence(units, prices, summary) {
     return [u.variantId,u.quantity,p?.currency,p?.primarySource??(p?.sourceBreakdown??[]).map((s)=>s.sourceId??s.source_id??s.providerCode??s.provider_code??s).sort(),p?.priceBasis,p?.estimateVersion,p?.calculatedAt,p?.estimates?.central];
   }).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
   return {scope:digest(priced.map((p)=>p.slice(0,6))),evidence:digest(priced),
-    eligible:summary.totalUnits>0&&summary.freshUnits===summary.totalUnits&&summary.unpricedUnits===0};
+    // Scope includes owned variant, quantity, currency, source, basis and
+    // methodology. That makes a partial subtotal comparable only with the same
+    // holdings and coverage; newly priced cards start a new scope instead of
+    // rewriting old history as if they had always been priced.
+    eligible:summary.totalUnits>0&&summary.pricedUnits>0&&Number.isFinite(summary.total),
+    pricedUnits:summary.pricedUnits,totalUnits:summary.totalUnits,staleUnits:summary.olderPriceUnits,
+    coverage:summary.unpricedUnits>0?'partial':'complete'};
 }
 
 export function mergeValuationTrend(history, point, eligible) {

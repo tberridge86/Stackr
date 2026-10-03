@@ -27,7 +27,7 @@ export type PreparedGeneralValuation = GeneralPreparedCoverage & {
   binders: { binderId: string; owned: GeneralPreparedCoverage; standardSet: GeneralPreparedCoverage | null; masterSet: GeneralPreparedCoverage | null }[];
 };
 export type PreparedValuation = PreparedCoverage & {
-  trend?: { scope: string; evidence: string; eligible: boolean; points: { at: string; total: number; evidence: string }[] };
+  trend?: { scope: string; evidence: string; eligible: boolean; pricedUnits?: number; totalUnits?: number; staleUnits?: number; coverage?: 'complete' | 'partial'; points: { at: string; total: number; evidence: string }[] };
   cycle?: { id: string; dueAt: string; overdue: boolean; population: number; accounted: number } | null;
   collectionRevision: string;
   valuationRevision: string;
@@ -132,7 +132,10 @@ export function hasLowerPreparedPriceCoverage(
 export function preparedValuationTrend(summary: PreparedValuation, days: 7 | 30, now = Date.now()) {
   const points = (summary.trend?.points ?? []).filter((p) => Number.isFinite(p.total) && p.total >= 0
     && Date.parse(p.at) >= now - days * 86400000 && Date.parse(p.at) <= now).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
-  if (points.length < 2 || summary.unpricedUnits || points.at(-1)?.total !== summary.total) return { values: [], change: 0, percent: 0 };
+  // The trend scope already fixes holdings, priced identities and pricing methodology.
+  // Partial coverage is therefore comparable within that scope and must not be
+  // discarded merely because other owned cards remain unpriced.
+  if (points.length < 2 || points.at(-1)?.total !== summary.total) return { values: [], change: 0, percent: 0 };
   const values = points.map((p) => p.total);
   const change = values[values.length - 1] - values[0];
   return { values, change, percent: values[0] > 0 ? change / values[0] * 100 : 0 };

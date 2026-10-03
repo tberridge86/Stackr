@@ -29,7 +29,7 @@ const prepared={total:8,currency:'GBP',totalUnits:4,distinctPriceIdentities:4,pr
   collectionRevision:'collection',valuationRevision:'valuation',calculatedAt:'2026-09-19T01:00:00Z',refresh:null,trend:{scope:'s',evidence:'b',eligible:true,points:[
   {at:'2026-09-18T01:00:00Z',total:10,evidence:'a'},{at:'2026-09-19T01:00:00Z',total:8,evidence:'b'}]},binders:[]} as PreparedValuation;
 assert.deepEqual(preparedValuationTrend(prepared,7,now),{values:[10,8],change:-2,percent:-20});
-assert.equal(preparedValuationTrend({...prepared,unpricedUnits:1},7,now).values.length,0);
+assert.equal(preparedValuationTrend({...prepared,unpricedUnits:1},7,now).values.length,2,'scoped partial history remains comparable');
 assert.equal(preparedValuationTrend({...prepared,total:9},7,now).values.length,0);
 assert.equal(preparedValuationTrend({...prepared,trend:undefined},7,now).values.length,0);
 const general = { total: 13, currency: 'GBP', totalUnits: 4, distinctPriceIdentities: 4, pricedUnits: 3,

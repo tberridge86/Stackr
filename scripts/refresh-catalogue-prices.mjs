@@ -29,10 +29,17 @@ export function catalogueRefreshPlan(rows, { hours = 12, requestBudget = 0, rese
     if(supportedCatalogueProviderScope(row)) eligible++;
   }
   const available=Math.floor(requestBudget*(1-reserveFraction));
+  const minimumRuntimeSeconds=Math.ceil(eligible*spacingMs/1000);
+  const cycleSeconds=hours*3600;
+  const spacingCapacity=Math.floor(hours*3600000/spacingMs);
+  const requiredRequestsPerSecond=eligible/cycleSeconds;
+  const spacingShortfall=Math.max(0,eligible-spacingCapacity);
+  const budgetShortfall=requestBudget>0?Math.max(0,eligible-available):eligible;
   return {population:rows.length,byLanguageVariant:groups,eligibleUpperBound:eligible,unsupported:rows.length-eligible,
-    cycleHours:hours,requestsUpperBound:eligible,minimumRuntimeSeconds:Math.ceil(eligible*spacingMs/1000),
-    reservedRequests:requestBudget-available,availableRequests:available,
-    fits:requestBudget>0&&available>=eligible&&eligible*spacingMs<=hours*3600000,
+    cycleHours:hours,requestsUpperBound:eligible,minimumRuntimeSeconds,minimumRuntimeHours:Number((minimumRuntimeSeconds/3600).toFixed(2)),
+    requiredRequestsPerSecond:Number(requiredRequestsPerSecond.toFixed(3)),spacingCapacity,spacingShortfall,
+    reservedRequests:requestBudget-available,availableRequests:available,budgetShortfall,
+    fits:requestBudget>0&&available>=eligible&&spacingShortfall===0,
     capacityVerified:false,providerCalls:0};
 }
 
@@ -46,6 +53,8 @@ export function refreshOutcome(error, retained=false) {
   if(code==='unsupported_refresh_scope')return {outcome:'unsupported_scope',delay:7*86400,code};
   if(['unresolved_provider_identity','ambiguous_provider_identity','provider_identity_truncated'].includes(code))return {outcome:'unresolved_identity',delay:86400,code};
   if(code==='exact_provider_quote_unavailable')return {outcome:retained?'older_price_retained':'no_provider_quote',delay:86400,code};
+  if(status===401)return {outcome:'retrying',delay:3600,code:'provider_unauthorized',systemic:true};
+  if(status===403)return {outcome:'retrying',delay:3600,code:'provider_forbidden',systemic:true};
   const raw=error?.retryAfter;
   const retrySeconds=Number.isFinite(Number(raw))&&raw!=null?Number(raw):Math.ceil((Date.parse(String(raw))-Date.now())/1000);
   return {outcome:'retrying',delay:Math.max(60,Number.isFinite(retrySeconds)?retrySeconds:300),code,
@@ -163,8 +172,11 @@ export async function mainCataloguePricing(args=process.argv.slice(2)) {
       } });
   }
   const valuation=await prepareCollectionValuation({supabase,service,ownerId,providerCapacityVerified:capacityVerified});
+  let coverage=null;
+  try { coverage=await (async()=>{const {data,error}=await supabase.schema('api').rpc('catalogue_price_coverage_status',{});if(error)throw error;return data;})(); }
+  catch(error){ console.warn(JSON.stringify({worker:'catalogue-pricing',coverageReport:'unavailable',code:error?.code??'coverage_read_failed'})); }
   console.log(JSON.stringify({worker:'catalogue-pricing',dryRun:false,project:target.projectRef,capacityVerified,...result,
-    priorityQueue:queueResult,valuationPublished:valuation?.published??false}));
+    coverage,priorityQueue:queueResult,valuationPublished:valuation?.published??false}));
   return result;
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)mainCataloguePricing().catch((error)=>{
