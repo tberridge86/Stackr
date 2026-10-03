@@ -30,7 +30,7 @@ import { ScrollToEndButton } from '../../components/ScrollToEndButton';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
-import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
+import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { getIncrementalListWindow } from '../../lib/performance';
 import { createLatestRequestGate } from '../../lib/latestRequestGate';
 import { buildProductQuery, refreshMarketProductPrice, searchMarketProducts } from '../../lib/productSearch';
@@ -654,51 +654,6 @@ export default function MarketScreen() {
       });
       return;
 
-      /* Legacy provider fallback retained unreachable until rollback gates pass. */
-      if (!PRICE_API_URL) { setDetailEbayData(null); return; }
-
-      // set.name falls back to set_id (e.g. "base1") when raw_data is absent —
-      // set IDs never appear in eBay titles so skip them to avoid killing results
-      const rawSetName = card.set?.name ?? '';
-      const setName = (rawSetName && rawSetName !== card.set?.id) ? rawSetName : '';
-
-      const params = new URLSearchParams({
-        name: card.name ?? '',
-        setName,
-        number: card.number ?? '',
-        rarity: card.rarity ?? '',
-        cardId: card.id ?? '',
-        productType: 'card',
-        pricingMode: 'raw',
-      });
-      params.set('condition', rawCondition);
-      const printedTotal = card.set?.printedTotal ?? card.set?.total;
-      if (printedTotal != null) params.set('setTotal', String(printedTotal));
-
-      const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch eBay price');
-
-      const data = await response.json();
-      if (__DEV__) {
-        console.log('[market:eBay:detail]', {
-          cardId: card.id,
-          pricingMode: 'raw',
-          condition: rawCondition,
-          query: data.query,
-          count: data.count,
-          average: data.average,
-          source: data.soldDataSource,
-          usedCachedPrice: data.usedCachedPrice,
-        });
-      }
-      setDetailEbayData({
-        low: data.low ?? null,
-        average: data.average ?? null,
-        high: data.high ?? null,
-        count: data.count ?? null,
-        query: data.query ?? null,
-        soldDataSource: data.soldDataSource ?? null,
-      });
     } catch (err) {
       console.log('eBay detail price error:', err);
       setDetailEbayData(null);
