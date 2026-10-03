@@ -58,7 +58,7 @@ import {
   type PokemonSet,
 } from '../../lib/pokemonTcg';
 import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
-import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
+import { getLocalSetArtworkSourceForSet, getLocalSetLogoSourceForSet } from '../../lib/localSetArtwork';
 import { getCardArtworkPresentation } from '../../lib/cardArtworkPresentation';
 import { searchMarketProducts, productLookupLabel, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
 import { expandSearchQuery, normaliseSearchText } from '../../lib/searchNormalisation';
@@ -1535,7 +1535,7 @@ export default function GlobalSearchScreen() {
               imageCacheKey={card.imageCacheKey}
               setName={card.setName}
               setLogoUri={getPokemonSetLogoUrl(card.setId)}
-              setLogoSource={getLocalSetArtworkSourceForSet({
+              setLogoSource={getLocalSetLogoSourceForSet({
                 id: card.setId,
                 language: card.language,
                 name: card.setName,
