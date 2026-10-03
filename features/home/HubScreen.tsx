@@ -1756,6 +1756,16 @@ export default function HubScreen() {
       priceResults = nextPriceEvidence.map((entry) => entry.result);
       const nextPricingSummary = pricingSummaryForResults(priceResults);
       const identitySignature = collectionIdentitySignature(priceResults);
+      const refreshableVariantIds = [...new Set(
+        priceResults.flatMap((price, index) => (
+          supportsHomeSnapshotScope(ownedUnits[index]?.productType, ownedUnits[index]?.condition) && price.variantId ? [price.variantId] : []
+        )),
+      )].sort();
+      refreshableVariantIdsRef.current = refreshableVariantIds;
+      let nextChartData: number[] = [];
+      let nextTrendCoverageLabel: string | null = null;
+      let nextTrendProvenanceLabel: string | null = null;
+      let nextTrendIsSubset = false;
       // Do not reconstruct collection history by applying today's holdings to
       // old per-card market snapshots. Only recorded collection valuations or
       // same-identity saved collection reads are valid history.
