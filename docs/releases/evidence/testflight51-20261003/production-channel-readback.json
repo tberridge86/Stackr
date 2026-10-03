@@ -1,0 +1,17 @@
+{
+  "currentPage": {
+    "id": "01a0378f-1bd1-78e6-a009-9d55f65268a5",
+    "isPaused": false,
+    "name": "production",
+    "updatedAt": "2026-08-25T06:15:20.785Z",
+    "createdAt": "2026-08-25T06:15:20.785Z",
+    "branchMapping": "{\"data\":[{\"branchId\":\"01a0378f-1b0f-7ccf-bc18-3fa7b76643cc\",\"branchMappingLogic\":\"true\"}],\"version\":0}",
+    "updateBranches": [
+      {
+        "id": "01a0378f-1b0f-7ccf-bc18-3fa7b76643cc",
+        "name": "production",
+        "updateGroups": []
+      }
+    ]
+  }
+}

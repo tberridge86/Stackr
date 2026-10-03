@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-03T07:20:34.453Z",
+  "ipa": {
+    "sha256": "c9ee459084ea0cedc928ddc04a5ac16f03bf6a0fc7eb969ee263363e73319c49"
+  },
+  "expected": {
+    "bundleIdentifier": "com.tommo86.Stackr",
+    "version": "1.0.4",
+    "buildNumber": "51",
+    "runtimeVersion": "1.0.4",
+    "channel": "production",
+    "sourceCommit": "650cbad73340ba74453c7c1ec757bbcdd91364e1"
+  },
+  "app": {
+    "bundleIdentifier": "com.tommo86.Stackr",
+    "version": "1.0.4",
+    "buildNumber": "51",
+    "runtimeVersion": "1.0.4",
+    "channel": "production"
+  },
+  "expoUpdates": {
+    "embeddedManifestPresent": true,
+    "sourceProof": "unavailable_no_embedded_manifest_source",
+    "id": "3d3f0bd7-7769-4d84-837d-0442e7226832",
+    "createdAt": null,
+    "runtimeVersion": null,
+    "channel": null,
+    "source": null,
+    "sourceMatchesExpected": null
+  },
+  "provisioning": {
+    "present": true,
+    "parsed": true,
+    "teamIdentifier": "K82N877J3F",
+    "applicationIdentifier": "K82N877J3F.com.tommo86.Stackr"
+  }
+}
