@@ -25,6 +25,7 @@ export type StackrHapticEvent =
   | 'scanner_ambiguous'
   | 'scanner_failed'
   | 'capture_saved'
+  | 'analysis_completed'
   | 'card_added'
   | 'duplicate_prevented'
   | 'binder_milestone'
@@ -174,6 +175,7 @@ export async function haptic(event: StackrHapticEvent, isCurrent: () => boolean 
         return;
       case 'binder_milestone':
       case 'capture_saved':
+      case 'analysis_completed':
       case 'listing_completed':
       case 'sale_completed':
       case 'trade_completed':
@@ -194,6 +196,7 @@ export const stackrHaptics = {
   scannerAmbiguous: () => haptic('scanner_ambiguous'),
   scannerFailed: () => haptic('scanner_failed'),
   captureSaved: () => haptic('capture_saved'),
+  analysisCompleted: () => haptic('analysis_completed'),
   cardAdded: () => haptic('card_added'),
   duplicatePrevented: () => haptic('duplicate_prevented'),
   binderMilestone: () => haptic('binder_milestone'),
