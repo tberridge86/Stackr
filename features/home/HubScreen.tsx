@@ -1658,15 +1658,41 @@ export default function HubScreen() {
         setCollectionPricingSummary(pricing);
         setOwnedCardCount(summary.totalUnits);
         setActiveBinder(preparedBinder);
-        // The existing trend represents exact coverage only; do not present it as a
-        // general-estimate trend until the server supplies matching points.
-        const trend = !isPreparedGeneralValuation(summary) ? preparedValuationTrend(exactSummary, chartRange === '7D' ? 7 : 30) : { values: [], change: 0, percent: 0 };
-        setChartData(trend.values);
-        setCollectionChangeAmount(trend.change);
-        setCollectionChangePercent(trend.percent);
-        setTrendCoverageLabel(trend.values.length ? 'Complete comparable collection' : null);
-        setTrendProvenanceLabel(trend.values.length ? 'Recorded stored-price valuations' : null);
-        setTrendIsSubset(false);
+        // Trend points use the exact stored-price subtotal, even when the headline
+        // uses a labelled general estimate. The server scope fixes holdings and
+        // priced identities, so partial coverage remains comparable without
+        // pretending unpriced cards were worth £0.
+        const exactPricing = preparedPricingSummary(exactSummary);
+        const serverTrend = preparedValuationTrend(exactSummary, chartRange === '7D' ? 7 : 30);
+        const currentExactRead: CollectionValueRead | null = exactPricing?.total != null && exactSummary.trend?.scope
+          ? { capturedAt: exactSummary.calculatedAt, total: exactPricing.total, totalUnits: exactPricing.totalUnits,
+              pricedUnits: exactPricing.pricedUnits, identitySignature: exactSummary.trend.scope }
+          : null;
+        const nextPreparedReads = currentExactRead
+          ? [...collectionValueReadsRef.current, currentExactRead].slice(-MAX_COLLECTION_VALUE_READS)
+          : collectionValueReadsRef.current;
+        const savedTrend = serverTrend.values.length >= 2 || !currentExactRead
+          ? []
+          : getComparableCollectionValueReads(nextPreparedReads, currentExactRead, chartRange === '7D' ? 7 : 30);
+        const trendValues = serverTrend.values.length >= 2 ? serverTrend.values : savedTrend;
+        const trendChange = trendValues.length >= 2 ? trendValues.at(-1)! - trendValues[0] : 0;
+        const trendPercent = trendValues.length >= 2 && trendValues[0] !== 0 ? trendChange / trendValues[0] * 100 : 0;
+        const trendSubset = Boolean(exactPricing && exactPricing.pricedUnits < exactPricing.totalUnits);
+        setChartData(trendValues);
+        setCollectionChangeAmount(trendChange);
+        setCollectionChangePercent(trendPercent);
+        setTrendCoverageLabel(trendValues.length >= 2
+          ? trendSubset
+            ? `Comparable history covers ${exactPricing?.pricedUnits ?? 0} of ${exactPricing?.totalUnits ?? 0} cards; unpriced cards are excluded, not £0.`
+            : `Comparable history covers all ${exactPricing?.totalUnits ?? 0} priced cards.`
+          : exactPricing?.pricedUnits
+            ? `One genuine valuation is recorded for ${exactPricing.pricedUnits} of ${exactPricing.totalUnits} cards. Another comparable valuation is needed for a graph.`
+            : 'No comparable collection valuation has been recorded yet.');
+        setTrendProvenanceLabel(trendValues.length >= 2
+          ? serverTrend.values.length >= 2 ? 'Recorded collection valuations' : 'Persisted collection reads'
+          : null);
+        setTrendIsSubset(trendSubset);
+        collectionValueReadsRef.current = nextPreparedReads;
         const refreshReport = exactSummary.refresh && prepared.refreshRequest
           ? `Refresh review: ${exactSummary.refresh.accepted} accepted, ${exactSummary.refresh.alreadyPending} already pending, ${exactSummary.refresh.unsupported} unsupported, ${exactSummary.refresh.unresolved} unresolved, ${exactSummary.refresh.blocked} blocked, ${exactSummary.refresh.remaining ?? 0} remaining.` : null;
         setCollectionPricingWarning(refreshReport ?? (prepared.state === 'updating'
@@ -1678,9 +1704,9 @@ export default function HubScreen() {
         cachedHomeSnapshotUserIdRef.current = trustedUserId;
         setMintyDataRefreshedAt(pricing.latestCalculatedAt);
         void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 4,
-          mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: trend.values, collectionValueReads: [],
-          collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: trend.change,
-          collectionChangePercent: trend.percent, ownedCardCount: summary.totalUnits, activeBinder: preparedBinder,
+          mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: trendValues, collectionValueReads: nextPreparedReads,
+          collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: trendChange,
+          collectionChangePercent: trendPercent, ownedCardCount: summary.totalUnits, activeBinder: preparedBinder,
           duplicateSummary: nextDuplicateSummary, missingCards: nextMissingCards });
         return;
       }
