@@ -34,7 +34,7 @@ assert.match(viewer,/width - 32/,'portrait showcase allows the card to dominate 
 assert.match(viewer,/no verified material pack for this printing yet/,'unsupported finishes remain explicit');
 
 const preview = fs.readFileSync('components/InteractiveCardPreview.tsx','utf8');
-assert.match(preview,/CARD_FOIL_HAPTIC_COOLDOWN_MS|nextCardFoilHapticState|FoilCrossingHaptics/);
+assert.match(preview,/nextCardFoilHapticState|FoilCrossingHaptics/);
 assert.match(preview,/AppState\.currentState === 'active'/,'delayed haptics expire after backgrounding');
 assert.match(preview,/cancelAnimation/,'motion is cancelled on suspension/unmount');
 
