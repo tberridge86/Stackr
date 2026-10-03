@@ -1,0 +1,24 @@
+{
+  "observedAtUtc": "2026-10-03T07:30:05.153Z",
+  "mode": "exact-build-action",
+  "expected": {
+    "appId": "6772118450",
+    "bundleId": "com.tommo86.Stackr",
+    "appVersion": "1.0.4",
+    "buildNumber": "51",
+    "externalGroup": "Stackr Beta Testers",
+    "internalGroup": "Team (Expo)"
+  },
+  "sourceIdentity": "650cbad73340ba74453c7c1ec757bbcdd91364e1",
+  "apple": {
+    "buildId": "46ef52b6-61ea-4e05-9363-ba4e0de86629",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "externalBuildState": "IN_BETA_TESTING",
+    "externalGroupBound": true,
+    "internalGroupBound": true,
+    "betaReviewId": "46ef52b6-61ea-4e05-9363-ba4e0de86629",
+    "betaReviewState": "APPROVED"
+  },
+  "action": "submitted-for-testflight-beta-review"
+}

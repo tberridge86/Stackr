@@ -1,6 +1,6 @@
 {
   "source": "650cbad73340ba74453c7c1ec757bbcdd91364e1",
-  "assembledAt": "2026-10-03T07:24:19.770Z",
+  "assembledAt": "2026-10-03T07:31:58.249Z",
   "files": [
     {
       "file": "local-request-evidence.json",
@@ -12,7 +12,7 @@
     },
     {
       "file": "current-normal-ios-build51-status.json",
-      "sha256": "4a5801882256e0f45250e21bd06888f8c2df3f8b0801fde226396eb9af53f028"
+      "sha256": "ffb6063cbe513a122f85a31d65e17c117dcd09b486a0877766ab646e6a93576d"
     },
     {
       "file": "normal-ios-build51-ipa-verification.json",
@@ -41,6 +41,22 @@
     {
       "file": "inventory-after-number50.json",
       "sha256": "1006f76b0156d381c1d21eb197d526c344b361021f644605c67c158546b99023"
+    },
+    {
+      "file": "apple-build51-notes.json",
+      "sha256": "309b8912b71d07af58898d96033ae864099f5afa2d2f2650c2d6498313f0b285"
+    },
+    {
+      "file": "apple-build51-attach.json",
+      "sha256": "49666752e1b3ca3232fa88b627d5c5399ffa4efcf0276de394aa10b30aa694a2"
+    },
+    {
+      "file": "apple-build51-review.json",
+      "sha256": "2fd476ecada1e007e38e1967da6ba1a690448fc40cbe19dd9146a19aed261722"
+    },
+    {
+      "file": "apple-build51-availability.json",
+      "sha256": "6c5967f0af76e851408a4c6a904be3404ca9c4b7f952a62997e7c819bfc948ec"
     }
   ]
 }

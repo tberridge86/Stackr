@@ -1,6 +1,6 @@
 # Stackr TestFlight 51 — 3 October 2026
 
-**Signed build finished; one Apple submission is in progress. TestFlight availability is not yet verified.**
+**Available in TestFlight.** At 07:30:40 UTC (08:30 UK time) on 3 October, independent Apple readback confirmed Stackr 1.0.4 (51) VALID, beta APPROVED and internal/external IN_BETA_TESTING, with both existing groups bound. Physical phone acceptance remains pending.
 
 [Sanitized evidence index](evidence/testflight51-20261003/index.json). File hashes in the index preserve the receipt bytes; raw credentials, signed download links and private build logs are excluded.
 
@@ -26,7 +26,9 @@ The owner requested another TestFlight release on 3 October. This is normal prod
 | IPA SHA256 | c9ee459084ea0cedc928ddc04a5ac16f03bf6a0fc7eb969ee263363e73319c49 |
 | Signing identity | K82N877J3F.com.tommo86.Stackr |
 | Submission | 5fff33af-c64b-4ed6-b51b-82bfd557664d |
+| Submission completion | FINISHED, 3 October 2026, 07:26:24 UTC; no terminal error |
 | Apple app | 6772118450 |
+| Apple build / beta review | 46ef52b6-61ea-4e05-9363-ba4e0de86629 |
 
 The downloaded IPA independently matches bundle, version, build, runtime, channel and provisioning team. Its embedded update manifest does not expose the Git source; source attestation comes from the exact EAS build record and guarded request, not an invented embedded-source claim.
 
@@ -40,7 +42,9 @@ PR298's exact head 19a58c946cd038c98cb9e4d631c0440346e5ade7 passed all eight app
 
 ## Remaining acceptance
 
-Apple processing, beta review and both tester-group availability must be confirmed before claiming this build is installable. Actual phone acceptance is separate: install build51, check card opening, Japanese searches, binder artwork, tilt in portrait/landscape, haptics off, Reduce Motion and background/reopen behavior. Record phone/iOS/network and first/repeat timings.
+Apple processing, beta review and both tester-group availability are confirmed in the [final independent readback](evidence/testflight51-20261003/apple-build51-availability.json). Exact tester notes were verified, the existing external group was attached, and one beta review request was approved. The prior build49 remains available.
+
+Actual phone acceptance is separate: install build51, check card opening, Japanese searches, binder artwork, tilt in portrait/landscape, haptics off, Reduce Motion and background/reopen behavior. Record phone/iOS/network and first/repeat timings. Check signed-in Home/binder/card values for the same holdings; Apple availability does not validate prices or physical-device performance.
 
 This release does not close the 2,908 remaining artwork cases, 94 missing checklists, SV4a 40-card gap, set-logo and metadata exceptions, or general pricing/valuation gaps. Native97 remains held. Cached API diagnostics are fast, but some uncached requests still exceed 0.5 seconds; phone loading and physical holo fidelity remain unmeasured.
 

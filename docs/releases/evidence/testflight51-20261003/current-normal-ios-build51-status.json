@@ -1,5 +1,5 @@
 {
-  "observedAtUtc": "2026-10-03T07:22:08.525Z",
+  "observedAtUtc": "2026-10-03T07:27:24.525Z",
   "buildId": "f883f337-b258-4209-940f-536193e3f526",
   "status": "FINISHED",
   "source": "650cbad73340ba74453c7c1ec757bbcdd91364e1",
@@ -16,15 +16,15 @@
   "associatedSubmissionIds": [
     {
       "id": "5fff33af-c64b-4ed6-b51b-82bfd557664d",
-      "status": "IN_PROGRESS"
+      "status": "FINISHED"
     }
   ],
   "submission": {
     "id": "5fff33af-c64b-4ed6-b51b-82bfd557664d",
-    "status": "IN_PROGRESS",
+    "status": "FINISHED",
     "appleAppId": "6772118450",
     "createdAt": "2026-10-03T07:21:15.527Z",
-    "completedAt": null,
+    "completedAt": "2026-10-03T07:26:24.416Z",
     "error": null
   }
 }
