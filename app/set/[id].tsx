@@ -632,8 +632,9 @@ export default function SetDetailScreen() {
   const authUserId = authenticatedUser?.id ?? null;
   const authUserIdRef = useRef(authUserId);
   authUserIdRef.current = authUserId;
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, language: routeLanguageParam } = useLocalSearchParams<{ id: string; language?: string }>();
   const setId = Array.isArray(id) ? id[0] : id;
+  const requestedLanguage = Array.isArray(routeLanguageParam) ? routeLanguageParam[0] : routeLanguageParam;
 
   const [setInfo, setSetInfo] = useState<PokemonSet | null>(null);
   const [cards, setCards] = useState<PokemonCard[]>([]);
@@ -674,7 +675,7 @@ export default function SetDetailScreen() {
       setOwnershipReady(false);
       setUserId(null);
       setVariantQuantities(new Map());
-      const language = getRouteSetLanguage(setId);
+      const language = requestedLanguage || getRouteSetLanguage(setId);
       let currentSet = await fetchPokemonSetForDetail(setId, { language }).catch(() => null);
       if (!currentSet) {
         const allSets = await fetchAllSets({ language: language ?? 'all', includeAssets: false });
@@ -729,7 +730,7 @@ export default function SetDetailScreen() {
     } finally {
       if (isCurrent()) setLoading(false);
     }
-  }, [setId, authUserId]);
+  }, [setId, authUserId, requestedLanguage]);
 
   useEffect(() => {
     void loadSetData();
