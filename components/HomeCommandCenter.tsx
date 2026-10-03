@@ -151,6 +151,9 @@ export type HomeActivityItem = {
   cardId?: string | null;
   setId?: string | null;
   imageUrl?: string | null;
+  fullImageUrl?: string | null;
+  imageFallbackUrls?: string[];
+  imageCacheKey?: string | null;
   activityType?: HomeActivityType;
 };
 
@@ -1716,6 +1719,9 @@ export function RecentActivitySection({
                     {item.imageUrl ? (
                       <StackrImage
                         uri={item.imageUrl}
+                        fullUri={item.fullImageUrl}
+                        fallbackUris={item.imageFallbackUrls}
+                        cacheKey={item.imageCacheKey ?? item.cardId ?? item.id}
                         style={styles.activityCardImage}
                         contentFit="contain"
                         priority="low"

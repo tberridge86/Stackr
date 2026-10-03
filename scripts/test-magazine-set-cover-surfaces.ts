@@ -33,8 +33,8 @@ assert.match(searchRails, /<StackrImage\s+uri=\{imageUri\}/,
   'card result artwork must continue using its original card image URI');
 
 const searchScreen = readFileSync('app/(tabs)/search.tsx', 'utf8');
-assert.match(searchScreen, /<SearchCardRailItem[\s\S]{0,1800}setLogoSource=\{getLocalSetArtworkSourceForSet\(/,
-  'search cards must pass local set art as a badge, not as card art');
+assert.match(searchScreen, /<SearchCardRailItem[\s\S]{0,2200}setLogoSource=\{getLocalSetLogoSourceForSet\(/,
+  'search card badges must use logo-only artwork so a portrait magazine cover is never squeezed into the logo slot');
 assert.match(searchScreen, /<SearchSetRailItem[\s\S]{0,1800}artworkSource=\{getLocalSetArtworkSourceForSet\(/,
   'search sets must pass local set art through the dedicated source prop');
 

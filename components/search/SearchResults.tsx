@@ -186,6 +186,9 @@ export function SearchRailSection({
 export function SearchCardRailItem({
   name,
   imageUri,
+  fullImageUri,
+  imageFallbackUris,
+  imageCacheKey,
   setName,
   setLogoUri,
   setLogoSource,
@@ -199,6 +202,9 @@ export function SearchCardRailItem({
 }: {
   name: string;
   imageUri?: string | null;
+  fullImageUri?: string | null;
+  imageFallbackUris?: string[];
+  imageCacheKey?: string | null;
   setName?: string | null;
   setLogoUri?: string | null;
   setLogoSource?: ImageSourcePropType | null;
@@ -240,6 +246,9 @@ export function SearchCardRailItem({
       <View style={{ height: 172, borderRadius: 13, overflow: 'hidden', backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
         <StackrImage
           uri={imageUri}
+          fullUri={fullImageUri}
+          fallbackUris={imageFallbackUris}
+          cacheKey={imageCacheKey}
           contentFit="contain"
           cardShape
           rounded={13}
@@ -305,7 +314,7 @@ export function SearchSetRailItem({
       accessibilityLabel={`Open set ${name}`}
       style={{
         width: 176,
-        minHeight: 176,
+        minHeight: 218,
         borderRadius: 17,
         borderWidth: 1,
         borderColor: theme.colors.border,
@@ -314,7 +323,7 @@ export function SearchSetRailItem({
         gap: 8,
       }}
     >
-      <View style={{ height: 76, borderRadius: 13, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <View style={{ height: 116, borderRadius: 13, backgroundColor: 'transparent', borderWidth: 0, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         {artworkSource ? (
           <Image source={artworkSource} resizeMode="contain" style={{ width: '100%', height: '100%' }} />
         ) : (
