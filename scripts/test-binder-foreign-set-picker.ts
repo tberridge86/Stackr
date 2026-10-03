@@ -182,8 +182,8 @@ async function main() {
   assert.match(languageBadgeSource, /POKEMON_CATALOGUE_LANGUAGE_OPTIONS/);
   assert.match(
     languageBadgeSource,
-    /POKEMON_CATALOGUE_LANGUAGE_CODES = \[\s*'en', 'ja', 'zh-cn', 'zh-tw',\s*\]/s,
-    'the shared selectable-set language list must retain English, Japanese, and both Chinese editions',
+    /POKEMON_CATALOGUE_LANGUAGE_CODES = \[\s*'en', 'ja', 'zh-cn', 'zh-tw', 'ko',\s*\]/s,
+    'the shared selectable-set language list must retain English, Japanese, both Chinese editions, and Korean',
   );
 
   const binderSource = readFileSync('lib/binders.ts', 'utf8');

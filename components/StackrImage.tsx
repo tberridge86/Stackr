@@ -145,6 +145,7 @@ function StackrImageBase({
   const activeCandidateSetRef = React.useRef(candidateSetKey);
   activeCandidateSetRef.current = candidateSetKey;
   const [failures, setFailures] = React.useState<{ setKey: string; keys: string[] }>({ setKey: '', keys: [] });
+  const [retryState, setRetryState] = React.useState<{ setKey: string; attempts: Record<string, number> }>({ setKey: '', attempts: {} });
   const candidate = nextStackrImageCandidate(candidates,
     failures.setKey === candidateSetKey ? failures.keys : []);
   const remoteUri = candidate?.uri ?? null;
@@ -152,8 +153,9 @@ function StackrImageBase({
   const resolvedSource = candidate?.source ?? null;
   // Renditions need distinct cache entries. A failed thumbnail must not poison
   // a supplied full-size fallback that uses the same card-level cache key.
+  const retryAttempt = candidate && retryState.setKey === candidateSetKey ? retryState.attempts[candidate.key] ?? 0 : 0;
   const imageSource = remoteUri && resolvedSource && typeof resolvedSource === 'object'
-    ? { ...resolvedSource, cacheKey: cacheKey ? `${cacheKey}:${remoteUri}` : remoteUri }
+    ? { ...resolvedSource, cacheKey: cacheKey ? `${cacheKey}:${remoteUri}:retry-${retryAttempt}` : `${remoteUri}:retry-${retryAttempt}` }
     : resolvedSource;
   const backgroundColor = placeholderColor ?? theme.colors.surface;
 
@@ -191,7 +193,7 @@ function StackrImageBase({
     >
       {resolvedSource ? (
         <ExpoImage
-          key={candidate?.key}
+          key={candidate ? `${candidate.key}:retry-${retryAttempt}` : undefined}
           source={imageSource}
           style={[styles.image, cardShape && cardFrame ? {
             width: faceWidth, height: faceHeight,
@@ -212,6 +214,17 @@ function StackrImageBase({
           onLoad={() => onLoad?.()}
           onError={() => {
             if (!candidate || activeCandidateSetRef.current !== candidateSetKey) return;
+            const attempts = retryState.setKey === candidateSetKey ? retryState.attempts[candidate.key] ?? 0 : 0;
+            // One same-identity retry distinguishes a transient render/network miss
+            // from a genuinely unavailable rendition. We never jump to artwork from
+            // another printing: only the already-vetted candidate list may follow.
+            if (isRemoteImage && attempts < 1) {
+              setRetryState((previous) => ({
+                setKey: candidateSetKey,
+                attempts: { ...(previous.setKey === candidateSetKey ? previous.attempts : {}), [candidate.key]: attempts + 1 },
+              }));
+              return;
+            }
             setFailures((previous) => ({
               setKey: candidateSetKey,
               keys: [...new Set([

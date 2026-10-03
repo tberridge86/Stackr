@@ -31,3 +31,15 @@ export function getLocalSetArtworkSourceForSet(
     ?? getSimplifiedChineseSetLogoSourceForSet(input, fallbackLanguage)
     ?? getTraditionalChineseSetLogoSourceForSet(input, fallbackLanguage);
 }
+
+/** Logo/mark-only resolver. Magazine issue covers are deliberately excluded so
+ * a full portrait cover is never squeezed into a tiny set-logo slot. */
+export function getLocalSetLogoSourceForSet(
+  input?: LocalSetArtworkLookupInput | null,
+  fallbackLanguage?: string | null,
+): ImageSourcePropType | null {
+  return getEnglishSetLogoSourceForSet(input, fallbackLanguage)
+    ?? getJapaneseSetLogoSourceForSet(input, fallbackLanguage)
+    ?? getSimplifiedChineseSetLogoSourceForSet(input, fallbackLanguage)
+    ?? getTraditionalChineseSetLogoSourceForSet(input, fallbackLanguage);
+}

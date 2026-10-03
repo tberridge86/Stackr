@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { getBinderCover } from '../lib/binderCovers';
 import { getLocalSetArtworkSourceForSet } from '../lib/localSetArtwork';
+import { getMagazineSetCoverForSet } from '../lib/magazineSetCovers';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
 import { getPublishedSetCoverFallback } from '../lib/publishedSetLogoFallbacks';
 import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
@@ -72,8 +73,14 @@ export function BinderArtwork({
   const { theme } = useTheme();
   const [logoFailed, setLogoFailed] = useState(false);
   const cover = getBinderCover(coverKey);
+  const magazineCover = cover || fallbackArtSource ? null : getMagazineSetCoverForSet({
+    id: sourceSetId ?? coverKey,
+    language: sourceSetLanguage,
+    name: setName,
+    englishDisplayName: setName,
+  });
   const resolvedLogoSource = fallbackLogoSource
-    ?? (cover ? null : getLocalSetArtworkSourceForSet({
+    ?? (cover || magazineCover ? null : getLocalSetArtworkSourceForSet({
       id: sourceSetId ?? coverKey,
       language: sourceSetLanguage,
       name: setName,
@@ -84,7 +91,7 @@ export function BinderArtwork({
   const hasResolvedLogo = Boolean((resolvedLogoSource || resolvedLogoUrl) && !logoFailed);
   const publishedCoverUrl = cover || fallbackArtSource || resolvedLogoSource || resolvedLogoUrl
     ? undefined : getPublishedSetCoverFallback({ id: sourceSetId ?? coverKey, language: sourceSetLanguage });
-  const shouldDockFallbackLogo = !cover?.image && !fallbackArtSource && hasResolvedLogo;
+  const shouldDockFallbackLogo = !cover?.image && !fallbackArtSource && !magazineCover && hasResolvedLogo;
   const setMarkPrimary = useMemo(() => {
     const cleaned = String(setName ?? sourceSetId ?? coverKey ?? '').replace(/^(ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '').trim();
     return cleaned || 'Set';
@@ -94,8 +101,12 @@ export function BinderArtwork({
   const progressBarHeight = showProgressBar ? Math.max(3, progressHeight) : 0;
   const progressGap = showProgressBar ? Math.max(4, Math.round(stageHeight * 0.035)) : 0;
   const artAreaHeight = Math.max(38, stageHeight - progressBarHeight - progressGap);
-  const binderWidth = Math.min(artworkWidth, Math.round(width * (showFan ? 0.82 : 0.76)));
-  const binderHeight = Math.min(artworkHeight, Math.round(artAreaHeight * (showFan ? 0.96 : 0.88)));
+  const binderWidth = magazineCover
+    ? Math.min(Math.max(artworkWidth, Math.round(width * 0.9)), Math.round(width * 0.94))
+    : Math.min(artworkWidth, Math.round(width * (showFan ? 0.82 : 0.76)));
+  const binderHeight = magazineCover
+    ? Math.min(Math.max(artworkHeight, Math.round(artAreaHeight * 0.96)), artAreaHeight)
+    : Math.min(artworkHeight, Math.round(artAreaHeight * (showFan ? 0.96 : 0.88)));
   const binderLeft = (width - binderWidth) / 2;
   const binderTop = Math.max(0, Math.round((artAreaHeight - binderHeight) * (showFan ? 0.46 : 0.5)));
   const progressBarWidth = Math.max(18, Math.min(progressWidth, Math.round(binderWidth * 0.82)));
@@ -212,6 +223,12 @@ export function BinderArtwork({
             <Image
               source={cover.image}
               style={styles.coverImage}
+              resizeMode="contain"
+            />
+          ) : magazineCover ? (
+            <Image
+              source={magazineCover.source}
+              style={styles.magazineCoverImage}
               resizeMode="contain"
             />
           ) : fallbackArtSource ? (
@@ -391,6 +408,11 @@ const styles = StyleSheet.create({
   coverImage: {
     width: '100%',
     height: '100%',
+  },
+  magazineCoverImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
   },
   fallbackLogo: {
     width: '78%',

@@ -88,6 +88,9 @@ export default function PokemonDetailScreen() {
   const [ownedKeys, setOwnedKeys] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<FilterKey>('all');
   const [loading, setLoading] = useState(true);
+  const [cardsLoading, setCardsLoading] = useState(true);
+  const [cardsError, setCardsError] = useState<string | null>(null);
+  const [retryEpoch, setRetryEpoch] = useState(0);
   const [ownershipLoading, setOwnershipLoading] = useState(false);
   const [busyCardId, setBusyCardId] = useState<string | null>(null);
   const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(new Set());
@@ -110,42 +113,67 @@ export default function PokemonDetailScreen() {
   useEffect(() => {
     let active = true;
 
-    const load = async () => {
-      try {
-        setLoading(true);
+    const applyCanonicalCards = (nextCards: PokedexCard[]) => {
+      if (!active || !nextCards.length) return;
+      setCards(nextCards);
+      setCardsLoading(false);
+      setCardsError(null);
+    };
 
-        let nextPokemon: PokemonData | null = null;
+    const load = async () => {
+      setCardsLoading(true);
+      setCardsError(null);
+
+      // The Pokédex grid already knows the species identity. Paint that route
+      // identity immediately and start Stackr card retrieval without waiting
+      // for the separate PokeAPI metadata request.
+      const routePokemon: PokemonData | null = routeName
+        ? { id: Number(id) || 0, name: routeName, types: [] }
+        : null;
+      if (routePokemon && active) {
+        setPokemon(routePokemon);
+        setLoading(false);
+      } else if (active) {
+        setLoading(true);
+      }
+
+      const routeCardsPromise = routePokemon
+        ? fetchCardsForPokemon(routePokemon.name, { onCanonicalCards: applyCanonicalCards })
+        : null;
+
+      try {
+        let nextPokemon: PokemonData | null = routePokemon;
 
         try {
           const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
           if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
           const json = await response.json();
           nextPokemon = json as PokemonData;
+          if (active) {
+            setPokemon(nextPokemon);
+            setLoading(false);
+          }
         } catch (pokemonError) {
           console.log('Pokedex Pokemon metadata lookup failed', {
             id,
             routeName,
             error: pokemonError instanceof Error ? pokemonError.message : String(pokemonError),
           });
-
-          if (routeName) {
-            nextPokemon = {
-              id: Number(id) || 0,
-              name: routeName,
-              types: [],
-            };
-          }
         }
 
         if (!nextPokemon) throw new Error('Pokemon metadata was unavailable.');
         if (!active) return;
 
-        setPokemon(nextPokemon);
-
-        const pokemonCards = await fetchCardsForPokemon(nextPokemon.name);
+        const sameRouteSpecies = routePokemon
+          && formatPokedexName(routePokemon.name) === formatPokedexName(nextPokemon.name);
+        const pokemonCards = sameRouteSpecies && routeCardsPromise
+          ? await routeCardsPromise
+          : await fetchCardsForPokemon(nextPokemon.name, { onCanonicalCards: applyCanonicalCards });
 
         if (!active) return;
         setCards(pokemonCards);
+        setCardsLoading(false);
+        setCardsError(null);
         console.log('Pokedex cards loaded', {
           pokemon: nextPokemon.name,
           count: pokemonCards.length,
@@ -156,18 +184,22 @@ export default function PokemonDetailScreen() {
         });
       } catch (error) {
         console.log('Failed to load Pokemon collection page', error);
+        if (active) {
+          setCardsLoading(false);
+          setCardsError('Cards could not be loaded. Check your connection and retry.');
+        }
       } finally {
         if (active) setLoading(false);
       }
     };
 
-    if (id) load();
+    if (id) void load();
 
     return () => {
       active = false;
       ownershipLoadGeneration.invalidate();
     };
-  }, [id, loadOwnership, ownershipLoadGeneration, routeName]);
+  }, [id, loadOwnership, ownershipLoadGeneration, retryEpoch, routeName]);
 
   useFocusEffect(
     useCallback(() => {
@@ -435,10 +467,23 @@ export default function PokemonDetailScreen() {
           }
           ListEmptyComponent={
             <View style={styles.emptyCard}>
-              <Text style={styles.emptyTitle}>No cards found</Text>
+              {cardsLoading ? <ActivityIndicator color={theme.colors.primary} size="small" /> : null}
+              <Text style={styles.emptyTitle}>{cardsLoading ? 'Loading cards…' : cardsError ? 'Cards unavailable' : 'No cards found'}</Text>
               <Text style={styles.emptyText}>
-                There are no matching cards in this view yet.
+                {cardsLoading
+                  ? 'Retrieving this Pokémon directly from the Stackr catalogue.'
+                  : cardsError ?? 'There are no matching cards in this view yet.'}
               </Text>
+              {cardsError ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry loading Pokémon cards"
+                  onPress={() => setRetryEpoch((current) => current + 1)}
+                  style={styles.retryButton}
+                >
+                  <Text style={styles.retryButtonText}>Retry</Text>
+                </Pressable>
+              ) : null}
             </View>
           }
         />
@@ -699,6 +744,19 @@ function makeStyles(theme: any) {
       fontSize: 14,
       lineHeight: 20,
       fontWeight: '700',
+    },
+    retryButton: {
+      alignSelf: 'center',
+      marginTop: 12,
+      borderRadius: 999,
+      backgroundColor: theme.colors.primary,
+      paddingHorizontal: 18,
+      paddingVertical: 10,
+    },
+    retryButtonText: {
+      color: '#FFFFFF',
+      fontSize: 12,
+      fontWeight: '900',
     },
   });
 }

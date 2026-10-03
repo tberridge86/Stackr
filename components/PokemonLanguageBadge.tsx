@@ -37,7 +37,7 @@ export type PokemonLanguageOption<Code extends PokemonLanguageBadgeCode = Pokemo
   Omit<PokemonLanguageDescriptor, 'code'> & { key: Code };
 
 export const POKEMON_CATALOGUE_LANGUAGE_CODES = [
-  'en', 'ja', 'zh-cn', 'zh-tw',
+  'en', 'ja', 'zh-cn', 'zh-tw', 'ko',
 ] as const satisfies readonly PokemonLanguageBadgeCode[];
 
 export type PokemonCatalogueLanguageCode = typeof POKEMON_CATALOGUE_LANGUAGE_CODES[number];

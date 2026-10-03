@@ -96,6 +96,7 @@ const run = extract('app/(tabs)/search.tsx', 'runSearch', {
   getCatalogueProductTypeFilter: () => null, getListingProductTypeFilter: () => null,
   productTypeMatchesIntent: () => false, isRawCardCategory: () => true, isListingProductCategory: () => false, isGradedCategory: () => false,
   correctPokemonNameQuery: async () => null, searchSetsQuick: async () => [], searchMarketProducts: async () => [],
+  readCachedCanonicalSearch: async () => null, writeCachedCanonicalSearch: async () => {},
   searchLocalPokemonCards: (q, options) => { const d = deferred(); requests.set(q, { ...d, options }); return d.promise; },
   supabase: { from: () => query },
   settleWithin: async () => ({ status: 'pending' }),

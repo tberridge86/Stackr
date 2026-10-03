@@ -12,6 +12,13 @@ export type ActivityPost = {
   value_change?: number | null;
   is_positive?: boolean | null;
   created_at: string;
+  card_name_snapshot?: string | null;
+  card_number_snapshot?: string | null;
+  card_language_snapshot?: string | null;
+  card_image_small_snapshot?: string | null;
+  card_image_large_snapshot?: string | null;
+  canonical_printing_id?: string | null;
+  canonical_variant_id?: string | null;
 
   profile?: {
     collector_name: string | null;
@@ -123,6 +130,15 @@ export async function createActivityPost(input: {
   setId?: string | null;
   valueChange?: number | null;
   isPositive?: boolean | null;
+  cardSnapshot?: {
+    name?: string | null;
+    number?: string | null;
+    language?: string | null;
+    imageSmall?: string | null;
+    imageLarge?: string | null;
+    canonicalPrintingId?: string | null;
+    canonicalVariantId?: string | null;
+  } | null;
 }, options: CreateActivityPostOptions = {}) {
   const {
     data: { user },
@@ -130,6 +146,24 @@ export async function createActivityPost(input: {
 
   assertActivityPostIdentity(options.expectedUserId, user?.id ?? null);
   if (!user) return;
+
+  let snapshot = input.cardSnapshot ?? null;
+  if (!snapshot && input.cardId) {
+    // Exact legacy-id lookup only. Historical artwork must never be repaired by
+    // a name/number fuzzy match because that can silently show another printing.
+    const { data: exactCard } = await supabase
+      .from('pokemon_cards')
+      .select('id,name,number,language,image_small,image_large')
+      .eq('id', input.cardId)
+      .maybeSingle();
+    if (exactCard?.id === input.cardId) snapshot = {
+      name: exactCard.name ?? null,
+      number: exactCard.number ?? null,
+      language: exactCard.language ?? null,
+      imageSmall: exactCard.image_small ?? null,
+      imageLarge: exactCard.image_large ?? null,
+    };
+  }
 
   const { error } = await supabase.from('activity_feed').insert({
     user_id: options.expectedUserId ?? user.id,
@@ -140,6 +174,13 @@ export async function createActivityPost(input: {
     set_id: input.setId ?? null,
     value_change: input.valueChange ?? null,
     is_positive: input.isPositive ?? null,
+    card_name_snapshot: snapshot?.name ?? null,
+    card_number_snapshot: snapshot?.number ?? null,
+    card_language_snapshot: snapshot?.language ?? null,
+    card_image_small_snapshot: snapshot?.imageSmall ?? null,
+    card_image_large_snapshot: snapshot?.imageLarge ?? null,
+    canonical_printing_id: snapshot?.canonicalPrintingId ?? null,
+    canonical_variant_id: snapshot?.canonicalVariantId ?? null,
   });
 
   if (error) {

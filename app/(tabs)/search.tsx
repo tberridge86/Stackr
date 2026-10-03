@@ -44,6 +44,7 @@ import { useTheme } from '../../components/theme-context';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchOwnedCardRows } from '../../lib/ownership';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import { readCachedCanonicalSearch, writeCachedCanonicalSearch } from '../../lib/searchCardResultCache';
 import {
   fetchCachedCardListingStats,
   fetchCachedProductListingStatsByName,
@@ -58,7 +59,8 @@ import {
   type PokemonSet,
 } from '../../lib/pokemonTcg';
 import { getPreferredCardDisplayName, getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
-import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
+import { getLocalSetArtworkSourceForSet, getLocalSetLogoSourceForSet } from '../../lib/localSetArtwork';
+import { getCardArtworkPresentation } from '../../lib/cardArtworkPresentation';
 import { searchMarketProducts, productLookupLabel, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
 import { expandSearchQuery, normaliseSearchText } from '../../lib/searchNormalisation';
 import {
@@ -97,6 +99,9 @@ type CardResult = {
   number: string | null;
   rarity: string | null;
   imageUri: string | null;
+  fullImageUri: string | null;
+  imageFallbackUris: string[];
+  imageCacheKey: string | null;
   estimatedValue: number | null;
   listingCount: number;
   ownedQuantity: number;
@@ -207,6 +212,15 @@ const SEARCH_PRICE_BUCKETS: { key: SearchPriceBucket; label: string }[] = [
   { key: '10to50', label: '£10-£50' },
   { key: '50to100', label: '£50-£100' },
   { key: '100plus', label: '£100+' },
+];
+
+const DISCOVER_SET_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string; flag: string; flagLanguage?: PokemonCatalogueLanguageCode }[] = [
+  { key: 'all', label: 'All', flag: '🌐' },
+  { key: 'en', label: 'English', flag: '🇬🇧', flagLanguage: 'en' },
+  { key: 'ja', label: 'Japanese', flag: '🇯🇵', flagLanguage: 'ja' },
+  { key: 'zh-cn', label: 'Simplified Chinese', flag: '🇨🇳', flagLanguage: 'zh-cn' },
+  { key: 'zh-tw', label: 'Traditional Chinese', flag: '🇹🇼', flagLanguage: 'zh-tw' },
+  { key: 'ko', label: 'Korean', flag: '🇰🇷', flagLanguage: 'ko' },
 ];
 
 const SEARCH_LANGUAGE_FILTERS: { key: SearchLanguageFilter; label: string; flagLanguage?: PokemonCatalogueLanguageCode }[] = [
@@ -421,6 +435,7 @@ function mapCardResults(
     const language = card.language ?? raw.language ?? raw.set?.language ?? null;
     const number = card.number ?? raw.number ?? raw.collector_number ?? null;
     const setId = getCardSetId(card);
+    const artwork = getCardArtworkPresentation(raw);
     return {
       id: card.id,
       name: getPreferredCardDisplayName({
@@ -441,7 +456,10 @@ function mapCardResults(
       language,
       number,
       rarity: card.rarity ?? raw.rarity ?? null,
-      imageUri: card.image_small ?? card.image_large ?? raw.images?.small ?? null,
+      imageUri: card.image_small ?? card.image_large ?? raw.images?.small ?? raw.images?.large ?? null,
+      fullImageUri: card.image_large ?? raw.images?.large ?? null,
+      imageFallbackUris: artwork?.candidates.map((candidate) => candidate.uri) ?? [],
+      imageCacheKey: artwork?.assetId ?? raw.stackr?.defaultVariantId ?? card.id,
       estimatedValue: getBestCardValue(card),
       listingCount: listingStats.get(card.id)?.count ?? 0,
       ownedQuantity: ownedMap.get(card.id) ?? 0,
@@ -482,11 +500,11 @@ function mapSetRow(row: any): SetResult {
   };
 }
 
-async function searchSetsQuick(primary: string, terms: string[]) {
+async function searchSetsQuick(primary: string, terms: string[], language: SearchLanguageFilter = 'all') {
   const safePrimary = primary.trim();
-  if (safePrimary.length < 2) return [];
+  const mappedSets = await fetchAllSets({ language });
+  if (safePrimary.length < 2) return mappedSets;
 
-  const mappedSets = await fetchAllSets({ language: 'all' });
   return mappedSets
     .map((set) => ({ set, score: rankSet(set, terms) }))
     .filter((entry) => entry.score > 0)
@@ -914,13 +932,33 @@ export default function GlobalSearchScreen() {
     const trimmed = searchText.trim();
     const requestId = ++requestRef.current;
 
-    if (trimmed.length < 2) {
+    if (trimmed.length < 2 && category !== 'sets') {
       previousSearchRef.current = null;
       setResults(EMPTY_RESULTS);
       setErrors({});
       setSuggestion(null);
       setLoading(false);
       setRefreshing(false);
+      return;
+    }
+
+    if (trimmed.length < 2 && category === 'sets') {
+      previousSearchRef.current = null;
+      setResults(EMPTY_RESULTS);
+      setErrors({});
+      setSuggestion(null);
+      setLoading(!force);
+      setRefreshing(force);
+      try {
+        const sets = await searchSetsQuick('', [], selectedLanguage);
+        if (requestId !== requestRef.current) return;
+        setResults({ ...EMPTY_RESULTS, sets });
+      } catch {
+        if (requestId !== requestRef.current) return;
+        setErrors({ sets: 'Set results could not be loaded.' });
+      } finally {
+        if (requestId === requestRef.current) { setLoading(false); setRefreshing(false); }
+      }
       return;
     }
 
@@ -946,6 +984,14 @@ export default function GlobalSearchScreen() {
 
     const correctionPromise = correctPokemonNameQuery(trimmed, { allowIndex: false }).catch(() => null);
     let canonicalCards: SearchResults['cards'] | null = null;
+    const cachedCardsPromise = force
+      ? Promise.resolve(null)
+      : readCachedCanonicalSearch(primary, selectedLanguage).catch(() => null);
+    void cachedCardsPromise.then((cachedRows) => {
+      if (requestId !== requestRef.current || canonicalCards !== null || !cachedRows?.length) return;
+      canonicalCards = mapCardResults(cachedRows);
+      setResults((current) => ({ ...current, cards: canonicalCards! }));
+    });
     const cardsPromise = searchLocalPokemonCards<any>(primary, {
       language: selectedLanguage,
       limit: cardResultLimit,
@@ -958,9 +1004,10 @@ export default function GlobalSearchScreen() {
         if (requestId !== requestRef.current) return;
         canonicalCards = mapCardResults(rows);
         setResults((current) => ({ ...current, cards: canonicalCards! }));
+        void writeCachedCanonicalSearch(primary, selectedLanguage, rows).catch(() => {});
       },
     });
-    const setsPromise = searchSetsQuick(primary, normalisedTerms);
+    const setsPromise = searchSetsQuick(primary, normalisedTerms, selectedLanguage);
     const productsPromise = shouldSearchProducts
       ? searchMarketProducts(trimmed, catalogueProductTypeFilter, catalogueProductTypeFilter || productTypeMatchesIntent(trimmed) ? 24 : 10, { throwOnError: true })
       : Promise.resolve([]);
@@ -1387,7 +1434,7 @@ export default function GlobalSearchScreen() {
     return ['cards', 'sets', 'sealed', 'graded', 'listings', 'collectors'] as const;
   }, [category, debouncedQuery]);
 
-  const hasQuery = debouncedQuery.trim().length >= 2;
+  const hasQuery = debouncedQuery.trim().length >= 2 || category === 'sets';
   const resultCount = filteredGroups.reduce((total, group) => total + results[group].length, 0);
   const visibleResultCount = filteredGroups.reduce((total, group) => total + visibleResults[group].length, 0);
   const failureSummary = getSearchFailureSummary(errors, filteredGroups);
@@ -1412,7 +1459,7 @@ export default function GlobalSearchScreen() {
     setFocusedResultLimit(searchResultWindow.initialCount);
   }, [activeSearchFilterCount, category, debouncedQuery, visibleResultCount, searchResultWindow.initialCount]);
 
-  const hasMoreFocusedResults = false;
+  const hasMoreFocusedResults = category === 'sets' && visibleResults.sets.length > focusedResultLimit;
 
   const renderMoreFocusedResults = useCallback(() => {
     setFocusedResultLimit((current) => current + searchResultWindow.pageSize);
@@ -1522,9 +1569,12 @@ export default function GlobalSearchScreen() {
               key={card.id}
               name={card.name}
               imageUri={card.imageUri}
+              fullImageUri={card.fullImageUri}
+              imageFallbackUris={card.imageFallbackUris}
+              imageCacheKey={card.imageCacheKey}
               setName={card.setName}
               setLogoUri={getPokemonSetLogoUrl(card.setId)}
-              setLogoSource={getLocalSetArtworkSourceForSet({
+              setLogoSource={getLocalSetLogoSourceForSet({
                 id: card.setId,
                 language: card.language,
                 name: card.setName,
@@ -1543,7 +1593,7 @@ export default function GlobalSearchScreen() {
                 source: 'catalogue',
                 card: { id: card.raw?.raw_data?.stackr?.cardId ?? card.id, name: card.name, language: card.language, raw_data: card.raw?.raw_data },
                 imageUri: card.imageUri,
-                fullImageUri: card.raw?.images?.large ?? null,
+                fullImageUri: card.fullImageUri,
                 selectedVariantId: card.raw?.raw_data?.stackr?.defaultVariantId ?? null,
                 subtitle: [card.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · '),
               } : undefined}
@@ -1564,7 +1614,7 @@ export default function GlobalSearchScreen() {
     if (group === 'sets' && visibleResults.sets.length) {
       return (
         <SearchRailSection key="sets" title="Sets" count={visibleResults.sets.length}>
-          {visibleResults.sets.map((set) => (
+          {visibleResults.sets.slice(0, category === 'sets' ? focusedResultLimit : visibleResults.sets.length).map((set) => (
             <SearchSetRailItem
               key={set.id}
               name={set.name}
@@ -1589,7 +1639,7 @@ export default function GlobalSearchScreen() {
                   return;
                 }
                 void rememberSearch();
-                router.push({ pathname: '/set/[id]', params: { id: set.id } });
+                router.push({ pathname: '/set/[id]', params: { id: set.id, language: set.language ?? selectedLanguage } });
               }}
             />
           ))}
@@ -1754,6 +1804,28 @@ export default function GlobalSearchScreen() {
                 activeFilterCount={activeSearchFilterCount}
                 resultLabel={hasQuery ? `${searchResultSummary} · ${currentSearchSortLabel}` : undefined}
               />
+              {category === 'sets' ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }} accessibilityRole="tablist">
+                  {DISCOVER_SET_LANGUAGE_FILTERS.map((language) => {
+                    const active = selectedLanguage === language.key;
+                    return <TouchableOpacity
+                      key={language.key}
+                      accessibilityRole="tab"
+                      accessibilityLabel={language.key === 'all' ? 'All set languages' : `${language.label} sets`}
+                      accessibilityState={{ selected: active }}
+                      onPress={() => { requestRef.current += 1; setFocusedResultLimit(searchResultWindow.initialCount); setSelectedLanguage(language.key); }}
+                      activeOpacity={0.8}
+                      style={{ minHeight: 42, paddingHorizontal: 12, borderRadius: 21, borderWidth: 1,
+                        borderColor: active ? theme.colors.primary : theme.colors.border,
+                        backgroundColor: active ? theme.colors.primary + '18' : theme.colors.surface,
+                        flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+                      <Text accessibilityElementsHidden style={{ fontSize: 18 }}>{language.flag}</Text>
+                      <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontSize: 12, fontWeight: active ? '900' : '700' }}>{language.label}</Text>
+                    </TouchableOpacity>;
+                  })}
+                </ScrollView>
+              ) : null}
+
               {suggestion ? (
                 <TouchableOpacity onPress={() => setQuery(suggestion)} activeOpacity={0.82} style={{ alignSelf: 'flex-start' }}>
                   <Text style={{ color: theme.colors.primary, fontSize: 11.5, lineHeight: 15, fontWeight: '900' }}>
