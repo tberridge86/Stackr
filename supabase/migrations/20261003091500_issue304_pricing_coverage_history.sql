@@ -128,7 +128,7 @@ returns setof public.catalogue_price_items
 language sql
 security invoker
 set search_path = ''
-as $
+as $$
   with candidates as (
     select
       i.cycle_id,
@@ -170,7 +170,7 @@ as $
   from selected s
   where i.cycle_id=s.cycle_id and i.variant_id=s.variant_id
   returning i.*;
-$;
+$$;
 
 revoke all on function api.claim_catalogue_prices(uuid,integer) from public,anon,authenticated;
 grant execute on function api.claim_catalogue_prices(uuid,integer) to service_role;
