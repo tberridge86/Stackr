@@ -181,8 +181,8 @@ export async function applyCardmarketDailyGuide({ api, retained, mappingLedger, 
       const entry = retained.manifest.feeds[kind];
       const existingRevision = await rpc(api, 'read_cardmarket_retained_feed_revision', { p_kind: manifestKind, p_sha256: entry.sha256 });
       if (existingRevision) { revisions[kind] = existingRevision; continue; }
-      const token = await rpc(api, 'claim_cardmarket_public_feed', { p_kind: manifestKind });
-      if (!token) throw Error(`Cardmarket ${kind} daily service lease was not available.`);
+      const token = await rpc(api, 'claim_cardmarket_source_revision', { p_kind: manifestKind, p_source_created_at: entry.createdAt, p_sha256: entry.sha256 });
+      if (!token) throw Error(`Cardmarket ${kind} source revision lease was not available (${entry.createdAt}; ${entry.sha256.slice(0, 12)}).`);
       try { revisions[kind] = await rpc(api, 'finish_cardmarket_public_feed', { p_kind: manifestKind, p_token: token, p_source_created_at: entry.createdAt, p_etag: entry.etag, p_sha256: entry.sha256, p_byte_length: entry.byteLength, p_source_url: entry.sourceUrl, p_retry_seconds: 0 }); }
       catch (error) { await rpc(api, 'fail_cardmarket_public_feed', { p_kind: manifestKind, p_token: token, p_retry_seconds: 3600 }).catch(() => {}); throw error; }
     }

@@ -23,7 +23,7 @@ const rpcCalls = [];
 const api = { rpc: async (name, args) => {
   rpcCalls.push({ name, args });
   if (name === 'read_cardmarket_retained_feed_revision') return { data: null, error: null };
-  if (name === 'claim_cardmarket_public_feed') return { data: `${args.p_kind}-token`, error: null };
+  if (name === 'claim_cardmarket_source_revision') return { data: `${args.p_kind}-token`, error: null };
   if (name === 'finish_cardmarket_public_feed') return { data: `${args.p_kind}-revision`, error: null };
   if (name === 'review_cardmarket_printing_mapping') return { data: true, error: null };
   if (name === 'queue_cardmarket_mapping_repairs') return { data: args.p_repairs.length, error: null };
@@ -34,7 +34,7 @@ const checkpoint = join(cache, 'apply-checkpoint.json');
 const applied = await applyCardmarketDailyGuide({ api, retained: conditional, mappingLedger: ledger, checkpointPath: checkpoint, exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture', now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1 });
 assert.deepEqual(applied, { revisions: { products: 'products-revision', priceGuide: 'price_guide-revision' }, reviewedMappings: 1, stored: 1, repairs: 1, pages: 1, complete: true });
 assert.equal(rpcCalls.filter(call => call.name === 'review_cardmarket_printing_mapping').length, 1);
-assert.equal(rpcCalls.find(call => call.name === 'claim_cardmarket_public_feed' && call.args.p_kind === 'price_guide').args.p_kind, 'price_guide');
+assert.equal(rpcCalls.find(call => call.name === 'claim_cardmarket_source_revision' && call.args.p_kind === 'price_guide').args.p_kind, 'price_guide');
 assert.equal(rpcCalls.find(call => call.name === 'store_cardmarket_blended_general_prices').args.p_results[0].selectedField, 'trend');
 await writeFile(checkpoint, JSON.stringify({ schemaVersion: 2, reviewedKeys: ['51:1'], afterProductId: 1, priceGuideSha256: 'a'.repeat(64) }));
 const revised = await applyCardmarketDailyGuide({ api, retained: conditional, mappingLedger: ledger, checkpointPath: checkpoint, exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB EUR fixture', now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1 });

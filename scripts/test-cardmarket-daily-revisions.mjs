@@ -9,7 +9,7 @@ try {
   create table catalog.card_printings(id uuid primary key);create table catalog.catalogue_versions(id uuid primary key);
   insert into catalog.card_printings values('${id(1)}');insert into catalog.catalogue_versions values('${id(2)}');
   grant usage on schema api,catalog,market to service_role,anon;`);
-  for(const file of ['20261003225832_cardmarket_general_price_backup.sql','20261004094846_cardmarket_daily_revision_resume.sql']) await db.exec(`begin;${readFileSync(`supabase/migrations/${file}`,'utf8')}commit;`);
+  for(const file of ['20261003225832_cardmarket_general_price_backup.sql','20261004094846_cardmarket_daily_revision_resume.sql','20261004102720_cardmarket_source_revision_lease.sql']) await db.exec(`begin;${readFileSync(`supabase/migrations/${file}`,'utf8')}commit;`);
   await db.exec('set role service_role');
   const revisions={};
   for(const [kind,sha,url] of [['products','a'.repeat(64),'productList/products_singles_6.json'],['price_guide','b'.repeat(64),'priceGuide/price_guide_6.json']]) {
@@ -29,6 +29,11 @@ try {
   assert.equal((await db.query('select * from market.cardmarket_blended_general_prices')).rows.length,0,'changed evidence still invalidates the prior quote');
   await db.exec("update market.cardmarket_public_feed_leases set last_succeeded_at=date_trunc('day',now() at time zone 'UTC') at time zone 'UTC' - interval '1 second',lease_until=null where feed_kind='products'");
   assert.ok(await rpc('claim_cardmarket_public_feed',['products']),'a new UTC day does not wait another rolling 24 hours');
+  await db.query("update market.cardmarket_public_feed_leases set lease_token=null,lease_until=null,retry_after=null where feed_kind='products'");
+  const newer=new Date(Date.now()-30*60_000).toISOString();
+  assert.ok(await rpc('claim_cardmarket_source_revision',['products',newer,'c'.repeat(64)]),'newer provider source may supersede an older source retrieved today');
+  await db.query("update market.cardmarket_public_feed_leases set lease_token=null,lease_until=null where feed_kind='products'");
+  assert.equal(await rpc('claim_cardmarket_source_revision',['products',new Date(Date.now()-2*3600_000).toISOString(),'d'.repeat(64)]),null,'older source is rejected');
   await db.exec('reset role;set role anon');
   await assert.rejects(rpc('read_cardmarket_retained_feed_revision',['products','a'.repeat(64)]),/permission denied/);
   console.log('Cardmarket daily revisions passed: restart reuse, UTC-day leases, idempotent reviews preserve prices, changed reviews invalidate, service-only ACL.');
