@@ -1,60 +1,38 @@
-# Cardmarket public backup readiness — 3 October 2026
+# Cardmarket public backup readiness
 
-## Current state
+## Current state — 4 October 2026
 
-The Cardmarket general-price backup is **schema-ready in staging only**. Migration `20261003225832_cardmarket_general_price_backup.sql` is applied to staging project `lmwfhvexfcoyeuoyrlco`; production is untouched. It has not received a Cardmarket payload, a reviewed mapping, or a stored price: imported feed revisions, mappings, and live general-price rows are all **zero**. The backup therefore serves no card and must not be described as operational.
+Cardmarket is now an operational **general market-guide backup** in staging and production. It is not an exact-card, condition, finish, grade, sold-price, or holdings-valuation provider.
 
-Cardmarket publishes public daily Pokémon catalogue and price-guide downloads. The public guide can support a broad, general market guide only after exact reviewed identity mapping. It cannot establish a language-, condition-, grade-, finish-, or sold-price valuation.
+The production retained-feed import completed from the verified 4 October public files. It scanned all 150 bounded product pages, stored 9,224 reviewed printing mappings and 9,223 blended general estimates, and persisted 65,397 explicit repairs: 65,396 `missing_exact_mapping` and one `no_market_guide_value`. The difference between mappings and estimates is recorded rather than hidden.
 
-## Verified public feed evidence
+The products revision is `ae42de16-eb38-414d-a45d-c688d558eeb7`, created 3 October 2026 09:44:53 UTC, SHA-256 `14a74405a86acfb80b42168e5cc019c0eae67925e8eee9893f53d35e4922d6ce`. The price-guide revision is `88df9af6-8055-4bf0-9c21-9c230681befe`, created 4 October 2026 00:40:55 UTC, SHA-256 `acdd6ed470fa738b7dd318d7548df425123d83b51d4ab258b0a0de43d9cf8e82`. Estimates retain their original EUR amount and the ECB EUR→GBP rate `0.85033` dated 2 October 2026.
+
+The production readback returns `priceScope: blended_general_estimate`, `provider: cardmarket_public`, and the selected guide field, while language, condition, finish, and grade remain `null`. It explicitly sets `usableForExactVariant: false` and `usableForHoldingsValuation: false`.
+
+## Durable daily operation
+
+Separate staging and production Railway workers use successful source build `3534ea3` and dedicated 1 GB `/var/lib/cardmarket` volumes. The configured hourly minute-17 UTC check verifies the durable manifest and either reuses a same-day retained revision or advances the public provider revision. It does not redownload a verified same-day guide. Retained revisions, reviewed mappings, and checkpoints make restart/resume idempotent.
+
+The first scheduled execution at 10:17 UTC is pending at the time of this update. A successful configured build is not evidence that the cron has executed; the scheduled run must be checked and recorded independently.
+
+The loader accepts only reviewed printing mappings with language, variant, finish, and review evidence. Unmapped, ambiguous, missing-price, or unusable records are explicit repairs. It does not infer mappings from names, codes, or catalogue proximity.
+
+## Public feed contract
 
 - Price guide: `https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_6.json`
 - Singles catalogue: `https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_6.json`
 
-One bounded full read of each file on 3 October 2026 validated the current parser:
+Cardmarket publishes the public product catalogue and price guide as daily downloads. This static feed is separate from the retired OAuth API. The bounded parser validates deadline, body size, retry timing, ETag/304 responses, envelopes, and product IDs. The cache loader revalidates raw-file SHA-256 and source dates before any database operation.
 
-| Feed | Rows | Feed `createdAt` | ETag | SHA-256 |
-| --- | ---: | --- | --- | --- |
-| Price guide | 79,688 | `2026-10-03T02:41:55+0200` | `"bc29ddf805de2f88594b3f77ab597797"` | `9d56fe70cb13047eca401adf51e34c067dac8e6c49249a00cd05522322b7be58` |
-| Singles catalogue | 74,620 | `2026-10-03T11:44:53+0200` | `"1b18027d11ac945b0900b7b37a8fa3f4"` | `14a74405a86acfb80b42168e5cc019c0eae67925e8eee9893f53d35e4922d6ce` |
+Only `trend`, `avg30`, or `avg` are eligible market-guide fields. `low` is an asking floor and is rejected. GBP display requires a positive, non-future ECB conversion no more than seven days old; the EUR source amount, field, rate, date, source, feed revisions, and stale date are preserved.
 
-Those payloads were not retained as import inputs. There is no cached real feed in the repository. The row-count difference is not coverage: it requires a measured join and an explicit unmapped/ambiguous repair queue.
+## Scope and remaining work
 
-Cardmarket’s 5 June 2024 announcement says that its product catalogue and price guide are public downloadable files updated daily. This static download path is distinct from the retired OAuth API restrictions.
-
-## Staging contract
-
-The staging migration creates an independent Cardmarket namespace. It leaves the existing TCGCSV/Tcgplayer English/Japanese constraints unchanged.
-
-- Feed revisions retain source URL, source date, ETag, SHA-256, byte length, retrieval time, and a per-file service-only lease. A successful file kind can be claimed only once per 24 hours.
-- A durable mapping links one reviewed Cardmarket product/category to one Stackr **printing**, never a variant. It requires language, variant, and finish evidence plus a review reference. Mapping changes append an audit record and invalidate the old blended quote.
-- `api.store_cardmarket_blended_general_prices` accepts only `trend`, `avg30`, or `avg`; `low` remains an asking-floor field and is rejected as a market estimate.
-- GBP display values require a positive EUR→GBP conversion with non-empty source, no future timestamp, and an age of at most seven days. The original EUR amount, selected guide field, FX rate/date/source, feed revisions, and stale time remain stored.
-- `api.read_cardmarket_blended_general_prices(uuid[])` is service-only and returns printing-scoped `blended_general_estimate` quotes. Its metadata sets language, condition, finish, and grade to `null`, and explicitly marks `usableForExactVariant: false` and `usableForHoldingsValuation: false`.
-
-The backend may use this read only as a general-guide fallback attached to the matched printing. It must never select it for exact card pricing, collection/holding totals, a condition/finish price, a graded price, or a last-sold claim.
-
-## Offline adapter and gates
-
-`scripts/cardmarket-public-guide.mjs` validates bounded downloads: 45-second deadline, 32 MiB body limit, transient/network retries, `Retry-After`, ETag/304 revision handling, non-empty envelopes, and valid IDs. `scripts/cardmarket-cached-ingestion.mjs` consumes only retained JSON files and a reviewed ledger. It makes no network or database call by default, pages at 500 products, emits deterministic review items, and refuses stale or future FX evidence when preparing a store batch.
-
-The parser and cached-planner tests are fixture tests. The migration test is a local PGlite test. They prove contracts, not production data coverage.
-
-The remaining gate is concrete:
-
-1. On the next permitted daily refresh, retain both real raw files and retrieval metadata.
-2. Claim and record both staging feed revisions under the service-only daily lease.
-3. Create reviewed, evidence-backed printing mappings without name/set/number inference.
-4. Run the bounded offline plan, persist only its reviewed `trend`/`avg30`/`avg` candidates with current FX evidence, and persist every missing or ambiguous result as a repair.
-5. Measure staging rows, mapping coverage, repairs, source age, and the backend’s general-only display path before considering production.
-
-## Related provider evidence
-
-A Railway credential probe for eBay OAuth/Browse passed at `2026-10-03T22:58:29.813Z`. It is independent from Cardmarket and does not fill the Cardmarket backup gate. Browse evidence remains active/listing evidence, not a Cardmarket import or an eBay sold-price claim.
+Cardmarket gives a broad general guide for the reviewed printing cohort. Its public data does not prove language, condition, finish, or grade. The 65,397 repair records are a durable coverage queue, not a claim of coverage. New mappings need the same reviewed identity evidence before they can contribute a general estimate.
 
 ## Primary sources
 
 - [Cardmarket announcement: public price guide and product catalogue](https://news.cardmarket.com/en/Magic/were-making-the-price-guide-and-product-catalogue-available-for-download)
 - [State of Cardmarket 2024](https://insight.cardmarket.com/en/Articles/the-state-of-cardmarket-2024)
 - [Cardmarket Data](https://www.cardmarket.com/en/Magic/Data)
-- [Finding and listing Pokémon cards](https://help.cardmarket.com/en/finding-and-listing-pokemon-cards)

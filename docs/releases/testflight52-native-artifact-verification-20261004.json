@@ -1,0 +1,34 @@
+{
+  "verifiedAt": "2026-10-04T10:05:39.567Z",
+  "easBuild": {
+    "id": "dbbc2425-0788-4c98-b289-d5d860da4b26",
+    "status": "FINISHED",
+    "platform": "IOS",
+    "distribution": "STORE",
+    "appVersion": "1.0.5",
+    "buildVersion": "52",
+    "runtimeVersion": "1.0.5",
+    "gitCommit": "b516cb7d529d8f764cb27380d2c975d0f736856f"
+  },
+  "artifact": {
+    "downloaded": true,
+    "byteLength": 363631672,
+    "sha256": "71aa905925b191f02a0b291e5f6ddfcbd7b5ada46175bbe0e91988f933aab49e",
+    "retainedPath": ".tmp/testflight52-stackr-1.0.5-52.ipa"
+  },
+  "ipaVerification": {
+    "bundleId": "com.tommo86.Stackr",
+    "version": "1.0.5",
+    "build": "52",
+    "runtime": "1.0.5",
+    "startupVideoSha256": "14b82efa2bdf8bbf98debde5e0138f2a3b419e32e011e7d0d91faf0a57ab697c",
+    "startupVideoMatches": 1,
+    "mp4Assets": 1,
+    "jsBundlesScanned": 1,
+    "obviousSecretMarkerMatches": 0
+  },
+  "limitations": [
+    "Local archive inspection only; no installed-device or handset behavior was tested.",
+    "No App Store Connect or TestFlight submission, group assignment, or remote configuration change was performed."
+  ]
+}

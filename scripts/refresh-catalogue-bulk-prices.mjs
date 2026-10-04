@@ -201,6 +201,16 @@ export async function runCatalogueBulkSweep({ begin, seedOutcomes = async () => 
   return summary;
 }
 
+export function durableSweepExitCode(health) {
+  if (!health || !['complete', 'needs_mapping'].includes(health.runStatus) || !Array.isArray(health.groups) || !health.groups.length) return 1;
+  const terminal = new Set(['complete', 'unmapped']); let total = 0;
+  for (const group of health.groups) {
+    if (!group || !terminal.has(group.status) || !Number.isInteger(group.total) || group.total <= 0) return 1;
+    total += group.total;
+  }
+  return total > 0 ? 0 : 1;
+}
+
 export async function mainCatalogueBulkPrices(args = process.argv.slice(2)) {
   const fixturePath = args.find((arg) => arg.startsWith('--fixture='))?.slice(10);
   if (fixturePath) { if (args.includes('--apply')) throw Error('Fixtures cannot write prices.'); const fixture = JSON.parse(await readFile(fixturePath, 'utf8')); const plan = planCatalogueBulkPrices(fixture); console.log(JSON.stringify({ dryRun: true, providerCalls: 0, ...plan })); return plan; }
@@ -233,7 +243,7 @@ export async function mainCatalogueBulkPrices(args = process.argv.slice(2)) {
     console.warn(JSON.stringify({ event: 'catalogue_bulk_price_coverage_deferred', project: target.projectRef, datasetAt, runId: result.runId, ...coverageError }));
   }
   const reported = { project: target.projectRef, datasetAt, ...result, status: coverage?.runStatus ?? health?.runStatus ?? result.status, health, coverage, coverageError };
-  console.log(JSON.stringify(reported)); if (result.deferred > 0) process.exitCode = 1; return reported;
+  console.log(JSON.stringify(reported)); process.exitCode = durableSweepExitCode(health); return reported;
 }
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) mainCatalogueBulkPrices().catch((error) => {
   console.error(JSON.stringify({
