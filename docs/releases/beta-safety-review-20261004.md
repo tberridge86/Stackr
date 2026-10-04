@@ -45,3 +45,28 @@ At 2026-10-04, the staging `market.catalogue_general_prices` table contained 13,
 4. Resolve or qualify the `translationStatus: verified` name-only wording before marketing the foreign-language experience as fully verified English text.
 
 
+
+## Defensible constrained-beta stopping point
+
+This beta can stop at a **truthful constrained catalogue experience**, once the signed build succeeds and the handset checks below pass. It must not be presented as complete provider coverage, complete artwork coverage, or complete English translation coverage.
+
+The current source evidence supports these beta behaviours:
+
+- General guide prices are separate from owned-card exact valuations. A card with no stored guide quote can remain unavailable or stale with its source/update state; it must not trigger a fabricated exact, condition, finish, grade, or sold price.
+- TCGCSV stored-guide coverage exists for some English and Japanese catalogue rows. The 4 October staging read recorded 13,433 English and 6,720 Japanese guide rows. These are row counts, not a claim that every published card or provider product is covered.
+- Cardmarket remains a non-operational backup: no retained current feed, reviewed mapping, or imported Cardmarket guide row exists. The documented Cardmarket gate must remain open.
+- Native artwork is exact-language only. Missing foreign artwork may be visibly absent; it must not fall back to an English rendition. Korean still lacks verified stored-art/controlled-reference evidence.
+- English descriptive text is only shown with authoritative-counterpart or reviewed-translation provenance. Cards without it remain translation pending. Name-only display derivation does not prove a full English description.
+
+The current iOS EAS store build `dbbc2425-0788-4c98-b289-d5d860da4b26` is **IN_PROGRESS** at the time of this review. It targets iOS, app version/runtime `1.0.5`, build `52`, and commit `b516cb7d529d8f764cb27380d2c975d0f736856f`. No artifact is available and no TestFlight submission was performed.
+
+The backend production dependency audit (`npm --prefix backend audit --omit=dev --json`) now reports four moderate findings, no high and no critical findings. They are the Jimp image-processing chain: `jimp`, `@jimp/custom`, `@jimp/core`, and `file-type`. This is a dependency report, not proof of exploitability. The earlier native audit remains a separate evidence item: its 54 findings are primarily Expo/Metro/Jest/CLI build tooling, but runtime-facing Expo update/router paths still require handset validation.
+
+A beta is ready for handoff only after all of the following are recorded against the signed artifact:
+
+1. EAS reports the build succeeded and exposes its immutable artifact/build identifier.
+2. One iOS and one Android physical-device pass covers cold and warm launch, offline launch, update check, deep link, notification startup, and the Stripe entry route.
+3. Representative English, Japanese, Simplified Chinese, Traditional Chinese, and Korean cards are checked for native identity, artwork language isolation, missing-art behaviour, source/update labels, and translation-pending behaviour.
+4. The release notes state the actual guide source coverage and exclude claims of all-card pricing, all-language artwork, Korean artwork parity, or fully translated foreign descriptions.
+
+These criteria intentionally permit missing-provider products, unmapped prices, unavailable artwork, and pending translations to remain visible as gaps. They do not permit silent failure, cross-language artwork substitution, invented English descriptions, or an unlabelled estimate presented as an exact valuation.

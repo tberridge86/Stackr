@@ -98,7 +98,10 @@ export async function downloadCardmarketPublicGuide(kind, { fetchImpl = fetch, r
       const body = await responseTextWithinLimit(response, maxBytes);
       const payload = JSON.parse(body);
       const rows = validateCardmarketPublicGuide(kind, payload);
-      return { kind, url, unchanged: false, etag: cleanEtag(response.headers.get('etag')), createdAt: payload.createdAt, rows, sha256: createHash('sha256').update(body).digest('hex') };
+      return {
+        kind, url, unchanged: false, etag: cleanEtag(response.headers.get('etag')), createdAt: payload.createdAt,
+        rows, payload, rawPayload: body, byteLength: Buffer.byteLength(body), sha256: createHash('sha256').update(body).digest('hex'),
+      };
     } catch (error) {
       lastError = error;
       if (receivedResponse || signal?.aborted || deadline.signal.aborted || attempt === retries) throw error;

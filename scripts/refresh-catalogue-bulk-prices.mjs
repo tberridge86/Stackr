@@ -194,7 +194,7 @@ export async function runCatalogueBulkSweep({ begin, seedOutcomes = async () => 
         pages++; groupCards += page.length; groupPriced += plan.priced;
       }
       if (!await finish({ runId: run.runId, categoryId: job.categoryId, groupId: job.groupId, token: job.leaseToken, status: 'complete', stats: { pages, cards: groupCards, priced: groupPriced } })) throw Error('Sweep checkpoint lease expired.'); summary.complete++; summary.cards += groupCards; summary.priced += groupPriced;
-    } catch (error) { const saved = await finish({ runId: run.runId, categoryId: job.categoryId, groupId: job.groupId, token: job.leaseToken, status: 'failed', retrySeconds: Math.min(86400, Math.max(60, Number(error.retryAfter) || 600)), stats: { error: String(error.message ?? error).slice(0, 500) } }); if (!saved) throw error; summary.deferred++; }
+    } catch (error) { const saved = await finish({ runId: run.runId, categoryId: job.categoryId, groupId: job.groupId, token: job.leaseToken, status: 'failed', retrySeconds: Math.min(86400, Math.max(60, Number(error.retryAfter) || 600)), stats: { error: String(error.message ?? error).slice(0, 500), rpc: error?.rpcName ?? null } }); if (!saved) throw error; summary.deferred++; }
     await onProgress({ ...summary });
   }
   summary.status = summary.deferred || !exhausted ? 'partial' : summary.unmapped ? 'needs_mapping' : 'complete';
