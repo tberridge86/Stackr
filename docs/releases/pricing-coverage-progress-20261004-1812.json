@@ -1,0 +1,762 @@
+{
+  "recordedAt": "2026-10-04 18:12:07 UTC",
+  "baseline": {
+    "observedAt": "2026-10-04T10:32:00Z",
+    "publishedVariants": 76269,
+    "freshCombinedVariants": 29099
+  },
+  "current": {
+    "total": 76269,
+    "priced": 29845,
+    "percent": 39.13123287312014,
+    "netNew": 746,
+    "languages": [
+      {
+        "observed_at": "2026-10-04 17:43:45.306962+00",
+        "language_code": "en",
+        "published_variants": 33359,
+        "fresh_tcgcsv_variants": 14697,
+        "fresh_cardmarket_presentation_variants": 7802,
+        "overlap": 4038,
+        "fresh_combined_variants": 18461
+      },
+      {
+        "observed_at": "2026-10-04 17:43:53.909252+00",
+        "language_code": "ja",
+        "published_variants": 14100,
+        "fresh_tcgcsv_variants": 6902,
+        "fresh_cardmarket_presentation_variants": 1032,
+        "overlap": 614,
+        "fresh_combined_variants": 7320
+      },
+      {
+        "observed_at": "2026-10-04 17:43:57.376172+00",
+        "language_code": "ko",
+        "published_variants": 239,
+        "fresh_tcgcsv_variants": 0,
+        "fresh_cardmarket_presentation_variants": 10,
+        "overlap": 0,
+        "fresh_combined_variants": 10
+      },
+      {
+        "observed_at": "2026-10-04 17:43:58.457766+00",
+        "language_code": "zh-cn",
+        "published_variants": 20405,
+        "fresh_tcgcsv_variants": 0,
+        "fresh_cardmarket_presentation_variants": 0,
+        "overlap": 0,
+        "fresh_combined_variants": 0
+      },
+      {
+        "observed_at": "2026-10-04 17:44:04.293691+00",
+        "language_code": "zh-tw",
+        "published_variants": 8166,
+        "fresh_tcgcsv_variants": 0,
+        "fresh_cardmarket_presentation_variants": 4054,
+        "overlap": 0,
+        "fresh_combined_variants": 4054
+      }
+    ],
+    "atomicSnapshot": false,
+    "definition": "Fresh current physical published variants with exact TCGCSV general variant quotes or eligible reviewed Cardmarket printing-scoped blended presentation estimates, counted once."
+  },
+  "batches": [
+    {
+      "name": "Delta and star title aliases",
+      "groups": [
+        1411,
+        1429
+      ],
+      "reviewed": 109,
+      "stageStored": 109,
+      "prodStored": 109,
+      "netCombinedGain": 73,
+      "stageValidation": [
+        {
+          "expected": 109,
+          "verified_fresh": 109,
+          "stored": 109,
+          "min_dataset_at": "2026-10-03 20:05:38+00",
+          "min_fx_at": "2026-10-02 00:00:00+00",
+          "min_stale_after": "2026-10-05 20:05:38+00",
+          "observed_at": "2026-10-04 17:20:16.025572+00"
+        }
+      ],
+      "prodValidation": [
+        {
+          "expected": 109,
+          "verified_fresh": 109,
+          "stored": 109,
+          "min_dataset_at": "2026-10-03 20:05:38+00",
+          "min_fx_at": "2026-10-02 00:00:00+00",
+          "min_stale_after": "2026-10-05 20:05:38+00",
+          "observed_at": "2026-10-04 17:23:50.048043+00"
+        }
+      ],
+      "aliases": "Cohort-only Delta Species→δ and Star→☆ equivalence; exact collector, canonical printing/variant and provider subtype retained."
+    },
+    {
+      "name": "Rumble strict product subset",
+      "group": 1433,
+      "reviewed": 13,
+      "stageStored": 13,
+      "prodStored": 13,
+      "netCombinedGain": 2,
+      "stageValidation": [
+        {
+          "expected": 13,
+          "verified_fresh": 13,
+          "stored": 13,
+          "min_dataset_at": "2026-10-03 20:05:38+00",
+          "min_fx_at": "2026-10-02 00:00:00+00",
+          "min_stale_after": "2026-10-05 20:05:38+00",
+          "observed_at": "2026-10-04 17:33:05.936715+00"
+        }
+      ],
+      "prodValidation": [
+        {
+          "expected": 13,
+          "verified_fresh": 13,
+          "stored": 13,
+          "min_dataset_at": "2026-10-03 20:05:38+00",
+          "min_fx_at": "2026-10-02 00:00:00+00",
+          "min_stale_after": "2026-10-05 20:05:38+00",
+          "observed_at": "2026-10-04 17:34:54.530218+00"
+        }
+      ],
+      "radiantCollection": "No mappings emitted; valid other-group mappings excluded for the shared set."
+    }
+  ],
+  "recovery": {
+    "dragonFrontiers": {
+      "job": {
+        "group": {
+          "name": "EX Dragon Frontiers",
+          "groupId": 1411,
+          "language": "en",
+          "categoryId": 3,
+          "modifiedOn": "2026-09-09T15:22:34.003",
+          "publishedOn": "2006-11-08T00:00:00",
+          "abbreviation": "DF",
+          "isSupplemental": false
+        },
+        "groupId": 1411,
+        "language": "en",
+        "categoryId": 3,
+        "leaseToken": "a5c82cc6-49fa-4570-a7bf-34bb0a1c708a"
+      },
+      "stats": {
+        "pages": 1,
+        "cards": 101,
+        "priced": 96
+      },
+      "done": [
+        {
+          "finished": true
+        }
+      ]
+    },
+    "otherGroups": [
+      {
+        "job": {
+          "group": {
+            "name": "EX Delta Species",
+            "groupId": 1429,
+            "language": "en",
+            "categoryId": 3,
+            "modifiedOn": "2026-07-24T13:49:51.963",
+            "publishedOn": "2005-10-31T00:00:00",
+            "abbreviation": "DS",
+            "isSupplemental": false
+          },
+          "groupId": 1429,
+          "language": "en",
+          "categoryId": 3,
+          "leaseToken": "8b7cffd5-cf55-4d40-b7f5-17a6b2e3a36f"
+        },
+        "mapping": {
+          "setId": "99249942-0d40-4681-89ef-ed4575e16313",
+          "setIds": [
+            "99249942-0d40-4681-89ef-ed4575e16313"
+          ],
+          "source": "reviewed",
+          "status": "mapped"
+        },
+        "stats": {
+          "pages": 1,
+          "cards": 116,
+          "priced": 98
+        },
+        "finished": true
+      },
+      {
+        "job": {
+          "group": {
+            "name": "Rumble",
+            "groupId": 1433,
+            "language": "en",
+            "categoryId": 3,
+            "modifiedOn": "2022-11-17T21:25:24.627",
+            "publishedOn": "2009-11-16T00:00:00",
+            "abbreviation": "RUM",
+            "isSupplemental": false
+          },
+          "groupId": 1433,
+          "language": "en",
+          "categoryId": 3,
+          "leaseToken": "c9926a80-5767-4362-bc93-14d00b4be474"
+        },
+        "mapping": {
+          "setId": "a05be832-81a3-4f39-9fb2-0be6c0c73727",
+          "setIds": [
+            "a05be832-81a3-4f39-9fb2-0be6c0c73727"
+          ],
+          "source": "reviewed",
+          "status": "mapped"
+        },
+        "stats": {
+          "pages": 1,
+          "cards": 16,
+          "priced": 13
+        },
+        "finished": true
+      }
+    ],
+    "health": [
+      {
+        "health": {
+          "runId": "b232d400-1e11-4fa9-995d-158e0cf8ee94",
+          "groups": [
+            {
+              "total": 135,
+              "status": "complete",
+              "categoryId": 3
+            },
+            {
+              "total": 85,
+              "status": "unmapped",
+              "categoryId": 3
+            },
+            {
+              "total": 163,
+              "status": "complete",
+              "categoryId": 85
+            },
+            {
+              "total": 296,
+              "status": "unmapped",
+              "categoryId": 85
+            }
+          ],
+          "quotes": [
+            {
+              "stale": 0,
+              "total": 14697,
+              "provider": "tcgcsv",
+              "languageCode": "en"
+            },
+            {
+              "stale": 0,
+              "total": 6902,
+              "provider": "tcgcsv",
+              "languageCode": "ja"
+            }
+          ],
+          "outcomes": {
+            "total": 76272,
+            "no_provider_quote": 3350,
+            "unsupported_finish": 1240,
+            "unsupported_language": 28813
+          },
+          "datasetAt": "2026-10-03T20:05:38+00:00",
+          "runStatus": "needs_mapping",
+          "openRepairs": 45991
+        }
+      }
+    ]
+  },
+  "refresh": {
+    "productionTCGCSV": {
+      "serviceId": "a2e61d08-1910-4762-bf82-e0473e86ad5f",
+      "serviceName": "stackr-catalogue-prices-daily-production",
+      "state": "cronSucceeded",
+      "statusText": "Last run succeeded",
+      "activeDeployments": [
+        {
+          "id": "3e2bdd6b-d3bd-490c-ad16-d10a02b9f0d4",
+          "status": "SUCCESS",
+          "createdAt": "2026-10-04T17:14:09.556Z",
+          "statusUpdatedAt": "2026-10-04T17:14:40.042Z"
+        }
+      ],
+      "replicaStatus": {
+        "running": 0,
+        "crashed": 0,
+        "total": 1
+      },
+      "cronJob": {
+        "lastExecutionStatus": "succeeded",
+        "lastExecutionAt": "2026-10-04T17:16:44.606Z"
+      },
+      "issues": {
+        "warningCount": 0,
+        "criticalCount": 0
+      },
+      "recentFailures": 0,
+      "recentFailedDeployments": [],
+      "hasIssues": false,
+      "isCronJob": true,
+      "hasVolume": false
+    },
+    "stagingTCGCSV": {
+      "serviceId": "2bfb696f-ac1a-481f-83d9-ce16cd13abe6",
+      "serviceName": "stackr-catalogue-prices-daily",
+      "state": "cronSucceeded",
+      "statusText": "Last run succeeded",
+      "activeDeployments": [
+        {
+          "id": "022f2a33-8bad-43a3-96d6-97b593295880",
+          "status": "SUCCESS",
+          "createdAt": "2026-10-04T15:57:23.334Z",
+          "statusUpdatedAt": "2026-10-04T16:16:14.830Z"
+        }
+      ],
+      "replicaStatus": {
+        "running": 0,
+        "crashed": 0,
+        "total": 1
+      },
+      "cronJob": {
+        "lastExecutionStatus": "succeeded",
+        "lastExecutionAt": "2026-10-04T17:14:29.637Z"
+      },
+      "issues": {
+        "warningCount": 0,
+        "criticalCount": 0
+      },
+      "recentFailures": 0,
+      "recentFailedDeployments": [],
+      "hasIssues": false,
+      "isCronJob": true,
+      "hasVolume": false
+    },
+    "productionRuntimeCoverageDeferred": [
+      {
+        "timestamp": "2026-10-04T17:16:20.858415921Z",
+        "severity": "info",
+        "message": "Starting Container",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-04T17:16:42.281986471Z",
+        "severity": "error",
+        "message": "canceling statement due to statement timeout",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"error\""
+          },
+          {
+            "key": "event",
+            "value": "\"catalogue_bulk_price_coverage_deferred\""
+          },
+          {
+            "key": "project",
+            "value": "\"oakdbbzdqwurpjnoqhmu\""
+          },
+          {
+            "key": "datasetAt",
+            "value": "\"2026-10-03T20:05:38+0000\""
+          },
+          {
+            "key": "runId",
+            "value": "\"b232d400-1e11-4fa9-995d-158e0cf8ee94\""
+          },
+          {
+            "key": "rpc",
+            "value": "\"catalogue_bulk_price_coverage\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-04T17:16:42.281988880Z",
+        "severity": "info",
+        "message": "",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          },
+          {
+            "key": "project",
+            "value": "\"oakdbbzdqwurpjnoqhmu\""
+          },
+          {
+            "key": "datasetAt",
+            "value": "\"2026-10-03T20:05:38+0000\""
+          },
+          {
+            "key": "runId",
+            "value": "\"b232d400-1e11-4fa9-995d-158e0cf8ee94\""
+          },
+          {
+            "key": "requeued",
+            "value": "0"
+          },
+          {
+            "key": "outcomeSeed",
+            "value": "{\"pages\":1,\"scanned\":0,\"written\":0,\"complete\":true}"
+          },
+          {
+            "key": "setsClaimed",
+            "value": "0"
+          },
+          {
+            "key": "complete",
+            "value": "0"
+          },
+          {
+            "key": "unmapped",
+            "value": "0"
+          },
+          {
+            "key": "deferred",
+            "value": "0"
+          },
+          {
+            "key": "cards",
+            "value": "0"
+          },
+          {
+            "key": "priced",
+            "value": "0"
+          },
+          {
+            "key": "status",
+            "value": "\"needs_mapping\""
+          },
+          {
+            "key": "health",
+            "value": "{\"runId\":\"b232d400-1e11-4fa9-995d-158e0cf8ee94\",\"groups\":[{\"total\":134,\"status\":\"complete\",\"categoryId\":3},{\"total\":86,\"status\":\"unmapped\",\"categoryId\":3},{\"total\":163,\"status\":\"complete\",\"categoryId\":85},{\"total\":296,\"status\":\"unmapped\",\"categoryId\":85}],\"quotes\":[{\"stale\":0,\"total\":14575,\"provider\":\"tcgcsv\",\"languageCode\":\"en\"},{\"stale\":0,\"total\":6902,\"provider\":\"tcgcsv\",\"languageCode\":\"ja\"}],\"outcomes\":{\"total\":76272,\"no_provider_quote\":3347,\"unsupported_finish\":1240,\"unsupported_language\":28813},\"datasetAt\":\"2026-10-03T20:05:38+00:00\",\"runStatus\":\"needs_mapping\",\"openRepairs\":46227}"
+          },
+          {
+            "key": "coverage",
+            "value": "null"
+          },
+          {
+            "key": "coverageError",
+            "value": "{\"rpc\":\"catalogue_bulk_price_coverage\",\"message\":\"canceling statement due to statement timeout\"}"
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-04T17:16:42.281991850Z",
+        "severity": "info",
+        "message": "",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          },
+          {
+            "key": "event",
+            "value": "\"catalogue_price_cron_finished\""
+          },
+          {
+            "key": "exitCode",
+            "value": "0"
+          },
+          {
+            "key": "signal",
+            "value": "null"
+          },
+          {
+            "key": "elapsedMs",
+            "value": "21283"
+          }
+        ]
+      }
+    ],
+    "interpretation": "17:16 production cron exited0 with valid needs_mapping health; optional broad coverage query timed out. No pending/running/failed groups remain after actual recovery. The next scheduled18:13 runtime has not yet been verified."
+  },
+  "database": {
+    "sharedSetExclusion": {
+      "canonicalVersion": "20261004171309",
+      "stageVerification": [
+        {
+          "verification": {
+            "history": [
+              {
+                "version": "20261004172449",
+                "statements_match": true
+              }
+            ],
+            "anon_execute": false,
+            "body_matches": true,
+            "service_execute": true,
+            "security_invoker": true,
+            "empty_search_path": [
+              "search_path=\"\""
+            ],
+            "shared_set_members": null,
+            "authenticated_execute": false,
+            "protected_authoritative": 0
+          }
+        }
+      ],
+      "productionVerification": [
+        {
+          "verification": {
+            "history": [
+              {
+                "version": "20261004172532",
+                "statements_match": true
+              }
+            ],
+            "anon_execute": false,
+            "body_matches": true,
+            "service_execute": true,
+            "security_invoker": true,
+            "empty_search_path": [
+              "search_path=\"\""
+            ],
+            "shared_set_members": [
+              {
+                "note": null,
+                "method": "exact_set_name",
+                "set_id": "276f194e-1d23-4d12-a13a-4ebf211588bd",
+                "group_id": 1409,
+                "category_id": 3,
+                "verified_at": "2026-10-04T09:20:35.012097+00:00",
+                "language_code": "en"
+              }
+            ],
+            "authenticated_execute": false,
+            "protected_authoritative": 104
+          }
+        }
+      ],
+      "stageSmoke": [
+        {
+          "smoke": {
+            "delta_species_candidates": 116,
+            "dragon_frontiers_candidates": 101
+          }
+        }
+      ],
+      "productionSmoke": [
+        {
+          "smoke": {
+            "delta_species_candidates": 116,
+            "legendary_treasures_prices": 64,
+            "dragon_frontiers_candidates": 101,
+            "legendary_treasures_candidates": 140
+          }
+        }
+      ]
+    },
+    "coverageOptimisation": {
+      "boundedCanonical": "20261004172210",
+      "stageAfterStatisticsRuntimeMs": 2196.837,
+      "productionRuntimeMs": 16610,
+      "statisticsMaintenance": "Targeted ANALYZE of catalogue_versions, catalogue_version_variants, card_variants, card_printings and sets; no canonical rows changed.",
+      "stageOnlyForwardVersions": [
+        "20261004174213",
+        "20261004180037"
+      ],
+      "stageFullExpandedCompactRuntimeMs": 8585,
+      "status": "Not closed: full summary still exceeds8s. No hash/compact forward applied to production; production retains physical17:22 helper. Client bounded language/page strategy under read-only timing review."
+    },
+    "rawRetentionContract": {
+      "canonicalVersion": "20261004174528",
+      "stageExistingBodyWasIdentical": [
+        {
+          "existing_body_same": true,
+          "prosecdef": false,
+          "proconfig": [
+            "search_path=\"\""
+          ]
+        }
+      ],
+      "stageVerification": [
+        {
+          "verification": {
+            "history": [
+              {
+                "version": "20261004175436",
+                "statements_match": true
+              }
+            ],
+            "invoker": true,
+            "table_rls": true,
+            "anon_execute": false,
+            "body_matches": true,
+            "service_execute": true,
+            "anon_table_select": false,
+            "canary_observations": 3,
+            "service_table_select": true,
+            "authenticated_execute": false,
+            "authenticated_table_select": false
+          }
+        }
+      ],
+      "productionVerification": [
+        {
+          "verification": {
+            "history": [
+              {
+                "version": "20261004175610",
+                "statements_match": true
+              }
+            ],
+            "invoker": true,
+            "table_rls": true,
+            "anon_execute": false,
+            "body_matches": true,
+            "service_execute": true,
+            "anon_table_select": false,
+            "canary_observations": 0,
+            "service_table_select": true,
+            "authenticated_execute": false,
+            "authenticated_table_select": false
+          }
+        }
+      ]
+    }
+  },
+  "foreignSourceCanaries": {
+    "stage": [
+      {
+        "verification": {
+          "run": {
+            "id": "039b270c-e9bb-4813-8f6b-c6a6461ad712",
+            "status": "completed",
+            "skipped": 0,
+            "updated": 0,
+            "inserted": 3,
+            "requested": 3,
+            "retrieved": 3
+          },
+          "observations": [
+            {
+              "rawId": "4daccf53-2cb9-4b7b-b320-bfbbf42e1421",
+              "language": "ko",
+              "productId": "741192",
+              "sourceUrl": "https://api.tcgdex.net/v2/ko/cards/SV4K-001",
+              "externalId": "SV4K-001:normal",
+              "recordType": "variant",
+              "validation": "valid",
+              "licenceStatus": "approved",
+              "providerRecordId": "SV4K-001:normal",
+              "payloadHashMatches": true
+            },
+            {
+              "rawId": "4e838654-6be4-4f61-b8a8-3949089a46eb",
+              "language": "zh-tw",
+              "productId": "699710",
+              "sourceUrl": "https://api.tcgdex.net/v2/zh-tw/cards/SV9a-039",
+              "externalId": "SV9a-039",
+              "recordType": "card",
+              "validation": "valid",
+              "licenceStatus": "approved",
+              "providerRecordId": "SV9a-039",
+              "payloadHashMatches": true
+            },
+            {
+              "rawId": "d05a94f3-b4a5-4964-b856-3871ca3aeb1b",
+              "language": "zh-cn",
+              "productId": "699710",
+              "sourceUrl": "https://api.tcgdex.net/v2/zh-cn/cards/SV9a-039",
+              "externalId": "SV9a-039:normal",
+              "recordType": "variant",
+              "validation": "valid",
+              "licenceStatus": "approved",
+              "providerRecordId": "SV9a-039:normal",
+              "payloadHashMatches": true
+            }
+          ]
+        }
+      }
+    ],
+    "production": [
+      {
+        "verification": {
+          "run": {
+            "id": "4ca63db6-39aa-4193-a591-12560fde81b0",
+            "status": "completed",
+            "skipped": 0,
+            "updated": 0,
+            "inserted": 3,
+            "requested": 3,
+            "retrieved": 3
+          },
+          "observations": [
+            {
+              "rawId": "27939597-dcc2-4872-bf02-880dd8bce6b1",
+              "language": "zh-tw",
+              "productId": "699710",
+              "sourceUrl": "https://api.tcgdex.net/v2/zh-tw/cards/SV9a-039",
+              "externalId": "SV9a-039",
+              "recordType": "card",
+              "validation": "valid",
+              "licenceStatus": "approved",
+              "providerRecordId": "SV9a-039",
+              "payloadHashMatches": true
+            },
+            {
+              "rawId": "5c814ec5-c8c8-428b-9cdf-c29b6fd4592e",
+              "language": "ko",
+              "productId": "741192",
+              "sourceUrl": "https://api.tcgdex.net/v2/ko/cards/SV4K-001",
+              "externalId": "SV4K-001:normal",
+              "recordType": "variant",
+              "validation": "valid",
+              "licenceStatus": "approved",
+              "providerRecordId": "SV4K-001:normal",
+              "payloadHashMatches": true
+            },
+            {
+              "rawId": "f326ea67-3098-4134-b98b-a0d2805d80e7",
+              "language": "zh-cn",
+              "productId": "699710",
+              "sourceUrl": "https://api.tcgdex.net/v2/zh-cn/cards/SV9a-039",
+              "externalId": "SV9a-039:normal",
+              "recordType": "variant",
+              "validation": "valid",
+              "licenceStatus": "approved",
+              "providerRecordId": "SV9a-039:normal",
+              "payloadHashMatches": true
+            }
+          ]
+        }
+      }
+    ],
+    "formerProductionFailure": "Missing17-arg retention RPC and observation bridge repaired; failed canary run resumed and now genuinely completed with3 retained observations.",
+    "scope": "Private raw input and run bookkeeping only. No catalogue or provider map/price writes. Stored source licence metadata copied verbatim; actual public provider URLs and payload hashes retained. Shared Cardmarket IDs remain candidates requiring review, not foreign prices.",
+    "scriptOperationalLimit": "No loaded server credential in release worktree, so HTTP/PostgREST CLI apply was not run. Live canaries used existing scoped SQL retention RPC with inputs generated by the same pure validation/hash function."
+  },
+  "japaneseGaps": {
+    "EBB": "Provider quotes are1st Edition/Unlimited, outside current Normal/Holofoil contract; not force-mapped.",
+    "M6a": "Production103/176 is not equivalent to staging same-code23458 placeholder; no catalogue mutation.",
+    "research": "Bounded retained-feed scan found no safe unmapped JA exact set-code+collector+supported-finish cohort."
+  },
+  "validation": {
+    "priceCacheSuite": "passed full16 focused scripts",
+    "typecheck": "passed",
+    "lint": "0errors9existing unrelated warnings",
+    "catalogueIngestion": "passed by raw-contract agent",
+    "readability": "109 delta and13 Rumble physical quote readbacks verified. This does not prove authenticated owner HTTP or phone visibility."
+  },
+  "background": {
+    "goal": "active",
+    "automationId": "grow-stackr-price-coverage",
+    "status": "ACTIVE",
+    "frequency": "hourly",
+    "next": "Repair full coverage reporting with bounded proved queries; retain bounded foreign source pages with checkpoints then rematerialize reviewed current provenance, keeping ambiguous IDs quarantined; continue exact mapping batches and verify scheduled daily runtime."
+  }
+}

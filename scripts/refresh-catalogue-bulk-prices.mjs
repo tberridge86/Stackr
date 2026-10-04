@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 import { fetchEcbCatalogueFx } from './catalogue-price-fx.mjs';
+import { readPagedCatalogueBulkCoverage } from './catalogue-bulk-coverage-report.mjs';
 
 // TCGCSV's supported Pokemon identity boundaries. Never cross a category/language.
 export const TCGCSV_CATALOGUES = Object.freeze([{ categoryId: 3, language: 'en' }, { categoryId: 85, language: 'ja' }]);
@@ -234,12 +235,19 @@ export async function mainCatalogueBulkPrices(args = process.argv.slice(2)) {
   // run state even when the optional full catalogue coverage report is slow.
   const health = await rpc(db, 'catalogue_bulk_sweep_health', { p_run: result.runId });
   let coverage = null; let coverageError = null;
-  try { coverage = await rpc(db, 'catalogue_bulk_price_coverage', { p_run: result.runId }); }
+  try {
+    coverage = await readPagedCatalogueBulkCoverage({
+      runId: result.runId, health,
+      readPage: ({ runId, after, limit }) => rpc(db, 'catalogue_bulk_price_coverage_page', {
+        p_run: runId, p_after: after, p_limit: limit,
+      }),
+    });
+  }
   catch (error) {
     // Provider checkpoints are already durable. Do not report a successful
     // sweep as failed solely because the broad reporting query is unavailable;
     // retain the boundary and error explicitly for the next optimisation pass.
-    coverageError = { rpc: error?.rpcName ?? 'catalogue_bulk_price_coverage', message: String(error?.message ?? error) };
+    coverageError = { rpc: error?.rpcName ?? error?.cause?.rpcName ?? 'catalogue_bulk_price_coverage_page', message: String(error?.message ?? error) };
     console.warn(JSON.stringify({ event: 'catalogue_bulk_price_coverage_deferred', project: target.projectRef, datasetAt, runId: result.runId, ...coverageError }));
   }
   const reported = { project: target.projectRef, datasetAt, ...result, status: coverage?.runStatus ?? health?.runStatus ?? result.status, health, coverage, coverageError };
