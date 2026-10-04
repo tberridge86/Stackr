@@ -20,7 +20,22 @@
   "providerRefresh": "Daily provider revisions checked hourly; actual successful runs recorded in daily-pricing-execution-20261004.json",
   "testNotes": "Pricing, source/update/stale/unavailable labels, offline recovery, exact opening video, simple ring/bar loaders, native-language artwork and verified English descriptions; missing translation/artwork remains explicit.",
   "rollback": "Existing approved TestFlight 1.0.4 (51) remains available; no OTA to its incompatible runtime.",
-  "claim": "Uploaded and VALID. Internal Team (Expo) is IN_BETA_TESTING. External Stackr Beta Testers assigned; awaiting Apple beta review.",
+  "claim": "Uploaded and VALID; delivery to the owner phone is unconfirmed. Build 51 remains the latest externally available build on the normal public TestFlight link. Build 52 is assigned internally and externally, but its external release awaits Apple beta review.",
+  "deliveryFollowUpRecordedAt": "2026-10-04T15:33:10Z",
+  "ownerPhoneReport": {
+    "reportedOn": "2026-10-04",
+    "latestAvailableBuild": "51",
+    "build52Visible": false,
+    "actualEnrollmentGroup": "not_verified"
+  },
+  "normalPublicLink": {
+    "url": "https://testflight.apple.com/join/qDmymuVm",
+    "group": "Stackr Beta Testers",
+    "enabled": true,
+    "build51ExternalAvailability": "IN_BETA_TESTING",
+    "build52ExternalAvailability": "WAITING_FOR_BETA_REVIEW"
+  },
+  "remainingDeliveryGate": "Apple external beta approval, followed by confirmation that build 52 appears on the owner phone. Internal server assignment does not establish handset receipt. No replacement invitation has been sent.",
   "appleUploadedAt": "2026-10-04T03:44:48-07:00",
   "internalGroup": {
     "id": "9ab9cbec-f5f1-4a9c-80bb-4afcce16960f",
