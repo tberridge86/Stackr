@@ -115,7 +115,16 @@ export function preflightBlockedMappingKeys({ candidates, group, products }) {
   return blocked;
 }
 
-async function rpc(db, name, args) { const { data, error } = await db.schema('api').rpc(name, args); if (error) throw error; return data; }
+async function rpc(db, name, args) {
+  const { data, error } = await db.schema('api').rpc(name, args);
+  if (error) {
+    // Jobs need the durable RPC boundary in their logs: PostgREST otherwise
+    // reduces a database timeout to an unhelpful generic message.
+    error.rpcName = name;
+    throw error;
+  }
+  return data;
+}
 export function createBulkFeedLoader(db, fetchImpl = fetch) {
   let datasetAt = null;
   return { setDataset: (value) => { datasetAt = value; }, async load(key) {
@@ -143,9 +152,12 @@ export function createBulkFeedLoader(db, fetchImpl = fetch) {
 /** Claims durable provider-set checkpoints until exhausted. A group is only
  * complete after every 500-card page is stored. Unmapped sets end as explicit
  * gaps (`needs_mapping` at run level), never as a silently skipped cursor. */
-export async function runCatalogueBulkSweep({ begin, claim, resolveSet, candidates, store, finish, loader, groups, datasetAt, fx, maxGroups = 5000, now = Date.now(), onProgress = () => {} }) {
+export async function runCatalogueBulkSweep({ begin, claim, resolveSet, candidates, store, finish, loader, groups, datasetAt, fx, maxGroups = 5000, now = Date.now(), onProgress = () => {}, requeueEnglishExactTitles = async (_run) => 0 }) {
   if (!Number.isInteger(maxGroups) || maxGroups < 1 || maxGroups > 5000) throw Error('maxGroups must be 1..5000.');
-  const run = await begin({ datasetAt, groups }); const summary = { runId: run.runId, setsClaimed: 0, complete: 0, unmapped: 0, deferred: 0, cards: 0, priced: 0, status: 'complete' }; let exhausted = false;
+  const run = await begin({ datasetAt, groups });
+  const requeued = await requeueEnglishExactTitles({ runId: run.runId });
+  if (!Number.isInteger(requeued) || requeued < 0) throw Error('Invalid English exact-title requeue result.');
+  const summary = { runId: run.runId, requeued, setsClaimed: 0, complete: 0, unmapped: 0, deferred: 0, cards: 0, priced: 0, status: 'complete' }; let exhausted = false;
   while (summary.setsClaimed < maxGroups) {
     const job = await claim({ runId: run.runId }); if (!job) { exhausted = true; break; } summary.setsClaimed++;
     try {
@@ -191,11 +203,19 @@ export async function mainCatalogueBulkPrices(args = process.argv.slice(2)) {
   const groups = (await Promise.all(TCGCSV_CATALOGUES.map(async ({ categoryId, language }) => (await loader.load(`tcgplayer/${categoryId}/groups`)).results.map((g) => ({ ...g, language }))))).flat();
   const result = await runCatalogueBulkSweep({ datasetAt, fx, loader, groups, maxGroups,
     onProgress: (progress) => { if (progress.setsClaimed % 10 === 0) console.info(JSON.stringify({ event: 'catalogue_bulk_price_progress', project: target.projectRef, datasetAt, ...progress, status: 'running' })); },
-    begin: ({ datasetAt, groups }) => rpc(db, 'begin_catalogue_bulk_sweep', { p_dataset: datasetAt, p_groups: groups }), claim: ({ runId }) => rpc(db, 'claim_catalogue_bulk_sweep_group', { p_run: runId }),
+    begin: ({ datasetAt, groups }) => rpc(db, 'begin_catalogue_bulk_sweep', { p_dataset: datasetAt, p_groups: groups }),
+    requeueEnglishExactTitles: ({ runId }) => rpc(db, 'requeue_english_exact_title_groups', { p_run: runId }), claim: ({ runId }) => rpc(db, 'claim_catalogue_bulk_sweep_group', { p_run: runId }),
     resolveSet: ({ categoryId, groupId, languageCode, name, abbreviation }) => rpc(db, 'resolve_catalogue_bulk_set', { p_category: categoryId, p_group: groupId, p_language: languageCode, p_name: name ?? '', p_abbreviation: abbreviation ?? '' }),
     candidates: ({ categoryId, groupId, after, limit }) => rpc(db, 'catalogue_bulk_group_candidates', { p_category: categoryId, p_group: groupId, p_after: after, p_limit: limit }), store: ({ results }) => rpc(db, 'store_catalogue_bulk_prices', { p_results: results }),
     finish: ({ runId, categoryId, groupId, token, status, stats, retrySeconds = 0 }) => rpc(db, 'finish_catalogue_bulk_sweep_group', { p_run: runId, p_category: categoryId, p_group: groupId, p_token: token, p_status: status, p_stats: stats, p_retry_seconds: retrySeconds }), });
   const coverage = await rpc(db, 'catalogue_bulk_price_coverage', { p_run: result.runId }); const reported = { project: target.projectRef, datasetAt, ...result, status: coverage?.runStatus ?? result.status, coverage };
   console.log(JSON.stringify(reported)); if (result.deferred > 0) process.exitCode = 1; return reported;
 }
-if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) mainCatalogueBulkPrices().catch((error) => { console.error(error.message); process.exitCode = 1; });
+if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) mainCatalogueBulkPrices().catch((error) => {
+  console.error(JSON.stringify({
+    event: 'catalogue_bulk_price_failed',
+    rpc: error?.rpcName ?? null,
+    message: String(error?.message ?? error),
+  }));
+  process.exitCode = 1;
+});
