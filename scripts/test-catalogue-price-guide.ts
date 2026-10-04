@@ -28,7 +28,7 @@ async function main() { try {
     insert into api.catalogue_cards values ('${id(30)}','${id(20)}','${id(10)}','en','normal','normal','${id(1)}','139','Lugia VSTAR',null),('${id(31)}','${id(20)}','${id(10)}','en','reverse_holo','reverse_holo','${id(1)}','139','Lugia VSTAR',null),('${id(32)}','${id(21)}','${id(11)}','ja','normal','normal','${id(1)}','001',null,'ピカチュウ'),('${id(33)}','${id(22)}','${id(12)}','ko','normal','normal','${id(1)}','001',null,'Pikachu'),('${id(34)}','${id(20)}','${id(10)}','en','holo','holo','${id(1)}','139','Lugia VSTAR',null);
     grant usage on schema api,catalog,market,public to service_role; grant select on all tables in schema api,catalog,public to service_role;`);
   await db.exec('alter table api.catalogue_sets add column set_code text');
-  for (const file of ['20261003224016_catalogue_price_bulk_cache.sql','20261003224031_restore_full_catalogue_price_guide.sql','20261003224558_catalogue_price_feed_access_indexes.sql','20261003225316_catalogue_price_repair_reads.sql','20261003225832_cardmarket_general_price_backup.sql','20261003231006_batch_catalogue_price_identity_reads.sql','20261003232812_japanese_exact_price_identities.sql','20261003234257_bounded_published_price_read.sql','20261003234442_cover_general_price_foreign_keys.sql','20261004091559_catalogue_bulk_sweep_bounded_initialisation.sql','20261004091600_bounded_collector_search_identity_view.sql']) await db.exec(`begin; ${readFileSync(`supabase/migrations/${file}`, 'utf8')} commit;`);
+  for (const file of ['20261003224016_catalogue_price_bulk_cache.sql','20261003224031_restore_full_catalogue_price_guide.sql','20261003224558_catalogue_price_feed_access_indexes.sql','20261003225316_catalogue_price_repair_reads.sql','20261003225832_cardmarket_general_price_backup.sql','20261003231006_batch_catalogue_price_identity_reads.sql','20261003232812_japanese_exact_price_identities.sql','20261003234257_bounded_published_price_read.sql','20261003234442_cover_general_price_foreign_keys.sql','20261004091559_catalogue_bulk_sweep_bounded_initialisation.sql','20261004091600_bounded_collector_search_identity_view.sql','20261004093500_bounded_catalogue_bulk_sweep_finish.sql']) await db.exec(`begin; ${readFileSync(`supabase/migrations/${file}`, 'utf8')} commit;`);
   await db.exec('set role anon'); await assert.rejects(rpc('catalogue_bulk_price_coverage'), /permission denied/); await assert.rejects(rpc('catalogue_bulk_sweep_health'), /permission denied/); await assert.rejects(rpc('read_catalogue_bulk_feed',['last-updated']), /permission denied/); await assert.rejects(db.query('select * from api.catalogue_card_collectors'), /permission denied/); await db.exec('reset role; set role service_role');
   const collectorRows=await db.query<any>("select variant_id from api.catalogue_card_collectors where set_id=$1 and language_code='en' and normalized_collector_base='139' order by variant_id",[id(10)]); assert.deepEqual(collectorRows.rows.map((row:any)=>row.variant_id),[id(30),id(31),id(34)],'collector identity view retains only current published variants');
   assert.equal((await rpc('read_catalogue_bulk_feed',['last-updated']))[0],null);
@@ -43,12 +43,12 @@ async function main() { try {
   assert.equal((await db.query('select * from market.catalogue_price_outcomes')).rows.length,5);
   assert.equal((await db.query<any>('select reason from market.catalogue_price_outcomes where variant_id=$1',[id(33)])).rows[0].reason,'unsupported_provider_language');
   assert.equal((await db.query<any>('select reason from market.catalogue_price_outcomes where variant_id=$1',[id(34)])).rows[0].reason,'unresolved_provider_identity');
-  const seededCount=(await db.query('select count(*)::int as count from market.catalogue_price_outcomes')).rows[0].count;
+  const seededCount=(await db.query<{count: number}>('select count(*)::int as count from market.catalogue_price_outcomes')).rows[0].count;
   await assert.rejects(rpc('begin_catalogue_bulk_sweep',[null,null]),/invalid provider manifest/); await assert.rejects(rpc('store_catalogue_bulk_prices',[null]),/invalid price results/);
   const dataset = new Date(Date.now() - 3600_000).toISOString();
   const manifest = [{ categoryId:3,groupId:100,language:'en',name:'SWSH12: Silver Tempest',abbreviation:'SWSH12' },{ categoryId:85,groupId:100,language:'ja',name:'ストームエメラルダ' },{ categoryId:85,groupId:101,language:'ja',name:'Provider-only set' }];
   const run = (await rpc('begin_catalogue_bulk_sweep',[dataset,encode(manifest)]))[0]; assert.equal(run.totalGroups,3);
-  assert.equal((await db.query('select count(*)::int as count from market.catalogue_price_outcomes')).rows[0].count,seededCount,'begin is idempotent and does not re-enumerate publication outcomes');
+  assert.equal((await db.query<{count: number}>('select count(*)::int as count from market.catalogue_price_outcomes')).rows[0].count,seededCount,'begin is idempotent and does not re-enumerate publication outcomes');
   const first = (await rpc('claim_catalogue_bulk_sweep_group',[run.runId]))[0]; assert.equal(first.categoryId,3);
   assert.equal((await rpc('resolve_catalogue_bulk_set',[3,100,'en',manifest[0].name,'SWSH12']))[0].setId,id(10));
   assert.equal((await rpc('resolve_catalogue_bulk_set',[85,100,'ja',manifest[1].name,'']))[0].setId,id(11));
@@ -74,9 +74,28 @@ async function main() { try {
   const unsupported=(await priceRead({references:[id(33)],language:'ko',estimateMode:'general'})).prices[0]; assert.equal(unsupported.unavailableReason,'unsupported_provider_language');
   assert.equal((await rpc('finish_catalogue_bulk_sweep_group',[run.runId,3,100,first.leaseToken,'complete',encode({cards:3,priced:2}),0]))[0],true);
   const second=(await rpc('claim_catalogue_bulk_sweep_group',[run.runId]))[0]; await rpc('finish_catalogue_bulk_sweep_group',[run.runId,85,100,second.leaseToken,'complete',encode({cards:1,priced:1}),0]); const third=(await rpc('claim_catalogue_bulk_sweep_group',[run.runId]))[0]; await rpc('finish_catalogue_bulk_sweep_group',[run.runId,85,101,third.leaseToken,'unmapped','{}',0]);
-  const coverage=(await rpc('catalogue_bulk_price_coverage',[run.runId]))[0]; assert.equal(coverage.runStatus,'needs_mapping'); assert.equal(coverage.openRepairs,1); assert.equal(coverage.cards.reduce((total:number,row:any)=>total+row.total,0),5);
+  // Finalisation must not depend on the rich presentation view.  A provider
+  // product without an exact card mapping becomes a durable repair in one
+  // set-based write, while a failed leased group records bounded backoff
+  // outcomes from the physical publication relations.
+  await db.query('update market.catalogue_bulk_feeds set payload=$1::jsonb where feed_key=$2', [encode({success:true,results:[{categoryId:3,groupId:100,productId:200,name:'Lugia VSTAR',extendedData:[{name:'Number',value:'139/195'}]},{categoryId:3,groupId:100,productId:201,name:'Unmapped provider product',extendedData:[{name:'Number',value:'140/195'}]}]}),'tcgplayer/3/100/products']);
+  await db.exec('revoke select on api.catalogue_cards from service_role');
+  const finishDataset = new Date(Date.now()-30_000).toISOString();
+  const finishRun=(await rpc('begin_catalogue_bulk_sweep',[finishDataset,encode([manifest[0]])]))[0];
+  const finishComplete=(await rpc('claim_catalogue_bulk_sweep_group',[finishRun.runId]))[0];
+  assert.equal((await rpc('finish_catalogue_bulk_sweep_group',[finishRun.runId,3,100,finishComplete.leaseToken,'complete',encode({cards:0,priced:0}),0]))[0],true);
+  assert.equal((await db.query<any>("select reason from market.catalogue_price_repairs where repair_key='product:3:201'")).rows[0].reason,'unmapped_provider_product');
+  const failedDataset = new Date(Date.now()-20_000).toISOString();
+  const failedRun=(await rpc('begin_catalogue_bulk_sweep',[failedDataset,encode([manifest[0]])]))[0];
+  const failedGroup=(await rpc('claim_catalogue_bulk_sweep_group',[failedRun.runId]))[0];
+  assert.equal((await rpc('finish_catalogue_bulk_sweep_group',[failedRun.runId,3,100,failedGroup.leaseToken,'failed',encode({error:'fixture timeout'}),600]))[0],true);
+  assert.equal((await db.query<any>('select reason from market.catalogue_price_outcomes where variant_id=$1',[id(30)])).rows[0].reason,'provider_backoff');
+  await db.exec('reset role; set role anon');
+  await assert.rejects(rpc('finish_catalogue_bulk_sweep_group',[failedRun.runId,3,100,failedGroup.leaseToken,'complete',encode({}),0]),/permission denied/);
+  await db.exec('reset role; set role service_role');
+  const coverage=(await rpc('catalogue_bulk_price_coverage',[run.runId]))[0]; assert.equal(coverage.runStatus,'needs_mapping'); assert.ok(coverage.openRepairs>=2); assert.equal(coverage.cards.reduce((total:number,row:any)=>total+row.total,0),5);
   const health=(await rpc('catalogue_bulk_sweep_health',[run.runId]))[0]; assert.equal(health.runStatus,'needs_mapping'); assert.equal(health.outcomes.total,5); assert.equal(health.quotes.reduce((n:number,row:any)=>n+row.total,0),3);
-  const repairsPage=await rpc('list_catalogue_price_repairs',[null,1]); assert.equal(repairsPage.length,1); assert.equal((await rpc('list_catalogue_price_repairs',[repairsPage[0].repair_key,1])).length,0); await assert.rejects(rpc('list_catalogue_price_repairs',[null,101]),/invalid repair page/);
+  const repairsPage=await rpc('list_catalogue_price_repairs',[null,1]); assert.equal(repairsPage.length,1); const nextRepairsPage=await rpc('list_catalogue_price_repairs',[repairsPage[0].repair_key,1]); assert.ok(nextRepairsPage.length<=1); assert.notEqual(nextRepairsPage[0]?.repair_key,repairsPage[0].repair_key); await assert.rejects(rpc('list_catalogue_price_repairs',[null,101]),/invalid repair page/);
   await db.exec('reset role; set role anon'); await assert.rejects(rpc('list_catalogue_price_repairs',[null,1]),/permission denied/); await db.exec('reset role; set role service_role');
   const products={success:true,results:[{categoryId:3,groupId:100,productId:201,name:'Reviewed provider alias',extendedData:[{name:'Number',value:'139/195'}]}]}; await db.query('insert into market.catalogue_bulk_feeds(feed_key,payload) values($1,$2::jsonb),($3,$4::jsonb) on conflict(feed_key) do update set payload=excluded.payload',['tcgplayer/3/groups',encode({success:true,results:[manifest[0]]}),'tcgplayer/3/100/products',encode(products)]);
   const repair={categoryId:3,groupId:100,setId:id(10),variantId:id(30),productId:201,subtype:'Normal',note:'Reviewed same number and artwork alias'}; assert.equal(validateMappingRepairs([repair]).length,1); assert.throws(()=>validateMappingRepairs([{...repair,subtype:'graded'}])); await assert.rejects(mainCataloguePriceGuide([]),/Use --repair/);
