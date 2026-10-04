@@ -7,7 +7,7 @@ import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export function validateMappingRepairs(input) {
   if (!Array.isArray(input) || input.length < 1 || input.length > 100) throw Error('Supply 1..100 reviewed set/card mappings.');
-  return input.map((m) => {
+  const mappings = input.map((m) => {
     if (!m || typeof m !== 'object' || Object.keys(m).some((k) => !['categoryId','groupId','setId','variantId','productId','subtype','note'].includes(k))
       || ![3,85].includes(m.categoryId) || !Number.isSafeInteger(m.groupId) || m.groupId <= 0 || !uuid.test(m.setId ?? '')
       || typeof m.note !== 'string' || m.note.trim().length < 5 || m.note.length > 1000) throw Error('Invalid reviewed set mapping.');
@@ -16,6 +16,31 @@ export function validateMappingRepairs(input) {
     if (m.variantId == null && (m.productId != null || m.subtype != null)) throw Error('Product mappings require an exact variant ID.');
     return { ...m, note: m.note.trim() };
   });
+  // A promo group can span several language-specific canonical sets. A
+  // provider product + finish, however, can price one published variant only.
+  // The database rechecks retained feeds and catalogue rows; doing these
+  // cross-entry checks here makes a reviewed batch fail before any RPC.
+  const variantMappings = new Map();
+  const providerIdentities = new Map();
+  for (const mapping of mappings) {
+    const groupKey = `${mapping.categoryId}:${mapping.groupId}`;
+    const setId = mapping.setId.toLowerCase();
+    if (mapping.variantId == null) continue;
+    const variantId = mapping.variantId.toLowerCase();
+    const variantKey = `${groupKey}:${mapping.productId}:${mapping.subtype}:${setId}`;
+    // This is the actual database uniqueness key; group ID is deliberately
+    // absent because TCGplayer product IDs are category-global.
+    const providerKey = `${mapping.categoryId}:${mapping.productId}:${mapping.subtype}`;
+    if (variantMappings.has(variantId) && variantMappings.get(variantId) !== variantKey) {
+      throw Error('A canonical variant cannot be reviewed against multiple provider products, groups, categories, or canonical sets in one batch.');
+    }
+    if (providerIdentities.has(providerKey) && providerIdentities.get(providerKey) !== variantId) {
+      throw Error('A provider product and finish cannot be reviewed against multiple canonical variants in one batch.');
+    }
+    variantMappings.set(variantId, variantKey);
+    providerIdentities.set(providerKey, variantId);
+  }
+  return mappings;
 }
 export async function mainCataloguePriceGuide(args = process.argv.slice(2)) {
   const repairFile = args.find((a) => a.startsWith('--repair='))?.slice(9);
