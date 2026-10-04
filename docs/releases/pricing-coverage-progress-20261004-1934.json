@@ -1,0 +1,270 @@
+{
+  "observedAt": "2026-10-04T19:33:41Z",
+  "coverage": {
+    "latestPublishedVersionsBeforeAndAfter": [
+      {
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "publishedAt": "2026-08-20T13:38:28.221Z",
+        "languageCode": "en",
+        "createdAt": "2026-08-20T01:59:16.793Z"
+      },
+      {
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "publishedAt": "2026-09-27T17:00:18.728003Z",
+        "languageCode": "ja",
+        "createdAt": "2026-09-27T16:56:26.864975Z"
+      },
+      {
+        "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "publishedAt": "2026-08-10T17:10:33.631Z",
+        "languageCode": "ko",
+        "createdAt": "2026-08-10T17:08:53.893Z"
+      },
+      {
+        "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "publishedAt": "2026-08-10T16:54:15.322Z",
+        "languageCode": "zh-cn",
+        "createdAt": "2026-08-10T16:48:17.226Z"
+      },
+      {
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "publishedAt": "2026-08-20T13:58:03.350Z",
+        "languageCode": "zh-tw",
+        "createdAt": "2026-08-20T13:54:38.472Z"
+      }
+    ],
+    "queryTemplate": "with settings as (\n  select set_config('statement_timeout','20s',true),\n         set_config('enable_nestloop','off',true)\n), physical as materialized (\n  select cvv.variant_id, cvv.printing_id, cvv.set_id, cvv.language_code,\n         cvv.catalogue_version_id\n  from catalog.catalogue_version_variants cvv\n  cross join settings\n  join catalog.card_variants v on v.id=cvv.variant_id\n    and v.deprecated_at is null and v.language_code=cvv.language_code\n    and v.printing_id=cvv.printing_id\n  join catalog.card_printings p on p.id=cvv.printing_id\n    and p.deprecated_at is null and p.set_id=cvv.set_id\n    and p.language_code=cvv.language_code\n  join catalog.sets s on s.id=p.set_id\n    and s.deprecated_at is null and s.language_code=cvv.language_code\n  join catalog.languages l on l.code=cvv.language_code\n  where cvv.catalogue_version_id = :catalogue_version_id\n    and cvv.language_code = :language_code\n), assessed as (\n  select c.*,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id) as tcgcsv_saved,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id\n        and g.stale_after > now()) as tcgcsv_fresh,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id) as cardmarket_saved,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id\n        and cm.stale_after > now()) as cardmarket_fresh\n  from physical c\n)\nselect :language_code as language_code, now() as observed_at, count(*) as physical_total,\n count(*) filter(where tcgcsv_saved) as tcgcsv_saved,\n count(*) filter(where tcgcsv_fresh) as tcgcsv_fresh,\n count(*) filter(where cardmarket_saved) as cardmarket_saved,\n count(*) filter(where cardmarket_fresh) as cardmarket_fresh,\n count(*) filter(where tcgcsv_saved or cardmarket_saved) as combined_saved,\n count(*) filter(where tcgcsv_fresh or cardmarket_fresh) as combined_fresh\nfrom assessed;",
+    "totals": {
+      "full": {
+        "combinedSaved": 30012,
+        "coveragePercent": 39.35,
+        "combinedFresh": 30012,
+        "physicalTotal": 76269
+      },
+      "excludingKorean": {
+        "combinedSaved": 29992,
+        "coveragePercent": 39.45,
+        "combinedFresh": 29992,
+        "physicalTotal": 76030
+      }
+    },
+    "purpose": "Read-only production combined TCGCSV plus Cardmarket fresh price coverage evidence",
+    "projectRef": "oakdbbzdqwurpjnoqhmu",
+    "coverageRows": [
+      {
+        "combinedFresh": 18618,
+        "physicalTotal": 33359,
+        "observedAt": "2026-10-04T19:26:55.386052Z",
+        "tcgcsvSaved": 14906,
+        "combinedSaved": 18618,
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "languageCode": "en",
+        "cardmarketSaved": 7802,
+        "tcgcsvFresh": 14906,
+        "cardmarketFresh": 7802
+      },
+      {
+        "combinedFresh": 7320,
+        "physicalTotal": 14100,
+        "observedAt": "2026-10-04T19:27:34.572769Z",
+        "tcgcsvSaved": 6902,
+        "combinedSaved": 7320,
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "languageCode": "ja",
+        "cardmarketSaved": 1032,
+        "tcgcsvFresh": 6902,
+        "cardmarketFresh": 1032
+      },
+      {
+        "combinedFresh": 20,
+        "physicalTotal": 239,
+        "observedAt": "2026-10-04T19:27:58.911292Z",
+        "accountingOnly": true,
+        "tcgcsvSaved": 0,
+        "combinedSaved": 20,
+        "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "languageCode": "ko",
+        "cardmarketSaved": 20,
+        "tcgcsvFresh": 0,
+        "cardmarketFresh": 20
+      },
+      {
+        "combinedFresh": 0,
+        "physicalTotal": 20405,
+        "observedAt": "2026-10-04T19:28:13.213812Z",
+        "tcgcsvSaved": 0,
+        "combinedSaved": 0,
+        "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "languageCode": "zh-cn",
+        "cardmarketSaved": 0,
+        "tcgcsvFresh": 0,
+        "cardmarketFresh": 0
+      },
+      {
+        "combinedFresh": 4054,
+        "physicalTotal": 8166,
+        "observedAt": "2026-10-04T19:28:34.971148Z",
+        "tcgcsvSaved": 0,
+        "combinedSaved": 4054,
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "languageCode": "zh-tw",
+        "cardmarketSaved": 4054,
+        "tcgcsvFresh": 0,
+        "cardmarketFresh": 4054
+      }
+    ],
+    "priceDefinition": {
+      "fresh": "stale_after > now()",
+      "tcgcsv": "same variant_id, printing_id, set_id, language_code, and catalogue_version_id in market.catalogue_general_prices",
+      "physicalPublishedVariant": "catalogue_version_variants joined to nondeprecated matching card_variants, card_printings, sets, and languages",
+      "cardmarket": "same printing_id and catalogue_version_id in market.cardmarket_blended_general_prices",
+      "combined": "TCGCSV OR Cardmarket exists for the physical published variant"
+    },
+    "remoteMutations": [],
+    "readOnly": true,
+    "notes": [
+      "Korean appears only in the full-denominator accounting row; no Korean repair or mapping action was taken.",
+      "The EN call returned successfully with 26.5 seconds wall time. Other per-language reads returned in 0.9 to 11.5 seconds. No query timed out.",
+      "The configuration calls were requested in a CTE with transaction-local scope; the recorded result establishes successful reads, not an independently verified server-side timeout limit."
+    ],
+    "window": {
+      "firstCoverageObservationUtc": "2026-10-04T19:26:55.386052Z",
+      "atomicAcrossLanguages": false,
+      "versionsReadBeforeUtc": "2026-10-04T19:26:36Z",
+      "latestCatalogueVersionsUnchangedBeforeAfter": true,
+      "lastCoverageObservationUtc": "2026-10-04T19:28:34.971148Z",
+      "versionsReadAfterUtc": "2026-10-04T19:28:44.328217Z"
+    }
+  },
+  "activeScope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "ownerExcludedKorean": true,
+    "priced": 29992,
+    "total": 76030,
+    "percent": 39.45,
+    "netPreviouslyUnpricedSince1032": 903
+  },
+  "primaryQuotes": {
+    "en": 14906,
+    "ja": 6902,
+    "total": 21808,
+    "stale": 0
+  },
+  "sourceCommits": {
+    "worker": "3d9ccdd5f9301605f9d3070619636d42dcc92472",
+    "numberedTitles": "a95a974355a20e9322aa8f4a2ab7d93927817cde"
+  },
+  "numberedTitles": {
+    "canonicalMigration": "20261004190319",
+    "appliedBothEnvironments": true,
+    "appliedBodiesMatch": true,
+    "resolverHash": "1b7045c72670b8adb4ea2d138da61cb7",
+    "currentnessHash": "a1748bd4911cf179f09a43b8f67ac0eb",
+    "serviceExecute": true,
+    "anonExecute": false,
+    "authenticatedExecute": false,
+    "productionRequeued": 14,
+    "productionRun": "b232d400-1e11-4fa9-995d-158e0cf8ee94",
+    "productionEnglishLedger": [
+      {
+        "status": "complete",
+        "groups": 136
+      },
+      {
+        "status": "pending",
+        "groups": 14
+      },
+      {
+        "status": "unmapped",
+        "groups": 70
+      }
+    ],
+    "newProductionPricesCounted": false
+  },
+  "worker": {
+    "cron": "13 * * * *",
+    "stage": {
+      "deploymentId": "44abec3c-0e23-4192-a17e-7b06b107eff0",
+      "exitCode": 0,
+      "requeued": 14,
+      "claimed": 15,
+      "complete": 15,
+      "cards": 4563,
+      "priced": 2827,
+      "coverageError": null,
+      "coverageDiagnostics": {
+        "pages": 38,
+        "scanned": 75797,
+        "catalogueVersions": [
+          {
+            "language_code": "en",
+            "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          {
+            "language_code": "ja",
+            "id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+          },
+          {
+            "language_code": "ko",
+            "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+          },
+          {
+            "language_code": "zh-cn",
+            "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+          },
+          {
+            "language_code": "zh-tw",
+            "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+          }
+        ],
+        "observedAtBegin": "2026-10-04T19:18:46.353563+00:00",
+        "observedAtEnd": "2026-10-04T19:19:07.911864+00:00",
+        "atomic": false
+      },
+      "elapsedMs": 110980
+    },
+    "production": {
+      "deploymentId": "8278200c-6670-4335-a7bc-b924d9d99ef2",
+      "status": "SUCCESS",
+      "createdAt": "2026-10-04T19:25:43.317Z",
+      "livePinVerified": true,
+      "sourcePatchOnly": true,
+      "unrelatedResourcesVariablesVolumesNetworkingAccepted": false,
+      "firstNewScheduledExecutionVerified": false
+    }
+  },
+  "checks": {
+    "sourceHead": "a95a974355a20e9322aa8f4a2ab7d93927817cde",
+    "applicableGitHub": 12,
+    "passed": 12,
+    "intentionalSkips": 2,
+    "localPriceCacheSuite": 19,
+    "typecheck": "passed",
+    "lint": "zero errors; nine existing warnings"
+  },
+  "diagnostic": {
+    "afterRequeueHealthEightSecondRead": "one transient timeout",
+    "narrowLedgerRead": "passed",
+    "followupHealthRequestedBudgetSeconds": 20,
+    "followupHealthWallMs": 4712,
+    "workerFailureObserved": false,
+    "note": "Administrative health-read retry does not prove a new production worker runtime; verify next scheduled receipt."
+  },
+  "background": {
+    "automation": "grow-stackr-price-coverage",
+    "status": "ACTIVE",
+    "newKoreanWork": false,
+    "dailyProviderWorkersContinue": true,
+    "goalComplete": false
+  },
+  "nextActions": [
+    "Verify first new production scheduled execution and full numbered-set prices before adding their gains.",
+    "Continue exact English/Japanese mappings, then Chinese source provenance; Korean excluded.",
+    "Keep unavailable/ambiguous/missing quotes out of the priced numerator."
+  ]
+}
