@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-10-04T09:44:48.598Z",
+  "sourceLedger": ".tmp/cardmarket-reviewed-ledger-20261004.json",
+  "sourceReviewedMappings": 9224,
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "status": "reviewed_exact_approved_pending_retained_feed_import",
+  "candidateMappings": 9224,
+  "quarantinedMappings": 0,
+  "providerProductCollisions": 0,
+  "canonicalPrintingCollisions": 0,
+  "languages": {
+    "en": {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "mappings": 4875
+    },
+    "ja": {
+      "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "mappings": 944
+    },
+    "ko": {
+      "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "mappings": 10
+    },
+    "zh-tw": {
+      "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "mappings": 3395
+    }
+  },
+  "exactIdentityContract": [
+    "same canonical printing UUID",
+    "same language",
+    "same collector number",
+    "same set UUID and set code",
+    "reviewed variant IDs retained in current production publication",
+    "reviewed TCGdex external IDs retained in current production publication"
+  ],
+  "rawCardmarketDiagnosis": "Production current TCGdex identifiers have no retained raw Cardmarket product IDs; this candidate ledger transfers only the independently reviewed stage product crosswalk and contains no price or feed revision.",
+  "limits": [
+    "Not imported into production.",
+    "Not a price guide.",
+    "Cardmarket public guide and product revisions must be retained and independently validated before mapping review and general-price storage.",
+    "Guide scope remains blended language/condition/finish and is never exact variant or holdings valuation."
+  ],
+  "rootReviewReference": "root20261004/cardmarket-reviewed-exact-production; stage-provenance=235b; production-provenance=8c928e4d-37f2-48a7-a312-fb2fe787cf99; full-canonical-crosswalk=docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+  "reviewedAt": "2026-10-04T09:45:44.020Z"
+}

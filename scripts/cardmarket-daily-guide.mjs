@@ -11,6 +11,7 @@ import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs
 
 const KINDS = ['products', 'priceGuide'];
 const MAX_PAGE_SIZE = 500;
+const HOUR = 60 * 60 * 1000;
 const REVIEW_CONCURRENCY = 24;
 const allowedRepairReasons = new Set(['missing_exact_mapping', 'ambiguous_provider_mapping', 'mapping_missing_language_variant_finish_evidence', 'duplicate_canonical_target', 'missing_price_guide_row', 'no_market_guide_value', 'provider_category_mismatch']);
 
@@ -62,7 +63,12 @@ async function writeAtomic(path, value) {
 export async function refreshCardmarketDailyFeeds({ cacheDir, fetchImpl = fetch, now = Date.now(), download = downloadCardmarketPublicGuide } = {}) {
   if (!cacheDir) throw Error('A Cardmarket cache directory is required.');
   const absoluteCache = resolve(cacheDir); const prior = await readCardmarketRetainedManifest(absoluteCache);
-  if (prior && new Date(now).toISOString().slice(0, 10) === new Date(Date.parse(prior.retrievedAt)).toISOString().slice(0, 10)) {
+  const today = new Date(now).toISOString().slice(0, 10);
+  const checkedToday = prior && today === new Date(Date.parse(prior.retrievedAt)).toISOString().slice(0, 10);
+  const guidePublishedToday = prior && today === new Date(Date.parse(prior.feeds.priceGuide.createdAt)).toISOString().slice(0, 10);
+  // Recheck yesterday's unchanged guide hourly until today's provider build
+  // arrives; a midnight 304 must not freeze yesterday's guide for another day.
+  if (checkedToday && (guidePublishedToday || now - Date.parse(prior.retrievedAt) < HOUR)) {
     const feeds = Object.fromEntries(await Promise.all(KINDS.map(async kind => [kind, await readVerifiedRetainedFeed(absoluteCache, prior.feeds[kind], kind)])));
     return { refreshed: false, reason: 'daily_cache_fresh', manifest: prior, feeds };
   }
@@ -173,6 +179,8 @@ export async function applyCardmarketDailyGuide({ api, retained, mappingLedger, 
     for (const [kind, manifestKind] of [['products', 'products'], ['priceGuide', 'price_guide']]) {
       if (revisions[kind]) continue;
       const entry = retained.manifest.feeds[kind];
+      const existingRevision = await rpc(api, 'read_cardmarket_retained_feed_revision', { p_kind: manifestKind, p_sha256: entry.sha256 });
+      if (existingRevision) { revisions[kind] = existingRevision; continue; }
       const token = await rpc(api, 'claim_cardmarket_public_feed', { p_kind: manifestKind });
       if (!token) throw Error(`Cardmarket ${kind} daily service lease was not available.`);
       try { revisions[kind] = await rpc(api, 'finish_cardmarket_public_feed', { p_kind: manifestKind, p_token: token, p_source_created_at: entry.createdAt, p_etag: entry.etag, p_sha256: entry.sha256, p_byte_length: entry.byteLength, p_source_url: entry.sourceUrl, p_retry_seconds: 0 }); }

@@ -22,6 +22,7 @@ assert.match(await readFile(join(cache, 'manifest.json'), 'utf8'), /etag-2/);
 const rpcCalls = [];
 const api = { rpc: async (name, args) => {
   rpcCalls.push({ name, args });
+  if (name === 'read_cardmarket_retained_feed_revision') return { data: null, error: null };
   if (name === 'claim_cardmarket_public_feed') return { data: `${args.p_kind}-token`, error: null };
   if (name === 'finish_cardmarket_public_feed') return { data: `${args.p_kind}-revision`, error: null };
   if (name === 'review_cardmarket_printing_mapping') return { data: true, error: null };
@@ -40,6 +41,15 @@ const revised = await applyCardmarketDailyGuide({ api, retained: conditional, ma
 assert.equal(revised.stored, 1, 'a changed guide restarts the product cursor');
 assert.equal(rpcCalls.filter(call => call.name === 'review_cardmarket_printing_mapping').length, 1, 'a changed guide retains prior reviewed mapping acknowledgements');
 assert.equal(JSON.parse(await readFile(checkpoint, 'utf8')).priceGuideSha256, conditional.manifest.feeds.priceGuide.sha256);
+const beforeRestartClaims = rpcCalls.filter(call => call.name === 'claim_cardmarket_public_feed').length;
+const restartApi = { rpc: async (name, args) => name === 'read_cardmarket_retained_feed_revision'
+  ? { data: `${args.p_kind}-revision`, error: null } : api.rpc(name, args) };
+const restarted = await applyCardmarketDailyGuide({ api: restartApi, retained: conditional, mappingLedger: ledger, checkpointPath: join(cache, 'new-volume-checkpoint.json'), exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture', now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1 });
+assert.equal(restarted.stored, 1);
+assert.equal(rpcCalls.filter(call => call.name === 'claim_cardmarket_public_feed').length, beforeRestartClaims, 'a new worker volume reuses already retained source revisions');
+let midnightCalls = 0;
+await refreshCardmarketDailyFeeds({ cacheDir: cache, now: Date.parse('2026-10-05T13:01:00Z'), download: async kind => { midnightCalls++; return { kind, unchanged: true, etag: `"${kind}-etag-2"` }; } });
+assert.equal(midnightCalls, 2, 'yesterday\'s guide is rechecked hourly until today\'s guide arrives');
 await assert.rejects(() => applyCardmarketDailyGuide({ api, retained: conditional, mappingLedger: { ...ledger, mappings: [{ ...ledger.mappings[0], cardmarketProductId: 99 }] }, checkpointPath: checkpoint, exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture' }), /absent from the retained product catalogue/);
 const candidateExport = await exportCardmarketReviewCandidates({ retained: conditional, api: { rpc: async (name) => {
   assert.equal(name, 'list_cardmarket_current_provenance_candidates');
