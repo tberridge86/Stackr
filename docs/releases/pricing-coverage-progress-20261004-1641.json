@@ -1,0 +1,260 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-04T16:49:13Z",
+  "previousReceipt": "pricing-coverage-progress-20261004-1618.json",
+  "environment": "production",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "measurementWindow": {
+    "start": "2026-10-04T16:40:22.697116Z",
+    "end": "2026-10-04T16:41:54.835884Z",
+    "atomic": false
+  },
+  "definition": "Fresh TCGCSV exact variant quotes and reviewed Cardmarket blended printing estimates, counted once per current published, nondeprecated physical variant with matching publication identity. This is general price-guide coverage, not exact condition/grade or completed-sale coverage.",
+  "baseline": {
+    "observedAt": "2026-10-04T10:32:00Z",
+    "publishedVariants": 76269,
+    "freshPricedVariants": 29099,
+    "coveragePercent": 38.15
+  },
+  "result": {
+    "publishedVariants": 76269,
+    "freshTcgcsvVariants": 21477,
+    "freshCardmarketPresentationVariants": 12898,
+    "overlap": 4605,
+    "freshPricedVariants": 29770,
+    "coveragePercent": 39.03,
+    "netNewPricedVariants": 671,
+    "cumulativeNewPrimaryQuotes": 961
+  },
+  "languages": [
+    {
+      "observed_at": "2026-10-04 16:40:22.697116+00",
+      "language_code": "en",
+      "published_variants": 33359,
+      "fresh_tcgcsv_variants": 14575,
+      "fresh_cardmarket_presentation_variants": 7802,
+      "overlap": 3991,
+      "fresh_combined_variants": 18386
+    },
+    {
+      "observed_at": "2026-10-04 16:41:42.579989+00",
+      "language_code": "ja",
+      "published_variants": 14100,
+      "fresh_tcgcsv_variants": 6902,
+      "fresh_cardmarket_presentation_variants": 1032,
+      "overlap": 614,
+      "fresh_combined_variants": 7320
+    },
+    {
+      "observed_at": "2026-10-04 16:41:51.356608+00",
+      "language_code": "ko",
+      "published_variants": 239,
+      "fresh_tcgcsv_variants": 0,
+      "fresh_cardmarket_presentation_variants": 10,
+      "overlap": 0,
+      "fresh_combined_variants": 10
+    },
+    {
+      "observed_at": "2026-10-04 16:41:52.257581+00",
+      "language_code": "zh-cn",
+      "published_variants": 20405,
+      "fresh_tcgcsv_variants": 0,
+      "fresh_cardmarket_presentation_variants": 0,
+      "overlap": 0,
+      "fresh_combined_variants": 0
+    },
+    {
+      "observed_at": "2026-10-04 16:41:54.835884+00",
+      "language_code": "zh-tw",
+      "published_variants": 8166,
+      "fresh_tcgcsv_variants": 0,
+      "fresh_cardmarket_presentation_variants": 4054,
+      "overlap": 0,
+      "fresh_combined_variants": 4054
+    }
+  ],
+  "batch": {
+    "id": "20261004-03",
+    "groups": [
+      3068,
+      3172,
+      17674
+    ],
+    "canonicalSetCodes": [
+      "swsh10tg",
+      "swsh11tg",
+      "swsh12tg"
+    ],
+    "reviewedExactTitleMappings": 84,
+    "reviewedDocumentedSecretSuffixAliases": 6,
+    "genericMatcherChanged": false,
+    "stageReviewed": 90,
+    "stageStored": 90,
+    "stagePhysicalFreshFxMatches": 90,
+    "productionReviewed": 90,
+    "productionStored": 90,
+    "productionPhysicalFreshFxMatches": 90,
+    "netNewCombinedCoverage": 90
+  },
+  "source": {
+    "provider": "tcgcsv",
+    "datasetAt": "2026-10-03T20:05:38Z",
+    "staleAfter": "2026-10-05T20:05:38Z",
+    "materialization": "Existing retained provider feeds; independent stage and production candidate resolution through existing guarded APIs",
+    "currency": "USD",
+    "displayCurrency": "GBP",
+    "fxRate": 0.757532293986637,
+    "fxDate": "2026-10-02T00:00:00Z",
+    "fxSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+  },
+  "apiReadback": {
+    "recordedAt": "2026-10-04T16:49:13Z",
+    "path": "api.read_catalogue_prices direct service SQL RPC",
+    "requestedVariants": 90,
+    "exactFreshTcgcsvQuotes": 90,
+    "authenticatedOwnerHttpMeasured": false,
+    "phoneVisibilityMeasured": false
+  },
+  "resolverRepair": {
+    "migration": "20261004162804_bounded_reviewed_provider_set_resolver",
+    "sourceCommit": "d343b4c",
+    "sqlSha256": "ba6188a7ee2fa1bc7182697d922ea62675f154d4995d9e7b5b573c0ff3c5f922",
+    "applied": [
+      "staging",
+      "production"
+    ],
+    "canonicalLedgerVersion": "20261004162804",
+    "toolGeneratedVersions": {
+      "stage": "20261004164106",
+      "production": "20261004164235"
+    },
+    "bodyParity": true,
+    "alignment": "Only the newly applied exact-body-matching history record's generated version was aligned to the committed CLI version; statements and all other records were preserved.",
+    "target": "api.resolve_catalogue_bulk_set_by_name",
+    "japaneseWrapperUnchanged": true,
+    "securityInvoker": true,
+    "anonymousAndAuthenticatedExecute": false,
+    "serviceRoleExecute": true,
+    "liveCallBudgetMs": 8000,
+    "stageExecutionMs": 549.603,
+    "productionExecutionMs": 2386.29,
+    "zeroTempSpill": true
+  },
+  "recovery": {
+    "providerCalls": 0,
+    "route": "Existing guarded claim, resolve, current-candidate, pure planner with whole-group collision preflight, full-page store and lease-bound finish contracts",
+    "groups": [
+      {
+        "group": 1403,
+        "pages": 1,
+        "cards": 177,
+        "priced": 127,
+        "execution": "bounded retained-feed recovery through existing worker contracts"
+      },
+      {
+        "group": 3068,
+        "pages": 1,
+        "cards": 30,
+        "priced": 30,
+        "execution": "bounded retained-feed recovery through existing worker contracts"
+      },
+      {
+        "group": 3172,
+        "pages": 1,
+        "cards": 30,
+        "priced": 30,
+        "execution": "bounded retained-feed recovery through existing worker contracts"
+      },
+      {
+        "group": 17674,
+        "pages": 1,
+        "cards": 30,
+        "priced": 30,
+        "execution": "bounded retained-feed recovery through existing worker contracts"
+      }
+    ],
+    "health": {
+      "runId": "b232d400-1e11-4fa9-995d-158e0cf8ee94",
+      "groups": [
+        {
+          "total": 134,
+          "status": "complete",
+          "categoryId": 3
+        },
+        {
+          "total": 86,
+          "status": "unmapped",
+          "categoryId": 3
+        },
+        {
+          "total": 163,
+          "status": "complete",
+          "categoryId": 85
+        },
+        {
+          "total": 296,
+          "status": "unmapped",
+          "categoryId": 85
+        }
+      ],
+      "quotes": [
+        {
+          "stale": 0,
+          "total": 14575,
+          "provider": "tcgcsv",
+          "languageCode": "en"
+        },
+        {
+          "stale": 0,
+          "total": 6902,
+          "provider": "tcgcsv",
+          "languageCode": "ja"
+        }
+      ],
+      "outcomes": {
+        "total": 76272,
+        "no_provider_quote": 3347,
+        "unsupported_finish": 1240,
+        "unsupported_language": 28813
+      },
+      "datasetAt": "2026-10-03T20:05:38+00:00",
+      "runStatus": "needs_mapping",
+      "openRepairs": 46227
+    },
+    "railwayLastCronFailureIsHistorical": true,
+    "nextScheduledRailwayExecutionVerified": false
+  },
+  "validation": {
+    "cataloguePriceCacheSuite": "passed",
+    "typecheck": "passed",
+    "lint": {
+      "errors": 0,
+      "existingWarnings": 9
+    },
+    "securityAdvisor": {
+      "queried": true,
+      "changedResolverIncludedInFindings": false,
+      "explicitAclVerified": true
+    }
+  },
+  "automation": {
+    "id": "grow-stackr-price-coverage",
+    "kind": "heartbeat",
+    "frequency": "hourly",
+    "status": "ACTIVE",
+    "notifications": "Material coverage gains, completion, new failures or required user action only"
+  },
+  "nextWork": [
+    "Verify the next scheduled worker execution after recovery",
+    "Continue bounded exact English/Japanese mappings",
+    "Rebuild Cardmarket private provenance from retained raw records in resumable 500-ID pages before repairing cross-language Asian product IDs",
+    "Stage and promote the tested Chinese eBay language-evidence fix through the pricing release workflow"
+  ],
+  "limitations": [
+    "100% priced coverage not achieved",
+    "Not an atomic whole-catalogue measurement",
+    "Source-tested Chinese backup repair still not deployed",
+    "Direct service SQL readback does not prove authenticated owner HTTP or phone visibility",
+    "Unmapped, no-quote and unsupported outcomes are not counted as priced"
+  ]
+}

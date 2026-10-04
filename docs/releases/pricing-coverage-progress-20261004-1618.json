@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-04T16:31:14Z",
+  "measurementWindow": {
+    "start": "2026-10-04T16:13:08.302911Z",
+    "end": "2026-10-04T16:18:09.871114Z",
+    "atomic": false
+  },
+  "environment": "production",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "definition": "Fresh TCGCSV exact variant quotes and reviewed Cardmarket blended printing estimates, counted once per current published, nondeprecated physical variant with matching publication identity. This is general price-guide coverage, not exact condition/grade or completed-sale coverage.",
+  "baseline": {
+    "observedAt": "2026-10-04T10:32:00Z",
+    "publishedVariants": 76269,
+    "freshPricedVariants": 29099,
+    "coveragePercent": 38.15
+  },
+  "result": {
+    "publishedVariants": 76269,
+    "freshTcgcsvVariants": 21387,
+    "freshCardmarketPresentationVariants": 12898,
+    "overlap": 4605,
+    "freshPricedVariants": 29680,
+    "coveragePercent": 38.91,
+    "netNewPricedVariants": 581
+  },
+  "languages": [
+    {
+      "observed_at": "2026-10-04 16:18:09.871114+00",
+      "language_code": "en",
+      "published_variants": 33359,
+      "fresh_tcgcsv_variants": 14485,
+      "fresh_cardmarket_presentation_variants": 7802,
+      "overlap": 3991,
+      "fresh_combined_variants": 18296
+    },
+    {
+      "observed_at": "2026-10-04 16:13:08.302911+00",
+      "language_code": "ja",
+      "published_variants": 14100,
+      "fresh_tcgcsv_variants": 6902,
+      "fresh_cardmarket_presentation_variants": 1032,
+      "overlap": 614,
+      "fresh_combined_variants": 7320
+    },
+    {
+      "observed_at": "2026-10-04 16:14:04.033156+00",
+      "language_code": "ko",
+      "published_variants": 239,
+      "fresh_tcgcsv_variants": 0,
+      "fresh_cardmarket_presentation_variants": 10,
+      "overlap": 0,
+      "fresh_combined_variants": 10
+    },
+    {
+      "observed_at": "2026-10-04 16:14:05.756801+00",
+      "language_code": "zh-cn",
+      "published_variants": 20405,
+      "fresh_tcgcsv_variants": 0,
+      "fresh_cardmarket_presentation_variants": 0,
+      "overlap": 0,
+      "fresh_combined_variants": 0
+    },
+    {
+      "observed_at": "2026-10-04 16:14:08.975948+00",
+      "language_code": "zh-tw",
+      "published_variants": 8166,
+      "fresh_tcgcsv_variants": 0,
+      "fresh_cardmarket_presentation_variants": 4054,
+      "overlap": 0,
+      "fresh_combined_variants": 4054
+    }
+  ],
+  "acceptedBatches": [
+    {
+      "id": "20261004-01",
+      "kind": "reviewed set aliases",
+      "groups": [
+        1375,
+        1381,
+        1399,
+        1402,
+        1403
+      ],
+      "positiveStoredQuotes": 811,
+      "stageValidated": true,
+      "productionApplied": true
+    },
+    {
+      "id": "20261004-02",
+      "kind": "reviewed annual McDonalds product aliases",
+      "groups": [
+        1401,
+        1427,
+        1692,
+        1694,
+        3087
+      ],
+      "positiveStoredQuotes": 60,
+      "stageValidated": true,
+      "productionApplied": true,
+      "netNewCombinedCoverage": 0
+    }
+  ],
+  "source": {
+    "provider": "tcgcsv",
+    "datasetAt": "2026-10-03T20:05:38Z",
+    "staleAfter": "2026-10-05T20:05:38Z",
+    "materialization": "Existing retained provider feeds; independent stage and production candidate resolution through existing guarded APIs",
+    "currency": "USD",
+    "displayCurrency": "GBP",
+    "fxRate": 0.757532293986637,
+    "fxDate": "2026-10-02T00:00:00Z",
+    "fxSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+  },
+  "storedQuoteValidation": {
+    "freshQuotes": 871,
+    "physicalIdentityAndFxMatches": 871,
+    "groups": [
+      {
+        "group_id": 1375,
+        "fresh_prices": 156,
+        "exact_identity_fx_matches": 156
+      },
+      {
+        "group_id": 1381,
+        "fresh_prices": 177,
+        "exact_identity_fx_matches": 177
+      },
+      {
+        "group_id": 1399,
+        "fresh_prices": 151,
+        "exact_identity_fx_matches": 151
+      },
+      {
+        "group_id": 1401,
+        "fresh_prices": 12,
+        "exact_identity_fx_matches": 12
+      },
+      {
+        "group_id": 1402,
+        "fresh_prices": 200,
+        "exact_identity_fx_matches": 200
+      },
+      {
+        "group_id": 1403,
+        "fresh_prices": 127,
+        "exact_identity_fx_matches": 127
+      },
+      {
+        "group_id": 1427,
+        "fresh_prices": 12,
+        "exact_identity_fx_matches": 12
+      },
+      {
+        "group_id": 1692,
+        "fresh_prices": 12,
+        "exact_identity_fx_matches": 12
+      },
+      {
+        "group_id": 1694,
+        "fresh_prices": 12,
+        "exact_identity_fx_matches": 12
+      },
+      {
+        "group_id": 3087,
+        "fresh_prices": 12,
+        "exact_identity_fx_matches": 12
+      }
+    ]
+  },
+  "apiReadback": {
+    "observedAt": "2026-10-04T16:21:00Z",
+    "path": "api.read_catalogue_prices direct service SQL RPC",
+    "selectedVariants": 100,
+    "freshExactTcgcsvQuotes": 100,
+    "authenticatedOwnerHttpMeasured": false,
+    "phoneVisibilityMeasured": false
+  },
+  "refresh": {
+    "runId": "b232d400-1e11-4fa9-995d-158e0cf8ee94",
+    "latestExecution": "2026-10-04T16:15:36Z",
+    "completedAt": "2026-10-04T16:17:08Z",
+    "newGroupsCompleted": 9,
+    "newGroupsFailed": 1,
+    "failedGroup": 1403,
+    "failedRpc": "resolve_catalogue_bulk_set",
+    "reason": "canceling statement due to statement timeout",
+    "repair": "Narrow bounded physical-publication lookup for reviewed mappings is being prepared; all 127 group1403 prices were separately verified and stored through the guarded existing materialization API. Worker checkpoint is still failed."
+  },
+  "automation": {
+    "id": "grow-stackr-price-coverage",
+    "kind": "heartbeat",
+    "frequency": "hourly",
+    "status": "ACTIVE",
+    "notifications": "Material coverage gains, completion, new failures or required user action only"
+  },
+  "limitations": [
+    "Not an atomic whole-catalogue measurement",
+    "No invented or substituted foreign-language prices",
+    "General Cardmarket printing estimates remain distinct from exact finish quotes",
+    "871 new primary quotes provide 581 net combined coverage gains after backup overlap",
+    "Chinese backup-language fix at de7b05e is source-tested but not deployed",
+    "100% priced coverage has not been reached"
+  ]
+}
