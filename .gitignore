@@ -63,6 +63,7 @@ tmp-*.png
 .vscode/
 .npmrc
 backend/.npmrc
+supabase/.temp/
 
 # browser source captures that should not ship with the app
 assets/**/ChatGPT Images 2.0 _ AI Image Generator*

@@ -46,13 +46,15 @@ const enLargeProducts = enCards.map((row, n) => ({ categoryId: 3, groupId: 10, p
 const jaLargeProducts = jaCards.map((row, n) => ({ categoryId: 85, groupId: 20, productId: 2000 + n, name: row.card_native_name, extendedData: [{ name: 'Number', value: `${n + 1}/2` }] }));
 const claimed = [{ categoryId: 3, groupId: 10, language: 'en', group: enGroup, leaseToken: 'lease-en' }, { categoryId: 85, groupId: 20, language: 'ja', group: jaGroup, leaseToken: 'lease-ja' }];
 const stored = []; const finished = []; let claimIndex = 0;
+const outcomeSeedPages = [{ scanned: 500, written: 500, complete: false }, { scanned: 102, written: 102, complete: true }];
 const sweep = await runCatalogueBulkSweep({ datasetAt: '2026-10-03T00:00:00Z', fx, now, groups: [enGroup, jaGroup], maxGroups: 10,
-  begin: async () => ({ runId: 'run-1' }), claim: async () => claimed[claimIndex++] ?? null,
+  begin: async () => ({ runId: 'run-1' }), seedOutcomes: async ({ limit }) => { assert.equal(limit,500); return outcomeSeedPages.shift(); }, claim: async () => claimed[claimIndex++] ?? null,
   resolveSet: async () => ({ status: 'mapped' }),
   candidates: async ({ categoryId, after }) => { const source = categoryId === 3 ? enCards : jaCards; const i = after ? source.findIndex((r) => r.variant_id === after) + 1 : 0; return source.slice(i, i + 500); },
   loader: { load: async (key) => ({ results: key.startsWith('tcgplayer/3/') ? (key.endsWith('products') ? enLargeProducts : enLargeProducts.map((p) => ({ productId: p.productId, subTypeName: 'Normal', marketPrice: 1 }))) : (key.endsWith('products') ? jaLargeProducts : jaLargeProducts.map((p) => ({ productId: p.productId, subTypeName: 'Normal', marketPrice: 4 }))) }) },
   store: async ({ results }) => { stored.push(results); return results.length; }, finish: async (value) => { finished.push(value); return true; } });
 assert.equal(sweep.cards, 602); assert.equal(sweep.priced, 602); assert.equal(stored.flat().length, 602); assert.equal(finished.filter((v) => v.status === 'complete').length, 2);
+assert.deepEqual(sweep.outcomeSeed,{ pages: 2, scanned: 602, written: 602, complete: true },'publication outcome seed resumes in bounded pages before provider work');
 
 // A bounded invocation reports partial work and the next run resumes its durable
 // checkpoint rather than restarting provider group zero.

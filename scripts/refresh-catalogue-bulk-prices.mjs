@@ -152,12 +152,23 @@ export function createBulkFeedLoader(db, fetchImpl = fetch) {
 /** Claims durable provider-set checkpoints until exhausted. A group is only
  * complete after every 500-card page is stored. Unmapped sets end as explicit
  * gaps (`needs_mapping` at run level), never as a silently skipped cursor. */
-export async function runCatalogueBulkSweep({ begin, claim, resolveSet, candidates, store, finish, loader, groups, datasetAt, fx, maxGroups = 5000, now = Date.now(), onProgress = () => {}, requeueEnglishExactTitles = async (_run) => 0 }) {
+export async function runCatalogueBulkSweep({ begin, seedOutcomes = async () => ({ complete: true, deferred: false, scanned: 0, written: 0 }), claim, resolveSet, candidates, store, finish, loader, groups, datasetAt, fx, maxGroups = 5000, now = Date.now(), onProgress = () => {}, requeueEnglishExactTitles = async (_run) => 0 }) {
   if (!Number.isInteger(maxGroups) || maxGroups < 1 || maxGroups > 5000) throw Error('maxGroups must be 1..5000.');
   const run = await begin({ datasetAt, groups });
+  const outcomeSeed = { pages: 0, scanned: 0, written: 0, complete: false };
+  // Publication-wide outcome initialisation is deliberately chunked in SQL.
+  // A completed catalogue revision is a no-op on later daily runs.
+  for (; outcomeSeed.pages < 500 && !outcomeSeed.complete; outcomeSeed.pages++) {
+    const page = await seedOutcomes({ limit: 500 });
+    if (!page || !Number.isInteger(page.scanned) || page.scanned < 0 || !Number.isInteger(page.written) || page.written < 0 || typeof page.complete !== 'boolean') throw Error('Invalid bulk outcome seed page.');
+    outcomeSeed.scanned += page.scanned; outcomeSeed.written += page.written;
+    if (page.deferred) break;
+    outcomeSeed.complete = page.complete;
+  }
+  if (!outcomeSeed.complete && outcomeSeed.pages >= 500) throw Error('Bulk outcome seed safety limit exceeded.');
   const requeued = await requeueEnglishExactTitles({ runId: run.runId });
   if (!Number.isInteger(requeued) || requeued < 0) throw Error('Invalid English exact-title requeue result.');
-  const summary = { runId: run.runId, requeued, setsClaimed: 0, complete: 0, unmapped: 0, deferred: 0, cards: 0, priced: 0, status: 'complete' }; let exhausted = false;
+  const summary = { runId: run.runId, requeued, outcomeSeed, setsClaimed: 0, complete: 0, unmapped: 0, deferred: 0, cards: 0, priced: 0, status: 'complete' }; let exhausted = false;
   while (summary.setsClaimed < maxGroups) {
     const job = await claim({ runId: run.runId }); if (!job) { exhausted = true; break; } summary.setsClaimed++;
     try {
@@ -204,11 +215,24 @@ export async function mainCatalogueBulkPrices(args = process.argv.slice(2)) {
   const result = await runCatalogueBulkSweep({ datasetAt, fx, loader, groups, maxGroups,
     onProgress: (progress) => { if (progress.setsClaimed % 10 === 0) console.info(JSON.stringify({ event: 'catalogue_bulk_price_progress', project: target.projectRef, datasetAt, ...progress, status: 'running' })); },
     begin: ({ datasetAt, groups }) => rpc(db, 'begin_catalogue_bulk_sweep', { p_dataset: datasetAt, p_groups: groups }),
+    seedOutcomes: ({ limit }) => rpc(db, 'seed_catalogue_bulk_price_outcomes', { p_limit: limit }),
     requeueEnglishExactTitles: ({ runId }) => rpc(db, 'requeue_english_exact_title_groups', { p_run: runId }), claim: ({ runId }) => rpc(db, 'claim_catalogue_bulk_sweep_group', { p_run: runId }),
     resolveSet: ({ categoryId, groupId, languageCode, name, abbreviation }) => rpc(db, 'resolve_catalogue_bulk_set', { p_category: categoryId, p_group: groupId, p_language: languageCode, p_name: name ?? '', p_abbreviation: abbreviation ?? '' }),
     candidates: ({ categoryId, groupId, after, limit }) => rpc(db, 'catalogue_bulk_group_candidates', { p_category: categoryId, p_group: groupId, p_after: after, p_limit: limit }), store: ({ results }) => rpc(db, 'store_catalogue_bulk_prices', { p_results: results }),
     finish: ({ runId, categoryId, groupId, token, status, stats, retrySeconds = 0 }) => rpc(db, 'finish_catalogue_bulk_sweep_group', { p_run: runId, p_category: categoryId, p_group: groupId, p_token: token, p_status: status, p_stats: stats, p_retry_seconds: retrySeconds }), });
-  const coverage = await rpc(db, 'catalogue_bulk_price_coverage', { p_run: result.runId }); const reported = { project: target.projectRef, datasetAt, ...result, status: coverage?.runStatus ?? result.status, coverage };
+  // Health is a bounded ledger read: group checkpoints are authoritative for
+  // run state even when the optional full catalogue coverage report is slow.
+  const health = await rpc(db, 'catalogue_bulk_sweep_health', { p_run: result.runId });
+  let coverage = null; let coverageError = null;
+  try { coverage = await rpc(db, 'catalogue_bulk_price_coverage', { p_run: result.runId }); }
+  catch (error) {
+    // Provider checkpoints are already durable. Do not report a successful
+    // sweep as failed solely because the broad reporting query is unavailable;
+    // retain the boundary and error explicitly for the next optimisation pass.
+    coverageError = { rpc: error?.rpcName ?? 'catalogue_bulk_price_coverage', message: String(error?.message ?? error) };
+    console.warn(JSON.stringify({ event: 'catalogue_bulk_price_coverage_deferred', project: target.projectRef, datasetAt, runId: result.runId, ...coverageError }));
+  }
+  const reported = { project: target.projectRef, datasetAt, ...result, status: coverage?.runStatus ?? health?.runStatus ?? result.status, health, coverage, coverageError };
   console.log(JSON.stringify(reported)); if (result.deferred > 0) process.exitCode = 1; return reported;
 }
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) mainCatalogueBulkPrices().catch((error) => {

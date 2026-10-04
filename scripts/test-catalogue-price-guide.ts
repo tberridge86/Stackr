@@ -10,8 +10,8 @@ async function rpc(name: string, args: unknown[] = []) { const placeholders = ar
 async function main() { try {
   await db.exec(`
     create role anon; create role authenticated; create role service_role; create schema api; create schema catalog; create schema market;
-    create table catalog.catalogue_versions(id uuid primary key, status text not null default 'published', deprecated_at timestamptz); create table catalog.sets(id uuid primary key, deprecated_at timestamptz); create table catalog.languages(code text primary key);
-    create table catalog.catalogue_version_variants(catalogue_version_id uuid,variant_id uuid,primary key(catalogue_version_id,variant_id));
+    create table catalog.catalogue_versions(id uuid primary key, status text not null default 'published', deprecated_at timestamptz); create table catalog.sets(id uuid primary key, language_code text, deprecated_at timestamptz); create table catalog.languages(code text primary key);
+    create table catalog.catalogue_version_variants(catalogue_version_id uuid,variant_id uuid,primary key(catalogue_version_id,variant_id)); create table catalog.catalogue_version_sets(catalogue_version_id uuid,set_id uuid,primary key(catalogue_version_id,set_id));
     create table catalog.card_printings(id uuid primary key,collector_number text,language_code text,set_id uuid,deprecated_at timestamptz);
     create table catalog.card_variants(id uuid primary key,printing_id uuid,language_code text,variant_code text,finish_code text,deprecated_at timestamptz,is_default boolean);
     create table api.catalogue_cards(variant_id uuid primary key,printing_id uuid,set_id uuid,language_code text,variant_code text,finish_code text,catalogue_version_id uuid,collector_number text,card_english_display_name text,card_native_name text);
@@ -19,22 +19,36 @@ async function main() { try {
     create table catalog.catalogue_version_external_identifiers(external_id text,language_code text,catalogue_version_id uuid,printing_id uuid,variant_id uuid); create view api.catalogue_external_identifiers as select * from catalog.catalogue_version_external_identifiers;
     create table api.market_price_estimates(variant_id uuid,product_kind text,display_currency_code text,condition_code text,language_code text,grader_code text,grade_value numeric,fallback_identity_key text,calculated_at timestamptz,price_estimate_id uuid);
     create table public.market_price_snapshots(id bigint,card_id text,language text,calculated_at timestamptz,user_id uuid,pricing_identity_json jsonb,set_id text);
-    insert into catalog.catalogue_versions values('${id(1)}','published',null); insert into catalog.languages values('en'),('ja'),('ko'),('zh-cn'),('zh-tw'); insert into catalog.sets values('${id(10)}',null),('${id(11)}',null),('${id(12)}',null);
+    insert into catalog.catalogue_versions values('${id(1)}','published',null); insert into catalog.languages values('en'),('ja'),('ko'),('zh-cn'),('zh-tw'); insert into catalog.sets values('${id(10)}','en',null),('${id(11)}','ja',null),('${id(12)}','ko',null);
     insert into api.catalogue_sets values('${id(10)}','en','Silver Tempest','Silver Tempest'),('${id(11)}','ja','ストームエメラルダ',null),('${id(12)}','ko','Korean Set',null);
     insert into catalog.card_printings(id,collector_number,language_code,set_id) values('${id(20)}','139','en','${id(10)}'),('${id(21)}','001','ja','${id(11)}'),('${id(22)}','001','ko','${id(12)}');
     insert into catalog.card_variants values('${id(30)}','${id(20)}','en','normal','normal',null,true),('${id(31)}','${id(20)}','en','reverse_holo','reverse_holo',null,false),('${id(32)}','${id(21)}','ja','normal','normal',null,true),('${id(33)}','${id(22)}','ko','normal','normal',null,true),('${id(34)}','${id(20)}','en','holo','holo',null,false);
     insert into catalog.catalogue_version_variants values('${id(1)}','${id(30)}'),('${id(1)}','${id(31)}'),('${id(1)}','${id(32)}'),('${id(1)}','${id(33)}'),('${id(1)}','${id(34)}');
+    insert into catalog.catalogue_version_sets values('${id(1)}','${id(10)}'),('${id(1)}','${id(11)}'),('${id(1)}','${id(12)}');
     insert into api.catalogue_cards values ('${id(30)}','${id(20)}','${id(10)}','en','normal','normal','${id(1)}','139','Lugia VSTAR',null),('${id(31)}','${id(20)}','${id(10)}','en','reverse_holo','reverse_holo','${id(1)}','139','Lugia VSTAR',null),('${id(32)}','${id(21)}','${id(11)}','ja','normal','normal','${id(1)}','001',null,'ピカチュウ'),('${id(33)}','${id(22)}','${id(12)}','ko','normal','normal','${id(1)}','001',null,'Pikachu'),('${id(34)}','${id(20)}','${id(10)}','en','holo','holo','${id(1)}','139','Lugia VSTAR',null);
     grant usage on schema api,catalog,market,public to service_role; grant select on all tables in schema api,catalog,public to service_role;`);
   await db.exec('alter table api.catalogue_sets add column set_code text');
-  for (const file of ['20261003224016_catalogue_price_bulk_cache.sql','20261003224031_restore_full_catalogue_price_guide.sql','20261003224558_catalogue_price_feed_access_indexes.sql','20261003225316_catalogue_price_repair_reads.sql','20261003225832_cardmarket_general_price_backup.sql','20261003231006_batch_catalogue_price_identity_reads.sql','20261003232812_japanese_exact_price_identities.sql','20261003234257_bounded_published_price_read.sql','20261003234442_cover_general_price_foreign_keys.sql']) await db.exec(`begin; ${readFileSync(`supabase/migrations/${file}`, 'utf8')} commit;`);
-  await db.exec('set role anon'); await assert.rejects(rpc('catalogue_bulk_price_coverage'), /permission denied/); await assert.rejects(rpc('read_catalogue_bulk_feed',['last-updated']), /permission denied/); await db.exec('reset role; set role service_role');
+  for (const file of ['20261003224016_catalogue_price_bulk_cache.sql','20261003224031_restore_full_catalogue_price_guide.sql','20261003224558_catalogue_price_feed_access_indexes.sql','20261003225316_catalogue_price_repair_reads.sql','20261003225832_cardmarket_general_price_backup.sql','20261003231006_batch_catalogue_price_identity_reads.sql','20261003232812_japanese_exact_price_identities.sql','20261003234257_bounded_published_price_read.sql','20261003234442_cover_general_price_foreign_keys.sql','20261004091559_catalogue_bulk_sweep_bounded_initialisation.sql','20261004091600_bounded_collector_search_identity_view.sql']) await db.exec(`begin; ${readFileSync(`supabase/migrations/${file}`, 'utf8')} commit;`);
+  await db.exec('set role anon'); await assert.rejects(rpc('catalogue_bulk_price_coverage'), /permission denied/); await assert.rejects(rpc('catalogue_bulk_sweep_health'), /permission denied/); await assert.rejects(rpc('read_catalogue_bulk_feed',['last-updated']), /permission denied/); await assert.rejects(db.query('select * from api.catalogue_card_collectors'), /permission denied/); await db.exec('reset role; set role service_role');
+  const collectorRows=await db.query<any>("select variant_id from api.catalogue_card_collectors where set_id=$1 and language_code='en' and normalized_collector_base='139' order by variant_id",[id(10)]); assert.deepEqual(collectorRows.rows.map((row:any)=>row.variant_id),[id(30),id(31),id(34)],'collector identity view retains only current published variants');
   assert.equal((await rpc('read_catalogue_bulk_feed',['last-updated']))[0],null);
   await assert.rejects(rpc('read_catalogue_bulk_feed',['../secret']), /invalid feed/);
+  await db.exec('reset role; set role anon');
+  await assert.rejects(rpc('seed_catalogue_bulk_price_outcomes',[500]), /permission denied/);
+  await db.exec('reset role; set role service_role');
+  const seeded = [] as any[];
+  for (let page = 0; page < 3; page++) { const value=(await rpc('seed_catalogue_bulk_price_outcomes',[2]))[0]; seeded.push(value); if (value.complete) break; }
+  assert.equal(seeded.at(-1).complete,true,'physical publication seed completes in bounded pages');
+  assert.equal(seeded.reduce((n,row)=>n+row.scanned,0),5);
+  assert.equal((await db.query('select * from market.catalogue_price_outcomes')).rows.length,5);
+  assert.equal((await db.query<any>('select reason from market.catalogue_price_outcomes where variant_id=$1',[id(33)])).rows[0].reason,'unsupported_provider_language');
+  assert.equal((await db.query<any>('select reason from market.catalogue_price_outcomes where variant_id=$1',[id(34)])).rows[0].reason,'unresolved_provider_identity');
+  const seededCount=(await db.query('select count(*)::int as count from market.catalogue_price_outcomes')).rows[0].count;
   await assert.rejects(rpc('begin_catalogue_bulk_sweep',[null,null]),/invalid provider manifest/); await assert.rejects(rpc('store_catalogue_bulk_prices',[null]),/invalid price results/);
   const dataset = new Date(Date.now() - 3600_000).toISOString();
   const manifest = [{ categoryId:3,groupId:100,language:'en',name:'SWSH12: Silver Tempest',abbreviation:'SWSH12' },{ categoryId:85,groupId:100,language:'ja',name:'ストームエメラルダ' },{ categoryId:85,groupId:101,language:'ja',name:'Provider-only set' }];
   const run = (await rpc('begin_catalogue_bulk_sweep',[dataset,encode(manifest)]))[0]; assert.equal(run.totalGroups,3);
+  assert.equal((await db.query('select count(*)::int as count from market.catalogue_price_outcomes')).rows[0].count,seededCount,'begin is idempotent and does not re-enumerate publication outcomes');
   const first = (await rpc('claim_catalogue_bulk_sweep_group',[run.runId]))[0]; assert.equal(first.categoryId,3);
   assert.equal((await rpc('resolve_catalogue_bulk_set',[3,100,'en',manifest[0].name,'SWSH12']))[0].setId,id(10));
   assert.equal((await rpc('resolve_catalogue_bulk_set',[85,100,'ja',manifest[1].name,'']))[0].setId,id(11));
@@ -61,6 +75,7 @@ async function main() { try {
   assert.equal((await rpc('finish_catalogue_bulk_sweep_group',[run.runId,3,100,first.leaseToken,'complete',encode({cards:3,priced:2}),0]))[0],true);
   const second=(await rpc('claim_catalogue_bulk_sweep_group',[run.runId]))[0]; await rpc('finish_catalogue_bulk_sweep_group',[run.runId,85,100,second.leaseToken,'complete',encode({cards:1,priced:1}),0]); const third=(await rpc('claim_catalogue_bulk_sweep_group',[run.runId]))[0]; await rpc('finish_catalogue_bulk_sweep_group',[run.runId,85,101,third.leaseToken,'unmapped','{}',0]);
   const coverage=(await rpc('catalogue_bulk_price_coverage',[run.runId]))[0]; assert.equal(coverage.runStatus,'needs_mapping'); assert.equal(coverage.openRepairs,1); assert.equal(coverage.cards.reduce((total:number,row:any)=>total+row.total,0),5);
+  const health=(await rpc('catalogue_bulk_sweep_health',[run.runId]))[0]; assert.equal(health.runStatus,'needs_mapping'); assert.equal(health.outcomes.total,5); assert.equal(health.quotes.reduce((n:number,row:any)=>n+row.total,0),3);
   const repairsPage=await rpc('list_catalogue_price_repairs',[null,1]); assert.equal(repairsPage.length,1); assert.equal((await rpc('list_catalogue_price_repairs',[repairsPage[0].repair_key,1])).length,0); await assert.rejects(rpc('list_catalogue_price_repairs',[null,101]),/invalid repair page/);
   await db.exec('reset role; set role anon'); await assert.rejects(rpc('list_catalogue_price_repairs',[null,1]),/permission denied/); await db.exec('reset role; set role service_role');
   const products={success:true,results:[{categoryId:3,groupId:100,productId:201,name:'Reviewed provider alias',extendedData:[{name:'Number',value:'139/195'}]}]}; await db.query('insert into market.catalogue_bulk_feeds(feed_key,payload) values($1,$2::jsonb),($3,$4::jsonb) on conflict(feed_key) do update set payload=excluded.payload',['tcgplayer/3/groups',encode({success:true,results:[manifest[0]]}),'tcgplayer/3/100/products',encode(products)]);
