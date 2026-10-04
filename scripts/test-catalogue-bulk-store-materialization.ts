@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
-const migration = [readFileSync('supabase/migrations/20261004094851_thin_published_price_identities.sql', 'utf8'), readFileSync('supabase/migrations/20261004101400_catalogue_bulk_store_materialization.sql', 'utf8')].join('\n');
+const migration = [readFileSync('supabase/migrations/20261004094851_thin_published_price_identities.sql', 'utf8'), readFileSync('supabase/migrations/20261004101533_catalogue_bulk_store_materialization.sql', 'utf8')].join('\n');
 const db = new PGlite();
 
 async function rpc(name: string, args: unknown[] = []) {
