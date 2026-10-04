@@ -1,0 +1,10 @@
+{
+  "name": "stackr-catalogue-price-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "2.105.3",
+    "dotenv": "16.4.7"
+  }
+}
