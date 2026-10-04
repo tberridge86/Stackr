@@ -34,3 +34,9 @@ Korean lacks an equivalent reviewed controlled-reference policy and a verified s
 The client accepts provenance tags, but source evidence does not show that ingestion assigns them only after an exact native-language/set/card/variant counterpart match or a recorded reviewed translation. A complete English-description claim requires an auditable record for each displayed foreign card: native identity, source, exact English counterpart or review ID, and translation provenance. Without it, the explanatory fields remain translation pending.
 
 Installed-device acceptance is still unmeasured. It must cover the actual release build and deployed backend, including all five languages, cold and warm image loads, offline/cache behaviour, artwork identity, English provenance display, URL expiry, and representative set/card details. Browser or fixture success does not substitute for that cohort.
+
+## 4 October deployed and native evidence
+
+Production and staging passed all 36 full server smoke checks, including published language catalogue routes, Japanese exact search, assets and pagination. A sampled production Japanese asset returned native 868×1212 JPEG data and reused its cache. These bounded samples do not prove complete artwork coverage or handset visual acceptance.
+
+The finished signed iOS 1.0.5 (52) binary passed bundle, runtime and exact startup-video verification. Six foreign presentation/cache/reference/localisation fixtures passed. Authoritative English descriptions and Korean exact-artwork coverage remain incomplete; absent evidence continues to produce translation-pending or unavailable states. See `releases/beta-gate-receipt-20261004.json` and `releases/testflight52-native-artifact-verification-20261004.json`.

@@ -1,0 +1,222 @@
+{
+  "observedAt": "2026-10-04T10:52:56Z",
+  "scope": "Security and performance readbacks after all 21 migrations; matched market guide/Cardmarket objects and worker service functions. Existing application-wide findings retained for separate review.",
+  "environments": [
+    {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "type": "security",
+      "groups": [
+        {
+          "name": "rls_enabled_no_policy",
+          "level": "INFO",
+          "count": 33,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+        },
+        {
+          "name": "authenticated_security_definer_function_executable",
+          "level": "WARN",
+          "count": 11,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+        },
+        {
+          "name": "auth_leaked_password_protection",
+          "level": "WARN",
+          "count": 1,
+          "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+        }
+      ],
+      "relevantFindings": []
+    },
+    {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "type": "performance",
+      "groups": [
+        {
+          "name": "unindexed_foreign_keys",
+          "level": "INFO",
+          "count": 187,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+        },
+        {
+          "name": "auth_rls_initplan",
+          "level": "WARN",
+          "count": 115,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "count": 196,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "multiple_permissive_policies",
+          "level": "WARN",
+          "count": 247,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies"
+        },
+        {
+          "name": "duplicate_index",
+          "level": "WARN",
+          "count": 4,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0009_duplicate_index"
+        },
+        {
+          "name": "auth_db_connections_absolute",
+          "level": "INFO",
+          "count": 1,
+          "remediation": "https://supabase.com/docs/guides/deployment/going-into-prod"
+        }
+      ],
+      "relevantFindings": [
+        {
+          "name": "unindexed_foreign_keys",
+          "level": "INFO",
+          "detail": "Table \\`market.cardmarket_provenance_observations\\` has a foreign key \\`cardmarket_provenance_observations_catalogue_version_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+        },
+        {
+          "name": "unindexed_foreign_keys",
+          "level": "INFO",
+          "detail": "Table \\`market.cardmarket_provenance_observations\\` has a foreign key \\`cardmarket_provenance_observations_printing_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "detail": "Index \\`cardmarket_blended_product_revision_idx\\` on table \\`market.cardmarket_blended_general_prices\\` has not been used",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "detail": "Index \\`cardmarket_mapping_repairs_open_idx\\` on table \\`market.cardmarket_mapping_repairs\\` has not been used",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "detail": "Index \\`cardmarket_mapping_repairs_printing_idx\\` on table \\`market.cardmarket_mapping_repairs\\` has not been used",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        }
+      ]
+    },
+    {
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "type": "security",
+      "groups": [
+        {
+          "name": "rls_enabled_no_policy",
+          "level": "INFO",
+          "count": 15,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+        },
+        {
+          "name": "authenticated_security_definer_function_executable",
+          "level": "WARN",
+          "count": 10,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+        },
+        {
+          "name": "auth_leaked_password_protection",
+          "level": "WARN",
+          "count": 1,
+          "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+        }
+      ],
+      "relevantFindings": []
+    },
+    {
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "type": "performance",
+      "groups": [
+        {
+          "name": "unindexed_foreign_keys",
+          "level": "INFO",
+          "count": 180,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+        },
+        {
+          "name": "auth_rls_initplan",
+          "level": "WARN",
+          "count": 119,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "count": 281,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "multiple_permissive_policies",
+          "level": "WARN",
+          "count": 246,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies"
+        },
+        {
+          "name": "duplicate_index",
+          "level": "WARN",
+          "count": 4,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0009_duplicate_index"
+        },
+        {
+          "name": "auth_db_connections_absolute",
+          "level": "INFO",
+          "count": 1,
+          "remediation": "https://supabase.com/docs/guides/deployment/going-into-prod"
+        }
+      ],
+      "relevantFindings": [
+        {
+          "name": "unindexed_foreign_keys",
+          "level": "INFO",
+          "detail": "Table \\`market.cardmarket_provenance_observations\\` has a foreign key \\`cardmarket_provenance_observations_catalogue_version_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+        },
+        {
+          "name": "unindexed_foreign_keys",
+          "level": "INFO",
+          "detail": "Table \\`market.cardmarket_provenance_observations\\` has a foreign key \\`cardmarket_provenance_observations_printing_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "detail": "Index \\`cardmarket_blended_price_fresh_idx\\` on table \\`market.cardmarket_blended_general_prices\\` has not been used",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "detail": "Index \\`cardmarket_blended_price_catalogue_version_idx\\` on table \\`market.cardmarket_blended_general_prices\\` has not been used",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "detail": "Index \\`cardmarket_blended_price_guide_revision_idx\\` on table \\`market.cardmarket_blended_general_prices\\` has not been used",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "detail": "Index \\`cardmarket_mapping_repairs_printing_idx\\` on table \\`market.cardmarket_mapping_repairs\\` has not been used",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "detail": "Index \\`cardmarket_mapping_reviews_printing_idx\\` on table \\`market.cardmarket_mapping_reviews\\` has not been used",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "detail": "Index \\`catalogue_general_prices_version_idx\\` on table \\`market.catalogue_general_prices\\` has not been used",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        }
+      ]
+    }
+  ]
+}

@@ -1,32 +1,34 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "snapshotInterval": {
-    "startedAt": "2026-10-04T10:05:51Z",
-    "finishedAt": "2026-10-04T10:07:18Z",
-    "consistency": "Per-language bounded physical reads; a live Japanese worker changed group/repair state during the interval."
+    "startedAt": "2026-10-04T10:31:22.929070Z",
+    "finishedAt": "2026-10-04T10:32:03Z",
+    "consistency": "Bounded independent physical reads by current published language version. The final health read found no pending, running, or failed TCGCSV groups."
   },
   "unit": "published variant",
-  "eligibility": "Current published catalogue-version membership joined physically to non-deprecated matching variant, printing, set, and language rows.",
-  "generalEstimateDefinition": "A fresh TCGCSV quote for the exact published variant OR a fresh Cardmarket blended general estimate for its exact published printing. The union is calculated once at published-variant level.",
-  "cardmarketScope": "Cardmarket counts are both distinct printing eligibility and the number of published variants those eligible printings can present. They are not added to TCG variant counts.",
+  "publicationEligibility": "Current published catalogue-version membership joined physically to matching non-deprecated variant, printing, set, and language rows.",
+  "tcgSupportedDefinition": "A current published variant with a durable TCGCSV outcome other than unsupported_provider_language or unsupported_provider_finish. This measures provider language/finish eligibility, not only permanent product mappings.",
+  "generalEstimateDefinition": "A fresh exact TCGCSV quote for the published variant OR a fresh Cardmarket blended general estimate for its exact published printing. The union is calculated once per published variant.",
+  "cardmarketScope": "Cardmarket distinct printing eligibility and the published variants those printings present are reported separately. Printing counts are never added to TCG variant counts.",
   "total": {
     "publishedVariants": 76269,
-    "tcgSupportedVariants": 21729,
-    "tcgPricedVariants": 19015,
+    "tcgSupportedVariants": 46219,
+    "tcgPricedVariants": 20516,
     "cardmarketEligiblePrintings": 9223,
     "cardmarketEligiblePresentationVariants": 12898,
-    "combinedGeneralEstimateVariants": 28117,
-    "combinedAvailabilityPercent": 36.87,
-    "tcgAndCardmarketPresentationVariants": 3796,
-    "tcgOnlyPresentationVariants": 15219,
-    "cardmarketOnlyPresentationVariants": 9102
+    "combinedGeneralEstimateVariants": 29099,
+    "combinedAvailabilityPercent": 38.15,
+    "tcgAndCardmarketPresentationVariants": 4315,
+    "tcgOnlyPresentationVariants": 16201,
+    "cardmarketOnlyPresentationVariants": 8583
   },
   "perLanguage": [
     {
       "language": "en",
       "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "capturedAt": "2026-10-04T10:31:22.929070Z",
       "publishedVariants": 33359,
-      "tcgSupportedVariants": 15433,
+      "tcgSupportedVariants": 32301,
       "tcgPricedVariants": 13614,
       "cardmarketEligiblePrintings": 4875,
       "cardmarketEligiblePresentationVariants": 7802,
@@ -34,27 +36,27 @@
       "tcgAndCardmarketPresentationVariants": 3701,
       "tcgOnlyPresentationVariants": 9913,
       "cardmarketOnlyPresentationVariants": 4101,
-      "capturedAt": "2026-10-04T10:06:43.527741Z",
       "combinedAvailabilityPercent": 53.1
     },
     {
       "language": "ja",
       "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "capturedAt": "2026-10-04T10:31:37.331530Z",
       "publishedVariants": 14100,
-      "tcgSupportedVariants": 6296,
-      "tcgPricedVariants": 5401,
+      "tcgSupportedVariants": 13918,
+      "tcgPricedVariants": 6902,
       "cardmarketEligiblePrintings": 943,
       "cardmarketEligiblePresentationVariants": 1032,
-      "combinedGeneralEstimateVariants": 6338,
-      "tcgAndCardmarketPresentationVariants": 95,
-      "tcgOnlyPresentationVariants": 5306,
-      "cardmarketOnlyPresentationVariants": 937,
-      "capturedAt": "2026-10-04T10:07:01.072761Z",
-      "combinedAvailabilityPercent": 44.95
+      "combinedGeneralEstimateVariants": 7320,
+      "tcgAndCardmarketPresentationVariants": 614,
+      "tcgOnlyPresentationVariants": 6288,
+      "cardmarketOnlyPresentationVariants": 418,
+      "combinedAvailabilityPercent": 51.91
     },
     {
       "language": "ko",
       "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "capturedAt": "2026-10-04T10:31:39.278290Z",
       "publishedVariants": 239,
       "tcgSupportedVariants": 0,
       "tcgPricedVariants": 0,
@@ -64,12 +66,12 @@
       "tcgAndCardmarketPresentationVariants": 0,
       "tcgOnlyPresentationVariants": 0,
       "cardmarketOnlyPresentationVariants": 10,
-      "capturedAt": "2026-10-04T10:07:04.610411Z",
       "combinedAvailabilityPercent": 4.18
     },
     {
       "language": "zh-cn",
       "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "capturedAt": "2026-10-04T10:31:40.021975Z",
       "publishedVariants": 20405,
       "tcgSupportedVariants": 0,
       "tcgPricedVariants": 0,
@@ -79,12 +81,12 @@
       "tcgAndCardmarketPresentationVariants": 0,
       "tcgOnlyPresentationVariants": 0,
       "cardmarketOnlyPresentationVariants": 0,
-      "capturedAt": "2026-10-04T10:07:05.523007Z",
       "combinedAvailabilityPercent": 0
     },
     {
       "language": "zh-tw",
       "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "capturedAt": "2026-10-04T10:31:41.430993Z",
       "publishedVariants": 8166,
       "tcgSupportedVariants": 0,
       "tcgPricedVariants": 0,
@@ -94,12 +96,11 @@
       "tcgAndCardmarketPresentationVariants": 0,
       "tcgOnlyPresentationVariants": 0,
       "cardmarketOnlyPresentationVariants": 4054,
-      "capturedAt": "2026-10-04T10:07:08.681711Z",
       "combinedAvailabilityPercent": 49.64
     }
   ],
-  "healthBefore": {
-    "capturedAt": "2026-10-04T10:05:51Z",
+  "health": {
+    "capturedAt": "2026-10-04T10:32:03Z",
     "runId": "b232d400-1e11-4fa9-995d-158e0cf8ee94",
     "datasetAt": "2026-10-03T20:05:38Z",
     "groups": {
@@ -108,47 +109,27 @@
         "unmapped": 99
       },
       "ja": {
-        "complete": 121,
-        "failed": 1,
-        "pending": 234,
-        "running": 1,
-        "unmapped": 102
+        "complete": 163,
+        "unmapped": 296
       }
     },
     "quotes": {
       "en": 13614,
-      "ja": 5401
+      "ja": 6902
     },
-    "openRepairs": 37306,
-    "runStatus": "partial"
-  },
-  "healthAfter": {
-    "capturedAt": "2026-10-04T10:07:18Z",
-    "runId": "b232d400-1e11-4fa9-995d-158e0cf8ee94",
-    "datasetAt": "2026-10-03T20:05:38Z",
-    "groups": {
-      "en": {
-        "complete": 121,
-        "unmapped": 99
-      },
-      "ja": {
-        "complete": 121,
-        "failed": 1,
-        "pending": 221,
-        "running": 1,
-        "unmapped": 115
-      }
+    "outcomes": {
+      "total": 76272,
+      "noProviderQuote": 3317,
+      "unsupportedFinish": 1240,
+      "unsupportedLanguage": 28813
     },
-    "quotes": {
-      "en": 13614,
-      "ja": 5401
-    },
-    "openRepairs": 37547,
-    "runStatus": "partial"
+    "openRepairs": 46529,
+    "runStatus": "needs_mapping"
   },
   "limitations": [
-    "This is an availability snapshot, not a claim that all general estimates have equivalent language, finish, condition, grade, or sold-price specificity.",
-    "Cardmarket estimates remain blended general estimates and are excluded from exact-variant and holdings valuation paths.",
-    "A live importer was active; the stable current-price quote counts did not change, while Japanese pending/unmapped groups and repair counts did."
+    "TCGCSV provider support is language/finish eligibility; it does not mean a product mapping or current quote exists.",
+    "Cardmarket estimates are blended general estimates and remain excluded from exact-variant and holdings-valuation paths.",
+    "The durable outcomes ledger has three more historical rows than the strict physical current-publication denominator; only the latter is used for availability percentages.",
+    "This is a completed TCGCSV sweep snapshot. It does not claim a future Cardmarket scheduled run has succeeded."
   ]
 }

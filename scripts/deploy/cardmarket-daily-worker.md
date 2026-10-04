@@ -1,6 +1,6 @@
 # Cardmarket public guide worker
 
-The Cardmarket backup has two dedicated Railway cron services: staging and production. Both use the deployed source commit `3534ea3`; the configured build is successful. That only proves the worker image is available. The first scheduled execution, due at minute 17 UTC, is still pending and must be recorded separately when it completes.
+The Cardmarket backup has two dedicated Railway cron services: staging and production. Both have completed the 4 October retained-feed import and a subsequent cached hourly resume. Their minute-17 UTC schedules were restored at 10:39–10:40Z; final service-configuration readback remains pending.
 
 Each service has its own 1 GB Railway volume mounted at `/var/lib/cardmarket`. Set:
 
@@ -24,6 +24,6 @@ SUPABASE_SECRET_KEY=<service-only secret>
 
 The loader binds each saved mapping to one reviewed printing and current catalogue revision. It is idempotent: unchanged mapping reviews survive restart, retained feed revisions are reused, and the product checkpoint resumes from its saved product ID. Missing, ambiguous, or unusable provider products become explicit repair rows; they are never guessed.
 
-The completed 4 October production import used the retained files, scanned all 150 bounded product pages, saved 9,224 reviewed printing mappings and 9,223 Cardmarket estimates, and recorded 65,397 repairs. The price guide is a blended general estimate only: language, condition, finish, and grade are null; `usableForExactVariant` and `usableForHoldingsValuation` are false. It preserves the original EUR guide value and a dated ECB EUR→GBP conversion. It never writes exact finish/condition prices or collection valuation inputs.
+The completed 4 October production import ran from 10:32:25Z to 10:34:20Z, scanned all 150 bounded product pages, saved 9,224 reviewed printing mappings and 9,223 Cardmarket estimates, and recorded 65,397 repairs. Staging completed the same cohort at 10:34:27Z. The following cached checks completed in about one second with no new estimates. Execution IDs, retained source revisions, and schedule evidence are recorded in `docs/releases/daily-pricing-execution-20261004.json`.
 
 Do not expose either cron service through a public domain. The worker rejects a missing/mismatched target, relative cache path, or a mapping/checkpoint outside the mounted volume.

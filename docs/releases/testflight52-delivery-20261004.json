@@ -1,0 +1,41 @@
+{
+  "observedAt": "2026-10-04T10:52:42.351Z",
+  "version": "1.0.5",
+  "buildNumber": "52",
+  "runtime": "1.0.5",
+  "bundle": "com.tommo86.Stackr",
+  "nativeSource": "b516cb7d529d8f764cb27380d2c975d0f736856f",
+  "easBuildId": "dbbc2425-0788-4c98-b289-d5d860da4b26",
+  "easBuildStatus": "FINISHED",
+  "artifactVerification": "testflight52-native-artifact-verification-20261004.json",
+  "submissionId": "4f3db0bb-8983-4c23-b10c-50d3f21ce6e2",
+  "submissionStatus": "FINISHED",
+  "submissionUrl": "https://expo.dev/accounts/tommo86/projects/Stackr/submissions/4f3db0bb-8983-4c23-b10c-50d3f21ce6e2",
+  "appleBuildId": "ab7ada32-5e74-4830-ba9d-7f4f2b6fbd7f",
+  "appleProcessing": "VALID",
+  "internalAvailability": "IN_BETA_TESTING",
+  "externalAvailability": "WAITING_FOR_BETA_REVIEW",
+  "handsetAcceptance": "not_performed",
+  "pricingCoverage": "29,099 of 76,269 published presentation variants (38.15%); incomplete",
+  "providerRefresh": "Daily provider revisions checked hourly; actual successful runs recorded in daily-pricing-execution-20261004.json",
+  "testNotes": "Pricing, source/update/stale/unavailable labels, offline recovery, exact opening video, simple ring/bar loaders, native-language artwork and verified English descriptions; missing translation/artwork remains explicit.",
+  "rollback": "Existing approved TestFlight 1.0.4 (51) remains available; no OTA to its incompatible runtime.",
+  "claim": "Uploaded and VALID. Internal Team (Expo) is IN_BETA_TESTING. External Stackr Beta Testers assigned; awaiting Apple beta review.",
+  "appleUploadedAt": "2026-10-04T03:44:48-07:00",
+  "internalGroup": {
+    "id": "9ab9cbec-f5f1-4a9c-80bb-4afcce16960f",
+    "name": "Team (Expo)",
+    "attached": true
+  },
+  "externalGroup": {
+    "id": "23f56283-e7db-482c-a243-d0179c8fbae7",
+    "name": "Stackr Beta Testers",
+    "attached": true
+  },
+  "betaReview": "WAITING_FOR_REVIEW",
+  "englishTestNotes": {
+    "locale": "en-US",
+    "present": true,
+    "matches": true
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-10-04T09:32:23.695Z",
+  "reviewedAt": "2026-10-04T10:52:42.355Z",
   "iosBuild": {
     "id": "dbbc2425-0788-4c98-b289-d5d860da4b26",
     "status": "FINISHED",
@@ -10,7 +10,14 @@
     "runtimeVersion": "1.0.5",
     "gitCommit": "b516cb7d529d8f764cb27380d2c975d0f736856f",
     "artifactAvailable": true,
-    "submitted": false
+    "submitted": true,
+    "submissionId": "4f3db0bb-8983-4c23-b10c-50d3f21ce6e2",
+    "submissionState": "FINISHED",
+    "appleBuildId": "ab7ada32-5e74-4830-ba9d-7f4f2b6fbd7f",
+    "appleProcessing": "VALID",
+    "internalAvailability": "IN_BETA_TESTING",
+    "externalAvailability": "WAITING_FOR_BETA_REVIEW",
+    "deliveryReceipt": "testflight52-delivery-20261004.json"
   },
   "backendAuditOmitDev": {
     "critical": 0,
@@ -83,5 +90,34 @@
     "status": 401,
     "cacheControl": "private, no-store",
     "requestIdPresent": true
-  }
+  },
+  "pricingCoverage": {
+    "publishedVariants": 76269,
+    "tcgSupportedVariants": 46219,
+    "tcgPricedVariants": 20516,
+    "cardmarketEligiblePrintings": 9223,
+    "cardmarketEligiblePresentationVariants": 12898,
+    "combinedGeneralEstimateVariants": 29099,
+    "combinedAvailabilityPercent": 38.15,
+    "tcgAndCardmarketPresentationVariants": 4315,
+    "tcgOnlyPresentationVariants": 16201,
+    "cardmarketOnlyPresentationVariants": 8583,
+    "unit": "published variant",
+    "receipt": "production-price-coverage-20261004.json",
+    "note": "All 679 feed groups are terminal; 395 require mappings. Coverage is deduplicated by current published presentation variant. No complete card-price claim."
+  },
+  "recurringGuide": {
+    "status": "verified",
+    "receipt": "daily-pricing-execution-20261004.json"
+  },
+  "ci": {
+    "revision": "a69b2b0a095dc9f49040f527e5a7fc99e8ba00dd",
+    "applicableChecksPassed": 12,
+    "intentionallySkipped": [
+      "release-candidate-gate",
+      "canary-api-evidence"
+    ],
+    "handsetEvidenceFromCi": false
+  },
+  "betaDecision": "CI, server, signed-artifact and recurring-guide checks support a truthful beta. This does not close general-release gates."
 }
