@@ -4,7 +4,7 @@ import { PGlite } from '@electric-sql/pglite';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const previous = readFileSync('supabase/migrations/20261004172210_bounded_catalogue_bulk_price_coverage.sql', 'utf8');
-const replacement = readFileSync('supabase/migrations/20261004174213_hashable_bounded_catalogue_bulk_price_coverage.sql', 'utf8');
+const replacement = readFileSync('supabase/migrations/20261004180037_compact_hashable_catalogue_bulk_price_coverage.sql', 'utf8');
 const db = new PGlite();
 
 async function coverage(run: string) {
@@ -70,7 +70,7 @@ async function main() {
     const before = await coverage(run);
     await db.exec(`reset role; begin; ${replacement} commit; set role service_role;`);
     const after = await coverage(run);
-    assert.deepEqual(after, before, 'hashable physical coverage preserves the prior helper JSON exactly');
+    assert.deepEqual(after, before, 'compact hashable physical coverage preserves the prior helper JSON exactly');
     assert.equal(after.cards.reduce((total: number, row: any) => total + row.total, 0), 4, 'latest physical membership remains the full denominator, including Korean');
     const enCard = after.cards.find((row: any) => row.language_code === 'en');
     assert.deepEqual({ total: enCard.total, mapped: enCard.mapped, unmapped: enCard.unmapped, priced: enCard.priced, stale: enCard.stale, retry: enCard.retry }, { total: 2, mapped: 1, unmapped: 1, priced: 2, stale: 1, retry: 1 });
@@ -80,7 +80,7 @@ async function main() {
     assert.equal(after.openRepairs, 1); assert.equal(after.runStatus, 'partial');
     await db.exec('reset role; set role anon');
     await assert.rejects(() => coverage(run), /permission denied/);
-    console.log('Hashable bounded catalogue bulk coverage passed: previous JSON, physical guards, status, and ACL agree.');
+    console.log('Compact hashable catalogue bulk coverage passed: previous JSON, physical guards, status, and ACL agree.');
   } finally {
     await db.close();
   }
