@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
-const migration = [readFileSync('supabase/migrations/20261004094851_thin_published_price_identities.sql', 'utf8'), readFileSync('supabase/migrations/20261004101533_catalogue_bulk_store_materialization.sql', 'utf8'), readFileSync('supabase/migrations/20261005093440_printing_general_price_guide.sql','utf8')].join('\n');
+const migration = [readFileSync('supabase/migrations/20261004094851_thin_published_price_identities.sql', 'utf8'), readFileSync('supabase/migrations/20261004101533_catalogue_bulk_store_materialization.sql', 'utf8'), readFileSync('supabase/migrations/20261005093440_printing_general_price_guide.sql','utf8'), readFileSync('supabase/migrations/20261005095334_printing_guide_native_set_language.sql','utf8')].join('\n');
 const db = new PGlite();
 
 async function rpc(name: string, args: unknown[] = []) {
@@ -19,7 +19,7 @@ async function main() {
       create table catalog.catalogue_versions(id uuid primary key,language_code text,status text,deprecated_at timestamptz,published_at timestamptz,created_at timestamptz default now());
       create table catalog.catalogue_version_variants(catalogue_version_id uuid,variant_id uuid,printing_id uuid,set_id uuid,language_code text,primary key(catalogue_version_id,variant_id));
       create table catalog.languages(code text primary key);
-      create table catalog.sets(id uuid primary key,deprecated_at timestamptz);
+      create table catalog.sets(id uuid primary key,deprecated_at timestamptz,language_code text);
       create table catalog.card_printings(id uuid primary key,set_id uuid,language_code text,collector_number text,english_display_name text,native_name text,deprecated_at timestamptz);
       create table catalog.card_variants(id uuid primary key,printing_id uuid,language_code text,variant_code text,finish_code text,deprecated_at timestamptz);
       create table market.catalogue_provider_set_members(category_id integer,group_id bigint,set_id uuid,language_code text,method text,primary key(category_id,group_id,set_id));
@@ -42,7 +42,7 @@ async function main() {
     const retiredSet = id(11); const printing = id(20); const normal = id(30); const reverse = id(31); const languageMismatch = id(32); const retiredVariant = id(33); const jaNormal = id(34); const duplicateNormal = id(35);
     await db.query("insert into catalog.catalogue_versions(id,language_code,status,deprecated_at,published_at) values($1,$2,$3,null,now()),($4,$2,$3,null,now()-interval '1 day'),($5,$6,$3,null,now())", [version, 'en', 'published', oldVersion, jaVersion, 'ja']);
     await db.query('insert into catalog.languages values($1),($2)', ['en', 'ja']);
-    await db.query('insert into catalog.sets values($1,null),($2,now()),($3,null)', [set, retiredSet, jaSet]);
+    await db.query('insert into catalog.sets values($1,null,$4),($2,now(),$4),($3,null,$5)', [set, retiredSet, jaSet,'en','ja']);
     await db.query('insert into catalog.card_printings values($1,$2,$3,$4,$5,null)', [printing, set, 'en', '139/195', 'Lugia VSTAR']);
     await db.query('insert into catalog.card_printings values($1,$2,$3,$4,$5,null)', [id(21), set, 'ja', '139/195', 'Lugia VSTAR']);
     await db.query('insert into catalog.card_printings values($1,$2,$3,$4,$5,null)', [id(22), retiredSet, 'en', '140/195', 'Lugia VSTAR']);
@@ -79,6 +79,10 @@ async function main() {
     assert.equal(Number(guide.centralEstimate),9.6); assert.equal(guide.providerSubtype,'Normal');
     assert.equal(guide.usableForExactVariant,false); assert.equal(guide.usableForHoldingsValuation,false);
     assert.equal(guide.language,'en'); assert.equal(guide.finish,null);
+    await db.query('update catalog.sets set language_code=$1 where id=$2',['ja',set]);
+    assert.equal((await db.query('select * from api.read_catalogue_printing_general_prices($1::uuid[])',[[printing]])).rows.length,0,'native set language mismatch excludes saved guide');
+    await assert.rejects(rpc('store_catalogue_bulk_prices',[JSON.stringify([printingItem])]),/catalogue revision changed/,'native set language mismatch blocks new writes');
+    await db.query('update catalog.sets set language_code=$1 where id=$2',['en',set]);
     assert.equal((await db.query<any>('select count(*)::int count from market.catalogue_general_prices where variant_id=$1',[reverse])).rows[0].count,0,'alternate finish stays out of the exact variant table');
     for (const patch of [{price:0},{price:0.001},{usableForExactVariant:true},{usableForHoldingsValuation:true},{subtype:'Reverse Holofoil'},{exchangeRateSource:''},{exchangeRateAt:null}]) {
       await assert.rejects(rpc('store_catalogue_bulk_prices',[JSON.stringify([{...printingItem,printingQuote:{...printingQuote,...patch}}])]),/unsupported printing general quote/);
@@ -130,6 +134,11 @@ async function main() {
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify([item(jaNormal, jaVersion, ja, quote(ja, 4))])]), /quote does not match stored provider build/, 'missing retained price proof is rejected');
     await db.query('update market.catalogue_bulk_feeds set payload=$1::jsonb where feed_key=$2', [JSON.stringify({ results: [{ productId: 300, subTypeName: 'Normal', marketPrice: 4 }, { productId: 300, subTypeName: 'Normal', marketPrice: 4 }] }), 'tcgplayer/85/200/prices']);
     assert.equal((await rpc('store_catalogue_bulk_prices', [JSON.stringify([item(jaNormal, jaVersion, ja, quote(ja, 4))])]))[0], 1, 'identical duplicate price observations preserve valid proof');
+    await db.query('update market.catalogue_bulk_feeds set payload=$1::jsonb where feed_key=$2', [JSON.stringify({ results:[{productId:300,subTypeName:'Normal',marketPrice:4}] }), 'tcgplayer/85/200/prices']);
+    const jaPrintingQuote = { ...quote(ja,4), priceScope:'printing_general_estimate', usableForExactVariant:false, usableForHoldingsValuation:false };
+    assert.equal((await rpc('store_catalogue_bulk_prices',[JSON.stringify([{...item(jaNormal,jaVersion,ja,quote(ja,4)),printingQuote:jaPrintingQuote}])]))[0],1);
+    const jaGuide = (await db.query<any>('select * from api.read_catalogue_printing_general_prices($1::uuid[])',[[id(23)]])).rows[0].quote;
+    assert.equal(jaGuide.language,'ja'); assert.equal(jaGuide.providerCategoryId,85,'Japanese guide keeps its native provider category');
 
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify([item(duplicateNormal, version, en, null)])]), /provider mapping collision/, 'one provider product cannot map to a different canonical variant');
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify([item(normal, version, en, quote(en)), item(duplicateNormal, version, en, null)])]), /provider mapping collision/, 'a rejected batch is atomic');
@@ -137,6 +146,13 @@ async function main() {
     assert.equal((await rpc('store_catalogue_bulk_prices', [JSON.stringify(Array.from({ length: 500 }, () => item(normal.toUpperCase(), version.toUpperCase(), en, quote(en))))]))[0], 500, 'the bounded maximum accepts canonicalized UUID input without weakening proof checks');
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify([])]), /invalid price results/);
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify(Array.from({ length: 501 }, () => item(normal, version, en, null)))]), /invalid price results/);
+    const nextDataset = new Date(Date.parse(datasetAt)+1).toISOString();
+    await db.query('update market.catalogue_bulk_feeds set dataset_at=$1 where feed_key in ($2,$3)',[nextDataset,'tcgplayer/3/100/products','tcgplayer/3/100/prices']);
+    await db.query('update market.catalogue_bulk_feeds set payload=$1::jsonb where feed_key=$2',[JSON.stringify({results:[{productId:200,subTypeName:'Normal',marketPrice:12.5}]}),'tcgplayer/3/100/prices']);
+    assert.equal((await rpc('store_catalogue_bulk_prices',[JSON.stringify([{...printingItem,printingQuote:{...printingQuote,datasetAt:nextDataset,price:12.5}}])]))[0],1);
+    const refreshedGuide = (await db.query<any>('select * from api.read_catalogue_printing_general_prices($1::uuid[])',[[printing]])).rows[0].quote;
+    assert.equal(Number(refreshedGuide.centralEstimate),10,'next provider build refreshes the printing guide without rebuilding the catalogue');
+    await assert.rejects(rpc('store_catalogue_bulk_prices',[JSON.stringify([printingItem])]),/printing quote does not match stored provider build/,'old retained amounts cannot overwrite a newer build');
 
     await db.exec('reset role; set role anon');
     await assert.rejects(rpc('read_catalogue_printing_general_prices',[[printing]]),/permission denied/);
