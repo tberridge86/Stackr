@@ -11,6 +11,8 @@ assert.throws(() => validateCardmarketPublicGuide('products', { ...products, pro
 const market = toCardmarketGeneralEstimate(product, guide.priceGuides[0], { sourceCreatedAt: guide.createdAt });
 assert.equal(market.priceType, 'general_market_estimate'); assert.equal(market.selectedField, 'trend'); assert.equal(market.condition, null);
 const askingGuide = { ...guide.priceGuides[0], trend: null, avg30: null, avg: null };
+assert.equal(toCardmarketGeneralEstimate(product, { ...askingGuide, trend: 0, avg30: 0, avg: 0 }), null, 'zero placeholders have no market quote');
+assert.equal(toCardmarketGeneralEstimate(product, { ...askingGuide, trend: 0, avg30: 2 }).selectedField, 'avg30', 'a zero trend does not hide a positive fallback field');
 assert.equal(toCardmarketGeneralEstimate(product, askingGuide), null);
 assert.deepEqual(toCardmarketAskingPrice(product, askingGuide).priceType, 'asking_price');
 assert.equal(toCardmarketGeneralEstimate({ ...product, idCategory: 52 }, guide.priceGuides[0]), null);

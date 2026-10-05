@@ -119,7 +119,8 @@ export async function downloadCardmarketPublicGuide(kind, { fetchImpl = fetch, r
  */
 export function toCardmarketGeneralEstimate(product, guide, { sourceCreatedAt = null, sourceEtag = null, sourceSha256 = null } = {}) {
   if (!product || !guide || product.idProduct !== guide.idProduct || product.idCategory !== guide.idCategory) return null;
-  const selectedField = marketFields.find(field => validPrice(guide[field]) && guide[field] != null);
+  const selectedField = marketFields.find(field => typeof guide[field] === 'number'
+    && Number.isFinite(guide[field]) && guide[field] > 0);
   if (!selectedField) return null;
   return {
     idProduct: product.idProduct,

@@ -83,7 +83,7 @@ function requiredPastDate(value) {
 }
 
 function cardmarketBlendedGeneralPrice(quote, selected, unavailablePrice) {
-  const amount = requiredFiniteNumber(quote?.centralEstimate);
+  const amount = requiredFiniteNumber(quote?.centralEstimate, Number.EPSILON);
   if (amount == null || quote?.provider !== 'cardmarket_public' || quote?.currency !== 'GBP'
     || quote?.priceScope !== 'blended_general_estimate'
     || quote?.usableForExactVariant !== false || quote?.usableForHoldingsValuation !== false
@@ -96,7 +96,7 @@ function cardmarketBlendedGeneralPrice(quote, selected, unavailablePrice) {
   if (!sourceCreatedAt || !exchangeRateAt || !staleAfter || staleAfter.timestamp < sourceCreatedAt.timestamp) return null;
   // Stale quotes keep their original FX evidence. Fresh inserts enforce the
   // seven-day FX window in SQL; a read never discards valid older evidence.
-  const originalPrice = requiredFiniteNumber(quote.originalPrice);
+  const originalPrice = requiredFiniteNumber(quote.originalPrice, Number.EPSILON);
   const exchangeRate = requiredFiniteNumber(quote.exchangeRate, Number.EPSILON);
   if (originalPrice == null || quote.originalCurrency !== 'EUR' || exchangeRate == null
     || typeof quote.exchangeRateSource !== 'string' || !quote.exchangeRateSource.trim()
@@ -120,14 +120,15 @@ function cardmarketBlendedGeneralPrice(quote, selected, unavailablePrice) {
 }
 
 export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshotPrice, unavailablePrice }) {
-  const storedPrice = (row) => {
+  const storedPrice = (row, preferFresh = false) => {
     const estimate = row.estimate;
     const snapshot = row.snapshot;
     const price = estimate ? toEstimatePrice(estimate, row.variant_id) : null;
     const legacy = snapshot ? toSnapshotPrice(snapshot, row.variant_id) : null;
-    const usable = (p) => p?.status !== 'unavailable' && Number.isFinite(p?.estimates?.central) && p.estimates.central >= 0;
+    const usable = (p) => p?.status !== 'unavailable' && Number.isFinite(p?.estimates?.central) && p.estimates.central > 0;
     const candidates = [price, legacy].filter(usable);
-    candidates.sort((a, b) => (Date.parse(b.calculatedAt ?? '') || 0) - (Date.parse(a.calculatedAt ?? '') || 0));
+    candidates.sort((a, b) => (preferFresh ? Number(b.freshness === 'fresh') - Number(a.freshness === 'fresh') : 0)
+      || (Date.parse(b.calculatedAt ?? '') || 0) - (Date.parse(a.calculatedAt ?? '') || 0));
     return candidates[0] ?? null;
   };
   return async (rawInput) => {
@@ -160,12 +161,14 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
           reason = selected.outcome?.reason ?? 'no_stored_market_quote';
           if (input.estimateMode === 'general') {
             // Prefer the provider's mapped price for this exact finish. A base
-            // printing estimate is only a fallback when that finish has no quote.
+            // printing estimate is a fallback when that finish has no fresh quote.
             const generalCandidates = [selected, ...base.filter((row) => row.variant_id !== selected.variant_id)];
+            let staleGeneralPrice = null;
+            let freshGeneralPrice = null;
             for (const candidate of generalCandidates) {
               const general = candidate.general_quote;
               const amount = general?.central_estimate == null ? null : Number(general.central_estimate);
-              const generalPrice = Number.isFinite(amount) && amount >= 0 ? {
+              const generalPrice = Number.isFinite(amount) && amount > 0 ? {
                 ...unavailablePrice(candidate.variant_id, { productType: 'raw_card', currency: 'GBP' }),
                 status: 'market_estimate', priceType: 'market_estimate', unavailableReason: null,
                 estimates: { low: null, central: amount, high: null }, calculatedAt: general.dataset_at,
@@ -177,11 +180,13 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
                   exchangeRate: Number(general.exchange_rate), exchangeRateAt: general.exchange_rate_at,
                   exchangeRateSource: general.exchange_rate_source, timestampBasis: 'provider_dataset', condition: 'unspecified' }],
               } : null;
-              const stored = storedPrice(candidate);
-              const quote = generalPrice && (!stored || (Date.parse(generalPrice.calculatedAt ?? '') || 0) > (Date.parse(stored.calculatedAt ?? '') || 0))
-                ? generalPrice : stored ?? generalPrice;
-              if (!quote || quote.fallbackEstimate) continue;
-              price = {
+              const stored = storedPrice(candidate, true);
+              const quotes = [generalPrice, stored].filter((quote) => quote && !quote.fallbackEstimate);
+              quotes.sort((a, b) => Number(b.freshness === 'fresh') - Number(a.freshness === 'fresh')
+                || (Date.parse(b.calculatedAt ?? '') || 0) - (Date.parse(a.calculatedAt ?? '') || 0));
+              const quote = quotes[0];
+              if (!quote) continue;
+              const generalEstimate = {
                 ...quote, variantId: selected.variant_id, status: 'market_estimate', priceType: 'market_estimate',
                 provenLastSold: false, lastSoldObservationId: null, lastSoldEvidence: null,
                 sample: { ...quote.sample, sold: 0, active: 0 },
@@ -189,8 +194,12 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
                   reason: 'general_card_estimate', baseVariantId: candidate.variant_id,
                   printingId: candidate.printing_id, language: candidate.language_code, finishCode: candidate.finish_code },
               };
-              break;
+              if (quote.freshness === 'fresh') { freshGeneralPrice = generalEstimate; break; }
+              staleGeneralPrice ??= generalEstimate;
             }
+            // An expired finish quote must not hide a fresh, explicitly labelled
+            // base-printing guide. Preserve the first saved quote when all are stale.
+            price = freshGeneralPrice ?? staleGeneralPrice ?? price;
             // Cardmarket is reviewed at the printing level but its public
             // guide has blended language/condition/finish scope. It is a
             // last-resort general estimate only, never exact evidence.

@@ -96,6 +96,35 @@ async function main() {
     assert.equal(general.prices[0].price?.fallbackEstimate?.reason, 'general_card_estimate');
     assert.equal(cardmarketReads, 1, 'general reads may safely check the printing-level fallback once');
 
+    const staleSnapshot = async (variantId: string, amount: number) => db.query(
+      `insert into public.market_price_snapshots(card_id,language,set_id,user_id,calculated_at,pricing_identity_json,market_price_gbp,primary_source,price_type,stale_after)
+       values($1,'en',$2,null,now(),$3::jsonb,$4,'tcgdex','market_estimate',now()-interval '1 hour')`,
+      [variantId, id(2), json({ canonicalVariantId: variantId, canonicalPrintingId: id(3), productType: 'raw_card', rawCondition: 'raw_near_mint' }), amount],
+    );
+    await staleSnapshot(id(5), 99);
+    const freshBase = (await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'general' })).prices[0];
+    assert.equal(freshBase.price?.estimates.central, 15, 'a stale requested finish must not hide a fresh base guide');
+    assert.equal(freshBase.price?.freshness, 'fresh');
+    assert.equal(freshBase.price?.fallbackEstimate?.baseVariantId, id(4));
+    assert.equal(freshBase.price?.fallbackEstimate?.exact, false);
+    const exactStale = (await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'exact' })).prices[0];
+    assert.equal(exactStale.price?.estimates.central, 99, 'exact mode retains its own finish quote');
+    assert.equal(exactStale.price?.freshness, 'stale');
+    await db.query("insert into api.market_price_estimates values($1,$2,'en','raw_card','GBP','raw_near_mint',null,null,null,now()-interval '10 minutes',now()+interval '1 day',37,null,null,'market_estimate',null,1,'[]','fresh')", [id(7), id(5)]);
+    const freshFinish = (await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'general' })).prices[0];
+    assert.equal(freshFinish.price?.estimates.central, 37, 'a fresh finish estimate beats both a newer stale snapshot and a different base guide');
+    assert.equal(freshFinish.price?.fallbackEstimate?.baseVariantId, id(5));
+    await db.query('delete from api.market_price_estimates where variant_id=$1', [id(5)]);
+    await staleSnapshot(id(4), 88);
+    assert.equal((await service.cataloguePrices({ references: [id(4)], language: 'en', estimateMode: 'general' })).prices[0].price?.estimates.central, 15, 'a newer stale snapshot cannot hide a fresh quote for the same variant');
+    await db.query("update market.catalogue_general_prices set stale_after=now()-interval '1 hour'");
+    const allStale = (await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'general' })).prices[0];
+    assert.equal(allStale.price?.estimates.central, 99, 'when all guides are stale, retain the requested finish first');
+    assert.equal(allStale.price?.freshness, 'stale');
+    await db.query('delete from public.market_price_snapshots');
+    await db.query('update market.catalogue_general_prices set central_estimate=0,original_price=0');
+    assert.equal((await service.cataloguePrices({ references: [id(4)], language: 'en', estimateMode: 'general' })).prices[0].price?.estimates.central, null, 'zero provider placeholders stay unavailable');
+
     await db.query('delete from market.catalogue_general_prices');
     const sourceAt = new Date(Date.now() - 2 * 86_400_000).toISOString();
     const fxAt = new Date(Date.now() - 10 * 86_400_000).toISOString();
@@ -113,6 +142,8 @@ async function main() {
     assert.equal(cardmarketFallback.prices[0].price?.sourceBreakdown[0]?.originalCurrency, 'EUR');
     for (const [label, quote] of [
       ['missing amount', { ...validCardmarketQuote, centralEstimate: null }],
+      ['zero amount', { ...validCardmarketQuote, centralEstimate: 0 }],
+      ['zero original', { ...validCardmarketQuote, centralEstimate: 0, originalPrice: 0 }],
       ['blank original', { ...validCardmarketQuote, originalPrice: ' ' }],
       ['future source date', { ...validCardmarketQuote, sourceCreatedAt: new Date(Date.now() + 60_000).toISOString() }],
       ['future FX date', { ...validCardmarketQuote, exchangeRateAt: new Date(Date.now() + 60_000).toISOString() }],
