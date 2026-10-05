@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { mainClassifyCataloguePricing } from './classify-catalogue-pricing.mjs';
 import { createCataloguePriceDatabase } from './catalogue-price-database.mjs';
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
@@ -293,4 +294,12 @@ if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) 
     message: String(error?.message ?? error),
   }));
   process.exitCode = 1;
+}).finally(async () => {
+  // A feed outage still classifies the retained valid evidence. The shared
+  // approval/target guards fail before writes when this lane is disabled.
+  if (process.argv.includes('--apply') && !process.argv.some((arg) => arg.startsWith('--fixture='))
+    && process.env.STACKR_CATALOGUE_BULK_PRICING_ENABLED === 'true') {
+    try { await mainClassifyCataloguePricing(['--apply']); }
+    catch (error) { console.error(`Classification failed: ${error.message}`); process.exitCode = 1; }
+  }
 });

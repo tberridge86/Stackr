@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { ApiError, SUPPORTED_LANGUAGE_CODES } from '../stackrApiV1.js';
+import { classifiedPrice, readClassifiedPrices } from './classifiedPriceRead.js';
 
 export const CATALOGUE_PRICE_PAGE_SIZE = 100;
 const hash = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -175,7 +176,8 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
     if (error) throw error;
     const byRef = new Map((data ?? []).map((row) => [row.reference, row.candidates ?? []]));
     const printingCandidates = (data ?? []).flatMap((row) => row.candidates ?? []);
-    const [cardmarketByPrinting, tcgcsvByPrinting] = input.estimateMode === 'general'
+    const classified = input.estimateMode === 'general' ? await readClassifiedPrices(supabase, printingCandidates) : null;
+    const [cardmarketByPrinting, tcgcsvByPrinting] = input.estimateMode === 'general' && classified === null
       ? await Promise.all([
         readPrintingGeneralQuotes(supabase, printingCandidates, 'read_cardmarket_blended_general_prices'),
         readPrintingGeneralQuotes(supabase, printingCandidates, 'read_catalogue_printing_general_prices'),
@@ -249,11 +251,15 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
           }
         } else reason = 'ambiguous_default_variant';
       }
+      // Once the classified store is installed it is authoritative for general
+      // values, including deliberate unavailable decisions for weak evidence.
+      // Exact-condition and graded readers retain their separate evidence path.
+      if (selected && classified !== null) price = classifiedPrice(classified.get(selected.variant_id), selected, unavailablePrice);
       const variantId = selected?.variant_id ?? null;
       if (!price && variantId) price = unavailablePrice(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' }, reason);
       const row = {
         reference, cardId: selected?.printing_id ?? null, variantId, language: selected?.language_code ?? null,
-        price, unavailableReason: price?.estimates?.central != null ? null : reason,
+        price, unavailableReason: price?.estimates?.central != null ? null : price?.unavailableReason ?? reason,
         nextRetryAt: selected?.outcome?.next_retry_at ?? null,
       };
       // Prices have content revisions independent of catalogue versions. Deletions,

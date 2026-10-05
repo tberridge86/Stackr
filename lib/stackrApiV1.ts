@@ -274,6 +274,8 @@ export type StackrMarketEvidenceStatus =
   | 'unavailable';
 
 export type StackrCardPrice = {
+  classification?: 'EXACT_PRICE' | 'MARKET_GUIDE' | 'ESTIMATED_VALUE' | 'PRICE_UNAVAILABLE';
+  evidenceType?: string;
   variantId: string;
   productType: StackrMarketProductType;
   identityKey: string | null;

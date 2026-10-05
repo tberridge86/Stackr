@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "accessCheck": {
+    "observedAt": "2026-10-05T21:42:07.497Z",
+    "scope": "One authenticated read-only price request; no retry, subscription changes, refresh jobs, catalogue changes or database writes.",
+    "endpoint": "https://api.pikaqian.com/v1/cards/020d2403-8f70-422b-bb34-1670bd7950e7/prices",
+    "status": 403,
+    "errorCode": "tier_required",
+    "pricePayloadKeys": null,
+    "monthlyQuota": null,
+    "monthlyQuotaRemaining": null,
+    "retryAfter": null
+  },
+  "completedPricingWrites": 0,
+  "catalogueWrites": 0,
+  "deployments": 0,
+  "translationCapture": {
+    "complete": true,
+    "pages": 130,
+    "records": 12921,
+    "manifestSha256": "4a4b7307d20b6a1c17a6c033267c21b75311d3945fad9aa975d2bcab7f25e01a",
+    "pricingIdentitySufficient": false,
+    "fields": [
+      "providerRecordId",
+      "nativeName",
+      "englishName",
+      "sourceSetId",
+      "providerCardType",
+      "isVariant"
+    ]
+  },
+  "productionChineseRead": {
+    "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+    "publishedClassified": 20453,
+    "priceUnavailable": 20453,
+    "newPikaQianPrices": 0
+  },
+  "officialDocumentation": [
+    "https://pikaqian.com/docs/api/get-card-prices-v-1-cards-card-id-prices-get/",
+    "https://pikaqian.com/docs/api/list-cards-endpoint-v-1-cards-get/",
+    "https://pikaqian.com/docs/tiers-and-rate-limits/",
+    "https://pikaqian.com/pricing"
+  ],
+  "blockingDependency": "pricing_entitlement_required",
+  "metadataAvailabilityDoesNotEstablishPricing": true
+}
