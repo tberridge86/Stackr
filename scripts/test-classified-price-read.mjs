@@ -13,6 +13,13 @@ assert.equal(classifiedPrice({...resolved,classification:'PRICE_UNAVAILABLE',val
 assert.equal(classifiedPrice(null,selected,unavailablePrice).unavailableReason,'classification_pending');
 assert.equal(classifiedPrice({...resolved,classification:'EXACT_PRICE'},selected,unavailablePrice).unavailableReason,'invalid_classified_price');
 assert.deepEqual(classifiedPrice({...resolved,value:500},selected,unavailablePrice).sourceBreakdown[0].verificationFlags,['high_value_single_provider','raw_condition_unspecified']);
+const oldCheap=classifiedPrice({...resolved,provider:'tcgdex_cardmarket',evidenceType:'retained_printing_market',confidence:0.55,
+ provenance:{snapshotId:'old-snapshot',conversionQuality:'retained_conversion_without_rate_timestamp'}},selected,unavailablePrice);
+assert.equal(oldCheap.classification,'ESTIMATED_VALUE');assert.equal(oldCheap.evidenceType,'retained_printing_market');
+assert.equal(oldCheap.confidence.label,'low');assert.equal(oldCheap.freshness,'stale');
+assert.equal(oldCheap.calculatedAt,resolved.sourceAt);
+assert.equal(oldCheap.sourceBreakdown[0].provenance.snapshotId,'old-snapshot');
+assert.deepEqual(oldCheap.sourceBreakdown[0].verificationFlags,['raw_condition_unspecified','retained_fx_unverified']);
 const calls=[];
 const candidates=Array.from({length:201},(_,i)=>({variant_id:`v${i}`}));
 const map=await readClassifiedPrices({schema:()=>({rpc:async(name,args)=>{calls.push(args.p_variants.length);return {data:args.p_variants.map(variant_id=>({variant_id,resolution:resolved}))};}})},candidates);

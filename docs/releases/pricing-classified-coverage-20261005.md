@@ -1,5 +1,7 @@
 # Classified Stackr pricing — 5 October 2026
 
+Later recovery: [card-price recovery](pricing-recovery-20261005.md) records **4,174 newly stored provider quotes**, the historical cheap-value fallback and the subsequent full classification refresh. The figures below retain the original 17:17 observation.
+
 The production database has processed **76,078 / 76,078 current published variants (100.00%)** across English, Japanese, Simplified Chinese and Traditional Chinese. **28,426 variants (37.36%) have a usable guide or estimate.** This is a database readback, not an authenticated production API or phone acceptance result. **The complete release definition of done is not met.**
 
 Observation: 2026-10-05 17:17:05 UTC. Production project: `oakdbbzdqwurpjnoqhmu`. Source baseline: `28cbcfc7d68eb11edc622078b0bbc3216810610f`. The [machine-readable receipt](pricing-classified-coverage-20261005.json) records publication IDs, migration aliases, function hashes, sample identities, original-provider references and limits.

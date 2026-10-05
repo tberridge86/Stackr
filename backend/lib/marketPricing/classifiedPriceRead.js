@@ -41,7 +41,8 @@ export function classifiedPrice(resolution,selected,unavailablePrice) {
    printingMatch:resolution.printingMatch,languageMatch:resolution.languageMatch,finishMatch:resolution.finishMatch,
    condition:resolution.condition,grade:null,marketSignalValue:resolution.marketSignalValue,
    usableForHoldingsValuation:resolution.usableForHoldingsValuation,
-   verificationFlags:[...(resolution.value>=100?['high_value_single_provider']:[]),'raw_condition_unspecified'],
+   verificationFlags:[...(resolution.value>=100?['high_value_single_provider']:[]),'raw_condition_unspecified',
+    ...(resolution.provenance?.conversionQuality==='retained_conversion_without_rate_timestamp'?['retained_fx_unverified']:[])],
    provenance:resolution.provenance}],
   fallbackEstimate:{identityKey:selected.variant_id,exact:false,reason:'general_card_estimate',printingId:selected.printing_id},
   unavailableReason:null,estimateVersion:resolution.policyVersion};

@@ -87,5 +87,72 @@ try {
  await db.exec('set role anon');
  await assert.rejects(db.query('select api.pricing_classified_coverage()'),/permission denied/);
  await assert.rejects(db.query('select * from market.pricing_classifications'),/permission denied/);
+ await db.exec('reset role');
+ await db.exec(`alter table catalog.card_printings add column collector_number text;
+ update catalog.card_printings set collector_number='048';
+ create table public.market_price_snapshots(id uuid,user_id uuid,card_id text,set_id text,language text,tcgdex_price numeric,
+  price_source text,primary_source text,price_type text,proven_last_sold boolean,tcgdex_card_id text,
+  tcgdex_price_updated_at timestamptz,snapshot_at timestamptz,stale_after timestamptz,pricing_identity_json jsonb,
+  source_payload jsonb,canonical_identity_key text);
+ grant select on public.market_price_snapshots to service_role;`);
+ await db.exec(`begin;${readFileSync(new URL('../supabase/migrations/20261005203421_retain_identity_bound_cheap_snapshots.sql',import.meta.url),'utf8')}commit;`);
+ const retainedIdentity={...identity,collector_number:'048'};
+ await db.exec(`begin;${readFileSync(new URL('../supabase/migrations/20261005203922_bound_retained_cheap_native_evidence.sql',import.meta.url),'utf8')}commit;`);
+ const emptyBase=await resolve(identity,[]);
+ await db.exec(`begin;${readFileSync(new URL('../supabase/migrations/20261005204527_scope_retained_cheap_provider_languages.sql',import.meta.url),'utf8')}commit;`);
+ const snapshot={id:id(70),user_id:null,card_id:id(4),set_id:id(2),language:'en',tcgdex_price:0.17,
+  price_source:'tcgdex_tcgplayer',primary_source:'tcgdex',price_type:'market_estimate',proven_last_sold:false,
+  tcgdex_card_id:'sv02-048',tcgdex_price_updated_at:at,snapshot_at:at,stale_after:'2026-10-02T00:00:00Z',
+  canonical_identity_key:'fixture-canonical-identity',
+  pricing_identity_json:{canonicalVariantId:id(4),canonicalPrintingId:id(3),setId:id(2),language:'en',productType:'raw_card',
+   rawCondition:'raw_near_mint',variant:'normal',finish:'normal',grade:'',gradingCompany:'',identityKey:'fixture-canonical-identity'},
+  source_payload:{id:'sv02-048',localId:'048',pricing:{tcgplayer:{unit:'USD',updated:at,normal:{marketPrice:0.2}}}}};
+ const retained=async(s=snapshot,i=retainedIdentity,b=emptyBase)=>(await db.query('select api.retained_cheap_snapshot_resolution($1::jsonb,$2::jsonb,$3::jsonb) result',[JSON.stringify(i),JSON.stringify(b),JSON.stringify(s)])).rows[0].result;
+ const kept=await retained();assert.equal(kept.classification,'ESTIMATED_VALUE');assert.equal(kept.value,0.2);
+ assert.equal(kept.exact,false);assert.equal(kept.finishMatch,false);assert.equal(kept.provenance.conversionQuality,'retained_conversion_without_rate_timestamp');
+ for(const changes of [{tcgdex_price:0},{tcgdex_price:2},{tcgdex_price:500},{card_id:id(99)},{set_id:id(99)},
+  {language:'ja'},{user_id:id(99)},{primary_source:'unreviewed'},{price_source:'unlabelled'},{price_source:null},{price_type:null},
+  {proven_last_sold:true},{canonical_identity_key:'another-identity'},{tcgdex_price_updated_at:'not-a-date'},
+  {tcgdex_price_updated_at:'2026-10-04T00:00:00Z'},{stale_after:null}]) assert.equal(await retained({...snapshot,...changes}),null,JSON.stringify(changes));
+ for(const changes of [{canonicalPrintingId:id(99)},{grade:'10'},{gradingCompany:'PSA'},{rawCondition:'raw_heavily_played'},{finish:'holo'}])
+  assert.equal(await retained({...snapshot,pricing_identity_json:{...snapshot.pricing_identity_json,...changes}}),null);
+ assert.equal(await retained(snapshot,{...retainedIdentity,physical_valid:false}),null);
+ for(const language of ['zh-cn','zh-tw'])
+  assert.equal(await retained({...snapshot,language,pricing_identity_json:{...snapshot.pricing_identity_json,language}},
+   {...retainedIdentity,language_code:language}),null,'unverified Chinese provider identity cannot be inferred from stored metadata');
+ assert.equal(await retained(snapshot,retainedIdentity,{...emptyBase,reason:'stronger_variant_evidence_required'}),null);
+ assert.equal(await retained(snapshot,retainedIdentity,await resolve(identity,[evidence(500)])),null,'a valuable direct quote cannot be replaced');
+ assert.equal(await retained({...snapshot,source_payload:{...snapshot.source_payload,id:'another-card'}}),null);
+ assert.equal(await retained({...snapshot,source_payload:{...snapshot.source_payload,localId:'049'}}),null);
+ assert.equal(await retained({...snapshot,source_payload:{...snapshot.source_payload,pricing:{tcgplayer:{unit:'JPY',updated:at}}}}),null);
+ assert.equal(await retained({...snapshot,source_payload:{...snapshot.source_payload,pricing:{tcgplayer:{unit:'USD',updated:'2026-10-02T00:00:00Z'}}}}),null);
+ assert.equal(await retained({...snapshot,source_payload:{...snapshot.source_payload,pricing:{tcgplayer:{unit:'USD',updated:at,idProduct:1234}}}}),null,'provider IDs are not price evidence');
+ for(const prices of [{lowPrice:0.01},{marketPrice:500,lowPrice:0.01},{marketPrice:3},{marketPrice:0.1,midPrice:50}])
+  assert.equal(await retained({...snapshot,source_payload:{...snapshot.source_payload,pricing:{tcgplayer:{unit:'USD',updated:at,normal:prices}}}}),null,'a low or conflicting expensive native signal cannot establish a cheap card');
+ await db.exec('delete from market.catalogue_general_prices');
+ await db.exec(`begin;${readFileSync(new URL('../supabase/migrations/20261005205507_select_latest_valid_retained_observation.sql',import.meta.url),'utf8')}commit;`);
+ await db.query(`insert into public.market_price_snapshots select * from jsonb_populate_record(null::public.market_price_snapshots,$1::jsonb)`,[JSON.stringify(snapshot)]);
+ await db.exec('set role service_role');
+ const retainedPage=(await db.query('select * from api.pricing_classification_page(null,100)')).rows;
+ assert.equal(retainedPage.find(r=>r.variant_id===id(4)).resolution.classification,'ESTIMATED_VALUE');
+ assert.equal(retainedPage.find(r=>r.variant_id===id(5)).resolution.classification,'PRICE_UNAVAILABLE','another finish does not inherit an old conversion');
+ await db.exec('reset role');
+ await db.query(`insert into public.market_price_snapshots select * from jsonb_populate_record(null::public.market_price_snapshots,$1::jsonb)`,
+  [JSON.stringify({...snapshot,id:id(71),snapshot_at:'2026-10-02T01:00:00Z',source_payload:{...snapshot.source_payload,id:'wrong-card'}})]);
+ assert.equal((await db.query('select * from api.pricing_classification_page(null,100)')).rows.find(r=>r.variant_id===id(4)).resolution.value,0.2,'newer invalid snapshots do not hide the latest valid observation');
+ const valuableSnapshot={...snapshot,id:id(72),tcgdex_price:500,snapshot_at:'2026-10-03T01:00:00Z',
+  source_payload:{...snapshot.source_payload,pricing:{tcgplayer:{unit:'USD',updated:at,normal:{marketPrice:600}}}}};
+ await db.query(`insert into public.market_price_snapshots select * from jsonb_populate_record(null::public.market_price_snapshots,$1::jsonb)`,[JSON.stringify(valuableSnapshot)]);
+ assert.equal((await db.query('select * from api.pricing_classification_page(null,100)')).rows.find(r=>r.variant_id===id(4)).resolution.classification,'PRICE_UNAVAILABLE','newer valuable evidence blocks an older cheap estimate');
+ await db.query('delete from public.market_price_snapshots where id=$1',[id(72)]);
+ await db.exec('set role service_role');
+ await db.query('select api.store_pricing_classification_page(null,100)');
+ const keptRead=(await db.query('select * from api.read_pricing_classifications($1)',[[id(4)]])).rows[0].resolution;
+ assert.equal(keptRead.value,0.2);assert.equal(keptRead.freshness,'stale');
+ await db.exec('reset role; set role anon');
+ await assert.rejects(db.query('select api.retained_cheap_snapshot_resolution(null,null,null)'),/permission denied/);
+ await assert.rejects(db.query('select api.retained_snapshot_is_valid(null,null,null)'),/permission denied/);
+ await assert.rejects(db.query('select * from api.pricing_classification_page_primary_evidence(null,1)'),/permission denied/);
+ await assert.rejects(db.query('select * from api.pricing_classification_page(null,1)'),/permission denied/);
  console.log(JSON.stringify({ok:true,policyCases:checks,persistence:true,bulkRead:true,history:true,staleOutage:true,newlyPublished:true,private:true}));
 } finally {await db.close();}
