@@ -61,4 +61,3 @@ try {
  assert.throws(()=>buildPublishedPriceCoveragePageSql({...input,observedAt,version:"';select 1;--"}),/unsafe page/);
  console.log('Published-price coverage keyset, native identity, expiry, zero, overlap and checkpoint controls passed.');
 } finally {await db.close();}
-
