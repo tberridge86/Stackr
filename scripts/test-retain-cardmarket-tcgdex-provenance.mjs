@@ -147,7 +147,10 @@ for (const retiredTable of ['card_variants', 'card_printings', 'sets']) {
 const missingPhysical = mockDb();
 const beforeMissingPhysical = missingPhysical.resolve.bind(missingPhysical);
 missingPhysical.resolve = query => query.table === 'card_variants' ? { data: [], error: null } : beforeMissingPhysical(query);
-await assert.rejects(() => listPublishedTcgdexIdentities(missingPhysical, { language: 'zh-cn', limit: 1 }), /variant membership failed/, 'a missing live physical row remains a hard failure');
+const missingPage = await listPublishedTcgdexIdentities(missingPhysical, { language: 'zh-cn', limit: 1 });
+assert.equal(missingPage.identities.length, 0, 'missing physical rows never become retention candidates');
+assert.equal(missingPage.entries[0].skipped, 'invalid_physical_identity');
+assert.equal(missingPage.nextAfterExternalId, 'SV9a-039');
 const conflictingPhysical = mockDb();
 const beforeConflictingPhysical = conflictingPhysical.resolve.bind(conflictingPhysical);
 conflictingPhysical.resolve = query => {
@@ -155,7 +158,14 @@ conflictingPhysical.resolve = query => {
   if (query.table === 'card_variants') result.data = result.data.map(row => ({ ...row, language_code: 'zh-tw' }));
   return result;
 };
-await assert.rejects(() => listPublishedTcgdexIdentities(conflictingPhysical, { language: 'zh-cn', limit: 1 }), /variant membership failed/, 'a conflicting live language remains a hard failure');
+const conflictingPage = await listPublishedTcgdexIdentities(conflictingPhysical, { language: 'zh-cn', limit: 1 });
+assert.equal(conflictingPage.identities.length, 0, 'conflicting live languages remain quarantined');
+assert.equal(conflictingPage.entries[0].skipped, 'invalid_physical_identity');
+assert.match(conflictingPage.entries[0].validationError, /variant membership failed/);
+const conflictSummary = await retainCardmarketTcgdexProvenance({ db: conflictingPhysical, language: 'zh-cn', limit: 1, apply: true, runKey: 'raw-retention-conflicting-20261005', fetchImpl: async () => { throw Error('Conflicting physical identities must never fetch provider data.'); } });
+assert.deepEqual(conflictSummary.identitySkipReasons, { deprecated_identity: 0, invalid_physical_identity: 1 });
+assert.equal(conflictingPhysical.updates.at(-1).body.status, 'running');
+assert.deepEqual(conflictingPhysical.updates.at(-1).body.metadata.identitySkipReasons, { deprecated_identity: 0, invalid_physical_identity: 1 });
 const malformedCheckpoint = mockDb({ preexistingRun: { id: ids.run, status: 'running', metadata: { purpose: 'cardmarket_tcgdex_provenance_only', canonicalWrites: false, catalogueVersionId: ids.version, language: 'zh-cn', intendedCohort: { sourceCode: 'tcgdex', sourceEntityType: 'card', recordScope: 'variant_identifiers', cursorPolicy: 'durable_checkpoint_only' }, checkpoint: { catalogueVersionId: ids.version, sourceEntityType: 'card', externalId: 'SV9a-039', languageCode: 'ja' } } } });
 await assert.rejects(() => retainCardmarketTcgdexProvenance({ db: malformedCheckpoint, language: 'zh-cn', apply: true, runKey: 'raw-retention-checkpoint-20261004', fetchImpl }), /checkpoint is not bound/);
 await assert.rejects(() => retainCardmarketTcgdexProvenance({ db: mockDb(), language: 'zh-cn', afterExternalId: 'SV9a-039', apply: true, runKey: 'raw-retention-jump-20261004', fetchImpl }), /durable import-run checkpoint/);

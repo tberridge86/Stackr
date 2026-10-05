@@ -123,9 +123,14 @@ async function validatePhysicalIdentityMembership(db, { language, version, ident
     const printing = printings.find(row => row.id === variant?.printing_id);
     const set = sets.find(row => row.id === printing?.set_id);
     // Historical aliases may remain in a publication after their physical rows retire.
-    // Advance past explicit retirements, but still fail on missing or conflicting live rows.
+    // Keep rejected physical rows unavailable while advancing the raw identity cursor.
     if ([variant, printing, set].some(row => row?.deprecated_at != null)) return { ...identity, skipped: 'deprecated_identity' };
-    return validatePhysicalIdentityRows({ ...context, identities: [identity] })[0];
+    try {
+      return validatePhysicalIdentityRows({ ...context, identities: [identity] })[0];
+    } catch (error) {
+      if (!['Published TCGdex variant membership failed validation.', 'Published TCGdex printing membership failed validation.', 'Published TCGdex set membership failed validation.'].includes(error.message)) throw error;
+      return { ...identity, skipped: 'invalid_physical_identity', validationError: error.message };
+    }
   });
   return { identities: entries.filter(identity => !identity.skipped), entries };
 }
@@ -195,7 +200,7 @@ async function createOrResumeRawImportRun(db, sourceId, runKey, apply, context) 
 }
 
 async function updateRunProgress(db, runId, metadata, counts, identity, { complete = false, error = null } = {}) {
-  const nextMetadata = { ...metadata, checkpoint: identity ? { catalogueVersionId: identity.catalogue_version_id, sourceEntityType: identity.source_entity_type, externalId: identity.external_id, languageCode: identity.language_code } : metadata.checkpoint ?? null, retentionAccounting: { reused: counts.reused, providerSkipped: counts.providerSkipped, identitySkipped: counts.identitySkipped } };
+  const nextMetadata = { ...metadata, checkpoint: identity ? { catalogueVersionId: identity.catalogue_version_id, sourceEntityType: identity.source_entity_type, externalId: identity.external_id, languageCode: identity.language_code } : metadata.checkpoint ?? null, retentionAccounting: { reused: counts.reused, providerSkipped: counts.providerSkipped, identitySkipped: counts.identitySkipped }, identitySkipReasons: counts.identitySkipReasons };
   const update = {
     metadata: nextMetadata, records_requested: counts.requested, records_retrieved: counts.retrieved,
     records_inserted: counts.inserted, records_updated: counts.updated, records_skipped: counts.skipped,
@@ -233,16 +238,20 @@ export async function retainCardmarketTcgdexProvenance({ db, language, afterExte
   const priorProviderSkipped = importRun.metadata?.retentionAccounting?.providerSkipped ?? Math.max(0, priorSkipped - priorReused - priorIdentitySkipped);
   if (![priorReused, priorProviderSkipped, priorIdentitySkipped].every(value => Number.isSafeInteger(value) && value >= 0) || priorReused + priorProviderSkipped + priorIdentitySkipped !== priorSkipped) throw Error('Raw-retention import-run accounting is invalid.');
   const counts = { requested: importRun.records_requested ?? 0, retrieved: importRun.records_retrieved ?? 0, inserted: importRun.records_inserted ?? 0, updated: importRun.records_updated ?? 0, skipped: priorSkipped, reused: priorReused, providerSkipped: priorProviderSkipped, identitySkipped: priorIdentitySkipped };
+  counts.identitySkipReasons = importRun.metadata?.identitySkipReasons ?? { deprecated_identity: priorIdentitySkipped, invalid_physical_identity: 0 };
+  if (!counts.identitySkipReasons || typeof counts.identitySkipReasons !== 'object' || Array.isArray(counts.identitySkipReasons) || Object.keys(counts.identitySkipReasons).some(key => !['deprecated_identity', 'invalid_physical_identity'].includes(key)) || !Object.values(counts.identitySkipReasons).every(value => Number.isSafeInteger(value) && value >= 0) || Object.values(counts.identitySkipReasons).reduce((sum,value) => sum + value, 0) !== priorIdentitySkipped) throw Error('Raw-retention identity skip accounting is invalid.');
   let metadata = importRun.metadata;
   try {
     const effectiveAfterExternalId = apply ? checkpointFromMetadata(importRun.metadata, { version, language }) : afterExternalId;
     const page = await listPublishedTcgdexIdentities(db, { language, afterExternalId: effectiveAfterExternalId, limit, version, source });
-    const summary = { language, catalogueVersionId: page.version.id, sourceId: page.source.id, runId: importRun.id, scanned: page.entries.length, retained: 0, skipped: 0, identitySkipped: 0, inserted: 0, updated: 0, reused: 0, nextAfterExternalId: page.nextAfterExternalId };
+    const summary = { language, catalogueVersionId: page.version.id, sourceId: page.source.id, runId: importRun.id, scanned: page.entries.length, retained: 0, skipped: 0, identitySkipped: 0, identitySkipReasons: { deprecated_identity: 0, invalid_physical_identity: 0 }, inserted: 0, updated: 0, reused: 0, nextAfterExternalId: page.nextAfterExternalId };
     for (const identity of page.entries) {
       counts.requested += 1;
       const fetched = identity.skipped ? { skipped: identity.skipped } : await fetchTcgdexCard(language, identity.external_id, fetchImpl);
       if (identity.skipped) {
         summary.skipped += 1; summary.identitySkipped += 1; counts.skipped += 1; counts.identitySkipped += 1;
+        summary.identitySkipReasons[identity.skipped] += 1;
+        counts.identitySkipReasons[identity.skipped] = (counts.identitySkipReasons[identity.skipped] ?? 0) + 1;
       } else if (fetched.skipped) {
         summary.skipped += 1; counts.skipped += 1; counts.providerSkipped += 1;
       } else {

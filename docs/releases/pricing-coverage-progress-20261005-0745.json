@@ -1,0 +1,143 @@
+{
+  "observedAt": "2026-10-05T07:45:24Z",
+  "scope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true
+  },
+  "progress": {
+    "kind": "Source repair and live provider/physical investigation",
+    "newPrices": 0,
+    "latestVerifiedCombinedCoverage": {
+      "priced": 31997,
+      "total": 76030,
+      "percent": 42.08,
+      "observedWindow": "2026-10-05 07:17:31–07:27:39 UTC",
+      "receipt": "pricing-coverage-progress-20261005-0730.json"
+    }
+  },
+  "correction": {
+    "previousReceipt": "pricing-coverage-progress-20261005-0730.json",
+    "previousAssumption": "All 96 non-current TCGdex aliases were retired.",
+    "authoritativeClassification": [
+      {
+        "reason": "deprecated_identity",
+        "aliases": 90,
+        "variants": 45
+      },
+      {
+        "reason": "invalid_physical_identity",
+        "aliases": 6,
+        "variants": 3
+      },
+      {
+        "reason": "valid_physical_identity",
+        "aliases": 1683,
+        "variants": 974
+      }
+    ],
+    "classificationAt": "2026-10-05T07:45:24Z"
+  },
+  "sourceRepair": {
+    "physicalValidationUnchanged": true,
+    "explicitRetirementsSkipped": true,
+    "physicalMismatchQuarantinedBeforeProviderFetch": true,
+    "rawCursorAdvancesAcrossRejectedOnlyPages": true,
+    "durableReasonCounters": [
+      "deprecated_identity",
+      "invalid_physical_identity"
+    ],
+    "sourceContextLanguageAndDatabaseErrorsAbort": true,
+    "remoteDeploymentClaim": false
+  },
+  "readOnlyReplay": {
+    "input": "First 100 exact card-to-variant aliases plus bounded memberships, physical rows, current publication and source rights from actual stage/production SQL reads.",
+    "execution": "Actual listPublishedTcgdexIdentities and retainCardmarketTcgdexProvenance using a read-only SQL-snapshot client and live public provider fetches. No CLI/PostgREST invocation or remote writes.",
+    "eachEnvironment": {
+      "scanned": 100,
+      "deprecated": 90,
+      "physicalConflicts": 6,
+      "validAliases": 4,
+      "physicalCards": 2,
+      "nextAfterExternalId": "SV10-002:normal"
+    },
+    "publicRequests": [
+      {
+        "requestedUrl": "https://api.tcgdex.net/v2/zh-cn/cards/SV10-001",
+        "status": 200,
+        "redirected": false,
+        "providerSetId": "SV10",
+        "collector": "001",
+        "cardName": "榛果球",
+        "providerProductId": 821832,
+        "retrievedAt": "2026-10-05T07:41:43.006Z"
+      },
+      {
+        "requestedUrl": "https://api.tcgdex.net/v2/zh-cn/cards/SV10-002",
+        "status": 200,
+        "redirected": false,
+        "providerSetId": "SV10",
+        "collector": "002",
+        "cardName": "蘑蘑菇",
+        "providerProductId": 821833,
+        "retrievedAt": "2026-10-05T07:41:43.060Z"
+      }
+    ]
+  },
+  "languageEvidence": {
+    "sameSetTextBothChineseEndpoints": "火箭隊的榮耀",
+    "sameProductIdBothChineseEndpoints": 821832,
+    "currentCNandTWSetNamesAndReleaseIdentical": true,
+    "existingProductionMappingOwners": [
+      {
+        "provider_product_id": 821832,
+        "printing_id": "c8052511-f5f3-4b84-91f4-98c24408ba85",
+        "language_code": "zh-tw",
+        "native_name": "榛果球",
+        "set_name": "火箭隊的榮耀",
+        "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "review_reference": "root20261004/cardmarket-reviewed-exact-production; stage-provenance=235b; production-provenance=8c928e4d-37f2-48a7-a312-fb2fe787cf99; full-canonical-crosswalk=docs/releases/cardmarket-production-crosswalk-review-20261004.json"
+      },
+      {
+        "provider_product_id": 821833,
+        "printing_id": "5cebe4fb-17ef-4bfe-9adf-92f24a901127",
+        "language_code": "zh-tw",
+        "native_name": "蘑蘑菇",
+        "set_name": "火箭隊的榮耀",
+        "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "review_reference": "root20261004/cardmarket-reviewed-exact-production; stage-provenance=235b; production-provenance=8c928e4d-37f2-48a7-a312-fb2fe787cf99; full-canonical-crosswalk=docs/releases/cardmarket-production-crosswalk-review-20261004.json"
+      }
+    ],
+    "decision": "Withhold new Simplified Chinese raw retention, mappings and quotes until independent physical-language proof; preserve existing Traditional Chinese owners.",
+    "documentation": "https://tcgdex.dev/errors/language-invalid",
+    "documentationSupports": "TCGdex defines zh-cn as Simplified and zh-tw as Traditional; declared endpoint support alone does not prove this particular payload's physical native language.",
+    "inference": "The sampled Simplified Chinese alias may mirror Traditional Chinese metadata. Not proof that the whole provider language is wrong."
+  },
+  "validation": {
+    "localPriceCacheScriptsPassed": 19,
+    "typecheckPassed": true,
+    "lintErrors": 0,
+    "existingLintWarnings": 9,
+    "priorCommit": "63ed69f5a8d33900f26905632854d79050049947",
+    "priorApplicableGitHubChecksPassed": 12,
+    "priorIntentionalSkips": 2,
+    "currentHeadGitHubChecks": "Not yet run"
+  },
+  "boundaries": {
+    "noKoreanWork": true,
+    "noRemoteMutation": true,
+    "noNewBuild": true,
+    "noPaidProviderActivation": true,
+    "noCatalogueChanges": true,
+    "fullGoalComplete": false
+  },
+  "next": [
+    "Use the bounded runner with verified Chinese physical identities; preserve skip reasons and existing shared-product ownership.",
+    "Review remaining exact English XY/HGSS/SM promo cohorts.",
+    "Investigate source-independent Simplified Chinese price provenance; do not turn a Traditional Chinese pointer into exact Simplified Chinese pricing."
+  ]
+}
