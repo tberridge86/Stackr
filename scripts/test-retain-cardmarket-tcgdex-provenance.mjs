@@ -112,13 +112,50 @@ assert.equal(reused.updates.at(-1).body.records_retrieved, 2);
 assert.equal(reused.updates.at(-1).body.records_inserted, 0);
 assert.equal(reused.updates.at(-1).body.records_updated, 0);
 assert.equal(reused.updates.at(-1).body.records_skipped, 2, 'ingestion convention records reused revisions as skipped writes');
-assert.deepEqual(reused.updates.at(-1).body.metadata.retentionAccounting, { reused: 2, providerSkipped: 0 });
+assert.deepEqual(reused.updates.at(-1).body.metadata.retentionAccounting, { reused: 2, providerSkipped: 0, identitySkipped: 0 });
 const retry = mockDb({ preexistingRun: { id: ids.run, status: 'failed', metadata: { purpose: 'cardmarket_tcgdex_provenance_only', canonicalWrites: false, catalogueVersionId: ids.version, language: 'zh-cn', intendedCohort: { sourceCode: 'tcgdex', sourceEntityType: 'card', recordScope: 'variant_identifiers', cursorPolicy: 'durable_checkpoint_only' }, checkpoint: null, retentionAccounting: { reused: 1, providerSkipped: 0 } }, records_requested: 1, records_retrieved: 1, records_inserted: 0, records_updated: 0, records_skipped: 1 }, rpcChanges: ['reused', 'reused'] });
 await retainCardmarketTcgdexProvenance({ db: retry, language: 'zh-cn', limit: 3, apply: true, runKey: 'raw-retention-retry-20261004', fetchImpl: async url => ({ status: 200, ok: true, json: async () => ({ ...payload, id: url.endsWith('SV9a-039') ? 'SV9a-039' : 'SV9a-040', localId: url.endsWith('SV9a-039') ? '039' : '040' }) }) });
 assert.equal(retry.updates.at(-1).body.records_requested, 3, 'retry preserves durable prior request count');
 assert.equal(retry.updates.at(-1).body.records_retrieved, 3);
 assert.equal(retry.updates.at(-1).body.records_skipped, 3);
-assert.deepEqual(retry.updates.at(-1).body.metadata.retentionAccounting, { reused: 3, providerSkipped: 0 }, 'retry persists aggregate reuse accounting without NaN');
+assert.deepEqual(retry.updates.at(-1).body.metadata.retentionAccounting, { reused: 3, providerSkipped: 0, identitySkipped: 0 }, 'retry persists aggregate reuse accounting without NaN');
+
+for (const retiredTable of ['card_variants', 'card_printings', 'sets']) {
+  const retired = mockDb();
+  const originalResolve = retired.resolve.bind(retired);
+  retired.resolve = query => {
+    const result = originalResolve(query);
+    if (query.schemaName === 'catalog' && query.table === retiredTable) result.data = result.data.map((row, index) => index === 0 ? { ...row, deprecated_at: '2026-08-20T00:00:00Z' } : row);
+    return result;
+  };
+  let fetched = 0;
+  const first = await retainCardmarketTcgdexProvenance({ db: retired, language: 'zh-cn', limit: 1, apply: true, runKey: `raw-retention-retired-${retiredTable}`, fetchImpl: async () => { fetched += 1; throw Error('Retired identity must not fetch provider data.'); } });
+  assert.equal(first.scanned, 1);
+  assert.equal(first.identitySkipped, 1);
+  assert.equal(first.nextAfterExternalId, 'SV9a-039', 'an entirely retired full page must still advance its raw identity cursor');
+  assert.equal(fetched, 0);
+  assert.equal(retired.updates.at(-1).body.status, 'running', 'retired-only pages do not falsely complete the cohort');
+  assert.equal(retired.updates.at(-1).body.metadata.checkpoint.externalId, 'SV9a-039');
+  if (retiredTable !== 'sets') {
+    const second = await retainCardmarketTcgdexProvenance({ db: retired, language: 'zh-cn', limit: 3, apply: true, runKey: `raw-retention-retired-${retiredTable}`, fetchImpl: async () => ({ status: 200, ok: true, json: async () => ({ ...payload, id: 'SV9a-040', localId: '040' }) }) });
+    assert.equal(second.retained, 1, 'resume reaches and retains a live identity after the retired page');
+    assert.equal(retired.updates.at(-1).body.records_requested, 2);
+    assert.deepEqual(retired.updates.at(-1).body.metadata.retentionAccounting, { reused: 0, providerSkipped: 0, identitySkipped: 1 });
+    assert.equal(retired.updates.at(-1).body.status, 'completed');
+  }
+}
+const missingPhysical = mockDb();
+const beforeMissingPhysical = missingPhysical.resolve.bind(missingPhysical);
+missingPhysical.resolve = query => query.table === 'card_variants' ? { data: [], error: null } : beforeMissingPhysical(query);
+await assert.rejects(() => listPublishedTcgdexIdentities(missingPhysical, { language: 'zh-cn', limit: 1 }), /variant membership failed/, 'a missing live physical row remains a hard failure');
+const conflictingPhysical = mockDb();
+const beforeConflictingPhysical = conflictingPhysical.resolve.bind(conflictingPhysical);
+conflictingPhysical.resolve = query => {
+  const result = beforeConflictingPhysical(query);
+  if (query.table === 'card_variants') result.data = result.data.map(row => ({ ...row, language_code: 'zh-tw' }));
+  return result;
+};
+await assert.rejects(() => listPublishedTcgdexIdentities(conflictingPhysical, { language: 'zh-cn', limit: 1 }), /variant membership failed/, 'a conflicting live language remains a hard failure');
 const malformedCheckpoint = mockDb({ preexistingRun: { id: ids.run, status: 'running', metadata: { purpose: 'cardmarket_tcgdex_provenance_only', canonicalWrites: false, catalogueVersionId: ids.version, language: 'zh-cn', intendedCohort: { sourceCode: 'tcgdex', sourceEntityType: 'card', recordScope: 'variant_identifiers', cursorPolicy: 'durable_checkpoint_only' }, checkpoint: { catalogueVersionId: ids.version, sourceEntityType: 'card', externalId: 'SV9a-039', languageCode: 'ja' } } } });
 await assert.rejects(() => retainCardmarketTcgdexProvenance({ db: malformedCheckpoint, language: 'zh-cn', apply: true, runKey: 'raw-retention-checkpoint-20261004', fetchImpl }), /checkpoint is not bound/);
 await assert.rejects(() => retainCardmarketTcgdexProvenance({ db: mockDb(), language: 'zh-cn', afterExternalId: 'SV9a-039', apply: true, runKey: 'raw-retention-jump-20261004', fetchImpl }), /durable import-run checkpoint/);

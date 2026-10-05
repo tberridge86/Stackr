@@ -103,19 +103,31 @@ export function validatePhysicalIdentityRows({ language, version, identities, me
 }
 
 async function validatePhysicalIdentityMembership(db, { language, version, identities }) {
-  if (identities.length === 0) return [];
+  if (identities.length === 0) return { identities: [], entries: [] };
   const variantIds = identities.map(identity => identity.variant_id);
   const [memberships, variants, languageRows] = await Promise.all([
     rows(db.schema('catalog').from('catalogue_version_variants').select('catalogue_version_id,language_code,set_id,printing_id,variant_id').eq('catalogue_version_id', version.id).in('variant_id', variantIds), 'read current variant memberships'),
-    rows(db.schema('catalog').from('card_variants').select('id,printing_id,language_code,deprecated_at').in('id', variantIds).is('deprecated_at', null), 'read current variants'),
+    rows(db.schema('catalog').from('card_variants').select('id,printing_id,language_code,deprecated_at').in('id', variantIds), 'read current variants'),
     rows(db.schema('catalog').from('languages').select('code,active,deprecated_at').eq('code', language).limit(2), 'read published language'),
   ]);
   const printingIds = [...new Set(variants.map(variant => variant.printing_id).filter(Boolean))];
-  const printings = await rows(db.schema('catalog').from('card_printings').select('id,set_id,language_code,collector_number,deprecated_at').in('id', printingIds).is('deprecated_at', null), 'read current printings');
+  const printings = await rows(db.schema('catalog').from('card_printings').select('id,set_id,language_code,collector_number,deprecated_at').in('id', printingIds), 'read current printings');
   const setIds = [...new Set(printings.map(printing => printing.set_id).filter(Boolean))];
-  const sets = await rows(db.schema('catalog').from('sets').select('id,language_code,set_code,provider_set_code,deprecated_at').in('id', setIds).is('deprecated_at', null), 'read current sets');
+  const sets = await rows(db.schema('catalog').from('sets').select('id,language_code,set_code,provider_set_code,deprecated_at').in('id', setIds), 'read current sets');
   if (languageRows.length !== 1) throw Error('Expected one published language record.');
-  return validatePhysicalIdentityRows({ language, version, identities, memberships, variants, printings, sets, languageRow: languageRows[0] });
+  const context = { language, version, memberships, variants, printings, sets, languageRow: languageRows[0] };
+  validatePhysicalIdentityRows({ ...context, identities: [] });
+  const entries = identities.map(identity => {
+    if (identity.catalogue_version_id !== version.id || !UUID.test(identity.variant_id ?? '') || identity.source_entity_type !== 'card' || identity.set_id !== null || identity.printing_id !== null) throw Error('Published TCGdex identity is not a card-to-variant identity.');
+    const variant = variants.find(row => row.id === identity.variant_id);
+    const printing = printings.find(row => row.id === variant?.printing_id);
+    const set = sets.find(row => row.id === printing?.set_id);
+    // Historical aliases may remain in a publication after their physical rows retire.
+    // Advance past explicit retirements, but still fail on missing or conflicting live rows.
+    if ([variant, printing, set].some(row => row?.deprecated_at != null)) return { ...identity, skipped: 'deprecated_identity' };
+    return validatePhysicalIdentityRows({ ...context, identities: [identity] })[0];
+  });
+  return { identities: entries.filter(identity => !identity.skipped), entries };
 }
 
 export async function listPublishedTcgdexIdentities(db, { language, afterExternalId = null, limit = MAX_PAGE_SIZE, version = null, source = null } = {}) {
@@ -131,8 +143,8 @@ export async function listPublishedTcgdexIdentities(db, { language, afterExterna
     if (identity.catalogue_version_id !== current.id || identity.source_id !== tcgdex.id || identity.language_code !== language) throw Error('Published TCGdex identity response failed validation.');
     tcgdexCardIdFromExternalId(identity.external_id);
   }
-  const identities = await validatePhysicalIdentityMembership(db, { language, version: current, identities: rawIdentities });
-  return { version: current, source: tcgdex, identities, nextAfterExternalId: identities.length === limit ? identities.at(-1).external_id : null };
+  const physical = await validatePhysicalIdentityMembership(db, { language, version: current, identities: rawIdentities });
+  return { version: current, source: tcgdex, ...physical, nextAfterExternalId: rawIdentities.length === limit ? rawIdentities.at(-1).external_id : null };
 }
 
 async function fetchTcgdexCard(language, externalId, fetchImpl = fetch) {
@@ -183,7 +195,7 @@ async function createOrResumeRawImportRun(db, sourceId, runKey, apply, context) 
 }
 
 async function updateRunProgress(db, runId, metadata, counts, identity, { complete = false, error = null } = {}) {
-  const nextMetadata = { ...metadata, checkpoint: identity ? { catalogueVersionId: identity.catalogue_version_id, sourceEntityType: identity.source_entity_type, externalId: identity.external_id, languageCode: identity.language_code } : metadata.checkpoint ?? null, retentionAccounting: { reused: counts.reused, providerSkipped: counts.providerSkipped } };
+  const nextMetadata = { ...metadata, checkpoint: identity ? { catalogueVersionId: identity.catalogue_version_id, sourceEntityType: identity.source_entity_type, externalId: identity.external_id, languageCode: identity.language_code } : metadata.checkpoint ?? null, retentionAccounting: { reused: counts.reused, providerSkipped: counts.providerSkipped, identitySkipped: counts.identitySkipped } };
   const update = {
     metadata: nextMetadata, records_requested: counts.requested, records_retrieved: counts.retrieved,
     records_inserted: counts.inserted, records_updated: counts.updated, records_skipped: counts.skipped,
@@ -217,18 +229,21 @@ export async function retainCardmarketTcgdexProvenance({ db, language, afterExte
   const importRun = await createOrResumeRawImportRun(db, source.id, runKey, apply, { version, language });
   const priorSkipped = importRun.records_skipped ?? 0;
   const priorReused = importRun.metadata?.retentionAccounting?.reused ?? 0;
-  const priorProviderSkipped = importRun.metadata?.retentionAccounting?.providerSkipped ?? Math.max(0, priorSkipped - priorReused);
-  if (!Number.isSafeInteger(priorReused) || priorReused < 0 || !Number.isSafeInteger(priorProviderSkipped) || priorProviderSkipped < 0 || priorReused + priorProviderSkipped !== priorSkipped) throw Error('Raw-retention import-run accounting is invalid.');
-  const counts = { requested: importRun.records_requested ?? 0, retrieved: importRun.records_retrieved ?? 0, inserted: importRun.records_inserted ?? 0, updated: importRun.records_updated ?? 0, skipped: priorSkipped, reused: priorReused, providerSkipped: priorProviderSkipped };
+  const priorIdentitySkipped = importRun.metadata?.retentionAccounting?.identitySkipped ?? 0;
+  const priorProviderSkipped = importRun.metadata?.retentionAccounting?.providerSkipped ?? Math.max(0, priorSkipped - priorReused - priorIdentitySkipped);
+  if (![priorReused, priorProviderSkipped, priorIdentitySkipped].every(value => Number.isSafeInteger(value) && value >= 0) || priorReused + priorProviderSkipped + priorIdentitySkipped !== priorSkipped) throw Error('Raw-retention import-run accounting is invalid.');
+  const counts = { requested: importRun.records_requested ?? 0, retrieved: importRun.records_retrieved ?? 0, inserted: importRun.records_inserted ?? 0, updated: importRun.records_updated ?? 0, skipped: priorSkipped, reused: priorReused, providerSkipped: priorProviderSkipped, identitySkipped: priorIdentitySkipped };
   let metadata = importRun.metadata;
   try {
     const effectiveAfterExternalId = apply ? checkpointFromMetadata(importRun.metadata, { version, language }) : afterExternalId;
     const page = await listPublishedTcgdexIdentities(db, { language, afterExternalId: effectiveAfterExternalId, limit, version, source });
-    const summary = { language, catalogueVersionId: page.version.id, sourceId: page.source.id, runId: importRun.id, scanned: page.identities.length, retained: 0, skipped: 0, inserted: 0, updated: 0, reused: 0, nextAfterExternalId: page.nextAfterExternalId };
-    for (const identity of page.identities) {
+    const summary = { language, catalogueVersionId: page.version.id, sourceId: page.source.id, runId: importRun.id, scanned: page.entries.length, retained: 0, skipped: 0, identitySkipped: 0, inserted: 0, updated: 0, reused: 0, nextAfterExternalId: page.nextAfterExternalId };
+    for (const identity of page.entries) {
       counts.requested += 1;
-      const fetched = await fetchTcgdexCard(language, identity.external_id, fetchImpl);
-      if (fetched.skipped) {
+      const fetched = identity.skipped ? { skipped: identity.skipped } : await fetchTcgdexCard(language, identity.external_id, fetchImpl);
+      if (identity.skipped) {
+        summary.skipped += 1; summary.identitySkipped += 1; counts.skipped += 1; counts.identitySkipped += 1;
+      } else if (fetched.skipped) {
         summary.skipped += 1; counts.skipped += 1; counts.providerSkipped += 1;
       } else {
         const input = buildRawRetentionInput(identity, fetched.payload, { sourceUrl: fetched.sourceUrl });
@@ -243,7 +258,7 @@ export async function retainCardmarketTcgdexProvenance({ db, language, afterExte
       }
       if (apply) metadata = await updateRunProgress(db, importRun.id, metadata, counts, identity);
     }
-    if (apply) await updateRunProgress(db, importRun.id, metadata, counts, page.identities.at(-1) ?? null, { complete: page.nextAfterExternalId === null });
+    if (apply) await updateRunProgress(db, importRun.id, metadata, counts, page.entries.at(-1) ?? null, { complete: page.nextAfterExternalId === null });
     return summary;
   } catch (error) {
     if (apply) await updateRunProgress(db, importRun.id, metadata, counts, null, { error: error.message }).catch(() => {});
