@@ -1,4 +1,20 @@
 {
+  "followUp": {
+  "observedAt": "2026-10-05T21:18:13Z",
+  "stagingCandidateTcgcsv": "scheduled run started at21:17:42, completion not yet observed",
+  "stagingCandidateCardmarket": "build succeeded, no scheduled runtime logs yet",
+  "productionTcgcsv": {
+    "deployment": "755c7a11-ce10-4b1c-9f8d-e17d3051d46c",
+    "createdAt": "2026-10-05T21:15:55.487Z",
+    "reason": "redeploy",
+    "configuredSource": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+    "buildMetaCommit": "28cbcfc7d68eb11edc622078b0bbc3216810610f",
+    "scheduledRunStartedAt": "2026-10-05T21:17:56.087Z",
+    "candidateF6aee12NotPromoted": true,
+    "initiatedByThisChat": false
+  },
+  "productionCardmarket": "20d42159 still failed at latest observation; retained volume intact"
+},
   "observedAt": "2026-10-05T21:16:52Z",
   "scope": {
     "languages": [
