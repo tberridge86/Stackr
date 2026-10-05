@@ -67,7 +67,7 @@ async function main() { try {
   await assert.rejects(rpc('store_catalogue_bulk_prices',[encode([result(id(32),3,'Normal',99)])]),/invalid provider mapping/);
   const priceRead=createCataloguePriceRead({supabase:{schema:(schema:string)=>{assert.equal(schema,'api');return {rpc:async(name:string,args:any)=>{
     if(name==='read_catalogue_prices') return {data:(await db.query('select * from api.read_catalogue_prices($1::text[],$2)',[args.p_references,args.p_language])).rows};
-    if(name==='read_catalogue_printing_general_prices') return {data:null,error:{code:'PGRST202',message:'optional additive guide unavailable'}};
+    if(name==='read_catalogue_printing_general_prices'||name==='read_pricing_classifications') return {data:null,error:{code:'PGRST202',message:'optional additive guide unavailable'}};
     assert.equal(name,'read_cardmarket_blended_general_prices'); return {data:(await db.query('select * from api.read_cardmarket_blended_general_prices($1::uuid[])',[args.p_printing_ids])).rows};
   }};}},toEstimatePrice:()=>null,toSnapshotPrice:()=>null,unavailablePrice:(variantId:string)=>({variantId,status:'unavailable',sample:{sold:0,active:0},estimates:{low:null,central:null,high:null}})});
   const reverse=await priceRead({references:[id(31)],language:'en',estimateMode:'general'}); assert.equal(reverse.prices[0].price.estimates.central,22.5); assert.equal(reverse.prices[0].price.sourceBreakdown[0].subtype,'Reverse Holofoil');

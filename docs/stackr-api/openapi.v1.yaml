@@ -1965,6 +1965,10 @@ components:
       additionalProperties: false
       required: [variantId, productType, identityKey, currency, status, priceType, estimates, sample, confidence, freshness, sourceBreakdown, outliers, fallbackEstimate, unavailableReason, calculatedAt, staleAfter, estimateVersion]
       properties:
+        classification:
+          type: string
+          enum: [EXACT_PRICE, MARKET_GUIDE, ESTIMATED_VALUE, PRICE_UNAVAILABLE]
+        evidenceType: { type: string }
         variantId: { type: string, format: uuid }
         productType: { $ref: "#/components/schemas/MarketProductType" }
         identityKey: { type: [string, "null"] }

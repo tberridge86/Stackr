@@ -1099,6 +1099,9 @@ export interface components {
             revision: string;
         };
         CatalogueStoredPrice: {
+            /** @enum {string} */
+            classification?: "EXACT_PRICE" | "MARKET_GUIDE" | "ESTIMATED_VALUE" | "PRICE_UNAVAILABLE";
+            evidenceType?: string;
             /** Format: uuid */
             variantId: string;
             productType: components["schemas"]["MarketProductType"];

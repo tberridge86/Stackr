@@ -1,0 +1,2205 @@
+{
+  "productionProject": "oakdbbzdqwurpjnoqhmu",
+  "sourceBaseline": "28cbcfc7d68eb11edc622078b0bbc3216810610f",
+  "coverage": {
+    "languages": [
+      {
+        "exact": 0,
+        "guide": 5315,
+        "estimated": 14563,
+        "published": 33359,
+        "classified": 33359,
+        "unavailable": 13481,
+        "language_code": "en"
+      },
+      {
+        "exact": 0,
+        "guide": 2020,
+        "estimated": 4931,
+        "published": 14100,
+        "classified": 14100,
+        "unavailable": 7149,
+        "language_code": "ja"
+      },
+      {
+        "exact": 0,
+        "guide": 0,
+        "estimated": 0,
+        "published": 20453,
+        "classified": 20453,
+        "unavailable": 20453,
+        "language_code": "zh-cn"
+      },
+      {
+        "exact": 0,
+        "guide": 0,
+        "estimated": 1597,
+        "published": 8166,
+        "classified": 8166,
+        "unavailable": 6569,
+        "language_code": "zh-tw"
+      }
+    ],
+    "providers": [
+      {
+        "provider": "cardmarket_public",
+        "variants": 2167
+      },
+      {
+        "provider": "tcgcsv",
+        "variants": 26259
+      },
+      {
+        "provider": null,
+        "variants": 47652
+      }
+    ],
+    "classified": 76078,
+    "exactPrice": 0,
+    "observedAt": "2026-10-05T17:17:05.171859+00:00",
+    "marketGuide": 7335,
+    "evidenceTiers": [
+      {
+        "variants": 2167,
+        "evidence_type": "blended_printing_market"
+      },
+      {
+        "variants": 25822,
+        "evidence_type": "exact_variant_market"
+      },
+      {
+        "variants": 47652,
+        "evidence_type": "none"
+      },
+      {
+        "variants": 437,
+        "evidence_type": "printing_market"
+      }
+    ],
+    "estimatedValue": 21091,
+    "priceUnavailable": 47652,
+    "catalogueVersions": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ],
+    "unavailableReasons": [
+      {
+        "reason": "unsupported_provider_language",
+        "variants": 24535
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "variants": 14604
+      },
+      {
+        "reason": "blended_language_finish_condition_evidence_insufficient",
+        "variants": 4683
+      },
+      {
+        "reason": "no_provider_quote",
+        "variants": 2899
+      },
+      {
+        "reason": "unsupported_provider_finish",
+        "variants": 723
+      },
+      {
+        "reason": "stronger_variant_evidence_required",
+        "variants": 160
+      },
+      {
+        "reason": "invalid_published_identity",
+        "variants": 48
+      }
+    ],
+    "totalPublishedVariants": 76078,
+    "classifiedCoveragePercent": 100,
+    "usableValuationCoveragePercent": 37.36
+  },
+  "productionIntegrity": {
+    "functions": [
+      {
+        "proname": "pricing_classification_page",
+        "body_hash": "18431d3e7584427b65ab2fdf9fa08983",
+        "proconfig": [
+          "search_path=\"\"",
+          "plan_cache_mode=force_custom_plan"
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "proname": "pricing_classified_coverage",
+        "body_hash": "64c13501c993e1b8c8ad7c3a6a141d8e",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "proname": "read_pricing_classifications",
+        "body_hash": "2f746197d9f7ad6324706681b4cec75d",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "proname": "resolve_pricing_classification",
+        "body_hash": "fc71dc28ef2f5234f65ecad814ac5197",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "proname": "store_pricing_classification_page",
+        "body_hash": "491eba12ff812dbbc466b9d4bfcc188c",
+        "proconfig": [
+          "search_path=\"\"",
+          "plan_cache_mode=force_custom_plan"
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      }
+    ],
+    "integrity": {
+      "total": 76078,
+      "history_rows": 76078,
+      "invalid_values": 0,
+      "identity_failures": 0
+    },
+    "migrations": [
+      {
+        "name": "classified_pricing_coverage",
+        "version": "20261005162643"
+      },
+      {
+        "name": "bound_classification_evidence_aggregation",
+        "version": "20261005163008"
+      },
+      {
+        "name": "classification_page_custom_plans",
+        "version": "20261005163402"
+      }
+    ],
+    "mappingCohorts": [
+      {
+        "set_code": "MC",
+        "variants": 695,
+        "native_name": "スタートデッキ100 バトルコレクション",
+        "language_code": "ja"
+      },
+      {
+        "set_code": "B1",
+        "variants": 331,
+        "native_name": "Mega Rising",
+        "language_code": "en"
+      },
+      {
+        "set_code": "SV2a",
+        "variants": 306,
+        "native_name": "ポケモンカード151",
+        "language_code": "ja"
+      },
+      {
+        "set_code": "SV8a",
+        "variants": 290,
+        "native_name": "テラスタルフェスex",
+        "language_code": "ja"
+      },
+      {
+        "set_code": "A1",
+        "variants": 286,
+        "native_name": "Genetic Apex",
+        "language_code": "en"
+      },
+      {
+        "set_code": "A4",
+        "variants": 241,
+        "native_name": "Wisdom of Sea and Sky",
+        "language_code": "en"
+      },
+      {
+        "set_code": "A3",
+        "variants": 239,
+        "native_name": "Celestial Guardians",
+        "language_code": "en"
+      },
+      {
+        "set_code": "B2",
+        "variants": 234,
+        "native_name": "Fantastical Parade",
+        "language_code": "en"
+      },
+      {
+        "set_code": "S8b",
+        "variants": 220,
+        "native_name": "VMAXクライマックス",
+        "language_code": "ja"
+      },
+      {
+        "set_code": "A2",
+        "variants": 207,
+        "native_name": "Space-Time Smackdown",
+        "language_code": "en"
+      },
+      {
+        "set_code": "sv02",
+        "variants": 206,
+        "native_name": "Paldea Evolved",
+        "language_code": "en"
+      },
+      {
+        "set_code": "sv01",
+        "variants": 206,
+        "native_name": "Scarlet & Violet",
+        "language_code": "en"
+      }
+    ]
+  },
+  "stagingIntegrity": {
+    "functions": [
+      {
+        "proname": "pricing_classification_page",
+        "body_hash": "18431d3e7584427b65ab2fdf9fa08983",
+        "proconfig": [
+          "search_path=\"\"",
+          "plan_cache_mode=force_custom_plan"
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "proname": "pricing_classified_coverage",
+        "body_hash": "64c13501c993e1b8c8ad7c3a6a141d8e",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "proname": "read_pricing_classifications",
+        "body_hash": "2f746197d9f7ad6324706681b4cec75d",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "proname": "resolve_pricing_classification",
+        "body_hash": "fc71dc28ef2f5234f65ecad814ac5197",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "proname": "store_pricing_classification_page",
+        "body_hash": "491eba12ff812dbbc466b9d4bfcc188c",
+        "proconfig": [
+          "search_path=\"\"",
+          "plan_cache_mode=force_custom_plan"
+        ],
+        "prosecdef": false,
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      }
+    ],
+    "integrity": {
+      "total": 75558,
+      "history_rows": 75558,
+      "invalid_values": 0,
+      "identity_failures": 0
+    },
+    "migrations": [
+      {
+        "name": "classified_pricing_coverage",
+        "version": "20261005162549"
+      },
+      {
+        "name": "bound_classification_evidence_aggregation",
+        "version": "20261005162949"
+      },
+      {
+        "name": "classification_page_custom_plans",
+        "version": "20261005163401"
+      }
+    ],
+    "mappingCohorts": [
+      {
+        "set_code": "MC",
+        "variants": 695,
+        "native_name": "スタートデッキ100 バトルコレクション",
+        "language_code": "ja"
+      },
+      {
+        "set_code": "B1",
+        "variants": 331,
+        "native_name": "Mega Rising",
+        "language_code": "en"
+      },
+      {
+        "set_code": "SV2a",
+        "variants": 306,
+        "native_name": "ポケモンカード151",
+        "language_code": "ja"
+      },
+      {
+        "set_code": "SV8a",
+        "variants": 290,
+        "native_name": "テラスタルフェスex",
+        "language_code": "ja"
+      },
+      {
+        "set_code": "A1",
+        "variants": 286,
+        "native_name": "Genetic Apex",
+        "language_code": "en"
+      },
+      {
+        "set_code": "A4",
+        "variants": 241,
+        "native_name": "Wisdom of Sea and Sky",
+        "language_code": "en"
+      },
+      {
+        "set_code": "A3",
+        "variants": 239,
+        "native_name": "Celestial Guardians",
+        "language_code": "en"
+      },
+      {
+        "set_code": "B2",
+        "variants": 234,
+        "native_name": "Fantastical Parade",
+        "language_code": "en"
+      },
+      {
+        "set_code": "S8b",
+        "variants": 220,
+        "native_name": "VMAXクライマックス",
+        "language_code": "ja"
+      },
+      {
+        "set_code": "A2",
+        "variants": 207,
+        "native_name": "Space-Time Smackdown",
+        "language_code": "en"
+      },
+      {
+        "set_code": "sv02",
+        "variants": 206,
+        "native_name": "Paldea Evolved",
+        "language_code": "en"
+      },
+      {
+        "set_code": "sv01",
+        "variants": 206,
+        "native_name": "Scarlet & Violet",
+        "language_code": "en"
+      }
+    ]
+  },
+  "highValueQa": {
+    "aggregates": [
+      {
+        "threshold": 20,
+        "variants": 2111,
+        "passed": 2111
+      },
+      {
+        "threshold": 50,
+        "variants": 945,
+        "passed": 945
+      },
+      {
+        "threshold": 100,
+        "variants": 439,
+        "passed": 439
+      },
+      {
+        "threshold": 500,
+        "variants": 39,
+        "passed": 39
+      },
+      {
+        "threshold": 1000,
+        "variants": 8,
+        "passed": 8
+      }
+    ],
+    "samples": [
+      {
+        "threshold": 20,
+        "variant_id": "02d97853-1381-4fd0-b241-33c950aa1dfa",
+        "value_gbp": "49.97",
+        "language_code": "ja",
+        "subtype": "Holofoil",
+        "method": "exact_set_code_number",
+        "collector_number": "242",
+        "printing_discriminator": "",
+        "set_code": "M2a",
+        "provider_name": "N's Zoroark ex - 242/193",
+        "provider_product_id": "665913"
+      },
+      {
+        "threshold": 20,
+        "variant_id": "4ec56195-4fbb-47c7-b0e9-9c42cafa7561",
+        "value_gbp": "49.71",
+        "language_code": "ja",
+        "subtype": "Holofoil",
+        "method": "exact_set_code_number",
+        "collector_number": "075",
+        "printing_discriminator": "",
+        "set_code": "SM11a",
+        "provider_name": "Charizard & Braixen GX - 075/064",
+        "provider_product_id": "574972"
+      },
+      {
+        "threshold": 20,
+        "variant_id": "7b4751ec-58dd-4e5e-90cc-f6b75d8af5f0",
+        "value_gbp": "49.65",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "14",
+        "printing_discriminator": "",
+        "set_code": "base1",
+        "provider_name": "Raichu",
+        "provider_product_id": "42354"
+      },
+      {
+        "threshold": 20,
+        "variant_id": "c700ca33-52bb-47cc-b5ff-0f7eeed34236",
+        "value_gbp": "49.57",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "reviewed",
+        "collector_number": "053",
+        "printing_discriminator": "",
+        "set_code": "svp",
+        "provider_name": "Mew ex - 053",
+        "provider_product_id": "518871"
+      },
+      {
+        "threshold": 20,
+        "variant_id": "58adca83-e4db-4602-b33c-183d913c621f",
+        "value_gbp": "49.56",
+        "language_code": "en",
+        "subtype": "Normal",
+        "method": "exact_name_number",
+        "collector_number": "18",
+        "printing_discriminator": "",
+        "set_code": "dp7",
+        "provider_name": "Gengar",
+        "provider_product_id": "85676"
+      },
+      {
+        "threshold": 50,
+        "variant_id": "6a8f687b-47ed-4590-88fd-3c9369d5106c",
+        "value_gbp": "99.99",
+        "language_code": "en",
+        "subtype": "Normal",
+        "method": "exact_name_number",
+        "collector_number": "33",
+        "printing_discriminator": "",
+        "set_code": "ecard2",
+        "provider_name": "Slowbro",
+        "provider_product_id": "89302"
+      },
+      {
+        "threshold": 50,
+        "variant_id": "3517a75a-555b-44e9-9772-07299111863c",
+        "value_gbp": "99.88",
+        "language_code": "ja",
+        "subtype": "Holofoil",
+        "method": "exact_set_code_number",
+        "collector_number": "106",
+        "printing_discriminator": "",
+        "set_code": "S11",
+        "provider_name": "Aerodactyl V - 106/100",
+        "provider_product_id": "570037"
+      },
+      {
+        "threshold": 50,
+        "variant_id": "0fb99109-fb1f-4aec-a3b1-cadab1fb6a0e",
+        "value_gbp": "98.84",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "9",
+        "printing_discriminator": "",
+        "set_code": "ex7",
+        "provider_name": "Dark Slowking",
+        "provider_product_id": "84657"
+      },
+      {
+        "threshold": 50,
+        "variant_id": "498813a0-2348-4215-a6d5-c977e179a664",
+        "value_gbp": "98.63",
+        "language_code": "en",
+        "subtype": "Reverse Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "17",
+        "printing_discriminator": "",
+        "set_code": "hgss4",
+        "provider_name": "Ditto",
+        "provider_product_id": "84844"
+      },
+      {
+        "threshold": 50,
+        "variant_id": "746db523-3922-4972-9692-feb27f08ad58",
+        "value_gbp": "98.48",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "reviewed",
+        "collector_number": "11",
+        "printing_discriminator": "",
+        "set_code": "2016xy",
+        "provider_name": "Meowth - 11/12",
+        "provider_product_id": "275067"
+      },
+      {
+        "threshold": 100,
+        "variant_id": "4b84f3ee-41b4-42d8-ac5c-cdbe95818b4e",
+        "value_gbp": "492.74",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "104",
+        "printing_discriminator": "",
+        "set_code": "ex6",
+        "provider_name": "Blastoise ex",
+        "provider_product_id": "83900"
+      },
+      {
+        "threshold": 100,
+        "variant_id": "428237fe-3ec9-4b72-bbb8-4920a5a5337f",
+        "value_gbp": "488.29",
+        "language_code": "en",
+        "subtype": "Reverse Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "1",
+        "printing_discriminator": "",
+        "set_code": "si1",
+        "provider_name": "Mew",
+        "provider_product_id": "46466"
+      },
+      {
+        "threshold": 100,
+        "variant_id": "3112c7fa-2a95-4c53-bb13-d542839de200",
+        "value_gbp": "486.54",
+        "language_code": "ja",
+        "subtype": "Holofoil",
+        "method": "exact_set_code_number",
+        "collector_number": "111",
+        "printing_discriminator": "",
+        "set_code": "S11",
+        "provider_name": "Giratina V - 111/100",
+        "provider_product_id": "570042"
+      },
+      {
+        "threshold": 100,
+        "variant_id": "6915914d-b253-4bb6-aa81-4f1525337c70",
+        "value_gbp": "476.11",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "97",
+        "printing_discriminator": "",
+        "set_code": "pl4",
+        "provider_name": "Gengar Lv.X",
+        "provider_product_id": "85682"
+      },
+      {
+        "threshold": 100,
+        "variant_id": "000fa84b-af14-42a9-9eb6-74ae96d528e9",
+        "value_gbp": "454.51",
+        "language_code": "en",
+        "subtype": "Reverse Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "148",
+        "printing_discriminator": "",
+        "set_code": "ecard3",
+        "provider_name": "Golem",
+        "provider_product_id": "85825"
+      },
+      {
+        "threshold": 500,
+        "variant_id": "1e032432-65b1-40c6-beb6-b1191d9233d5",
+        "value_gbp": "984.79",
+        "language_code": "en",
+        "subtype": "Reverse Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "29",
+        "printing_discriminator": "",
+        "set_code": "lc",
+        "provider_name": "Mewtwo",
+        "provider_product_id": "87419"
+      },
+      {
+        "threshold": 500,
+        "variant_id": "e2c57b33-3fed-41c3-ae36-838c43c90c99",
+        "value_gbp": "903.74",
+        "language_code": "en",
+        "subtype": "Reverse Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "22",
+        "printing_discriminator": "",
+        "set_code": "ex8",
+        "provider_name": "Rayquaza",
+        "provider_product_id": "88625"
+      },
+      {
+        "threshold": 500,
+        "variant_id": "75268134-9d55-425b-b084-af563cc175e3",
+        "value_gbp": "818.13",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "106",
+        "printing_discriminator": "",
+        "set_code": "ex7",
+        "provider_name": "Rocket's Zapdos ex",
+        "provider_product_id": "88801"
+      },
+      {
+        "threshold": 500,
+        "variant_id": "cf2929dc-ab48-4019-bc22-af938b864d5d",
+        "value_gbp": "769.57",
+        "language_code": "en",
+        "subtype": "Normal",
+        "method": "exact_name_number",
+        "collector_number": "085",
+        "printing_discriminator": "",
+        "set_code": "svp",
+        "provider_name": "Pikachu with Grey Felt Hat",
+        "provider_product_id": "518861"
+      },
+      {
+        "threshold": 500,
+        "variant_id": "4b349537-42af-4c27-95b0-9e539b9f21f4",
+        "value_gbp": "767.58",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "20",
+        "printing_discriminator": "",
+        "set_code": "col1",
+        "provider_name": "Rayquaza",
+        "provider_product_id": "88628"
+      },
+      {
+        "threshold": 1000,
+        "variant_id": "983fccf3-e9ae-45e5-a4e8-1ce73ed4e435",
+        "value_gbp": "3408.90",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "149",
+        "printing_discriminator": "",
+        "set_code": "ecard2",
+        "provider_name": "Lugia",
+        "provider_product_id": "86905"
+      },
+      {
+        "threshold": 1000,
+        "variant_id": "700d809f-e1ac-463c-8a90-1f4c5a8ba39f",
+        "value_gbp": "2272.59",
+        "language_code": "en",
+        "subtype": "Reverse Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "146",
+        "printing_discriminator": "",
+        "set_code": "ecard3",
+        "provider_name": "Charizard",
+        "provider_product_id": "84186"
+      },
+      {
+        "threshold": 1000,
+        "variant_id": "7f21ede3-5184-4280-a9b6-7ad4a8026fc4",
+        "value_gbp": "1893.83",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "105",
+        "printing_discriminator": "",
+        "set_code": "ex10",
+        "provider_name": "Lugia ex",
+        "provider_product_id": "86912"
+      },
+      {
+        "threshold": 1000,
+        "variant_id": "1085cdda-3fa7-4092-9c55-454542ee13ac",
+        "value_gbp": "1439.30",
+        "language_code": "en",
+        "subtype": "Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "104",
+        "printing_discriminator": "",
+        "set_code": "ex13",
+        "provider_name": "Pikachu Star",
+        "provider_product_id": "88111"
+      },
+      {
+        "threshold": 1000,
+        "variant_id": "d3d725c1-7bad-4376-b5a2-18fff5cf82f4",
+        "value_gbp": "1363.55",
+        "language_code": "en",
+        "subtype": "Reverse Holofoil",
+        "method": "exact_name_number",
+        "collector_number": "11",
+        "printing_discriminator": "",
+        "set_code": "lc",
+        "provider_name": "Gengar",
+        "provider_product_id": "85670"
+      }
+    ],
+    "limits": "Stored provider identity, variant finish, dated FX and conversion consistency. Single-provider market aggregates with unspecified raw condition. No independent multi-source transaction or device verification."
+  },
+  "mappingTriage": {
+    "sets": [
+      {
+        "id": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+        "method": null,
+        "group_id": null,
+        "set_code": "MC",
+        "category_id": null,
+        "native_name": "スタートデッキ100 バトルコレクション"
+      },
+      {
+        "id": "41f64718-acd1-4c40-8a40-5c67daac2cb8",
+        "method": "exact_set_code",
+        "group_id": 23644,
+        "set_code": "S8b",
+        "category_id": 85,
+        "native_name": "VMAXクライマックス"
+      },
+      {
+        "id": "e42556b8-3e82-44bb-8c52-c06b893ee4a3",
+        "method": "exact_set_code",
+        "group_id": 23599,
+        "set_code": "SV2a",
+        "category_id": 85,
+        "native_name": "ポケモンカード151"
+      },
+      {
+        "id": "a7459948-3544-4122-8fec-7fc6aecfd2e5",
+        "method": "exact_set_code",
+        "group_id": 23909,
+        "set_code": "SV8a",
+        "category_id": 85,
+        "native_name": "テラスタルフェスex"
+      }
+    ],
+    "samples": [
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "55243440-7b6c-4a89-b477-9292a91c6b3c",
+        "finish_code": "normal",
+        "variant_code": "normal",
+        "collector_number": "001"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "2b508176-7faf-4eb9-b37a-f38d03140448",
+        "finish_code": "reverse_holo",
+        "variant_code": "reverse_holo",
+        "collector_number": "001"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "14eaa81d-fdc0-428d-8d58-af327b2a66ba",
+        "finish_code": "normal",
+        "variant_code": "normal",
+        "collector_number": "002"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "883fa1e3-8cf0-4a86-adab-f4ec2ff13b6b",
+        "finish_code": "reverse_holo",
+        "variant_code": "reverse_holo",
+        "collector_number": "002"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "2c66eac2-0253-4d65-bff8-45d8c392c3ed",
+        "finish_code": "normal",
+        "variant_code": "normal",
+        "collector_number": "004"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "596b9544-0a39-44e5-b92d-fb0cf2485ef3",
+        "finish_code": "reverse_holo",
+        "variant_code": "reverse_holo",
+        "collector_number": "004"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "da3d450b-a520-4ccb-b0bf-e4c4b7c3c0ff",
+        "finish_code": "normal",
+        "variant_code": "normal",
+        "collector_number": "005"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "56e0644c-aaec-4ab7-aa74-de71ae1293b6",
+        "finish_code": "reverse_holo",
+        "variant_code": "reverse_holo",
+        "collector_number": "005"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "81adcfe8-feed-46f2-8be5-e3cdad2c5c3d",
+        "finish_code": "normal",
+        "variant_code": "normal",
+        "collector_number": "007"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "b4b420d4-5509-45ad-8e46-03b693e39eec",
+        "finish_code": "reverse_holo",
+        "variant_code": "reverse_holo",
+        "collector_number": "007"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "768afc3e-b087-4fe1-873b-a786b1f31302",
+        "finish_code": "normal",
+        "variant_code": "normal",
+        "collector_number": "008"
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "set_code": "SV2a",
+        "variant_id": "20e43dbd-fe50-473a-8937-c9fd33eb8ca6",
+        "finish_code": "reverse_holo",
+        "variant_code": "reverse_holo",
+        "collector_number": "008"
+      }
+    ],
+    "feedKeys": [
+      {
+        "sample": "{\"errors\": [], \"results\": [{\"name\": \"ME06: Delta Reign\", \"groupId\": 24831, \"categoryId\": 3, \"modifiedOn\": \"2026-09-03T14:16:12.22\", \"publishedOn\": \"2026-11-06T00:00:00\", \"abbreviation\": \"DLR\", \"isSupplemental\": false}, {\"name\": \"ME: 30th Celebration\"",
+        "feed_key": "tcgplayer/3/groups",
+        "payload_type": "object"
+      },
+      {
+        "sample": "{\"errors\": [], \"results\": [{\"name\": \"M6a: MEGA Expansion 30th Celebration\", \"groupId\": 24721, \"categoryId\": 85, \"modifiedOn\": \"2026-09-25T20:39:54.6\", \"publishedOn\": \"2026-09-16T00:00:00\", \"abbreviation\": \"m6a\", \"isSupplemental\": false}, {\"name\": \"MF",
+        "feed_key": "tcgplayer/85/groups",
+        "payload_type": "object"
+      }
+    ]
+  },
+  "httpVerification": {
+    "observedAt": "2026-10-05T17:16:15.998Z",
+    "backendHealth": {
+      "status": 200,
+      "source": "28cbcfc7d68e",
+      "deployment": "e985732a-4ebe-4281-8811-963a61276a58",
+      "targetProject": "oakdbbzdqwurpjnoqhmu"
+    },
+    "gatewayLanguages": {
+      "status": 200,
+      "languages": [
+        "en",
+        "ja",
+        "zh-cn",
+        "zh-tw",
+        "ko"
+      ]
+    },
+    "directPrice": {
+      "status": 401,
+      "code": "gateway_origin_auth_required"
+    },
+    "gatewayPrice": {
+      "status": 401,
+      "code": "authentication_required"
+    },
+    "authenticatedPrice": "not verified; no existing owner session available",
+    "device": "not verified"
+  },
+  "boundaries": {
+    "sourceProvidersPreserved": true,
+    "newPaidProviderActivation": false,
+    "supabaseServiceOnly": true,
+    "ownerAuthenticationWeakened": false,
+    "collectionHoldingsGeneralPriceFallback": false,
+    "completed": false,
+    "productionAuthenticatedHttp": "not verified",
+    "phone": "not verified",
+    "backendIntegrationDeployment": "not deployed",
+    "workerIntegrationDeployment": "not deployed",
+    "mobileLabels": "source only"
+  },
+  "bulkServiceSamples": [
+    {
+      "language_code": "en",
+      "classification": "ESTIMATED_VALUE",
+      "variant_id": "0ec4349c-453d-4849-9804-921c69a236ae",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "8a4ba2ca-76e9-4f70-b0b4-7074bffe8c75",
+        "value": 2,
+        "finish": "reverse_holo",
+        "reason": null,
+        "currency": "GBP",
+        "language": "en",
+        "provider": "tcgcsv",
+        "sourceAt": "2026-10-04T20:05:38+00:00",
+        "checkedAt": "2026-10-05T16:27:51.197637+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "0ec4349c-453d-4849-9804-921c69a236ae",
+        "confidence": 0.85,
+        "printingId": "fbea0fc1-51e3-455d-9bb0-cbb7dd50954d",
+        "provenance": {
+          "scope": "exact_variant_market",
+          "value": 1.95,
+          "finish": "reverse_holo",
+          "set_id": "8a4ba2ca-76e9-4f70-b0b4-7074bffe8c75",
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "source_at": "2026-10-04T20:05:38+00:00",
+          "variant_id": "0ec4349c-453d-4849-9804-921c69a236ae",
+          "printing_id": "fbea0fc1-51e3-455d-9bb0-cbb7dd50954d",
+          "stale_after": "2026-10-06T20:05:38+00:00",
+          "retrieved_at": "2026-10-04T20:33:51.206667+00:00",
+          "variant_code": "reverse_holo",
+          "source_record": {
+            "set_id": "8a4ba2ca-76e9-4f70-b0b4-7074bffe8c75",
+            "subtype": "Reverse Holofoil",
+            "group_id": 23228,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-04T20:05:38+00:00",
+            "product_id": 509888,
+            "variant_id": "0ec4349c-453d-4849-9804-921c69a236ae",
+            "category_id": 3,
+            "printing_id": "fbea0fc1-51e3-455d-9bb0-cbb7dd50954d",
+            "recorded_at": "2026-10-04T20:33:51.206667+00:00",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "exchange_rate": 0.757532293986637,
+            "language_code": "en",
+            "original_price": 2.57,
+            "central_estimate": 1.95,
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+        },
+        "staleAfter": "2026-10-06T20:05:38+00:00",
+        "finishMatch": true,
+        "retrievedAt": "2026-10-04T20:33:51.206667+00:00",
+        "evidenceType": "exact_variant_market",
+        "languageMatch": true,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "ESTIMATED_VALUE",
+        "marketSignalValue": 1.95,
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "en",
+      "classification": "ESTIMATED_VALUE",
+      "variant_id": "12391e58-28fb-4010-b477-e754261c2c7f",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "76866762-6684-44e1-bd7d-11a741f408d2",
+        "value": 2,
+        "finish": "normal",
+        "reason": null,
+        "currency": "GBP",
+        "language": "en",
+        "provider": "cardmarket_public",
+        "sourceAt": "2026-10-04T00:40:55+00:00",
+        "checkedAt": "2026-10-05T16:27:51.197637+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "12391e58-28fb-4010-b477-e754261c2c7f",
+        "confidence": 0.45,
+        "printingId": "79481cbc-4c53-43af-92eb-40e9392f1183",
+        "provenance": {
+          "scope": "blended_printing_market",
+          "value": 1.96,
+          "finish": null,
+          "set_id": "76866762-6684-44e1-bd7d-11a741f408d2",
+          "mapping": {
+            "method": "reviewed_exact",
+            "printing_id": "79481cbc-4c53-43af-92eb-40e9392f1183",
+            "reviewed_at": "2026-10-04T09:51:42.678918+00:00",
+            "mapping_scope": "blended_printing",
+            "finish_evidence": {
+              "type": "blended_public_guide_not_exact_finish",
+              "scope": "blended_public_guide_not_exact_finish",
+              "finishCodes": [
+                "normal"
+              ],
+              "retainedPriceGuideSha256": "acdd6ed470fa738b7dd318d7548df425123d83b51d4ab258b0a0de43d9cf8e82",
+              "retainedPriceGuideCreatedAt": "2026-10-04T02:40:55+0200"
+            },
+            "review_reference": "root20261004/cardmarket-reviewed-exact-production; stage-provenance=235b; production-provenance=8c928e4d-37f2-48a7-a312-fb2fe787cf99; full-canonical-crosswalk=docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+            "variant_evidence": {
+              "type": "current_tcgdex_canonical_printing",
+              "variantIds": [
+                "12391e58-28fb-4010-b477-e754261c2c7f"
+              ],
+              "externalIds": [
+                "neo4-72:normal"
+              ]
+            },
+            "language_evidence": {
+              "type": "current_tcgdex_canonical_language",
+              "provenance": {
+                "source": "tcgdex",
+                "variantIds": [
+                  "12391e58-28fb-4010-b477-e754261c2c7f"
+                ],
+                "externalIds": [
+                  "neo4-72:normal"
+                ],
+                "finishCodes": [
+                  "normal"
+                ],
+                "finishScope": "blended_public_guide_not_exact_finish",
+                "rawRecordIds": [
+                  "38b5dd08-f364-4dab-a4fc-f0492d21c4ce"
+                ],
+                "payloadHashes": [
+                  "927df7841dcd5d101bbd77ceaf5fc8b7e4defec8155cde44413fc0e9bdf51012"
+                ]
+              },
+              "languageCode": "en",
+              "productionCrosswalk": {
+                "type": "full_cohort_current_canonical_identity",
+                "contract": "same printing UUID, language, collector number, set UUID and code, reviewed variant IDs, and reviewed TCGdex external IDs",
+                "validation": "stage and production current published physical identities matched exactly; production catalogue version may differ by language",
+                "validatedAt": "2026-10-04T09:44:48.598Z",
+                "crosswalkReceipt": "docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+                "stageProvenanceRun": "235b",
+                "sourceReviewReference": "root20261004/provenance235b/fullcohort/querychecks",
+                "productionProvenanceRun": "8c928e4d-37f2-48a7-a312-fb2fe787cf99",
+                "sourceCatalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "productionCatalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+              },
+              "retainedProductsSha256": "14a74405a86acfb80b42168e5cc019c0eae67925e8eee9893f53d35e4922d6ce",
+              "retainedProductsCreatedAt": "2026-10-03T11:44:53+0200"
+            },
+            "provider_product_id": 274724,
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "provider_category_id": 51
+          },
+          "currency": "GBP",
+          "language": null,
+          "provider": "cardmarket_public",
+          "source_at": "2026-10-04T00:40:55+00:00",
+          "printing_id": "79481cbc-4c53-43af-92eb-40e9392f1183",
+          "stale_after": "2026-10-06T00:40:55+00:00",
+          "retrieved_at": "2026-10-04T10:32:54.071751+00:00",
+          "variant_code": null,
+          "source_record": {
+            "printing_id": "79481cbc-4c53-43af-92eb-40e9392f1183",
+            "recorded_at": "2026-10-04T10:32:54.071751+00:00",
+            "stale_after": "2026-10-06T00:40:55+00:00",
+            "display_scope": "blended_general_estimate",
+            "exchange_rate": 0.85033,
+            "original_price": 2.31,
+            "selected_field": "trend",
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "EUR",
+            "source_created_at": "2026-10-04T00:40:55+00:00",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "central_estimate_gbp": 1.96,
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "price_guide_revision_id": "88df9af6-8055-4bf0-9c21-9c230681befe",
+            "product_catalogue_revision_id": "18956fc2-1835-42c2-809d-de4b45ac04e9"
+          },
+          "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+        },
+        "staleAfter": "2026-10-06T00:40:55+00:00",
+        "finishMatch": false,
+        "retrievedAt": "2026-10-04T10:32:54.071751+00:00",
+        "evidenceType": "blended_printing_market",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "ESTIMATED_VALUE",
+        "marketSignalValue": 1.96,
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "en",
+      "classification": "MARKET_GUIDE",
+      "variant_id": "983fccf3-e9ae-45e5-a4e8-1ce73ed4e435",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+        "value": 3408.9,
+        "finish": "holo",
+        "reason": null,
+        "currency": "GBP",
+        "language": "en",
+        "provider": "tcgcsv",
+        "sourceAt": "2026-10-04T20:05:38+00:00",
+        "checkedAt": "2026-10-05T16:44:40.072409+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "983fccf3-e9ae-45e5-a4e8-1ce73ed4e435",
+        "confidence": 0.85,
+        "printingId": "3d76bbe5-42c8-4d00-9306-0de3888d7e2e",
+        "provenance": {
+          "scope": "exact_variant_market",
+          "value": 3408.9,
+          "finish": "holo",
+          "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "source_at": "2026-10-04T20:05:38+00:00",
+          "variant_id": "983fccf3-e9ae-45e5-a4e8-1ce73ed4e435",
+          "printing_id": "3d76bbe5-42c8-4d00-9306-0de3888d7e2e",
+          "stale_after": "2026-10-06T20:05:38+00:00",
+          "retrieved_at": "2026-10-04T20:17:30.203993+00:00",
+          "variant_code": "holo",
+          "source_record": {
+            "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+            "subtype": "Holofoil",
+            "group_id": 1397,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-04T20:05:38+00:00",
+            "product_id": 86905,
+            "variant_id": "983fccf3-e9ae-45e5-a4e8-1ce73ed4e435",
+            "category_id": 3,
+            "printing_id": "3d76bbe5-42c8-4d00-9306-0de3888d7e2e",
+            "recorded_at": "2026-10-04T20:17:30.203993+00:00",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "exchange_rate": 0.757532293986637,
+            "language_code": "en",
+            "original_price": 4500,
+            "central_estimate": 3408.9,
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+        },
+        "staleAfter": "2026-10-06T20:05:38+00:00",
+        "finishMatch": true,
+        "retrievedAt": "2026-10-04T20:17:30.203993+00:00",
+        "evidenceType": "exact_variant_market",
+        "languageMatch": true,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "MARKET_GUIDE",
+        "marketSignalValue": 3408.9,
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "en",
+      "classification": "MARKET_GUIDE",
+      "variant_id": "700d809f-e1ac-463c-8a90-1f4c5a8ba39f",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+        "value": 2272.59,
+        "finish": "reverse_holo",
+        "reason": null,
+        "currency": "GBP",
+        "language": "en",
+        "provider": "tcgcsv",
+        "sourceAt": "2026-10-04T20:05:38+00:00",
+        "checkedAt": "2026-10-05T16:43:59.279565+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "700d809f-e1ac-463c-8a90-1f4c5a8ba39f",
+        "confidence": 0.85,
+        "printingId": "824a8586-647f-4b83-afaa-cb5f745c28de",
+        "provenance": {
+          "scope": "exact_variant_market",
+          "value": 2272.59,
+          "finish": "reverse_holo",
+          "set_id": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "source_at": "2026-10-04T20:05:38+00:00",
+          "variant_id": "700d809f-e1ac-463c-8a90-1f4c5a8ba39f",
+          "printing_id": "824a8586-647f-4b83-afaa-cb5f745c28de",
+          "stale_after": "2026-10-06T20:05:38+00:00",
+          "retrieved_at": "2026-10-04T20:15:05.652111+00:00",
+          "variant_code": "reverse_holo",
+          "source_record": {
+            "set_id": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+            "subtype": "Reverse Holofoil",
+            "group_id": 1372,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-04T20:05:38+00:00",
+            "product_id": 84186,
+            "variant_id": "700d809f-e1ac-463c-8a90-1f4c5a8ba39f",
+            "category_id": 3,
+            "printing_id": "824a8586-647f-4b83-afaa-cb5f745c28de",
+            "recorded_at": "2026-10-04T20:15:05.652111+00:00",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "exchange_rate": 0.757532293986637,
+            "language_code": "en",
+            "original_price": 2999.99,
+            "central_estimate": 2272.59,
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+        },
+        "staleAfter": "2026-10-06T20:05:38+00:00",
+        "finishMatch": true,
+        "retrievedAt": "2026-10-04T20:15:05.652111+00:00",
+        "evidenceType": "exact_variant_market",
+        "languageMatch": true,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "MARKET_GUIDE",
+        "marketSignalValue": 2272.59,
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "en",
+      "classification": "PRICE_UNAVAILABLE",
+      "variant_id": "00012d45-6f4b-4698-a6b4-beb9a7950732",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "66542fcc-a805-41d3-9390-f51faf82f570",
+        "value": null,
+        "finish": "normal",
+        "reason": "unresolved_provider_identity",
+        "currency": "GBP",
+        "language": "en",
+        "provider": null,
+        "sourceAt": null,
+        "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "unavailable",
+        "variantId": "00012d45-6f4b-4698-a6b4-beb9a7950732",
+        "confidence": 0,
+        "printingId": "c1ee3343-024d-482d-9975-7bf7bfc4dd6f",
+        "staleAfter": null,
+        "finishMatch": false,
+        "retrievedAt": null,
+        "evidenceType": "none",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": false,
+        "classification": "PRICE_UNAVAILABLE",
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "en",
+      "classification": "PRICE_UNAVAILABLE",
+      "variant_id": "0002ba25-52c8-41fd-af60-a7474928b0bf",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "06abb851-f530-4fc2-b672-2cdccfce77ba",
+        "value": null,
+        "finish": "normal",
+        "reason": "unresolved_provider_identity",
+        "currency": "GBP",
+        "language": "en",
+        "provider": null,
+        "sourceAt": null,
+        "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "unavailable",
+        "variantId": "0002ba25-52c8-41fd-af60-a7474928b0bf",
+        "confidence": 0,
+        "printingId": "32ad68bc-a626-44ed-aed7-738e41714e7c",
+        "staleAfter": null,
+        "finishMatch": false,
+        "retrievedAt": null,
+        "evidenceType": "none",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": false,
+        "classification": "PRICE_UNAVAILABLE",
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "ja",
+      "classification": "ESTIMATED_VALUE",
+      "variant_id": "17fd5ec5-e3b0-40c2-a90a-3006ddd4c317",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "520d745d-3f2d-4921-8ecd-4e4ff695493a",
+        "value": 2,
+        "finish": "normal",
+        "reason": null,
+        "currency": "GBP",
+        "language": "ja",
+        "provider": "tcgcsv",
+        "sourceAt": "2026-10-04T20:05:38+00:00",
+        "checkedAt": "2026-10-05T16:32:18.920089+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "17fd5ec5-e3b0-40c2-a90a-3006ddd4c317",
+        "confidence": 0.85,
+        "printingId": "0804fcb9-06ab-441f-b3ca-b460db9b9244",
+        "provenance": {
+          "scope": "exact_variant_market",
+          "value": 1.97,
+          "finish": "normal",
+          "set_id": "520d745d-3f2d-4921-8ecd-4e4ff695493a",
+          "currency": "GBP",
+          "language": "ja",
+          "provider": "tcgcsv",
+          "source_at": "2026-10-04T20:05:38+00:00",
+          "variant_id": "17fd5ec5-e3b0-40c2-a90a-3006ddd4c317",
+          "printing_id": "0804fcb9-06ab-441f-b3ca-b460db9b9244",
+          "stale_after": "2026-10-06T20:05:38+00:00",
+          "retrieved_at": "2026-10-04T20:43:06.852913+00:00",
+          "variant_code": "normal",
+          "source_record": {
+            "set_id": "520d745d-3f2d-4921-8ecd-4e4ff695493a",
+            "subtype": "Normal",
+            "group_id": 23689,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-04T20:05:38+00:00",
+            "product_id": 573632,
+            "variant_id": "17fd5ec5-e3b0-40c2-a90a-3006ddd4c317",
+            "category_id": 85,
+            "printing_id": "0804fcb9-06ab-441f-b3ca-b460db9b9244",
+            "recorded_at": "2026-10-04T20:43:06.852913+00:00",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "exchange_rate": 0.757532293986637,
+            "language_code": "ja",
+            "original_price": 2.6,
+            "central_estimate": 1.97,
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+        },
+        "staleAfter": "2026-10-06T20:05:38+00:00",
+        "finishMatch": true,
+        "retrievedAt": "2026-10-04T20:43:06.852913+00:00",
+        "evidenceType": "exact_variant_market",
+        "languageMatch": true,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "ESTIMATED_VALUE",
+        "marketSignalValue": 1.97,
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "ja",
+      "classification": "ESTIMATED_VALUE",
+      "variant_id": "19bdc609-fb4a-4ad7-83e5-2094b8bcff45",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "d0dbab35-0a77-4dcf-a464-88bb0950bdc8",
+        "value": 2,
+        "finish": "normal",
+        "reason": null,
+        "currency": "GBP",
+        "language": "ja",
+        "provider": "tcgcsv",
+        "sourceAt": "2026-10-04T20:05:38+00:00",
+        "checkedAt": "2026-10-05T16:32:18.920089+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "19bdc609-fb4a-4ad7-83e5-2094b8bcff45",
+        "confidence": 0.85,
+        "printingId": "d6d7ee9d-b524-4c70-bfb8-94f68fda4ff6",
+        "provenance": {
+          "scope": "exact_variant_market",
+          "value": 1.96,
+          "finish": "normal",
+          "set_id": "d0dbab35-0a77-4dcf-a464-88bb0950bdc8",
+          "currency": "GBP",
+          "language": "ja",
+          "provider": "tcgcsv",
+          "source_at": "2026-10-04T20:05:38+00:00",
+          "variant_id": "19bdc609-fb4a-4ad7-83e5-2094b8bcff45",
+          "printing_id": "d6d7ee9d-b524-4c70-bfb8-94f68fda4ff6",
+          "stale_after": "2026-10-06T20:05:38+00:00",
+          "retrieved_at": "2026-10-04T20:43:10.458663+00:00",
+          "variant_code": "normal",
+          "source_record": {
+            "set_id": "d0dbab35-0a77-4dcf-a464-88bb0950bdc8",
+            "subtype": "Normal",
+            "group_id": 23690,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-04T20:05:38+00:00",
+            "product_id": 574536,
+            "variant_id": "19bdc609-fb4a-4ad7-83e5-2094b8bcff45",
+            "category_id": 85,
+            "printing_id": "d6d7ee9d-b524-4c70-bfb8-94f68fda4ff6",
+            "recorded_at": "2026-10-04T20:43:10.458663+00:00",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "exchange_rate": 0.757532293986637,
+            "language_code": "ja",
+            "original_price": 2.59,
+            "central_estimate": 1.96,
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+        },
+        "staleAfter": "2026-10-06T20:05:38+00:00",
+        "finishMatch": true,
+        "retrievedAt": "2026-10-04T20:43:10.458663+00:00",
+        "evidenceType": "exact_variant_market",
+        "languageMatch": true,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "ESTIMATED_VALUE",
+        "marketSignalValue": 1.96,
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "ja",
+      "classification": "MARKET_GUIDE",
+      "variant_id": "0421d637-c79b-521b-a38c-5686650fccb0",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+        "value": 716.29,
+        "finish": "holo",
+        "reason": null,
+        "currency": "GBP",
+        "language": "ja",
+        "provider": "tcgcsv",
+        "sourceAt": "2026-10-04T20:05:38+00:00",
+        "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "0421d637-c79b-521b-a38c-5686650fccb0",
+        "confidence": 0.85,
+        "printingId": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+        "provenance": {
+          "scope": "exact_variant_market",
+          "value": 716.29,
+          "finish": "holo",
+          "set_id": "903d5baa-27c7-5690-b1d7-2395c770204a",
+          "currency": "GBP",
+          "language": "ja",
+          "provider": "tcgcsv",
+          "source_at": "2026-10-04T20:05:38+00:00",
+          "variant_id": "0421d637-c79b-521b-a38c-5686650fccb0",
+          "printing_id": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+          "stale_after": "2026-10-06T20:05:38+00:00",
+          "retrieved_at": "2026-10-04T21:23:16.299716+00:00",
+          "variant_code": "holo",
+          "source_record": {
+            "set_id": "903d5baa-27c7-5690-b1d7-2395c770204a",
+            "subtype": "Holofoil",
+            "group_id": 24791,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-04T20:05:38+00:00",
+            "product_id": 709267,
+            "variant_id": "0421d637-c79b-521b-a38c-5686650fccb0",
+            "category_id": 85,
+            "printing_id": "d38f99e1-4d94-592d-b99f-8bd465c81ae0",
+            "recorded_at": "2026-10-04T21:23:16.299716+00:00",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "exchange_rate": 0.757532293986637,
+            "language_code": "ja",
+            "original_price": 945.56,
+            "central_estimate": 716.29,
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+        },
+        "staleAfter": "2026-10-06T20:05:38+00:00",
+        "finishMatch": true,
+        "retrievedAt": "2026-10-04T21:23:16.299716+00:00",
+        "evidenceType": "exact_variant_market",
+        "languageMatch": true,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "MARKET_GUIDE",
+        "marketSignalValue": 716.29,
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "ja",
+      "classification": "MARKET_GUIDE",
+      "variant_id": "8c8e91c0-ea48-4d74-a720-05b7cdf99ced",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "fe68fe5a-4e40-477a-8bcc-0fa35ef392ef",
+        "value": 606.03,
+        "finish": "holo",
+        "reason": null,
+        "currency": "GBP",
+        "language": "ja",
+        "provider": "tcgcsv",
+        "sourceAt": "2026-10-04T20:05:38+00:00",
+        "checkedAt": "2026-10-05T16:44:32.865499+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "8c8e91c0-ea48-4d74-a720-05b7cdf99ced",
+        "confidence": 0.85,
+        "printingId": "c7431580-da00-4230-8404-e626721116fd",
+        "provenance": {
+          "scope": "exact_variant_market",
+          "value": 606.03,
+          "finish": "holo",
+          "set_id": "fe68fe5a-4e40-477a-8bcc-0fa35ef392ef",
+          "currency": "GBP",
+          "language": "ja",
+          "provider": "tcgcsv",
+          "source_at": "2026-10-04T20:05:38+00:00",
+          "variant_id": "8c8e91c0-ea48-4d74-a720-05b7cdf99ced",
+          "printing_id": "c7431580-da00-4230-8404-e626721116fd",
+          "stale_after": "2026-10-06T20:05:38+00:00",
+          "retrieved_at": "2026-10-04T20:44:43.91153+00:00",
+          "variant_code": "holo",
+          "source_record": {
+            "set_id": "fe68fe5a-4e40-477a-8bcc-0fa35ef392ef",
+            "subtype": "Holofoil",
+            "group_id": 23709,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-04T20:05:38+00:00",
+            "product_id": 572846,
+            "variant_id": "8c8e91c0-ea48-4d74-a720-05b7cdf99ced",
+            "category_id": 85,
+            "printing_id": "c7431580-da00-4230-8404-e626721116fd",
+            "recorded_at": "2026-10-04T20:44:43.91153+00:00",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "exchange_rate": 0.757532293986637,
+            "language_code": "ja",
+            "original_price": 800,
+            "central_estimate": 606.03,
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+        },
+        "staleAfter": "2026-10-06T20:05:38+00:00",
+        "finishMatch": true,
+        "retrievedAt": "2026-10-04T20:44:43.91153+00:00",
+        "evidenceType": "exact_variant_market",
+        "languageMatch": true,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "MARKET_GUIDE",
+        "marketSignalValue": 606.03,
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "ja",
+      "classification": "PRICE_UNAVAILABLE",
+      "variant_id": "00113adf-cd7e-4214-b467-04bb528bae21",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "c20234cb-c629-4383-b107-c49b38b682ae",
+        "value": null,
+        "finish": "normal",
+        "reason": "no_provider_quote",
+        "currency": "GBP",
+        "language": "ja",
+        "provider": null,
+        "sourceAt": null,
+        "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "unavailable",
+        "variantId": "00113adf-cd7e-4214-b467-04bb528bae21",
+        "confidence": 0,
+        "printingId": "056b7550-283b-4ef5-b434-6fc4815c102b",
+        "staleAfter": null,
+        "finishMatch": false,
+        "retrievedAt": null,
+        "evidenceType": "none",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": false,
+        "classification": "PRICE_UNAVAILABLE",
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "ja",
+      "classification": "PRICE_UNAVAILABLE",
+      "variant_id": "00180499-760f-4ca6-8fd9-e039393a0fe2",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+        "value": null,
+        "finish": "normal",
+        "reason": "unresolved_provider_identity",
+        "currency": "GBP",
+        "language": "ja",
+        "provider": null,
+        "sourceAt": null,
+        "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "unavailable",
+        "variantId": "00180499-760f-4ca6-8fd9-e039393a0fe2",
+        "confidence": 0,
+        "printingId": "5f91ad11-0be9-46c2-b448-26e9d40c1f0c",
+        "staleAfter": null,
+        "finishMatch": false,
+        "retrievedAt": null,
+        "evidenceType": "none",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": false,
+        "classification": "PRICE_UNAVAILABLE",
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "zh-cn",
+      "classification": "PRICE_UNAVAILABLE",
+      "variant_id": "00027c85-111b-4c36-8ef3-884c9daf93ff",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "92ffa013-edb7-4c49-8ed1-c50f0162d41d",
+        "value": null,
+        "finish": "normal",
+        "reason": "unsupported_provider_language",
+        "currency": "GBP",
+        "language": "zh-cn",
+        "provider": null,
+        "sourceAt": null,
+        "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "unavailable",
+        "variantId": "00027c85-111b-4c36-8ef3-884c9daf93ff",
+        "confidence": 0,
+        "printingId": "e07594be-1c67-4549-a191-72d47a6219dd",
+        "staleAfter": null,
+        "finishMatch": false,
+        "retrievedAt": null,
+        "evidenceType": "none",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": false,
+        "classification": "PRICE_UNAVAILABLE",
+        "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "zh-cn",
+      "classification": "PRICE_UNAVAILABLE",
+      "variant_id": "0005747c-c08b-4372-b915-bc2f6ec55d01",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "42e798dd-f171-4f0b-916e-2386fd2a353f",
+        "value": null,
+        "finish": "reverse_holo",
+        "reason": "unsupported_provider_language",
+        "currency": "GBP",
+        "language": "zh-cn",
+        "provider": null,
+        "sourceAt": null,
+        "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "unavailable",
+        "variantId": "0005747c-c08b-4372-b915-bc2f6ec55d01",
+        "confidence": 0,
+        "printingId": "157a1705-cda6-446a-b460-859a57740d26",
+        "staleAfter": null,
+        "finishMatch": false,
+        "retrievedAt": null,
+        "evidenceType": "none",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": false,
+        "classification": "PRICE_UNAVAILABLE",
+        "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "zh-tw",
+      "classification": "ESTIMATED_VALUE",
+      "variant_id": "d0bef489-40ff-4b2c-b959-cb813e165d9e",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "3c0c1ae1-7d62-4384-97f1-734ff9460162",
+        "value": 1.7,
+        "finish": "normal",
+        "reason": null,
+        "currency": "GBP",
+        "language": "zh-tw",
+        "provider": "cardmarket_public",
+        "sourceAt": "2026-10-04T00:40:55+00:00",
+        "checkedAt": "2026-10-05T16:45:43.362949+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "d0bef489-40ff-4b2c-b959-cb813e165d9e",
+        "confidence": 0.45,
+        "printingId": "f6dc3905-55c0-44f9-8b2c-9a3efee68d9a",
+        "provenance": {
+          "scope": "blended_printing_market",
+          "value": 1.73,
+          "finish": null,
+          "set_id": "3c0c1ae1-7d62-4384-97f1-734ff9460162",
+          "mapping": {
+            "method": "reviewed_exact",
+            "printing_id": "f6dc3905-55c0-44f9-8b2c-9a3efee68d9a",
+            "reviewed_at": "2026-10-04T09:52:11.170336+00:00",
+            "mapping_scope": "blended_printing",
+            "finish_evidence": {
+              "type": "blended_public_guide_not_exact_finish",
+              "scope": "blended_public_guide_not_exact_finish",
+              "finishCodes": [
+                "normal",
+                "reverse_holo"
+              ],
+              "retainedPriceGuideSha256": "acdd6ed470fa738b7dd318d7548df425123d83b51d4ab258b0a0de43d9cf8e82",
+              "retainedPriceGuideCreatedAt": "2026-10-04T02:40:55+0200"
+            },
+            "review_reference": "root20261004/cardmarket-reviewed-exact-production; stage-provenance=235b; production-provenance=8c928e4d-37f2-48a7-a312-fb2fe787cf99; full-canonical-crosswalk=docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+            "variant_evidence": {
+              "type": "current_tcgdex_canonical_printing",
+              "variantIds": [
+                "cc082be7-8578-42bc-8cd9-e9b3f377ba99",
+                "d0bef489-40ff-4b2c-b959-cb813e165d9e"
+              ],
+              "externalIds": [
+                "SV2a-064",
+                "SV2a-064:reverse_holo"
+              ]
+            },
+            "language_evidence": {
+              "type": "current_tcgdex_canonical_language",
+              "provenance": {
+                "source": "tcgdex",
+                "variantIds": [
+                  "cc082be7-8578-42bc-8cd9-e9b3f377ba99",
+                  "d0bef489-40ff-4b2c-b959-cb813e165d9e"
+                ],
+                "externalIds": [
+                  "SV2a-064",
+                  "SV2a-064:reverse_holo"
+                ],
+                "finishCodes": [
+                  "normal",
+                  "reverse_holo"
+                ],
+                "finishScope": "blended_public_guide_not_exact_finish",
+                "rawRecordIds": [
+                  "0797f6c3-693e-4c5b-954f-6ecf1060337a",
+                  "13b3cba5-91d3-4399-94b8-4a2b45b70611"
+                ],
+                "payloadHashes": [
+                  "105de79399996c7720dd98267fd3642f01368744f2cc9846ae700a1b8db5cbe4",
+                  "dbb4a0964eb31947e0480d42207adaa84fa25f090546a84fa2c3a23e3c5b6342"
+                ]
+              },
+              "languageCode": "zh-tw",
+              "productionCrosswalk": {
+                "type": "full_cohort_current_canonical_identity",
+                "contract": "same printing UUID, language, collector number, set UUID and code, reviewed variant IDs, and reviewed TCGdex external IDs",
+                "validation": "stage and production current published physical identities matched exactly; production catalogue version may differ by language",
+                "validatedAt": "2026-10-04T09:44:48.598Z",
+                "crosswalkReceipt": "docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+                "stageProvenanceRun": "235b",
+                "sourceReviewReference": "root20261004/provenance235b/fullcohort/querychecks",
+                "productionProvenanceRun": "8c928e4d-37f2-48a7-a312-fb2fe787cf99",
+                "sourceCatalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+                "productionCatalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+              },
+              "retainedProductsSha256": "14a74405a86acfb80b42168e5cc019c0eae67925e8eee9893f53d35e4922d6ce",
+              "retainedProductsCreatedAt": "2026-10-03T11:44:53+0200"
+            },
+            "provider_product_id": 719506,
+            "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+            "provider_category_id": 51
+          },
+          "currency": "GBP",
+          "language": null,
+          "provider": "cardmarket_public",
+          "source_at": "2026-10-04T00:40:55+00:00",
+          "printing_id": "f6dc3905-55c0-44f9-8b2c-9a3efee68d9a",
+          "stale_after": "2026-10-06T00:40:55+00:00",
+          "retrieved_at": "2026-10-04T10:33:37.123536+00:00",
+          "variant_code": null,
+          "source_record": {
+            "printing_id": "f6dc3905-55c0-44f9-8b2c-9a3efee68d9a",
+            "recorded_at": "2026-10-04T10:33:37.123536+00:00",
+            "stale_after": "2026-10-06T00:40:55+00:00",
+            "display_scope": "blended_general_estimate",
+            "exchange_rate": 0.85033,
+            "original_price": 2.03,
+            "selected_field": "trend",
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "EUR",
+            "source_created_at": "2026-10-04T00:40:55+00:00",
+            "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+            "central_estimate_gbp": 1.73,
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "price_guide_revision_id": "88df9af6-8055-4bf0-9c21-9c230681befe",
+            "product_catalogue_revision_id": "18956fc2-1835-42c2-809d-de4b45ac04e9"
+          },
+          "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+        },
+        "staleAfter": "2026-10-06T00:40:55+00:00",
+        "finishMatch": false,
+        "retrievedAt": "2026-10-04T10:33:37.123536+00:00",
+        "evidenceType": "blended_printing_market",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "ESTIMATED_VALUE",
+        "marketSignalValue": 1.73,
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "zh-tw",
+      "classification": "ESTIMATED_VALUE",
+      "variant_id": "18b95ea4-1ee0-47c9-9f26-4c4db042728c",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "a7f84e96-a008-47f0-8b41-a05de3f23618",
+        "value": 0.9,
+        "finish": "normal",
+        "reason": null,
+        "currency": "GBP",
+        "language": "zh-tw",
+        "provider": "cardmarket_public",
+        "sourceAt": "2026-10-04T00:40:55+00:00",
+        "checkedAt": "2026-10-05T16:32:18.920089+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "fresh",
+        "variantId": "18b95ea4-1ee0-47c9-9f26-4c4db042728c",
+        "confidence": 0.45,
+        "printingId": "5d3fef57-2e0c-44bd-976c-55080a2b3ccc",
+        "provenance": {
+          "scope": "blended_printing_market",
+          "value": 0.9,
+          "finish": null,
+          "set_id": "a7f84e96-a008-47f0-8b41-a05de3f23618",
+          "mapping": {
+            "method": "reviewed_exact",
+            "printing_id": "5d3fef57-2e0c-44bd-976c-55080a2b3ccc",
+            "reviewed_at": "2026-10-04T09:52:05.598046+00:00",
+            "mapping_scope": "blended_printing",
+            "finish_evidence": {
+              "type": "blended_public_guide_not_exact_finish",
+              "scope": "blended_public_guide_not_exact_finish",
+              "finishCodes": [
+                "normal"
+              ],
+              "retainedPriceGuideSha256": "acdd6ed470fa738b7dd318d7548df425123d83b51d4ab258b0a0de43d9cf8e82",
+              "retainedPriceGuideCreatedAt": "2026-10-04T02:40:55+0200"
+            },
+            "review_reference": "root20261004/cardmarket-reviewed-exact-production; stage-provenance=235b; production-provenance=8c928e4d-37f2-48a7-a312-fb2fe787cf99; full-canonical-crosswalk=docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+            "variant_evidence": {
+              "type": "current_tcgdex_canonical_printing",
+              "variantIds": [
+                "18b95ea4-1ee0-47c9-9f26-4c4db042728c"
+              ],
+              "externalIds": [
+                "S11-050"
+              ]
+            },
+            "language_evidence": {
+              "type": "current_tcgdex_canonical_language",
+              "provenance": {
+                "source": "tcgdex",
+                "variantIds": [
+                  "18b95ea4-1ee0-47c9-9f26-4c4db042728c"
+                ],
+                "externalIds": [
+                  "S11-050"
+                ],
+                "finishCodes": [
+                  "normal"
+                ],
+                "finishScope": "blended_public_guide_not_exact_finish",
+                "rawRecordIds": [
+                  "cdc97cae-64bd-4cea-91d6-53fe5aff2cd5"
+                ],
+                "payloadHashes": [
+                  "df01111ad4e0b04d6faad711e3f48e6058203d81586a2c61b7f4e827f9e1354d"
+                ]
+              },
+              "languageCode": "zh-tw",
+              "productionCrosswalk": {
+                "type": "full_cohort_current_canonical_identity",
+                "contract": "same printing UUID, language, collector number, set UUID and code, reviewed variant IDs, and reviewed TCGdex external IDs",
+                "validation": "stage and production current published physical identities matched exactly; production catalogue version may differ by language",
+                "validatedAt": "2026-10-04T09:44:48.598Z",
+                "crosswalkReceipt": "docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+                "stageProvenanceRun": "235b",
+                "sourceReviewReference": "root20261004/provenance235b/fullcohort/querychecks",
+                "productionProvenanceRun": "8c928e4d-37f2-48a7-a312-fb2fe787cf99",
+                "sourceCatalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+                "productionCatalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+              },
+              "retainedProductsSha256": "14a74405a86acfb80b42168e5cc019c0eae67925e8eee9893f53d35e4922d6ce",
+              "retainedProductsCreatedAt": "2026-10-03T11:44:53+0200"
+            },
+            "provider_product_id": 667925,
+            "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+            "provider_category_id": 51
+          },
+          "currency": "GBP",
+          "language": null,
+          "provider": "cardmarket_public",
+          "source_at": "2026-10-04T00:40:55+00:00",
+          "printing_id": "5d3fef57-2e0c-44bd-976c-55080a2b3ccc",
+          "stale_after": "2026-10-06T00:40:55+00:00",
+          "retrieved_at": "2026-10-04T10:33:30.734304+00:00",
+          "variant_code": null,
+          "source_record": {
+            "printing_id": "5d3fef57-2e0c-44bd-976c-55080a2b3ccc",
+            "recorded_at": "2026-10-04T10:33:30.734304+00:00",
+            "stale_after": "2026-10-06T00:40:55+00:00",
+            "display_scope": "blended_general_estimate",
+            "exchange_rate": 0.85033,
+            "original_price": 1.06,
+            "selected_field": "trend",
+            "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+            "original_currency": "EUR",
+            "source_created_at": "2026-10-04T00:40:55+00:00",
+            "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+            "central_estimate_gbp": 0.9,
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "price_guide_revision_id": "88df9af6-8055-4bf0-9c21-9c230681befe",
+            "product_catalogue_revision_id": "18956fc2-1835-42c2-809d-de4b45ac04e9"
+          },
+          "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+        },
+        "staleAfter": "2026-10-06T00:40:55+00:00",
+        "finishMatch": false,
+        "retrievedAt": "2026-10-04T10:33:30.734304+00:00",
+        "evidenceType": "blended_printing_market",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": true,
+        "classification": "ESTIMATED_VALUE",
+        "marketSignalValue": 0.9,
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "zh-tw",
+      "classification": "PRICE_UNAVAILABLE",
+      "variant_id": "00006aeb-fca8-4524-903d-586eabb913ed",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "ff1e5d11-3043-4137-a0a2-bc2b2da43d9e",
+        "value": null,
+        "finish": "normal",
+        "reason": "unsupported_provider_language",
+        "currency": "GBP",
+        "language": "zh-tw",
+        "provider": null,
+        "sourceAt": null,
+        "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "unavailable",
+        "variantId": "00006aeb-fca8-4524-903d-586eabb913ed",
+        "confidence": 0,
+        "printingId": "e25b8109-26d8-46a1-a6b7-1aaf25011a47",
+        "staleAfter": null,
+        "finishMatch": false,
+        "retrievedAt": null,
+        "evidenceType": "none",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": false,
+        "classification": "PRICE_UNAVAILABLE",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "usableForHoldingsValuation": false
+      }
+    },
+    {
+      "language_code": "zh-tw",
+      "classification": "PRICE_UNAVAILABLE",
+      "variant_id": "00069fda-6c29-404c-8a80-769e81945a0b",
+      "resolution": {
+        "exact": false,
+        "grade": null,
+        "setId": "749e4fbd-3eda-46e3-8a89-c6244595e6a2",
+        "value": null,
+        "finish": "normal",
+        "reason": "unsupported_provider_language",
+        "currency": "GBP",
+        "language": "zh-tw",
+        "provider": null,
+        "sourceAt": null,
+        "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+        "condition": "raw_market_unspecified",
+        "freshness": "unavailable",
+        "variantId": "00069fda-6c29-404c-8a80-769e81945a0b",
+        "confidence": 0,
+        "printingId": "75a6ce11-7065-44d6-af17-635c5617fd00",
+        "staleAfter": null,
+        "finishMatch": false,
+        "retrievedAt": null,
+        "evidenceType": "none",
+        "languageMatch": false,
+        "policyVersion": "classified-v1",
+        "printingMatch": false,
+        "classification": "PRICE_UNAVAILABLE",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "usableForHoldingsValuation": false
+      }
+    }
+  ],
+  "validations": {
+    "classificationPolicyCases": 39,
+    "backendUnitTests": 46,
+    "typecheck": true,
+    "typecheckBackend": true,
+    "lint": {
+      "passed": true,
+      "preexistingWarnings": 9,
+      "cache": false
+    },
+    "apiContractOperations": 41,
+    "pricingV2": true,
+    "cataloguePriceCache": true,
+    "personalPricing": true,
+    "collectionPricingUi": true,
+    "offlineFixtureNoNetwork": true
+  },
+  "browserOwnerSession": {
+    "observedAt": "2026-10-05",
+    "available": false,
+    "scope": "Connected Chrome and in-app browser inventory; no Stackr app tab. Unrelated tabs were not opened."
+  },
+  "providerDependencies": [
+    {
+      "provider": "CardTrader",
+      "state": "API requires bearer token; no Stackr credential configured",
+      "source": "https://www.cardtrader.com/it/docs/api/full/reference"
+    },
+    {
+      "provider": "PriceCharting",
+      "state": "API entitlement/subscription and token missing",
+      "source": "https://www.pricecharting.com/api-documentation"
+    },
+    {
+      "provider": "eBay sold",
+      "state": "Marketplace Insights is limited-release; no authorized completed-sales runtime lane",
+      "source": "https://edp.ebay.com/api-docs/buy/marketplace-insights/resources/methods"
+    },
+    {
+      "provider": "eBay Browse",
+      "state": "Implemented asking-price adapter; no successful runtime read demonstrated, not completed-sale evidence"
+    },
+    {
+      "provider": "PikaQian",
+      "state": "Approved metadata-only adapter, no retained price feed or source base URL",
+      "language": "zh-cn"
+    },
+    {
+      "provider": "TCGdex zh-cn",
+      "state": "Observed metadata references can point to Traditional Chinese; not accepted as Simplified Chinese price proof"
+    }
+  ],
+  "migrationLedgerNote": "Canonical filenames use actual production-applied versions. Staging connector assigned earlier timestamps to the same named migrations. All five deployed function bodies/configuration hashes agree; aliases are recorded explicitly rather than rewriting applied migrations."
+}

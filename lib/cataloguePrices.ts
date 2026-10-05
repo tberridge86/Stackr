@@ -19,7 +19,9 @@ function toStackrApiLanguage(value?: string | null) {
 }
 
 export function cataloguePriceScope(accountScope: string, options: CataloguePriceOptions) {
-  return `${accountScope}|${toStackrApiLanguage(options.language) ?? 'all'}|${options.estimateMode ?? 'exact'}|raw_near_mint|GBP`;
+  const mode = options.estimateMode ?? 'exact';
+  const condition = mode === 'general' ? 'raw_market_unspecified' : 'raw_near_mint';
+  return `${accountScope}|${toStackrApiLanguage(options.language) ?? 'all'}|${mode}|${condition}|GBP`;
 }
 
 export async function fetchCataloguePrices(references: string[], options: CataloguePriceOptions = {}, client = stackrApiClient) {
@@ -57,10 +59,16 @@ export function cataloguePriceDisplay(row: StackrCataloguePriceRow) {
   const providerLabel = provider === 'cardmarket_public' ? 'Cardmarket'
     : provider === 'tcgplayer' || provider === 'tcgcsv' ? 'TCGplayer'
       : null;
+  const classificationLabel = price?.classification === 'EXACT_PRICE' ? 'Exact price'
+    : price?.classification === 'MARKET_GUIDE' ? 'Market guide'
+      : price?.classification === 'ESTIMATED_VALUE' ? 'Estimated value'
+        : price?.classification === 'PRICE_UNAVAILABLE' ? 'Price unavailable' : null;
   return {
     displayPrice: value, currency: price?.currency ?? 'GBP', priceType: 'market_estimate',
     updatedAt: price?.calculatedAt ?? null, pricingStatus: value == null ? 'unavailable' : stale ? 'stale' : 'priced',
-    sourceLabel: `${stale ? 'Stale ' : ''}${providerLabel ? `${providerLabel} ` : ''}${general ? 'general market estimate' : 'market estimate'}`,
+    sourceLabel: classificationLabel
+      ? `${stale ? 'Stale ' : ''}${providerLabel ? `${providerLabel} · ` : ''}${classificationLabel}`
+      : `${stale ? 'Stale ' : ''}${providerLabel ? `${providerLabel} ` : ''}${general ? 'general market estimate' : 'market estimate'}`,
     confidence: price?.confidence.label ?? null, unavailableReason: row.unavailableReason,
     priceBasis: general ? 'general' as const : 'exact' as const,
   };
