@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createBulkFeedLoader, mainCatalogueBulkPrices, planCatalogueBulkPrices, preflightBlockedPrintingProducts, providerSubtype, runCatalogueBulkSweep, selectBulkProduct, validateBulkFx } from './refresh-catalogue-bulk-prices.mjs';
+import { BULK_PRICE_WRITE_BATCH_SIZE, createBulkFeedLoader, mainCatalogueBulkPrices, planCatalogueBulkPrices, preflightBlockedPrintingProducts, providerSubtype, runCatalogueBulkSweep, selectBulkProduct, validateBulkFx } from './refresh-catalogue-bulk-prices.mjs';
 
 const now = Date.parse('2026-10-03T12:00:00Z');
 const fx = { rate: 0.75, at: '2026-10-03T10:00:00Z', source: 'fixture-fx' };
@@ -73,6 +73,9 @@ const sweep = await runCatalogueBulkSweep({ datasetAt: '2026-10-03T00:00:00Z', f
   loader: { load: async (key) => ({ results: key.startsWith('tcgplayer/3/') ? (key.endsWith('products') ? enLargeProducts : enLargeProducts.map((p) => ({ productId: p.productId, subTypeName: 'Normal', marketPrice: 1 }))) : (key.endsWith('products') ? jaLargeProducts : jaLargeProducts.map((p) => ({ productId: p.productId, subTypeName: 'Normal', marketPrice: 4 }))) }) },
   store: async ({ results }) => { stored.push(results); return results.length; }, finish: async (value) => { finished.push(value); return true; } });
 assert.equal(sweep.cards, 602); assert.equal(sweep.priced, 602); assert.equal(stored.flat().length, 602); assert.equal(finished.filter((v) => v.status === 'complete').length, 2);
+assert.ok(stored.every(rows => rows.length <= BULK_PRICE_WRITE_BATCH_SIZE), 'large candidate pages never become a single long write transaction');
+assert.equal(new Set(stored.flat().map(row => row.variantId)).size, 602, 'splitting writes retains every candidate exactly once');
+assert.equal(finished[0].stats.pages, 2); assert.equal(finished[0].stats.writeBatches, 16, 'read pages and write batches are distinct checkpoint evidence');
 assert.deepEqual(sweep.outcomeSeed,{ pages: 2, scanned: 602, written: 602, complete: true },'publication outcome seed resumes in bounded pages before provider work');
 
 // A bounded invocation reports partial work and the next run resumes its durable
@@ -83,6 +86,18 @@ assert.equal((await runCatalogueBulkSweep({ ...resumeOptions, maxGroups: 1 })).s
 assert.equal((await runCatalogueBulkSweep({ ...resumeOptions, maxGroups: 1 })).status, 'partial');
 assert.equal((await runCatalogueBulkSweep({ ...resumeOptions, maxGroups: 1 })).status, 'complete');
 assert.equal(resumeFinished.filter((row) => row.status === 'complete').length, 2);
+
+// A partial acknowledgement cannot complete a group. Previously committed
+// batches remain durable, and the next claim replans/replays the whole group.
+let failedStoreCalls = 0; const failedFinished = [];
+const failedSweep = await runCatalogueBulkSweep({
+  ...resumeOptions, maxGroups: 1, claim: async () => claimed[0],
+  store: async ({ results }) => ++failedStoreCalls === 2 ? results.length - 1 : results.length,
+  finish: async row => { failedFinished.push(row); return true; },
+});
+assert.equal(failedStoreCalls, 2); assert.equal(failedSweep.deferred, 1);
+assert.equal(failedFinished.length, 1); assert.equal(failedFinished[0].status, 'failed');
+assert.match(failedFinished[0].stats.error, /complete write batch/);
 
 // The duplicate is separated by the 500-card boundary. Preflight must detect it
 // before storing page one, so neither canonical alias receives the quote/map.

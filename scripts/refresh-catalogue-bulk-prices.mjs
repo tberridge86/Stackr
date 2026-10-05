@@ -9,6 +9,9 @@ import { readPagedCatalogueBulkCoverage } from './catalogue-bulk-coverage-report
 
 // TCGCSV's supported Pokemon identity boundaries. Never cross a category/language.
 export const TCGCSV_CATALOGUES = Object.freeze([{ categoryId: 3, language: 'en' }, { categoryId: 85, language: 'ja' }]);
+// Keep each guarded price transaction below the database deadline. Candidate
+// pagination and collision checks still cover the complete provider group.
+export const BULK_PRICE_WRITE_BATCH_SIZE = 40;
 const keyOf = (categoryId, groupId, suffix) => `tcgplayer/${categoryId}/${groupId}${suffix ? `/${suffix}` : ''}`;
 const normal = (value) => String(value ?? '').normalize('NFKC').toLocaleLowerCase().replace(/&/g, 'and').replace(/[\s\p{P}\p{S}_]+/gu, '');
 const number = (value) => String(value ?? '').normalize('NFKC').trim().split('/')[0].replace(/^0+(?=\d)/, '');
@@ -221,13 +224,17 @@ export async function runCatalogueBulkSweep({ begin, seedOutcomes = async () => 
       } while (true);
       const group = { categoryId: job.categoryId, groupId: job.groupId }; const blockedMappingKeys = preflightBlockedMappingKeys({ candidates: allCandidates, group, products: feed.products });
       const blockedPrintingProducts = preflightBlockedPrintingProducts({ candidates: allCandidates, group, products: feed.products });
-      let pages = 0; let groupCards = 0; let groupPriced = 0;
+      let pages = 0; let writeBatches = 0; let groupCards = 0; let groupPriced = 0;
       for (let offset = 0; offset < allCandidates.length; offset += 500) {
         const page = allCandidates.slice(offset, offset + 500); const plan = planCatalogueBulkPrices({ candidates: page, group, products: feed.products, prices: feed.prices, blockedMappingKeys, blockedPrintingProducts, datasetAt, fx, now });
-        const stored = await store({ results: plan.results }); if (stored !== page.length) throw Error('Price storage did not acknowledge the complete candidate page.');
+        for (let start = 0; start < plan.results.length; start += BULK_PRICE_WRITE_BATCH_SIZE) {
+          const results = plan.results.slice(start, start + BULK_PRICE_WRITE_BATCH_SIZE);
+          const stored = await store({ results }); if (stored !== results.length) throw Error('Price storage did not acknowledge the complete write batch.');
+          writeBatches++;
+        }
         pages++; groupCards += page.length; groupPriced += plan.priced;
       }
-      if (!await finish({ runId: run.runId, categoryId: job.categoryId, groupId: job.groupId, token: job.leaseToken, status: 'complete', stats: { pages, cards: groupCards, priced: groupPriced } })) throw Error('Sweep checkpoint lease expired.'); summary.complete++; summary.cards += groupCards; summary.priced += groupPriced;
+      if (!await finish({ runId: run.runId, categoryId: job.categoryId, groupId: job.groupId, token: job.leaseToken, status: 'complete', stats: { pages, writeBatches, cards: groupCards, priced: groupPriced } })) throw Error('Sweep checkpoint lease expired.'); summary.complete++; summary.cards += groupCards; summary.priced += groupPriced;
     } catch (error) { const saved = await finish({ runId: run.runId, categoryId: job.categoryId, groupId: job.groupId, token: job.leaseToken, status: 'failed', retrySeconds: Math.min(86400, Math.max(60, Number(error.retryAfter) || 600)), stats: { error: String(error.message ?? error).slice(0, 500), rpc: error?.rpcName ?? null } }); if (!saved) throw error; summary.deferred++; }
     await onProgress({ ...summary });
   }
