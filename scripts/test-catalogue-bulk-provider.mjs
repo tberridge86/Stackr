@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createBulkFeedLoader, mainCatalogueBulkPrices, planCatalogueBulkPrices, providerSubtype, runCatalogueBulkSweep, selectBulkProduct, validateBulkFx } from './refresh-catalogue-bulk-prices.mjs';
+import { createBulkFeedLoader, mainCatalogueBulkPrices, planCatalogueBulkPrices, preflightBlockedPrintingProducts, providerSubtype, runCatalogueBulkSweep, selectBulkProduct, validateBulkFx } from './refresh-catalogue-bulk-prices.mjs';
 
 const now = Date.parse('2026-10-03T12:00:00Z');
 const fx = { rate: 0.75, at: '2026-10-03T10:00:00Z', source: 'fixture-fx' };
@@ -37,6 +37,25 @@ assert.equal(jaPlan.results[0].mapping?.method, 'exact_set_code_number');
 assert.equal(jaPlan.results[0].quote?.subtype, 'Normal', 'the Japanese number path still requires the exact canonical finish');
 const collision = planCatalogueBulkPrices({ candidates: [base, { ...base, variant_id: 'same-provider-identity' }], group: enGroup, ...feed, datasetAt: '2026-10-03T00:00:00Z', fx, now });
 assert.ok(collision.results.every((row) => row.reason === 'ambiguous_provider_identity' && row.mapping === null), 'two canonical cards cannot claim one provider product/subtype');
+
+// A printing guide keeps basic-finish provenance and stronger product ownership.
+
+const printingRow = { ...base, printing_id:'printing-one', variant_code:'reverse_holo', finish_code:'reverse_holo' };
+const printingPlan = (prices, options={}) => planCatalogueBulkPrices({ candidates:[printingRow], group:enGroup, products:[enProduct], prices, datasetAt:'2026-10-03T00:00:00Z', fx, now, ...options });
+const basic = [{productId:30,subTypeName:'Normal',marketPrice:12}];
+const alternate = printingPlan(basic).results[0];
+assert.equal(alternate.reason,'no_provider_quote'); assert.equal(alternate.quote,null);
+assert.equal(alternate.mapping.subtype,'Reverse Holofoil'); assert.equal(alternate.printingQuote.subtype,'Normal');
+assert.equal(alternate.printingQuote.usableForExactVariant,false); assert.equal(alternate.printingQuote.usableForHoldingsValuation,false);
+assert.equal(printingPlan([...basic,basic[0]]).results[0].printingQuote,undefined,'duplicate finish rows are not chosen');
+assert.equal(printingPlan([{...basic[0],marketPrice:0}]).results[0].printingQuote,undefined);
+assert.equal(printingPlan([{...basic[0],marketPrice:0.001}]).results[0].printingQuote,undefined,'rounded GBP zero stays missing');
+const crossPages = [...Array.from({length:500},(_,n)=>({...base,variant_id:'unrelated-'+n,card_english_display_name:'Unrelated'})),
+  printingRow,{...base,printing_id:'another-printing',variant_id:'another-variant'}];
+const blockedPrintingProducts = preflightBlockedPrintingProducts({candidates:crossPages,group:enGroup,products:[enProduct]});
+assert.deepEqual([...blockedPrintingProducts],[30],'different finish claims across pages block printing estimates');
+assert.equal(printingPlan(basic,{blockedPrintingProducts}).results[0].printingQuote,undefined);
+assert.equal(printingPlan(basic,{candidates:[{...printingRow,language_code:'ja'}]}).results[0].printingQuote,undefined);
 
 // 600 identities exercise two set checkpoints and 500-card pagination. The
 // first group is deliberately paged 500 + 100, proving the prior cap is gone.

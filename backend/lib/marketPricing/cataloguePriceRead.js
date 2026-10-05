@@ -39,28 +39,28 @@ export function catalogueGeneralBase(rows) {
   return [...normals, ...(holos.length === 1 ? holos : [])];
 }
 
-function isMissingCardmarketGuideRpc(error) {
-  // Production can serve the TCGCSV guide before the additive Cardmarket
-  // migration is applied. Only the known absent-RPC responses are optional;
+function isMissingPrintingGuideRpc(error, name) {
+  // Additive printing guides can be deployed independently of the backend.
+  // Only known absent-RPC responses are optional;
   // permissions and database failures must still fail the bounded read.
   return ['42883', 'PGRST202'].includes(String(error?.code ?? ''))
-    || /read_cardmarket_blended_general_prices.*(?:does not exist|could not find)/i.test(String(error?.message ?? ''));
+    || (String(error?.message ?? '').includes(name) && /does not exist|could not find/i.test(String(error?.message ?? '')));
 }
 
-async function readCardmarketBlendedGeneralQuotes(supabase, candidates) {
+async function readPrintingGeneralQuotes(supabase, candidates, name) {
   const printingIds = [...new Set(candidates.map((candidate) => candidate?.printing_id)
     .filter((printingId) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(printingId))))];
   if (!printingIds.length) return new Map();
   const quotes = new Map();
   // Candidate rows can include multiple variants for a 100-reference page.
-  // The RPC itself caps a service-only batch at 100 printings.
+  // Each guide RPC caps a service-only batch at 100 printings.
   for (let index = 0; index < printingIds.length; index += CATALOGUE_PRICE_PAGE_SIZE) {
     const batch = printingIds.slice(index, index + CATALOGUE_PRICE_PAGE_SIZE);
-    const { data, error } = await supabase.schema('api').rpc('read_cardmarket_blended_general_prices', {
+    const { data, error } = await supabase.schema('api').rpc(name, {
       p_printing_ids: batch,
     });
     if (error) {
-      if (isMissingCardmarketGuideRpc(error)) return new Map();
+      if (isMissingPrintingGuideRpc(error, name)) return new Map();
       throw error;
     }
     for (const row of data ?? []) {
@@ -119,6 +119,41 @@ function cardmarketBlendedGeneralPrice(quote, selected, unavailablePrice) {
   };
 }
 
+function tcgcsvPrintingGeneralPrice(quote, selected, unavailablePrice) {
+  const amount = requiredFiniteNumber(quote?.centralEstimate, Number.EPSILON);
+  const originalPrice = requiredFiniteNumber(quote?.originalPrice, Number.EPSILON);
+  const exchangeRate = requiredFiniteNumber(quote?.exchangeRate, Number.EPSILON);
+  const sourceAt = requiredPastDate(quote?.sourceCreatedAt);
+  const fxAt = requiredPastDate(quote?.exchangeRateAt);
+  const staleAt = Date.parse(quote?.staleAfter ?? '');
+  if (amount == null || originalPrice == null || exchangeRate == null || !sourceAt || !fxAt || !Number.isFinite(staleAt)
+    || staleAt < sourceAt.timestamp || quote.provider !== 'tcgcsv' || quote.currency !== 'GBP' || quote.originalCurrency !== 'USD'
+    || quote.priceScope !== 'printing_general_estimate' || quote.usableForExactVariant !== false || quote.usableForHoldingsValuation !== false
+    || quote.language !== selected.language_code || quote.condition !== null || quote.finish !== null || quote.grade !== null
+    || !['Normal','Holofoil'].includes(quote.providerSubtype)
+    || !((quote.providerCategoryId === 3 && quote.language === 'en') || (quote.providerCategoryId === 85 && quote.language === 'ja'))
+    || !Number.isSafeInteger(quote.providerGroupId) || quote.providerGroupId <= 0
+    || !Number.isSafeInteger(quote.providerProductId) || quote.providerProductId <= 0
+    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(quote.anchorVariantId ?? '')
+    || typeof quote.exchangeRateSource !== 'string' || !quote.exchangeRateSource.trim()
+    || Math.abs(amount - Math.round(originalPrice * exchangeRate * 100) / 100) > 0.0051) return null;
+  return {
+    ...unavailablePrice(selected.variant_id, { productType: 'raw_card', currency: 'GBP' }),
+    status: 'market_estimate', priceType: 'market_estimate', unavailableReason: null,
+    provenLastSold: false, lastSoldObservationId: null, lastSoldEvidence: null,
+    estimates: { low: null, central: amount, high: null }, calculatedAt: sourceAt.value, staleAfter: quote.staleAfter,
+    freshness: staleAt <= Date.now() ? 'stale' : 'fresh', sample: { sold: 0, active: 0 },
+    sourceBreakdown: [{ provider: 'tcgcsv', evidenceType: 'printing_general_estimate',
+      categoryId: quote.providerCategoryId, groupId: quote.providerGroupId, productId: quote.providerProductId,
+      subtype: quote.providerSubtype, originalCurrency: 'USD', originalPrice, exchangeRate,
+      exchangeRateAt: fxAt.value, exchangeRateSource: quote.exchangeRateSource,
+      timestampBasis: 'provider_dataset', language: quote.language, condition: null, finish: null, grade: null,
+      usableForExactVariant: false, usableForHoldingsValuation: false }],
+    fallbackEstimate: { identityKey: selected.variant_id, exact: false, reason: 'general_card_estimate',
+      baseVariantId: quote.anchorVariantId, printingId: selected.printing_id, language: selected.language_code, finishCode: null },
+  };
+}
+
 export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshotPrice, unavailablePrice }) {
   const storedPrice = (row, preferFresh = false) => {
     const estimate = row.estimate;
@@ -139,9 +174,12 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
     });
     if (error) throw error;
     const byRef = new Map((data ?? []).map((row) => [row.reference, row.candidates ?? []]));
-    const cardmarketByPrinting = input.estimateMode === 'general'
-      ? await readCardmarketBlendedGeneralQuotes(supabase, (data ?? []).flatMap((row) => row.candidates ?? []))
-      : new Map();
+    const printingCandidates = (data ?? []).flatMap((row) => row.candidates ?? []);
+    const [cardmarketByPrinting, tcgcsvByPrinting] = input.estimateMode === 'general'
+      ? await Promise.all([
+        readPrintingGeneralQuotes(supabase, printingCandidates, 'read_cardmarket_blended_general_prices'),
+        readPrintingGeneralQuotes(supabase, printingCandidates, 'read_catalogue_printing_general_prices'),
+      ]) : [new Map(), new Map()];
     const rows = input.references.map((reference) => {
       const candidates = byRef.get(reference) ?? [];
       const groups = new Set(candidates.map((c) => `${c.printing_id}:${c.set_id}:${c.language_code}`));
@@ -200,6 +238,8 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
             // An expired finish quote must not hide a fresh, explicitly labelled
             // base-printing guide. Preserve the first saved quote when all are stale.
             price = freshGeneralPrice ?? staleGeneralPrice ?? price;
+            const printingGuide = tcgcsvPrintingGeneralPrice(tcgcsvByPrinting.get(selected.printing_id), selected, unavailablePrice);
+            if (printingGuide && (!price || (price.freshness !== 'fresh' && printingGuide.freshness === 'fresh'))) price = printingGuide;
             // Cardmarket is reviewed at the printing level but its public
             // guide has blended language/condition/finish scope. It is a
             // last-resort general estimate only, never exact evidence.

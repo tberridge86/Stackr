@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
-const migration = [readFileSync('supabase/migrations/20261004094851_thin_published_price_identities.sql', 'utf8'), readFileSync('supabase/migrations/20261004101533_catalogue_bulk_store_materialization.sql', 'utf8')].join('\n');
+const migration = [readFileSync('supabase/migrations/20261004094851_thin_published_price_identities.sql', 'utf8'), readFileSync('supabase/migrations/20261004101533_catalogue_bulk_store_materialization.sql', 'utf8'), readFileSync('supabase/migrations/20261005093440_printing_general_price_guide.sql','utf8')].join('\n');
 const db = new PGlite();
 
 async function rpc(name: string, args: unknown[] = []) {
@@ -72,6 +72,34 @@ async function main() {
     assert.equal((await rpc('store_catalogue_bulk_prices', [JSON.stringify([item(normal, version, en, quote(en))])]))[0], 1, 'valid English mapping and retained quote store together');
     assert.equal((await db.query<any>('select count(*)::int count from market.catalogue_general_prices')).rows[0].count, 1);
 
+    const printingQuote = { ...quote(en), priceScope:'printing_general_estimate', usableForExactVariant:false, usableForHoldingsValuation:false };
+    const printingItem = { ...item(reverse, version, mapping(3,100,200,'Reverse Holofoil'),null), printingQuote };
+    assert.equal((await rpc('store_catalogue_bulk_prices',[JSON.stringify([printingItem])]))[0],1);
+    const guide = (await db.query<any>('select * from api.read_catalogue_printing_general_prices($1::uuid[])',[[printing]])).rows[0].quote;
+    assert.equal(Number(guide.centralEstimate),9.6); assert.equal(guide.providerSubtype,'Normal');
+    assert.equal(guide.usableForExactVariant,false); assert.equal(guide.usableForHoldingsValuation,false);
+    assert.equal(guide.language,'en'); assert.equal(guide.finish,null);
+    assert.equal((await db.query<any>('select count(*)::int count from market.catalogue_general_prices where variant_id=$1',[reverse])).rows[0].count,0,'alternate finish stays out of the exact variant table');
+    for (const patch of [{price:0},{price:0.001},{usableForExactVariant:true},{usableForHoldingsValuation:true},{subtype:'Reverse Holofoil'},{exchangeRateSource:''},{exchangeRateAt:null}]) {
+      await assert.rejects(rpc('store_catalogue_bulk_prices',[JSON.stringify([{...printingItem,printingQuote:{...printingQuote,...patch}}])]),/unsupported printing general quote/);
+    }
+    await assert.rejects(rpc('store_catalogue_bulk_prices',[JSON.stringify([{...printingItem,printingQuote:{...printingQuote,price:99}}])]),/printing quote does not match stored provider build/);
+    await db.query('update market.catalogue_bulk_feeds set payload=$1::jsonb where feed_key=$2',[JSON.stringify({results:[{productId:200,subTypeName:'Normal',marketPrice:12},{productId:200,subTypeName:'Normal',marketPrice:12}]}),'tcgplayer/3/100/prices']);
+    await assert.rejects(rpc('store_catalogue_bulk_prices',[JSON.stringify([printingItem])]),/printing quote does not match stored provider build/,'duplicated basic finish evidence is not silently chosen');
+    await db.query('update market.catalogue_bulk_feeds set payload=$1::jsonb where feed_key=$2',[JSON.stringify({results:[{productId:200,subTypeName:'Normal',marketPrice:12}]}),'tcgplayer/3/100/prices']);
+    await db.query('insert into market.catalogue_provider_cards(variant_id,printing_id,set_id,catalogue_version_id,language_code,category_id,group_id,product_id,subtype,method) values($1,$2,$3,$4,$5,3,100,200,$6,$7)',[duplicateNormal,id(24),set,version,'en','Holofoil','reviewed']);
+    await assert.rejects(rpc('store_catalogue_bulk_prices',[JSON.stringify([printingItem])]),/printing provider product collision/,'ownership is checked across all finishes');
+    assert.equal((await db.query('select * from api.read_catalogue_printing_general_prices($1::uuid[])',[[printing]])).rows.length,0,'later conflicting ownership also invalidates reads');
+    await db.query('delete from market.catalogue_provider_cards where variant_id=$1',[duplicateNormal]);
+    await db.query('update catalog.card_variants set deprecated_at=now() where id=$1',[reverse]);
+    assert.equal((await db.query('select * from api.read_catalogue_printing_general_prices($1::uuid[])',[[printing]])).rows.length,0,'retired anchors do not leak saved prices');
+    await db.query('update catalog.card_variants set deprecated_at=null where id=$1',[reverse]);
+    await db.query('update catalog.catalogue_version_variants set printing_id=$1 where variant_id=$2 and catalogue_version_id=$3',[id(24),reverse,version]);
+    assert.equal((await db.query('select * from api.read_catalogue_printing_general_prices($1::uuid[])',[[printing]])).rows.length,0,'corrupted membership excludes printing guides');
+    await db.query('update catalog.catalogue_version_variants set printing_id=$1 where variant_id=$2 and catalogue_version_id=$3',[printing,reverse,version]);
+    assert.equal((await db.query('select * from api.read_catalogue_printing_general_prices($1::uuid[])',[[printing]])).rows.length,1);
+    await assert.rejects(rpc('read_catalogue_printing_general_prices',[Array(101).fill(printing)]),/invalid printing guide batch/);
+
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify([item(normal, oldVersion, en, quote(en))])]), /catalogue revision changed/, 'old catalogue version is rejected');
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify([item(reverse, version, mapping(3, 100, 200, 'Normal'), null)])]), /invalid provider mapping/, 'wrong finish is rejected');
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify([item(normal, version, mapping(85, 200, 200, 'Normal', 'exact_set_code_number'), null)])]), /invalid provider mapping/, 'wrong provider language is rejected');
@@ -111,6 +139,8 @@ async function main() {
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify(Array.from({ length: 501 }, () => item(normal, version, en, null)))]), /invalid price results/);
 
     await db.exec('reset role; set role anon');
+    await assert.rejects(rpc('read_catalogue_printing_general_prices',[[printing]]),/permission denied/);
+    await assert.rejects(db.query('select * from market.catalogue_printing_general_prices'),/permission denied/);
     await assert.rejects(rpc('store_catalogue_bulk_prices', [JSON.stringify([item(normal, version, en, null)])]), /permission denied/);
     console.log('Materialized bulk store passed: bounded current identities, retained product/price proof, collision and atomicity guards, and service-only access.');
   } finally { await db.close(); }

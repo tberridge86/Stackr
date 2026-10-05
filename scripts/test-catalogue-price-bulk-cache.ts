@@ -83,6 +83,8 @@ async function main() {
     await db.exec('reset role'); await db.query('update catalog.catalogue_versions set deprecated_at=null where id=$1',[id(1)]); await db.exec('set role service_role'); assert.equal((await candidates()).length, 2);
     let catalogueReads = 0;
     let cardmarketReads = 0;
+    let printingGuideReads = 0;
+    let printingQuote: Record<string, unknown> | null = null;
     let cardmarketQuote: Record<string, unknown> | null = null;
     const supabase = { schema: () => ({ rpc: async (name: string, args: any) => {
       if (name === 'read_catalogue_prices') {
@@ -95,12 +97,18 @@ async function main() {
         assert.deepEqual(args.p_printing_ids, [id(3)], 'Cardmarket is queried only by the resolved printing identity');
         return { data: cardmarketQuote ? [{ printing_id: id(3), quote: cardmarketQuote }] : [], error: null };
       }
+      if (name === 'read_catalogue_printing_general_prices') {
+        printingGuideReads++;
+        assert.deepEqual(args.p_printing_ids, [id(3)]);
+        return { data: printingQuote ? [{ printing_id: id(3), quote: printingQuote }] : [], error: null };
+      }
       throw new Error(`Unexpected RPC ${name}`);
     } }) };
     const service = createMarketPricingService({ supabase: supabase as any });
     const exact = await service.cataloguePrices({ references: [id(4), id(5)], language: 'en', estimateMode: 'exact' });
     assert.equal(catalogueReads, 1, 'one visible page is one catalogue database read');
     assert.equal(cardmarketReads, 0, 'exact reads never consult Cardmarket');
+    assert.equal(printingGuideReads, 0, 'exact reads never consult a printing guide');
     assert.equal(exact.prices[0].price?.estimates.central, 10);
     assert.equal(exact.prices[1].price?.estimates.central, null, 'normal evidence cannot become a reverse-holo quote');
     const known = Object.fromEntries(exact.prices.map((row: any) => [row.reference, row.revision]));
@@ -140,6 +148,35 @@ async function main() {
     const allStale = (await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'general' })).prices[0];
     assert.equal(allStale.price?.estimates.central, 99, 'when all guides are stale, retain the requested finish first');
     assert.equal(allStale.price?.freshness, 'stale');
+    const validPrintingQuote = {
+      provider: 'tcgcsv', currency: 'GBP', centralEstimate: 18, originalPrice: 24, originalCurrency: 'USD',
+      exchangeRate: 0.75, exchangeRateAt: new Date(Date.now()-3600000).toISOString(), exchangeRateSource: 'ECB fixture',
+      sourceCreatedAt: new Date(Date.now()-3600000).toISOString(), staleAfter: new Date(Date.now()+86400000).toISOString(),
+      priceScope: 'printing_general_estimate', usableForExactVariant: false, usableForHoldingsValuation: false,
+      language: 'en', condition: null, finish: null, grade: null, providerCategoryId: 3, providerGroupId: 44,
+      providerProductId: 12, providerSubtype: 'Holofoil', anchorVariantId: id(4),
+    };
+    printingQuote = validPrintingQuote;
+    const printingFallback = (await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'general' })).prices[0];
+    assert.equal(printingFallback.price?.estimates.central, 18, 'fresh printing evidence beats a stale finish snapshot');
+    assert.equal(printingFallback.variantId, id(5), 'requested identity stays unchanged');
+    assert.equal(printingFallback.price?.sourceBreakdown[0]?.subtype, 'Holofoil', 'provider finish stays explicit');
+    assert.equal(printingFallback.price?.fallbackEstimate?.finishCode, null, 'source finish is never relabelled as requested finish');
+    assert.equal(printingFallback.price?.provenLastSold, false);
+    assert.equal(printingFallback.price?.sourceBreakdown[0]?.usableForHoldingsValuation, false);
+    assert.equal((await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'exact' })).prices[0].price?.estimates.central, 99);
+    await db.query("update market.catalogue_general_prices set stale_after=now()+interval '1 day'");
+    assert.equal((await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'general' })).prices[0].price?.estimates.central, 15, 'fresh base guide stays preferred');
+    await db.query("update market.catalogue_general_prices set stale_after=now()-interval '1 hour'");
+    for (const bad of [{ language:'ja' },{ usableForExactVariant:true },{ usableForHoldingsValuation:true },
+      { finish:'holo' },{ providerSubtype:'Reverse Holofoil' },{ centralEstimate:0 },{ originalPrice:0 },{ centralEstimate:19 },
+      { providerCategoryId:85 },{ sourceCreatedAt:new Date(Date.now()+60000).toISOString() }]) {
+      printingQuote = { ...validPrintingQuote, ...bad };
+      assert.equal((await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'general' })).prices[0].price?.estimates.central, 99, 'invalid printing evidence cannot replace the saved quote');
+    }
+    printingQuote = { ...validPrintingQuote, staleAfter:new Date(Date.now()-1000).toISOString() };
+    assert.equal((await service.cataloguePrices({ references: [id(5)], language: 'en', estimateMode: 'general' })).prices[0].price?.estimates.central, 99, 'all-stale preserves the requested finish');
+    printingQuote = null;
     await db.query('delete from public.market_price_snapshots');
     await db.query('update market.catalogue_general_prices set central_estimate=0,original_price=0');
     assert.equal((await service.cataloguePrices({ references: [id(4)], language: 'en', estimateMode: 'general' })).prices[0].price?.estimates.central, null, 'zero provider placeholders stay unavailable');

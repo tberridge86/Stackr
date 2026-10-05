@@ -73,7 +73,7 @@ export function selectBulkProduct(row, group, products) {
 
 /** Pure, one-provider-set page planner. `mapping` remains on noquote results so
  * prices and permanent identity maps are committed atomically by the database. */
-export function planCatalogueBulkPrices({ candidates, group, products, prices, blockedMappingKeys = new Set(), datasetAt, fx, now = Date.now() }) {
+export function planCatalogueBulkPrices({ candidates, group, products, prices, blockedMappingKeys = new Set(), blockedPrintingProducts = new Set(), datasetAt, fx, now = Date.now() }) {
   validateBulkFx(fx, now);
   if (!Number.isFinite(Date.parse(datasetAt ?? '')) || Date.parse(datasetAt) > now + 300000 || !Array.isArray(candidates) || candidates.length > 500) throw Error('Invalid bulk page.');
   const results = candidates.map((row) => {
@@ -101,7 +101,39 @@ export function planCatalogueBulkPrices({ candidates, group, products, prices, b
   const duplicates = new Set(); const seen = new Map();
   for (const result of results) if (result.mapping) { const key = `${result.mapping.categoryId}/${result.mapping.groupId}/${result.mapping.productId}/${result.mapping.subtype}`; if (seen.has(key)) { duplicates.add(key); } else seen.set(key, result); }
   for (const result of results) if (result.mapping && duplicates.has(`${result.mapping.categoryId}/${result.mapping.groupId}/${result.mapping.productId}/${result.mapping.subtype}`)) { result.mapping = null; result.quote = null; result.reason = 'ambiguous_provider_identity'; result.nextRetryAt = later(result.reason, now); }
+  const printingBlocks = new Set([...blockedPrintingProducts, ...preflightBlockedPrintingProducts({ candidates, group, products })]);
+  for (let index = 0; index < results.length; index++) {
+    const result = results[index]; const row = candidates[index]; const m = result.mapping;
+    if (!m || !row.printing_id || printingBlocks.has(m.productId)) continue;
+    // A basic finish on the same verified product is a PRINTING estimate.
+    // Never relabel it as the requested variant or change its exact outcome.
+    for (const subtype of ['Normal', 'Holofoil']) {
+      const evidence = prices.filter((p) => p.productId === m.productId && p.subTypeName === subtype);
+      if (evidence.length !== 1 || !Number.isFinite(evidence[0].marketPrice)
+        || evidence[0].marketPrice <= 0 || Math.round(evidence[0].marketPrice * fx.rate * 100) <= 0) continue;
+      result.printingQuote = { ...m, subtype, currency: 'USD', price: evidence[0].marketPrice,
+        datasetAt, exchangeRate: fx.rate, exchangeRateAt: fx.at, exchangeRateSource: fx.source,
+        priceScope: 'printing_general_estimate', usableForExactVariant: false, usableForHoldingsValuation: false };
+      break;
+    }
+  }
   return { results, priced: results.filter((r) => r.quote).length, mapped: results.filter((r) => r.mapping).length };
+}
+
+/** Product ownership is stronger than product/finish ownership for a printing
+ * guide. Run against the entire group before storing ANY 500-row page. */
+export function preflightBlockedPrintingProducts({ candidates, group, products }) {
+  const byProduct = new Map(); const byPrinting = new Map(); const blocked = new Set();
+  for (const row of candidates) {
+    if (!row.printing_id || TCGCSV_CATALOGUES.find((c) => c.language === row.language_code)?.categoryId !== group.categoryId || !providerSubtype(row)) continue;
+    const product = selectBulkProduct(row, group, products);
+    if (!product) continue;
+    const owners = byProduct.get(product.productId) ?? new Set(); owners.add(row.printing_id); byProduct.set(product.productId, owners);
+    const identities = byPrinting.get(row.printing_id) ?? new Set(); identities.add(product.productId); byPrinting.set(row.printing_id, identities);
+  }
+  for (const [product, owners] of byProduct) if (owners.size > 1) blocked.add(product);
+  for (const products of byPrinting.values()) if (products.size > 1) for (const product of products) blocked.add(product);
+  return blocked;
 }
 
 export function preflightBlockedMappingKeys({ candidates, group, products }) {
@@ -188,9 +220,10 @@ export async function runCatalogueBulkSweep({ begin, seedOutcomes = async () => 
         if (page.length < 500) break;
       } while (true);
       const group = { categoryId: job.categoryId, groupId: job.groupId }; const blockedMappingKeys = preflightBlockedMappingKeys({ candidates: allCandidates, group, products: feed.products });
+      const blockedPrintingProducts = preflightBlockedPrintingProducts({ candidates: allCandidates, group, products: feed.products });
       let pages = 0; let groupCards = 0; let groupPriced = 0;
       for (let offset = 0; offset < allCandidates.length; offset += 500) {
-        const page = allCandidates.slice(offset, offset + 500); const plan = planCatalogueBulkPrices({ candidates: page, group, products: feed.products, prices: feed.prices, blockedMappingKeys, datasetAt, fx, now });
+        const page = allCandidates.slice(offset, offset + 500); const plan = planCatalogueBulkPrices({ candidates: page, group, products: feed.products, prices: feed.prices, blockedMappingKeys, blockedPrintingProducts, datasetAt, fx, now });
         const stored = await store({ results: plan.results }); if (stored !== page.length) throw Error('Price storage did not acknowledge the complete candidate page.');
         pages++; groupCards += page.length; groupPriced += plan.priced;
       }
