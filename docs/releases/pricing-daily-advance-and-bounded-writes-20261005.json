@@ -1,0 +1,1539 @@
+{
+  "observedAt": "2026-10-05T20:38:38Z",
+  "scope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "lastVerifiedPublishedPhysicalVariants": 76030,
+    "lastVerifiedFullPhysicalCatalogue": 76269,
+    "lastFullCountAt": "2026-10-05T19:18:57Z",
+    "currentDenominator": "not remeasured: full physical aggregate exceeded20s during active refresh; publication UUIDs remain unchanged, but this is not an immutable snapshot.",
+    "fullTargetAchieved": false
+  },
+  "cohort": {
+    "categoryId": 85,
+    "groupId": 23909,
+    "name": "SV8a: Terastal Fest ex",
+    "nativeSetCode": "SV8a",
+    "candidates": 382,
+    "reasons": {
+      "unresolvedProviderIdentity": 290,
+      "priced": 35,
+      "noProviderQuote": 57
+    },
+    "positivePrintingGuides": 57,
+    "netNewBeforeConcurrentRefresh": 57,
+    "newMappings": 0,
+    "catalogueMutations": 0,
+    "stageAndProductionSemanticPlansAgree": true,
+    "wholeGroupCrossFinishProductOwnershipPreflight": true,
+    "blockedProducts": 0,
+    "semanticModifiersAccepted": 0,
+    "accepted": [
+      {
+        "variantId": "089ae635-4a8d-42a2-a9c6-26c568990cc9",
+        "printingId": "8d1e972a-0e8e-4261-8431-6da17ba33bbf",
+        "collector": "146",
+        "nativeName": "トレジャーガジェット",
+        "providerName": "Treasure Gadget",
+        "providerNumber": "146/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.23,
+        "providerProductId": 602573,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "08a18b7b-6150-45ea-9540-56a1757b5a6e",
+        "printingId": "2b05b07d-fd11-4044-9649-428f78911f7c",
+        "collector": "206",
+        "nativeName": "グレイシアex",
+        "providerName": "Glaceon ex - 206/187",
+        "providerNumber": "206/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 66.55,
+        "providerProductId": 602670,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "0942a53f-6ac5-4979-b873-6847c42fbca1",
+        "printingId": "7597bf16-5806-496e-b089-2cd1951fb68f",
+        "collector": "188",
+        "nativeName": "アオキの手際",
+        "providerName": "Larry's Efficiency - 188/187",
+        "providerNumber": "188/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1.45,
+        "providerProductId": 602651,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "09ee68a1-cac5-4b16-a914-546d9fd4abe4",
+        "printingId": "4b883c0d-9713-4995-98e9-1ccfd3b8db00",
+        "collector": "200",
+        "nativeName": "リーフィアex",
+        "providerName": "Leafeon ex - 200/187",
+        "providerNumber": "200/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 72.76,
+        "providerProductId": 602664,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "10547e9c-4fe5-4558-a168-f09797952d92",
+        "printingId": "6edb8345-eacd-4cd5-807c-080d9275ec20",
+        "collector": "149",
+        "nativeName": "ポケモン回収サイクロン",
+        "providerName": "Scoop Up Cyclone",
+        "providerNumber": "149/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.22,
+        "providerProductId": 602577,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "196e943f-7cc3-47dc-91f6-a1cc46e0a4e6",
+        "printingId": "b5dfa585-228d-4508-a684-868a3f0eaf05",
+        "collector": "214",
+        "nativeName": "テツノカシラex",
+        "providerName": "Iron Crown ex - 214/187",
+        "providerNumber": "214/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 6.19,
+        "providerProductId": 602678,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "197be90e-2e6b-4859-9418-2f271964ced3",
+        "printingId": "3c224712-9b6e-4fb2-91b2-f542da079156",
+        "collector": "217",
+        "nativeName": "ブラッキーex",
+        "providerName": "Umbreon ex - 217/187",
+        "providerNumber": "217/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 409.14,
+        "providerProductId": 602681,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "25696995-6159-4601-b0b6-20ba321f2cec",
+        "printingId": "35dfae99-4162-41e2-8a5c-55eae6155ad9",
+        "collector": "142",
+        "nativeName": "つりざおMAX",
+        "providerName": "Fishing Rod MAX",
+        "providerNumber": "142/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.17,
+        "providerProductId": 602566,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "28777091-a233-49f6-8995-13e2054a201d",
+        "printingId": "bcd0fa24-46fb-4c1f-a514-7eee44813f2a",
+        "collector": "229",
+        "nativeName": "カキツバタ",
+        "providerName": "Drayton",
+        "providerNumber": "229/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.13,
+        "providerProductId": 602693,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "2ee3d488-bd98-4cc0-aa9c-5b498754788c",
+        "printingId": "f5425ab1-f98c-4fdf-9f74-f9ea85b12f02",
+        "collector": "159",
+        "nativeName": "マキシマムベルト",
+        "providerName": "Maximum Belt",
+        "providerNumber": "159/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.26,
+        "providerProductId": 602595,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "329c5074-e198-4a28-8a74-2afb4c9f3a02",
+        "printingId": "52c4b262-88d4-4d3b-88a9-e740fcc158e8",
+        "collector": "236",
+        "nativeName": "ピカチュウex",
+        "providerName": "Pikachu ex",
+        "providerNumber": "236/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 57.69,
+        "providerProductId": 602700,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "38ff932d-2a07-48ac-b1aa-258ef1620b7d",
+        "printingId": "76c0dca9-1bc6-424c-8cee-148320744ea6",
+        "collector": "205",
+        "nativeName": "シャワーズex",
+        "providerName": "Vaporeon ex - 205/187",
+        "providerNumber": "205/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 61.6,
+        "providerProductId": 602669,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "3eb10408-92a5-473a-acd2-f45bdfc9a287",
+        "printingId": "cf7ca4bd-120f-4752-929d-281e9b952ea4",
+        "collector": "148",
+        "nativeName": "プライムキャッチャー",
+        "providerName": "Prime Catcher",
+        "providerNumber": "148/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.21,
+        "providerProductId": 602576,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "4288c769-e118-46e3-af4e-04f923d8e037",
+        "printingId": "8c5a6ad1-b817-4a96-b13a-65853a1b04aa",
+        "collector": "228",
+        "nativeName": "アンズの秘技",
+        "providerName": "Janine's Secret Art - 228/187",
+        "providerNumber": "228/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.91,
+        "providerProductId": 602692,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "47444237-5935-43ab-bb7f-c9b318e6bf8b",
+        "printingId": "edae9cc2-c516-46b9-b19d-ea597e969145",
+        "collector": "208",
+        "nativeName": "オーガポン いどのめんex",
+        "providerName": "Wellspring Mask Ogerpon ex - 208/187",
+        "providerNumber": "208/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.7,
+        "providerProductId": 602672,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "4a9b1eb4-91dd-4fbf-8b33-a278c327ebbc",
+        "printingId": "b2c19317-53b6-43b0-8632-ff8dd2f33114",
+        "collector": "193",
+        "nativeName": "タイム",
+        "providerName": "Tyme",
+        "providerNumber": "193/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1.09,
+        "providerProductId": 602657,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "4c7c4c1b-a15f-4e0b-86c3-67455829010c",
+        "printingId": "60008eea-53e3-45c9-b19f-c9e70b937cac",
+        "collector": "201",
+        "nativeName": "オーガポン みどりのめんex",
+        "providerName": "Teal Mask Ogerpon ex - 201/187",
+        "providerNumber": "201/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.77,
+        "providerProductId": 602665,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "4e1a578c-6fe3-40f9-a398-2a5426d7b967",
+        "printingId": "4f17ed3b-8624-488f-abdc-a3624072f31d",
+        "collector": "190",
+        "nativeName": "コルサ",
+        "providerName": "Brassius",
+        "providerNumber": "190/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.71,
+        "providerProductId": 602654,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "4faedc4c-98b4-40f9-8b04-a52d7c010966",
+        "printingId": "b86e3462-85af-49cd-870a-f87a6a3b444c",
+        "collector": "235",
+        "nativeName": "ウネルミナモex",
+        "providerName": "Walking Wake ex - 235/187",
+        "providerNumber": "235/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 3.99,
+        "providerProductId": 602699,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "59c73a32-94cd-49dd-a6c7-1dd7fa5a9f7f",
+        "printingId": "11435059-d81c-4135-a38b-c8da45ef9d4b",
+        "collector": "192",
+        "nativeName": "シュウメイ",
+        "providerName": "Atticus - 192/187",
+        "providerNumber": "192/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1,
+        "providerProductId": 602656,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "5d06798d-2b8f-4d9d-b622-0f64ba0d9377",
+        "printingId": "ed611855-4cfc-4d9e-9f96-6e1271dcece3",
+        "collector": "194",
+        "nativeName": "ネリネ",
+        "providerName": "Amarys - 194/187",
+        "providerNumber": "194/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1.15,
+        "providerProductId": 602658,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "5ff67dbe-cbc9-43a6-87ba-8007d311d567",
+        "printingId": "4651026c-f9e1-412c-9e96-a69209145c73",
+        "collector": "199",
+        "nativeName": "レホール",
+        "providerName": "Raifort",
+        "providerNumber": "199/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1.3,
+        "providerProductId": 602663,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "61c270cc-1cce-487c-8563-7d2c76475f32",
+        "printingId": "3507baf0-d406-4ec4-acc9-36e90f37bea4",
+        "collector": "223",
+        "nativeName": "イーブイex",
+        "providerName": "Eevee ex - 223/187",
+        "providerNumber": "223/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 39.09,
+        "providerProductId": 602687,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "698f3156-8679-4699-9d17-3415c42b07d0",
+        "printingId": "6c5bc88e-8581-4488-aa61-586ff3ed8689",
+        "collector": "189",
+        "nativeName": "オルティガ",
+        "providerName": "Ortega",
+        "providerNumber": "189/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1.22,
+        "providerProductId": 602653,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "77fb6c7f-7c0a-4a26-8d71-4896cd2af7bf",
+        "printingId": "25f76a34-9487-4148-9b66-3ebaf44a1498",
+        "collector": "216",
+        "nativeName": "オーガポン いしずえのめんex",
+        "providerName": "Cornerstone Mask Ogerpon ex - 216/187",
+        "providerNumber": "216/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.34,
+        "providerProductId": 602680,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "7833de74-5a67-40ab-a9c8-65be3583bb17",
+        "printingId": "b241c65f-a1e6-406a-add0-ffb5c22d3a3e",
+        "collector": "221",
+        "nativeName": "ドラパルトex",
+        "providerName": "Dragapult ex - 221/187",
+        "providerNumber": "221/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 15.46,
+        "providerProductId": 602685,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "7d157eee-05ea-4c07-ab07-36219c20b37c",
+        "printingId": "358d0851-53a6-48c9-ae17-49dd9b7e2a4b",
+        "collector": "195",
+        "nativeName": "パルデアの仲間たち",
+        "providerName": "Friends in Paldea - 195/187",
+        "providerNumber": "195/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 2.5,
+        "providerProductId": 602659,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "7e06072c-01ab-46fe-98d9-33604009d19b",
+        "printingId": "76895659-0ba2-4d0d-917c-17f73f8567df",
+        "collector": "184",
+        "nativeName": "ニュートラルセンター",
+        "providerName": "Neutralization Zone",
+        "providerNumber": "184/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.2,
+        "providerProductId": 602644,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "80eb514d-bff3-41a6-ab8c-2c8ee05f87b6",
+        "printingId": "e585382b-1174-4fa6-baca-5d789e4882ab",
+        "collector": "207",
+        "nativeName": "イルカマンex",
+        "providerName": "Palafin ex - 207/187",
+        "providerNumber": "207/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 10.43,
+        "providerProductId": 602671,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "832bf3ab-c858-453a-9da5-15e219a820f5",
+        "printingId": "a145b151-ba96-4473-b6cc-8453faeef360",
+        "collector": "234",
+        "nativeName": "オーガポン みどりのめんex",
+        "providerName": "Teal Mask Ogerpon ex - 234/187",
+        "providerNumber": "234/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5.21,
+        "providerProductId": 602698,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "86e8b8cf-c54e-4bd9-9001-30e0a6f9827b",
+        "printingId": "1e4c9fdd-7f77-4e76-885e-8f326c29f77a",
+        "collector": "211",
+        "nativeName": "エーフィex",
+        "providerName": "Espeon ex - 211/187",
+        "providerNumber": "211/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 63.87,
+        "providerProductId": 602675,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "88e5f49d-4132-494c-8cfa-e9a0557e3b90",
+        "printingId": "bd40f09c-a4b7-4b4d-8ab8-d82c66fafee2",
+        "collector": "224",
+        "nativeName": "イーブイex",
+        "providerName": "Eevee ex - 224/187",
+        "providerNumber": "224/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 22.81,
+        "providerProductId": 602688,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "8a234800-8369-44c8-b30b-6c712cd8edc1",
+        "printingId": "a8bf63f4-fcaf-4ed6-b31c-a5bc2c95ad9d",
+        "collector": "213",
+        "nativeName": "テツノブジンex",
+        "providerName": "Iron Valiant ex - 213/187",
+        "providerNumber": "213/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 8.23,
+        "providerProductId": 602677,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "8a62ceb0-859d-40ab-8c76-12a040561076",
+        "printingId": "fe753a33-84d6-429f-adda-8d50f1852d44",
+        "collector": "220",
+        "nativeName": "サーフゴーex",
+        "providerName": "Gholdengo ex - 220/187",
+        "providerNumber": "220/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 6.43,
+        "providerProductId": 602684,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "91eb5f91-c9cd-42bd-b83a-d5fb83855e4b",
+        "printingId": "51fcae0c-d389-466b-b31c-d5531ebadf1b",
+        "collector": "231",
+        "nativeName": "タロ",
+        "providerName": "Lacey - 231/187",
+        "providerNumber": "231/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 7.03,
+        "providerProductId": 602695,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "9347f81b-d3c6-420d-bbe2-a2909e61e3bb",
+        "printingId": "d4f99f78-19f7-42c2-a8ba-a8d736274528",
+        "collector": "233",
+        "nativeName": "テツノイサハex",
+        "providerName": "Iron Leaves ex - 233/187",
+        "providerNumber": "233/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 3.78,
+        "providerProductId": 602697,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "96f9c154-fb19-477e-b4ef-d6451ddb754b",
+        "printingId": "341bf572-a6f2-4b6b-bd2d-1749272b1a37",
+        "collector": "191",
+        "nativeName": "シュウメイ",
+        "providerName": "Atticus - 191/187",
+        "providerNumber": "191/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1.27,
+        "providerProductId": 602655,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "9737cd89-3ece-4ae8-819b-531d0d504322",
+        "printingId": "32cd7b89-09b2-4039-a0bd-00edbd7f1bdb",
+        "collector": "203",
+        "nativeName": "ソウブレイズex",
+        "providerName": "Ceruledge ex",
+        "providerNumber": "203/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 17.41,
+        "providerProductId": 602667,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "99da1cfe-ce22-47d0-af83-cf7195d4a18b",
+        "printingId": "9d8f4f43-43b2-4a3b-83f6-38538ecc0800",
+        "collector": "204",
+        "nativeName": "オーガポン かまどのめんex",
+        "providerName": "Hearthflame Mask Ogerpon ex - 204/187",
+        "providerNumber": "204/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.56,
+        "providerProductId": 602668,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "9d95906b-ed06-4676-a036-c16368e33154",
+        "printingId": "2f32eebb-4717-4600-9bf6-b16ed6e9d09a",
+        "collector": "232",
+        "nativeName": "ネリネ",
+        "providerName": "Amarys - 232/187",
+        "providerNumber": "232/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 2.45,
+        "providerProductId": 602696,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "a7618d5f-2dbe-4813-ac2d-71732bc04615",
+        "printingId": "175c7923-1404-48e9-9f98-df62c9d8cf08",
+        "collector": "196",
+        "nativeName": "ピーニャ",
+        "providerName": "Giacomo",
+        "providerNumber": "196/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.91,
+        "providerProductId": 602660,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "ac121536-73bd-49db-b963-5ceed777bf8a",
+        "printingId": "62d33a3e-750a-4e9c-9db9-52840c602023",
+        "collector": "212",
+        "nativeName": "ニンフィアex",
+        "providerName": "Sylveon ex - 212/187",
+        "providerNumber": "212/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 135.09,
+        "providerProductId": 602676,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "af43bf53-ea68-42c5-aabe-49c124b21837",
+        "printingId": "991758d6-e369-486b-b80b-fec7c9c27891",
+        "collector": "218",
+        "nativeName": "トドロクツキex",
+        "providerName": "Roaring Moon ex - 218/187",
+        "providerNumber": "218/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 27.3,
+        "providerProductId": 602682,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "b51c1e52-fbe2-407c-8333-928107e05d47",
+        "printingId": "090e0fc0-f8f4-421b-ac05-203109715121",
+        "collector": "209",
+        "nativeName": "サンダースex",
+        "providerName": "Jolteon ex - 209/187",
+        "providerNumber": "209/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 48.14,
+        "providerProductId": 602673,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "b6191b83-a7d2-4740-8490-377606541bad",
+        "printingId": "3cb40454-273c-4161-be7f-5c9a92629f1b",
+        "collector": "222",
+        "nativeName": "タケルライコex",
+        "providerName": "Raging Bolt ex - 222/187",
+        "providerNumber": "222/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 13.68,
+        "providerProductId": 602686,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "b690cf05-69c8-4782-8b0e-b4069af89c31",
+        "printingId": "d21aa53e-3790-4191-9bde-5e01f309ff12",
+        "collector": "219",
+        "nativeName": "モモワロウex",
+        "providerName": "Pecharunt ex - 219/187",
+        "providerNumber": "219/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5,
+        "providerProductId": 602683,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "b69a311c-0562-4d19-9725-51606fdaad28",
+        "printingId": "d1a9d8a7-98b9-4015-9e1c-de97ce9b3089",
+        "collector": "226",
+        "nativeName": "テラパゴスex",
+        "providerName": "Terapagos ex - 226/187",
+        "providerNumber": "226/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5.27,
+        "providerProductId": 602690,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "d0c33840-b26e-4cd8-82d7-4acb6a9d339a",
+        "printingId": "ba8c6e91-965f-4395-85b7-2f2c896931ee",
+        "collector": "197",
+        "nativeName": "ビワ",
+        "providerName": "Eri",
+        "providerNumber": "197/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 2.27,
+        "providerProductId": 602661,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "d3a07737-bd22-428b-97d8-8e32d0a0b6fc",
+        "printingId": "b7d1f38e-f8ec-45ee-80e4-720fc6a40500",
+        "collector": "227",
+        "nativeName": "アカマツ",
+        "providerName": "Crispin - 227/187",
+        "providerNumber": "227/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.86,
+        "providerProductId": 602691,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "deeab409-2460-4155-811a-594fe5874206",
+        "printingId": "dd153d67-495c-48d0-9643-5fdc2b76291f",
+        "collector": "198",
+        "nativeName": "メロコ",
+        "providerName": "Mela - 198/187",
+        "providerNumber": "198/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.96,
+        "providerProductId": 602662,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "e14a1621-4b02-46e9-a9ed-c7f03ef53b7f",
+        "printingId": "f161eb9e-a0ef-41c0-8a4e-148adad42307",
+        "collector": "237",
+        "nativeName": "テラパゴスex",
+        "providerName": "Terapagos ex - 237/187",
+        "providerNumber": "237/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5.63,
+        "providerProductId": 602701,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "e2bb7269-0dad-4ef5-80e6-19f24b992121",
+        "printingId": "3111dd66-4c0f-4e21-9403-3711d1645731",
+        "collector": "202",
+        "nativeName": "ブースターex",
+        "providerName": "Flareon ex - 202/187",
+        "providerNumber": "202/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 52.08,
+        "providerProductId": 602666,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "eb9f8299-2f73-4b30-9ac0-bb3a2373f863",
+        "printingId": "30018516-bd17-4254-859b-dcd118646ebc",
+        "collector": "152",
+        "nativeName": "きらめく結晶",
+        "providerName": "Sparkling Crystal",
+        "providerNumber": "152/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.34,
+        "providerProductId": 602582,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "f0c8addd-7134-4449-bf54-cb42f3ebc4ea",
+        "printingId": "815cfdf4-0937-4f0f-8b37-c0f8e5c2dab9",
+        "collector": "230",
+        "nativeName": "スグリ",
+        "providerName": "Kieran - 230/187",
+        "providerNumber": "230/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5.37,
+        "providerProductId": 602694,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "f133ce63-97e9-4053-a5d3-591ba7d40dc7",
+        "printingId": "a9803ada-73b0-4f12-ba02-4f4ad083cc22",
+        "collector": "215",
+        "nativeName": "スナノケガワex",
+        "providerName": "Sandy Shocks ex - 215/187",
+        "providerNumber": "215/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.24,
+        "providerProductId": 602679,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "f64ed4e6-fd34-4095-a7f7-8c5fa5d0d1b2",
+        "printingId": "e09390d5-2d9a-4cca-85e6-6ad6d0a23bc1",
+        "collector": "225",
+        "nativeName": "ガチグマ アカツキex",
+        "providerName": "Bloodmoon Ursaluna ex - 225/187",
+        "providerNumber": "225/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 10.78,
+        "providerProductId": 602689,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "fe4e06c3-78c3-462b-9ad9-85a3d0aa171d",
+        "printingId": "2e9d1cf3-fc80-4ab6-90b6-0ae4056940e3",
+        "collector": "210",
+        "nativeName": "テツノカイナex",
+        "providerName": "Iron Hands ex - 210/187",
+        "providerNumber": "210/187",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5.09,
+        "providerProductId": 602674,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "nativeEvidenceExamples": [
+    {
+      "collector": "146/187",
+      "nativeName": "トレジャーガジェット",
+      "url": "https://www.pokemon-card.com/card-search/details.php/card/46807/regu/XY"
+    },
+    {
+      "collector": "206/187",
+      "nativeName": "グレイシアex",
+      "url": "https://www.pokemon-card.com/card-search/details.php/card/47127",
+      "limitation": "Primary-source examples corroborate native set/full-number identity, not a visual inspection of every57card."
+    }
+  ],
+  "providerEvidence": {
+    "provider": "tcgcsv",
+    "categoryId": 85,
+    "datasetAt": "2026-10-04T20:05:38Z",
+    "staleAfter": "2026-10-06T20:05:38Z",
+    "sourceFinish": "Holofoil",
+    "requestedFinish": "normal",
+    "originalCurrency": "USD",
+    "displayCurrency": "GBP",
+    "fx": {
+      "rate": 0.757532293986637,
+      "at": "2026-10-02T00:00:00.000Z",
+      "source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    },
+    "retainedProducts": 487,
+    "retainedPriceRows": 523,
+    "semanticHashes": {
+      "stage": {
+        "products": "9a0eab28a7a02e510faa896a47834f78c57d7fa4001bb678e889bb0770b3f332",
+        "prices": "882a0c4a908daaae1de97e3f91104ae83fdc4bb6cc8ac69ca0cb4cc25860aed5"
+      },
+      "prod": {
+        "products": "9a0eab28a7a02e510faa896a47834f78c57d7fa4001bb678e889bb0770b3f332",
+        "prices": "882a0c4a908daaae1de97e3f91104ae83fdc4bb6cc8ac69ca0cb4cc25860aed5"
+      }
+    }
+  },
+  "preflight": {
+    "stage": [
+      {
+        "native_set": {
+          "id": "a7459948-3544-4122-8fec-7fc6aecfd2e5",
+          "set_code": "SV8a",
+          "provider_set_code": "SV8a",
+          "language_code": "ja"
+        },
+        "physical_variants": 57,
+        "positive_exact": 0,
+        "positive_cardmarket": 0,
+        "positive_printing": 0
+      }
+    ],
+    "production": [
+      {
+        "native_set": {
+          "id": "a7459948-3544-4122-8fec-7fc6aecfd2e5",
+          "set_code": "SV8a",
+          "provider_set_code": "SV8a",
+          "language_code": "ja"
+        },
+        "physical_variants": 57,
+        "positive_exact": 0,
+        "positive_cardmarket": 0,
+        "positive_printing": 0
+      }
+    ]
+  },
+  "writes": {
+    "stage": 57,
+    "production": 57,
+    "chunkSizes": [
+      40,
+      17
+    ],
+    "stageValidatedBeforeProduction": true,
+    "productionCompletedBeforeScheduledWorkerStart": "20:16:15Z <20:16:33.142Z",
+    "noWorkerRestart": true
+  },
+  "verification": {
+    "stage": {
+      "positiveFresh": 57,
+      "printingGuideUsed": 57,
+      "exactUnavailable": 57,
+      "exactPrintingReads": 0
+    },
+    "production": {
+      "positiveFresh": 57,
+      "printingGuideUsed": 57,
+      "exactUnavailable": 56,
+      "exactPrintingReads": 0,
+      "additionalExactModeRecord": {
+        "variantId": "ac121536-73bd-49db-b963-5ceed777bf8a",
+        "provider": "tcgdex",
+        "valueGbp": 107.8,
+        "freshness": "stale",
+        "sourceAt": "2026-10-04T22:54:32.812Z",
+        "staleAfter": "2026-10-05T04:54:32.812Z",
+        "interpretation": "Preexisting stale legacy estimate; not a fresh exact quote or part of new priced-coverage gain."
+      }
+    },
+    "all57SourceIdentityAmountFxAssertionsPassedBothEnvironments": true,
+    "priceScope": "printing_general_estimate",
+    "usableForExactVariant": false,
+    "usableForHoldingsValuation": false,
+    "noSoldClaim": true,
+    "requestedVariantPreserved": true,
+    "actualProviderFinishPreserved": true,
+    "proof": "Actual service SQL candidates/printing-guide readback replayed through the backend in Japanese; no authenticated owner HTTP/device visibility proof."
+  },
+  "coverage": {
+    "currentFullStoredGuide": "unmeasured",
+    "currentGeneralSourceAvailabilityProjection": "unmeasured",
+    "lastVerifiedStoredGuide": {
+      "priced": 33422,
+      "total": 76030,
+      "percent": 43.96,
+      "at": "2026-10-05T19:18:57Z"
+    },
+    "lastVerifiedGeneralProjection": {
+      "priced": 33658,
+      "total": 76030,
+      "percent": 44.27,
+      "at": "2026-10-05T19:18:57Z"
+    },
+    "whyNoNewPercent": "Two20s complete coverage aggregate attempts and one20s full physical count timed out while the daily refresh and a separate English mapping recovery task were active. No percentage is derived by adding57to an old mixed-source total.",
+    "ownerHttp": "unmeasured",
+    "phone": "unmeasured",
+    "versionsBefore": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "language_code": "ko"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ],
+    "versionsFinal": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "language_code": "ko"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ]
+  },
+  "changedDailyDataset": {
+    "newDatasetAt": "2026-10-05T20:05:57Z",
+    "metadata": {
+      "stage": [
+        {
+          "feed_key": "last-updated",
+          "dataset_at": "2026-10-05 20:05:57+00",
+          "fetched_at": "2026-10-05 20:16:07.86197+00",
+          "lease_until": null
+        },
+        {
+          "feed_key": "tcgplayer/85/23909/prices",
+          "dataset_at": "2026-10-04 20:05:38+00",
+          "fetched_at": "2026-10-04 21:48:59.562374+00",
+          "lease_until": null
+        },
+        {
+          "feed_key": "tcgplayer/85/23909/products",
+          "dataset_at": "2026-10-04 20:05:38+00",
+          "fetched_at": "2026-10-04 21:48:57.556325+00",
+          "lease_until": null
+        }
+      ],
+      "production": [
+        {
+          "feed_key": "last-updated",
+          "dataset_at": "2026-10-05 20:05:57+00",
+          "fetched_at": "2026-10-05 20:16:33.788789+00",
+          "lease_until": null
+        },
+        {
+          "feed_key": "tcgplayer/85/23909/prices",
+          "dataset_at": "2026-10-04 20:05:38+00",
+          "fetched_at": "2026-10-04 20:51:57.280314+00",
+          "lease_until": null
+        },
+        {
+          "feed_key": "tcgplayer/85/23909/products",
+          "dataset_at": "2026-10-04 20:05:38+00",
+          "fetched_at": "2026-10-04 20:51:55.299992+00",
+          "lease_until": null
+        }
+      ]
+    },
+    "stageRunId": "8f5e8ee0-8280-4136-bfe0-a3bb6ee5c14a",
+    "productionRunId": "faaff017-f849-48b1-9721-9c148f6bf689",
+    "productionDeployment": "ba85de72-ae0d-4dd3-b5a2-be0075a94763",
+    "deployedSource": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+    "productionStartedAt": "2026-10-05T20:16:33.142184872Z",
+    "fullScheduledResult": "pending: run still active; no exit-zero/full39-page proof yet",
+    "productionGroupsAt2034": [
+      {
+        "category_id": 3,
+        "status": "complete",
+        "n": 62,
+        "priced": 6223
+      },
+      {
+        "category_id": 3,
+        "status": "failed",
+        "n": 13,
+        "priced": 0
+      },
+      {
+        "category_id": 3,
+        "status": "pending",
+        "n": 140,
+        "priced": 0
+      },
+      {
+        "category_id": 3,
+        "status": "running",
+        "n": 1,
+        "priced": 0
+      },
+      {
+        "category_id": 3,
+        "status": "unmapped",
+        "n": 4,
+        "priced": 0
+      },
+      {
+        "category_id": 85,
+        "status": "pending",
+        "n": 460,
+        "priced": 0
+      }
+    ],
+    "productionCurrentFailures": [
+      {
+        "category_id": 3,
+        "group_id": 1386,
+        "provider_name": "Dark Explorers",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:41:43.524462+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1404,
+        "provider_name": "EX Deoxys",
+        "status": "failed",
+        "stats": {
+          "rpc": "store_catalogue_bulk_prices",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:35:23.91714+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1415,
+        "provider_name": "Call of Legends",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:37:25.866064+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1416,
+        "provider_name": "EX Hidden Legends",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:38:08.402364+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1417,
+        "provider_name": "Legends Awakened",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:38:40.790323+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1419,
+        "provider_name": "EX FireRed & LeafGreen",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:39:18.66745+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1424,
+        "provider_name": "Emerging Powers",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:40:06.857183+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1426,
+        "provider_name": "Dragon Vault",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:40:28.831044+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1430,
+        "provider_name": "Diamond and Pearl",
+        "status": "failed",
+        "stats": {
+          "rpc": "store_catalogue_bulk_prices",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:41:30.242648+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1432,
+        "provider_name": "POP Series 6",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:42:03.486549+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1447,
+        "provider_name": "POP Series 2",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:43:22.298969+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1450,
+        "provider_name": "POP Series 8",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:43:39.015026+00"
+      },
+      {
+        "category_id": 3,
+        "group_id": 1452,
+        "provider_name": "POP Series 4",
+        "status": "failed",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        },
+        "retry_after": "2026-10-05 20:44:24.130898+00"
+      }
+    ],
+    "changedRevisionGuideReadback": {
+      "stage": [
+        {
+          "printing_id": "000319a5-22d1-4337-a5b8-54409d18b659",
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 99.69,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "03e7d0ab-873b-4829-aebc-5ef18bd2ae8e",
+            "centralEstimate": 75.38,
+            "providerGroupId": 1383,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 87347,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 3,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          }
+        },
+        {
+          "printing_id": "00041166-f5c2-4e1b-9cc0-7bdf12cf563a",
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 2.19,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "cfa3e291-2ec6-4679-9b15-554f33fb3c7a",
+            "centralEstimate": 1.66,
+            "providerGroupId": 1429,
+            "providerSubtype": "Normal",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 88582,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 3,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          }
+        },
+        {
+          "printing_id": "0006146b-dd39-47a2-becb-d64ab121cff9",
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 0.53,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "b7a0eaac-0fab-4545-bbab-4786fdb21335",
+            "centralEstimate": 0.4,
+            "providerGroupId": 2626,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 213177,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 3,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          }
+        }
+      ],
+      "production": [
+        {
+          "printing_id": "000319a5-22d1-4337-a5b8-54409d18b659",
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 99.69,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "03e7d0ab-873b-4829-aebc-5ef18bd2ae8e",
+            "centralEstimate": 75.38,
+            "providerGroupId": 1383,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 87347,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 3,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          }
+        },
+        {
+          "printing_id": "0023e809-964b-41a6-b7bf-2f1e585b2646",
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 0.28,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "f31617a1-ceb9-459d-86b7-dcc366992d77",
+            "centralEstimate": 0.21,
+            "providerGroupId": 1408,
+            "providerSubtype": "Normal",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 85161,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 3,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          }
+        },
+        {
+          "printing_id": "002a7fdc-3af7-4835-8eec-44bd83754a63",
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 4,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "12d79c23-98fb-41be-8576-150b3ce8d202",
+            "centralEstimate": 3.02,
+            "providerGroupId": 1412,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 87564,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 3,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          }
+        }
+      ],
+      "countEach": 3,
+      "sourceAt": "2026-10-05T20:05:57Z",
+      "expiry": "2026-10-07T20:05:57Z",
+      "fxRate": 0.756158514816137,
+      "fxAt": "2026-10-05T00:00:00Z",
+      "interpretation": "Real new-revision printing-guide persistence/readback verified on three guides per environment, with correct positive values, source-finish/general labels and dated FX. Not proof that every prior cohort or the complete daily job refreshed."
+    }
+  },
+  "cardmarketFailure": {
+    "deploymentId": "20d42159-6b30-4403-883c-eebe3821d1ed",
+    "sourceCommit": "0e4834409b0f024624e2d1882ae7d9c1fe359957",
+    "status": "CRASHED",
+    "failedAt": "2026-10-05T20:21:50.447369251Z",
+    "error": "canceling statement due to statement timeout",
+    "phase": "Before reviewed-ledger mappings log; mappings loader RPC is the next bounded path.",
+    "priorSuccessfulScheduledRuns": [
+      "2026-10-05T18:24:40Z",
+      "2026-10-05T19:19:13Z"
+    ],
+    "lastSuccessfulMappings": 9234,
+    "volumeId": "86718ccd-b9a3-4570-ad10-c114a3be4eb6",
+    "mount": "/var/lib/cardmarket",
+    "cacheNotRestartedOrCleared": true,
+    "newRunRecovery": "not yet verified"
+  },
+  "repairCandidate": {
+    "commit": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+    "branch": "codex/stackr-bounded-price-worker-writes",
+    "reviewUrl": "https://github.com/tberridge86/Stackr/commit/f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+    "status": "Published isolated source candidate; not deployed, not merged into release branch.",
+    "pricingWriteBatch": 40,
+    "fullGroupPreflightPreserved": true,
+    "readPagination": 500,
+    "checkpointReadPagesAndWriteBatchesSeparate": true,
+    "partialAcknowledgementFailsGroup": true,
+    "cardmarketMappingReadPage": 100,
+    "cardmarketDefaultMaxPages": 2500,
+    "retainedMappingSafetyCeiling": 250000,
+    "failedPartialLedgerNotPublished": true,
+    "validation": {
+      "bulkProvider": true,
+      "bulkSweepExit": true,
+      "cardmarketReviewedLedger": true,
+      "cardmarketDailyRevisions": true,
+      "cardmarketDailyRetention": true,
+      "databaseDeadlineAndFx": true,
+      "typecheck": true,
+      "lint": {
+        "errors": 0,
+        "existingWarnings": 9
+      },
+      "syntaxAndDiffCheck": true
+    },
+    "limitations": "Larger write transactions are bounded in this candidate; independent set-resolver timeouts remain a separate diagnostic. No affected live-job repair can be claimed before stage runtime and production promotion/readback."
+  },
+  "coordination": {
+    "activeTaskTitle": "Classify Stackr pricing coverage",
+    "threadId": "01a10cd5-3cb4-7e20-88ac-1b59eb471330",
+    "worktree": "C:/Users/berri/.codex/worktrees/pricing-classified-coverage/Stackr-1",
+    "ownership": "Separate active English provider-mapping/classification recovery observed; avoid overlapping provider batches and SQL changes. No message sent outside this chat.",
+    "pricingWorktreeOwnedPendingEdits": "Four tested worker/test files copied from published candidate remain intentional local edits; do not discard."
+  },
+  "next": [
+    "First inspect whether the20:16scheduled TCGCSV run settled and inspect its complete report/exit separately from platform build status.",
+    "When affected scheduled jobs are idle, validate isolated candidate in staging, then promote production through protected source controls without clearing/replacing Cardmarket cache volume.",
+    "Diagnose native-set resolver RPC timeouts separately; do not claim smaller store chunks solve them.",
+    "Recheck Cardmarket scheduled reviewed-ledger loading and recover its failed run via the existing cadence.",
+    "Recompute full positive fresh deduplicated coverage and full physical denominator after concurrent imports settle; verify all earlier guide cohorts advance with source date and FX.",
+    "Check the active pricing-classification task before further English mapping writes. Continue justified Japanese gaps and native Chinese evidence; Korean stays excluded."
+  ]
+}
