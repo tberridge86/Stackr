@@ -1,0 +1,265 @@
+{
+  "observedAt": "2026-10-05T09:20:03Z",
+  "verificationCompletedAt": "2026-10-05T09:23:09Z",
+  "publicationVersionsUnchanged": true,
+  "scope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "publishedPhysicalVariants": 76030,
+    "fullTargetAchieved": false
+  },
+  "positiveStoredGuideCoverage": {
+    "priced": 32899,
+    "total": 76030,
+    "percent": 43.27,
+    "rows": [
+      {
+        "language_code": "en",
+        "observed_at": "2026-10-05 09:16:30.339913+00",
+        "physical_total": 33359,
+        "conservative_fresh": 21556,
+        "potential_general_fresh": 21792,
+        "potential_additional_base": 236,
+        "potential_additional_printings": 231
+      },
+      {
+        "language_code": "ja",
+        "observed_at": "2026-10-05 09:16:40.702794+00",
+        "physical_total": 14100,
+        "conservative_fresh": 7307,
+        "potential_general_fresh": 7307,
+        "potential_additional_base": 0,
+        "potential_additional_printings": 0
+      },
+      {
+        "language_code": "zh-cn",
+        "observed_at": "2026-10-05 09:16:42.924877+00",
+        "physical_total": 20405,
+        "conservative_fresh": 0,
+        "potential_general_fresh": 0,
+        "potential_additional_base": 0,
+        "potential_additional_printings": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "observed_at": "2026-10-05 09:16:44.838352+00",
+        "physical_total": 8166,
+        "conservative_fresh": 4036,
+        "potential_general_fresh": 4036,
+        "potential_additional_base": 0,
+        "potential_additional_printings": 0
+      }
+    ],
+    "observationWindow": "09:16:30–09:16:44 UTC; independent language reads",
+    "atomic": false,
+    "legacyRawRows": 32934,
+    "zeroPlaceholderCorrection": 35,
+    "definition": "Current physical publication, positive unexpired TCGCSV variant quotes or reviewed positive unexpired Cardmarket printing guides. Exact raw-condition/grade and phone availability are separate."
+  },
+  "additionalGeneralPrintingFallback": {
+    "variants": 236,
+    "printings": 231,
+    "primaryStoredVariantsAdded": 0,
+    "baselineReplay": {
+      "verifiedFresh": 234,
+      "staleMasked": 2
+    },
+    "afterFixProductionSqlReplay": {
+      "references": 236,
+      "verifiedFresh": 236,
+      "unavailable": 0,
+      "requestedIdentityPreserved": true,
+      "exact": false,
+      "provenLastSold": false,
+      "provider": "tcgcsv"
+    },
+    "stageReplay": {
+      "verifiedFresh": 210,
+      "unavailable": 26,
+      "retiredInStage": 16,
+      "unresolvedSource": 10
+    },
+    "scope": "Existing Normal/Holo source quote from the same current printing, explicitly labelled general-card estimate. Live production SQL candidates replayed through the actual backend module; not authenticated owner HTTP or a phone test.",
+    "potentialSourceGuideAvailability": {
+      "priced": 33135,
+      "total": 76030,
+      "percent": 43.58,
+      "fullApiPopulationRead": false
+    }
+  },
+  "fixes": {
+    "sourceHead": "0e4834409b0f024624e2d1882ae7d9c1fe359957",
+    "freshness": "General mode prefers fresh quotes within an exact variant and uses a fresh labelled base-printing fallback when the requested finish only has expired evidence. If all evidence is stale, retain the requested finish's saved quote first. Exact mode never inherits base finish prices.",
+    "zeroPlaceholders": "Cardmarket ignores zero trend/avg30/avg fields and tries positive alternative fields; all-zero guide rows remain no_market_guide_value. Backend rejects nonpositive original or displayed Cardmarket values and nonpositive stored guide values. Historical zero rows remain retained.",
+    "cardmarketZeroRows": {
+      "ja": 17,
+      "zhTw": 18,
+      "total": 35
+    },
+    "physicalReadMigration": {
+      "file": "supabase/migrations/20261005090204_current_physical_catalogue_price_read.sql",
+      "sourceHead": "71340931f6779c3a8a4b47b523b1a4b553ce79bb",
+      "appliedStageAndProduction": true,
+      "canonicalLedgerVersion": "20261005090204",
+      "functionHash": "e3e7f61e1ef3eccbbc83fdd0da21e5d7",
+      "anonAccess": false,
+      "authenticatedAccess": false,
+      "serviceAccess": true,
+      "guards": "Latest published version per language; variant/printing/set/language membership must agree with canonical rows. Bounds, order, exact/general split, privacy and current alias semantics remain.",
+      "controls": [
+        {
+          "reference": "7d02957d-9876-420a-81f0-0bc347eb012e",
+          "selected_candidate_count": 0
+        },
+        {
+          "reference": "a7f6873d-5d84-44ec-ac47-cf376061f3bf",
+          "selected_candidate_count": 0
+        },
+        {
+          "reference": "5bff5571-a70e-4c7f-a834-430ebc3178f1",
+          "selected_candidate_count": 0
+        }
+      ],
+      "rawCurrentPhysicalAudit": [
+        {
+          "language_code": "zh-cn",
+          "raw": 20453,
+          "missing": 0,
+          "retired": 45,
+          "mismatched": 3
+        },
+        {
+          "language_code": "en",
+          "raw": 33359,
+          "missing": 0,
+          "retired": 0,
+          "mismatched": 0
+        },
+        {
+          "language_code": "zh-tw",
+          "raw": 8166,
+          "missing": 0,
+          "retired": 0,
+          "mismatched": 0
+        },
+        {
+          "language_code": "ja",
+          "raw": 14100,
+          "missing": 0,
+          "retired": 0,
+          "mismatched": 0
+        }
+      ],
+      "stageDifferenceCorrection": "The 16 stage ambiguous-default exclusions are retired variants in staging, not historical-version duplicates. Production's EN candidates are current. The migration's historical-duplicate and corrupted-membership cases are separately verified in fixtures."
+    }
+  },
+  "deployment": {
+    "backend": {
+      "configuredPin": "0e4834409b0f024624e2d1882ae7d9c1fe359957",
+      "stageDeployment": "f4c5ad30-2ff1-4f49-8ab9-0befb415ad20",
+      "stageHealthSource": "0e4834409b0f",
+      "productionDeployment": "fd52c2b8-c2b8-4be8-a4b1-05b0e3fe2743",
+      "productionHealthSource": "71340931f677",
+      "productionHealthSourceBasis": "railway_git_sha",
+      "backendFilesIdenticalBetweenConfiguredAndAttestedCommits": true,
+      "productionHealthStatus": 200,
+      "publicSmoke": {
+        "ok": true,
+        "checks": 4
+      },
+      "anonymousPriceAccess": {
+        "stagingDirect": 401,
+        "productionDirect": 401,
+        "gateway": 401,
+        "directCacheControl": "no-store",
+        "gatewayCacheControl": "private, no-store"
+      },
+      "ownerHttpAndPhonePriceRead": "not measured",
+      "alsoContainsPreviouslyTestedChineseEbayLanguageEvidenceFix": true
+    },
+    "cardmarket": {
+      "configuredPin": "0e4834409b0f024624e2d1882ae7d9c1fe359957",
+      "stageDeployment": "541f5626-8fdf-4469-8ec0-51bdc67ae1b0",
+      "stageScheduledRuntime": {
+        "started": "2026-10-05T09:17:33Z",
+        "completed": "2026-10-05T09:17:48Z",
+        "reviewedMappings": 9234,
+        "stored": 0,
+        "repairs": 0,
+        "pages": 0,
+        "complete": true,
+        "meaning": "Current retained revision already complete; actual mounted-cache resume passed, no new quotes. Selector changes are verified by focused fixtures, not a new full live feed import."
+      },
+      "productionPromotionTriggered": true,
+      "productionDeployment": "65b4d9d0-60f3-4117-a68b-90851e14a9d6",
+      "productionBuildStatus": "SUCCESS",
+      "productionBuildOrRuntime": "Build succeeded. First scheduled runtime of the promoted production worker has not been observed; retain that gate separately.",
+      "volumeAndCadencePreserved": true
+    },
+    "tcgcsv": {
+      "earlierPartial": {
+        "deploymentId": "8f9b3981-44b9-415a-842a-b5f01153e9fa",
+        "status": "CRASHED",
+        "started": "2026-10-05T08:14:39.248457134Z",
+        "completed": "2026-10-05T08:15:55.500940982Z",
+        "exitCode": 1,
+        "partial": true,
+        "manualRunningGroup": true,
+        "coverageErrorNull": true,
+        "cause": "Existing scheduled worker observed the manually held expansion lease before its verified completion; it cleared no new groups, returned partial and exited 1. Follow-up scheduled execution not yet verified."
+      },
+      "latestDeployment": "6b89852d-2f52-4608-8a5d-d2171c64fca8",
+      "latestPlatformStatus": "SUCCESS",
+      "observedStop": "2026-10-05T09:17:27Z",
+      "newCronResultAndPagedReport": "not yet observed",
+      "currentLedger": {
+        "englishComplete": 163,
+        "englishUnmapped": 57,
+        "japaneseComplete": 163,
+        "japaneseUnmapped": 296,
+        "pending": 0,
+        "running": 0,
+        "failed": 0,
+        "status": "needs_mapping"
+      }
+    }
+  },
+  "validation": {
+    "focusedPriceCacheScripts": 19,
+    "extraCardmarketSelectorsAndCachedIngestionPassed": true,
+    "typecheckPassed": true,
+    "backendTypecheckPassed": true,
+    "lintErrors": 0,
+    "existingLintWarnings": 9,
+    "sourceChecks7134093": {
+      "applicablePassed": 12,
+      "releaseSkips": 2
+    },
+    "newMigrationFixtureCases": "Historical publication duplicates, printing/set/language membership corruption, service-only read cap/order/privacy, stale/fresh selection, all-stale retention and zero placeholder rejection."
+  },
+  "next": {
+    "boundedPromoAlternativeFinish": {
+      "swsh": 134,
+      "megaEvolution": 2,
+      "activeQuotesAdded": 0,
+      "reviewStatus": "Evidence/planning only",
+      "implementation": "Printing-scoped provider guide, with the provider finish explicitly retained; do not store a different finish as an exact canonical-variant quote."
+    },
+    "providerGaps": "Unmapped groups, missing quotes and Chinese native-language source evidence remain. Deck-code candidates inspected have no matching current published Japanese sets and cannot be guessed.",
+    "firstProductionCardmarketRuntimeNeedsVerification": true,
+    "backendOwnerPriceVisibilityNeedsRealOwnerSession": true
+  },
+  "boundaries": {
+    "noKoreanBatch": true,
+    "noCanonicalCatalogueMutation": true,
+    "noPaidProviderActivation": true,
+    "noNewPhoneBuild": true,
+    "noCommerceChanges": true,
+    "noOutsideMessages": true
+  }
+}
