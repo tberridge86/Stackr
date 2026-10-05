@@ -14,9 +14,9 @@ async function main() {
     await db.exec(`
       create role anon; create role authenticated; create role service_role;
       create schema api; create schema catalog; create schema market;
-      create table catalog.catalogue_versions(id uuid primary key, status text not null default 'published', deprecated_at timestamptz);
-      create table catalog.catalogue_version_variants(catalogue_version_id uuid,variant_id uuid,primary key(catalogue_version_id,variant_id));
-      create table catalog.sets(id uuid primary key, deprecated_at timestamptz); create table catalog.languages(code text primary key);
+      create table catalog.catalogue_versions(id uuid primary key, status text not null default 'published', deprecated_at timestamptz,language_code text default 'en',published_at timestamptz default now(),created_at timestamptz default now());
+      create table catalog.catalogue_version_variants(catalogue_version_id uuid,variant_id uuid,printing_id uuid default '${id(3)}',set_id uuid default '${id(2)}',language_code text default 'en',primary key(catalogue_version_id,variant_id));
+      create table catalog.sets(id uuid primary key, deprecated_at timestamptz,language_code text default 'en'); create table catalog.languages(code text primary key);
       create table catalog.card_printings(id uuid primary key, collector_number text, language_code text, set_id uuid, deprecated_at timestamptz);
       create table catalog.card_variants(id uuid primary key, printing_id uuid references catalog.card_printings, language_code text, variant_code text, finish_code text, deprecated_at timestamptz, is_default boolean);
       create table api.catalogue_cards(variant_id uuid primary key, printing_id uuid, set_id uuid, language_code text, variant_code text, finish_code text, catalogue_version_id uuid);
@@ -24,10 +24,10 @@ async function main() {
       create view api.catalogue_external_identifiers as select * from catalog.catalogue_version_external_identifiers;
       create table api.market_price_estimates(price_estimate_id uuid primary key, variant_id uuid, language_code text, product_kind text, display_currency_code text, condition_code text, grader_code text, grade_value numeric, fallback_identity_key text, calculated_at timestamptz, stale_after timestamptz, central_estimate numeric, low_estimate numeric, high_estimate numeric, evidence_status text, identity_key text, sample_count integer, source_breakdown jsonb, freshness text);
       create table public.market_price_snapshots(id bigint generated always as identity primary key, card_id text, language text, set_id text, user_id uuid, calculated_at timestamptz, snapshot_at timestamptz, pricing_identity_json jsonb, market_price_gbp numeric, primary_source text, price_type text, stale_after timestamptz);
-      insert into catalog.catalogue_versions values('${id(1)}','published',null); insert into catalog.languages values('en'),('ja'),('ko'),('zh-cn'),('zh-tw');
-      insert into catalog.sets values('${id(2)}',null);
+      insert into catalog.catalogue_versions(id,status,deprecated_at) values('${id(1)}','published',null); insert into catalog.languages values('en'),('ja'),('ko'),('zh-cn'),('zh-tw');
+      insert into catalog.sets(id,deprecated_at) values('${id(2)}',null);
       insert into catalog.card_printings values('${id(3)}','001/165','en','${id(2)}',null);
-      insert into catalog.card_variants values('${id(4)}','${id(3)}','en','normal','normal',null,true),('${id(5)}','${id(3)}','en','reverse_holo','reverse_holo',null,false); insert into catalog.catalogue_version_variants values('${id(1)}','${id(4)}'),('${id(1)}','${id(5)}');
+      insert into catalog.card_variants values('${id(4)}','${id(3)}','en','normal','normal',null,true),('${id(5)}','${id(3)}','en','reverse_holo','reverse_holo',null,false); insert into catalog.catalogue_version_variants(catalogue_version_id,variant_id) values('${id(1)}','${id(4)}'),('${id(1)}','${id(5)}');
       insert into api.catalogue_cards values('${id(4)}','${id(3)}','${id(2)}','en','normal','normal','${id(1)}'),('${id(5)}','${id(3)}','${id(2)}','en','reverse_holo','reverse_holo','${id(1)}');
       insert into api.market_price_estimates values('${id(6)}','${id(4)}','en','raw_card','GBP','raw_near_mint',null,null,null,now(),now()+interval '1 day',10,null,null,'market_estimate',null,1,'[]','fresh');
       grant usage on schema api,catalog,market,public to service_role;
@@ -37,6 +37,7 @@ async function main() {
     await db.exec(`begin; ${readFileSync('supabase/migrations/20261003231006_batch_catalogue_price_identity_reads.sql', 'utf8')} commit;`);
     await db.exec(`begin; ${readFileSync('supabase/migrations/20261003234257_bounded_published_price_read.sql', 'utf8')} commit;`);
     await db.exec(`begin; ${readFileSync('supabase/migrations/20261003234442_cover_general_price_foreign_keys.sql', 'utf8')} commit;`);
+    await db.exec(`begin; ${readFileSync('supabase/migrations/20261005090204_current_physical_catalogue_price_read.sql', 'utf8')} commit;`);
     await db.exec('set role anon');
     await assert.rejects(db.query('select * from api.read_catalogue_prices($1::text[],$2)', [[id(4)], 'en']), /permission denied/);
     await db.exec('reset role; set role service_role');
@@ -47,6 +48,24 @@ async function main() {
     await assert.rejects(db.query('select * from api.read_catalogue_prices($1::text[],$2)', [Array.from({ length: 101 }, () => id(4)), 'en']), /invalid catalogue price references/);
     assert.deepEqual((await db.query<any>('select * from api.read_catalogue_prices($1::text[],$2)', [[id(4)], 'ja'])).rows[0].candidates, [], 'English variant references never cross into Japanese cards');
     const candidates = async () => (await db.query<any>('select * from api.read_catalogue_prices($1::text[],$2)', [[id(4)], 'en'])).rows[0].candidates;
+    await db.exec('reset role');
+    await db.query("insert into catalog.catalogue_versions(id,status,language_code,published_at) values($1,'published','en',now()-interval '1 day')", [id(8)]);
+    await db.query('insert into catalog.catalogue_version_variants(catalogue_version_id,variant_id) values($1,$2)', [id(8),id(4)]);
+    await db.exec('set role service_role');
+    assert.equal((await candidates()).length, 2, 'historical published membership cannot duplicate a requested variant');
+    for (const [column, value, restored] of [['printing_id',id(90),id(3)], ['set_id',id(90),id(2)], ['language_code','ja','en']]) {
+      await db.exec('reset role');
+      await db.query(`update catalog.catalogue_version_variants set ${column}=$1 where catalogue_version_id=$2 and variant_id=$3`, [value,id(1),id(4)]);
+      await db.exec('set role service_role');
+      assert.deepEqual((await candidates()).map((row: any) => row.variant_id), [id(5)], `${column} membership mismatch stays excluded despite old valid membership`);
+      await db.exec('reset role');
+      await db.query(`update catalog.catalogue_version_variants set ${column}=$1 where catalogue_version_id=$2 and variant_id=$3`, [restored,id(1),id(4)]);
+      await db.exec('set role service_role');
+    }
+    await db.exec('reset role');
+    await db.query('delete from catalog.catalogue_version_variants where catalogue_version_id=$1', [id(8)]);
+    await db.query('delete from catalog.catalogue_versions where id=$1', [id(8)]);
+    await db.exec('set role service_role');
     await db.exec('reset role'); await db.query('update catalog.card_variants set deprecated_at=now() where id=$1',[id(4)]); await db.exec('set role service_role');
     assert.deepEqual((await candidates()).map((row: any) => row.variant_id), [id(5)], 'deprecated variants are excluded while other published variants remain');
     await db.exec('reset role'); await db.query('update catalog.card_variants set deprecated_at=null where id=$1',[id(4)]); await db.exec('set role service_role'); assert.equal((await candidates()).length, 2);
