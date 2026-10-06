@@ -208,7 +208,8 @@
     "test:ebay-browse-access": "node scripts/test-ebay-browse-access.mjs",
     "pricing:verify-ebay-access": "node scripts/verify-ebay-browse-access.mjs --probe",
     "catalogue-prices:bulk": "node scripts/refresh-catalogue-bulk-prices.mjs",
-    "catalogue-prices:guide": "node scripts/catalogue-price-guide.mjs"
+    "catalogue-prices:guide": "node scripts/catalogue-price-guide.mjs",
+    "test:next-beta-fixes": "node scripts/test-ui-standardisation.cjs && tsx scripts/test-card-finish-profiles.ts && tsx scripts/test-card-artwork-images.ts && tsx scripts/test-pricing-v2-client.ts && tsx scripts/test-catalogue-price-client.ts"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

@@ -132,6 +132,7 @@ export function StackrPopupProvider({ children }: { children: React.ReactNode })
       {children}
       <StackrCenterModal
         visible={Boolean(activePopup)}
+        accessibilityLabel={activePopup?.title ?? 'Stackr notification'}
         onClose={dismissPopup}
         dismissible={Boolean(activePopup?.options?.cancelable)}
         contentStyle={[
@@ -183,6 +184,8 @@ export function StackrPopupProvider({ children }: { children: React.ReactNode })
                     key={`${button.text ?? 'Action'}-${index}`}
                     activeOpacity={0.82}
                     onPress={() => closePopup(button)}
+                    accessibilityRole="button"
+                    accessibilityLabel={button.text ?? 'OK'}
                     style={[
                       styles.actionButton,
                       {

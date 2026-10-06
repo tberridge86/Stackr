@@ -29,6 +29,9 @@ type StackrImageProps = {
   source?: ImageSourcePropType | null;
   fallbackSource?: ImageSourcePropType | null;
   fallbackUris?: readonly string[];
+  uriCandidates?: readonly (string | null | undefined)[];
+  fallback?: React.ReactNode;
+  cropToCard?: boolean;
   style?: StyleProp<ViewStyle>;
   imageStyle?: StyleProp<ImageStyle>;
   contentFit?: ImageContentFit;
@@ -45,6 +48,8 @@ type StackrImageProps = {
   onLoad?: () => void;
   onError?: () => void;
   onSourceChange?: (uri: string | null) => void;
+  /** Retain source pixels for enlarged card inspection and pinch zoom. */
+  preserveDetail?: boolean;
 };
 
 const prefetchedUris = new Set<string>();
@@ -112,6 +117,9 @@ function StackrImageBase({
   source,
   fallbackSource,
   fallbackUris,
+  uriCandidates,
+  fallback,
+  cropToCard = false,
   style,
   imageStyle,
   contentFit = 'cover',
@@ -127,14 +135,16 @@ function StackrImageBase({
   onLoad,
   onError,
   onSourceChange,
+  preserveDetail = false,
 }: StackrImageProps) {
   const [cardFrame, setCardFrame] = React.useState<{ width: number; height: number } | null>(null);
+  const shape = cardShape || cropToCard;
   const faceWidth = cardFrame ? Math.min(cardFrame.width, cardFrame.height * stackrCardImageSizes.cardAspectRatio) : 0;
   const faceHeight = faceWidth / stackrCardImageSizes.cardAspectRatio;
   const { theme } = useTheme();
   const candidates = stackrImageCandidates([
     sanitizeImageSource(source),
-    ...[thumbnailUri, uri, fullUri].map((value) => {
+    ...[...(uriCandidates ?? []), thumbnailUri, uri, fullUri].map((value) => {
       const allowedUri = enforceTcgdexRuntimeImagePolicy(value);
       return allowedUri ? { uri: allowedUri } : null;
     }),
@@ -182,7 +192,7 @@ function StackrImageBase({
 
   return (
     <View
-      onLayout={cardShape ? ({ nativeEvent: { layout } }) => setCardFrame(previous =>
+      onLayout={shape ? ({ nativeEvent: { layout } }) => setCardFrame(previous =>
         previous?.width === layout.width && previous.height === layout.height ? previous
           : { width: layout.width, height: layout.height }) : undefined}
       style={[
@@ -195,7 +205,7 @@ function StackrImageBase({
         <ExpoImage
           key={candidate ? `${candidate.key}:retry-${retryAttempt}` : undefined}
           source={imageSource}
-          style={[styles.image, cardShape && cardFrame ? {
+          style={[styles.image, shape && cardFrame ? {
             width: faceWidth, height: faceHeight,
             left: (cardFrame.width - faceWidth) / 2, top: (cardFrame.height - faceHeight) / 2,
             // styles.image is absolute-fill. Clear its opposing edges so Yoga
@@ -208,6 +218,8 @@ function StackrImageBase({
           placeholderContentFit={contentFit}
           cachePolicy={isTcgdexControlledCardReferenceUrl(remoteUri) ? 'memory' : 'memory-disk'}
           priority={priority}
+          allowDownscaling={!preserveDetail}
+          decodeFormat={preserveDetail ? 'argb' : undefined}
           transition={transition}
           recyclingKey={remoteUri ?? cacheKey ?? undefined}
           accessibilityLabel={accessibilityLabel}
@@ -237,7 +249,7 @@ function StackrImageBase({
         />
       ) : null}
 
-      {!resolvedSource && showFallbackIcon ? (
+      {!resolvedSource && fallback ? fallback : !resolvedSource && showFallbackIcon ? (
         <View style={styles.fallbackIcon}>
           <Ionicons name="image-outline" size={20} color={theme.colors.textSoft} />
         </View>

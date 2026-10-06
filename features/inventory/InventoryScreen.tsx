@@ -1,3 +1,5 @@
+import { CardFinishArtwork } from '../../components/CardFinishArtwork';
+import { getCardFinishMetadata } from '../../lib/cardFinishProfiles';
 import { Ionicons } from '@expo/vector-icons';
 import { stackrHaptics } from '../../lib/haptics';
 import { router, useFocusEffect } from 'expo-router';
@@ -2254,7 +2256,9 @@ export default function InventoryScreen() {
           </TouchableOpacity>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             {item.card.image_small ? (
-              <StackrImage
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={`View ${item.card.name} details`} onPress={() => item.card.is_product ? openProductStockModal(item.card) : router.push({ pathname: '/card/[id]', params: { id: item.card.id, setId: item.card.set_id ?? undefined, variant: item.card.variant ?? undefined, finish: item.card.finish ?? undefined } })}>
+<CardFinishArtwork cardMetadata={getCardFinishMetadata(item.card)} style={{ width: imageWidth, height: imageHeight }} borderRadius={imageRadius}>
+<StackrImage
                 uri={item.card.image_small}
                 style={{ width: imageWidth, height: imageHeight, borderRadius: imageRadius, backgroundColor: theme.colors.surface }}
                 contentFit="contain"
@@ -2262,6 +2266,8 @@ export default function InventoryScreen() {
                 rounded={imageRadius}
                 showFallbackIcon={false}
               />
+</CardFinishArtwork>
+</TouchableOpacity>
             ) : (
               <View style={{ width: imageWidth, height: imageHeight, borderRadius: imageRadius, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name={item.card.is_product ? 'cube-outline' : 'albums-outline'} size={26} color={theme.colors.primary} />
@@ -2350,7 +2356,9 @@ export default function InventoryScreen() {
           <Ionicons name="add" size={17} color="#FFFFFF" />
         </TouchableOpacity>
         {item.card.image_small ? (
-          <StackrImage
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={`View ${item.card.name} details`} onPress={() => item.card.is_product ? openProductStockModal(item.card) : router.push({ pathname: '/card/[id]', params: { id: item.card.id, setId: item.card.set_id ?? undefined, variant: item.card.variant ?? undefined, finish: item.card.finish ?? undefined } })}>
+<CardFinishArtwork cardMetadata={getCardFinishMetadata(item.card)} style={{ width: imageWidth, height: imageHeight }} borderRadius={imageRadius}>
+<StackrImage
             uri={item.card.image_small}
             style={{ width: '100%', aspectRatio: item.card.is_product ? 1 : stackrCardImageSizes.cardAspectRatio, borderRadius: 10 }}
             contentFit="contain"
@@ -2358,6 +2366,8 @@ export default function InventoryScreen() {
             rounded={10}
             showFallbackIcon={false}
           />
+</CardFinishArtwork>
+</TouchableOpacity>
         ) : (
           <View style={{ width: '100%', aspectRatio: item.card.is_product ? 1 : stackrCardImageSizes.cardAspectRatio, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name={item.card.is_product ? 'cube-outline' : 'albums-outline'} size={28} color={theme.colors.primary} />
