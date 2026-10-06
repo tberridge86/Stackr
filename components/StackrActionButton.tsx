@@ -13,6 +13,7 @@ import {
 
 import { stackrGradients } from '../lib/theme';
 import { typeScale } from '../lib/typography';
+import { stackrControlTokens } from '../lib/stackrSizing';
 import { StackrButtonPattern } from './StackrEmboss';
 import { StackrCardActionIcon } from './StackrScreen';
 import { Text } from './Text';
@@ -66,20 +67,20 @@ export function StackrActionButton({
   const iconFrameSize = size === 'hero' ? 44 : size === 'compact' ? 30 : 38;
   const artworkSize = size === 'hero' ? 34 : size === 'compact' ? 24 : 30;
   const iconSize = size === 'hero' ? 22 : size === 'compact' ? 17 : 20;
-  const textColor = usesGradient ? '#FFFFFF' : isDestructive ? '#D1294B' : isDisabled ? theme.colors.textSoft : theme.colors.text;
-  const subtitleColor = usesGradient ? 'rgba(255,255,255,0.78)' : isDestructive ? '#A33A4B' : theme.colors.textSoft;
-  const iconColor = isDestructive ? '#D1294B' : theme.colors.primary;
+  const textColor = usesGradient ? '#FFFFFF' : isDestructive ? theme.colors.semantic.error : isDisabled ? theme.colors.textSoft : theme.colors.text;
+  const subtitleColor = usesGradient ? '#FFFFFF' : isDestructive ? theme.colors.semantic.error : theme.colors.textSoft;
+  const iconColor = isDestructive ? theme.colors.semantic.error : theme.colors.primary;
   const backgroundColor = isDisabled
     ? theme.colors.surface
     : isDestructive
-      ? '#FFF1F5'
+      ? theme.colors.semantic.destructiveSurface
       : isQuiet
         ? theme.colors.surface
         : theme.colors.card;
   const borderColor = usesGradient
     ? 'rgba(255,255,255,0.30)'
     : isDestructive
-      ? '#FFC2D0'
+      ? theme.colors.semantic.destructiveBorder
       : isDisabled
         ? theme.colors.border
         : theme.colors.border;
@@ -108,18 +109,12 @@ export function StackrActionButton({
             size === 'compact' && styles.titleCompact,
             { color: textColor },
           ]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.82}
         >
           {title}
         </Text>
         {subtitle ? (
           <Text
             style={[styles.subtitle, size === 'compact' && styles.subtitleCompact, { color: subtitleColor }]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.84}
           >
             {subtitle}
           </Text>
@@ -138,6 +133,8 @@ export function StackrActionButton({
       disabled={isDisabled}
       activeOpacity={0.84}
       accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled }}
+      aria-disabled={isDisabled}
       accessibilityLabel={accessibilityLabel ?? (subtitle ? `${title}. ${subtitle}` : title)}
       style={[
         styles.shell,
@@ -145,6 +142,7 @@ export function StackrActionButton({
         usesGradient ? styles.primaryShell : isDestructive ? styles.destructiveShell : styles.secondaryShell,
         isScan && styles.scanShell,
         isDisabled && styles.disabledShell,
+        isDestructive && { shadowColor: theme.colors.semantic.error },
         style,
       ]}
     >
@@ -189,7 +187,7 @@ const styles = StyleSheet.create({
     borderRadius: 17,
   },
   compactShell: {
-    minHeight: 46,
+    minHeight: stackrControlTokens.minTapTarget,
     borderRadius: 16,
   },
   primaryShell: {
@@ -244,7 +242,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   compactContent: {
-    minHeight: 46,
+    minHeight: stackrControlTokens.minTapTarget,
     borderRadius: 16,
     paddingHorizontal: 13,
     paddingVertical: 8,

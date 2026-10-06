@@ -1,3 +1,9 @@
+import { StackrImage } from '../../components/StackrImage';
+import { StackrCardArtworkFallback } from '../../components/StackrArtworkFallback';
+import { stackrCardImageSizes } from '../../lib/stackrSizing';
+import { StackrLoadingIndicator } from '../../components/StackrLoadingIndicator';
+import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
+import { mergeShowcaseFinishMetadata } from '../../lib/cardFinishProfiles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -511,8 +517,15 @@ function ShowcaseCabinet({
   onPress: () => void;
 }) {
   const { theme } = useTheme();
-  const imageUri = card?.imageUri ?? card?.images?.small ?? card?.images?.large ?? null;
+  const imageUris = [...new Set([
+    card?.images?.large,
+    card?.image_large,
+    card?.imageUri,
+    card?.images?.small,
+    card?.image_small,
+  ].filter((value): value is string => Boolean(value)))];
   const setName = card?.set?.name ?? card?.setName ?? null;
+  const identity = { name: card?.name ?? 'Unknown card', setName, language: (card as any)?.language ?? (card as any)?.raw_data?.language ?? null };
   const cardNumber = card?.number ?? null;
   const rawValue = card ? getPriceFromPokemonCard(card) : null;
   const value = typeof card?.estimatedValueGbp === 'number'
@@ -553,11 +566,33 @@ function ShowcaseCabinet({
           borderColor: '#EEE7FF',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden',
+          overflow: card ? 'visible' : 'hidden',
         }}
       >
-        {imageUri ? (
-          <Image source={{ uri: imageUri }} resizeMode="contain" style={{ width: '88%', height: '92%' }} />
+        {card ? (
+          <CardDetailInspectSurface
+            title={identity.name}
+            cardMetadata={card}
+            isSlabbed={card.showcaseKind === 'graded'}
+            style={{ width: '100%', height: '100%' }}
+          >
+          <StackrImage
+            uriCandidates={imageUris}
+            contentFit="contain"
+            cropToCard
+            style={{ width: '100%', height: '100%', borderRadius: stackrCardImageSizes.cardCornerRadius }}
+            showFallbackIcon={false}
+            fallback={(
+              <StackrCardArtworkFallback
+                name={identity.name}
+                setName={identity.setName}
+                number={cardNumber}
+                language={identity.language}
+                density="compact"
+              />
+            )}
+          />
+          </CardDetailInspectSurface>
         ) : (
           <View style={{ alignItems: 'center', gap: 8, paddingHorizontal: 14 }}>
             <View
@@ -1360,11 +1395,13 @@ export default function ProfileScreen() {
       };
       const mergeCard = (fresh: any | null, fallback?: ProfileShowcaseCard | null) => {
         if (!fresh) return fallback ?? null;
+        const matchingSaved = fallback && fallback.id === fresh.id && (!fresh.set?.id || fresh.set.id === fallback.setId) ? fallback : null;
         return {
           ...fresh,
-          imageUri: fallback?.imageUri ?? fresh.images?.small ?? fresh.images?.large ?? null,
-          estimatedValueGbp: fallback?.estimatedValueGbp ?? null,
-          showcaseKind: fallback?.showcaseKind ?? 'card',
+          ...mergeShowcaseFinishMetadata(fresh, matchingSaved),
+          imageUri: matchingSaved?.imageUri ?? fresh.images?.small ?? fresh.images?.large ?? null,
+          estimatedValueGbp: matchingSaved?.estimatedValueGbp ?? null,
+          showcaseKind: matchingSaved?.showcaseKind ?? 'card',
         };
       };
 
@@ -1569,7 +1606,7 @@ export default function ProfileScreen() {
     const actions: any[] = [
       {
         text: 'View card',
-        onPress: () => router.push({ pathname: '/card/[id]', params: { id: card.id, setId: card.setId ?? card.set?.id ?? undefined } } as any),
+        onPress: () => router.push({ pathname: '/card/[id]', params: { id: card.id, setId: card.setId ?? card.set?.id ?? undefined, variant: card.variant ?? undefined, finish: card.finish ?? undefined, slabbed: card.showcaseKind === 'graded' ? '1' : undefined } } as any),
       },
       {
         text: 'Replace',

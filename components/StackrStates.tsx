@@ -1,9 +1,10 @@
+import { StackrLoadingIndicator } from './StackrLoadingIndicator';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, StyleProp, View, ViewStyle } from 'react-native';
+import { StyleProp, View, ViewStyle } from 'react-native';
 import { stackrRadii, stackrSpacing } from '../lib/theme';
 import { Text } from './Text';
-import { StackrButton } from './StackrControls';
+import { StackrButton, type StackrButtonVariant } from './StackrControls';
 import { useTheme } from './theme-context';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -34,6 +35,8 @@ export function StackrStateBlock({
   tone = 'neutral',
   actionLabel,
   onAction,
+  actionVariant = 'primary',
+  live,
   secondaryLabel,
   onSecondaryAction,
   style,
@@ -44,6 +47,8 @@ export function StackrStateBlock({
   tone?: StateTone;
   actionLabel?: string;
   onAction?: () => void;
+  actionVariant?: StackrButtonVariant;
+  live?: boolean;
   secondaryLabel?: string;
   onSecondaryAction?: () => void;
   style?: StyleProp<ViewStyle>;
@@ -53,7 +58,6 @@ export function StackrStateBlock({
 
   return (
     <View
-      accessibilityRole="summary"
       style={[
         {
           borderRadius: stackrRadii.lg,
@@ -81,18 +85,20 @@ export function StackrStateBlock({
       >
         <Ionicons name={icon ?? toneIcon[tone]} size={23} color={color} />
       </View>
-      <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900', textAlign: 'center' }}>
-        {title}
-      </Text>
-      {body ? (
-        <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, fontWeight: '700', textAlign: 'center' }}>
-          {body}
+      <View accessibilityRole={tone === 'error' ? 'alert' : 'summary'} accessibilityLiveRegion={(live ?? tone === 'error') ? 'polite' : 'none'}>
+        <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900', textAlign: 'center' }}>
+          {title}
         </Text>
-      ) : null}
+        {body ? (
+          <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, fontWeight: '700', textAlign: 'center', marginTop: 8 }}>
+            {body}
+          </Text>
+        ) : null}
+      </View>
       {actionLabel || secondaryLabel ? (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4, justifyContent: 'center' }}>
           {secondaryLabel ? <StackrButton label={secondaryLabel} variant="secondary" onPress={onSecondaryAction} /> : null}
-          {actionLabel ? <StackrButton label={actionLabel} variant={tone === 'error' ? 'destructive' : 'primary'} onPress={onAction} /> : null}
+          {actionLabel ? <StackrButton label={actionLabel} variant={actionVariant} onPress={onAction} /> : null}
         </View>
       ) : null}
     </View>
@@ -103,7 +109,7 @@ export function StackrLoadingState({ label = 'Loading...', style }: { label?: st
   const { theme } = useTheme();
   return (
     <View style={[{ alignItems: 'center', justifyContent: 'center', padding: stackrSpacing.xl, gap: 10 }, style]}>
-      <ActivityIndicator color={theme.colors.primary} />
+      <StackrLoadingIndicator color={theme.colors.primary} />
       <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '800' }}>{label}</Text>
     </View>
   );
@@ -153,8 +159,7 @@ export function StackrPermissionState({
   );
 }
 
-export function StackrSkeleton({ style }: { height?: number; style?: StyleProp<ViewStyle> }) {
-  const { theme } = useTheme();
+export function StackrSkeleton({ height = 56, style }: { height?: number; style?: StyleProp<ViewStyle> }) {
   return (
     <View
       accessibilityLabel="Loading content"
@@ -162,13 +167,14 @@ export function StackrSkeleton({ style }: { height?: number; style?: StyleProp<V
       accessibilityState={{ busy: true }}
       style={[
         {
-          height: 3,
-          borderRadius: 2,
-          backgroundColor: theme.colors.primary,
+          alignItems: 'center',
+          justifyContent: 'center',
         },
         style,
-        { height: 3 },
+        { height, backgroundColor: 'transparent' },
       ]}
-    />
+    >
+      <StackrLoadingIndicator size={Math.min(height, 48)} accessible={false} />
+    </View>
   );
 }

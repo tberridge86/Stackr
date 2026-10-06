@@ -1,3 +1,45 @@
+type CanonicalVariant = {
+  variantId: string;
+  canonicalId?: string | null;
+  variantCode?: string | null;
+  variantLabel?: string | null;
+  finishCode?: string | null;
+  finishLabel?: string | null;
+};
+
+function normalizedOwnedVariant(value: unknown) {
+  const token = String(value ?? '').trim().toLowerCase().replace(/[\s_\-]+/g, '');
+  // These are exact naming equivalents between the legacy ownership model and
+  // the canonical catalogue. Compound finishes with no canonical equivalent
+  // (for example unlimited holofoil) deliberately remain unmatched.
+  if (token === 'nonholo' || token === 'nonholofoil') return 'normal';
+  if (token === 'holofoil') return 'holo';
+  if (token === 'reverse' || token === 'reverseholofoil') return 'reverseholo';
+  if (token === '1steditionnormal') return 'firstedition';
+  return token;
+}
+
+/** Resolve an owned finish/edition exactly. A non-empty owned label may never
+ * silently become the printing's default variant. */
+export function selectExactOwnedVariantId(
+  variants: readonly CanonicalVariant[],
+  defaultVariantId: string | null | undefined,
+  ownedVariant?: string | null,
+) {
+  const requested = normalizedOwnedVariant(ownedVariant);
+  if (!requested) return defaultVariantId || null;
+  const matches = variants.filter((variant) => [
+    variant.variantId,
+    variant.canonicalId,
+    variant.variantCode,
+    variant.variantLabel,
+    variant.finishCode,
+    variant.finishLabel,
+  ].some((value) => normalizedOwnedVariant(value) === requested));
+  return matches.length === 1 ? matches[0].variantId : null;
+}
+
+
 export type RotatingStringBatch = {
   items: string[];
   total: number;

@@ -13,6 +13,7 @@ import {
   type StackrSearchResult,
   type StackrSet,
 } from './stackrApiV1';
+import { selectExactStackrPriceVariant, type StackrPriceVariantOptions } from './stackrPriceIdentity';
 import { buildForeignCardPresentation } from './foreignCardPresentation';
 import {
   getEnglishSetDisplayName,
@@ -452,8 +453,8 @@ export function toStackrApiLanguage(value?: string | null): StackrApiLanguageCod
   if (language === 'en' || language === 'english') return 'en';
   if (language === 'ja' || language === 'jp' || language === 'japanese') return 'ja';
   if (language === 'ko' || language === 'kr' || language === 'korean') return 'ko';
-  if (['zh-cn', 'zh-hans', 'chinese-simplified', 'simplified-chinese'].includes(language)) return 'zh-cn';
-  if (['zh', 'zh-tw', 'zh-hant', 'chinese', 'traditional-chinese'].includes(language)) return 'zh-tw';
+  if (['zh-cn', 'zh-hans', 'zhcn', 'cn', 'chinese-simplified', 'simplified-chinese'].includes(language)) return 'zh-cn';
+  if (['zh', 'zh-tw', 'zh-hant', 'zhtw', 'tw', 'chinese', 'traditional-chinese'].includes(language)) return 'zh-tw';
   return null;
 }
 
@@ -1476,14 +1477,24 @@ export async function fetchStackrPrice(
     condition?: string | null;
     grader?: string | null;
     grade?: string | number | null;
-    /** Exact evidence remains preferred; this asks the API for its labelled general estimate when absent. */
-    estimateMode?: 'general';
     force?: boolean;
-  } = {},
+  } & StackrPriceVariantOptions = {},
   client: StackrApiClient = stackrApiClient,
 ): Promise<{ resolved: StackrResolvedCard; price: StackrCardPrice } | null> {
-  const resolved = await resolveStackrCard(reference, { language: options.language, setId: options.setId }, client);
-  if (!resolved) return null;
+  const languageHint = clean(options.language);
+  const requestedLanguage = toStackrApiLanguage(languageHint);
+  if (languageHint && languageHint.toLowerCase() !== 'all' && !requestedLanguage) return null;
+  const setHint = clean(options.setId);
+  // This price API uses a canonical set UUID. Resolve external set codes with
+  // resolveStackrSetId before calling; a supplied constraint may never disappear.
+  if (setHint && !UUID_PATTERN.test(setHint)) return null;
+  const base = await resolveStackrCard(reference, { language: options.language, setId: setHint }, client);
+  if (!base) return null;
+  if (requestedLanguage && base.card.languageCode !== requestedLanguage) return null;
+  if (setHint && base.card.set.setId.toLowerCase() !== setHint.toLowerCase()) return null;
+  const variantId = selectExactStackrPriceVariant(base.card, base.variantId, reference.trim(), options);
+  if (!variantId) return null;
+  const resolved = { ...base, variantId };
   if (!shouldUseStackrApi(client)) {
     const snapshots = await fetchStackrPriceSnapshots([reference, resolved.card.cardId], {
       language: options.language,
@@ -1499,6 +1510,9 @@ export async function fetchStackrPrice(
         currency: snapshot?.currency ?? options.currency ?? 'GBP',
         status: hasEstimate ? 'market_estimate' : 'unavailable',
         priceType: hasEstimate ? 'market_estimate' : 'unavailable',
+        provenLastSold: false,
+        lastSoldObservationId: null,
+        lastSoldEvidence: null,
         estimates: {
           low: snapshot?.market_low ?? null,
           central: snapshot?.market_central ?? null,
@@ -1525,23 +1539,23 @@ export async function fetchStackrPrice(
   }
   const query = {
     productType: options.productType,
-    currency: options.currency ?? 'GBP',
+    currency: (options.currency ?? 'GBP').trim().toUpperCase(),
     condition: clean(options.condition) ?? undefined,
     grader: clean(options.grader) ?? undefined,
     grade: clean(options.grade) ?? undefined,
-    estimateMode: options.estimateMode ?? 'general',
   };
-  if ((!options.productType || options.productType === 'raw_card') && query.currency === 'GBP' && !query.grader && !query.grade) {
-    const price = await fetchCachedRawDetailPrice({ variantId: resolved.variantId,
-      cardId: resolved.card.cardId, language: resolved.card.languageCode }, query, client, options.force);
-    return { resolved, price };
+  const price = (!options.productType || options.productType === 'raw_card')
+    && query.currency === 'GBP' && !query.grader && !query.grade
+    ? await fetchCachedRawDetailPrice({ variantId: resolved.variantId,
+      cardId: resolved.card.cardId, language: resolved.card.languageCode }, query, client, options.force)
+    : (await client.cardPrice(resolved.variantId, query)).data;
+  if (price.variantId !== resolved.variantId || price.productType !== (options.productType ?? 'raw_card')) {
+    throw new Error('Stackr API returned a price for a different card variant or product type.');
   }
-  const response = await client.cardPrice(resolved.variantId, query);
-  return { resolved, price: response.data };
+  if (price.currency !== query.currency) throw new Error('Stackr API returned a price in an unexpected currency.');
+  return { resolved, price };
 }
 
-
-/** Reuse facts already returned to the binder; only the existing approved image/set resolution runs here. */
 export async function enrichStackrCardArtworkFromFacts(
   cards: Array<{ raw_data?: any }>,
   signal?: AbortSignal,

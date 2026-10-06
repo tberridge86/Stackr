@@ -1,3 +1,4 @@
+import { StackrButton } from '../../components/StackrControls';
 import { theme } from '../../lib/theme';
 import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -87,17 +88,8 @@ export default function ProfileSetupScreen() {
           <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '800', textAlign: 'center' }}>
             {loading ? 'Loading your profile…' : error ? 'Profile unavailable' : 'Sign in to edit your profile'}
           </Text>
-          {error ? <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 20 }}>{error}</Text> : null}
-          {error ? (
-            <TouchableOpacity
-              onPress={() => void refreshProfile()}
-              accessibilityRole="button"
-              accessibilityLabel="Retry loading profile"
-              style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 16 }}
-            >
-              <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>Try again</Text>
-            </TouchableOpacity>
-          ) : null}
+          {error ? <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 20 }}>{error}</Text> : null}
+          {error ? <StackrButton label="Try again" accessibilityLabel="Retry loading profile" onPress={() => void refreshProfile()} /> : null}
         </View>
       </SafeAreaView>
     );

@@ -274,6 +274,9 @@ export type StackrMarketEvidenceStatus =
   | 'unavailable';
 
 export type StackrCardPrice = {
+  provenLastSold?: boolean;
+  lastSoldObservationId?: string | null;
+  lastSoldEvidence?: { observationId?: string | null } | null;
   variantId: string;
   productType: StackrMarketProductType;
   identityKey: string | null;

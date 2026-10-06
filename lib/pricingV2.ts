@@ -65,6 +65,9 @@ export async function fetchStackrPricingV2(cardId: string, options: PricingV2Opt
 
   const result = await fetchStackrPrice(cardId, {
     language: options.language,
+    variant: options.variant,
+    finish: options.finish,
+    edition: options.edition,
     productType: options.productType === 'graded_card' || options.productType === 'sealed_product'
       ? options.productType
       : 'raw_card',
@@ -78,6 +81,7 @@ export async function fetchStackrPricingV2(cardId: string, options: PricingV2Opt
   });
   if (!result) throw new Error('Stackr API could not resolve an exact canonical variant for pricing.');
   const price = result.price;
+  if (price.currency !== 'GBP') throw new Error('Stackr API returned a price in an unexpected currency.');
   const state: PricingV2Response['state'] = price.status === 'unavailable'
     ? 'insufficient_exact_market_evidence'
     : price.status === 'asking_price_indication'

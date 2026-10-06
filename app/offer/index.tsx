@@ -884,6 +884,7 @@ export default function OfferDetailScreen() {
 
       <StackrCenterModal
         visible={Boolean(confirmCopy)}
+        accessibilityLabel={confirmCopy?.title ?? 'Confirm trade action'}
         onClose={() => !sending && setConfirmAction(null)}
         dismissible={!sending}
         contentStyle={{ padding: 20 }}
