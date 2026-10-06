@@ -1130,7 +1130,7 @@ assert.match(
   /SUPABASE_ACCESS_TOKEN:\s+\$\{\{ secrets\.STACKR_GITHUB_PRODUCTION_BACKUPS \|\| secrets\.SUPABASE_ACCESS_TOKEN \}\}/,
   'production must prefer the dedicated backup-read token without removing the standard token fallback',
 );
-assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[gate0_hardening, pricing_identity_guard_rehearsal, catalogue_api, full_platform\]/);
+assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[gate0_hardening, pricing_identity_guard_rehearsal, cardmarket_ledger_rehearsal, catalogue_api, full_platform\]/);
 assert.match(
   stagingWorkflow,
   /if \[ "\$\{\{ inputs\.release_scope \}\}" != "gate0_hardening" \] && \[ "\$\{\{ inputs\.release_candidate \}\}" != "true" \]; then[\s\S]*Non-Gate-0 staging deployments require release_candidate=true and reviewed evidence\.[\s\S]*exit 1/,
