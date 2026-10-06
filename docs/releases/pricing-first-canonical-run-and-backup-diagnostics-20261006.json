@@ -1,6 +1,6 @@
 {
   "batch": "20261006-29",
-  "observedAt": "2026-10-06T13:46:00Z",
+  "observedAt": "2026-10-06T13:45:12Z",
   "authorization": {
     "source": "C:/Users/berri/.codex/attachments/23c056aa-f5f0-4fc7-9760-0856e83aaf5b/Pasted text.txt",
     "quote": "This request authorizes the scoped remote diagnostics, required migrations, provider imports, refresh scheduling and deployments needed for this work, followed by the next TestFlight release after all readiness gates pass.",
