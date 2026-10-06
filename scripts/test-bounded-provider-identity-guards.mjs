@@ -75,7 +75,18 @@ async function main(){
  await db.exec('reset role');
  await assert.rejects(db.exec('begin;'+migration+'commit;'),/unexpected English exact-title identity guard revision/);
  await db.exec('rollback');
- console.log(JSON.stringify({checks,legacyParity:true,serviceOnly:true,publishedVersionsPreserved:true,changedRevisionRejected:true}));
+ const candidateDefinitionMd5=(await db.query("select md5(replace(pg_get_functiondef('api.english_exact_price_set_is_current(bigint,uuid)'::regprocedure),E'\\r\\n',E'\\n')) hash")).rows[0].hash;
+ const rollback=readFileSync('docs/releases/pricing-identity-guard-rollback-20261006.sql','utf8');
+ await db.exec('begin;'+rollback+'commit;');
+ await check(true,'forward rollback preserves native published identity');
+ assert.equal((await db.query("select md5(replace(pg_get_functiondef('api.english_exact_price_set_is_current(bigint,uuid)'::regprocedure),E'\\r\\n',E'\\n')) hash")).rows[0].hash,'ca77044f82345cc18fdc7f2be1cca8f6','rollback restores the captured predecessor exactly');
+ await db.exec('set role anon');await assert.rejects(db.query('select api.english_exact_price_set_is_current($1,$2)',[100,id(10)]),/permission denied/);
+ await db.exec('reset role;set role authenticated');await assert.rejects(db.query('select api.english_exact_price_set_is_current($1,$2)',[100,id(10)]),/permission denied/);
+ await db.exec('reset role;set role service_role');assert.equal((await db.query('select api.english_exact_price_set_is_current($1,$2) valid',[100,id(10)])).rows[0].valid,true);
+ await db.exec('reset role');
+ await assert.rejects(db.exec('begin;'+rollback+'commit;'),/unexpected candidate identity guard revision for rollback/);
+ await db.exec('rollback');
+ console.log(JSON.stringify({checks,legacyParity:true,serviceOnly:true,publishedVersionsPreserved:true,changedRevisionRejected:true,candidateDefinitionMd5,forwardRollbackRestoresExactPredecessor:true,rollbackAccessPreserved:true,alreadyRestoredRollbackRejected:true}));
  }finally{await db.close()}
 }
 main().catch(error=>{console.error(error);process.exitCode=1});
