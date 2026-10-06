@@ -1,5 +1,13 @@
 # Ongoing pricing coverage
 
+## Batch: 20261006-30 — canonical rerun identified rejected backup credentials
+
+**PR317 is merged** at `86e21c0b4d7e84110ca1cba03438ba617de4414e` after eight exact-head CI checks passed. The protected main-only Cardmarket rehearsal [run37474015185](https://github.com/tberridge86/Stackr/actions/runs/37474015185) passed source/tests/target controls, then stopped at13:51:31UTC with **`staging_backup_credentials_rejected`**. The fixed staging endpoint accepted none of the configured primary/alternative credentials. This is now a specific authentication/authorization blocker; no candidate SQL ran, no platform job ran, and cleanup succeeded. Logical dumps and physical freshness were not verified. Do not repeatedly dispatch or bypass backups.
+
+Required action is to configure the GitHub **staging `STACKR_GITHUB_STAGING_BACKUPS` secret** with a valid Supabase credential permitted to read this staging project's backups. The [official endpoint contract](https://supabase.com/docs/reference/api/v1-list-all-backups) requires `backups_read` for a fine-grained token (`database:read` for OAuth). Credentials belong in the protected secret store, not chat. Existing human authorization covers the eventual scoped canonical jobs; no extra generic deployment approval is needed, but their release gates must pass.
+
+An independent13:46UTC narrow staging read confirms both normalized predecessor hashes unchanged. Production's tiny hash connection timed out and was not repeated. No persistent function, price/mapping/catalogue, cache or native action occurred. Historical38371/76030 and unknown current full/owner/projection coverage stay separate. Four intentional dirty worker/test copies and primary checkout are preserved. Once backup access is restored, rerun this selected canonical scope; successful rollback remains intermediate before reviewed persistent migrations/full installed controls/retained-cache runtime and protected production acceptance. [Current receipt](pricing-canonical-backup-access-blocker-20261006.json).
+
 ## Batch: 20261006-29 — first canonical staging run stopped before SQL at backup gate
 
 The original human audit request explicitly authorizes scoped remote diagnostics, required migrations and deployments. That authorization was reconfirmed from the original attachment; it does not remove protected backup/source/target/access gates. **PR315 is merged** at `1026a5b159ffbd71e7559813e1e54803b0a3da64` after its exact head passed eight CI checks. The main-only Cardmarket rollback rehearsal was dispatched through the existing protected staging lane as [run37472315164](https://github.com/tberridge86/Stackr/actions/runs/37472315164), with migration/mobile flags false and the unrelated platform job excluded.
