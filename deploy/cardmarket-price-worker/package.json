@@ -1,0 +1,1 @@
+{"name":"stackr-cardmarket-price-worker","private":true,"type":"module","dependencies":{"@supabase/supabase-js":"2.105.1","dotenv":"16.6.1"}}

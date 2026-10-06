@@ -354,6 +354,32 @@ paths:
         "422": { $ref: "#/components/responses/Error" }
         "429": { $ref: "#/components/responses/Error" }
         "503": { $ref: "#/components/responses/Error" }
+  /market/catalogue-prices:
+    post:
+      tags: [Market]
+      operationId: readCataloguePrices
+      description: "Bounded stored-price read for the authenticated configured owner. This request never calls a provider. Successful responses use Cache-Control private, no-store; request bodies are limited to 48 KiB."
+      security: [{ SupabaseBearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CataloguePriceRequest"
+      responses:
+        "200":
+          description: Stored exact or explicitly labelled general estimates for up to 100 exact references. Private and no-store.
+          headers:
+            Cache-Control:
+              schema: { type: string, const: "private, no-store" }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CataloguePriceResponse"
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
   /market/collection-valuation:
     get:
       tags: [Market]
@@ -1890,6 +1916,134 @@ components:
         updatedAt:
           type: [string, "null"]
           format: date-time
+    CataloguePriceRequest:
+      type: object
+      additionalProperties: false
+      description: At most 100 exact references; serialized request body must not exceed 48 KiB.
+      required: [references]
+      properties:
+        references:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            minLength: 1
+            maxLength: 160
+            pattern: "^[A-Za-z0-9._:/+-]+$"
+        language:
+          $ref: "#/components/schemas/LanguageCode"
+        estimateMode:
+          type: string
+          enum: [exact, general]
+          default: exact
+        knownRevisions:
+          type: object
+          additionalProperties:
+            type: string
+            pattern: "^[a-f0-9]{64}$"
+    CataloguePriceItem:
+      type: object
+      additionalProperties: false
+      required: [reference, cardId, variantId, language, price, unavailableReason, nextRetryAt, revision]
+      properties:
+        reference: { type: string }
+        cardId: { type: [string, "null"], format: uuid }
+        variantId: { type: [string, "null"], format: uuid }
+        language: { $ref: "#/components/schemas/LanguageCode" }
+        price:
+          anyOf:
+            - $ref: "#/components/schemas/CatalogueStoredPrice"
+            - type: "null"
+        unavailableReason: { type: [string, "null"] }
+        nextRetryAt: { type: [string, "null"], format: date-time }
+        revision:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    CatalogueStoredPrice:
+      type: object
+      additionalProperties: false
+      required: [variantId, productType, identityKey, currency, status, priceType, estimates, sample, confidence, freshness, sourceBreakdown, outliers, fallbackEstimate, unavailableReason, calculatedAt, staleAfter, estimateVersion]
+      properties:
+        variantId: { type: string, format: uuid }
+        productType: { $ref: "#/components/schemas/MarketProductType" }
+        identityKey: { type: [string, "null"] }
+        currency: { type: string }
+        status: { $ref: "#/components/schemas/MarketEvidenceStatus" }
+        priceType: { $ref: "#/components/schemas/MarketEvidenceStatus" }
+        priceBasis: { type: string }
+        quoteScope: { type: string, enum: [exact_variant, printing_level] }
+        primarySource: { type: string }
+        estimates:
+          type: object
+          additionalProperties: false
+          required: [low, central, high]
+          properties:
+            low: { type: [number, "null"] }
+            central: { type: [number, "null"] }
+            high: { type: [number, "null"] }
+        sample:
+          type: object
+          additionalProperties: false
+          required: [total, sold, active, sources, dateRange]
+          properties:
+            total: { type: number }
+            sold: { type: number }
+            active: { type: number }
+            sources: { type: number }
+            dateRange:
+              type: object
+              additionalProperties: false
+              required: [from, to]
+              properties:
+                from: { type: [string, "null"], format: date-time }
+                to: { type: [string, "null"], format: date-time }
+        confidence:
+          type: object
+          additionalProperties: false
+          required: [score, label]
+          properties:
+            score: { type: number }
+            label: { type: string, enum: [high, medium, low, insufficient_evidence] }
+        freshness: { type: string, enum: [fresh, stale, expired, unknown, source_timestamped] }
+        sourceBreakdown:
+          type: array
+          items: { type: object, additionalProperties: true }
+        outliers: { type: object, additionalProperties: true }
+        fallbackEstimate:
+          type: [object, "null"]
+          additionalProperties: true
+          required: [identityKey, reason, exact]
+          properties:
+            identityKey: { type: [string, "null"] }
+            reason: { type: string }
+            exact: { type: boolean, const: false }
+        unavailableReason: { type: [string, "null"] }
+        calculatedAt: { type: [string, "null"], format: date-time }
+        staleAfter: { type: [string, "null"], format: date-time }
+        estimateVersion: { type: string }
+    CataloguePriceResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [prices, unchangedReferences, priceRevision, estimateMode]
+              properties:
+                prices:
+                  type: array
+                  items: { $ref: "#/components/schemas/CataloguePriceItem" }
+                unchangedReferences:
+                  type: array
+                  items: { type: string }
+                priceRevision:
+                  type: string
+                  pattern: "^[a-f0-9]{64}$"
+                estimateMode:
+                  type: string
+                  enum: [exact, general]
     CardPriceResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"

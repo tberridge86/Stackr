@@ -1,0 +1,477 @@
+{
+  "observedAt": "2026-10-05T06:45:18Z",
+  "activeScope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "priced": 31953,
+    "total": 76030,
+    "percent": 42.03,
+    "netSince1032October4": 2864
+  },
+  "coverage": {
+    "rows": [
+      {
+        "language_code": "en",
+        "observed_at": "2026-10-05 06:42:56.798194+00",
+        "physical_total": 33359,
+        "tcgcsv_saved": 17635,
+        "tcgcsv_fresh": 17635,
+        "cardmarket_saved": 7802,
+        "cardmarket_fresh": 7802,
+        "combined_saved": 20575,
+        "combined_fresh": 20575
+      },
+      {
+        "language_code": "ja",
+        "observed_at": "2026-10-05 06:43:07.147115+00",
+        "physical_total": 14100,
+        "tcgcsv_saved": 6907,
+        "tcgcsv_fresh": 6907,
+        "cardmarket_saved": 1032,
+        "cardmarket_fresh": 1032,
+        "combined_saved": 7324,
+        "combined_fresh": 7324
+      },
+      {
+        "language_code": "zh-cn",
+        "observed_at": "2026-10-05 06:43:09.277562+00",
+        "physical_total": 20405,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 0,
+        "cardmarket_fresh": 0,
+        "combined_saved": 0,
+        "combined_fresh": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "observed_at": "2026-10-05 06:43:10.586428+00",
+        "physical_total": 8166,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 4054,
+        "cardmarket_fresh": 4054,
+        "combined_saved": 4054,
+        "combined_fresh": 4054
+      }
+    ],
+    "atomic": false,
+    "publicationVersionsBefore": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "language_code": "ko",
+        "published_at": "2026-08-10 17:10:33.631+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "publicationVersionsAfter": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "language_code": "ko",
+        "published_at": "2026-08-10 17:10:33.631+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "versionsUnchanged": true,
+    "queries": "Same physical CVV + variant/printing/set/language contract as 4 October; TCGCSV exact physical identity + current CV, or current-CV Cardmarket printing; source stale_after > now().",
+    "requestedReadSettings": {
+      "statementTimeoutSeconds": 20,
+      "enableNestloop": false
+    },
+    "queryTemplate": "with physical as materialized (\n  select cvv.variant_id, cvv.printing_id, cvv.set_id, cvv.language_code,\n         cvv.catalogue_version_id\n  from catalog.catalogue_version_variants cvv\n  join catalog.card_variants v on v.id=cvv.variant_id\n    and v.deprecated_at is null and v.language_code=cvv.language_code\n    and v.printing_id=cvv.printing_id\n  join catalog.card_printings p on p.id=cvv.printing_id\n    and p.deprecated_at is null and p.set_id=cvv.set_id\n    and p.language_code=cvv.language_code\n  join catalog.sets s on s.id=p.set_id\n    and s.deprecated_at is null and s.language_code=cvv.language_code\n  join catalog.languages l on l.code=cvv.language_code\n  where cvv.catalogue_version_id = :catalogue_version_id\n    and cvv.language_code = :language_code\n), assessed as (\n  select c.*,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id) as tcgcsv_saved,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id\n        and g.stale_after > now()) as tcgcsv_fresh,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id) as cardmarket_saved,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id\n        and cm.stale_after > now()) as cardmarket_fresh\n  from physical c\n)\nselect :language_code as language_code, now() as observed_at, count(*) as physical_total,\n count(*) filter(where tcgcsv_saved) as tcgcsv_saved,\n count(*) filter(where tcgcsv_fresh) as tcgcsv_fresh,\n count(*) filter(where cardmarket_saved) as cardmarket_saved,\n count(*) filter(where cardmarket_fresh) as cardmarket_fresh,\n count(*) filter(where tcgcsv_saved or cardmarket_saved) as combined_saved,\n count(*) filter(where tcgcsv_fresh or cardmarket_fresh) as combined_fresh\nfrom assessed;"
+  },
+  "overnight": {
+    "latestRun": "4dda2fc7-a30e-4188-8f2a-15aea5dd417d",
+    "dailyDatasetAt": "2026-10-04T20:05:38Z",
+    "beforeSunMoonActivePriced": 31869,
+    "netPreviouslyUnpriced": 1877,
+    "newPrimaryQuoteNetGrowth": 2626,
+    "englishQueuedTitleGroups": [
+      {
+        "group_id": 3020,
+        "name": "SWSH09: Brilliant Stars Trainer Gallery",
+        "status": "complete",
+        "stats": {
+          "cards": 32,
+          "pages": 1,
+          "priced": 27
+        }
+      },
+      {
+        "group_id": 23228,
+        "name": "SV03: Obsidian Flames",
+        "status": "complete",
+        "stats": {
+          "cards": 425,
+          "pages": 1,
+          "priced": 313
+        }
+      },
+      {
+        "group_id": 23286,
+        "name": "SV04: Paradox Rift",
+        "status": "complete",
+        "stats": {
+          "cards": 432,
+          "pages": 1,
+          "priced": 227
+        }
+      },
+      {
+        "group_id": 23381,
+        "name": "SV05: Temporal Forces",
+        "status": "complete",
+        "stats": {
+          "cards": 379,
+          "pages": 1,
+          "priced": 226
+        }
+      },
+      {
+        "group_id": 23473,
+        "name": "SV06: Twilight Masquerade",
+        "status": "complete",
+        "stats": {
+          "cards": 384,
+          "pages": 1,
+          "priced": 237
+        }
+      },
+      {
+        "group_id": 23537,
+        "name": "SV07: Stellar Crown",
+        "status": "complete",
+        "stats": {
+          "cards": 304,
+          "pages": 1,
+          "priced": 224
+        }
+      },
+      {
+        "group_id": 23651,
+        "name": "SV08: Surging Sparks",
+        "status": "complete",
+        "stats": {
+          "cards": 422,
+          "pages": 1,
+          "priced": 267
+        }
+      },
+      {
+        "group_id": 24073,
+        "name": "SV09: Journey Together",
+        "status": "complete",
+        "stats": {
+          "cards": 349,
+          "pages": 1,
+          "priced": 254
+        }
+      },
+      {
+        "group_id": 24269,
+        "name": "SV10: Destined Rivals",
+        "status": "complete",
+        "stats": {
+          "cards": 416,
+          "pages": 1,
+          "priced": 283
+        }
+      },
+      {
+        "group_id": 24380,
+        "name": "ME01: Mega Evolution",
+        "status": "complete",
+        "stats": {
+          "cards": 328,
+          "pages": 1,
+          "priced": 181
+        }
+      },
+      {
+        "group_id": 24448,
+        "name": "ME02: Phantasmal Flames",
+        "status": "complete",
+        "stats": {
+          "cards": 218,
+          "pages": 1,
+          "priced": 144
+        }
+      },
+      {
+        "group_id": 24587,
+        "name": "ME03: Perfect Order",
+        "status": "complete",
+        "stats": {
+          "cards": 212,
+          "pages": 1,
+          "priced": 124
+        }
+      },
+      {
+        "group_id": 24655,
+        "name": "ME04: Chaos Rising",
+        "status": "complete",
+        "stats": {
+          "cards": 201,
+          "pages": 1,
+          "priced": 111
+        }
+      },
+      {
+        "group_id": 24688,
+        "name": "ME05: Pitch Black",
+        "status": "complete",
+        "stats": {
+          "cards": 0,
+          "pages": 0,
+          "priced": 0
+        }
+      }
+    ],
+    "firstPass": {
+      "began": "2026-10-04T20:13:51Z",
+      "ended": "2026-10-04T21:03:56Z",
+      "checkpointTimeout": true,
+      "exitCode": 124,
+      "groupsClaimed": 610,
+      "resumedByFollowingScheduledExecutions": true
+    },
+    "latestScheduledExecution": {
+      "at": "2026-10-05T06:17:59Z",
+      "exitCode": 0,
+      "elapsedMs": 61221,
+      "health": {
+        "runId": "4dda2fc7-a30e-4188-8f2a-15aea5dd417d",
+        "groups": [
+          {
+            "total": 150,
+            "status": "complete",
+            "categoryId": 3
+          },
+          {
+            "total": 70,
+            "status": "unmapped",
+            "categoryId": 3
+          },
+          {
+            "total": 163,
+            "status": "complete",
+            "categoryId": 85
+          },
+          {
+            "total": 296,
+            "status": "unmapped",
+            "categoryId": 85
+          }
+        ],
+        "quotes": [
+          {
+            "stale": 0,
+            "total": 17527,
+            "provider": "tcgcsv",
+            "languageCode": "en"
+          },
+          {
+            "stale": 0,
+            "total": 6907,
+            "provider": "tcgcsv",
+            "languageCode": "ja"
+          }
+        ],
+        "outcomes": {
+          "total": 76272,
+          "no_provider_quote": 3467,
+          "unsupported_finish": 1240,
+          "unsupported_language": 28813
+        },
+        "datasetAt": "2026-10-04T20:05:38+00:00",
+        "runStatus": "needs_mapping",
+        "openRepairs": 45932
+      },
+      "coverageError": null,
+      "coverageDiagnostics": {
+        "pages": 39,
+        "scanned": 76317,
+        "catalogueVersions": [
+          {
+            "language_code": "en",
+            "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          {
+            "language_code": "ja",
+            "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+          },
+          {
+            "language_code": "ko",
+            "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+          },
+          {
+            "language_code": "zh-cn",
+            "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+          },
+          {
+            "language_code": "zh-tw",
+            "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+          }
+        ],
+        "observedAtBegin": "2026-10-05T06:17:00.175743+00:00",
+        "observedAtEnd": "2026-10-05T06:17:48.159927+00:00",
+        "atomic": false
+      }
+    },
+    "deployment": {
+      "currentId": "8f9b3981-44b9-415a-842a-b5f01153e9fa",
+      "status": "SUCCESS",
+      "configuredSourcePin": "3d9ccdd5f9301605f9d3070619636d42dcc92472",
+      "railwayDeploymentMetadataCommit": "413425af4e40d4740105944798fef6652754f54b",
+      "workerReportAndDockerFilesIdenticalBetweenCommits": true
+    }
+  },
+  "newBatch": {
+    "id": "20261005-08",
+    "providerGroupId": 1863,
+    "providerName": "SM Base Set",
+    "providerAbbreviation": "SM01",
+    "providerPublishedOn": "2017-02-03T00:00:00",
+    "canonicalSetId": "ad42d9fa-77e8-4ea4-a591-0591acd4e853",
+    "canonicalSetCode": "sm1",
+    "canonicalName": "Sun & Moon",
+    "canonicalReleaseDate": "2017-02-03",
+    "setOnlyAliasReviewed": true,
+    "candidates": 172,
+    "exactMapped": 135,
+    "priced": 108,
+    "noProviderQuote": 27,
+    "unresolvedProviderIdentity": 37,
+    "priorPrimary": 0,
+    "backupOverlap": 24,
+    "netPreviouslyUnpriced": 84,
+    "stageAndProductionPhysicalIdentitiesIdentical": true,
+    "providerCollisions": 0,
+    "variantConflicts": 0,
+    "blockedMappingKeys": 0,
+    "verifiedStoredQuotesEachEnvironment": 108,
+    "productionApiReferencesVerified": 108,
+    "storeBatchesEachEnvironment": 6,
+    "leaseBoundFinishStage": {
+      "finished": true
+    },
+    "leaseBoundFinishProduction": {
+      "finished": true
+    },
+    "stageRun": "0778cb55-e99b-4100-a08b-6ce4026f2960",
+    "productionRun": "4dda2fc7-a30e-4188-8f2a-15aea5dd417d",
+    "review": {
+      "categoryId": 3,
+      "groupId": 1863,
+      "setId": "ad42d9fa-77e8-4ea4-a591-0591acd4e853",
+      "note": "ROOT-EN-SM1-20261005-08: reviewed SM Base Set (SM01) alias to current English Sun & Moon expansion (sm1, release 2017-02-03). Stage and production have identical set/printing/variant identities; retained full-group exact card names, collector numbers and finish quote subtypes match. Unresolved cards and missing quotes remain unavailable; other authoritative provider groups are preserved."
+    },
+    "fx": {
+      "rate": 0.757532293986637,
+      "at": "2026-10-02T00:00:00.000Z",
+      "source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    },
+    "priceSourceAt": "2026-10-04T20:05:38Z",
+    "staleAfter": "2026-10-06T20:05:38Z"
+  },
+  "afterBatch": {
+    "groupLedger": [
+      {
+        "category_id": 3,
+        "status": "complete",
+        "groups": 151
+      },
+      {
+        "category_id": 3,
+        "status": "unmapped",
+        "groups": 69
+      },
+      {
+        "category_id": 85,
+        "status": "complete",
+        "groups": 163
+      },
+      {
+        "category_id": 85,
+        "status": "unmapped",
+        "groups": 296
+      }
+    ],
+    "primaryEnglish": 17635,
+    "primaryJapanese": 6907,
+    "primaryTotal": 24542,
+    "manualReviewedPrimaryQuotesAdded": 1400,
+    "zeroQuoteAudit": [
+      {
+        "zero_original": 0,
+        "zero_display": 0,
+        "total": 24542
+      }
+    ]
+  },
+  "checks": {
+    "headBeforeReceipt": "861eac1",
+    "applicableGitHubPassed": 12,
+    "intentionalSkips": 2,
+    "noNewCodeOrMigrationsThisBatch": true,
+    "validation": "Actual stage and production physical/collision preflight, guarded writes, exact source-price/FX/freshness verification, full current candidate checkpoint and 108 API quote readbacks."
+  },
+  "boundaries": {
+    "generalGuideNotConditionGradeOrSoldValuation": true,
+    "serviceSqlApiNotOwnerHttpOrPhoneVisibility": true,
+    "noKoreanWork": true,
+    "noCatalogueMutation": true,
+    "noNewNativeBuild": true,
+    "noNewPaidProvider": true,
+    "fullTargetAchieved": false
+  },
+  "next": [
+    "Review remaining English promo set aliases one cohort at a time; set metadata alone is not product identity proof.",
+    "Review Japanese aggregate/deck/promo cases individually; keep current stage/production non-equivalent sets and edition mismatches quarantined.",
+    "Improve Chinese source provenance and deploy already-tested Chinese eBay asking-price repair through the existing staged pricing path."
+  ]
+}

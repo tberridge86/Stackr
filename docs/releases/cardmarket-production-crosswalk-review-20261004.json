@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-10-04T09:44:48.598Z",
+  "sourceLedger": ".tmp/cardmarket-reviewed-ledger-20261004.json",
+  "sourceReviewedMappings": 9224,
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "status": "production_retained_feed_import_complete",
+  "candidateMappings": 9224,
+  "quarantinedMappings": 0,
+  "providerProductCollisions": 0,
+  "canonicalPrintingCollisions": 0,
+  "languages": {
+    "en": {
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "mappings": 4875
+    },
+    "ja": {
+      "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "mappings": 944
+    },
+    "ko": {
+      "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "mappings": 10
+    },
+    "zh-tw": {
+      "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "mappings": 3395
+    }
+  },
+  "exactIdentityContract": [
+    "same canonical printing UUID",
+    "same language",
+    "same collector number",
+    "same set UUID and set code",
+    "reviewed variant IDs retained in current production publication",
+    "reviewed TCGdex external IDs retained in current production publication"
+  ],
+  "rawCardmarketDiagnosis": "Production current TCGdex identifiers have no retained raw Cardmarket product IDs; this candidate ledger transfers only the independently reviewed stage product crosswalk and contains no price or feed revision.",
+  "limits": [
+    "Cardmarket public guide and product revisions must be retained and independently validated before mapping review and general-price storage.",
+    "Guide scope remains blended language/condition/finish and is never exact variant or holdings valuation."
+  ],
+  "rootReviewReference": "root20261004/cardmarket-reviewed-exact-production; stage-provenance=235b; production-provenance=8c928e4d-37f2-48a7-a312-fb2fe787cf99; full-canonical-crosswalk=docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+  "reviewedAt": "2026-10-04T09:45:44.020Z",
+  "import": {
+    "completedAt": "2026-10-04T09:53:33.128Z",
+    "checkpoint": ".tmp/cardmarket-production-daily-checkpoint-20261004.json",
+    "cache": ".tmp/cardmarket-public-20261004",
+    "complete": true,
+    "pagesScanned": 150,
+    "reviewedMappings": 9224,
+    "blendedEstimatesStored": 9223,
+    "repairRecordsUpserted": 65397,
+    "repairsByReason": {
+      "missing_exact_mapping": 65396,
+      "no_market_guide_value": 1
+    },
+    "productsRevision": {
+      "id": "ae42de16-eb38-414d-a45d-c688d558eeb7",
+      "createdAt": "2026-10-03T09:44:53Z",
+      "sha256": "14a74405a86acfb80b42168e5cc019c0eae67925e8eee9893f53d35e4922d6ce",
+      "bytes": 13677937
+    },
+    "priceGuideRevision": {
+      "id": "88df9af6-8055-4bf0-9c21-9c230681befe",
+      "createdAt": "2026-10-04T00:40:55Z",
+      "sha256": "acdd6ed470fa738b7dd318d7548df425123d83b51d4ab258b0a0de43d9cf8e82",
+      "bytes": 15630955
+    },
+    "fx": {
+      "baseCurrency": "EUR",
+      "targetCurrency": "GBP",
+      "rate": 0.85033,
+      "at": "2026-10-02T00:00:00Z",
+      "source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    },
+    "servingProof": {
+      "priceScope": "blended_general_estimate",
+      "provider": "cardmarket_public",
+      "selectedField": "trend",
+      "originalCurrency": "EUR",
+      "language": null,
+      "condition": null,
+      "finish": null,
+      "usableForExactVariant": false,
+      "usableForHoldingsValuation": false
+    }
+  }
+}

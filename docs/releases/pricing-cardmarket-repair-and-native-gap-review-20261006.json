@@ -1,0 +1,292 @@
+{
+  "schemaVersion": "stackr-cardmarket-bounded-ledger-production-v1",
+  "observedAt": "2026-10-06 00:23:34.107214+00",
+  "priorFailure": {
+    "deployment": "0e66bdfc-160e-4a55-bded-291e1106f2b9",
+    "source": "0e4834409b0f024624e2d1882ae7d9c1fe359957",
+    "failedAt": "2026-10-05T23:21:29.567530888Z",
+    "message": "canceling statement due to statement timeout",
+    "phase": "Before reviewed-ledger completion marker; command runs ledger loader first.",
+    "oldReadPageSize": 500
+  },
+  "repair": {
+    "candidate": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+    "branch": "codex/stackr-bounded-price-worker-writes",
+    "service": "1c4cf45c-816d-46cc-a416-78d8c18bd779",
+    "environment": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+    "productionDeployment": "c7286876-4d57-4cf9-aaf3-ac1162958684",
+    "createdAt": "2026-10-06T00:16:20.224Z",
+    "builtAt": "2026-10-06T00:18:20.665Z",
+    "imageDigest": "sha256:d5197fee5d69db4208110b8f70a4e29032ace3f1cc323bc70db1c7dd00354ab0",
+    "deploymentScope": "Dedicated production Cardmarket cron service; same service has no staging instance. Live source connection did not accept the unrelated environment patch.",
+    "pageSize": 100,
+    "maxPages": 2500,
+    "mappingSafetyCeiling": 250000,
+    "atomicLedgerRequired": true,
+    "fullStageRuntimePreviouslyVerified": true,
+    "scheduledRuntime": {
+      "startedAt": "2026-10-06T00:20:43.967501480Z",
+      "fullReviewedMappingsLoadedAt": "2026-10-06T00:21:39.392208995Z",
+      "allMappings": 9234,
+      "completedAt": "2026-10-06T00:21:40.590893332Z",
+      "platformSucceededAt": "2026-10-06T00:21:50.436Z",
+      "status": "succeeded",
+      "complete": true,
+      "stored": 0,
+      "repairs": 0,
+      "pages": 0,
+      "sourceRevisions": {
+        "products": "18956fc2-1835-42c2-809d-de4b45ac04e9",
+        "priceGuide": "88df9af6-8055-4bf0-9c21-9c230681befe"
+      }
+    },
+    "schedulePreserved": "17 * * * *",
+    "volumePreserved": {
+      "id": "86718ccd-b9a3-4570-ad10-c114a3be4eb6",
+      "mountPath": "/var/lib/cardmarket",
+      "sizeMB": 1024,
+      "region": "us-west2"
+    },
+    "cacheCleared": false,
+    "manualRestart": false,
+    "publicDomainAdded": false,
+    "secretsOrAccessChanged": false,
+    "mergedIntoPR312": false
+  },
+  "sourceFreshness": {
+    "upstream": [
+      {
+        "kind": "priceGuide",
+        "status": 200,
+        "url": "https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_6.json",
+        "sourceCreatedAt": "2026-10-04T02:40:55+0200",
+        "etag": "\"0d1a914781572d8fd94e4a69f1487467\"",
+        "lastModified": "Sun, 04 Oct 2026 00:41:04 GMT",
+        "checkedAt": "2026-10-06T00:17:33.333Z"
+      },
+      {
+        "kind": "products",
+        "status": 200,
+        "url": "https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_6.json",
+        "sourceCreatedAt": "2026-10-05T14:13:33+0200",
+        "etag": "\"da32edebcea16b6701087beec71c8086\"",
+        "lastModified": "Mon, 05 Oct 2026 12:13:36 GMT",
+        "checkedAt": "2026-10-06T00:17:33.383Z"
+      }
+    ],
+    "storedProduction": {
+      "observed_at": "2026-10-06 00:23:34.107214+00",
+      "source_created_at": "2026-10-04 00:40:55+00",
+      "stale_after": "2026-10-06 00:40:55+00",
+      "stored_printings": 9233,
+      "positive_fresh_printings": 9198
+    },
+    "sourceDateExtended": false,
+    "actualProviderPriceCreatedAt": "2026-10-04T00:40:55Z",
+    "actualExpiry": "2026-10-06T00:40:55Z",
+    "note": "Successful cron and updated product catalogue do not constitute a new price dataset. Quotes remain correctly dated and become stale at actual expiry if the provider has not advanced. 9,198 is positive printing-row count, not net variant coverage."
+  },
+  "coverage": {
+    "latestCompleteObservation": "2026-10-05T23:19:16Z",
+    "positiveStored": 38371,
+    "currentPhysicalDenominatorLastVerified": 76030,
+    "lastMeasuredPercent": 50.47,
+    "fullCatalogueLastVerified": 76269,
+    "excludedKorean": 239,
+    "newFullCoverageMeasured": false,
+    "currentFallbackProjection": "not measured",
+    "ownerHttpPhone": "not measured",
+    "warning": "Do not reuse 50.47% after the Cardmarket expiry or subtract source counts to fabricate a new total; fresh alternative printing guides may overlap those Cardmarket rows."
+  },
+  "tcgcsvRuntime": {
+    "deployment": "755c7a11-ce10-4b1c-9f8d-e17d3051d46c",
+    "configuredSource": "7dc63aa",
+    "completedAt": "2026-10-06T00:18:33.662130064Z",
+    "exit": 0,
+    "elapsedMs": 70148,
+    "dataset": "2026-10-05T20:05:57Z",
+    "groupsClaimed": 0,
+    "pricesImported": 0,
+    "deferred": 0,
+    "diagnosticPages": 39,
+    "coverageError": null,
+    "staged40ResultWritePathExercised": false,
+    "productionTCGCandidatePromoted": false
+  },
+  "boundedJapaneseResearch": {
+    "sourceCategory": 85,
+    "sourceDataset": "2026-10-05T20:05:57Z",
+    "completeGroupMasks": [
+      {
+        "groupId": 24260,
+        "candidates": 92,
+        "mapped": 92,
+        "missingAnyPositiveStoredGuide": 0,
+        "mappedMissing": 0,
+        "completeCurrentGroup": true
+      },
+      {
+        "groupId": 23601,
+        "candidates": 413,
+        "mapped": 227,
+        "missingAnyPositiveStoredGuide": 186,
+        "mappedMissing": 0,
+        "completeCurrentGroup": true
+      },
+      {
+        "groupId": 23686,
+        "candidates": 112,
+        "mapped": 112,
+        "missingAnyPositiveStoredGuide": 38,
+        "mappedMissing": 38,
+        "completeCurrentGroup": true
+      },
+      {
+        "groupId": 23615,
+        "candidates": 135,
+        "mapped": 135,
+        "missingAnyPositiveStoredGuide": 0,
+        "mappedMissing": 0,
+        "completeCurrentGroup": true
+      }
+    ],
+    "rankingOnly": true,
+    "rankingNotAnOwnerApiRead": true,
+    "sm7": {
+      "groupId": 23686,
+      "currentStageAndProductionCandidates": 112,
+      "products": 114,
+      "priceRows": 92,
+      "exactQuotePlanner": {
+        "priced": 74,
+        "noProviderQuote": 38
+      },
+      "alternativeBasicFinishGuides": 0,
+      "wholeGroupBlockedProducts": 0,
+      "missingRowsWithoutAnyPriceRow": 20,
+      "missingRowsWithNullMarketPrices": 18,
+      "askingPricesKeptSeparate": true,
+      "sourceAndNativeIdentitiesIndependentlyReadBothEnvironments": true,
+      "quoteOrMappingWrites": 0,
+      "samples": [
+        {
+          "variantId": "0c8c0c5e-eebe-47d1-871c-680ab62e9a17",
+          "printingId": "35dffe45-50c8-42c7-84c4-0138af92520a",
+          "collector": "110",
+          "native": "ダートじてんしゃ",
+          "requestedFinish": "holo",
+          "productId": 573398,
+          "productName": "Acro Bike - 110/096",
+          "quotes": []
+        },
+        {
+          "variantId": "1595d63e-b652-438d-94e9-7bccd4921efb",
+          "printingId": "7594945e-ff17-4428-ba47-7b4af88c8cfd",
+          "collector": "105",
+          "native": "ダーテングGX",
+          "requestedFinish": "holo",
+          "productId": 573393,
+          "productName": "Shiftry GX - 105/096",
+          "quotes": []
+        },
+        {
+          "variantId": "175c7654-bc9e-4d37-85ec-fda704cd5099",
+          "printingId": "fe7391d0-00c3-4fe8-965e-b4e1cf2ca048",
+          "collector": "079",
+          "native": "ギリギリポーション",
+          "requestedFinish": "normal",
+          "productId": 573367,
+          "productName": "Last Chance Potion",
+          "quotes": []
+        },
+        {
+          "variantId": "279644d2-0697-4404-916a-eb69de5f4c61",
+          "printingId": "3810ba4b-c384-4ce4-ab87-1e2784b19de6",
+          "collector": "073",
+          "native": "ドゴーム",
+          "requestedFinish": "normal",
+          "productId": 573361,
+          "productName": "Loudred",
+          "quotes": [
+            {
+              "lowPrice": 1.34,
+              "midPrice": 1.49,
+              "highPrice": 1.49,
+              "productId": 573361,
+              "marketPrice": null,
+              "subTypeName": "Normal",
+              "directLowPrice": null
+            }
+          ]
+        }
+      ]
+    },
+    "legacyPromos": {
+      "groups": [
+        {
+          "groupId": 23876,
+          "setCode": "S-P",
+          "productionCandidates": 13
+        },
+        {
+          "groupId": 23881,
+          "setCode": "SM-P",
+          "lastObservedProductionCandidates": 12
+        },
+        {
+          "groupId": 23908,
+          "setCode": "XY-P",
+          "lastObservedProductionCandidates": 12
+        }
+      ],
+      "productionPhysicalSetIdsPresent": true,
+      "stagingPhysicalSetIdsAbsent": true,
+      "stageSetMembershipAbsent": true,
+      "writes": 0,
+      "decision": "No staging catalogue publication or production-only price mappings; select a cohort already published in both environments."
+    }
+  },
+  "unrelatedProductionPatch": {
+    "id": "8e29d75c-d567-4a9a-9e96-8a40e51a22f3",
+    "service": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+    "accepted": false,
+    "unchanged": true
+  },
+  "otherChat": {
+    "id": "01a10cd5-3cb4-7e20-88ac-1b59eb471330",
+    "title": "Classify Stackr pricing coverage",
+    "state": "idle",
+    "messaged": false,
+    "paidChineseProviderActivated": false
+  },
+  "guardCandidate": {
+    "source": "12215cbe4466fc5928e060c33bff2928aad26981",
+    "applied": false,
+    "canonicalScopedRehearsalStillPending": true
+  },
+  "validation": {
+    "ledgerFixture": "pass",
+    "workerTargetVolumeFixture": "pass",
+    "dailyGuideRetentionFixture": "pass",
+    "cachedIngestionFixture": "pass",
+    "candidateCardmarketSourceAndOwnedCopyMatch": true,
+    "diffCheck": "pass",
+    "backendOrTypeScriptSourceChanged": false
+  },
+  "preserved": {
+    "ownedUncommittedWorkerTestCopies": 4,
+    "dirtyPrimaryCheckout": "D:/Stackr-1",
+    "historicalReceipts": true,
+    "stagedTCGWorkerCandidate": true,
+    "commerceControls": true,
+    "pausedAutomations": true
+  },
+  "next": [
+    "Check actual Cardmarket upstream guide advancement and persisted source/expiry, without cache clear or healthy worker restart.",
+    "After expiry, remeasure complete current native physical positive coverage in bounded pages; keep stale saved prices and projected fallback/owner-device results separate.",
+    "Inspect the complete currently published Japanese Shiny Treasure ex group23601:186 direct stored-mask gaps are unmapped; validate variant/finish/printing ambiguity and provider ownership before proposing writes.",
+    "Do not repeat resolved guide cohorts, SM7 no-alternative batch or production-only S-P/SM-P/XY-P staging-absent mappings.",
+    "Keep TCGCSV40-result write runtime proof and the scoped guard migration rehearsal as independent unfinished gates.",
+    "Continue native Chinese source evidence without paid activation or English-price substitution."
+  ]
+}

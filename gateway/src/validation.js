@@ -410,6 +410,23 @@ function validatePriceRefresh(payload, batch) {
   }
 }
 
+function validateCataloguePrices(payload) {
+  rejectUnknownKeys(payload, new Set(['references', 'language', 'estimateMode', 'knownRevisions']));
+  const refs = payload.references;
+  if (!Array.isArray(refs) || refs.length < 1 || refs.length > 100
+    || refs.some((ref) => typeof ref !== 'string' || !/^[A-Za-z0-9._:/+-]{1,160}$/.test(ref))) {
+    bad('invalid_price_references', 'Supply between 1 and 100 exact card references.');
+  }
+  if (payload.language != null && !LANGUAGE_CODES.has(payload.language)) bad('invalid_language', 'language is not supported.');
+  if (payload.estimateMode != null && !['exact', 'general'].includes(payload.estimateMode)) bad('invalid_estimate_mode', 'estimateMode must be exact or general.');
+  if (payload.knownRevisions != null) {
+    requireObject(payload.knownRevisions);
+    if (Object.entries(payload.knownRevisions).some(([ref, rev]) => !refs.includes(ref) || !/^[a-f0-9]{64}$/.test(rev))) {
+      bad('invalid_price_revisions', 'knownRevisions must contain revisions for requested references only.');
+    }
+  }
+}
+
 export function parseAndValidateJson(bodyBytes, kind, pathname = '') {
   let payload;
   try {
@@ -420,6 +437,7 @@ export function parseAndValidateJson(bodyBytes, kind, pathname = '') {
   requireObject(payload);
   if (kind === 'priceRefresh') validatePriceRefresh(payload, false);
   if (kind === 'priceRefreshBatch') validatePriceRefresh(payload, true);
+  if (kind === 'cataloguePrices') validateCataloguePrices(payload);
   if (kind === 'recognitionIdentify') validateRecognitionIdentify(payload);
   if (kind === 'recognitionEmbed') validateRecognitionEmbed(payload);
   if (kind === 'recognitionFeedback') validateRecognitionFeedback(payload);

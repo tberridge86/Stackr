@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   type ImageSourcePropType,
@@ -195,6 +196,8 @@ export function SearchCardRailItem({
   number,
   rarity,
   estimatedValue,
+  priceContext,
+  priceUnavailable,
   listingCount,
   ownedQuantity,
   onPress,
@@ -211,6 +214,9 @@ export function SearchCardRailItem({
   number?: string | null;
   rarity?: string | null;
   estimatedValue?: number | null;
+  /** Saved catalogue guide provenance. The numeric price remains a general estimate. */
+  priceContext?: string | null;
+  priceUnavailable?: boolean;
   listingCount?: number;
   ownedQuantity?: number;
   onPress: () => void;
@@ -269,10 +275,11 @@ export function SearchCardRailItem({
           {setName ?? 'Unknown set'}
         </Text>
       </View>
-      <RailMetaLine primary={estimate ?? (listingCount ? `${listingCount} listing${listingCount === 1 ? '' : 's'}` : number ? `#${number}` : 'Card')} />
+      <RailMetaLine primary={priceUnavailable ? 'General price unavailable' : estimate ?? (listingCount ? `${listingCount} listing${listingCount === 1 ? '' : 's'}` : number ? `#${number}` : 'Card')} />
       <RailMetaLine
         muted
         primary={[
+          priceContext,
           number ? `#${number}` : null,
           rarity,
           ownedQuantity ? `Owned x${ownedQuantity}` : null,
@@ -790,20 +797,7 @@ export function RecentSearchPill({
 
 export function SearchSkeleton() {
   const { theme } = useTheme();
-  return (
-    <View style={{ gap: 10 }}>
-      {[0, 1, 2, 3].map((item) => (
-        <View key={item} style={{ minHeight: 92, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.card, padding: 11, flexDirection: 'row', gap: 11 }}>
-          <View style={{ width: 58, height: 72, borderRadius: 10, backgroundColor: theme.colors.surface }} />
-          <View style={{ flex: 1, gap: 8, paddingTop: 4 }}>
-            <View style={{ width: '78%', height: 15, borderRadius: 8, backgroundColor: theme.colors.surface }} />
-            <View style={{ width: '56%', height: 12, borderRadius: 8, backgroundColor: theme.colors.surface }} />
-            <View style={{ width: '42%', height: 12, borderRadius: 8, backgroundColor: theme.colors.surface }} />
-          </View>
-        </View>
-      ))}
-    </View>
-  );
+  return <View style={{ paddingVertical: 32, alignItems: 'center' }}><ActivityIndicator color={theme.colors.primary} accessibilityLabel="Loading search results" /></View>;
 }
 
 function SearchResultShell({

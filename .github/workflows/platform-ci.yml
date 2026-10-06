@@ -46,6 +46,9 @@ jobs:
       - run: node --test tools/artwork3303-publish-20260928/publish.test.mjs tools/tw200-publish-20260930/publish.test.mjs tools/tw200-publish-20260930/workflow.test.mjs tools/english45-publish-20260930/publish.test.mjs tools/sh33-publish-20260930/publish.test.mjs tools/sh33-publish-20260930/repair.test.mjs tools/residual146-publish-20260930/publish.test.mjs tools/native96-publish-20260930/publish.test.mjs tools/korean232-publish-20260930/publish.test.mjs tools/artwork3303-publish-20260928/native-name-corrections.test.mjs tools/native65-publish-20261001/publish.test.mjs tools/native72-publish-20261001/publish.test.mjs tools/native70-publish-20261001/publish.test.mjs tools/native78-publish-20261001/publish.test.mjs tools/native73-publish-20261001/publish.test.mjs tools/native84-publish-20261001/publish.test.mjs tools/native99-publish-20261001/publish.test.mjs tools/native97-publish-20261001/publish.test.mjs tools/artwork3303-publish-20260928/journal.integration.test.mjs
       - run: node --test tools/queue1-publish-20260927/publish.test.mjs tools/queue1-pbl-relink-20260927/relink.test.mjs tools/mep89-publish-20260927/publish.test.mjs tools/pocket131-publish-20260927/publish.test.mjs tools/newsets480-publish-20260927/publish.test.mjs tools/anniversary201-publish-20260927/publish.test.mjs tools/printing-front-api-20260927/publish.test.mjs tools/card-detail-front-20260927/publish.test.mjs
       - run: node tools/pbl-price-identities-20260927/repair.test.mjs
+      - run: node scripts/test-price-guard-rehearsal-workflow.mjs
+      - run: node scripts/test-bounded-provider-identity-guards.mjs
+      - run: npm run test:next-beta-fixes
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run typecheck:backend

@@ -32,6 +32,8 @@ import { isSetVariantQuantitySchemaUnavailable } from '../../lib/setVariantRemov
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { useAuth } from '../../components/auth-context';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
+import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
+import type { CataloguePriceDisplay } from '../../lib/cataloguePrices';
 
 type FilterType = 'all' | 'owned' | 'missing';
 type SortType = 'number' | 'name' | 'rarity';
@@ -190,11 +192,17 @@ function formatMoney(value?: number | null, currency?: string | null) {
   }
 }
 
-function getCardPriceLines(card: PokemonCard) {
-  const pricing = card.pricing;
+function getCardPriceLines(card: PokemonCard & { runtimeCataloguePricing?: CataloguePriceDisplay }) {
+  const pricing = card.runtimeCataloguePricing ? {
+    displayPrice: card.runtimeCataloguePricing.displayPrice,
+    currency: card.runtimeCataloguePricing.currency,
+    sourceLabel: card.runtimeCataloguePricing.sourceLabel,
+    confidence: card.runtimeCataloguePricing.confidence,
+    updatedAt: card.runtimeCataloguePricing.updatedAt,
+  } : card.pricing;
   const primary = formatMoney(pricing?.displayPrice ?? null, pricing?.currency);
   if (!primary) {
-    return { primary: 'Price unavailable', context: null };
+    return { primary: 'Price unavailable', context: card.runtimeCataloguePricing?.unavailableReason ?? null };
   }
   const confidence = pricing?.confidence
     ? `${pricing.confidence.charAt(0).toUpperCase()}${pricing.confidence.slice(1)} confidence`
@@ -210,7 +218,8 @@ function getCardPriceLines(card: PokemonCard) {
   const original = pricing?.originalCurrency && pricing?.originalCurrency !== pricing?.currency
     ? formatMoney(pricing.originalPrice ?? null, pricing.originalCurrency)
     : null;
-  const context = [source, confidence, original ? `Source: ${original}` : null].filter(Boolean).join(' - ');
+  const updated = pricing?.updatedAt ? `Updated ${new Date(pricing.updatedAt).toLocaleDateString('en-GB')}` : null;
+  const context = [source, confidence, updated, original ? `Source: ${original}` : null].filter(Boolean).join(' - ');
   return { primary, context };
 }
 
@@ -400,7 +409,7 @@ function getCardRarityFilter(card: PokemonCard): Omit<RarityFilterOption, 'count
 // ===============================
 
 type CardItemProps = {
-  card: PokemonCard;
+  card: PokemonCard & { runtimeCataloguePricing?: CataloguePriceDisplay };
   variantQuantities: Map<string, number>;
   setId: string;
   onOpenQuantity: (card: PokemonCard, variant: string) => void;
@@ -638,6 +647,7 @@ export default function SetDetailScreen() {
 
   const [setInfo, setSetInfo] = useState<PokemonSet | null>(null);
   const [cards, setCards] = useState<PokemonCard[]>([]);
+  const pricedCards = useCataloguePriceOverlay(cards);
   const [loading, setLoading] = useState(true);
   const [ownershipReady, setOwnershipReady] = useState(false);
   const loadRequestRef = useRef(0);
@@ -945,7 +955,7 @@ export default function SetDetailScreen() {
   }, [rarityFilterOptions, selectedRarity]);
 
   const filteredCards = useMemo(() => {
-    let result = cards.filter((card) => {
+    let result = pricedCards.filter((card) => {
       const variants = getVariants(card, setId);
       const anyOwned = variants.some((v) => (variantQuantities.get(getVariantKey(card.id, setId ?? '', v)) ?? 0) > 0);
       const displayName = getSetCardDisplayName(card, card.name);
@@ -975,7 +985,7 @@ export default function SetDetailScreen() {
     });
 
     return result;
-  }, [cards, variantQuantities, search, filter, selectedRarity, sort, setId, finishSection, hasCompletionistSections, completionistFamilyCounts]);
+  }, [pricedCards, variantQuantities, search, filter, selectedRarity, sort, setId, finishSection, hasCompletionistSections, completionistFamilyCounts]);
 
   const cardGridWindow = useMemo(
     () => getIncrementalListWindow(2, { initialRows: 8, pageRows: 6, minInitial: 16, minPage: 12 }),
@@ -1022,7 +1032,7 @@ export default function SetDetailScreen() {
   });
   const setLogoUrl = setLogoSource ? null : getPokemonSetVisualUrl(setInfo, setInfo?.language ?? getRouteSetLanguage(setId));
 
-  const renderCard = useCallback(({ item: card }: { item: PokemonCard }) => (
+  const renderCard = useCallback(({ item: card }: { item: PokemonCard & { runtimeCataloguePricing?: CataloguePriceDisplay } }) => (
     <CardItem
       card={card}
       variantQuantities={variantQuantities}

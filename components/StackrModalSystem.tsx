@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
 import { typeScale } from '../lib/typography';
+import { stackrControlTokens } from '../lib/stackrSizing';
 
 type StackrModalBaseProps = {
   visible: boolean;
@@ -101,6 +102,7 @@ export function StackrBottomSheet({
   onClear,
   clearLabel = 'Clear all',
   dismissible = true,
+  accessibilityLabel,
   maxHeight = '78%',
   scroll = true,
   footer,
@@ -127,7 +129,7 @@ export function StackrBottomSheet({
       visible={visible}
       transparent
       animationType={Platform.OS === 'web' ? 'none' : 'slide'}
-      accessibilityLabel={title ?? 'Options'}
+      accessibilityLabel={accessibilityLabel ?? title ?? 'Options'}
       onDismiss={onDismiss}
       accessibilityViewIsModal
       onShow={() => { if (Platform.OS === 'web') closeButtonRef.current?.focus(); }}
@@ -193,6 +195,7 @@ export function StackrBottomSheet({
                   accessibilityLabel={title ? `Close ${title}` : 'Close options'}
                   disabled={!dismissible}
                   accessibilityState={{ disabled: !dismissible }}
+                  aria-disabled={!dismissible}
                   style={[styles.closeButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
                 >
                   <Ionicons name="close" size={20} color={theme.colors.text} />
@@ -406,7 +409,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   clearButton: {
-    minHeight: 48,
+    minHeight: stackrControlTokens.minTapTarget,
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 12,
@@ -420,8 +423,8 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   closeButton: {
-    width: 48,
-    height: 48,
+    width: stackrControlTokens.minTapTarget,
+    height: stackrControlTokens.minTapTarget,
     borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',

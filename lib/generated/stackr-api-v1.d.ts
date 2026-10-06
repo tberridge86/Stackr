@@ -264,6 +264,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/market/catalogue-prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Bounded stored-price read for the authenticated configured owner. This request never calls a provider. Successful responses use Cache-Control private, no-store; request bodies are limited to 48 KiB. */
+        post: operations["readCataloguePrices"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/market/collection-valuation": {
         parameters: {
             query?: never;
@@ -1055,6 +1072,98 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string | null;
         };
+        /** @description At most 100 exact references; serialized request body must not exceed 48 KiB. */
+        CataloguePriceRequest: {
+            references: string[];
+            language?: components["schemas"]["LanguageCode"];
+            /**
+             * @default exact
+             * @enum {string}
+             */
+            estimateMode: "exact" | "general";
+            knownRevisions?: {
+                [key: string]: string;
+            };
+        };
+        CataloguePriceItem: {
+            reference: string;
+            /** Format: uuid */
+            cardId: string | null;
+            /** Format: uuid */
+            variantId: string | null;
+            language: components["schemas"]["LanguageCode"];
+            price: components["schemas"]["CatalogueStoredPrice"] | null;
+            unavailableReason: string | null;
+            /** Format: date-time */
+            nextRetryAt: string | null;
+            revision: string;
+        };
+        CatalogueStoredPrice: {
+            /** Format: uuid */
+            variantId: string;
+            productType: components["schemas"]["MarketProductType"];
+            identityKey: string | null;
+            currency: string;
+            status: components["schemas"]["MarketEvidenceStatus"];
+            priceType: components["schemas"]["MarketEvidenceStatus"];
+            priceBasis?: string;
+            /** @enum {string} */
+            quoteScope?: "exact_variant" | "printing_level";
+            primarySource?: string;
+            estimates: {
+                low: number | null;
+                central: number | null;
+                high: number | null;
+            };
+            sample: {
+                total: number;
+                sold: number;
+                active: number;
+                sources: number;
+                dateRange: {
+                    /** Format: date-time */
+                    from: string | null;
+                    /** Format: date-time */
+                    to: string | null;
+                };
+            };
+            confidence: {
+                score: number;
+                /** @enum {string} */
+                label: "high" | "medium" | "low" | "insufficient_evidence";
+            };
+            /** @enum {string} */
+            freshness: "fresh" | "stale" | "expired" | "unknown" | "source_timestamped";
+            sourceBreakdown: {
+                [key: string]: unknown;
+            }[];
+            outliers: {
+                [key: string]: unknown;
+            };
+            fallbackEstimate: ({
+                identityKey: string | null;
+                reason: string;
+                /** @constant */
+                exact: false;
+            } & {
+                [key: string]: unknown;
+            }) | null;
+            unavailableReason: string | null;
+            /** Format: date-time */
+            calculatedAt: string | null;
+            /** Format: date-time */
+            staleAfter: string | null;
+            estimateVersion: string;
+        };
+        CataloguePriceResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                prices: components["schemas"]["CataloguePriceItem"][];
+                unchangedReferences: string[];
+                priceRevision: string;
+                /** @enum {string} */
+                estimateMode: "exact" | "general";
+            };
+        };
         CardPriceResponse: components["schemas"]["Envelope"] & {
             data?: {
                 /** Format: uuid */
@@ -1752,6 +1861,35 @@ export interface operations {
             404: components["responses"]["Error"];
             422: components["responses"]["Error"];
             429: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
+    readCataloguePrices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CataloguePriceRequest"];
+            };
+        };
+        responses: {
+            /** @description Stored exact or explicitly labelled general estimates for up to 100 exact references. Private and no-store. */
+            200: {
+                headers: {
+                    "Cache-Control"?: "private, no-store";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CataloguePriceResponse"];
+                };
+            };
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
             503: components["responses"]["Error"];
         };
     };

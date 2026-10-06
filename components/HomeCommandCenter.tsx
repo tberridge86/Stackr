@@ -263,8 +263,9 @@ const getActivityType = (item: HomeActivityItem): HomeActivityType => {
   return 'generic';
 };
 
-function SkeletonLine({ width, height = 12 }: { width: number | `${number}%`; height?: number }) {
-  return <View style={[styles.skeletonLine, { width, height }]} />;
+function SectionLoadingRing() {
+  const { theme } = useTheme();
+  return <View style={{ paddingVertical: 24, alignItems: 'center' }}><ActivityIndicator color={theme.colors.primary} accessibilityLabel="Loading collection" /></View>;
 }
 
 function EmptyMessage({
@@ -632,21 +633,7 @@ export function ContinueBinderCard({
             { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
           ]}
         >
-        {isLoading ? (
-          <View style={styles.binderSkeleton}>
-            <View style={[styles.binderCoverSkeleton, { backgroundColor: theme.colors.surface }]} />
-            <View style={{ flex: 1 }}>
-              <SkeletonLine width="74%" height={18} />
-              <SkeletonLine width="52%" />
-              <SkeletonLine width="92%" height={10} />
-              <View style={styles.statRow}>
-                <SkeletonLine width="30%" height={34} />
-                <SkeletonLine width="30%" height={34} />
-                <SkeletonLine width="30%" height={34} />
-              </View>
-            </View>
-          </View>
-        ) : error ? (
+        {isLoading ? (<SectionLoadingRing />) : error ? (
           <EmptyMessage icon="alert-circle-outline" title="Could not load binder progress" subtitle={error} />
         ) : binder ? (
           <>
@@ -1081,13 +1068,7 @@ export function DuplicatesCard({
         </View>
       </View>
       <View style={[styles.card, styles.duplicatesCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        {isLoading ? (
-          <>
-            <SkeletonLine width="60%" height={22} />
-            <SkeletonLine width="46%" />
-            <SkeletonLine width="100%" height={54} />
-          </>
-        ) : error ? (
+        {isLoading ? (<SectionLoadingRing />) : error ? (
           <EmptyMessage icon="alert-circle-outline" title="Could not load duplicates" subtitle={error} />
         ) : hasDuplicates ? (
           <DuplicatePremiumBody
@@ -1226,17 +1207,7 @@ export function HomeOpportunitiesSection({
     <View style={{ marginBottom: 20 }}>
       <HomeSectionHeader title="On your radar" />
       <View>
-        {isLoading && rows.length === 0 ? (
-          [0, 1, 2].map((index) => (
-            <View key={index} style={styles.opportunitySkeletonV2}>
-              <View style={[styles.opportunityIconV2, { backgroundColor: theme.colors.surface }]} />
-              <View style={{ flex: 1, gap: 7 }}>
-                <SkeletonLine width="74%" height={13} />
-                <SkeletonLine width="48%" height={9} />
-              </View>
-            </View>
-          ))
-        ) : rows.length ? (
+        {isLoading && rows.length === 0 ? (<SectionLoadingRing />) : rows.length ? (
           rows.map((row, index) => (
             <View key={row.key} style={index === rows.length - 1 ? styles.opportunityLastRowV2 : undefined}>
               <OpportunityRow {...row} />
@@ -1293,13 +1264,7 @@ export function ChaseOrMissingSection({
         onAction={onViewAll}
       />
       <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        {isLoading ? (
-          <View style={[styles.previewRail, isChase && styles.chasePreviewRail]}>
-            {[0, 1, 2].map((index) => (
-              <View key={index} style={[isChase ? styles.chasePreviewSkeleton : styles.previewSkeleton, { backgroundColor: theme.colors.surface }]} />
-            ))}
-          </View>
-        ) : error ? (
+        {isLoading ? (<SectionLoadingRing />) : error ? (
           <EmptyMessage icon="alert-circle-outline" title={mode === 'chase' ? 'Could not load chase cards' : 'Could not load missing cards'} subtitle={error} />
         ) : items.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.previewRail, isChase && styles.chasePreviewRail]}>
@@ -1681,17 +1646,7 @@ export function RecentActivitySection({
     <View style={{ marginBottom: 20 }}>
       <HomeSectionHeader title="From your collection" subtitle="Your latest additions and activity" />
       <View style={openLayout ? undefined : [styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        {isLoading && items.length === 0 ? (
-          [0, 1].map((index) => (
-            <View key={index} style={styles.activitySkeletonRow}>
-              <View style={[styles.activityCardThumb, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]} />
-              <View style={{ flex: 1 }}>
-                <SkeletonLine width="72%" height={14} />
-                <SkeletonLine width="48%" height={10} />
-              </View>
-            </View>
-          ))
-        ) : error && items.length === 0 ? (
+        {isLoading && items.length === 0 ? (<SectionLoadingRing />) : error && items.length === 0 ? (
           <EmptyMessage icon="alert-circle-outline" title="Could not refresh recent activity" subtitle={error} actionLabel="Retry" onAction={onRetry} />
         ) : visibleItems.length > 0 ? (
           <>
@@ -2316,11 +2271,6 @@ const styles = StyleSheet.create({
     padding: 14,
     ...cardShadow,
   },
-  skeletonLine: {
-    borderRadius: 999,
-    backgroundColor: 'rgba(121,112,169,0.18)',
-    marginBottom: 10,
-  },
   emptyBox: {
     borderWidth: 1,
     borderRadius: HOME_TOKENS.radius.lg,
@@ -2366,15 +2316,6 @@ const styles = StyleSheet.create({
     ...typeScale.buttonPrimary,
     color: '#FFFFFF',
     fontSize: 12,
-  },
-  binderSkeleton: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  binderCoverSkeleton: {
-    width: 78,
-    height: 104,
-    borderRadius: 16,
   },
   binderMain: {
     flexDirection: 'row',
@@ -2834,13 +2775,6 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     fontWeight: '900',
   },
-  opportunitySkeletonV2: {
-    minHeight: 64,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: HOME_TOKENS.spacing.sm,
-    paddingVertical: HOME_TOKENS.spacing.sm,
-  },
   duplicatesCard: {
     position: 'relative',
     paddingBottom: 34,
@@ -3164,16 +3098,6 @@ const styles = StyleSheet.create({
   chasePreviewRail: {
     gap: 12,
     paddingRight: 12,
-  },
-  previewSkeleton: {
-    width: 208,
-    height: 106,
-    borderRadius: 18,
-  },
-  chasePreviewSkeleton: {
-    width: 126,
-    height: 252,
-    borderRadius: 18,
   },
   previewCard: {
     width: 208,
@@ -3627,12 +3551,6 @@ const styles = StyleSheet.create({
     ...typeScale.buttonSecondary,
     fontSize: 13,
     fontWeight: '900',
-  },
-  activitySkeletonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: HOME_TOKENS.spacing.sm,
-    marginBottom: HOME_TOKENS.spacing.sm,
   },
   activityRow: {
     minHeight: 64,

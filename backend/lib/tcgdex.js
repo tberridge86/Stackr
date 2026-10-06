@@ -6,6 +6,7 @@ import {
 
 const TCGDEX_BASE_URL = process.env.TCGDEX_API_BASE_URL || 'https://api.tcgdex.net/v2';
 const TCGDEX_CACHE_TTL_MS = Number(process.env.TCGDEX_CACHE_TTL_MS || 10 * 60 * 1000);
+const TCGDEX_REQUEST_TIMEOUT_MS = Number(process.env.TCGDEX_REQUEST_TIMEOUT_MS || 8_000);
 const USD_TO_GBP = Number(process.env.USD_TO_GBP || 0.79);
 const EUR_TO_GBP = Number(process.env.EUR_TO_GBP || 0.86);
 const CONTROLLED_CARD_REFERENCE_LANGUAGES = new Set(['ja', 'zh-tw', 'zh-cn']);
@@ -117,7 +118,7 @@ function toGbp(value, unit) {
   return money(num * USD_TO_GBP);
 }
 
-async function fetchJson(path, { timeoutMs = null, isolateInflight = false, forceRefresh = false } = {}) {
+async function fetchJson(path, { timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, isolateInflight = false, forceRefresh = false } = {}) {
   const url = `${TCGDEX_BASE_URL.replace(/\/$/, '')}${path}`;
   const now = Date.now();
   const cached = tcgdexCache.get(url);

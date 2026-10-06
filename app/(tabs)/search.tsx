@@ -84,6 +84,7 @@ import { getIncrementalListWindow } from '../../lib/performance';
 import { supabase } from '../../lib/supabase';
 import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
 import { sanitizeMarketplaceListingPresentationFields } from '../../lib/marketplacePresentation';
+import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 
 type SearchCategory = 'all' | 'cards' | 'sets' | 'sealed' | 'graded' | 'collectors' | ListingCategoryKey;
 type SearchSortKey = 'relevance' | 'priceAsc' | 'priceDesc' | 'rarity' | 'set' | 'gradeDesc' | 'newest';
@@ -1411,6 +1412,12 @@ export default function GlobalSearchScreen() {
     return next;
   }, [results, searchSort, selectedGrade, selectedGrader, selectedLanguage, selectedPriceBucket, selectedRarities, selectedSetFilter]);
 
+  const pricedSearchCards = useCataloguePriceOverlay(visibleResults.cards);
+  const cataloguePriceByCardId = useMemo(
+    () => new Map(pricedSearchCards.map((card) => [card.id, card.runtimeCataloguePricing])),
+    [pricedSearchCards],
+  );
+
   const activeSearchFilterCount =
     Number(category !== 'all')
     + Number(searchSort !== 'relevance')
@@ -1586,7 +1593,13 @@ export default function GlobalSearchScreen() {
               })}
               number={card.number}
               rarity={card.rarity}
-              estimatedValue={card.estimatedValue}
+              estimatedValue={cataloguePriceByCardId.has(card.id) ? cataloguePriceByCardId.get(card.id)?.displayPrice : card.estimatedValue}
+              priceUnavailable={cataloguePriceByCardId.has(card.id) && cataloguePriceByCardId.get(card.id)?.pricingStatus === 'unavailable'}
+              priceContext={(() => {
+                const guide = cataloguePriceByCardId.get(card.id);
+                if (!guide) return null;
+                return [guide.sourceLabel, guide.unavailableReason, guide.updatedAt ? `Updated ${new Date(guide.updatedAt).toLocaleDateString('en-GB')}` : null].filter(Boolean).join(' - ');
+              })()}
               listingCount={card.listingCount}
               ownedQuantity={card.ownedQuantity}
               inspectionRequest={card.imageUri ? {

@@ -1,0 +1,471 @@
+{
+  "followUp": {
+  "observedAt": "2026-10-05T21:18:13Z",
+  "stagingCandidateTcgcsv": "scheduled run started at21:17:42, completion not yet observed",
+  "stagingCandidateCardmarket": "build succeeded, no scheduled runtime logs yet",
+  "productionTcgcsv": {
+    "deployment": "755c7a11-ce10-4b1c-9f8d-e17d3051d46c",
+    "createdAt": "2026-10-05T21:15:55.487Z",
+    "reason": "redeploy",
+    "configuredSource": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+    "buildMetaCommit": "28cbcfc7d68eb11edc622078b0bbc3216810610f",
+    "scheduledRunStartedAt": "2026-10-05T21:17:56.087Z",
+    "candidateF6aee12NotPromoted": true,
+    "initiatedByThisChat": false
+  },
+  "productionCardmarket": "20d42159 still failed at latest observation; retained volume intact"
+},
+  "observedAt": "2026-10-05T21:16:52Z",
+  "scope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "lastFullPositiveCount": {
+      "at": "2026-10-05T19:18:57Z",
+      "storedPositiveVariants": 33422,
+      "physicalVariants": 76030,
+      "fullPhysicalCatalogueIncludingExcludedKorean": 76269,
+      "projection": 33658
+    },
+    "currentFullCoverage": "not measured; independent classification/recovery task remains active",
+    "ownerHttpAndPhone": "not measured"
+  },
+  "source": {
+    "provider": "tcgcsv",
+    "datasetAt": "2026-10-05T20:05:57+0000",
+    "fxRate": 0.756158514816137,
+    "fxAt": "2026-10-05T00:00:00Z"
+  },
+  "stagingChangedDatasetResult": {
+    "deployment": "ec7a9dfd-b5a4-4b13-b655-54646f7026a3",
+    "sourceCommit": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+    "runId": "8f5e8ee0-8280-4136-bfe0-a3bb6ee5c14a",
+    "endedAt": "2026-10-05T21:05:10.609561990Z",
+    "exitCode": 0,
+    "setsClaimed": 680,
+    "complete": 272,
+    "unmapped": 408,
+    "deferred": 0,
+    "cards": 37572,
+    "priced": 24718,
+    "status": "needs_mapping",
+    "health": {
+      "runId": "8f5e8ee0-8280-4136-bfe0-a3bb6ee5c14a",
+      "groups": [
+        {
+          "total": 159,
+          "status": "complete",
+          "categoryId": 3
+        },
+        {
+          "total": 61,
+          "status": "unmapped",
+          "categoryId": 3
+        },
+        {
+          "total": 113,
+          "status": "complete",
+          "categoryId": 85
+        },
+        {
+          "total": 347,
+          "status": "unmapped",
+          "categoryId": 85
+        }
+      ],
+      "quotes": [
+        {
+          "stale": 0,
+          "total": 18010,
+          "provider": "tcgcsv",
+          "languageCode": "en"
+        },
+        {
+          "stale": 9,
+          "total": 6730,
+          "provider": "tcgcsv",
+          "languageCode": "ja"
+        }
+      ],
+      "outcomes": {
+        "total": 74672,
+        "no_provider_quote": 3568,
+        "unsupported_finish": 120,
+        "unsupported_language": 28813
+      },
+      "datasetAt": "2026-10-05T20:05:57+00:00",
+      "runStatus": "needs_mapping",
+      "openRepairs": 44019
+    },
+    "coverageDiagnostics": {
+      "pages": 38,
+      "scanned": 75797,
+      "catalogueVersions": [
+        {
+          "language_code": "en",
+          "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+        },
+        {
+          "language_code": "ja",
+          "id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+        },
+        {
+          "language_code": "ko",
+          "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+        },
+        {
+          "language_code": "zh-cn",
+          "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+        },
+        {
+          "language_code": "zh-tw",
+          "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+        }
+      ],
+      "observedAtBegin": "2026-10-05T21:04:35.633586+00:00",
+      "observedAtEnd": "2026-10-05T21:05:06.915258+00:00",
+      "atomic": false
+    },
+    "coverageError": null,
+    "countsAreNotFourLanguagePositiveCoverage": true
+  },
+  "productionChangedDatasetResult": {
+    "deployment": "ba85de72-ae0d-4dd3-b5a2-be0075a94763",
+    "sourceCommit": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+    "runId": "faaff017-f849-48b1-9721-9c148f6bf689",
+    "endedAt": "2026-10-05T20:58:49.852638023Z",
+    "exitCode": 1,
+    "terminalRpc": "finish_catalogue_bulk_sweep_group",
+    "error": "canceling statement due to statement timeout",
+    "completeCoverageReport": false,
+    "lastProgress": {
+      "at": "2026-10-05T20:56:29.394317611Z",
+      "message": "",
+      "level": "info",
+      "event": "catalogue_bulk_price_progress",
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "datasetAt": "2026-10-05T20:05:57+0000",
+      "runId": "faaff017-f849-48b1-9721-9c148f6bf689",
+      "requeued": 0,
+      "outcomeSeed": {
+        "pages": 1,
+        "scanned": 0,
+        "written": 0,
+        "complete": true
+      },
+      "setsClaimed": 270,
+      "complete": 197,
+      "unmapped": 43,
+      "deferred": 30,
+      "cards": 33596,
+      "priced": 25285,
+      "status": "running"
+    },
+    "checkpointObservation": [
+      {
+        "category_id": 3,
+        "status": "complete",
+        "groups": 147,
+        "processed_priced": 19014
+      },
+      {
+        "category_id": 3,
+        "status": "failed",
+        "groups": 8,
+        "processed_priced": 0
+      },
+      {
+        "category_id": 3,
+        "status": "pending",
+        "groups": 18,
+        "processed_priced": 0
+      },
+      {
+        "category_id": 3,
+        "status": "running",
+        "groups": 1,
+        "processed_priced": 0
+      },
+      {
+        "category_id": 3,
+        "status": "unmapped",
+        "groups": 46,
+        "processed_priced": 0
+      },
+      {
+        "category_id": 85,
+        "status": "pending",
+        "groups": 460,
+        "processed_priced": 0
+      }
+    ],
+    "retryAndLeaseObservation": [
+      {
+        "category_id": 3,
+        "group_id": 1379,
+        "status": "failed",
+        "lease_until": null,
+        "retry_after": "2026-10-05 21:05:57.156175+00",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        }
+      },
+      {
+        "category_id": 3,
+        "group_id": 1406,
+        "status": "failed",
+        "lease_until": null,
+        "retry_after": "2026-10-05 21:06:08.169087+00",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        }
+      },
+      {
+        "category_id": 3,
+        "group_id": 1412,
+        "status": "failed",
+        "lease_until": null,
+        "retry_after": "2026-10-05 21:02:08.869512+00",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        }
+      },
+      {
+        "category_id": 3,
+        "group_id": 2754,
+        "status": "failed",
+        "lease_until": null,
+        "retry_after": "2026-10-05 21:03:27.003343+00",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        }
+      },
+      {
+        "category_id": 3,
+        "group_id": 2848,
+        "status": "failed",
+        "lease_until": null,
+        "retry_after": "2026-10-05 21:06:35.25478+00",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        }
+      },
+      {
+        "category_id": 3,
+        "group_id": 23537,
+        "status": "failed",
+        "lease_until": null,
+        "retry_after": "2026-10-05 21:07:21.348898+00",
+        "stats": {
+          "rpc": "store_catalogue_bulk_prices",
+          "error": "canceling statement due to statement timeout"
+        }
+      },
+      {
+        "category_id": 3,
+        "group_id": 23651,
+        "status": "failed",
+        "lease_until": null,
+        "retry_after": "2026-10-05 21:07:43.701108+00",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        }
+      },
+      {
+        "category_id": 3,
+        "group_id": 24073,
+        "status": "failed",
+        "lease_until": null,
+        "retry_after": "2026-10-05 21:08:12.70905+00",
+        "stats": {
+          "rpc": "resolve_catalogue_bulk_set",
+          "error": "canceling statement due to statement timeout"
+        }
+      },
+      {
+        "category_id": 3,
+        "group_id": 24269,
+        "status": "running",
+        "lease_until": "2026-10-05 21:28:24.209344+00",
+        "retry_after": null,
+        "stats": {}
+      }
+    ],
+    "manualReclaimOrLeaseChanges": 0
+  },
+  "guideRefreshObservations": {
+    "stage": [
+      {
+        "group_id": 1451,
+        "dataset_at": "2026-10-05 20:05:57+00",
+        "printing_guides": 164,
+        "positive_fresh": 164,
+        "fx_at": "2026-10-05 00:00:00+00",
+        "fx_min": "0.756158514816137",
+        "fx_max": "0.756158514816137"
+      },
+      {
+        "group_id": 1861,
+        "dataset_at": "2026-10-05 20:05:57+00",
+        "printing_guides": 194,
+        "positive_fresh": 194,
+        "fx_at": "2026-10-05 00:00:00+00",
+        "fx_min": "0.756158514816137",
+        "fx_max": "0.756158514816137"
+      },
+      {
+        "group_id": 2545,
+        "dataset_at": "2026-10-05 20:05:57+00",
+        "printing_guides": 243,
+        "positive_fresh": 243,
+        "fx_at": "2026-10-05 00:00:00+00",
+        "fx_min": "0.756158514816137",
+        "fx_max": "0.756158514816137"
+      },
+      {
+        "group_id": 23779,
+        "dataset_at": "2026-10-05 20:05:57+00",
+        "printing_guides": 105,
+        "positive_fresh": 105,
+        "fx_at": "2026-10-05 00:00:00+00",
+        "fx_min": "0.756158514816137",
+        "fx_max": "0.756158514816137"
+      },
+      {
+        "group_id": 23909,
+        "dataset_at": "2026-10-05 20:05:57+00",
+        "printing_guides": 92,
+        "positive_fresh": 92,
+        "fx_at": "2026-10-05 00:00:00+00",
+        "fx_min": "0.756158514816137",
+        "fx_max": "0.756158514816137"
+      },
+      {
+        "group_id": 24451,
+        "dataset_at": "2026-10-05 20:05:57+00",
+        "printing_guides": 71,
+        "positive_fresh": 71,
+        "fx_at": "2026-10-05 00:00:00+00",
+        "fx_min": "0.756158514816137",
+        "fx_max": "0.756158514816137"
+      }
+    ],
+    "production": [
+      {
+        "group_id": 1451,
+        "dataset_at": "2026-10-05 20:05:57+00",
+        "printing_guides": 164,
+        "positive_fresh": 164,
+        "fx_at": "2026-10-05 00:00:00+00",
+        "fx_min": "0.756158514816137",
+        "fx_max": "0.756158514816137"
+      },
+      {
+        "group_id": 1861,
+        "dataset_at": "2026-10-05 20:05:57+00",
+        "printing_guides": 194,
+        "positive_fresh": 194,
+        "fx_at": "2026-10-05 00:00:00+00",
+        "fx_min": "0.756158514816137",
+        "fx_max": "0.756158514816137"
+      },
+      {
+        "group_id": 2545,
+        "dataset_at": "2026-10-05 20:05:57+00",
+        "printing_guides": 243,
+        "positive_fresh": 243,
+        "fx_at": "2026-10-05 00:00:00+00",
+        "fx_min": "0.756158514816137",
+        "fx_max": "0.756158514816137"
+      },
+      {
+        "group_id": 23779,
+        "dataset_at": "2026-10-04 20:05:38+00",
+        "printing_guides": 58,
+        "positive_fresh": 58,
+        "fx_at": "2026-10-02 00:00:00+00",
+        "fx_min": "0.757532293986637",
+        "fx_max": "0.757532293986637"
+      },
+      {
+        "group_id": 23909,
+        "dataset_at": "2026-10-04 20:05:38+00",
+        "printing_guides": 57,
+        "positive_fresh": 57,
+        "fx_at": "2026-10-02 00:00:00+00",
+        "fx_min": "0.757532293986637",
+        "fx_max": "0.757532293986637"
+      },
+      {
+        "group_id": 24451,
+        "dataset_at": "2026-10-04 20:05:38+00",
+        "printing_guides": 2,
+        "positive_fresh": 2,
+        "fx_at": "2026-10-02 00:00:00+00",
+        "fx_min": "0.757532293986637",
+        "fx_max": "0.757532293986637"
+      }
+    ],
+    "interpretation": "Group-scoped positive fresh stored printing rows, including new rows overlapping exact prices; not net new variants, not full API/phone coverage. Staging all six groups advanced; production XY/SM/SWSH advanced while ME/SV-P/SV8a still retain 4 October evidence."
+  },
+  "repair": {
+    "commit": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+    "branch": "codex/stackr-bounded-price-worker-writes",
+    "stagedPatch": "f2b4cd9b-a982-4f49-ad0b-12c10e09d0d0",
+    "changesReviewedNonDestructive": true,
+    "appliedOnlyToStaging": true,
+    "stageDeployments": {
+      "tcgcsv": "b4528cce-6d89-4fcd-a2d6-6678f93828e3",
+      "cardmarket": "f4d21fad-7090-41bb-b3dc-b4237c3f2ad8"
+    },
+    "bothBuildsSucceeded": true,
+    "scheduledRuntime": "not yet observed for candidate",
+    "productionPromoted": false,
+    "limitations": [
+      "40-result writes do not repair resolver or finalization SQL timeout paths.",
+      "100-row ledger query success does not prove full cron completion."
+    ],
+    "ledger100Rows": {
+      "stage": 2516,
+      "production": 4580,
+      "returnedEach": 100,
+      "administrativeSqlDeadlineSeconds": 8,
+      "elapsedIncludesToolOverhead": true
+    },
+    "localTests": "unchanged tested candidate; focused pricing, typecheck and lint evidence retained in prior receipt",
+    "ownedLocalCopiesPreserved": 4
+  },
+  "cardmarket": {
+    "productionDeployment": "20d42159-6b30-4403-883c-eebe3821d1ed",
+    "latestSavedStatus": "CRASHED",
+    "lastFailure": "2026-10-05T20:21:53.143Z",
+    "volume": "86718ccd-b9a3-4570-ad10-c114a3be4eb6",
+    "cacheCleared": false,
+    "productionRestarted": false
+  },
+  "coordination": {
+    "otherTaskTitle": "Classify Stackr pricing coverage",
+    "otherTaskId": "01a10cd5-3cb4-7e20-88ac-1b59eb471330",
+    "observedActive": true,
+    "outsideMessagesSent": 0,
+    "overlappingMappingBatchesStarted": 0
+  },
+  "next": [
+    "Observe candidate staged Cardmarket complete cron and retained volume.",
+    "Observe candidate TCGCSV complete scheduled runtime; verify real 40-write path separately from unchanged-dataset exit.",
+    "Promote through protected workflow only after relevant staged checks pass and no overlapping running replica; inspect pending changes first.",
+    "Diagnose resolver/finalization timeout paths with bounded evidence; never inflate timeouts to claim speed fixed.",
+    "Allow durable production run to resume without clearing leases or cache, then recount complete current physical/fresh deduplicated positive coverage.",
+    "Continue native Japanese/Chinese evidence after overlap checks; Korean excluded."
+  ]
+}

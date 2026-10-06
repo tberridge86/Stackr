@@ -1,3 +1,6 @@
+import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
+import { StackrCardArtworkFallback } from '../../components/StackrArtworkFallback';
+import { stackrCardImageSizes } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -1316,22 +1319,44 @@ function ScanResultScreen() {
           <>
             {/* Card image */}
             <PremiumCard style={{ alignItems: 'center', marginTop: 16, marginBottom: 16, paddingVertical: 18 }}>
-              <View style={{ padding: 8, borderRadius: 22, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
-                <EditionAwareCardImage
-                  uri={selectedCard.image_large ?? selectedCard.image_small}
-                  cardId={selectedCard.id}
-                  rawData={selectedCard.raw_data}
-                  editionHint={selectedTcgVariant?.editionHint ?? selectedCard.editionHint}
-                  sourceSize="large"
-                  style={{ width: 220, height: 308, borderRadius: 16 }}
-                  resizeMode="contain"
-                />
-                <RaritySymbol
-                  rarity={selectedCard.rarity}
-                  size={18}
-                  style={RARITY_SYMBOL_CARD_OVERLAY}
-                />
-              </View>
+              <CardDetailInspectSurface
+                  title={selectedCard.name}
+                  rarity={selectedCard.rarity ?? undefined}
+                  cardMetadata={selectedCard}
+                  variant={selectedTcgVariant?.key}
+                  style={{ width: 220, height: 220 / stackrCardImageSizes.cardAspectRatio }}
+                  accessibilityLabel={`Inspect ${selectedCard.name} card finish`}
+                >
+                  <View style={{ width: '100%', height: '100%' }}>
+                    <EditionAwareCardImage
+                      uri={selectedCard.image_small}
+                      fullUri={selectedCard.image_large}
+                      cardId={selectedCard.id}
+                      rawData={selectedCard.raw_data}
+                      editionHint={selectedTcgVariant?.editionHint ?? selectedCard.editionHint}
+                      sourceSize="large"
+                      cropToCard
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="contain"
+                      fallback={(
+                        <StackrCardArtworkFallback
+                          name={selectedCard.name}
+                          setName={selectedCard.set_name}
+                          number={selectedCard.number}
+                          language={selectedCard.language}
+                        />
+                      )}
+                    />
+                    <RaritySymbol
+                      rarity={selectedCard.rarity}
+                      size={18}
+                      style={RARITY_SYMBOL_CARD_OVERLAY}
+                    />
+                  </View>
+                </CardDetailInspectSurface>
+              <Text variant="support" style={{ color: theme.colors.textSoft, marginTop: 13, fontSize: 12, lineHeight: 16, fontWeight: '700' }}>
+                Hold, then move the card to inspect its finish.
+              </Text>
               <View style={{ marginTop: 14, width: '100%' }}>
                 {selectedLocalQuickScanStatus ? (
                   <ResultStatusPill

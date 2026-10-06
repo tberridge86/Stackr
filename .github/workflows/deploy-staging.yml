@@ -8,11 +8,11 @@ on:
         required: true
         type: string
       release_scope:
-        description: Run Gate 0 hardening, rehearse the catalogue API, or deploy the full platform after recognition approval
+        description: Run Gate 0, rehearse pricing identity guards, rehearse the catalogue API, or deploy the full platform
         required: true
         default: gate0_hardening
         type: choice
-        options: [gate0_hardening, catalogue_api, full_platform]
+        options: [gate0_hardening, pricing_identity_guard_rehearsal, catalogue_api, full_platform]
       apply_migrations:
         description: Apply migrations after the dry run
         required: true
@@ -40,6 +40,7 @@ jobs:
   deploy:
     if: >-
       inputs.confirmation == 'DEPLOY STAGING' &&
+      inputs.release_scope != 'pricing_identity_guard_rehearsal' &&
       github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -656,3 +657,81 @@ jobs:
           rm -f "$RUNNER_TEMP/eas-update.json"
           rm -f "$RUNNER_TEMP/eas-update-publish-evidence.json"
           rm -f "$RUNNER_TEMP/eas-update-attestation.json"
+
+  pricing-identity-guard-rehearsal:
+    if: >-
+      inputs.confirmation == 'DEPLOY STAGING' &&
+      inputs.release_scope == 'pricing_identity_guard_rehearsal' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: staging
+    env:
+      STACKR_DEPLOYMENT_ENVIRONMENT: staging
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.STACKR_GITHUB_STAGING_BACKUPS || secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
+    steps:
+      - name: Require the reviewed rollback-only scope
+        env:
+          APPLY_MIGRATIONS: ${{ inputs.apply_migrations }}
+          RELEASE_CANDIDATE: ${{ inputs.release_candidate }}
+          PUBLISH_MOBILE_UPDATE: ${{ inputs.publish_mobile_update }}
+        run: |
+          test "$APPLY_MIGRATIONS" = "false"
+          test "$RELEASE_CANDIDATE" = "true"
+          test "$PUBLISH_MOBILE_UPDATE" = "false"
+          test "$SUPABASE_PROJECT_REF" = "lmwfhvexfcoyeuoyrlco"
+          test "$STACKR_MIGRATION_BASELINE_APPROVED" = "true"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Attest exact source and run guard/atomic rollback controls
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+          npm ci
+          node scripts/test-bounded-provider-identity-guards.mjs
+          node scripts/test-price-guard-rehearsal-workflow.mjs
+      - name: Prepare verified staging database address
+        run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
+      - name: Verify physical and ephemeral logical backups
+        run: |
+          mkdir -p "$RUNNER_TEMP/stackr-price-guard-backup"
+          npx --yes supabase@2.110.0 backups list \
+            --project-ref "$SUPABASE_PROJECT_REF" --output-format json \
+            > "$RUNNER_TEMP/stackr-price-guard-backup/physical.json" \
+            2> "$RUNNER_TEMP/stackr-price-guard-backup/physical.stderr"
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-price-guard-backup/schema.sql" \
+            > "$RUNNER_TEMP/stackr-price-guard-backup/schema.stdout" \
+            2> "$RUNNER_TEMP/stackr-price-guard-backup/schema.stderr"
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" \
+            --data-only --use-copy --file "$RUNNER_TEMP/stackr-price-guard-backup/data.sql" \
+            > "$RUNNER_TEMP/stackr-price-guard-backup/data.stdout" \
+            2> "$RUNNER_TEMP/stackr-price-guard-backup/data.stderr"
+          node scripts/deploy/verify-backup.mjs \
+            --physical="$RUNNER_TEMP/stackr-price-guard-backup/physical.json" \
+            --schema="$RUNNER_TEMP/stackr-price-guard-backup/schema.sql" \
+            --data="$RUNNER_TEMP/stackr-price-guard-backup/data.sql" --require-physical
+      - name: Rehearse the single guard replacement and prove rollback
+        run: |
+          node scripts/deploy/rehearse-price-identity-guard.mjs \
+            > "$RUNNER_TEMP/stackr-price-guard-rehearsal.json"
+      - name: Upload non-secret rehearsal attestation
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-price-guard-rehearsal-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-price-guard-rehearsal.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Remove ephemeral backups and attestations
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/stackr-price-guard-backup"
+          rm -f "$RUNNER_TEMP/stackr-price-guard-rehearsal.json"

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "reviewReference": "root20261004/provenance235b/fullcohort/querychecks",
+  "provenanceRunId": "235b388d-5025-4456-81cd-09edfa261b10",
+  "retainedFeeds": {
+    "products": {
+      "sha256": "14a74405a86acfb80b42168e5cc019c0eae67925e8eee9893f53d35e4922d6ce",
+      "createdAt": "2026-10-03T11:44:53+0200"
+    },
+    "priceGuide": {
+      "sha256": "acdd6ed470fa738b7dd318d7548df425123d83b51d4ab258b0a0de43d9cf8e82",
+      "createdAt": "2026-10-04T02:40:55+0200"
+    }
+  },
+  "candidateCount": 9230,
+  "reviewedMappingCount": 9224,
+  "quarantinedCount": 6,
+  "quarantined": [
+    {
+      "printingId": "15c45db5-f287-4d47-b19c-fd93381ec503",
+      "providerProductId": 279173,
+      "reason": "duplicate_canonical_target",
+      "competingProviderProductIds": [
+        279173,
+        279241
+      ]
+    },
+    {
+      "printingId": "15c45db5-f287-4d47-b19c-fd93381ec503",
+      "providerProductId": 279241,
+      "reason": "duplicate_canonical_target",
+      "competingProviderProductIds": [
+        279173,
+        279241
+      ]
+    },
+    {
+      "printingId": "550b3e76-98fd-4655-9409-88650731bfeb",
+      "providerProductId": 725165,
+      "reason": "duplicate_canonical_target",
+      "competingProviderProductIds": [
+        725165,
+        727120
+      ]
+    },
+    {
+      "printingId": "550b3e76-98fd-4655-9409-88650731bfeb",
+      "providerProductId": 727120,
+      "reason": "duplicate_canonical_target",
+      "competingProviderProductIds": [
+        725165,
+        727120
+      ]
+    },
+    {
+      "printingId": "d3649fa9-1c47-4f0a-9932-0292892c3832",
+      "providerProductId": 886477,
+      "reason": "duplicate_canonical_target",
+      "competingProviderProductIds": [
+        886477,
+        898185
+      ]
+    },
+    {
+      "printingId": "d3649fa9-1c47-4f0a-9932-0292892c3832",
+      "providerProductId": 898185,
+      "reason": "duplicate_canonical_target",
+      "competingProviderProductIds": [
+        886477,
+        898185
+      ]
+    }
+  ],
+  "ledgerSha256": "6cdd1d2575f7cbedcb92d889f1bb93bd73dcdaa624f1919d5d505804ff127c49"
+}

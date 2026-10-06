@@ -1,0 +1,123 @@
+{
+  "reviewedAt": "2026-10-04T10:52:42.355Z",
+  "iosBuild": {
+    "id": "dbbc2425-0788-4c98-b289-d5d860da4b26",
+    "status": "FINISHED",
+    "platform": "IOS",
+    "distribution": "STORE",
+    "appVersion": "1.0.5",
+    "buildVersion": "52",
+    "runtimeVersion": "1.0.5",
+    "gitCommit": "b516cb7d529d8f764cb27380d2c975d0f736856f",
+    "artifactAvailable": true,
+    "submitted": true,
+    "submissionId": "4f3db0bb-8983-4c23-b10c-50d3f21ce6e2",
+    "submissionState": "FINISHED",
+    "appleBuildId": "ab7ada32-5e74-4830-ba9d-7f4f2b6fbd7f",
+    "appleProcessing": "VALID",
+    "internalAvailability": "IN_BETA_TESTING",
+    "externalAvailability": "WAITING_FOR_BETA_REVIEW",
+    "deliveryReceipt": "testflight52-delivery-20261004.json"
+  },
+  "backendAuditOmitDev": {
+    "critical": 0,
+    "high": 0,
+    "moderate": 4,
+    "packages": [
+      "jimp",
+      "@jimp/custom",
+      "@jimp/core",
+      "file-type"
+    ]
+  },
+  "foreignLanguageChecks": [
+    "edition-aware-image-selection",
+    "foreign-pokemon-cache",
+    "tcgdex-controlled-card-reference",
+    "native-language-display",
+    "foreign-card-presentation",
+    "card-localisation"
+  ],
+  "handsetQaComplete": false,
+  "providerCoverageClaim": "not_complete",
+  "stagingServerSmoke": {
+    "status": "passed",
+    "backendCommit": "b516cb7d529d8f764cb27380d2c975d0f736856f",
+    "backendEnvironment": "staging",
+    "supabaseProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "gateway": "https://stackr-api-gateway-staging.berridge14.workers.dev",
+    "searchQuery": "SV2a 157",
+    "publishedCatalogueRequired": true,
+    "commerceDisabledRequired": true
+  },
+  "productionServerSmoke": {
+    "status": "passed",
+    "gateway": "https://api.stackrtcg.com",
+    "gatewayVersionId": "8ca498c6-a03f-4b2d-a55a-d9fcbd4c6d33",
+    "backendDeploymentId": "c2dc1193-573e-4294-bf4f-1e75c993334d",
+    "backendCommit": "9153986cfbb5341fd63518db5ff98994a3de2d56",
+    "backendEnvironment": "production",
+    "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
+    "totalChecks": 36,
+    "passedChecks": 36,
+    "searchQuery": "SV2a 157",
+    "covered": [
+      "backend attestation",
+      "published catalogue shards",
+      "catalogue search",
+      "catalogue assets and pagination",
+      "gateway CORS",
+      "direct-origin boundary",
+      "disabled commerce and retired mutations"
+    ]
+  },
+  "cataloguePriceRead": {
+    "serviceRoleRpc": "api.read_catalogue_prices",
+    "references": 100,
+    "language": "en",
+    "resolvedReferences": 100,
+    "candidates": 157,
+    "earliestGeneralDatasetAt": "2026-10-03T20:05:38Z",
+    "latestGeneralStaleAfter": "2026-10-05T20:05:38Z",
+    "executionSamplesMs": [
+      33.413,
+      34.601
+    ],
+    "cacheState": "shared-cache samples; a forced database-cold measurement was not performed",
+    "providerRequests": 0
+  },
+  "anonymousCataloguePriceRoute": {
+    "status": 401,
+    "cacheControl": "private, no-store",
+    "requestIdPresent": true
+  },
+  "pricingCoverage": {
+    "publishedVariants": 76269,
+    "tcgSupportedVariants": 46219,
+    "tcgPricedVariants": 20516,
+    "cardmarketEligiblePrintings": 9223,
+    "cardmarketEligiblePresentationVariants": 12898,
+    "combinedGeneralEstimateVariants": 29099,
+    "combinedAvailabilityPercent": 38.15,
+    "tcgAndCardmarketPresentationVariants": 4315,
+    "tcgOnlyPresentationVariants": 16201,
+    "cardmarketOnlyPresentationVariants": 8583,
+    "unit": "published variant",
+    "receipt": "production-price-coverage-20261004.json",
+    "note": "All 679 feed groups are terminal; 395 require mappings. Coverage is deduplicated by current published presentation variant. No complete card-price claim."
+  },
+  "recurringGuide": {
+    "status": "verified",
+    "receipt": "daily-pricing-execution-20261004.json"
+  },
+  "ci": {
+    "revision": "a69b2b0a095dc9f49040f527e5a7fc99e8ba00dd",
+    "applicableChecksPassed": 12,
+    "intentionallySkipped": [
+      "release-candidate-gate",
+      "canary-api-evidence"
+    ],
+    "handsetEvidenceFromCi": false
+  },
+  "betaDecision": "CI, server, signed-artifact and recurring-guide checks support a truthful beta. This does not close general-release gates."
+}

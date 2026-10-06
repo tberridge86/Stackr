@@ -12,6 +12,7 @@ import { normalizeTcgdexLanguage } from './tcgdex.js';
 
 const TCGDEX_BASE_URL = process.env.TCGDEX_API_BASE_URL || 'https://api.tcgdex.net/v2';
 const TCGDEX_CACHE_TTL_MS = Number(process.env.TCGDEX_CACHE_TTL_MS || 10 * 60 * 1000);
+const TCGDEX_REQUEST_TIMEOUT_MS = Number(process.env.TCGDEX_REQUEST_TIMEOUT_MS || 8_000);
 const TCGDEX_BATCH_SIZE = Math.max(1, Math.min(Number(process.env.TCGDEX_SYNC_BATCH_SIZE || 12), 24));
 const MIN_CARD_IMAGE_WIDTH = Number(process.env.MIN_CARD_IMAGE_WIDTH || 120);
 const MIN_CARD_IMAGE_HEIGHT = Number(process.env.MIN_CARD_IMAGE_HEIGHT || 160);
@@ -152,8 +153,13 @@ export function createTCGdexClient(language = 'en') {
       url,
     }));
 
-    const response = await fetch(url, { headers: { Accept: 'application/json' } });
-    const raw = await response.text();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), TCGDEX_REQUEST_TIMEOUT_MS);
+    let response; let raw;
+    try {
+      response = await fetch(url, { headers: { Accept: 'application/json' }, signal: controller.signal });
+      raw = await response.text();
+    } finally { clearTimeout(timeout); }
     if (!response.ok) {
       throw new Error(`TCGdex ${lang} request failed (${response.status}) for ${url}: ${raw.slice(0, 240)}`);
     }

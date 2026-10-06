@@ -1,7 +1,7 @@
 {
   "name": "Stackr-native",
   "main": "expo-router/entry",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "scripts": {
     "start": "expo start",
     "build:web": "expo export --platform web --output-dir dist",
@@ -200,7 +200,16 @@
     "test:official-english-set-logos": "python scripts/materialize-official-english-set-logos.py --check && node scripts/test-official-english-set-logo-runtime-lookup.cjs",
     "test:binder-retrieval": "node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-binder-pricing.ts && node --import tsx scripts/test-binder-visible-prices.ts && node --import tsx scripts/test-pokemon-set-identity-dedup.ts && node --import tsx scripts/test-binder-reopen.mjs && node --import tsx scripts/test-binder-rarity-filter.ts && node --import tsx scripts/test-master-set-denominator.ts",
     "test:catalogue-pricing": "node scripts/test-catalogue-pricing.mjs && node scripts/test-published-price-catalogue-revision.mjs && tsx scripts/test-stable-collection-prices.ts && node scripts/test-prepared-valuation-routes.mjs",
-    "test:card-inspection": "npm run test:card-haptics && node --import tsx scripts/test-card-holo-profile.ts && node --import tsx scripts/test-card-inspection-interactions.ts && node --import tsx scripts/test-home-card-inspection.ts && node --import tsx scripts/test-card-inspection-lifecycle.ts && node --import tsx scripts/test-card-foil-rendering.ts && node --import tsx scripts/test-card-foil-web.ts && node --import tsx scripts/test-card-showcase.ts && node scripts/test-printing-materials.cjs && node --import tsx scripts/test-issue304-printing-showcase.ts"
+    "test:card-inspection": "npm run test:card-haptics && node --import tsx scripts/test-card-holo-profile.ts && node --import tsx scripts/test-card-inspection-interactions.ts && node --import tsx scripts/test-home-card-inspection.ts && node --import tsx scripts/test-card-inspection-lifecycle.ts && node --import tsx scripts/test-card-foil-rendering.ts && node --import tsx scripts/test-card-foil-web.ts && node --import tsx scripts/test-card-showcase.ts && node scripts/test-printing-materials.cjs && node --import tsx scripts/test-issue304-printing-showcase.ts",
+    "test:startup-video": "node --import tsx scripts/test-startup-reduce-motion.ts && node --import tsx scripts/test-shared-ux-release.ts",
+    "test:catalogue-price-cache": "tsx scripts/test-catalogue-price-bulk-cache.ts && tsx scripts/test-catalogue-price-guide.ts && tsx scripts/test-japanese-exact-price-identities.ts && tsx scripts/test-numbered-english-provider-set-titles.ts && tsx scripts/test-catalogue-bulk-price-coverage-page.ts && tsx scripts/test-hashable-bounded-catalogue-bulk-price-coverage.ts && tsx scripts/test-bounded-catalogue-bulk-price-coverage.ts && tsx scripts/test-bounded-reviewed-provider-set-resolver.ts && tsx scripts/test-shared-set-provider-map-exclusion.ts && tsx scripts/test-thin-published-price-identities.ts && tsx scripts/test-catalogue-bulk-store-materialization.ts && node scripts/test-catalogue-bulk-coverage-report.mjs && node scripts/test-catalogue-bulk-provider.mjs && node scripts/test-catalogue-bulk-sweep-exit.mjs && node scripts/test-cardmarket-daily-revisions.mjs && node scripts/test-cardmarket-daily-guide.mjs && node scripts/test-cardmarket-db-reviewed-ledger.mjs && node scripts/test-retain-cardmarket-tcgdex-provenance.mjs && node --import tsx scripts/test-cardmarket-raw-retention-contract.mjs",
+    "test:cardmarket-public-guide": "node scripts/test-cardmarket-public-guide.mjs && node scripts/test-cardmarket-cached-ingestion.mjs && tsx scripts/test-cardmarket-general-price-backup.ts",
+    "test:price-database-deadline": "node scripts/test-catalogue-price-database.mjs && node scripts/test-catalogue-price-fx.mjs",
+    "test:ebay-browse-access": "node scripts/test-ebay-browse-access.mjs",
+    "pricing:verify-ebay-access": "node scripts/verify-ebay-browse-access.mjs --probe",
+    "catalogue-prices:bulk": "node scripts/refresh-catalogue-bulk-prices.mjs",
+    "catalogue-prices:guide": "node scripts/catalogue-price-guide.mjs",
+    "test:next-beta-fixes": "node scripts/test-ui-standardisation.cjs && tsx scripts/test-card-finish-profiles.ts && tsx scripts/test-card-artwork-images.ts && tsx scripts/test-pricing-v2-client.ts && tsx scripts/test-catalogue-price-client.ts"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -244,6 +253,7 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-updates": "~29.0.19",
+    "expo-video": "3.0.16",
     "expo-web-browser": "~15.0.10",
     "express": "^5.2.1",
     "jpeg-js": "^0.4.4",
@@ -267,7 +277,7 @@
     "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.3.14",
+    "@electric-sql/pglite": "0.5.8",
     "@types/react": "~19.1.0",
     "@types/react-test-renderer": "19.1.0",
     "eslint": "^9.25.0",

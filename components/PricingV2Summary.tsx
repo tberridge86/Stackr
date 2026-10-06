@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StackrLoadingIndicator } from './StackrLoadingIndicator';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
 import { fetchStackrPricingV2, PRICING_ENGINE_V2_ENABLED, PricingV2Response } from '../lib/pricingV2';
@@ -82,9 +83,12 @@ export default function PricingV2Summary(props: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const requestSequence = useRef(0);
 
   const load = async (forceRefresh = false) => {
     if (!props.cardId || !PRICING_ENGINE_V2_ENABLED) return;
+    const request = ++requestSequence.current;
+    setData(null);
     setLoading(true);
     setError(null);
     try {
@@ -99,22 +103,25 @@ export default function PricingV2Summary(props: Props) {
         grade: props.grade,
         forceRefresh,
       });
-      setData(result);
+      if (request === requestSequence.current) setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Pricing unavailable');
+      if (request === requestSequence.current) setError(err instanceof Error ? err.message : 'Pricing unavailable');
     } finally {
-      setLoading(false);
+      if (request === requestSequence.current) setLoading(false);
     }
   };
 
   useEffect(() => {
     load(false);
+    return () => { requestSequence.current += 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.cardId, props.language, props.variant, props.finish, props.edition, props.condition, props.productType, props.gradingCompany, props.grade]);
 
   if (!PRICING_ENGINE_V2_ENABLED) return null;
 
-  const copy = getStateCopy(data);
+  const copy = error
+    ? { headline: 'Pricing unavailable', body: error, action: 'Refresh' }
+    : getStateCopy(data);
   const confidenceColor = data?.confidence.label === 'high'
     ? '#20C997'
     : data?.confidence.label === 'medium'
@@ -128,7 +135,7 @@ export default function PricingV2Summary(props: Props) {
           <Text style={styles.eyebrow}>Stackr verified pricing</Text>
           <Text style={styles.title}>{copy.headline}</Text>
         </View>
-        {loading ? <ActivityIndicator size="small" color={theme.colors.primary} /> : null}
+        {loading ? <StackrLoadingIndicator color={theme.colors.primary} /> : null}
       </View>
 
       <Text style={styles.body}>{error ?? copy.body}</Text>
@@ -136,7 +143,7 @@ export default function PricingV2Summary(props: Props) {
       <View style={styles.metaRow}>
         <View style={[styles.confidencePill, { borderColor: confidenceColor, backgroundColor: confidenceColor + '14' }]}>
           <Text style={[styles.confidenceText, { color: confidenceColor }]}>
-            {data ? `${data.confidence.label.toUpperCase()} confidence` : 'Loading'}
+            {data ? `${data.confidence.label.toUpperCase()} confidence` : loading ? 'Loading' : 'Unavailable'}
           </Text>
         </View>
         <Text style={styles.metaText}>

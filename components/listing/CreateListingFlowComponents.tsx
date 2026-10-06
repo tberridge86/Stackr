@@ -8,19 +8,23 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
-  type TextInputProps,
   TouchableOpacity,
   View,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../Text';
 import { useTheme } from '../theme-context';
 import { StackrBackButton } from '../StackrBackButton';
-import { StackrButtonPattern } from '../StackrEmboss';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../RaritySymbol';
 import { StackrCardActionIcon } from '../StackrScreen';
+import { StackrCardArtworkFallback } from '../StackrArtworkFallback';
+import { StackrImage } from '../StackrImage';
+import { StackrFlowHeader } from '../StackrFlowLayout';
+import { StackrButton, type StackrButtonVariant } from '../StackrControls';
+import { STACKR_FLOW_LAYOUT_TOKENS } from '../../lib/stackrFlowLayoutCore';
+import { StackrTextInput as SharedTextInput, type StackrTextInputProps } from '../StackrTextInput';
 import { stackrIcons } from '../../lib/stackrIcons';
 import {
   PROTECTION_COPY,
@@ -40,10 +44,10 @@ const STAGE_LABELS: Record<ListingFlowStage, string> = {
   card: 'Card',
   condition: 'Condition',
   value: 'Value',
-  protection: 'Protection',
+  protection: 'Evidence',
   evidence: 'Evidence',
   ai: 'AI check',
-  gold: 'Gold',
+  gold: 'Review',
   details: 'Details',
   review: 'Review',
 };
@@ -64,6 +68,7 @@ export function ListingFlowHeader({
   onStagePress,
   stageLabels,
   rightAccessory,
+  singlePage = false,
 }: {
   title?: string;
   subtitle?: string;
@@ -74,51 +79,48 @@ export function ListingFlowHeader({
   onStagePress?: (stage: ListingFlowStage) => void;
   stageLabels?: Partial<Record<ListingFlowStage, string>>;
   rightAccessory?: React.ReactNode;
+  singlePage?: boolean;
 }) {
-  const { theme } = useTheme();
   const titleParts = title.trim().split(/\s+/);
   const titleAccent = titleParts.length > 1 ? titleParts.pop() : '';
   const titlePrefix = titleParts.join(' ');
+  const activeIndex = Math.max(0, stages.indexOf(activeStage));
+  const activeLabel = stageLabels?.[activeStage] ?? STAGE_LABELS[activeStage];
+
+  if (singlePage) {
+    return (
+      <StackrFlowHeader
+        title={title}
+        subtitle={subtitle}
+        leftAccessory={<StackrBackButton onPress={onBack} />}
+        rightAccessory={rightAccessory}
+      />
+    );
+  }
 
   return (
-    <View style={styles.headerShell}>
-      <View style={styles.headerTopRow}>
-        <StackrBackButton onPress={onBack} />
-        <View style={styles.headerCopy}>
-          <Text
-            accessibilityRole="header"
-            accessibilityLabel={title}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.88}
-            style={[styles.headerTitle, { color: theme.colors.text }]}
-          >
-            {titlePrefix || title}
-            {titleAccent ? (
-              <Text style={[styles.headerTitle, { color: theme.colors.primary }]}>
-                {` ${titleAccent}`}
-              </Text>
-            ) : null}
-          </Text>
-          <Text
-            style={[styles.headerSubtitle, { color: theme.colors.textSoft }]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.84}
-          >
-            {subtitle}
-          </Text>
-        </View>
-        {rightAccessory ? <View style={styles.headerRight}>{rightAccessory}</View> : null}
-      </View>
+    <StackrFlowHeader
+      title={`${titlePrefix || title}${titleAccent ? ` ${titleAccent}` : ''}`}
+      subtitle={subtitle}
+      leftAccessory={<StackrBackButton onPress={onBack} />}
+      rightAccessory={rightAccessory}
+      progress={{
+        label: 'Listing progress',
+        current: activeIndex + 1,
+        total: stages.length,
+        authoritativeComplete: false,
+        statusText: `Step ${activeIndex + 1} of ${stages.length}: ${activeLabel}`,
+      }}
+    >
       <ListingProgressStepper
         stages={stages}
         activeStage={activeStage}
         completedStages={completedStages}
         onStagePress={onStagePress}
         stageLabels={stageLabels}
+        navigationOnly
       />
-    </View>
+    </StackrFlowHeader>
   );
 }
 
@@ -128,16 +130,55 @@ export function ListingProgressStepper({
   completedStages,
   onStagePress,
   stageLabels,
+  navigationOnly = false,
 }: {
   stages: ListingFlowStage[];
   activeStage: ListingFlowStage;
   completedStages: ListingFlowStage[];
   onStagePress?: (stage: ListingFlowStage) => void;
   stageLabels?: Partial<Record<ListingFlowStage, string>>;
+  navigationOnly?: boolean;
 }) {
   const { theme } = useTheme();
   const activeIndex = stages.indexOf(activeStage);
   const completedSet = new Set(completedStages);
+
+  if (navigationOnly) {
+    const navigableStages = stages.filter((stage) => completedSet.has(stage));
+    if (!navigableStages.length || !onStagePress) return null;
+    return (
+      <View style={{ marginTop: 10 }} accessibilityLabel="Completed listing steps">
+        <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '800', marginBottom: 6 }}>
+          Review an earlier step
+        </Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+          {navigableStages.map((stage) => {
+            const label = stageLabels?.[stage] ?? STAGE_LABELS[stage];
+            return (
+              <TouchableOpacity
+                key={stage}
+                onPress={() => onStagePress(stage)}
+                accessibilityRole="button"
+                accessibilityLabel={`Review completed ${label} step`}
+                style={{
+                  minHeight: 44,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.card,
+                  paddingHorizontal: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900' }}>{label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.progressTrack}>
@@ -297,6 +338,7 @@ export function CardMatchConfirmation({
   number,
   rarity,
   language,
+  languageLabel,
   variant,
   rawValue,
   gradedValue,
@@ -307,6 +349,7 @@ export function CardMatchConfirmation({
   number?: string | null;
   rarity?: string | null;
   language?: string | null;
+  languageLabel?: string | null;
   variant?: string | null;
   rawValue?: number | null;
   gradedValue?: number | null;
@@ -316,9 +359,9 @@ export function CardMatchConfirmation({
     <View style={[styles.matchCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }, theme.shadows.card]}>
       <View style={[styles.matchImage, styles.matchImageFrame, { backgroundColor: theme.colors.surface }]}>
         {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={StyleSheet.absoluteFill} resizeMode="contain" />
+          <StackrImage uri={imageUrl} style={StyleSheet.absoluteFill} contentFit="contain" fallback={<StackrCardArtworkFallback name={name} setName={setName} number={number} language={language} density="compact" />} />
         ) : (
-          <StackrCardActionIcon source={stackrIcons.searchCard} frameSize={72} artworkSize={58} />
+          <StackrCardArtworkFallback name={name} setName={setName} number={number} language={language} density="compact" style={StyleSheet.absoluteFill} />
         )}
         <RaritySymbol
           rarity={rarity}
@@ -332,7 +375,7 @@ export function CardMatchConfirmation({
           {[setName, number ? `#${number}` : null].filter(Boolean).join(' · ')}
         </Text>
         <Text style={[styles.matchMeta, { color: theme.colors.textSoft }]} numberOfLines={1}>
-          {[language ?? 'English', variant ?? 'Standard'].filter(Boolean).join(' · ')}
+          {[languageLabel ?? language ?? 'English', variant ?? 'Standard'].filter(Boolean).join(' · ')}
         </Text>
         <View style={styles.valuePills}>
           <InfoPill label="Estimated value" value={formatCurrency(rawValue)} />
@@ -493,7 +536,7 @@ export function ProtectionTierReveal({
       <Text style={[styles.protectionTitle, { color: textColor }]}>{copy.revealTitle}</Text>
       <Text style={[styles.protectionMessage, { color: isGold ? 'rgba(255,255,255,0.84)' : theme.colors.textSoft }]}>{message ?? copy.message}</Text>
       <View style={[styles.protectionReasonBox, { backgroundColor: isGold ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.72)', borderColor: isGold ? 'rgba(255,255,255,0.18)' : theme.colors.border }]}>
-        <Text style={[styles.protectionReasonTitle, { color: textColor }]}>Protection level based on the card and transaction value.</Text>
+        <Text style={[styles.protectionReasonTitle, { color: textColor }]}>Evidence level based on the item and transaction value.</Text>
         <Text style={[styles.protectionReasonBody, { color: isGold ? 'rgba(255,255,255,0.82)' : theme.colors.textSoft }]}>
           {decisionValue != null ? `Value used: ${formatCurrency(decisionValue)}. ` : ''}
           {reason}
@@ -697,8 +740,8 @@ export function LabelPreview({
   return (
     <View style={[styles.labelPreview, { backgroundColor: '#FFFFFF', borderColor: theme.colors.border }]}>
       <View style={styles.labelTop}>
-        <Text style={{ color: '#07145F', fontSize: 13, fontWeight: '900' }}>Stackr Gold Verification</Text>
-        <Text style={{ color: '#7C5A10', fontSize: 10, fontWeight: '900' }}>PENDING AGS</Text>
+        <Text style={{ color: '#07145F', fontSize: 13, fontWeight: '900' }}>Stackr listing review</Text>
+        <Text style={{ color: '#7C5A10', fontSize: 10, fontWeight: '900' }}>REVIEW PENDING</Text>
       </View>
       <View style={styles.labelBody}>
         <View style={[styles.qrPending, { borderColor: '#E8E1FF' }]}>
@@ -714,7 +757,7 @@ export function LabelPreview({
         </View>
       </View>
       <Text style={{ color: '#716BA8', fontSize: 9, lineHeight: 12 }}>
-        QR creation is completed by the Stackr verification backend when the submission is saved.
+        This reference identifies the internal listing review. It is not an authentication certificate.
       </Text>
     </View>
   );
@@ -780,9 +823,11 @@ export function ListingReviewSection({
 export function InlineRequirementMessage({
   message,
   tone = 'info',
+  live = false,
 }: {
   message: string;
   tone?: 'info' | 'warning' | 'error' | 'success';
+  live?: boolean;
 }) {
   const { theme } = useTheme();
   const palette = {
@@ -794,7 +839,7 @@ export function InlineRequirementMessage({
   return (
     <View style={[styles.inlineMessage, { backgroundColor: palette.bg, borderColor: palette.border }]}>
       <Ionicons name={palette.icon} size={16} color={palette.fg} />
-      <Text style={{ flex: 1, color: palette.fg, fontSize: 12, lineHeight: 16, fontWeight: '800' }}>{message}</Text>
+      <Text accessibilityRole={tone === 'error' ? 'alert' : undefined} accessibilityLiveRegion={live || tone === 'error' ? 'polite' : 'none'} style={{ flex: 1, color: palette.fg, fontSize: 12, lineHeight: 16, fontWeight: '800' }}>{message}</Text>
     </View>
   );
 }
@@ -822,18 +867,16 @@ export function MarketplaceListingPreview({
   return (
     <View style={[styles.previewCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }, theme.shadows.card]}>
       {imageUrl ? (
-        <Image source={{ uri: imageUrl }} style={styles.previewImage} resizeMode="contain" />
+        <StackrImage uri={imageUrl} style={styles.previewImage} contentFit="contain" fallback={<StackrCardArtworkFallback name={title} setName={subtitle} density="compact" />} />
       ) : (
-        <View style={[styles.previewImageFallback, { backgroundColor: theme.colors.surface }]}>
-          <StackrCardActionIcon source={stackrIcons.sellCard} frameSize={64} artworkSize={52} />
-        </View>
+        <StackrCardArtworkFallback name={title} setName={subtitle} density="compact" style={styles.previewImage} />
       )}
       <View style={{ flex: 1 }}>
         <Text style={[styles.previewTitle, { color: theme.colors.text }]} numberOfLines={2}>{title}</Text>
         {subtitle ? <Text style={[styles.previewSubtitle, { color: theme.colors.textSoft }]} numberOfLines={2}>{subtitle}</Text> : null}
         <View style={styles.previewPillRow}>
           {condition ? <InfoPill label="Condition" value={condition} /> : null}
-          {tier ? <InfoPill label="Protection" value={formatProtectionTier(tier)} /> : null}
+          {tier ? <InfoPill label="Evidence" value={formatProtectionTier(tier)} /> : null}
           {!tier && trustLabel && trustValue ? <InfoPill label={trustLabel} value={trustValue} /> : null}
         </View>
         <Text style={[styles.previewPrice, { color: theme.colors.primary }]}>{formatCurrency(value)}</Text>
@@ -849,6 +892,7 @@ export function PrimaryFooter({
   loading,
   missing,
   secondaryLabel,
+  secondaryVariant = 'secondary',
   onSecondaryPress,
   compact = false,
 }: {
@@ -858,38 +902,39 @@ export function PrimaryFooter({
   loading?: boolean;
   missing?: MissingRequirement[];
   secondaryLabel?: string;
+  secondaryVariant?: StackrButtonVariant;
   onSecondaryPress?: () => void;
   compact?: boolean;
 }) {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const firstMissing = missing?.[0]?.label;
   return (
-    <View style={[styles.footer, compact ? styles.footerCompact : null, { backgroundColor: theme.colors.bg, borderColor: theme.colors.border }]}>
+    <View
+      style={[
+        styles.footer,
+        { width: '100%', maxWidth: STACKR_FLOW_LAYOUT_TOKENS.maxContentWidth, alignSelf: 'center' },
+        compact ? styles.footerCompact : null,
+        {
+          backgroundColor: theme.colors.bg,
+          borderColor: theme.colors.border,
+          paddingBottom: compact ? 8 : Math.max(insets.bottom, 10),
+        },
+      ]}
+    >
       {!compact && firstMissing ? <InlineRequirementMessage message={firstMissing} tone="warning" /> : null}
-      <View style={{ flexDirection: 'row', gap: 10 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {secondaryLabel && onSecondaryPress ? (
-          <TouchableOpacity onPress={onSecondaryPress} activeOpacity={0.82} style={[styles.footerSecondary, compact ? styles.footerButtonCompact : null, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '900' }}>{secondaryLabel}</Text>
-          </TouchableOpacity>
+          <StackrButton label={secondaryLabel} onPress={onSecondaryPress} disabled={loading} variant={secondaryVariant} style={{ flexGrow: 1, flexBasis: 140 }} />
         ) : null}
-        <TouchableOpacity
+        <StackrButton
+          label={label}
+          variant="primary"
           onPress={onPress}
-          disabled={disabled || loading}
-          activeOpacity={0.86}
-          style={[styles.footerPrimary, compact ? styles.footerButtonCompact : null, { opacity: disabled ? 0.58 : 1 }]}
-        >
-          <LinearGradient
-            colors={theme.gradients.actionPrimary as any}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <StackrButtonPattern tone="purple" compact />
-          <View pointerEvents="none" style={styles.footerPrimaryHighlight} />
-          <Text style={{ color: '#FFFFFF', fontSize: 15, lineHeight: 19, fontWeight: '900' }}>
-            {loading ? 'Working...' : label}
-          </Text>
-        </TouchableOpacity>
+          disabled={disabled}
+          loading={loading}
+          style={{ flexGrow: 1, flexBasis: 180 }}
+        />
       </View>
     </View>
   );
@@ -905,62 +950,29 @@ export function FieldLabel({ label, required }: { label: string; required?: bool
 }
 
 export function StackrTextInput({
-  value,
-  onChangeText,
-  placeholder,
   multiline,
-  keyboardType,
-  autoCapitalize,
-  autoCorrect,
-  spellCheck,
   inputAccessoryViewID,
   returnKeyType,
   onSubmitEditing,
   blurOnSubmit,
-}: {
-  value: string;
-  onChangeText: (value: string) => void;
-  placeholder?: string;
-  multiline?: boolean;
-  keyboardType?: TextInputProps['keyboardType'];
-  autoCapitalize?: TextInputProps['autoCapitalize'];
-  autoCorrect?: boolean;
-  spellCheck?: boolean;
-  inputAccessoryViewID?: TextInputProps['inputAccessoryViewID'];
-  returnKeyType?: TextInputProps['returnKeyType'];
-  onSubmitEditing?: TextInputProps['onSubmitEditing'];
-  blurOnSubmit?: TextInputProps['blurOnSubmit'];
-}) {
-  const { theme } = useTheme();
+  showLabel = false,
+  style,
+  ...props
+}: StackrTextInputProps) {
   const resolvedAccessoryViewID = inputAccessoryViewID ?? (
     Platform.OS === 'ios' ? STACKR_LISTING_INPUT_ACCESSORY_ID : undefined
   );
 
   return (
-    <TextInput
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor={theme.colors.textSoft}
+    <SharedTextInput
+      {...props}
+      showLabel={showLabel}
       multiline={multiline}
-      keyboardType={keyboardType}
-      autoCapitalize={autoCapitalize}
-      autoCorrect={autoCorrect}
-      spellCheck={spellCheck}
       inputAccessoryViewID={resolvedAccessoryViewID}
       returnKeyType={returnKeyType ?? (multiline ? 'default' : 'done')}
       onSubmitEditing={onSubmitEditing ?? Keyboard.dismiss}
       blurOnSubmit={blurOnSubmit ?? !multiline}
-      style={[
-        styles.input,
-        {
-          minHeight: multiline ? 96 : 48,
-          textAlignVertical: multiline ? 'top' : 'center',
-          backgroundColor: theme.colors.card,
-          borderColor: theme.colors.border,
-          color: theme.colors.text,
-        },
-      ]}
+      style={[styles.input, style]}
     />
   );
 }

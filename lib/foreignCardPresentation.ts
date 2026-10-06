@@ -150,24 +150,31 @@ function languageLabel(language: string) {
   return LANGUAGE_LABELS[language] ?? language.toUpperCase();
 }
 
-function englishPayloads(raw: any) {
-  return [
-    raw?.english,
-    raw?.english_details,
-    raw?.englishDetails,
-    raw?.translation?.english,
-    raw?.translations?.en,
-    raw?.translations?.['en-GB'],
-    raw?.translations?.['en-US'],
-  ].filter((value) => value && typeof value === 'object');
+const VERIFIED_ENGLISH_PROVENANCE = new Set([
+  'authoritative_matched_counterpart',
+  'reviewed_translation',
+]);
+
+function verifiedEnglishPayload(value: unknown, inheritedProvenance?: unknown) {
+  if (!value || typeof value !== 'object') return null;
+  const record = value as Record<string, unknown>;
+  const provenance = clean(record.provenance ?? record.translationProvenance ?? inheritedProvenance)?.toLowerCase();
+  return provenance && VERIFIED_ENGLISH_PROVENANCE.has(provenance) ? record : null;
 }
 
+/** Latin script alone is never evidence of a translation. */
+function englishPayloads(raw: any) {
+  const inherited = raw?.english_details_provenance ?? raw?.englishDetailsProvenance;
+  return [raw?.english, raw?.english_details, raw?.englishDetails, raw?.translation?.english,
+    raw?.translations?.en, raw?.translations?.['en-GB'], raw?.translations?.['en-US']]
+    .map((value) => verifiedEnglishPayload(value, inherited)).filter(Boolean) as Record<string, unknown>[];
+}
 function firstEnglishField(raw: any, fieldNames: string[]) {
   for (const payload of englishPayloads(raw)) {
-    for (const field of fieldNames) {
-      if (payload[field] != null) return payload[field];
-    }
+    for (const field of fieldNames) if (payload[field] != null) return payload[field];
   }
+  const provenance = clean(raw?.english_details_provenance ?? raw?.englishDetailsProvenance)?.toLowerCase();
+  if (!provenance || !VERIFIED_ENGLISH_PROVENANCE.has(provenance)) return null;
   for (const field of fieldNames) {
     const snake = field.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
     for (const suffix of ['_en', 'En']) {
@@ -177,7 +184,6 @@ function firstEnglishField(raw: any, fieldNames: string[]) {
   }
   return null;
 }
-
 function cleanStringArray(value: unknown) {
   if (!Array.isArray(value)) return undefined;
   const cleaned = value.map(cleanEnglishText).filter((entry): entry is string => Boolean(entry));

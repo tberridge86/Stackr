@@ -391,6 +391,14 @@ export function createV1Router(options = {}) {
     });
   }));
 
+  router.post('/market/catalogue-prices', asyncRoute(async (req, res) => {
+    // The router-level personal-pricing middleware has already authenticated
+    // and authorized this request. Saved pages must never be shared by caches.
+    sendEnvelope(req, res, await getPricingService().cataloguePrices(req.body ?? {}), {
+      cacheControl: PERSONAL_PRICING_CACHE_CONTROL,
+    });
+  }));
+
   const requirePreparedValuations = () => {
     if ((options.env ?? process.env).STACKR_PREPARED_VALUATIONS_ENABLED !== 'true') throw new ApiError(404, 'prepared_valuations_disabled', 'Prepared collection valuations are not enabled.');
   };

@@ -5,8 +5,9 @@ import {
   validatePriceSourceAdapter,
 } from './priceSourceAdapter.js';
 
-let cachedToken = null;
-let tokenExpiresAt = 0;
+// Credentials and token scopes belong to one adapter instance. Never reuse an
+// application token from another environment or credential configuration.
+const applicationTokens = new WeakMap();
 
 function clean(value) {
   const trimmed = String(value ?? '').trim();
@@ -19,8 +20,30 @@ function numberOrNull(value) {
 }
 
 async function requestEbayApplicationToken(config) {
-  const now = Date.now();
-  if (cachedToken && now < tokenExpiresAt - 60_000) return cachedToken;
+  const cached = applicationTokens.get(config);
+  if (cached?.token && Date.now() < cached.expiresAt - 60_000) return cached.token;
+  if (cached?.pending) return cached.pending;
+  const pending = mintEbayApplicationToken(config).then(({ token, expiresAt }) => {
+    applicationTokens.set(config, { token, expiresAt });
+    return token;
+  });
+  applicationTokens.set(config, { pending });
+  try { return await pending; }
+  catch (error) { if (applicationTokens.get(config)?.pending === pending) applicationTokens.delete(config); throw error; }
+}
+
+async function boundedEbayFetch(config, url, options) {
+  try {
+    return await config.fetchImpl(url, { ...options, signal: AbortSignal.timeout(config.requestTimeoutMs) });
+  } catch (error) {
+    if (error?.name === 'AbortError' || error?.name === 'TimeoutError') {
+      throw new PriceSourceUnavailableError('ebay_request_timeout', 'eBay request exceeded its deadline.');
+    }
+    throw error;
+  }
+}
+
+async function mintEbayApplicationToken(config) {
 
   if (!config.clientId || !config.clientSecret) {
     throw new PriceSourceUnavailableError(
@@ -30,7 +53,7 @@ async function requestEbayApplicationToken(config) {
   }
 
   const basic = Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
-  const response = await config.fetchImpl(`${config.oauthBaseUrl}/identity/v1/oauth2/token`, {
+  const response = await boundedEbayFetch(config, `${config.oauthBaseUrl}/identity/v1/oauth2/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -43,18 +66,20 @@ async function requestEbayApplicationToken(config) {
   });
 
   if (!response.ok) {
-    const text = await response.text();
     throw new PriceSourceUnavailableError(
       'ebay_oauth_failed',
       `eBay OAuth token request failed with status ${response.status}.`,
-      { responsePreview: text.slice(0, 160) },
+      { httpStatus: response.status },
     );
   }
 
   const payload = await response.json();
-  cachedToken = payload.access_token;
-  tokenExpiresAt = now + Number(payload.expires_in ?? 3600) * 1000;
-  return cachedToken;
+  const token = clean(payload.access_token);
+  const expiresIn = Number(payload.expires_in);
+  if (!token || !Number.isFinite(expiresIn) || expiresIn <= 0) {
+    throw new PriceSourceUnavailableError('invalid_ebay_oauth_response', 'eBay did not return a valid application token.');
+  }
+  return { token, expiresAt: Date.now() + expiresIn * 1000 };
 }
 
 function normaliseBrowseItem(item, context = {}) {
@@ -93,6 +118,7 @@ export function createEbayBrowsePriceSource(options = {}) {
     oauthBaseUrl: options.oauthBaseUrl ?? 'https://api.ebay.com',
     browseBaseUrl: options.browseBaseUrl ?? 'https://api.ebay.com',
     fetchImpl: options.fetchImpl ?? fetch,
+    requestTimeoutMs: Math.min(30_000, Math.max(1, Number(options.requestTimeoutMs) || 8_000)),
   };
 
   const adapter = {
@@ -109,12 +135,20 @@ export function createEbayBrowsePriceSource(options = {}) {
       };
     },
 
-    async healthCheck() {
+    async healthCheck({ verifyAccess = false } = {}) {
       if (!config.enabled) return { status: 'disabled', message: 'eBay Browse active-listing adapter is disabled.' };
       if (!config.clientId || !config.clientSecret) {
         return { status: 'unavailable', message: 'Missing eBay OAuth client credentials.' };
       }
-      return { status: 'ok', message: 'eBay Browse active-listing access is configured.' };
+      if (!verifyAccess) return { status: 'ok', accessVerified: false, message: 'eBay Browse credentials are configured; live access has not been verified.' };
+      try {
+        const result = await this.fetchActiveListings({ query: 'Pokemon', limit: 1 });
+        return result.ok
+          ? { status: 'ok', accessVerified: true, checkedAt: new Date().toISOString(), message: 'eBay OAuth and Browse read access verified.' }
+          : { status: 'unavailable', accessVerified: false, reason: result.reason, message: result.message };
+      } catch (error) {
+        return { status: 'unavailable', accessVerified: false, reason: error?.code ?? 'ebay_access_probe_failed', message: 'eBay live access probe failed.' };
+      }
     },
 
     async fetchActiveListings(request = {}) {
@@ -131,9 +165,10 @@ export function createEbayBrowsePriceSource(options = {}) {
       const token = await requestEbayApplicationToken(config);
       const url = new URL('/buy/browse/v1/item_summary/search', config.browseBaseUrl);
       url.searchParams.set('q', query);
-      url.searchParams.set('limit', String(Math.min(Number(request.limit ?? 50), 200)));
+      const requestedLimit = Number(request.limit ?? 50);
+      url.searchParams.set('limit', String(Number.isInteger(requestedLimit) ? Math.max(1, Math.min(requestedLimit, 200)) : 50));
 
-      const response = await config.fetchImpl(url, {
+      const response = await boundedEbayFetch(config, url, {
         headers: {
           Accept: 'application/json',
           Authorization: `Bearer ${token}`,
@@ -146,6 +181,11 @@ export function createEbayBrowsePriceSource(options = {}) {
         return unavailablePriceSourceResult('ebay_browse_failed', `eBay Browse search failed with status ${response.status}.`, {
           status: response.status,
         });
+      }
+
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)
+        || (payload.itemSummaries != null && !Array.isArray(payload.itemSummaries)) || payload.errors?.length) {
+        return unavailablePriceSourceResult('invalid_ebay_browse_response', 'eBay did not return a valid Browse response.');
       }
 
       const items = Array.isArray(payload?.itemSummaries) ? payload.itemSummaries : [];

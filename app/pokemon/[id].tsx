@@ -29,6 +29,8 @@ import { supabase } from '../../lib/supabase';
 import { createAccountLoadGeneration } from '../../lib/accountLoadGeneration';
 import { useCardInspection } from '../../components/CardInspectionProvider';
 import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
+import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
+import type { CataloguePriceDisplay } from '../../lib/cataloguePrices';
 
 type PokemonData = {
   id: number;
@@ -227,15 +229,16 @@ export default function PokemonDetailScreen() {
   );
   const totalCount = cards.length;
   const progress = totalCount ? ownedCount / totalCount : 0;
+  const pricedCards = useCataloguePriceOverlay(cards);
 
   const filteredCards = useMemo(() => {
-    return cards.filter((card) => {
+    return pricedCards.filter((card) => {
       const owned = ownedKeys.has(makeOwnedKey(card));
       if (filter === 'owned') return owned;
       if (filter === 'missing') return !owned;
       return true;
     });
-  }, [cards, filter, ownedKeys]);
+  }, [pricedCards, filter, ownedKeys]);
 
   const toggleCardOwned = useCallback(
     async (card: PokedexCard) => {
@@ -282,7 +285,7 @@ export default function PokemonDetailScreen() {
     );
   };
 
-  const renderCard = ({ item }: { item: PokedexCard }) => {
+  const renderCard = ({ item }: { item: PokedexCard & { runtimeCataloguePricing?: CataloguePriceDisplay } }) => {
     const owned = ownedKeys.has(makeOwnedKey(item));
     const setName = getDisplaySetName({
       setId: item.set_id,
@@ -372,7 +375,18 @@ export default function PokemonDetailScreen() {
 
         <Text numberOfLines={2} style={styles.cardName}>{item.name}</Text>
         <Text numberOfLines={1} style={styles.cardMeta}>{setName}</Text>
-        <Text numberOfLines={1} style={styles.cardValue}>{formatMoney(item.estimated_value)}</Text>
+        <Text numberOfLines={1} style={styles.cardValue}>
+          {item.runtimeCataloguePricing?.displayPrice != null
+            ? formatMoney(item.runtimeCataloguePricing.displayPrice)
+            : item.runtimeCataloguePricing?.pricingStatus === 'unavailable'
+              ? 'General price unavailable'
+              : formatMoney(item.estimated_value)}
+        </Text>
+        {item.runtimeCataloguePricing ? (
+          <Text numberOfLines={1} style={styles.cardMeta}>
+            {item.runtimeCataloguePricing.sourceLabel}{item.runtimeCataloguePricing.updatedAt ? ` · ${new Date(item.runtimeCataloguePricing.updatedAt).toLocaleDateString('en-GB')}` : ''}
+          </Text>
+        ) : null}
         <Text numberOfLines={1} style={styles.cardMeta}>
           {item.number ? `#${item.number}` : 'No number'}
         </Text>

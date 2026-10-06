@@ -1,0 +1,79 @@
+{
+  "recordedAt": "2026-10-04T18:40:30Z",
+  "worker": {
+    "sourceCommit": "3d9ccdd5f9301605f9d3070619636d42dcc92472",
+    "branch": "codex/stackr-pricing-artwork-loading-readiness",
+    "staging": {
+      "serviceId": "2bfb696f-ac1a-481f-83d9-ce16cd13abe6",
+      "deploymentId": "44abec3c-0e23-4192-a17e-7b06b107eff0",
+      "deploymentStatus": "SUCCESS",
+      "createdAt": "2026-10-04T18:36:02.341Z",
+      "statusUpdatedAt": "2026-10-04T18:37:39.001Z",
+      "liveSourcePinVerified": true,
+      "scheduledExecutionVerified": false,
+      "cron": "13 * * * *",
+      "stagedChangesAccepted": "Only the exact worker source fields; no unrelated services, variables, volumes or networking."
+    },
+    "production": {
+      "newPagedWorkerDeployed": false,
+      "existingScheduledPriceRefreshes": "Successful at 17:16 and 18:17 UTC with optional old whole-report timeout retained.",
+      "promotionGate": "Verify the new staging scheduled execution and coverage report before staging production source pin."
+    },
+    "checks": {
+      "applicableGitHubChecks": "12 passed",
+      "railwayStagingBuild": "passed",
+      "intentionalSkips": 2
+    }
+  },
+  "koSourceRetention": {
+    "providerRequests": 13,
+    "physicalPrintings": 13,
+    "currentExternalIdentifiers": 25,
+    "firstExternalId": "SV4K-001",
+    "lastExternalId": "SV4K-013",
+    "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+    "runKey": "cardmarket-tcgdex-raw-retention-ko-20261004-canary25",
+    "method": "Bounded private retention calls through the tested RPC using inputs from the pure runner validator. This is not proof of CLI/PostgREST execution.",
+    "stage": {
+      "run_id": "7dab33cf-29fa-4703-89d9-3874e7a57021",
+      "run_status": "completed",
+      "retained": 25,
+      "matching_payloads": 25,
+      "matching_hashes": 25,
+      "matching_urls": 25,
+      "matching_dates": 25,
+      "matching_rights": 25,
+      "valid_records": 25
+    },
+    "production": {
+      "run_id": "a56466dc-17c8-4a24-96e4-58a9e3e981d7",
+      "run_status": "completed",
+      "retained": 25,
+      "matching_payloads": 25,
+      "matching_hashes": 25,
+      "matching_urls": 25,
+      "matching_dates": 25,
+      "matching_rights": 25,
+      "valid_records": 25
+    },
+    "priceWrites": 0,
+    "wholeLanguageComplete": false,
+    "retained": {
+      "actualPublicSourceUrls": true,
+      "actualStoredRights": true,
+      "actualSourceAndRetrievalDates": true,
+      "fullPayloadsAndHashes": true,
+      "cardAndColonVariantKeysPreserved": true
+    },
+    "continuation": {
+      "nextAfterExternalId": "SV4K-013",
+      "instruction": "Re-enumerate current physical identities after this boundary. This completed bounded canary run must not be resumed as the full raw-retention runner's cohort."
+    }
+  },
+  "coverage": {
+    "total": 76269,
+    "priced": 29845,
+    "percent": 39.13123287312014,
+    "changedByPrivateSourceRetention": false
+  }
+}

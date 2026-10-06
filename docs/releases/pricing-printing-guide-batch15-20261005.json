@@ -1,0 +1,313 @@
+{
+  "observedAt": "2026-10-05T18:21:48Z",
+  "scope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "publishedPhysicalVariants": 76030,
+    "fullTargetAchieved": false
+  },
+  "sourceCommit": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+  "cohorts": [
+    {
+      "categoryId": 3,
+      "groupId": 1861,
+      "providerName": "SM Promos",
+      "candidates": 248,
+      "positivePrintingGuides": 177
+    },
+    {
+      "categoryId": 3,
+      "groupId": 1451,
+      "providerName": "XY Promos",
+      "candidates": 216,
+      "positivePrintingGuides": 154
+    }
+  ],
+  "identityReview": {
+    "existingCurrentPermanentMappings": true,
+    "independentStageAndProductionPlansAgree": true,
+    "fullCanonicalCollectorRequired": true,
+    "providerNumberAndTitleRequired": true,
+    "permittedTitleAlias": "Exact normalized English title, or the identical title followed by a bare terminal SM/XY collector suffix. No semantic modifier removed.",
+    "titleExclusions": 0,
+    "wholeGroupProductPrintingCollisionPreflight": true,
+    "printingCollisions": 0,
+    "newMappings": 0,
+    "newExactVariantQuotes": 0
+  },
+  "provider": {
+    "name": "tcgcsv",
+    "retainedDatasetAt": "2026-10-04T20:05:38Z",
+    "staleAfter": "2026-10-06T20:05:38Z",
+    "sourceSubtypes": [
+      "Normal",
+      "Holofoil"
+    ],
+    "actualNewCohortSubtype": "Holofoil",
+    "originalCurrency": "USD",
+    "exchangeRate": 0.757532293986637,
+    "exchangeRateAt": "2026-10-02T00:00:00.000Z",
+    "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+    "newProviderFetches": 0
+  },
+  "preflight": {
+    "positiveExact": 0,
+    "physicalVariants": 331,
+    "positivePrinting": 0,
+    "positiveCardmarket": 0
+  },
+  "writes": {
+    "stage": {
+      "group1861": 177,
+      "group1451": 154,
+      "total": 331
+    },
+    "production": {
+      "group1861": 177,
+      "group1451": 154,
+      "total": 331
+    },
+    "table": "market.catalogue_printing_general_prices"
+  },
+  "verification": {
+    "stage": {
+      "positiveFresh": 331,
+      "printingGuideUsed": 331,
+      "exactUnavailable": 331,
+      "generalPrintingReadBatches": 4,
+      "exactPrintingReadBatches": 0
+    },
+    "production": {
+      "positiveFresh": 331,
+      "printingGuideUsed": 331,
+      "exactUnavailable": 331,
+      "generalPrintingReadBatches": 4,
+      "exactPrintingReadBatches": 0
+    },
+    "allCurrentProductionPrintingGuides": {
+      "valid": 467,
+      "fresh": 467
+    },
+    "requestedIdentitiesPreserved": true,
+    "usableForExactVariant": false,
+    "usableForHoldingsValuation": false,
+    "noSoldClaim": true,
+    "sourceFinishRetained": true,
+    "method": "Actual service SQL candidates and printing-guide rows replayed through the deployed backend module; owner HTTP and phone visibility remain unmeasured."
+  },
+  "coverage": {
+    "metric": "Positive fresh exact TCGCSV, printing general TCGCSV or blended Cardmarket stored values per current physical variant, deduplicated.",
+    "priced": 33364,
+    "total": 76030,
+    "percent": 43.88,
+    "rows": [
+      {
+        "language_code": "en",
+        "observed_at": "2026-10-05 18:21:10.761638+00",
+        "physical_total": 33359,
+        "primary_positive": 18915,
+        "cardmarket_positive": 7802,
+        "printing_positive": 467,
+        "legacy_positive": 21556,
+        "combined_positive": 22021
+      },
+      {
+        "language_code": "ja",
+        "observed_at": "2026-10-05 18:21:30.374312+00",
+        "physical_total": 14100,
+        "primary_positive": 6907,
+        "cardmarket_positive": 1015,
+        "printing_positive": 0,
+        "legacy_positive": 7307,
+        "combined_positive": 7307
+      },
+      {
+        "language_code": "zh-cn",
+        "observed_at": "2026-10-05 18:21:39.188403+00",
+        "physical_total": 20405,
+        "primary_positive": 0,
+        "cardmarket_positive": 0,
+        "printing_positive": 0,
+        "legacy_positive": 0,
+        "combined_positive": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "observed_at": "2026-10-05 18:21:43.130675+00",
+        "physical_total": 8166,
+        "primary_positive": 0,
+        "cardmarket_positive": 4036,
+        "printing_positive": 0,
+        "legacy_positive": 4036,
+        "combined_positive": 4036
+      }
+    ],
+    "previousMeasuredStoredGuide": 33033,
+    "netNewCohort": 331,
+    "legacyPositiveExactTcgcsvOrBlendedCardmarket": 32899,
+    "knownAdditionalBaseFallbackVariants": 236,
+    "baseFallbackPrintingOverlap": 0,
+    "generalSourceAvailabilityProjection": 33600,
+    "generalSourceAvailabilityProjectionPercent": 44.19,
+    "publicationVersionsBefore": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ],
+    "publicationVersionsAfter": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ],
+    "publicationVersionsUnchanged": true,
+    "atomic": false,
+    "ownerHttpMeasured": false,
+    "phoneVisibilityMeasured": false,
+    "primaryBackupGain": "The current primary store has 18,915 English quotes, 36 more than the preceding receipt; all 36 overlap existing general backup coverage, since deduplicated legacy English coverage remains 21,556. No net stored-guide gain is attributed to those 36."
+  },
+  "productionRuntime": {
+    "deploymentId": "ba85de72-ae0d-4dd3-b5a2-be0075a94763",
+    "configuredPin": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+    "startedAt": "2026-10-05T18:16:50.960Z",
+    "finishedAt": "2026-10-05T18:17:53.911Z",
+    "exitCode": 0,
+    "elapsedMs": 62743,
+    "project": "oakdbbzdqwurpjnoqhmu",
+    "datasetAt": "2026-10-04T20:05:38+0000",
+    "runId": "4dda2fc7-a30e-4188-8f2a-15aea5dd417d",
+    "setsClaimed": 0,
+    "priced": 0,
+    "deferred": 0,
+    "status": "needs_mapping",
+    "coverageError": null,
+    "coverageDiagnostics": {
+      "pages": 39,
+      "scanned": 76317,
+      "catalogueVersions": [
+        {
+          "language_code": "en",
+          "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+        },
+        {
+          "language_code": "ja",
+          "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+        },
+        {
+          "language_code": "ko",
+          "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+        },
+        {
+          "language_code": "zh-cn",
+          "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+        },
+        {
+          "language_code": "zh-tw",
+          "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+        }
+      ],
+      "observedAtBegin": "2026-10-05T18:17:03.493773+00:00",
+      "observedAtEnd": "2026-10-05T18:17:52.833705+00:00",
+      "atomic": false
+    },
+    "health": {
+      "runId": "4dda2fc7-a30e-4188-8f2a-15aea5dd417d",
+      "groups": [
+        {
+          "total": 166,
+          "status": "complete",
+          "categoryId": 3
+        },
+        {
+          "total": 54,
+          "status": "unmapped",
+          "categoryId": 3
+        },
+        {
+          "total": 163,
+          "status": "complete",
+          "categoryId": 85
+        },
+        {
+          "total": 296,
+          "status": "unmapped",
+          "categoryId": 85
+        }
+      ],
+      "quotes": [
+        {
+          "stale": 0,
+          "total": 18915,
+          "provider": "tcgcsv",
+          "languageCode": "en"
+        },
+        {
+          "stale": 0,
+          "total": 6907,
+          "provider": "tcgcsv",
+          "languageCode": "ja"
+        }
+      ],
+      "outcomes": {
+        "total": 76272,
+        "no_provider_quote": 4022,
+        "unsupported_finish": 1240,
+        "unsupported_language": 28813
+      },
+      "datasetAt": "2026-10-04T20:05:38+00:00",
+      "runStatus": "needs_mapping",
+      "openRepairs": 45223
+    },
+    "scope": "Complete scheduled production runtime and paged report on the promoted planner. No new group pricing occurred during this run; next changed provider-revision guide refresh remains a distinct gate. Diagnostic scanned rows include Korean/historical or rejected membership and are not the active four-language denominator."
+  },
+  "validation": {
+    "codeChanged": false,
+    "existingFocusedPriceCacheScripts": 19,
+    "sourceChecksPassed": 12,
+    "sourceChecksCommit": "28cbcfc7d68eb11edc622078b0bbc3216810610f",
+    "newBatchTitleCollectorAndCollisionAssertions": "passed",
+    "independentStageProductionSourcePlans": "passed",
+    "liveSqlBackendReplay": "passed",
+    "receiptChecks": "passed"
+  },
+  "remainingGates": [
+    "printing guide refresh on the next changed provider dataset",
+    "remaining English/Japanese mapped finish/provider-set gaps",
+    "Chinese native-language pricing sources",
+    "actual owner HTTP and phone price delivery"
+  ],
+  "newNativeBuilds": 0,
+  "newOtaUpdates": 0,
+  "newPaidProviderActivations": 0,
+  "canonicalCatalogueMutations": 0
+}

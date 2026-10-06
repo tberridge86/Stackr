@@ -32,9 +32,16 @@ function hook(predicate) {
 }
 const sections = ['pattern', 'texture', 'masterBall', 'stamped'];
 const cards = sections.map((section, i) => Object.freeze({ id: `variant-${i}`, number: '001', name: 'Pikachu', localName: '', section, rarity: i % 2 ? 'AR' : 'Common', language: 'zh-CN' }));
+// The real screen filters the overlay result, not the raw catalogue array. Keep
+// this distinct so the harness catches a future regression back to `cards`.
+const pricedCards = cards.map((card, i) => Object.freeze({ ...card, runtimeCataloguePricing: i === 2 ? Object.freeze({
+  displayPrice: 12.34, currency: 'GBP', priceType: 'market_estimate', updatedAt: '2026-10-03T20:05:38.000Z',
+  pricingStatus: 'stale', sourceLabel: 'Stale TCGplayer general market estimate', confidence: 'medium',
+  unavailableReason: null, priceBasis: 'general',
+}) : undefined }));
 function filterContext(overrides = {}) {
   return {
-    cards, variantQuantities: new Map([['set:variant-1:normal', 1]]), search: '', filter: 'all',
+    cards, pricedCards, variantQuantities: new Map([['set:variant-1:normal', 1]]), search: '', filter: 'all',
     selectedRarity: 'All', ALL_RARITY_FILTER: 'All', sort: 'number', setId: 'set', finishSection: 'all',
     hasCompletionistSections: true, completionistFamilyCounts: new Map(), useMemo: (fn) => fn(),
     getVariants: () => ['normal'], getVariantKey: (card, set, finish) => `${set}:${card}:${finish}`,
@@ -60,12 +67,14 @@ test('real set filter shows every printing by default and still intersects finis
   const before = JSON.stringify(cards);
   const all = expression(code, filterContext());
   assert.deepEqual(ids(all), cards.map((row) => row.id));
-  all.forEach((row, index) => assert.equal(row, cards[index], 'Exact row identity must be preserved'));
+  all.forEach((row, index) => assert.equal(row, pricedCards[index], 'Exact overlay row identity must be preserved'));
+  assert.deepEqual(all[2].runtimeCataloguePricing, pricedCards[2].runtimeCataloguePricing,
+    'Saved stale general estimates must remain attached to the real filtered row');
   assert.deepEqual(ids(expression(code, filterContext({ finishSection: 'stamped' }))), ['variant-3']);
   assert.deepEqual(ids(expression(code, filterContext({ filter: 'owned' }))), ['variant-1']);
   assert.deepEqual(ids(expression(code, filterContext({ filter: 'missing', selectedRarity: 'AR' }))), ['variant-3']);
   assert.equal(expression(code, filterContext({ search: 'not-present' })).length, 0);
-  assert.equal(expression(code, filterContext({ cards: [] })).length, 0);
+  assert.equal(expression(code, filterContext({ cards: [], pricedCards: [] })).length, 0);
   assert.equal(JSON.stringify(cards), before, 'Filtering must not mutate catalogue data');
 });
 

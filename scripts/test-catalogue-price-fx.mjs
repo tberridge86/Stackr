@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { ECB_REFERENCE_FEED, fetchEcbCatalogueFx, parseEcbCatalogueFx } from './catalogue-price-fx.mjs';
+const now = Date.parse('2026-10-03T23:00:00Z');
+const xml = `<gesmes:Envelope><Cube><Cube time='2026-10-02'><Cube currency='USD' rate='1.1225'/><Cube currency='GBP' rate='0.85033'/></Cube></Cube></gesmes:Envelope>`;
+const parsed = parseEcbCatalogueFx(xml, now);
+assert.equal(parsed.rate, 0.85033 / 1.1225);
+assert.equal(parsed.at, '2026-10-02T00:00:00.000Z');
+assert.equal(parsed.source, ECB_REFERENCE_FEED);
+assert.equal(parseEcbCatalogueFx(xml, now, 'EUR').rate, 0.85033, 'Cardmarket EUR prices use GBP-per-EUR directly');
+assert.throws(() => parseEcbCatalogueFx(xml, now, 'JPY'), /Unsupported ECB base currency/);
+for (const bad of [xml.replace('2026-10-02', '2026-09-01'), xml.replace('2026-10-02', '2026-10-05'), xml.replace('2026-10-02', '2026-02-31'), xml.replace('0.85033', '0'), xml.replace('0.85033', 'NaN'), xml.replace("currency='GBP'", "currency='EUR'"), xml.replace('</Cube>', "<Cube currency='USD' rate='1.1'/></Cube>")]) assert.throws(() => parseEcbCatalogueFx(bad, now));
+const fetched = await fetchEcbCatalogueFx({ now, fetchImpl: async (url, options) => {
+  assert.equal(url, ECB_REFERENCE_FEED); assert.equal(options.redirect, 'error'); assert.ok(options.signal);
+  return new Response(xml);
+} });
+assert.deepEqual(fetched, parsed);
+assert.equal((await fetchEcbCatalogueFx({ now, baseCurrency: 'EUR', fetchImpl: async () => new Response(xml) })).rate, 0.85033);
+await assert.rejects(fetchEcbCatalogueFx({ now, fetchImpl: async () => new Response('x'.repeat(131_073)) }), /size limit/);
+await assert.rejects(fetchEcbCatalogueFx({ now, fetchImpl: async () => new Response('outage', { status: 503 }) }), /failed/);
+console.log('Catalogue price FX passed: dated ECB USD/EUR base rates, weekends, missing/duplicate/invalid rates, outage and size bound.');

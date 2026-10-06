@@ -1,3 +1,6 @@
+import { useCardInspection } from '../../components/CardInspectionProvider';
+import { getEditionVariantImageUrl } from '../../lib/editionImages';
+import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
 import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import {
@@ -8,16 +11,13 @@ import {
   TouchableOpacity,
   Alert,
   Image,
-  Pressable,
   useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import { StackrButton } from '../../components/StackrControls';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
-import { useCardInspection } from '../../components/CardInspectionProvider';
-import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
-import { getEditionVariantImageUrl } from '../../lib/editionImages';
+import { CardInspectionStage } from '../../components/CardInspectionStage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import PricingV2Summary from '../../components/PricingV2Summary';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
@@ -41,8 +41,9 @@ import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { fetchPokeTraceCardPrice } from '../../lib/pricing';
 import { refreshPersonalProviderEstimate } from '../../lib/personalPriceRefresh';
 import { StackrApiV1Error } from '../../lib/stackrApiV1';
-import { stackrTabContentPadding } from '../../lib/stackrSizing';
+import { stackrTabContentPadding, stackrCardImageSizes } from '../../lib/stackrSizing';
 import { buildForeignCardPresentation } from '../../lib/foreignCardPresentation';
+import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 
 type PokemonCard = {
   id: string;
@@ -124,9 +125,9 @@ export default function CardDetailScreen() {
   const { premiumSellerAccess } = useAppMode();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const heroImageHeight = Math.min(430, Math.max(342, (width - 64) * 1.25));
-  const params = useLocalSearchParams<{ id?: string; setId?: string; editionHint?: string }>();
+  const { width, height } = useWindowDimensions();
+  const heroImageWidth = Math.min(width - 80, 440, height * 0.7 * stackrCardImageSizes.cardAspectRatio);
+  const params = useLocalSearchParams<{ id?: string; setId?: string; editionHint?: string; variant?: string; finish?: string; slabbed?: string }>();
   const cardId = typeof params.id === 'string' ? params.id : '';
   const paramSetId = typeof params.setId === 'string' ? params.setId : '';
   const priceContextRef = useRef('');
@@ -186,6 +187,8 @@ export default function CardDetailScreen() {
   const [priceRefreshNotice, setPriceRefreshNotice] = useState<string | null>(null);
 
   const [latestSnapshotPrice, setLatestSnapshotPrice] = useState<LatestSnapshotPrice | null>(null);
+  const cataloguePriceCards = useCataloguePriceOverlay(card ? [card] : []);
+  const catalogueGuidePricing = cataloguePriceCards[0]?.runtimeCataloguePricing;
 
   // ===============================
   // LOAD CARD
@@ -527,28 +530,24 @@ export default function CardDetailScreen() {
       </View>
 
       {/* Card Image */}
-      <View style={styles.heroCard}>
-        <View style={[styles.heroImageFrame, { height: heroImageHeight }]}>
+      <CardInspectionStage style={{ alignSelf: 'center', marginBottom: 24, width: heroImageWidth + 48 }}>
+      <CardDetailInspectSurface
+        title={presentation.name}
+        rarity={card.rarity ?? undefined}
+        cardMetadata={card}
+        variant={typeof params.variant === 'string' ? params.variant : undefined}
+        finish={typeof params.finish === 'string' ? params.finish : undefined}
+        isSlabbed={params.slabbed === '1'}
+        style={[styles.heroCard, { width: heroImageWidth, height: heroImageWidth / stackrCardImageSizes.cardAspectRatio }]}
+        accessibilityLabel={`Inspect ${presentation.name} artwork`}
+      >
+        <View style={styles.heroImageFrame}>
           {card.images?.large || card.images?.small ? (
-            <Pressable
-              style={{ flex: 1 }}
-              onLongPress={() => inspectCard({
-                source: 'catalogue',
-                card: { id: inspectionCardId, name: card.name, language: card.language, raw_data: card.raw_data },
-                imageUri: inspectionImageUri,
-                fullImageUri: inspectionImageUri,
-                selectedVariantId: card.raw_data?.stackr?.defaultVariantId ?? null,
-                subtitle: [presentation.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · '),
-              })}
-              delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
-              accessibilityRole="button"
-              accessibilityLabel={`Inspect ${presentation.name}`}
-              accessibilityActions={[{ name: 'inspect', label: 'Inspect card' }]}
-              onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect') inspectCard({ source: 'catalogue', card: { id: inspectionCardId, name: card.name, language: card.language, raw_data: card.raw_data }, imageUri: inspectionImageUri, fullImageUri: inspectionImageUri, selectedVariantId: card.raw_data?.stackr?.defaultVariantId ?? null, subtitle: [presentation.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · ') }); }}
-            >
-              <EditionAwareCardImage
-              uri={card.images?.large || card.images?.small}
+            <EditionAwareCardImage
+              uri={card.images?.small}
+              fullUri={card.images?.large}
               cardId={card.id}
+              language={card.language ?? card.raw_data?.language ?? null}
               rawData={card.raw_data}
               editionHint={editionHint}
               sourceSize="large"
@@ -556,7 +555,6 @@ export default function CardDetailScreen() {
               style={styles.cardImage}
               resizeMode="contain"
               />
-            </Pressable>
           ) : (
             <View style={styles.imageFallback}>
               <Text style={styles.imageFallbackText}>No image</Text>
@@ -568,8 +566,8 @@ export default function CardDetailScreen() {
             style={RARITY_SYMBOL_CARD_OVERLAY}
           />
         </View>
-      </View>
-
+      </CardDetailInspectSurface>
+      </CardInspectionStage>
       {referenceImage && (card.images?.large || card.images?.small) && <Text style={{ color: theme.colors.textSoft, marginBottom: 8 }}>Reference image; finish may differ.</Text>}
 
       <StackrCardIdentity
@@ -671,9 +669,21 @@ export default function CardDetailScreen() {
         </View>
 
         <View style={styles.infoCard}>
+          {catalogueGuidePricing ? (
+            <View style={{ marginBottom: 12 }}>
+              <Text style={styles.priceSourceLabel}>{catalogueGuidePricing.sourceLabel} (GBP)</Text>
+              <Text style={styles.marketHint}>
+                {catalogueGuidePricing.displayPrice != null
+                  ? `£${catalogueGuidePricing.displayPrice.toFixed(2)}${catalogueGuidePricing.updatedAt ? ` · updated ${new Date(catalogueGuidePricing.updatedAt).toLocaleDateString('en-GB')}` : ''}`
+                  : catalogueGuidePricing.unavailableReason ?? 'General market estimate unavailable.'}
+              </Text>
+            </View>
+          ) : null}
           <PricingV2Summary
             cardId={card.id}
             language={card.language ?? (card as any).raw_data?.language ?? null}
+            variant={typeof params.variant === 'string' ? params.variant : undefined}
+            finish={typeof params.finish === 'string' ? params.finish : undefined}
             edition={editionHint}
             productType="raw_card"
           />
@@ -1082,11 +1092,7 @@ function makeStyles(theme: any) {
     fontSize: 14,
   },
   heroCard: {
-    backgroundColor: 'transparent',
-    borderRadius: 22,
-    padding: 10,
-    marginBottom: 14,
-    alignItems: 'center',
+    alignSelf: 'center',
   },
   heroImageFrame: {
     width: '100%',

@@ -1,3 +1,16 @@
+export const stackrControlTokens = {
+  minTapTarget: 48,
+  primaryHeight: 52,
+  secondaryHeight: 48,
+  utilityHeight: 48,
+  radius: 16,
+  utilityRadius: 14,
+  iconSize: 22,
+  iconButtonSize: 48,
+  horizontalPadding: 18,
+  iconTextGap: 8,
+} as const;
+
 export const stackrLogoSizes = {
   homeMark: {
     width: 38,
@@ -83,6 +96,7 @@ export const stackrCardImageSizes = {
     radius: 9,
   },
   gridCardRadius: 10,
+  cardCornerRadius: 10,
 } as const;
 
 export const stackrTabContentPadding = {

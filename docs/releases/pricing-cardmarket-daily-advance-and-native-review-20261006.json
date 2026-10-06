@@ -1,0 +1,607 @@
+{
+  "schemaVersion": "stackr-positive-coverage-daily-advance-20261006-v1",
+  "observationAt": "2026-10-06T03:34:45.990Z",
+  "measuredAt": "2026-10-06 03:46:25.346915+00",
+  "coverage": {
+    "complete": true,
+    "observation": "2026-10-06T03:34:45.990Z",
+    "rows": [
+      {
+        "language": "en",
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "pages": 67,
+        "complete": true,
+        "scanned": 33359,
+        "physical": 33359,
+        "invalidPhysicalMemberships": 0,
+        "positiveStoredVariants": 26549,
+        "positiveVariantQuotes": 23091,
+        "positiveCardmarketVariants": 7802,
+        "additionalPrintingGuideVariants": 1592,
+        "nextCursor": "fffe6c6a-f269-4c47-bab4-ba1c603cab2b"
+      },
+      {
+        "language": "ja",
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "pages": 57,
+        "complete": true,
+        "scanned": 14100,
+        "physical": 14100,
+        "invalidPhysicalMemberships": 0,
+        "positiveStoredVariants": 7786,
+        "positiveVariantQuotes": 6903,
+        "positiveCardmarketVariants": 1015,
+        "additionalPrintingGuideVariants": 483,
+        "nextCursor": "fffe8a09-35d9-532c-af27-932931198e1d"
+      },
+      {
+        "language": "zh-cn",
+        "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "pages": 21,
+        "complete": true,
+        "scanned": 20453,
+        "physical": 20405,
+        "invalidPhysicalMemberships": 48,
+        "positiveStoredVariants": 0,
+        "positiveVariantQuotes": 0,
+        "positiveCardmarketVariants": 0,
+        "additionalPrintingGuideVariants": 0,
+        "nextCursor": "fffbee7c-4094-4589-ab7a-ff72015294b1"
+      },
+      {
+        "language": "zh-tw",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "pages": 9,
+        "complete": true,
+        "scanned": 8166,
+        "physical": 8166,
+        "invalidPhysicalMemberships": 0,
+        "positiveStoredVariants": 4036,
+        "positiveVariantQuotes": 0,
+        "positiveCardmarketVariants": 4036,
+        "additionalPrintingGuideVariants": 0,
+        "nextCursor": "fff6e5fe-60a1-4033-91d1-258f6a890efa"
+      },
+      {
+        "language": "ko",
+        "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "pages": 1,
+        "complete": true,
+        "scanned": 239,
+        "physical": 239,
+        "invalidPhysicalMemberships": 0,
+        "positiveStoredVariants": 0,
+        "positiveVariantQuotes": 0,
+        "positiveCardmarketVariants": 0,
+        "additionalPrintingGuideVariants": 0,
+        "nextCursor": "fe7f9e8e-6b17-4899-ac66-1d34bf955aa6"
+      }
+    ],
+    "targetLanguages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "measuredPhysicalVariants": 76030,
+    "measuredPositiveStoredVariants": 38371,
+    "wholeCataloguePercent": 50.47,
+    "projectedGeneralSourceAvailability": "not measured",
+    "ownerHttpPhoneVisibility": "not measured",
+    "atomic": false,
+    "fullPhysicalCatalogue": 76269,
+    "readAtBegin": "2026-10-06 03:35:17.543087+00",
+    "readAtEnd": "2026-10-06 03:43:50.953447+00",
+    "verifiedAt": "2026-10-06T03:45:02.554774+00:00",
+    "partitions": 155,
+    "allMembershipHashesNativeCountsAndPublicationIdsMatched": true,
+    "finalPublicationIds": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "language_code": "ko"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ],
+    "sourceBreakdown": [
+      {
+        "language": "en",
+        "scope": "variant_quote",
+        "expires": "2026-10-07 20:05:57+00",
+        "provider": "tcgcsv",
+        "variants": 23087,
+        "source_date": "2026-10-05 20:05:57+00"
+      },
+      {
+        "language": "en",
+        "scope": "printing_guide",
+        "expires": "2026-10-07T20:05:57+00:00",
+        "provider": "tcgcsv",
+        "variants": 1592,
+        "source_date": "2026-10-05T20:05:57+00:00"
+      },
+      {
+        "language": "en",
+        "scope": "printing_guide",
+        "expires": "2026-10-08 00:48:24+00",
+        "provider": "cardmarket_public",
+        "variants": 7802,
+        "source_date": "2026-10-06 00:48:24+00"
+      },
+      {
+        "language": "en",
+        "scope": "variant_quote",
+        "expires": "2026-10-06 20:05:38+00",
+        "provider": "tcgcsv",
+        "variants": 4,
+        "source_date": "2026-10-04 20:05:38+00"
+      },
+      {
+        "language": "ja",
+        "scope": "variant_quote",
+        "expires": "2026-10-07 20:05:57+00",
+        "provider": "tcgcsv",
+        "variants": 6894,
+        "source_date": "2026-10-05 20:05:57+00"
+      },
+      {
+        "language": "ja",
+        "scope": "printing_guide",
+        "expires": "2026-10-07T20:05:57+00:00",
+        "provider": "tcgcsv",
+        "variants": 483,
+        "source_date": "2026-10-05T20:05:57+00:00"
+      },
+      {
+        "language": "ja",
+        "scope": "printing_guide",
+        "expires": "2026-10-08 00:48:24+00",
+        "provider": "cardmarket_public",
+        "variants": 1015,
+        "source_date": "2026-10-06 00:48:24+00"
+      },
+      {
+        "language": "ja",
+        "scope": "variant_quote",
+        "expires": "2026-10-06 20:05:38+00",
+        "provider": "tcgcsv",
+        "variants": 9,
+        "source_date": "2026-10-04 20:05:38+00"
+      },
+      {
+        "language": "zh-tw",
+        "scope": "printing_guide",
+        "expires": "2026-10-08 00:48:24+00",
+        "provider": "cardmarket_public",
+        "variants": 4036,
+        "source_date": "2026-10-06 00:48:24+00"
+      }
+    ],
+    "sourceBreakdownOverlaps": true,
+    "changedNetCoverageFromPriorObservation": 0,
+    "priceWritesByThisHeartbeat": 0
+  },
+  "measurement": {
+    "helper": "scripts/lib/published-price-coverage-page.mjs",
+    "databaseStatementDeadline": "8s",
+    "englishPageLimit": 500,
+    "japanesePageLimit": 250,
+    "printingGuideRpcCap": 100,
+    "failedReadsAdvance": false,
+    "atomic": false,
+    "initialCatalogueCountHarnessErrors": 3,
+    "harnessErrorResolution": "Extra parenthesis removed in the ignored count-only harness; failed Korean catalogue-only reads never advanced. No Korean pricing was read or repaired.",
+    "regression": "Published-price coverage keyset/native identity/expiry/zero/overlap/checkpoint PGlite suite passed."
+  },
+  "cardmarket": {
+    "providerHeaders": [
+      {
+        "kind": "priceGuide",
+        "status": 200,
+        "url": "https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_6.json",
+        "sourceCreatedAt": "2026-10-06T02:48:24+0200",
+        "etag": "\"430f0a7bbe3a53920ab1237081f58d9e\"",
+        "lastModified": "Tue, 06 Oct 2026 00:48:33 GMT",
+        "checkedAt": "2026-10-06T03:33:39.844Z"
+      },
+      {
+        "kind": "products",
+        "status": 200,
+        "url": "https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_6.json",
+        "sourceCreatedAt": "2026-10-05T14:13:33+0200",
+        "etag": "\"da32edebcea16b6701087beec71c8086\"",
+        "lastModified": "Mon, 05 Oct 2026 12:13:36 GMT",
+        "checkedAt": "2026-10-06T03:33:39.890Z"
+      }
+    ],
+    "sourceCreatedAt": "2026-10-06T00:48:24Z",
+    "expiresAt": "2026-10-08T00:48:24Z",
+    "positiveFreshPrintingRows": 9198,
+    "staleNonpositivePrintingRows": 35,
+    "productionPersisted": [
+      {
+        "observed_at": "2026-10-06 03:34:01.206615+00",
+        "source_created_at": "2026-10-06 00:48:24+00",
+        "stale_after": "2026-10-08 00:48:24+00",
+        "stored_printings": 9198,
+        "positive_fresh_printings": 9198
+      },
+      {
+        "observed_at": "2026-10-06 03:34:01.206615+00",
+        "source_created_at": "2026-10-04 00:40:55+00",
+        "stale_after": "2026-10-06 00:40:55+00",
+        "stored_printings": 35,
+        "positive_fresh_printings": 0
+      }
+    ],
+    "stagingPersisted": [
+      {
+        "observed_at": "2026-10-06 03:45:32.90203+00",
+        "source_created_at": "2026-10-06 00:48:24+00",
+        "stale_after": "2026-10-08 00:48:24+00",
+        "stored_printings": 9198,
+        "positive_fresh_printings": 9198
+      },
+      {
+        "observed_at": "2026-10-06 03:45:32.90203+00",
+        "source_created_at": "2026-10-04 00:40:55+00",
+        "stale_after": "2026-10-06 00:40:55+00",
+        "stored_printings": 35,
+        "positive_fresh_printings": 0
+      }
+    ],
+    "production": {
+      "service": "1c4cf45c-816d-46cc-a416-78d8c18bd779",
+      "deployment": "c7286876-4d57-4cf9-aaf3-ac1162958684",
+      "source": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+      "scheduledCompletedAt": "2026-10-06T03:21:54.414521592Z",
+      "level": "info",
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "revisions": {
+        "products": "cb8f04f4-14aa-49eb-8f25-939ff5c411ef",
+        "priceGuide": "49c887e7-42ec-4116-bf4c-7f3b6fc5b84f"
+      },
+      "reviewedMappings": 9234,
+      "stored": 9198,
+      "repairs": 65422,
+      "pages": 150,
+      "complete": true,
+      "platformLastExecutionAt": "2026-10-06T03:21:55.399Z"
+    },
+    "staging": {
+      "deployment": "f4d21fad-7090-41bb-b3dc-b4237c3f2ad8",
+      "scheduledCompletedAt": "2026-10-06T02:21:40.896779874Z",
+      "level": "info",
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "revisions": {
+        "products": "9506da72-c1c6-4f33-b48f-543a08ed1529",
+        "priceGuide": "30a39d8a-a3c2-4569-81ab-eaf47beedf12"
+      },
+      "reviewedMappings": 9234,
+      "stored": 9198,
+      "repairs": 65422,
+      "pages": 150,
+      "complete": true
+    },
+    "scope": "Actual changed-dataset scheduled persistence after expiry. Printing-general values, not exact finish/condition/graded/holdings/sold prices, net variant gains or owner HTTP/phone proof.",
+    "manualRestart": false,
+    "cacheCleared": false,
+    "manualPriceWrites": false
+  },
+  "tcgcsv": {
+    "productionDeployment": "a05bce17-b739-48a8-ae23-9b3809fada5e",
+    "createdAt": "2026-10-06T01:30:30.357Z",
+    "configuredSource": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+    "deploymentInitiatedByThisHeartbeat": false,
+    "currentSchedule": "13 * * * *",
+    "scheduleChangedByThisHeartbeat": false,
+    "scheduledRuntime": {
+      "finishedAt": "2026-10-06T03:18:00.547435342Z",
+      "exitCode": 0,
+      "datasetAt": "2026-10-05T20:05:57+0000",
+      "setsClaimed": 0,
+      "cards": 0,
+      "priced": 0,
+      "deferred": 0,
+      "diagnostics": {
+        "pages": 39,
+        "scanned": 76317,
+        "catalogueVersions": [
+          {
+            "language_code": "en",
+            "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          {
+            "language_code": "ja",
+            "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+          },
+          {
+            "language_code": "ko",
+            "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+          },
+          {
+            "language_code": "zh-cn",
+            "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+          },
+          {
+            "language_code": "zh-tw",
+            "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+          }
+        ],
+        "observedAtBegin": "2026-10-06T03:17:12.682292+00:00",
+        "observedAtEnd": "2026-10-06T03:17:58.706602+00:00",
+        "atomic": false
+      },
+      "coverageError": null
+    },
+    "stageCandidate": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+    "fortyResultChangedDatasetWriteRuntime": "still unverified; staging only"
+  },
+  "shinyTreasure": {
+    "category": 85,
+    "group": 23601,
+    "datasetAt": "2026-10-05T20:05:57Z",
+    "stage": {
+      "env": "stage",
+      "candidates": 413,
+      "products": 486,
+      "prices": 485,
+      "missing": 186,
+      "reasons": {
+        "no_provider_quote": 41,
+        "priced": 186,
+        "unresolved_provider_identity": 186
+      },
+      "blockedMappingKeys": [],
+      "blockedPrintingProducts": [],
+      "newMappings": 0,
+      "alternativeGuides": 40,
+      "examples": [
+        {
+          "number": "101",
+          "finish": "normal",
+          "variant": "normal",
+          "unique": true,
+          "products": [
+            {
+              "id": 567502,
+              "name": "Primeape - 101/190",
+              "presale": false
+            },
+            {
+              "id": 577353,
+              "name": "Primeape - 101/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        },
+        {
+          "number": "060",
+          "finish": "normal",
+          "variant": "normal",
+          "unique": true,
+          "products": [
+            {
+              "id": 567440,
+              "name": "Luxio - 060/190",
+              "presale": false
+            },
+            {
+              "id": 577328,
+              "name": "Luxio - 060/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        },
+        {
+          "number": "001",
+          "finish": "normal",
+          "variant": "normal",
+          "unique": true,
+          "products": [
+            {
+              "id": 567347,
+              "name": "Oddish - 001/190",
+              "presale": false
+            },
+            {
+              "id": 577294,
+              "name": "Oddish - 001/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        },
+        {
+          "number": "045",
+          "finish": "reverse_holo",
+          "variant": "reverse_holo",
+          "unique": true,
+          "products": [
+            {
+              "id": 567411,
+              "name": "Wugtrio - 045/190",
+              "presale": false
+            },
+            {
+              "id": 577320,
+              "name": "Wugtrio - 045/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        },
+        {
+          "number": "012",
+          "finish": "normal",
+          "variant": "normal",
+          "unique": true,
+          "products": [
+            {
+              "id": 567362,
+              "name": "Sprigatito - 012/190",
+              "presale": false
+            },
+            {
+              "id": 577301,
+              "name": "Sprigatito - 012/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        }
+      ]
+    },
+    "prod": {
+      "env": "prod",
+      "candidates": 413,
+      "products": 486,
+      "prices": 485,
+      "missing": 186,
+      "reasons": {
+        "no_provider_quote": 41,
+        "priced": 186,
+        "unresolved_provider_identity": 186
+      },
+      "blockedMappingKeys": [],
+      "blockedPrintingProducts": [],
+      "newMappings": 0,
+      "alternativeGuides": 40,
+      "examples": [
+        {
+          "number": "101",
+          "finish": "normal",
+          "variant": "normal",
+          "unique": true,
+          "products": [
+            {
+              "id": 567502,
+              "name": "Primeape - 101/190",
+              "presale": false
+            },
+            {
+              "id": 577353,
+              "name": "Primeape - 101/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        },
+        {
+          "number": "060",
+          "finish": "normal",
+          "variant": "normal",
+          "unique": true,
+          "products": [
+            {
+              "id": 567440,
+              "name": "Luxio - 060/190",
+              "presale": false
+            },
+            {
+              "id": 577328,
+              "name": "Luxio - 060/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        },
+        {
+          "number": "001",
+          "finish": "normal",
+          "variant": "normal",
+          "unique": true,
+          "products": [
+            {
+              "id": 567347,
+              "name": "Oddish - 001/190",
+              "presale": false
+            },
+            {
+              "id": 577294,
+              "name": "Oddish - 001/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        },
+        {
+          "number": "045",
+          "finish": "reverse_holo",
+          "variant": "reverse_holo",
+          "unique": true,
+          "products": [
+            {
+              "id": 567411,
+              "name": "Wugtrio - 045/190",
+              "presale": false
+            },
+            {
+              "id": 577320,
+              "name": "Wugtrio - 045/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        },
+        {
+          "number": "012",
+          "finish": "normal",
+          "variant": "normal",
+          "unique": true,
+          "products": [
+            {
+              "id": 567362,
+              "name": "Sprigatito - 012/190",
+              "presale": false
+            },
+            {
+              "id": 577301,
+              "name": "Sprigatito - 012/190 (Mirror Holofoil)",
+              "presale": false
+            }
+          ]
+        }
+      ]
+    },
+    "alternateFortyGuides": {
+      "stageReadablePositiveFresh": 40,
+      "productionReadablePositiveFresh": 40,
+      "alreadyStored": true,
+      "scope": "printing_general_estimate; actual Holofoil/Normal finish retained, exact/holdings false; no repeat writes"
+    },
+    "finding": "186 identities remain unresolved because the same collector number appears in standard and Mirror Holofoil products. Whole-group planner proposes zero new mappings. Do not drop semantic modifiers, convert mirror into an exact generic finish, or weaken current duplicate guards.",
+    "nativePrintingsStageAndProduction": true,
+    "providerMarketNullControlsPreserved": true
+  },
+  "nextCohort": {
+    "category": 85,
+    "group": 24423,
+    "name": "M-P Promotional Cards",
+    "stageCandidates": 83,
+    "productionCandidates": 83,
+    "mapped": 62,
+    "providerProducts": 68,
+    "providerPriceRows": 32,
+    "datasetAt": "2026-10-05T20:05:57Z",
+    "status": "independent retained feeds/current native group obtained; full identity, finish, presale and whole-group ownership review still required before any candidate write"
+  },
+  "unchangedGates": {
+    "guardMigration": "12215cbe / 20261005221812_bounded_provider_identity_guards.sql remains unapplied; canonical scoped rehearsal/protected promotion pending",
+    "unrelatedRailwayPatch": "8e29d75c-d567-4a9a-9e96-8a40e51a22f3 remains staged and unaccepted",
+    "workerCandidateMergedIntoPR312": false,
+    "fourOwnedUncommittedWorkerFilesPreserved": true,
+    "paidChineseSourceActivation": false,
+    "externalMessagesSent": false,
+    "buildPublished": false,
+    "koreanPricingExcluded": true
+  }
+}

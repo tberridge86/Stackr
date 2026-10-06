@@ -2,7 +2,7 @@
   "expo": {
     "name": "Stackr",
     "slug": "Stackr",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -18,8 +18,9 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/rev2/01-brand/app/splash-ultra-hd.png",
-          "resizeMode": "cover",
+          "image": "./assets/startup/stackr-loading-poster.png",
+          "imageWidth": 320,
+          "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
       ],

@@ -34,14 +34,22 @@ on:
     - cron: '17 */6 * * *'
     - cron: '32 */6 * * *'
     - cron: '47 */12 * * *'
-    # Full-universe refresh remains intentionally disabled.
+    # Whole-guide builds are published daily by TCGCSV. Hourly resumes only
+    # continue interrupted checkpoints and do not poll a provider build.
+    - cron: '8 2 * * *'
+    - cron: '13 * * * *'
 
 jobs:
   refresh-prices:
     # Do not pay for dependency installation every five minutes while the
     # exact worker is disabled. Partial provider configuration still runs its
     # gate so it fails visibly instead of masquerading as a healthy rollout.
-    if: vars.STACKR_PRICING_SCHEDULER != 'railway_catalogue' && (github.event_name != 'schedule' || github.event.schedule != '*/5 * * * *' || vars.PRICING_ENGINE_V2_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED == 'true')
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'full-universe') ||
+      (github.event_name == 'schedule' && (github.event.schedule == '8 2 * * *' || github.event.schedule == '13 * * * *') && vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED == 'true') ||
+      (vars.STACKR_PRICING_SCHEDULER != 'railway_catalogue' &&
+       (github.event_name != 'schedule' || (github.event.schedule != '8 2 * * *' && github.event.schedule != '13 * * * *')) &&
+       (github.event_name != 'schedule' || github.event.schedule != '*/5 * * * *' || vars.PRICING_ENGINE_V2_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED == 'true'))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: production
@@ -56,6 +64,9 @@ jobs:
       POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
       USD_TO_GBP: ${{ vars.USD_TO_GBP || '0.79' }}
       EUR_TO_GBP: ${{ vars.EUR_TO_GBP || '0.86' }}
+      STACKR_CATALOGUE_BULK_PRICING_ENABLED: ${{ vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED || 'false' }}
+      STACKR_USD_GBP_RATE_AT: ${{ vars.STACKR_USD_GBP_RATE_AT || '' }}
+      STACKR_USD_GBP_RATE_SOURCE: ${{ vars.STACKR_USD_GBP_RATE_SOURCE || '' }}
       # All sold-data and canonical publication controls are dormant by
       # default. Setting a provider key alone has no effect.
       PRICING_ENGINE_V2_ENABLED: ${{ vars.PRICING_ENGINE_V2_ENABLED || 'false' }}
@@ -88,9 +99,9 @@ jobs:
           cache: npm
 
       - name: Block disabled full universe sync
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'full-universe'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'full-universe' && vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED != 'true'
         run: |
-          echo "The full-universe lane is disabled until a reviewed Node-only provider boundary exists." >&2
+          echo "The full-universe lane is disabled until the price-guide readiness gates pass." >&2
           exit 1
 
       - name: Verify production runtime bindings
@@ -98,6 +109,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Run manual full catalogue guide
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'full-universe' && vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED == 'true'
+        run: node scripts/refresh-catalogue-bulk-prices.mjs --apply --max-groups=5000
 
       # A partial PokeTrace configuration is a hard gate failure. It is not
       # silently replaced with a stale cache or a legacy queue worker.
@@ -153,3 +168,11 @@ jobs:
       - name: Run owned-card refresh
         if: github.event_name == 'schedule' && github.event.schedule == '47 */12 * * *'
         run: npm run price-refresh:owned
+
+      - name: Refresh full catalogue price guide
+        if: github.event_name == 'schedule' && github.event.schedule == '8 2 * * *' && vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED == 'true'
+        run: node scripts/refresh-catalogue-bulk-prices.mjs --apply --max-groups=5000
+
+      - name: Resume catalogue price guide checkpoint
+        if: github.event_name == 'schedule' && github.event.schedule == '13 * * * *' && vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED == 'true'
+        run: node scripts/refresh-catalogue-bulk-prices.mjs --apply --max-groups=5000

@@ -43,10 +43,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams, Stack } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { PinchGestureHandler, State } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, PinchGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
+import { CardInspectionStage } from '../../components/CardInspectionStage';
+import { getLibraryCardFinishMetadata } from '../../lib/cardFinishProfiles';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { BinderArtwork } from '../../components/BinderArtwork';
 import { BinderModeIconBadge, BinderModePill } from '../../components/BinderModeBadge';
@@ -66,6 +68,9 @@ import { StackrImage } from '../../components/StackrImage';
 import { useCardImagePreload } from '../../hooks/useCardImagePreload';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 import { ScrollToEndButton } from '../../components/ScrollToEndButton';
+import {
+  CardDetailInspectSurface,
+} from '../../components/InteractiveCardInspectPressable';
 import {
   BinderRecord,
   BinderCardRecord,
@@ -115,6 +120,8 @@ import { createActivityPost } from '../../lib/activity';
 import { stackrHaptics } from '../../lib/haptics';
 import { useCardInspection } from '../../components/CardInspectionProvider';
 import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
+import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
+import type { CataloguePriceDisplay } from '../../lib/cataloguePrices';
 import type { ScanEditionHint } from '../../types/scan';
 
 // ===============================
@@ -149,6 +156,7 @@ const cardShadow = {
 
 type BinderCardWithDetails = BinderCardRecord & {
   card?: any | null;
+  runtimeCataloguePricing?: CataloguePriceDisplay;
 };
 
 function getBinderCardDisplayName(item: BinderCardWithDetails | null | undefined, fallback = 'Card') {
@@ -1484,14 +1492,15 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // SORTED CARDS
   // ===============================
 
+  const cataloguePricedCards = useCataloguePriceOverlay(cards);
   const displayCards = useMemo(() => {
     const language = normalizePokemonCardLanguage(binder?.language);
     if (binder?.type === 'official' && language === 'ja' && !masterSetEnabled) {
-      return cards.filter((card) => !isJapaneseSecretBinderCard(card)
+      return cataloguePricedCards.filter((card) => !isJapaneseSecretBinderCard(card)
         && !isBinderCardBeyondPrintedTotal(card.card?.number ?? card.card_number, binder.catalogue_set_printed_total));
     }
-    return cards;
-  }, [binder?.language, binder?.type, binder?.catalogue_set_printed_total, cards, masterSetEnabled]);
+    return cataloguePricedCards;
+  }, [binder?.language, binder?.type, binder?.catalogue_set_printed_total, cataloguePricedCards, masterSetEnabled]);
 
   const rarityChoices = useMemo(() => binderRarityChoices(displayCards), [displayCards]);
   const activeRarity = rarityChoices.some((choice) => choice.key === rarityFilter) ? rarityFilter : 'all';
@@ -1710,6 +1719,25 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
     return Math.max(baseQuantity, ownedVariantCount);
   }, [getDisplayedVariantQuantity, masterSetEnabled, variantManagedCards]);
+
+  const ownedFinishesByCard = useMemo(() => {
+    const index = new Map<string, string[]>();
+    ownedVariants.forEach((quantity, key) => {
+      if (quantity <= 0) return;
+      const separator = key.lastIndexOf(':');
+      const identity = key.slice(0, separator);
+      const variants = index.get(identity) ?? [];
+      variants.push(key.slice(separator + 1));
+      index.set(identity, variants);
+    });
+    return index;
+  }, [ownedVariants]);
+
+  const getLibraryFinish = (item: BinderCardWithDetails) => getLibraryCardFinishMetadata({
+    ...item.card,
+    setId: item.set_id,
+    rarity: item.card?.rarity ?? (item as any).rarity,
+  }, ownedFinishesByCard.get(getVariantCardKey(item.card_id, item.set_id)));
 
   // ===============================
   // VISIBILITY TOGGLE
@@ -2661,9 +2689,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // GESTURE HANDLERS
   // ===============================
 
+  const modalArtworkTouch = useRef(false);
   const modalPanResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 8,
+      onMoveShouldSetPanResponder: (_, gesture) => !modalArtworkTouch.current && gesture.dy > 8,
       onPanResponderMove: (_, gesture) => {
         if (gesture.dy > 0) modalTranslateY.setValue(gesture.dy);
       },
@@ -2941,6 +2970,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const savedImageUri = getBinderSavedCardImageUri(item);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const cardName = getBinderCardDisplayName(item, item.card_id);
+    const guide = item.runtimeCataloguePricing;
     const forTrade = isForTrade(item.card_id, item.set_id);
     const isGradedBinder = binder?.card_mode === 'graded';
 
@@ -3213,6 +3243,17 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         }}>
           {cardName}
         </Text>
+
+        {guide ? (
+          <View style={{ marginTop: 2 }}>
+            <Text numberOfLines={1} style={{ color: theme.colors.primary, fontSize: 10, fontWeight: '900' }}>
+              {guide.pricingStatus === 'unavailable' ? 'General price unavailable' : `${formatCurrency(guide.displayPrice)} general estimate`}
+            </Text>
+            <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 8.5, fontWeight: '700' }}>
+              {[guide.sourceLabel, guide.unavailableReason, guide.updatedAt ? `Updated ${new Date(guide.updatedAt).toLocaleDateString('en-GB')}` : null].filter(Boolean).join(' - ')}
+            </Text>
+          </View>
+        ) : null}
 
         {item.owned && binder?.card_mode === 'graded' && (
           <Text
@@ -3493,6 +3534,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       ] : []),
     ] : []),
   ] : [];
+  const detailArtworkAspectRatio = binder.card_mode === 'graded' ? 0.68 : stackrCardImageSizes.cardAspectRatio;
+  const detailArtworkWidth = Math.min(Math.max(0, width - 80), 440, screenHeight * 0.7 * detailArtworkAspectRatio);
 
   // ===============================
   // MAIN RENDER
@@ -4655,10 +4698,17 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                     }}
                     showsVerticalScrollIndicator={false}
                   >
-                    <View style={{
-                      width: '100%',
-                      aspectRatio: binder.card_mode === 'graded' ? 0.68 : stackrCardImageSizes.cardAspectRatio,
-                      maxHeight: screenHeight * 0.62,
+                    <CardInspectionStage style={{ width: detailArtworkWidth + 48, alignSelf: 'center', marginBottom: 24 }}>
+                    <GestureHandlerRootView
+                      onTouchStart={() => { modalArtworkTouch.current = true; }}
+                      onTouchEnd={() => { modalArtworkTouch.current = false; }}
+                      onTouchCancel={() => { modalArtworkTouch.current = false; }}
+                      onPointerDown={() => { modalArtworkTouch.current = true; }}
+                      onPointerUp={() => { modalArtworkTouch.current = false; }}
+                      onPointerCancel={() => { modalArtworkTouch.current = false; }}
+                      style={{
+                      width: detailArtworkWidth,
+                      aspectRatio: detailArtworkAspectRatio,
                       alignSelf: 'center',
                       borderRadius: 20,
                       overflow: 'visible',
@@ -4678,9 +4728,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               size="modal"
                             />
                           ) : (
+                            <CardDetailInspectSurface title={getBinderCardDisplayName(selectedCard, selectedCard.card_id)} cardMetadata={getLibraryFinish(selectedCard)} active={detailVisible} style={{ flex: 1 }}>
                             <EditionAwareCardImage
-                              uri={modalImageUri ?? undefined}
+                              uri={modalImageUri}
+                              fullUri={modalImageUri}
                               fallbackUri={savedModalImageUri ?? (detailFullImageUri ? storedModalImageUri : undefined)}
+                              language={modalCard?.language}
                               cardId={selectedCard.card_id}
                               rawData={modalCard}
                               editionHint={getBinderEditionHint(binder.edition)}
@@ -4690,6 +4743,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               imageStyle={{ borderRadius: 15 }}
                               resizeMode="contain"
                             />
+                            </CardDetailInspectSurface>
                           )}
 
                           {/* Variant slices in Modal */}
@@ -4780,7 +4834,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                           bottom: 14,
                         }}
                       />
-                    </View>
+                    </GestureHandlerRootView>
+                    </CardInspectionStage>
 
                     {modalImageUri && (referenceImage || (masterSetEnabled && getVariants(modalCard, selectedCard.set_id).length > 1)) && (
                       <Text style={{ color: theme.colors.textSoft, marginTop: 8 }}>Reference image; finish may differ.</Text>

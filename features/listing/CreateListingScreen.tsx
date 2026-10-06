@@ -3226,7 +3226,7 @@ export default function CreateListingScreen() {
           {supportsCatalogue ? (
             <>
               {renderListingLanguageSelector()}
-              <StackrTextInput
+              <StackrTextInput label={`Search ${categoryConfig.title.toLowerCase()}, set or product line`}
                 value={searchQuery}
                 onChangeText={handleSearchChange}
                 placeholder={`Search ${categoryConfig.title.toLowerCase()}, set or product line`}
@@ -3343,7 +3343,7 @@ export default function CreateListingScreen() {
         {identificationMethod !== 'collection' ? (
           <>
             {renderListingLanguageSelector()}
-            <StackrTextInput
+            <StackrTextInput label="Search Pokemon, set, number or rarity"
               value={searchQuery}
               onChangeText={handleSearchChange}
               placeholder="Search Pokemon, set, number or rarity"
@@ -3364,7 +3364,7 @@ export default function CreateListingScreen() {
           </>
         ) : (
           <View style={{ gap: 8 }}>
-            <StackrTextInput
+            <StackrTextInput label="Search your collection by card, set, number or rarity"
               value={collectionSearchQuery}
               onChangeText={setCollectionSearchQuery}
               placeholder="Search your collection by card, set, number or rarity"
@@ -3491,7 +3491,7 @@ export default function CreateListingScreen() {
 
         <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
           <FieldLabel label="Card name" required />
-          <StackrTextInput
+          <StackrTextInput label="e.g. Pikachu"
             value={manualIdentity.cardName}
             onChangeText={handleManualSlabCardNameChange}
             placeholder="e.g. Pikachu"
@@ -3537,7 +3537,7 @@ export default function CreateListingScreen() {
           <View style={styles.twoColumn}>
             <View style={{ flex: 1 }}>
               <FieldLabel label="Set" />
-              <StackrTextInput
+              <StackrTextInput label="Auto-filled after selection"
                 value={manualIdentity.setName}
                 onChangeText={(value) => setManualIdentity((current) => ({ ...current, setName: value }))}
                 placeholder="Auto-filled after selection"
@@ -3546,7 +3546,7 @@ export default function CreateListingScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <FieldLabel label="Card number" />
-              <StackrTextInput
+              <StackrTextInput label="e.g. 025/165"
                 value={manualIdentity.cardNumber}
                 onChangeText={(value) => setManualIdentity((current) => ({ ...current, cardNumber: value }))}
                 placeholder="e.g. 025/165"
@@ -3573,7 +3573,7 @@ export default function CreateListingScreen() {
         </View>
 
         <FieldLabel label="Notes for Stackr review" />
-        <StackrTextInput value={manualIdentity.notes} onChangeText={(value) => setManualIdentity((current) => ({ ...current, notes: value }))} placeholder="Anything unusual about the label, variant or slab." multiline />
+        <StackrTextInput label="Anything unusual about the label, variant or slab." value={manualIdentity.notes} onChangeText={(value) => setManualIdentity((current) => ({ ...current, notes: value }))} placeholder="Anything unusual about the label, variant or slab." multiline />
       </View>
     ) : (
     <View style={styles.stepContent}>
@@ -3588,26 +3588,26 @@ export default function CreateListingScreen() {
       {isCardSubject(listingSubjectType) ? <InlineRequirementMessage message="Card identity pending review" tone="warning" /> : null}
       <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
         <FieldLabel label={isCardSubject(listingSubjectType) ? 'Card name' : 'Product name'} required />
-        <StackrTextInput
+        <StackrTextInput label={isCardSubject(listingSubjectType) ? 'e.g. Charizard ex' : 'e.g. Surging Sparks Booster Box'}
           value={manualIdentity.cardName}
           onChangeText={(value) => setManualIdentity((current) => ({ ...current, cardName: value }))}
           placeholder={isCardSubject(listingSubjectType) ? 'e.g. Charizard ex' : 'e.g. Surging Sparks Booster Box'}
           autoCapitalize="words"
         />
         <FieldLabel label={isCardSubject(listingSubjectType) ? 'Set' : 'Associated set'} />
-        <StackrTextInput value={manualIdentity.setName} onChangeText={(value) => setManualIdentity((current) => ({ ...current, setName: value }))} placeholder="e.g. Obsidian Flames" autoCapitalize="words" />
+        <StackrTextInput label="e.g. Obsidian Flames" value={manualIdentity.setName} onChangeText={(value) => setManualIdentity((current) => ({ ...current, setName: value }))} placeholder="e.g. Obsidian Flames" autoCapitalize="words" />
         {isCardSubject(listingSubjectType) ? (
           <>
             <FieldLabel label="Card number" />
-            <StackrTextInput value={manualIdentity.cardNumber} onChangeText={(value) => setManualIdentity((current) => ({ ...current, cardNumber: value }))} placeholder="e.g. 223/197" autoCapitalize="characters" />
+            <StackrTextInput label="e.g. 223/197" value={manualIdentity.cardNumber} onChangeText={(value) => setManualIdentity((current) => ({ ...current, cardNumber: value }))} placeholder="e.g. 223/197" autoCapitalize="characters" />
             <View style={styles.twoColumn}>
               <View style={{ flex: 1 }}>
                 <FieldLabel label="Language" />
-                <StackrTextInput value={manualIdentity.language} onChangeText={(value) => setManualIdentity((current) => ({ ...current, language: value }))} placeholder="English" autoCapitalize="words" />
+                <StackrTextInput label="English" value={manualIdentity.language} onChangeText={(value) => setManualIdentity((current) => ({ ...current, language: value }))} placeholder="English" autoCapitalize="words" />
               </View>
               <View style={{ flex: 1 }}>
                 <FieldLabel label="Variant" />
-                <StackrTextInput value={manualIdentity.variant} onChangeText={(value) => setManualIdentity((current) => ({ ...current, variant: value }))} placeholder="Holo, reverse..." autoCapitalize="words" />
+                <StackrTextInput label="Holo, reverse..." value={manualIdentity.variant} onChangeText={(value) => setManualIdentity((current) => ({ ...current, variant: value }))} placeholder="Holo, reverse..." autoCapitalize="words" />
               </View>
             </View>
           </>
@@ -3616,18 +3616,18 @@ export default function CreateListingScreen() {
             <View style={styles.twoColumn}>
               <View style={{ flex: 1 }}>
                 <FieldLabel label="Language or region" />
-                <StackrTextInput value={manualIdentity.language} onChangeText={(value) => setManualIdentity((current) => ({ ...current, language: value }))} placeholder="English / UK" autoCapitalize="words" />
+                <StackrTextInput label="English / UK" value={manualIdentity.language} onChangeText={(value) => setManualIdentity((current) => ({ ...current, language: value }))} placeholder="English / UK" autoCapitalize="words" />
               </View>
               <View style={{ flex: 1 }}>
                 <FieldLabel label="Variant" />
-                <StackrTextInput value={manualIdentity.variant} onChangeText={(value) => setManualIdentity((current) => ({ ...current, variant: value }))} placeholder="Artwork, edition..." autoCapitalize="words" />
+                <StackrTextInput label="Artwork, edition..." value={manualIdentity.variant} onChangeText={(value) => setManualIdentity((current) => ({ ...current, variant: value }))} placeholder="Artwork, edition..." autoCapitalize="words" />
               </View>
             </View>
             <InlineRequirementMessage message="Manual products are flagged for catalogue review. Do not use another product's image as a catalogue match." tone="warning" />
           </>
         )}
         <FieldLabel label="Notes for Stackr review" />
-        <StackrTextInput value={manualIdentity.notes} onChangeText={(value) => setManualIdentity((current) => ({ ...current, notes: value }))} placeholder="Anything that helps identify this item." multiline />
+        <StackrTextInput label="Anything that helps identify this item." value={manualIdentity.notes} onChangeText={(value) => setManualIdentity((current) => ({ ...current, notes: value }))} placeholder="Anything that helps identify this item." multiline />
       </View>
     </View>
     )
@@ -3673,7 +3673,7 @@ export default function CreateListingScreen() {
           </View>
           <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
             <FieldLabel label="Certification number" required />
-            <StackrTextInput value={certificationNumber} onChangeText={handleCertificationNumberChange} placeholder="As printed on the slab label" autoCapitalize="characters" />
+            <StackrTextInput label="As printed on the slab label" value={certificationNumber} onChangeText={handleCertificationNumberChange} placeholder="As printed on the slab label" autoCapitalize="characters" />
             <FieldLabel label="Slab case condition" required />
             <View style={styles.optionWrap}>
               {SLAB_CASE_CONDITION_OPTIONS.map((option) => (
@@ -3778,12 +3778,12 @@ export default function CreateListingScreen() {
       {(listingMode === 'sell' || listingMode === 'both') ? (
         <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
           <FieldLabel label="Guide price (no checkout)" required />
-          <StackrTextInput value={askingPrice} onChangeText={setAskingPrice} placeholder="0.00" keyboardType="decimal-pad" />
+          <StackrTextInput label="0.00" value={askingPrice} onChangeText={setAskingPrice} placeholder="0.00" keyboardType="decimal-pad" />
           <PressableChecklistItem label="Offers accepted" checked={offersAccepted} onPress={() => setOffersAccepted((value) => !value)} />
           {offersAccepted ? (
             <>
               <FieldLabel label="Minimum offer" />
-              <StackrTextInput value={minimumOffer} onChangeText={setMinimumOffer} placeholder="Optional" keyboardType="decimal-pad" />
+              <StackrTextInput label="Optional" value={minimumOffer} onChangeText={setMinimumOffer} placeholder="Optional" keyboardType="decimal-pad" />
             </>
           ) : null}
         </View>
@@ -3791,9 +3791,9 @@ export default function CreateListingScreen() {
       {(listingMode === 'trade' || listingMode === 'both') ? (
         <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
           <FieldLabel label="Expected trade value" required />
-          <StackrTextInput value={tradeValue} onChangeText={setTradeValue} placeholder="0.00" keyboardType="decimal-pad" />
+          <StackrTextInput label="0.00" value={tradeValue} onChangeText={setTradeValue} placeholder="0.00" keyboardType="decimal-pad" />
           <FieldLabel label="Cards or sets wanted" />
-          <StackrTextInput value={wantedCards} onChangeText={setWantedCards} placeholder="e.g. Gengar, Team Rocket, similar-value slabs" multiline />
+          <StackrTextInput label="e.g. Gengar, Team Rocket, similar-value slabs" value={wantedCards} onChangeText={setWantedCards} placeholder="e.g. Gengar, Team Rocket, similar-value slabs" multiline />
         </View>
       ) : null}
       {prices.unavailable ? (
@@ -4061,7 +4061,7 @@ export default function CreateListingScreen() {
           {listingSubjectType !== 'graded_slab' && sellerCondition && ximilarEstimate?.condition && !ximilarEstimate.condition.toLowerCase().includes(sellerCondition.toLowerCase()) ? (
             <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
               <FieldLabel label="Condition discrepancy note" />
-              <StackrTextInput
+              <StackrTextInput label="Explain why your declared condition differs, if needed."
                 value={conditionDiscrepancyReason}
                 onChangeText={setConditionDiscrepancyReason}
                 placeholder="Explain why your declared condition differs, if needed."
@@ -4083,16 +4083,16 @@ export default function CreateListingScreen() {
       <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>Stackr pre-fills what it already knows. Add the practical details buyers need.</Text>
       <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
         <FieldLabel label="Quantity" required />
-        <StackrTextInput value={quantity} onChangeText={setQuantity} placeholder="1" keyboardType="numeric" />
+        <StackrTextInput label="1" value={quantity} onChangeText={setQuantity} placeholder="1" keyboardType="numeric" />
         <FieldLabel label="Known defects" />
-        <StackrTextInput value={knownDefects} onChangeText={setKnownDefects} placeholder="Disclose whitening, scratches, bends or dents." multiline />
+        <StackrTextInput label="Disclose whitening, scratches, bends or dents." value={knownDefects} onChangeText={setKnownDefects} placeholder="Disclose whitening, scratches, bends or dents." multiline />
         <View style={styles.descriptionHeader}>
           <FieldLabel label="Description" />
           <TouchableOpacity onPress={generateDescription} style={[styles.generateButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
             <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>Create description</Text>
           </TouchableOpacity>
         </View>
-        <StackrTextInput value={description} onChangeText={setDescription} placeholder="Concise factual description." multiline />
+        <StackrTextInput label="Concise factual description." value={description} onChangeText={setDescription} placeholder="Concise factual description." multiline />
       </View>
     </View>
   );
@@ -4346,7 +4346,7 @@ export default function CreateListingScreen() {
           );
         })}
       </ScrollView>
-      <StackrTextInput value={grade} onChangeText={setGrade} placeholder="Exact grade" autoCapitalize="characters" />
+      <StackrTextInput label="Exact grade" value={grade} onChangeText={setGrade} placeholder="Exact grade" autoCapitalize="characters" />
     </View>
   );
 
