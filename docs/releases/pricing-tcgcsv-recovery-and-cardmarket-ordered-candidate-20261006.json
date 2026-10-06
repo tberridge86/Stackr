@@ -1,0 +1,277 @@
+{
+  "batch": "20261006-27",
+  "observedAt": "2026-10-06T08:40:16Z",
+  "tcgcsv": {
+    "scope": "deployment",
+    "deploymentId": "da477ff2-be95-49d0-a321-7373dedc6ed9",
+    "serviceId": "a2e61d08-1910-4762-bf82-e0473e86ad5f",
+    "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+    "status": "SUCCESS",
+    "deploy": [
+      {
+        "timestamp": "2026-10-06T08:17:49.222165668Z",
+        "severity": "info",
+        "message": "Starting Container",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-06T08:18:13.603518910Z",
+        "severity": "error",
+        "message": "Catalogue bulk coverage page request failed: canceling statement due to statement timeout",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"error\""
+          },
+          {
+            "key": "event",
+            "value": "\"catalogue_bulk_price_coverage_deferred\""
+          },
+          {
+            "key": "project",
+            "value": "\"oakdbbzdqwurpjnoqhmu\""
+          },
+          {
+            "key": "datasetAt",
+            "value": "\"2026-10-05T20:05:57+0000\""
+          },
+          {
+            "key": "runId",
+            "value": "\"faaff017-f849-48b1-9721-9c148f6bf689\""
+          },
+          {
+            "key": "rpc",
+            "value": "\"catalogue_bulk_price_coverage_page\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-06T08:18:13.603521960Z",
+        "severity": "info",
+        "message": "",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          },
+          {
+            "key": "project",
+            "value": "\"oakdbbzdqwurpjnoqhmu\""
+          },
+          {
+            "key": "datasetAt",
+            "value": "\"2026-10-05T20:05:57+0000\""
+          },
+          {
+            "key": "runId",
+            "value": "\"faaff017-f849-48b1-9721-9c148f6bf689\""
+          },
+          {
+            "key": "requeued",
+            "value": "0"
+          },
+          {
+            "key": "outcomeSeed",
+            "value": "{\"pages\":1,\"scanned\":0,\"written\":0,\"complete\":true}"
+          },
+          {
+            "key": "setsClaimed",
+            "value": "0"
+          },
+          {
+            "key": "complete",
+            "value": "0"
+          },
+          {
+            "key": "unmapped",
+            "value": "0"
+          },
+          {
+            "key": "deferred",
+            "value": "0"
+          },
+          {
+            "key": "cards",
+            "value": "0"
+          },
+          {
+            "key": "priced",
+            "value": "0"
+          },
+          {
+            "key": "status",
+            "value": "\"needs_mapping\""
+          },
+          {
+            "key": "health",
+            "value": "{\"runId\":\"faaff017-f849-48b1-9721-9c148f6bf689\",\"groups\":[{\"total\":168,\"status\":\"complete\",\"categoryId\":3},{\"total\":52,\"status\":\"unmapped\",\"categoryId\":3},{\"total\":163,\"status\":\"complete\",\"categoryId\":85},{\"total\":297,\"status\":\"unmapped\",\"categoryId\":85}],\"quotes\":[{\"stale\":0,\"total\":23123,\"provider\":\"tcgcsv\",\"languageCode\":\"en\"},{\"stale\":9,\"total\":6912,\"provider\":\"tcgcsv\",\"languageCode\":\"ja\"}],\"outcomes\":{\"total\":76272,\"no_provider_quote\":4027,\"unsupported_finish\":1240,\"unsupported_language\":28813},\"datasetAt\":\"2026-10-05T20:05:57+00:00\",\"runStatus\":\"needs_mapping\",\"openRepairs\":38009}"
+          },
+          {
+            "key": "coverage",
+            "value": "null"
+          },
+          {
+            "key": "coverageError",
+            "value": "{\"rpc\":\"catalogue_bulk_price_coverage_page\",\"message\":\"Catalogue bulk coverage page request failed: canceling statement due to statement timeout\"}"
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-06T08:18:13.603524800Z",
+        "severity": "info",
+        "message": "",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          },
+          {
+            "key": "event",
+            "value": "\"catalogue_price_cron_finished\""
+          },
+          {
+            "key": "exitCode",
+            "value": "0"
+          },
+          {
+            "key": "signal",
+            "value": "null"
+          },
+          {
+            "key": "elapsedMs",
+            "value": "24425"
+          }
+        ]
+      }
+    ]
+  },
+  "cardmarket": {
+    "scope": "deployment",
+    "deploymentId": "7cdd2890-86b9-40b7-9c3b-52124dcd0ad4",
+    "serviceId": "1c4cf45c-816d-46cc-a416-78d8c18bd779",
+    "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+    "status": "CRASHED",
+    "deploy": [
+      {
+        "timestamp": "2026-10-06T08:23:51.413254213Z",
+        "severity": "info",
+        "message": "Mounting volume on: /var/lib/containers/railwayapp/bind-mounts/a9c5a012-bf9b-43cb-bf97-61539db6dbfc/vol_n6krkn4y683r3r8g",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-06T08:23:52.416478221Z",
+        "severity": "info",
+        "message": "Starting Container",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-06T08:24:37.698991734Z",
+        "severity": "error",
+        "message": "TimeoutError: The operation was aborted due to timeout",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"error\""
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeConclusion": {
+    "tcgcsv": "Existing scheduled runtime recovered; exit0, no imports/deferrals on unchanged Oct5 dataset. coverage=null/error retained, not full reporting success.",
+    "cardmarket": "Failed45-second transport abort, RPC not identified in worker logs; mounted cache retained."
+  },
+  "boundedRead": {
+    "production": {
+      "rpc": "list_reviewed_cardmarket_printing_mappings",
+      "cursor": 0,
+      "limit": 100,
+      "role": "service_role",
+      "deadlineSeconds": 8,
+      "ok": false,
+      "error": "57014 SQL function during startup"
+    },
+    "staging": {
+      "sameRpc": true,
+      "rows": 100,
+      "executionMs": 1515.438,
+      "temporaryReadBlocks": 522,
+      "temporaryWrittenBlocks": 1390
+    }
+  },
+  "stagingInnerPlan": {
+    "executionMs": 5745.118,
+    "returnedRows": 100,
+    "mappingsValidated": 9234,
+    "printingsScanned": 68202,
+    "physicalMembershipLoops": 9234,
+    "meaning": "A single read-only inner-body plan, not a production benchmark. LIMIT100 comes after global physical validation and sort."
+  },
+  "metadata": {
+    "productionHelperAt": "2026-10-06T08:34:11.107021Z",
+    "englishGuardHash": "ca77044f82345cc18fdc7f2be1cca8f6",
+    "productionIndexRead": "Connection timeout; not repeated",
+    "stagingIndexes": "Existing printing and membership indexes present; provider product ordering index is category-leading only. No index/schema writes initiated."
+  },
+  "candidate": {
+    "path": "docs/releases/pricing-cardmarket-ledger-candidate-20261006.sql",
+    "predecessor": "docs/releases/pricing-cardmarket-ledger-predecessor-20261006.sql",
+    "test": "scripts/test-cardmarket-ledger-ordered-candidate.mjs",
+    "state": "source-only; not an applied migration or deployed function",
+    "method": "Provider-ordered invoker loop validates exact unchanged native/current-publication/physical predicates and stops only after p_limit ELIGIBLE rows. Raw mappings are never limited first.",
+    "predecessorDefinitionMd5": "8a23b5ed8bfb28bfc3bc38650f973f89",
+    "candidateLfSha256": "6ea53be5d373faea6db7a4fff3445b497f952919f3d3b7fdf745865ff5b39ff0",
+    "localControls": 15,
+    "fullKeysetAndProvenanceParity": true,
+    "publicAccessDenied": true,
+    "invokerSecurityPreserved": true,
+    "rollbackVerified": true,
+    "liveInstalledControls": false,
+    "livePerformance": false,
+    "pricingIdentityGuardScopeIncludesThis": false
+  },
+  "scope": {
+    "manualPriceMappingWrites": false,
+    "schemaCatalogueWrites": false,
+    "remoteJobs": false,
+    "deployments": false,
+    "restartOrCacheClear": false,
+    "deadlineIncrease": false,
+    "paidActivation": false,
+    "koreanWork": false,
+    "sourceFreshnessExtended": false,
+    "newNetPriceGain": false
+  },
+  "coverage": {
+    "lastComplete": "2026-10-06T03:34:45.990Z",
+    "historicalPositive": 38371,
+    "physicalDenominator": 76030,
+    "fullPhysical": 76269,
+    "excludedKorean": 239,
+    "currentComplete": "unknown",
+    "projection": "unknown",
+    "ownerHttpPhone": "unmeasured",
+    "partialCheckpoint": "preserved"
+  },
+  "next": [
+    "Review the separate Cardmarket source candidate; do not silently bundle it into the existing English guard scope.",
+    "Prepare exact predecessor-fenced canonical staging rehearsal and unchanged-role/native/pagination live acceptance, with backup and rollback, before any persistent promotion. Source/local success is not installed performance.",
+    "Inspect next scheduled Cardmarket result without restarting cache; preserve true source expiry. TCGCSV diagnostics remain distinct from positive native coverage.",
+    "Continue canonical English guard acceptance and full frozen coverage only after deployed read repair."
+  ]
+}
