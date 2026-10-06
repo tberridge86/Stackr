@@ -12,4 +12,3 @@ AS $function$
  and exists (select 1 from catalog.catalogue_version_variants cvv join catalog.card_variants variant on variant.id=cvv.variant_id and variant.deprecated_at is null and variant.printing_id=p.id and variant.language_code=p.language_code join catalog.sets s on s.id=variant.set_id and s.deprecated_at is null where cvv.catalogue_version_id=v.id)
  order by m.provider_product_id limit case when p_limit between 1 and 500 then p_limit else 0 end;
 $function$
-
