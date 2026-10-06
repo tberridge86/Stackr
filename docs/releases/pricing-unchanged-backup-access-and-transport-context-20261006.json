@@ -1,0 +1,51 @@
+{
+  "batch": "20261006-31",
+  "observedAt": "2026-10-06T14:41:34Z",
+  "backupGate": {
+    "metadataOnly": true,
+    "primaryUpdatedAt": "2026-08-11T06:43:14Z",
+    "fallbackUpdatedAt": "2026-08-10T19:04:41Z",
+    "changed": false,
+    "knownRejectedRun": 37474015185,
+    "noRepeatedCredentialProbeOrDispatch": true,
+    "requiredActionPreviouslyNotified": "Valid staging backup-read credential in STACKR_GITHUB_STAGING_BACKUPS"
+  },
+  "productionTcgcsv": {
+    "deployment": "8c447a96-9663-4f01-b403-3bd4ae638b1e",
+    "buildMetadataCommit": "28cbcfc7d68eb11edc622078b0bbc3216810610f",
+    "startedAt": "2026-10-06T14:17:23Z",
+    "finishedAt": "2026-10-06T14:18:04Z",
+    "exit": 0,
+    "elapsedMs": 40441,
+    "datasetAt": "2026-10-05T20:05:57Z",
+    "setsClaimed": 0, "priced": 0, "deferrals": 0,
+    "coverage": null,
+    "coverageErrorRpc": "catalogue_bulk_price_coverage_page",
+    "coverageError": "statement timeout",
+    "durableGroups": {"enComplete": 168, "enUnmapped": 52, "jaComplete": 163, "jaUnmapped": 297},
+    "interpretation": "Partial runtime recovery with unchanged-source zero work and failed diagnostics, like the earlier08:18 observation; not full report, changed-source refresh, new positive gain or restored end-to-end service."
+  },
+  "productionCardmarket": {
+    "deployment": "b9dbeac6-ac52-40c0-a1d2-ed2e4d839c08",
+    "source": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+    "startedAt": "2026-10-06T14:20:30Z",
+    "failedAt": "2026-10-06T14:21:15Z",
+    "cacheMounted": true,
+    "failure": "transport timeout; actual RPC not named in deployed logs",
+    "interpretation": "Repeated known failure. Container command runs reviewed-ledger loading before the guide worker, but command order/timing does not substitute for an actual RPC failure receipt."
+  },
+  "stagingCardmarket": {"deployment": "f4d21fad-7090-41bb-b3dc-b4237c3f2ad8", "lastScheduledSuccess": "2026-10-06T14:19:12Z", "controlPlaneOnly": true, "noRestart": true},
+  "provider": {"tcgcsvPublicLastUpdated": "2026-10-05T20:05:57+0000", "dailyAdvance": false},
+  "boundedSourceWork": {
+    "path": "scripts/catalogue-price-database.mjs",
+    "problem": "Cardmarket45-second transport aborts have no RPC/phase attribution. SQL57014 and intermittent connection failures must remain separate diagnoses.",
+    "change": "One sanitized event on a thrown fetch error: fixed allowlisted RPC name, caller/deadline/transport classification and existing deadline. Unknown names stayunknown; no URL/headers/body/error payload logged by the new observer.",
+    "preserved": ["same45-second default transport deadline", "same caller AbortSignal", "same original thrown error", "zero POST retries", "unchanged HTTP/SQL responses", "no writes or source age changes", "observer failures cannot mask requests"],
+    "tests": ["stalled request deadline", "caller abort", "one attempt per transport failure", "failure-path allowlist and unknown-name redaction", "no request/exception secret fields", "sync and async observer failure isolation", "SQL57014 response remainsSQL", "success payload parity", "datedFX controls", "workflow isolation", "Stage13 deployment tooling"],
+    "lint": "zero errors/eight existing warnings",
+    "state": "implemented and locally tested; not deployed, no observed runtime event or price-speed/coverage claim"
+  },
+  "coverage": {"lastCompleteCutoff": "2026-10-06T03:34:45.990Z", "historicalPositive": 38371, "fourLanguageDenominator": 76030, "fullPhysical": 76269, "excludedKorean": 239, "currentCompletePositive": null, "currentProjectedAvailability": null, "ownerHttpPhoneProof": false},
+  "preserved": ["four intentional uncommitted worker/test copies", "dirty primary checkout", "normal schedules and mounted cache", "unaccepted Chinese-provider patch", "historical receipts and04:39 checkpoint"],
+  "next": "Review source-only diagnostic change; do not redeploy healthy workers merely to add logs. Once backup access changes, continue selected canonical rehearsal and persistent guarded release acceptance. Inspect the next normal daily source advance/runtime with exact source and error labels. Independent native-language cohorts still require current physical identity in both environments."
+}
