@@ -47,6 +47,7 @@ jobs:
       - run: node --test tools/queue1-publish-20260927/publish.test.mjs tools/queue1-pbl-relink-20260927/relink.test.mjs tools/mep89-publish-20260927/publish.test.mjs tools/pocket131-publish-20260927/publish.test.mjs tools/newsets480-publish-20260927/publish.test.mjs tools/anniversary201-publish-20260927/publish.test.mjs tools/printing-front-api-20260927/publish.test.mjs tools/card-detail-front-20260927/publish.test.mjs
       - run: node tools/pbl-price-identities-20260927/repair.test.mjs
       - run: node scripts/test-price-guard-rehearsal-workflow.mjs
+      - run: node scripts/test-staging-pricing-backup-list.mjs
       - run: node scripts/test-bounded-provider-identity-guards.mjs
       - run: node scripts/test-cardmarket-ledger-ordered-candidate.mjs
       - run: npm run test:next-beta-fixes

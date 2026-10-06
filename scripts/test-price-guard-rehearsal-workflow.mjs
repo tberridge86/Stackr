@@ -38,7 +38,9 @@ assert(commands.includes('pricing_identity_guard_rehearsal) SCRIPT=scripts/deplo
 assert(commands.includes('*) exit 1'), 'unreviewed rehearsal scope must fail closed');
 assert(!/db push|railway.* up |wrangler|eas-cli|update:rollback|rehearse-gate0/.test(commands), 'pricing rehearsal cannot publish or run unrelated migrations');
 assert(commands.includes('verify-backup.mjs') && commands.includes('--require-physical'));
-assert(commands.includes('schema.stderr') && commands.includes('data.stderr') && commands.includes('physical.stderr'), 'backup diagnostics stay ephemeral');
+assert(commands.includes('schema.stderr') && commands.includes('data.stderr'), 'logical backup diagnostics stay ephemeral');
+assert(commands.includes('list-staging-pricing-backups.mjs'), 'physical backup errors use fixed-target sanitized diagnostics');
+assert.equal(pricing.env.SUPABASE_BACKUP_FALLBACK_ACCESS_TOKEN, '${{ secrets.SUPABASE_ACCESS_TOKEN }}');
 const uploads = pricing.steps.filter(step => step.uses?.startsWith('actions/upload-artifact@'));
 assert.equal(uploads.length, 1);
 assert.equal(uploads[0].with.path, '${{ runner.temp }}/stackr-price-guard-rehearsal.json', 'only non-secret attestation can be uploaded');

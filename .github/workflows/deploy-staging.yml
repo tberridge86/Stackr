@@ -670,6 +670,7 @@ jobs:
     env:
       STACKR_DEPLOYMENT_ENVIRONMENT: staging
       SUPABASE_ACCESS_TOKEN: ${{ secrets.STACKR_GITHUB_STAGING_BACKUPS || secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_BACKUP_FALLBACK_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
       STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
@@ -700,15 +701,14 @@ jobs:
           node scripts/test-bounded-provider-identity-guards.mjs
           node scripts/test-cardmarket-ledger-ordered-candidate.mjs
           node scripts/test-price-guard-rehearsal-workflow.mjs
+          node scripts/test-staging-pricing-backup-list.mjs
       - name: Prepare verified staging database address
         run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
       - name: Verify physical and ephemeral logical backups
         run: |
           mkdir -p "$RUNNER_TEMP/stackr-price-guard-backup"
-          npx --yes supabase@2.110.0 backups list \
-            --project-ref "$SUPABASE_PROJECT_REF" --output-format json \
-            > "$RUNNER_TEMP/stackr-price-guard-backup/physical.json" \
-            2> "$RUNNER_TEMP/stackr-price-guard-backup/physical.stderr"
+          node scripts/deploy/list-staging-pricing-backups.mjs \
+            --output="$RUNNER_TEMP/stackr-price-guard-backup/physical.json"
           npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" \
             --file "$RUNNER_TEMP/stackr-price-guard-backup/schema.sql" \
             > "$RUNNER_TEMP/stackr-price-guard-backup/schema.stdout" \
