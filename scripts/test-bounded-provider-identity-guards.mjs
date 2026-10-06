@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PGlite} from '@electric-sql/pglite';
+import {createHash} from 'node:crypto';
+import {readPriceGuardState,rehearsePriceIdentityGuard} from './deploy/rehearse-price-identity-guard-core.mjs';
+import {orderedVersionNameMd5,orderedRemoteStatementLedgerSha256} from './deploy/staging-migration-ledger.mjs';
 const db=new PGlite();
 const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const migration=readFileSync('supabase/migrations/20261005221812_bounded_provider_identity_guards.sql','utf8');
@@ -86,7 +89,31 @@ async function main(){
  await db.exec('reset role');
  await assert.rejects(db.exec('begin;'+rollback+'commit;'),/unexpected candidate identity guard revision for rollback/);
  await db.exec('rollback');
- console.log(JSON.stringify({checks,legacyParity:true,serviceOnly:true,publishedVersionsPreserved:true,changedRevisionRejected:true,candidateDefinitionMd5,forwardRollbackRestoresExactPredecessor:true,rollbackAccessPreserved:true,alreadyRestoredRollbackRejected:true}));
+ await db.exec("create schema supabase_migrations;create table supabase_migrations.schema_migrations(version text primary key,name text,statements text[]);insert into supabase_migrations.schema_migrations values('20261004084131','fixture_guard',array['select 1']);");
+ const client={query:(...args)=>db.query(...args),exec:text=>db.exec(text)};
+ const state=await readPriceGuardState(client);
+ const baseline={project:'lmwfhvexfcoyeuoyrlco',count:state.ledger.length,orderedVersionNameMd5:orderedVersionNameMd5(state.ledger),orderedStatementLedgerSha256:orderedRemoteStatementLedgerSha256(state.ledger)};
+ const candidate={migrationVersion:'20261005221812',sourceLfSha256:createHash('sha256').update(migration.replaceAll('\r\n','\n')).digest('hex'),predecessorDefinitionMd5:'ca77044f82345cc18fdc7f2be1cca8f6',candidateDefinitionMd5};
+ const options={client,projectRef:baseline.project,baseline,candidate,migrationSql:migration,readCanary:async()=> (await db.query('select api.english_exact_price_set_is_current($1,$2) valid',[100,id(10)])).rows};
+ const rehearsed=await rehearsePriceIdentityGuard(options);
+ assert.equal(rehearsed.rollbackVerified,true);assert.equal(rehearsed.persistedCandidate,false);
+ assert.equal((await readPriceGuardState(client)).guard.hash,candidate.predecessorDefinitionMd5);
+ await assert.rejects(rehearsePriceIdentityGuard({...options,projectRef:'oakdbbzdqwurpjnoqhmu'}),/price_guard_requires_staging/);
+ await assert.rejects(rehearsePriceIdentityGuard({...options,migrationSql:migration+'\n-- changed source'}),/price_guard_source_hash_drift/);
+ await db.exec("update supabase_migrations.schema_migrations set statements=array['select 2']");
+ await assert.rejects(rehearsePriceIdentityGuard(options),/price_guard_ledger_statement_drift/);
+ await db.exec("update supabase_migrations.schema_migrations set statements=array['select 1']");
+ let canaryCalls=0;
+ await assert.rejects(rehearsePriceIdentityGuard({...options,readCanary:async()=>{canaryCalls++;if(canaryCalls===2)throw Error('injected live control failure');return options.readCanary();}}),/injected live control failure/);
+ assert.equal((await readPriceGuardState(client)).guard.hash,candidate.predecessorDefinitionMd5,'failed controls restore the exact predecessor');
+ assert.equal((await readPriceGuardState(client)).ledger.length,baseline.count,'failed rehearsal never registers a migration');
+ let parityCalls=0;
+ await assert.rejects(rehearsePriceIdentityGuard({...options,readCanary:async()=>[{valid:++parityCalls===1}]}),/price_guard_api_response_drift/);
+ assert.equal((await readPriceGuardState(client)).guard.hash,candidate.predecessorDefinitionMd5);
+ let sqlFailureCalls=0;
+ await assert.rejects(rehearsePriceIdentityGuard({...options,readCanary:async()=>{if(++sqlFailureCalls===2){await db.exec('set local role service_role');await db.query('select * from api.missing_rehearsal_control');}return options.readCanary();}}),/does not exist/);
+ assert.equal((await readPriceGuardState(client)).guard.hash,candidate.predecessorDefinitionMd5,'aborted service-role query restores function and connection role');
+ console.log(JSON.stringify({checks,legacyParity:true,serviceOnly:true,publishedVersionsPreserved:true,changedRevisionRejected:true,candidateDefinitionMd5,forwardRollbackRestoresExactPredecessor:true,rollbackAccessPreserved:true,alreadyRestoredRollbackRejected:true,canonicalRehearsal:{rollbackOnly:true,productionRejected:true,sourceDriftRejected:true,ledgerDriftRejected:true,failedControlsRestorePredecessor:true,apiParityDriftRestoresPredecessor:true,ledgerUnchanged:true}}));
  }finally{await db.close()}
 }
 main().catch(error=>{console.error(error);process.exitCode=1});

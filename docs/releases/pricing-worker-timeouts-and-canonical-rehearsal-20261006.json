@@ -1,0 +1,221 @@
+{
+  "batch": "20261006-25",
+  "observedAt": "2026-10-06T06:50:00Z",
+  "automation": "grow-stackr-price-coverage",
+  "production": {
+    "tcgcsv": {
+      "scope": "deployment",
+      "deploymentId": "a05bce17-b739-48a8-ae23-9b3809fada5e",
+      "serviceId": "a2e61d08-1910-4762-bf82-e0473e86ad5f",
+      "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+      "status": "CRASHED",
+      "deploy": [
+        {
+          "timestamp": "2026-10-06T06:16:59.290383537Z",
+          "severity": "info",
+          "message": "Starting Container",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T06:19:39.150300731Z",
+          "severity": "error",
+          "message": "TimeoutError: The operation was aborted due to timeout",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"error\""
+            },
+            {
+              "key": "event",
+              "value": "\"catalogue_bulk_price_failed\""
+            },
+            {
+              "key": "rpc",
+              "value": "\"read_catalogue_bulk_feed\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T06:19:39.150303231Z",
+          "severity": "info",
+          "message": "",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            },
+            {
+              "key": "event",
+              "value": "\"catalogue_price_cron_finished\""
+            },
+            {
+              "key": "exitCode",
+              "value": "1"
+            },
+            {
+              "key": "signal",
+              "value": "null"
+            },
+            {
+              "key": "elapsedMs",
+              "value": "153983"
+            }
+          ]
+        }
+      ]
+    },
+    "cardmarket": {
+      "scope": "deployment",
+      "deploymentId": "c7286876-4d57-4cf9-aaf3-ac1162958684",
+      "serviceId": "1c4cf45c-816d-46cc-a416-78d8c18bd779",
+      "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+      "status": "CRASHED",
+      "deploy": [
+        {
+          "timestamp": "2026-10-06T06:20:30.715732323Z",
+          "severity": "info",
+          "message": "Mounting volume on: /var/lib/containers/railwayapp/bind-mounts/aeb0e5d9-9e5b-44d6-ab4c-56b9bfd240e0/vol_n6krkn4y683r3r8g",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T06:20:31.727549278Z",
+          "severity": "info",
+          "message": "Starting Container",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T06:21:09.600967136Z",
+          "severity": "error",
+          "message": "canceling statement due to statement timeout",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"error\""
+            }
+          ]
+        }
+      ]
+    },
+    "boundedMetadataRead": {
+      "ok": false,
+      "error": "Connection terminated due to connection timeout",
+      "attempts": 1
+    },
+    "controlPlane": {
+      "status": "ACTIVE_HEALTHY",
+      "meaning": "Project metadata only; not SQL connectivity or worker runtime proof"
+    }
+  },
+  "staging": {
+    "boundedMetadataRead": {
+      "ok": true,
+      "observedAt": "2026-10-06T06:44:34.722887Z",
+      "ledgerCount": 200,
+      "guardPredecessor": "ca77044f82345cc18fdc7f2be1cca8f6",
+      "otherActiveClientSessions": 0
+    },
+    "latestScheduledSuccess": {
+      "tcgcsv": "2026-10-06T06:14:50Z",
+      "cardmarket": "2026-10-06T06:19:47Z"
+    }
+  },
+  "sourceIntegration": {
+    "workflow": ".github/workflows/deploy-staging.yml",
+    "scope": "pricing_identity_guard_rehearsal",
+    "implemented": true,
+    "merged": false,
+    "dispatched": false,
+    "executedRemotely": false,
+    "persistedCandidate": false,
+    "rollbackOnly": true,
+    "mainOnly": true,
+    "protectedEnvironment": "staging",
+    "sharedDeploymentConcurrency": true,
+    "verifiedBackupsRequired": true,
+    "sourceCommitAttestation": true,
+    "expectedAppliedLedgerCount": 200,
+    "originalManifestUnchanged": true,
+    "historyWrites": false,
+    "backendOrMobileDeployment": false,
+    "actualApiCanaryIds": 10,
+    "apiStatementDeadlineSeconds": 8,
+    "controls": "Public role denial, service acceptance, invalid identity rejection, cap rejection, positive/fresh native general quotes, full response parity and exact rollback/ledger preservation. Broader native/title/ambiguity/unsupported controls remain locally tested; a live persistent release still needs those acceptance gates."
+  },
+  "validation": {
+    "nodeSyntax": "pass",
+    "guardAndAtomicRollbackControls": "pass",
+    "workflowScopeSafetyControls": "pass",
+    "lint": {
+      "errors": 0,
+      "existingWarnings": 9
+    },
+    "diffCheck": "pass",
+    "liveCandidateControls": "not run"
+  },
+  "coverage": {
+    "currentCompletePositive": "unmeasured",
+    "lastComplete": {
+      "cutoff": "2026-10-06T03:34:45.990Z",
+      "positive": 38371,
+      "physicalDenominator": 76030,
+      "percent": 50.47,
+      "fullPhysicalCatalogue": 76269,
+      "excludedKorean": 239
+    },
+    "partialCheckpoint": "docs/releases/pricing-positive-coverage-checkpoint-20261006-0439.json",
+    "partialPreserved": true,
+    "ownerHttpPhone": "unmeasured",
+    "projectedGeneralAvailability": "unmeasured",
+    "newNetGainMeasured": false
+  },
+  "freshness": {
+    "cardmarket": {
+      "lastVerifiedSourceAt": "2026-10-06T00:48:24Z",
+      "staleAfter": "2026-10-08T00:48:24Z",
+      "newReadThisTurn": false
+    },
+    "tcgcsv": {
+      "lastVerifiedSourceAt": "2026-10-05T20:05:57Z",
+      "staleAfter": "2026-10-07T20:05:57Z",
+      "newReadThisTurn": false
+    }
+  },
+  "limitations": [
+    "Cardmarket log does not identify the timed-out query; do not infer old 500-row loader recurrence.",
+    "Guard source rehearsal is not a fix for read_catalogue_bulk_feed or general SQL connectivity.",
+    "Production function/ledger current recheck failed; prior immutable baseline is historical, not newly verified.",
+    "No current whole-catalogue percentage or owner/device success established."
+  ],
+  "next": [
+    "Check normal next scheduled worker results and lightweight production connectivity before any action; do not restart caches or repeat broad SQL.",
+    "Review/merge exact scoped source through normal PR/main controls; then run the rollback-only protected canonical stage scope with required flags if authorized.",
+    "After a successful live rehearsal, prepare a reviewed persistent single-guard canonical release with distinct staging/production ledgers and complete installed API/access/native acceptance; rollback-only success does not apply it.",
+    "Resume or supersede the frozen full coverage checkpoint only after deployed read repair and membership/version checks."
+  ],
+  "actions": {
+    "manualPriceOrMappingWrites": false,
+    "schemaWrites": false,
+    "deployments": false,
+    "remoteJobTriggers": false,
+    "restartsOrCacheClears": false,
+    "paidActivation": false,
+    "outsideMessages": false,
+    "nativeOrOtaBuild": false,
+    "koreanWork": false
+  }
+}
