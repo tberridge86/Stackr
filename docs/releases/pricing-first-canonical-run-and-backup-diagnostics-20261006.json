@@ -1,0 +1,57 @@
+{
+  "batch": "20261006-29",
+  "observedAt": "2026-10-06T13:46:00Z",
+  "authorization": {
+    "source": "C:/Users/berri/.codex/attachments/23c056aa-f5f0-4fc7-9760-0856e83aaf5b/Pasted text.txt",
+    "quote": "This request authorizes the scoped remote diagnostics, required migrations, provider imports, refresh scheduling and deployments needed for this work, followed by the next TestFlight release after all readiness gates pass.",
+    "interpretation": "Existing human authorization covers these scoped canonical staging jobs; protected target/source/access/backup gates still apply. Current heartbeat forbids native/OTA publishing."
+  },
+  "mergedSource": {
+    "pr": "https://github.com/tberridge86/Stackr/pull/315",
+    "head": "8797c5040bf55c182d8ccc2b52f5b446e6ff5583",
+    "merge": "1026a5b159ffbd71e7559813e1e54803b0a3da64",
+    "mergedAt": "2026-10-06T13:37:07Z",
+    "exactHeadChecks": "eight successful checks; release candidate gate deliberately skipped; no protected rule bypass"
+  },
+  "canonicalRun": {
+    "id": 37472315164,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/37472315164",
+    "head": "1026a5b159ffbd71e7559813e1e54803b0a3da64",
+    "createdAt": "2026-10-06T13:37:48Z",
+    "completedAt": "2026-10-06T13:39:00Z",
+    "scope": "cardmarket_ledger_rehearsal",
+    "inputs": {"confirmation": "DEPLOY STAGING", "release_candidate": true, "apply_migrations": false, "publish_mobile_update": false},
+    "conclusion": "failure",
+    "passed": ["main and rollback-only scope gates", "exact source attestation", "20 English controls", "18 Cardmarket controls", "workflow safety", "verified staging address"],
+    "failedStep": "Verify physical and ephemeral logical backups",
+    "failureAt": "2026-10-06T13:38:57Z",
+    "failureExit": 1,
+    "failureCause": "not exposed: CLI stdout/stderr retained ephemerally then removed; no claim that rejection was authentication, provider failure or backup absence",
+    "candidateExecuted": false,
+    "persistedCandidate": false,
+    "platformJob": "skipped",
+    "cleanup": "success"
+  },
+  "backupSourceFollowup": {
+    "status": "locally tested source, not remotely proved",
+    "endpoint": "https://api.supabase.com/v1/projects/lmwfhvexfcoyeuoyrlco/database/backups",
+    "documentation": "https://supabase.com/docs/reference/api/v1-list-all-backups",
+    "pattern": "fixed staging endpoint; one alternative already-configured credential only after 401/403; no transport/service retries; sanitized errors; raw manifest only ephemeral mode0600; unchanged physical/logical verification",
+    "tests": ["401/403 fallback", "duplicate credential rejection", "no fallback after503", "missing credential", "transport/body secret redaction", "invalid manifest", "primary success", "workflow scope/access/backup isolation", "Stage13 deployment tooling"],
+    "lint": "zero errors/eight existing warnings"
+  },
+  "scheduledProduction": {
+    "tcgcsv": {"deployment": "fee8a5ea-98d1-437b-9d07-1fe07968df8f", "failedAt": "2026-10-06T13:15:55Z", "path": "read_catalogue_bulk_feed", "exit": 1, "elapsedMs": 45614},
+    "cardmarket": {"deployment": "fbe257eb-83d7-4db8-9a89-40e9c3a35110", "failedAt": "2026-10-06T13:21:33Z", "path": "transport abort; RPC unidentified; retained cache mounted"},
+    "interpretation": "repeated existing incident, not new resolved failures; first-page Cardmarket diagnosis does not identify all worker aborts"
+  },
+  "coverage": {
+    "lastCompleteCutoff": "2026-10-06T03:34:45.990Z",
+    "historicalPositive": 38371, "fourLanguageDenominator": 76030,
+    "fullPhysical": 76269, "excludedKorean": 239,
+    "currentCompletePositive": null, "currentProjectedAvailability": null, "ownerHttpPhoneProof": false,
+    "partialCheckpointPreserved": "pricing-positive-coverage-checkpoint-20261006-0439.json"
+  },
+  "preserved": ["four intentional uncommitted worker/test files", "dirty primary checkout", "mounted caches and schedules", "unaccepted Chinese-provider patch", "actual source age and exact/general labels"],
+  "next": "Review and merge only backup observability/fixed-target listing source through canonical main checks, then rerun the selected staging rehearsal. Do not bypass a rejected backup, registry/source/access drift or infer installed performance from source/tests."
+}
