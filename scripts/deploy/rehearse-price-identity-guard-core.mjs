@@ -4,12 +4,15 @@ import { orderedRemoteStatementLedgerSha256, orderedVersionNameMd5 } from './sta
 import { findUnsafeTopLevelMigrationStatements } from './migration-transaction-safety.mjs';
 
 export const PRICE_GUARD_STAGING_PROJECT = 'lmwfhvexfcoyeuoyrlco';
-const signature = 'api.english_exact_price_set_is_current(bigint,uuid)';
+const defaultSignature = 'api.english_exact_price_set_is_current(bigint,uuid)';
+export const CARDMARKET_LEDGER_SIGNATURE = 'api.list_reviewed_cardmarket_printing_mappings(bigint,integer)';
+const allowedSignatures = new Set([defaultSignature, CARDMARKET_LEDGER_SIGNATURE]);
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const stable = value => JSON.stringify(value, (_key, item) => item && typeof item === 'object' && !Array.isArray(item)
   ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
 
-export async function readPriceGuardState(client) {
+export async function readPriceGuardState(client, signature = defaultSignature) {
+  assert(allowedSignatures.has(signature), 'price_guard_unreviewed_function');
   const ledger = (await client.query(`
     select version,name,cardinality(statements)::int as statement_count,
       encode(sha256(convert_to(array_to_json(statements)::text,'UTF8')),'hex') as "remoteStatementsSha256"
@@ -36,7 +39,8 @@ function verifyBaseline(state, baseline, expectedGuard) {
 
 // A rehearsal can never commit or register a migration. The caller provides
 // read-only API controls; the CLI runner fixes the reviewed live controls.
-export async function rehearsePriceIdentityGuard({ client, projectRef, candidate, baseline, migrationSql, readCanary }) {
+export async function rehearsePriceIdentityGuard({ client, projectRef, candidate, baseline, migrationSql, readCanary, signature = defaultSignature }) {
+  assert(allowedSignatures.has(signature), 'price_guard_unreviewed_function');
   assert.equal(projectRef, PRICE_GUARD_STAGING_PROJECT, 'price_guard_requires_staging');
   assert.equal(baseline.project, projectRef, 'price_guard_baseline_target_mismatch');
   assert.equal(sha256(migrationSql.replaceAll('\r\n', '\n')), candidate.sourceLfSha256, 'price_guard_source_hash_drift');
@@ -45,7 +49,7 @@ export async function rehearsePriceIdentityGuard({ client, projectRef, candidate
   try {
     await client.exec('begin isolation level repeatable read; set local lock_timeout=\'5s\'; set local statement_timeout=\'8s\';');
     transactionOpen = true;
-    const before = await readPriceGuardState(client);
+    const before = await readPriceGuardState(client, signature);
     verifyBaseline(before, baseline, candidate.predecessorDefinitionMd5);
     assert(!before.ledger.some(row => row.version === candidate.migrationVersion), 'price_guard_already_recorded');
     const beforeCanary = await readCanary(client);
@@ -54,15 +58,15 @@ export async function rehearsePriceIdentityGuard({ client, projectRef, candidate
     // The existing migration has its own DDL deadline. Every control/read
     // still uses the same eight-second deadline as the production diagnosis.
     await client.exec("set local statement_timeout='8s'");
-    const inside = await readPriceGuardState(client);
+    const inside = await readPriceGuardState(client, signature);
     verifyBaseline(inside, baseline, candidate.candidateDefinitionMd5);
     const afterCanary = await readCanary(client);
     assert.equal(stable(afterCanary), stable(beforeCanary), 'price_guard_api_response_drift');
     await client.exec('rollback');
     transactionOpen = false;
-    const restored = await readPriceGuardState(client);
+    const restored = await readPriceGuardState(client, signature);
     verifyBaseline(restored, baseline, candidate.predecessorDefinitionMd5);
-    return { ok: true, projectRef, rollbackOnly: true, migrationVersion: candidate.migrationVersion,
+    return { ok: true, projectRef, signature, rollbackOnly: true, migrationVersion: candidate.migrationVersion,
       sourceLfSha256: candidate.sourceLfSha256, ledgerCount: baseline.count, canaryCount: afterCanary.length,
       beforeHash: before.guard.hash, insideHash: inside.guard.hash, restoredHash: restored.guard.hash,
       sourceApiParity: true, accessPreserved: true, unchangedLedger: true, rollbackVerified: true,

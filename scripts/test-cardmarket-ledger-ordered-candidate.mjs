@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
+import {readPriceGuardState,rehearsePriceIdentityGuard,CARDMARKET_LEDGER_SIGNATURE,PRICE_GUARD_STAGING_PROJECT} from './deploy/rehearse-price-identity-guard-core.mjs';
+import {orderedRemoteStatementLedgerSha256,orderedVersionNameMd5} from './deploy/staging-migration-ledger.mjs';
 const db=new PGlite();
 const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const old=readFileSync('docs/releases/pricing-cardmarket-ledger-predecessor-20261006.sql','utf8');
@@ -64,9 +66,21 @@ try {
   assert.equal(access.ok,false);checks++;
  }
  const proc=(await db.query("select prosecdef from pg_proc where oid='api.list_reviewed_cardmarket_printing_mappings(bigint,integer)'::regprocedure")).rows[0];
+ const candidateDefinition=(await db.query("select pg_get_functiondef('api.list_reviewed_cardmarket_printing_mappings(bigint,integer)'::regprocedure) definition")).rows[0].definition;
  assert.equal(proc.prosecdef,false,'candidate must retain invoker security');
  await db.exec('rollback');
  const restored=(await db.query("select pg_get_functiondef('api.list_reviewed_cardmarket_printing_mappings(bigint,integer)'::regprocedure) definition")).rows[0].definition;
  assert.equal(restored,originalDefinition,'rollback restores exact predecessor');
- console.log(JSON.stringify({checks,nativeResponseParity:true,fullKeysetLedgerParity:true,invalidRawCandidatesDoNotTruncate:true,invokerAccessPreserved:true,rollbackRestored:true,sourceOnly:true,predecessorDefinitionMd5:createHash('md5').update(originalDefinition).digest('hex'),candidateLfSha256:createHash('sha256').update(candidate.replaceAll('\\r\\n','\\n')).digest('hex')}));
+ await db.exec('create schema supabase_migrations;create table supabase_migrations.schema_migrations(version text,name text,statements text[]);');
+ const before=await readPriceGuardState(db,CARDMARKET_LEDGER_SIGNATURE);
+ const baseline={project:PRICE_GUARD_STAGING_PROJECT,count:0,orderedVersionNameMd5:orderedVersionNameMd5(before.ledger),orderedStatementLedgerSha256:orderedRemoteStatementLedgerSha256(before.ledger)};
+ const sourceCandidate={predecessorDefinitionMd5:before.guard.hash,candidateDefinitionMd5:createHash('md5').update(candidateDefinition).digest('hex'),sourceLfSha256:createHash('sha256').update(candidate.replaceAll('\r\n','\n')).digest('hex')};
+ const readCanary=async client=>{await client.exec('set local role service_role');try{return (await client.query('select * from api.list_reviewed_cardmarket_printing_mappings(0,100)')).rows;}finally{await client.exec('reset role');}};
+ const rehearsal={client:db,projectRef:PRICE_GUARD_STAGING_PROJECT,signature:CARDMARKET_LEDGER_SIGNATURE,candidate:sourceCandidate,baseline,migrationSql:candidate,readCanary};
+ const result=await rehearsePriceIdentityGuard(rehearsal);
+ assert.equal(result.rollbackVerified,true);assert.equal(result.persistedCandidate,false);assert.equal(result.canaryCount,100);checks++;
+ await assert.rejects(()=>rehearsePriceIdentityGuard({...rehearsal,signature:'api.unreviewed()'}),/unreviewed_function/);checks++;
+ await assert.rejects(()=>rehearsePriceIdentityGuard({...rehearsal,readCanary:async client=>{const rows=await readCanary(client);if((await readPriceGuardState(client,CARDMARKET_LEDGER_SIGNATURE)).guard.hash!==before.guard.hash)throw Error('injected Cardmarket control failure');return rows;}}),/injected Cardmarket/);checks++;
+ assert.equal((await readPriceGuardState(db,CARDMARKET_LEDGER_SIGNATURE)).guard.hash,before.guard.hash);
+ console.log(JSON.stringify({checks,nativeResponseParity:true,fullKeysetLedgerParity:true,invalidRawCandidatesDoNotTruncate:true,invokerAccessPreserved:true,rollbackRestored:true,canonicalRollbackOnly:true,unreviewedFunctionRejected:true,failedControlsRestorePredecessor:true,sourceOnly:true,predecessorDefinitionMd5:sourceCandidate.predecessorDefinitionMd5,candidateDefinitionMd5:sourceCandidate.candidateDefinitionMd5,candidateLfSha256:sourceCandidate.sourceLfSha256}));
 } finally {await db.close();}

@@ -19,6 +19,9 @@ for (const prior of ['gate0_hardening', 'catalogue_api', 'full_platform']) {
 }
 assert.equal(selected(pricing, scope), true);
 assert.equal(selected(workflow.jobs.deploy, scope), false, 'rehearsal cannot also deploy the platform');
+assert.equal(selected(pricing, 'cardmarket_ledger_rehearsal'), true);
+assert.equal(selected(workflow.jobs.deploy, 'cardmarket_ledger_rehearsal'), false);
+assert.equal(selected(pricing, 'cardmarket_ledger_rehearsal', 'refs/heads/codex/candidate'), false);
 for (const job of [pricing, workflow.jobs.deploy]) {
   assert.equal(selected(job, scope, 'refs/heads/codex/candidate'), false, 'candidate branch cannot run protected rehearsal');
   assert.equal(selected(job, scope, 'refs/heads/main', ''), false, 'missing dispatch confirmation must not run');
@@ -30,6 +33,9 @@ for (const [key, expected] of [['APPLY_MIGRATIONS', 'false'], ['RELEASE_CANDIDAT
 assert(validation.includes('test "$STACKR_MIGRATION_BASELINE_APPROVED" = "true"'));
 assert(validation.includes('lmwfhvexfcoyeuoyrlco'));
 const commands = pricing.steps.map(step => step.run ?? '').join('\n');
+assert(commands.includes('cardmarket_ledger_rehearsal) SCRIPT=scripts/deploy/rehearse-cardmarket-ledger.mjs'));
+assert(commands.includes('pricing_identity_guard_rehearsal) SCRIPT=scripts/deploy/rehearse-price-identity-guard.mjs'));
+assert(commands.includes('*) exit 1'), 'unreviewed rehearsal scope must fail closed');
 assert(!/db push|railway.* up |wrangler|eas-cli|update:rollback|rehearse-gate0/.test(commands), 'pricing rehearsal cannot publish or run unrelated migrations');
 assert(commands.includes('verify-backup.mjs') && commands.includes('--require-physical'));
 assert(commands.includes('schema.stderr') && commands.includes('data.stderr') && commands.includes('physical.stderr'), 'backup diagnostics stay ephemeral');

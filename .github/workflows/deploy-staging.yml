@@ -8,11 +8,11 @@ on:
         required: true
         type: string
       release_scope:
-        description: Run Gate 0, rehearse pricing identity guards, rehearse the catalogue API, or deploy the full platform
+        description: Run Gate 0, rehearse a pricing guard or Cardmarket ledger, rehearse catalogue API, or deploy the full platform
         required: true
         default: gate0_hardening
         type: choice
-        options: [gate0_hardening, pricing_identity_guard_rehearsal, catalogue_api, full_platform]
+        options: [gate0_hardening, pricing_identity_guard_rehearsal, cardmarket_ledger_rehearsal, catalogue_api, full_platform]
       apply_migrations:
         description: Apply migrations after the dry run
         required: true
@@ -41,6 +41,7 @@ jobs:
     if: >-
       inputs.confirmation == 'DEPLOY STAGING' &&
       inputs.release_scope != 'pricing_identity_guard_rehearsal' &&
+      inputs.release_scope != 'cardmarket_ledger_rehearsal' &&
       github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -661,7 +662,7 @@ jobs:
   pricing-identity-guard-rehearsal:
     if: >-
       inputs.confirmation == 'DEPLOY STAGING' &&
-      inputs.release_scope == 'pricing_identity_guard_rehearsal' &&
+      (inputs.release_scope == 'pricing_identity_guard_rehearsal' || inputs.release_scope == 'cardmarket_ledger_rehearsal') &&
       github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -697,6 +698,7 @@ jobs:
           git diff --exit-code
           npm ci
           node scripts/test-bounded-provider-identity-guards.mjs
+          node scripts/test-cardmarket-ledger-ordered-candidate.mjs
           node scripts/test-price-guard-rehearsal-workflow.mjs
       - name: Prepare verified staging database address
         run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
@@ -719,10 +721,16 @@ jobs:
             --physical="$RUNNER_TEMP/stackr-price-guard-backup/physical.json" \
             --schema="$RUNNER_TEMP/stackr-price-guard-backup/schema.sql" \
             --data="$RUNNER_TEMP/stackr-price-guard-backup/data.sql" --require-physical
-      - name: Rehearse the single guard replacement and prove rollback
+      - name: Rehearse the selected single function and prove rollback
+        env:
+          PRICING_REHEARSAL_SCOPE: ${{ inputs.release_scope }}
         run: |
-          node scripts/deploy/rehearse-price-identity-guard.mjs \
-            > "$RUNNER_TEMP/stackr-price-guard-rehearsal.json"
+          case "$PRICING_REHEARSAL_SCOPE" in
+            pricing_identity_guard_rehearsal) SCRIPT=scripts/deploy/rehearse-price-identity-guard.mjs ;;
+            cardmarket_ledger_rehearsal) SCRIPT=scripts/deploy/rehearse-cardmarket-ledger.mjs ;;
+            *) exit 1 ;;
+          esac
+          node "$SCRIPT" > "$RUNNER_TEMP/stackr-price-guard-rehearsal.json"
       - name: Upload non-secret rehearsal attestation
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
