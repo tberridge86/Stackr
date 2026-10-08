@@ -262,3 +262,16 @@ const invalidIdEvents = [];
 const invalidIdService = createCatalogueV1Service({ supabase: createReadOnlyCatalogueSupabase({}, invalidIdEvents) });
 await assert.rejects(() => invalidIdService.assetManifest({ printingId: "not-a-uuid" }), (error) => error instanceof ApiError && error.code === "invalid_printing_id");
 assert.equal(invalidIdEvents.length, 0, "invalid single identities must fail before any catalogue read");
+
+const publishedReaderEvents = [];
+const publishedReaderId = '44444444-4444-4444-8444-444444444444';
+const publishedReader = createReadOnlyCatalogueSupabase({
+  catalogue_card_names: [{ id: publishedReaderId, printing_id: publishedReaderId, name: 'Pikachu', normalized_name: 'pikachu', name_type: 'native' }],
+  catalogue_cards: [{ printing_id: publishedReaderId, variant_id: publishedReaderId, game_code: 'pokemon', language_code: 'en', set_id: setId, card_native_name: 'Pikachu', variant_code: 'normal' }],
+}, publishedReaderEvents);
+const dedicatedReaderService = createCatalogueV1Service({
+  supabase: { schema() { throw new Error('species search must use its existing published-search reader'); } },
+  searchSupabase: publishedReader,
+});
+assert.equal((await dedicatedReaderService.pokemonCards('Pikachu', { limit: 120 })).cards[0].cardId, publishedReaderId);
+assert.deepEqual([...new Set(publishedReaderEvents.map(e => e.tableName))].sort(), ['catalogue_card_names', 'catalogue_cards'], 'the search reader must access only explicitly published API views');

@@ -1396,7 +1396,7 @@ export function createCatalogueV1Service(options) {
       // in `matchesPokedexSpeciesName` below.
       const lookupName = normalizedName.replace(/\s+[fm]$/, '');
       const contains = lookupName.replace(/[%_]/g, ' ').replace(/\s+/g, '%');
-      let namesQuery = table(supabase, 'api', 'catalogue_card_names')
+      let namesQuery = table(searchSupabase, 'api', 'catalogue_card_names')
         .select('id,printing_id,name,normalized_name')
         .in('name_type', [...EXACT_NAME_TYPES, ...ALIAS_NAME_TYPES])
         .ilike('normalized_name', `%${contains}%`)
@@ -1414,7 +1414,7 @@ export function createCatalogueV1Service(options) {
       // Name-source pagination must never skip a matched printing because it
       // has many variants. Read only this bounded page's printing IDs, but
       // exhaust their variant rows in stable slices before grouping them.
-      const rows = await fetchPublishedPokemonCardRows(supabase, printingIds, language);
+      const rows = await fetchPublishedPokemonCardRows(searchSupabase, printingIds, language);
       return { cards: groupCardRows(sortCardsForDisplay(rows)), pagination };
     },
 
