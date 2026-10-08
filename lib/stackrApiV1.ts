@@ -965,6 +965,17 @@ export class StackrApiClient {
     return this.request<{ cards: StackrCard[] }>(`/sets/${encodeURIComponent(setId)}/cards`, query, init);
   }
 
+  pokemonCards(
+    name: string,
+    query: { language?: StackrApiLanguageCode; cursor?: string | null; limit?: number } = {},
+  ) {
+    const species = name.trim();
+    if (!species || species.length > 120) {
+      throw new Error('pokemonCards requires a Pokemon species or form name.');
+    }
+    return this.request<{ cards: StackrCard[] }>(`/pokemon/${encodeURIComponent(species)}/cards`, query);
+  }
+
   card(cardId: string) {
     return this.request<{ card: StackrCard }>(`/cards/${encodeURIComponent(cardId)}`);
   }

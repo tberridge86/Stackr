@@ -8,6 +8,8 @@ import { hasAdminRole, handleRequest } from '../src/index.js';
 import { hmacSha256, serviceSignatureInput, sha256Hex } from '../src/crypto.js';
 import { GatewayError } from '../src/errors.js';
 import { GatewayState } from '../src/state.js';
+import { matchRoute } from '../src/routes.js';
+import { validateQuery } from '../src/validation.js';
 import { verifySupabaseRequest } from '../src/auth.js';
 import { createGatewayOriginAuth } from '../../backend/lib/gatewayOriginAuth.js';
 
@@ -1062,4 +1064,67 @@ test('same-artwork reference UUID duplicates are rejected case-insensitively bef
   assert.equal(response.status, 400);
   assert.equal((await response.json()).error.code, 'duplicate_same_artwork_reference');
   assert.equal(forwarded, false);
+});
+
+test('asset manifest batch printing IDs are UUID-bounded and unambiguous', () => {
+  const printingA = '11111111-1111-4111-8111-111111111111';
+  const printingB = '22222222-2222-4222-8222-222222222222';
+  const route = matchRoute('/v1/assets/manifest');
+  assert.equal(route.cache, 'catalogue', 'approved public artwork retains the existing catalogue cache boundary');
+  assert.doesNotThrow(() => validateQuery(route, new URL(`https://stackr.test/v1/assets/manifest?printingIds=${printingA},${printingB}&limit=500`)));
+  assert.throws(
+    () => validateQuery(route, new URL('https://stackr.test/v1/assets/manifest?printingIds=not-a-uuid')),
+    (error) => error instanceof GatewayError && error.code === 'invalid_printing_ids',
+  );
+  assert.throws(
+    () => validateQuery(route, new URL(`https://stackr.test/v1/assets/manifest?printingIds=${Array.from({ length: 101 }, () => printingA).join(',')}`)),
+    (error) => error instanceof GatewayError && error.code === 'invalid_printing_ids',
+  );
+  assert.throws(
+    () => validateQuery(route, new URL(`https://stackr.test/v1/assets/manifest?printingId=${printingA}&printingIds=${printingB}`)),
+    (error) => error instanceof GatewayError && error.code === 'ambiguous_printing_filter',
+  );
+});
+
+test('asset manifest filters reach the v1 backend handler without legacy rewriting', async () => {
+  const printingA = '11111111-1111-4111-8111-111111111111';
+  const printingB = '22222222-2222-4222-8222-222222222222';
+  const downstream = [];
+  const fetchImpl = async (url, init) => {
+    downstream.push({ url: String(url), init });
+    return new Response(JSON.stringify({ data: { assets: [] }, meta: { requestId: 'origin', apiVersion: '1' } }), {
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
+    });
+  };
+  const env = environment();
+  const deps = { cache: new MemoryCache(), fetchImpl };
+  assert.equal((await handleRequest(request(`/v1/assets/manifest?printingId=${printingA}&limit=20`), env, context(), deps)).status, 200);
+  assert.equal((await handleRequest(request(`/v1/assets/manifest?printingIds=${printingA},${printingB}&limit=500`), env, context(), deps)).status, 200);
+  assert.deepEqual(downstream.map(({ url }) => new URL(url).pathname), [
+    '/v1/assets/manifest',
+    '/v1/assets/manifest',
+  ]);
+  assert.equal(new URL(downstream[0].url).searchParams.get('printingId'), printingA);
+  assert.equal(new URL(downstream[1].url).searchParams.get('printingIds'), `${printingA},${printingB}`);
+  assert.equal(downstream[0].init.headers.get('x-stackr-origin-key'), env.BACKEND_ORIGIN_KEY);
+});
+
+
+test('Pokédex card pages pass only bounded cursor query parameters to the canonical backend', async () => {
+  const forwarded = [];
+  const deps = {
+    cache: new MemoryCache(),
+    fetchImpl: async (url) => {
+      forwarded.push(String(url));
+      return new Response(JSON.stringify({ data: { cards: [] }, meta: { requestId: 'origin', apiVersion: '1' } }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+  };
+  const accepted = await handleRequest(request('/v1/pokemon/Mr.%20Mime/cards?limit=120'), environment(), context(), deps);
+  assert.equal(accepted.status, 200);
+  assert.match(forwarded[0], /\/v1\/pokemon\/Mr\.%20Mime\/cards\?limit=120/);
+  const rejected = await handleRequest(request('/v1/pokemon/Mew/cards?provider=all'), environment(), context(), deps);
+  assert.equal(rejected.status, 400);
+  assert.equal((await rejected.json()).error.code, 'unsupported_query_parameter');
 });

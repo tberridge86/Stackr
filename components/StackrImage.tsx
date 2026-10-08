@@ -53,6 +53,16 @@ type StackrImageProps = {
 };
 
 const prefetchedUris = new Set<string>();
+const MAX_PREFETCHED_URIS = 256;
+
+function rememberPrefetchedUri(uri: string) {
+  prefetchedUris.add(uri);
+  while (prefetchedUris.size > MAX_PREFETCHED_URIS) {
+    const oldest = prefetchedUris.values().next().value;
+    if (oldest === undefined) break;
+    prefetchedUris.delete(oldest);
+  }
+}
 
 function sanitizeImageSource(source?: ImageSourcePropType | null): ImageSourcePropType | null {
   if (source == null || typeof source === 'number') return source ?? null;
@@ -80,7 +90,7 @@ export async function prefetchStackrImages(
   const nextUrls = uniqueUrls.slice(0, limit);
   if (!nextUrls.length) return false;
 
-  nextUrls.forEach((url) => prefetchedUris.add(url));
+  nextUrls.forEach(rememberPrefetchedUri);
 
   try {
     const controlled = nextUrls.filter(isTcgdexControlledCardReferenceUrl);
@@ -124,7 +134,7 @@ function StackrImageBase({
   imageStyle,
   contentFit = 'cover',
   priority = 'normal',
-  transition = 180,
+  transition = 0,
   prefetch = false,
   cacheKey,
   rounded,
@@ -144,7 +154,7 @@ function StackrImageBase({
   const { theme } = useTheme();
   const candidates = stackrImageCandidates([
     sanitizeImageSource(source),
-    ...[...(uriCandidates ?? []), thumbnailUri, uri, fullUri].map((value) => {
+    ...[...(uriCandidates ?? []), ...(preserveDetail ? [fullUri, uri, thumbnailUri] : [thumbnailUri, uri, fullUri])].map((value) => {
       const allowedUri = enforceTcgdexRuntimeImagePolicy(value);
       return allowedUri ? { uri: allowedUri } : null;
     }),
@@ -168,12 +178,14 @@ function StackrImageBase({
     ? { ...resolvedSource, cacheKey: cacheKey ? `${cacheKey}:${remoteUri}:retry-${retryAttempt}` : `${remoteUri}:retry-${retryAttempt}` }
     : resolvedSource;
   const backgroundColor = placeholderColor ?? theme.colors.surface;
+  const thumbnailPlaceholder = preserveDetail && thumbnailUri && thumbnailUri !== remoteUri
+    ? sanitizeImageSource({ uri: thumbnailUri }) ?? undefined : undefined;
 
   React.useEffect(() => { onSourceChange?.(remoteUri); }, [onSourceChange, remoteUri]);
 
   React.useEffect(() => {
     if (!prefetch || !remoteUri || prefetchedUris.has(remoteUri)) return;
-    prefetchedUris.add(remoteUri);
+    rememberPrefetchedUri(remoteUri);
     let started = false;
     const task = InteractionManager.runAfterInteractions(() => {
       started = true;
@@ -214,7 +226,7 @@ function StackrImageBase({
             borderRadius: faceWidth * 0.045, overflow: 'hidden',
           } : undefined, imageStyle]}
           contentFit={contentFit}
-          placeholder={isRemoteImage ? { blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' } : undefined}
+          placeholder={thumbnailPlaceholder}
           placeholderContentFit={contentFit}
           cachePolicy={isTcgdexControlledCardReferenceUrl(remoteUri) ? 'memory' : 'memory-disk'}
           priority={priority}

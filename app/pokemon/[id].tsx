@@ -18,6 +18,8 @@ import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/Rarit
 import {
   fetchCardsForPokemon,
   fetchOwnedPokedexCards,
+  hydratePokedexCardArtwork,
+  PokedexCardsProgress,
   formatPokedexName,
   PokedexCard,
   setPokedexCardOwned,
@@ -92,12 +94,35 @@ export default function PokemonDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [cardsLoading, setCardsLoading] = useState(true);
   const [cardsError, setCardsError] = useState<string | null>(null);
+  const [collectionComplete, setCollectionComplete] = useState(false);
   const [retryEpoch, setRetryEpoch] = useState(0);
   const [ownershipLoading, setOwnershipLoading] = useState(false);
   const [busyCardId, setBusyCardId] = useState<string | null>(null);
   const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(new Set());
   const longPressedCardId = useRef<string | null>(null);
   const ownershipLoadGeneration = useRef(createAccountLoadGeneration()).current;
+  const mergeArtwork = useCallback((hydrated: PokedexCard[]) => {
+    if (!hydrated.length) return;
+    const byId = new Map(hydrated.map((card) => [card.id, card]));
+    setCards((current) => current.map((card) => {
+      const image = byId.get(card.id);
+      return image ? {
+        ...card,
+        image_small: image.image_small,
+        image_large: image.image_large,
+        image_urls: image.image_urls,
+      } : card;
+    }));
+  }, []);
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: { item: PokedexCard | null }[] }) => {
+    const visible = viewableItems
+      .map(({ item }) => item)
+      .filter((item): item is PokedexCard => Boolean(item))
+      .slice(0, 100);
+    if (!visible.length) return;
+    void hydratePokedexCardArtwork(visible).then(mergeArtwork).catch(() => {});
+  }).current;
 
   const loadOwnership = useCallback(async () => {
     const isCurrentLoad = ownershipLoadGeneration.begin();
@@ -115,20 +140,26 @@ export default function PokemonDetailScreen() {
   useEffect(() => {
     let active = true;
 
-    const applyCanonicalCards = (nextCards: PokedexCard[]) => {
-      if (!active || !nextCards.length) return;
-      setCards(nextCards);
+    const applyCards = (progress: PokedexCardsProgress) => {
+      if (!active) return;
+      setCards((current) => {
+        const existing = new Map(current.map((card) => [card.id, card]));
+        return progress.cards.map((card) => {
+          const prior = existing.get(card.id);
+          return prior && !card.image_small && !card.image_large && (prior.image_small || prior.image_large)
+            ? { ...card, image_small: prior.image_small, image_large: prior.image_large, image_urls: prior.image_urls }
+            : card;
+        });
+      });
+      setCollectionComplete(progress.complete);
       setCardsLoading(false);
-      setCardsError(null);
+      setCardsError(progress.error?.message ?? null);
     };
 
     const load = async () => {
       setCardsLoading(true);
       setCardsError(null);
-
-      // The Pokédex grid already knows the species identity. Paint that route
-      // identity immediately and start Stackr card retrieval without waiting
-      // for the separate PokeAPI metadata request.
+      setCollectionComplete(false);
       const routePokemon: PokemonData | null = routeName
         ? { id: Number(id) || 0, name: routeName, types: [] }
         : null;
@@ -139,48 +170,40 @@ export default function PokemonDetailScreen() {
         setLoading(true);
       }
 
-      const routeCardsPromise = routePokemon
-        ? fetchCardsForPokemon(routePokemon.name, { onCanonicalCards: applyCanonicalCards })
-        : null;
-
-      try {
-        let nextPokemon: PokemonData | null = routePokemon;
-
+      const metadata = (async (): Promise<PokemonData | null> => {
         try {
           const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
           if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
-          const json = await response.json();
-          nextPokemon = json as PokemonData;
-          if (active) {
-            setPokemon(nextPokemon);
-            setLoading(false);
-          }
+          return await response.json() as PokemonData;
         } catch (pokemonError) {
           console.log('Pokedex Pokemon metadata lookup failed', {
-            id,
-            routeName,
+            id, routeName,
             error: pokemonError instanceof Error ? pokemonError.message : String(pokemonError),
           });
+          return null;
         }
+      })();
 
+      try {
+        const nextPokemon = routePokemon ?? await metadata;
         if (!nextPokemon) throw new Error('Pokemon metadata was unavailable.');
         if (!active) return;
-
-        const sameRouteSpecies = routePokemon
-          && formatPokedexName(routePokemon.name) === formatPokedexName(nextPokemon.name);
-        const pokemonCards = sameRouteSpecies && routeCardsPromise
-          ? await routeCardsPromise
-          : await fetchCardsForPokemon(nextPokemon.name, { onCanonicalCards: applyCanonicalCards });
-
+        if (!routePokemon) {
+          setPokemon(nextPokemon);
+          setLoading(false);
+        } else {
+          void metadata.then((details) => {
+            if (active && details) setPokemon(details);
+          });
+        }
+        const pokemonCards = await fetchCardsForPokemon(nextPokemon.name, { onProgress: applyCards });
         if (!active) return;
-        setCards(pokemonCards);
-        setCardsLoading(false);
-        setCardsError(null);
+        applyCards(pokemonCards);
         console.log('Pokedex cards loaded', {
           pokemon: nextPokemon.name,
-          count: pokemonCards.length,
+          count: pokemonCards.cards.length,
+          complete: pokemonCards.complete,
         });
-
         loadOwnership().catch((ownershipError) => {
           console.log('Failed to load Pokemon ownership after cards', ownershipError);
         });
@@ -246,22 +269,22 @@ export default function PokemonDetailScreen() {
       const nextOwned = !ownedKeys.has(key);
 
       setBusyCardId(card.id);
-      setOwnedKeys((prev) => {
-        const next = new Set(prev);
-        if (nextOwned) next.add(key);
-        else next.delete(key);
-        return next;
-      });
+      // A personal marker can appear immediately. Removal is guarded by
+      // physical inventory and binder ownership, so do not claim it is gone
+      // until the authoritative read succeeds.
+      if (nextOwned) setOwnedKeys((prev) => new Set(prev).add(key));
 
       try {
         await setPokedexCardOwned(card, nextOwned);
         await loadOwnership();
       } catch (error: any) {
-        setOwnedKeys((prev) => {
+        if (nextOwned) setOwnedKeys((prev) => {
           const next = new Set(prev);
-          if (nextOwned) next.delete(key);
-          else next.add(key);
+          next.delete(key);
           return next;
+        });
+        await loadOwnership().catch((ownershipError) => {
+          console.log('Failed to reload Pokémon ownership', ownershipError);
         });
         console.log('Failed to update Pokedex card ownership', error);
         Alert.alert('Could not update card', error?.message ?? 'Please try again.');
@@ -429,6 +452,9 @@ export default function PokemonDetailScreen() {
           columnWrapperStyle={{ gap: 10, marginBottom: 12 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+          initialNumToRender={Math.max(16, columns * 4)}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={{ itemVisiblePercentThreshold: 35 }}
           ListHeaderComponent={
             <View>
               {ownershipLoading && (
@@ -468,7 +494,9 @@ export default function PokemonDetailScreen() {
                   <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
                 </View>
                 <Text style={styles.progressSub}>
-                  Tap cards below to mark them owned. Long hold a card to open its details.
+                  {collectionComplete
+                    ? 'Tap cards below to mark them owned. Long hold a card to open its details.'
+                    : 'Loading more matching cards…'}
                 </Text>
               </View>
 

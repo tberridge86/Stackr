@@ -53,6 +53,7 @@ function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language
   const face = <View style={[styles.container, finishMetadata ? { width: '100%', height: '100%' } : style]}>
     {resolvedDisplayUri || fullUri || fallbackUri ? <StackrImage
       uri={resolvedDisplayUri}
+      thumbnailUri={sourceSize !== 'small' && !hasSourceVariant && uri !== resolvedDisplayUri ? uri : undefined}
       fullUri={!hasSourceVariant ? fullUri : undefined}
       fallbackSource={!hasSourceVariant && fallbackUri ? { uri: fallbackUri } : undefined}
       fallbackUris={!foreign && !hasSourceVariant ? artwork?.candidates.map((candidate) => candidate.uri) : undefined}
@@ -64,8 +65,8 @@ function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language
       cropToCard={cropToCard}
       preserveDetail={sourceSize !== 'small'}
       fallback={fallback}
-      priority={sourceSize === 'small' ? 'low' : 'normal'}
-      transition={sourceSize === 'small' ? 140 : 220}
+      priority="normal"
+      transition={0}
       showFallbackIcon
       cardShape
     /> : fallback ?? <View style={styles.fallback} />}

@@ -28,8 +28,8 @@ export function validatePath(pathname) {
   }
 }
 
-function validateQueryValue(name, value, allowShortSetCollector = false) {
-  if (value.length > 2048) bad('invalid_query', `${name} is too long.`);
+function validateQueryValue(name, value, allowShortSetCollector = false, allowAssetPrintingBatch = false) {
+  if (value.length > (allowAssetPrintingBatch && name === 'printingIds' ? 4096 : 2048)) bad('invalid_query', `${name} is too long.`);
   if (name === 'legacyIds') {
     const ids = value.split(',');
     if (!ids.length || ids.length > 24 || new Set(ids.map((id) => id.toLowerCase())).size !== ids.length
@@ -40,6 +40,13 @@ function validateQueryValue(name, value, allowShortSetCollector = false) {
   }
   if (name === 'legacySetId' && !/^[A-Za-z0-9][A-Za-z0-9:._-]{0,79}$/.test(value)) {
     bad('invalid_legacy_set', 'legacySetId must be a saved set reference.');
+  }
+  if (name === 'printingIds' && allowAssetPrintingBatch) {
+    const ids = value.split(',');
+    if (ids.length < 1 || ids.length > 100 || ids.some((id) => !UUID_PATTERN.test(id))) {
+      bad('invalid_printing_ids', 'printingIds must contain between 1 and 100 canonical UUIDs.');
+    }
+    return;
   }
   if (name === 'variantIds' || name === 'printingIds') {
     validateVariantIds(value.split(','), 24);
@@ -100,7 +107,10 @@ export function validateQuery(route, url) {
     }
     if (seen.has(name)) bad('duplicate_query_parameter', `Query parameter ${name} may only be supplied once.`);
     seen.add(name);
-    validateQueryValue(name, value, allowShortSetCollector);
+    validateQueryValue(name, value, allowShortSetCollector, route.id === 'asset_manifest');
+  }
+  if (route.id === 'asset_manifest' && seen.has('printingId') && seen.has('printingIds')) {
+    bad('ambiguous_printing_filter', 'printingId and printingIds cannot be used together.');
   }
   if (route.id === 'market_price_snapshots' && ['variantIds', 'printingIds', 'legacyIds'].filter((key) => seen.has(key)).length !== 1) {
     bad('variant_ids_required', 'Supply exactly one group of card references.');

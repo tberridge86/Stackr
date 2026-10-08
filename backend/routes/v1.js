@@ -355,6 +355,14 @@ export function createV1Router(options = {}) {
     });
   }));
 
+  router.get('/pokemon/:name/cards', asyncRoute(async (req, res) => {
+    const cards = await getService().pokemonCards(req.params.name, req.query);
+    sendEnvelope(req, res, { cards: cards.cards }, {
+      pagination: cards.pagination,
+      cacheControl: DEFAULT_CATALOGUE_CACHE_CONTROL,
+    });
+  }));
+
   router.get('/cards/:cardId', asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().card(req.params.cardId));
   }));
