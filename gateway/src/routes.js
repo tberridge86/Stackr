@@ -32,7 +32,7 @@ export const ROUTES = [
   { id: 'sets', pattern: /^\/v1\/sets$/, ...publicGet, query: query('language', 'game', 'seriesId', 'setCode', 'region', 'cursor', 'limit') },
   { id: 'set', pattern: new RegExp(`^/v1/sets/${UUID}$`), ...publicGet, query: query() },
   { id: 'set_cards', pattern: new RegExp(`^/v1/sets/${UUID}/cards$`), ...publicGet, query: query('language', 'cursor', 'limit', 'includeAssets') },
-  { id: 'pokemon_cards', pattern: /^\/v1\/pokemon\/[^/]+\/cards$/, ...publicGet, query: query('language', 'cursor', 'limit') },
+  { id: 'pokemon_cards', pattern: /^\/v1\/pokemon\/[^/]+\/cards$/, ...publicGet, timeoutMs: 12_000, query: query('language', 'cursor', 'limit') },
   { id: 'card', pattern: new RegExp(`^/v1/cards/${UUID}$`), ...publicGet, query: query() },
   { id: 'card_variants', pattern: new RegExp(`^/v1/cards/${UUID}/variants$`), ...publicGet, query: query() },
   {
