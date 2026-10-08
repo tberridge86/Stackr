@@ -3,8 +3,9 @@ import { useAuth } from '../components/auth-context';
 import { stackrApiClient, type StackrCataloguePriceRow } from './stackrApiV1';
 import { cataloguePriceCache, cataloguePriceDisplay, cataloguePriceScope, fetchCataloguePrices, type CataloguePriceDisplay } from './cataloguePrices';
 import { toStackrApiLanguage } from './stackrDomainAdapter';
+import { provisionalCataloguePriceDisplay } from './cataloguePriceBaseline';
 
-type DisplayCard = { id: string; language?: string | null; externalIds?: Record<string, unknown> | null; raw_data?: any; raw?: any; card?: any };
+type DisplayCard = { id: string; language?: string | null; rarity?: string | null; productType?: string | null; set?: unknown; pricing?: { displayPrice?: number | null } | null; externalIds?: Record<string, unknown> | null; raw_data?: any; raw?: any; card?: any };
 
 function referenceFor(card: DisplayCard) {
   return String(card.externalIds?.stackrVariant
@@ -21,6 +22,24 @@ function referenceFor(card: DisplayCard) {
     ?? card.id);
 }
 function languageFor(card: DisplayCard) { return toStackrApiLanguage(card.language ?? card.raw_data?.language ?? card.raw?.language ?? card.raw?.raw_data?.language ?? card.card?.language ?? card.card?.raw_data?.language) ?? 'en'; }
+
+function releaseDateFor(set: unknown) {
+  if (!set || typeof set !== 'object') return undefined;
+  const value = (set as Record<string, unknown>).releaseDate;
+  return typeof value === 'string' ? value : undefined;
+}
+
+function provisionalDisplay(card: DisplayCard, reference: string, language: string) {
+  const raw = card.raw ?? card.raw_data ?? card.card?.raw ?? card.card?.raw_data ?? {};
+  return provisionalCataloguePriceDisplay({
+    variantId: reference,
+    printingId: raw.printing_id ?? raw.printingId ?? card.id,
+    language,
+    rarity: card.rarity ?? raw.rarity ?? raw.rarity_code,
+    releaseDate: releaseDateFor(card.set) ?? raw.set?.releaseDate ?? raw.set?.release_date ?? raw.set_release_date,
+    productType: card.productType ?? raw.productType ?? raw.product_type,
+  });
+}
 
 /** Read-only general-price decoration. It stays out of catalogue records and holdings. */
 export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[]): (T & { runtimeCataloguePricing?: CataloguePriceDisplay })[] {
@@ -60,7 +79,12 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[]): (T 
     return () => { active = false; unsubscribe(); };
   }, [groups, ownerId]);
   return useMemo(() => cards.map((card) => {
-    const row = saved.ownerId === ownerId && ownerId ? saved.rows.get(`${languageFor(card)}:${referenceFor(card)}`) : undefined;
-    return row ? { ...card, runtimeCataloguePricing: cataloguePriceDisplay(row) } : card;
+    const language = languageFor(card); const reference = referenceFor(card);
+    const row = saved.ownerId === ownerId && ownerId ? saved.rows.get(`${language}:${reference}`) : undefined;
+    const stored = row ? cataloguePriceDisplay(row) : undefined;
+    if (stored?.displayPrice == null && typeof card.pricing?.displayPrice === 'number'
+      && Number.isFinite(card.pricing.displayPrice) && card.pricing.displayPrice > 0) return card;
+    const pricing = stored?.displayPrice != null ? stored : provisionalDisplay(card, reference, language);
+    return pricing ? { ...card, runtimeCataloguePricing: pricing } : card;
   }), [cards, ownerId, saved]);
 }

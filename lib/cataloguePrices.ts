@@ -52,17 +52,26 @@ export function cataloguePriceDisplay(row: StackrCataloguePriceRow) {
   const price = row.price;
   const value = price?.estimates.central ?? null;
   const general = price?.fallbackEstimate?.reason === 'general_card_estimate';
+  const provisional = price?.fallbackEstimate?.reason === 'provisional_catalogue_baseline';
   const stale = price?.freshness === 'stale' || price?.freshness === 'expired';
-  const provider = String(price?.sourceBreakdown?.[0]?.provider ?? '').trim().toLowerCase();
-  const providerLabel = provider === 'cardmarket_public' ? 'Cardmarket'
-    : provider === 'tcgplayer' || provider === 'tcgcsv' ? 'TCGplayer'
-      : null;
+  const sourceLabel = value == null
+    ? 'Price unavailable'
+    : price?.provenLastSold && price.priceType === 'recent_sold_value'
+      ? 'Last sold'
+      : price?.priceType === 'asking_price_indication'
+        ? 'Asking price indication'
+        : provisional
+          ? 'Estimated price (provisional baseline)'
+          : general || price?.priceType === 'recent_sold_value' || price?.priceType === 'recent_sold_market_estimate' || price?.priceType === 'thin_sold_value'
+            ? 'Estimated price'
+            : 'Current market value';
   return {
     displayPrice: value, currency: price?.currency ?? 'GBP', priceType: 'market_estimate',
-    updatedAt: price?.calculatedAt ?? null, pricingStatus: value == null ? 'unavailable' : stale ? 'stale' : 'priced',
-    sourceLabel: `${stale ? 'Stale ' : ''}${providerLabel ? `${providerLabel} ` : ''}${general ? 'general market estimate' : 'market estimate'}`,
+    updatedAt: price?.calculatedAt ?? null, pricingStatus: value == null ? 'unavailable' : provisional ? 'provisional' : stale ? 'stale' : 'priced',
+    sourceLabel: `${stale ? 'Stale ' : ''}${sourceLabel}`,
     confidence: price?.confidence.label ?? null, unavailableReason: row.unavailableReason,
-    priceBasis: general ? 'general' as const : 'exact' as const,
+    priceBasis: general || provisional ? 'general' as const : 'exact' as const,
+    provisional, sourceBreakdown: price?.sourceBreakdown ?? [],
   };
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "Stackr-native",
   "main": "expo-router/entry",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "scripts": {
     "start": "expo start",
     "build:web": "expo export --platform web --output-dir dist",
@@ -209,7 +209,9 @@
     "pricing:verify-ebay-access": "node scripts/verify-ebay-browse-access.mjs --probe",
     "catalogue-prices:bulk": "node scripts/refresh-catalogue-bulk-prices.mjs",
     "catalogue-prices:guide": "node scripts/catalogue-price-guide.mjs",
-    "test:next-beta-fixes": "node scripts/test-ui-standardisation.cjs && tsx scripts/test-card-finish-profiles.ts && tsx scripts/test-card-artwork-images.ts && tsx scripts/test-pricing-v2-client.ts && tsx scripts/test-catalogue-price-client.ts"
+    "test:next-beta-fixes": "node scripts/test-ui-standardisation.cjs && tsx scripts/test-card-finish-profiles.ts && tsx scripts/test-card-artwork-images.ts && tsx scripts/test-pricing-v2-client.ts && tsx scripts/test-catalogue-price-client.ts",
+    "test:pokedex-release": "node scripts/test-pokedex-route-repair.mjs && node --import tsx scripts/test-pokedex-loading.ts",
+    "test:catalogue-price-baseline": "node --import tsx scripts/test-catalogue-price-baseline.ts && node --import tsx scripts/test-catalogue-price-client.ts"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

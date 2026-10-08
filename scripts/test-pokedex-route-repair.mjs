@@ -122,6 +122,25 @@ async function assertPokemonCardsPagination() {
   assert.deepEqual((await catalogue.pokemonCards('Mew', { limit: 120 })).cards, [], 'token matching must not include Mewtwo');
 }
 
+async function assertPokemonCardTypesAndEmptyPageContinuation() {
+  const ids = Array.from({ length: 4 }, (_, index) => `50000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`);
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      catalogue_card_names: ids.map((id) => ({ id, printing_id: id, name: 'Pikachu', normalized_name: 'pikachu', name_type: 'english_display' })),
+      catalogue_cards: ids.map((id, index) => ({
+        printing_id: id, variant_id: id, game_code: 'pokemon', language_code: 'en', set_id: setId,
+        card_native_name: index === 0 ? 'Trainer fixture' : 'Pikachu', card_english_display_name: 'Pikachu',
+        supertype: ['Trainer', 'Energy', 'Pokémon', null][index], variant_code: 'normal',
+      })),
+    }),
+  });
+  const first = await catalogue.pokemonCards('Pikachu', { limit: 1 });
+  assert.deepEqual(first.cards, [], 'a misleading published alias cannot turn a Trainer into a species card');
+  assert.ok(first.pagination.nextCursor, 'an empty filtered page must retain its opaque continuation');
+  const next = await catalogue.pokemonCards('Pikachu', { cursor: first.pagination.nextCursor, limit: 3 });
+  assert.deepEqual(next.cards.map((card) => card.cardId).sort(), ids.slice(2), 'exclude explicit Energy cards while retaining Pokémon and legacy unclassified species cards');
+}
+
 async function assertPokemonGenderSymbolLookup() {
   const printingId = '44444444-4444-4444-8444-444444444444';
   const events = [];
@@ -252,6 +271,7 @@ async function assertAssetManifestIdentityRpc() {
 
 await assertBatchAssetManifestPrintingFilter();
 await assertPokemonCardsPagination();
+await assertPokemonCardTypesAndEmptyPageContinuation();
 await assertPokemonGenderSymbolLookup();
 await assertPokemonCardsRetainHighVariantPrintings();
 await assertPokemonRouteEnvelope();

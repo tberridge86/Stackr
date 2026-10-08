@@ -1,29 +1,43 @@
 import { searchLocalPokemonCards } from './cardSearch';
 import { supabase } from './supabase';
-import { getPreferredSetDisplayName } from './pokemonDisplayNames';
-import { fetchStackrCardRows, fetchStackrSetRows } from './stackrDomainAdapter';
+import {
+  getEnglishCardDisplayName,
+  getEnglishSetDisplayName,
+  getPreferredCardDisplayName,
+  getPreferredSetDisplayName,
+} from './pokemonDisplayNames';
+import { enrichStackrCardArtworkFromFacts, fetchStackrCardRows, fetchStackrPriceSnapshots, fetchStackrSetRows, stackrCardToLegacyCard } from './stackrDomainAdapter';
+import { stackrApiClient, type StackrCard } from './stackrApiV1';
+import {
+  buildOwnedPokedexCards,
+  canRemovePokedexOwnershipMarker,
+  type OwnedPokedexCard,
+  type OwnedPokedexCardRow,
+} from './pokedexCollectionCore';
+
+export { buildOwnedPokedexCards, canRemovePokedexOwnershipMarker, type OwnedPokedexCard } from './pokedexCollectionCore';
 
 export type PokedexCard = {
   id: string;
   name: string;
+  english_name?: string | null;
+  language?: string | null;
+  region?: string | null;
   number?: string | null;
   rarity?: string | null;
   set_id?: string | null;
   set_name?: string | null;
+  set_english_name?: string | null;
   image_small?: string | null;
   image_large?: string | null;
   image_urls?: string[];
   estimated_value?: number | null;
   price_source?: string | null;
   raw_data?: any;
+  /** Canonical facts used only for bounded, on-demand artwork hydration. */
+  canonical_card?: StackrCard;
 };
 
-export type OwnedPokedexCard = {
-  card_id: string;
-  set_id: string | null;
-  binder_card_ids: string[];
-  pokedex_card_ids: string[];
-};
 
 const normalise = (value: string) =>
   value
@@ -79,85 +93,199 @@ const getPokemonCardSearchTerms = (pokemonName: string) => {
 const uniqueUrls = (urls: (string | null | undefined)[]) =>
   Array.from(new Set(urls.filter((url): url is string => Boolean(url))));
 
-const POKEDEX_CARD_SEARCH_LANGUAGES = ['en', 'ja', 'zh-cn', 'zh-tw', 'ko'] as const;
-
-type FetchCardsForPokemonOptions = {
-  onCanonicalCards?: (cards: PokedexCard[]) => void;
+const buildPokedexImageUrls = (card: any) => {
+  return uniqueUrls([card.raw_data?.images?.small, card.image_small, card.raw_data?.images?.large, card.image_large]);
 };
 
-const buildPokedexImageUrls = (card: any) => {
-  return uniqueUrls([
-    card.raw_data?.images?.large,
-    card.raw_data?.images?.small,
-    card.image_large,
-    card.image_small,
-  ]);
+export type PokedexCardsProgress = {
+  cards: PokedexCard[];
+  complete: boolean;
+  error?: Error | null;
+};
+
+const getPokedexCardNames = (card: any) => {
+  const raw = card.raw_data ?? card.raw_payload ?? card;
+  const input = {
+    id: card.id ?? card.card_id ?? null,
+    sourceId: card.source_id ?? card.provider_card_id ?? raw?.source_id ?? null,
+    setId: card.set_id ?? raw?.set_id ?? raw?.set?.id ?? null,
+    collectorNumber: card.number ?? card.collector_number ?? raw?.localId ?? raw?.number ?? null,
+    language: card.language ?? raw?.language ?? raw?.set?.language ?? null,
+    region: card.region ?? raw?.region ?? raw?.set?.region ?? null,
+    localName: card.local_name ?? raw?.local_name ?? raw?.native_name ?? null,
+    englishDisplayName:
+      card.english_display_name
+      ?? raw?.english_display_name
+      ?? raw?.englishDisplayName
+      ?? null,
+    canonicalName: card.canonical_name ?? null,
+    fallbackName: card.name ?? null,
+    raw,
+  };
+
+  return {
+    name: getPreferredCardDisplayName(input),
+    englishName: getEnglishCardDisplayName(input),
+    language: input.language,
+    region: input.region,
+  };
 };
 
 const mapCardRow = (card: any): PokedexCard => {
   const imageUrls = buildPokedexImageUrls(card);
-  const setName = getPreferredSetDisplayName({
-    id: card.set_id ?? card.raw_data?.set?.id ?? null,
-    sourceId: card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set?.source_id ?? card.raw_data?.source_id ?? card.set_id ?? null,
-    setCode: card.raw_data?.set?.set_code ?? card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set_code ?? card.set_id ?? null,
-    language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
-    region: card.region ?? card.raw_data?.region ?? card.raw_data?.set?.region ?? null,
-    localName: card.raw_data?.set?.local_name ?? card.raw_data?.set?.name ?? null,
-    englishDisplayName: card.raw_data?.set?.english_display_name ?? card.raw_data?.set?.englishDisplayName ?? null,
-    canonicalName: card.raw_data?.set?.name ?? card.set_name ?? null,
+  const thumbnailUrl = card.raw_data?.images?.small ?? card.image_small ?? null;
+  const largeImageUrl = card.raw_data?.images?.large ?? card.image_large ?? null;
+  const cardNames = getPokedexCardNames(card);
+  const setRaw = card.raw_data?.set ?? card.raw_payload?.set ?? card.set ?? {};
+  const setInput = {
+    id: card.set_id ?? setRaw?.id ?? null,
+    sourceId: setRaw?.tcgdex_id ?? setRaw?.source_id ?? card.raw_data?.source_id ?? card.set_id ?? null,
+    setCode: setRaw?.set_code ?? setRaw?.tcgdex_id ?? card.raw_data?.set_code ?? card.set_id ?? null,
+    language: cardNames.language,
+    region: cardNames.region,
+    localName: setRaw?.local_name ?? setRaw?.localName ?? setRaw?.native_name ?? null,
+    englishDisplayName: setRaw?.english_display_name ?? setRaw?.englishDisplayName ?? null,
+    canonicalName: setRaw?.name ?? card.set_name ?? null,
     fallbackName: card.set_name ?? card.set_id ?? null,
-    raw: card.raw_data?.set ?? card.raw_data,
+    raw: setRaw,
+  };
+  const setName = getPreferredSetDisplayName({
+    ...setInput,
   });
 
   return {
     id: card.id,
-    name: card.name,
+    name: cardNames.name,
+    english_name: cardNames.englishName,
+    language: cardNames.language,
+    region: cardNames.region,
     number: card.number ?? null,
     rarity: card.rarity ?? card.raw_data?.rarity ?? null,
     set_id: card.set_id ?? card.raw_data?.set?.id ?? null,
     set_name: setName,
-    image_small: imageUrls[1] ?? imageUrls[0] ?? null,
-    image_large: imageUrls[0] ?? null,
+    set_english_name: getEnglishSetDisplayName(setInput),
+    image_small: thumbnailUrl,
+    image_large: largeImageUrl,
     image_urls: imageUrls,
     raw_data: card.raw_data ?? null,
   };
 };
 
-const mapApiCard = (card: any): PokedexCard => ({
-  id: card.id,
-  name: card.name,
-  number: card.number ?? null,
-  rarity: card.rarity ?? null,
-  set_id: card.set?.id ?? null,
-  set_name: card.set?.name ?? null,
-  image_small: card.images?.small ?? null,
-  image_large: card.images?.large ?? null,
-  image_urls: uniqueUrls([card.images?.large, card.images?.small]),
-  raw_data: card,
-});
+type ArtworkHydrationEntry = { promise: Promise<PokedexCard>; expiresAt: number; settled: boolean };
+const artworkHydrationByCardId = new Map<string, ArtworkHydrationEntry>();
+const ARTWORK_CACHE_LIMIT = 512;
+
+const pruneArtworkHydrationCache = () => {
+  const now = Date.now();
+  for (const [id, entry] of artworkHydrationByCardId) {
+    if (entry.settled && entry.expiresAt <= now) artworkHydrationByCardId.delete(id);
+  }
+  while (artworkHydrationByCardId.size >= ARTWORK_CACHE_LIMIT) {
+    const removable = [...artworkHydrationByCardId.entries()]
+      .filter(([, entry]) => entry.settled)
+      .sort(([, left], [, right]) => left.expiresAt - right.expiresAt)[0];
+    if (!removable) break;
+    artworkHydrationByCardId.delete(removable[0]);
+  }
+};
+
+const mergePokedexArtwork = (source: PokedexCard, hydrated: any): PokedexCard => {
+  if (!hydrated) return source;
+  const mapped = mapCardRow(hydrated);
+  return {
+    ...source,
+    image_small: mapped.image_small,
+    image_large: mapped.image_large,
+    image_urls: mapped.image_urls,
+  };
+};
+
+/**
+ * Hydrates at most one visible-card batch. The promise cache avoids repeat
+ * asset reads as a FlatList recycles cells while preserving canonical facts.
+ */
+export async function hydratePokedexCardArtwork(cards: PokedexCard[]): Promise<PokedexCard[]> {
+  pruneArtworkHydrationCache();
+  const unique = [...new Map(cards
+    .filter((card) => card.canonical_card && !card.image_small && !card.image_large)
+    .map((card) => [card.id, card]))
+    .values()]
+    .slice(0, 100);
+  const newCards = unique.filter((card) => !artworkHydrationByCardId.has(card.id));
+  if (newCards.length) {
+    const batch = enrichStackrCardArtworkFromFacts(newCards)
+      .then((hydrated) => new Map(hydrated.map((card) => [card.id, card])))
+      .catch(() => new Map<string, any>());
+    for (const card of newCards) {
+      if (artworkHydrationByCardId.size >= ARTWORK_CACHE_LIMIT) break;
+      const entry: ArtworkHydrationEntry = { promise: Promise.resolve(card), expiresAt: Number.POSITIVE_INFINITY, settled: false };
+      entry.promise = batch.then((byId) => mergePokedexArtwork(card, byId.get(card.id))).then((result) => {
+        entry.settled = true;
+        entry.expiresAt = Date.now() + (result.image_small || result.image_large ? 60_000 : 30_000);
+        pruneArtworkHydrationCache();
+        return result;
+      });
+      artworkHydrationByCardId.set(card.id, entry);
+    }
+  }
+  return Promise.all(unique.map((card) => artworkHydrationByCardId.get(card.id)?.promise ?? Promise.resolve(card)));
+}
 
 async function addSetNames(cards: PokedexCard[]): Promise<PokedexCard[]> {
-  const missingSetNameIds = [...new Set(
+  const missingSetMetadataIds = [...new Set(
     cards
-      .filter((card) => !card.set_name && card.set_id)
+      .filter((card) => (!card.set_name || !card.set_english_name) && card.set_id)
       .map((card) => card.set_id as string)
   )];
 
-  if (!missingSetNameIds.length) return cards;
+  if (!missingSetMetadataIds.length) return cards;
 
-  const sets = await fetchStackrSetRows(missingSetNameIds);
+  const sets = await fetchStackrSetRows(missingSetMetadataIds);
   return cards.map((card) => ({
     ...card,
     set_name: card.set_name ?? (card.set_id ? sets.get(card.set_id)?.name ?? null : null),
+    set_english_name:
+      card.set_english_name
+      ?? (card.set_id ? sets.get(card.set_id)?.englishDisplayName ?? null : null),
   }));
 }
 
+async function addLatestPrices(cards: PokedexCard[]): Promise<PokedexCard[]> {
+  const cardIds = [...new Set(cards.map((card) => card.id).filter(Boolean))];
+  if (!cardIds.length) return cards;
+
+  const snapshotMap = await fetchStackrPriceSnapshots(cardIds);
+
+  return cards.map((card) => {
+    const price = snapshotMap.get(card.id);
+
+    return {
+      ...card,
+      estimated_value: price?.market_central ?? null,
+      price_source: price ? 'stackr-api' : null,
+    };
+  });
+}
+
 async function enrichPokedexCards(cards: PokedexCard[]): Promise<PokedexCard[]> {
-  // A character page can contain hundreds of printings. Its cards are not
-  // canonical price variants, so the old per-card resolver pass both delayed
-  // the first render and flooded the shared pricing route. Set names are a
-  // bounded metadata read; exact prices remain available from a card detail.
-  return addSetNames(cards);
+  // Card retrieval is the primary detail-screen content. Set labels and prices
+  // are optional enrichments, so an unavailable auxiliary endpoint must never
+  // turn a populated Pokémon collection into an empty error state.
+  const [setNames, prices] = await Promise.allSettled([
+    addSetNames(cards),
+    addLatestPrices(cards),
+  ]);
+
+  const withSetNames = setNames.status === 'fulfilled' ? setNames.value : cards;
+  if (prices.status !== 'fulfilled') return withSetNames;
+
+  const pricesById = new Map(prices.value.map((card) => [card.id, card]));
+  return withSetNames.map((card) => {
+    const priced = pricesById.get(card.id);
+    return priced
+      ? { ...card, estimated_value: priced.estimated_value, price_source: priced.price_source }
+      : card;
+  });
 }
 
 async function fetchPokemonTcgApiCardsForPokemon(pokemonName: string): Promise<PokedexCard[]> {
@@ -180,60 +308,178 @@ async function fetchPokemonTcgApiCardsForPokemon(pokemonName: string): Promise<P
   return Array.from(cardsById.values());
 }
 
+const sortPokedexCards = (cards: PokedexCard[]) => cards.sort((a, b) => {
+  const dateA = a.raw_data?.set?.releaseDate ?? '';
+  const dateB = b.raw_data?.set?.releaseDate ?? '';
+  if (dateA !== dateB) return dateB.localeCompare(dateA);
+  return String(a.number ?? '').localeCompare(String(b.number ?? ''), undefined, { numeric: true });
+});
+
+const INITIAL_CANONICAL_PAGE_LIMIT = 24;
+const CANONICAL_PAGE_LIMIT = 120;
+
+async function fetchCanonicalPokedexCards(
+  pokemonName: string,
+  onProgress?: (progress: PokedexCardsProgress) => void,
+): Promise<PokedexCardsProgress> {
+  const cardsById = new Map<string, PokedexCard>();
+  let cursor: string | null = null;
+  let publishedFirstPage = false;
+  let factsComplete = false;
+  let factsError: Error | null = null;
+
+  try {
+    do {
+      const response = await stackrApiClient.pokemonCards(pokemonName, {
+        cursor,
+        limit: publishedFirstPage ? CANONICAL_PAGE_LIMIT : INITIAL_CANONICAL_PAGE_LIMIT,
+      });
+      for (const card of response.data.cards) {
+        const legacy = stackrCardToLegacyCard(card, []);
+        cardsById.set(legacy.id, { ...mapCardRow(legacy), canonical_card: card });
+      }
+      cursor = response.meta.pagination?.nextCursor ?? null;
+      onProgress?.({ cards: sortPokedexCards([...cardsById.values()]), complete: false });
+      // The first visible row gets thumbnails without waiting for later
+      // source pages, pricing, or set labels. Subsequent visible chunks are
+      // requested by the detail FlatList.
+      if (!publishedFirstPage) {
+        publishedFirstPage = true;
+        void hydratePokedexCardArtwork(sortPokedexCards([...cardsById.values()]).slice(0, 16))
+          .then((hydrated) => {
+            for (const card of hydrated) {
+              const current = cardsById.get(card.id) ?? card;
+              cardsById.set(card.id, { ...current, image_small: card.image_small,
+                image_large: card.image_large, image_urls: card.image_urls });
+            }
+            onProgress?.({ cards: sortPokedexCards([...cardsById.values()]), complete: factsComplete, error: factsError });
+          })
+          .catch(() => {});
+      }
+    } while (cursor);
+  } catch (error) {
+    const failure = error instanceof Error ? error : new Error(String(error));
+    factsError = failure;
+    if (cardsById.size) {
+      return { cards: sortPokedexCards([...cardsById.values()]), complete: false, error: failure };
+    }
+    throw failure;
+  }
+
+  const cards = sortPokedexCards([...cardsById.values()]);
+  // Completion must represent the factual paginated collection, never wait
+  // indefinitely on optional set or pricing services.
+  const factual = { cards, complete: true };
+  factsComplete = true;
+  onProgress?.(factual);
+  void enrichPokedexCards(cards)
+    .then((enriched) => {
+      for (const card of enriched) {
+        const current = cardsById.get(card.id);
+        cardsById.set(card.id, current ? { ...card, image_small: current.image_small ?? card.image_small,
+          image_large: current.image_large ?? card.image_large, image_urls: current.image_urls?.length ? current.image_urls : card.image_urls } : card);
+      }
+      onProgress?.({ cards: sortPokedexCards([...cardsById.values()]), complete: true });
+    })
+    .catch(() => {});
+  return factual;
+}
+
 export async function fetchCardsForPokemon(
   pokemonName: string,
-  options: FetchCardsForPokemonOptions = {},
-): Promise<PokedexCard[]> {
+  options: { onProgress?: (progress: PokedexCardsProgress) => void } = {},
+): Promise<PokedexCardsProgress> {
+  try {
+    const result = await fetchCanonicalPokedexCards(pokemonName, options.onProgress);
+    options.onProgress?.(result);
+    return result;
+  } catch (canonicalError) {
+    // Older API deployments lack the paginated route. Keep the prior search
+    // path as a visible, explicitly incomplete fallback instead of claiming a
+    // hard-capped result is a full species collection.
+  }
   const displayName = formatPokedexName(pokemonName);
   const searchTerms = getPokemonCardSearchTerms(pokemonName);
   const rowsById = new Map<string, any>();
 
-  const sortedCards = () => Array.from(rowsById.values())
-    .filter((card) => pokemonNameMatchesCardName(displayName, card.name ?? ''))
-    .map(mapCardRow)
-    .sort((a, b) => {
-      const dateA = a.raw_data?.set?.releaseDate ?? '';
-      const dateB = b.raw_data?.set?.releaseDate ?? '';
-      if (dateA !== dateB) return dateB.localeCompare(dateA);
-      return String(a.number ?? '').localeCompare(String(b.number ?? ''), undefined, { numeric: true });
+  for (const term of searchTerms) {
+    const data = await searchLocalPokemonCards<any>(term, {
+      language: 'all',
+      limit: 100,
+      skipSetDetection: true,
     });
-
-  const emitCanonicalCards = (rows: any[]) => {
-    let changed = false;
-    for (const row of rows) {
-      if (!row?.id || !pokemonNameMatchesCardName(displayName, row.name ?? '')) continue;
+    for (const row of data) {
       rowsById.set(row.id, row);
-      changed = true;
     }
-    if (changed) options.onCanonicalCards?.(sortedCards());
-  };
-
-  // Search each supported catalogue language independently. One unavailable
-  // shard must not erase another language, and all requests begin together so
-  // Pokédex does not serialise five API round trips before showing cards.
-  const searches = searchTerms.flatMap((term) => POKEDEX_CARD_SEARCH_LANGUAGES.map(async (language) => {
-    try {
-      const rows = await searchLocalPokemonCards<any>(term, {
-        language,
-        limit: 100,
-        skipSetDetection: true,
-        onCanonicalResults: emitCanonicalCards,
-      });
-      emitCanonicalCards(rows);
-    } catch (error) {
-      console.log('Pokédex catalogue language search failed', { pokemonName, language, error });
-    }
-  }));
-
-  await Promise.all(searches);
-
-  let cards = sortedCards();
-  if (cards.length === 0) {
-    cards = await fetchPokemonTcgApiCardsForPokemon(pokemonName);
-    if (cards.length) options.onCanonicalCards?.(cards);
   }
 
-  return enrichPokedexCards(cards);
+  if (rowsById.size === 0) {
+    const fallbackRows = await searchLocalPokemonCards<any>(displayName, {
+      limit: 1000,
+      skipSetDetection: true,
+      select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
+    });
+
+    for (const row of fallbackRows) {
+      rowsById.set(row.id, row);
+    }
+  }
+
+  let cards = Array.from(rowsById.values())
+    .filter((card) => {
+      const names = getPokedexCardNames(card);
+      return pokemonNameMatchesCardName(displayName, names.englishName ?? names.name);
+    })
+    .map(mapCardRow);
+
+  if (cards.length === 0) {
+    cards = await fetchPokemonTcgApiCardsForPokemon(pokemonName);
+  }
+
+  const result = { cards: sortPokedexCards(cards), complete: false };
+  options.onProgress?.(result);
+  return result;
+}
+
+const OWNERSHIP_PAGE_SIZE = 500;
+
+async function fetchAllOwnershipRows<T extends { id: string }>(
+  fetchPage: (after: string | null) => PromiseLike<{ data: T[] | null; error: unknown }>,
+): Promise<T[]> {
+  const rows: T[] = [];
+  let after: string | null = null;
+  for (;;) {
+    const { data, error } = await fetchPage(after);
+    if (error) throw error;
+    rows.push(...(data ?? []));
+    if (!data || data.length < OWNERSHIP_PAGE_SIZE) return rows;
+    const next = data[data.length - 1]?.id;
+    if (!next || next === after) throw new Error('Ownership pagination did not advance.');
+    after = next;
+  }
+}
+
+const fetchOwnedBinderIds = async (userId: string) => {
+  const binders = await fetchAllOwnershipRows<{ id: string }>((after) => {
+    const query = supabase.from('binders').select('id').eq('user_id', userId)
+      .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+    return after ? query.gt('id', after) : query;
+  });
+  return [...new Set(binders.map((binder) => binder.id).filter(Boolean))];
+};
+
+async function fetchBinderOwnershipRows(binderIds: string[]): Promise<OwnedPokedexCardRow[]> {
+  const rowsById = new Map<string, OwnedPokedexCardRow>();
+  for (let start = 0; start < binderIds.length; start += 100) {
+    const ids = binderIds.slice(start, start + 100);
+    const rows = await fetchAllOwnershipRows<OwnedPokedexCardRow>((after) => {
+      const query = supabase.from('binder_cards').select('id, card_id, set_id').in('binder_id', ids).eq('owned', true)
+        .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+      return after ? query.gt('id', after) : query;
+    });
+    for (const row of rows) rowsById.set(row.id, row);
+  }
+  return [...rowsById.values()];
 }
 
 export async function fetchOwnedPokedexCards(): Promise<Map<string, OwnedPokedexCard>> {
@@ -245,63 +491,22 @@ export async function fetchOwnedPokedexCards(): Promise<Map<string, OwnedPokedex
   if (userError) throw userError;
   if (!user) return new Map();
 
-  const { data: binders, error: binderError } = await supabase
-    .from('binders')
-    .select('id')
-    .eq('user_id', user.id);
+  const binderIds = await fetchOwnedBinderIds(user.id);
+  const [variants, binderCards, pokedexCards] = await Promise.all([
+    fetchAllOwnershipRows<OwnedPokedexCardRow>((after) => {
+      const query = supabase.from('user_card_variants').select('id, card_id, set_id')
+        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+      return after ? query.gt('id', after) : query;
+    }),
+    fetchBinderOwnershipRows(binderIds),
+    fetchAllOwnershipRows<OwnedPokedexCardRow>((after) => {
+      const query = supabase.from('user_pokedex_cards').select('id, card_id, set_id')
+        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+      return after ? query.gt('id', after) : query;
+    }),
+  ]);
 
-  if (binderError) throw binderError;
-
-  const map = new Map<string, OwnedPokedexCard>();
-
-  const addRow = (
-    row: { id: string; card_id: string; set_id: string | null },
-    source: 'binder' | 'pokedex'
-  ) => {
-    const key = `${row.set_id ?? ''}:${row.card_id}`;
-    const existing = map.get(key);
-
-    if (existing) {
-      if (source === 'binder') existing.binder_card_ids.push(row.id);
-      else existing.pokedex_card_ids.push(row.id);
-    } else {
-      map.set(key, {
-        card_id: row.card_id,
-        set_id: row.set_id ?? null,
-        binder_card_ids: source === 'binder' ? [row.id] : [],
-        pokedex_card_ids: source === 'pokedex' ? [row.id] : [],
-      });
-    }
-  };
-
-  const binderIds = (binders ?? []).map((binder) => binder.id).filter(Boolean);
-
-  if (binderIds.length) {
-    const { data: rows, error } = await supabase
-      .from('binder_cards')
-      .select('id, card_id, set_id')
-      .in('binder_id', binderIds)
-      .eq('owned', true);
-
-    if (error) throw error;
-
-    for (const row of rows ?? []) {
-      addRow(row, 'binder');
-    }
-  }
-
-  const { data: pokedexRows, error: pokedexError } = await supabase
-    .from('user_pokedex_cards')
-    .select('id, card_id, set_id')
-    .eq('user_id', user.id);
-
-  if (pokedexError) throw pokedexError;
-
-  for (const row of pokedexRows ?? []) {
-    addRow(row, 'pokedex');
-  }
-
-  return map;
+  return buildOwnedPokedexCards(variants, binderCards, pokedexCards);
 }
 
 export async function fetchOwnedPokemonNameSet(): Promise<Set<string>> {
@@ -315,7 +520,8 @@ export async function fetchOwnedPokemonNameSet(): Promise<Set<string>> {
   for (const cardId of cardIds) {
     const card = rows.get(cardId);
     if (card) {
-      const normalizedCardName = normalise(card.name ?? '');
+      const cardNames = getPokedexCardNames(card);
+      const normalizedCardName = normalise(cardNames.englishName ?? cardNames.name);
       if (!normalizedCardName) continue;
       names.add(normalizedCardName);
     }
@@ -334,65 +540,40 @@ export async function setPokedexCardOwned(card: PokedexCard, owned: boolean): Pr
   if (!user) throw new Error('You must be signed in.');
 
   const setId = card.set_id ?? card.raw_data?.set?.id ?? null;
-  const { data: binders, error: binderError } = await supabase
-    .from('binders')
-    .select('id')
-    .eq('user_id', user.id);
-
-  if (binderError) throw binderError;
-
-  const binderIds = (binders ?? []).map((binder) => binder.id).filter(Boolean);
-  let existingBinderRows: { id: string }[] = [];
-
-  if (binderIds.length) {
-    let existingQuery = supabase
-      .from('binder_cards')
-      .select('id')
-      .in('binder_id', binderIds)
-      .eq('card_id', card.id);
-
-    if (setId) existingQuery = existingQuery.eq('set_id', setId);
-
-    const { data: rows, error } = await existingQuery;
-    if (error) throw error;
-    existingBinderRows = rows ?? [];
+  if (owned && !setId) {
+    throw new Error('This card needs a verified set before it can be marked collected. Open its catalogue entry and try again.');
   }
-
   if (!owned) {
-    if (existingBinderRows.length) {
-      const { error: binderUpdateError } = await supabase
-        .from('binder_cards')
-        .update({ owned: false })
-        .in('id', existingBinderRows.map((row) => row.id));
-
-      if (binderUpdateError) throw binderUpdateError;
+    let variantsQuery = supabase
+      .from('user_card_variants')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('card_id', card.id)
+      .limit(1);
+    if (setId) variantsQuery = variantsQuery.eq('set_id', setId);
+    const { data: physicalVariants, error: physicalVariantError } = await variantsQuery;
+    if (physicalVariantError) throw physicalVariantError;
+    if (!canRemovePokedexOwnershipMarker(physicalVariants)) {
+      throw new Error('This card is owned through your collection. Use the collection card controls to remove it.');
     }
-
-    const { error } = await supabase
+    const binderIds = await fetchOwnedBinderIds(user.id);
+    for (let start = 0; start < binderIds.length; start += 100) {
+      let query = supabase.from('binder_cards').select('id')
+        .in('binder_id', binderIds.slice(start, start + 100))
+        .eq('card_id', card.id).eq('owned', true).limit(1);
+      if (setId) query = query.eq('set_id', setId);
+      const { data, error } = await query;
+      if (error) throw error;
+      if (data?.length) throw new Error('This card is owned through your collection. Use the collection card controls to remove it.');
+    }
+    let marker = supabase
       .from('user_pokedex_cards')
       .delete()
       .eq('user_id', user.id)
       .eq('card_id', card.id);
-
+    marker = setId ? marker.eq('set_id', setId) : marker.is('set_id', null);
+    const { error } = await marker;
     if (error) throw error;
-    return;
-  }
-
-  if (existingBinderRows.length) {
-    const { error: binderUpdateError } = await supabase
-      .from('binder_cards')
-      .update({ owned: true })
-      .in('id', existingBinderRows.map((row) => row.id));
-
-    if (binderUpdateError) throw binderUpdateError;
-
-    const { error: pokedexDeleteError } = await supabase
-      .from('user_pokedex_cards')
-      .delete()
-      .eq('user_id', user.id)
-      .eq('card_id', card.id);
-
-    if (pokedexDeleteError) throw pokedexDeleteError;
     return;
   }
 

@@ -148,6 +148,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/pokemon/{name}/cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Published cards for an exact Pokémon species or form. */
+        get: operations["listPokemonCards"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cards/{cardId}": {
         parameters: {
             query?: never;
@@ -1647,6 +1664,36 @@ export interface operations {
             };
         };
     };
+    listPokemonCards: {
+        parameters: {
+            query?: {
+                language?: components["parameters"]["Language"];
+                /** @description Opaque cursor returned by the previous page. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Published name source rows per page; deduplicated card count may be smaller. */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Species or form name; URL-encode punctuation and spaces. */
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cursor-paginated canonical cards, with factual metadata available before optional artwork. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardsResponse"];
+                };
+            };
+            400: components["responses"]["Error"];
+        };
+    };
     getCard: {
         parameters: {
             query?: never;
@@ -2100,6 +2147,8 @@ export interface operations {
                 assetType?: string;
                 setId?: string;
                 printingId?: string;
+                /** @description Bounded canonical printing batch, mutually exclusive with printingId. */
+                printingIds?: string[];
                 variantId?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];

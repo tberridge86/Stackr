@@ -55,6 +55,8 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run typecheck:backend
+      - run: npm run test:pokedex-release
+      - run: npm run test:catalogue-price-baseline
       - run: npm test --prefix backend
       - run: npm run test:live-pricing
       - run: npm run test:personal-pricing

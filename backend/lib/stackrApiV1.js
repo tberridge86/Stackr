@@ -1415,7 +1415,12 @@ export function createCatalogueV1Service(options) {
       // has many variants. Read only this bounded page's printing IDs, but
       // exhaust their variant rows in stable slices before grouping them.
       const rows = await fetchPublishedPokemonCardRows(searchSupabase, printingIds, language);
-      return { cards: groupCardRows(sortCardsForDisplay(rows)), pagination };
+      // A published alias can be wrong. Explicit Trainer/Energy identities
+      // must never become species cards merely because a name matches.
+      const pokemonRows = rows.filter((row) => !['trainer', 'energy'].includes(
+        String(row.supertype ?? '').normalize('NFKC').trim().toLowerCase(),
+      ));
+      return { cards: groupCardRows(sortCardsForDisplay(pokemonRows)), pagination };
     },
 
     async card(cardId) {

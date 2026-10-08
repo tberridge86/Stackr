@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import { Buffer } from 'node:buffer';
 import ts from 'typescript';
 import { CataloguePriceCache } from '../lib/cataloguePriceCacheCore';
+import type { StackrCardPrice } from '../lib/stackrApiV1';
 import * as hash from '../lib/cataloguePriceHash';
 import * as transport from '../lib/stackrApiTransportPolicy';
 
@@ -31,11 +32,11 @@ async function main() {
   let token: string | null = jwt('owner-a', 1);
   const requests: { url: string; body: any }[] = [];
   const ids = Array.from({ length: 201 }, (_, i) => `00000000-0000-4000-8000-${String(i + 1).padStart(12, '0')}`);
-  const quote = (variantId: string) => ({ variantId, productType: 'raw_card', currency: 'GBP', status: 'market_estimate',
+  const quote = (variantId: string): StackrCardPrice => ({ variantId, identityKey: variantId, productType: 'raw_card', currency: 'GBP', status: 'market_estimate',
     priceType: 'market_estimate', estimates: { central: 12, low: null, high: null }, confidence: { label: 'low', score: 0.2 },
     calculatedAt: '2026-10-03T10:00:00Z', staleAfter: '2099-01-01T00:00:00Z', freshness: 'fresh',
-    sample: { total: 1, sold: 0, active: 0, sources: 1 }, sourceBreakdown: [], fallbackEstimate: null, unavailableReason: null,
-    provenLastSold: false, lastSoldEvidence: null });
+    sample: { total: 1, sold: 0, active: 0, sources: 1, dateRange: { from: null, to: null } }, sourceBreakdown: [], outliers: {}, fallbackEstimate: null, unavailableReason: null,
+    estimateVersion: 'fixture', provenLastSold: false, lastSoldEvidence: null });
   const client = new api.StackrApiClient({ baseUrl: 'https://api.example.test/v1', getAccessToken: async () => token,
     getDeviceId: async () => 'test-device', createIdempotencyKey: () => 'test-key', fetchImpl: async (url, init) => {
       assert.equal((init?.headers as any).Authorization, `Bearer ${token}`);
@@ -108,6 +109,12 @@ async function main() {
   assert.equal(requests.length, 8, 'condition-specific detail quotes have separate caches');
   await prices.fetchCachedRawDetailPrice(identity, { condition: 'near_mint' }, client, true);
   assert.equal(requests.length, 9, 'manual refresh bypasses the fresh detail cache');
+  const currentMarket = prices.cataloguePriceDisplay({ reference: ids[0], variantId: ids[0], cardId: ids[0], language: 'en', price: quote(ids[0]), unavailableReason: null, nextRetryAt: null, revision: 'display-current' });
+  assert.equal(currentMarket.sourceLabel, 'Current market value');
+  const generalMarket = prices.cataloguePriceDisplay({ reference: ids[0], variantId: ids[0], cardId: ids[0], language: 'en', price: { ...quote(ids[0]), fallbackEstimate: { identityKey: ids[0], reason: 'general_card_estimate', exact: false } }, unavailableReason: null, nextRetryAt: null, revision: 'display-general' });
+  assert.equal(generalMarket.sourceLabel, 'Estimated price');
+  const sold = prices.cataloguePriceDisplay({ reference: ids[0], variantId: ids[0], cardId: ids[0], language: 'en', price: { ...quote(ids[0]), priceType: 'recent_sold_value', provenLastSold: true, lastSoldEvidence: { observationId: 'verified-sale' } }, unavailableReason: null, nextRetryAt: null, revision: 'display-sold' });
+  assert.equal(sold.sourceLabel, 'Last sold');
   assert.ok([...disk.keys()].every((key) => !key.includes('signature') && !key.includes('owner-a')), 'cache keys contain hashed identity, never bearer tokens');
   console.log('Price client passed: 201 cards / 3 bulk requests, zero per-card requests, restart / zero requests, account/token/language/mode/condition isolation, authenticated preview routing and forced detail refresh.');
 }
