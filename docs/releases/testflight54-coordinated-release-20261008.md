@@ -1,12 +1,12 @@
 # Stackr 1.0.6 (54) coordinated release
 
-Owner-authorised on 8 October 2026: push the coordinated next release and deliver build 54 to the existing TestFlight app. This receipt starts with preparation; build, deployment and Apple identities will be recorded after verification.
+Owner-authorised on 8 October 2026: push the coordinated next release and deliver build 54 to the existing TestFlight app. Verified native, service and Apple identities are recorded in the [delivery receipt](testflight54-delivery-20261008.md).
 
 ## Source and audience
 
 The candidate starts from main `77e2e8de67e9a39eb6bd79f4e56ce1d557c17cba`, which includes the delivered build 53 source `e9cb563446c632d53f317cf1fc48f28b85a3167f` and later accepted changes. The old dirty desktop checkout is preserved. Its older configuration, unrelated UI experiments and research artwork are excluded.
 
-The normal app remains `com.tommo86.Stackr`, Apple app `6772118450`, EAS project `22048198-a309-41d2-a2bf-aa354c76be3a`, production data and `https://api.stackrtcg.com`. Build 53 is Apple `VALID` and available to existing internal/external testers; the observed remote iOS counter is 53. The intended next number is 54. Version/runtime 1.0.6 isolates this native candidate from earlier 1.0.5 updates. The normal production submit profile now explicitly identifies the existing Apple app and internal `Team (Expo)` group.
+The normal app remains `com.tommo86.Stackr`, Apple app `6772118450`, EAS project `22048198-a309-41d2-a2bf-aa354c76be3a`, production data and `https://api.stackrtcg.com`. Before this release, build 53 was Apple `VALID` and available to existing internal/external testers, with remote iOS counter 53. The delivered native build is now 54 from reviewed source `bf3d7a233aa7d30dda99b61ccd51533ae85eed90`; Apple processing is `VALID`, with tester availability recorded in the delivery receipt. Version/runtime 1.0.6 isolates this native candidate from earlier 1.0.5 updates. The normal production submit profile now explicitly identifies the existing Apple app and internal `Team (Expo)` group.
 
 ## Included fixes
 
@@ -42,4 +42,4 @@ A final image review found that Pokédex visible-card hydration still entered th
 
 Observed first-source-page retrieval can still take approximately 2.5 seconds; cached sampled reads were approximately 100–370 ms. No universal instantaneous-loading claim is made.
 
-Build, upload, Apple processing and tester availability are pending. The native workflow's GitHub environment has no `EXPO_TOKEN`; the existing authenticated EAS CLI will instead build the clean exact reviewed main revision with the same normal-production identity and runtime checks. Successful service tests do not establish an installed device has received the new code.
+The native workflow's GitHub environment had no `EXPO_TOKEN`; the existing authenticated EAS CLI built and submitted the clean frozen reviewed revision with normal-production identity and runtime checks. Build 54 finished, its packaged identity/startup artwork were verified, the exact build was uploaded, and Apple processing is `VALID`. See the [delivery receipt](testflight54-delivery-20261008.md) for exact EAS/Apple IDs and independently verified internal/external availability. Installed-device acceptance remains pending.
