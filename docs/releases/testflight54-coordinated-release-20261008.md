@@ -16,6 +16,7 @@ The normal app remains `com.tommo86.Stackr`, Apple app `6772118450`, EAS project
 - Missing resolved raw-card browsing prices receive a penny-rounded, low-confidence `Estimated price (provisional baseline)`. Stored quotes retain precedence. This local rarity/era baseline makes no provider request or database write and invents no sale evidence or timestamps. Non-raw products remain excluded. Last-sold labels require the actual proven-last-sold API evidence.
 - Visible images use thumbnails; detail views retain full pixels and can show their supplied same-card thumbnail during loading. Synthetic blur and default fades are removed, and prefetch deduplication is bounded to 256 URLs. Exact language/printing and authorised reference safeguards remain.
 - OpenAPI and generated declarations include the species route and bounded artwork batches. The new regression scripts are wired into normal Platform CI.
+- The root lockfile pins the compatible `shell-quote` 1.11.0 patch for [GHSA-pqg4-j6r4-53mv](https://github.com/advisories/GHSA-pqg4-j6r4-53mv). Expo and React Native versions remain unchanged. The existing cold-retrieval fixture now checks bounded canonical Pokédex paging and early factual results instead of the replaced per-language search fanout.
 
 ## Validation and delivery order
 
