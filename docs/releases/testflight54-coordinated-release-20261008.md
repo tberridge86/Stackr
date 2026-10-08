@@ -30,4 +30,16 @@ Universal instantaneous loading, all-catalogue live estimate coverage and iPhone
 
 A public production sample exposed a published Trainer card whose English name was `Pikachu`. The new species route excludes explicit Trainer/Energy card types while retaining source cursors, preventing that metadata error from appearing as a Pokémon card. Correction of the underlying published name remains a catalogue follow-up; no translation data was rewritten here.
 
-Build, upload, Apple processing and tester availability are pending at this preparation stage. Successful service tests do not establish an installed device has received the new code.
+## Verified production services
+
+PR [319](https://github.com/tberridge86/Stackr/pull/319) merged as `92e444124a2cedc9647444a2656ff5d8f9343ce8`. Both its PR checks and exact-main Platform CI [37819963096](https://github.com/tberridge86/Stackr/actions/runs/37819963096) passed, including the patched zero-critical dependency gate.
+
+The backend-only production run [37820015514](https://github.com/tberridge86/Stackr/actions/runs/37820015514) passed. Railway deployment `b594fd37-3c01-4642-a516-cf5c038d8442` is healthy and attests that source. The previous healthy deployment `e985732a-4ebe-4281-8811-963a61276a58` is retained. The unrelated provider-key patch `8e29d75c-d567-4a9a-9e96-8a40e51a22f3` remains staged and unchanged.
+
+Gateway run [37821003494](https://github.com/tberridge86/Stackr/actions/runs/37821003494) passed. Production Worker version `072eeb72-fb64-422c-a0ba-e97f54dbbf95` serves 100% in deployment `156a0dfa-d273-4a8e-a81b-87e95097d06e`; existing secrets and Durable Object namespace were attested before and after. Public reads confirm Pikachu/Mr. Mime cards, pagination, bounded printing artwork, correct canonical variant-only asset associations, validation errors and request IDs. Anonymous price/history/refresh routes remain private. These checks do not establish signed-in owner price coverage.
+
+A final image review found that Pokédex visible-card hydration still entered the old serial per-set enrichment path. The mobile follow-up replaces those whole-set/metadata reads with bounded printing-ID artwork batches while retaining the existing exact-card conversion and image guards. It does not change the deployed backend or gateway code.
+
+Observed first-source-page retrieval can still take approximately 2.5 seconds; cached sampled reads were approximately 100–370 ms. No universal instantaneous-loading claim is made.
+
+Build, upload, Apple processing and tester availability are pending. The native workflow's GitHub environment has no `EXPO_TOKEN`; the existing authenticated EAS CLI will instead build the clean exact reviewed main revision with the same normal-production identity and runtime checks. Successful service tests do not establish an installed device has received the new code.

@@ -1014,11 +1014,15 @@ export class StackrApiClient {
     assetType?: string;
     setId?: string;
     printingId?: string;
+    printingIds?: string[];
     variantId?: string;
     cursor?: string | null;
     limit?: number;
   } = {}, init: RequestInit = {}) {
-    return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', query, init);
+    return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', {
+      ...query,
+      printingIds: query.printingIds?.join(','),
+    }, init);
   }
 
   cataloguePrices(input: {
