@@ -244,6 +244,36 @@ function manifestPublishedCheck(body) {
   };
 }
 
+const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function normalizedCardName(value) {
+  return String(value ?? '').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
+function pokemonCardsCheck(species) {
+  const expectedName = normalizedCardName(species);
+  return (body) => {
+    const cards = body?.data?.cards;
+    const pagination = body?.meta?.pagination;
+    const cardIds = Array.isArray(cards) ? cards.map((card) => card?.cardId) : [];
+    const cardIdsAreCanonical = cardIds.length > 0
+      && cardIds.every((cardId) => typeof cardId === 'string' && CANONICAL_UUID.test(cardId))
+      && new Set(cardIds).size === cardIds.length;
+    const cardsHaveExpectedSpecies = Array.isArray(cards) && cards.some((card) => [
+      card?.names?.native,
+      card?.names?.englishDisplay,
+    ].some((name) => normalizedCardName(name).includes(expectedName)));
+    const paginationIsBounded = pagination?.limit === 1
+      && (pagination.nextCursor === null || (typeof pagination.nextCursor === 'string' && pagination.nextCursor.length > 0));
+    return {
+      ok: cardIdsAreCanonical && cardsHaveExpectedSpecies && paginationIsBounded,
+      cardIds,
+      count: Array.isArray(cards) ? cards.length : null,
+      nextCursor: pagination?.nextCursor ?? null,
+    };
+  };
+}
+
 const gatewayUrl = argument('gateway', process.env.STACKR_GATEWAY_URL);
 const backendUrl = argument('backend', process.env.STACKR_BACKEND_URL);
 const recognitionUrl = argument('recognition', process.env.STACKR_RECOGNITION_URL);
@@ -366,6 +396,21 @@ if (gatewayUrl) {
       // successful release smoke proves the newly deployed origin can answer.
       // The public route does not forward this header to the backend.
       headers: { Authorization: 'Bearer smoke-cache-bypass' },
+    }));
+    checks.push(await check(gatewayUrl, '/v1/pokemon/pikachu/cards?limit=1', {
+      name: 'pokemon_cards_pikachu',
+      inspectJson: pokemonCardsCheck('Pikachu'),
+    }));
+    checks.push(await check(gatewayUrl, '/v1/pokemon/Mr.%20Mime/cards?limit=1', {
+      name: 'pokemon_cards_mr_mime_encoded',
+      inspectJson: pokemonCardsCheck('Mr Mime'),
+    }));
+    checks.push(await check(gatewayUrl, '/v1/pokemon/pikachu/cards?provider=all', {
+      name: 'pokemon_cards_rejects_unsupported_query',
+      accept: [400],
+      inspectJson(body) {
+        return { ok: body?.error?.code === 'unsupported_query_parameter' };
+      },
     }));
     let firstAssetDeliveryUrl = null;
     let firstAssetId = null;

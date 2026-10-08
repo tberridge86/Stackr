@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Buffer } from 'node:buffer';
 import { getEnglishCardDisplayName } from './cardDisplayNames.js';
+import { matchesPokedexSpeciesName, normalisePokedexName } from './pokedexCards.js';
 
 export const STACKR_API_V1 = '1';
 export const DEFAULT_CATALOGUE_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -775,6 +776,27 @@ async function fetchCardRowsByVariants(supabase, variantIds) {
     .limit(Math.max(ids.length, 1) * 4));
 }
 
+async function fetchPublishedPokemonCardRows(supabase, printingIds, language) {
+  const ids = [...new Set(printingIds.filter(Boolean))];
+  if (!ids.length) return [];
+  const rows = [];
+  let afterVariantId = null;
+  do {
+    let query = table(supabase, 'api', 'catalogue_cards')
+      .select('*')
+      .in('printing_id', ids)
+      .eq('game_code', 'pokemon')
+      .order('variant_id', { ascending: true })
+      .limit(501);
+    query = applyLanguageFilter(query, language);
+    if (afterVariantId) query = query.gt('variant_id', afterVariantId);
+    const page = await queryRows(query);
+    rows.push(...page.slice(0, 500));
+    afterVariantId = page.length > 500 ? clean(page[499]?.variant_id) : null;
+  } while (afterVariantId);
+  return rows;
+}
+
 async function fetchCardRowsByPrintings(supabase, printingIds) {
   const ids = [...new Set(printingIds.filter(Boolean))];
   if (!ids.length) return [];
@@ -1146,6 +1168,17 @@ export function searchFixtureCatalogue(query, fixture, options = {}) {
   return results.slice(0, limit);
 }
 
+function parsePrintingIds(value) {
+  if (typeof value !== 'string') {
+    throw new ApiError(400, 'invalid_printing_ids', 'printingIds must contain between 1 and 100 canonical UUIDs.');
+  }
+  const ids = value.split(',').map((item) => item.trim());
+  if (!ids.length || ids.length > 100 || ids.some((id) => !id || !isUuid(id))) {
+    throw new ApiError(400, 'invalid_printing_ids', 'printingIds must contain between 1 and 100 canonical UUIDs.');
+  }
+  return [...new Set(ids.map((id) => id.toLowerCase()))];
+}
+
 export function createCatalogueV1Service(options) {
   const supabase = options.supabase;
   const searchSupabase = options.searchSupabase ?? supabase;
@@ -1341,6 +1374,50 @@ export function createCatalogueV1Service(options) {
       return { cards: await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions), pagination };
     },
 
+    async pokemonCards(pokemonName, input = {}) {
+      const name = clean(pokemonName);
+      const normalizedName = normalisePokedexName(name);
+      if (!name || !normalizedName || name.length > 120 || /[\u0000-\u001f\u007f]/.test(name)) {
+        throw new ApiError(400, 'invalid_pokemon_name', 'name must be a valid Pokémon species or form name.');
+      }
+      const limit = parseLimit(input.limit, 120, 250);
+      const language = clean(input.language);
+      if (language && !SUPPORTED_LANGUAGE_CODES.includes(language)) {
+        throw new ApiError(400, 'invalid_language', 'Unsupported catalogue language.');
+      }
+
+      // Published names are the cross-language bridge. A token-boundary check
+      // below accepts only an explicit English species/form match, while still
+      // covering native English, reviewed translations and aliases. A cursor
+      // advances through source rows (not assembled cards), ensuring a later
+      // page can never hide an unexamined matching printing.
+      // Published catalogues sometimes normalize gender glyphs away. Search
+      // their ungendered source token too, then restore the strict form check
+      // in `matchesPokedexSpeciesName` below.
+      const lookupName = normalizedName.replace(/\s+[fm]$/, '');
+      const contains = lookupName.replace(/[%_]/g, ' ').replace(/\s+/g, '%');
+      let namesQuery = table(supabase, 'api', 'catalogue_card_names')
+        .select('id,printing_id,name,normalized_name')
+        .in('name_type', [...EXACT_NAME_TYPES, ...ALIAS_NAME_TYPES])
+        .ilike('normalized_name', `%${contains}%`)
+        .order('id', { ascending: true })
+        .limit(limit + 1);
+      namesQuery = applyIdCursor(namesQuery, 'id', input.cursor);
+      const sourceRows = await queryRows(namesQuery);
+      const { rows: pageNames, pagination } = pageFromRows(sourceRows, limit, 'id');
+      const printingIds = [...new Set(pageNames
+        .filter((row) => matchesPokedexSpeciesName(normalizedName, row.name ?? row.normalized_name))
+        .map((row) => row.printing_id)
+        .filter(Boolean))];
+      if (!printingIds.length) return { cards: [], pagination };
+
+      // Name-source pagination must never skip a matched printing because it
+      // has many variants. Read only this bounded page's printing IDs, but
+      // exhaust their variant rows in stable slices before grouping them.
+      const rows = await fetchPublishedPokemonCardRows(supabase, printingIds, language);
+      return { cards: groupCardRows(sortCardsForDisplay(rows)), pagination };
+    },
+
     async card(cardId) {
       if (!isUuid(cardId)) throw new ApiError(400, 'invalid_card_id', 'cardId must be a canonical UUID.');
       let rows = await queryRows(table(supabase, 'api', 'catalogue_cards')
@@ -1421,6 +1498,15 @@ export function createCatalogueV1Service(options) {
     },
 
     async assetManifest(input = {}) {
+      const printingId = clean(input.printingId);
+      if (printingId && !isUuid(printingId)) {
+        throw new ApiError(400, 'invalid_printing_id', 'printingId must be a canonical UUID.');
+      }
+      const printingIdsInput = clean(input.printingIds);
+      if (printingId && printingIdsInput) {
+        throw new ApiError(400, 'ambiguous_printing_filter', 'printingId and printingIds cannot be used together.');
+      }
+      const printingIds = printingIdsInput ? parsePrintingIds(printingIdsInput) : null;
       const limit = parseLimit(input.limit, 250, 1000);
       const cursor = parseCursor(input.cursor);
       if (cursor && (!isUuid(cursor.catalogueVersionId) || !isUuid(cursor.assetRowId))) {
@@ -1429,8 +1515,8 @@ export function createCatalogueV1Service(options) {
       // Identity predicates on the full manifest expand inherited
       // identities across the catalogue. Card fallback requests can use the
       // existing bounded RPC without changing the generic manifest contract.
-      const printingOnly = isUuid(input.printingId) && !clean(input.variantId);
-      const variantOnly = isUuid(input.variantId) && !clean(input.printingId);
+      const printingOnly = (isUuid(printingId) || printingIds) && !clean(input.variantId);
+      const variantOnly = isUuid(input.variantId) && !printingId && !printingIds;
       if (assetUrlOptions.assetIdentityRpc && input.assetType === 'card_image'
         && (printingOnly || variantOnly) && !clean(input.setId)) {
         const rows = [];
@@ -1440,7 +1526,7 @@ export function createCatalogueV1Service(options) {
           const batch = await queryRows(assetSupabase.schema('api').rpc(
             'card_image_manifest_for_identities', {
               p_variant_ids: variantOnly ? [clean(input.variantId)] : [],
-              p_printing_ids: printingOnly ? [clean(input.printingId)] : [],
+              p_printing_ids: printingOnly ? (printingIds ?? [printingId]) : [],
               p_after_version_id: after?.catalogueVersionId ?? null,
               p_after_asset_id: after?.assetRowId ?? null,
               p_limit: pageSize,
@@ -1471,6 +1557,7 @@ export function createCatalogueV1Service(options) {
       if (clean(input.assetType)) query = query.eq('asset_type', clean(input.assetType));
       if (clean(input.setId)) query = query.eq('set_id', clean(input.setId));
       if (clean(input.printingId)) query = query.eq('printing_id', clean(input.printingId));
+      if (printingIds) query = query.in('printing_id', printingIds);
       if (clean(input.variantId)) query = query.eq('variant_id', clean(input.variantId));
       if (cursor) {
         const catalogueVersionId = clean(cursor.catalogueVersionId);
