@@ -13,10 +13,11 @@ const pages: [string, string | null, number][] = [];
 const writes: string[] = [];
 const filters: [string, unknown][] = [];
 let artworkReads = 0;
-let finishArtwork!: (rows: any[]) => void;
+let finishArtwork!: (response: any) => void;
 let missing = false;
-const artwork = new Promise<any[]>((resolve) => { finishArtwork = resolve; });
+const artwork = new Promise<any>((resolve) => { finishArtwork = resolve; });
 const factual = { cardId: 'card-a', defaultVariantId: 'variant-a' };
+const assetRequests: Array<{ printingIds?: string[]; cursor?: string | null; limit?: number; assetType?: string }> = [];
 const pokemonRequests: { name: string; cursor: string | null; limit: number }[] = [];
 let pokemonResponses: Array<() => Promise<any>> = [async () => ({ data: { cards: [factual] }, meta: {} })];
 const legacy = (id: string, images = false) => ({ id, name: 'Pikachu', language: 'en', set_id: 'set-a',
@@ -61,9 +62,10 @@ const mocks: Record<string, unknown> = {
   './pokemonDisplayNames': { getPreferredCardDisplayName: () => 'Pikachu', getEnglishCardDisplayName: () => null,
     getPreferredSetDisplayName: () => 'Native set', getEnglishSetDisplayName: () => null },
   './stackrDomainAdapter': {
-    enrichStackrCardArtworkFromFacts: async (cards: any[]) => { artworkReads += 1;
-      return cards[0].id === 'card-a' ? artwork : cards.map((card) => legacy(card.id, !missing)); },
-    stackrCardToLegacyCard: (card: any) => legacy(card.cardId),
+    stackrCardToLegacyCard: (card: any, assets: any[] = []) => {
+      const variantIds = new Set([card.defaultVariantId, ...(card.variants ?? []).flatMap((variant: any) => [variant.variantId, variant.imageVariantId, variant.sameArtworkAsVariantId])]);
+      return legacy(card.cardId, assets.some((asset) => asset.cardId === card.cardId || variantIds.has(asset.variantId)));
+    },
     fetchStackrSetRows: async () => new Map([['set-a', { name: 'Native set', englishDisplayName: 'Approved set' }]]),
     fetchStackrPriceSnapshots: async () => new Map([['card-a', { market_central: 12 }]]),
   },
@@ -72,6 +74,13 @@ const mocks: Record<string, unknown> = {
     const response = pokemonResponses.shift();
     if (!response) throw new Error('Unexpected Pokémon page request');
     return response();
+  }, assetManifest: async (request: any) => {
+    artworkReads += 1;
+    assetRequests.push(request);
+    if (request.printingIds?.length === 1 && request.printingIds[0] === 'card-a') return artwork;
+    if (missing) return { data: { assets: [] }, meta: {} };
+    const ids: string[] = request.printingIds ?? [];
+    return { data: { assets: ids.map((cardId) => ({ assetId: `asset-${cardId}`, assetType: 'card_image', cardId: null, variantId: cardId.replace(/^card-/, 'variant-').replace(/^visible-/, 'visible-variant-'), deliveryUrl: `https://example.test/${cardId}.webp` })) }, meta: {} };
   } } },
   './pokedexCollectionCore': ownership,
 };
@@ -141,13 +150,13 @@ async function run() {
   await tick();
   assert.equal(phases.at(-1).cards[0].estimated_value, 12);
   assert.equal(phases.at(-1).cards[0].set_english_name, 'Approved set');
-  finishArtwork([legacy('card-a', true)]);
+  finishArtwork({ data: { assets: [{ assetId: 'asset-card-a', assetType: 'card_image', cardId: null, variantId: 'variant-a', deliveryUrl: 'https://example.test/card-a.webp' }] }, meta: {} });
   await tick();
   assert.equal(phases.at(-1).cards[0].image_small, 'https://example.test/thumb.webp');
   assert.equal(phases.at(-1).cards[0].estimated_value, 12, 'Late thumbnails preserve earlier prices');
   assert.equal(phases.at(-1).cards[0].set_english_name, 'Approved set', 'Late thumbnails preserve earlier set names');
 
-  const uncached = { id: 'card-b', name: 'Pikachu', canonical_card: { cardId: 'card-b' } } as any;
+  const uncached = { id: 'card-b', name: 'Pikachu', canonical_card: { cardId: 'card-b', defaultVariantId: 'variant-b' } } as any;
   missing = true;
   await exports.hydratePokedexCardArtwork([uncached]);
   const reads = artworkReads;
@@ -157,6 +166,18 @@ async function run() {
   const recovered = await exports.hydratePokedexCardArtwork([uncached]);
   assert.equal(artworkReads, reads + 1, 'A missing image is retryable after its short TTL');
   assert.equal(recovered[0].image_urls?.[0], 'https://example.test/thumb.webp', 'Visible image candidates prefer thumbnails');
+
+  assetRequests.length = 0;
+  const visible = Array.from({ length: 24 }, (_, index) => ({
+    id: `visible-${index}`, name: 'Pikachu', set_id: `set-${index}`,
+    canonical_card: { cardId: `visible-${index}`, defaultVariantId: `visible-variant-${index}` },
+  })) as any[];
+  const visibleHydrated = await exports.hydratePokedexCardArtwork(visible);
+  assert.equal(assetRequests.length, 1, 'Visible cards from distinct sets use one printing batch, not per-set manifests');
+  assert.deepEqual(Array.from(assetRequests[0].printingIds ?? []), visible.map((card) => card.canonical_card.cardId), 'The manifest request carries exactly the visible canonical printing IDs');
+  assert.equal(assetRequests[0].assetType, 'card_image');
+  assert.equal(assetRequests[0].limit, 100);
+  assert.ok(visibleHydrated.every((card: any) => card.image_small), 'Variant-only assets hydrate their matching canonical facts');
   const pageOne = Array.from({ length: 24 }, (_, index) => ({ cardId: `page-one-${index}`, defaultVariantId: `variant-one-${index}` }));
   const pageTwo = [pageOne[0], { cardId: 'page-two-unique', defaultVariantId: 'variant-two-unique' }];
   let finishSecondPage!: (response: any) => void;

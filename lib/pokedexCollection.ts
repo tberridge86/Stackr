@@ -6,8 +6,8 @@ import {
   getPreferredCardDisplayName,
   getPreferredSetDisplayName,
 } from './pokemonDisplayNames';
-import { enrichStackrCardArtworkFromFacts, fetchStackrCardRows, fetchStackrPriceSnapshots, fetchStackrSetRows, stackrCardToLegacyCard } from './stackrDomainAdapter';
-import { stackrApiClient, type StackrCard } from './stackrApiV1';
+import { fetchStackrCardRows, fetchStackrPriceSnapshots, fetchStackrSetRows, stackrCardToLegacyCard } from './stackrDomainAdapter';
+import { stackrApiClient, type StackrCard, type StackrCatalogueAsset } from './stackrApiV1';
 import {
   buildOwnedPokedexCards,
   canRemovePokedexOwnershipMarker,
@@ -174,6 +174,8 @@ const mapCardRow = (card: any): PokedexCard => {
 type ArtworkHydrationEntry = { promise: Promise<PokedexCard>; expiresAt: number; settled: boolean };
 const artworkHydrationByCardId = new Map<string, ArtworkHydrationEntry>();
 const ARTWORK_CACHE_LIMIT = 512;
+const ARTWORK_MANIFEST_BATCH_SIZE = 100;
+const ARTWORK_MANIFEST_MAX_PAGES = 3;
 
 const pruneArtworkHydrationCache = () => {
   const now = Date.now();
@@ -213,8 +215,11 @@ export async function hydratePokedexCardArtwork(cards: PokedexCard[]): Promise<P
     .slice(0, 100);
   const newCards = unique.filter((card) => !artworkHydrationByCardId.has(card.id));
   if (newCards.length) {
-    const batch = enrichStackrCardArtworkFromFacts(newCards)
-      .then((hydrated) => new Map(hydrated.map((card) => [card.id, card])))
+    const batch = fetchVisiblePokedexArtwork(newCards)
+      .then((assets) => new Map(newCards.map((card) => [
+        card.id,
+        stackrCardToLegacyCard(card.canonical_card!, assets),
+      ])))
       .catch(() => new Map<string, any>());
     for (const card of newCards) {
       if (artworkHydrationByCardId.size >= ARTWORK_CACHE_LIMIT) break;
@@ -467,6 +472,28 @@ const fetchOwnedBinderIds = async (userId: string) => {
   });
   return [...new Set(binders.map((binder) => binder.id).filter(Boolean))];
 };
+
+/** Fetch only visible canonical printings; never enumerate an entire set. */
+async function fetchVisiblePokedexArtwork(cards: PokedexCard[]): Promise<StackrCatalogueAsset[]> {
+  const printingIds = [...new Set(cards.map((card) => card.canonical_card?.cardId).filter((id): id is string => Boolean(id)))];
+  const assets: StackrCatalogueAsset[] = [];
+  for (let start = 0; start < printingIds.length; start += ARTWORK_MANIFEST_BATCH_SIZE) {
+    const printingBatch = printingIds.slice(start, start + ARTWORK_MANIFEST_BATCH_SIZE);
+    let cursor: string | null = null;
+    for (let page = 0; page < ARTWORK_MANIFEST_MAX_PAGES; page += 1) {
+      const response = await stackrApiClient.assetManifest({
+        assetType: 'card_image',
+        printingIds: printingBatch,
+        cursor,
+        limit: ARTWORK_MANIFEST_BATCH_SIZE,
+      });
+      assets.push(...response.data.assets);
+      cursor = response.meta.pagination?.nextCursor ?? null;
+      if (!cursor) break;
+    }
+  }
+  return assets;
+}
 
 async function fetchBinderOwnershipRows(binderIds: string[]): Promise<OwnedPokedexCardRow[]> {
   const rowsById = new Map<string, OwnedPokedexCardRow>();

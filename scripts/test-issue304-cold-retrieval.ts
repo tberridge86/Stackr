@@ -49,9 +49,9 @@ async function testPokedexCanonicalPaging() {
       './pokemonDisplayNames': { getPreferredCardDisplayName: () => 'Pikachu', getEnglishCardDisplayName: () => 'Pikachu', getPreferredSetDisplayName: () => 'Set', getEnglishSetDisplayName: () => 'Set' },
       './stackrDomainAdapter': {
         stackrCardToLegacyCard: (card: any) => ({ id: card.cardId, name: 'Pikachu', number: '1', language: 'en', set: { id: 'set-a', name: 'Set' }, raw_data: { set: { id: 'set-a', name: 'Set' }, images: {} } }),
-        enrichStackrCardArtworkFromFacts: async () => [], fetchStackrCardRows: async () => new Map(), fetchStackrSetRows: async () => new Map(), fetchStackrPriceSnapshots: async () => new Map(),
+        fetchStackrCardRows: async () => new Map(), fetchStackrSetRows: async () => new Map(), fetchStackrPriceSnapshots: async () => new Map(),
       },
-      './stackrApiV1': { stackrApiClient: { pokemonCards: async (name: string, query: any) => {
+      './stackrApiV1': { stackrApiClient: { assetManifest: async () => ({ data: { assets: [] }, meta: {} }), pokemonCards: async (name: string, query: any) => {
         requestedPages.push({ name, cursor: query.cursor, limit: query.limit });
         return requestedPages.length === 1
           ? { data: { cards: firstPage }, meta: { pagination: { nextCursor: 'opaque-next' } } }
