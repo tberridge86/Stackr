@@ -66,15 +66,23 @@ const readOne = async (f: ReturnType<typeof fixture>, n = 1, estimateMode = 'gen
 
 async function main() {
   for (const rarity of [null, 'unknown', 'Common', 'Uncommon', 'Rare', 'Rare Holo', 'Double Rare', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Hyper Rare', 'Shiny Rare', 'Shiny Ultra Rare', 'Promo', 'ACE SPEC', 'Radiant Rare', 'Amazing Rare']) {
-    for (const releaseDate of [null, 'malformed', '1999-01-01', '2002', '2003', '2009', '2010', '2015', '2016', '2019', '2020', '2026']) {
+    for (const releaseDate of [null, 'malformed', '1999-01-01', '2002', '2003', '2009', '2010', '2015', '2016', '2019', '2020', '2026',
+      '2012garbage', '2023-02-29', '2024-02-29', '2022-13-01', '2022-01-32', String(new Date().getUTCFullYear() + 2)]) {
       const input = { variantId: id(1), rarity, releaseDate };
       assert.deepEqual(serverBaseline(input), clientBaseline(input), `reviewed model parity: ${rarity}/${releaseDate}`);
+    }
+  }
+  for (const field of ['finish', 'variant', 'edition']) {
+    for (const value of [null, '', 'normal', 'standard', 'default', 'regular', 'non-holo', 'nonfoil', 'unlimited',
+      'holo', 'reverse_holo', 'first_edition', 'stamped', 'masterball', 'unknown']) {
+      const input = { variantId: id(1), rarity: 'Common', releaseDate: '2022-01-01', [field]: value };
+      assert.deepEqual(serverBaseline(input), clientBaseline(input), `ordinary printing policy parity: ${field}/${value}`);
     }
   }
   assert.equal(serverBaseline({ variantId: '' }), null);
   assert.deepEqual(serverBaseline({ variantId: id(1), rarity: 'common', releaseDate: '2026' }), {
     currency: 'GBP', low: 0.02, central: 0.09, high: 0.23, rarity: 'common', eraMultiplier: 0.85,
-    modelVersion: 'catalogue-rarity-era-baseline-v1',
+    modelVersion: 'catalogue-rarity-era-baseline-v2',
   }, 'fractional pennies use the reviewed rounding policy');
 
   const baselineFixture = fixture([candidate()]);
@@ -98,11 +106,28 @@ async function main() {
   assert.deepEqual(unchanged.unchangedReferences, [id(1)], 'provisional data follows the existing content revision contract');
 
   const unknown = await readOne(fixture([candidate()], { cardRows: [candidate()], setRows: [] }));
-  assert.equal(unknown.price.estimates.central, 0.25);
-  assert.equal(unknown.price.sourceBreakdown[0].rarity, 'unknown');
-  assert.equal(unknown.price.sourceBreakdown[0].metadataStatus, 'published_card_unknown_set_date');
+  assert.equal(unknown.price.estimates.central, null, 'unknown rarity or date must not receive the old 25p baseline');
+  assert.equal(unknown.price.status, 'unavailable');
+  assert.equal(unknown.unavailableReason, 'no_stored_market_quote');
   const rarityLabel = await readOne(fixture([candidate()], { cardRows: [{ ...candidate(), rarity_code: 'common', rarity_label: 'Special Illustration Rare' }] }));
-  assert.equal(rarityLabel.price.estimates.central, 12.75, 'the presentation rarity label wins just as the client adapter does');
+  assert.equal(rarityLabel.price.estimates.central, null, 'a collectible rarity cannot receive a category price');
+  assert.equal(rarityLabel.unavailableReason, 'no_stored_market_quote');
+  for (const rarity of ['Rare', 'Rare Holo', 'Promo', 'Ultra Rare', null, 'unknown', 'Uncommon Holo', 'Special Common']) {
+    const rejected = await readOne(fixture([candidate()], { cardRows: [{ ...candidate(), rarity_label: rarity }] }));
+    assert.equal(rejected.price.status, 'unavailable', `${rarity} requires stored price evidence`);
+    assert.equal(rejected.unavailableReason, 'no_stored_market_quote');
+  }
+  for (const release_date of ['1999-01-01', '2009', null, '2012garbage', '2023-02-29', '2022-13-01', '2022-01-32']) {
+    const rejected = await readOne(fixture([candidate()], { setRows: [{ ...candidate(), release_date }] }));
+    assert.equal(rejected.price.status, 'unavailable', `${release_date} is not a supported modern release date`);
+    assert.equal(rejected.unavailableReason, 'no_stored_market_quote', 'ineligible baseline keeps the original reason');
+  }
+  for (const overrides of [{ variant_code: 'holo', finish_code: 'holo' }, { variant_code: 'first_edition' },
+    { finish_code: 'reverse_holo' }, { edition_code: 'first_edition' }]) {
+    const rejected = await readOne(fixture([candidate(1, overrides)]));
+    assert.equal(rejected.price.status, 'unavailable', 'a known special variant/finish/edition needs stored evidence');
+    assert.equal(rejected.unavailableReason, 'no_stored_market_quote');
+  }
 
   const exact = fixture([candidate()]);
   assert.equal((await readOne(exact, 1, 'exact')).price.status, 'unavailable');
@@ -130,6 +155,12 @@ async function main() {
   }
   const exactSold = await readOne(fixture([candidate(1, { estimate: quote(45, { status: 'last_sold', priceType: 'last_sold', provenLastSold: true }) })]), 1, 'exact');
   assert.equal(exactSold.price.provenLastSold, true, 'exact stored sale behavior is preserved');
+  const storedSale = quote(45, { status: 'last_sold', priceType: 'last_sold', freshness: 'stale', provenLastSold: true,
+    lastSoldObservationId: 'verified-sale-fixture', lastSoldEvidence: { observationId: 'verified-sale-fixture', evidenceSha256: 'a'.repeat(64) },
+    sample: { total: 3, sold: 3, active: 0, sources: 1, dateRange: { from: '2026-10-01', to: '2026-10-02' } },
+    sourceBreakdown: [{ provider: 'manual_verified_import', sourceItemId: 'fixture-item' }] });
+  const soldInGeneral = await readOne(fixture([candidate(1, { estimate: storedSale })]));
+  assert.deepEqual(soldInGeneral.price, storedSale, 'general browsing preserves every stored sale field and its stale label');
   const mapped = fixture([candidate(1, { general_quote: { central_estimate: 6, dataset_at: '2026-10-01', stale_after: '2027-01-01', provider: 'tcgcsv' } })]);
   assert.equal((await readOne(mapped)).price.estimates.central, 6);
   assert.equal(metadataCalls(mapped).length, 0);
@@ -144,6 +175,14 @@ async function main() {
   const cardmarket = fixture([candidate()], { guides: { read_cardmarket_blended_general_prices: [{ printing_id: id(1001), quote: cardmarketQuote }] } });
   assert.equal((await readOne(cardmarket)).price.estimates.central, 7.5);
   assert.equal(metadataCalls(cardmarket).length, 0);
+  const exactCardmarket = quote(60.125, { freshness: 'stale', sourceBreakdown: [{ provider: 'cardmarket',
+    evidenceType: 'market_estimate', originalCurrency: 'EUR', originalPrice: 70.735294, exchangeRate: 0.85,
+    exchangeRateAt: '2026-10-01', language: 'en', finish: 'holo', condition: 'raw_near_mint' }] });
+  const preservedCardmarket = await readOne(fixture([candidate(1, { snapshot: exactCardmarket })], {
+    guides: { read_catalogue_printing_general_prices: [{ printing_id: id(1001), quote: printingQuote }],
+      read_cardmarket_blended_general_prices: [{ printing_id: id(1001), quote: cardmarketQuote }] },
+  }));
+  assert.deepEqual(preservedCardmarket.price, exactCardmarket, 'fresh general guides cannot overwrite exact stored Cardmarket value or source precision');
 
   for (const mismatch of [{ catalogue_version_id: id(9001) }, { language_code: 'ja' }, { printing_id: id(8888) }, { set_id: id(7777) }, { variant_id: id(6666) }]) {
     const f = fixture([candidate()], { cardRows: [{ ...candidate(), ...mismatch }], ignoreFilters: true });
@@ -151,7 +190,7 @@ async function main() {
   }
   assert.equal((await readOne(fixture([candidate()], { cardRows: [candidate(), candidate()] }))).price.status, 'unavailable', 'duplicate published metadata is ambiguous');
   const setMismatch = await readOne(fixture([candidate()], { setRows: [{ ...candidate(), catalogue_version_id: id(9001), release_date: '1999' }], ignoreFilters: true }));
-  assert.equal(setMismatch.price.estimates.central, 0.1, 'foreign publication set dates are ignored');
+  assert.equal(setMismatch.price.status, 'unavailable', 'foreign publication set dates cannot establish modern baseline eligibility');
   for (const error of [{ errorTable: 'catalogue_cards' }, { rejectTable: 'catalogue_cards' }]) {
     const f = fixture([candidate(1), candidate(2, { estimate: quote(50) })], error);
     const result = await f.read({ references: [id(1), id(2)], estimateMode: 'general' });
@@ -159,7 +198,16 @@ async function main() {
     assert.equal(result.prices[1].price.estimates.central, 50, 'optional metadata failure preserves saved prices');
   }
   const failedSet = await readOne(fixture([candidate()], { rejectTable: 'catalogue_sets' }));
-  assert.equal(failedSet.price.estimates.central, 0.1, 'a verified published card may use explicitly unknown era');
+  assert.equal(failedSet.price.status, 'unavailable', 'set read failure leaves the era unverified');
+  assert.equal(failedSet.unavailableReason, 'no_stored_market_quote');
+
+  for (const language_code of ['zh-cn', 'zh-tw']) {
+    const foreignScript = fixture([candidate(1, { language_code })], {
+      cardRows: [{ ...candidate(), language_code: language_code === 'zh-cn' ? 'zh-tw' : 'zh-cn', rarity_label: 'Common' }],
+      ignoreFilters: true,
+    });
+    assert.equal((await readOne(foreignScript)).price.status, 'unavailable', 'Chinese scripts cannot lend published metadata to each other');
+  }
 
   let rejectLate: (error: Error) => void = () => {};
   const metadataDeferred = { promise: new Promise((_, reject) => { rejectLate = reject; }) };

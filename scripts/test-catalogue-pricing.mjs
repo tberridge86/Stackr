@@ -5,7 +5,7 @@ import './test-stored-price-read.mjs';
 import { assertCatalogueCapacity, catalogueRefreshPlan, refreshOutcome } from './refresh-catalogue-prices.mjs';
 import { mergeValuationTrend, valuationTrendEvidence, ownedValuationUnits, prepareCollectionValuation, readPages, resolveValuationUnit, setValuationUnits, summarisePreparedUnits } from './lib/prepared-collection-valuation.mjs';
 import { createMarketPricingService } from '../backend/lib/marketPricing/service.js';
-import { summariseTcgdexExactVariantPricing } from '../backend/lib/tcgdex.js';
+import { fetchTcgdexCardPrice, summariseTcgdexExactVariantPricing, summariseTcgdexNormalPricing, summariseTcgdexPricing } from '../backend/lib/tcgdex.js';
 import { ownerQueueRetryAfter, prepareStoredValuationIfEnabled } from './refresh-owner-provider-prices.mjs';
 import { withSavedCardLanguage, withPublishedOwnedLanguage, readSavedCardLanguages } from './lib/owner-price-saved-references.mjs';
 
@@ -50,6 +50,61 @@ for (const key of ['normal', 'reverse', 'firstEdition', 'wPromo', 'newFinish']) 
   assert.equal(summariseTcgdexExactVariantPricing({ ...jaHoloCard, variants: { ...jaHoloCard.variants, [key]: true } }, 'ja', 'holo'), null);
   assert.equal(summariseTcgdexExactVariantPricing({ ...jaHoloCard, variants: { ...jaHoloCard.variants, [key]: undefined } }, 'ja', 'holo'), null);
 }
+
+const cardmarketCard = { id: 'market-fixture-001', set: { id: 'market-fixture' }, localId: '001', language: 'en',
+  variants: { normal: true, holo: false, reverse: false, firstEdition: false, wPromo: false } };
+const cardmarketPricing = fields => ({ ...cardmarketCard, pricing: { cardmarket: {
+  unit: 'GBP', updated: '2026-10-08T12:00:00Z', low: 0.25, ...fields,
+} } });
+assert.equal(summariseTcgdexNormalPricing(cardmarketPricing({}), 'en'), null, 'a low-only Cardmarket asking floor is unavailable as a market estimate');
+assert.equal(summariseTcgdexPricing(cardmarketPricing({}), 'en').preferredGbp, null);
+for (const fields of [{ trend: 42, avg30: 30, avg: 20 }, { avg30: 30, avg: 20 }, { avg: 20 }]) {
+  const card = cardmarketPricing(fields);
+  const expected = fields.trend ?? fields.avg30 ?? fields.avg;
+  const exact = summariseTcgdexNormalPricing(card, 'en');
+  assert.equal(exact.price, expected, 'Cardmarket trend, avg30, then avg keep their precedence over low');
+  assert.equal(exact.priceSource, 'tcgdex_cardmarket');
+  assert.equal(exact.pricingUpdatedAt, card.pricing.cardmarket.updated);
+  assert.equal(exact.raw, card, 'provider field precision and provenance stay intact');
+  const summary = summariseTcgdexPricing(card, 'en');
+  assert.equal(summary.preferredGbp, expected);
+  assert.equal(summary.cardmarket[0].lowGbp, 0.25, 'a supported quote retains its low range without promoting it');
+}
+const lowOnlyHolo = { ...jaHoloCard, pricing: { cardmarket: { unit: 'GBP', updated: '2026-10-08', low: 0.25 } } };
+assert.equal(summariseTcgdexExactVariantPricing(lowOnlyHolo, 'ja', 'holo'), null, 'unique ordinary holo proof does not promote an asking floor');
+const wrongFinishMarket = cardmarketPricing({ 'trend-holo': 42, 'low-holo': 0.25 });
+assert.equal(summariseTcgdexNormalPricing(wrongFinishMarket, 'en'), null, 'a holo market field cannot rescue a normal low-only record');
+const tcgplayerPricing = normal => ({ ...cardmarketCard, pricing: { tcgplayer: {
+  unit: 'GBP', updated: '2026-10-08T12:00:00Z', normal,
+} } });
+assert.equal(summariseTcgdexNormalPricing(tcgplayerPricing({ lowPrice: 0.25 }), 'en'), null, 'a low-only TCGplayer record also lacks a market center');
+assert.equal(summariseTcgdexPricing(tcgplayerPricing({ lowPrice: 0.25 }), 'en').preferredGbp, null);
+for (const normal of [{ marketPrice: 42, midPrice: 30, lowPrice: 0.25 }, { midPrice: 30, lowPrice: 0.25 }]) {
+  const exact = summariseTcgdexNormalPricing(tcgplayerPricing(normal), 'en');
+  assert.equal(exact.price, normal.marketPrice ?? normal.midPrice);
+  assert.equal(exact.tcg_low, 0.25);
+}
+for (const variantCode of ['holo', 'reverse_holo']) {
+  const providerVariant = variantCode === 'holo' ? 'holofoil' : 'reverse-holofoil';
+  const card = { ...cardmarketCard, variants: { ...cardmarketCard.variants, holo: true, reverse: true },
+    pricing: { tcgplayer: { unit: 'GBP', [providerVariant]: { lowPrice: 0.25 } } } };
+  assert.equal(summariseTcgdexExactVariantPricing(card, 'en', variantCode), null, 'finish-specific asking prices remain separate from market estimates');
+}
+// Exercise the legacy exact-ID reader with a mocked provider transport. No
+// real requests or refresh writes run from this fixture.
+const originalProviderFetch = globalThis.fetch;
+try {
+  for (const [provider, fields, expected] of [
+    ['cardmarket', { low: 0.25 }, null], ['cardmarket', { low: 0.25, trend: 42 }, 42],
+    ['tcgplayer', { normal: { lowPrice: 0.25 } }, null], ['tcgplayer', { normal: { lowPrice: 0.25, marketPrice: 42 } }, 42],
+  ]) {
+    const card = { ...cardmarketCard, id: `${provider}-${expected ?? 'low'}-legacy-fixture`,
+      pricing: { [provider]: { unit: 'GBP', updated: '2026-10-08T12:00:00Z', ...fields } } };
+    globalThis.fetch = async () => ({ ok: true, text: async () => JSON.stringify(card) });
+    const price = await fetchTcgdexCardPrice({ cardId: card.id, language: 'en', exactOnly: true });
+    assert.equal(price.price, expected, 'legacy provider readers use the same market-versus-low boundary');
+  }
+} finally { globalThis.fetch = originalProviderFetch; }
 
 const providerCard={id:'sv01-1',set:{id:'sv01'},localId:'1',language:'en',variants:{normal:true,holo:true,reverse:true},
  pricing:{tcgplayer:{unit:'USD',updated:'2026-09-18T00:00:00Z',normal:{marketPrice:5},holofoil:{marketPrice:10},'reverse-holofoil':{marketPrice:15}}}};

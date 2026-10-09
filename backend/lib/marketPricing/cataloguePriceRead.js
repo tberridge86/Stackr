@@ -71,7 +71,9 @@ async function readBaselineMetadata(supabase, candidates, signal) {
 }
 
 function provisionalCataloguePrice(selected, metadata, unavailablePrice, reason) {
-  const baseline = provisionalCataloguePriceBaseline({ variantId: selected.variant_id, ...metadata });
+  const baseline = provisionalCataloguePriceBaseline({ variantId: selected.variant_id, ...metadata,
+    variant: selected.variant_code, finish: selected.finish_code, edition: selected.edition_code });
+  if (!baseline) return null;
   return {
     ...unavailablePrice(selected.variant_id, { productType: 'raw_card', currency: 'GBP' }),
     identityKey: selected.variant_id, status: 'market_estimate', priceType: 'market_estimate',
@@ -244,7 +246,9 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
     const snapshot = row.snapshot;
     const price = estimate ? toEstimatePrice(estimate, row.variant_id) : null;
     const legacy = snapshot ? toSnapshotPrice(snapshot, row.variant_id) : null;
-    const usable = (p) => p?.status !== 'unavailable' && Number.isFinite(p?.estimates?.central) && p.estimates.central > 0;
+    const usable = (p) => p?.status !== 'unavailable' && p?.currency === 'GBP'
+      && p?.productType === 'raw_card' && !p?.fallbackEstimate && p?.quoteScope !== 'printing_level'
+      && Number.isFinite(p?.estimates?.central) && p.estimates.central > 0;
     const candidates = [price, legacy].filter(usable);
     candidates.sort((a, b) => (preferFresh ? Number(b.freshness === 'fresh') - Number(a.freshness === 'fresh') : 0)
       || (Date.parse(b.calculatedAt ?? '') || 0) - (Date.parse(a.calculatedAt ?? '') || 0));
@@ -280,9 +284,12 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
         selected = requested.size ? (requested.size === 1 && exact.length === 1 ? exact[0] : null)
           : base[0] ?? (defaults.length === 1 ? defaults[0] : candidates.length === 1 ? candidates[0] : null);
         if (selected) {
-          price = storedPrice(selected);
+          price = storedPrice(selected, input.estimateMode === 'general');
           reason = selected.outcome?.reason ?? 'no_stored_market_quote';
-          if (input.estimateMode === 'general') {
+          // General browsing retains the requested finish's stored exact
+          // evidence, including its stale state and sale/estimate provenance.
+          // A fresh blended or sibling guide cannot prove that exact value.
+          if (input.estimateMode === 'general' && !price) {
             // Prefer the provider's mapped price for this exact finish. A base
             // printing estimate is a fallback when that finish has no fresh quote.
             const generalCandidates = [selected, ...base.filter((row) => row.variant_id !== selected.variant_id)];
@@ -370,7 +377,8 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
     const pricedRows = rows.map((row) => {
       const selected = baselineCandidates.get(row.reference);
       const metadata = selected && baselineMetadata.get(`${selected.catalogue_version_id}:${selected.variant_id}`);
-      const result = metadata ? { ...row, price: provisionalCataloguePrice(selected, metadata, unavailablePrice, row.unavailableReason), unavailableReason: null } : row;
+      const provisional = metadata && provisionalCataloguePrice(selected, metadata, unavailablePrice, row.unavailableReason);
+      const result = provisional ? { ...row, price: provisional, unavailableReason: null } : row;
       return { ...result, revision: hash(result) };
     });
     return {

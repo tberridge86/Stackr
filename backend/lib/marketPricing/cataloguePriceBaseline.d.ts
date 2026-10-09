@@ -4,8 +4,11 @@ export type CataloguePriceBaselineInput = {
   language?: string | null;
   rarity?: unknown;
   releaseDate?: unknown;
+  finish?: unknown;
+  variant?: unknown;
+  edition?: unknown;
 };
-export const PROVISIONAL_CATALOGUE_PRICE_MODEL: 'catalogue-rarity-era-baseline-v1';
+export const PROVISIONAL_CATALOGUE_PRICE_MODEL: 'catalogue-rarity-era-baseline-v2';
 export function provisionalCataloguePriceBaseline(input: CataloguePriceBaselineInput): {
   currency: 'GBP'; low: number; central: number; high: number;
   rarity: string; eraMultiplier: number; modelVersion: typeof PROVISIONAL_CATALOGUE_PRICE_MODEL;

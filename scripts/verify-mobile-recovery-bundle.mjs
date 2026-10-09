@@ -13,6 +13,7 @@ for (const phrase of [
   'The CoroCoro library', 'Catalogue match pending', 'Test touch feedback',
   'stackr-premium-opening', 'stackr-premium-poster',
   'Estimated price (provisional baseline)',
+  'catalogue-rarity-era-baseline-v2', 'retired_provisional_baseline',
   'Loading more...', 'Results will appear as loading completes.',
   'activity_read_identity_changed', 'Your card is saved. Its history entry',
 ]) {

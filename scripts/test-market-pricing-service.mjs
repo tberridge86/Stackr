@@ -643,6 +643,21 @@ async function assertLabelledLegacySnapshotFallback() {
   assert.equal(unavailable.status, 'unavailable', 'a numeric null must not become a £0 legacy price');
   assert.equal(unavailable.estimates.central, null);
 
+  const lowOnly = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata, snapshots: [snapshot({ tcgdex_price: null, tcg_mid: null, tcg_low: 0.25, market_price_gbp: null })] }),
+  });
+  assert.equal((await lowOnly.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' })).status,
+    'unavailable', 'a stored lowest asking price alone cannot become a central market estimate');
+  for (const marketColumn of ['tcgdex_price', 'tcg_mid', 'market_price_gbp']) {
+    const supported = createMarketPricingService({
+      supabase: createSnapshotSupabase({ metadata, snapshots: [snapshot({ tcgdex_price: null, tcg_mid: null,
+        market_price_gbp: null, tcg_low: 0.25, [marketColumn]: 42.55 })] }),
+    });
+    const paired = await supported.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+    assert.equal(paired.estimates.central, 42.55, `${marketColumn} remains a supported stored market value`);
+    assert.equal(paired.estimates.low, 0.25, 'the low range stays separate from the market center');
+  }
+
   const usd = await service.price(variantId, { productType: 'raw_card', currency: 'USD', condition: 'near_mint' });
   assert.equal(usd.status, 'unavailable', 'a GBP snapshot must not serve a USD request');
 }

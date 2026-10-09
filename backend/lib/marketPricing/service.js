@@ -206,7 +206,7 @@ function legacySource(row) {
 function legacySnapshotEstimate(row, variantId, scope) {
   const source = legacySource(row);
   const central = source === 'tcgdex'
-    ? snapshotValue(row, 'tcgdex_price', 'tcg_mid', 'tcg_low', 'market_price_gbp')
+    ? snapshotValue(row, 'tcgdex_price', 'tcg_mid', 'market_price_gbp')
     : null;
   if (!source || central == null) return null;
   const calculatedAt = dateOrNull(row.tcgdex_price_updated_at) ?? dateOrNull(row.calculated_at) ?? dateOrNull(row.snapshot_at);
