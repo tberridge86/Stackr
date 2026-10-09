@@ -1138,6 +1138,16 @@ export async function updateBinderCardOwned(
     ownedQuantity?: number;
   }
 ): Promise<BinderSnapshotPriceFields | null> {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) throw new Error('Sign in before changing your collection.');
+  const currentUserId = user.id;
+  const recordActivity = (input: Parameters<typeof createActivityPost>[0]) =>
+    createActivityPost(input, { expectedUserId: currentUserId }).catch((error) => {
+      // The holding is already saved. A changed account suppresses its event
+      // without turning this into a failed collection mutation.
+      console.warn('Saved collection activity needs verification', error);
+    });
   const virtual = parseVirtualBinderCardId(binderCardId);
 
   if (virtual) {
@@ -1176,7 +1186,7 @@ export async function updateBinderCardOwned(
 
       if (error) throw error;
 
-      await createActivityPost({
+      await recordActivity({
         title: 'Added a card to binder',
         subtitle: cardMeta?.cardName ?? virtual.cardId,
         cardId: virtual.cardId,
@@ -1212,7 +1222,7 @@ export async function updateBinderCardOwned(
 
       if (error) throw error;
 
-      await createActivityPost({
+      await recordActivity({
         title: 'Removed from collection',
         subtitle: existingRow.card_name ?? cardMeta?.cardName ?? virtual.cardId,
         cardId: virtual.cardId,
@@ -1262,7 +1272,7 @@ export async function updateBinderCardOwned(
   invalidateBinderCaches();
 
   if (owned && existingCard && !existingCard.owned) {
-    await createActivityPost({
+    await recordActivity({
       title: 'Added a card to binder',
       subtitle: existingCard.card_name ?? existingCard.card_id,
       cardId: existingCard.card_id,
@@ -1280,7 +1290,7 @@ export async function updateBinderCardOwned(
   }
 
   if (!owned && existingCard?.owned) {
-    await createActivityPost({
+    await recordActivity({
       title: 'Removed from collection',
       subtitle: existingCard.card_name ?? existingCard.card_id,
       cardId: existingCard.card_id,
@@ -1309,6 +1319,15 @@ export async function updateBinderCardQuantity(
     grade?: string | null;
   }
 ): Promise<void> {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) throw new Error('Sign in before changing your collection.');
+  const currentUserId = user.id;
+  const recordActivity = (input: Parameters<typeof createActivityPost>[0]) =>
+    createActivityPost(input, { expectedUserId: currentUserId }).catch((error) => {
+      // Quantity success is independent of recording its history.
+      console.warn('Saved collection activity needs verification', error);
+    });
   const ownedQuantity = Math.max(1, Math.min(999, Math.floor(Number(quantity) || 1)));
   const virtual = parseVirtualBinderCardId(binderCardId);
 
@@ -1316,13 +1335,13 @@ export async function updateBinderCardQuantity(
     const language = normalizePokemonCardLanguage(cardMeta?.language);
     const { data: existingVariantQuantity } = await supabase
       .from('binder_cards')
-      .select('owned_quantity, card_name, image_url')
+      .select('owned, owned_quantity, card_name, image_url')
       .eq('binder_id', virtual.binderId)
       .eq('card_id', virtual.cardId)
       .eq('set_id', virtual.setId)
       .eq('language', language)
       .maybeSingle();
-    const previousQuantity = Math.max(0, Number(existingVariantQuantity?.owned_quantity ?? 0) || 0);
+    const previousQuantity = existingVariantQuantity?.owned === false ? 0 : Math.max(0, Number(existingVariantQuantity?.owned_quantity ?? 0) || 0);
     const latestPrices = await fetchLatestSnapshotPrices([virtual.cardId], language);
     const price = latestPrices.get(virtual.cardId) ?? null;
 
@@ -1354,7 +1373,7 @@ export async function updateBinderCardQuantity(
 
     if (error) throw error;
     if (previousQuantity > ownedQuantity) {
-      await createActivityPost({
+      await recordActivity({
         title: `Quantity reduced from ${previousQuantity} to ${ownedQuantity}`,
         subtitle: existingVariantQuantity?.card_name ?? cardMeta?.cardName ?? virtual.cardId,
         cardId: virtual.cardId,
@@ -1362,9 +1381,9 @@ export async function updateBinderCardQuantity(
         type: 'quantity_reduced',
         isPositive: false,
       });
-    } else if (previousQuantity === 0 && ownedQuantity > 0) {
-      await createActivityPost({
-        title: 'Added to collection',
+    } else if (ownedQuantity > previousQuantity) {
+      await recordActivity({
+        title: previousQuantity === 0 ? 'Added to collection' : `Quantity increased from ${previousQuantity} to ${ownedQuantity}`,
         subtitle: cardMeta?.cardName ?? virtual.cardId,
         cardId: virtual.cardId,
         setId: virtual.setId,
@@ -1378,10 +1397,10 @@ export async function updateBinderCardQuantity(
 
   const { data: existingCard } = await supabase
     .from('binder_cards')
-    .select('card_id, set_id, language, card_name, owned_quantity')
+    .select('card_id, set_id, language, card_name, owned, owned_quantity')
     .eq('id', binderCardId)
     .maybeSingle();
-  const previousQuantity = Math.max(0, Number(existingCard?.owned_quantity ?? 0) || 0);
+  const previousQuantity = existingCard?.owned === false ? 0 : Math.max(0, Number(existingCard?.owned_quantity ?? 0) || 0);
 
   const { error } = await supabase
     .from('binder_cards')
@@ -1390,13 +1409,22 @@ export async function updateBinderCardQuantity(
 
   if (error) throw error;
   if (existingCard && previousQuantity > ownedQuantity) {
-    await createActivityPost({
+    await recordActivity({
       title: `Quantity reduced from ${previousQuantity} to ${ownedQuantity}`,
       subtitle: existingCard.card_name ?? existingCard.card_id,
       cardId: existingCard.card_id,
       setId: existingCard.set_id,
       type: 'quantity_reduced',
       isPositive: false,
+    });
+  } else if (existingCard && ownedQuantity > previousQuantity) {
+    await recordActivity({
+      title: previousQuantity === 0 ? 'Added to collection' : `Quantity increased from ${previousQuantity} to ${ownedQuantity}`,
+      subtitle: existingCard.card_name ?? existingCard.card_id,
+      cardId: existingCard.card_id,
+      setId: existingCard.set_id,
+      type: 'binder_add',
+      isPositive: true,
     });
   }
   invalidateBinderCaches();

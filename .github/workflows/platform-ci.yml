@@ -67,6 +67,7 @@ jobs:
       - run: node scripts/test-gateway-privacy-deployment.mjs
       - run: npm run test:collection-pricing-ui
       - run: npm run test:home-release
+      - run: npm run test:home-activity
       - run: npm run test:settings-help
       - run: npm run test:ux-p1
       - run: npm run test:ux-p2

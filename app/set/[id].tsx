@@ -773,6 +773,15 @@ export default function SetDetailScreen() {
     const key = getVariantKey(cardId, setId ?? '', variant);
     const previousQuantity = variantQuantities.get(key) ?? 0;
     const targetCard = cards.find((card) => card.id === cardId);
+    const recordActivity = async (post: Parameters<typeof createActivityPost>[0]) => {
+      try {
+        const result = await createActivityPost(post, { expectedUserId: userId });
+        if (result.status === 'failed' && userId === authUserIdRef.current) Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
+      } catch (historyError) {
+        if (userId !== authUserIdRef.current || (historyError instanceof Error && historyError.message === 'activity_post_identity_changed')) return;
+        Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
+      }
+    };
 
     setVariantQuantities((prev) => {
       const next = new Map(prev);
@@ -792,7 +801,7 @@ export default function SetDetailScreen() {
           .eq('variant', variant);
         if (error) throw error;
         if (previousQuantity > 0) {
-          await createActivityPost({
+          await recordActivity({
             title: 'Removed from collection',
             subtitle: `${targetCard?.name ?? cardId} · ${shortVariant(variant)}`,
             cardId,
@@ -812,7 +821,7 @@ export default function SetDetailScreen() {
       );
       if (error) throw error;
       if (previousQuantity > nextQuantity) {
-        await createActivityPost({
+        await recordActivity({
           title: `Quantity reduced from ${previousQuantity} to ${nextQuantity}`,
           subtitle: `${targetCard?.name ?? cardId} · ${shortVariant(variant)}`,
           cardId,
@@ -820,9 +829,9 @@ export default function SetDetailScreen() {
           type: 'quantity_reduced',
           isPositive: false,
         });
-      } else if (previousQuantity === 0 && nextQuantity > 0) {
-        await createActivityPost({
-          title: 'Added to collection',
+      } else if (nextQuantity > previousQuantity) {
+        await recordActivity({
+          title: previousQuantity === 0 ? 'Added to collection' : `Quantity increased from ${previousQuantity} to ${nextQuantity}`,
           subtitle: `${targetCard?.name ?? cardId} · ${shortVariant(variant)}`,
           cardId,
           setId,
@@ -831,6 +840,7 @@ export default function SetDetailScreen() {
         });
       }
     } catch (error: any) {
+      if (userId !== authUserIdRef.current) return;
       setVariantQuantities((prev) => {
         const next = new Map(prev);
         if (previousQuantity <= 0) next.delete(key);

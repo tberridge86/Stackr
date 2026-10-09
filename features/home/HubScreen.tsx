@@ -34,6 +34,7 @@ import { StackrProfileAvatar } from '../../components/StackrProfileAvatar';
 import { fetchBinders, fetchBinderCards, type BinderCardRecord, type BinderRecord } from '../../lib/binders';
 import type { OwnedCardRow } from '../../lib/ownership';
 import { fetchHomeSavedCollection, savedBinderCatalogueTotal } from '../../lib/homeSavedCollection';
+import { readRecentHomeActivityRows } from '../../lib/homeActivity';
 import { supabase } from '../../lib/supabase';
 import { PRICE_API_URL } from '../../lib/config';
 import { ValueTrackerCard } from '../../components/ValueTrackerCard';
@@ -2246,7 +2247,8 @@ export default function HubScreen() {
     setActivityLoading(true);
     setActivityError(null);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
       if (!user) {
         if (homeActivityRequestRef.current === requestId) setRecentActivity([]);
         return;
@@ -2257,16 +2259,8 @@ export default function HubScreen() {
         && homeSessionUserIdRef.current === trustedUserId
       );
 
-      const feedResult = await supabase
-        .from('activity_feed')
-        .select('id, type, title, subtitle, card_id, set_id, value_change, is_positive, created_at, card_name_snapshot, card_number_snapshot, card_language_snapshot, card_image_small_snapshot, card_image_large_snapshot, canonical_printing_id, canonical_variant_id')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (feedResult.error) throw feedResult.error;
-
-      const visibleFeed = (feedResult.data ?? [])
+      const posts = await readRecentHomeActivityRows(supabase, trustedUserId, isCurrentRequest);
+      const visibleFeed = posts
         .filter((post: any) => !isGate0CommerceActivity(post));
       const feedItems: HomeActivityItem[] = visibleFeed.map((post: any) => ({
         id: `post:${post.id}`,
@@ -2293,9 +2287,13 @@ export default function HubScreen() {
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 10);
 
-      const enriched = await enrichActivityItemsWithCardImages(combined);
       if (!isCurrentRequest()) return;
-      setRecentActivity(enriched);
+      setRecentActivity(combined);
+      // The event is usable before optional artwork; stale enrichment cannot
+      // replace a newer history read or cross an account change.
+      void enrichActivityItemsWithCardImages(combined).then((enriched) => {
+        if (isCurrentRequest()) setRecentActivity(enriched);
+      }).catch((error) => console.log('Failed to enrich home activity cards', error));
     } catch (error) {
       console.log('Failed to load recent home activity', error);
       if (homeActivityRequestRef.current !== requestId) return;

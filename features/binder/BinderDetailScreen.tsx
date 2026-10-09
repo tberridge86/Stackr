@@ -2271,8 +2271,17 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       }
 
       const cardName = getBinderCardDisplayName(targetCard, cardId);
+      const recordActivity = async (post: Parameters<typeof createActivityPost>[0]) => {
+        try {
+          const result = await createActivityPost(post, { expectedUserId: userId });
+          if (result.status === 'failed') Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
+        } catch (historyError) {
+          if (historyError instanceof Error && historyError.message === 'activity_post_identity_changed') return;
+          Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
+        }
+      };
       if (previousQuantity > nextQuantity) {
-        await createActivityPost({
+        await recordActivity({
           title: nextQuantity <= 0 ? 'Removed from collection' : `Quantity reduced from ${previousQuantity} to ${nextQuantity}`,
           subtitle: `${cardName}${variant !== 'card' ? ` · ${VARIANT_LABELS[variant] ?? catalogueVariantLabel(variant)}` : ''}`,
           cardId,
@@ -2280,9 +2289,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           type: nextQuantity <= 0 ? 'binder_remove' : 'quantity_reduced',
           isPositive: false,
         });
-      } else if (previousQuantity === 0 && nextQuantity > 0) {
-        await createActivityPost({
-          title: 'Added to collection',
+      } else if (nextQuantity > previousQuantity) {
+        await recordActivity({
+          title: previousQuantity === 0 ? 'Added to collection' : `Quantity increased from ${previousQuantity} to ${nextQuantity}`,
           subtitle: `${cardName}${variant !== 'card' ? ` · ${VARIANT_LABELS[variant] ?? catalogueVariantLabel(variant)}` : ''}`,
           cardId,
           setId,

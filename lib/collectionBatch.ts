@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchBinderById, invalidateBinderCaches } from './binders';
+import { createActivityPost } from './activity';
 import {
   canonicalCollectionBatchValue,
   buildCollectionBatchRecoveryIntent,
@@ -68,6 +69,8 @@ export type CollectionBatchSaveResult = {
   copiesAdded: number;
   newCards: number;
   incrementedCards: number;
+  /** The cards are saved; history can be recovered by replaying this request. */
+  activityFailures?: number;
 };
 
 type BinderCardRow = {
@@ -100,7 +103,7 @@ type BaselineBinderCard = Readonly<{
   rowFingerprint: string | null;
 }>;
 
-type CollectionBatchBaseResult = Omit<CollectionBatchSaveResult, 'requestKey' | 'replayed'>;
+type CollectionBatchBaseResult = Omit<CollectionBatchSaveResult, 'requestKey' | 'replayed' | 'activityFailures'>;
 
 type CollectionBatchJournal = Readonly<{
   schemaVersion: 1;
@@ -204,6 +207,50 @@ export function aggregateCollectionBatch(
 }
 
 const collectionBatchCoordinator = createCollectionBatchRequestCoordinator();
+
+async function verifyCollectionBatchOwner(expectedUserId: string) {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (data.user?.id !== expectedUserId) {
+    throw new Error('Sign in with the account that started this collection save.');
+  }
+}
+
+function collectionBatchActivityId(ownerUserId: string, requestKey: string, entry: CollectionBatchEntry) {
+  const hash = sha256Text(canonicalCollectionBatchValue({
+    ownerUserId, requestKey, card: collectionBatchIdentityKey(entry), purpose: 'collection-activity-v1',
+  }));
+  const variantNibble = ((Number.parseInt(hash[16], 16) & 3) | 8).toString(16);
+  return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-5${hash.slice(13, 16)}-${variantNibble}${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+}
+
+async function recordOwnedCardBatchActivity(ownerUserId: string, requestKey: string, batch: CollectionBatchEntry[]) {
+  let activityFailures = 0;
+  for (const entry of batch) {
+    try {
+      const activity = await createActivityPost({
+        title: 'Added to collection',
+        subtitle: `${entry.cardName ?? entry.cardId} · ${entry.quantity} ${entry.quantity === 1 ? 'copy' : 'copies'}`,
+        type: 'binder_add',
+        cardId: entry.cardId,
+        setId: entry.setId,
+        isPositive: true,
+        cardSnapshot: {
+          name: entry.cardName, number: entry.cardNumber, language: entry.language,
+          imageSmall: entry.imageUrl, imageLarge: entry.imageUrl,
+        },
+      }, {
+        expectedUserId: ownerUserId,
+        eventId: collectionBatchActivityId(ownerUserId, requestKey, entry),
+      });
+      if (activity?.status !== 'created') activityFailures += 1;
+    } catch (error) {
+      activityFailures += 1;
+      console.warn('Saved collection history needs recovery', error);
+    }
+  }
+  return activityFailures;
+}
 
 async function loadBinderCardRows(binderId: string): Promise<BinderCardRow[]> {
   const { data, error } = await supabase
@@ -618,12 +665,14 @@ function buildCollectionBatchPlan(input: {
 }
 
 async function saveCollectionBatchOnce(input: {
+  ownerUserId: string;
   requestKey: string;
   fingerprint: string;
   binderId: string;
   batch: CollectionBatchEntry[];
   binderDefaultCondition: string | null | undefined;
 }): Promise<CollectionBatchExecutionResult> {
+  await verifyCollectionBatchOwner(input.ownerUserId);
   const existingRows = await loadBinderCardRows(input.binderId);
   const storedJournal = await readCollectionBatchJournal(input);
   let plan: ReturnType<typeof buildCollectionBatchPlan>;
@@ -638,6 +687,7 @@ async function saveCollectionBatchOnce(input: {
       throw new CollectionBatchReconciliationRequiredError(input.requestKey);
     }
     if (decision === 'replay') {
+      await verifyCollectionBatchOwner(input.ownerUserId);
       if (storedJournal.state !== 'committed') {
         await persistVerifiedCollectionBatchJournal(Object.freeze({ ...storedJournal, state: 'committed' }));
       }
@@ -656,6 +706,7 @@ async function saveCollectionBatchOnce(input: {
 
   try {
     for (const mutation of plan.plans) {
+      await verifyCollectionBatchOwner(input.ownerUserId);
       mutationStarted = true;
       if (mutation.existing) {
         let update = supabase
@@ -715,16 +766,20 @@ async function saveCollectionBatchOnce(input: {
       }
     }
 
+    await verifyCollectionBatchOwner(input.ownerUserId);
     const verifiedRows = await loadBinderCardRows(input.binderId);
     if (!expectedBinderStateMatches(verifiedRows, plan.journal.expected, input.batch)) {
       throw new CollectionBatchReconciliationRequiredError(input.requestKey);
     }
+    await verifyCollectionBatchOwner(input.ownerUserId);
     await persistVerifiedCollectionBatchJournal(Object.freeze({ ...plan.journal, state: 'committed' }));
   } catch (error) {
     if (!mutationStarted || isCollectionBatchReconciliationRequired(error)) throw error;
     try {
+      await verifyCollectionBatchOwner(input.ownerUserId);
       const reconciledRows = await loadBinderCardRows(input.binderId);
       if (expectedBinderStateMatches(reconciledRows, plan.journal.expected, input.batch)) {
+        await verifyCollectionBatchOwner(input.ownerUserId);
         await persistVerifiedCollectionBatchJournal(Object.freeze({ ...plan.journal, state: 'committed' }));
         return { ...plan.journal.result, durablyReplayed: false };
       }
@@ -747,6 +802,7 @@ export async function addOwnedCardBatchToBinder(
   const { data, error } = await supabase.auth.getUser();
   if (error) throw error;
   if (!data.user || binder.user_id !== data.user.id) throw new Error('Sign in with the account that owns this binder.');
+  const ownerUserId = data.user.id;
 
   const defaultLanguage = normalizePokemonCardLanguage(binder.language ?? 'en');
   const batch = aggregateCollectionBatch(cards, defaultLanguage);
@@ -766,6 +822,7 @@ export async function addOwnedCardBatchToBinder(
     requestKey: options.requestKey,
     fingerprint,
     invoke: () => saveCollectionBatchOnce({
+      ownerUserId,
       requestKey: options.requestKey,
       fingerprint,
       binderId,
@@ -776,9 +833,62 @@ export async function addOwnedCardBatchToBinder(
 
   invalidateBinderCaches(binderId);
   const { durablyReplayed, ...result } = execution.value;
+  // Cards and the durable receipt are already verified. A history failure is
+  // separate from collection success, and a replay repairs the same event IDs.
+  // This also recovers a crash between the committed receipt and the first post.
+  const activityFailures = await recordOwnedCardBatchActivity(ownerUserId, options.requestKey, batch);
   return {
     requestKey: options.requestKey,
     replayed: execution.replayed || durablyReplayed,
     ...result,
+    ...(activityFailures > 0 ? { activityFailures } : {}),
   };
+}
+
+/** Repairs historical events from a committed receipt without replaying holdings. */
+export async function repairOwnedCardBatchActivity(
+  binderId: string,
+  cards: CollectionBatchCard[],
+  options: { requestKey: string },
+): Promise<CollectionBatchSaveResult> {
+  const binder = await fetchBinderById(binderId);
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (!binder || !data.user || binder.user_id !== data.user.id) {
+    throw new Error('Sign in with the account that owns this binder.');
+  }
+  const ownerUserId = data.user.id;
+  const batch = aggregateCollectionBatch(cards, normalizePokemonCardLanguage(binder.language ?? 'en'));
+  if (!batch.length) throw new CollectionBatchReconciliationRequiredError(options.requestKey);
+  const fingerprint = sha256Text(canonicalCollectionBatchValue({ binderId, batch }));
+  const journal = await readCollectionBatchJournal({ requestKey: options.requestKey, fingerprint, binderId, batch });
+  if (!journal || journal.state !== 'committed') {
+    throw new CollectionBatchReconciliationRequiredError(options.requestKey);
+  }
+  await verifyCollectionBatchOwner(ownerUserId);
+  const activityFailures = await recordOwnedCardBatchActivity(ownerUserId, options.requestKey, batch);
+  return {
+    requestKey: options.requestKey, replayed: true, ...journal.result,
+    ...(activityFailures > 0 ? { activityFailures } : {}),
+  };
+}
+
+/** Resumes a saved request; a committed receipt permits history repair only. */
+export async function resumeOwnedCardBatchToBinder(
+  binderId: string,
+  cards: CollectionBatchCard[],
+  options: { requestKey: string },
+): Promise<CollectionBatchSaveResult> {
+  const binder = await fetchBinderById(binderId);
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (!binder || !data.user || binder.user_id !== data.user.id) {
+    throw new Error('Sign in with the account that owns this binder.');
+  }
+  const batch = aggregateCollectionBatch(cards, normalizePokemonCardLanguage(binder.language ?? 'en'));
+  const fingerprint = sha256Text(canonicalCollectionBatchValue({ binderId, batch }));
+  const journal = await readCollectionBatchJournal({ requestKey: options.requestKey, fingerprint, binderId, batch });
+  return journal?.state === 'committed'
+    ? repairOwnedCardBatchActivity(binderId, cards, options)
+    : addOwnedCardBatchToBinder(binderId, cards, options);
 }

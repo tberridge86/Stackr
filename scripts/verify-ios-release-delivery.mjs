@@ -23,7 +23,9 @@ for (const args of [
   const result = spawnSync(process.execPath, args, { env, stdio: 'inherit' });
   assert.equal(result.status, 0, 'Actual iOS bundle delivery proof failed.');
 }
-const api = await verifyPublishedMobileDelivery({ expectedBackendSha: process.env.EXPECTED_BACKEND_SHA });
+const api = await verifyPublishedMobileDelivery({ expectedBackendSha: process.env.EXPECTED_BACKEND_SHA,
+  supabaseUrl: env.STACKR_MOBILE_SUPABASE_URL,
+  supabasePublishableKey: env.STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY });
 const metadata = JSON.parse(readFileSync(path.join(directory, 'metadata.json'), 'utf8'));
 const receipt = { source, profile: profileName, ...api,
   iosBundleSha256: createHash('sha256').update(readFileSync(path.join(directory, metadata.fileMetadata.ios.bundle))).digest('hex'),

@@ -101,6 +101,7 @@ jobs:
         run: |
           npm run test:mobile-recovery
           npm run test:server-delivery
+          npm run test:home-activity
           node scripts/verify-ios-release-delivery.mjs
 
       - name: Start iOS build without submission

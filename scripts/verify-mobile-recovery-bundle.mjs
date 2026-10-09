@@ -14,6 +14,7 @@ for (const phrase of [
   'stackr-premium-opening', 'stackr-premium-poster',
   'Estimated price (provisional baseline)',
   'Loading more...', 'Results will appear as loading completes.',
+  'activity_read_identity_changed', 'Your card is saved. Its history entry',
 ]) {
   assert.ok(code.includes(Buffer.from(phrase)), `Recovery UI content is absent from the exported iOS code: ${phrase}`);
 }

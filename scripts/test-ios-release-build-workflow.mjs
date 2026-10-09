@@ -24,6 +24,11 @@ assert.match(workflow, /EXPECTED_BACKEND_SHA: \$\{\{ inputs\.expected_backend_sh
 const deliveryGatePosition = workflow.indexOf('node scripts/verify-ios-release-delivery.mjs');
 const nativeBuildPosition = workflow.indexOf('- name: Start iOS build without submission');
 assert.ok(deliveryGatePosition >= 0 && nativeBuildPosition > deliveryGatePosition);
+for (const command of ['npm run test:mobile-recovery', 'npm run test:server-delivery', 'npm run test:home-activity']) {
+  const position = workflow.indexOf(command);
+  assert.ok(position >= 0 && position < deliveryGatePosition, `${command} must pass before live proof and native build.`);
+}
+assert.match(readFileSync('.github/workflows/platform-ci.yml', 'utf8'), /npm run test:home-activity/);
 assert.match(workflow, /mobile-delivery-receipt\.json/);
 
 const before = { ...process.env };

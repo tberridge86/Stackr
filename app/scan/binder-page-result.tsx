@@ -24,8 +24,9 @@ import {
 } from '../../lib/binderPageScanStore';
 import { fetchBinders, invalidateBinderCaches, type BinderRecord } from '../../lib/binders';
 import {
-  addOwnedCardBatchToBinder,
+  resumeOwnedCardBatchToBinder,
   createCollectionBatchRequestKey,
+  loadCollectionBatchRecoveryIntent,
   persistVerifiedCollectionBatchRecoveryIntent,
 } from '../../lib/collectionBatch';
 import { logScanLearningEvent } from '../../lib/scanLearning';
@@ -528,7 +529,7 @@ export default function BinderPageScanResultScreen() {
       Alert.alert('Binder list unavailable', 'Retry loading your binders before saving this review.');
       return;
     }
-    const binderId = selectedBinder.id;
+    let binderId = selectedBinder.id;
     const page = destinationPage;
     const saveMutationSequence = pocketMutationSequenceRef.current;
     if (saveInFlightRef.current) return;
@@ -539,15 +540,12 @@ export default function BinderPageScanResultScreen() {
       // collection intent from that verified persisted review rather than a
       // render that may still be one interaction behind.
       await pendingPocketMutationRef.current;
-      const pendingFailure = pocketMutationFailuresRef.current.find((failure) => failure.sequence <= saveMutationSequence);
-      if (pendingFailure) throw pendingFailure.error;
       const currentSession = sessionRef.current;
       const persistedPockets = pocketsRef.current;
       const confirmed = persistedPockets
         .filter((pocket) => pocket.status === 'confirmed')
         .map((pocket) => ({ pocket, candidate: getSelectedCandidate(pocket) }))
         .filter((entry): entry is { pocket: BinderPagePocketResult; candidate: NonNullable<ReturnType<typeof getSelectedCandidate>> } => Boolean(entry.candidate));
-      if (!confirmed.length) throw new Error('Confirm at least one pocket before saving.');
       const { data: { session: authSession } } = await supabase.auth.getSession();
       if (
         !currentSession
@@ -558,32 +556,33 @@ export default function BinderPageScanResultScreen() {
         throw new Error('Sign in with the account that started this binder page review before saving.');
       }
       const databaseStartedAt = Date.now();
-      const cards = confirmed.map(({ pocket, candidate }) => ({
-        cardId: candidate.id,
-        setId: candidate.set_id ?? '',
-        language: candidate.language ?? null,
-        quantity: 1,
-        cardName: candidate.name,
-        cardNumber: candidate.number ?? null,
-        imageUrl: candidate.image_small ?? candidate.image_large ?? null,
-        setName: candidate.set_name ?? null,
-        notes: `Binder page ${page}, pocket ${pocket.row + 1}-${pocket.column + 1}`,
-        slotOrder: (page - 1) * 25 + pocket.index,
-      })).filter((card) => Boolean(card.setId));
-      if (!cards.length) throw new Error('Confirmed pockets are missing a set identity. Correct those pockets before saving.');
       const sourceSessionId = scanSessionId ?? currentSession.scanSessionId;
-      const requestKey = createCollectionBatchRequestKey({
-        sourceSessionId,
-        binderId,
-        cards,
-      });
-      const intent = await persistVerifiedCollectionBatchRecoveryIntent({
-        sourceSessionId,
-        binderId,
-        cards,
-        requestKey,
-      });
-      const saved = await addOwnedCardBatchToBinder(intent.binderId, [...intent.cards], { requestKey: intent.requestKey });
+      // A persisted request freezes the original destination and pockets. A
+      // reopened review may have page 1 selected or later edits; history repair
+      // must resume that request instead of inventing another collection add.
+      let intent = await loadCollectionBatchRecoveryIntent(sourceSessionId);
+      if (!intent) {
+        const pendingFailure = pocketMutationFailuresRef.current.find((failure) => failure.sequence <= saveMutationSequence);
+        if (pendingFailure) throw pendingFailure.error;
+        if (!confirmed.length) throw new Error('Confirm at least one pocket before saving.');
+        const cards = confirmed.map(({ pocket, candidate }) => ({
+          cardId: candidate.id,
+          setId: candidate.set_id ?? '',
+          language: candidate.language ?? null,
+          quantity: 1,
+          cardName: candidate.name,
+          cardNumber: candidate.number ?? null,
+          imageUrl: candidate.image_small ?? candidate.image_large ?? null,
+          setName: candidate.set_name ?? null,
+          notes: `Binder page ${page}, pocket ${pocket.row + 1}-${pocket.column + 1}`,
+          slotOrder: (page - 1) * 25 + pocket.index,
+        })).filter((card) => Boolean(card.setId));
+        if (!cards.length) throw new Error('Confirmed pockets are missing a set identity. Correct those pockets before saving.');
+        const requestKey = createCollectionBatchRequestKey({ sourceSessionId, binderId, cards });
+        intent = await persistVerifiedCollectionBatchRecoveryIntent({ sourceSessionId, binderId, cards, requestKey });
+      }
+      binderId = intent.binderId;
+      const saved = await resumeOwnedCardBatchToBinder(intent.binderId, [...intent.cards], { requestKey: intent.requestKey });
       const databaseSaveMs = Date.now() - databaseStartedAt;
 
       if (scanSessionId) {
@@ -609,14 +608,15 @@ export default function BinderPageScanResultScreen() {
       }
 
       invalidateBinderCaches(binderId);
-      if (scanSessionId && currentSession) {
+      if (!saved.activityFailures && scanSessionId && currentSession) {
         try {
           await markBinderPageScanSessionSaved(scanSessionId, currentSession.ownerUserId);
         } catch (recoveryError) {
           console.log('Binder page review completion checkpoint failed:', recoveryError);
         }
       }
-      Alert.alert('Binder updated', `${saved.copiesAdded} confirmed ${saved.copiesAdded === 1 ? 'copy' : 'copies'} saved.`, [
+      Alert.alert('Binder updated', `${saved.copiesAdded} confirmed ${saved.copiesAdded === 1 ? 'copy' : 'copies'} saved.${saved.activityFailures ? ' Some history entries could not be recorded. Retry this saved review to finish history without adding more copies.' : ''}`, [
+        ...(saved.activityFailures ? [{ text: 'Finish history', onPress: () => { void saveConfirmed(); } }] : []),
         {
           text: 'View binder',
           onPress: () => router.replace({

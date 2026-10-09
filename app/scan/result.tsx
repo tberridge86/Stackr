@@ -830,7 +830,7 @@ function ScanResultScreen() {
         row.set_id === selectedCard.set_id
         && normalizePokemonCardLanguage(row.language ?? selectedBinder?.language ?? 'en') === selectedLanguage
       ));
-      await saveScanCollectionVariant({
+      const saved = await saveScanCollectionVariant({
         ownerUserId: user.id,
         sourceSessionId,
         binderId: selectedBinderId,
@@ -855,7 +855,7 @@ function ScanResultScreen() {
         }),
       });
       await submitShadowPilotOutcome('added_to_collection', selectedCard, 'collection_add');
-      Alert.alert('✅ Added!', `${selectedCard.name} has been added to your binder.`, [{ text: 'OK' }]);
+      Alert.alert('✅ Added!', `${selectedCard.name} has been added to your binder.${saved.batch.activityFailures ? ' Its history entry could not be recorded. Open saved work in Scan to finish history without adding another copy.' : ''}`, [{ text: 'OK' }]);
     } catch (error: any) {
       Alert.alert('Error', error?.message ?? 'Could not add card.');
     } finally {
