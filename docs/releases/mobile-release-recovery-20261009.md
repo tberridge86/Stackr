@@ -25,6 +25,7 @@ Final local validation on the frozen application source:
 - `npm run typecheck`: passed.
 - `npm run lint`: passed, zero errors and eight pre-existing warnings.
 - `npm run test:mobile-recovery`: passed, including the main Pokédex runtime fixture.
+- Shared card-first UI checks: all 13 passed after updating the fixture's shared-loader dependency and priced visible-list binding. Home collector component regressions also passed.
 - `git diff --check`: passed.
 - Production-environment iOS export: passed, 3,362 modules; this is packaging time, not an app-loading measurement. The existing absent ignored Android `google-services.json` produced a config warning but did not prevent the iOS export.
 - `node scripts/verify-mobile-recovery-bundle.mjs .tmp/mobile-recovery-final-20261009`: passed; recovery UI content and 33 byte-identical assets verified.

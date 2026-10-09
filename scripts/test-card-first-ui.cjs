@@ -15,6 +15,7 @@ const mocks = {
   '@expo/vector-icons': { Ionicons: 'Ionicons' },
   'react-native': { Keyboard: { dismiss() { dismissals++; } }, StyleSheet: { create: (styles) => styles, hairlineWidth: 1 }, TextInput: 'TextInput', TouchableOpacity: 'TouchableOpacity', View: 'View' },
   './StackrModalSystem': { StackrBottomSheet: 'StackrBottomSheet' },
+  './StackrLoadingIndicator': { StackrLoadingIndicator: 'StackrLoadingIndicator' },
   './StackrNavigationIcon': { StackrNavigationIcon: 'StackrNavigationIcon' },
   './Text': { Text: 'Text' },
   './theme-context': { useTheme: () => ({ theme }) },
@@ -95,7 +96,7 @@ function attr(node, name) { return attrs(node).properties.find((p) => ts.isJsxAt
 test('set has one two-column grid; identity summary is its scrollable header, advanced filters are outside it', () => {
   const source = sourceFile('app/set/[id].tsx'); const grids = elements(source, 'FlatList'); assert.equal(grids.length, 1);
   assert.equal(attr(grids[0], 'numColumns').initializer.expression.text, '2');
-  assert.match(attr(grids[0], 'data').getText(source), /visibleFilteredCards/);
+  assert.match(attr(grids[0], 'data').getText(source), /pricedVisibleFilteredCards/);
   assert.match(attr(grids[0], 'ListHeaderComponent').getText(source), /StackrBrowseSummary/);
   assert.equal(elements(source, 'StackrBrowseToolbar').length, 1);
   assert.equal(elements(source, 'StackrBrowseFilterSheet').length, 1);
