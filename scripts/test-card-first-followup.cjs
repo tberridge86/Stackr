@@ -32,8 +32,8 @@ function hook(predicate) {
 }
 const sections = ['pattern', 'texture', 'masterBall', 'stamped'];
 const cards = sections.map((section, i) => Object.freeze({ id: `variant-${i}`, number: '001', name: 'Pikachu', localName: '', section, rarity: i % 2 ? 'AR' : 'Common', language: 'zh-CN' }));
-// The real screen filters the overlay result, not the raw catalogue array. Keep
-// this distinct so the harness catches a future regression back to `cards`.
+// Keep overlay rows distinct to verify that filtering/windowing still presents
+// the exact priced row, even though quote requests follow the visible window.
 const pricedCards = cards.map((card, i) => Object.freeze({ ...card, runtimeCataloguePricing: i === 2 ? Object.freeze({
   displayPrice: 12.34, currency: 'GBP', priceType: 'market_estimate', updatedAt: '2026-10-03T20:05:38.000Z',
   pricingStatus: 'stale', sourceLabel: 'Stale TCGplayer general market estimate', confidence: 'medium',
@@ -50,6 +50,15 @@ function filterContext(overrides = {}) {
   };
 }
 const ids = (rows) => Array.from(rows, (row) => row.id);
+function displayedRows(overrides = {}) {
+  const context = filterContext(overrides);
+  const filteredCards = expression(initializer('filteredCards'), context);
+  const visibleFilteredCards = expression(initializer('visibleFilteredCards'), {
+    ...context, filteredCards, visibleCardCount: context.cards.length,
+  });
+  const pricedCardsBySource = expression(initializer('pricedCardsBySource'), context);
+  return expression(initializer('pricedVisibleFilteredCards'), { ...context, visibleFilteredCards, pricedCardsBySource });
+}
 
 test('real set state and Clear all start from all finishes, with no forced default group', () => {
   const initial = expression(initializer('[finishSection, setFinishSection]'), { useState: (value) => value });
@@ -63,18 +72,17 @@ test('real set state and Clear all start from all finishes, with no forced defau
 });
 
 test('real set filter shows every printing by default and still intersects finish, ownership and rarity', () => {
-  const code = initializer('filteredCards');
   const before = JSON.stringify(cards);
-  const all = expression(code, filterContext());
+  const all = displayedRows();
   assert.deepEqual(ids(all), cards.map((row) => row.id));
   all.forEach((row, index) => assert.equal(row, pricedCards[index], 'Exact overlay row identity must be preserved'));
   assert.deepEqual(all[2].runtimeCataloguePricing, pricedCards[2].runtimeCataloguePricing,
     'Saved stale general estimates must remain attached to the real filtered row');
-  assert.deepEqual(ids(expression(code, filterContext({ finishSection: 'stamped' }))), ['variant-3']);
-  assert.deepEqual(ids(expression(code, filterContext({ filter: 'owned' }))), ['variant-1']);
-  assert.deepEqual(ids(expression(code, filterContext({ filter: 'missing', selectedRarity: 'AR' }))), ['variant-3']);
-  assert.equal(expression(code, filterContext({ search: 'not-present' })).length, 0);
-  assert.equal(expression(code, filterContext({ cards: [], pricedCards: [] })).length, 0);
+  assert.deepEqual(ids(displayedRows({ finishSection: 'stamped' })), ['variant-3']);
+  assert.deepEqual(ids(displayedRows({ filter: 'owned' })), ['variant-1']);
+  assert.deepEqual(ids(displayedRows({ filter: 'missing', selectedRarity: 'AR' })), ['variant-3']);
+  assert.equal(displayedRows({ search: 'not-present' }).length, 0);
+  assert.equal(displayedRows({ cards: [], pricedCards: [] }).length, 0);
   assert.equal(JSON.stringify(cards), before, 'Filtering must not mutate catalogue data');
 });
 
@@ -114,11 +122,12 @@ test('real toolbar retains submit callbacks and busy state; Search wires recent-
     react: { __esModule: true, default: React }, '@expo/vector-icons': { Ionicons: 'Ionicons' },
     'react-native': { ActivityIndicator: 'ActivityIndicator', Keyboard: { dismiss: () => dismissed++ }, StyleSheet: { create: (value) => value }, TextInput: 'TextInput', TouchableOpacity: 'TouchableOpacity', View: 'View' },
     './StackrModalSystem': { StackrBottomSheet: 'Sheet' }, './StackrNavigationIcon': { StackrNavigationIcon: 'Icon' },
+    './StackrLoadingIndicator': { StackrLoadingIndicator: 'StackrLoadingIndicator' },
     './Text': { Text: 'Text' }, './theme-context': { useTheme: () => ({ theme: { colors: {} } }) },
   };
   const output = ts.transpileModule(read('components/StackrBrowseControls.tsx'), { compilerOptions: { jsx: ts.JsxEmit.React, module: ts.ModuleKind.CommonJS } }).outputText;
   const module = { exports: {} };
-  vm.runInNewContext(output, { module, exports: module.exports, require: (name) => { assert.ok(name in mocks); return mocks[name]; } });
+  vm.runInNewContext(output, { module, exports: module.exports, require: (name) => { assert.ok(name in mocks, `Unexpected runtime dependency: ${name}`); return mocks[name]; } });
   function walk(node, type) {
     if (Array.isArray(node)) return node.flatMap((child) => walk(child, type));
     if (!node || typeof node !== 'object') return [];
@@ -128,10 +137,10 @@ test('real toolbar retains submit callbacks and busy state; Search wires recent-
   const toolbar = module.exports.StackrBrowseToolbar(props);
   walk(toolbar, 'TextInput')[0].props.onSubmitEditing();
   assert.equal(dismissed, 1); assert.equal(submitted, 1);
-  assert.equal(toolbar.props.accessibilityState.busy, true); assert.equal(walk(toolbar, 'ActivityIndicator').length, 1);
+  assert.equal(toolbar.props.accessibilityState.busy, true); assert.equal(walk(toolbar, 'StackrLoadingIndicator').length, 1);
   const idle = module.exports.StackrBrowseToolbar({ ...props, loading: false, onSubmitSearch: undefined });
   walk(idle, 'TextInput')[0].props.onSubmitEditing();
-  assert.equal(submitted, 1); assert.equal(walk(idle, 'ActivityIndicator').length, 0);
+  assert.equal(submitted, 1); assert.equal(walk(idle, 'StackrLoadingIndicator').length, 0);
   const search = read('app/(tabs)/search.tsx');
   assert.match(search, /onSubmitSearch=\{\(\) => \{ void rememberSearch\(\); \}\}/);
   assert.match(search, /loading=\{loading\}/); assert.match(search, /placeholder=\{showcaseConfig\?\.placeholder/);
