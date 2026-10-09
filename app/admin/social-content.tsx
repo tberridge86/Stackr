@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,

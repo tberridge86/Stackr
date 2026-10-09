@@ -6,6 +6,19 @@ import { toStackrApiLanguage } from './stackrDomainAdapter';
 import { provisionalCataloguePriceDisplay } from './cataloguePriceBaseline';
 
 type DisplayCard = { id: string; language?: string | null; rarity?: string | null; productType?: string | null; set?: unknown; pricing?: { displayPrice?: number | null } | null; externalIds?: Record<string, unknown> | null; raw_data?: any; raw?: any; card?: any };
+type CataloguePriceOverlayOptions<T extends DisplayCard> = {
+  /** Cards whose saved quotes may be read now. Every display card still receives
+   * the local raw-card fallback immediately when a saved quote is unavailable. */
+  requestCards?: T[];
+};
+
+/** Bound stored-quote reads to an incremental list's visible and next window.
+ * This does not limit offline fallback decoration for the rest of the list. */
+export function cataloguePriceReadWindow<T>(cards: T[], visibleCount: number, nearbyCount: number) {
+  const visible = Number.isFinite(visibleCount) ? Math.max(0, Math.floor(visibleCount)) : 0;
+  const nearby = Number.isFinite(nearbyCount) ? Math.max(0, Math.floor(nearbyCount)) : 0;
+  return cards.slice(0, Math.min(cards.length, visible + nearby));
+}
 
 function referenceFor(card: DisplayCard) {
   return String(card.externalIds?.stackrVariant
@@ -42,21 +55,26 @@ function provisionalDisplay(card: DisplayCard, reference: string, language: stri
 }
 
 /** Read-only general-price decoration. It stays out of catalogue records and holdings. */
-export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[]): (T & { runtimeCataloguePricing?: CataloguePriceDisplay })[] {
+export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[], options: CataloguePriceOverlayOptions<T> = {}): (T & { runtimeCataloguePricing?: CataloguePriceDisplay })[] {
   const { user } = useAuth();
   const ownerId = user?.id ?? null;
   const [saved, setSaved] = useState<{ ownerId: string | null; rows: Map<string, StackrCataloguePriceRow> }>({ ownerId: null, rows: new Map() });
-  const identityKey = cards.map((card) => `${card.id}:${languageFor(card)}:${referenceFor(card)}`).join('|');
+  const requestCards = options.requestCards ?? cards;
+  const displayIdentityKey = cards.map((card) => `${languageFor(card)}:${referenceFor(card)}`).join('|');
+  const displayKeys = useMemo(() => new Set(displayIdentityKey.split('|')), [displayIdentityKey]);
+  const requestIdentityKey = requestCards.map((card) => `${card.id}:${languageFor(card)}:${referenceFor(card)}`).join('|');
   const groups = useMemo(() => {
     const result = new Map<string, string[]>();
-    for (const card of cards) {
+    for (const card of requestCards) {
       const language = languageFor(card); const reference = referenceFor(card);
-      result.set(language, [...(result.get(language) ?? []), reference]);
+      const references = result.get(language);
+      if (references) references.push(reference);
+      else result.set(language, [reference]);
     }
     return result;
-    // Only catalogue identity changes resubscribe the overlay.
+    // Only requested catalogue identities resubscribe the stored-price reader.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [identityKey]);
+  }, [requestIdentityKey]);
   useEffect(() => {
     if (!ownerId || (process.env.EXPO_PUBLIC_STACKR_API_ENABLED !== 'true' && process.env.EXPO_PUBLIC_STACKR_API_ENABLED !== '1')) return;
     let active = true; let accountScope: string | null = null;
@@ -67,7 +85,15 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[]): (T 
         const scope = cataloguePriceScope(accountScope, { language, estimateMode: 'general' });
         for (const [reference, row] of cataloguePriceCache.peek(scope, references)) rows.set(`${language}:${reference}`, row);
       }
-      setSaved({ ownerId, rows });
+      setSaved((previous) => {
+        // A moving list window must never make already-read prices disappear.
+        // Account changes still discard the previous account's rows.
+        const nextRows = previous.ownerId === ownerId
+          ? new Map([...previous.rows].filter(([key]) => displayKeys.has(key)))
+          : new Map<string, StackrCataloguePriceRow>();
+        for (const [key, row] of rows) nextRows.set(key, row);
+        return { ownerId, rows: nextRows };
+      });
     };
     const unsubscribe = cataloguePriceCache.subscribe((scope) => {
       if (accountScope && [...groups.keys()].some((language) => cataloguePriceScope(accountScope!, { language, estimateMode: 'general' }) === scope)) publish();
@@ -77,7 +103,7 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[]): (T 
       for (const [language, references] of groups) void fetchCataloguePrices(references, { language, estimateMode: 'general' }).then(publish).catch(() => undefined);
     }).catch(() => undefined);
     return () => { active = false; unsubscribe(); };
-  }, [groups, ownerId]);
+  }, [displayKeys, groups, ownerId]);
   return useMemo(() => cards.map((card) => {
     const language = languageFor(card); const reference = referenceFor(card);
     const row = saved.ownerId === ownerId && ownerId ? saved.rows.get(`${language}:${reference}`) : undefined;

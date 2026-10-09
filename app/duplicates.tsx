@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   FlatList,
   Modal,
   Pressable,

@@ -10,8 +10,8 @@ import { Stack, router, useLocalSearchParams, usePathname } from 'expo-router';
 import { decode as decodeJpeg } from 'jpeg-js';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Svg, { Polygon } from 'react-native-svg';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   AppState,
   Image,

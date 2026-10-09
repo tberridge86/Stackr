@@ -1,8 +1,8 @@
 import { StackrBinderButton } from "./StackrBrowseControls";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Image,
   StyleSheet,
   TouchableOpacity,

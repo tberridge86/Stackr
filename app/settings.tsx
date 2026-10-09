@@ -8,7 +8,7 @@ import { useAuth } from '../components/auth-context';
 import { useTheme } from '../components/theme-context';
 import { supabase } from '../lib/supabase';
 import { getPasswordResetRedirectUrl } from '../lib/authRedirects';
-import { getStackrHapticsEnabled, hydrateStackrHapticsPreference, saveStackrHapticsEnabled } from '../lib/haptics';
+import { getStackrHapticsEnabled, hydrateStackrHapticsPreference, saveStackrHapticsEnabled, testStackrHaptics } from '../lib/haptics';
 import { cardMotionPreference, useCardMotionPreference } from '../lib/cardMotionPreference';
 import { CollectionDataControls } from '../components/CollectionDataControls';
 import { MintyPreferenceControls } from '../components/MintyPreferenceControls';
@@ -72,6 +72,15 @@ export default function SettingsScreen() {
       await Linking.openSettings();
     });
   };
+  const testTouchFeedback = () => {
+    void run('Test touch feedback', async () => {
+      const result = await testStackrHaptics();
+      if (result === 'requested') return 'Touch feedback test complete. If you did not feel a short tap, check your device’s haptics settings.';
+      if (result === 'disabled') return 'Touch feedback is off. Turn it on above, then try again.';
+      if (result === 'unsupported') return 'Touch feedback is not available in the browser.';
+      return 'Touch feedback could not play. Check your device’s haptics settings, then try again.';
+    });
+  };
   const signOut = (scope: 'local' | 'others') => {
     const expectedAccount = accountId;
     Alert.alert(scope === 'local' ? 'Log out of this device?' : 'Sign out other sessions?',
@@ -107,6 +116,7 @@ export default function SettingsScreen() {
     </UtilityGroup>
     <UtilityGroup title="Appearance & accessibility">
       <UtilityRow title="Touch feedback" detail="Haptics for Stackr actions on this device." trailing={<Switch trackColor={{ true: theme.colors.primary }} accessibilityLabel="Touch feedback" value={haptics} disabled={!!busy || !hapticsLoaded} onValueChange={value => { void run('Save touch feedback', async () => { await saveStackrHapticsEnabled(value); setHaptics(value); }); }} />} />
+      <UtilityRow title="Test touch feedback" detail="Feel a sample of Stackr’s touch feedback." disabled={!!busy || !hapticsLoaded} onPress={testTouchFeedback} />
       <UtilityRow title="Reduce card motion" detail="Turn off card tilt and lighting. Your device’s Reduce Motion setting is always respected." trailing={<Switch trackColor={{ true: theme.colors.primary }} accessibilityLabel="Reduce card motion" value={motion.reduced} disabled={!!busy || (!motion.loaded && !motion.error)} onValueChange={value => { void run('Save card motion', () => cardMotionPreference.save(value)); }} />} />
       {motion.error ? <UtilityRow title="Card motion preference could not load" detail="Motion is paused. Change the switch to save a choice or reopen Settings to retry." /> : null}
       <UtilityRow title="Text size" detail="Stackr follows your device’s text size. Change it in your device’s accessibility settings." />

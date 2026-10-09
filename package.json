@@ -211,7 +211,8 @@
     "catalogue-prices:guide": "node scripts/catalogue-price-guide.mjs",
     "test:next-beta-fixes": "node scripts/test-ui-standardisation.cjs && tsx scripts/test-card-finish-profiles.ts && tsx scripts/test-card-artwork-images.ts && tsx scripts/test-pricing-v2-client.ts && tsx scripts/test-catalogue-price-client.ts",
     "test:pokedex-release": "node scripts/test-pokedex-route-repair.mjs && node --import tsx scripts/test-pokedex-loading.ts",
-    "test:catalogue-price-baseline": "node --import tsx scripts/test-catalogue-price-baseline.ts && node --import tsx scripts/test-catalogue-price-client.ts"
+    "test:catalogue-price-baseline": "node --import tsx scripts/test-catalogue-price-baseline.ts && node --import tsx scripts/test-catalogue-price-client.ts",
+    "test:mobile-recovery": "node --import tsx scripts/test-stackr-loading-indicator.ts && node --import tsx scripts/test-startup-reduce-motion.ts && node --import tsx scripts/test-corocoro-issue-archive.ts && node --import tsx scripts/test-corocoro-mobile-delivery.ts && node --import tsx scripts/test-set-price-window.ts && node --import tsx scripts/test-card-inspection-interactions.ts && node --import tsx scripts/test-settings-help.ts && node --import tsx scripts/test-issue304-cold-retrieval.ts"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { stackrHaptics } from '../../lib/haptics';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   FlatList,

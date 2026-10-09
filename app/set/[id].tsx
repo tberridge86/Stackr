@@ -1,3 +1,5 @@
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
+import { getCorocoroIssuesForSet, formatCorocoroIssueMonth } from '../../lib/corocoroIssueArchive';
 import { useTheme } from '../../components/theme-context';
 import { stackrHaptics } from '../../lib/haptics';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -7,7 +9,6 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
   Alert,
 } from 'react-native';
@@ -32,7 +33,7 @@ import { isSetVariantQuantitySchemaUnavailable } from '../../lib/setVariantRemov
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { useAuth } from '../../components/auth-context';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
-import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
+import { cataloguePriceReadWindow, useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 import type { CataloguePriceDisplay } from '../../lib/cataloguePrices';
 
 type FilterType = 'all' | 'owned' | 'missing';
@@ -647,7 +648,6 @@ export default function SetDetailScreen() {
 
   const [setInfo, setSetInfo] = useState<PokemonSet | null>(null);
   const [cards, setCards] = useState<PokemonCard[]>([]);
-  const pricedCards = useCataloguePriceOverlay(cards);
   const [loading, setLoading] = useState(true);
   const [ownershipReady, setOwnershipReady] = useState(false);
   const loadRequestRef = useRef(0);
@@ -955,7 +955,7 @@ export default function SetDetailScreen() {
   }, [rarityFilterOptions, selectedRarity]);
 
   const filteredCards = useMemo(() => {
-    let result = pricedCards.filter((card) => {
+    let result = cards.filter((card) => {
       const variants = getVariants(card, setId);
       const anyOwned = variants.some((v) => (variantQuantities.get(getVariantKey(card.id, setId ?? '', v)) ?? 0) > 0);
       const displayName = getSetCardDisplayName(card, card.name);
@@ -985,7 +985,7 @@ export default function SetDetailScreen() {
     });
 
     return result;
-  }, [pricedCards, variantQuantities, search, filter, selectedRarity, sort, setId, finishSection, hasCompletionistSections, completionistFamilyCounts]);
+  }, [cards, variantQuantities, search, filter, selectedRarity, sort, setId, finishSection, hasCompletionistSections, completionistFamilyCounts]);
 
   const cardGridWindow = useMemo(
     () => getIncrementalListWindow(2, { initialRows: 8, pageRows: 6, minInitial: 16, minPage: 12 }),
@@ -1000,6 +1000,22 @@ export default function SetDetailScreen() {
   const visibleFilteredCards = useMemo(
     () => filteredCards.slice(0, visibleCardCount),
     [filteredCards, visibleCardCount]
+  );
+  // Read saved quotes only for what this incremental grid can show next. The
+  // overlay still decorates every card with its local raw-card fallback, so a
+  // larger set never waits for a whole-set pricing request before rendering.
+  const storedPriceCards = useMemo(
+    () => cataloguePriceReadWindow(filteredCards, visibleCardCount, cardGridWindow.pageSize),
+    [filteredCards, visibleCardCount, cardGridWindow.pageSize]
+  );
+  const pricedCards = useCataloguePriceOverlay(cards, { requestCards: storedPriceCards });
+  const pricedCardsBySource = useMemo(
+    () => new Map(cards.map((card, index) => [card, pricedCards[index] ?? card])),
+    [cards, pricedCards]
+  );
+  const pricedVisibleFilteredCards = useMemo(
+    () => visibleFilteredCards.map((card) => pricedCardsBySource.get(card) ?? card),
+    [visibleFilteredCards, pricedCardsBySource]
   );
   const hasMoreFilteredCards = visibleCardCount < filteredCards.length;
   const renderMoreFilteredCards = useCallback(() => {
@@ -1099,6 +1115,16 @@ export default function SetDetailScreen() {
       <StackrBackdrop />
       <View style={{ paddingHorizontal: 16, paddingTop: 2, marginBottom: 2 }}>
         <StackrBackButton onPress={() => router.back()} />
+        {getCorocoroIssuesForSet(setId ?? '').map(issue => (
+          <TouchableOpacity key={issue.id} accessibilityRole="button"
+            accessibilityLabel={`Open ${formatCorocoroIssueMonth(issue.issueMonth)} CoroCoro magazine binder`}
+            onPress={() => router.push({ pathname: '/corocoro', params: { issue: issue.id } })}
+            style={{ paddingVertical: 12, minHeight: 44 }}>
+            <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>
+              CoroCoro · {formatCorocoroIssueMonth(issue.issueMonth)} edition
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <StackrBrowseToolbar
@@ -1118,7 +1144,7 @@ export default function SetDetailScreen() {
         testID="set-card-grid"
         style={{ flex: 1 }}
         keyboardShouldPersistTaps="handled"
-        data={visibleFilteredCards}
+        data={pricedVisibleFilteredCards}
         keyExtractor={(item, index) => `${setId ?? item.set?.id ?? 'set'}:${item.id}:${item.number ?? 'no-number'}:${item.rarity ?? 'rarity'}:${index}`}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between' }}

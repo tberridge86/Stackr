@@ -1,7 +1,8 @@
 import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { usePreventRemove } from '@react-navigation/native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, TouchableOpacity, View, Alert } from 'react-native';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
+import { ScrollView, TouchableOpacity, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { StackrBackButton } from '../../components/StackrBackButton';

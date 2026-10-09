@@ -2,13 +2,13 @@ import { StackrButton } from '../../components/StackrControls';
 import { theme } from '../../lib/theme';
 import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
   View,
   ScrollView,
   TextInput,
   Image,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { Text } from '../../components/Text';

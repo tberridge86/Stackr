@@ -3,8 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Animated,
   Image,
   Modal,

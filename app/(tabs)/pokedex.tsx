@@ -1,7 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Pressable,
@@ -31,7 +31,7 @@ type PokemonListItem = {
   url: string;
 };
 
-type PokemonEntry = {
+export type PokemonEntry = {
   id: number;
   name: string;
   url: string;
@@ -63,7 +63,10 @@ const REGION_FILTERS: { key: RangeKey; label: string; source: ImageSourcePropTyp
 ];
 
 const POKEDEX_LIST_LIMIT = 1350;
-const POKEAPI_LIST_URL = `https://pokeapi.co/api/v2/pokemon?limit=${POKEDEX_LIST_LIMIT}`;
+const POKEDEX_INITIAL_LIST_LIMIT = 151;
+const getPokeApiListUrl = (offset: number, limit: number) => (
+  `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`
+);
 const POKEDEX_CACHE_KEY = 'stackr:pokedex:pokemon-list:v1';
 
 let pokemonMemoryCache: PokemonEntry[] | null = null;
@@ -98,6 +101,95 @@ const mapPokemonResults = (results: PokemonListItem[]): PokemonEntry[] =>
     }))
     .filter((item) => item.id > 0)
     .sort((a, b) => a.id - b.id);
+
+const mergePokemonResults = (...pages: PokemonEntry[][]): PokemonEntry[] => {
+  const byId = new Map<number, PokemonEntry>();
+  for (const page of pages) {
+    for (const entry of page) byId.set(entry.id, entry);
+  }
+  return Array.from(byId.values()).sort((a, b) => a.id - b.id);
+};
+
+type PokeApiPageResponse = {
+  ok: boolean;
+  status: number;
+  json: () => Promise<unknown>;
+};
+
+type PokedexPageFetcher = (url: string) => Promise<PokeApiPageResponse>;
+
+const readPokemonPage = async (fetchPage: PokedexPageFetcher, offset: number, limit: number) => {
+  const response = await fetchPage(getPokeApiListUrl(offset, limit));
+  if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
+  const json = await response.json() as { count?: unknown; results?: unknown };
+  if (!Array.isArray(json.results) || !json.results.every((item) => {
+    if (!item || typeof item !== 'object'
+      || typeof item.name !== 'string' || !item.name.trim()
+      || typeof item.url !== 'string') return false;
+    const id = getPokemonIdFromUrl(item.url);
+    return Number.isSafeInteger(id) && id > 0;
+  })) throw new Error('PokeAPI returned malformed Pokémon results');
+  return { count: json.count, entries: mapPokemonResults(json.results as PokemonListItem[]) };
+};
+
+/**
+ * Fetch the capped catalogue in two bounded phases. The first callback is for
+ * display only; callers must cache only this function's fully validated return.
+ */
+export async function fetchCompletePokedex(
+  fetchPage: PokedexPageFetcher,
+  onFirstPage: (entries: PokemonEntry[]) => void,
+): Promise<PokemonEntry[]> {
+  const first = await readPokemonPage(fetchPage, 0, POKEDEX_INITIAL_LIST_LIMIT);
+  const reportedTotal = Number(first.count);
+  if (!Number.isSafeInteger(reportedTotal) || reportedTotal < 1) {
+    throw new Error('PokeAPI returned an invalid Pokémon count');
+  }
+
+  const cappedTotal = Math.min(POKEDEX_LIST_LIMIT, reportedTotal);
+  const expectedFirstPageLength = Math.min(cappedTotal, POKEDEX_INITIAL_LIST_LIMIT);
+  if (mergePokemonResults(first.entries).length !== expectedFirstPageLength) {
+    throw new Error('PokeAPI returned a truncated first Pokémon page');
+  }
+  onFirstPage(first.entries);
+
+  const remainingLimit = cappedTotal - first.entries.length;
+  if (!remainingLimit) return first.entries;
+
+  const remaining = await readPokemonPage(fetchPage, first.entries.length, remainingLimit);
+  const complete = mergePokemonResults(first.entries, remaining.entries);
+  if (complete.length !== cappedTotal) {
+    throw new Error('PokeAPI returned a truncated Pokémon continuation');
+  }
+  return complete;
+}
+
+type PokedexRemoteLoadOptions = {
+  hasCachedPokemon: boolean;
+  isActive: () => boolean;
+  publishPartial: (entries: PokemonEntry[]) => void;
+  publishComplete: (entries: PokemonEntry[]) => void;
+  persistComplete: (entries: PokemonEntry[]) => Promise<void>;
+  setLoadingMore: (loading: boolean) => void;
+};
+
+/** Keep partial display data out of every cache and ignore superseded loads. */
+export async function loadPokedexRemote(
+  fetchPage: PokedexPageFetcher,
+  options: PokedexRemoteLoadOptions,
+): Promise<'complete' | 'stale'> {
+  const complete = await fetchCompletePokedex(fetchPage, (firstPage) => {
+    if (!options.isActive()) return;
+    if (!options.hasCachedPokemon) options.publishPartial(firstPage);
+    options.setLoadingMore(true);
+  });
+  if (!options.isActive()) return 'stale';
+
+  options.publishComplete(complete);
+  if (!options.isActive()) return 'stale';
+  await options.persistComplete(complete);
+  return options.isActive() ? 'complete' : 'stale';
+}
 
 const isPokemonEntryArray = (value: unknown): value is PokemonEntry[] =>
   Array.isArray(value) &&
@@ -137,8 +229,12 @@ export default function PokedexScreen() {
   const itemWidth = (width - 36 - (numColumns + 1) * 6) / numColumns;
 
   const [pokemon, setPokemon] = useState<PokemonEntry[]>([]);
+  const [pokemonTotal, setPokemonTotal] = useState(POKEDEX_LIST_LIMIT);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadEpoch, setReloadEpoch] = useState(0);
   const [selectedRange, setSelectedRange] = useState<RangeKey>('all');
   const [ownedPokemonNames, setOwnedPokemonNames] = useState<Set<string>>(new Set());
   const [compactProgress, setCompactProgress] = useState(false);
@@ -146,16 +242,22 @@ export default function PokedexScreen() {
   useEffect(() => {
     let active = true;
 
-    const applyPokemon = (mapped: PokemonEntry[]) => {
-      pokemonMemoryCache = mapped;
+    const publishPokemon = (mapped: PokemonEntry[]) => {
       if (!active) return;
       setPokemon(mapped);
       setLoading(false);
     };
 
+    const applyCompletePokemon = (mapped: PokemonEntry[]) => {
+      if (!active) return;
+      pokemonMemoryCache = mapped;
+      setPokemonTotal(mapped.length);
+      publishPokemon(mapped);
+    };
+
     const loadCachedPokemon = async () => {
       if (pokemonMemoryCache?.length) {
-        applyPokemon(pokemonMemoryCache);
+        applyCompletePokemon(pokemonMemoryCache);
         return true;
       }
 
@@ -166,7 +268,7 @@ export default function PokedexScreen() {
         const parsed = JSON.parse(cached);
         if (!isPokemonEntryArray(parsed) || parsed.length === 0) return false;
 
-        applyPokemon(parsed);
+        applyCompletePokemon(parsed);
         return true;
       } catch (error) {
         console.log('Failed to load cached Pokédex', error);
@@ -175,28 +277,45 @@ export default function PokedexScreen() {
     };
 
     const loadRemotePokemon = async (hasCachedPokemon: boolean) => {
+      let publishedPartial = false;
       try {
+        if (active) setLoadError(null);
         if (!hasCachedPokemon && active) setLoading(true);
 
-        const response = await fetch(POKEAPI_LIST_URL);
-        if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
-
-        const json = await response.json();
-
-        const results: PokemonListItem[] = Array.isArray(json?.results)
-          ? json.results
-          : [];
-
-        const mapped = mapPokemonResults(results);
-
-        applyPokemon(mapped);
-        AsyncStorage.setItem(POKEDEX_CACHE_KEY, JSON.stringify(mapped)).catch((cacheError) => {
-          console.log('Failed to cache Pokédex', cacheError);
+        await loadPokedexRemote(fetch, {
+          hasCachedPokemon,
+          isActive: () => active,
+          // A cold tab can become useful after Kanto has arrived. Do not replace
+          // a complete cached list with this display-only partial page.
+          publishPartial: (firstPage) => {
+            publishedPartial = true;
+            publishPokemon(firstPage);
+          },
+          publishComplete: applyCompletePokemon,
+          setLoadingMore,
+          persistComplete: async (mapped) => {
+            if (!active) return;
+            try {
+              await AsyncStorage.setItem(POKEDEX_CACHE_KEY, JSON.stringify(mapped));
+            } catch (cacheError) {
+              if (active) console.log('Failed to cache Pokédex', cacheError);
+            }
+          },
         });
       } catch (error) {
         console.log('Failed to load Pokédex', error);
+        if (active) {
+          setLoadError(hasCachedPokemon
+            ? 'Could not refresh the Pokédex. Showing saved results.'
+            : publishedPartial
+              ? 'Could not load the full Pokédex. Showing the Pokémon loaded so far.'
+              : 'Could not load the Pokédex. Check your connection and try again.');
+        }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     };
 
@@ -210,7 +329,7 @@ export default function PokedexScreen() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [reloadEpoch]);
 
   useFocusEffect(
     useCallback(() => {
@@ -269,7 +388,9 @@ export default function PokedexScreen() {
   }, [isPokemonOwned, pokemon]);
 
   const ownedPokedexCount = ownedPokemonIds.size;
-  const pokedexTotal = pokemon.length || POKEDEX_LIST_LIMIT;
+  const pokedexTotal = pokemonTotal;
+  const incompletePokedex = pokemon.length < pokedexTotal;
+  const pendingPokedex = incompletePokedex && (loading || loadingMore);
 
   const mastersetProgress = pokedexTotal ? ownedPokedexCount / pokedexTotal : 0;
   const mastersetPercent = Math.round(mastersetProgress * 100);
@@ -412,13 +533,34 @@ export default function PokedexScreen() {
                 {mastersetPercent}% complete
               </Text>
               <Text style={styles.mastersetProgressValue}>
-                {loading ? 'Loading...' : `${filteredPokemon.length} shown`}
+                {loading ? 'Loading...' : loadingMore ? 'Loading more...' : `${filteredPokemon.length} shown`}
               </Text>
             </View>
           )}
         </View>
 
-        {loading ? (
+        {loadError ? (
+          <View style={styles.loadError} accessibilityRole="alert">
+            <Text style={styles.loadErrorText}>{loadError}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading the Pokédex"
+              onPress={() => setReloadEpoch((current) => current + 1)}
+              style={({ pressed }) => [styles.loadRetry, pressed && styles.cardPressed]}
+            >
+              <Text style={styles.loadRetryText}>Retry</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {loadingMore && pokemon.length > 0 ? (
+          <View style={styles.loadingMore} accessible accessibilityRole="progressbar" accessibilityLabel="Loading more Pokémon" accessibilityState={{ busy: true }}>
+            <ActivityIndicator color={theme.colors.primary} size="small" />
+            <Text style={styles.loadingMoreText}>Loading more Pokémon...</Text>
+          </View>
+        ) : null}
+
+        {loading && pokemon.length === 0 ? (
           <View style={styles.loadingWrap}>
             <ActivityIndicator color={theme.colors.primary} size="large" />
             <Text style={styles.loadingText}>Loading full Pokédex...</Text>
@@ -445,9 +587,9 @@ export default function PokedexScreen() {
             ListFooterComponent={<View style={{ height: 40 }} />}
             ListEmptyComponent={
               <View style={styles.emptyCard}>
-                <Text style={styles.emptyTitle}>No Pokémon found</Text>
+                <Text style={styles.emptyTitle}>{pendingPokedex ? 'More Pokémon are still loading' : loadError && incompletePokedex ? 'Some Pokémon could not load' : 'No Pokémon found'}</Text>
                 <Text style={styles.emptyText}>
-                  Try a different name, number, or region.
+                  {pendingPokedex ? 'Results will appear as loading completes.' : loadError && incompletePokedex ? 'Tap Retry to load the remaining Pokémon.' : 'Try a different name, number, or region.'}
                 </Text>
               </View>
             }
@@ -663,6 +805,48 @@ function makeStyles(theme: any) {
     color: theme.colors.textSoft,
     marginTop: 12,
     fontWeight: '700',
+  },
+  loadError: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '20',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    marginBottom: 8,
+  },
+  loadErrorText: {
+    flex: 1,
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+  },
+  loadRetry: {
+    backgroundColor: theme.colors.primary + '14',
+    borderRadius: 9,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  loadRetryText: {
+    color: theme.colors.primary,
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  loadingMore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 4,
+    paddingBottom: 8,
+  },
+  loadingMoreText: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    fontWeight: '800',
   },
   emptyCard: {
     backgroundColor: theme.colors.card,

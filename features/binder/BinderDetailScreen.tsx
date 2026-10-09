@@ -18,8 +18,8 @@ import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueI
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   FlatList,

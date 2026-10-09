@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Image,
   StyleSheet,
   TouchableOpacity,

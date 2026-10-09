@@ -1,4 +1,5 @@
 import { stackrHaptics } from '../lib/haptics';
+import { useCardMotionPreference } from '../lib/cardMotionPreference';
 import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { useIsFocused } from '@react-navigation/native';
 import { getCardFinishMetadata, resolveCardFinish, type CardFinishMetadata } from '../lib/cardFinishProfiles';
@@ -131,7 +132,9 @@ export function InteractiveCardInspectPressable({
 }: InteractiveCardInspectPressableProps) {
   const skipNextPressRef = React.useRef(false);
   const canOpenDetail = Boolean(onOpenDetail && !disabled);
-  const reducedMotion = useReducedMotion();
+  const systemReducedMotion = useReducedMotion();
+  const motionPreference = useCardMotionPreference();
+  const reducedMotion = systemReducedMotion || motionPreference.reduced || !motionPreference.loaded;
   const tapProgress = useSharedValue(0);
   const pressedOpacity = Math.max(0.94, Math.min(1, activeOpacity));
 
@@ -271,7 +274,9 @@ export function CardDetailInspectSurface({
   previewTilt,
 }: CardDetailInspectSurfaceProps) {
   const systemReducedMotion = useReducedMotion();
-  const reducedMotion = systemReducedMotion || forceReducedMotion;
+  const motionPreference = useCardMotionPreference();
+  // Match the full-screen inspector: pending or failed preference reads remain still.
+  const reducedMotion = systemReducedMotion || forceReducedMotion || motionPreference.reduced || !motionPreference.loaded;
   const isFocused = useIsFocused();
   const [foreground, setForeground] = React.useState(AppState.currentState !== 'background');
   React.useEffect(() => {

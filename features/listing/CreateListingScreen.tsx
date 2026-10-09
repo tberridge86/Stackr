@@ -7,8 +7,8 @@ import { preferenceAwareHaptics as Haptics } from '../../lib/haptics';
 import * as ImagePicker from 'expo-image-picker';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   BackHandler,
   Image,

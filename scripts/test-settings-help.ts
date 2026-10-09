@@ -96,6 +96,7 @@ async function main() {
   assert.equal(mail.length, openedBeforeExit, 'leaving Help must cancel a delayed composer open');
   disk.setItem = saveImmediately;
   let haptics = true;
+  let hapticTests = 0;
   const signOutScopes: string[] = [];
   let buttons: { text: string; onPress?: () => void }[] = [];
   common['react-native'].Alert.alert = (_title: string, _body: string, actions: typeof buttons) => { buttons = actions; };
@@ -106,7 +107,8 @@ async function main() {
   common['../lib/authRedirects'] = { getPasswordResetRedirectUrl: () => 'stackr://reset-password' };
   common['../lib/cardMotionPreference'] = { cardMotionPreference: { save: async () => {} }, useCardMotionPreference: () => ({ reduced: false, loaded: true, error: false }) };
   common['../lib/haptics'] = { getStackrHapticsEnabled: () => haptics, hydrateStackrHapticsPreference: async () => haptics,
-    saveStackrHapticsEnabled: async (value: boolean) => { if (failSave) throw new Error('disk'); haptics = value; } };
+    saveStackrHapticsEnabled: async (value: boolean) => { if (failSave) throw new Error('disk'); haptics = value; },
+    testStackrHaptics: async () => { hapticTests += 1; return 'requested'; } };
   common['../lib/supabase'] = { supabase: { auth: { getUser: async () => ({ data: { user: account } }),
     signOut: async ({ scope }: { scope: string }) => { signOutScopes.push(scope); return {}; } } } };
   account = { id: 'A', email: 'A@example.invalid', identities: [{ provider: 'apple' }] };
@@ -120,6 +122,8 @@ async function main() {
   failSave = false;
   await act(async () => { hapticSwitch().props.onValueChange(false); });
   assert.equal(hapticSwitch().props.value, false);
+  await act(async () => { root.root.findByProps({ title: 'Test touch feedback' }).props.onPress(); });
+  assert.equal(hapticTests, 1, 'Settings must expose the existing preference-aware haptic request.');
   await act(async () => { root.root.findByProps({ title: 'Sign out other sessions' }).props.onPress(); });
   const oldConfirmation = buttons.find(button => button.text === 'Sign out others')!.onPress!;
   account = { id: 'B', email: 'B@example.invalid', identities: [{ provider: 'email' }] };

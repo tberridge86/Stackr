@@ -7,8 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Keyboard,
@@ -503,7 +503,10 @@ function mapSetRow(row: any): SetResult {
 
 async function searchSetsQuick(primary: string, terms: string[], language: SearchLanguageFilter = 'all') {
   const safePrimary = primary.trim();
-  const mappedSets = await fetchAllSets({ language });
+  // Set facts are sufficient to rank the small result rail. The result tiles
+  // retain their approved/local logo fallbacks, so do not page every catalogue
+  // set-artwork manifest before showing a maximum of twelve matches.
+  const mappedSets = await fetchAllSets({ language, includeAssets: false });
   if (safePrimary.length < 2) return mappedSets;
 
   return mappedSets

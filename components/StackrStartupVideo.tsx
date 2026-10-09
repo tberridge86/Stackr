@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 
-const STARTUP_VIDEO = require('../assets/startup/stackr-loading-screen-exact.mp4');
-const STARTUP_POSTER = require('../assets/startup/stackr-loading-poster.png');
+const STARTUP_VIDEO = require('../assets/startup/stackr-premium-opening.mp4');
+const STARTUP_POSTER = require('../assets/startup/stackr-premium-poster.png');
 export const STARTUP_VIDEO_TIMEOUT_MS = 12_000;
 
 type Props = { onComplete?: () => void; preview?: boolean };
 
-/** Local, unchanged 5.534-second clip. Playback never gates authentication. */
+/** Local 4.2-second premium logo reveal. Playback never gates authentication. */
 export function StackrStartupVideo({ onComplete, preview = false }: Props) {
   const { width, height } = useWindowDimensions();
   const size = Math.min(width, height);

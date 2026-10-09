@@ -3,10 +3,10 @@ import { StackrCardArtworkFallback } from '../../components/StackrArtworkFallbac
 import { stackrCardImageSizes } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
   View,
   TouchableOpacity,
-  ActivityIndicator,
   ScrollView,
   Alert,
   FlatList,

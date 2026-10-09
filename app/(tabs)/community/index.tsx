@@ -2,10 +2,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StackrBottomSheet } from '../../../components/StackrModalSystem';
 import { useTheme } from '../../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../../components/StackrLoadingIndicator';
 import {
   View,
   FlatList,
-  ActivityIndicator,
   StyleSheet,
   Image,
   Pressable,
