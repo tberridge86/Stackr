@@ -1,3 +1,4 @@
+import { normalizeCardTranslationName, resolveCardEnglishSupplement } from './cardNameTranslations.js';
 import {
   JAPANESE_SET_DISPLAY_DRAFT_LOOKUP_METADATA,
   JAPANESE_SET_DISPLAY_DRAFTS_BY_CODE,
@@ -14,179 +15,6 @@ import {
   STACKR_JAPANESE_SET_IDENTITIES_BY_CODE,
   STACKR_JAPANESE_SET_IDENTITY_LOOKUP_METADATA,
 } from './generated/stackrJapaneseSetIdentity.generated.mjs';
-
-const KANTO_SPECIES_BY_DEX_ID = {
-  1: 'Bulbasaur',
-  2: 'Ivysaur',
-  3: 'Venusaur',
-  4: 'Charmander',
-  5: 'Charmeleon',
-  6: 'Charizard',
-  7: 'Squirtle',
-  8: 'Wartortle',
-  9: 'Blastoise',
-  10: 'Caterpie',
-  11: 'Metapod',
-  12: 'Butterfree',
-  13: 'Weedle',
-  14: 'Kakuna',
-  15: 'Beedrill',
-  16: 'Pidgey',
-  17: 'Pidgeotto',
-  18: 'Pidgeot',
-  19: 'Rattata',
-  20: 'Raticate',
-  21: 'Spearow',
-  22: 'Fearow',
-  23: 'Ekans',
-  24: 'Arbok',
-  25: 'Pikachu',
-  26: 'Raichu',
-  27: 'Sandshrew',
-  28: 'Sandslash',
-  29: 'Nidoran Female',
-  30: 'Nidorina',
-  31: 'Nidoqueen',
-  32: 'Nidoran Male',
-  33: 'Nidorino',
-  34: 'Nidoking',
-  35: 'Clefairy',
-  36: 'Clefable',
-  37: 'Vulpix',
-  38: 'Ninetales',
-  39: 'Jigglypuff',
-  40: 'Wigglytuff',
-  41: 'Zubat',
-  42: 'Golbat',
-  43: 'Oddish',
-  44: 'Gloom',
-  45: 'Vileplume',
-  46: 'Paras',
-  47: 'Parasect',
-  48: 'Venonat',
-  49: 'Venomoth',
-  50: 'Diglett',
-  51: 'Dugtrio',
-  52: 'Meowth',
-  53: 'Persian',
-  54: 'Psyduck',
-  55: 'Golduck',
-  56: 'Mankey',
-  57: 'Primeape',
-  58: 'Growlithe',
-  59: 'Arcanine',
-  60: 'Poliwag',
-  61: 'Poliwhirl',
-  62: 'Poliwrath',
-  63: 'Abra',
-  64: 'Kadabra',
-  65: 'Alakazam',
-  66: 'Machop',
-  67: 'Machoke',
-  68: 'Machamp',
-  69: 'Bellsprout',
-  70: 'Weepinbell',
-  71: 'Victreebel',
-  72: 'Tentacool',
-  73: 'Tentacruel',
-  74: 'Geodude',
-  75: 'Graveler',
-  76: 'Golem',
-  77: 'Ponyta',
-  78: 'Rapidash',
-  79: 'Slowpoke',
-  80: 'Slowbro',
-  81: 'Magnemite',
-  82: 'Magneton',
-  83: "Farfetch'd",
-  84: 'Doduo',
-  85: 'Dodrio',
-  86: 'Seel',
-  87: 'Dewgong',
-  88: 'Grimer',
-  89: 'Muk',
-  90: 'Shellder',
-  91: 'Cloyster',
-  92: 'Gastly',
-  93: 'Haunter',
-  94: 'Gengar',
-  95: 'Onix',
-  96: 'Drowzee',
-  97: 'Hypno',
-  98: 'Krabby',
-  99: 'Kingler',
-  100: 'Voltorb',
-  101: 'Electrode',
-  102: 'Exeggcute',
-  103: 'Exeggutor',
-  104: 'Cubone',
-  105: 'Marowak',
-  106: 'Hitmonlee',
-  107: 'Hitmonchan',
-  108: 'Lickitung',
-  109: 'Koffing',
-  110: 'Weezing',
-  111: 'Rhyhorn',
-  112: 'Rhydon',
-  113: 'Chansey',
-  114: 'Tangela',
-  115: 'Kangaskhan',
-  116: 'Horsea',
-  117: 'Seadra',
-  118: 'Goldeen',
-  119: 'Seaking',
-  120: 'Staryu',
-  121: 'Starmie',
-  122: 'Mr. Mime',
-  123: 'Scyther',
-  124: 'Jynx',
-  125: 'Electabuzz',
-  126: 'Magmar',
-  127: 'Pinsir',
-  128: 'Tauros',
-  129: 'Magikarp',
-  130: 'Gyarados',
-  131: 'Lapras',
-  132: 'Ditto',
-  133: 'Eevee',
-  134: 'Vaporeon',
-  135: 'Jolteon',
-  136: 'Flareon',
-  137: 'Porygon',
-  138: 'Omanyte',
-  139: 'Omastar',
-  140: 'Kabuto',
-  141: 'Kabutops',
-  142: 'Aerodactyl',
-  143: 'Snorlax',
-  144: 'Articuno',
-  145: 'Zapdos',
-  146: 'Moltres',
-  147: 'Dratini',
-  148: 'Dragonair',
-  149: 'Dragonite',
-  150: 'Mewtwo',
-  151: 'Mew',
-};
-
-const JAPANESE_151_TRAINER_NAMES = {
-  'エネルギーシール': 'Energy Sticker',
-  'スナッチアーム': 'Grabber',
-  '古びたかいの化石': 'Antique Dome Fossil',
-  '古びたこうらの化石': 'Antique Helix Fossil',
-  '古びたひみつのコハク': 'Antique Old Amber',
-  '安全ゴーグル': 'Protective Goggles',
-  '大きなふうせん': 'Big Air Balloon',
-  'ガチガチバンド': 'Rigid Band',
-  'たべのこし': 'Leftovers',
-  'エリカの招待': "Erika's Invitation",
-  'サカキのカリスマ': "Giovanni's Charisma",
-  'ナナミの手助け': "Daisy's Help",
-  'マサキの転送': "Bill's Transfer",
-  'サイクリングロード': 'Cycling Road',
-  'ポケモンいれかえ': 'Switch',
-  '基本超エネルギー': 'Basic Psychic Energy',
-};
 
 const JAPANESE_SET_ENGLISH_NAMES_BY_ID = {
   pmcg1: 'Base Set',
@@ -605,76 +433,32 @@ export function getJapaneseSetEnglishTranslationDraft(input = {}) {
   return getExactCjkLanguage(input) === 'ja' && supplement?.status === 'model_translation_draft' ? supplement : null;
 }
 
-function readDexIds(value) {
-  const values = Array.isArray(value) ? value : value == null ? [] : [value];
-  return values.map(Number).filter((entry) => Number.isInteger(entry) && entry > 0);
-}
-
-function getJapanese151DexId(input = {}) {
-  const setKeys = [
-    input.setId,
-    input.raw?.set_id,
-    input.raw?.setId,
-    input.raw?.set?.id,
-    input.raw?.set?.tcgdex_id,
-  ].map(normalizeSetKey);
-  if (!setKeys.includes('sv2a')) return null;
-
-  const number = Number(String(input.collectorNumber ?? input.raw?.localId ?? input.raw?.number ?? '').replace(/^0+(?=\d)/, ''));
-  return Number.isInteger(number) && number >= 1 && number <= 151 ? number : null;
-}
-
-function getJapaneseCardSuffix(localName) {
-  const value = clean(localName);
-  if (!value) return '';
-  if (/(vstar)$/i.test(value)) return ' VSTAR';
-  if (/(vmax)$/i.test(value)) return ' VMAX';
-  if (/(ex)$/i.test(value)) return ' ex';
-  if (/(gx)$/i.test(value)) return ' GX';
-  if (/(break)$/i.test(value)) return ' BREAK';
-  if (/(^|[^a-z])v$/i.test(value)) return ' V';
-  return '';
+/** Reviewed names are display aliases; they do not establish printing equivalence. */
+export function getEnglishCardDisplaySupplement(input = {}) {
+  const explicitLanguage = input.language ?? input.raw?.language;
+  const region = input.region ?? input.raw?.region;
+  const id = String(input.id ?? input.sourceId ?? '').trim();
+  const language = explicitLanguage ?? region ?? id.split(':')[0];
+  const nativeName = [
+    input.localName, input.raw?.local_name, input.raw?.localName,
+    input.raw?.native_name, input.raw?.nativeName, input.raw?.name,
+    input.canonicalName, input.fallbackName,
+  ].map(normalizeCardTranslationName).find(Boolean) ?? null;
+  return resolveCardEnglishSupplement({
+    language, nativeName,
+    cardIds: [input.id, input.sourceId, input.raw?.canonicalId, input.raw?.canonical_id,
+      input.raw?.cardId, input.raw?.card_id, input.raw?.printingId, input.raw?.printing_id,
+      input.raw?.stackr?.cardId, input.raw?.stackr?.canonicalId],
+    englishNames: [input.englishDisplayName, input.raw?.english_display_name, input.raw?.englishDisplayName,
+      input.raw?.name_en, input.raw?.nameEn, input.raw?.translations?.en?.name,
+      input.raw?.translations?.['en-GB']?.name, input.raw?.translations?.['en-US']?.name],
+    englishNameProvenance: input.englishDisplayProvenance
+      ?? input.raw?.english_display_provenance ?? input.raw?.englishDisplayProvenance,
+  });
 }
 
 export function getEnglishCardDisplayName(input = {}) {
-  const explicit = [
-    input.englishDisplayName,
-    input.raw?.english_display_name,
-    input.raw?.englishDisplayName,
-    input.raw?.name_en,
-    input.raw?.nameEn,
-    input.raw?.translations?.en?.name,
-    input.raw?.translations?.['en-GB']?.name,
-    input.raw?.translations?.['en-US']?.name,
-  ].map(cleanEnglishDisplayCandidate).find(Boolean) ?? null;
-  if (explicit) return explicit;
-
-  const language = String(input.language ?? input.raw?.language ?? '').trim().toLowerCase();
-  const normalizedLanguage = language.replace(/_/g, '-');
-  const region = String(input.region ?? input.raw?.region ?? '').trim().toLowerCase();
-  const id = String(input.id ?? input.sourceId ?? '').trim().toLowerCase();
-  const isJapanese = language === 'ja' || language === 'jp' || region === 'japan' || region === 'jp' || id.startsWith('ja:');
-  if (!isJapanese) {
-    const localName = clean(input.localName) ?? clean(input.raw?.local_name) ?? clean(input.raw?.name) ?? clean(input.fallbackName);
-    const isNonEnglish = isKnownForeignLanguage(normalizedLanguage)
-      || region === 'tw'
-      || region === 'taiwan'
-      || id.startsWith('zh-tw:')
-      || id.startsWith('zh:');
-    return !isNonEnglish && localName && !containsNonEnglishScript(localName) ? localName : null;
-  }
-
-  const localName = clean(input.localName) ?? clean(input.raw?.local_name) ?? clean(input.raw?.name) ?? clean(input.fallbackName);
-  if (localName && JAPANESE_151_TRAINER_NAMES[localName]) return JAPANESE_151_TRAINER_NAMES[localName];
-
-  const dexId = getJapanese151DexId(input) ?? [
-    ...readDexIds(input.raw?.dexId),
-    ...readDexIds(input.raw?.dexIds),
-    ...readDexIds(input.raw?.nationalPokedexNumbers),
-    ...readDexIds(input.raw?.nationalPokedexNumber),
-  ][0] ?? null;
-  const speciesName = dexId == null ? null : KANTO_SPECIES_BY_DEX_ID[dexId];
-  return speciesName ? `${speciesName}${getJapaneseCardSuffix(localName)}` : null;
+  return getEnglishCardDisplaySupplement(input)?.value ?? null;
 }
 
 export function getPreferredSetDisplayName(input = {}) {

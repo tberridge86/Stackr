@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Buffer } from 'node:buffer';
-import { getEnglishCardDisplayName } from './cardDisplayNames.js';
+import { getEnglishCardDisplaySupplement } from './cardDisplayNames.js';
+import { findNativeCardNamesForEnglishQuery, normalizeCardEnglishSearchText } from './cardNameTranslations.js';
 import { matchesPokedexSpeciesName, normalisePokedexName } from './pokedexCards.js';
 
 export const STACKR_API_V1 = '1';
@@ -642,26 +643,21 @@ export function toVariant(row) {
 }
 
 function cardEnglishDisplay(row) {
-  const printing = getEnglishCardDisplayName({
+  const supplement = getEnglishCardDisplaySupplement({
     id: row.printing_id,
     setId: row.set_id,
     collectorNumber: row.collector_number,
     language: row.language_code,
     localName: row.card_native_name,
     englishDisplayName: row.card_english_display_name,
+    englishDisplayProvenance: row.card_english_display_provenance,
+    raw: { english_display_name: row.concept_english_display_name },
   });
-  if (printing) return { value: printing, source: 'printing' };
-  const concept = getEnglishCardDisplayName({
-    id: row.printing_id,
-    setId: row.set_id,
-    collectorNumber: row.collector_number,
-    language: row.language_code,
-    localName: row.card_native_name,
-    englishDisplayName: row.concept_english_display_name,
-  });
-  return concept
-    ? { value: concept, source: 'concept' }
-    : { value: null, source: null };
+  if (!supplement) return { value: null, source: null, supplement: null };
+  const source = supplement.provenance === 'explicit_english_metadata'
+    && supplement.value === row.concept_english_display_name
+    && supplement.value !== row.card_english_display_name ? 'concept' : 'printing';
+  return { value: supplement.value, source, supplement };
 }
 
 export function toCardSummary(rows) {
@@ -694,6 +690,7 @@ export function toCardSummary(rows) {
       native: row.card_native_name,
       englishDisplay: englishDisplay.value,
       englishDisplaySource: englishDisplay.source,
+      englishSupplement: englishDisplay.supplement,
     },
     details: {
       supertype: row.supertype ?? null,
@@ -1071,6 +1068,51 @@ async function searchFuzzyName(supabase, parsed, limit, language) {
       matchedNameType: match?.name_type ?? null,
     });
   });
+}
+
+/** Query only published native-name candidates, then verify each actual printing. */
+export async function searchPublishedEnglishTranslations(supabase, query, limit, language, selectedSetId = null, signal = null) {
+  const needle = normalizeCardEnglishSearchText(query);
+  const matches = findNativeCardNamesForEnglishQuery(query, language);
+  if (!needle || !matches.length) return [];
+  const languages = [...new Set(matches.map((match) => match.language))];
+  const pages = await Promise.all(languages.map(async (code) => {
+    const nativeNames = [...new Set(matches.filter((match) => match.language === code).map((match) => match.nativeName))].slice(0, 80);
+    let request = table(supabase, 'api', 'catalogue_cards').select('*')
+      .eq('language_code', code).in('card_native_name', nativeNames)
+      .order('variant_id', { ascending: true }).limit(Math.min(500, limit * 4));
+    if (selectedSetId) request = request.eq('set_id', selectedSetId);
+    if (signal) request = request.abortSignal(signal);
+    return queryRows(request);
+  }));
+  return dedupeByVariant(pages.flat()).filter((row) => (
+    (!language || row.language_code === language) && (!selectedSetId || row.set_id === selectedSetId)
+  )).flatMap((row) => {
+    const supplement = getEnglishCardDisplaySupplement({ id: row.printing_id, language: row.language_code,
+      localName: row.card_native_name, englishDisplayName: row.card_english_display_name,
+      englishDisplayProvenance: row.card_english_display_provenance });
+    const translated = normalizeCardEnglishSearchText(supplement?.value);
+    if (!translated || !translated.includes(needle)) return [];
+    return [toSearchResult(row, translated === needle ? 'exact_translated_name' : 'fuzzy_name', {
+      matchedName: supplement.value, matchedNameType: 'published_english_translation',
+    })];
+  }).slice(0, limit);
+}
+
+export function mergePublishedTranslationSearchResults(stored, translated, limit) {
+  const merged = [];
+  const seen = new Set();
+  for (let index = 0; index < Math.max(stored.length, translated.length); index++) {
+    for (const result of [stored[index], translated[index]]) {
+      if (!result) continue;
+      const key = result.variantId ?? result.cardId ?? result.setId;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(result);
+      if (merged.length === limit) return merged;
+    }
+  }
+  return merged;
 }
 
 export function searchFixtureCatalogue(query, fixture, options = {}) {
@@ -1609,6 +1651,17 @@ export function createCatalogueV1Service(options) {
         ? await fetchSetIdsByCode(searchSupabase, parsed.setCode, language) : null;
       const exactSetCollector = () => searchSetCodeCollector(searchSupabase, parsed, limit, language,
         options.collectorIdentityLookup === true, requestedSetIds);
+      const nameInSet = () => searchNameWithSetCode(searchSupabase, parsed, limit, language);
+      const nameStrategies = [
+        () => searchNames(searchSupabase, parsed, limit, language, EXACT_NAME_TYPES, () => 'exact_name'),
+        () => searchNames(searchSupabase, parsed, limit, language, ALIAS_NAME_TYPES, (type) => type === 'alias' ? 'exact_alias' : 'exact_translated_name'),
+        () => searchFuzzyName(searchSupabase, parsed, limit, language),
+      ];
+      let translationResults;
+      const translatedNames = async () => {
+        translationResults ??= await searchPublishedEnglishTranslations(searchSupabase, q, limit, language, selectedSetId);
+        return translationResults;
+      };
 
       const strategies = requestedSetIds?.length ? [exactSetCollector] : [
         () => searchCanonicalId(searchSupabase, parsed, limit),
@@ -1620,18 +1673,45 @@ export function createCatalogueV1Service(options) {
         // A set code containing digits is also a possible collector token.
         // Resolve the exact name/set pair before attempting a catalogue-wide
         // collector fallback for queries such as "Pinsir sv08.5".
-        () => searchNameWithSetCode(searchSupabase, parsed, limit, language),
+        nameInSet,
         () => searchCollectorNumber(searchSupabase, parsed, limit, language, selectedSetId, options.collectorIdentityLookup === true),
-        () => searchNames(searchSupabase, parsed, limit, language, EXACT_NAME_TYPES, () => 'exact_name'),
-        () => searchNames(searchSupabase, parsed, limit, language, ALIAS_NAME_TYPES, (type) => type === 'alias' ? 'exact_alias' : 'exact_translated_name'),
-        () => searchFuzzyName(searchSupabase, parsed, limit, language),
+        ...nameStrategies,
+        translatedNames,
       ];
 
       for (const strategy of strategies) {
-        const results = (await strategy()).filter((result) => (
+        let results = (await strategy()).filter((result) => (
           (!language || result.languageCode === language)
           && (!selectedSetId || result.setId === selectedSetId)
         ));
+        if (results.length && (strategy === nameInSet || nameStrategies.includes(strategy))) {
+          // Optional aliases must not erase a successful stored-name search.
+          // Abort the optional published-view enrichment after 450ms; the sole
+          // translation fallback still exposes genuine database failures.
+          const controller = new AbortController();
+          let timeout;
+          const deadline = new Promise((_, reject) => {
+            timeout = setTimeout(() => {
+              controller.abort();
+              reject(new ApiError(504, 'translation_search_timeout', 'Optional translation search timed out.'));
+            }, 450);
+          });
+          try {
+            // Race consumes later transport failures and prevents a late page
+            // from changing the already-returned stored-result snapshot.
+            translationResults ??= await Promise.race([
+              searchPublishedEnglishTranslations(searchSupabase, q, limit, language, selectedSetId, controller.signal),
+              deadline,
+            ]);
+            results = mergePublishedTranslationSearchResults(results, translationResults, limit);
+          } catch (error) {
+            const code = typeof error?.code === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(error.code) ? error.code : null;
+            console.warn(JSON.stringify({ event: 'optional_translation_search_failed', code }));
+          } finally {
+            clearTimeout(timeout);
+            controller.abort();
+          }
+        }
         if (results.length) {
           const cards = results.filter((result) => result.type === 'card' && result.card).map((result) => result.card);
           const hydratedCards = await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions);

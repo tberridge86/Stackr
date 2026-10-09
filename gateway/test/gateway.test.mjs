@@ -12,9 +12,35 @@ import { matchRoute } from '../src/routes.js';
 import { validateQuery } from '../src/validation.js';
 import { verifySupabaseRequest } from '../src/auth.js';
 import { createGatewayOriginAuth } from '../../backend/lib/gatewayOriginAuth.js';
+import { readPublishedPokedexIndex } from '../../backend/lib/pokedexIndex.js';
 
 const USER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const DEVICE_ID = 'device:test:00000001';
+
+test('server-owned Pokédex index accepts both app pages and rejects invalid or oversized queries', async () => {
+  const forwarded = [];
+  const deps = { cache: new MemoryCache(), fetchImpl: async (url) => {
+    const parsed = new URL(url);
+    forwarded.push(parsed);
+    return Response.json({ data: readPublishedPokedexIndex(Object.fromEntries(parsed.searchParams)), meta: { apiVersion: '1' } });
+  } };
+  const env = environment();
+  const first = await handleRequest(request('/v1/pokemon?offset=0&limit=151'), env, context(), deps);
+  const continuation = await handleRequest(request('/v1/pokemon?offset=151&limit=1199'), env, context(), deps);
+  assert.equal(first.status, 200);
+  assert.equal(continuation.status, 200);
+  const a = (await first.json()).data;
+  const b = (await continuation.json()).data;
+  assert.equal(a.indexVersion, b.indexVersion);
+  assert.equal(a.results.length + b.results.length, a.count);
+  assert.equal(forwarded[1].searchParams.get('limit'), '1199');
+  for (const query of ['offset=-1', 'offset=1.5', 'offset=NaN', 'offset=9007199254740992',
+    'limit=1351', 'limit=0', 'offset=0&offset=1', 'provider=all']) {
+    assert.equal((await handleRequest(request(`/v1/pokemon?${query}`), env, context(), deps)).status, 400, query);
+  }
+  assert.equal((await handleRequest(request('/v1/sets?limit=1199'), env, context(), deps)).status, 400,
+    'The expanded index bound never changes other route limits.');
+});
 
 test('selected-set collector searches reach the backend while unscoped and ambiguous queries stay rejected', async () => {
   const forwarded = [];

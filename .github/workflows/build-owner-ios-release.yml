@@ -7,6 +7,10 @@ on:
         description: Exact reviewed main commit to bundle in the native build
         required: true
         type: string
+      expected_backend_sha:
+        description: Exact reviewed backend source already deployed and serving the mobile API
+        required: true
+        type: string
       build_profile:
         description: Approved iOS build audience; normal production is distinct from owner recognition
         required: false
@@ -32,6 +36,7 @@ jobs:
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
       FROZEN_SOURCE_SHA: ${{ inputs.expected_main_sha }}
+      EXPECTED_BACKEND_SHA: ${{ inputs.expected_backend_sha }}
       RELEASE_BUILD_PROFILE: ${{ inputs.build_profile }}
     steps:
       - name: Check out frozen reviewed source
@@ -91,6 +96,12 @@ jobs:
             process.exit(result.status ?? 1);
             NODE
           fi
+
+      - name: Prove native content and published API delivery
+        run: |
+          npm run test:mobile-recovery
+          npm run test:server-delivery
+          node scripts/verify-ios-release-delivery.mjs
 
       - name: Start iOS build without submission
         shell: bash
@@ -159,6 +170,7 @@ jobs:
             channel: profile.channel,
             runtimeVersion: expectedRuntime,
             ownerRecognitionEnabled: isOwner,
+            delivery: JSON.parse(fs.readFileSync('outputs/releases/mobile-delivery-receipt.json', 'utf8')),
             build: {
               id: row.id,
               status: typeof row.status === 'string' ? row.status : null,
@@ -179,7 +191,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: frozen-ios-build-receipt-${{ github.run_id }}-${{ github.run_attempt }}
-          path: outputs/releases/frozen-ios-build-receipt.json
+          path: |
+            outputs/releases/frozen-ios-build-receipt.json
+            outputs/releases/mobile-delivery-receipt.json
           if-no-files-found: error
           retention-days: 14
           compression-level: 9

@@ -823,6 +823,9 @@ export function getEnglishCardDisplayName(input: CardDisplayNameInput) {
     input.raw?.translations?.['en-GB']?.name,
     input.raw?.translations?.['en-US']?.name,
   ].map(cleanEnglishDisplayCandidate).find(Boolean) ?? null;
+  // A canonical API null is an unresolved full title, not permission to infer
+  // one from a species prefix or collector number on the phone.
+  if (input.raw?.stackr?.canonical === true) return explicit;
   if (explicit) return explicit;
 
   if (!isJapaneseCard(input)) {

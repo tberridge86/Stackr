@@ -625,8 +625,11 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
   const primary = primaryCardImageAsset(card, cardAssets);
   const artwork = resolveCardArtwork(card, cardAssets);
   const raw = {
+    stackr: { canonical: true },
     english_display_name: card.names.englishDisplay,
     english_display_source: card.names.englishDisplaySource ?? null,
+    english_display_supplement: card.names.englishSupplement ?? null,
+    english_display_provenance: card.names.englishSupplement?.canonicalProvenance ?? null,
     supertype: card.details?.supertype ?? null,
     subtypes: card.details?.subtypes ?? [],
     artist: card.details?.artist ?? null,
@@ -695,6 +698,8 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
       local_name: card.names.native,
       english_display_name: presentation.englishDisplayName,
       english_display_source: card.names.englishDisplaySource ?? null,
+      english_display_supplement: card.names.englishSupplement ?? null,
+      english_display_provenance: card.names.englishSupplement?.canonicalProvenance ?? null,
       translation_status: presentation.translationStatus,
       number: card.collectorNumber.value,
       localId: card.collectorNumber.value,

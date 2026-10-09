@@ -22,6 +22,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchOwnedPokemonNameSet, pokemonNameMatchesCardName } from '../../lib/pokedexCollection';
+import { stackrApiClient } from '../../lib/stackrApiV1';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { PokemonArtworkGlow, StackrScreen } from '../../components/StackrScreen';
 import { stackrIcons } from '../../lib/stackrIcons';
@@ -64,10 +65,10 @@ const REGION_FILTERS: { key: RangeKey; label: string; source: ImageSourcePropTyp
 
 const POKEDEX_LIST_LIMIT = 1350;
 const POKEDEX_INITIAL_LIST_LIMIT = 151;
-const getPokeApiListUrl = (offset: number, limit: number) => (
-  `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`
+const getPokedexListUrl = (offset: number, limit: number) => (
+  `/pokemon?offset=${offset}&limit=${limit}`
 );
-const POKEDEX_CACHE_KEY = 'stackr:pokedex:pokemon-list:v1';
+const POKEDEX_CACHE_KEY = 'stackr:pokedex:pokemon-list:v2:published';
 
 let pokemonMemoryCache: PokemonEntry[] | null = null;
 
@@ -118,18 +119,31 @@ type PokeApiPageResponse = {
 
 type PokedexPageFetcher = (url: string) => Promise<PokeApiPageResponse>;
 
+const fetchPublishedPokedexPage: PokedexPageFetcher = async (path) => {
+  const params = new URLSearchParams(path.split('?')[1]);
+  const response = await stackrApiClient.pokemonIndex({
+    offset: Number(params.get('offset')),
+    limit: Number(params.get('limit')),
+  });
+  return { ok: true, status: 200, json: async () => response.data };
+};
+
 const readPokemonPage = async (fetchPage: PokedexPageFetcher, offset: number, limit: number) => {
-  const response = await fetchPage(getPokeApiListUrl(offset, limit));
-  if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
-  const json = await response.json() as { count?: unknown; results?: unknown };
+  const response = await fetchPage(getPokedexListUrl(offset, limit));
+  if (!response.ok) throw new Error(`Pokédex API returned ${response.status}`);
+  const json = await response.json() as { count?: unknown; indexVersion?: unknown; results?: unknown };
+  if (typeof json.indexVersion !== 'string' || !json.indexVersion.trim()) {
+    throw new Error('Pokédex API returned an invalid index version');
+  }
   if (!Array.isArray(json.results) || !json.results.every((item) => {
     if (!item || typeof item !== 'object'
       || typeof item.name !== 'string' || !item.name.trim()
       || typeof item.url !== 'string') return false;
     const id = getPokemonIdFromUrl(item.url);
     return Number.isSafeInteger(id) && id > 0;
-  })) throw new Error('PokeAPI returned malformed Pokémon results');
-  return { count: json.count, entries: mapPokemonResults(json.results as PokemonListItem[]) };
+  })) throw new Error('Pokédex API returned malformed Pokémon results');
+  return { count: json.count, indexVersion: json.indexVersion,
+    entries: mapPokemonResults(json.results as PokemonListItem[]) };
 };
 
 /**
@@ -143,13 +157,13 @@ export async function fetchCompletePokedex(
   const first = await readPokemonPage(fetchPage, 0, POKEDEX_INITIAL_LIST_LIMIT);
   const reportedTotal = Number(first.count);
   if (!Number.isSafeInteger(reportedTotal) || reportedTotal < 1) {
-    throw new Error('PokeAPI returned an invalid Pokémon count');
+    throw new Error('Pokédex API returned an invalid Pokémon count');
   }
 
   const cappedTotal = Math.min(POKEDEX_LIST_LIMIT, reportedTotal);
   const expectedFirstPageLength = Math.min(cappedTotal, POKEDEX_INITIAL_LIST_LIMIT);
   if (mergePokemonResults(first.entries).length !== expectedFirstPageLength) {
-    throw new Error('PokeAPI returned a truncated first Pokémon page');
+    throw new Error('Pokédex API returned a truncated first Pokémon page');
   }
   onFirstPage(first.entries);
 
@@ -157,9 +171,12 @@ export async function fetchCompletePokedex(
   if (!remainingLimit) return first.entries;
 
   const remaining = await readPokemonPage(fetchPage, first.entries.length, remainingLimit);
+  if (remaining.indexVersion !== first.indexVersion || remaining.count !== first.count) {
+    throw new Error('The Pokédex index changed during loading. Please retry.');
+  }
   const complete = mergePokemonResults(first.entries, remaining.entries);
   if (complete.length !== cappedTotal) {
-    throw new Error('PokeAPI returned a truncated Pokémon continuation');
+    throw new Error('Pokédex API returned a truncated Pokémon continuation');
   }
   return complete;
 }
@@ -197,9 +214,10 @@ const isPokemonEntryArray = (value: unknown): value is PokemonEntry[] =>
     (item) =>
       item &&
       typeof item === 'object' &&
-      typeof (item as PokemonEntry).id === 'number' &&
-      typeof (item as PokemonEntry).name === 'string' &&
-      typeof (item as PokemonEntry).url === 'string'
+      Number.isSafeInteger((item as PokemonEntry).id) && (item as PokemonEntry).id > 0 &&
+      typeof (item as PokemonEntry).name === 'string' && (item as PokemonEntry).name.trim().length > 0 &&
+      typeof (item as PokemonEntry).url === 'string' &&
+      getPokemonIdFromUrl((item as PokemonEntry).url) === (item as PokemonEntry).id
   );
 
 const getPokemonImageUrl = (id: number) => {
@@ -266,7 +284,8 @@ export default function PokedexScreen() {
         if (!cached) return false;
 
         const parsed = JSON.parse(cached);
-        if (!isPokemonEntryArray(parsed) || parsed.length === 0) return false;
+        if (!isPokemonEntryArray(parsed) || parsed.length !== POKEDEX_LIST_LIMIT
+          || mergePokemonResults(parsed).length !== parsed.length) return false;
 
         applyCompletePokemon(parsed);
         return true;
@@ -282,7 +301,7 @@ export default function PokedexScreen() {
         if (active) setLoadError(null);
         if (!hasCachedPokemon && active) setLoading(true);
 
-        await loadPokedexRemote(fetch, {
+        await loadPokedexRemote(fetchPublishedPokedexPage, {
           hasCachedPokemon,
           isActive: () => active,
           // A cold tab can become useful after Kanto has arrived. Do not replace

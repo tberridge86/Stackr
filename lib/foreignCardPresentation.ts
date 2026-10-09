@@ -361,8 +361,11 @@ export function buildForeignCardPresentation(card: ForeignCardPresentationInput)
     || translatedRules?.length
     || translatedAttacks?.length,
   );
+  const nameSupplement = raw?.english_display_supplement;
+  const provisionalEnglishName = nameSupplement?.value === englishDisplayName
+    && nameSupplement?.authoritative === false;
   const translationStatus = englishDisplayName
-    ? withheldNativeDetails ? 'partial' : 'verified'
+    ? withheldNativeDetails || provisionalEnglishName ? 'partial' : 'verified'
     : hasTranslatedDetails ? 'partial' : 'pending';
 
   return {

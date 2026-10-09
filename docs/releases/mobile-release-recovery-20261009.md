@@ -2,6 +2,8 @@
 
 The owner's iPhone is recorded by Apple as installed on `1.0.6 (54)`. The reported missing changes are a release-content problem. The premium opening, card-to-sleeve-to-top-loader animation and clickable CoroCoro library were omitted from the source assembled for build 54, although the work existed in the original desktop checkout. Agent implementation was not reconciled with the actual release candidate. The release should not have been represented as completing the owner's full scope.
 
+The same recovery candidate now includes the [server/API delivery correction](server-mobile-delivery-20261009.md): a first-party versioned Pokédex index, server English names/search, bounded server provisional prices, published-version/cache fixes, and a gate that verifies deployed API content before a native build. That receipt supersedes the earlier export and legacy-cache notes below. The later mobile cache key accepts only a validated complete 1,350-entry published list.
+
 ## Candidate contents
 
 The recovery branch is `codex/recover-missing-mobile-work-20261009`, based on main `e3bfacc83265090b94cbb2431495069cd8722757`. The original dirty checkout is preserved. This candidate contains no new dependencies and no server, database, catalogue or price-provider mutation.
@@ -40,7 +42,7 @@ The configured independent Stackr reviewer found no actionable task-caused corre
 - Provider-backed, calibrated price coverage across the full catalogue. The existing rarity/era fallback is low confidence and not completed-sale evidence or a current provider market quote. No current full-catalogue coverage percentage is asserted.
 - Measured cold/warm launch, search, set-card and Pokédex behavior on actual iPhone hardware. Removing blocking work does not establish universal instantaneous loading.
 - Eight documented magazine issues without supplied covers, unresolved exact card mappings and missing card artwork. Unavailable content is shown honestly.
-- Remaining HD artwork and source-backed English display/description gaps, including the previously documented incorrectly named Trainer card. No broad catalogue or translation publication is included.
+- Remaining HD artwork and source-backed English display/description gaps, including the previously documented incorrectly named Trainer card. The new candidate integrates existing approved English-name records on the server; production publication and remaining canonical corrections are not established by local tests.
 - Physical haptic, card tilt, image quality and accessibility acceptance on the uploaded replacement build.
 
 Scheduled work remains removed as requested. Completing local agent tasks does not automatically create a native release.

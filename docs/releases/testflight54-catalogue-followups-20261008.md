@@ -2,6 +2,8 @@
 
 This list records release follow-up work. It does not claim complete catalogue pricing, universal instant loading, or completed artwork/translation coverage.
 
+The [9 October server delivery candidate](server-mobile-delivery-20261009.md) integrates the existing approved English-name runtime and first-party search, and adds an explicitly provisional server price fallback. It remains undeployed. Those local corrections reduce these gaps; they do not establish complete live coverage or replace the evidence below.
+
 ## Codex can continue to audit or implement
 
 - **Prices:** Measure a bounded, reproducible sample of canonical raw-card browse results against the stored quote and local provisional-estimate paths. Check that every displayed fallback remains labelled `Estimated price (provisional baseline)`, low confidence, and never appears as a sale or current provider quote. Review and calibrate the rarity/era model only with approved evidence; retain stored quotes, account scope, and provider-request limits.

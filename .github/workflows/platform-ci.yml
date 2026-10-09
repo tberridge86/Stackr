@@ -58,6 +58,7 @@ jobs:
       - run: npm run test:pokedex-release
       - run: npm run test:catalogue-price-baseline
       - run: npm run test:mobile-recovery
+      - run: npm run test:server-delivery
       - run: npm test --prefix backend
       - run: npm run test:live-pricing
       - run: npm run test:personal-pricing
