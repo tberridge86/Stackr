@@ -107,6 +107,7 @@ jobs:
       - run: npm run test:english-set-visibility
       - run: node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-tcgdex-boundary-compatibility.ts
       - run: npm run test:tcgdex-controlled-card-reference
+      - run: npm run test:tcgdex-reference-persistence
       - run: node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-edition-aware-image-selection.ts
       - run: npm run test:binder-foreign-set-picker
       - run: npm run test:pokemon-language-flags

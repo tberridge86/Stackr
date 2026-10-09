@@ -9,7 +9,14 @@ assert.equal(selectTcgdexReferencePersistenceImage(controlled, existing), existi
 assert.equal(selectTcgdexReferencePersistenceImage('https://catalogue.stackr.test/cards/new.webp', existing), 'https://catalogue.stackr.test/cards/new.webp');
 const scanResultSource = readFileSync('app/scan/result.tsx', 'utf8');
 const collectionBatchSource = readFileSync('lib/collectionBatch.ts', 'utf8');
-assert.match(scanResultSource, /addOwnedCardBatchToBinder/, 'scan binder saves must use the verified collection batch path');
+const compositeSaveSource = readFileSync('lib/scanCollectionVariantSave.ts', 'utf8');
+assert.match(scanResultSource, /await saveScanCollectionVariant\(/, 'scan binder saves must enter the owner-bound composite save path');
+assert.match(compositeSaveSource, /persistVerifiedCollectionBatchRecoveryIntent/,
+  'composite saves must share the sanitized batch recovery intent');
+assert.match(compositeSaveSource, /addOwnedCardBatchToBinder/);
+assert.match(compositeSaveSource, /repairOwnedCardBatchActivity/);
+assert.match(compositeSaveSource, /!intent\.historyOnly && intent\.variant/,
+  'history-only repair must skip finish quantity writes');
 assert.match(collectionBatchSource, /stripTcgdexReferenceBeforePersistence\(card\.imageUrl\)/, 'batch input must exclude a new controlled display reference');
 assert.match(collectionBatchSource, /preserveExistingImageUrlBeforePersistence\([\s\S]{0,180}entry\.imageUrl,[\s\S]{0,180}existing\?\.image_url/, 'batch updates must retain the stored image baseline');
 const listingSource = readFileSync('features/listing/CreateListingScreen.tsx', 'utf8');
