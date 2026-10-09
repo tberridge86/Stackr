@@ -10,7 +10,7 @@ for (const expected of [
 assert.match(search,/category === 'sets' \? \(/);
 assert.match(search,/accessibilityState=\{\{ selected: active \}\}/);
 assert.match(search,/searchSetsQuick\(primary, normalisedTerms, selectedLanguage\)/);
-assert.match(search,/fetchAllSets\(\{ language \}\)/);
+assert.match(search,/fetchAllSets\(\{ language, includeAssets: false \}\)/);
 assert.match(search,/trimmed\.length < 2 && category === 'sets'/);
 assert.match(search,/requestId !== requestRef\.current/);
 assert.match(search,/requestRef\.current \+= 1; setFocusedResultLimit\(searchResultWindow\.initialCount\); setSelectedLanguage/);
