@@ -1,10 +1,10 @@
 import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
   View,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator,
   Alert,
   Image,
   RefreshControl,

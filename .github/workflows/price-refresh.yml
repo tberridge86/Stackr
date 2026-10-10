@@ -46,7 +46,7 @@ jobs:
     # gate so it fails visibly instead of masquerading as a healthy rollout.
     if: >-
       (github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'full-universe') ||
-      (github.event_name == 'schedule' && (github.event.schedule == '8 2 * * *' || github.event.schedule == '13 * * * *') && vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED == 'true') ||
+      (github.event_name == 'schedule' && (github.event.schedule == '8 2 * * *' || github.event.schedule == '13 * * * *') && vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED == 'true' && vars.STACKR_CATALOGUE_PRICING_SCHEDULER != 'railway') ||
       (vars.STACKR_PRICING_SCHEDULER != 'railway_catalogue' &&
        (github.event_name != 'schedule' || (github.event.schedule != '8 2 * * *' && github.event.schedule != '13 * * * *')) &&
        (github.event_name != 'schedule' || github.event.schedule != '*/5 * * * *' || vars.PRICING_ENGINE_V2_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_ENABLED == 'true' || vars.PRICING_V2_POKETRACE_SOLD_AUTHORISED == 'true'))

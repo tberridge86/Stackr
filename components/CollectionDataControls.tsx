@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Share } from 'react-native';
+import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
+import { Alert, Share } from 'react-native';
 import { createCollectionExport, CollectionExportError } from '../lib/collectionExport';
 import { supabase } from '../lib/supabase';
 import { UtilityGroup, UtilityRow } from './UtilityScreen';

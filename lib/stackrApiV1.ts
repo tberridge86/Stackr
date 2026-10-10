@@ -165,6 +165,13 @@ export type StackrCard = {
     native: string;
     englishDisplay: string | null;
     englishDisplaySource?: 'printing' | 'concept' | null;
+    englishSupplement?: {
+      value: string;
+      provenance: string;
+      authoritative: boolean;
+      sourceCardIds?: string[];
+      canonicalProvenance?: Record<string, unknown>;
+    } | null;
   };
   details?: {
     supertype: string | null;
@@ -976,6 +983,14 @@ export class StackrApiClient {
     return this.request<{ cards: StackrCard[] }>(`/pokemon/${encodeURIComponent(species)}/cards`, query);
   }
 
+  pokemonIndex(query: { offset?: number; limit?: number } = {}) {
+    return this.request<{
+      count: number;
+      indexVersion: string;
+      results: Array<{ name: string; url: string }>;
+    }>('/pokemon', query);
+  }
+
   card(cardId: string) {
     return this.request<{ card: StackrCard }>(`/cards/${encodeURIComponent(cardId)}`);
   }
@@ -1053,6 +1068,8 @@ export class StackrApiClient {
     grader?: string;
     grade?: string;
     observationType?: 'sold_observation' | 'active_listing';
+    provenOnly?: boolean;
+    soldSince?: string;
     cursor?: string | null;
     limit?: number;
   } = {}) {

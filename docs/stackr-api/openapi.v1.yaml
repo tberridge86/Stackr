@@ -193,6 +193,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CardsResponse"
+  /pokemon:
+    get:
+      tags: [Catalogue]
+      operationId: listPokemonIndex
+      summary: Reviewed server-owned Pokémon and form index; no live provider request.
+      parameters:
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 1350, default: 151 }
+        - $ref: "#/components/parameters/IfNoneMatch"
+      responses:
+        "200":
+          description: The first 1350 species/form entries, preserving the app's existing index scope.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: object
+                    required: [count, indexVersion, results]
+                    properties:
+                      count: { type: integer }
+                      indexVersion: { type: string }
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          required: [name, url]
+                          properties:
+                            name: { type: string }
+                            url: { type: string, format: uri }
+                  meta:
+                    $ref: "#/components/schemas/EnvelopeMeta"
+        "304":
+          description: The index page has not changed.
+        "400":
+          $ref: "#/components/responses/Error"
   /pokemon/{name}/cards:
     get:
       tags: [Catalogue]
@@ -313,17 +355,26 @@ paths:
           schema:
             type: string
             enum: [sold_observation, active_listing]
+        - name: provenOnly
+          in: query
+          description: Filter verified completed-sale evidence before pagination. Defaults to false.
+          schema: { type: boolean, default: false }
+        - name: soldSince
+          in: query
+          description: Include sale dates on or after this past ISO timestamp, before pagination.
+          schema: { type: string, format: date-time }
         - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/Limit"
       responses:
         "200":
-          description: Pricing evidence history with active and sold rows explicitly labelled. Private and no-store in default personal owner-only mode.
+          description: Raw near-mint history by default, with active and sold rows explicitly labelled. Exact graded history is unavailable until numeric-grade identity is exposed. Private and no-store in default personal owner-only mode.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PriceHistoryResponse"
         "400":
           $ref: "#/components/responses/Error"
+        "422": { $ref: "#/components/responses/Error" }
         "401": { $ref: "#/components/responses/Error" }
         "403": { $ref: "#/components/responses/Error" }
         "503": { $ref: "#/components/responses/Error" }
@@ -1922,6 +1973,19 @@ components:
             englishDisplaySource:
               type: [string, "null"]
               enum: [printing, concept, null]
+            englishSupplement:
+              type: [object, "null"]
+              required: [value, provenance, authoritative]
+              properties:
+                value: { type: string }
+                provenance: { type: string }
+                authoritative: { type: boolean }
+                sourceCardIds:
+                  type: array
+                  items: { type: string }
+                canonicalProvenance:
+                  type: object
+                  additionalProperties: true
         details:
           type: object
           required: [supertype, subtypes, artist]

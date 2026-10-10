@@ -297,11 +297,12 @@ const hubScreen = fs.readFileSync('features/home/HubScreen.tsx', 'utf8');
 assert.match(hubScreen, /\{premiumSellerAccess\.allowed \? \(\s*<StackrBottomSheet visible=\{roleModalOpen\}/s);
 assert.doesNotMatch(hubScreen, /ordinary Market listings remain available outside|create ordinary listings/);
 assert.doesNotMatch(hubScreen, /Use purchase history/);
+assert.match(hubScreen, /const posts = await readRecentHomeActivityRows\(supabase, trustedUserId, isCurrentRequest\)/);
 assert.match(
   hubScreen,
-  /const visibleFeed = \(feedResult\.data \?\? \[\]\)\s*\.filter\(\(post: any\) => !isGate0CommerceActivity\(post\)\)/s,
+  /const visibleFeed = posts\s*\.filter\(\(post: any\) => !isGate0CommerceActivity\(post\)\)/s,
 );
-assert.doesNotMatch(hubScreen, /premiumSellerAccess\.allowed\s*\?\s*\(feedResult\.data/);
+assert.doesNotMatch(hubScreen, /premiumSellerAccess\.allowed\s*\?\s*\(?\s*(?:feedResult\.data|posts)/);
 
 const duplicatesScreen = fs.readFileSync('app/duplicates.tsx', 'utf8');
 assert.match(duplicatesScreen, /\{canCreateListing \? \(\s*<StackrButton\s*label="Create beta listing"/s);

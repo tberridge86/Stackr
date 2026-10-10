@@ -7,6 +7,7 @@ import { downloadCardmarketPublicGuide, validateCardmarketPublicGuide } from './
 import { planCardmarketCachedIngestion, toCardmarketBlendedStoreResults, validateCardmarketMappingLedger } from './cardmarket-cached-ingestion.mjs';
 import { fetchEcbCatalogueFx } from './catalogue-price-fx.mjs';
 import { createCataloguePriceDatabase } from './catalogue-price-database.mjs';
+import { dailyGuideFreshness, requireFreshDailyGuide } from './catalogue-price-daily-status.mjs';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 
 const KINDS = ['products', 'priceGuide'];
@@ -150,28 +151,47 @@ export async function applyCardmarketDailyGuide({ api, retained, mappingLedger, 
   positiveInteger(maxPages, 'max pages');
   const products = retained.feeds.products; const priceGuide = retained.feeds.priceGuide;
   validateCardmarketPublicGuide('products', products); validateCardmarketPublicGuide('priceGuide', priceGuide);
+  requireFreshDailyGuide(priceGuide.createdAt, now);
   const ledger = validateCardmarketMappingLedger(mappingLedger);
   const productsByKey = new Set(products.products.map(row => `${row.idCategory}:${row.idProduct}`));
   for (const mapping of ledger) {
     if (!productsByKey.has(`${mapping.cardmarketCategoryId}:${mapping.cardmarketProductId}`)) throw Error('Reviewed Cardmarket mapping is absent from the retained product catalogue.');
   }
   let checkpoint;
-  try { checkpoint = await json(checkpointPath); } catch (error) { if (error?.code !== 'ENOENT') throw error; checkpoint = { schemaVersion: 3, reviewedKeys: [], afterProductId: 0, priceGuideSha256: null, revisions: null }; }
+  try { checkpoint = await json(checkpointPath); } catch (error) { if (error?.code !== 'ENOENT') throw error; checkpoint = { schemaVersion: 3, reviewedKeys: [], reviewedIdentities: {}, afterProductId: 0, priceGuideSha256: null, revisions: null }; }
   if (checkpoint.schemaVersion === 1 || checkpoint.schemaVersion === 2) checkpoint = { schemaVersion: 3, reviewedKeys: checkpoint.reviewedKeys, afterProductId: checkpoint.afterProductId, priceGuideSha256: checkpoint.priceGuideSha256 ?? null, revisions: null };
   if (checkpoint.schemaVersion !== 3 || !Array.isArray(checkpoint.reviewedKeys) || !Number.isSafeInteger(checkpoint.afterProductId) || (checkpoint.priceGuideSha256 !== null && !/^[a-f0-9]{64}$/.test(checkpoint.priceGuideSha256)) || (checkpoint.revisions !== null && (typeof checkpoint.revisions !== 'object' || (checkpoint.revisions.products !== null && typeof checkpoint.revisions.products !== 'string') || (checkpoint.revisions.priceGuide !== null && typeof checkpoint.revisions.priceGuide !== 'string')))) throw Error('Invalid Cardmarket apply checkpoint.');
+  checkpoint.reviewedIdentities ??= {};
+  if (typeof checkpoint.reviewedIdentities !== 'object' || Array.isArray(checkpoint.reviewedIdentities)
+    || Object.values(checkpoint.reviewedIdentities).some(value => typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value))) throw Error('Invalid Cardmarket reviewed identity checkpoint.');
   const save = async () => writeAtomic(checkpointPath, `${JSON.stringify(checkpoint, null, 2)}\n`);
+  if (checkpoint.productsSha256 !== retained.manifest.feeds.products.sha256) {
+    checkpoint.productsSha256 = retained.manifest.feeds.products.sha256;
+    checkpoint.afterProductId = 0;
+    if (checkpoint.revisions) checkpoint.revisions.products = null;
+    await save();
+  }
   if (checkpoint.priceGuideSha256 !== retained.manifest.feeds.priceGuide.sha256) {
     checkpoint.afterProductId = 0;
     checkpoint.priceGuideSha256 = retained.manifest.feeds.priceGuide.sha256;
     checkpoint.revisions = null;
     await save();
   }
-  const pendingReviews = ledger.filter(mapping => !checkpoint.reviewedKeys.includes(`${mapping.cardmarketCategoryId}:${mapping.cardmarketProductId}`));
+  const reviewKey = mapping => `${mapping.cardmarketCategoryId}:${mapping.cardmarketProductId}`;
+  const reviewIdentity = mapping => { const { _index, ...identity } = mapping; return sha256(JSON.stringify(identity)); };
+  const pendingReviews = ledger.filter(mapping => checkpoint.reviewedIdentities[reviewKey(mapping)] !== reviewIdentity(mapping));
   for (let offset = 0; offset < pendingReviews.length; offset += REVIEW_CONCURRENCY) {
     const batch = pendingReviews.slice(offset, offset + REVIEW_CONCURRENCY);
     const accepted = await Promise.all(batch.map(mapping => rpc(api, 'review_cardmarket_printing_mapping', { p_mapping: reviewPayload(mapping) })));
     if (accepted.some(value => value !== true)) throw Error('Cardmarket reviewed mapping was not acknowledged.');
-    checkpoint.reviewedKeys.push(...batch.map(mapping => `${mapping.cardmarketCategoryId}:${mapping.cardmarketProductId}`));
+    for (const mapping of batch) {
+      const key = reviewKey(mapping);
+      if (!checkpoint.reviewedKeys.includes(key)) checkpoint.reviewedKeys.push(key);
+      checkpoint.reviewedIdentities[key] = reviewIdentity(mapping);
+    }
+    // A new/corrected reviewed identity may be behind the completed cursor.
+    // Save the reset with its acknowledgement so a crash cannot skip its price.
+    checkpoint.afterProductId = 0;
     await save();
   }
   const revisions = checkpoint.revisions ?? { products: null, priceGuide: null };
@@ -189,16 +209,23 @@ export async function applyCardmarketDailyGuide({ api, retained, mappingLedger, 
     checkpoint.revisions = revisions; await save();
   }
   const sourceMetadata = { productsEtag: retained.manifest.feeds.products.etag, productsSha256: retained.manifest.feeds.products.sha256, priceGuideEtag: retained.manifest.feeds.priceGuide.etag, priceGuideSha256: retained.manifest.feeds.priceGuide.sha256 };
-  const summary = { revisions, reviewedMappings: checkpoint.reviewedKeys.length, stored: 0, repairs: 0, pages: 0, complete: false };
+  const summary = { revisions, reviewedMappings: ledger.length, stored: 0, repairs: 0, pages: 0, complete: false,
+    dailyReadiness: { provider: dailyGuideFreshness(priceGuide.createdAt, now), quoteScope: 'printing_level_blended', fullCatalogueCurrent: false } };
   while (summary.pages < maxPages) {
     const plan = planCardmarketCachedIngestion({ productsPayload: products, priceGuidePayload: priceGuide, mappingLedger, sourceMetadata, afterProductId: checkpoint.afterProductId, limit: MAX_PAGE_SIZE });
     if (!plan.scanned) { summary.complete = true; break; }
-    const repairs = sanitizeRepairs(plan.reviewQueue);
+    const results = toCardmarketBlendedStoreResults(plan, { exchangeRate, exchangeRateAt, exchangeRateSource }, now);
+    const pricedKeys = new Set(results.map(row => `${row.providerCategoryId}:${row.providerProductId}`));
+    const unpriceable = plan.estimates.filter(row => !pricedKeys.has(`${row.providerCategoryId}:${row.providerProductId}`));
+    const repairs = sanitizeRepairs([...plan.reviewQueue, ...unpriceable.map(row => ({
+      key: `cardmarket:${row.providerCategoryId}:${row.providerProductId}`, reason: 'no_market_guide_value',
+      providerProductId: row.providerProductId, providerCategoryId: row.providerCategoryId,
+      detail: { reason: 'rounded_to_zero_gbp' },
+    }))]);
     for (let offset = 0; offset < repairs.length; offset += MAX_PAGE_SIZE) {
       const batch = repairs.slice(offset, offset + MAX_PAGE_SIZE); const count = await rpc(api, 'queue_cardmarket_mapping_repairs', { p_repairs: batch });
       if (count !== batch.length) throw Error('Cardmarket repair batch was not acknowledged.'); summary.repairs += count;
     }
-    const results = toCardmarketBlendedStoreResults(plan, { exchangeRate, exchangeRateAt, exchangeRateSource }, now);
     for (let offset = 0; offset < results.length; offset += MAX_PAGE_SIZE) {
       const batch = results.slice(offset, offset + MAX_PAGE_SIZE); const count = await rpc(api, 'store_cardmarket_blended_general_prices', { p_price_guide_revision: revisions.priceGuide, p_product_catalogue_revision: revisions.products, p_results: batch });
       if (count !== batch.length) throw Error('Cardmarket price batch was not acknowledged.'); summary.stored += count;

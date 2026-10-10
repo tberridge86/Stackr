@@ -1,3 +1,5 @@
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
+import { getCorocoroIssuesForCard, formatCorocoroIssueMonth } from '../../lib/corocoroIssueArchive';
 import { useCardInspection } from '../../components/CardInspectionProvider';
 import { getEditionVariantImageUrl } from '../../lib/editionImages';
 import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
@@ -6,7 +8,6 @@ import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import {
   View,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
   TouchableOpacity,
   Alert,
@@ -650,6 +651,19 @@ export default function CardDetailScreen() {
         {!!presentedDetails.supertype && <Text style={styles.metaChip}>{presentedDetails.supertype}</Text>}
         {!!card.hp && <Text style={styles.metaChip}>HP {card.hp}</Text>}
       </View>
+      {getCorocoroIssuesForCard(cardId).map((issue) => (
+        <TouchableOpacity
+          key={issue.id}
+          style={styles.setLinkRow}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${issue.publication}, ${formatCorocoroIssueMonth(issue.issueMonth)} magazine binder`}
+          onPress={() => router.push({ pathname: '/corocoro', params: { issue: issue.id } })}
+        >
+          <Text style={styles.setLinkText}>
+            {issue.publication} · {formatCorocoroIssueMonth(issue.issueMonth)}
+          </Text>
+        </TouchableOpacity>
+      ))}
 
       {/* ===============================
           MARKET GUIDE (moved up)

@@ -5,10 +5,14 @@ import ts from 'typescript';
 import vm from 'node:vm';
 
 assert.equal(
-  createHash('sha256').update(readFileSync('assets/startup/stackr-loading-screen-exact.mp4')).digest('hex'),
-  '14b82efa2bdf8bbf98debde5e0138f2a3b419e32e011e7d0d91faf0a57ab697c',
-  'The bundled opening video must remain byte-for-byte identical to the supplied MP4.',
+  createHash('sha256').update(readFileSync('assets/startup/stackr-premium-opening.mp4')).digest('hex'),
+  '809a97349ed29f348724266ea9807af81a83a7edafae01371c2ffedca149a989',
+  'The bundled premium opening video must remain byte-for-byte identical to the approved MP4.',
 );
+
+const startupVideoSource = readFileSync('components/StackrStartupVideo.tsx', 'utf8');
+assert.match(startupVideoSource, /assets\/startup\/stackr-premium-opening\.mp4/);
+assert.match(startupVideoSource, /assets\/startup\/stackr-premium-poster\.png/);
 
 type Deferred<T> = { promise: Promise<T>; resolve(value: T): void; reject(error: Error): void };
 function deferred<T>(): Deferred<T> {

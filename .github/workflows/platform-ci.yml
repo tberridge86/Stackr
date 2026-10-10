@@ -49,6 +49,7 @@ jobs:
       - run: node scripts/test-price-guard-rehearsal-workflow.mjs
       - run: node scripts/test-staging-pricing-backup-list.mjs
       - run: npm run test:price-database-deadline
+      - run: npm run test:daily-pricing
       - run: node scripts/test-bounded-provider-identity-guards.mjs
       - run: node scripts/test-cardmarket-ledger-ordered-candidate.mjs
       - run: npm run test:next-beta-fixes
@@ -57,6 +58,8 @@ jobs:
       - run: npm run typecheck:backend
       - run: npm run test:pokedex-release
       - run: npm run test:catalogue-price-baseline
+      - run: npm run test:mobile-recovery
+      - run: npm run test:server-delivery
       - run: npm test --prefix backend
       - run: npm run test:live-pricing
       - run: npm run test:personal-pricing
@@ -65,6 +68,7 @@ jobs:
       - run: node scripts/test-gateway-privacy-deployment.mjs
       - run: npm run test:collection-pricing-ui
       - run: npm run test:home-release
+      - run: npm run test:home-activity
       - run: npm run test:settings-help
       - run: npm run test:ux-p1
       - run: npm run test:ux-p2
@@ -104,6 +108,7 @@ jobs:
       - run: npm run test:english-set-visibility
       - run: node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-tcgdex-boundary-compatibility.ts
       - run: npm run test:tcgdex-controlled-card-reference
+      - run: npm run test:tcgdex-reference-persistence
       - run: node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-edition-aware-image-selection.ts
       - run: npm run test:binder-foreign-set-picker
       - run: npm run test:pokemon-language-flags

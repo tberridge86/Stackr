@@ -7,6 +7,7 @@ import { CataloguePriceCache } from '../lib/cataloguePriceCacheCore';
 import type { StackrCardPrice } from '../lib/stackrApiV1';
 import * as hash from '../lib/cataloguePriceHash';
 import * as transport from '../lib/stackrApiTransportPolicy';
+import * as baseline from '../lib/cataloguePriceBaseline';
 
 // Run the actual phone modules with only native/transport dependencies replaced.
 function load<T>(file: string, mocks: Record<string, unknown>): T {
@@ -64,6 +65,7 @@ async function main() {
     './optionalCatalogueEnrichment': {},
     './stackrApiV1': { ...api, stackrApiClient: client }, './stackrDomainMappings': { toStackrApiLanguage: (value: string) => value },
     './cataloguePriceHash': hash,
+    './cataloguePriceBaseline': baseline,
   });
   const adapter = load<typeof import('../lib/stackrDomainAdapter')>('lib/stackrDomainAdapter.ts', {
     './stackrSetRetrieval': {},
@@ -115,6 +117,24 @@ async function main() {
   assert.equal(generalMarket.sourceLabel, 'Estimated price');
   const sold = prices.cataloguePriceDisplay({ reference: ids[0], variantId: ids[0], cardId: ids[0], language: 'en', price: { ...quote(ids[0]), priceType: 'recent_sold_value', provenLastSold: true, lastSoldEvidence: { observationId: 'verified-sale' } }, unavailableReason: null, nextRetryAt: null, revision: 'display-sold' });
   assert.equal(sold.sourceLabel, 'Last sold');
+  const provisionalRow = { reference: ids[0], variantId: ids[0], cardId: ids[0], language: 'en', price: {
+    ...quote(ids[0]), estimates: { central: 0.25, low: null, high: null },
+    estimateVersion: 'catalogue-rarity-era-baseline-v1',
+    fallbackEstimate: { identityKey: ids[0], reason: 'provisional_catalogue_baseline', exact: false as const },
+  }, unavailableReason: null, nextRetryAt: null, revision: 'c'.repeat(64) };
+  const generalScope = prices.cataloguePriceScope(scopeA, { language: 'en', estimateMode: 'general' });
+  await prices.cataloguePriceCache.read(generalScope, [ids[1]], async () => ({
+    prices: [{ ...provisionalRow, reference: ids[1], variantId: ids[1], cardId: ids[1], price: { ...provisionalRow.price, variantId: ids[1] } }],
+    unchangedReferences: [], priceRevision: 'c'.repeat(64), estimateMode: 'general',
+  }));
+  await prices.cataloguePriceCache.flush(); prices.cataloguePriceCache.clearMemory();
+  const restarted = await prices.cataloguePriceCache.read(generalScope, [ids[1]], async () => { throw new Error('Offline restart'); });
+  assert.equal(prices.cataloguePriceDisplay(restarted.get(ids[1])!).displayPrice, null, 'A warm disk restart must hide retired £0.25 baseline quotes.');
+  assert.equal(prices.cataloguePriceDisplay(provisionalRow).unavailableReason, 'retired_provisional_baseline');
+  assert.equal(prices.cataloguePriceDisplay({ ...provisionalRow, price: { ...provisionalRow.price, estimateVersion: baseline.PROVISIONAL_CATALOGUE_PRICE_MODEL } }).displayPrice, 0.25,
+    'Current provisional model is recognized; the overlay separately checks card eligibility.');
+  assert.equal(prices.cataloguePriceDisplay({ ...provisionalRow, price: { ...quote(ids[0]), estimates: { central: 0.25, low: null, high: null } } }).displayPrice, 0.25,
+    'A real low-value card is not inflated or removed merely because its price is £0.25.');
   assert.ok([...disk.keys()].every((key) => !key.includes('signature') && !key.includes('owner-a')), 'cache keys contain hashed identity, never bearer tokens');
   console.log('Price client passed: 201 cards / 3 bulk requests, zero per-card requests, restart / zero requests, account/token/language/mode/condition isolation, authenticated preview routing and forced detail refresh.');
 }

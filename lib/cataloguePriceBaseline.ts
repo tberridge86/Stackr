@@ -4,59 +4,52 @@ export type CataloguePriceBaselineInput = {
   language?: string | null;
   rarity?: unknown;
   releaseDate?: unknown;
+  finish?: unknown;
+  variant?: unknown;
+  edition?: unknown;
 };
 
 export type CataloguePriceBaselineDisplayInput = CataloguePriceBaselineInput & { productType?: unknown };
 
 const RARITY_BASELINE_GBP: Record<string, number> = {
-  common: 0.10, uncommon: 0.15, rare: 0.35, rare_holo: 0.75,
-  double_rare: 1.20, ultra_rare: 3, illustration_rare: 5,
-  special_illustration_rare: 15, hyper_rare: 8, shiny_rare: 2,
-  shiny_ultra_rare: 5, promo: 1, ace_spec: 2, radiant_rare: 1.5,
-  amazing_rare: 1.25, unknown: 0.25,
+  common: 0.10, uncommon: 0.15,
 };
 
-export const PROVISIONAL_CATALOGUE_PRICE_MODEL = 'catalogue-rarity-era-baseline-v1';
+export const PROVISIONAL_CATALOGUE_PRICE_MODEL = 'catalogue-rarity-era-baseline-v2';
 
 function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-function rarityKey(value: unknown) {
-  const token = String(value ?? '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-  if (token.includes('special') && token.includes('illustration')) return 'special_illustration_rare';
-  if (token.includes('illustration')) return 'illustration_rare';
-  if (token.includes('shiny') && token.includes('ultra')) return 'shiny_ultra_rare';
-  if (token.includes('shiny')) return 'shiny_rare';
-  if (token.includes('double')) return 'double_rare';
-  if (token.includes('ultra')) return 'ultra_rare';
-  if (token.includes('hyper')) return 'hyper_rare';
-  if (token.includes('holo')) return 'rare_holo';
-  if (token.includes('promo')) return 'promo';
-  if (token.includes('ace')) return 'ace_spec';
-  if (token.includes('radiant')) return 'radiant_rare';
-  if (token.includes('amazing')) return 'amazing_rare';
-  if (token.includes('uncommon')) return 'uncommon';
-  if (token.includes('common')) return 'common';
-  if (token.includes('rare')) return 'rare';
-  return 'unknown';
+function token(value: unknown) {
+  return String(value ?? '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
 
-function eraMultiplier(value: unknown) {
-  const text = String(value ?? '').slice(0, 4);
-  if (!/^\d{4}$/.test(text)) return 1;
-  const year = Number(text);
-  if (year < 2003) return 1.8;
-  if (year < 2010) return 1.35;
-  if (year < 2016) return 1.1;
-  return year >= 2020 ? 0.85 : 1;
+function releaseYear(value: unknown) {
+  const text = String(value ?? '').trim();
+  if (!/^\d{4}(?:-\d{2}-\d{2})?$/.test(text)) return null;
+  const year = Number(text.slice(0, 4));
+  if (year < 2010 || year > new Date().getUTCFullYear() + 1) return null;
+  if (text.length > 4) {
+    const date = new Date(`${text}T00:00:00Z`);
+    if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== text) return null;
+  }
+  return year;
 }
 
-/** Offline browse-only coverage fallback. Never sale evidence or an exact valuation. */
+function ordinary(value: unknown) {
+  return ['', 'normal', 'standard', 'default', 'regular', 'non_holo', 'nonholo', 'non_foil', 'nonfoil', 'unlimited'].includes(token(value));
+}
+
+/** Conservative browse-only estimate for ordinary modern bulk cards. Vintage
+ * cards, rares and missing metadata require a stored price with card evidence. */
 export function provisionalCataloguePriceBaseline(input: CataloguePriceBaselineInput) {
   if (!input.variantId?.trim()) return null;
-  const rarity = rarityKey(input.rarity);
-  const multiplier = eraMultiplier(input.releaseDate);
+  const rarity = token(input.rarity);
+  const year = releaseYear(input.releaseDate);
+  if (!Object.hasOwn(RARITY_BASELINE_GBP, rarity) || year == null
+    || !ordinary(input.finish) || !ordinary(input.variant) || !ordinary(input.edition)) return null;
+  const multiplier = year < 2016 ? 1.1 : year >= 2020 ? 0.85 : 1;
   const central = roundMoney(RARITY_BASELINE_GBP[rarity] * multiplier);
   return {
     currency: 'GBP' as const,

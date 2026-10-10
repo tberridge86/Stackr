@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   GestureResponderEvent,
   Image,
   RefreshControl,

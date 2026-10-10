@@ -696,8 +696,12 @@ for (const schedule of ['8 2 * * *', '13 * * * *']) {
     assert.equal(acceptsPriceLane(github, vars), false, 'Disabled guide schedules must not install dependencies or refresh prices');
     assert.equal(acceptsPriceLane(github, { ...vars, STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'true' }), true,
       'Whole-guide schedules must remain independent of the owner-worker scheduler');
+    assert.equal(acceptsPriceLane(github, { ...vars, STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'true', STACKR_CATALOGUE_PRICING_SCHEDULER: 'railway' }), false,
+      'Railway guide ownership must suppress competing GitHub guide jobs');
   }
 }
+assert.equal(acceptsPriceLane({ event_name: 'workflow_dispatch', event: { inputs: { lane: 'full-universe' } } },
+  { STACKR_CATALOGUE_PRICING_SCHEDULER: 'railway' }), true, 'Explicit manual recovery remains available behind its enable guard');
 assert.equal(acceptsPriceLane({ event_name: 'schedule', event: { schedule: '47 */12 * * *' } },
   { STACKR_PRICING_SCHEDULER: 'railway_catalogue', STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'true' }), false,
   'Enabling the guide must not start a competing owner-price lane');

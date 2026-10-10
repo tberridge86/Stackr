@@ -343,7 +343,96 @@ async function assertInvalidServiceInput() {
   );
 }
 
-function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], storedExactPrices = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, approvedTcgdexAliases = [], insertErrors = [], onSnapshotUpdate = null }) {
+async function assertGradedPriceRequiresExactIdentity() {
+  const variantId = '90909090-9090-4909-8909-909090909090';
+  const estimate = (grader, grade, amount, calculatedAt) => ({
+    variant_id: variantId, product_kind: 'graded_card', display_currency_code: 'GBP',
+    condition_code: null, grader_code: grader, grade_value: grade,
+    evidence_status: 'market_estimate', central_estimate: amount, calculated_at: calculatedAt,
+  });
+  const estimates = [
+    estimate('PSA', '10', 321, '2026-10-01'), estimate('PSA', '9', 190, '2026-10-02'),
+    estimate('BGS', '10', 420, '2026-10-03'),
+  ];
+  for (const missingScope of [{}, { grader: 'PSA' }, { grade: '10' }, { grader: '', grade: '10' }, { grader: 'PSA', grade: ' ' }]) {
+    const db = createSnapshotSupabase({ metadata: [], estimates });
+    const price = await createMarketPricingService({ supabase: db }).price(variantId,
+      { productType: 'graded_card', currency: 'GBP', ...missingScope });
+    assert.equal(price.status, 'unavailable', 'incomplete slab identity cannot select an arbitrary stored grader or grade');
+    assert.equal(price.unavailableReason, 'grader_and_grade_required_for_graded_price');
+    assert.equal(price.estimates.central, null);
+    assert.equal(db.equalities.length, 0, 'incomplete slab identity is rejected before reading estimate rows');
+  }
+  const service = createMarketPricingService({ supabase: createSnapshotSupabase({ metadata: [], estimates }) });
+  assert.equal((await service.price(variantId, { productType: 'graded_card', currency: 'GBP', grader: 'psa', grade: '10' })).estimates.central,
+    321, 'complete slab identity retains the requested grader and grade despite newer competing slabs');
+  assert.equal((await service.price(variantId, { productType: 'graded_card', currency: 'GBP', grader: 'PSA', grade: '8' })).status,
+    'unavailable', 'a missing exact grade cannot borrow another slab value');
+}
+
+
+async function assertHistoryKeepsExactRawScope() {
+  const variantId = '92929292-9292-4929-8929-929292929292';
+  const row = (observationId, overrides = {}) => ({
+    observation_id: observationId, variant_id: variantId, product_kind: 'raw_card', currency_code: 'GBP',
+    condition_code: 'raw_near_mint', observation_type: 'sold_observation', observed_price: 75,
+    shipping_price: null, observed_at: '2026-10-09T12:00:00Z', ...overrides,
+  });
+  const history = [
+    row('near-mint'),
+    row('played', { condition_code: 'raw_lightly_played', observed_price: 30 }),
+    row('mint', { condition_code: 'raw_mint', observed_price: 90 }),
+    row('foreign', { currency_code: 'USD', observed_price: 120 }),
+    row('slab-9', { product_kind: 'graded_card', condition_code: null, grader_code: 'PSA', grade_label: 'Mint 9', observed_price: 200 }),
+    row('slab-10', { product_kind: 'graded_card', condition_code: null, grader_code: 'PSA', grade_label: 'Gem Mint 10', observed_price: 400 }),
+    row('sibling', { variant_id: '93939393-9393-4939-8939-939393939393' }),
+    row('asking', { observation_type: 'active_listing', observed_price: 150 }),
+  ];
+  const db = createSnapshotSupabase({ metadata: [], history });
+  const service = createMarketPricingService({ supabase: db });
+  const sold = await service.priceHistory(variantId, { observationType: 'sold_observation' });
+  assert.deepEqual(sold.observations.map((observation) => observation.observationId), ['near-mint'],
+    'default raw history uses the exact variant, GBP and near-mint condition without played/foreign/slab sales');
+  assert.equal(sold.observations[0].observedPrice, 75);
+  assert.equal(sold.observations[0].shippingPrice, null, 'unknown delivery remains unknown');
+  assert.equal(sold.observations[0].currency, 'GBP', 'history returns recorded currency rather than implicit FX');
+  const played = await service.priceHistory(variantId, { observationType: 'sold_observation', condition: 'lightly_played' });
+  assert.deepEqual(played.observations.map((observation) => observation.observationId), ['played'],
+    'an explicit condition remains separate from the default near-mint history');
+  const foreign = await service.priceHistory(variantId, { observationType: 'sold_observation', currency: 'USD' });
+  assert.deepEqual(foreign.observations.map((observation) => observation.observationId), ['foreign']);
+  assert.equal(foreign.observations[0].observedPrice, 120, 'foreign prices remain in their own recorded currency');
+  const allRaw = await service.priceHistory(variantId);
+  assert.deepEqual(allRaw.observations.map((observation) => observation.observationType).sort(), ['active_listing', 'sold_observation'],
+    'unfiltered history preserves separate asking/sold observation types instead of relabelling them');
+  const recent = new Date(Date.now() - 86400000).toISOString();
+  const proofRows = [
+    ...Array.from({ length: 20 }, (_, index) => row(`unproven-${index}`, { observed_at: new Date().toISOString(), proven_last_sold: false, sold_at: recent })),
+    row('old-proof', { observed_at: new Date().toISOString(), proven_last_sold: true, sold_at: '2020-01-01T00:00:00Z' }),
+    row('future-proof', { observed_at: new Date().toISOString(), proven_last_sold: true, sold_at: new Date(Date.now() + 86400000).toISOString() }),
+    row('recent-proof', { observed_at: recent, proven_last_sold: true, sold_at: recent }),
+  ];
+  const provenService = createMarketPricingService({ supabase: createSnapshotSupabase({ metadata: [], history: proofRows }) });
+  const filteredProof = await provenService.priceHistory(variantId, { limit: 14, observationType: 'sold_observation', provenOnly: 'true',
+    soldSince: new Date(Date.now() - 7 * 86400000).toISOString() });
+  assert.deepEqual(filteredProof.observations.map(observation => observation.observationId), ['recent-proof'],
+    'unverified and out-of-window observations are filtered before pagination rather than hiding a valid recent sale');
+  await assert.rejects(provenService.priceHistory(variantId, { provenOnly: 'yes' }), error => error.code === 'invalid_proven_only');
+  await assert.rejects(provenService.priceHistory(variantId, { soldSince: '123' }), error => error.code === 'invalid_sold_since');
+  for (const scope of [
+    { productType: 'graded_card' }, { productType: 'graded_card', grader: 'PSA' },
+    { productType: 'graded_card', grader: 'PSA', grade: '10' }, { productType: 'graded_card', grader: 'PSA', grade: '9' },
+    { productType: 'raw_card', grade: '10' }, { productType: 'raw_card', grader: 'PSA' },
+  ]) {
+    const reads = db.equalities.length;
+    await assert.rejects(service.priceHistory(variantId, scope),
+      (error) => error.status === 422 && error.code === 'unsupported_graded_history_identity',
+      'unfilterable graded history is explicitly unsupported rather than borrowing another slab grade');
+    assert.equal(db.equalities.length, reads, 'unsupported graded history does not read mixed evidence rows');
+  }
+}
+
+function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], history = [], storedExactPrices = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, approvedTcgdexAliases = [], insertErrors = [], onSnapshotUpdate = null }) {
   const limits = [];
   const inserted = [];
   const updates = [];
@@ -364,7 +453,9 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
                 ? snapshotRows
                 : schemaName === 'api' && tableName === 'market_price_estimates'
                   ? estimates
-                  : tableName === 'market_price_snapshots'
+                  : schemaName === 'api' && tableName === 'market_price_history'
+                    ? history
+                    : tableName === 'market_price_snapshots'
                     ? snapshotRows
                     : tableName === 'price_refresh_queue'
                       ? queueRows
@@ -393,6 +484,10 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
       },
       gte(column, value) {
         rows = rows.filter((row) => String(row[column] ?? '') >= String(value));
+        return builder;
+      },
+      lte(column, value) {
+        rows = rows.filter((row) => row[column] != null && String(row[column]) <= String(value));
         return builder;
       },
       lt(column, value) {
@@ -642,6 +737,26 @@ async function assertLabelledLegacySnapshotFallback() {
   const unavailable = await empty.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
   assert.equal(unavailable.status, 'unavailable', 'a numeric null must not become a £0 legacy price');
   assert.equal(unavailable.estimates.central, null);
+  for (const slabOverride of [{ grader: 'PSA' }, { grade: '10' }, { grader: 'PSA', grade: '10' }]) {
+    const incompatible = await service.price(variantId, { productType: 'raw_card', currency: 'GBP', ...slabOverride });
+    assert.equal(incompatible.status, 'unavailable', 'raw requests with slab qualifiers cannot inherit a legacy raw quote');
+    assert.equal(incompatible.estimates.central, null);
+  }
+
+  const lowOnly = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata, snapshots: [snapshot({ tcgdex_price: null, tcg_mid: null, tcg_low: 0.25, market_price_gbp: null })] }),
+  });
+  assert.equal((await lowOnly.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' })).status,
+    'unavailable', 'a stored lowest asking price alone cannot become a central market estimate');
+  for (const marketColumn of ['tcgdex_price', 'tcg_mid', 'market_price_gbp']) {
+    const supported = createMarketPricingService({
+      supabase: createSnapshotSupabase({ metadata, snapshots: [snapshot({ tcgdex_price: null, tcg_mid: null,
+        market_price_gbp: null, tcg_low: 0.25, [marketColumn]: 42.55 })] }),
+    });
+    const paired = await supported.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+    assert.equal(paired.estimates.central, 42.55, `${marketColumn} remains a supported stored market value`);
+    assert.equal(paired.estimates.low, 0.25, 'the low range stays separate from the market center');
+  }
 
   const usd = await service.price(variantId, { productType: 'raw_card', currency: 'USD', condition: 'near_mint' });
   assert.equal(usd.status, 'unavailable', 'a GBP snapshot must not serve a USD request');
@@ -1231,8 +1346,31 @@ async function assertExactOwnerProviderRefresh() {
   const second = concurrentService.refreshExactProviderEstimate(concurrentVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(concurrentCalls, 1, 'concurrent refresh requests must share one provider call');
+  const unsupportedScopes = [
+    { productType: 'graded_card', grader: 'PSA', grade: '10', currency: 'GBP' },
+    { productType: 'sealed_product', currency: 'GBP' },
+    { productType: 'raw_card', condition: 'damaged', currency: 'GBP' },
+    { productType: 'raw_card', condition: 'near_mint', currency: 'USD' },
+    { productType: 'raw_card', condition: 'near_mint', currency: 'GBP', grader: 'PSA' },
+    { productType: 'raw_card', condition: 'near_mint', currency: 'GBP', grade: '10' },
+  ];
+  for (const scope of unsupportedScopes) {
+    await assert.rejects(concurrentService.refreshExactProviderEstimate(concurrentVariantId, scope),
+      (error) => error.code === 'unsupported_refresh_scope',
+      'an unsupported request cannot borrow a pending quote for the same canonical variant');
+  }
+  const supportedAlias = concurrentService.refreshExactProviderEstimate(concurrentVariantId,
+    { productType: 'raw_card', currency: 'gbp', condition: 'raw_near_mint' });
+  assert.equal(concurrentCalls, 1, 'supported condition/currency spellings reuse the exact raw quote without another provider request');
   resolveQuote({ providerCardId: 'base3-4', language: 'en', number: '4/102', price: 12.5, pricingUpdatedAt: new Date().toISOString() });
-  await Promise.all([first, second]);
+  const concurrentPrices = await Promise.all([first, second, supportedAlias]);
+  assert.ok(concurrentPrices.every((price) => price.productType === 'raw_card' && price.currency === 'GBP' && price.estimates.central === 12.5));
+  for (const scope of unsupportedScopes) {
+    await assert.rejects(concurrentService.refreshExactProviderEstimate(concurrentVariantId, scope),
+      (error) => error.code === 'unsupported_refresh_scope',
+      'an unsupported request keeps its scope error even when a raw refresh is in cooldown');
+  }
+  assert.equal(concurrentCalls, 1);
 
   const normal = summariseTcgdexNormalPricing({
     id: 'base3-4', localId: '4/102', set: { id: 'base3' },
@@ -1515,6 +1653,8 @@ assertPricingMathAndTitleValidation();
 await assertEbayAdapterBoundary();
 await assertRoutes();
 await assertInvalidServiceInput();
+await assertGradedPriceRequiresExactIdentity();
+await assertHistoryKeepsExactRawScope();
 await assertLabelledLegacySnapshotFallback();
 await assertOptInGeneralStoredPrices();
 await assertNormalVariantProviderBaseSnapshotIdentity();

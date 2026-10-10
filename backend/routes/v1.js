@@ -1,5 +1,6 @@
 /* eslint-env node */
 import express from 'express';
+import { readPublishedPokedexIndex } from '../lib/pokedexIndex.js';
 import { createClient } from '@supabase/supabase-js';
 import {
   ApiError,
@@ -188,7 +189,13 @@ function sendEnvelope(req, res, payload, options = {}) {
       ...(options.pagination ? { pagination: options.pagination } : {}),
     },
   };
-  const etag = options.etag ?? etagFor(body);
+  // Transport metadata changes per request; validate the published facts and
+  // pagination instead. This is weak because the envelope bytes can differ.
+  const etag = options.etag ?? `W/${etagFor({
+    data: payload,
+    apiVersion: STACKR_API_V1,
+    ...(options.pagination ? { pagination: options.pagination } : {}),
+  })}`;
   res.setHeader('X-Request-Id', req.stackrRequestId);
   res.setHeader('X-Stackr-Api-Version', STACKR_API_V1);
   res.setHeader('Cache-Control', cacheControl);
@@ -353,6 +360,10 @@ export function createV1Router(options = {}) {
     sendEnvelope(req, res, { cards: cards.cards }, {
       pagination: cards.pagination,
     });
+  }));
+
+  router.get('/pokemon', asyncRoute(async (req, res) => {
+    sendEnvelope(req, res, readPublishedPokedexIndex(req.query));
   }));
 
   router.get('/pokemon/:name/cards', asyncRoute(async (req, res) => {

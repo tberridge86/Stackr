@@ -94,7 +94,8 @@ export function toCardmarketBlendedStoreResults(plan, { exchangeRate, exchangeRa
   if (!plan || !Array.isArray(plan.estimates) || !Number.isFinite(exchangeRate) || exchangeRate <= 0 || !normalizeText(exchangeRateSource)) throw new Error('Supply positive Cardmarket EUR/GBP FX evidence.');
   const fxAt = Date.parse(exchangeRateAt ?? '');
   if (!Number.isFinite(fxAt) || fxAt > now || fxAt < now - 7 * 24 * 60 * 60 * 1000) throw new Error('Cardmarket FX evidence must be dated within the last seven days and not future-dated.');
-  return plan.estimates.map(({ printingId, catalogueVersionId, providerProductId, providerCategoryId, quote }) => ({
+  return plan.estimates.filter(({ quote }) => Number.isFinite(quote.value) && quote.value > 0
+    && Math.round(quote.value * exchangeRate * 100) > 0).map(({ printingId, catalogueVersionId, providerProductId, providerCategoryId, quote }) => ({
     printingId, catalogueVersionId, providerProductId, providerCategoryId,
     price: quote.value, selectedField: quote.selectedField,
     exchangeRate, exchangeRateAt, exchangeRateSource: normalizeText(exchangeRateSource),

@@ -1,7 +1,7 @@
 import { theme } from '../lib/theme';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,

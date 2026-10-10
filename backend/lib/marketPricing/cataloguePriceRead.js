@@ -1,11 +1,97 @@
 import { createHash } from 'node:crypto';
 import { ApiError, SUPPORTED_LANGUAGE_CODES } from '../stackrApiV1.js';
+import { provisionalCataloguePriceBaseline } from './cataloguePriceBaseline.js';
 
 export const CATALOGUE_PRICE_PAGE_SIZE = 100;
+const BASELINE_METADATA_TIMEOUT_MS = 450;
 const hash = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const normal = (row) => ['normal', 'standard', 'default'].includes(row.variant_code)
   && ['normal', 'standard', 'default', 'non_holo'].includes(row.finish_code);
 const holo = (row) => row.variant_code === 'holo' && row.finish_code === 'holo';
+const uuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value ?? ''));
+
+function resolvedRawCandidate(row) {
+  return row && [row.variant_id, row.printing_id, row.set_id, row.catalogue_version_id].every(uuid)
+    && SUPPORTED_LANGUAGE_CODES.includes(row.language_code)
+    && (row.product_kind ?? row.productType ?? row.product_type ?? 'raw_card') === 'raw_card'
+    && row.grader_code == null && row.grade_value == null;
+}
+
+async function readBaselineMetadata(supabase, candidates, signal) {
+  const groups = new Map();
+  for (const candidate of candidates) {
+    if (!resolvedRawCandidate(candidate)) continue;
+    const scope = `${candidate.catalogue_version_id}:${candidate.language_code}`;
+    if (!groups.has(scope)) groups.set(scope, new Map());
+    groups.get(scope).set(candidate.variant_id, candidate);
+  }
+  const metadata = new Map();
+  await Promise.all([...groups.values()].map(async (group) => {
+    const values = [...group.values()];
+    for (let index = 0; index < values.length; index += CATALOGUE_PRICE_PAGE_SIZE) {
+      const batch = values.slice(index, index + CATALOGUE_PRICE_PAGE_SIZE);
+      const scope = batch[0];
+      const ids = batch.map((row) => row.variant_id);
+      const setIds = [...new Set(batch.map((row) => row.set_id))];
+      // A price-less RPC identity is not enough to borrow metadata from another
+      // publication, language or printing. Both views are published-only.
+      const cardQuery = supabase.schema('api').from('catalogue_cards')
+          .select('variant_id,printing_id,set_id,language_code,catalogue_version_id,rarity_code,rarity_label')
+          .eq('catalogue_version_id', scope.catalogue_version_id).eq('language_code', scope.language_code)
+          .in('variant_id', ids).limit(CATALOGUE_PRICE_PAGE_SIZE);
+      const setQuery = supabase.schema('api').from('catalogue_sets')
+          .select('set_id,language_code,catalogue_version_id,release_date')
+          .eq('catalogue_version_id', scope.catalogue_version_id).eq('language_code', scope.language_code)
+          .in('set_id', setIds).limit(CATALOGUE_PRICE_PAGE_SIZE);
+      const [cards, sets] = await Promise.allSettled([
+        typeof cardQuery.abortSignal === 'function' ? cardQuery.abortSignal(signal) : cardQuery,
+        typeof setQuery.abortSignal === 'function' ? setQuery.abortSignal(signal) : setQuery,
+      ]);
+      // Optional metadata failures cannot erase saved quotes. If the published
+      // card cannot be verified, retain unavailable rather than guessing.
+      if (cards.status !== 'fulfilled' || cards.value.error) continue;
+      const setRows = sets.status === 'fulfilled' && !sets.value.error ? sets.value.data ?? [] : [];
+      for (const selected of batch) {
+        const matching = (cards.value.data ?? []).filter((row) => row.variant_id === selected.variant_id
+          && row.printing_id === selected.printing_id && row.set_id === selected.set_id
+          && row.language_code === selected.language_code && row.catalogue_version_id === selected.catalogue_version_id);
+        if (matching.length !== 1) continue;
+        const matchingSets = setRows.filter((row) => row.set_id === selected.set_id
+          && row.language_code === selected.language_code && row.catalogue_version_id === selected.catalogue_version_id);
+        const card = matching[0];
+        const releaseDate = matchingSets.length === 1 ? matchingSets[0].release_date : null;
+        metadata.set(`${selected.catalogue_version_id}:${selected.variant_id}`, {
+          rarity: card.rarity_label ?? card.rarity_code, releaseDate,
+          metadataStatus: matchingSets.length === 1 ? 'published_card_and_set' : 'published_card_unknown_set_date',
+        });
+      }
+    }
+  }));
+  return metadata;
+}
+
+function provisionalCataloguePrice(selected, metadata, unavailablePrice, reason) {
+  const baseline = provisionalCataloguePriceBaseline({ variantId: selected.variant_id, ...metadata,
+    variant: selected.variant_code, finish: selected.finish_code, edition: selected.edition_code });
+  if (!baseline) return null;
+  return {
+    ...unavailablePrice(selected.variant_id, { productType: 'raw_card', currency: 'GBP' }),
+    identityKey: selected.variant_id, status: 'market_estimate', priceType: 'market_estimate',
+    sourceLabel: 'Estimated price (provisional baseline)', priceBasis: 'general', unavailableReason: null,
+    estimates: { low: baseline.low, central: baseline.central, high: baseline.high },
+    confidence: { score: 0, label: 'low' }, freshness: 'unknown', calculatedAt: null, staleAfter: null,
+    provenLastSold: false, lastSoldObservationId: null, lastSoldEvidence: null,
+    sample: { total: 0, sold: 0, active: 0, sources: 0, dateRange: { from: null, to: null } },
+    estimateVersion: baseline.modelVersion,
+    sourceBreakdown: [{ provider: 'stackr_catalogue_baseline', evidenceType: 'provisional_category_baseline',
+      modelVersion: baseline.modelVersion, rarity: baseline.rarity, eraMultiplier: baseline.eraMultiplier,
+      metadataStatus: metadata.metadataStatus, marketQuoteUnavailableReason: reason,
+      usableForExactVariant: false, usableForHoldingsValuation: false }],
+    fallbackEstimate: { identityKey: selected.variant_id, exact: false, reason: 'provisional_catalogue_baseline',
+      baseVariantId: selected.variant_id, printingId: selected.printing_id, language: selected.language_code,
+      finishCode: selected.finish_code, usableForExactVariant: false, usableForHoldingsValuation: false },
+  };
+}
 
 export function validateCataloguePriceRead(input = {}) {
   if (!input || typeof input !== 'object' || Array.isArray(input)
@@ -160,7 +246,9 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
     const snapshot = row.snapshot;
     const price = estimate ? toEstimatePrice(estimate, row.variant_id) : null;
     const legacy = snapshot ? toSnapshotPrice(snapshot, row.variant_id) : null;
-    const usable = (p) => p?.status !== 'unavailable' && Number.isFinite(p?.estimates?.central) && p.estimates.central > 0;
+    const usable = (p) => p?.status !== 'unavailable' && p?.currency === 'GBP'
+      && p?.productType === 'raw_card' && !p?.fallbackEstimate && p?.quoteScope !== 'printing_level'
+      && Number.isFinite(p?.estimates?.central) && p.estimates.central > 0;
     const candidates = [price, legacy].filter(usable);
     candidates.sort((a, b) => (preferFresh ? Number(b.freshness === 'fresh') - Number(a.freshness === 'fresh') : 0)
       || (Date.parse(b.calculatedAt ?? '') || 0) - (Date.parse(a.calculatedAt ?? '') || 0));
@@ -180,6 +268,7 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
         readPrintingGeneralQuotes(supabase, printingCandidates, 'read_cardmarket_blended_general_prices'),
         readPrintingGeneralQuotes(supabase, printingCandidates, 'read_catalogue_printing_general_prices'),
       ]) : [new Map(), new Map()];
+    const baselineCandidates = new Map();
     const rows = input.references.map((reference) => {
       const candidates = byRef.get(reference) ?? [];
       const groups = new Set(candidates.map((c) => `${c.printing_id}:${c.set_id}:${c.language_code}`));
@@ -195,9 +284,12 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
         selected = requested.size ? (requested.size === 1 && exact.length === 1 ? exact[0] : null)
           : base[0] ?? (defaults.length === 1 ? defaults[0] : candidates.length === 1 ? candidates[0] : null);
         if (selected) {
-          price = storedPrice(selected);
+          price = storedPrice(selected, input.estimateMode === 'general');
           reason = selected.outcome?.reason ?? 'no_stored_market_quote';
-          if (input.estimateMode === 'general') {
+          // General browsing retains the requested finish's stored exact
+          // evidence, including its stale state and sale/estimate provenance.
+          // A fresh blended or sibling guide cannot prove that exact value.
+          if (input.estimateMode === 'general' && !price) {
             // Prefer the provider's mapped price for this exact finish. A base
             // printing estimate is a fallback when that finish has no fresh quote.
             const generalCandidates = [selected, ...base.filter((row) => row.variant_id !== selected.variant_id)];
@@ -250,6 +342,7 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
         } else reason = 'ambiguous_default_variant';
       }
       const variantId = selected?.variant_id ?? null;
+      if (!price && input.estimateMode === 'general' && resolvedRawCandidate(selected)) baselineCandidates.set(reference, selected);
       if (!price && variantId) price = unavailablePrice(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' }, reason);
       const row = {
         reference, cardId: selected?.printing_id ?? null, variantId, language: selected?.language_code ?? null,
@@ -258,12 +351,40 @@ export function createCataloguePriceRead({ supabase, toEstimatePrice, toSnapshot
       };
       // Prices have content revisions independent of catalogue versions. Deletions,
       // identity changes and availability changes produce explicit replacement rows.
-      return { ...row, revision: hash(row) };
+      return row;
+    });
+    let baselineMetadata = new Map();
+    if (baselineCandidates.size) {
+      const controller = new AbortController();
+      let timeout;
+      try {
+        // Transport cancellation bounds real Supabase reads; the race also
+        // protects saved quotes from an adapter that does not honor abort.
+        // A late result stays private to this phase and cannot mutate rows.
+        const metadataRead = readBaselineMetadata(supabase, [...baselineCandidates.values()], controller.signal)
+          .catch(() => new Map());
+        baselineMetadata = await Promise.race([
+          metadataRead,
+          new Promise((resolve) => {
+            timeout = setTimeout(() => { controller.abort(); resolve(new Map()); }, BASELINE_METADATA_TIMEOUT_MS);
+          }),
+        ]);
+      } finally {
+        clearTimeout(timeout);
+        controller.abort();
+      }
+    }
+    const pricedRows = rows.map((row) => {
+      const selected = baselineCandidates.get(row.reference);
+      const metadata = selected && baselineMetadata.get(`${selected.catalogue_version_id}:${selected.variant_id}`);
+      const provisional = metadata && provisionalCataloguePrice(selected, metadata, unavailablePrice, row.unavailableReason);
+      const result = provisional ? { ...row, price: provisional, unavailableReason: null } : row;
+      return { ...result, revision: hash(result) };
     });
     return {
-      prices: rows.filter((row) => input.knownRevisions[row.reference] !== row.revision),
-      unchangedReferences: rows.filter((row) => input.knownRevisions[row.reference] === row.revision).map((row) => row.reference),
-      priceRevision: hash(rows.map((row) => [row.reference, row.revision])),
+      prices: pricedRows.filter((row) => input.knownRevisions[row.reference] !== row.revision),
+      unchangedReferences: pricedRows.filter((row) => input.knownRevisions[row.reference] === row.revision).map((row) => row.reference),
+      priceRevision: hash(pricedRows.map((row) => [row.reference, row.revision])),
       estimateMode: input.estimateMode,
     };
   };

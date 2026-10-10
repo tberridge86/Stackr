@@ -12,9 +12,35 @@ import { matchRoute } from '../src/routes.js';
 import { validateQuery } from '../src/validation.js';
 import { verifySupabaseRequest } from '../src/auth.js';
 import { createGatewayOriginAuth } from '../../backend/lib/gatewayOriginAuth.js';
+import { readPublishedPokedexIndex } from '../../backend/lib/pokedexIndex.js';
 
 const USER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const DEVICE_ID = 'device:test:00000001';
+
+test('server-owned Pokédex index accepts both app pages and rejects invalid or oversized queries', async () => {
+  const forwarded = [];
+  const deps = { cache: new MemoryCache(), fetchImpl: async (url) => {
+    const parsed = new URL(url);
+    forwarded.push(parsed);
+    return Response.json({ data: readPublishedPokedexIndex(Object.fromEntries(parsed.searchParams)), meta: { apiVersion: '1' } });
+  } };
+  const env = environment();
+  const first = await handleRequest(request('/v1/pokemon?offset=0&limit=151'), env, context(), deps);
+  const continuation = await handleRequest(request('/v1/pokemon?offset=151&limit=1199'), env, context(), deps);
+  assert.equal(first.status, 200);
+  assert.equal(continuation.status, 200);
+  const a = (await first.json()).data;
+  const b = (await continuation.json()).data;
+  assert.equal(a.indexVersion, b.indexVersion);
+  assert.equal(a.results.length + b.results.length, a.count);
+  assert.equal(forwarded[1].searchParams.get('limit'), '1199');
+  for (const query of ['offset=-1', 'offset=1.5', 'offset=NaN', 'offset=9007199254740992',
+    'limit=1351', 'limit=0', 'offset=0&offset=1', 'provider=all']) {
+    assert.equal((await handleRequest(request(`/v1/pokemon?${query}`), env, context(), deps)).status, 400, query);
+  }
+  assert.equal((await handleRequest(request('/v1/sets?limit=1199'), env, context(), deps)).status, 400,
+    'The expanded index bound never changes other route limits.');
+});
 
 test('selected-set collector searches reach the backend while unscoped and ambiguous queries stay rejected', async () => {
   const forwarded = [];
@@ -61,6 +87,68 @@ test('general price mode reaches the owner origin while retaining private access
     assert.equal(invalid.status, 400);
   }
   assert.equal(forwarded, 1, 'invalid modes and anonymous requests never reach the private origin');
+});
+
+test('price history forwards bounded sale-evidence filters privately and rejects invalid or unrelated queries', async () => {
+  const env = environment({ STACKR_PRICING_OWNER_USER_ID: USER_ID });
+  const forwarded = [];
+  const cacheCalls = { match: 0, put: 0 };
+  const deps = {
+    cache: {
+      async match() { cacheCalls.match++; },
+      async put() { cacheCalls.put++; },
+    },
+    verifyAuth: async (req) => {
+      if (!req.headers.get('authorization')) throw new GatewayError(401, 'authentication_required', 'Sign in.');
+      return { ...authenticated(), token: 'owner-token' };
+    },
+    fetchImpl: async (url, init) => {
+      assert.equal(init.headers.get('authorization'), 'Bearer owner-token');
+      forwarded.push(new URL(url));
+      return Response.json({ data: { items: [], nextCursor: null } });
+    },
+  };
+  const path = `/v1/cards/${USER_ID}/price-history`;
+  const headers = { Authorization: 'Bearer owner-token', 'X-Stackr-Device-Id': DEVICE_ID };
+  for (const [provenOnly, soldSince] of [
+    ['true', '2024-02-29T12:30:45.000Z'],
+    ['false', '2024-02-29T12:30:45+01:00'],
+  ]) {
+    const query = new URLSearchParams({ productType: 'raw_card', currency: 'GBP', condition: 'NM',
+      observationType: 'sold_observation', provenOnly, soldSince, limit: '200' });
+    const response = await handleRequest(request(`${path}?${query}`, { headers }), env, context(), deps);
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('cache-control'), /private.*no-store/);
+    assert.equal(forwarded.at(-1).pathname, path);
+    assert.equal(forwarded.at(-1).searchParams.get('provenOnly'), provenOnly);
+    assert.equal(forwarded.at(-1).searchParams.get('soldSince'), soldSince);
+    assert.equal(forwarded.at(-1).searchParams.get('condition'), 'NM');
+    assert.equal(forwarded.at(-1).searchParams.get('limit'), '200');
+  }
+  const invalidQueries = [
+    'provenOnly=', 'provenOnly=1', 'provenOnly=TRUE', 'provenOnly=true&provenOnly=false',
+    'soldSince=', 'soldSince=2024-01-01', 'soldSince=not-a-date',
+    'soldSince=2024-02-30T12:00:00Z', 'soldSince=2023-02-29T12:00:00Z',
+    'soldSince=2024-01-01T24:00:00Z', 'soldSince=2024-01-01T00:60:00Z',
+    'soldSince=2024-01-01T00:00:00%2B24:00', 'soldSince=2999-01-01T00:00:00Z',
+    `soldSince=${'0'.repeat(36)}`, 'soldSince=2024-01-01T00:00:00Z&soldSince=2024-01-02T00:00:00Z',
+  ];
+  for (const query of invalidQueries) {
+    const response = await handleRequest(request(`${path}?${query}`, { headers }), env, context(), deps);
+    assert.equal(response.status, 400, query);
+  }
+  for (const unrelatedPath of [`/v1/cards/${USER_ID}/price`, '/v1/market/movers', '/v1/sets']) {
+    for (const query of ['provenOnly=true', 'soldSince=2024-01-01T00:00:00Z']) {
+      const response = await handleRequest(request(`${unrelatedPath}?${query}`, { headers }), env, context(), deps);
+      assert.equal(response.status, 400);
+      assert.equal((await response.json()).error.code, 'unsupported_query_parameter');
+    }
+  }
+  assert.equal((await handleRequest(request(`${path}?provenOnly=true`), env, context(), deps)).status, 401);
+  const otherOwner = { ...deps, verifyAuth: async () => authenticated({ sub: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' }) };
+  assert.equal((await handleRequest(request(`${path}?provenOnly=true`, { headers }), env, context(), otherOwner)).status, 403);
+  assert.equal(forwarded.length, 2, 'invalid filters and non-owners never reach the backend');
+  assert.deepEqual(cacheCalls, { match: 0, put: 0 }, 'sale history does not use a shared pricing cache');
 });
 
 test('set-card facts flag reaches the origin and cannot collide with artwork cache entries', async () => {

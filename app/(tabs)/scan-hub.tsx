@@ -62,8 +62,9 @@ export default function ScanWorkspace() {
               setResumingSourceSessionId(pending.sourceSessionId);
               const { data } = await supabase.auth.getUser();
               if (!data.user) throw new Error('Sign in to resume this saved scan.');
-              await resumePendingScanCollectionVariant(data.user.id, pending.sourceSessionId);
+              const result = await resumePendingScanCollectionVariant(data.user.id, pending.sourceSessionId);
               await load();
+              if (result.batch.activityFailures) setError('Your card is saved. Its history entry could not be recorded. Resume this saved work to finish history without adding another copy.');
             } catch (resumeError) {
               setError(resumeError instanceof Error ? resumeError.message : 'Saved scan could not be resumed. Try again.');
             } finally { setResumingSourceSessionId(null); }

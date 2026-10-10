@@ -1,3 +1,5 @@
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
+import { getCorocoroIssuesForSet, formatCorocoroIssueMonth } from '../../lib/corocoroIssueArchive';
 import { useTheme } from '../../components/theme-context';
 import { stackrHaptics } from '../../lib/haptics';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -7,7 +9,6 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
   Alert,
 } from 'react-native';
@@ -32,7 +33,7 @@ import { isSetVariantQuantitySchemaUnavailable } from '../../lib/setVariantRemov
 import { getCatalogueVariantKeys, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { useAuth } from '../../components/auth-context';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
-import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
+import { cataloguePriceReadWindow, useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 import type { CataloguePriceDisplay } from '../../lib/cataloguePrices';
 
 type FilterType = 'all' | 'owned' | 'missing';
@@ -647,7 +648,6 @@ export default function SetDetailScreen() {
 
   const [setInfo, setSetInfo] = useState<PokemonSet | null>(null);
   const [cards, setCards] = useState<PokemonCard[]>([]);
-  const pricedCards = useCataloguePriceOverlay(cards);
   const [loading, setLoading] = useState(true);
   const [ownershipReady, setOwnershipReady] = useState(false);
   const loadRequestRef = useRef(0);
@@ -773,6 +773,15 @@ export default function SetDetailScreen() {
     const key = getVariantKey(cardId, setId ?? '', variant);
     const previousQuantity = variantQuantities.get(key) ?? 0;
     const targetCard = cards.find((card) => card.id === cardId);
+    const recordActivity = async (post: Parameters<typeof createActivityPost>[0]) => {
+      try {
+        const result = await createActivityPost(post, { expectedUserId: userId });
+        if (result.status === 'failed' && userId === authUserIdRef.current) Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
+      } catch (historyError) {
+        if (userId !== authUserIdRef.current || (historyError instanceof Error && historyError.message === 'activity_post_identity_changed')) return;
+        Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
+      }
+    };
 
     setVariantQuantities((prev) => {
       const next = new Map(prev);
@@ -792,7 +801,7 @@ export default function SetDetailScreen() {
           .eq('variant', variant);
         if (error) throw error;
         if (previousQuantity > 0) {
-          await createActivityPost({
+          await recordActivity({
             title: 'Removed from collection',
             subtitle: `${targetCard?.name ?? cardId} · ${shortVariant(variant)}`,
             cardId,
@@ -812,7 +821,7 @@ export default function SetDetailScreen() {
       );
       if (error) throw error;
       if (previousQuantity > nextQuantity) {
-        await createActivityPost({
+        await recordActivity({
           title: `Quantity reduced from ${previousQuantity} to ${nextQuantity}`,
           subtitle: `${targetCard?.name ?? cardId} · ${shortVariant(variant)}`,
           cardId,
@@ -820,9 +829,9 @@ export default function SetDetailScreen() {
           type: 'quantity_reduced',
           isPositive: false,
         });
-      } else if (previousQuantity === 0 && nextQuantity > 0) {
-        await createActivityPost({
-          title: 'Added to collection',
+      } else if (nextQuantity > previousQuantity) {
+        await recordActivity({
+          title: previousQuantity === 0 ? 'Added to collection' : `Quantity increased from ${previousQuantity} to ${nextQuantity}`,
           subtitle: `${targetCard?.name ?? cardId} · ${shortVariant(variant)}`,
           cardId,
           setId,
@@ -831,6 +840,7 @@ export default function SetDetailScreen() {
         });
       }
     } catch (error: any) {
+      if (userId !== authUserIdRef.current) return;
       setVariantQuantities((prev) => {
         const next = new Map(prev);
         if (previousQuantity <= 0) next.delete(key);
@@ -955,7 +965,7 @@ export default function SetDetailScreen() {
   }, [rarityFilterOptions, selectedRarity]);
 
   const filteredCards = useMemo(() => {
-    let result = pricedCards.filter((card) => {
+    let result = cards.filter((card) => {
       const variants = getVariants(card, setId);
       const anyOwned = variants.some((v) => (variantQuantities.get(getVariantKey(card.id, setId ?? '', v)) ?? 0) > 0);
       const displayName = getSetCardDisplayName(card, card.name);
@@ -985,7 +995,7 @@ export default function SetDetailScreen() {
     });
 
     return result;
-  }, [pricedCards, variantQuantities, search, filter, selectedRarity, sort, setId, finishSection, hasCompletionistSections, completionistFamilyCounts]);
+  }, [cards, variantQuantities, search, filter, selectedRarity, sort, setId, finishSection, hasCompletionistSections, completionistFamilyCounts]);
 
   const cardGridWindow = useMemo(
     () => getIncrementalListWindow(2, { initialRows: 8, pageRows: 6, minInitial: 16, minPage: 12 }),
@@ -1000,6 +1010,22 @@ export default function SetDetailScreen() {
   const visibleFilteredCards = useMemo(
     () => filteredCards.slice(0, visibleCardCount),
     [filteredCards, visibleCardCount]
+  );
+  // Read saved quotes only for what this incremental grid can show next. The
+  // overlay still decorates every card with its local raw-card fallback, so a
+  // larger set never waits for a whole-set pricing request before rendering.
+  const storedPriceCards = useMemo(
+    () => cataloguePriceReadWindow(filteredCards, visibleCardCount, cardGridWindow.pageSize),
+    [filteredCards, visibleCardCount, cardGridWindow.pageSize]
+  );
+  const pricedCards = useCataloguePriceOverlay(cards, { requestCards: storedPriceCards });
+  const pricedCardsBySource = useMemo(
+    () => new Map(cards.map((card, index) => [card, pricedCards[index] ?? card])),
+    [cards, pricedCards]
+  );
+  const pricedVisibleFilteredCards = useMemo(
+    () => visibleFilteredCards.map((card) => pricedCardsBySource.get(card) ?? card),
+    [visibleFilteredCards, pricedCardsBySource]
   );
   const hasMoreFilteredCards = visibleCardCount < filteredCards.length;
   const renderMoreFilteredCards = useCallback(() => {
@@ -1099,6 +1125,16 @@ export default function SetDetailScreen() {
       <StackrBackdrop />
       <View style={{ paddingHorizontal: 16, paddingTop: 2, marginBottom: 2 }}>
         <StackrBackButton onPress={() => router.back()} />
+        {getCorocoroIssuesForSet(setId ?? '').map(issue => (
+          <TouchableOpacity key={issue.id} accessibilityRole="button"
+            accessibilityLabel={`Open ${formatCorocoroIssueMonth(issue.issueMonth)} CoroCoro magazine binder`}
+            onPress={() => router.push({ pathname: '/corocoro', params: { issue: issue.id } })}
+            style={{ paddingVertical: 12, minHeight: 44 }}>
+            <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>
+              CoroCoro · {formatCorocoroIssueMonth(issue.issueMonth)} edition
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <StackrBrowseToolbar
@@ -1118,7 +1154,7 @@ export default function SetDetailScreen() {
         testID="set-card-grid"
         style={{ flex: 1 }}
         keyboardShouldPersistTaps="handled"
-        data={visibleFilteredCards}
+        data={pricedVisibleFilteredCards}
         keyExtractor={(item, index) => `${setId ?? item.set?.id ?? 'set'}:${item.id}:${item.number ?? 'no-number'}:${item.rarity ?? 'rarity'}:${index}`}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between' }}

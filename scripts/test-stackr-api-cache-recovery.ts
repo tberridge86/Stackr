@@ -16,6 +16,18 @@ loader._load = (name, parent, main) => {
 async function main() {
   const { StackrApiClient, StackrApiV1Error } = await import('../lib/stackrApiV1');
   loader._load = original;
+  let indexUrl = '';
+  const publicIndexClient = new StackrApiClient({
+    baseUrl: 'https://api.stackr.test/v1', getDeviceId: async () => 'device:test:000001',
+    getAccessToken: async () => { throw new Error('Public index must not read a login token'); },
+    fetchImpl: async (url, init) => {
+      indexUrl = String(url);
+      assert.equal((init?.headers as Record<string, string>).Authorization, undefined);
+      return Response.json({ data: { count: 1350, indexVersion: 'reviewed-v1', results: [] }, meta: {} });
+    },
+  });
+  assert.equal((await publicIndexClient.pokemonIndex({ offset: 151, limit: 1199 })).data.indexVersion, 'reviewed-v1');
+  assert.equal(indexUrl, 'https://api.stackr.test/v1/pokemon?offset=151&limit=1199');
   const calls: RequestInit[] = [];
   let always304 = false;
   const client = new StackrApiClient({

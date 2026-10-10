@@ -105,10 +105,187 @@ function testScreenOrdering() {
   assert.match(search, /requestId !== requestRef\.current/, 'late search results remain guarded by request identity');
 }
 
+function testPokedexTabStagedLoadingSource() {
+  const pokedex = fs.readFileSync('app/(tabs)/pokedex.tsx', 'utf8');
+  assert.match(pokedex, /const POKEDEX_INITIAL_LIST_LIMIT = 151;/,
+    'the main Pokédex has a bounded first factual page');
+  assert.match(pokedex, /export async function loadPokedexRemote/,
+    'the tab delegates its cold path to a runtime-testable staged loader');
+  assert.match(pokedex, /Could not load the full Pokédex\. Showing the Pokémon loaded so far\./,
+    'a failed continuation reports partial data honestly');
+  assert.match(pokedex, /onPress=\{\(\) => setReloadEpoch\(\(current\) => current \+ 1\)\}/,
+    'the partial/error state offers an explicit retry');
+}
+
+function loadPokedexTabModule() {
+  const source = fs.readFileSync('app/(tabs)/pokedex.tsx', 'utf8');
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React, esModuleInterop: true },
+  }).outputText;
+  const exports: any = {};
+  const mocks: Record<string, unknown> = {
+    react: { __esModule: true, default: {} },
+    'react-native': {},
+    '@react-native-async-storage/async-storage': { __esModule: true, default: {} },
+    'expo-router': {},
+    'react-native-safe-area-context': {},
+    '@expo/vector-icons': {},
+    '../../components/theme-context': {},
+    '../../components/StackrLoadingIndicator': {},
+    '../../components/Text': {},
+    '../../components/FeatureTipModal': {},
+    '../../lib/pokedexCollection': {},
+    '../../components/StackrBackdrop': {},
+    '../../components/StackrScreen': {},
+    '../../lib/stackrIcons': { stackrIcons: { pokedex: {} } },
+  };
+  vm.runInNewContext(compiled, {
+    exports,
+    console,
+    require: (name: string) => mocks[name] ?? {},
+  });
+  return exports as {
+    loadPokedexRemote: (fetcher: (url: string) => Promise<any>, options: any) => Promise<'complete' | 'stale'>;
+  };
+}
+
+const pokedexPage = (start: number, count: number) => Array.from({ length: count }, (_, index) => {
+  const id = start + index;
+  return { name: `pokemon-${id}`, url: `https://pokeapi.co/api/v2/pokemon/${id}/` };
+});
+
+async function testPokedexTabColdPathRuntime() {
+  const { loadPokedexRemote } = loadPokedexTabModule();
+  const firstPage = pokedexPage(1, 151);
+  const continuation = pokedexPage(152, 1199);
+  const calls: string[] = [];
+  let resolveContinuation!: (response: any) => void;
+  const continuationPending = new Promise<any>((resolve) => { resolveContinuation = resolve; });
+  const fetcher = async (url: string) => {
+    calls.push(url);
+    if (calls.length === 1) return { ok: true, status: 200, json: async () => ({ count: 1350, indexVersion: 'fixture-v1', results: firstPage }) };
+    return continuationPending;
+  };
+  let active = true;
+  const partials: any[][] = [];
+  const completes: any[][] = [];
+  const cached: any[][] = [];
+  const load = loadPokedexRemote(fetcher, {
+    hasCachedPokemon: false,
+    isActive: () => active,
+    publishPartial: (entries: any[]) => partials.push(entries),
+    publishComplete: (entries: any[]) => completes.push(entries),
+    persistComplete: async (entries: any[]) => { cached.push(entries); },
+    setLoadingMore: () => {},
+  });
+  await tick();
+  assert.equal(partials.length, 1, 'the first 151 rows publish while the continuation is pending');
+  assert.equal(partials[0].length, 151);
+  assert.equal(completes.length, 0, 'a partial page is not treated as complete');
+  assert.equal(cached.length, 0, 'a partial page is never cached');
+  assert.match(calls[0], /offset=0&limit=151/);
+  assert.match(calls[1], /offset=151&limit=1199/);
+  resolveContinuation({ ok: true, status: 200, json: async () => ({ count: 1350, indexVersion: 'fixture-v1', results: continuation }) });
+  assert.equal(await load, 'complete');
+  assert.equal(completes[0].length, 1350, 'the completed continuation merges into a full list');
+  assert.equal(cached[0].length, 1350, 'only the validated full list reaches cache');
+
+  const savedComplete = completes[0];
+  const failedWrites: any[][] = [];
+  await assert.rejects(loadPokedexRemote(async (url: string) => (
+    url.includes('offset=0')
+      ? { ok: true, status: 200, json: async () => ({ count: 1350, indexVersion: 'fixture-v1', results: firstPage }) }
+      : { ok: false, status: 503, json: async () => ({}) }
+  ), {
+    hasCachedPokemon: true,
+    isActive: () => true,
+    publishPartial: () => assert.fail('saved full results must not be replaced by a partial refresh'),
+    publishComplete: () => assert.fail('a failed continuation cannot publish a complete refresh'),
+    persistComplete: async (entries: any[]) => { failedWrites.push(entries); },
+    setLoadingMore: () => {},
+  }), /Pokédex API returned 503/);
+  assert.equal(failedWrites.length, 0, 'a failed continuation cannot overwrite the saved complete cache');
+  assert.equal(savedComplete.length, 1350, 'the caller retains the previously saved complete data on failure');
+
+  const retryWrites: any[][] = [];
+  const retryResult = await loadPokedexRemote(async (url: string) => (
+    url.includes('offset=0')
+      ? { ok: true, status: 200, json: async () => ({ count: 1350, indexVersion: 'fixture-v1', results: firstPage }) }
+      : { ok: true, status: 200, json: async () => ({ count: 1350, indexVersion: 'fixture-v1', results: continuation }) }
+  ), {
+    hasCachedPokemon: false,
+    isActive: () => true,
+    publishPartial: () => {},
+    publishComplete: () => {},
+    persistComplete: async (entries: any[]) => { retryWrites.push(entries); },
+    setLoadingMore: () => {},
+  });
+  assert.equal(retryResult, 'complete', 'a retry can replace the partial attempt with a validated full list');
+  assert.equal(retryWrites[0].length, 1350, 'the successful retry persists the merged full list');
+
+  const truncatedWrites: any[][] = [];
+  await assert.rejects(loadPokedexRemote(async (url: string) => (
+    url.includes('offset=0')
+      ? { ok: true, status: 200, json: async () => ({ count: 1350, indexVersion: 'fixture-v1', results: firstPage }) }
+      : { ok: true, status: 200, json: async () => ({ count: 1350, indexVersion: 'fixture-v1', results: continuation.slice(0, 8) }) }
+  ), {
+    hasCachedPokemon: false,
+    isActive: () => true,
+    publishPartial: () => {},
+    publishComplete: () => assert.fail('a truncated continuation cannot become a complete list'),
+    persistComplete: async (entries: any[]) => { truncatedWrites.push(entries); },
+    setLoadingMore: () => {},
+  }), /truncated Pokémon continuation/);
+  assert.equal(truncatedWrites.length, 0, 'malformed/truncated continuation data is never cached');
+
+  await assert.rejects(loadPokedexRemote(async (url: string) => ({
+    ok: true, status: 200, json: async () => url.includes('offset=0')
+      ? { count: 1350, indexVersion: 'fixture-v1', results: firstPage }
+      : { count: 1350, indexVersion: 'fixture-v2', results: continuation },
+  }), {
+    hasCachedPokemon: false, isActive: () => true, publishPartial: () => {},
+    publishComplete: () => assert.fail('Mixed revisions cannot publish a complete index'),
+    persistComplete: async () => assert.fail('Mixed revisions cannot reach cache'), setLoadingMore: () => {},
+  }), /index changed during loading/);
+
+  let staleContinuation!: (response: any) => void;
+  const stalePending = new Promise<any>((resolve) => { staleContinuation = resolve; });
+  active = true;
+  const staleComplete: any[][] = [];
+  const staleCache: any[][] = [];
+  const staleLoad = loadPokedexRemote(async (url: string) => (
+    url.includes('offset=0')
+      ? { ok: true, status: 200, json: async () => ({ count: 1350, indexVersion: 'fixture-v1', results: firstPage }) }
+      : stalePending
+  ), {
+    hasCachedPokemon: false,
+    isActive: () => active,
+    publishPartial: () => {},
+    publishComplete: (entries: any[]) => staleComplete.push(entries),
+    persistComplete: async (entries: any[]) => { staleCache.push(entries); },
+    setLoadingMore: () => {},
+  });
+  await tick();
+  active = false;
+  staleContinuation({ ok: true, status: 200, json: async () => ({ count: 1350, indexVersion: 'fixture-v1', results: continuation }) });
+  assert.equal(await staleLoad, 'stale', 'an unmounted/superseded continuation reports stale');
+  assert.equal(staleComplete.length, 0, 'an unmounted/superseded load does not publish a final list');
+  assert.equal(staleCache.length, 0, 'an unmounted/superseded load does not write cache');
+}
+
+function testSearchSetFactsFirst() {
+  const search = fs.readFileSync('app/(tabs)/search.tsx', 'utf8');
+  assert.match(search, /fetchAllSets\(\{ language, includeAssets: false \}\)/,
+    'set ranking reads facts only instead of globally enumerating set artwork');
+}
+
 async function main() {
   await testPersistedSearchCache();
   await testPokedexCanonicalPaging();
   testScreenOrdering();
+  testPokedexTabStagedLoadingSource();
+  await testPokedexTabColdPathRuntime();
+  testSearchSetFactsFirst();
   console.log('Issue #304 cold retrieval checks passed: persisted Search/Binders, progressive canonical Pokédex paging, retry and stale-request guards.');
 }
 

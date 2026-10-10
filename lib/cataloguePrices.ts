@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CataloguePriceCache } from './cataloguePriceCacheCore';
 import { stackrApiClient, type StackrApiClient, type StackrCataloguePriceRow } from './stackrApiV1';
 import { sha256Text } from './cataloguePriceHash';
+import { PROVISIONAL_CATALOGUE_PRICE_MODEL } from './cataloguePriceBaseline';
 
 export const cataloguePriceCache = new CataloguePriceCache(AsyncStorage);
 const unavailableServers = new WeakMap<StackrApiClient, { until: number; error: unknown }>();
@@ -50,9 +51,12 @@ export function isUnavailableCataloguePriceRoute(error: any) {
 
 export function cataloguePriceDisplay(row: StackrCataloguePriceRow) {
   const price = row.price;
-  const value = price?.estimates.central ?? null;
   const general = price?.fallbackEstimate?.reason === 'general_card_estimate';
   const provisional = price?.fallbackEstimate?.reason === 'provisional_catalogue_baseline';
+  // A restart must not restore the retired rarity model's cheap vintage prices.
+  // Preserve every evidence-backed quote; only the provisional model is retired.
+  const retiredBaseline = provisional && price?.estimateVersion !== PROVISIONAL_CATALOGUE_PRICE_MODEL;
+  const value = retiredBaseline ? null : price?.estimates.central ?? null;
   const stale = price?.freshness === 'stale' || price?.freshness === 'expired';
   const sourceLabel = value == null
     ? 'Price unavailable'
@@ -69,7 +73,8 @@ export function cataloguePriceDisplay(row: StackrCataloguePriceRow) {
     displayPrice: value, currency: price?.currency ?? 'GBP', priceType: 'market_estimate',
     updatedAt: price?.calculatedAt ?? null, pricingStatus: value == null ? 'unavailable' : provisional ? 'provisional' : stale ? 'stale' : 'priced',
     sourceLabel: `${stale ? 'Stale ' : ''}${sourceLabel}`,
-    confidence: price?.confidence.label ?? null, unavailableReason: row.unavailableReason,
+    confidence: price?.confidence.label ?? null,
+    unavailableReason: retiredBaseline ? 'retired_provisional_baseline' : row.unavailableReason,
     priceBasis: general || provisional ? 'general' as const : 'exact' as const,
     provisional, sourceBreakdown: price?.sourceBreakdown ?? [],
   };

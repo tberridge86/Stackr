@@ -251,14 +251,15 @@ assert.match(
   /sanitizeMintyInsightForGate0\(localMintyInsight\)/,
   'Hub must sanitize the preference-aware local insight at the display boundary'
 );
+assert.match(hubSource, /const posts = await readRecentHomeActivityRows\(supabase, trustedUserId, isCurrentRequest\)/);
 assert.match(
   hubSource,
-  /const visibleFeed = \(feedResult\.data \?\? \[\]\)\s*\.filter\(\(post: any\) => !isGate0CommerceActivity\(post\)\)/,
+  /const visibleFeed = posts\s*\.filter\(\(post: any\) => !isGate0CommerceActivity\(post\)\)/,
   'Home activity filtering must apply to every cohort'
 );
 assert.doesNotMatch(
   hubSource,
-  /premiumSellerAccess\.allowed\s*\?\s*\(feedResult\.data/,
+  /premiumSellerAccess\.allowed\s*\?\s*\(?\s*(?:feedResult\.data|posts)/,
   'trusted sellers must not bypass Gate 0 activity filtering'
 );
 assert.match(

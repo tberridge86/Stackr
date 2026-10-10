@@ -1,3 +1,4 @@
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import { getSimplifiedChineseSetLogoSourceForSet } from '../../lib/simplifiedChineseSetLogos';
 import { StackrBrowseToolbar, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
@@ -8,7 +9,6 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
-  ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { Text } from '../../components/Text';
@@ -715,6 +715,16 @@ export default function ExploreScreen() {
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 18 }}>
 
         <StackrPageTitle title="Discover Sets" accentText="Sets" style={{ marginBottom: 8 }} />
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Browse CoroCoro magazine editions and their cards"
+          onPress={() => router.push('/corocoro')}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, marginBottom: 8 }}
+        >
+          <Ionicons name="book-outline" size={22} color={theme.colors.primary} />
+          <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>CoroCoro magazine library</Text>
+          <Ionicons name="chevron-forward" size={16} color={theme.colors.primary} />
+        </TouchableOpacity>
         {pendingLanguages.length ? <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft, marginBottom: 8 }}>Loading {pendingLanguages.join(', ')} sets…</Text> : null}
         {loadError ? (
           <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingLeft: 12, marginBottom: 12 }}>

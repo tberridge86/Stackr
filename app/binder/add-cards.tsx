@@ -1,13 +1,13 @@
 import { useTheme } from '../../components/theme-context';
 import { stackrHaptics } from '../../lib/haptics';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
   View,
   TextInput,
   TouchableOpacity,
   FlatList,
   Image,
-  ActivityIndicator,
   Alert,
   ScrollView,
 } from 'react-native';

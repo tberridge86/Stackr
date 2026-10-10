@@ -48,12 +48,29 @@ function paginationFromRows(bundleRows, rawRows, limit) {
   };
 }
 
-async function fetchFactRows(supabase, setId, language, afterVariantId, limit) {
+async function fetchFactRows(supabase, setId, language, afterVariantId, limit, options) {
+  let catalogueVersionId = clean(options.catalogueVersionId);
+  if (!catalogueVersionId) {
+    const { data: publishedSet, error } = await supabase.schema('api')
+      .from('catalogue_sets')
+      .select('catalogue_version_id')
+      .eq('set_id', setId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!publishedSet) return { cards: [], pagination: { limit, nextCursor: null } };
+    catalogueVersionId = clean(publishedSet.catalogue_version_id);
+  }
+  if (!isUuid(catalogueVersionId)) {
+    throw new ApiError(502, 'catalogue_version_unavailable', 'The published set catalogue version is unavailable.');
+  }
+  // Keep the facts path as narrowly scoped as the canonical set-card read.
+  // Otherwise Postgres can walk every published version's variants first.
   let query = supabase
     .schema('api')
     .from('catalogue_cards')
     .select('*')
     .eq('set_id', setId)
+    .eq('catalogue_version_id', catalogueVersionId)
     .order('variant_id', { ascending: true })
     .limit(limit + 1);
   if (language) query = query.eq('language_code', language);
@@ -71,11 +88,11 @@ async function fetchFactRows(supabase, setId, language, afterVariantId, limit) {
 }
 
 /**
- * Fetches one published set page through a single PostgREST request.
+ * Fetches one published set page, resolving its published version for facts.
  * Binder first paint can request facts only (includeAssets=false), while existing
  * consumers retain the preferred-artwork response by default.
  */
-export async function fetchFastSetCards(supabase, setId, input = {}) {
+export async function fetchFastSetCards(supabase, setId, input = {}, options = {}) {
   if (!isUuid(setId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
   const limit = parseLimit(input.limit, 120, 500);
   const language = clean(input.language);
@@ -89,7 +106,7 @@ export async function fetchFastSetCards(supabase, setId, input = {}) {
   }
 
   if (!shouldIncludeAssets(input.includeAssets)) {
-    return fetchFactRows(supabase, setId, language, afterVariantId, limit);
+    return fetchFactRows(supabase, setId, language, afterVariantId, limit, options);
   }
 
   const { data, error } = await supabase.schema('api').rpc('catalogue_set_card_rows', {

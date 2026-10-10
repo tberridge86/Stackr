@@ -1,8 +1,8 @@
 import { StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   StyleProp,
   TouchableOpacity,
   View,

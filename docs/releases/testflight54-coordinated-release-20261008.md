@@ -43,3 +43,17 @@ A final image review found that Pokédex visible-card hydration still entered th
 Observed first-source-page retrieval can still take approximately 2.5 seconds; cached sampled reads were approximately 100–370 ms. No universal instantaneous-loading claim is made.
 
 The native workflow's GitHub environment had no `EXPO_TOKEN`; the existing authenticated EAS CLI built and submitted the clean frozen reviewed revision with normal-production identity and runtime checks. Build 54 finished, its packaged identity/startup artwork were verified, the exact build was uploaded, and Apple processing is `VALID`. See the [delivery receipt](testflight54-delivery-20261008.md) for exact EAS/Apple IDs and independently verified internal/external availability. Installed-device acceptance remains pending.
+
+## Owner feedback and content audit, 9 October
+
+Apple's tester information now records the owner's iOS device as installed on `1.0.6 (54)`. This confirms delivery, not product acceptance. The owner reports unchanged loading, haptics, pricing and CoroCoro behaviour.
+
+The source audit confirms a release-assembly omission: the newer premium startup video, card-to-sleeve-to-top-loader indicator and clickable CoroCoro library remained in the original desktop checkout and were excluded from the frozen build. The shipped loader was a plain native ring. The magazine cover pack was already present in the repository, but the new issue navigation and its native cover resolver were absent. Calling those changes unrelated UI experiments did not match the owner's requested scope.
+
+Build 54's pricing change is a local provisional browse fallback plus stored quote reads, not a provider refresh or complete catalogue pricing operation. Its performance changes principally target species-card retrieval; they do not establish instant startup, general search or all-screen loading.
+
+The recovery branch restores the requested opening and in-page animation, wires 52 existing loading callsites, adds the documented CoroCoro issue library with 26 bundled owner-supplied covers, limits initial set quote reads to the current incremental grid and one nearby page, and preserves already-read prices within the current card list and account. It also adds the existing preference-aware touch-feedback test to Settings and fixes the detail-card surface ignoring the saved Reduce card motion setting. Automated checks and an exported iOS bundle are review evidence; no replacement native build or upload is recorded here.
+
+The same recovery removes two additional cold-path blockers: the main Pokédex publishes its initial 151 entries before continuing, without caching an incomplete list, and set search ranks facts without first enumerating global artwork manifests. See the [mobile recovery record](mobile-release-recovery-20261009.md) for the exact candidate scope, runtime fixtures, packaging checks and remaining gaps.
+
+Remaining work must stay explicit: calibrated all-catalogue prices and provider coverage, broader measured cold/warm performance, eight missing magazine covers, unresolved exact card mappings and artwork within the magazine archive, and physical iPhone haptic/visual acceptance. The archive contains 34 documented issues and 54 card references; only the two previously curated Mew editions have exact Stackr card mappings. These remaining references must not be presented as fully connected cards.
