@@ -3,9 +3,11 @@ import {
   StackrCatalogueCache,
   calculateCatalogueChecksum,
   createInMemoryStackrCatalogueStore,
+  syncStackrCatalogueInBackground,
+  RETIRED_CHINESE_DUPLICATE_SET_IDS,
   type StackrCatalogueShard,
 } from '../lib/stackrCatalogueCache';
-import type { StackrCatalogueManifest } from '../lib/stackrApiV1';
+import type { StackrCatalogueManifest, StackrApiClient } from '../lib/stackrApiV1';
 
 const manifest: StackrCatalogueManifest = {
   currentCatalogueVersion: 'catalogue-test-v1',
@@ -196,6 +198,49 @@ async function deltaAndOfflineQueue() {
 }
 
 async function run() {
+  const store = createInMemoryStackrCatalogueStore();
+  const cache = new StackrCatalogueCache(store);
+  await cache.bootstrap({ manifest, shards: [shard] });
+  const before = store.snapshot!();
+  const card = before.cards[0];
+  await store.upsertSets([{ ...before.sets[0], setId: RETIRED_CHINESE_DUPLICATE_SET_IDS[0], languageCode: 'zh-cn' }]);
+  await store.upsertCards([{ ...card, cardId: 'previously-consumed-duplicate', setId: RETIRED_CHINESE_DUPLICATE_SET_IDS[0] }]);
+  await cache.retireReviewedChineseDuplicates();
+  assert.equal(store.snapshot!().cards.some(row => row.cardId === 'previously-consumed-duplicate'), false);
+  assert.equal((await cache.getManifest())!.latestChangeSequence, 12, 'replay must preserve delta cursor');
+  const queue = await cache.enqueueOfflineScan({ cardId: card.cardId });
+  await store.upsertCards([{ ...card, cardId: 'unrelated', setId: 'unrelated-set', defaultVariantId: null }]);
+  await store.upsertAliases([{ aliasId: 'old-alias', cardId: card.cardId, languageCode: 'en', name: 'old', nameType: 'native' }]);
+  await store.upsertExternalIds([{ externalId: 'old-external', cardId: card.cardId, provider: 'test', providerCardId: 'old' }]);
+  const change = (entityType: string, entityId: string, sequence: number) => ({ entityType, entityId, sequence,
+    operation: 'deprecation' as const, entityKey: entityId, changedAt: '2026-10-10T00:00:00Z', summary: {} });
+  await cache.applyDelta([change('card-variants', card.defaultVariantId!, 13)]);
+  assert.equal(store.snapshot!().cards[0].defaultVariantId, null);
+  assert.equal(store.snapshot!().cards[0].imageSmall, null);
+  const requests: (string | null | undefined)[] = [];
+  const pages = [Array.from({ length: 500 }, (_, index) => change('card-printings', `other-${index}`, 14 + index)),
+    [change('sets', card.setId, 514)]];
+  const client = { async catalogManifest() { return { data: manifest }; }, async catalogDelta(query: { cursor?: string | null }) {
+    requests.push(query.cursor);
+    return { data: { changes: pages[requests.length - 1], pagination: { nextCursor: requests.length === 1 ? 'second-page' : null } } };
+  } } as unknown as StackrApiClient;
+  const storageRows = new Map<string, string>();
+  const legacyStorage = { async getItem(key: string) { return storageRows.get(key) ?? null; },
+    async multiGet(keys: readonly string[]) { return keys.map(key => [key, storageRows.get(key) ?? null] as [string, string | null]); },
+    async multiSet(entries: readonly [string, string][]) { for (const [key, value] of entries) storageRows.set(key, value); },
+    async multiRemove(keys: readonly string[]) { for (const key of keys) storageRows.delete(key); } };
+  const sync = await syncStackrCatalogueInBackground({ client, cache, legacyStorage });
+  assert.equal(sync.status, 'delta_applied', JSON.stringify(sync));
+  assert.deepEqual(requests, [null, 'second-page']);
+  const after = store.snapshot!();
+  assert.deepEqual(after.cards.map(row => row.cardId), ['unrelated']);
+  assert.equal(after.variants.length, 0);
+  assert.equal(after.aliases.length, 0);
+  assert.equal(after.externalIds.length, 0);
+  assert.equal(after.pendingScans[0].id, queue.id);
+  assert.equal(after.manifest!.latestChangeSequence, 514);
+  await cache.applyDelta([change('sets', card.setId, 14)]);
+  assert.deepEqual(store.snapshot!().cards, after.cards, 'repeated deprecation is safe');
   await bootstrapAndExactLookup();
   await rollbackOnChecksumMismatch();
   await deltaAndOfflineQueue();
