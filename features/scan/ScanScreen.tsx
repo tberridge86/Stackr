@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Buffer } from 'buffer';
 import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
 import * as FileSystem from 'expo-file-system/legacy';
-import { preferenceAwareHaptics as Haptics } from '../../lib/haptics';
+import { stackrHaptics } from '../../lib/haptics';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Stack, router, useLocalSearchParams, usePathname } from 'expo-router';
 import { decode as decodeJpeg } from 'jpeg-js';
@@ -3034,7 +3034,7 @@ export default function ScanScreen() {
 
     try {
       if (source === 'manual') {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        await stackrHaptics.scannerCaptureLocked().catch(() => {});
       }
       const captureStartedAt = Date.now();
       const photo = capturedPhoto ?? await camera.takePictureAsync({
@@ -3363,7 +3363,7 @@ export default function ScanScreen() {
       }
 
       setScanMessage(cards.length === 1 ? 'Card found.' : `${cards.length} possible matches found.`);
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      await (cards.length === 1 ? stackrHaptics.scannerExactMatch() : stackrHaptics.scannerAmbiguous()).catch(() => {});
       if (!canContinueCapture()) return;
       saveDiagnostics('candidates_returned');
       setScannerState({ type: 'confirm' });
@@ -3619,7 +3619,7 @@ export default function ScanScreen() {
 
         if (stableCaptureStartedAtRef.current == null) stableCaptureStartedAtRef.current = Date.now();
         setScanMessage('Hold steady.');
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        await stackrHaptics.scannerCaptureLocked().catch(() => {});
         setScanMessage('Card locked. Scanning...');
         await handleCapture('auto');
         return;
@@ -3648,7 +3648,7 @@ export default function ScanScreen() {
 
       autoReadyFrames.current = 0;
       setScanMessage('Card locked. Scanning...');
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      await stackrHaptics.scannerCaptureLocked().catch(() => {});
       await handleCapture('auto', photo);
     } catch (error) {
       autoReadyFrames.current = 0;
