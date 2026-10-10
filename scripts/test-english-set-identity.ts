@@ -302,6 +302,7 @@ async function main() {
     },
   };
   assert.equal((await exports.fetchStackrSet(`zh-cn:${retiredSetId}`, 'zh-cn', {}, correctedClient)).language, 'zh-tw');
+  assert.equal((await exports.fetchStackrSet(retiredSetId, 'ZH_HANS', {}, correctedClient)).language, 'zh-tw');
   const correctedFacts = await imageReads.fetchPreferredStackrCardsForReferences([retiredSetId], 'zh-cn', correctedClient, { includeAssets: false, minimumCardCount: 1 });
   assert.equal(correctedFacts.length, 1);
   assert.equal(correctedFacts[0].language, 'zh-tw', 'active facts-first path accepts only the reviewed correction language');

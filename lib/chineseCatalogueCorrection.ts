@@ -11,6 +11,9 @@ export function correctedChineseSetContext(reference: string, language?: string 
   const raw = reference.trim();
   const key = raw.toLowerCase().replace(/^zh-cn:/, '');
   const target = CHINESE_DUPLICATE_SET_CORRECTIONS[key];
-  if (!target || (language && !['all', 'zh-cn', 'zh-tw'].includes(language))) return { reference, language };
+  const normalizedLanguage = String(language ?? '').trim().toLowerCase().replace(/_/g, '-');
+  const supportedHints = ['', 'all', 'zh-cn', 'zh-hans', 'zhcn', 'cn', 'chinese-simplified', 'simplified-chinese',
+    'zh', 'zh-tw', 'zh-hant', 'zhtw', 'tw', 'chinese', 'traditional-chinese'];
+  if (!target || !supportedHints.includes(normalizedLanguage)) return { reference, language };
   return { reference: target, language: 'zh-tw' as const };
 }
