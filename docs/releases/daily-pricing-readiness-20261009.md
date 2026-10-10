@@ -54,7 +54,7 @@ Gateway validation and forwarding passed all 51 tests. Generated contract valida
 
 Independent read-only pricing review found no remaining actionable defect in the final task logic. It covered the daily workers, client/panel/chart, service, gateway, contracts and fixtures. Review is not live activation evidence: complete catalogue freshness, daily capacity and actual API/native delivery remain unverified.
 
-The production-profile local iOS export passed with 3,364 modules: `entry-c5e00ec45b83c2b4c73d527d8bc28832.hbc`, 11,593,656 bytes, SHA-256 `e012445ffbaf19f8343904dfaabc0cf25426935c19164cfde948effc2b5ecea5`. Its guard verified the updated exact-history/delivery markers, existing v2/retired-cache guards and all 33 required opening/loader/cover assets. This is unsigned local bundle evidence, not a signed native build, TestFlight upload or measurement on an iPhone. The PR checks report CI for the exact candidate commit separately.
+The frozen-source production-profile local iOS export passed with 3,364 modules at pricing source `07c12e024669acf1d0ed49bde7cc81b732ac4cb2`: `entry-c5e00ec45b83c2b4c73d527d8bc28832.hbc`, 11,593,655 bytes, SHA-256 `6066af05384e7532e8b860dd2967abd9ffe7b125791aadcaedb20214d56cd30e`. This supersedes the preceding local export receipt. Its guard verified the updated exact-history/delivery markers, existing v2/retired-cache guards and all 33 required opening/loader/cover assets. This is unsigned local bundle evidence, not a signed native build, TestFlight upload or measurement on an iPhone. The PR checks report CI for the exact candidate commit separately.
 
 ## Remaining boundaries and promotion
 
