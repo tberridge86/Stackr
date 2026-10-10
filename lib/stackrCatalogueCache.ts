@@ -12,11 +12,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   activateLegacyCatalogueCacheMigration,
   prepareLegacyCatalogueCacheMigration,
+  type LegacyCacheStorage,
 } from './stackrLegacyCacheMigration';
 
 declare const require: ((id: string) => any) | undefined;
 
 export const STACKR_CATALOGUE_CACHE_SCHEMA_VERSION = 'stackr-mobile-catalogue-cache-v1';
+// Exact reviewed false zh-cn sets. Replay even when an older app already consumed
+// their delta cursor without removing rows. This touches catalogue cache only.
+export const RETIRED_CHINESE_DUPLICATE_SET_IDS = [
+  '1dbfe92e-8914-49b2-974c-47683cf51d4d', '4719ccc9-35c0-406a-b2c2-989af15d77b0',
+  '66d9e865-7d40-4b2e-8ef0-ae24fca87673', 'a16f8d4c-d648-4bee-a219-9abc2aae49a6',
+  'b67bee5b-da76-4575-a263-ab9cb69d4d7b',
+];
 
 export type StackrCatalogueCacheManifest = {
   currentCatalogueVersion: string;
@@ -132,6 +140,7 @@ export type StackrCatalogueStore = {
   upsertVariants(variants: StackrCachedVariant[]): Promise<void>;
   upsertAliases(aliases: StackrCachedAlias[]): Promise<void>;
   upsertExternalIds(externalIds: StackrCachedExternalId[]): Promise<void>;
+  removeCatalogueIdentities(changes: StackrDeltaChange[]): Promise<void>;
   findExactIdentities(input: StackrCatalogueLookupInput): Promise<StackrCachedCardIdentity[]>;
   enqueueOfflineScan(scan: StackrQueuedOfflineScan): Promise<void>;
   listOfflineScans(): Promise<StackrQueuedOfflineScan[]>;
@@ -293,6 +302,18 @@ export function createInMemoryStackrCatalogueStore(
     },
     async upsertExternalIds(externalIds) {
       state.externalIds = upsertByKey(state.externalIds, externalIds, 'externalId');
+    },
+    async removeCatalogueIdentities(changes) {
+      const removedSets = new Set(changes.filter(c => ['sets', 'set'].includes(c.entityType)).map(c => c.entityId));
+      const removedCards = new Set(changes.filter(c => ['card-printings', 'card_printings', 'card', 'printing'].includes(c.entityType)).map(c => c.entityId));
+      const removedVariants = new Set(changes.filter(c => ['card-variants', 'card_variants', 'variant'].includes(c.entityType)).map(c => c.entityId));
+      for (const card of state.cards) if (removedSets.has(card.setId)) removedCards.add(card.cardId);
+      state.sets = state.sets.filter(row => !removedSets.has(row.setId));
+      state.cards = state.cards.filter(row => !removedCards.has(row.cardId)).map(row =>
+        removedVariants.has(row.defaultVariantId ?? '') ? { ...row, defaultVariantId: null, imageSmall: null, imageLarge: null } : row);
+      state.variants = state.variants.filter(row => !removedCards.has(row.cardId) && !removedVariants.has(row.variantId));
+      state.aliases = state.aliases.filter(row => !removedCards.has(row.cardId));
+      state.externalIds = state.externalIds.filter(row => !removedCards.has(row.cardId));
     },
     async findExactIdentities(input) {
       const language = normaliseLanguage(input.languageCode);
@@ -490,6 +511,8 @@ export class StackrCatalogueCache {
       ...changes.map((change) => Number(change.sequence) || 0)
     );
     await this.store.transaction(async () => {
+      await this.store.removeCatalogueIdentities(changes.filter(change =>
+        change.operation === 'deprecation' || change.operation === 'delete_marker'));
       if (manifest) {
         await this.store.setManifest({
           ...manifest,
@@ -500,6 +523,13 @@ export class StackrCatalogueCache {
       }
     });
     return this.store.getManifest();
+  }
+
+  async retireReviewedChineseDuplicates() {
+    await this.store.transaction(() => this.store.removeCatalogueIdentities(RETIRED_CHINESE_DUPLICATE_SET_IDS.map(entityId => ({
+      entityId, entityType: 'sets', entityKey: entityId, sequence: 0, operation: 'deprecation',
+      changedAt: '2026-10-10T00:00:00Z', summary: { reason: 'incorrect_simplified_chinese_duplicate' },
+    }))));
   }
 
   findExactIdentities(input: StackrCatalogueLookupInput) {
@@ -537,18 +567,20 @@ export async function getPersistentStackrCatalogueCache() {
 export async function syncStackrCatalogueInBackground(input: {
   client: StackrApiClient;
   cache?: StackrCatalogueCache | null;
+  legacyStorage?: LegacyCacheStorage;
 }) {
   const cache = input.cache ?? await getPersistentStackrCatalogueCache();
   if (!cache) return { status: 'sqlite_unavailable' as const };
 
-  const current = await cache.getManifest();
+    const current = await cache.getManifest();
+    await cache.retireReviewedChineseDuplicates();
   try {
     const legacyMigrationOperationId = current
       ? `catalogue:${current.currentCatalogueVersion}`
       : null;
     if (legacyMigrationOperationId) {
       await prepareLegacyCatalogueCacheMigration({
-        storage: AsyncStorage,
+        storage: input.legacyStorage ?? AsyncStorage,
         operationId: legacyMigrationOperationId,
       });
     }
@@ -561,22 +593,30 @@ export async function syncStackrCatalogueInBackground(input: {
         requiresBootstrap: true,
       };
     }
-    const deltaEnvelope = await input.client.catalogDelta({
-      since: current.latestChangeSequence,
-      limit: 500,
-    });
-    await cache.applyDelta(deltaEnvelope.data.changes);
+    let cursor: string | null = null;
+    let latestChangeSequence = current.latestChangeSequence;
+    const seenCursors = new Set<string>();
+    for (let page = 0; page < 100; page += 1) {
+      const deltaEnvelope = await input.client.catalogDelta({ since: current.latestChangeSequence, cursor, limit: 500 });
+      await cache.applyDelta(deltaEnvelope.data.changes);
+      latestChangeSequence = (await cache.getManifest())?.latestChangeSequence ?? latestChangeSequence;
+      cursor = deltaEnvelope.meta.pagination?.nextCursor ?? null;
+      if (!cursor) break;
+      if (seenCursors.has(cursor)) throw new Error('Catalogue delta cursor repeated');
+      seenCursors.add(cursor);
+      if (page === 99) throw new Error('Catalogue delta sync page limit reached; resume on next sync');
+    }
     if (legacyMigrationOperationId) {
       const active = await cache.getManifest();
       await activateLegacyCatalogueCacheMigration({
-        storage: AsyncStorage,
+        storage: input.legacyStorage ?? AsyncStorage,
         operationId: legacyMigrationOperationId,
         activeCatalogueVersion: active?.currentCatalogueVersion ?? null,
       });
     }
     return {
       status: 'delta_applied' as const,
-      latestChangeSequence: deltaEnvelope.data.changes.at(-1)?.sequence ?? current.latestChangeSequence,
+      latestChangeSequence,
     };
   } catch (error) {
     return {

@@ -3,6 +3,7 @@ import { Buffer } from 'node:buffer';
 import { getEnglishCardDisplaySupplement } from './cardDisplayNames.js';
 import { findNativeCardNamesForEnglishQuery, normalizeCardEnglishSearchText } from './cardNameTranslations.js';
 import { matchesPokedexSpeciesName, normalisePokedexName } from './pokedexCards.js';
+import { correctedCatalogueCardId, correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
 
 export const STACKR_API_V1 = '1';
 export const DEFAULT_CATALOGUE_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -872,6 +873,7 @@ function sortCardsForDisplay(rows) {
 }
 
 async function searchCanonicalId(supabase, parsed, limit) {
+  if (isUuid(parsed.raw)) parsed = { ...parsed, raw: correctedCatalogueCardId(parsed.raw) };
   const exact = [];
   if (isCanonicalCatalogueKey(parsed.raw)) {
     exact.push(...await queryRows(table(supabase, 'api', 'catalogue_cards')
@@ -1382,16 +1384,25 @@ export function createCatalogueV1Service(options) {
 
     async set(setId) {
       if (!isUuid(setId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
+      const originalSetId = setId;
+      setId = correctedCatalogueSetId(setId);
       const row = await queryMaybeOne(table(supabase, 'api', 'catalogue_sets')
         .select('*')
         .eq('set_id', setId)
         .maybeSingle());
       if (!row) throw new ApiError(404, 'set_not_found', 'Set was not found.');
+      if (setId !== originalSetId && row.language_code !== CORRECTION_LANGUAGE) throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
       return { set: toSet(row) };
     },
 
     async setCards(setId, input = {}) {
       if (!isUuid(setId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
+      const targetSetId = correctedCatalogueSetId(setId);
+      const isLanguageCorrection = targetSetId !== setId;
+      if (targetSetId !== setId) {
+        setId = targetSetId;
+        input = { ...input, language: CORRECTION_LANGUAGE };
+      }
       const limit = parseLimit(input.limit, 120, 500);
       let query = table(supabase, 'api', 'catalogue_cards')
         .select('*')
@@ -1404,9 +1415,10 @@ export function createCatalogueV1Service(options) {
       // this predicate Postgres can walk every published version's variants
       // before applying the set filter, even for a tiny binder page.
       const publishedSet = await queryMaybeOne(table(supabase, 'api', 'catalogue_sets')
-        .select('catalogue_version_id')
+        .select('catalogue_version_id,language_code')
         .eq('set_id', setId)
         .maybeSingle());
+      if (isLanguageCorrection && (!publishedSet || publishedSet.language_code !== CORRECTION_LANGUAGE)) throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
       if (!publishedSet) return { cards: [], pagination: { limit, nextCursor: null } };
       if (!isUuid(publishedSet.catalogue_version_id)) {
         throw new ApiError(502, 'catalogue_version_unavailable', 'The published set catalogue version is unavailable.');
@@ -1476,6 +1488,8 @@ export function createCatalogueV1Service(options) {
 
     async card(cardId) {
       if (!isUuid(cardId)) throw new ApiError(400, 'invalid_card_id', 'cardId must be a canonical UUID.');
+      const originalCardId = cardId;
+      cardId = correctedCatalogueCardId(cardId);
       let rows = await queryRows(table(supabase, 'api', 'catalogue_cards')
         .select('*')
         .eq('printing_id', cardId)
@@ -1487,6 +1501,7 @@ export function createCatalogueV1Service(options) {
           .limit(50));
       }
       if (!rows.length) throw new ApiError(404, 'card_not_found', 'Card was not found.');
+      if (cardId !== originalCardId && rows.some(row => row.language_code !== CORRECTION_LANGUAGE)) throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
       const [card] = await fetchCardImageAssets(
         assetSupabase,
         [toCardSummary(sortCardsForDisplay(rows))].filter(Boolean),
@@ -1649,12 +1664,17 @@ export function createCatalogueV1Service(options) {
       if (!q || (q.length < 2 && !shortSetCollector)) throw new ApiError(400, 'invalid_search_query', 'Search query must contain at least two characters, or a collector identifier within a selected set.');
       if (q.length > 160) throw new ApiError(400, 'invalid_search_query', 'Search query is too long.');
       const limit = parseLimit(input.limit, 20, 100);
-      const language = clean(input.language);
+      let language = clean(input.language);
       if (language && !SUPPORTED_LANGUAGE_CODES.includes(language)) {
         throw new ApiError(400, 'invalid_language', 'Unsupported catalogue language.');
       }
-      const selectedSetId = clean(input.setId);
+      let selectedSetId = clean(input.setId);
       if (selectedSetId && !isUuid(selectedSetId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
+      const targetSetId = selectedSetId ? correctedCatalogueSetId(selectedSetId) : null;
+      if (targetSetId !== selectedSetId || (isUuid(q) && correctedCatalogueCardId(q) !== q)) {
+        selectedSetId = targetSetId;
+        language = CORRECTION_LANGUAGE;
+      }
       const parsed = parseSearchQuery(q, { setId: selectedSetId });
       const requestedSetIds = parsed.setCode && parsed.setCollectorNumber
         ? await fetchSetIdsByCode(searchSupabase, parsed.setCode, language) : null;
