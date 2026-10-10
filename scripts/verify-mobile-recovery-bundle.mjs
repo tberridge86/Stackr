@@ -14,6 +14,7 @@ for (const phrase of [
   'stackr-premium-opening', 'stackr-premium-poster',
   'Estimated price (provisional baseline)',
   'catalogue-rarity-era-baseline-v2', 'retired_provisional_baseline',
+  'Verified sale prices exclude delivery.', 'unsupported_graded_history_identity',
   'Loading more...', 'Results will appear as loading completes.',
   'activity_read_identity_changed', 'Your card is saved. Its history entry',
 ]) {

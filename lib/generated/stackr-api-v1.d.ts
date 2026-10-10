@@ -1877,6 +1877,10 @@ export interface operations {
                 grader?: components["parameters"]["Grader"];
                 grade?: components["parameters"]["Grade"];
                 observationType?: "sold_observation" | "active_listing";
+                /** @description Filter verified completed-sale evidence before pagination. Defaults to false. */
+                provenOnly?: boolean;
+                /** @description Include sale dates on or after this past ISO timestamp, before pagination. */
+                soldSince?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
                 limit?: components["parameters"]["Limit"];
@@ -1889,7 +1893,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Pricing evidence history with active and sold rows explicitly labelled. Private and no-store in default personal owner-only mode. */
+            /** @description Raw near-mint history by default, with active and sold rows explicitly labelled. Exact graded history is unavailable until numeric-grade identity is exposed. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1901,6 +1905,7 @@ export interface operations {
             400: components["responses"]["Error"];
             401: components["responses"]["Error"];
             403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
             503: components["responses"]["Error"];
         };
     };

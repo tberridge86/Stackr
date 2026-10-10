@@ -1068,6 +1068,8 @@ export class StackrApiClient {
     grader?: string;
     grade?: string;
     observationType?: 'sold_observation' | 'active_listing';
+    provenOnly?: boolean;
+    soldSince?: string;
     cursor?: string | null;
     limit?: number;
   } = {}) {

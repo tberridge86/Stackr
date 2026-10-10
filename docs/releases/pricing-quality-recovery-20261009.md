@@ -48,3 +48,5 @@ Cards without a trustworthy reviewed mapping or supported exact quote remain exp
 ## Identity research
 
 Cardmarket lists separate printed products for Jungle Scyther [JU10](https://www.cardmarket.com/en/Pokemon/Products/Singles/Jungle/Scyther-V1-JU10) and [JU26](https://www.cardmarket.com/en/Pokemon/Products/Singles/Jungle/Scyther-V2-JU26), and Fossil Dragonite [FO4](https://www.cardmarket.com/en/Pokemon/Products/Singles/Fossil/Dragonite-V1-FO4) and [FO19](https://www.cardmarket.com/en/Pokemon/Products/Singles/Fossil/Dragonite-V2-FO19). Species/name alone cannot identify the monetary value. These pages support printing differences, not a current near-mint price claim or a feed import.
+
+The 10 October [daily pricing follow-up](daily-pricing-readiness-20261009.md) extends this same candidate with provider freshness/checkpoint/rounding recovery, truthful coverage, exact client/server/gateway identity and supported verified-sale history. Its latest validation and unsigned local export supersede the earlier candidate export above; no live prices have been refreshed.

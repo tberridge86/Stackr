@@ -19,7 +19,7 @@ import {
   fetchPokeTracePriceHistory,
 } from '../lib/pricing';
 
-type SourceKey = 'ebay' | 'tcgplayer' | 'cardmarket';
+type SourceKey = 'ebay' | 'tcgplayer' | 'cardmarket' | 'poketrace' | 'other';
 
 type Props = {
   cardName: string;
@@ -39,7 +39,17 @@ const SOURCE_COPY: Record<SourceKey, { label: string; color: string }> = {
   ebay: { label: 'eBay market', color: '#087F73' },
   tcgplayer: { label: 'TCGPlayer cached', color: '#FFBE35' },
   cardmarket: { label: 'CardMarket cached', color: '#2563EB' },
+  poketrace: { label: 'PokeTrace verified sales', color: '#7C3AED' },
+  other: { label: 'Other verified sales', color: '#64748B' },
 };
+
+function historySourceKey(source: string): SourceKey {
+  if (source === 'poketrace' || source.startsWith('poketrace_')) return 'poketrace';
+  if (source === 'ebay' || source.startsWith('ebay_')) return 'ebay';
+  if (source === 'tcgplayer' || source.startsWith('tcgplayer_')) return 'tcgplayer';
+  if (source === 'cardmarket' || source.startsWith('cardmarket_')) return 'cardmarket';
+  return 'other';
+}
 
 const formatCurrency = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value) ? `\u00A3${value.toFixed(2)}` : '--';
@@ -129,9 +139,9 @@ function MiniMarketChart({
   height: number;
 }) {
   const geometry = useMemo(() => {
-    const rows = history.filter((row) => getChartValue(row) != null);
+    const rows = history.filter((row) => getChartValue(row) != null && Number.isFinite(Date.parse(row.date)));
     const values = rows.map((row) => getChartValue(row) as number);
-    if (values.length < 2) return null;
+    if (values.length === 0) return null;
 
     const min = Math.min(...values);
     const max = Math.max(...values);
@@ -142,17 +152,19 @@ function MiniMarketChart({
     const chartWidth = Math.max(1, width - padX * 2);
     const chartHeight = Math.max(1, height - padTop - padBottom);
 
-    const sourceOrder: SourceKey[] = ['ebay', 'tcgplayer', 'cardmarket'];
+    const firstDate = Math.min(...rows.map(row => Date.parse(row.date)));
+    const lastDate = Math.max(...rows.map(row => Date.parse(row.date)));
+    const sourceOrder: SourceKey[] = ['ebay', 'tcgplayer', 'cardmarket', 'poketrace', 'other'];
     const series = sourceOrder
       .map((source) => {
-        const sourceRows = rows.filter((row) => row.source === source || (source === 'cardmarket' && row.source.startsWith('cardmarket')));
-        const points = sourceRows.map((row, index) => ({
-          x: padX + (sourceRows.length <= 1 ? 0 : (index / (sourceRows.length - 1)) * chartWidth),
+        const sourceRows = rows.filter((row) => historySourceKey(row.source) === source);
+        const points = sourceRows.map((row) => ({
+          x: padX + ((Date.parse(row.date) - firstDate) / Math.max(1, lastDate - firstDate)) * chartWidth,
           y: padTop + ((max - (getChartValue(row) as number)) / range) * chartHeight,
         }));
         return { source, points };
       })
-      .filter((item) => item.points.length >= 2);
+      .filter((item) => item.points.length > 0);
 
     return {
       min,
@@ -166,7 +178,7 @@ function MiniMarketChart({
   if (!geometry) {
     return (
       <View style={[styles.chartEmpty, { height }]}>
-        <Text style={styles.chartEmptyText}>More price history will appear after another refresh.</Text>
+        <Text style={styles.chartEmptyText}>Verified sales for this exact card are not available yet.</Text>
       </View>
     );
   }
@@ -236,6 +248,8 @@ export default function PokeTraceMarketInsights({
   const [sourceHelpOpen, setSourceHelpOpen] = useState(false);
   const isGradedMode = Boolean(gradingCompany && grade);
   const displayGradingCompany = formatSlabCompanyLabel(gradingCompany);
+  const pricingGradingCompany = gradingCompany?.trim() ? displayGradingCompany : null;
+  const hasGradedRequest = Boolean(pricingGradingCompany || (grade != null && String(grade).trim()));
 
   useEffect(() => {
     let mounted = true;
@@ -257,8 +271,9 @@ export default function PokeTraceMarketInsights({
           number: number ?? null,
           language: language ?? null,
           market: 'US',
-          gradingCompany: displayGradingCompany,
+          gradingCompany: pricingGradingCompany,
           grade,
+          condition: rawCondition ?? 'NEAR_MINT',
         });
         if (!mounted) return;
         setPrice(current);
@@ -270,7 +285,10 @@ export default function PokeTraceMarketInsights({
 
         const tier = current?.graded_tier ?? getRawTier(current, rawCondition);
         const rows = current?.providerCardId
-          ? await fetchPokeTracePriceHistory(current.providerCardId, tier, period)
+          ? await fetchPokeTracePriceHistory(current.providerCardId, tier, period, {
+            productType: hasGradedRequest ? 'graded_card' : 'raw_card', currency: current.currency ?? 'GBP',
+            grader: pricingGradingCompany, grade,
+          })
           : [];
         if (!mounted) return;
         setHistory(rows);
@@ -285,7 +303,7 @@ export default function PokeTraceMarketInsights({
     return () => {
       mounted = false;
     };
-  }, [cardName, displayGradingCompany, grade, language, number, period, rawCondition, setName, summaryOnly]);
+  }, [cardName, grade, hasGradedRequest, language, number, period, pricingGradingCompany, rawCondition, setName, summaryOnly]);
 
   const depthRows = useMemo(() => {
     const rows = [
@@ -394,7 +412,7 @@ export default function PokeTraceMarketInsights({
               </View>
             </View>
             <Text style={[styles.sourceNote, { color: theme.colors.textSoft }]}>
-              Source: PokeTrace market data. Stored fallback prices appear separately.
+              {price?.source === 'stackr-api' ? 'Source: Stackr market data. Estimates are labelled separately.' : 'Source: PokeTrace market data. Stored fallback prices appear separately.'}
             </Text>
           </>
         )}
@@ -491,9 +509,10 @@ export default function PokeTraceMarketInsights({
           ) : null}
 
           <MiniMarketChart history={history} width={chartWidth} height={170} />
+          <Text style={{ color: theme.colors.textSoft, fontSize: 11 }}>Verified sale prices exclude delivery. Up to 200 recent sales are shown.</Text>
 
           <View style={styles.legendRow}>
-            {(['ebay', 'tcgplayer', 'cardmarket'] as SourceKey[]).map((source) => (
+            {Array.from(new Set(history.map(row => historySourceKey(row.source)))).map((source) => (
               <View key={source} style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: SOURCE_COPY[source].color }]} />
                 <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700' }}>{SOURCE_COPY[source].label}</Text>

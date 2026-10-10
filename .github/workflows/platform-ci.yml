@@ -49,6 +49,7 @@ jobs:
       - run: node scripts/test-price-guard-rehearsal-workflow.mjs
       - run: node scripts/test-staging-pricing-backup-list.mjs
       - run: npm run test:price-database-deadline
+      - run: npm run test:daily-pricing
       - run: node scripts/test-bounded-provider-identity-guards.mjs
       - run: node scripts/test-cardmarket-ledger-ordered-candidate.mjs
       - run: npm run test:next-beta-fixes

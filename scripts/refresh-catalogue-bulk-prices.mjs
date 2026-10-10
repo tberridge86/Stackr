@@ -6,6 +6,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs';
 import { fetchEcbCatalogueFx } from './catalogue-price-fx.mjs';
 import { readPagedCatalogueBulkCoverage } from './catalogue-bulk-coverage-report.mjs';
+import { requireFreshDailyGuide, summarizeCatalogueDailyRun } from './catalogue-price-daily-status.mjs';
 
 // TCGCSV's supported Pokemon identity boundaries. Never cross a category/language.
 export const TCGCSV_CATALOGUES = Object.freeze([{ categoryId: 3, language: 'en' }, { categoryId: 85, language: 'ja' }]);
@@ -75,7 +76,8 @@ export function selectBulkProduct(row, group, products) {
  * prices and permanent identity maps are committed atomically by the database. */
 export function planCatalogueBulkPrices({ candidates, group, products, prices, blockedMappingKeys = new Set(), blockedPrintingProducts = new Set(), datasetAt, fx, now = Date.now() }) {
   validateBulkFx(fx, now);
-  if (!Number.isFinite(Date.parse(datasetAt ?? '')) || Date.parse(datasetAt) > now + 300000 || !Array.isArray(candidates) || candidates.length > 500) throw Error('Invalid bulk page.');
+  requireFreshDailyGuide(datasetAt, now);
+  if (!Array.isArray(candidates) || candidates.length > 500) throw Error('Invalid bulk page.');
   const results = candidates.map((row) => {
     const subtype = providerSubtype(row);
     const category = TCGCSV_CATALOGUES.find((c) => c.language === row.language_code)?.categoryId;
@@ -89,7 +91,8 @@ export function planCatalogueBulkPrices({ candidates, group, products, prices, b
         const providerKey = `${mapping.categoryId}/${mapping.groupId}/${mapping.productId}/${mapping.subtype}`;
         const candidates = prices.filter((price) => price.productId === product.productId && price.subTypeName === subtype);
         if (blockedMappingKeys.has(providerKey)) { mapping = null; reason = 'ambiguous_provider_identity'; }
-        else if (candidates.length === 1 && Number.isFinite(candidates[0].marketPrice) && candidates[0].marketPrice >= 0) {
+        else if (candidates.length === 1 && Number.isFinite(candidates[0].marketPrice) && candidates[0].marketPrice > 0
+          && Math.round(candidates[0].marketPrice * fx.rate * 100) > 0) {
           reason = 'priced'; quote = { ...mapping, currency: 'USD', price: candidates[0].marketPrice, datasetAt, exchangeRate: fx.rate, exchangeRateAt: fx.at, exchangeRateSource: fx.source };
         } else reason = 'no_provider_quote';
       }
@@ -158,14 +161,14 @@ async function rpc(db, name, args) {
   }
   return data;
 }
-export function createBulkFeedLoader(db, fetchImpl = fetch) {
+export function createBulkFeedLoader(db, fetchImpl = fetch, { now = Date.now } = {}) {
   let datasetAt = null;
   return { setDataset: (value) => { datasetAt = value; }, async load(key) {
     const cached = await rpc(db, 'read_catalogue_bulk_feed', { p_key: key });
     if (cached?.payload != null) {
       // Metadata is intentionally rechecked hourly. Set files are immutable for
       // a provider build, so retain them indefinitely until metadata advances.
-      if (key === 'last-updated' && Date.parse(cached.fetched_at) > Date.now() - 3600000) return cached.payload;
+      if (key === 'last-updated' && Date.parse(cached.fetched_at) > now() - 3600000) return cached.payload;
       if (key !== 'last-updated' && Date.parse(cached.dataset_at) === Date.parse(datasetAt)) return cached.payload;
     }
     let token = null; for (let i = 0; i < 12 && !token; i++) { token = await rpc(db, 'claim_catalogue_bulk_feed_revision', { p_key: key, p_dataset: key === 'last-updated' ? null : datasetAt }); if (!token && i < 11) await delay(1100); }
@@ -177,6 +180,10 @@ export function createBulkFeedLoader(db, fetchImpl = fetch) {
       const payload = key === 'last-updated' ? (await response.text()).trim() : await response.json();
       if (key !== 'last-updated' && (payload?.success !== true || !Array.isArray(payload.results) || payload.errors?.length)) throw Error('Invalid TCGCSV feed.');
       const timestamp = key === 'last-updated' ? payload : datasetAt; if (!Number.isFinite(Date.parse(timestamp))) throw Error('Invalid TCGCSV build timestamp.');
+      if (key === 'last-updated') {
+        requireFreshDailyGuide(timestamp, now());
+        if (Date.parse(timestamp) < Date.parse(cached?.dataset_at)) throw Error('TCGCSV build timestamp regressed.');
+      }
       if (!await rpc(db, 'finish_catalogue_bulk_feed', { p_key: key, p_token: token, p_dataset: timestamp, p_payload: payload, p_retry_seconds: 0 })) throw Error('Provider feed lease expired.'); return payload;
     } catch (error) { await rpc(db, 'finish_catalogue_bulk_feed', { p_key: key, p_token: token, p_dataset: datasetAt, p_payload: null, p_retry_seconds: Math.min(86400, Math.max(60, Number(error.retryAfter) || 300)) }); throw error; }
   } };
@@ -254,7 +261,7 @@ export async function mainCatalogueBulkPrices(args = process.argv.slice(2)) {
   const fx = validateBulkFx(process.env.STACKR_USD_GBP_RATE_AT || process.env.STACKR_USD_GBP_RATE_SOURCE
     ? { rate: Number(process.env.USD_TO_GBP), at: process.env.STACKR_USD_GBP_RATE_AT, source: process.env.STACKR_USD_GBP_RATE_SOURCE }
     : await fetchEcbCatalogueFx());
-  const db = createCataloguePriceDatabase(target.url, key); const loader = createBulkFeedLoader(db); const datasetAt = await loader.load('last-updated'); loader.setDataset(datasetAt);
+  const db = createCataloguePriceDatabase(target.url, key); const loader = createBulkFeedLoader(db); const datasetAt = await loader.load('last-updated'); requireFreshDailyGuide(datasetAt); loader.setDataset(datasetAt);
   const groups = (await Promise.all(TCGCSV_CATALOGUES.map(async ({ categoryId, language }) => (await loader.load(`tcgplayer/${categoryId}/groups`)).results.map((g) => ({ ...g, language }))))).flat();
   const result = await runCatalogueBulkSweep({ datasetAt, fx, loader, groups, maxGroups,
     onProgress: (progress) => { if (progress.setsClaimed % 10 === 0) console.info(JSON.stringify({ event: 'catalogue_bulk_price_progress', project: target.projectRef, datasetAt, ...progress, status: 'running' })); },
@@ -284,7 +291,7 @@ export async function mainCatalogueBulkPrices(args = process.argv.slice(2)) {
     console.warn(JSON.stringify({ event: 'catalogue_bulk_price_coverage_deferred', project: target.projectRef, datasetAt, runId: result.runId, ...coverageError }));
   }
   const reported = { project: target.projectRef, datasetAt, ...result, status: coverage?.runStatus ?? health?.runStatus ?? result.status, health, coverage, coverageError };
-  console.log(JSON.stringify(reported)); process.exitCode = durableSweepExitCode(health); return reported;
+  console.log(JSON.stringify(summarizeCatalogueDailyRun(reported))); process.exitCode = durableSweepExitCode(health); return reported;
 }
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) mainCatalogueBulkPrices().catch((error) => {
   console.error(JSON.stringify({
