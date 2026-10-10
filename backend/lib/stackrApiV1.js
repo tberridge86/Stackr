@@ -12,6 +12,7 @@ export const SUPPORTED_LANGUAGE_CODES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const EXACT_NAME_TYPES = new Set(['native', 'english_display']);
 const ALIAS_NAME_TYPES = new Set(['alias', 'translated', 'search_normalized']);
+const POKEDEX_EMPTY_SOURCE_PAGE_LIMIT = 4;
 const SAME_ARTWORK_DISPLAY_REFERENCE_LIMIT = 50;
 const SAME_ARTWORK_MAX_WIDTH = 512;
 const SAME_ARTWORK_MAX_HEIGHT = 720;
@@ -1438,31 +1439,39 @@ export function createCatalogueV1Service(options) {
       // in `matchesPokedexSpeciesName` below.
       const lookupName = normalizedName.replace(/\s+[fm]$/, '');
       const contains = lookupName.replace(/[%_]/g, ' ').replace(/\s+/g, '%');
-      let namesQuery = table(searchSupabase, 'api', 'catalogue_card_names')
-        .select('id,printing_id,name,normalized_name')
-        .in('name_type', [...EXACT_NAME_TYPES, ...ALIAS_NAME_TYPES])
-        .ilike('normalized_name', `%${contains}%`)
-        .order('id', { ascending: true })
-        .limit(limit + 1);
-      namesQuery = applyIdCursor(namesQuery, 'id', input.cursor);
-      const sourceRows = await queryRows(namesQuery);
-      const { rows: pageNames, pagination } = pageFromRows(sourceRows, limit, 'id');
-      const printingIds = [...new Set(pageNames
-        .filter((row) => matchesPokedexSpeciesName(normalizedName, row.name ?? row.normalized_name))
-        .map((row) => row.printing_id)
-        .filter(Boolean))];
-      if (!printingIds.length) return { cards: [], pagination };
+      let cursor = input.cursor;
+      for (let page = 0; page < POKEDEX_EMPTY_SOURCE_PAGE_LIMIT; page += 1) {
+        let namesQuery = table(searchSupabase, 'api', 'catalogue_card_names')
+          .select('id,printing_id,name,normalized_name')
+          .in('name_type', [...EXACT_NAME_TYPES, ...ALIAS_NAME_TYPES])
+          .ilike('normalized_name', `%${contains}%`)
+          .order('id', { ascending: true })
+          .limit(limit + 1);
+        namesQuery = applyIdCursor(namesQuery, 'id', cursor);
+        const sourceRows = await queryRows(namesQuery);
+        const { rows: pageNames, pagination } = pageFromRows(sourceRows, limit, 'id');
+        const printingIds = [...new Set(pageNames
+          .filter((row) => matchesPokedexSpeciesName(normalizedName, row.name ?? row.normalized_name))
+          .map((row) => row.printing_id)
+          .filter(Boolean))];
 
-      // Name-source pagination must never skip a matched printing because it
-      // has many variants. Read only this bounded page's printing IDs, but
-      // exhaust their variant rows in stable slices before grouping them.
-      const rows = await fetchPublishedPokemonCardRows(searchSupabase, printingIds, language);
-      // A published alias can be wrong. Explicit Trainer/Energy identities
-      // must never become species cards merely because a name matches.
-      const pokemonRows = rows.filter((row) => !['trainer', 'energy'].includes(
-        String(row.supertype ?? '').normalize('NFKC').trim().toLowerCase(),
-      ));
-      return { cards: groupCardRows(sortCardsForDisplay(pokemonRows)), pagination };
+        // Name-source pagination must never skip a matched printing because it
+        // has many variants. Exhaust only this source page's printing IDs.
+        const rows = await fetchPublishedPokemonCardRows(searchSupabase, printingIds, language);
+        // A published alias can be wrong. Explicit Trainer/Energy identities
+        // must never become species cards merely because a name matches.
+        const pokemonRows = rows.filter((row) => !['trainer', 'energy'].includes(
+          String(row.supertype ?? '').normalize('NFKC').trim().toLowerCase(),
+        ));
+        const cards = groupCardRows(sortCardsForDisplay(pokemonRows));
+        // Reach useful facts when an early alias or language-filtered slice is
+        // empty, without scanning the entire species in one request. A bounded
+        // empty response retains its cursor and cannot imply an empty total.
+        if (cards.length || !pagination.nextCursor || page === POKEDEX_EMPTY_SOURCE_PAGE_LIMIT - 1) {
+          return { cards, pagination };
+        }
+        cursor = pagination.nextCursor;
+      }
     },
 
     async card(cardId) {
