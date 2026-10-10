@@ -135,10 +135,50 @@ async function assertPokemonCardTypesAndEmptyPageContinuation() {
     }),
   });
   const first = await catalogue.pokemonCards('Pikachu', { limit: 1 });
-  assert.deepEqual(first.cards, [], 'a misleading published alias cannot turn a Trainer into a species card');
-  assert.ok(first.pagination.nextCursor, 'an empty filtered page must retain its opaque continuation');
+  assert.deepEqual(first.cards.map((card) => card.cardId), [ids[2]], 'skip misleading Trainer/Energy aliases to reach the first useful species printing');
+  assert.ok(first.pagination.nextCursor, 'continuation follows the last consumed name rather than the rejected first alias');
   const next = await catalogue.pokemonCards('Pikachu', { cursor: first.pagination.nextCursor, limit: 3 });
-  assert.deepEqual(next.cards.map((card) => card.cardId).sort(), ids.slice(2), 'exclude explicit Energy cards while retaining Pokémon and legacy unclassified species cards');
+  assert.deepEqual(next.cards.map((card) => card.cardId), [ids[3]], 'resume after the returned printing while retaining legacy unclassified species cards');
+  assert.equal(next.pagination.nextCursor, null);
+}
+
+async function assertPokemonEmptyScanRemainsBounded() {
+  const ids = Array.from({ length: 6 }, (_, index) => `60000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`);
+  const events = [];
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      catalogue_card_names: ids.map((id) => ({ id, printing_id: id, name: 'Pikachu', normalized_name: 'pikachu', name_type: 'english_display' })),
+      catalogue_cards: ids.map((id, index) => ({
+        printing_id: id, variant_id: id, game_code: 'pokemon', language_code: 'en', set_id: setId,
+        card_native_name: index === 5 ? 'Pikachu' : 'Trainer fixture', card_english_display_name: 'Pikachu',
+        supertype: index === 5 ? 'Pokémon' : 'Trainer', variant_code: 'normal',
+      })),
+    }, events),
+  });
+  const first = await catalogue.pokemonCards('Pikachu', { limit: 1 });
+  assert.deepEqual(first.cards, [], 'rejected aliases remain excluded when the bounded source scan is exhausted');
+  assert.ok(first.pagination.nextCursor, 'bounded empty results must remain explicitly incomplete');
+  assert.equal(events.filter((event) => event.tableName === 'catalogue_card_names' && event.operation === 'select').length, 4,
+    'one request must not sweep every matching alias when useful printings are farther away');
+  const next = await catalogue.pokemonCards('Pikachu', { cursor: first.pagination.nextCursor, limit: 1 });
+  assert.deepEqual(next.cards.map((card) => card.cardId), [ids[5]], 'the continuation must still reach the unexamined valid printing');
+  assert.equal(next.pagination.nextCursor, null);
+}
+
+async function assertPokemonEmptyLanguageSliceContinues() {
+  const ids = ['70000000-0000-4000-8000-000000000001', '70000000-0000-4000-8000-000000000002'];
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      catalogue_card_names: ids.map((id, index) => ({ id, printing_id: id, name: 'Pikachu', normalized_name: 'pikachu', name_type: index ? 'translated' : 'native' })),
+      catalogue_cards: ids.map((id, index) => ({
+        printing_id: id, variant_id: id, game_code: 'pokemon', language_code: index ? 'ja' : 'en', set_id: setId,
+        card_native_name: index ? 'ピカチュウ' : 'Pikachu', card_english_display_name: 'Pikachu', supertype: 'Pokémon', variant_code: 'normal',
+      })),
+    }),
+  });
+  const page = await catalogue.pokemonCards('Pikachu', { language: 'ja', limit: 1 });
+  assert.deepEqual(page.cards.map((card) => card.cardId), [ids[1]], 'an earlier English source name must not hide the approved Japanese printing');
+  assert.equal(page.pagination.nextCursor, null);
 }
 
 async function assertPokemonGenderSymbolLookup() {
@@ -272,6 +312,8 @@ async function assertAssetManifestIdentityRpc() {
 await assertBatchAssetManifestPrintingFilter();
 await assertPokemonCardsPagination();
 await assertPokemonCardTypesAndEmptyPageContinuation();
+await assertPokemonEmptyScanRemainsBounded();
+await assertPokemonEmptyLanguageSliceContinues();
 await assertPokemonGenderSymbolLookup();
 await assertPokemonCardsRetainHighVariantPrintings();
 await assertPokemonRouteEnvelope();
