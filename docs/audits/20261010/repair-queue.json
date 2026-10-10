@@ -1,0 +1,588 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-10T22:39:31Z",
+  "coordinator": "root",
+  "workingDirectory": "D:/Stackr-release-recovery-20261009",
+  "branch": "codex/specialist-audits-backend-repair-20261010",
+  "auditedBaseRevision": "5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1",
+  "protocol": ".codex/AUDIT_PROTOCOL.md",
+  "auditStatus": {
+    "coding": "completed",
+    "backend": "completed",
+    "pricing": "completed",
+    "performance": "completed",
+    "artwork": "completed",
+    "translation": "completed",
+    "pokedex": "completed",
+    "search": "completed",
+    "reviewer": "completed"
+  },
+  "background": {
+    "name": "Stackr backend repair and audit follow-through",
+    "state": "ACTIVE",
+    "cadence": "Every two hours while the local computer and Codex app are running",
+    "automationId": "stackr-backend-repair-and-audit-follow-through"
+  },
+  "issues": [
+    {
+      "id": "BACKEND-SET-IDENTITY-001",
+      "severity": "P1",
+      "owner": "stackr_backend",
+      "status": "reviewed_ready_for_release",
+      "summary": "Manual Japanese set-name lookup accepted contradictory language or set-code metadata.",
+      "evidence": "docs/audits/20261010/backend.md",
+      "files": [
+        "backend/lib/cardDisplayNames.js",
+        "scripts/test-backend-approved-card-names.mjs"
+      ],
+      "validation": [
+        "Backend approved-name regression passed, including language/set conflicts",
+        "Backend typecheck passed"
+      ],
+      "delivery": {
+        "local": "implemented",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Carry the reviewed source through the matching coordinated release lane; verify actual API or signed-app/device delivery before marking this finding delivered."
+    },
+    {
+      "id": "TRANSLATION-MARNIE-001",
+      "severity": "P1",
+      "owner": "stackr_translation",
+      "status": "source_verified_correction_proposed",
+      "summary": "A live zh-tw Trainer printing with native name 瑪俐 is delivered as English Pikachu through an approved generated alias snapshot shared by 12 exact printing IDs.",
+      "evidence": "docs/audits/20261010/backend.md, translation.md and marnie-alias-correction.json; all 12 live Trainer records reproduced 22:22:58–22:23:00Z; official TW detail7432 and English Sword & Shield checklist support Marnie",
+      "files": [],
+      "validation": [
+        "Actual API mismatch reproduced by backend specialist",
+        "All 12 exact live identities verified by translation specialist",
+        "Wrong value traced to original accepted workbook rows/hash",
+        "Marnie search empty while Pikachu/native queries return the affected records"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Review the exact correction proposal, repair the accepted source-of-truth and corresponding generated maps through the existing mechanism, add a semantic Trainer-name regression, then carry any authorized scoped publication through release coordination with rollback and actual API/search readback. Do not invent provenance or treat the proposal as published."
+    },
+    {
+      "id": "HISTORY-DIRECT-WRITE-001",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Direct set quantity changes commit holdings before a separate history write, without a persisted history-only retry after that write fails.",
+      "evidence": "docs/audits/20261010/coding.md; app/set/[id].tsx quantity mutation path",
+      "files": [
+        "app/set/[id].tsx",
+        "features/binder/BinderDetailScreen.tsx"
+      ],
+      "validation": [
+        "Current home activity and haptic focused suites pass; they do not cover durable recovery for this direct write path"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Assign exclusive runtime ownership and reproduce the partial-write failure before implementing a stable event ID and bounded history-only recovery."
+    },
+    {
+      "id": "DELIVERY-MOBILE-001",
+      "severity": "P1",
+      "owner": "release",
+      "status": "matching_signed_build_unverified",
+      "summary": "Current mobile loader/history/haptic changes are not evidenced in the signed build 54 source or on the user's phone.",
+      "evidence": "docs/audits/20261010/coding.md; docs/releases/daily-pricing-live-promotion-20261010.md",
+      "files": [],
+      "validation": [
+        "Prior receipt attests deployed server source and an unsigned mobile export, not a matching installed build"
+      ],
+      "delivery": {
+        "local": "source_changes_exist",
+        "reviewed": false,
+        "merged": "see individual release receipts",
+        "deployed": "server_only_receipted",
+        "deviceVerified": false
+      },
+      "nextAction": "Release owner must verify matching signed native build, internal TestFlight availability and installed version before claiming mobile completion."
+    },
+    {
+      "id": "PRICE-AUDIT-01",
+      "severity": "P1",
+      "owner": "root",
+      "status": "reviewed_ready_for_release",
+      "summary": "V2 presentation cache returned a prior account's cached quote after account switch/sign-out and lacked an in-flight account guard.",
+      "evidence": "docs/audits/20261010/pricing.md; root correction in lib/pricingV2.ts",
+      "files": [
+        "lib/pricingV2.ts",
+        "scripts/test-pricing-v2-client.ts"
+      ],
+      "validation": [
+        "Actual-module regression passes same-account cache, account switch, sign-out, in-flight switch, bounded eviction and existing exact identity/force/currency cases"
+      ],
+      "delivery": {
+        "local": "implemented_and_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Carry the reviewed source through the matching coordinated release lane; verify actual API or signed-app/device delivery before marking this finding delivered."
+    },
+    {
+      "id": "PRICE-AUDIT-02",
+      "severity": "P2",
+      "owner": "root",
+      "status": "reviewed_ready_for_release",
+      "summary": "The snapshot adapter labelled provisional catalogue baseline estimates as exact.",
+      "evidence": "docs/audits/20261010/pricing.md; fetchStackrPriceSnapshots in lib/stackrDomainAdapter.ts",
+      "files": [
+        "lib/stackrDomainAdapter.ts",
+        "scripts/test-catalogue-price-client.ts"
+      ],
+      "validation": [
+        "Actual adapter fixtures pass exact, general and persisted provisional classification; 201 references use three bulk requests"
+      ],
+      "delivery": {
+        "local": "implemented_and_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Carry the reviewed source through the matching coordinated release lane; verify actual API or signed-app/device delivery before marking this finding delivered."
+    },
+    {
+      "id": "PRICE-AUDIT-03",
+      "severity": "P2",
+      "owner": "root",
+      "status": "reviewed_ready_for_release",
+      "summary": "V2 presentation lost provider names and source/FX provenance fields during conversion.",
+      "evidence": "docs/audits/20261010/pricing.md; sourceBreakdown mapping in lib/pricingV2.ts",
+      "files": [
+        "lib/pricingV2.ts",
+        "scripts/test-pricing-v2-client.ts"
+      ],
+      "validation": [
+        "Provider, original EUR amount/currency, FX rate and raw-record reference survive the actual presentation module fixture"
+      ],
+      "delivery": {
+        "local": "implemented_and_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Carry the reviewed source through the matching coordinated release lane; verify actual API or signed-app/device delivery before marking this finding delivered."
+    },
+    {
+      "id": "PRICE-AUDIT-04",
+      "severity": "P2",
+      "owner": "root",
+      "status": "reviewed_ready_for_release",
+      "summary": "Stale price copy claimed a refresh was queued when refreshQueued was false.",
+      "evidence": "docs/audits/20261010/pricing.md; components/PricingV2Summary.tsx stale state",
+      "files": [
+        "components/PricingV2Summary.tsx"
+      ],
+      "validation": [
+        "Stale copy now branches on the actual refreshQueued field; existing pricing UI race fixtures pass"
+      ],
+      "delivery": {
+        "local": "implemented",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Carry the reviewed source through the matching coordinated release lane; verify actual API or signed-app/device delivery before marking this finding delivered."
+    },
+    {
+      "id": "PERF-001",
+      "severity": "P1",
+      "owner": "stackr_performance",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Set detail card facts wait for optional artwork/provider enrichment before being published to the screen.",
+      "evidence": "docs/audits/20261010/performance.md",
+      "files": [
+        "app/set/[id].tsx",
+        "lib/pokemonTcg.ts"
+      ],
+      "validation": [
+        "Eight existing loading/cache/image fixtures pass; this source path still awaits optional enrichment"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Reuse the existing bounded card facts reader to publish useful rows before optional artwork; prove late enrichment cannot overwrite a newer request/account."
+    },
+    {
+      "id": "PERF-002",
+      "severity": "P1",
+      "owner": "stackr_search",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Search group completion/final loading can wait for all source promises, without screen cancellation or a deadline.",
+      "evidence": "docs/audits/20261010/performance.md; independently confirmed and deduplicated by search.md",
+      "files": [
+        "app/(tabs)/search.tsx"
+      ],
+      "validation": [
+        "Source-confirmed waits; actual phone latency remains unmeasured"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Claim the search screen for bounded independent group publication, cancellation and honest partial errors. Preserve useful cached facts and request/account generation guards."
+    },
+    {
+      "id": "PERF-003",
+      "severity": "P2",
+      "owner": "stackr_pokedex",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Pokédex card tiles use native Image rather than the shared thumbnail/recovery image boundary.",
+      "evidence": "docs/audits/20261010/performance.md; independently confirmed and deduplicated by pokedex.md",
+      "files": [
+        "app/pokemon/[id].tsx"
+      ],
+      "validation": [
+        "Shared image candidate fixtures pass; screen-specific thumbnail behavior remains outside that boundary"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Claim the Pokemon detail screen exclusively and adopt the existing thumbnail/recovery image boundary with visible-item hydration and identity-preserving candidates."
+    },
+    {
+      "id": "ART-001",
+      "severity": "P1",
+      "owner": "stackr_artwork",
+      "status": "reviewed_ready_for_release",
+      "summary": "The client rejects valid explicit same-artwork references when the source sibling variant is absent from a narrowed card DTO.",
+      "evidence": "docs/audits/20261010/artwork.md; three actual live card DTOs and hash-verified files",
+      "files": [
+        "lib/cardArtworkPresentation.ts",
+        "scripts/test-master-set-artwork.ts"
+      ],
+      "validation": [
+        "New narrowed DTO fixture failed before repair and now passes across all five languages",
+        "Actual EN/JA/TC public DTOs now resolve shared artwork with three matching renditions through corrected local selector",
+        "Master-set, issue304, image candidate and edition-aware focused regressions passed; app typecheck/lint passed"
+      ],
+      "delivery": {
+        "local": "implemented_and_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Carry the reviewed source through the matching coordinated release lane; verify actual API or signed-app/device delivery before marking this finding delivered."
+    },
+    {
+      "id": "ART-002",
+      "severity": "P2",
+      "owner": "stackr_artwork",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Supplied CoroCoro cover lookup bypasses existing source-disable and per-issue denylist controls.",
+      "evidence": "docs/audits/20261010/artwork.md",
+      "files": [
+        "lib/corocoroSuppliedCovers.ts",
+        "components/CorocoroIssueCover.tsx"
+      ],
+      "validation": [
+        "Disable flag and monthly:2001-05 denylist cases reproduce a supplied cover despite the main cover resolver returning null"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Confirm the actual tracked cover helper path, assign exclusive ownership and apply the existing removal policy before supplied-cover selection."
+    },
+    {
+      "id": "TRANSLATION-SET-PARITY-002",
+      "severity": "P2",
+      "owner": "stackr_translation",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Client Japanese manual set-name lookup still accepts language/set conflicts now guarded by the backend correction.",
+      "evidence": "docs/audits/20261010/translation.md T-02",
+      "files": [
+        "lib/pokemonDisplayNames.ts"
+      ],
+      "validation": [
+        "Actual client module conflict inputs reproduce wrong authoritative Pokemon Card 151 inference"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Sequentially claim the client helper and its real regression fixture; preserve valid/manual/provider names while matching backend conflict semantics."
+    },
+    {
+      "id": "TRANSLATION-TRAINER-FALLBACK-003",
+      "severity": "P2",
+      "owner": "stackr_translation",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Legacy noncanonical client fallback can label Japanese マリィ as Pikachu from a raw dexId25.",
+      "evidence": "docs/audits/20261010/translation.md T-03",
+      "files": [
+        "lib/pokemonDisplayNames.ts"
+      ],
+      "validation": [
+        "Canonical raw.stackr.canonical=true control correctly returns no species title; the noncanonical control reproduces the wrong name"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Repair legacy Trainer/species title eligibility under the same exclusive client helper handoff; native names and unknown translations must remain intact."
+    },
+    {
+      "id": "PRICING-COVERAGE-001",
+      "severity": "P1",
+      "owner": "stackr_pricing",
+      "status": "coverage_incomplete_targeted_follow_through",
+      "summary": "Successful retained daily bulk workers do not establish a usable price for every published card/variant.",
+      "evidence": "docs/audits/20261010/pricing.md; dated daily-pricing-live-promotion-20261010.md receipt",
+      "files": [],
+      "validation": [
+        "Prior denominator 76,317 published variants; provider processing counters are not combined unique usable-price coverage",
+        "Current baseline v2 deliberately excludes rare/vintage/unknown and unsupported identity scopes"
+      ],
+      "delivery": {
+        "local": "policy_and_source_gaps_recorded",
+        "reviewed": false,
+        "merged": "existing daily-worker source",
+        "deployed": "existing retained workers",
+        "deviceVerified": false
+      },
+      "nextAction": "Continue exact reviewed provider mappings and identity/source retention, then obtain a frozen combined coverage denominator through the established authorized lane. Preserve labelled general estimates and missing exact evidence; do not restore the retired cheap rare/vintage baseline or repeat unbounded provider sweeps."
+    },
+    {
+      "id": "BACKEND-METADATA-COHORT-001",
+      "severity": "P2",
+      "owner": "stackr_backend",
+      "status": "actionable_bounded_investigation",
+      "summary": "Extend the initial metadata audit into representative publication-scoped completeness and conflict cohorts.",
+      "evidence": "docs/audits/20261010/backend.md next bounded repairs; full metadata completeness remains unmeasured",
+      "files": [],
+      "validation": [],
+      "delivery": {
+        "local": "not_started",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Use existing read-only contracts and a named representative cohort, capped at 20 card records per pass. Check native names, collector numbers, rarity applicability, species/supertype, set/language and finishes. Record actual sampled denominator and supported defects, then claim exact files for safe local fixes. Do not call the sample full-catalogue coverage or run remote database scripts/provider jobs without applicable authorization."
+    },
+    {
+      "id": "PDX-001",
+      "severity": "P1",
+      "owner": "stackr_backend",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Provider Pokemon forms are included in the National Dex species count and displayed with form IDs as Dex numbers.",
+      "evidence": "docs/audits/20261010/pokedex.md",
+      "files": [
+        "backend/lib/pokedexIndex.js",
+        "app/(tabs)/pokedex.tsx",
+        "lib/pokedexCollection.ts"
+      ],
+      "validation": [
+        "Named cached snapshot has 1,350 Pokemon entries including 325 IDs above 1,025",
+        "Bounded fresh PokeAPI reads return 1,351 Pokemon versus 1,025 species; form10100 maps to species26"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Claim the index producer and consumer contract sequentially. Separate canonical species identity from forms using verified provider species/form metadata; preserve legitimate card form browsing. Do not hide entries by a guessed hardcoded numeric cutoff."
+    },
+    {
+      "id": "PDX-002",
+      "severity": "P1",
+      "owner": "stackr_pokedex",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Ownership can remain associated with a prior account or an unsuccessful ownership read.",
+      "evidence": "docs/audits/20261010/pokedex.md",
+      "files": [
+        "app/(tabs)/pokedex.tsx",
+        "app/pokemon/[id].tsx"
+      ],
+      "validation": [
+        "List focus path lacks account generation and reset/error state",
+        "Detail rejects late account responses but retains prior owned keys and initially treats a failed read as missing"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Claim list/detail screens exclusively and reset ownership on account changes with request/account generation guards. Expose unknown/error ownership separately from missing; reproduce account switch and failed-first-read controls."
+    },
+    {
+      "id": "PDX-003",
+      "severity": "P1",
+      "owner": "stackr_backend",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Pokemon form/default names and gender distinctions differ across card retrieval and client ownership matching.",
+      "evidence": "docs/audits/20261010/pokedex.md",
+      "files": [
+        "backend/lib/pokedexCards.js",
+        "lib/pokedexCollection.ts"
+      ],
+      "validation": [
+        "Client matcher rejects Nidoran female/male titles for provider nidoran-f/nidoran-m names",
+        "Bounded first raichu-alola page is empty with continuation while Alolan Raichu returns real cards; that is not evidence of a complete no-match"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Claim backend alias and client ownership matcher sequentially. Use reviewed species/form aliases and preserve gender distinctions, default-form equivalence and whole-token boundaries; protect Mew/Mewtwo and unknown identity controls."
+    },
+    {
+      "id": "PDX-004",
+      "severity": "P1",
+      "owner": "stackr_pokedex",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "An owned Trainer with a wrong Pokemon alias can mark a species complete because name-set ownership lacks Trainer/Energy eligibility filtering.",
+      "evidence": "docs/audits/20261010/pokedex.md",
+      "files": [
+        "lib/pokedexCollection.ts"
+      ],
+      "validation": [
+        "Wrong Marnie-to-Pikachu translation contaminates name-derived ownership",
+        "Dedicated card retrieval excludes explicit Trainer/Energy rows; name-set ownership does not"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Add species eligibility guards before deriving owned names under exclusive helper ownership. Coordinate with TRANSLATION-MARNIE-001 without treating the data proposal as published; preserve eligible Pokemon and explicit unknown metadata."
+    },
+    {
+      "id": "PDX-005",
+      "severity": "P2",
+      "owner": "stackr_pokedex",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Populated partial card results hide continuation errors and retry controls and can present the prefix count as the complete total.",
+      "evidence": "docs/audits/20261010/pokedex.md",
+      "files": [
+        "app/pokemon/[id].tsx"
+      ],
+      "validation": [
+        "Service retains earlier cards with complete:false after a later page failure",
+        "Detail screen renders retry only for empty results"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Retain useful cards while showing an incomplete count, partial failure and retry on populated results. Protect request generations and deduplicate continuation retries."
+    },
+    {
+      "id": "SEARCH-001",
+      "severity": "P1",
+      "owner": "stackr_search",
+      "status": "reviewed_ready_for_release",
+      "summary": "Actual search screen normalization drops identity-bearing native-script, gender and form terms and ranks native-only sets at zero.",
+      "evidence": "docs/audits/20261010/search.md; root release handoff records the local correction and compatibility evidence",
+      "files": [
+        "lib/searchNormalisation.ts",
+        "scripts/test-progressive-card-search.mjs"
+      ],
+      "validation": [
+        "Failing actual screen/real helper native query captured before correction; 16 identity controls and actual native/English/code set ranking now pass",
+        "Six narrow search scripts pass; installed bundled Hermes compiler supports and compiles Unicode-property regexes",
+        "Independent reviewer reran progressive search and global language controls; integrated app typecheck/lint pass"
+      ],
+      "delivery": {
+        "local": "implemented_and_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Carry the reviewed source through the matching coordinated release lane; verify actual API or signed-app/device delivery before marking this finding delivered."
+    },
+    {
+      "id": "SEARCH-002",
+      "severity": "P2",
+      "owner": "stackr_search",
+      "status": "audit_confirmed_needs_owned_repair",
+      "summary": "Cached card results hide a failed fresh factual card retrieval because cached and fresh canonical callbacks share success state.",
+      "evidence": "docs/audits/20261010/search.md",
+      "files": [
+        "app/(tabs)/search.tsx",
+        "scripts/test-progressive-card-search.mjs"
+      ],
+      "validation": [
+        "Actual extracted callback retains a cached card but reports empty error state after fresh source rejection"
+      ],
+      "delivery": {
+        "local": "unresolved",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Claim the screen after SEARCH-001 handoff. Distinguish cached facts from fresh factual success, preserve cache while exposing retry/incomplete state, and keep optional-artwork failure from invalidating successful card facts."
+    }
+  ],
+  "integrationBaseRevision": "7b6cb00eff1d9d85b11a0af5700cb1bba0fd7cd6",
+  "reviewEvidence": "docs/audits/20261010/reviewer.md",
+  "releaseHandoff": "docs/releases/specialist-audit-repair-handoff-20261010.md",
+  "integrationValidation": {
+    "applicationTypecheck": "passed after final search handoff",
+    "applicationLint": "passed; 0 errors and 8 existing warnings",
+    "backendTypecheck": "passed after integration with main7b6cb00",
+    "baselineChineseIdentityRegression": "3 passed after integration",
+    "independentFocusedRegressions": "all seven repairs reviewed; six executed relevant scripts passed",
+    "configurationAndQueue": "nine installed specialist TOMLs parsed; nine reports and 24 unique findings",
+    "gateway": "unchanged; no gateway check required",
+    "fullCatalogueCoverage": "unmeasured",
+    "physicalDevice": "unverified"
+  }
+}
