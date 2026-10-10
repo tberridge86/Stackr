@@ -964,6 +964,49 @@ async function assertStrictForeignLanguageSafety() {
   assert.equal(simplifiedAdapter.licenceStatus, 'approved');
   assert.equal(simplifiedAdapter.assetLicenceStatus, 'under_review', 'metadata approval must not approve provider images');
 
+  const traditionalAdapter = new TcgdexSourceAdapter({ language: 'zh-tw', licenceStatus: 'approved' });
+  for (const setCode of ['SV7a', 'SV8', 'SV8a', 'SV9', 'SV10']) {
+    for (const recordType of ['set', 'card', 'variant', 'asset'] as const) {
+      const record: ProviderRecord = {
+        ...providerRecord('zh-cn', recordType === 'set' ? setCode : `${setCode}-001`),
+        recordType,
+        payload: {
+          id: recordType === 'set' ? setCode : `${setCode}-001`,
+          localId: '001', name: '測試卡', set: { id: setCode },
+          image: `https://assets.tcgdex.net/zh-cn/sv/${setCode}/001`,
+        },
+      };
+      const validation = simplifiedAdapter.validateRecord(record);
+      assert.equal(validation.ok, false, `${setCode} ${recordType} must not reimport the wrong language`);
+      assert.ok(validation.issues.some(issue => issue.code === 'tcgdex_chinese_printing_language_conflict'));
+      assert.equal(traditionalAdapter.validateRecord({ ...record, languageCode: 'zh-tw' }).ok, true, 'Traditional identities remain valid');
+      assert.equal(simplifiedAdapter.validateRecord({ ...record, payload: { ...record.payload, set: {} } }).ok, false, 'Provider ID must retain the guard without a nested set');
+    }
+  }
+  assert.equal(simplifiedAdapter.validateRecord({
+    ...providerRecord('zh-cn', 'csv1c-001'),
+    payload: { id: 'csv1c-001', localId: '001', name: '测试卡', set: { id: 'CSV1C' } },
+  }).ok, true, 'Unrelated verified Simplified Chinese sets remain importable');
+
+  const conflictReceipt = JSON.parse(readFileSync('docs/releases/chinese-language-conflicts-20261010.json', 'utf8')) as {
+    pairs: { set_code: string; collector_number: string; native_name: string }[];
+  };
+  assert.equal(conflictReceipt.pairs.length, 605);
+  const rejectedRecords = conflictReceipt.pairs.map(pair => ({
+    ...providerRecord('zh-cn', `${pair.set_code}-${pair.collector_number}`),
+    payload: { localId: pair.collector_number, name: pair.native_name, set: { id: pair.set_code } },
+  }));
+  const guardedAdapter = {
+    ...fakeAdapter(rejectedRecords),
+    validateRecord: (record: ProviderRecord) => simplifiedAdapter.validateRecord(record),
+    normaliseRecord: () => { throw new Error('Rejected language identities must never reach canonical upserts'); },
+  };
+  const rejectedBatch = await new CatalogueIngestionRunner(noDbAccess(), guardedAdapter).run({ dryRun: true });
+  assert.ok(rejectedBatch.stats, 'Healthy bounded dry-run must return import statistics');
+  assert.equal(rejectedBatch.stats.recordsRetrieved, 605);
+  assert.equal(rejectedBatch.stats.recordsConflicted, 605);
+  assert.equal(rejectedBatch.stats.recordsSkipped, 0);
+
   const simplified = simplifiedAdapter.normaliseRecord(providerRecord('zh-cn', 'zh-cn-card-1'));
   const korean = koreanAdapter.normaliseRecord(providerRecord('ko', 'ko-card-1'));
   assert.equal(simplified.languageCode, 'zh-cn', 'zh-cn must stay zh-cn');
