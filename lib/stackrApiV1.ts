@@ -962,7 +962,7 @@ export class StackrApiClient {
   }
 
   // STACKR_IDENTITIES_FIRST_V2
-  get catalogueCacheNamespace() { return this.baseUrl; }
+  get catalogueCacheNamespace() { return `${this.baseUrl}|chinese-identity-correction-20261010`; }
 
   setCards(
     setId: string,
