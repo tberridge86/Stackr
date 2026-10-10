@@ -46,7 +46,9 @@ async function main() {
       let data: any;
       if (String(url).endsWith('/market/catalogue-prices')) {
         data = { prices: body.references.map((reference: string) => ({ reference, variantId: reference, cardId: reference,
-          language: body.language, price: quote(reference), unavailableReason: null, nextRetryAt: null, revision: 'a'.repeat(64) })),
+          language: body.language, price: body.estimateMode === 'general' ? { ...quote(reference),
+            fallbackEstimate: { identityKey: reference, reason: 'general_card_estimate', exact: false } } : quote(reference),
+          unavailableReason: null, nextRetryAt: null, revision: 'a'.repeat(64) })),
           unchangedReferences: [], priceRevision: 'b'.repeat(64), estimateMode: body.estimateMode };
       } else data = { ...quote(ids[0]), priceType: 'recent_sold', provenLastSold: true,
         lastSoldObservationId: 'verified-sale', lastSoldEvidence: { observationId: 'verified-sale', soldAt: '2026-10-02T10:00:00Z' } };
@@ -82,7 +84,9 @@ async function main() {
     './homePriceRefreshCore': {}, './stackrPriceIdentity': {}, './pokemonDisplayNames': {}, './cardNameTranslations.js': {},
     './pokemonSetIdentity': {}, './resilientCatalogueRead': {}, './optionalSearchEnrichment': {},
   });
-  assert.equal((await adapter.fetchStackrPriceSnapshots(ids, { language: 'en' }, client)).size, 201);
+  const exactSnapshots = await adapter.fetchStackrPriceSnapshots(ids, { language: 'en' }, client);
+  assert.equal(exactSnapshots.size, 201);
+  assert.equal(exactSnapshots.get(ids[0])?.price_basis, 'exact', 'exact quotes retain their classification');
   assert.deepEqual(requests.map((request) => request.body.references.length), [100, 100, 1]);
   assert.ok(requests.every((request) => request.url.endsWith('/market/catalogue-prices')), 'no individual identity or price requests');
   const scopeA = await client.getPricingCacheScope();
@@ -100,6 +104,8 @@ async function main() {
   assert.equal(requests.length, 4, 'signed-out reads do not use cached prices');
   token = jwt('owner-a', 999);
   await prices.fetchCataloguePrices([ids[0]], { language: 'en', estimateMode: 'general' }, client);
+  assert.equal((await adapter.fetchStackrPriceSnapshots([ids[0]], { language: 'en', estimateMode: 'general' }, client)).get(ids[0])?.price_basis,
+    'general', 'general guides are never reclassified as exact by the snapshot adapter');
   await prices.fetchCataloguePrices([ids[0]], { language: 'ja' }, client);
   assert.equal(requests.length, 6, 'language and general/exact modes are isolated');
   const identity = { variantId: ids[0], cardId: ids[0], language: 'en' };
@@ -130,6 +136,8 @@ async function main() {
   await prices.cataloguePriceCache.flush(); prices.cataloguePriceCache.clearMemory();
   const restarted = await prices.cataloguePriceCache.read(generalScope, [ids[1]], async () => { throw new Error('Offline restart'); });
   assert.equal(prices.cataloguePriceDisplay(restarted.get(ids[1])!).displayPrice, null, 'A warm disk restart must hide retired £0.25 baseline quotes.');
+  assert.equal((await adapter.fetchStackrPriceSnapshots([ids[1]], { language: 'en', estimateMode: 'general' }, client)).get(ids[1])?.price_basis,
+    'general', 'a provisional baseline stays general through the actual snapshot adapter after restart');
   assert.equal(prices.cataloguePriceDisplay(provisionalRow).unavailableReason, 'retired_provisional_baseline');
   assert.equal(prices.cataloguePriceDisplay({ ...provisionalRow, price: { ...provisionalRow.price, estimateVersion: baseline.PROVISIONAL_CATALOGUE_PRICE_MODEL } }).displayPrice, 0.25,
     'Current provisional model is recognized; the overlay separately checks card eligibility.');
