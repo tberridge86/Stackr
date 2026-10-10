@@ -24,6 +24,8 @@ async function testPersistedSearchCache() {
   });
 
   const rows = Array.from({ length: 60 }, (_, index) => ({ id: `card-${index}`, language: 'ja' }));
+  store.set('stackr:canonical-search-cards:v1:zh-cn:sv10', JSON.stringify({ version: 1, cachedAt: 1000, rows: [{ id: 'old-false-cn', language: 'zh-cn' }] }));
+  assert.equal(await exports.readCachedCanonicalSearch('SV10', 'zh-cn', 2000), null, 'the corrected app ignores old Chinese search snapshots');
   await exports.writeCachedCanonicalSearch('M5 002', 'ja', rows, 1_000);
   assert.equal((await exports.readCachedCanonicalSearch('M5 002', 'ja', 2_000)).length, 48, 'canonical cold cache stays bounded');
   assert.equal(await exports.readCachedCanonicalSearch('M5 002', 'en', 2_000), null, 'language shards never share cached rows');
