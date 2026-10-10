@@ -222,7 +222,7 @@ async function run() {
     [change('sets', card.setId, 514)]];
   const client = { async catalogManifest() { return { data: manifest }; }, async catalogDelta(query: { cursor?: string | null }) {
     requests.push(query.cursor);
-    return { data: { changes: pages[requests.length - 1], pagination: { nextCursor: requests.length === 1 ? 'second-page' : null } } };
+    return { data: { changes: pages[requests.length - 1] }, meta: { pagination: { nextCursor: requests.length === 1 ? 'second-page' : null } } };
   } } as unknown as StackrApiClient;
   const storageRows = new Map<string, string>();
   const legacyStorage = { async getItem(key: string) { return storageRows.get(key) ?? null; },

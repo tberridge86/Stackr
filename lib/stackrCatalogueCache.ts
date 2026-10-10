@@ -600,7 +600,7 @@ export async function syncStackrCatalogueInBackground(input: {
       const deltaEnvelope = await input.client.catalogDelta({ since: current.latestChangeSequence, cursor, limit: 500 });
       await cache.applyDelta(deltaEnvelope.data.changes);
       latestChangeSequence = (await cache.getManifest())?.latestChangeSequence ?? latestChangeSequence;
-      cursor = deltaEnvelope.data.pagination.nextCursor;
+      cursor = deltaEnvelope.meta.pagination?.nextCursor ?? null;
       if (!cursor) break;
       if (seenCursors.has(cursor)) throw new Error('Catalogue delta cursor repeated');
       seenCursors.add(cursor);
