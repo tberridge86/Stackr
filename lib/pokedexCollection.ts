@@ -543,13 +543,16 @@ async function fetchBinderOwnershipRows(binderIds: string[]): Promise<OwnedPoked
   return [...rowsById.values()];
 }
 
-export async function fetchOwnedPokedexCards(): Promise<Map<string, OwnedPokedexCard>> {
+export async function fetchOwnedPokedexCards(expectedAccountId?: string): Promise<Map<string, OwnedPokedexCard>> {
   const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
 
   if (userError) throw userError;
+  if (expectedAccountId !== undefined && user?.id !== expectedAccountId) {
+    throw new Error('Your account changed. Retry ownership.');
+  }
   if (!user) return new Map();
 
   const binderIds = await fetchOwnedBinderIds(user.id);
@@ -570,8 +573,8 @@ export async function fetchOwnedPokedexCards(): Promise<Map<string, OwnedPokedex
   return buildOwnedPokedexCards(variants, binderCards, pokedexCards);
 }
 
-export async function fetchOwnedPokemonNameSet(): Promise<Set<string>> {
-  const owned = await fetchOwnedPokedexCards();
+export async function fetchOwnedPokemonNameSet(expectedAccountId?: string): Promise<Set<string>> {
+  const owned = await fetchOwnedPokedexCards(expectedAccountId);
   const cardIds = [...new Set(Array.from(owned.values()).map((row) => row.card_id).filter(Boolean))];
   const names = new Set<string>();
 
@@ -592,7 +595,11 @@ export async function fetchOwnedPokemonNameSet(): Promise<Set<string>> {
   return names;
 }
 
-export async function setPokedexCardOwned(card: PokedexCard, owned: boolean): Promise<void> {
+export async function setPokedexCardOwned(
+  card: PokedexCard,
+  owned: boolean,
+  accountIntent?: { expectedAccountId: string; isCurrentAccount: () => boolean },
+): Promise<void> {
   const {
     data: { user },
     error: userError,
@@ -600,6 +607,20 @@ export async function setPokedexCardOwned(card: PokedexCard, owned: boolean): Pr
 
   if (userError) throw userError;
   if (!user) throw new Error('You must be signed in.');
+  const assertCurrentIntent = () => {
+    if (accountIntent && (user.id !== accountIntent.expectedAccountId || !accountIntent.isCurrentAccount())) {
+      throw new Error('Your account changed. Retry ownership.');
+    }
+  };
+  assertCurrentIntent();
+  const verifyBeforeWrite = async () => {
+    if (!accountIntent) return;
+    assertCurrentIntent();
+    const { data: { user: currentUser }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    assertCurrentIntent();
+    if (currentUser?.id !== accountIntent.expectedAccountId) throw new Error('Your account changed. Retry ownership.');
+  };
 
   const setId = card.set_id ?? card.raw_data?.set?.id ?? null;
   if (owned && !setId) {
@@ -628,6 +649,7 @@ export async function setPokedexCardOwned(card: PokedexCard, owned: boolean): Pr
       if (error) throw error;
       if (data?.length) throw new Error('This card is owned through your collection. Use the collection card controls to remove it.');
     }
+    await verifyBeforeWrite();
     let marker = supabase
       .from('user_pokedex_cards')
       .delete()
@@ -639,6 +661,7 @@ export async function setPokedexCardOwned(card: PokedexCard, owned: boolean): Pr
     return;
   }
 
+  await verifyBeforeWrite();
   const { error } = await supabase.from('user_pokedex_cards').upsert({
     user_id: user.id,
     card_id: card.id,

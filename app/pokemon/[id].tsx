@@ -1,7 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
@@ -27,8 +27,7 @@ import {
 import { getDisplaySetName } from '../../lib/setDisplay';
 import { stackrCardImageSizes } from '../../lib/stackrSizing';
 import { stackrHaptics } from '../../lib/haptics';
-import { supabase } from '../../lib/supabase';
-import { createAccountLoadGeneration } from '../../lib/accountLoadGeneration';
+import { usePokedexOwnership } from '../../lib/pokedexOwnershipState';
 import { useCardInspection } from '../../components/CardInspectionProvider';
 import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
 import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
@@ -57,6 +56,7 @@ const getPokemonSpriteUrl = (id: number) =>
   `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
 const makeOwnedKey = (card: Pick<PokedexCard, 'id' | 'set_id'>) => `${card.set_id ?? ''}:${card.id}`;
+const readOwnedKeys = async (accountId: string) => new Set((await fetchOwnedPokedexCards(accountId)).keys());
 
 const getParamValue = (value?: string | string[]) => Array.isArray(value) ? value[0] : value;
 
@@ -89,18 +89,16 @@ export default function PokemonDetailScreen() {
 
   const [pokemon, setPokemon] = useState<PokemonData | null>(null);
   const [cards, setCards] = useState<PokedexCard[]>([]);
-  const [ownedKeys, setOwnedKeys] = useState<Set<string>>(new Set());
+  const ownership = usePokedexOwnership(readOwnedKeys);
+  const ownedKeys = ownership.values;
   const [filter, setFilter] = useState<FilterKey>('all');
   const [loading, setLoading] = useState(true);
   const [cardsLoading, setCardsLoading] = useState(true);
   const [cardsError, setCardsError] = useState<string | null>(null);
   const [collectionComplete, setCollectionComplete] = useState(false);
   const [retryEpoch, setRetryEpoch] = useState(0);
-  const [ownershipLoading, setOwnershipLoading] = useState(false);
-  const [busyCardId, setBusyCardId] = useState<string | null>(null);
   const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(new Set());
   const longPressedCardId = useRef<string | null>(null);
-  const ownershipLoadGeneration = useRef(createAccountLoadGeneration()).current;
   const mergeArtwork = useCallback((hydrated: PokedexCard[]) => {
     if (!hydrated.length) return;
     const byId = new Map(hydrated.map((card) => [card.id, card]));
@@ -123,19 +121,6 @@ export default function PokemonDetailScreen() {
     if (!visible.length) return;
     void hydratePokedexCardArtwork(visible).then(mergeArtwork).catch(() => {});
   }).current;
-
-  const loadOwnership = useCallback(async () => {
-    const isCurrentLoad = ownershipLoadGeneration.begin();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!isCurrentLoad()) return;
-    const requestedUserId = user?.id ?? null;
-    const owned = await fetchOwnedPokedexCards();
-    const { data: { user: currentUser }, error: currentUserError } = await supabase.auth.getUser();
-    if (currentUserError) throw currentUserError;
-    if (!isCurrentLoad() || currentUser?.id !== requestedUserId) return;
-    setOwnedKeys(new Set(Array.from(owned.keys())));
-  }, [ownershipLoadGeneration]);
 
   useEffect(() => {
     let active = true;
@@ -204,9 +189,6 @@ export default function PokemonDetailScreen() {
           count: pokemonCards.cards.length,
           complete: pokemonCards.complete,
         });
-        loadOwnership().catch((ownershipError) => {
-          console.log('Failed to load Pokemon ownership after cards', ownershipError);
-        });
       } catch (error) {
         console.log('Failed to load Pokemon collection page', error);
         if (active) {
@@ -222,40 +204,20 @@ export default function PokemonDetailScreen() {
 
     return () => {
       active = false;
-      ownershipLoadGeneration.invalidate();
     };
-  }, [id, loadOwnership, ownershipLoadGeneration, retryEpoch, routeName]);
-
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-
-      setOwnershipLoading(true);
-      loadOwnership()
-        .catch((error) => {
-          console.log('Failed to refresh Pokemon ownership', error);
-        })
-        .finally(() => {
-          if (active) setOwnershipLoading(false);
-        });
-
-      return () => {
-        active = false;
-        ownershipLoadGeneration.invalidate();
-      };
-    }, [loadOwnership, ownershipLoadGeneration])
-  );
+  }, [id, retryEpoch, routeName]);
 
   const ownedCount = useMemo(
-    () => cards.filter((card) => ownedKeys.has(makeOwnedKey(card))).length,
+    () => ownedKeys ? cards.filter((card) => ownedKeys.has(makeOwnedKey(card))).length : null,
     [cards, ownedKeys]
   );
   const totalCount = cards.length;
-  const progress = totalCount ? ownedCount / totalCount : 0;
+  const progress = totalCount && ownedCount !== null ? ownedCount / totalCount : 0;
   const pricedCards = useCataloguePriceOverlay(cards);
 
   const filteredCards = useMemo(() => {
     return pricedCards.filter((card) => {
+      if (!ownedKeys) return true;
       const owned = ownedKeys.has(makeOwnedKey(card));
       if (filter === 'owned') return owned;
       if (filter === 'missing') return !owned;
@@ -266,41 +228,30 @@ export default function PokemonDetailScreen() {
   const toggleCardOwned = useCallback(
     async (card: PokedexCard) => {
       const key = makeOwnedKey(card);
+      if (!ownedKeys || !ownership.canMutate) return;
       const nextOwned = !ownedKeys.has(key);
 
-      setBusyCardId(card.id);
-      // A personal marker can appear immediately. Removal is guarded by
-      // physical inventory and binder ownership, so do not claim it is gone
-      // until the authoritative read succeeds.
-      if (nextOwned) setOwnedKeys((prev) => new Set(prev).add(key));
-
-      try {
-        await setPokedexCardOwned(card, nextOwned);
-        await loadOwnership();
-      } catch (error: any) {
-        if (nextOwned) setOwnedKeys((prev) => {
-          const next = new Set(prev);
-          next.delete(key);
-          return next;
-        });
-        await loadOwnership().catch((ownershipError) => {
-          console.log('Failed to reload Pokémon ownership', ownershipError);
-        });
-        console.log('Failed to update Pokedex card ownership', error);
-        Alert.alert('Could not update card', error?.message ?? 'Please try again.');
-      } finally {
-        setBusyCardId(null);
-      }
+      const failure = await ownership.changeOwnership(key, nextOwned, (expectedAccountId, isCurrentAccount) => (
+        setPokedexCardOwned(card, nextOwned, { expectedAccountId, isCurrentAccount })
+      ));
+      if (!failure?.isCurrent()) return;
+      console.log('Failed to update Pokedex card ownership', failure.error);
+      const error = failure.error as { message?: string } | null;
+      Alert.alert('Could not update card', error?.message ?? 'Please try again.');
     },
-    [loadOwnership, ownedKeys]
+    [ownedKeys, ownership]
   );
 
   const renderFilter = (key: FilterKey, label: string) => {
     const active = filter === key;
+    const disabled = key !== 'all' && !ownedKeys;
 
     return (
       <Pressable
         onPress={() => setFilter(key)}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityState={{ disabled, selected: active }}
         style={[styles.filterChip, active && styles.filterChipActive]}
       >
         <Text style={[styles.filterText, active && styles.filterTextActive]}>{label}</Text>
@@ -309,7 +260,7 @@ export default function PokemonDetailScreen() {
   };
 
   const renderCard = ({ item }: { item: PokedexCard & { runtimeCataloguePricing?: CataloguePriceDisplay } }) => {
-    const owned = ownedKeys.has(makeOwnedKey(item));
+    const owned = ownedKeys?.has(makeOwnedKey(item)) ?? false;
     const setName = getDisplaySetName({
       setId: item.set_id,
       setName: item.set_name,
@@ -343,10 +294,11 @@ export default function PokemonDetailScreen() {
             return;
           }
           void stackrHaptics.selection();
+          if (!ownership.canMutate) { openDetails(); return; }
           toggleCardOwned(item);
         }}
         accessibilityRole="button"
-        accessibilityLabel={`${item.name}. Tap to change ownership. ${catalogueInspection ? 'Hold to inspect.' : 'Hold for details.'}`}
+        accessibilityLabel={`${item.name}. ${ownership.canMutate ? 'Tap to change ownership.' : 'Tap for details. Ownership changes unavailable.'} ${catalogueInspection ? 'Hold to inspect.' : 'Hold for details.'}`}
         accessibilityActions={catalogueInspection ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
         onAccessibilityAction={(event) => {
           if (event.nativeEvent.actionName !== 'inspect') return;
@@ -379,11 +331,11 @@ export default function PokemonDetailScreen() {
           )}
 
           <View style={[styles.ownedBadge, owned ? styles.ownedBadgeOn : styles.ownedBadgeOff]}>
-            {busyCardId === item.id ? (
+            {ownership.busyKey === makeOwnedKey(item) ? (
               <ActivityIndicator size="small" color={owned ? '#FFFFFF' : theme.colors.primary} />
             ) : (
               <Ionicons
-                name={owned ? 'checkmark' : 'add'}
+                name={owned ? 'checkmark' : ownership.canMutate ? 'add' : 'help-outline'}
                 size={14}
                 color={owned ? '#FFFFFF' : theme.colors.primary}
               />
@@ -457,7 +409,7 @@ export default function PokemonDetailScreen() {
           viewabilityConfig={{ itemVisiblePercentThreshold: 35 }}
           ListHeaderComponent={
             <View>
-              {ownershipLoading && (
+              {ownership.status === 'loading' && (
                 <View style={styles.syncRow}>
                   <ActivityIndicator color={theme.colors.primary} size="small" />
                 </View>
@@ -488,16 +440,23 @@ export default function PokemonDetailScreen() {
               <View style={styles.progressCard}>
                 <View style={styles.progressTop}>
                   <Text style={styles.progressTitle}>Pokemon card collection</Text>
-                  <Text style={styles.progressCount}>{ownedCount} / {totalCount}</Text>
+                  <Text style={styles.progressCount}>{ownedCount === null ? 'Ownership unknown' : `${ownedCount} / ${totalCount}`}</Text>
                 </View>
                 <View style={styles.progressTrack}>
                   <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
                 </View>
                 <Text style={styles.progressSub}>
                   {collectionComplete
-                    ? 'Tap cards below to mark them owned. Long hold a card to open its details.'
+                    ? ownership.canMutate ? 'Tap cards below to mark them owned. Long hold a card to open its details.' : 'Tap cards to open their details. Long hold to inspect.'
                     : 'Loading more matching cards…'}
                 </Text>
+                {ownership.message ? <Text style={styles.progressSub} accessibilityRole={ownership.status === 'error' ? 'alert' : undefined}>{ownership.message}</Text> : null}
+                {ownership.status === 'error' ? (
+                  <Pressable accessibilityRole="button" accessibilityLabel="Retry Pokémon ownership"
+                    onPress={() => { void ownership.retryOwnership(); }} style={styles.retryButton}>
+                    <Text style={styles.retryButtonText}>Retry ownership</Text>
+                  </Pressable>
+                ) : null}
               </View>
 
               <View style={styles.filterRow}>

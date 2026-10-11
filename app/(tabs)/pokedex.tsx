@@ -18,7 +18,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text } from '../../components/Text';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchOwnedPokemonNameSet, pokemonNameMatchesCardName } from '../../lib/pokedexCollection';
@@ -26,6 +26,7 @@ import { stackrApiClient } from '../../lib/stackrApiV1';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { PokemonArtworkGlow, StackrScreen } from '../../components/StackrScreen';
 import { stackrIcons } from '../../lib/stackrIcons';
+import { usePokedexOwnership } from '../../lib/pokedexOwnershipState';
 
 type PokemonListItem = {
   name: string;
@@ -254,7 +255,8 @@ export default function PokedexScreen() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadEpoch, setReloadEpoch] = useState(0);
   const [selectedRange, setSelectedRange] = useState<RangeKey>('all');
-  const [ownedPokemonNames, setOwnedPokemonNames] = useState<Set<string>>(new Set());
+  const ownership = usePokedexOwnership(fetchOwnedPokemonNameSet);
+  const ownedPokemonNames = ownership.values;
   const [compactProgress, setCompactProgress] = useState(false);
 
   useEffect(() => {
@@ -350,24 +352,6 @@ export default function PokedexScreen() {
     };
   }, [reloadEpoch]);
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-
-      fetchOwnedPokemonNameSet()
-        .then((names) => {
-          if (active) setOwnedPokemonNames(names);
-        })
-        .catch((error) => {
-          console.log('Failed to load Pokedex ownership', error);
-        });
-
-      return () => {
-        active = false;
-      };
-    }, [])
-  );
-
   const filteredPokemon = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase();
 
@@ -384,7 +368,7 @@ export default function PokedexScreen() {
   }, [pokemon, query, selectedRange]);
 
   const ownedPokemonNameList = useMemo(
-    () => Array.from(ownedPokemonNames),
+    () => Array.from(ownedPokemonNames ?? []),
     [ownedPokemonNames]
   );
 
@@ -406,12 +390,12 @@ export default function PokedexScreen() {
     return ids;
   }, [isPokemonOwned, pokemon]);
 
-  const ownedPokedexCount = ownedPokemonIds.size;
+  const ownedPokedexCount = ownedPokemonNames ? ownedPokemonIds.size : null;
   const pokedexTotal = pokemonTotal;
   const incompletePokedex = pokemon.length < pokedexTotal;
   const pendingPokedex = incompletePokedex && (loading || loadingMore);
 
-  const mastersetProgress = pokedexTotal ? ownedPokedexCount / pokedexTotal : 0;
+  const mastersetProgress = pokedexTotal && ownedPokedexCount !== null ? ownedPokedexCount / pokedexTotal : 0;
   const mastersetPercent = Math.round(mastersetProgress * 100);
   const mastersetFillWidth = `${Math.min(100, mastersetProgress * 100)}%` as DimensionValue;
 
@@ -461,7 +445,7 @@ export default function PokedexScreen() {
           })
         }
         accessibilityRole="button"
-        accessibilityLabel={`${formatPokemonName(item.name)}, number ${String(item.id).padStart(4, '0')}${owned ? ', owned' : ', not owned'}`}
+        accessibilityLabel={`${formatPokemonName(item.name)}, number ${String(item.id).padStart(4, '0')}${!ownedPokemonNames ? ', ownership unknown' : owned ? ', owned' : ', not owned'}`}
         style={({ pressed }) => [styles.gridCard, { width: itemWidth }, pressed && styles.cardPressed]}
       >
         <View style={[styles.gridImageWrap, owned && { backgroundColor: 'transparent' }]}>
@@ -538,7 +522,7 @@ export default function PokedexScreen() {
           <View style={styles.mastersetProgressTop}>
             <Text style={styles.mastersetProgressLabel}>Masterset progress</Text>
             <Text style={styles.mastersetPercent}>
-              {compactProgress
+              {ownedPokedexCount === null ? 'Ownership unknown' : compactProgress
                 ? `${mastersetPercent}% · ${ownedPokedexCount}/${pokedexTotal}`
                 : `${ownedPokedexCount}/${pokedexTotal} owned`}
             </Text>
@@ -549,7 +533,7 @@ export default function PokedexScreen() {
           {!compactProgress && (
             <View style={styles.mastersetMetaRow}>
               <Text style={styles.mastersetProgressValue}>
-                {mastersetPercent}% complete
+                {ownedPokedexCount === null ? 'Ownership unknown' : `${mastersetPercent}% complete`}
               </Text>
               <Text style={styles.mastersetProgressValue}>
                 {loading ? 'Loading...' : loadingMore ? 'Loading more...' : `${filteredPokemon.length} shown`}
@@ -557,6 +541,18 @@ export default function PokedexScreen() {
             </View>
           )}
         </View>
+
+        {ownership.message ? (
+          <View style={styles.loadError} accessibilityRole={ownership.status === 'error' ? 'alert' : undefined}>
+            <Text style={styles.loadErrorText}>{ownership.message}</Text>
+            {ownership.status === 'error' ? (
+              <Pressable accessibilityRole="button" accessibilityLabel="Retry Pokédex ownership"
+                onPress={() => { void ownership.retryOwnership(); }} style={styles.loadRetry}>
+                <Text style={styles.loadRetryText}>Retry</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
 
         {loadError ? (
           <View style={styles.loadError} accessibilityRole="alert">
