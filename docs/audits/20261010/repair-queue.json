@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T04:22:46Z",
+  "updatedAt": "2026-10-11T06:30:56Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-release-recovery-20261009",
   "branch": "codex/specialist-audits-backend-repair-20261010",
@@ -22,18 +22,18 @@
     "state": "ACTIVE",
     "cadence": "Every two hours while the local computer and Codex app are running",
     "automationId": "stackr-backend-repair-and-audit-follow-through",
-    "lastPassStartedAt": "2026-10-11T04:14:52Z",
+    "lastPassStartedAt": "2026-10-11T06:11:45Z",
     "currentWork": null,
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/329",
       "state": "OPEN",
-      "checkedHead": "4504a75276a0680540c9edfc59f7239e86ac55fc",
+      "checkedHead": "586183926c209f7836a70baa90eabd6d75929fe4",
       "applicableChecks": "9 succeeded; release/canary gates skipped on PR",
       "merged": false
     },
-    "lastPassCompletedAt": "2026-10-11T04:22:46Z",
-    "lastPassOutcome": "PDX-004 explicit Trainer/Energy ownership guard locally committed, tested and independently reviewed; PDX-001 verified species/form contract gap retained without identity guesses",
-    "lastPassEvidence": "docs/releases/backend-ownership-repair-follow-through-20261011.md"
+    "lastPassCompletedAt": "2026-10-11T06:30:56Z",
+    "lastPassOutcome": "Two client naming contract findings locally committed, tested and independently reviewed; unchanged operating-document source binding failure isolated as a new unrepaired finding",
+    "lastPassEvidence": "docs/releases/backend-name-contract-repair-follow-through-20261011.md"
   },
   "issues": [
     {
@@ -336,45 +336,109 @@
       "id": "TRANSLATION-SET-PARITY-002",
       "severity": "P2",
       "owner": "stackr_translation",
-      "status": "audit_confirmed_needs_owned_repair",
+      "status": "reviewed_ready_for_release",
       "summary": "Client Japanese manual set-name lookup still accepts language/set conflicts now guarded by the backend correction.",
       "evidence": "docs/audits/20261010/translation.md T-02",
       "files": [
-        "lib/pokemonDisplayNames.ts"
+        "lib/pokemonDisplayNames.ts",
+        "scripts/test-japanese-set-english-runtime-lookup.ts"
       ],
       "validation": [
-        "Actual client module conflict inputs reproduce wrong authoritative Pokemon Card 151 inference"
+        "Actual client module conflict inputs reproduce wrong authoritative Pokemon Card 151 inference",
+        "42 actual client/backend set cases and 39 helper/presentation cases pass; final fixtures independently rerun by read-only reviewer",
+        "Separate worker probe reproduces nine wrong actual consumer outputs on frozen baseline and passes all nine with corrected helper",
+        "Existing foreign-card presentation regression and separate identity builder check pass; 215 bound codes and 41 exclusions",
+        "Final application typecheck and expanded lint pass; 0 errors, 8 existing warnings, no introduced warnings; whole-task diff check passes",
+        "Aggregate Japanese runtime lookup remains failing at unchanged operating boundary SHA-256 binding; backend/gateway runtime unchanged",
+        "Worker baseline set fixture failed 26 of 42 cases; corrected 42/42 rejects conflicting language/code/manual aliases while retaining valid exact names"
       ],
       "delivery": {
-        "local": "unresolved",
-        "reviewed": false,
+        "local": "committed_and_tested",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Sequentially claim the client helper and its real regression fixture; preserve valid/manual/provider names while matching backend conflict semantics."
+      "nextAction": "Release coordination integrates reviewed client source and verifies matching signed-app/device delivery. Backend/source-decision owner separately reconciles TRANSLATION-RIGHTS-BINDING-004; keep aggregate failure explicit and do not alter the approval binding merely to pass a check.",
+      "workClaim": {
+        "agent": "/root/translation_client_contract_repair",
+        "definition": "D:/Stackr-1/.codex/agents/stackr_translation.toml",
+        "backendHandoffDefinition": ".codex/agents/stackr_backend.toml",
+        "claimedAt": "2026-10-11T06:17:11Z",
+        "integrationHead": "586183926c209f7836a70baa90eabd6d75929fe4",
+        "exclusiveFiles": [
+          "lib/pokemonDisplayNames.ts",
+          "scripts/test-japanese-set-english-runtime-lookup.ts",
+          "scripts/test-native-language-display.ts",
+          "docs/audits/20261011/translation-client-contract-repair.md"
+        ],
+        "issues": [
+          "TRANSLATION-SET-PARITY-002",
+          "TRANSLATION-TRAINER-FALLBACK-003"
+        ],
+        "evidence": "docs/audits/20261011/translation-client-contract-repair.md",
+        "status": "completed",
+        "completedAt": "2026-10-11T06:30:56Z",
+        "implementationRevision": "088c0bcb64d6beeb366d4f88658b85c613c26010"
+      },
+      "sourceRevision": "088c0bcb64d6beeb366d4f88658b85c613c26010",
+      "repairEvidence": "docs/audits/20261011/translation-client-contract-repair.md",
+      "reviewEvidence": "docs/audits/20261011/translation-client-contract-review.md",
+      "remainingScope": "Matching signed-app and installed-device delivery remain pending. Separate pre-existing source-binding gate is unrepaired; no generated translation map or source activation was changed."
     },
     {
       "id": "TRANSLATION-TRAINER-FALLBACK-003",
       "severity": "P2",
       "owner": "stackr_translation",
-      "status": "audit_confirmed_needs_owned_repair",
+      "status": "reviewed_ready_for_release",
       "summary": "Legacy noncanonical client fallback can label Japanese マリィ as Pikachu from a raw dexId25.",
       "evidence": "docs/audits/20261010/translation.md T-03",
       "files": [
-        "lib/pokemonDisplayNames.ts"
+        "lib/pokemonDisplayNames.ts",
+        "scripts/test-native-language-display.ts"
       ],
       "validation": [
-        "Canonical raw.stackr.canonical=true control correctly returns no species title; the noncanonical control reproduces the wrong name"
+        "Canonical raw.stackr.canonical=true control correctly returns no species title; the noncanonical control reproduces the wrong name",
+        "42 actual client/backend set cases and 39 helper/presentation cases pass; final fixtures independently rerun by read-only reviewer",
+        "Separate worker probe reproduces nine wrong actual consumer outputs on frozen baseline and passes all nine with corrected helper",
+        "Existing foreign-card presentation regression and separate identity builder check pass; 215 bound codes and 41 exclusions",
+        "Final application typecheck and expanded lint pass; 0 errors, 8 existing warnings, no introduced warnings; whole-task diff check passes",
+        "Aggregate Japanese runtime lookup remains failing at unchanged operating boundary SHA-256 binding; backend/gateway runtime unchanged",
+        "Worker baseline card fixture failed 22 of 39 cases; corrected 39/39 preserves full native titles and case-sensitive EX/ex without Dex or collector-number guesses"
       ],
       "delivery": {
-        "local": "unresolved",
-        "reviewed": false,
+        "local": "committed_and_tested",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Repair legacy Trainer/species title eligibility under the same exclusive client helper handoff; native names and unknown translations must remain intact."
+      "nextAction": "Release coordination integrates reviewed client source and verifies matching signed-app/device delivery. Backend/source-decision owner separately reconciles TRANSLATION-RIGHTS-BINDING-004; keep aggregate failure explicit and do not alter the approval binding merely to pass a check.",
+      "workClaim": {
+        "agent": "/root/translation_client_contract_repair",
+        "definition": "D:/Stackr-1/.codex/agents/stackr_translation.toml",
+        "backendHandoffDefinition": ".codex/agents/stackr_backend.toml",
+        "claimedAt": "2026-10-11T06:17:11Z",
+        "integrationHead": "586183926c209f7836a70baa90eabd6d75929fe4",
+        "exclusiveFiles": [
+          "lib/pokemonDisplayNames.ts",
+          "scripts/test-japanese-set-english-runtime-lookup.ts",
+          "scripts/test-native-language-display.ts",
+          "docs/audits/20261011/translation-client-contract-repair.md"
+        ],
+        "issues": [
+          "TRANSLATION-SET-PARITY-002",
+          "TRANSLATION-TRAINER-FALLBACK-003"
+        ],
+        "evidence": "docs/audits/20261011/translation-client-contract-repair.md",
+        "status": "completed",
+        "completedAt": "2026-10-11T06:30:56Z",
+        "implementationRevision": "088c0bcb64d6beeb366d4f88658b85c613c26010"
+      },
+      "sourceRevision": "088c0bcb64d6beeb366d4f88658b85c613c26010",
+      "repairEvidence": "docs/audits/20261011/translation-client-contract-repair.md",
+      "reviewEvidence": "docs/audits/20261011/translation-client-contract-review.md",
+      "remainingScope": "Matching signed-app and installed-device delivery remain pending. Separate pre-existing source-binding gate is unrepaired; no generated translation map or source activation was changed."
     },
     {
       "id": "PRICING-COVERAGE-001",
@@ -644,6 +708,45 @@
         "deviceVerified": false
       },
       "nextAction": "Claim the screen after SEARCH-001 handoff. Distinguish cached facts from fresh factual success, preserve cache while exposing retry/incomplete state, and keep optional-artwork failure from invalidating successful card facts."
+    },
+    {
+      "id": "TRANSLATION-RIGHTS-BINDING-004",
+      "severity": "P2",
+      "owner": "stackr_backend",
+      "status": "source_binding_reconciliation_required",
+      "summary": "Unchanged Japanese English-set runtime builder cannot verify the operating-document SHA-256 bound by its existing source decision; aggregate validation fails before artefact drift checking.",
+      "discoveredAt": "2026-10-11T06:30:56Z",
+      "evidence": "docs/audits/20261011/translation-client-contract-repair.md",
+      "reviewEvidence": "docs/audits/20261011/translation-client-contract-review.md",
+      "handoff": "docs/releases/backend-name-contract-repair-follow-through-20261011.md",
+      "files": [
+        "catalogue/rights-reviews/tcgdex-japanese-set-english-display-green.2026-09-04.json",
+        "docs/stackrtcg-ip-operating-boundary.md",
+        "scripts/tcgdex-metadata-green-gate.ts",
+        "scripts/build-japanese-set-english-runtime-lookup.ts"
+      ],
+      "validation": [
+        "Worker and independent reviewer reproduced operating boundary binding SHA-256 mismatch from runtime builder --check, without --import-source-root or writes",
+        "Expected document hash f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b; current and exact baseline document hash 3ddb9d0b1fa0057db6a1830a703f86349238a675c4f52e93556e8baff8aebc0a",
+        "Decision, bound document, builder, gate, source and generated maps have no task diff; mismatch predates the naming repair",
+        "Failure occurs at scripts/tcgdex-metadata-green-gate.ts:17 before generated-artefact comparison; separately executed identity check passes 215 bound codes/41 exclusions"
+      ],
+      "delivery": {
+        "local": "reproduced_unrepaired",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "affectedBinding": {
+        "baseline": "586183926c209f7836a70baa90eabd6d75929fe4",
+        "decisionSha256": "8b1d61c4954cc0ca2631232fffe625f05338a5e45baeeacfc479913a41b7931f",
+        "expectedDocumentSha256": "f93aa675f76aadbe77e58bbbb0e0a81fdeb4268de8ca4d7a8190e9a6df5efb1b",
+        "baselineAndCurrentDocumentSha256": "3ddb9d0b1fa0057db6a1830a703f86349238a675c4f52e93556e8baff8aebc0a"
+      },
+      "nextOwner": "stackr_backend and the existing source/rights-decision owner",
+      "nextAction": "Compare the bound decision scope with the current operating document and prepare evidence-backed reconciliation through the established source/approval mechanism. Do not overwrite the hash, weaken the gate, regenerate maps or activate a source to hide the mismatch. Reuse this evidence until relevant inputs change.",
+      "remainingScope": "This is an unresolved verification binding, not a licence or activation conclusion. No live operation or source-decision mutation is authorized by this background pass."
     }
   ],
   "integrationBaseRevision": "38db6229f0dc419db37cca009320db9c1a7bbe92",
@@ -658,7 +761,21 @@
     "configurationAndQueue": "nine installed specialist TOMLs parsed; nine reports and 24 unique findings",
     "gateway": "unchanged; no gateway check required",
     "fullCatalogueCoverage": "unmeasured",
-    "physicalDevice": "unverified"
+    "physicalDevice": "unverified",
+    "latestFollowThrough": {
+      "implementationRevision": "088c0bcb64d6beeb366d4f88658b85c613c26010",
+      "currentUniqueFindings": 25,
+      "applicationTypecheck": "passed",
+      "applicationLint": "passed; 0 errors, 8 existing warnings, no introduced warnings",
+      "focusedRuntimeCases": "42 set and 39 card cases passed; independently rerun",
+      "aggregateJapaneseRuntimeLookup": "failed at pre-existing operating boundary binding SHA-256 mismatch",
+      "sourceBindingFinding": "TRANSLATION-RIGHTS-BINDING-004",
+      "reviewEvidence": "docs/audits/20261011/translation-client-contract-review.md",
+      "gatewayAndBackendRuntime": "unchanged; gates not rerun or claimed",
+      "merged": false,
+      "deployed": false,
+      "deviceVerified": false
+    }
   },
   "repairPasses": [
     {
@@ -720,6 +837,47 @@
         "deviceVerified": false
       },
       "remaining": "Unknown/missing classification remains unverified compatibility. Marnie alias publication, account-state boundaries and species/form denominator corrections are separate unresolved findings. Signed-app/device delivery remains pending."
+    },
+    {
+      "date": "2026-10-11",
+      "issues": [
+        "TRANSLATION-SET-PARITY-002",
+        "TRANSLATION-TRAINER-FALLBACK-003"
+      ],
+      "startedAt": "2026-10-11T06:11:45Z",
+      "completedAt": "2026-10-11T06:30:56Z",
+      "implementationRevision": "088c0bcb64d6beeb366d4f88658b85c613c26010",
+      "integrationParent": "586183926c209f7836a70baa90eabd6d75929fe4",
+      "mainBaseline": "38db6229f0dc419db37cca009320db9c1a7bbe92",
+      "matchingPR": "https://github.com/tberridge86/Stackr/pull/329",
+      "evidence": "docs/audits/20261011/translation-client-contract-repair.md",
+      "review": "docs/audits/20261011/translation-client-contract-review.md",
+      "handoff": "docs/releases/backend-name-contract-repair-follow-through-20261011.md",
+      "validation": [
+        "Worker baseline failures: 26/42 set cases and 22/39 card cases; separate 9/9 actual consumer failures reproduced",
+        "Final 42/42 set cases and 39/39 helper/presentation cases pass; independent reviewer reran both final fixtures and existing foreign-card presentation suite",
+        "Separate identity builder --check passes with 215 bound codes and 41 exclusions",
+        "Final application typecheck, expanded lint (0 errors, 8 existing warnings, no introduced warnings) and whole-task diff check pass",
+        "Aggregate Japanese runtime lookup fails at unchanged operating-document SHA-256 binding; no source, gate, decision or generated map was changed"
+      ],
+      "priorHeadHostedChecks": {
+        "head": "586183926c209f7836a70baa90eabd6d75929fe4",
+        "succeeded": 9,
+        "skipped": [
+          "release-candidate-gate",
+          "canary-api-evidence"
+        ],
+        "merged": false
+      },
+      "delivery": {
+        "local": "committed_and_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "newUnrepairedFinding": "TRANSLATION-RIGHTS-BINDING-004",
+      "remaining": "Source binding reconciliation, separate Marnie publication, other forms/whole-catalogue completeness, signed-app and installed-device delivery remain pending."
     }
   ]
 }

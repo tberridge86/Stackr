@@ -18,7 +18,7 @@ The individual specialists audited `5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1` on
 | Search | [search.md](search.md) | Pokédex and search |
 | Independent reviewer | [reviewer.md](reviewer.md) | After specialist reports and local repairs |
 
-Completion and individual findings are recorded in [repair-queue.json](repair-queue.json). The queue contains 24 distinct findings, including shared findings reconciled between specialists. The [assignment plan](assignment-plan.json) specifies each specialist's acceptance criteria and exclusive evidence ownership. The reviewer remains read-only; the coordinator records its returned findings faithfully.
+Completion and individual findings are recorded in [repair-queue.json](repair-queue.json). The 10 October audits identified 24 distinct findings, including shared findings reconciled between specialists. The current queue also contains a separately reproduced translation document-binding failure from the 11 October follow-through, making 25 findings. The [assignment plan](assignment-plan.json) specifies each specialist's acceptance criteria and exclusive evidence ownership. The reviewer remains read-only; the coordinator records its returned findings faithfully.
 
 ## Continuing repairs
 
@@ -60,3 +60,14 @@ consumer controls pass and independent review found no blocker. The
 records checks and delivery limits. PDX-001 remains unresolved because the
 current index lacks a verified species/form mapping contract; no numeric cutoff
 or snapshot rewrite was introduced.
+
+The third pass repaired TRANSLATION-SET-PARITY-002 and
+TRANSLATION-TRAINER-FALLBACK-003 in the shared client naming helper. Conflicting
+set identities are rejected; full native card titles and distinct `ex`/`EX`
+mechanics replace numeric or partial-name guesses. The 42 set and 39 card
+controls, final application typecheck/lint and independent identity review pass.
+The aggregate Japanese lookup still fails an unchanged operating-document hash
+binding, now separately recorded as TRANSLATION-RIGHTS-BINDING-004. The
+[naming contract handoff](../../releases/backend-name-contract-repair-follow-through-20261011.md)
+records reproduced outputs, the remaining validation gate and separate delivery
+states. No source binding or generated catalogue was changed.
