@@ -27,6 +27,11 @@ import { StackrBinderButton, StackrBrowseToolbar, StackrBrowseSummary, StackrBro
 import { StackrImage } from '../../components/StackrImage';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 import { createActivityPost } from '../../lib/activity';
+import {
+  createDirectCollectionHistoryIntent,
+  recordDirectCollectionHistory,
+  recoverDirectCollectionHistory,
+} from '../../lib/directCollectionHistoryRecovery';
 import { getIncrementalListWindow } from '../../lib/performance';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { getPreferredCardDisplayName } from '../../lib/pokemonDisplayNames';
@@ -803,6 +808,13 @@ export default function SetDetailScreen() {
   }, [loadSetData, ownershipRetry]);
 
   useEffect(() => {
+    if (!ownershipVisible || !userId) return;
+    void recoverDirectCollectionHistory(userId).then((recovery) => {
+      if (recovery.invalid) console.warn('Saved collection history recovery needs verification.');
+    }).catch(() => undefined);
+  }, [ownershipVisible, userId]);
+
+  useEffect(() => {
     setSetLogoFailed(false);
     clearCardFilters();
     setBrowseFiltersVisible(false);
@@ -834,14 +846,32 @@ export default function SetDetailScreen() {
     quantityMutationRef.current.set(key, generation);
     const previousQuantity = visibleVariantQuantities.get(key) ?? 0;
     const targetCard = cards.find((card) => card.id === cardId);
+    const historyCardSnapshot = targetCard ? {
+      name: targetCard.name ?? null,
+      number: targetCard.number ?? null,
+      language: targetCard.language ?? setInfo?.language ?? null,
+      imageSmall: targetCard.images?.small ?? null,
+      imageLarge: targetCard.images?.large ?? null,
+    } : {
+      // Keep an explicit empty snapshot: a delayed replay must not fill this
+      // mutation with newer catalogue facts when its target is no longer loaded.
+      name: null,
+      number: null,
+      language: null,
+      imageSmall: null,
+      imageLarge: null,
+    };
     const recordActivity = async (post: Parameters<typeof createActivityPost>[0]) => {
       if (!isCurrentOwnership()) return;
-      try {
-        const result = await createActivityPost(post, { expectedUserId: userId ?? undefined });
-        if (result.status === 'failed' && isCurrentOwnership()) Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
-      } catch (historyError) {
-        if (!isCurrentOwnership() || (historyError instanceof Error && historyError.message === 'activity_post_identity_changed')) return;
-        Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
+      const intent = createDirectCollectionHistoryIntent({ ownerUserId: userId!, activity: post });
+      const result = await recordDirectCollectionHistory(intent);
+      if (result.status !== 'created' && isCurrentOwnership()) {
+        Alert.alert(
+          'Collection updated',
+          result.status === 'pending'
+            ? 'Your card change was saved, and its history entry is waiting to be recovered.'
+            : 'Your card change was saved, but its history entry could not be recorded.',
+        );
       }
     };
 
@@ -870,6 +900,7 @@ export default function SetDetailScreen() {
             setId,
             type: 'binder_remove',
             isPositive: false,
+            cardSnapshot: historyCardSnapshot,
           });
         }
         return;
@@ -890,6 +921,7 @@ export default function SetDetailScreen() {
           setId,
           type: 'quantity_reduced',
           isPositive: false,
+          cardSnapshot: historyCardSnapshot,
         });
       } else if (nextQuantity > previousQuantity) {
         await recordActivity({
@@ -899,6 +931,7 @@ export default function SetDetailScreen() {
           setId,
           type: 'binder_add',
           isPositive: true,
+          cardSnapshot: historyCardSnapshot,
         });
       }
     } catch (error: any) {
@@ -921,7 +954,7 @@ export default function SetDetailScreen() {
     } finally {
       if (quantityMutationRef.current.get(key) === generation) quantityMutationRef.current.delete(key);
     }
-  }, [cards, userId, setId, visibleVariantQuantities, ownershipReady, currentOwnershipGeneration]);
+  }, [cards, userId, setId, setInfo?.language, visibleVariantQuantities, ownershipReady, currentOwnershipGeneration]);
 
   const handleQuickAddVariant = useCallback(async (card: PokemonCard, variant: string) => {
     if (!variant) return;

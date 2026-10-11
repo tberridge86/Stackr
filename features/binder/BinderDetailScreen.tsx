@@ -117,6 +117,11 @@ import { beginBinderRetrieval, getIncrementalListWindow, measureAsync, stackrLis
 import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { createActivityPost } from '../../lib/activity';
+import {
+  createDirectCollectionHistoryIntent,
+  recordDirectCollectionHistory,
+  recoverDirectCollectionHistory,
+} from '../../lib/directCollectionHistoryRecovery';
 import { stackrHaptics } from '../../lib/haptics';
 import { useCardInspection } from '../../components/CardInspectionProvider';
 import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
@@ -1435,6 +1440,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     return () => subscription.unsubscribe();
   }, [load]);
 
+  useEffect(() => {
+    if (!userId || isReadOnly) return;
+    void recoverDirectCollectionHistory(userId).then((recovery) => {
+      if (recovery.invalid) console.warn('Saved collection history recovery needs verification.');
+    }).catch(() => undefined);
+  }, [userId, isReadOnly]);
+
   useFocusEffect(
     useCallback(() => {
       load();
@@ -2181,6 +2193,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     quantity: number
   ) => {
     if (!userId || isReadOnly) return;
+    const historyOwnerId = userId;
+    const historyAccountGeneration = accountGenerationRef.current;
+    const historyLoadGeneration = loadRequestRef.current;
+    const isCurrentHistoryOwner = () => activeAccountIdRef.current === historyOwnerId
+      && accountGenerationRef.current === historyAccountGeneration
+      && loadRequestRef.current === historyLoadGeneration;
     const key = getVariantKey(cardId, setId, variant);
     const cardKey = getVariantCardKey(cardId, setId);
     const nextQuantity = Math.max(0, Math.min(999, Math.floor(Number(quantity) || 0)));
@@ -2188,6 +2206,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const targetCard = cards.find((card) => card.card_id === cardId && card.set_id === setId);
     const cardVariants = targetCard ? getVariants(targetCard.card, setId) : [];
     if (!targetCard || !cardVariants.includes(variant)) return;
+    const cardName = getBinderCardDisplayName(targetCard, cardId);
+    const historyCardSnapshot = {
+      name: cardName,
+      number: targetCard.card?.number ?? targetCard.card_number ?? null,
+      language: targetCard.card?.language ?? targetCard.language ?? binder?.language ?? null,
+      imageSmall: targetCard.card?.images?.small ?? targetCard.image_url ?? null,
+      imageLarge: targetCard.card?.images?.large ?? targetCard.image_url ?? null,
+    };
     // Before the first finish edit, retain the existing ordinary owned copies.
     // Otherwise selecting Reverse would make a previously owned Base disappear.
     const legacyDefault = !variantManagedCards.has(cardKey) && targetCard.owned
@@ -2270,14 +2296,16 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         if (error) throw error;
       }
 
-      const cardName = getBinderCardDisplayName(targetCard, cardId);
       const recordActivity = async (post: Parameters<typeof createActivityPost>[0]) => {
-        try {
-          const result = await createActivityPost(post, { expectedUserId: userId });
-          if (result.status === 'failed') Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
-        } catch (historyError) {
-          if (historyError instanceof Error && historyError.message === 'activity_post_identity_changed') return;
-          Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
+        const intent = createDirectCollectionHistoryIntent({ ownerUserId: historyOwnerId, activity: post });
+        const result = await recordDirectCollectionHistory(intent);
+        if (result.status !== 'created' && isCurrentHistoryOwner()) {
+          Alert.alert(
+            'Collection updated',
+            result.status === 'pending'
+              ? 'Your card change was saved, and its history entry is waiting to be recovered.'
+              : 'Your card change was saved, but its history entry could not be recorded.',
+          );
         }
       };
       if (previousQuantity > nextQuantity) {
@@ -2288,6 +2316,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           setId,
           type: nextQuantity <= 0 ? 'binder_remove' : 'quantity_reduced',
           isPositive: false,
+          cardSnapshot: historyCardSnapshot,
         });
       } else if (nextQuantity > previousQuantity) {
         await recordActivity({
@@ -2297,6 +2326,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           setId,
           type: 'binder_add',
           isPositive: true,
+          cardSnapshot: historyCardSnapshot,
         });
       }
     } catch (error) {
@@ -2304,7 +2334,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       Alert.alert('Error', 'Failed to update variant quantity.');
       load();
     }
-  }, [cards, isReadOnly, load, ownedVariants, userId, variantManagedCards]);
+  }, [binder?.language, cards, isReadOnly, load, ownedVariants, userId, variantManagedCards]);
 
   const handleToggleVariant = useCallback(async (cardId: string, setId: string, variant: string) => {
     const savedQuantity = getVariantQuantityFromMap(ownedVariants, cardId, setId, variant);
