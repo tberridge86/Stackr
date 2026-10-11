@@ -1,7 +1,8 @@
 import 'dotenv/config';
+import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
-import { basename, dirname, join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { downloadCardmarketPublicGuide, validateCardmarketPublicGuide } from './cardmarket-public-guide.mjs';
 import { planCardmarketCachedIngestion, toCardmarketBlendedStoreResults, validateCardmarketMappingLedger } from './cardmarket-cached-ingestion.mjs';
@@ -12,6 +13,7 @@ import { resolvePricingV2SupabaseTarget } from './pricing-v2-supabase-target.mjs
 
 const KINDS = ['products', 'priceGuide'];
 const MAX_PAGE_SIZE = 500;
+const MAX_WRITE_BATCH_SIZE = 100;
 const HOUR = 60 * 60 * 1000;
 const REVIEW_CONCURRENCY = 24;
 const allowedRepairReasons = new Set(['missing_exact_mapping', 'ambiguous_provider_mapping', 'mapping_missing_language_variant_finish_evidence', 'duplicate_canonical_target', 'missing_price_guide_row', 'no_market_guide_value', 'provider_category_mismatch']);
@@ -106,6 +108,11 @@ function sanitizeRepairs(items) {
 }
 async function rpc(api, name, args) {
   const { data, error } = await api.rpc(name, args); if (error) throw error; return data;
+}
+const writeFailureReason = error => error?.code === '57014' ? 'statement_timeout' : 'request_failed';
+async function writeBatch(api, name, args, label) {
+  try { return await rpc(api, name, args); }
+  catch (error) { throw Error(`Cardmarket ${label} batch failed: ${writeFailureReason(error)}`); }
 }
 
 /**
@@ -222,12 +229,12 @@ export async function applyCardmarketDailyGuide({ api, retained, mappingLedger, 
       providerProductId: row.providerProductId, providerCategoryId: row.providerCategoryId,
       detail: { reason: 'rounded_to_zero_gbp' },
     }))]);
-    for (let offset = 0; offset < repairs.length; offset += MAX_PAGE_SIZE) {
-      const batch = repairs.slice(offset, offset + MAX_PAGE_SIZE); const count = await rpc(api, 'queue_cardmarket_mapping_repairs', { p_repairs: batch });
+    for (let offset = 0; offset < repairs.length; offset += MAX_WRITE_BATCH_SIZE) {
+      const batch = repairs.slice(offset, offset + MAX_WRITE_BATCH_SIZE); const count = await writeBatch(api, 'queue_cardmarket_mapping_repairs', { p_repairs: batch }, 'repair');
       if (count !== batch.length) throw Error('Cardmarket repair batch was not acknowledged.'); summary.repairs += count;
     }
-    for (let offset = 0; offset < results.length; offset += MAX_PAGE_SIZE) {
-      const batch = results.slice(offset, offset + MAX_PAGE_SIZE); const count = await rpc(api, 'store_cardmarket_blended_general_prices', { p_price_guide_revision: revisions.priceGuide, p_product_catalogue_revision: revisions.products, p_results: batch });
+    for (let offset = 0; offset < results.length; offset += MAX_WRITE_BATCH_SIZE) {
+      const batch = results.slice(offset, offset + MAX_WRITE_BATCH_SIZE); const count = await writeBatch(api, 'store_cardmarket_blended_general_prices', { p_price_guide_revision: revisions.priceGuide, p_product_catalogue_revision: revisions.products, p_results: batch }, 'price');
       if (count !== batch.length) throw Error('Cardmarket price batch was not acknowledged.'); summary.stored += count;
     }
     checkpoint.afterProductId = plan.nextAfterProductId ?? plan.afterProductId + plan.scanned; await save(); summary.pages += 1;
