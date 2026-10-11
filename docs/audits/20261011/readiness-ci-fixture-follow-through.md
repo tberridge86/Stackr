@@ -21,3 +21,13 @@ Only three test fixtures change. No production code or workflow/gate is relaxed.
 Baseline failures reproduce locally. Final 13 layout/shared-component cases, five filter/reset/toolbar cases, full `test:home-release` and full `test:home-activity` pass. Application TypeScript and all three fixtures' scoped lint pass. Independent review reran the dedicated controls and accepted all three with no P1/P2. Diff check passes.
 
 These remain source/VM/mocked-boundary checks. The signed-out fixture is not a physical account-switch test; the separate complete-screen account-generation suite carries that broader local regression evidence. No installed-device, live data, latency or release claim follows. The corrected published revision needs its own fresh hosted results; do not reuse the failed first head's successes as final-head evidence.
+
+## Second published head and remaining fixture sweep
+
+Exact head `9908433eda4bdaee8ade786f3d5e8bc9d1a1fa01` finished with eleven successful checks, one failed check and two skipped gates at 17:08 UTC. The corrected layout/filter/activity checks passed. [lint-type-unit](https://github.com/tberridge86/Stackr/actions/runs/38157493664/job/114523378024) reached `test:pokemon-language-flags` and failed an obsolete literal `fetchCardsForSet` call check after factual-loader options were added.
+
+The replacement reads the actual Set Detail TypeScript AST. It requires `currentSet.id` and exactly `currentSet.language ?? language` in the existing options object while allowing the factual-loader options. All existing route, set-ID, selected-language and name checks remain. RED was reproduced; the full `test:pokemon-language-flags`, direct script and scoped lint pass. Independent review accepted the fixture.
+
+A proactive local sweep ran the nineteen remaining fixture commands in the platform CI job: eighteen passed initially. The four-language catalogue test failed because Windows CRLF prevented its LF-only literal check from recognizing the existing pinned `CSV1C` to `CBB1C` provider-ID rekey. Normalising CRLF immediately before the same exact literal assertion fixes the test without changing the pinned snapshot, path, identity, language or rekey requirement. The full `test:four-language-catalogue-backfill` and scoped lint pass; independent review accepted the one-line correction.
+
+These two changes affect test fixtures only. No production source, dependency, workflow, release gate or provider data is changed. The local sweep is recorded under the D-drive scratch receipt; it is not hosted evidence, and local Node24 differs from CI Node22. The next published head needs fresh hosted results. Skipped release/canary gates stay open.
