@@ -80,6 +80,18 @@ assert.equal(ids.some((id) => genuinePikachuIds.has(id)), false);
 
 const forward = readFileSync('supabase/manual/marnie_canonical_correction_rehearsal_20261011.sql', 'utf8');
 const reverse = readFileSync('supabase/manual/marnie_canonical_correction_rollback_rehearsal_20261011.sql', 'utf8');
+const expectedLockedTables = new Set([
+  'catalog.card_printings', 'catalog.card_variants', 'catalog.card_names', 'catalog.catalogue_versions',
+  'catalog.catalogue_version_printings', 'catalog.catalogue_version_variants', 'catalog.catalogue_change_log',
+]);
+for (const [sql, expectedTables] of [
+  [forward, expectedLockedTables],
+  [reverse, new Set([...expectedLockedTables].filter((table) => table !== 'catalog.card_variants'))],
+]) {
+  const match = sql.match(/lock table\s+([\s\S]*?)\s+in share row exclusive mode;/iu);
+  assert.ok(match, 'each rehearsal must take the bounded publication-membership lock');
+  assert.deepEqual(new Set(match[1].split(',').map((table) => table.trim())), expectedTables);
+}
 const committed = (sql) => sql.replace(/rollback;\s*select '[^']+' result;\s*$/u, 'commit;');
 async function runForward(db, sql) {
   const guardStart = sql.indexOf('do $guard$');
@@ -96,7 +108,8 @@ async function createFixture({ drift = null } = {}) {
     create table catalog.card_variants(id uuid primary key, printing_id uuid, set_id uuid, collector_number text, language_code text, variant_code text, finish_code text, source_updated_at timestamptz, deprecated_at timestamptz);
     create table catalog.card_names(id uuid primary key, printing_id uuid, variant_id uuid, language_code text, name_type text, name text, normalized_name text, source_confidence numeric, source_updated_at timestamptz, deprecated_at timestamptz, deprecated_reason text, updated_at timestamptz);
     create table catalog.catalogue_versions(id uuid primary key, language_code text, status text, deprecated_at timestamptz, max_change_sequence bigint, updated_at timestamptz);
-    create table catalog.catalogue_version_variants(catalogue_version_id uuid, variant_id uuid);
+    create table catalog.catalogue_version_printings(catalogue_version_id uuid, language_code text, set_id uuid, printing_id uuid, created_at timestamptz default now(), primary key(catalogue_version_id, printing_id));
+    create table catalog.catalogue_version_variants(catalogue_version_id uuid, language_code text, set_id uuid, printing_id uuid, variant_id uuid, canonical_key text not null default '', created_at timestamptz default now(), primary key(catalogue_version_id, variant_id));
     create table catalog.catalogue_change_log(change_sequence bigserial primary key,catalogue_version_id uuid,entity_schema text,entity_table text,entity_id uuid,entity_key text,change_type text,mobile_syncable boolean,public_change_summary jsonb,changed_at timestamptz default now());
     create view api.catalogue_delta_changes as
       select ccl.change_sequence,ccl.catalogue_version_id,ccl.entity_schema,ccl.entity_table,ccl.entity_id,ccl.entity_key,ccl.change_type,ccl.public_change_summary,ccl.changed_at
@@ -104,10 +117,13 @@ async function createFixture({ drift = null } = {}) {
       where ccl.mobile_syncable=true and cv.status='published' and cv.deprecated_at is null;`);
   await db.query(`insert into catalog.catalogue_versions values($1,'zh-tw','published',null,null,now())`, [before.publicationBefore.id]);
   for (const p of before.printingBefore) await db.query('insert into catalog.card_printings values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)', [p.printingId, p.setId, p.collectorNumber, p.language, p.nativeName, p.supertype, p.englishDisplayName, p.sourceUpdatedAt, p.deprecatedAt, p.correctedByPrintingId, p.updatedAt]);
+  for (const p of before.printingBefore) {
+    await db.query('insert into catalog.catalogue_version_printings(catalogue_version_id,language_code,set_id,printing_id) values($1,$2,$3,$4)', [before.publicationBefore.id, 'zh-tw', p.setId, p.printingId]);
+  }
   for (const v of before.variantBefore) {
     const p = before.printingBefore.find(({ printingId }) => printingId === v.printingId);
     await db.query('insert into catalog.card_variants values($1,$2,$3,$4,$5,$6,$7,null,null)', [v.variantId, v.printingId, p.setId, p.collectorNumber, 'zh-tw', v.variantCode, v.finishCode]);
-    await db.query('insert into catalog.catalogue_version_variants values($1,$2)', [before.publicationBefore.id, v.variantId]);
+    await db.query('insert into catalog.catalogue_version_variants(catalogue_version_id,language_code,set_id,printing_id,variant_id,canonical_key) values($1,$2,$3,$4,$5,$6)', [before.publicationBefore.id, 'zh-tw', p.setId, v.printingId, v.variantId, `${v.printingId}:${v.variantId}`]);
   }
   for (const n of before.nameBefore) await db.query('insert into catalog.card_names values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)', [n.nameId, n.printingId, n.variantId, n.language, n.nameType, n.name, n.normalizedName, n.sourceConfidence, n.sourceUpdatedAt, n.deprecatedAt, n.deprecatedReason, n.updatedAt]);
   if (drift === 'publication') await db.query("update catalog.catalogue_versions set status='draft'");
@@ -117,6 +133,8 @@ async function createFixture({ drift = null } = {}) {
   if (drift === 'extra-alias') { const v = before.variantBefore[0]; await db.query('insert into catalog.card_names values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)', ['bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', v.printingId, v.variantId, 'en', 'english_display', 'Pika', 'pika', 0.85, null, null, null, before.nameBefore[0].updatedAt]); }
   if (drift === 'null-variant-alias') { const p = before.printingBefore[0]; await db.query('insert into catalog.card_names values($1,$2,null,$3,$4,$5,$6,$7,$8,$9,$10,$11)', ['cccccccc-cccc-4ccc-8ccc-cccccccccccc', p.printingId, 'en', 'english_display', 'Pika', 'pika', 0.85, null, null, null, p.updatedAt]); }
   if (drift === 'extra-variant') { const p = before.printingBefore[0]; await db.query('insert into catalog.card_variants values($1,$2,$3,$4,$5,$6,$7,null,null)', ['dddddddd-dddd-4ddd-8ddd-dddddddddddd', p.printingId, p.setId, p.collectorNumber, 'zh-tw', 'holo', 'holo']); }
+  if (drift === 'printing-membership') await db.query('delete from catalog.catalogue_version_printings where printing_id=$1', [ids[0]]);
+  if (drift === 'variant-membership') await db.query('delete from catalog.catalogue_version_variants where variant_id=$1', [variants[0]]);
   return db;
 }
 
@@ -205,6 +223,6 @@ for (const column of ['set_id', 'collector_number']) {
   } finally { await db.close(); }
 }
 
-for (const drift of ['publication', 'set', 'collector', 'finish', 'extra-alias', 'null-variant-alias', 'extra-variant']) await expectedFailure(drift);
+for (const drift of ['publication', 'set', 'collector', 'finish', 'extra-alias', 'null-variant-alias', 'extra-variant', 'printing-membership', 'variant-membership']) await expectedFailure(drift);
 
 console.log('Marnie canonical correction preparation passed: 12 printings, 13 variants/English aliases, native aliases and genuine Pikachu cohort preserved; canonical write remains pending.');

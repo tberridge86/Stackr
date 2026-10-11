@@ -5,7 +5,8 @@ begin;
 set local lock_timeout = '5s';
 set local statement_timeout = '45s';
 lock table catalog.card_printings, catalog.card_variants, catalog.card_names,
-  catalog.catalogue_versions, catalog.catalogue_change_log in share row exclusive mode;
+  catalog.catalogue_versions, catalog.catalogue_version_printings, catalog.catalogue_version_variants,
+  catalog.catalogue_change_log in share row exclusive mode;
 
 create temporary table marnie_targets (
   printing_id uuid not null,
@@ -97,9 +98,18 @@ begin
       and n.printing_id in (select distinct printing_id from marnie_targets)) then
     raise exception 'Target overlap with genuine Pikachu cohort';
   end if;
+  if (select count(distinct cvp.printing_id) from catalog.catalogue_version_printings cvp
+      join marnie_targets t on t.printing_id=cvp.printing_id and t.set_id=cvp.set_id
+      join catalog.catalogue_versions cv on cv.id=cvp.catalogue_version_id
+      where cv.id='f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e'::uuid and cvp.language_code='zh-tw'
+        and cv.language_code='zh-tw' and cv.status='published' and cv.deprecated_at is null) <> 12 then
+    raise exception 'Every target printing must remain published';
+  end if;
   if (select count(*) from catalog.catalogue_version_variants cvv join marnie_targets t on t.variant_id=cvv.variant_id
+        and t.printing_id=cvv.printing_id and t.set_id=cvv.set_id
       join catalog.catalogue_versions cv on cv.id=cvv.catalogue_version_id
-      where cv.language_code='zh-tw' and cv.status='published' and cv.deprecated_at is null) <> 13 then
+      where cv.id='f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e'::uuid and cvv.language_code='zh-tw'
+        and cv.language_code='zh-tw' and cv.status='published' and cv.deprecated_at is null) <> 13 then
     raise exception 'Every target variant must remain published';
   end if;
 end $guard$;
