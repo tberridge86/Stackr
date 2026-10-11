@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T20:56:10.702Z",
+  "updatedAt": "2026-10-11T21:45:59.452Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "agent/release/tif-marnie-release55-20261011",
@@ -85,8 +85,8 @@
       "id": "TRANSLATION-MARNIE-001",
       "severity": "P1",
       "owner": "stackr_translation",
-      "status": "canonical_applied_runtime_backend_device_pending",
-      "summary": "A live zh-tw Trainer printing with native name 瑪俐 is delivered as English Pikachu through an approved generated alias snapshot shared by 12 exact printing IDs.",
+      "status": "canonical_runtime_backend_api_delivered_testflight_device_pending",
+      "summary": "The bounded Traditional Chinese Marnie correction is delivered through canonical data, generated runtime and matching backend; scoped public detail/search acceptance passed. Native archive is finished; Apple submission/TestFlight state is recorded separately, and installed-device acceptance remains pending.",
       "evidence": "docs/audits/20261011/marnie-canonical-correction-follow-through.md",
       "files": [
         "supabase/manual/marnie_canonical_correction_rehearsal_20261011.sql",
@@ -102,18 +102,18 @@
         "Marnie search empty while Pikachu/native queries return the affected records"
       ],
       "delivery": {
-        "local": "reviewed_preparation_not_applied",
-        "reviewed": false,
-        "merged": false,
-        "deployed": false,
+        "local": "merged_runtime_backend_api_verified",
+        "reviewed": true,
+        "merged": true,
+        "deployed": true,
         "deviceVerified": false,
         "canonicalApplied": true,
         "canonicalAppliedAt": "2026-10-11T20:38:16.250674+00:00",
         "canonicalIndependentReadback": true,
         "runtimeGenerated": true,
-        "backendDelivered": false
+        "backendDelivered": true
       },
-      "nextAction": "Canonical correction is independently read back. Deliver the exact receipt-bound runtime through reviewed PR336 and matching backend/API checks before release55; actual iPhone acceptance remains outstanding.",
+      "nextAction": "Run the iPhone acceptance checklist from the available Build 55 TestFlight target. Keep physical-finish/native artwork evidence and all measured KPI windows separate.",
       "latestReadback": {
         "observedAt": "2026-10-11T20:38:18.111168+00:00",
         "environment": "oakdbbzdqwurpjnoqhmu",
@@ -160,6 +160,124 @@
         "generatorConsumable": false,
         "runtimeGenerationPerformed": false,
         "validation": "Proposal/before-image/current accepted and record hashes, exact captured identities/timestamps, sole prospective group replacement and genuine Pikachu preservation pass; no generated artifact"
+      },
+      "currentDelivery": {
+        "marnie": {
+          "canonicalApplied": true,
+          "correctedPrintings": 12,
+          "correctedEnglishAliases": 13,
+          "genuinePikachuPreserved": 22,
+          "publicDeltaRows": 25,
+          "runtimeGenerated": true,
+          "runtimePublished": true,
+          "apiAcceptance": {
+            "checkedAt": "2026-10-11T21:11:23.809Z",
+            "requestCount": 38,
+            "backendSha": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
+            "queries": [
+              {
+                "query": "瑪俐",
+                "pages": 1,
+                "resultCount": 13,
+                "matchedCorrectedPrintingIds": [
+                  "1386b19f-ada3-447a-83d0-105acf48752c",
+                  "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+                  "44b54476-f33f-435f-8985-b412cb5edb4c",
+                  "4a459e00-0853-43a7-b0a6-e9d0f56c42f6",
+                  "4a9af5de-61f9-4bb7-8133-5d28e2b356ad",
+                  "63019ce2-f59b-4aed-a3e0-025789ecb7ab",
+                  "818b3095-25cf-491e-b536-6a2e7513a3a0",
+                  "971eba73-3c5f-4306-a6d5-700e8b748c9b",
+                  "a52f71c8-a76c-449a-8030-219ec64a61d8",
+                  "c3ee4722-7304-4cbf-a905-93162e371e76",
+                  "d2132ffe-de94-462d-be98-8b6fba08e8ad",
+                  "f9c8c84e-1179-4585-8a38-9591727bb676"
+                ]
+              },
+              {
+                "query": "Marnie",
+                "pages": 1,
+                "resultCount": 14,
+                "matchedCorrectedPrintingIds": [
+                  "1386b19f-ada3-447a-83d0-105acf48752c",
+                  "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+                  "44b54476-f33f-435f-8985-b412cb5edb4c",
+                  "4a459e00-0853-43a7-b0a6-e9d0f56c42f6",
+                  "4a9af5de-61f9-4bb7-8133-5d28e2b356ad",
+                  "63019ce2-f59b-4aed-a3e0-025789ecb7ab",
+                  "818b3095-25cf-491e-b536-6a2e7513a3a0",
+                  "971eba73-3c5f-4306-a6d5-700e8b748c9b",
+                  "a52f71c8-a76c-449a-8030-219ec64a61d8",
+                  "c3ee4722-7304-4cbf-a905-93162e371e76",
+                  "d2132ffe-de94-462d-be98-8b6fba08e8ad",
+                  "f9c8c84e-1179-4585-8a38-9591727bb676"
+                ]
+              },
+              {
+                "query": "Pikachu",
+                "pages": 1,
+                "resultCount": 43,
+                "matchedCorrectedPrintingIds": []
+              }
+            ]
+          },
+          "artwork": {
+            "payloadPrintings": 12,
+            "payloadVariants": 13,
+            "detailBrowserRenders": 12,
+            "wrongOrMissingScopedDetailAssetsFound": 0,
+            "physicalFinishVerified": false,
+            "nativeImageStatusResolved": false
+          }
+        },
+        "backend": {
+          "workflowId": "38174683974",
+          "deploymentId": "0ec29984-7ac0-4cc6-93d9-4c26beb871d9",
+          "status": "SUCCESS",
+          "gitSha": "0188361a1b1e278ea180f9eec5ec487af52ca8cd"
+        },
+        "nativeBuild": {
+          "id": "01fda53d-c962-4b2c-9c01-3ab2e29afb7a",
+          "status": "FINISHED",
+          "appVersion": "1.0.6",
+          "appBuildVersion": "55",
+          "platform": "IOS",
+          "buildProfile": "production",
+          "channel": "production",
+          "runtimeVersion": "1.0.6",
+          "completedAt": "2026-10-11T21:34:43.941Z",
+          "hasNativeArchive": true
+        },
+        "appleTarget55": {
+          "submissionId": "a1d84265-9aa8-434e-a3ce-aa5fb980a70f",
+          "requestAccepted": true,
+          "submissionStatus": "FINISHED",
+          "buildId": "01fda53d-c962-4b2c-9c01-3ab2e29afb7a",
+          "appVersion": "1.0.6",
+          "appBuildVersion": "55",
+          "platform": "IOS",
+          "createdAt": "2026-10-11T21:39:14.440Z",
+          "completedAt": "2026-10-11T21:44:46.561Z",
+          "testFlightAvailable": true,
+          "betaObservation": {
+            "observedAt": "2026-10-11T21:45:26.314Z",
+            "available": true,
+            "build55": {
+              "appVersion": "1.0.6",
+              "buildNumber": "55",
+              "processingState": "VALID",
+              "internalState": "IN_BETA_TESTING",
+              "externalState": "READY_FOR_BETA_SUBMISSION",
+              "uploadedDate": "2026-10-11T14:41:09-07:00",
+              "expired": false,
+              "easSubmissionId": "a1d84265-9aa8-434e-a3ce-aa5fb980a70f",
+              "easBuildId": "01fda53d-c962-4b2c-9c01-3ab2e29afb7a",
+              "runtimeVersion": "1.0.6",
+              "fingerprintHash": "726bbef8c43382dd671747934d8f276fe2897b2c"
+            }
+          },
+          "installedDeviceVerified": false
+        }
       }
     },
     {
@@ -1294,11 +1412,11 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "marnie_canonical_applied_matching_runtime_delivery_in_progress",
-    "implementationRevision": "6317a2fe7ecf353781f8c8eaa069eacd4409232d",
+    "status": "release55_testflight_available_device_pending",
+    "implementationRevision": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
     "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
-    "independentReview": "canonical_commit_readback_accepted; runtime_source_under_review",
-    "nextAction": "Finish receipt-bound runtime, exact PR336 CI/review and matching backend; then normal production build55 and real owner iPhone15Pro/5G acceptance",
+    "independentReview": "canonical/runtime/backend/API delivery verified; Build 55 finished; Apple submission FINISHED; TestFlight available",
+    "nextAction": "Collect the owner iPhone 15 Pro/mobile-data acceptance receipt.",
     "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c",
     "release55SearchRevision": "1048fa2d3aaea172084414afcc28c5851450304b",
     "ownerApprovedLiveScope": "Reviewed PR329 merge, bounded Marnie canonical/backend coordination and normal release55 build/testing; owner lets go TIF on 2026-10-11"
@@ -1319,8 +1437,8 @@
   "parallelWork": [],
   "localIntegration": {
     "worktree": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
-    "revision": "6317a2fe7ecf353781f8c8eaa069eacd4409232d",
-    "integratedMain": "3d08536f7bd581ed1266f176c13640c0a712305f",
+    "revision": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
+    "integratedMain": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
     "newMainSQLChecks": [
       "3-card actual SQL membership rehearsal and preservation/drift rejection passed",
       "Actual staging binder lifecycle/privilege/isolation/idempotency/lock fixture passed"
@@ -1335,10 +1453,10 @@
       "PERF-003 shared exact tile recovery",
       "HAPTIC-INSPECTION-001 expire delayed opening feedback"
     ],
-    "remoteUpdated": false,
-    "currentChecks": "Final relevant local checks and independent review passed; hosted checks on new candidate are pending",
+    "remoteUpdated": true,
+    "currentChecks": "Final main checks 8 successful, 0 failed, 1 skipped; backend/API delivery recorded. Device acceptance remains pending.",
     "newMainDeploymentTooling": "passed",
-    "checkedAt": "2026-10-11T19:14:39.856Z",
+    "checkedAt": "2026-10-11T21:45:59.452Z",
     "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
     "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c"
   },
@@ -1361,19 +1479,39 @@
     }
   ],
   "deliveryFollowThrough": {
-    "observedAt": "2026-10-11T20:56:10.702Z",
+    "observedAt": "2026-10-11T21:45:59.452Z",
     "approvedCandidate": "ec4987d629a5a1036e500e4a9af4b380afd5c70c",
-    "mergedMain": "154fb2287166415bd2b6dbdf6e9a08eca3f42c5a",
+    "mergedMain": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
     "mergedPullRequest": "https://github.com/tberridge86/Stackr/pull/329",
-    "backendWorkflow": "https://github.com/tberridge86/Stackr/actions/runs/38171508080",
-    "backendDeployment": "7a345980-364a-4a49-a968-3367d7cf6353",
+    "backendWorkflow": "https://github.com/tberridge86/Stackr/actions/runs/38174683974",
+    "backendDeployment": "0ec29984-7ac0-4cc6-93d9-4c26beb871d9",
     "backendStatus": "SUCCESS",
     "ownerPriceWorkerDeployments": "both SUCCESS; no processing/coverage claim",
     "performanceCanaryDeployment": "663ace44-f7bb-4ce0-9a0c-7487d4df28cc FAILED snapshot retrieval; previous canary remains online",
     "unrelatedStagedPatch": "excluded",
     "marniePullRequest": "https://github.com/tberridge86/Stackr/pull/336",
-    "signedBuild55Created": false,
+    "signedBuild55Created": true,
     "deviceVerified": false,
-    "overallReady": false
+    "overallReady": false,
+    "build55": {
+      "id": "01fda53d-c962-4b2c-9c01-3ab2e29afb7a",
+      "status": "FINISHED",
+      "version": "1.0.6 (55)",
+      "channel": "production",
+      "runtimeVersion": "1.0.6"
+    },
+    "appleTarget55": {
+      "submissionId": "a1d84265-9aa8-434e-a3ce-aa5fb980a70f",
+      "status": "FINISHED",
+      "testFlightAvailable": true
+    },
+    "performanceCanaryCurrent": {
+      "deploymentId": "25f4310c-c9d7-4785-a426-9f85ff62fac1",
+      "status": "SUCCESS",
+      "state": "online",
+      "statusText": "Online",
+      "warnings": 0,
+      "crashes": 0
+    }
   }
 }
