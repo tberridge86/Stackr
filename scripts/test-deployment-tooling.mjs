@@ -538,7 +538,9 @@ assert.match(rollbackTool, /serviceId environmentId/);
 assert.match(rollbackTool, /RAILWAY_BACKEND_SERVICE_ID/);
 assert.match(rollbackTool, /RAILWAY_RECOGNITION_SERVICE_ID/);
 assert.match(rollbackTool, /RAILWAY_ENVIRONMENT_ID/);
-assert.match(rollbackTool, /\['SUCCESS', 'REMOVED'\]\.includes\(deployment\.status\)/);
+assert.match(rollbackTool, /\['SUCCESS', 'REMOVED', 'CRASHED'\]\.includes\(deployment\.status\)/);
+assert.match(rollbackTool, /MAX_PREDEPLOY_RECEIPT_AGE_MS/);
+assert.match(rollbackTool, /stackr-staging-backend-predeploy-health-v1/);
 assert.match(rollbackTool, /verifyOnly/);
 assert.match(
   rollbackTool,
@@ -652,13 +654,107 @@ const failedBackendRollbackTarget = run(
 assert.notEqual(failedBackendRollbackTarget.status, 0, 'failed deployments must not be accepted as rollback targets');
 assert.match(failedBackendRollbackTarget.stderr, /not a known-good successful or superseded deployment/);
 
-const crashedBackendRollbackTarget = run(
-  'scripts/deploy/railway-rollback.mjs',
-  ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
-  { ...backendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'CRASHED' },
-);
-assert.notEqual(crashedBackendRollbackTarget.status, 0, 'crashed deployments must not be accepted as rollback targets');
-assert.match(crashedBackendRollbackTarget.stderr, /not a known-good successful or superseded deployment/);
+const stagingBackendRollbackEnvironment = {
+  ...backendRollbackEnvironment,
+  STACKR_DEPLOYMENT_ENVIRONMENT: 'staging',
+  RAILWAY_BACKEND_SERVICE_ID: '66641988-1846-4775-bcc4-5d1f6985db91',
+  RAILWAY_ENVIRONMENT_ID: '88986bd6-970f-4bfe-9cea-15aada4d466c',
+  MOCK_RAILWAY_SERVICE_ID: '66641988-1846-4775-bcc4-5d1f6985db91',
+  MOCK_RAILWAY_ENVIRONMENT_ID: '88986bd6-970f-4bfe-9cea-15aada4d466c',
+  MOCK_RAILWAY_DEPLOYMENT_STATUS: 'CRASHED',
+};
+const rollbackReceiptTemp = mkdtempSync(path.join(tmpdir(), 'stackr-rollback-receipt-test-'));
+const writeRollbackReceipt = (name, patch = {}) => {
+  const receipt = {
+    schemaVersion: 'stackr-staging-backend-predeploy-health-v1',
+    observedAt: new Date().toISOString(),
+    deployment: {
+      id: 'backend-deployment',
+      serviceId: '66641988-1846-4775-bcc4-5d1f6985db91',
+      environmentId: '88986bd6-970f-4bfe-9cea-15aada4d466c',
+      status: 'SUCCESS',
+    },
+    health: {
+      status: 200,
+      ok: true,
+      deploymentId: 'backend-deployment',
+      railwayEnvironment: 'staging',
+      supabaseProjectRef: 'lmwfhvexfcoyeuoyrlco',
+      gitCommit: '0c1254e45dfb',
+      gitCommitSource: 'bundled_workflow_sha',
+    },
+    ...patch,
+  };
+  const receiptPath = path.join(rollbackReceiptTemp, name);
+  writeFileSync(receiptPath, JSON.stringify(receipt));
+  return receiptPath;
+};
+try {
+  const crashedWithoutReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.notEqual(crashedWithoutReceipt.status, 0, 'crashed staging targets require a verified pre-deploy receipt');
+  assert.match(crashedWithoutReceipt.stderr, /verified pre-deploy receipt is required/);
+
+  const validReceiptPath = writeRollbackReceipt('valid.json');
+  const crashedWithVerifiedReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${validReceiptPath}`],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.equal(crashedWithVerifiedReceipt.status, 0, crashedWithVerifiedReceipt.stderr || crashedWithVerifiedReceipt.stdout);
+  assert.match(crashedWithVerifiedReceipt.stdout, /"status": "CRASHED"/);
+
+  const crashedOutsideStagingWithReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${validReceiptPath}`],
+    { ...backendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'CRASHED' },
+  );
+  assert.notEqual(crashedOutsideStagingWithReceipt.status, 0, 'the crashed-target exception is restricted to the protected staging backend');
+  assert.match(crashedOutsideStagingWithReceipt.stderr, /valid only for the protected staging backend rollback path/);
+
+  const failedWithVerifiedReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${validReceiptPath}`],
+    { ...stagingBackendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'FAILED' },
+  );
+  assert.notEqual(failedWithVerifiedReceipt.status, 0, 'failed targets must stay blocked even with a valid pre-deploy receipt');
+  assert.match(failedWithVerifiedReceipt.stderr, /not a known-good successful or superseded deployment/);
+
+  const malformedReceiptPath = path.join(rollbackReceiptTemp, 'malformed.json');
+  writeFileSync(malformedReceiptPath, '{');
+  const crashedWithMalformedReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${malformedReceiptPath}`],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.notEqual(crashedWithMalformedReceipt.status, 0, 'malformed crashed-target receipts must fail closed');
+  assert.match(crashedWithMalformedReceipt.stderr, /receipt is unreadable/);
+
+  const mismatchedReceiptPath = writeRollbackReceipt('mismatched.json', {
+    health: { status: 200, ok: true, deploymentId: 'other-deployment', railwayEnvironment: 'staging', supabaseProjectRef: 'lmwfhvexfcoyeuoyrlco', gitCommit: '0c1254e45dfb', gitCommitSource: 'bundled_workflow_sha' },
+  });
+  const crashedWithMismatchedReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${mismatchedReceiptPath}`],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.notEqual(crashedWithMismatchedReceipt.status, 0, 'mismatched crashed-target receipts must fail closed');
+  assert.match(crashedWithMismatchedReceipt.stderr, /does not match the crashed staging backend target/);
+
+  const staleReceiptPath = writeRollbackReceipt('stale.json', { observedAt: new Date(Date.now() - (21 * 60 * 1000)).toISOString() });
+  const crashedWithStaleReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${staleReceiptPath}`],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.notEqual(crashedWithStaleReceipt.status, 0, 'stale crashed-target receipts must fail closed');
+  assert.match(crashedWithStaleReceipt.stderr, /receipt is stale or has an invalid timestamp/);
+} finally {
+  rmSync(rollbackReceiptTemp, { recursive: true, force: true });
+}
 
 const ineligibleBackendRollbackTarget = run(
   'scripts/deploy/railway-rollback.mjs',
@@ -688,7 +784,9 @@ for (const target of ['d205637b-5376-41aa-9169-1015ba88fec3','88986bd6-970f-4bfe
 for (const control of ['apply_migrations','publish_mobile_update','release_candidate']) assert.ok(stagingBackendLane.includes(`test "\${{ inputs.${control} }}" = 'false'`));
 assert.match(stagingBackendLane, /gitCommitSource !== 'bundled_workflow_sha'/);
 assert.doesNotMatch(stagingBackendLane, /variable set/);
-assert.match(stagingBackendLane, /railway-rollback.mjs --component=backend --deployment="\$PREVIOUS_BACKEND_DEPLOYMENT_ID"/);
+assert.match(stagingBackendLane, /railway-rollback.mjs --component=backend --deployment="\$PREVIOUS_BACKEND_DEPLOYMENT_ID" --verified-before=outputs\/releases\/backend-before-health\.json/);
+assert.match(stagingBackendLane, /schemaVersion:'stackr-staging-backend-predeploy-health-v1'/);
+assert.match(stagingBackendLane, /health:\{status:response\.status,ok:health\.ok,\.\.\.health\.runtime\}/);
 assert.match(stagingBackendLane, /verify-chinese-staging-resolution.mjs/);
 assert.match(stagingBackendLane, /--allowed-origin=https:\/\/staging\.stackr\.app/);
 assert.doesNotMatch(stagingBackendLane, /--allowed-origin=https:\/\/stackr\.app/);

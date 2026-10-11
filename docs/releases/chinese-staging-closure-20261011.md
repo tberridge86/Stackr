@@ -16,8 +16,10 @@ activate a pricing provider for Chinese cards.
 
 Staging's remaining five false Simplified Chinese sets map to the existing
 Traditional Chinese sets: SV7a, SV8, SV8a, SV9 and SV10. The separate staging
-manual preserves all 667 source asset rows, 750 target asset rows and 1,210
-target version-asset associations. All 667 source hashes already have exact
+manual preserves all 667 source asset rows, 758 target asset rows and 1,215
+target version-asset associations, including set-linked assets. Its narrower
+variant-only safeguards cover 750 target assets and 1,210 associations.
+All 667 source hashes already have exact
 mapped target associations. The 605 published target assets remain available;
 unavailable deduplication placeholders are preserved. It retires only the
 five sets, 605 printings and 750 variants, retaining IDs and exact correction
@@ -85,6 +87,24 @@ corrects the staging smoke origin and accepts this eligible superseded state
 under the existing exact service/environment guards. The Chinese retirement
 was subsequently committed after the corrected 39-check public smoke passed
 against the same verified backend. No gateway configuration is changed.
+
+PR #332 merged as `0c1254e45dfb6e238264f46b0fed8b7f547b57c2` after all eight
+normal checks passed. Corrected workflow `38132211138` passed and deployed
+`3fb76791-aba4-4cc4-8ef5-5bddd91a6b78`, attested to that bundled source.
+The committed-phase verifier independently paginated all 1,360 changes across
+three public pages and verified the five image hashes again on this final API.
+An independent materialized database read reproduces the exact 4,000-row audit
+fingerprint and all 5/605/750 physical correction pairs. A supplementary broad
+API-view aggregate timed out; it was not retried because the committed guards
+and public delivery verifier already established the required delivery counts.
+
+During replacement, Railway marked the previous healthy deployment `CRASHED`
+after sending SIGTERM to its npm container. Recovery now records the exact
+healthy predeploy identity in a timestamped receipt. A staging backend target
+with this status may be restored only with matching fresh health proof and
+explicit provider rollback eligibility; an unattested crash or failed deployment
+still aborts. This recovery-only follow-up changes no backend code; the deployed
+backend tree remains identical to the final source tree.
 
 Live staging application/deployment/delta receipts are recorded separately as
 they complete. This scoped closure does not certify full migration alignment,
