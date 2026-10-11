@@ -196,6 +196,10 @@ const EMPTY_RESULTS: SearchResults = {
 };
 
 const SEARCH_FIRST_PAINT_BUDGET_MS = 420;
+// The public gateway's existing backend failure limit is four seconds. This
+// only bounds when the screen reports an unfinished source; it does not claim
+// to cancel transports that do not accept an AbortSignal.
+const SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS = 4_000;
 
 const SEARCH_SORT_OPTIONS: { key: SearchSortKey; label: string }[] = [
   { key: 'relevance', label: 'Most relevant' },
@@ -263,6 +267,23 @@ function settleWithin<T>(promise: Promise<T>, ms = SEARCH_FIRST_PAINT_BUDGET_MS)
     ),
     delay(ms).then((): TimedSettled<T> => ({ status: 'pending' })),
   ]);
+}
+
+/**
+ * A primary source may never settle even after the first partial result is
+ * useful. Make that state visible and let the screen finish loading without
+ * converting the unfinished source into an authoritative empty result.
+ */
+function settleSearchSource<T>(promise: Promise<T>, timeoutMs = SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS): Promise<PromiseSettledResult<T>> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      resolve({ status: 'rejected', reason: new Error('Search source timed out. Please try again.') });
+    }, timeoutMs);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve({ status: 'fulfilled', value }); },
+      (reason) => { clearTimeout(timer); resolve({ status: 'rejected', reason }); },
+    );
+  });
 }
 
 function isFulfilled<T>(result: TimedSettled<T> | PromiseSettledResult<T>): result is PromiseFulfilledResult<T> {
@@ -1126,13 +1147,13 @@ export default function GlobalSearchScreen() {
       listings: firstResults.listings.length + firstResults.graded.length,
     });
 
-    const [correction, cardsResult, setsResult, productsResult, profilesResult, listingsResult] = await Promise.allSettled([
-      correctionPromise,
-      cardsPromise,
-      setsPromise,
-      productsPromise,
-      profilesPromise,
-      listingsPromise,
+    const [correction, cardsResult, setsResult, productsResult, profilesResult, listingsResult] = await Promise.all([
+      settleSearchSource(correctionPromise),
+      settleSearchSource(cardsPromise),
+      settleSearchSource(setsPromise),
+      settleSearchSource(productsPromise),
+      settleSearchSource(profilesPromise),
+      settleSearchSource(listingsPromise),
     ]);
 
     if (requestId !== requestRef.current) return;
