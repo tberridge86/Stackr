@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T16:05:57.511Z",
+  "updatedAt": "2026-10-11T16:40:58.706Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "agent/release/tif-readiness-20261011",
@@ -26,9 +26,11 @@
     "currentWork": {
       "owner": "root",
       "status": "reviewed_candidate_preparing_matching_pr",
-      "implementationRevision": "bd2aa90414f40533979e4161d5c0e8fbf78708cf",
-      "independentReview": "accepted_scoped_repairs",
-      "nextAction": "Exact-head hosted checks and canonical/delivery/device gates; no claim of overall release completion"
+      "implementationRevision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
+      "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
+      "independentReview": "accepted_scoped_repairs_and_limited_sql_preparation",
+      "nextAction": "Exact-head hosted checks, coordinated canonical/runtime preparation and delivery/device gates; overall release completion remains unproved",
+      "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c"
     },
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/329",
@@ -40,10 +42,11 @@
       "merged": false,
       "currentBase": "144cb333e467017983e5bcb249859df81122dd63",
       "requiresReconciliation": true,
-      "mergeCanTriggerLiveDeployment": true
+      "mergeCanTriggerLiveDeployment": true,
+      "observationState": "historical_prepublication_snapshot_not_final_checks"
     },
-    "lastPassCompletedAt": "2026-10-11T16:05:57.511Z",
-    "lastPassOutcome": "Reviewed source repairs and read-only catalogue/services/pricing/Marnie baselines; delivery and ten-target acceptance open",
+    "lastPassCompletedAt": "2026-10-11T16:37:41.948Z",
+    "lastPassOutcome": "Eight resumed source findings repaired/reviewed; bounded Marnie SQL/inverse preparation reviewed but canonical/runtime delivery unresolved; ten targets not accepted",
     "lastPassEvidence": "docs/releases/resumed-readiness-integration-20261011.md",
     "previousAutomation": {
       "id": "stackr-backend-repair-and-audit-follow-through",
@@ -82,10 +85,16 @@
       "id": "TRANSLATION-MARNIE-001",
       "severity": "P1",
       "owner": "stackr_translation",
-      "status": "source_verified_correction_proposed",
+      "status": "reviewed_local_preparation_canonical_runtime_delivery_pending",
       "summary": "A live zh-tw Trainer printing with native name 瑪俐 is delivered as English Pikachu through an approved generated alias snapshot shared by 12 exact printing IDs.",
       "evidence": "docs/audits/20261011/marnie-canonical-correction-follow-through.md",
-      "files": [],
+      "files": [
+        "supabase/manual/marnie_canonical_correction_rehearsal_20261011.sql",
+        "supabase/manual/marnie_canonical_correction_rollback_rehearsal_20261011.sql",
+        "scripts/test-marnie-canonical-correction-preparation.mjs",
+        "docs/audits/20261011/marnie-runtime-correction-candidate.json",
+        "scripts/test-marnie-runtime-correction-preparation.mjs"
+      ],
       "validation": [
         "Actual API mismatch reproduced by backend specialist",
         "All 12 exact live identities verified by translation specialist",
@@ -93,13 +102,13 @@
         "Marnie search empty while Pikachu/native queries return the affected records"
       ],
       "delivery": {
-        "local": "unresolved",
+        "local": "reviewed_preparation_not_applied",
         "reviewed": false,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Prepare and review existing canonical correction/provenance/publication lane, preserving 12 printing identities and 13 finishes. Runtime-only change leaves wrong stored search aliases. Exact live write/publication/deployment requires separate approval; current confidence metadata is not source proof.",
+      "nextAction": "Finish coordinated canonical/runtime preparation and non-production consumer proof. SQL alone can be hidden by the dated generated fallback; runtime alone leaves stored search aliases wrong. Exact reviewed live write/publication/deployment still requires separate approval.",
       "latestReadback": {
         "observedAt": "2026-10-11T15:40:20.589116Z",
         "environment": "oakdbbzdqwurpjnoqhmu",
@@ -112,6 +121,34 @@
         "canonicalJsonSha256": "1c472427d8cff2f506a58d79cb975565e6af2231e86ecb744922430def533677",
         "writes": false,
         "privateDataRead": false
+      },
+      "preparation": {
+        "revision": "ec068d2327e840e6b1525abc1d04e09a4617232c",
+        "independentlyReviewed": true,
+        "evidence": "docs/audits/20261011/marnie-canonical-correction-preflight.md",
+        "actualLocalRehearsal": "PGlite rollback/default and bounded disposable forward/inverse commit passed",
+        "liveWrites": false,
+        "runtimeRegenerated": false,
+        "correctionApplied": false
+      },
+      "schemaReadback": {
+        "observedAt": "2026-10-11 16:18:47.816747+00",
+        "evidence": "docs/audits/20261011/marnie-canonical-schema.receipt.json",
+        "relevantColumns": 103,
+        "relevantConstraints": 51,
+        "writes": false,
+        "privateDataRead": false,
+        "fullDeployedRehearsal": false
+      },
+      "runtimePreparation": {
+        "revision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
+        "independentlyReviewed": true,
+        "candidate": "docs/audits/20261011/marnie-runtime-correction-candidate.json",
+        "test": "scripts/test-marnie-runtime-correction-preparation.mjs",
+        "status": "pending_canonical_write_and_owner_approval",
+        "generatorConsumable": false,
+        "runtimeGenerationPerformed": false,
+        "validation": "Proposal/before-image/current accepted and record hashes, exact captured identities/timestamps, sole prospective group replacement and genuine Pikachu preservation pass; no generated artifact"
       }
     },
     {
@@ -942,6 +979,34 @@
       },
       "implementationRevision": "9bdd2355799fd6e69a8ac14aa59c205481159b63",
       "nextAction": "Approved matching app delivery and real installed account-switch/edit/retry proof; history-only durable retry remains HISTORY-DIRECT-WRITE-001."
+    },
+    {
+      "id": "HAPTIC-INSPECTION-001",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "reviewed_local_repair_pending_release",
+      "summary": "Opening haptic can complete after asynchronous preference hydration when its inspection has already closed or changed.",
+      "evidence": "docs/audits/20261011/inspection-opening-haptic-review.md",
+      "files": [
+        "lib/haptics.ts",
+        "components/CardInspectionProvider.tsx",
+        "scripts/test-card-haptics.ts",
+        "scripts/test-card-inspection-lifecycle.ts"
+      ],
+      "validation": [
+        "Actual frozen facade/provider RED reproduces expired feedback; guarded implementation GREEN",
+        "30 complete-provider/lifecycle cases and full card-inspection command pass; application typecheck and lint (0 errors/3 pre-existing fixture warnings) pass",
+        "Independent source/fixture review accepted with no scoped P1/P2; eight production consumer files and sixteen source call sites mapped"
+      ],
+      "implementationRevision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
+      "delivery": {
+        "local": "committed_tested_reviewed",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Approved matching app delivery and physical entry-path/preferences/latency/comfort checks; zero tactile observations, target7 remains open."
     }
   ],
   "integrationBaseRevision": "599c776f12201470273574c4d5f9f01632609dc1",
@@ -972,6 +1037,19 @@
       "merged": false,
       "deployed": false,
       "deviceVerified": false
+    },
+    "resumedReadiness": {
+      "observedAt": "2026-10-11T16:37:41.948Z",
+      "currentUniqueFindings": 28,
+      "evidence": "docs/releases/resumed-readiness-integration-20261011.md",
+      "sourceRevision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
+      "preparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c",
+      "hostedChecks": "pending publication; old-head checks are historical",
+      "merged": false,
+      "deployed": false,
+      "deviceVerified": false,
+      "overallReady": false,
+      "runtimePreparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819"
     }
   },
   "repairPasses": [
@@ -1134,14 +1212,28 @@
       "remoteWrites": "candidate push only when subsequently recorded",
       "liveChanges": false,
       "overallReady": false
+    },
+    {
+      "observedAt": "2026-10-11T16:37:41.948Z",
+      "issue": "HAPTIC-INSPECTION-001",
+      "implementationRevision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
+      "preparedCanonicalRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c",
+      "evidence": "docs/releases/resumed-readiness-integration-20261011.md",
+      "independentReview": "accepted_scoped_source_and_local_preparation",
+      "remoteWrites": "candidate push only when subsequently recorded",
+      "liveChanges": false,
+      "overallReady": false,
+      "runtimePreparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819"
     }
   ],
   "currentWork": {
     "owner": "root",
     "status": "reviewed_candidate_preparing_matching_pr",
-    "implementationRevision": "bd2aa90414f40533979e4161d5c0e8fbf78708cf",
-    "independentReview": "accepted_scoped_repairs",
-    "nextAction": "Exact-head hosted checks and canonical/delivery/device gates; no claim of overall release completion"
+    "implementationRevision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
+    "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
+    "independentReview": "accepted_scoped_repairs_and_limited_sql_preparation",
+    "nextAction": "Exact-head hosted checks, coordinated canonical/runtime preparation and delivery/device gates; overall release completion remains unproved",
+    "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -1154,12 +1246,12 @@
     "designAcceptance": "Each entire journey, relevant states, shared patterns, accessibility, correctness/private persistence and measured criteria need evidence; no mockup/API/CI completion claim",
     "runnerStatus": "paused",
     "currentChatWorkAuthorized": true,
-    "observedAt": "2026-10-11T16:05:57.511Z"
+    "observedAt": "2026-10-11T16:37:41.948Z"
   },
   "parallelWork": [],
   "localIntegration": {
     "worktree": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
-    "revision": "bd2aa90414f40533979e4161d5c0e8fbf78708cf",
+    "revision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
     "integratedMain": "3d08536f7bd581ed1266f176c13640c0a712305f",
     "newMainSQLChecks": [
       "3-card actual SQL membership rehearsal and preservation/drift rejection passed",
@@ -1172,12 +1264,15 @@
       "PDX-001 species/provider-route contract",
       "SET-ACCOUNT-BOUNDARY-001 synchronous and late private state",
       "PDX-005 honest populated partial/retry",
-      "PERF-003 shared exact tile recovery"
+      "PERF-003 shared exact tile recovery",
+      "HAPTIC-INSPECTION-001 expire delayed opening feedback"
     ],
     "remoteUpdated": false,
-    "currentChecks": "Relevant final local checks passed; hosted exact-head checks pending candidate push",
+    "currentChecks": "Relevant final local checks and independent review passed; matching pushed-head CI not yet captured in this prepublication record",
     "newMainDeploymentTooling": "passed",
-    "checkedAt": "2026-10-11T16:05:57.511Z"
+    "checkedAt": "2026-10-11T16:37:41.948Z",
+    "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
+    "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c"
   },
   "candidateRemoteBranch": "codex/specialist-audits-backend-repair-20261010",
   "heldWork": [

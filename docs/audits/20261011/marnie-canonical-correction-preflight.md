@@ -69,7 +69,12 @@ Do not regenerate that runtime from the historical “already applied” input.
 After a reviewed canonical write, the delivery lane must prove that the API
 supplies valid reviewed English-name provenance which takes priority, or replace
 the exact generated record through a newly reviewed applied input and recheck
-the backend/mobile mirror. Neither step has been performed here.
+the backend/mobile mirror. Neither step has been performed here. The separate
+`marnie-runtime-correction-candidate.json` prepares only the expected single
+group replacement, with exact identities/timestamps and source hashes. It is
+not generator input and does not create new generated metadata or assert an
+applied correction. The actual regenerated record/input hashes must reflect the
+future applied source.
 
 ## Local controls
 
