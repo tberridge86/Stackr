@@ -87,19 +87,26 @@ assert.equal(finalRows[0].image_small, 'https://example.test/approved.webp');
 const EMPTY_RESULTS = { cards: [], sets: [], sealed: [], collectors: [], listings: [], graded: [] };
 const requestRef = { current: 0 }, previousSearchRef = { current: null };
 let state = EMPTY_RESULTS;
+let errors = {};
+let cachedCanonicalRows = null;
 const requests = new Map();
+assert.match(
+  fs.readFileSync('app/(tabs)/search.tsx', 'utf8'),
+  /\[trimmed, category, selectedLanguage, searchIdentityEpoch\]/,
+  'The mounted search callback must scope retained results to the active account generation.',
+);
 const query = { select() { return this; }, ilike() { return this; }, eq() { return this; }, or() { return this; }, limit: async () => ({ data: [] }) };
 const noop = () => {};
 const run = extract('app/(tabs)/search.tsx', 'runSearch', {
   requestRef, previousSearchRef, category: 'all', selectedLanguage: 'ja', searchIdentityEpoch: 0,
   EMPTY_RESULTS, SEARCH_FIRST_PAINT_BUDGET_MS: 1,
   setResults: value => { state = typeof value === 'function' ? value(state) : value; },
-  setLoading: noop, setRefreshing: noop, setErrors: noop, setSuggestion: noop, setSetSuggestion: noop, setSearchError: noop,
+  setLoading: noop, setRefreshing: noop, setErrors: value => { errors = value; }, setSuggestion: noop, setSetSuggestion: noop, setSearchError: noop,
   expandSearchQuery, normaliseSearchText,
   getCatalogueProductTypeFilter: () => null, getListingProductTypeFilter: () => null,
   productTypeMatchesIntent: () => false, isRawCardCategory: () => true, isListingProductCategory: () => false, isGradedCategory: () => false,
   correctPokemonNameQuery: async () => null, searchSetsQuick: async () => [], searchMarketProducts: async () => [],
-  readCachedCanonicalSearch: async () => null, writeCachedCanonicalSearch: async () => {},
+  readCachedCanonicalSearch: async () => cachedCanonicalRows, writeCachedCanonicalSearch: async () => {},
   searchLocalPokemonCards: (q, options) => { const d = deferred(); requests.set(q, { ...d, options }); return d.promise; },
   supabase: { from: () => query },
   settleWithin: async () => ({ status: 'pending' }),
@@ -177,4 +184,32 @@ requests.get('alpha').resolve([{ id: 'Alpha' }]); await old;
 assert.equal(state.cards[0].id, 'Bravo');
 requests.get('bravo').reject(new Error('optional enrichment failed')); await current;
 assert.equal(state.cards[0].id, 'Bravo', 'final failure retains current canonical matches');
+
+// A failed fresh factual read must never be presented as a successful cache
+// refresh. The mounted callback keeps the useful saved row and exposes the
+// existing retry path through its card-group error state.
+cachedCanonicalRows = [{ id: 'Cached' }];
+const cachedFailure = run('Cached');
+await tick();
+assert.equal(state.cards[0].id, 'Cached', 'cached factual rows remain useful while a refresh is pending');
+requests.get('cached').reject(new Error('fresh catalogue request failed'));
+await cachedFailure;
+assert.equal(state.cards[0].id, 'Cached', 'a failed refresh must retain the exact cached row');
+assert.equal(errors.cards, 'Card results could not be refreshed.', 'a failed fresh factual read must expose retry instead of looking current');
+cachedCanonicalRows = null;
+
+// Canonical rows may arrive before optional artwork recovery. A completed
+// factual result remains successful and must not inherit the earlier failure.
+const enrichedCard = run('Enriched');
+requests.get('enriched').options.onCanonicalResults([{ id: 'Enriched', image_small: null }]);
+requests.get('enriched').resolve([{ id: 'Enriched', image_small: 'https://example.test/art.webp' }]);
+await enrichedCard;
+assert.equal(state.cards[0].image_small, 'https://example.test/art.webp');
+assert.equal(errors.cards, undefined, 'successful factual rows and optional artwork recovery must not show a false failure');
+
+const emptySearch = run('Empty');
+requests.get('empty').resolve([]);
+await emptySearch;
+assert.deepEqual(state.cards, [], 'a successful empty factual response remains an honest no-match result');
+assert.equal(errors.cards, undefined, 'a successful empty factual response must not become a refresh error');
 console.log('Progressive search passed: native/gender/number queries, native/English set ranking, rows before artwork, optional failure, identity preservation, first/final renders and stale-query rejection.');

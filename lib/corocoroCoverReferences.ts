@@ -3,6 +3,7 @@ import alternativeSources from './generated/corocoroAlternativeCoverSources.json
 import communitySources from './generated/corocoroCommunityCoverSources.json';
 import { getCorocoroIssueGroup, groupCorocoroIssues } from './corocoroIssueArchive';
 import { COROCORO_SUPPLIED_COVER_COUNT } from './corocoroSuppliedCovers';
+import { getMagazineSetCoverForSet } from './magazineSetCovers';
 
 export const COROCORO_COVER_ARCHIVES = [
   { label: 'PocketMonsters cover & scan archive', url: 'https://pocketmonsters.net/imageboard/55/catalog' },
@@ -77,9 +78,13 @@ export function getCorocoroIssueCoverPresentation(issueId: string, context: Coro
     && ['localhost', '127.0.0.1', '[::1]'].includes(context.hostname);
   const alternatives = localPreview ? getAlternativeSources(issue.publication, issue.issueMonth) : [];
   // This is the user's existing attachment, not an imported publisher/seller image.
-  if (localPreview && issue.id === 'monthly:1997-02') return {
+  const previewUrl = 'http://127.0.0.1:4175/corocoro-reference.png';
+  const preview = localPreview && issue.id === 'monthly:1997-02'
+    ? getMagazineSetCoverForSet({ id: 'ja:magazine:corocoro-comic:1997-02', language: 'ja' }, undefined, () => ({ uri: previewUrl }))
+    : null;
+  if (preview) return {
     image: {
-      imageUrl: 'http://127.0.0.1:4175/corocoro-reference.png',
+      imageUrl: previewUrl,
       alt: 'Owner-supplied Monthly CoroCoro Comic February 1997 reference cover',
     }, source, alternativeSources: alternatives, caption: 'Your supplied reference cover',
   };

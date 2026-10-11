@@ -1174,6 +1174,10 @@ export default function GlobalSearchScreen() {
       next.cards = mapCardResults(cardsForHydration);
     } else if (canonicalCards !== null) {
       next.cards = canonicalCards;
+      // Cached or early canonical rows remain useful, but they must not make
+      // a failed fresh factual read appear current. The existing group error
+      // keeps those exact rows visible and offers the screen's retry action.
+      nextErrors.cards = 'Card results could not be refreshed.';
     } else {
       nextErrors.cards = 'Card results could not be loaded.';
     }

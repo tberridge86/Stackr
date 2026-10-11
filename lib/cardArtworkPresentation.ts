@@ -15,9 +15,12 @@ const ordinaryFinishes = new Set(['normal', 'holo', 'reverse_holo']);
 const publicUrl = (value: unknown) => typeof value === 'string' && /^https?:\/\//i.test(value)
   ? enforceTcgdexRuntimeImagePolicy(value) ?? undefined : undefined;
 
-function rendition(asset: StackrCatalogueAsset, roles: string[]) {
+function rendition(asset: StackrCatalogueAsset, roles: string[], minimumLongEdge = 0) {
   for (const role of roles) {
-    const match = asset.derivatives?.find((item) => String(item.role ?? item.key ?? item.name ?? item.type ?? '').toLowerCase() === role);
+    const match = asset.derivatives?.find((item) => String(item.role ?? item.key ?? item.name ?? item.type ?? '').toLowerCase() === role
+      && (!minimumLongEdge || (Number.isFinite(item.width) && Number.isFinite(item.height)
+        && (item.width ?? 0) > 0 && (item.height ?? 0) > 0
+        && Math.max(item.width ?? 0, item.height ?? 0) >= minimumLongEdge)));
     const url = publicUrl(match?.deliveryUrl ?? match?.url);
     if (url) return url;
   }
@@ -61,8 +64,13 @@ export function resolveCardArtwork(card: StackrCard, assets: StackrCatalogueAsse
     if (!exact && !printingFace && !approvedAbsentSibling && (!source || !canShareFace(selected, source))) return [];
     const original = publicUrl(asset.deliveryUrl);
     const small = rendition(asset, ['card-grid', 'grid', 'small', 'search-result', 'thumb']);
-    const large = rendition(asset, ['detail-page', 'detail', 'large']);
-    const urls = [...new Set([small, large, original].filter((url): url is string => Boolean(url)))];
+    const detail = rendition(asset, ['detail-page', 'detail', 'large']);
+    const highResolutionDetail = rendition(asset, ['detail-page', 'detail', 'large'], 1000);
+    const highResolutionOriginal = Number.isFinite(asset.width) && Number.isFinite(asset.height)
+      && (asset.width ?? 0) > 0 && (asset.height ?? 0) > 0
+      && Math.max(asset.width ?? 0, asset.height ?? 0) >= 1000 ? original : undefined;
+    const large = highResolutionDetail ?? highResolutionOriginal ?? detail;
+    const urls = [...new Set([small, large, detail, original].filter((url): url is string => Boolean(url)))];
     if (!urls.length) return [];
     return [{ asset, small: small ?? large ?? original, large: large ?? original ?? small, urls,
       rank: exact ? 0 : explicitAlias ? 1 : printingFace ? 2 : 3, kind: exact ? 'exact' as const : 'shared' as const }];

@@ -49,6 +49,36 @@ assert.equal(resolveCardArtwork(triple, [], triple.variants[1].variantId).source
 triple.variants[1].image.derivatives = [];
 assert.equal(resolveCardArtwork(triple, [], triple.variants[1].variantId).small, triple.variants[1].image.deliveryUrl, 'exact approved original beats another finish thumbnail');
 
+// Detail presentation can use a verified larger original without making list
+// thumbnails heavier or changing which printing/finish the artwork represents.
+const highResolution = card(['normal']);
+const highResolutionAsset = {
+  ...asset(highResolution), width: 850, height: 1200,
+  derivatives: [
+    { role: 'card-grid', deliveryPath: null, deliveryUrl: 'https://approved.example/grid.webp', width: 240, height: 330 },
+    { role: 'detail-page', deliveryPath: null, deliveryUrl: 'https://approved.example/detail.webp', width: 600, height: 825 },
+  ],
+};
+highResolution.variants[0].image = highResolutionAsset;
+const highResolutionBefore = structuredClone(highResolution);
+assert.equal(resolveCardArtwork(highResolution).small, 'https://approved.example/grid.webp');
+assert.equal(resolveCardArtwork(highResolution).large, highResolutionAsset.deliveryUrl, 'A known 1200px original must precede the 825px detail rendition');
+assert.ok(resolveCardArtwork(highResolution).candidates.some(candidate => candidate.uri === 'https://approved.example/detail.webp'), 'The useful smaller detail fallback remains available');
+assert.deepEqual(highResolution, highResolutionBefore, 'Resolution selection does not change printing, finish, source records or dimensions');
+highResolutionAsset.derivatives[1] = { ...highResolutionAsset.derivatives[1], width: 750, height: 1050 };
+assert.equal(resolveCardArtwork(highResolution).large, 'https://approved.example/detail.webp', 'A detail rendition meeting the target avoids the larger original');
+highResolutionAsset.height = 825;
+highResolutionAsset.width = 600;
+highResolutionAsset.derivatives[1] = { ...highResolutionAsset.derivatives[1], width: 600, height: 825 };
+assert.equal(resolveCardArtwork(highResolution).large, 'https://approved.example/detail.webp', 'Source-limited originals are retained without invented resolution');
+highResolutionAsset.height = Number.POSITIVE_INFINITY;
+assert.equal(resolveCardArtwork(highResolution).large, 'https://approved.example/detail.webp', 'Invalid dimension metadata must not qualify an original');
+const unknownResolution = card(['normal']);
+unknownResolution.variants[0].image = asset(unknownResolution);
+assert.equal(resolveCardArtwork(unknownResolution).large, unknownResolution.variants[0].image.derivatives[1].deliveryUrl, 'Unknown dimensions preserve existing presentation and remain unverified');
+assert.equal(highResolution.variants[0].variantId, highResolutionBefore.variants[0].variantId);
+assert.equal(resolveCardArtwork(highResolution).kind, 'exact');
+
 // The live card endpoint can return only the selected variant. Its approved
 // image still names the explicit same-artwork sibling, which is absent here.
 function narrowedReference(language: StackrCard['languageCode'] = 'ja', finish = 'reverse_holo') {
