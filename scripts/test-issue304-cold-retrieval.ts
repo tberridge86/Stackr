@@ -281,6 +281,32 @@ function testSearchSetFactsFirst() {
     'set ranking reads facts only instead of globally enumerating set artwork');
 }
 
+function testSetDetailFactsFirst() {
+  const setDetail = fs.readFileSync('app/set/[id].tsx', 'utf8');
+  const cardsRead = setDetail.indexOf('const fetchedCards = await fetchCardsForSet(currentSet.id, {');
+  const cardPublish = setDetail.indexOf('setCards(fetchedCards);', cardsRead);
+  const artworkEnrichment = setDetail.indexOf('void fetchPokemonSetForDetail(currentSet.id, { language: currentSet.language, includeAssets: true })', cardPublish);
+  const cardMinimum = setDetail.slice(setDetail.lastIndexOf('const currentSetCardMinimum', cardsRead), cardsRead);
+
+  assert.ok(cardsRead >= 0, 'set detail reads its factual cards before it starts optional set artwork enrichment');
+  assert.match(setDetail.slice(cardsRead, cardPublish), /includeAssets:\s*false/,
+    'set detail uses the facts-only card lane so optional artwork/provider enrichment cannot delay factual cards');
+  assert.match(setDetail.slice(cardsRead, cardPublish), /minimumCardCount:\s*currentSetCardMinimum/,
+    'set detail keeps a known card-count minimum when it uses the facts-only lane');
+  assert.ok(cardPublish > cardsRead && artworkEnrichment > cardPublish,
+    'set detail publishes factual cards before its guarded optional artwork refresh');
+  assert.match(cardMinimum, /getExactPokemonSetCardTotal\(currentSet\) \?\? 0/,
+    'set detail delegates the facts-only completeness minimum to the canonical-total helper');
+  assert.match(setDetail, /\.then\(\(enriched\) => \{ if \(enriched && isCurrent\(\)\) setSetInfo\(enriched\); \}\)/,
+    'late artwork enrichment remains bound to the active request and account');
+  assert.match(setDetail, /void enrichStackrCardArtworkFromFacts\(fetchedCards, artworkAbort\.signal, undefined, \(progress\) => \{[\s\S]*?if \(!isCurrent\(\) \|\| artworkAbort\.signal\.aborted\) return;[\s\S]*?setCards\(\(current\) => mergeSetCardArtwork\(current, progress\)\);/,
+    'Set Detail recovers per-card artwork after first paint without awaiting it');
+  assert.match(setDetail, /\.then\(\(enriched\) => \{[\s\S]*?if \(!isCurrent\(\) \|\| artworkAbort\.signal\.aborted\) return;[\s\S]*?mergeSetCardArtwork\(current, enriched\)/,
+    'a completed artwork read cannot overwrite a newer route or account');
+  assert.match(setDetail, /artworkAbortRef\.current\?\.abort\(\);[\s\S]*?return \(\) => \{[\s\S]*?artworkAbortRef\.current\?\.abort\(\);/,
+    'a replacement route and unmount cancel optional artwork work');
+}
+
 async function main() {
   await testPersistedSearchCache();
   await testPokedexCanonicalPaging();
@@ -288,6 +314,7 @@ async function main() {
   testPokedexTabStagedLoadingSource();
   await testPokedexTabColdPathRuntime();
   testSearchSetFactsFirst();
+  testSetDetailFactsFirst();
   console.log('Issue #304 cold retrieval checks passed: persisted Search/Binders, progressive canonical Pokédex paging, retry and stale-request guards.');
 }
 
