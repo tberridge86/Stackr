@@ -12,7 +12,8 @@ import { PUBLISHED_CARD_ENGLISH_NAMES_METADATA as publishedMetadata } from '../b
 
 const hash = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 assert.equal(hash(records), metadata.recordsSha256);
-assert.equal(metadata.recordsSha256, '3309ae44ba128205f00276e78a7eb05e5c00e0069eac140f653e951566b95581');
+assert.equal(metadata.recordsSha256, '6de8551e043ced800b359a8fb952548649eb042922abf9cae7637c35933c636e');
+await import('./test-marnie-applied-runtime-readback.mjs');
 assert.equal(hash(legacyLinks), metadata.legacyLinksSha256);
 assert.equal(metadata.approvedPrintings, 19_315);
 assert.equal(metadata.verifiedOfficial, false);

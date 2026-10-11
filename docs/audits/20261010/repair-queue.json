@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T19:14:39.856Z",
+  "updatedAt": "2026-10-11T20:56:10.702Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
-  "branch": "agent/release/tif-readiness-20261011",
+  "branch": "agent/release/tif-marnie-release55-20261011",
   "auditedBaseRevision": "5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1",
   "protocol": ".codex/AUDIT_PROTOCOL.md",
   "auditStatus": {
@@ -85,7 +85,7 @@
       "id": "TRANSLATION-MARNIE-001",
       "severity": "P1",
       "owner": "stackr_translation",
-      "status": "reviewed_local_preparation_canonical_runtime_delivery_pending",
+      "status": "canonical_applied_runtime_backend_device_pending",
       "summary": "A live zh-tw Trainer printing with native name 瑪俐 is delivered as English Pikachu through an approved generated alias snapshot shared by 12 exact printing IDs.",
       "evidence": "docs/audits/20261011/marnie-canonical-correction-follow-through.md",
       "files": [
@@ -106,20 +106,31 @@
         "reviewed": false,
         "merged": false,
         "deployed": false,
-        "deviceVerified": false
+        "deviceVerified": false,
+        "canonicalApplied": true,
+        "canonicalAppliedAt": "2026-10-11T20:38:16.250674+00:00",
+        "canonicalIndependentReadback": true,
+        "runtimeGenerated": true,
+        "backendDelivered": false
       },
-      "nextAction": "Finish coordinated canonical/runtime preparation and non-production consumer proof. SQL alone can be hidden by the dated generated fallback; runtime alone leaves stored search aliases wrong. Exact reviewed live write/publication/deployment still requires separate approval.",
+      "nextAction": "Canonical correction is independently read back. Deliver the exact receipt-bound runtime through reviewed PR336 and matching backend/API checks before release55; actual iPhone acceptance remains outstanding.",
       "latestReadback": {
-        "observedAt": "2026-10-11T15:40:20.589116Z",
+        "observedAt": "2026-10-11T20:38:18.111168+00:00",
         "environment": "oakdbbzdqwurpjnoqhmu",
-        "scope": "12 exact proposed public catalogue printings",
-        "wrongEnglishDisplays": 12,
-        "wrongEnglishAliasRows": 13,
+        "scope": "Exact12printings/13variants/13Englishand13nativealiases",
+        "correctEnglishDisplays": 12,
+        "correctEnglishAliasRows": 13,
         "variants": 13,
         "unchangedNativeAliasRows": 13,
-        "evidence": "docs/audits/20261011/marnie-before-image.receipt.json",
-        "canonicalJsonSha256": "1c472427d8cff2f506a58d79cb975565e6af2231e86ecb744922430def533677",
-        "writes": false,
+        "genuinePikachuPreserved": 22,
+        "forwardDeltaRows": 25,
+        "sequence": {
+          "max": 41944,
+          "min": 41920
+        },
+        "evidence": "docs/audits/20261011/marnie-canonical-commit.readback.json",
+        "canonicalJsonSha256": "ad7258476484491834fdc316070928493f39b9585e759542c953035a72237a99",
+        "writes": true,
         "privateDataRead": false
       },
       "preparation": {
@@ -1283,13 +1294,14 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "release55_source_reviewed_pending_exact_head_ci",
+    "status": "marnie_canonical_applied_matching_runtime_delivery_in_progress",
     "implementationRevision": "6317a2fe7ecf353781f8c8eaa069eacd4409232d",
     "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
-    "independentReview": "accepted_scoped_search_and_history_repairs",
-    "nextAction": "Publish existing candidate branch, obtain exact new-head checks and local iOS export proof, then final source/backend/native/device gates; no live approval granted",
+    "independentReview": "canonical_commit_readback_accepted; runtime_source_under_review",
+    "nextAction": "Finish receipt-bound runtime, exact PR336 CI/review and matching backend; then normal production build55 and real owner iPhone15Pro/5G acceptance",
     "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c",
-    "release55SearchRevision": "1048fa2d3aaea172084414afcc28c5851450304b"
+    "release55SearchRevision": "1048fa2d3aaea172084414afcc28c5851450304b",
+    "ownerApprovedLiveScope": "Reviewed PR329 merge, bounded Marnie canonical/backend coordination and normal release55 build/testing; owner lets go TIF on 2026-10-11"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -1347,5 +1359,21 @@
       "supersededBy": "9bdd2355799fd6e69a8ac14aa59c205481159b63",
       "supersededAt": "2026-10-11T16:05:57.511Z"
     }
-  ]
+  ],
+  "deliveryFollowThrough": {
+    "observedAt": "2026-10-11T20:56:10.702Z",
+    "approvedCandidate": "ec4987d629a5a1036e500e4a9af4b380afd5c70c",
+    "mergedMain": "154fb2287166415bd2b6dbdf6e9a08eca3f42c5a",
+    "mergedPullRequest": "https://github.com/tberridge86/Stackr/pull/329",
+    "backendWorkflow": "https://github.com/tberridge86/Stackr/actions/runs/38171508080",
+    "backendDeployment": "7a345980-364a-4a49-a968-3367d7cf6353",
+    "backendStatus": "SUCCESS",
+    "ownerPriceWorkerDeployments": "both SUCCESS; no processing/coverage claim",
+    "performanceCanaryDeployment": "663ace44-f7bb-4ce0-9a0c-7487d4df28cc FAILED snapshot retrieval; previous canary remains online",
+    "unrelatedStagedPatch": "excluded",
+    "marniePullRequest": "https://github.com/tberridge86/Stackr/pull/336",
+    "signedBuild55Created": false,
+    "deviceVerified": false,
+    "overallReady": false
+  }
 }

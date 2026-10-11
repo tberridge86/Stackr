@@ -5,7 +5,7 @@
  */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import {
   OWNER_APPROVED_CARD_ENGLISH_NAME_RECORDS,
@@ -68,10 +68,15 @@ for (const alias of nativeAliases) {
   assert.ok(variants.includes(alias.variantId));
 }
 
+const appliedReadbackPath = 'docs/audits/20261011/marnie-canonical-commit.readback.json';
+const hasAppliedReadback = existsSync(appliedReadbackPath) && readJson(appliedReadbackPath).runtimeGenerationPerformed === true;
+if (hasAppliedReadback) await import('./test-marnie-applied-runtime-readback.mjs');
 const marnieRuntimeGroups = OWNER_APPROVED_CARD_ENGLISH_NAME_RECORDS
   .filter(([language, nativeName]) => language === 'zh-tw' && nativeName === '瑪俐');
-assert.deepEqual(marnieRuntimeGroups, [['zh-tw', '瑪俐', 'Pikachu', ids]],
-  'The current generated runtime exposes the known-bad alias; do not describe this preparation as delivered.');
+assert.deepEqual(marnieRuntimeGroups, [['zh-tw', '瑪俐', hasAppliedReadback ? 'Marnie' : 'Pikachu', ids]],
+  hasAppliedReadback
+    ? 'Applied runtime requires the separate receipt-bound Marnie check.'
+    : 'Without an applied receipt, the runtime must remain the known-bad historical baseline.');
 const genuinePikachuIds = new Set(OWNER_APPROVED_CARD_ENGLISH_NAME_RECORDS
   .filter(([language, nativeName, englishName]) => language === 'zh-tw' && nativeName === '皮卡丘' && englishName === 'Pikachu')
   .flatMap(([, , , cardIds]) => cardIds));
@@ -225,4 +230,6 @@ for (const column of ['set_id', 'collector_number']) {
 
 for (const drift of ['publication', 'set', 'collector', 'finish', 'extra-alias', 'null-variant-alias', 'extra-variant', 'printing-membership', 'variant-membership']) await expectedFailure(drift);
 
-console.log('Marnie canonical correction preparation passed: 12 printings, 13 variants/English aliases, native aliases and genuine Pikachu cohort preserved; canonical write remains pending.');
+console.log(hasAppliedReadback
+  ? 'Marnie historical preparation guards passed; applied canonical capture and generated runtime are separately verified. Backend/device delivery is not established here.'
+  : 'Marnie canonical correction preparation passed: 12 printings, 13 variants/English aliases, native aliases and genuine Pikachu cohort preserved; canonical write remains pending.');
