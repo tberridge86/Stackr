@@ -172,7 +172,67 @@ function testScreenKnownNameDataflow() {
     'The screen consumes progressive factual card publications');
 }
 
+async function testOwnedSpeciesEligibility() {
+  const printingId = '90000000-0000-4000-8000-000000000001';
+  const scenarios: { label: string; fields: Record<string, unknown>; expectedNames: string[] }[] = [
+    { label: 'top Trainer wrong alias', fields: { supertype: 'Trainer' }, expectedNames: [] },
+    { label: 'top Energy wrong alias', fields: { supertype: 'Energy' }, expectedNames: [] },
+    { label: 'adapter-shaped raw Trainer', fields: { raw_data: { supertype: 'Trainer' } }, expectedNames: [] },
+    { label: 'adapter-shaped raw Energy', fields: { raw_data: { supertype: 'Energy' } }, expectedNames: [] },
+    { label: 'raw payload Trainer', fields: { raw_payload: { supertype: 'Trainer' } }, expectedNames: [] },
+    { label: 'blank outer cannot hide Trainer', fields: { supertype: '', raw_data: { supertype: 'Trainer' } }, expectedNames: [] },
+    { label: 'null outer cannot hide Energy', fields: { supertype: null, raw_data: { supertype: 'Energy' } }, expectedNames: [] },
+    { label: 'conflicting outer Pokemon/raw Trainer', fields: { supertype: 'Pokémon', raw_data: { supertype: 'Trainer' } }, expectedNames: [] },
+    { label: 'conflicting outer Energy/raw Pokemon', fields: { supertype: 'Energy', raw_data: { supertype: 'Pokémon' } }, expectedNames: [] },
+    { label: 'blank raw cannot hide payload Energy', fields: { raw_data: { supertype: '' }, raw_payload: { supertype: 'Energy' } }, expectedNames: [] },
+    { label: 'normalized outer Trainer', fields: { supertype: '  ＴＲＡＩＮＥＲ  ' }, expectedNames: [] },
+    { label: 'normalized raw Energy', fields: { raw_data: { supertype: ' eNeRgY\n' } }, expectedNames: [] },
+    { label: 'eligible outer Pokemon', fields: { supertype: 'Pokémon' }, expectedNames: ['pikachu'] },
+    { label: 'eligible raw Pokemon', fields: { raw_data: { supertype: 'Pokémon' } }, expectedNames: ['pikachu'] },
+    { label: 'native gender title retained', fields: { name: 'Nidoran♀', english_display_name: null,
+      raw_data: { supertype: 'Pokémon' } }, expectedNames: ['nidoran f'] },
+    { label: 'Japanese supplied English title retained', fields: { name: 'ピカチュウ', language: 'ja',
+      raw_data: { supertype: 'Pokémon' } }, expectedNames: ['pikachu'] },
+    { label: 'Chinese supplied English title retained', fields: { name: '皮卡丘', language: 'zh-tw',
+      raw_data: { supertype: 'Pokémon' } }, expectedNames: ['pikachu'] },
+    { label: 'missing classification compatibility', fields: {}, expectedNames: ['pikachu'] },
+    { label: 'null classification compatibility', fields: { supertype: null, raw_data: { supertype: null } }, expectedNames: ['pikachu'] },
+    { label: 'unknown classification compatibility', fields: { supertype: 'Unknown' }, expectedNames: ['pikachu'] },
+  ];
+  const failures: string[] = [];
+  const writesBefore = writes.length;
+  for (const source of ['user_card_variants', 'binder_cards', 'user_pokedex_cards']) {
+    for (const scenario of scenarios) {
+      const row = { id: `holding-${source}`, card_id: printingId, set_id: 'exact-set',
+        user_id: 'owner-a', binder_id: 'binder-a', owned: true };
+      ownershipFixture = { binders: [{ id: 'binder-a', user_id: 'owner-a' }],
+        user_card_variants: [], binder_cards: [], user_pokedex_cards: [], [source]: [row] };
+      cardNameRows = new Map([[printingId, { id: printingId, name: '瑪俐', english_display_name: 'Pikachu',
+        language: 'zh-tw', ...scenario.fields }]]);
+      const before = JSON.stringify({ ownership: ownershipFixture, cards: [...cardNameRows] });
+      const names = await exports.fetchOwnedPokemonNameSet();
+      if (JSON.stringify([...names]) !== JSON.stringify(scenario.expectedNames)) {
+        failures.push(`${source}: ${scenario.label} returned ${JSON.stringify([...names])}`);
+      }
+      const stored = await exports.fetchOwnedPokedexCards();
+      const holding = stored.get(`exact-set:${printingId}`);
+      assert.equal(holding?.card_id, printingId, 'eligibility never removes exact printing ownership');
+      assert.equal(holding?.set_id, 'exact-set', 'eligibility never changes the ownership set');
+      const contribution = source === 'user_card_variants' ? holding?.card_variant_ids
+        : source === 'binder_cards' ? holding?.binder_card_ids : holding?.pokedex_card_ids;
+      assert.deepEqual(Array.from(contribution ?? []), [row.id], 'every source retains its exact ownership contribution');
+      assert.equal(JSON.stringify({ ownership: ownershipFixture, cards: [...cardNameRows] }), before,
+        'name eligibility must not classify unknown rows or mutate native metadata and inventory');
+    }
+  }
+  assert.equal(writes.length, writesBefore, 'eligibility must not write any ownership source');
+  ownershipFixture = null;
+  cardNameRows = new Map();
+  assert.deepEqual(failures, [], 'actual owned-name service eligibility across each independent ownership source');
+}
+
 async function run() {
+  await testOwnedSpeciesEligibility();
   await testReviewedSpeciesAliasesAndOwnership();
   testScreenKnownNameDataflow();
   await assert.rejects(exports.setPokedexCardOwned({ id: 'card-a', name: 'Pikachu', set_id: 'set-a' }, false), /collection card controls/);

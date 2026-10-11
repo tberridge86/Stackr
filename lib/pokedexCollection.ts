@@ -156,6 +156,15 @@ const getPokedexCardNames = (card: any) => {
   };
 };
 
+// Canonical adapters retain classification in raw metadata. An explicit
+// non-Pokémon classification cannot be overridden by a blank or conflicting
+// presentation field; missing classifications stay unknown.
+const isExplicitNonPokemonCard = (card: any) => (
+  [card.supertype, card.raw_data?.supertype, card.raw_payload?.supertype].some((supertype) => (
+    ['trainer', 'energy'].includes(String(supertype ?? '').normalize('NFKC').trim().toLowerCase())
+  ))
+);
+
 const mapCardRow = (card: any): PokedexCard => {
   const imageUrls = buildPokedexImageUrls(card);
   const thumbnailUrl = card.raw_data?.images?.small ?? card.image_small ?? null;
@@ -572,6 +581,7 @@ export async function fetchOwnedPokemonNameSet(): Promise<Set<string>> {
   for (const cardId of cardIds) {
     const card = rows.get(cardId);
     if (card) {
+      if (isExplicitNonPokemonCard(card)) continue;
       const cardNames = getPokedexCardNames(card);
       const normalizedCardName = normalise(cardNames.englishName ?? cardNames.name);
       if (!normalizedCardName) continue;
