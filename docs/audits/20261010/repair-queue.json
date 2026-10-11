@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-10T22:39:31Z",
+  "updatedAt": "2026-10-11T00:31:27Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-release-recovery-20261009",
   "branch": "codex/specialist-audits-backend-repair-20261010",
@@ -21,7 +21,19 @@
     "name": "Stackr backend repair and audit follow-through",
     "state": "ACTIVE",
     "cadence": "Every two hours while the local computer and Codex app are running",
-    "automationId": "stackr-backend-repair-and-audit-follow-through"
+    "automationId": "stackr-backend-repair-and-audit-follow-through",
+    "lastPassStartedAt": "2026-10-11T00:22:38Z",
+    "currentWork": null,
+    "lastObservedPullRequest": {
+      "url": "https://github.com/tberridge86/Stackr/pull/329",
+      "state": "OPEN",
+      "checkedHead": "925461ebba900038c60cc5232567f910287049a9",
+      "applicableChecks": "9 succeeded; release/canary gates skipped on PR",
+      "merged": false
+    },
+    "lastPassCompletedAt": "2026-10-11T00:31:27Z",
+    "lastPassOutcome": "Verified and independently reviewed PDX-003 named-case repair; other form aliases remain unreviewed",
+    "lastPassEvidence": "docs/releases/backend-repair-follow-through-20261011.md"
   },
   "issues": [
     {
@@ -456,25 +468,57 @@
       "id": "PDX-003",
       "severity": "P1",
       "owner": "stackr_backend",
-      "status": "audit_confirmed_needs_owned_repair",
+      "status": "partially_repaired_ready_for_release",
       "summary": "Pokemon form/default names and gender distinctions differ across card retrieval and client ownership matching.",
       "evidence": "docs/audits/20261010/pokedex.md",
       "files": [
         "backend/lib/pokedexCards.js",
-        "lib/pokedexCollection.ts"
+        "backend/lib/stackrApiV1.js",
+        "lib/pokedexCollection.ts",
+        "scripts/test-pokedex-route-repair.mjs",
+        "scripts/test-pokedex-loading.ts"
       ],
       "validation": [
         "Client matcher rejects Nidoran female/male titles for provider nidoran-f/nidoran-m names",
-        "Bounded first raichu-alola page is empty with continuation while Alolan Raichu returns real cards; that is not evidence of a complete no-match"
+        "Bounded first raichu-alola page is empty with continuation while Alolan Raichu returns real cards; that is not evidence of a complete no-match",
+        "Actual-source named-case regressions failed before repair and pass after correction",
+        "Independent identity review resolved unknown-prefix gap using full-title anchoring and new parity/service negatives",
+        "Final app/backend typechecks, lint and narrow regression gates passed"
       ],
       "delivery": {
-        "local": "unresolved",
-        "reviewed": false,
+        "local": "named_cases_implemented_and_tested",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Claim backend alias and client ownership matcher sequentially. Use reviewed species/form aliases and preserve gender distinctions, default-form equivalence and whole-token boundaries; protect Mew/Mewtwo and unknown identity controls."
+      "nextAction": "Carry the reviewed named-case source through coordinated release and verify API/app responses. Continue a separately claimed bounded source-verified form-alias cohort; keep all unreviewed mappings explicit and do not count this as complete form coverage.",
+      "workClaim": {
+        "agent": "/root/backend_pokedex_alias_repair",
+        "definition": ".codex/agents/stackr_backend.toml",
+        "claimedAt": "2026-10-11T00:22:38Z",
+        "integrationHead": "26b413d28014230f407bcc297136b4e6e59857aa",
+        "exclusiveFiles": [
+          "backend/lib/pokedexCards.js",
+          "backend/lib/stackrApiV1.js",
+          "lib/pokedexCollection.ts",
+          "scripts/test-pokedex-route-repair.mjs",
+          "scripts/test-pokedex-loading.ts"
+        ],
+        "evidence": "docs/audits/20261011/pokedex-name-repair.md",
+        "status": "completed",
+        "completedAt": "2026-10-11T00:31:27Z"
+      },
+      "sourceRevision": "a00bcc5c744477e1e8471da343ab23bf86764652",
+      "repairEvidence": "docs/audits/20261011/pokedex-name-repair.md",
+      "reviewEvidence": "docs/audits/20261011/pokedex-name-review.md",
+      "coveredCases": [
+        "Nidoran female/male backend-client glyph parity",
+        "Exact raichu-alola to Alolan Raichu route/title alias and strict ordinary-Raichu exclusion",
+        "Exact deoxys-normal to bare Deoxys/card-mechanics compatibility with explicit or unknown form qualifiers excluded",
+        "Resolved backend source query and bounded legacy mobile fallback consumers"
+      ],
+      "remainingScope": "Other regional/default/form aliases have not been verified; full provider-form coverage and physical Deoxys form are unmeasured. Live API and phone delivery remain pending."
     },
     {
       "id": "PDX-004",
@@ -571,7 +615,7 @@
       "nextAction": "Claim the screen after SEARCH-001 handoff. Distinguish cached facts from fresh factual success, preserve cache while exposing retry/incomplete state, and keep optional-artwork failure from invalidating successful card facts."
     }
   ],
-  "integrationBaseRevision": "7b6cb00eff1d9d85b11a0af5700cb1bba0fd7cd6",
+  "integrationBaseRevision": "38db6229f0dc419db37cca009320db9c1a7bbe92",
   "reviewEvidence": "docs/audits/20261010/reviewer.md",
   "releaseHandoff": "docs/releases/specialist-audit-repair-handoff-20261010.md",
   "integrationValidation": {
@@ -584,5 +628,31 @@
     "gateway": "unchanged; no gateway check required",
     "fullCatalogueCoverage": "unmeasured",
     "physicalDevice": "unverified"
-  }
+  },
+  "repairPasses": [
+    {
+      "date": "2026-10-11",
+      "issue": "PDX-003",
+      "implementationRevision": "a00bcc5c744477e1e8471da343ab23bf86764652",
+      "integrationParent": "26b413d28014230f407bcc297136b4e6e59857aa",
+      "mainBaseline": "38db6229f0dc419db37cca009320db9c1a7bbe92",
+      "matchingPR": "https://github.com/tberridge86/Stackr/pull/329",
+      "evidence": "docs/audits/20261011/pokedex-name-repair.md",
+      "review": "docs/audits/20261011/pokedex-name-review.md",
+      "validation": [
+        "npm run test:pokedex-release passed after correcting review-found unknown-prefix gap",
+        "Independent reviewer reran both changed regressions and 17 actual-module parity controls",
+        "Final application typecheck, lint (0 errors; 8 existing warnings), backend typecheck and diff check passed",
+        "Pricing presentation/adapter clients passed after merging latest main PR328"
+      ],
+      "delivery": {
+        "local": "committed_and_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "remaining": "Other regional/default/form aliases are unreviewed. Bare Deoxys title compatibility does not establish its physical form."
+    }
+  ]
 }

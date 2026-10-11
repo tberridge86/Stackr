@@ -43,3 +43,12 @@ independent reviewer found no blocking defect in the seven prepared corrections;
 the final integrated application typecheck/lint and backend typecheck pass.
 The [release handoff](../../releases/specialist-audit-repair-handoff-20261010.md)
 records verification and the remaining API, signed-app and phone delivery gates.
+
+## Continuing pass — 11 October
+
+The first local heartbeat pass prepared a source-reviewed PDX-003 correction
+for Nidoran gender parity and the exact Alolan Raichu/default Deoxys route
+aliases. It passed independent identity review and final checks. PDX-003 stays
+partially repaired because other form mappings remain unreviewed. Read the
+[pass handoff](../../releases/backend-repair-follow-through-20261011.md) for
+the review-found qualifier gap, its correction and separate delivery states.
