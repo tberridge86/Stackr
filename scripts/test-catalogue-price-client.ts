@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import * as chineseCatalogueCorrection from '../lib/chineseCatalogueCorrection';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { Buffer } from 'node:buffer';
@@ -70,6 +71,7 @@ async function main() {
     './cataloguePriceBaseline': baseline,
   });
   const adapter = load<typeof import('../lib/stackrDomainAdapter')>('lib/stackrDomainAdapter.ts', {
+    './chineseCatalogueCorrection': chineseCatalogueCorrection,
     './stackrSetRetrieval': {},
     './stackrPreferredSetArtwork': {},
     './cardArtworkPresentation': {},

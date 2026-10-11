@@ -11,6 +11,8 @@ import * as pokemonDisplayNames from '../lib/pokemonDisplayNames';
 import * as resilientCatalogueRead from '../lib/resilientCatalogueRead';
 import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment';
 import * as cardArtworkPresentation from '../lib/cardArtworkPresentation';
+import * as chineseCatalogueCorrection from '../lib/chineseCatalogueCorrection';
+import * as stackrSetRetrieval from '../lib/stackrSetRetrieval';
 
 const PRISMATIC_ID = 'fb3cd93c-9006-42f5-b026-96a9fedcf269';
 const prismatic = {
@@ -56,6 +58,8 @@ async function main() {
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const defaultClient = {};
   const dependencies: Record<string, unknown> = {
+    './chineseCatalogueCorrection': chineseCatalogueCorrection,
+    './stackrSetRetrieval': stackrSetRetrieval,
     './cardArtworkPresentation': cardArtworkPresentation,
     './stackrApiV1': { stackrApiClient: defaultClient },
     './englishSetIdentity': { getEnglishSetReferenceAliases, matchesEnglishSetReference },
@@ -282,6 +286,26 @@ async function main() {
       'explicit language disagreement must not silently switch printings');
   }
   assert.equal(pokemonSetIdentity.getPokemonSetLanguageFromPrefixedId('zh-cn:CSV1C'), 'zh-cn');
+  const [retiredSetId, correctSetId] = Object.entries(chineseCatalogueCorrection.CHINESE_DUPLICATE_SET_CORRECTIONS)[0];
+  const reviewedMaps = JSON.parse(fs.readFileSync('backend/data/chinese-language-correction-aliases.json', 'utf8'));
+  assert.deepEqual(chineseCatalogueCorrection.CHINESE_DUPLICATE_SET_CORRECTIONS, reviewedMaps.sets);
+  assert.deepEqual(chineseCatalogueCorrection.correctedChineseSetContext(retiredSetId, 'ja'), { reference: retiredSetId, language: 'ja' });
+  assert.deepEqual(chineseCatalogueCorrection.correctedChineseSetContext('zh-cn:CSV1C', 'zh-cn'), { reference: 'zh-cn:CSV1C', language: 'zh-cn' });
+  const correctedSet = { ...prismatic, setId: correctSetId, languageCode: 'zh-tw', setCode: 'SV10', total: 1, printedTotal: 1 };
+  const correctedClient = {
+    set: async (id: string) => { assert.equal(id, correctSetId); return { data: { set: correctedSet } }; },
+    setCards: async (id: string, query: any) => {
+      assert.equal(id, correctSetId); assert.equal(query.language, 'zh-tw');
+      return { data: { cards: [{ ...cardRows[0], cardId: '11111111-1111-4111-8111-111111111111',
+        defaultVariantId: '22222222-2222-4222-8222-222222222222', variants: [{ ...cardRows[0].variants[0], variantId: '22222222-2222-4222-8222-222222222222' }],
+        set: correctedSet, languageCode: 'zh-tw', catalogueVersionId: PRISMATIC_ID }] }, meta: {} };
+    },
+  };
+  assert.equal((await exports.fetchStackrSet(`zh-cn:${retiredSetId}`, 'zh-cn', {}, correctedClient)).language, 'zh-tw');
+  assert.equal((await exports.fetchStackrSet(retiredSetId, 'ZH_HANS', {}, correctedClient)).language, 'zh-tw');
+  const correctedFacts = await imageReads.fetchPreferredStackrCardsForReferences([retiredSetId], 'zh-cn', correctedClient, { includeAssets: false, minimumCardCount: 1 });
+  assert.equal(correctedFacts.length, 1);
+  assert.equal(correctedFacts[0].language, 'zh-tw', 'active facts-first path accepts only the reviewed correction language');
   assert.equal(pokemonSetIdentity.getPokemonSetLanguageFromPrefixedId('zh-tw:SV2a'), 'zh-tw');
   assert.equal(pokemonSetIdentity.getPokemonSetLanguageFromPrefixedId('ko:SV2a'), 'ko');
 

@@ -1,4 +1,5 @@
 import { createSetFactsReader, loadCompleteSetPages } from './stackrSetRetrieval';
+import { correctedChineseSetContext } from './chineseCatalogueCorrection';
 import { readPreferredSetArtwork } from './stackrPreferredSetArtwork';
 import { resolveCardArtwork } from './cardArtworkPresentation';
 import { getPublishedSetCoverFallback, getPublishedSetLogoFallback } from './publishedSetLogoFallbacks';
@@ -823,6 +824,7 @@ export async function fetchStackrSet(
   options: { includeAssets?: boolean } = {},
   client: StackrApiClient = stackrApiClient,
 ): Promise<StackrLegacySet | null> {
+  ({ reference, language } = correctedChineseSetContext(reference, language));
   const prefixLanguage = getPokemonSetLanguageFromPrefixedId(reference);
   if (prefixLanguage && language && toStackrApiLanguage(language) !== prefixLanguage) return null;
   const setId = await resolveCanonicalStackrSetId(reference, language, client);
@@ -868,6 +870,7 @@ async function resolveLegacyStackrSetId(
   reference: string,
   language?: string | null,
 ) {
+  ({ reference, language } = correctedChineseSetContext(reference, language));
   const value = String(reference ?? '').trim();
   if (!value) return null;
   const normalizedReference = normalizePokemonSetReferenceForLookup(value);
@@ -896,6 +899,7 @@ async function resolveCanonicalStackrSetId(
   client: StackrApiClient = stackrApiClient,
   signal?: AbortSignal,
 ) {
+  ({ reference, language } = correctedChineseSetContext(reference, language));
   const value = String(reference ?? '').trim();
   if (!value) return null;
   const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(value);
@@ -949,6 +953,7 @@ async function fetchLegacyStackrCardsForSet(
   reference: string,
   language?: string | null,
 ) {
+  ({ reference, language } = correctedChineseSetContext(reference, language));
   const setId = await resolveLegacyStackrSetId(reference, language) ?? reference;
   const normalizedLanguage = language && language !== 'all' ? legacyLanguage(language) : null;
   const references = [...new Set([reference, setId].flatMap((candidate) => {
@@ -977,6 +982,7 @@ async function fetchCanonicalSetCardFacts(
   signal?: AbortSignal,
   options: SetCardReadOptions = {},
 ) {
+  ({ reference, language } = correctedChineseSetContext(reference, language));
   const setId = await resolveCanonicalStackrSetId(reference, language, client, signal);
   if (!setId) return { setId: null, cards: [] as StackrCard[] };
   if (options.includeAssets === false) {
