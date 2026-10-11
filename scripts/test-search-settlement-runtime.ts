@@ -169,7 +169,7 @@ async function testStaleBoundaries() {
 async function main() {
   await testTimeoutRuntimePath();
   await testStaleBoundaries();
-  console.log('Mounted Search runtime settlement passes timeout, honest group error, stale boundary and late-completion guards.');
+  console.log('Search coordinator harness passes timeout, honest group error, simulated invalidation and late-completion guards.');
 }
 
 void main();
