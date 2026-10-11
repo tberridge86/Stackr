@@ -103,6 +103,10 @@ const run = extract('app/(tabs)/search.tsx', 'runSearch', {
   searchLocalPokemonCards: (q, options) => { const d = deferred(); requests.set(q, { ...d, options }); return d.promise; },
   supabase: { from: () => query },
   settleWithin: async () => ({ status: 'pending' }),
+  settleSearchSource: promise => promise.then(
+    value => ({ status: 'fulfilled', value }),
+    reason => ({ status: 'rejected', reason }),
+  ),
   isFulfilled: result => result.status === 'fulfilled', isRejected: result => result.status === 'rejected',
   mapCardResults: rows => rows, mapListingResult: row => row, sanitizeGate0CommerceCopy: x => x,
   retainFailedSearchGroups: (next, errors, previous) => Object.fromEntries(Object.entries(next).map(([key, value]) => [key, errors[key] && previous ? previous[key] : value])),
