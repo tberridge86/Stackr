@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T16:40:58.706Z",
+  "updatedAt": "2026-10-11T19:14:39.856Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "agent/release/tif-readiness-20261011",
@@ -155,24 +155,36 @@
       "id": "HISTORY-DIRECT-WRITE-001",
       "severity": "P2",
       "owner": "stackr_coding",
-      "status": "audit_confirmed_needs_owned_repair",
+      "status": "reviewed_scoped_repair_pending_release",
       "summary": "Direct set quantity changes commit holdings before a separate history write, without a persisted history-only retry after that write fails.",
-      "evidence": "docs/audits/20261010/coding.md; app/set/[id].tsx quantity mutation path",
+      "evidence": "docs/audits/20261011/direct-history-recovery-release55.md",
       "files": [
         "app/set/[id].tsx",
-        "features/binder/BinderDetailScreen.tsx"
+        "features/binder/BinderDetailScreen.tsx",
+        "lib/directCollectionHistoryRecovery.ts",
+        "scripts/test-direct-collection-history-recovery.ts",
+        "scripts/test-binder-direct-history-recovery.ts",
+        "scripts/test-home-activity-ui.ts",
+        "scripts/test-set-account-boundary.ts",
+        "package.json"
       ],
       "validation": [
-        "Current home activity and haptic focused suites pass; they do not cover durable recovery for this direct write path"
+        "Actual Set and Binder direct consumers commit holdings once and preserve initiating-owner history, immutable snapshots and stale A-to-B-to-A alert boundaries",
+        "Actual activity writer acknowledges stable duplicate after ambiguous insert despite changed catalogue; absent-target Set snapshot remains explicit",
+        "Restart, duplicate local replay, account switch, nested immutability, corrupt record, twenty-valid attempt cap and storage failure pass",
+        "Full Home activity suite and Set account-boundary fixture pass; final application typecheck and scoped lint pass; independent review accepts no scoped P1/P2"
       ],
       "delivery": {
-        "local": "unresolved",
-        "reviewed": false,
+        "local": "committed_tested_reviewed",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Assign exclusive runtime ownership and reproduce the partial-write failure before implementing a stable event ID and bounded history-only recovery."
+      "nextAction": "Matching approved mobile delivery and real restart/account/connection checks; source fixture proof does not establish installed-device history recovery.",
+      "reviewEvidence": "docs/audits/20261011/direct-history-recovery-release55-review.md",
+      "implementationRevision": "6317a2fe7ecf353781f8c8eaa069eacd4409232d",
+      "remainingScope": "Independent holding/journal commit crash window and Set pre-journal generation invalidation remain; retry triggers are mounted owner/editability changes, UUID order and recovery-time created_at are not original action chronology; attempt count is bounded but no new transport deadline exists."
     },
     {
       "id": "DELIVERY-MOBILE-001",
@@ -340,13 +352,15 @@
       "owner": "stackr_search",
       "status": "reviewed_partial_repair_pending_release",
       "summary": "Search group completion/final loading can wait for all source promises, without screen cancellation or a deadline.",
-      "evidence": "docs/audits/20261011/performance-search-settlement-repair.md",
+      "evidence": "docs/audits/20261011/search-independent-publication-release55.md",
       "files": [
-        "app/(tabs)/search.tsx"
+        "app/(tabs)/search.tsx",
+        "scripts/test-search-settlement-runtime.ts"
       ],
       "validation": [
         "Actual helper and runSearch coordinator harness clears stalled final loading, retains useful current/same-key rows, reports source error and rejects late updates after simulated request invalidation",
-        "Separate source review and root reruns pass; typecheck/lint 0 errors/8 existing warnings"
+        "Separate source review and root reruns pass; typecheck/lint 0 errors/8 existing warnings",
+        "Release55 actual coordinator RED at frozen23c64b0 and GREEN verifies independent sets/products/collectors/graded-and-raw listings before stalled siblings, explicit empty/failure handling and invalidation; independent source review accepts scope"
       ],
       "delivery": {
         "local": "partial_repair_integrated_locally",
@@ -355,7 +369,7 @@
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Deliver bounded-settlement mitigation through the coordinated lane; separately prepare independent per-source publication/cancellation with actual screen evidence.",
+      "nextAction": "Matching approved app delivery and measured current-query/account correctness and latency; do not infer physical cancellation or p95 from coordinator harness.",
       "preparedRepair": {
         "revision": "9a62df9c48b13679e70d6c08ea8dfa8fd322b639",
         "worktree": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/perf002-search-settlement",
@@ -369,8 +383,17 @@
           "deviceVerified": false
         }
       },
-      "implementationRevision": "db48cbc0ff216a0944f7813341decda3ed5b3349",
-      "remainingScope": "Late non-card groups still publish at a final barrier; physical transport cancellation and mounted-effect/device timing remain open. Four-second settlement follows the first phase, not proof of p95 first-result target."
+      "implementationRevision": "1048fa2d3aaea172084414afcc28c5851450304b",
+      "remainingScope": "Final source settlement is bounded and late non-card groups publish independently; physical transport cancellation, mounted native effects and 100-observation iPhone p95 cohorts remain unproved.",
+      "release55FollowThrough": {
+        "implementationRevision": "1048fa2d3aaea172084414afcc28c5851450304b",
+        "baselineRevision": "23c64b0e28c2260ba7b5312fbc0fee1bba8dbc6f",
+        "scope": "Independent publication on the existing promises; no extra request, source, transport or dependency",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "PERF-003",
@@ -1050,6 +1073,23 @@
       "deviceVerified": false,
       "overallReady": false,
       "runtimePreparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819"
+    },
+    "release55": {
+      "observedAt": "2026-10-11T19:14:39.856Z",
+      "sourceRevision": "6317a2fe7ecf353781f8c8eaa069eacd4409232d",
+      "searchRevision": "1048fa2d3aaea172084414afcc28c5851450304b",
+      "applicationTypecheck": "passed",
+      "applicationLint": "0 errors, 8 existing app/component warnings",
+      "expandedTouchedLint": "0 errors, 11 existing Search/Binder warnings",
+      "homeActivity": "10-command suite passed",
+      "personalLoading": "17-command suite passed",
+      "mobileRecovery": "8-command suite passed",
+      "independentReview": "accepted, no scoped P1/P2",
+      "hostedChecks": "pending new-head publication",
+      "merged": false,
+      "deployed": false,
+      "deviceVerified": false,
+      "overallReady": false
     }
   },
   "repairPasses": [
@@ -1224,16 +1264,32 @@
       "liveChanges": false,
       "overallReady": false,
       "runtimePreparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819"
+    },
+    {
+      "observedAt": "2026-10-11T19:14:39.856Z",
+      "issues": [
+        "PERF-002",
+        "HISTORY-DIRECT-WRITE-001"
+      ],
+      "sourceRevisions": [
+        "1048fa2d3aaea172084414afcc28c5851450304b",
+        "6317a2fe7ecf353781f8c8eaa069eacd4409232d"
+      ],
+      "evidence": "docs/releases/release55-preparation-20261011.md",
+      "remoteWrites": "candidate push only when subsequently recorded",
+      "liveChanges": false,
+      "overallReady": false
     }
   ],
   "currentWork": {
     "owner": "root",
-    "status": "reviewed_candidate_preparing_matching_pr",
-    "implementationRevision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
+    "status": "release55_source_reviewed_pending_exact_head_ci",
+    "implementationRevision": "6317a2fe7ecf353781f8c8eaa069eacd4409232d",
     "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
-    "independentReview": "accepted_scoped_repairs_and_limited_sql_preparation",
-    "nextAction": "Exact-head hosted checks, coordinated canonical/runtime preparation and delivery/device gates; overall release completion remains unproved",
-    "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c"
+    "independentReview": "accepted_scoped_search_and_history_repairs",
+    "nextAction": "Publish existing candidate branch, obtain exact new-head checks and local iOS export proof, then final source/backend/native/device gates; no live approval granted",
+    "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c",
+    "release55SearchRevision": "1048fa2d3aaea172084414afcc28c5851450304b"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -1246,12 +1302,12 @@
     "designAcceptance": "Each entire journey, relevant states, shared patterns, accessibility, correctness/private persistence and measured criteria need evidence; no mockup/API/CI completion claim",
     "runnerStatus": "paused",
     "currentChatWorkAuthorized": true,
-    "observedAt": "2026-10-11T16:37:41.948Z"
+    "observedAt": "2026-10-11T19:14:39.856Z"
   },
   "parallelWork": [],
   "localIntegration": {
     "worktree": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
-    "revision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
+    "revision": "6317a2fe7ecf353781f8c8eaa069eacd4409232d",
     "integratedMain": "3d08536f7bd581ed1266f176c13640c0a712305f",
     "newMainSQLChecks": [
       "3-card actual SQL membership rehearsal and preservation/drift rejection passed",
@@ -1268,9 +1324,9 @@
       "HAPTIC-INSPECTION-001 expire delayed opening feedback"
     ],
     "remoteUpdated": false,
-    "currentChecks": "Relevant final local checks and independent review passed; matching pushed-head CI not yet captured in this prepublication record",
+    "currentChecks": "Final relevant local checks and independent review passed; hosted checks on new candidate are pending",
     "newMainDeploymentTooling": "passed",
-    "checkedAt": "2026-10-11T16:37:41.948Z",
+    "checkedAt": "2026-10-11T19:14:39.856Z",
     "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
     "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c"
   },
