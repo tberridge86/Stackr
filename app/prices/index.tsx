@@ -30,7 +30,7 @@ import { ScrollToEndButton } from '../../components/ScrollToEndButton';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
-import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
+import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { getIncrementalListWindow } from '../../lib/performance';
 import { createLatestRequestGate } from '../../lib/latestRequestGate';
 import { buildProductQuery, refreshMarketProductPrice, searchMarketProducts } from '../../lib/productSearch';
@@ -530,76 +530,8 @@ export default function MarketScreen() {
     setSearchResults(cards);
     setLastSuccessfulSearch({ query: trimmed, lookupType: activeLookupType });
     await loadSearchResultPrices(cards.map((card) => card.id), () => searchRequestRef.current.isCurrent(requestId));
-    // Legacy direct-table fallback is unreachable and retained only until rollback gates pass.
-    if (false) {
-    const words = trimmed.split(/\s+/).filter(Boolean);
-    let cardTerm = trimmed;
-    let matchedSetIds: string[] = [];
-
-    // Start at i=1 so at least one word is always kept as the card term.
-    // Starting at i=0 would let a single word like "pikachu" be consumed
-    // entirely by set detection (matching "Detective Pikachu" set) with no
-    // name filter left to apply.
-    if (!skipSetFilter) for (let i = 1; i < words.length; i++) {
-        const possibleCardTerm = words.slice(0, i).join(' ');
-        const possibleSetTerm = words.slice(i).join(' ');
-        if (!possibleSetTerm) continue;
-
-        const { data: matchingSets, error: setError } = await supabase
-          .from('pokemon_sets')
-          .select('id, name')
-          .or(`name.ilike.%${possibleSetTerm}%,id.ilike.%${possibleSetTerm}%`)
-          .limit(20);
-
-        if (setError) { console.log('Set search error:', setError); continue; }
-
-        const filteredSets = (matchingSets ?? []).filter((set: any) => {
-          const setName = normalise(set.name ?? '');
-          const setId = normalise(set.id ?? '');
-          const searchText = normalise(possibleSetTerm);
-          return setName.includes(searchText) || setId.includes(searchText);
-        });
-
-        if (filteredSets.length > 0) {
-          cardTerm = possibleCardTerm;
-          matchedSetIds = filteredSets.map((set: any) => set.id);
-          break;
-        }
-      }
-
-      let dbQuery = supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .limit(500);
-
-      if (cardTerm) {
-        // Normalise apostrophes and map plain-ascii "pokemon" to the accented
-        // form stored in the DB ("Pokémon") so ilike matches correctly.
-        const normalised = cardTerm
-          .replace(/[''ʼ]/g, "'")
-          .replace(/\bpokemon\b/gi, 'Pokémon');
-        const searchWords = normalised.split(/\s+/).filter(Boolean);
-        for (const word of searchWords) {
-          // "Mistys" → also try "Misty_s" so the _ wildcard matches the apostrophe
-          if (!word.includes("'") && /[a-z]s$/i.test(word)) {
-            const wildcardForm = `${word.slice(0, -1)}_s`;
-            dbQuery = dbQuery.or(`name.ilike.%${word}%,name.ilike.%${wildcardForm}%`);
-          } else {
-            dbQuery = dbQuery.ilike('name', `%${word}%`);
-          }
-        }
-      }
-      if (!skipSetFilter && matchedSetIds.length > 0) dbQuery = dbQuery.in('set_id', matchedSetIds);
-
-      const { data, error } = await dbQuery;
-      if (error) throw error;
-
-      const fallbackCards = (data ?? []).map(mapCard);
-      if (!searchRequestRef.current.isCurrent(requestId)) return;
-      setSearchResults(fallbackCards);
-      setLastSuccessfulSearch({ query: trimmed, lookupType: activeLookupType });
-      await loadSearchResultPrices(fallbackCards.map((card) => card.id), () => searchRequestRef.current.isCurrent(requestId));
-    }
+    // Canonical Stackr search is the only card-search route. Rollback lives in
+    // the shared domain adapter rather than a second screen-local SQL search.
     } catch (err) {
       if (!searchRequestRef.current.isCurrent(requestId)) return;
       console.log('Search error:', err);
@@ -722,51 +654,6 @@ export default function MarketScreen() {
       });
       return;
 
-      /* Legacy provider fallback retained unreachable until rollback gates pass. */
-      if (!PRICE_API_URL) { setDetailEbayData(null); return; }
-
-      // set.name falls back to set_id (e.g. "base1") when raw_data is absent —
-      // set IDs never appear in eBay titles so skip them to avoid killing results
-      const rawSetName = card.set?.name ?? '';
-      const setName = (rawSetName && rawSetName !== card.set?.id) ? rawSetName : '';
-
-      const params = new URLSearchParams({
-        name: card.name ?? '',
-        setName,
-        number: card.number ?? '',
-        rarity: card.rarity ?? '',
-        cardId: card.id ?? '',
-        productType: 'card',
-        pricingMode: 'raw',
-      });
-      params.set('condition', rawCondition);
-      const printedTotal = card.set?.printedTotal ?? card.set?.total;
-      if (printedTotal != null) params.set('setTotal', String(printedTotal));
-
-      const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch eBay price');
-
-      const data = await response.json();
-      if (__DEV__) {
-        console.log('[market:eBay:detail]', {
-          cardId: card.id,
-          pricingMode: 'raw',
-          condition: rawCondition,
-          query: data.query,
-          count: data.count,
-          average: data.average,
-          source: data.soldDataSource,
-          usedCachedPrice: data.usedCachedPrice,
-        });
-      }
-      setDetailEbayData({
-        low: data.low ?? null,
-        average: data.average ?? null,
-        high: data.high ?? null,
-        count: data.count ?? null,
-        query: data.query ?? null,
-        soldDataSource: data.soldDataSource ?? null,
-      });
     } catch (err) {
       console.log('eBay detail price error:', err);
       setDetailEbayData(null);
