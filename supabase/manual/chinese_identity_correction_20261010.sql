@@ -38,6 +38,8 @@ join catalog.card_variants tv on tv.printing_id=p.traditional_printing_id and tv
 create temporary table chinese_old_reference_ids on commit drop as
 select source_id::text value from chinese_set_pairs union select printing_id::text from chinese_printing_pairs
 union select source_id::text from chinese_variant_pairs
+union select language_prefix||source_id::text from chinese_set_pairs
+  cross join (values ('zh-cn:'),('zh-hans:')) prefixes(language_prefix)
 union select 'zh-cn:'||set_code from chinese_printing_pairs
 union select 'zh-cn:'||set_code||'-'||collector_number from chinese_printing_pairs
 union select 'zh-cn:'||set_code||':'||collector_number from chinese_printing_pairs
@@ -84,7 +86,7 @@ begin
     and (column_name in('card_id','api_card_id','set_id','favorite_card_id','chase_card_id','stackr_card_id'))
   loop
     execute format('lock table public.%I in share mode',ref.table_name);
-    execute format('select count(*) from public.%I where lower(%I::text) in(select lower(value) from chinese_old_reference_ids)',ref.table_name,ref.column_name)
+    execute format('select count(*) from public.%I where lower(replace(btrim(%I::text),''_'',''-'')) in(select lower(value) from chinese_old_reference_ids)',ref.table_name,ref.column_name)
       into reference_count;
     if reference_count<>0 then raise exception 'Affected reference exists in %.%; explicit reference reconciliation required',ref.table_name,ref.column_name; end if;
   end loop;

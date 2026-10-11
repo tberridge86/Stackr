@@ -8,6 +8,8 @@ The mobile catalogue cache removes deprecated sets, printings and variants, incl
 
 Production project: `oakdbbzdqwurpjnoqhmu`. The manual SQL defaults to ROLLBACK and has passed production rehearsal. It checks exact 5/605/750 mapping hashes, published target language, absent source artwork, absent affected ownership/business/price references, and 605 exact open conflict receipts. It locks checked tables during the transaction, records full pairing evidence in `audit.catalogue_events`, and publishes 1,360 deprecation deltas. Staging is deliberately excluded because it has 667 source asset associations requiring separate review.
 
+The 11 October reference guard also checks language-prefixed legacy set UUIDs (`zh-cn:` and `zh-hans:`, including underscore spellings), with case and surrounding whitespace normalized for comparison only. Saved collection/business references are never rewritten. An affected reference aborts the transaction for explicit reconciliation.
+
 Delivery order: review and merge; deploy backend using the existing owner TestFlight backend lane; prove old links resolve; execute guarded production COMMIT; verify canonical/public views and deltas; deliver compatible mobile cache repair and verify on device.
 
 Rollback: before database COMMIT, revert runtime/mobile changes normally. After COMMIT, preserve the resolver and source guard. Any database reversal must use the recorded before-pairs, verify the exact retirement reason and pointers, restore only that cohort, and append restoration deltas; never delete history or republish broad language data. No automatic destructive rollback is supplied.
