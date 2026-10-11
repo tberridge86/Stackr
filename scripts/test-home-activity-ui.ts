@@ -19,12 +19,18 @@ async function testSetActivityFailure() {
   let quantities = new Map<string, number>();
   let persisted = 0;
   let identityChanged = false;
+  const currentOwnershipGeneration = 1;
   const alerts: string[] = [];
   const activityCalls: any[] = [];
+  const ownershipIdentityRef = { current: 'owner-a' };
+  const ownershipGenerationRef = { current: currentOwnershipGeneration };
+  const quantityMutationRef = { current: new Map<string, number>() };
   const builder: any = { eq: () => builder, then: (resolve: any) => Promise.resolve({ error: null }).then(resolve) };
-  const makeHandler = () => execute(source.slice(start, end), {
-    useCallback: (fn: unknown) => fn, userId: 'owner-a', authUserIdRef: { current: 'owner-a' }, ownershipReady: true,
-    setId: 'set-a', variantQuantities: quantities, cards: [{ id: 'card-a', name: 'Pikachu' }],
+  const makeHandler = ({ signedOut = false } = {}) => execute(source.slice(start, end), {
+    useCallback: (fn: unknown) => fn, userId: signedOut ? null : 'owner-a', authUserIdRef: { current: 'owner-a' }, ownershipReady: true,
+    ownershipIdentityRef, ownershipGenerationRef,
+    currentOwnershipGeneration, quantityMutationRef,
+    setId: 'set-a', visibleVariantQuantities: quantities, cards: [{ id: 'card-a', name: 'Pikachu' }],
     getVariantKey: () => 'key', shortVariant: (value: unknown) => value,
     setVariantQuantities: (update: (previous: Map<string, number>) => Map<string, number>) => { quantities = update(quantities); },
     supabase: { from: () => ({
@@ -53,6 +59,11 @@ async function testSetActivityFailure() {
   assert.equal(alerts.length, 1, 'old-owner history completion stays quiet');
   await makeHandler()('card-a', 'normal', 2);
   assert.equal(activityCalls.length, 2, 'an unchanged quantity creates no additional history');
+  const persistedBeforeSignedOut = persisted;
+  await makeHandler({ signedOut: true })('card-a', 'normal', 3);
+  assert.equal(persisted, persistedBeforeSignedOut, 'a stale signed-out handler cannot write a quantity');
+  assert.equal(quantities.get('key'), 2, 'a stale signed-out handler cannot change a visible quantity');
+  assert.equal(activityCalls.length, 2, 'a stale signed-out handler cannot create activity');
 }
 
 async function testManualHistoryRepair() {

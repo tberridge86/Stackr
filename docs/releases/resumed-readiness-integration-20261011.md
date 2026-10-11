@@ -37,6 +37,8 @@ Relevant final local checks pass. Substantive source repairs were independently 
 
 Old hosted checks on `884e2b5f` include successes, a cancelled lint/type job and skipped release/canary gates. They cannot validate this new tip. Record exact pushed-head CI outcomes and any skipped gates in the next hosted receipt/PR metadata. Ordinary PR checks never substitute for release, canonical-data or installed-device acceptance.
 
+The first published resumed head `511ebc169f9fa8a103e88551391313a8d89b0d4b` subsequently had ten successful checks, two legacy-fixture failures and two skipped gates. The layout/filter/activity fixtures were corrected for the stronger account visibility/generation guard without production changes, independently reviewed, and pass the relevant full Home checks/typecheck/lint. See `docs/audits/20261011/readiness-ci-fixture-follow-through.md`. Fresh hosted results for the corrected revision are still required and are retained separately.
+
 ## Fresh read-only evidence and remaining gates
 
 Production published-canonical scope totals **700 sets / 56,831 printings / 75,522 variants** across five language-specific versions. It excludes additional provider/local support. All 239 Korean printing rows report missing native images; metadata availability is not decoded, rights-cleared or rendered coverage. The five-file artwork cohort and small deterministic pricing sample are bounded diagnostics, not global percentages.

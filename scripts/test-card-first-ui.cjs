@@ -1,4 +1,5 @@
 /* Actual shared-component interactions + source layout contracts, not native render timing. */
+/* global __dirname */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
@@ -102,7 +103,9 @@ test('set has one two-column grid; identity summary is its scrollable header, ad
   assert.equal(elements(source, 'StackrBrowseFilterSheet').length, 1);
   assert.equal(elements(source, 'StackrActionButton').length, 0, 'No full-width create-binder banner');
   const code = source.text; assert.ok(!code.includes('Collection Progress') && !code.includes('always pinned'));
-  assert.match(code, /ownershipReady \? .*catalogue entries owned/);
+  const summaries = elements(source, 'StackrBrowseSummary');
+  assert.equal(summaries.length, 1);
+  assert.match(summaries[0].getText(source), /ownershipVisible \? .*catalogue entries owned/);
   assert.match(code, /Published total:/); assert.match(code, /Loaded catalogue entries:/);
   assert.ok(!code.includes('progressPercent'), 'No percentage using an unverified mixed counting basis');
 });
