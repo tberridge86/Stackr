@@ -5,6 +5,7 @@ begin;
 set local lock_timeout = '5s';
 set local statement_timeout = '45s';
 lock table catalog.card_printings, catalog.card_names, catalog.catalogue_versions,
+  catalog.catalogue_version_printings, catalog.catalogue_version_variants,
   catalog.catalogue_change_log in share row exclusive mode;
 
 create temporary table marnie_rollback_targets (
@@ -55,6 +56,16 @@ begin
   if (select count(*) from catalog.catalogue_versions where id='f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e'::uuid
       and language_code='zh-tw' and status='published' and deprecated_at is null) <> 1 then
     raise exception 'Captured Traditional Chinese publication is no longer current';
+  end if;
+  if (select count(*) from catalog.catalogue_version_printings cvp
+      join marnie_rollback_printings t on t.printing_id=cvp.printing_id and t.set_id=cvp.set_id
+      where cvp.catalogue_version_id='f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e'::uuid and cvp.language_code='zh-tw') <> 12 then
+    raise exception 'Every rollback printing must remain published';
+  end if;
+  if (select count(*) from catalog.catalogue_version_variants cvv join marnie_rollback_targets t on t.variant_id=cvv.variant_id
+      join marnie_rollback_printings p on p.printing_id=t.printing_id and p.printing_id=cvv.printing_id and p.set_id=cvv.set_id
+      where cvv.catalogue_version_id='f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e'::uuid and cvv.language_code='zh-tw') <> 13 then
+    raise exception 'Every rollback variant must remain published';
   end if;
   if (select count(*) from catalog.card_printings p join marnie_rollback_printings t on t.printing_id=p.id
       where p.set_id=t.set_id and p.collector_number=t.collector_number

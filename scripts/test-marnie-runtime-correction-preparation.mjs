@@ -4,7 +4,7 @@
  */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import {
   OWNER_APPROVED_CARD_ENGLISH_NAME_METADATA as metadata,
   OWNER_APPROVED_CARD_ENGLISH_NAME_RECORDS as currentRecords,
@@ -23,8 +23,6 @@ assert.equal(candidate.generatorConsumable, false);
 assert.equal(normalizedHash(proposal), candidate.sourceBindings.proposalNormalizedSha256);
 assert.equal(normalizedHash(before), candidate.sourceBindings.beforeImageNormalizedSha256);
 assert.equal(candidate.sourceBindings.currentAcceptedInputSha256, proposal.runtimeSource.acceptedInputSha256);
-assert.equal(candidate.sourceBindings.currentAcceptedInputSha256, metadata.inputSha256.accepted);
-assert.equal(metadata.recordsSha256, proposal.runtimeSource.expectedRecordsSha256);
 
 const proposedRows = candidate.replacement.printings;
 const proposedIds = proposedRows.map(({ printingId }) => printingId);
@@ -55,8 +53,21 @@ assert.deepEqual(proposedRows, beforeRows, 'Candidate identity and timestamps mu
 const expectedCurrent = ['zh-tw', '瑪俐', candidate.replacement.expectedCurrentEnglishName, proposedIds];
 const expectedReplacement = candidate.replacement.expectedGeneratedRecord;
 assert.deepEqual(expectedReplacement, ['zh-tw', '瑪俐', 'Marnie', proposedIds]);
+const appliedReadbackPath = 'docs/audits/20261011/marnie-canonical-commit.readback.json';
+const hasAppliedReadback = existsSync(appliedReadbackPath) && readJson(appliedReadbackPath).runtimeGenerationPerformed === true;
 const staleGroups = currentRecords.filter(([language, nativeName]) => language === 'zh-tw' && nativeName === '瑪俐');
-assert.deepEqual(staleGroups, [expectedCurrent], 'Current runtime remains the known-bad baseline.');
+assert.deepEqual(staleGroups, [hasAppliedReadback ? expectedReplacement : expectedCurrent],
+  hasAppliedReadback ? 'Applied runtime requires the separate receipt-bound Marnie check.' : 'Current runtime remains the known-bad baseline.');
+
+if (hasAppliedReadback) {
+  await import('./test-marnie-applied-runtime-readback.mjs');
+  assert.equal(metadata.source, 'release55_readback_baseline');
+  assert.equal(metadata.recordsSha256, '6de8551e043ced800b359a8fb952548649eb042922abf9cae7637c35933c636e');
+  assert.equal(metadata.canonicalDatabaseWriteAuthorized, false);
+} else {
+  assert.equal(candidate.sourceBindings.currentAcceptedInputSha256, metadata.inputSha256.accepted);
+  assert.equal(metadata.recordsSha256, proposal.runtimeSource.expectedRecordsSha256);
+}
 
 const genuinePikachuIds = new Set(currentRecords
   .filter(([language, nativeName, englishName]) => language === 'zh-tw' && nativeName === '皮卡丘' && englishName === 'Pikachu')
@@ -64,12 +75,16 @@ const genuinePikachuIds = new Set(currentRecords
 assert.ok(genuinePikachuIds.size > 0);
 assert.equal(proposedIds.some((id) => genuinePikachuIds.has(id)), false);
 
-const prospectiveRecords = currentRecords.map((record) => record === staleGroups[0] ? expectedReplacement : record);
-assert.equal(prospectiveRecords.length, currentRecords.length);
-const changedIndices = currentRecords.flatMap((record, index) => JSON.stringify(record) === JSON.stringify(prospectiveRecords[index]) ? [] : [index]);
-assert.deepEqual(changedIndices, [currentRecords.indexOf(staleGroups[0])]);
-for (let index = 0; index < currentRecords.length; index += 1) {
-  if (changedIndices.includes(index)) continue;
-  assert.strictEqual(prospectiveRecords[index], currentRecords[index]);
+if (!hasAppliedReadback) {
+  const prospectiveRecords = currentRecords.map((record) => record === staleGroups[0] ? expectedReplacement : record);
+  assert.equal(prospectiveRecords.length, currentRecords.length);
+  const changedIndices = currentRecords.flatMap((record, index) => JSON.stringify(record) === JSON.stringify(prospectiveRecords[index]) ? [] : [index]);
+  assert.deepEqual(changedIndices, [currentRecords.indexOf(staleGroups[0])]);
+  for (let index = 0; index < currentRecords.length; index += 1) {
+    if (changedIndices.includes(index)) continue;
+    assert.strictEqual(prospectiveRecords[index], currentRecords[index]);
+  }
 }
-console.log('Marnie prospective runtime replacement is isolated, hash-bound, and pending canonical write/owner approval');
+console.log(hasAppliedReadback
+  ? 'Marnie historical candidate remains immutable; receipt-bound applied runtime check passed. Backend/device delivery is not established here.'
+  : 'Marnie prospective runtime replacement is isolated, hash-bound, and pending canonical write/owner approval');
