@@ -1,5 +1,6 @@
 import { useTheme } from '../../components/theme-context';
 import { Text } from '../../components/Text';
+import { StackrImage } from '../../components/StackrImage';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -100,7 +101,6 @@ export default function PokemonDetailScreen() {
   const [cardsError, setCardsError] = useState<string | null>(null);
   const [collectionComplete, setCollectionComplete] = useState(false);
   const [retryEpoch, setRetryEpoch] = useState(0);
-  const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(new Set());
   const longPressedCardId = useRef<string | null>(null);
   const mergeArtwork = useCallback((hydrated: PokedexCard[]) => {
     if (!hydrated.length) return;
@@ -274,9 +274,10 @@ export default function PokemonDetailScreen() {
       setName: item.set_name,
       rawData: item.raw_data,
     });
-    const imageUrl = (item.image_urls ?? [item.image_large, item.image_small])
-      .filter((url): url is string => Boolean(url))
-      .find((url) => !failedImageUrls.has(`${item.id}:${url}`));
+    const imageCandidates = (item.image_urls ?? [item.image_small, item.image_large])
+      .filter((url): url is string => Boolean(url));
+    const imageUrl = imageCandidates[0] ?? null;
+    const fullImageUrl = item.image_large ?? imageCandidates.at(-1) ?? imageUrl;
     const catalogueInspection = getCatalogueInspectionImage(item);
     const openDetails = () => router.push({ pathname: '/card/[id]', params: { id: item.id, setId: item.set_id ?? undefined } });
 
@@ -322,17 +323,14 @@ export default function PokemonDetailScreen() {
       >
         <View style={styles.cardImageWrap}>
           {imageUrl ? (
-            <Image
-              source={{ uri: imageUrl }}
+            <StackrImage
+              uri={imageUrl}
+              fullUri={fullImageUrl}
               style={styles.cardImage}
-              resizeMode="contain"
-              onError={() => {
-                setFailedImageUrls((prev) => {
-                  const next = new Set(prev);
-                  next.add(`${item.id}:${imageUrl}`);
-                  return next;
-                });
-              }}
+              contentFit="contain"
+              uriCandidates={imageCandidates}
+              cacheKey={`pokedex:${item.canonical_card?.cardId ?? item.raw_data?.stackr?.cardId ?? item.id}:${item.set_id ?? ''}:${item.number ?? ''}`}
+              accessibilityLabel={`${item.name} card image`}
             />
           ) : (
             <Ionicons name="image-outline" size={34} color={theme.colors.textSoft} />
@@ -449,16 +447,20 @@ export default function PokemonDetailScreen() {
               <View style={styles.progressCard}>
                 <View style={styles.progressTop}>
                   <Text style={styles.progressTitle}>Pokemon card collection</Text>
-                  <Text style={styles.progressCount}>{ownedCount === null ? 'Ownership unknown' : `${ownedCount} / ${totalCount}`}</Text>
+                  <Text style={styles.progressCount}>{collectionComplete ? (ownedCount === null ? 'Ownership unknown' : `${ownedCount} / ${totalCount}`) : `${totalCount} cards loaded`}</Text>
                 </View>
-                <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
-                </View>
+                {collectionComplete ? (
+                  <View style={styles.progressTrack}>
+                    <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
+                  </View>
+                ) : null}
                 <Text style={styles.progressSub}>
                   {collectionComplete
                     ? ownership.canMutate ? 'Tap cards below to mark them owned. Long hold a card to open its details.' : 'Tap cards to open their details. Long hold to inspect.'
-                    : 'Loading more matching cards…'}
+                    : cardsError ? 'Only a partial card list is available. Retry to load the remaining cards.' : cardsLoading ? 'Loading more matching cards…' : 'Only a partial card list is available.'}
                 </Text>
+                {cardsError ? <Text style={styles.progressSub} accessibilityRole="alert">{cardsError}</Text> : null}
+                {cardsError ? <Pressable accessibilityRole="button" accessibilityLabel="Retry loading Pokémon cards" onPress={() => setRetryEpoch((current) => current + 1)} style={styles.retryButton}><Text style={styles.retryButtonText}>Retry</Text></Pressable> : null}
                 {ownership.message ? <Text style={styles.progressSub} accessibilityRole={ownership.status === 'error' ? 'alert' : undefined}>{ownership.message}</Text> : null}
                 {ownership.status === 'error' ? (
                   <Pressable accessibilityRole="button" accessibilityLabel="Retry Pokémon ownership"

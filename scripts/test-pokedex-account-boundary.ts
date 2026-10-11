@@ -109,6 +109,7 @@ function screenHarness(kind: 'list' | 'detail') {
     react: React, 'expo-router': expo,
     '../../components/theme-context': { useTheme: () => ({ theme }) },
     '../../components/Text': { Text: 'Text' }, '../../components/StackrLoadingIndicator': { StackrLoadingIndicator: 'Spinner' },
+    '../../components/StackrImage': { StackrImage: 'StackrImage' },
     '../../components/FeatureTipModal': { FeatureTipGate: 'Tip' },
     'react-native': { ...Object.fromEntries(['FlatList', 'Image', 'Pressable', 'ScrollView', 'TextInput', 'View'].map((name) => [name, name])),
       StyleSheet: { create: (styles: any) => styles }, useWindowDimensions: () => ({ width: 390 }), Alert: { alert: (...args: any[]) => { alerts.push(args); alertAccounts.push(auth.user?.id ?? null); } } },
