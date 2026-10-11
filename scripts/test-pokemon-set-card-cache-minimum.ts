@@ -52,9 +52,11 @@ async function main() {
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const moduleBox: any = { exports: {} };
   vm.runInNewContext(compiled, { module: moduleBox, exports: moduleBox.exports, require: (name: string) => dependencies[name] ?? {} });
-  const { fetchCardsForSet, invalidatePokemonCatalogueCardCaches } = moduleBox.exports as {
+  const { fetchCardsForSet, getExactPokemonSetCardTotal, invalidatePokemonCatalogueCardCaches, mergeSetCardArtwork } = moduleBox.exports as {
     fetchCardsForSet: (setId: string, options?: any) => Promise<any[]>;
+    getExactPokemonSetCardTotal: (set: any) => number | null;
     invalidatePokemonCatalogueCardCaches: () => void;
+    mergeSetCardArtwork: (current: any[], incoming: any[]) => any[];
   };
 
   // A weak caller starts the read. A binder joins while it is in flight with
@@ -72,9 +74,40 @@ async function main() {
   assert.equal(reads, 2);
   assert.equal((await fetchCardsForSet('swsh7', { language: 'en', preferCanonicalApi: true, minimumCardCount: 237 })).length, 237);
   assert.equal(reads, 2, 'the recovered complete set is cached');
+  assert.equal(getExactPokemonSetCardTotal({ id: 'sv8pt5', language: 'en', printedTotal: 131, total: 180 }), 180,
+    'facts-only Set Detail uses canonical total rather than a smaller printed count');
+  assert.equal(getExactPokemonSetCardTotal({ id: 'unverified', language: 'en', printedTotal: 131, total: 0 }), null,
+    'a printed count alone is not passed to the exact facts reader as a complete-set count');
+
+  const fact = {
+    id: 'card-1', name: 'Fact name', number: '1', language: 'en', set: { id: 'set-1', name: 'Facts' },
+    images: {}, pricing: { displayPrice: 99 },
+    raw_data: { number: '1', set: { id: 'set-1' }, stackr: {
+      cardId: 'card-1', catalogueVersionId: 'version-1', defaultVariantId: 'variant-1',
+      variants: [{ variantId: 'variant-1', canonicalId: 'pokemon:en:set-1:1:normal', finishCode: 'normal' }],
+    } },
+  };
+  const artwork = {
+    ...fact, name: 'Wrong replacement name', images: { small: 'https://approved.example/small.webp', large: 'https://approved.example/large.webp' },
+    raw_data: { ...fact.raw_data, presentation: { artwork: { sourceVariantId: 'variant-1' }, selected_image_variant_id: 'variant-1' } },
+  };
+  assert.equal(mergeSetCardArtwork([fact], [])[0], fact,
+    'facts remain visible while optional artwork is unresolved or fails');
+  const painted = mergeSetCardArtwork([fact], [artwork])[0];
+  assert.equal(painted.images.small, artwork.images.small, 'a later exact identity can paint approved artwork');
+  assert.equal(painted.name, fact.name, 'artwork cannot replace factual card fields');
+  assert.equal(painted.pricing.displayPrice, fact.pricing.displayPrice, 'artwork cannot replace prices');
+  for (const wrong of [
+    { ...artwork, language: 'ja' },
+    { ...artwork, set: { ...artwork.set, id: 'set-2' } },
+    { ...artwork, number: '2', raw_data: { ...artwork.raw_data, number: '2' } },
+    { ...artwork, raw_data: { ...artwork.raw_data, stackr: { ...artwork.raw_data.stackr, catalogueVersionId: 'version-2' } } },
+    { ...artwork, raw_data: { ...artwork.raw_data, stackr: { ...artwork.raw_data.stackr, defaultVariantId: 'variant-2', variants: [{ variantId: 'variant-2', canonicalId: 'pokemon:en:set-1:1:holo', finishCode: 'holo' }] } } },
+  ]) assert.equal(mergeSetCardArtwork([fact], [wrong])[0], fact,
+    'wrong language, set, printing, catalogue version, or selected finish cannot overwrite a newer factual row');
 
   invalidatePokemonCatalogueCardCaches();
-  console.log('Set-card cache keeps partial rows visible, never retains them for a 237-card binder, and caches recovery.');
+  console.log('Set-card cache keeps partial rows visible, never retains them for a 237-card binder, caches recovery, and merges only exact artwork identities.');
 }
 
 void main();

@@ -15,7 +15,8 @@ import {
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { fetchAllSets, fetchCardsForSet, fetchPokemonSetForDetail, getKnownPokemonSetTotal, getPokemonSetVisualUrl, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
+import { fetchAllSets, fetchCardsForSet, fetchPokemonSetForDetail, getExactPokemonSetCardTotal, getKnownPokemonSetTotal, getPokemonSetVisualUrl, mergeSetCardArtwork, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
+import { enrichStackrCardArtworkFromFacts } from '../../lib/stackrDomainAdapter';
 import { getPokemonSetLanguageFromPrefixedId, stripPokemonSetLanguagePrefix } from '../../lib/pokemonSetIdentity';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { matchesEnglishSetReference } from '../../lib/englishSetIdentity';
@@ -651,6 +652,7 @@ export default function SetDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [ownershipReady, setOwnershipReady] = useState(false);
   const loadRequestRef = useRef(0);
+  const artworkAbortRef = useRef<AbortController | null>(null);
   const [setLogoFailed, setSetLogoFailed] = useState(false);
   const [variantQuantities, setVariantQuantities] = useState<Map<string, number>>(new Map());
   const [userId, setUserId] = useState<string | null>(null);
@@ -678,6 +680,7 @@ export default function SetDetailScreen() {
 
   const loadSetData = useCallback(async () => {
     if (!setId) return;
+    artworkAbortRef.current?.abort();
     const request = ++loadRequestRef.current;
     const isCurrent = () => loadRequestRef.current === request && authUserIdRef.current === authUserId;
     try {
@@ -693,11 +696,30 @@ export default function SetDetailScreen() {
           || (language === 'en' && matchesEnglishSetReference(s, setId))) ?? null;
       }
       if (!currentSet) throw new Error('Set details are temporarily unavailable.');
-      const fetchedCards = await fetchCardsForSet(currentSet.id, { language: currentSet.language ?? language });
+      const currentSetCardMinimum = getExactPokemonSetCardTotal(currentSet) ?? 0;
+      const fetchedCards = await fetchCardsForSet(currentSet.id, {
+        language: currentSet.language ?? language,
+        includeAssets: false,
+        minimumCardCount: currentSetCardMinimum,
+      });
       if (!isCurrent()) return;
       setSetInfo(currentSet);
       setCards(fetchedCards);
       setLoading(false);
+
+      // Facts are enough for first paint. Recover approved card artwork in the
+      // background, without allowing a stale route/account to repaint cards.
+      const artworkAbort = new AbortController();
+      artworkAbortRef.current = artworkAbort;
+      void enrichStackrCardArtworkFromFacts(fetchedCards, artworkAbort.signal, undefined, (progress) => {
+        if (!isCurrent() || artworkAbort.signal.aborted) return;
+        setCards((current) => mergeSetCardArtwork(current, progress));
+      }).then((enriched) => {
+        if (!isCurrent() || artworkAbort.signal.aborted) return;
+        setCards((current) => mergeSetCardArtwork(current, enriched));
+      }).catch(() => undefined).finally(() => {
+        if (artworkAbortRef.current === artworkAbort) artworkAbortRef.current = null;
+      });
 
       // Paint the cards first. Only this set's marks are requested in the background.
       void fetchPokemonSetForDetail(currentSet.id, { language: currentSet.language, includeAssets: true })
@@ -744,7 +766,11 @@ export default function SetDetailScreen() {
 
   useEffect(() => {
     void loadSetData();
-    return () => { loadRequestRef.current += 1; };
+    return () => {
+      loadRequestRef.current += 1;
+      artworkAbortRef.current?.abort();
+      artworkAbortRef.current = null;
+    };
   }, [loadSetData]);
 
   useEffect(() => {
