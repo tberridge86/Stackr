@@ -646,6 +646,20 @@ assert.match(backendRollback.stdout, /"component": "backend"/);
 assert.match(backendRollback.stdout, /"deploymentRollback": true/);
 
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
+const stagingBackendLane = stagingWorkflow.slice(stagingWorkflow.indexOf('  backend_only:'));
+assert.ok(stagingBackendLane.length > 0);
+assert.match(stagingWorkflow, /inputs.release_scope != 'backend_only'/);
+assert.match(stagingBackendLane, /github.ref == 'refs\/heads\/main'.*inputs.release_scope == 'backend_only'/);
+assert.match(stagingBackendLane, /environment: staging/);
+assert.match(stagingBackendLane, /git rev-parse HEAD.*EXPECTED_MAIN_SHA/);
+for (const target of ['d205637b-5376-41aa-9169-1015ba88fec3','88986bd6-970f-4bfe-9cea-15aada4d466c','66641988-1846-4775-bcc4-5d1f6985db91','lmwfhvexfcoyeuoyrlco']) assert.ok(stagingBackendLane.includes(target));
+for (const control of ['apply_migrations','publish_mobile_update','release_candidate']) assert.ok(stagingBackendLane.includes(`test "\${{ inputs.${control} }}" = 'false'`));
+assert.match(stagingBackendLane, /gitCommitSource !== 'bundled_workflow_sha'/);
+assert.doesNotMatch(stagingBackendLane, /variable set/);
+assert.match(stagingBackendLane, /railway-rollback.mjs --component=backend --deployment="\$PREVIOUS_BACKEND_DEPLOYMENT_ID"/);
+assert.match(stagingBackendLane, /verify-chinese-staging-resolution.mjs/);
+assert.doesNotMatch(stagingBackendLane, /db push|supabase_apply_migration|eas update|wrangler deploy/);
+
 const platformCiWorkflow = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
 const productionBackendOnlyJob = productionWorkflow.match(
@@ -1134,7 +1148,7 @@ assert.match(
   /SUPABASE_ACCESS_TOKEN:\s+\$\{\{ secrets\.STACKR_GITHUB_PRODUCTION_BACKUPS \|\| secrets\.SUPABASE_ACCESS_TOKEN \}\}/,
   'production must prefer the dedicated backup-read token without removing the standard token fallback',
 );
-assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[gate0_hardening, pricing_identity_guard_rehearsal, cardmarket_ledger_rehearsal, catalogue_api, full_platform\]/);
+assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[backend_only, gate0_hardening, pricing_identity_guard_rehearsal, cardmarket_ledger_rehearsal, catalogue_api, full_platform\]/);
 assert.match(
   stagingWorkflow,
   /if \[ "\$\{\{ inputs\.release_scope \}\}" != "gate0_hardening" \] && \[ "\$\{\{ inputs\.release_candidate \}\}" != "true" \]; then[\s\S]*Non-Gate-0 staging deployments require release_candidate=true and reviewed evidence\.[\s\S]*exit 1/,
