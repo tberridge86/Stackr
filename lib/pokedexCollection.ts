@@ -41,14 +41,31 @@ export type PokedexCard = {
 
 const normalise = (value: string) =>
   value
+    .normalize('NFKC')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+    .replace(/♀/g, ' f ')
+    .replace(/♂/g, ' m ')
     .replace(/\bfemale\b/g, 'f')
     .replace(/\bmale\b/g, 'm')
-    .replace(/[''`'.]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/([a-z])[’‘`´']s\b/g, '$1')
+    .replace(/[’‘`´']/g, '')
+    .replace(/[^a-z0-9\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
+
+// Exact reviewed provider routes only. Keep in step with the independently
+// deployed backend/lib/pokedexCards.js matcher; regression controls cover both.
+const REVIEWED_CARD_TITLE_ALIASES = new Map([
+  ['raichu alola', 'Alolan Raichu'],
+  ['deoxys normal', 'Deoxys'],
+]);
+
+const matchesWholeName = (pokemon: string, card: string) => {
+  const escaped = pokemon.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+  return new RegExp(`(^|\\s)${escaped}(?=\\s|$)`).test(card);
+};
 
 export const formatPokedexName = (name: string) =>
   name
@@ -61,16 +78,24 @@ export const pokemonNameMatchesCardName = (pokemonName: string, cardName: string
   const card = normalise(cardName);
 
   if (!pokemon || !card) return false;
-  if (card === pokemon) return true;
-
-  const escaped = pokemon.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
-  return new RegExp(`(^|\\s)${escaped}(\\s|$)`).test(card);
+  if (matchesWholeName(pokemon, card)) return true;
+  const alias = REVIEWED_CARD_TITLE_ALIASES.get(pokemon);
+  if (!alias) return false;
+  if (pokemon === 'deoxys normal') {
+    // Bare/default title equivalence cannot infer the artwork's physical form.
+    // Only printed mechanics may follow the bare title; form labels stay exact.
+    if (/\b(?:forme?|attack|defense|speed)\b/.test(card)) return false;
+    return /^deoxys(?:\s+(?:ex|gx|v|vmax|vstar|break|prime|lv\s+x))*$/.test(card);
+  }
+  return matchesWholeName(normalise(alias), card);
 };
 
 const getPokemonCardSearchTerms = (pokemonName: string) => {
   const displayName = formatPokedexName(pokemonName);
   const terms = new Set([displayName]);
   const normalized = normalise(displayName);
+  const alias = REVIEWED_CARD_TITLE_ALIASES.get(normalized);
+  if (alias) terms.add(alias);
 
   if (normalized === 'mr mime') terms.add('Mr. Mime');
   if (normalized === 'mr rime') terms.add('Mr. Rime');

@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Buffer } from 'node:buffer';
 import { getEnglishCardDisplaySupplement } from './cardDisplayNames.js';
 import { findNativeCardNamesForEnglishQuery, normalizeCardEnglishSearchText } from './cardNameTranslations.js';
-import { matchesPokedexSpeciesName, normalisePokedexName } from './pokedexCards.js';
+import { matchesPokedexSpeciesName, normalisePokedexName, pokedexCardLookupName } from './pokedexCards.js';
 import { correctedCatalogueCardId, correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
 
 export const STACKR_API_V1 = '1';
@@ -1449,7 +1449,7 @@ export function createCatalogueV1Service(options) {
       // Published catalogues sometimes normalize gender glyphs away. Search
       // their ungendered source token too, then restore the strict form check
       // in `matchesPokedexSpeciesName` below.
-      const lookupName = normalizedName.replace(/\s+[fm]$/, '');
+      const lookupName = pokedexCardLookupName(normalizedName);
       const contains = lookupName.replace(/[%_]/g, ' ').replace(/\s+/g, '%');
       let cursor = input.cursor;
       for (let page = 0; page < POKEDEX_EMPTY_SOURCE_PAGE_LIMIT; page += 1) {

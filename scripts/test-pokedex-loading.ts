@@ -20,6 +20,9 @@ const factual = { cardId: 'card-a', defaultVariantId: 'variant-a' };
 const assetRequests: Array<{ printingIds?: string[]; cursor?: string | null; limit?: number; assetType?: string }> = [];
 const pokemonRequests: { name: string; cursor: string | null; limit: number }[] = [];
 let pokemonResponses: Array<() => Promise<any>> = [async () => ({ data: { cards: [factual] }, meta: {} })];
+let cardNameRows = new Map<string, any>();
+let localSearchRows = new Map<string, any[]>();
+const localSearchTerms: string[] = [];
 const legacy = (id: string, images = false) => ({ id, name: 'Pikachu', language: 'en', set_id: 'set-a',
   raw_data: { set: { id: 'set-a', name: 'Native set' }, images: images
     ? { small: 'https://example.test/thumb.webp', large: 'https://example.test/detail.webp' } : {} } });
@@ -57,11 +60,15 @@ const query = (table: string) => {
 };
 const exports = {} as typeof import('../lib/pokedexCollection');
 const mocks: Record<string, unknown> = {
-  './cardSearch': {},
+  './cardSearch': { searchLocalPokemonCards: async (term: string) => {
+    localSearchTerms.push(term);
+    return localSearchRows.get(term) ?? [];
+  } },
   './supabase': { supabase: { auth: { getUser: async () => ({ data: { user: { id: 'owner-a' } }, error: null }) }, from: query } },
-  './pokemonDisplayNames': { getPreferredCardDisplayName: () => 'Pikachu', getEnglishCardDisplayName: () => null,
+  './pokemonDisplayNames': { getPreferredCardDisplayName: (input: any) => input.fallbackName ?? 'Pikachu', getEnglishCardDisplayName: (input: any) => input.englishDisplayName ?? null,
     getPreferredSetDisplayName: () => 'Native set', getEnglishSetDisplayName: () => null },
   './stackrDomainAdapter': {
+    fetchStackrCardRows: async () => cardNameRows,
     stackrCardToLegacyCard: (card: any, assets: any[] = []) => {
       const variantIds = new Set([card.defaultVariantId, ...(card.variants ?? []).flatMap((variant: any) => [variant.variantId, variant.imageVariantId, variant.sameArtworkAsVariantId])]);
       return legacy(card.cardId, assets.some((asset) => asset.cardId === card.cardId || variantIds.has(asset.variantId)));
@@ -90,6 +97,71 @@ runInNewContext(ts.transpileModule(readFileSync('lib/pokedexCollection.ts', 'utf
   require: (name: string) => { assert.ok(name in mocks, `Unexpected dependency ${name}`); return mocks[name]; } });
 const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
+async function testReviewedSpeciesAliasesAndOwnership() {
+  const backendMatcher = {} as { matchesPokedexSpeciesName: (route: string, title: string) => boolean };
+  runInNewContext(ts.transpileModule(readFileSync('backend/lib/pokedexCards.js', 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  }).outputText, { exports: backendMatcher });
+  const cases: [string, string, boolean][] = [
+    ['pikachu', 'Pikachu ex', true], ['mr-mime', "Sabrina’s Mr. Mime", true],
+    ['nidoran-f', 'Nidoran♀', true], ['nidoran-m', 'Nidoran♂', true],
+    ['nidoran-f', 'Nidoran Female', true], ['nidoran-m', 'Nidoran Male', true],
+    ['nidoran-f', 'Nidoran♂', false], ['nidoran-m', 'Nidoran♀', false],
+    ['nidoran-f', 'Nidoran', false], ['nidoran-m', 'Nidoran', false],
+    ['raichu', 'Raichu', true], ['raichu-alola', 'Alolan Raichu ex', true], ['raichu-alola', 'Raichu', false],
+    ['raichu-alola', 'Raichu Alola', true], ['raichu-future', 'Alolan Raichu', false],
+    ['deoxys-normal', 'Deoxys', true], ['deoxys-normal', 'Deoxys V', true],
+    ['deoxys-normal', 'Deoxys Normal Forme', true], ['deoxys-normal', 'Deoxys Attack Forme', false],
+    ['deoxys-normal', 'Speed Forme Deoxys', false], ['deoxys-normal', 'Deoxys Cosmic Forme', false],
+    ['deoxys-normal', 'Cosmic Deoxys', false], ['deoxys-normal', 'Future Deoxys', false],
+    ['deoxys-normal', 'Origin Deoxys V', false],
+    ['deoxys-normal', 'Deoxys Future', false], ['deoxys-attack', 'Deoxys', false],
+    ['deoxys-attack', 'Deoxys Attack Forme', true], ['deoxys-defense', 'Deoxys Defense Forme', true],
+    ['giratina-altered', 'Giratina', false], ['wormadam-plant', 'Wormadam', false],
+    ['deoxys-future', 'Deoxys', false], ['mew', 'Mewtwo', false], ['mew', 'Mew ex', true],
+    ['ピカチュウ', 'ピカチュウ', true], ['皮卡丘', '皮卡丘', true], ['皮卡丘', '雷丘', false],
+    ['pikachu', 'ピカチュウ', false], ['pikachu', '皮卡丘', false], ['future-species', 'Pikachu', false],
+  ];
+  for (const [route, title, expected] of cases) {
+    assert.equal(exports.pokemonNameMatchesCardName(route, title), expected, `${route} / ${title}: mobile ownership matching`);
+    assert.equal(backendMatcher.matchesPokedexSpeciesName(route, title), expected, `${route} / ${title}: backend/mobile parity`);
+  }
+  cardNameRows = new Map([
+    ['female', { id: 'female', name: 'Nidoran♀', language: 'en' }],
+    ['male', { id: 'male', name: 'Nidoran♂', language: 'en' }],
+    ['alolan-ja', { id: 'alolan-ja', name: 'アローラライチュウ', english_display_name: 'Alolan Raichu', language: 'ja' }],
+    ['alolan-zh', { id: 'alolan-zh', name: '阿羅拉雷丘', english_display_name: 'Alolan Raichu', language: 'zh-tw' }],
+    ['default', { id: 'default', name: 'Deoxys', language: 'en' }],
+  ]);
+  ownershipFixture = {
+    binders: [{ id: 'binder-a', user_id: 'owner-a' }],
+    user_card_variants: [{ id: 'physical-female', card_id: 'female', set_id: 'set-a' }],
+    binder_cards: [{ id: 'binder-male', binder_id: 'binder-a', card_id: 'male', set_id: 'set-a', owned: true }],
+    user_pokedex_cards: ['alolan-ja', 'alolan-zh', 'default'].map((card_id) => ({ id: `marker-${card_id}`, card_id, set_id: 'set-a' })),
+  };
+  const names = await exports.fetchOwnedPokemonNameSet();
+  for (const [route, expected] of [['nidoran-f', true], ['nidoran-m', true], ['raichu-alola', true],
+    ['deoxys-normal', true], ['deoxys-attack', false], ['raichu-future', false]] as const) {
+    assert.equal([...names].some((name) => exports.pokemonNameMatchesCardName(route, name)), expected,
+      `${route}: actual owned-name service and list matcher must agree`);
+  }
+  ownershipFixture = null;
+  cardNameRows = new Map();
+  for (const [route, title] of [['raichu-alola', 'Alolan Raichu'], ['deoxys-normal', 'Deoxys']]) {
+    localSearchTerms.length = 0;
+    localSearchRows = new Map([[title, [{ id: 'legacy-alias', name: title, language: 'en' },
+      { id: 'legacy-unrelated', name: route === 'raichu-alola' ? 'Raichu' : 'Deoxys Attack Forme', language: 'en' }]]]);
+    pokemonResponses = [async () => { throw new Error('Older API has no species route'); }];
+    const fallback = await exports.fetchCardsForPokemon(route);
+    assert.ok(localSearchTerms.includes(title), `${route}: the legacy search consumer must use its reviewed title alias`);
+    assert.deepEqual(Array.from(fallback.cards, (card) => card.id), ['legacy-alias'],
+      `${route}: the legacy fallback must retain the alias while excluding other forms`);
+    assert.equal(fallback.complete, false, 'a hard-capped legacy lookup remains explicitly incomplete');
+  }
+  localSearchRows = new Map();
+  pokemonResponses = [async () => ({ data: { cards: [factual] }, meta: {} })];
+}
+
 function testScreenKnownNameDataflow() {
   const source = readFileSync('app/pokemon/[id].tsx', 'utf8');
   assert.match(source, /const nextPokemon = routePokemon \?\? await metadata;/,
@@ -101,6 +173,7 @@ function testScreenKnownNameDataflow() {
 }
 
 async function run() {
+  await testReviewedSpeciesAliasesAndOwnership();
   testScreenKnownNameDataflow();
   await assert.rejects(exports.setPokedexCardOwned({ id: 'card-a', name: 'Pikachu', set_id: 'set-a' }, false), /collection card controls/);
   assert.equal(writes.length, 0, 'Physical ownership blocks all manual/binder removals');
