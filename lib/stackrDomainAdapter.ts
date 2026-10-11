@@ -413,7 +413,7 @@ function legacySetRow(row: any): StackrLegacySet {
     series: getPokemonSetDisplaySeries({ series: String(row.series ?? raw.series ?? ''), language,
       setCode: row.set_code ?? raw.set_code }),
     printedTotal: Number(row.printed_total ?? raw.cardCount?.official ?? 0),
-    total: Number(row.total ?? row.actual_total ?? raw.cardCount?.total ?? row.printed_total ?? 0),
+    total: Number(row.total ?? row.actual_total ?? raw.cardCount?.total ?? 0),
     releaseDate: String(row.release_date ?? raw.releaseDate ?? ''),
     language,
     region: clean(row.region ?? raw.region),
@@ -596,7 +596,9 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
       setCode: set.setCode,
     }),
     printedTotal: Number(set.printedTotal ?? 0),
-    total: Number(set.total ?? set.printedTotal ?? 0),
+    // Keep unknown canonical totals unknown: the set screen forwards this
+    // field to exact-completeness validation. printedTotal is display-only.
+    total: Number(set.total ?? 0),
     releaseDate: set.releaseDate ?? '',
     language: toLegacyLanguage(set.languageCode),
     region: set.regionCode,

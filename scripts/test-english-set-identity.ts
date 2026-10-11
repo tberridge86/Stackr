@@ -77,7 +77,12 @@ async function main() {
   const exports: any = {};
   let clock = 1_000_000;
   const TestDate = class extends Date { static now() { return clock; } };
-  vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController, setTimeout, clearTimeout, Date: TestDate });
+  vm.runInNewContext(`${compiled}\nexports.testLegacySetRow = legacySetRow;`, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController, setTimeout, clearTimeout, Date: TestDate });
+  const legacyPrintedOnly = exports.testLegacySetRow({ id: PRISMATIC_ID, language: 'en', name: 'Prismatic Evolutions', printed_total: 131 });
+  assert.equal(legacyPrintedOnly.printedTotal, 131);
+  assert.equal(legacyPrintedOnly.total, 0, 'legacy fallback metadata must not fabricate an exact count either');
+  assert.equal(exports.testLegacySetRow({ id: PRISMATIC_ID, language: 'en', actual_total: 180, printed_total: 131 }).total, 180,
+    'an explicitly recorded actual legacy total remains usable');
 
   // Exercise the real preferred-read and enrichment deadlines at a shorter
   // test scale. A slow optional set response used to cancel successful card
@@ -203,6 +208,18 @@ async function main() {
       return { data: { cards: rows }, meta: { pagination: { nextCursor: null } } };
     },
   });
+  // Read the same public set-mapping path consumed by Set Detail before it
+  // forwards a minimum. A mapper must not manufacture an exact total from a
+  // printed hint, otherwise the caller bypasses the facts adapter's guard.
+  const printedOnlyClient = exactFactsClient({ ...prismatic, total: null, printedTotal: 131 }, exactFactRows.slice(0, 131), 'facts-mapped-printed-only');
+  const printedOnlySet = await imageReads.fetchStackrSet(PRISMATIC_ID, 'en', { includeAssets: false }, printedOnlyClient);
+  assert.equal(printedOnlySet.printedTotal, 131, 'the separate printed display hint is retained');
+  assert.equal(printedOnlySet.total, 0, 'mapped set facts must preserve a missing exact canonical total');
+  await assert.rejects(
+    imageReads.fetchStackrCardsForSet(PRISMATIC_ID, 'en', printedOnlyClient, { includeAssets: false, minimumCardCount: printedOnlySet.total }),
+    /Exact canonical set total is unavailable/,
+    'a mapped printed hint cannot bypass the exact facts guard through the screen minimum',
+  );
   await assert.rejects(
     imageReads.fetchStackrCardsForSet('sv8pt5', 'en', exactFactsClient({ ...prismatic, total: null, printedTotal: 131 }, exactFactRows.slice(0, 131), 'facts-printed-only'), { includeAssets: false }),
     /Exact canonical set total is unavailable/,

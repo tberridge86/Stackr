@@ -100,6 +100,26 @@ policy.
 
 ## Limitations and handoff
 
+### Further source-projection correction
+
+Coordinator review reproduced a further completeness bypass after the adapter
+fallback was fixed: `fetchStackrSet` projected missing canonical `total` as the
+printed `131`, and Set Detail then forwarded that fabricated value as an exact
+minimum. The new public set-read regression failed with `131 !== 0` before the
+correction. Canonical and legacy set projections now retain `printedTotal`
+separately and expose unknown actual totals as `0`, matching existing unknown
+count conventions. A recorded canonical/actual total remains unchanged. The
+screen's exact-total helper therefore cannot derive a verified count from the
+printed display hint. Existing published-total display still uses the separate
+printed field.
+
+The actual public `fetchStackrSet` -> facts-only `fetchStackrCardsForSet` control
+now rejects this printed-only route, and an actual legacy row projection control
+retains `actual_total: 180`. The original canonical 180-row acceptance, 131-row
+rejection, cache/identity/artwork controls remain passing. This is a local
+source representation repair; no remote catalogue or source decision changed.
+Independent review of this final projection correction is pending.
+
 The tests establish source and helper behavior only. No live API, deployment,
 or installed-iPhone measurement was performed. The adapter still permits an
 explicit caller-supplied minimum, so that value must remain an independently
