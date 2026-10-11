@@ -24,3 +24,13 @@ catalogue metadata and images.
   otherwise record unmeasured. Never invent an overall completion percentage.
 - Do not send email, Slack messages, or repeat old alerts. The previous catalogue
   reporting automation was paused and is not a work queue to reactivate.
+
+## Independent specialist audits and backend repairs
+
+Read `.codex/AUDIT_PROTOCOL.md` for the owner's requested specialist audits and
+shared repair queue. Use the existing eight Stackr project specialists for their
+own areas and `.codex/agents/stackr_backend.toml` for backend metadata repairs.
+The coding lead assigns bounded work; each specialist reports its own evidence.
+Background follow-through continues actionable repairs and targeted rechecks,
+rather than repeating full audits. Preserve existing authorizations and report
+local validation separately from live API and installed-device delivery.

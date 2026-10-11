@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "stackr-marnie-runtime-correction-candidate-v1",
+  "status": "pending_canonical_write_and_owner_approval",
+  "runtimeGenerationPerformed": false,
+  "canonicalDatabaseWriteAuthorized": false,
+  "generatorConsumable": false,
+  "purpose": "Prospective one-group replacement fixture only. This file must not be supplied to the owner-approved runtime generator until the guarded canonical write is complete, read back, and approved.",
+  "sourceBindings": {
+    "proposalPath": "docs/audits/20261010/marnie-alias-correction.json",
+    "proposalNormalizedSha256": "4e45815a9eb6abcb8ac94c1986808557110fb1821559af30e0222510ba26b13b",
+    "beforeImagePath": "docs/audits/20261011/marnie-before-image.receipt.json",
+    "beforeImageNormalizedSha256": "1c472427d8cff2f506a58d79cb975565e6af2231e86ecb744922430def533677",
+    "currentRuntimePath": "backend/lib/generated/ownerApprovedCardEnglishNames.js",
+    "currentAcceptedInputSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868"
+  },
+  "replacement": {
+    "expectedCurrentEnglishName": "Pikachu",
+    "proposedEnglishName": "Marnie",
+    "printings": [
+      { "printingId": "1386b19f-ada3-447a-83d0-105acf48752c", "language": "zh-tw", "nativeName": "瑪俐", "setId": "41251d8a-6a1c-4f91-8e84-22e2fe7737fd", "collectorNumber": "120", "expectedPublicUpdatedAt": "2026-10-06T18:49:23.353178+00:00" },
+      { "printingId": "3467f1b3-cfed-47c1-bddb-73a6507009b4", "language": "zh-tw", "nativeName": "瑪俐", "setId": "4b4beb82-d593-4c0b-850f-3197e7dd0ac5", "collectorNumber": "163", "expectedPublicUpdatedAt": "2026-10-06T18:49:17.96426+00:00" },
+      { "printingId": "44b54476-f33f-435f-8985-b412cb5edb4c", "language": "zh-tw", "nativeName": "瑪俐", "setId": "e6feffca-611b-479c-bfb2-43b80374458f", "collectorNumber": "177", "expectedPublicUpdatedAt": "2026-10-06T18:49:04.857771+00:00" },
+      { "printingId": "4a459e00-0853-43a7-b0a6-e9d0f56c42f6", "language": "zh-tw", "nativeName": "瑪俐", "setId": "205ab185-9052-4965-b9f0-20fe44b7b61f", "collectorNumber": "171", "expectedPublicUpdatedAt": "2026-10-06T18:49:16.223958+00:00" },
+      { "printingId": "4a9af5de-61f9-4bb7-8133-5d28e2b356ad", "language": "zh-tw", "nativeName": "瑪俐", "setId": "7201a603-407b-491c-b118-467f6549e400", "collectorNumber": "160", "expectedPublicUpdatedAt": "2026-10-06T18:49:11.435254+00:00" },
+      { "printingId": "63019ce2-f59b-4aed-a3e0-025789ecb7ab", "language": "zh-tw", "nativeName": "瑪俐", "setId": "c816b27f-f145-413b-b971-3f7b1542f24c", "collectorNumber": "156", "expectedPublicUpdatedAt": "2026-10-06T18:49:26.171478+00:00" },
+      { "printingId": "818b3095-25cf-491e-b536-6a2e7513a3a0", "language": "zh-tw", "nativeName": "瑪俐", "setId": "6c446b0c-155d-4926-b0ee-5369f6ac44d3", "collectorNumber": "028", "expectedPublicUpdatedAt": "2026-10-06T18:50:07.078228+00:00" },
+      { "printingId": "971eba73-3c5f-4306-a6d5-700e8b748c9b", "language": "zh-tw", "nativeName": "瑪俐", "setId": "5578c7d0-f386-4945-b651-65dd2f3ee2d3", "collectorNumber": "143", "expectedPublicUpdatedAt": "2026-10-06T18:49:26.171478+00:00" },
+      { "printingId": "a52f71c8-a76c-449a-8030-219ec64a61d8", "language": "zh-tw", "nativeName": "瑪俐", "setId": "d14fde0e-c786-41d0-93ef-6dc69cef94d0", "collectorNumber": "156", "expectedPublicUpdatedAt": "2026-10-06T18:49:23.353178+00:00" },
+      { "printingId": "c3ee4722-7304-4cbf-a905-93162e371e76", "language": "zh-tw", "nativeName": "瑪俐", "setId": "1217161f-69bf-4176-acce-93f23e475d04", "collectorNumber": "026", "expectedPublicUpdatedAt": "2026-10-06T18:50:07.078228+00:00" },
+      { "printingId": "d2132ffe-de94-462d-be98-8b6fba08e8ad", "language": "zh-tw", "nativeName": "瑪俐", "setId": "205ab185-9052-4965-b9f0-20fe44b7b61f", "collectorNumber": "149", "expectedPublicUpdatedAt": "2026-10-06T18:49:16.223958+00:00" },
+      { "printingId": "f9c8c84e-1179-4585-8a38-9591727bb676", "language": "zh-tw", "nativeName": "瑪俐", "setId": "70184f97-2d37-457a-8ae4-21a4b40d270c", "collectorNumber": "147", "expectedPublicUpdatedAt": "2026-10-06T18:49:57.558818+00:00" }
+    ],
+    "expectedGeneratedRecord": ["zh-tw", "瑪俐", "Marnie", ["1386b19f-ada3-447a-83d0-105acf48752c", "3467f1b3-cfed-47c1-bddb-73a6507009b4", "44b54476-f33f-435f-8985-b412cb5edb4c", "4a459e00-0853-43a7-b0a6-e9d0f56c42f6", "4a9af5de-61f9-4bb7-8133-5d28e2b356ad", "63019ce2-f59b-4aed-a3e0-025789ecb7ab", "818b3095-25cf-491e-b536-6a2e7513a3a0", "971eba73-3c5f-4306-a6d5-700e8b748c9b", "a52f71c8-a76c-449a-8030-219ec64a61d8", "c3ee4722-7304-4cbf-a905-93162e371e76", "d2132ffe-de94-462d-be98-8b6fba08e8ad", "f9c8c84e-1179-4585-8a38-9591727bb676"]]
+  }
+}

@@ -77,6 +77,59 @@ async function staleComponentRequestsCannotReplaceSelectedPrice() {
   assert.equal(slots[0], null, 'an unmounted panel must ignore late price responses');
 }
 
+async function presentationCachePreservesAccountAccess() {
+  let account: string | null = 'owner-a';
+  let calls = 0;
+  let duringFetch: (() => void) | undefined;
+  const pricing = load<typeof import('../lib/pricingV2')>('lib/pricingV2.ts', {
+    './stackrApiV1': { stackrApiClient: { getPricingCacheScope: async () => {
+      if (!account) throw new Error('Sign in to read saved prices.');
+      return account;
+    } } },
+    './stackrDomainAdapter': { fetchStackrPrice: async () => {
+      calls++;
+      const value = account === 'owner-a' ? 42 : 84;
+      duringFetch?.();
+      return { resolved: { card: { cardId: 'card' }, variantId: 'normal' }, price: {
+        currency: 'GBP', status: 'market_estimate', freshness: 'fresh',
+        estimates: { central: value, low: null, high: null }, confidence: { score: 0.2, label: 'low' },
+        sample: { total: 1, sold: 0, active: 0, sources: 1 }, sourceBreakdown: [{ provider: 'tcgdex',
+          evidenceType: 'provider_market_estimate', originalCurrency: 'EUR', originalAmount: 50,
+          fxRate: 0.84, fxDate: '2026-10-10', rawRecordRef: 'fixture-record' }],
+        calculatedAt: null, staleAfter: null, estimateVersion: 'fixture', priceType: 'market_estimate',
+      } };
+    } },
+  });
+  const first = await pricing.fetchStackrPricingV2('card');
+  assert.equal(first.marketPrice, 42);
+  assert.equal(first.sourceBreakdown[0].source, 'tcgdex', 'preserve the API provider field');
+  assert.equal(first.sourceBreakdown[0].originalCurrency, 'EUR');
+  assert.equal(first.sourceBreakdown[0].originalAmount, 50);
+  assert.equal(first.sourceBreakdown[0].fxRate, 0.84);
+  assert.equal(first.sourceBreakdown[0].rawRecordRef, 'fixture-record', 'retain source provenance instead of reducing it to a label');
+  assert.equal((await pricing.fetchStackrPricingV2('card')).marketPrice, 42);
+  assert.equal(calls, 1, 'same-account cache hits avoid price requests');
+  account = 'owner-b';
+  assert.equal((await pricing.fetchStackrPricingV2('card')).marketPrice, 84, 'another account cannot reuse owner A pricing');
+  assert.equal((await pricing.fetchStackrPricingV2('card', { accountScope: 'owner-a' } as never)).marketPrice, 84,
+    'unexpected caller properties cannot override the resolved account namespace');
+  assert.equal(calls, 2);
+  account = null;
+  await assert.rejects(pricing.fetchStackrPricingV2('card'), /Sign in/);
+  assert.equal(calls, 2, 'signed-out cache reads fail before requesting prices');
+  account = 'owner-a';
+  duringFetch = () => { account = 'owner-b'; };
+  await assert.rejects(pricing.fetchStackrPricingV2('other-card'), /account changed/);
+  duringFetch = undefined;
+  assert.equal((await pricing.fetchStackrPricingV2('other-card')).marketPrice, 84,
+    'an old in-flight account response is neither returned nor cached for the new account');
+  assert.equal(calls, 4);
+  for (let i = 0; i < 200; i++) await pricing.fetchStackrPricingV2(`bounded-${i}`);
+  const beforeEvictedRead = calls;
+  await pricing.fetchStackrPricingV2('card');
+  assert.equal(calls, beforeEvictedRead + 1, 'long sessions do not retain every historical cached card');
+}
+
 async function main() {
   const cardId = '00000000-0000-4000-8000-000000000001';
   const normalId = '00000000-0000-4000-8000-000000000002';
@@ -127,6 +180,7 @@ async function main() {
     } },
   });
   const pricing = load<typeof import('../lib/pricingV2')>('lib/pricingV2.ts', {
+    './stackrApiV1': { stackrApiClient: { getPricingCacheScope: async () => 'fixture-owner' } },
     './stackrDomainAdapter': { fetchStackrPrice: (reference: string, options: Parameters<typeof adapter.fetchStackrPrice>[1]) => (
       adapter.fetchStackrPrice(reference, options, client as never)
     ) },
@@ -178,7 +232,8 @@ async function main() {
   const detail = readFileSync('app/card/[id].tsx', 'utf8');
   assert.match(detail, /<PricingV2Summary[\s\S]{0,400}variant=\{typeof params\.variant[\s\S]{0,200}finish=\{typeof params\.finish/);
   await staleComponentRequestsCannotReplaceSelectedPrice();
-  console.log('Pricing client tests passed: exact variant/finish/edition, conflicting identities, language/set isolation, grading, forced cache refresh, currency and late UI responses.');
+  await presentationCachePreservesAccountAccess();
+  console.log('Pricing client tests passed: exact identity, forced refresh, currency, late UI responses, account/sign-out isolation, provider labels and bounded presentation cache.');
 }
 
 void main().catch((error) => { console.error(error); process.exitCode = 1; });

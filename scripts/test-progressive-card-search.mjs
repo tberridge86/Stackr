@@ -4,6 +4,9 @@ import ts from 'typescript';
 import vm from 'node:vm';
 const optionalExports = {};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/optionalCatalogueEnrichment.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, { exports: optionalExports, AbortController, setTimeout, clearTimeout });
+const normalizationExports = {};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/searchNormalisation.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, { exports: normalizationExports });
+const { expandSearchQuery, normaliseSearchText } = normalizationExports;
 
 const tick = () => new Promise(setImmediate);
 function deferred() { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; }
@@ -84,38 +87,129 @@ assert.equal(finalRows[0].image_small, 'https://example.test/approved.webp');
 const EMPTY_RESULTS = { cards: [], sets: [], sealed: [], collectors: [], listings: [], graded: [] };
 const requestRef = { current: 0 }, previousSearchRef = { current: null };
 let state = EMPTY_RESULTS;
+let errors = {};
+let cachedCanonicalRows = null;
 const requests = new Map();
+assert.match(
+  fs.readFileSync('app/(tabs)/search.tsx', 'utf8'),
+  /\[trimmed, category, selectedLanguage, searchIdentityEpoch\]/,
+  'The mounted search callback must scope retained results to the active account generation.',
+);
 const query = { select() { return this; }, ilike() { return this; }, eq() { return this; }, or() { return this; }, limit: async () => ({ data: [] }) };
 const noop = () => {};
 const run = extract('app/(tabs)/search.tsx', 'runSearch', {
   requestRef, previousSearchRef, category: 'all', selectedLanguage: 'ja', searchIdentityEpoch: 0,
   EMPTY_RESULTS, SEARCH_FIRST_PAINT_BUDGET_MS: 1,
   setResults: value => { state = typeof value === 'function' ? value(state) : value; },
-  setLoading: noop, setRefreshing: noop, setErrors: noop, setSuggestion: noop, setSetSuggestion: noop, setSearchError: noop,
-  expandSearchQuery: q => [q], normaliseSearchText: q => q,
+  setLoading: noop, setRefreshing: noop, setErrors: value => { errors = value; }, setSuggestion: noop, setSetSuggestion: noop, setSearchError: noop,
+  expandSearchQuery, normaliseSearchText,
   getCatalogueProductTypeFilter: () => null, getListingProductTypeFilter: () => null,
   productTypeMatchesIntent: () => false, isRawCardCategory: () => true, isListingProductCategory: () => false, isGradedCategory: () => false,
   correctPokemonNameQuery: async () => null, searchSetsQuick: async () => [], searchMarketProducts: async () => [],
-  readCachedCanonicalSearch: async () => null, writeCachedCanonicalSearch: async () => {},
+  readCachedCanonicalSearch: async () => cachedCanonicalRows, writeCachedCanonicalSearch: async () => {},
   searchLocalPokemonCards: (q, options) => { const d = deferred(); requests.set(q, { ...d, options }); return d.promise; },
   supabase: { from: () => query },
   settleWithin: async () => ({ status: 'pending' }),
+  settleSearchSource: promise => promise.then(
+    value => ({ status: 'fulfilled', value }),
+    reason => ({ status: 'rejected', reason }),
+  ),
   isFulfilled: result => result.status === 'fulfilled', isRejected: result => result.status === 'rejected',
   mapCardResults: rows => rows, mapListingResult: row => row, sanitizeGate0CommerceCopy: x => x,
-  retainFailedSearchGroups: (next, errors, previous) => Object.fromEntries(Object.entries(next).map(([key, value]) => [key, errors[key] && previous ? previous[key] : value])),
+  retainFailedSearchGroups: (next, errors, previous, currentResults = {}) => Object.fromEntries(Object.entries(next).map(([key, value]) => [key, errors[key] && previous && !currentResults[key] && value.length === 0 ? previous[key] : value])),
   fetchCardListingStats: async () => new Map(), fetchOwnedCardRows: async () => [], fetchProductListingStats: async () => new Map(),
   console: { log: noop },
 });
+
+// Protect the actual screen's primary-query boundary, rather than a mocked
+// normalizer: dropping native names can turn an exact query into a generic ex
+// or number search before the catalogue sees it.
+for (const [input, expected] of [
+  ['リザードン ex', 'リザードン ex'],
+  ['ピカチュウ 025', 'ピカチュウ 025'],
+  ['皮卡丘 ex', '皮卡丘 ex'],
+  ['피카츄 025', '피카츄 025'],
+  ['ヒ\u309aカチュウ', 'ピカチュウ'],
+  ['Nidoran♀ δ', 'nidoran♀ δ'],
+  ['Nidoran♂ δ', 'nidoran♂ δ'],
+  ['Pokémon', 'pokemon'],
+  ['Flabébé', 'flabebe'],
+  ['Farfetch’d', "farfetch'd"],
+  ['Charizard 4/102', 'charizard 4/102'],
+  ['# 004/102', '#004/102'],
+  ['Ｍ５　００２', 'm5 002'],
+  ['ＳＶＡＭ　ＧＲＡ', 'svam gra'],
+  ['PSA 10 Charizard', 'psa 10 charizard'],
+  ['00000000-0000-4000-8000-000000000025', '00000000-0000-4000-8000-000000000025'],
+]) {
+  const request = run(input);
+  assert.equal([...requests.keys()].at(-1), expected, `The mounted screen must retain identity terms in ${input}`);
+  requests.get(expected).resolve([]);
+  await request;
+}
+assert.deepEqual(Array.from(expandSearchQuery('Pokémon sv')), ['pokemon sv', 'pokemon scarlet violet']);
+assert.deepEqual(Array.from(expandSearchQuery('BGS Charizard')), ['bgs charizard', 'beckett charizard']);
+assert.notEqual(normaliseSearchText('Nidoran♀ δ'), normaliseSearchText('Nidoran♂ δ'));
+assert.notEqual(normaliseSearchText('Nidoran♂ δ'), normaliseSearchText('Nidoran♂'));
+
+// Use the actual set search-text and ranking functions. The native title must
+// survive both query expansion and the set's English/native haystack.
+const boundedSetEditDistance = extract('app/(tabs)/search.tsx', 'boundedSetEditDistance', {});
+const fuzzySetWordScore = extract('app/(tabs)/search.tsx', 'fuzzySetWordScore', { boundedSetEditDistance });
+const getSetSearchText = extract('app/(tabs)/search.tsx', 'getSetSearchText', {
+  normaliseSearchText,
+  getPreferredSetDisplayName: value => value.englishDisplayName ?? value.canonicalName,
+  normalizePokemonCardLanguage: value => value,
+});
+const rankSet = extract('app/(tabs)/search.tsx', 'rankSet', { getSetSearchText, normaliseSearchText, fuzzySetWordScore });
+const nativeSet = { id: 'ja-sv3', name: 'Ruler of the Black Flame', localName: '黒炎の支配者', language: 'ja', externalIds: { setCode: 'sv3' } };
+const unrelatedSet = { id: 'ja-sv2a', name: 'Pokemon Card 151', localName: 'ポケモンカード151', language: 'ja', externalIds: { setCode: 'sv2a' } };
+const searchSetsQuick = extract('app/(tabs)/search.tsx', 'searchSetsQuick', {
+  fetchAllSets: async () => [unrelatedSet, nativeSet], rankSet,
+});
+for (const input of ['黒炎の支配者', 'Ruler of the Black Flame', 'sv3']) {
+  assert.deepEqual((await searchSetsQuick(input, expandSearchQuery(input).map(normaliseSearchText), 'ja')).map(set => set.id), [nativeSet.id]);
+}
+assert.deepEqual(await searchSetsQuick('不存在的系列', expandSearchQuery('不存在的系列').map(normaliseSearchText), 'ja'), []);
+
 const old = run('Alpha');
-requests.get('Alpha').options.onCanonicalResults([{ id: 'Alpha' }]);
+requests.get('alpha').options.onCanonicalResults([{ id: 'Alpha' }]);
 assert.equal(state.cards[0].id, 'Alpha');
 await tick(); assert.equal(state.cards[0].id, 'Alpha', 'first-phase pending render keeps early rows');
 const current = run('Bravo');
-requests.get('Bravo').options.onCanonicalResults([{ id: 'Bravo' }]);
-requests.get('Alpha').options.onCanonicalResults([{ id: 'stale' }]);
+requests.get('bravo').options.onCanonicalResults([{ id: 'Bravo' }]);
+requests.get('alpha').options.onCanonicalResults([{ id: 'stale' }]);
 assert.equal(state.cards[0].id, 'Bravo', 'late callbacks from previous query are ignored');
-requests.get('Alpha').resolve([{ id: 'Alpha' }]); await old;
+requests.get('alpha').resolve([{ id: 'Alpha' }]); await old;
 assert.equal(state.cards[0].id, 'Bravo');
-requests.get('Bravo').reject(new Error('optional enrichment failed')); await current;
+requests.get('bravo').reject(new Error('optional enrichment failed')); await current;
 assert.equal(state.cards[0].id, 'Bravo', 'final failure retains current canonical matches');
-console.log('Progressive search passed: rows before artwork, optional failure, identity preservation, first/final renders and stale-query rejection.');
+
+// A failed fresh factual read must never be presented as a successful cache
+// refresh. The mounted callback keeps the useful saved row and exposes the
+// existing retry path through its card-group error state.
+cachedCanonicalRows = [{ id: 'Cached' }];
+const cachedFailure = run('Cached');
+await tick();
+assert.equal(state.cards[0].id, 'Cached', 'cached factual rows remain useful while a refresh is pending');
+requests.get('cached').reject(new Error('fresh catalogue request failed'));
+await cachedFailure;
+assert.equal(state.cards[0].id, 'Cached', 'a failed refresh must retain the exact cached row');
+assert.equal(errors.cards, 'Card results could not be refreshed.', 'a failed fresh factual read must expose retry instead of looking current');
+cachedCanonicalRows = null;
+
+// Canonical rows may arrive before optional artwork recovery. A completed
+// factual result remains successful and must not inherit the earlier failure.
+const enrichedCard = run('Enriched');
+requests.get('enriched').options.onCanonicalResults([{ id: 'Enriched', image_small: null }]);
+requests.get('enriched').resolve([{ id: 'Enriched', image_small: 'https://example.test/art.webp' }]);
+await enrichedCard;
+assert.equal(state.cards[0].image_small, 'https://example.test/art.webp');
+assert.equal(errors.cards, undefined, 'successful factual rows and optional artwork recovery must not show a false failure');
+
+const emptySearch = run('Empty');
+requests.get('empty').resolve([]);
+await emptySearch;
+assert.deepEqual(state.cards, [], 'a successful empty factual response remains an honest no-match result');
+assert.equal(errors.cards, undefined, 'a successful empty factual response must not become a refresh error');
+console.log('Progressive search passed: native/gender/number queries, native/English set ranking, rows before artwork, optional failure, identity preservation, first/final renders and stale-query rejection.');

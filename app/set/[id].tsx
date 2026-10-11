@@ -15,7 +15,8 @@ import {
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { fetchAllSets, fetchCardsForSet, fetchPokemonSetForDetail, getKnownPokemonSetTotal, getPokemonSetVisualUrl, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
+import { fetchAllSets, fetchCardsForSet, fetchPokemonSetForDetail, getExactPokemonSetCardTotal, getKnownPokemonSetTotal, getPokemonSetVisualUrl, mergeSetCardArtwork, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
+import { enrichStackrCardArtworkFromFacts } from '../../lib/stackrDomainAdapter';
 import { getPokemonSetLanguageFromPrefixedId, stripPokemonSetLanguagePrefix } from '../../lib/pokemonSetIdentity';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { matchesEnglishSetReference } from '../../lib/englishSetIdentity';
@@ -26,6 +27,11 @@ import { StackrBinderButton, StackrBrowseToolbar, StackrBrowseSummary, StackrBro
 import { StackrImage } from '../../components/StackrImage';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 import { createActivityPost } from '../../lib/activity';
+import {
+  createDirectCollectionHistoryIntent,
+  recordDirectCollectionHistory,
+  recoverDirectCollectionHistory,
+} from '../../lib/directCollectionHistoryRecovery';
 import { getIncrementalListWindow } from '../../lib/performance';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { getPreferredCardDisplayName } from '../../lib/pokemonDisplayNames';
@@ -638,10 +644,22 @@ CardItem.displayName = 'CardItem';
 
 export default function SetDetailScreen() {
   const { theme } = useTheme();
-  const { user: authenticatedUser } = useAuth();
+  const { user: authenticatedUser, loading: authLoading, error: authError } = useAuth();
   const authUserId = authenticatedUser?.id ?? null;
+  const loadRequestRef = useRef(0);
   const authUserIdRef = useRef(authUserId);
   authUserIdRef.current = authUserId;
+  const ownershipIdentityRef = useRef(authUserId);
+  const ownershipGenerationRef = useRef(0);
+  const ownershipLoadedGenerationRef = useRef(-1);
+  const authBoundaryKey = `${authUserId ?? 'signed-out'}:${authLoading ? 'loading' : 'ready'}:${authError ? 'error' : 'clear'}`;
+  const authBoundaryRef = useRef(authBoundaryKey);
+  if (ownershipIdentityRef.current !== authUserId) ownershipIdentityRef.current = authUserId;
+  if (authBoundaryRef.current !== authBoundaryKey) {
+    authBoundaryRef.current = authBoundaryKey;
+    ownershipGenerationRef.current += 1;
+    loadRequestRef.current += 1;
+  }
   const { id, language: routeLanguageParam } = useLocalSearchParams<{ id: string; language?: string }>();
   const setId = Array.isArray(id) ? id[0] : id;
   const requestedLanguage = Array.isArray(routeLanguageParam) ? routeLanguageParam[0] : routeLanguageParam;
@@ -650,13 +668,17 @@ export default function SetDetailScreen() {
   const [cards, setCards] = useState<PokemonCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [ownershipReady, setOwnershipReady] = useState(false);
-  const loadRequestRef = useRef(0);
+  const [ownershipError, setOwnershipError] = useState<string | null>(null);
+  const [ownershipRetry, setOwnershipRetry] = useState(0);
+  const artworkAbortRef = useRef<AbortController | null>(null);
   const [setLogoFailed, setSetLogoFailed] = useState(false);
   const [variantQuantities, setVariantQuantities] = useState<Map<string, number>>(new Map());
   const [userId, setUserId] = useState<string | null>(null);
   const [quantityTarget, setQuantityTarget] = useState<QuantityTarget>(null);
   const [quantityDraft, setQuantityDraft] = useState('1');
   const [quantitySaving, setQuantitySaving] = useState(false);
+  const quantityMutationRef = useRef(new Map<string, number>());
+  const emptyVariantQuantitiesRef = useRef(new Map<string, number>());
 
   const [browseFiltersVisible, setBrowseFiltersVisible] = useState(false);
   const [search, setSearch] = useState('');
@@ -671,6 +693,10 @@ export default function SetDetailScreen() {
     setSort('number');
     setFinishSection('all');
   }, []);
+  const currentOwnershipGeneration = ownershipGenerationRef.current;
+  const authReady = !authLoading && !authError;
+  const ownershipVisible = authReady && ownershipReady && ownershipLoadedGenerationRef.current === currentOwnershipGeneration && userId !== null && userId === authUserId;
+  const visibleVariantQuantities = ownershipVisible ? variantQuantities : emptyVariantQuantitiesRef.current;
 
   // ===============================
   // LOAD DATA
@@ -678,13 +704,20 @@ export default function SetDetailScreen() {
 
   const loadSetData = useCallback(async () => {
     if (!setId) return;
+    artworkAbortRef.current?.abort();
     const request = ++loadRequestRef.current;
-    const isCurrent = () => loadRequestRef.current === request && authUserIdRef.current === authUserId;
+    const generation = ownershipGenerationRef.current;
+    const isCurrent = () => loadRequestRef.current === request && authUserIdRef.current === authUserId
+      && ownershipGenerationRef.current === generation && authBoundaryRef.current === authBoundaryKey;
     try {
       setLoading(true);
       setOwnershipReady(false);
+      setOwnershipError(null);
       setUserId(null);
       setVariantQuantities(new Map());
+      setQuantityTarget(null);
+      setQuantityDraft('1');
+      setQuantitySaving(false);
       const language = requestedLanguage || getRouteSetLanguage(setId);
       let currentSet = await fetchPokemonSetForDetail(setId, { language }).catch(() => null);
       if (!currentSet) {
@@ -693,11 +726,30 @@ export default function SetDetailScreen() {
           || (language === 'en' && matchesEnglishSetReference(s, setId))) ?? null;
       }
       if (!currentSet) throw new Error('Set details are temporarily unavailable.');
-      const fetchedCards = await fetchCardsForSet(currentSet.id, { language: currentSet.language ?? language });
+      const currentSetCardMinimum = getExactPokemonSetCardTotal(currentSet) ?? 0;
+      const fetchedCards = await fetchCardsForSet(currentSet.id, {
+        language: currentSet.language ?? language,
+        includeAssets: false,
+        minimumCardCount: currentSetCardMinimum,
+      });
       if (!isCurrent()) return;
       setSetInfo(currentSet);
       setCards(fetchedCards);
       setLoading(false);
+
+      // Facts are enough for first paint. Recover approved card artwork in the
+      // background, without allowing a stale route/account to repaint cards.
+      const artworkAbort = new AbortController();
+      artworkAbortRef.current = artworkAbort;
+      void enrichStackrCardArtworkFromFacts(fetchedCards, artworkAbort.signal, undefined, (progress) => {
+        if (!isCurrent() || artworkAbort.signal.aborted) return;
+        setCards((current) => mergeSetCardArtwork(current, progress));
+      }).then((enriched) => {
+        if (!isCurrent() || artworkAbort.signal.aborted) return;
+        setCards((current) => mergeSetCardArtwork(current, enriched));
+      }).catch(() => undefined).finally(() => {
+        if (artworkAbortRef.current === artworkAbort) artworkAbortRef.current = null;
+      });
 
       // Paint the cards first. Only this set's marks are requested in the background.
       void fetchPokemonSetForDetail(currentSet.id, { language: currentSet.language, includeAssets: true })
@@ -734,18 +786,33 @@ export default function SetDetailScreen() {
           ])
         ));
       }
-      if (isCurrent()) setOwnershipReady(true);
+      if (isCurrent()) {
+        ownershipLoadedGenerationRef.current = generation;
+        setOwnershipReady(true);
+      }
     } catch (e) {
       console.log('Failed to load set data', e);
+      if (isCurrent()) setOwnershipError('Could not check ownership.');
     } finally {
       if (isCurrent()) setLoading(false);
     }
-  }, [setId, authUserId, requestedLanguage]);
+  }, [setId, authUserId, authBoundaryKey, requestedLanguage]);
 
   useEffect(() => {
     void loadSetData();
-    return () => { loadRequestRef.current += 1; };
-  }, [loadSetData]);
+    return () => {
+      loadRequestRef.current += 1;
+      artworkAbortRef.current?.abort();
+      artworkAbortRef.current = null;
+    };
+  }, [loadSetData, ownershipRetry]);
+
+  useEffect(() => {
+    if (!ownershipVisible || !userId) return;
+    void recoverDirectCollectionHistory(userId).then((recovery) => {
+      if (recovery.invalid) console.warn('Saved collection history recovery needs verification.');
+    }).catch(() => undefined);
+  }, [ownershipVisible, userId]);
 
   useEffect(() => {
     setSetLogoFailed(false);
@@ -754,32 +821,57 @@ export default function SetDetailScreen() {
   }, [setId, clearCardFilters]);
 
   // ===============================
+  const retryOwnership = useCallback(() => setOwnershipRetry((current) => current + 1), []);
+
   // QUANTITY
   // ===============================
 
   const openQuantityModal = useCallback((card: PokemonCard, variant: string) => {
-    if (!ownershipReady) {
+    if (!ownershipVisible) {
       Alert.alert('Collection is still loading', 'Your cards are ready to browse. Please wait for your saved quantities before editing.');
       return;
     }
-    const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
+    const currentQuantity = visibleVariantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
     void stackrHaptics.selection();
     setQuantityTarget({ card, variant });
     setQuantityDraft(String(Math.max(1, currentQuantity || 1)));
-  }, [setId, variantQuantities, ownershipReady]);
+  }, [setId, visibleVariantQuantities, ownershipVisible]);
 
   const handleSetVariantQuantity = useCallback(async (cardId: string, variant: string, nextQuantity: number) => {
-    if (!userId || userId !== authUserIdRef.current || !ownershipReady) return;
+    const generation = currentOwnershipGeneration;
+    const isCurrentOwnership = () => userId !== null && userId === authUserIdRef.current
+      && ownershipIdentityRef.current === userId && ownershipGenerationRef.current === generation && ownershipReady;
     const key = getVariantKey(cardId, setId ?? '', variant);
-    const previousQuantity = variantQuantities.get(key) ?? 0;
+    if (!isCurrentOwnership() || quantityMutationRef.current.get(key) === generation) return;
+    quantityMutationRef.current.set(key, generation);
+    const previousQuantity = visibleVariantQuantities.get(key) ?? 0;
     const targetCard = cards.find((card) => card.id === cardId);
+    const historyCardSnapshot = targetCard ? {
+      name: targetCard.name ?? null,
+      number: targetCard.number ?? null,
+      language: targetCard.language ?? setInfo?.language ?? null,
+      imageSmall: targetCard.images?.small ?? null,
+      imageLarge: targetCard.images?.large ?? null,
+    } : {
+      // Keep an explicit empty snapshot: a delayed replay must not fill this
+      // mutation with newer catalogue facts when its target is no longer loaded.
+      name: null,
+      number: null,
+      language: null,
+      imageSmall: null,
+      imageLarge: null,
+    };
     const recordActivity = async (post: Parameters<typeof createActivityPost>[0]) => {
-      try {
-        const result = await createActivityPost(post, { expectedUserId: userId });
-        if (result.status === 'failed' && userId === authUserIdRef.current) Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
-      } catch (historyError) {
-        if (userId !== authUserIdRef.current || (historyError instanceof Error && historyError.message === 'activity_post_identity_changed')) return;
-        Alert.alert('Collection updated', 'Your card change was saved, but its history entry could not be recorded.');
+      if (!isCurrentOwnership()) return;
+      const intent = createDirectCollectionHistoryIntent({ ownerUserId: userId!, activity: post });
+      const result = await recordDirectCollectionHistory(intent);
+      if (result.status !== 'created' && isCurrentOwnership()) {
+        Alert.alert(
+          'Collection updated',
+          result.status === 'pending'
+            ? 'Your card change was saved, and its history entry is waiting to be recovered.'
+            : 'Your card change was saved, but its history entry could not be recorded.',
+        );
       }
     };
 
@@ -808,6 +900,7 @@ export default function SetDetailScreen() {
             setId,
             type: 'binder_remove',
             isPositive: false,
+            cardSnapshot: historyCardSnapshot,
           });
         }
         return;
@@ -828,6 +921,7 @@ export default function SetDetailScreen() {
           setId,
           type: 'quantity_reduced',
           isPositive: false,
+          cardSnapshot: historyCardSnapshot,
         });
       } else if (nextQuantity > previousQuantity) {
         await recordActivity({
@@ -837,10 +931,11 @@ export default function SetDetailScreen() {
           setId,
           type: 'binder_add',
           isPositive: true,
+          cardSnapshot: historyCardSnapshot,
         });
       }
     } catch (error: any) {
-      if (userId !== authUserIdRef.current) return;
+      if (!isCurrentOwnership()) return;
       setVariantQuantities((prev) => {
         const next = new Map(prev);
         if (previousQuantity <= 0) next.delete(key);
@@ -856,48 +951,53 @@ export default function SetDetailScreen() {
           : 'Could not save this card quantity.'
       );
       throw error;
+    } finally {
+      if (quantityMutationRef.current.get(key) === generation) quantityMutationRef.current.delete(key);
     }
-  }, [cards, userId, setId, variantQuantities, ownershipReady]);
+  }, [cards, userId, setId, setInfo?.language, visibleVariantQuantities, ownershipReady, currentOwnershipGeneration]);
 
   const handleQuickAddVariant = useCallback(async (card: PokemonCard, variant: string) => {
     if (!variant) return;
     void stackrHaptics.selection();
-    const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
+    if (!ownershipVisible) return;
+    const currentQuantity = visibleVariantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
     try {
       await handleSetVariantQuantity(card.id, variant, currentQuantity + 1);
     } catch {
       // The optimistic rollback and accessible error were already handled above.
     }
-  }, [handleSetVariantQuantity, setId, variantQuantities]);
+  }, [handleSetVariantQuantity, setId, visibleVariantQuantities, ownershipVisible]);
 
   const saveQuantityModal = useCallback(async () => {
-    if (!quantityTarget) return;
+    if (!ownershipVisible || !quantityTarget) return;
     const nextQuantity = Math.max(1, Math.min(99, Number.parseInt(quantityDraft, 10) || 1));
 
+    const generation = currentOwnershipGeneration;
     try {
       setQuantitySaving(true);
       await handleSetVariantQuantity(quantityTarget.card.id, quantityTarget.variant, nextQuantity);
-      setQuantityTarget(null);
+      if (ownershipGenerationRef.current === generation && ownershipIdentityRef.current === authUserIdRef.current) setQuantityTarget(null);
     } catch {
       // Error is surfaced in handleSetVariantQuantity.
     } finally {
-      setQuantitySaving(false);
+      if (ownershipGenerationRef.current === generation && ownershipIdentityRef.current === authUserIdRef.current) setQuantitySaving(false);
     }
-  }, [handleSetVariantQuantity, quantityDraft, quantityTarget]);
+  }, [handleSetVariantQuantity, ownershipVisible, quantityDraft, quantityTarget, currentOwnershipGeneration]);
 
   const removeQuantityModal = useCallback(async () => {
-    if (!quantityTarget) return;
+    if (!ownershipVisible || !quantityTarget) return;
 
+    const generation = currentOwnershipGeneration;
     try {
       setQuantitySaving(true);
       await handleSetVariantQuantity(quantityTarget.card.id, quantityTarget.variant, 0);
-      setQuantityTarget(null);
+      if (ownershipGenerationRef.current === generation && ownershipIdentityRef.current === authUserIdRef.current) setQuantityTarget(null);
     } catch {
       // Error is surfaced in handleSetVariantQuantity.
     } finally {
-      setQuantitySaving(false);
+      if (ownershipGenerationRef.current === generation && ownershipIdentityRef.current === authUserIdRef.current) setQuantitySaving(false);
     }
-  }, [handleSetVariantQuantity, quantityTarget]);
+  }, [handleSetVariantQuantity, ownershipVisible, quantityTarget, currentOwnershipGeneration]);
 
   // ===============================
   // FILTER + SORT
@@ -967,7 +1067,7 @@ export default function SetDetailScreen() {
   const filteredCards = useMemo(() => {
     let result = cards.filter((card) => {
       const variants = getVariants(card, setId);
-      const anyOwned = variants.some((v) => (variantQuantities.get(getVariantKey(card.id, setId ?? '', v)) ?? 0) > 0);
+      const anyOwned = variants.some((v) => (visibleVariantQuantities.get(getVariantKey(card.id, setId ?? '', v)) ?? 0) > 0);
       const displayName = getSetCardDisplayName(card, card.name);
       const matchesSearch =
         displayName.toLowerCase().includes(search.toLowerCase()) ||
@@ -995,7 +1095,7 @@ export default function SetDetailScreen() {
     });
 
     return result;
-  }, [cards, variantQuantities, search, filter, selectedRarity, sort, setId, finishSection, hasCompletionistSections, completionistFamilyCounts]);
+  }, [cards, visibleVariantQuantities, search, filter, selectedRarity, sort, setId, finishSection, hasCompletionistSections, completionistFamilyCounts]);
 
   const cardGridWindow = useMemo(
     () => getIncrementalListWindow(2, { initialRows: 8, pageRows: 6, minInitial: 16, minPage: 12 }),
@@ -1033,8 +1133,8 @@ export default function SetDetailScreen() {
   }, [cardGridWindow.pageSize, filteredCards.length]);
 
   const ownedCardCount = useMemo(() =>
-    cards.filter((c) => getVariants(c, setId).some((v) => (variantQuantities.get(getVariantKey(c.id, setId ?? '', v)) ?? 0) > 0)).length,
-    [cards, variantQuantities, setId]
+    cards.filter((c) => getVariants(c, setId).some((v) => (visibleVariantQuantities.get(getVariantKey(c.id, setId ?? '', v)) ?? 0) > 0)).length,
+    [cards, visibleVariantQuantities, setId]
   );
 
   const knownSetTotal = getKnownPokemonSetTotal(setInfo?.id ?? setId, setInfo?.language ?? getRouteSetLanguage(setId));
@@ -1061,12 +1161,12 @@ export default function SetDetailScreen() {
   const renderCard = useCallback(({ item: card }: { item: PokemonCard & { runtimeCataloguePricing?: CataloguePriceDisplay } }) => (
     <CardItem
       card={card}
-      variantQuantities={variantQuantities}
+      variantQuantities={visibleVariantQuantities}
       setId={setId ?? ''}
       onOpenQuantity={openQuantityModal}
       onQuickAdd={handleQuickAddVariant}
     />
-  ), [variantQuantities, setId, openQuantityModal, handleQuickAddVariant]);
+  ), [visibleVariantQuantities, setId, openQuantityModal, handleQuickAddVariant]);
 
   // ===============================
   // LOADING STATE
@@ -1100,8 +1200,9 @@ export default function SetDetailScreen() {
     );
   }
 
-  const selectedVariantQuantity = quantityTarget
-    ? variantQuantities.get(getVariantKey(quantityTarget.card.id, setId ?? '', quantityTarget.variant)) ?? 0
+  const visibleQuantityTarget = ownershipVisible ? quantityTarget : null;
+  const selectedVariantQuantity = visibleQuantityTarget
+    ? visibleVariantQuantities.get(getVariantKey(visibleQuantityTarget.card.id, setId ?? '', visibleQuantityTarget.variant)) ?? 0
     : 0;
   const activeFinishSection = hasCompletionistSections && finishSection !== 'all'
     ? availableFinishSections.find((section) => section.key === finishSection) ?? null
@@ -1183,18 +1284,25 @@ export default function SetDetailScreen() {
               />
             ) : undefined}
             action={
-              <StackrBinderButton onPress={() => router.push({
-                pathname: '/binder/new',
-                params: {
-                  sourceSetId: setInfo.id ?? setId,
-                  type: 'official',
-                  language: setInfo.language ?? getRouteSetLanguage(setId),
-                },
-              })} />
+              <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                <StackrBinderButton onPress={() => router.push({
+                  pathname: '/binder/new',
+                  params: {
+                    sourceSetId: setInfo.id ?? setId,
+                    type: 'official',
+                    language: setInfo.language ?? getRouteSetLanguage(setId),
+                  },
+                })} />
+                {authUserId && ownershipError ? (
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel="Retry ownership" onPress={retryOwnership} style={{ minHeight: 44, justifyContent: 'center' }}>
+                    <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '800' }}>Retry</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
             }
           >
             <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-              {ownershipReady ? `${ownedCardCount} catalogue entries owned` : 'Checking ownership…'}
+              {ownershipVisible ? `${ownedCardCount} catalogue entries owned` : authUserId ? ownershipError ?? 'Checking ownership…' : 'Sign in to track ownership'}
             </Text>
             {activeFinishSection || activeRarityFilter ? (
               <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
@@ -1247,7 +1355,7 @@ export default function SetDetailScreen() {
       </StackrBrowseFilterSheet>
 
       <StackrBottomSheet
-        visible={quantityTarget !== null}
+        visible={visibleQuantityTarget !== null}
         title="Quantity owned"
         onClose={() => setQuantityTarget(null)}
         dismissible={!quantitySaving}
@@ -1257,27 +1365,27 @@ export default function SetDetailScreen() {
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
               <StackrImage
-                uri={quantityTarget?.card.images?.small ?? null}
-                fullUri={quantityTarget?.card.images?.large ?? null}
+                uri={visibleQuantityTarget?.card.images?.small ?? null}
+                fullUri={visibleQuantityTarget?.card.images?.large ?? null}
                 style={{ width: 58, height: 80, borderRadius: 8, backgroundColor: theme.colors.surface }}
                 contentFit="contain"
                 rounded={8}
-                cacheKey={`${quantityTarget?.card.id ?? 'card'}:${quantityTarget?.card.imageStatus ?? 'unknown'}:${quantityTarget?.card.images?.small ?? 'placeholder'}`}
-                accessibilityLabel={`${getSetCardDisplayName(quantityTarget?.card, 'Card')} card image`}
+                cacheKey={`${visibleQuantityTarget?.card.id ?? 'card'}:${visibleQuantityTarget?.card.imageStatus ?? 'unknown'}:${visibleQuantityTarget?.card.images?.small ?? 'placeholder'}`}
+                accessibilityLabel={`${getSetCardDisplayName(visibleQuantityTarget?.card, 'Card')} card image`}
                 onError={() => {
                   console.log('Card modal image failed', {
-                    cardId: quantityTarget?.card.id ?? null,
-                    imageUrl: quantityTarget?.card.images?.small ?? null,
+                    cardId: visibleQuantityTarget?.card.id ?? null,
+                    imageUrl: visibleQuantityTarget?.card.images?.small ?? null,
                   });
                 }}
               />
 
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>
-                  {getSetCardDisplayName(quantityTarget?.card, 'Card')}
+                  {getSetCardDisplayName(visibleQuantityTarget?.card, 'Card')}
                 </Text>
                 <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 4 }}>
-                  {quantityTarget ? shortVariant(quantityTarget.variant) : ''} · #{quantityTarget?.card.number ?? ''}
+                  {visibleQuantityTarget ? shortVariant(visibleQuantityTarget.variant) : ''} · #{visibleQuantityTarget?.card.number ?? ''}
                 </Text>
               </View>
 

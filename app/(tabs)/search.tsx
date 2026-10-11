@@ -196,6 +196,10 @@ const EMPTY_RESULTS: SearchResults = {
 };
 
 const SEARCH_FIRST_PAINT_BUDGET_MS = 420;
+// The public gateway's existing backend failure limit is four seconds. This
+// only bounds when the screen reports an unfinished source; it does not claim
+// to cancel transports that do not accept an AbortSignal.
+const SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS = 4_000;
 
 const SEARCH_SORT_OPTIONS: { key: SearchSortKey; label: string }[] = [
   { key: 'relevance', label: 'Most relevant' },
@@ -263,6 +267,23 @@ function settleWithin<T>(promise: Promise<T>, ms = SEARCH_FIRST_PAINT_BUDGET_MS)
     ),
     delay(ms).then((): TimedSettled<T> => ({ status: 'pending' })),
   ]);
+}
+
+/**
+ * A primary source may never settle even after the first partial result is
+ * useful. Make that state visible and let the screen finish loading without
+ * converting the unfinished source into an authoritative empty result.
+ */
+function settleSearchSource<T>(promise: Promise<T>, timeoutMs = SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS): Promise<PromiseSettledResult<T>> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      resolve({ status: 'rejected', reason: new Error('Search source timed out. Please try again.') });
+    }, timeoutMs);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve({ status: 'fulfilled', value }); },
+      (reason) => { clearTimeout(timer); resolve({ status: 'rejected', reason }); },
+    );
+  });
 }
 
 function isFulfilled<T>(result: TimedSettled<T> | PromiseSettledResult<T>): result is PromiseFulfilledResult<T> {
@@ -1126,13 +1147,61 @@ export default function GlobalSearchScreen() {
       listings: firstResults.listings.length + firstResults.graded.length,
     });
 
-    const [correction, cardsResult, setsResult, productsResult, profilesResult, listingsResult] = await Promise.allSettled([
-      correctionPromise,
-      cardsPromise,
-      setsPromise,
-      productsPromise,
-      profilesPromise,
-      listingsPromise,
+    // A ready group must not wait for an unrelated source's final deadline.
+    // Keep the existing final reconciliation, error copy and same-query recovery.
+    const publishReadyGroups = (groups: Partial<SearchResults>, groupErrors: SearchErrorState = {}) => {
+      if (requestId !== requestRef.current) return;
+      setResults((current) => {
+        if (requestId !== requestRef.current) return current;
+        const recovered = retainFailedSearchGroups({ ...current, ...groups }, groupErrors, previous);
+        previousSearchRef.current = { key: searchKey, results: recovered };
+        return recovered;
+      });
+      setErrors((current) => {
+        if (requestId !== requestRef.current) return current;
+        const next = { ...current };
+        for (const group of Object.keys(groups) as (keyof SearchResults)[]) delete next[group];
+        return { ...next, ...groupErrors };
+      });
+    };
+    const settledSets = settleSearchSource(setsPromise).then((result) => {
+      publishReadyGroups({ sets: result.status === 'fulfilled' ? result.value : [] },
+        result.status === 'fulfilled' ? {} : { sets: 'Set results could not be loaded.' });
+      return result;
+    });
+    const settledProducts = settleSearchSource(productsPromise).then((result) => {
+      publishReadyGroups({ sealed: result.status === 'fulfilled' ? result.value : [] },
+        result.status === 'fulfilled' ? {} : { sealed: 'Sealed product results could not be loaded.' });
+      return result;
+    });
+    const settledProfiles = settleSearchSource(profilesPromise).then((result) => {
+      const success = result.status === 'fulfilled' && !result.value.error;
+      publishReadyGroups({ collectors: success ? (result.value.data ?? []).map((profile: any) => ({
+        id: profile.id,
+        name: sanitizeGate0CommerceCopy(profile.collector_name ?? null, 'Collector') ?? 'Collector',
+        avatarUrl: profile.avatar_url ?? null,
+      })) : [] }, success ? {} : { collectors: 'Collector results could not be loaded.' });
+      return result;
+    });
+    const settledListings = settleSearchSource(listingsPromise).then((result) => {
+      const success = result.status === 'fulfilled' && !result.value.error;
+      const rows = success ? result.value.data ?? [] : [];
+      publishReadyGroups({
+        graded: rows.filter((listing: any) => listing.pricing_mode === 'graded' || listing.grade_company || listing.grade).map(mapListingResult),
+        listings: rows.filter((listing: any) => !(listing.pricing_mode === 'graded' || listing.grade_company || listing.grade)).map(mapListingResult),
+      }, success ? {} : {
+        listings: 'Market listings could not be loaded.', graded: 'Graded listings could not be loaded.',
+      });
+      return result;
+    });
+
+    const [correction, cardsResult, setsResult, productsResult, profilesResult, listingsResult] = await Promise.all([
+      settleSearchSource(correctionPromise),
+      settleSearchSource(cardsPromise),
+      settledSets,
+      settledProducts,
+      settledProfiles,
+      settledListings,
     ]);
 
     if (requestId !== requestRef.current) return;
@@ -1153,6 +1222,10 @@ export default function GlobalSearchScreen() {
       next.cards = mapCardResults(cardsForHydration);
     } else if (canonicalCards !== null) {
       next.cards = canonicalCards;
+      // Cached or early canonical rows remain useful, but they must not make
+      // a failed fresh factual read appear current. The existing group error
+      // keeps those exact rows visible and offers the screen's retry action.
+      nextErrors.cards = 'Card results could not be refreshed.';
     } else {
       nextErrors.cards = 'Card results could not be loaded.';
     }
@@ -1192,7 +1265,7 @@ export default function GlobalSearchScreen() {
       nextErrors.graded = 'Graded listings could not be loaded.';
     }
 
-    const recovered = retainFailedSearchGroups(next, nextErrors, previous);
+    const recovered = retainFailedSearchGroups(next, nextErrors, previous, { cards: canonicalCards !== null });
     previousSearchRef.current = { key: searchKey, results: recovered };
     setResults(recovered);
     setErrors(nextErrors);

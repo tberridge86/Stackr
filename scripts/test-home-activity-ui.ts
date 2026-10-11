@@ -19,40 +19,63 @@ async function testSetActivityFailure() {
   let quantities = new Map<string, number>();
   let persisted = 0;
   let identityChanged = false;
+  const currentOwnershipGeneration = 1;
   const alerts: string[] = [];
   const activityCalls: any[] = [];
+  const ownershipIdentityRef = { current: 'owner-a' };
+  const ownershipGenerationRef = { current: currentOwnershipGeneration };
+  const quantityMutationRef = { current: new Map<string, number>() };
   const builder: any = { eq: () => builder, then: (resolve: any) => Promise.resolve({ error: null }).then(resolve) };
-  const makeHandler = () => execute(source.slice(start, end), {
-    useCallback: (fn: unknown) => fn, userId: 'owner-a', authUserIdRef: { current: 'owner-a' }, ownershipReady: true,
-    setId: 'set-a', variantQuantities: quantities, cards: [{ id: 'card-a', name: 'Pikachu' }],
-    getVariantKey: () => 'key', shortVariant: (value: unknown) => value,
+  const defaultCards = [{ id: 'card-a', name: 'Pikachu' }];
+  const makeHandler = ({ signedOut = false, loadedCards = defaultCards }: { signedOut?: boolean; loadedCards?: any[] } = {}) => execute(source.slice(start, end), {
+    useCallback: (fn: unknown) => fn, userId: signedOut ? null : 'owner-a', authUserIdRef: { current: 'owner-a' }, ownershipReady: true,
+    ownershipIdentityRef, ownershipGenerationRef,
+    currentOwnershipGeneration, quantityMutationRef,
+    setId: 'set-a', setInfo: { language: 'en' }, visibleVariantQuantities: quantities, cards: loadedCards,
+    getVariantKey: (cardId: string) => cardId, shortVariant: (value: unknown) => value,
     setVariantQuantities: (update: (previous: Map<string, number>) => Map<string, number>) => { quantities = update(quantities); },
     supabase: { from: () => ({
       upsert: async () => { persisted++; return { error: null }; },
       delete: () => { persisted++; return builder; },
     }) },
-    createActivityPost: async (post: unknown, options: unknown) => {
-      activityCalls.push({ post, options });
-      if (identityChanged) throw new Error('activity_post_identity_changed');
-      return { status: 'failed', error: new Error('history transport failed') };
+    createActivityPost: async () => ({ status: 'created' }),
+    createDirectCollectionHistoryIntent: (input: unknown) => input,
+    recordDirectCollectionHistory: async (intent: any) => {
+      activityCalls.push(intent);
+      if (identityChanged) {
+        ownershipIdentityRef.current = 'owner-b';
+        ownershipGenerationRef.current += 1;
+      }
+      return { status: 'pending', error: new Error('history transport failed') };
     },
     Alert: { alert: (title: string) => alerts.push(title) }, console: { log: () => {} },
   }, 'handleSetVariantQuantity');
+  await makeHandler({ loadedCards: [] })('card-missing', 'normal', 1);
+  assert.equal(persisted, 1, 'a direct quantity still commits when its card row has left the loaded list');
+  assert.equal(quantities.get('card-missing'), 1);
+  assert.deepEqual(JSON.parse(JSON.stringify(activityCalls[0].activity.cardSnapshot)), {
+    name: null, number: null, language: null, imageSmall: null, imageLarge: null,
+  }, 'a missing target records an explicit empty snapshot instead of enabling a replay lookup');
   const handler = makeHandler();
   await handler('card-a', 'normal', 1);
-  assert.equal(persisted, 1);
-  assert.equal(quantities.get('key'), 1, 'failed history cannot revert a saved holding');
-  assert.deepEqual(JSON.parse(JSON.stringify(activityCalls[0].options)), { expectedUserId: 'owner-a' });
-  assert.equal(activityCalls[0].post.type, 'binder_add');
-  assert.deepEqual(alerts, ['Collection updated']);
+  assert.equal(persisted, 2);
+  assert.equal(quantities.get('card-a'), 1, 'failed history cannot revert a saved holding');
+  assert.equal(activityCalls[1].ownerUserId, 'owner-a');
+  assert.equal(activityCalls[1].activity.type, 'binder_add');
+  assert.deepEqual(alerts, ['Collection updated', 'Collection updated']);
   identityChanged = true;
   await makeHandler()('card-a', 'normal', 2);
-  assert.equal(quantities.get('key'), 2, 'post-commit owner changes cannot become a save rollback');
-  assert.equal(activityCalls[1].post.title, 'Quantity increased from 1 to 2', 'an existing-stack increase creates addition history');
-  assert.equal(activityCalls[1].post.type, 'binder_add');
-  assert.equal(alerts.length, 1, 'old-owner history completion stays quiet');
+  assert.equal(quantities.get('card-a'), 2, 'post-commit owner changes cannot become a save rollback');
+  assert.equal(activityCalls[2].activity.title, 'Quantity increased from 1 to 2', 'an existing-stack increase creates addition history');
+  assert.equal(activityCalls[2].activity.type, 'binder_add');
+  assert.equal(alerts.length, 2, 'old-owner history completion stays quiet');
   await makeHandler()('card-a', 'normal', 2);
-  assert.equal(activityCalls.length, 2, 'an unchanged quantity creates no additional history');
+  assert.equal(activityCalls.length, 3, 'an unchanged quantity creates no additional history');
+  const persistedBeforeSignedOut = persisted;
+  await makeHandler({ signedOut: true })('card-a', 'normal', 3);
+  assert.equal(persisted, persistedBeforeSignedOut, 'a stale signed-out handler cannot write a quantity');
+  assert.equal(quantities.get('card-a'), 2, 'a stale signed-out handler cannot change a visible quantity');
+  assert.equal(activityCalls.length, 3, 'a stale signed-out handler cannot create activity');
 }
 
 async function testManualHistoryRepair() {

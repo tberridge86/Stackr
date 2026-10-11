@@ -1,0 +1,1043 @@
+{
+  "schemaVersion": "stackr-marnie-canonical-schema-read-only-v1",
+  "projectId": "oakdbbzdqwurpjnoqhmu",
+  "writes": false,
+  "privateDataRead": false,
+  "observedAt": "2026-10-11 16:18:47.816747+00",
+  "scope": "Exact catalogue/audit schema metadata and published mobile-syncable delta view only",
+  "data": {
+    "observed_at": "2026-10-11 16:18:47.816747+00",
+    "delta_view_definition": " SELECT ccl.change_sequence,\n    ccl.catalogue_version_id,\n    ccl.entity_schema,\n    ccl.entity_table,\n    ccl.entity_id,\n    ccl.entity_key,\n    ccl.change_type,\n    ccl.public_change_summary,\n    ccl.changed_at\n   FROM catalog.catalogue_change_log ccl\n     JOIN catalog.catalogue_versions cv ON cv.id = ccl.catalogue_version_id\n  WHERE ccl.mobile_syncable = true AND cv.status = 'published'::text AND cv.deprecated_at IS NULL;",
+    "columns": [
+      {
+        "type": "uuid",
+        "table": "catalogue_events",
+        "column": "id",
+        "schema": "audit",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_events",
+        "column": "request_id",
+        "schema": "audit",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "catalogue_events",
+        "column": "actor_user_id",
+        "schema": "audit",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_events",
+        "column": "actor_role",
+        "schema": "audit",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_events",
+        "column": "event_type",
+        "schema": "audit",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_events",
+        "column": "entity_schema",
+        "schema": "audit",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_events",
+        "column": "entity_table",
+        "schema": "audit",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "catalogue_events",
+        "column": "entity_id",
+        "schema": "audit",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_events",
+        "column": "canonical_key",
+        "schema": "audit",
+        "nullable": "YES"
+      },
+      {
+        "type": "jsonb",
+        "table": "catalogue_events",
+        "column": "event_payload",
+        "schema": "audit",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_events",
+        "column": "internal_notes",
+        "schema": "audit",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_events",
+        "column": "source_updated_at",
+        "schema": "audit",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_events",
+        "column": "created_at",
+        "schema": "audit",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_events",
+        "column": "updated_at",
+        "schema": "audit",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "card_names",
+        "column": "id",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "card_names",
+        "column": "card_concept_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "card_names",
+        "column": "printing_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "card_names",
+        "column": "variant_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_names",
+        "column": "language_code",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_names",
+        "column": "name_type",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_names",
+        "column": "name",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_names",
+        "column": "normalized_name",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "numeric",
+        "table": "card_names",
+        "column": "source_confidence",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_names",
+        "column": "source_updated_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_names",
+        "column": "deprecated_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_names",
+        "column": "deprecated_reason",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_names",
+        "column": "created_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_names",
+        "column": "updated_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "card_printings",
+        "column": "id",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "game_code",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "card_printings",
+        "column": "set_id",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "language_code",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "card_printings",
+        "column": "card_concept_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "collector_number",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "collector_number_prefix",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "integer",
+        "table": "card_printings",
+        "column": "collector_number_sort",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "collector_number_suffix",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "collector_number_sort_key",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "native_name",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "english_display_name",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "card_printings",
+        "column": "rarity_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "supertype",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "ARRAY",
+        "table": "card_printings",
+        "column": "subtypes",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "artist",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_printings",
+        "column": "source_updated_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_printings",
+        "column": "discontinued_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_printings",
+        "column": "deprecated_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "deprecated_reason",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "card_printings",
+        "column": "corrected_by_printing_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_printings",
+        "column": "created_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_printings",
+        "column": "updated_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_printings",
+        "column": "printing_discriminator",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "card_variants",
+        "column": "id",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "card_variants",
+        "column": "printing_id",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "game_code",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "card_variants",
+        "column": "set_id",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "language_code",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "collector_number",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "variant_code",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "finish_code",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "canonical_key",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "artwork_key",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "image_signature",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "boolean",
+        "table": "card_variants",
+        "column": "is_default",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "variant_display_name",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "numeric",
+        "table": "card_variants",
+        "column": "source_confidence",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_variants",
+        "column": "source_updated_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_variants",
+        "column": "discontinued_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_variants",
+        "column": "deprecated_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "deprecated_reason",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "card_variants",
+        "column": "corrected_by_variant_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_variants",
+        "column": "created_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "card_variants",
+        "column": "updated_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "card_variants",
+        "column": "native_image_status",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "card_variants",
+        "column": "same_artwork_as_variant_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "bigint",
+        "table": "catalogue_change_log",
+        "column": "change_sequence",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "catalogue_change_log",
+        "column": "catalogue_version_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_change_log",
+        "column": "entity_schema",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_change_log",
+        "column": "entity_table",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "catalogue_change_log",
+        "column": "entity_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_change_log",
+        "column": "entity_key",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_change_log",
+        "column": "change_type",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "boolean",
+        "table": "catalogue_change_log",
+        "column": "mobile_syncable",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "jsonb",
+        "table": "catalogue_change_log",
+        "column": "public_change_summary",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_change_log",
+        "column": "changed_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_change_log",
+        "column": "created_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_change_log",
+        "column": "updated_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "catalogue_versions",
+        "column": "id",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_versions",
+        "column": "version_key",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_versions",
+        "column": "status",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_versions",
+        "column": "description",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_versions",
+        "column": "published_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "catalogue_versions",
+        "column": "superseded_by_version_id",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "bigint",
+        "table": "catalogue_versions",
+        "column": "min_change_sequence",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "bigint",
+        "table": "catalogue_versions",
+        "column": "max_change_sequence",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_versions",
+        "column": "source_updated_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_versions",
+        "column": "deprecated_at",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_versions",
+        "column": "deprecated_reason",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_versions",
+        "column": "created_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalogue_versions",
+        "column": "updated_at",
+        "schema": "catalog",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_versions",
+        "column": "language_code",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "catalogue_versions",
+        "column": "version_label",
+        "schema": "catalog",
+        "nullable": "YES"
+      },
+      {
+        "type": "jsonb",
+        "table": "catalogue_versions",
+        "column": "coverage_summary",
+        "schema": "catalog",
+        "nullable": "NO"
+      }
+    ],
+    "constraints": [
+      {
+        "name": "catalogue_events_actor_user_id_fkey",
+        "table": "audit.catalogue_events",
+        "validated": true,
+        "definition": "FOREIGN KEY (actor_user_id) REFERENCES auth.users(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "catalogue_events_pkey",
+        "table": "audit.catalogue_events",
+        "validated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "name": "card_names_card_concept_id_fkey",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "FOREIGN KEY (card_concept_id) REFERENCES catalog.card_concepts(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "card_names_check",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "CHECK (num_nonnulls(card_concept_id, printing_id, variant_id) >= 1)"
+      },
+      {
+        "name": "card_names_language_code_fkey",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "FOREIGN KEY (language_code) REFERENCES catalog.languages(code)"
+      },
+      {
+        "name": "card_names_name_check",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "CHECK (name <> ''::text)"
+      },
+      {
+        "name": "card_names_name_type_check",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "CHECK (name_type = ANY (ARRAY['native'::text, 'english_display'::text, 'translated'::text, 'alias'::text, 'search_normalized'::text]))"
+      },
+      {
+        "name": "card_names_normalized_name_check",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "CHECK (normalized_name <> ''::text)"
+      },
+      {
+        "name": "card_names_pkey",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "name": "card_names_printing_id_fkey",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "FOREIGN KEY (printing_id) REFERENCES catalog.card_printings(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "card_names_source_confidence_check",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "CHECK (source_confidence >= 0::numeric AND source_confidence <= 1::numeric)"
+      },
+      {
+        "name": "card_names_variant_id_fkey",
+        "table": "catalog.card_names",
+        "validated": true,
+        "definition": "FOREIGN KEY (variant_id) REFERENCES catalog.card_variants(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "card_printings_card_concept_id_fkey",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "FOREIGN KEY (card_concept_id) REFERENCES catalog.card_concepts(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "card_printings_collector_number_check",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "CHECK (collector_number <> ''::text)"
+      },
+      {
+        "name": "card_printings_collector_number_sort_check",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "CHECK (collector_number_sort IS NULL OR collector_number_sort >= 0)"
+      },
+      {
+        "name": "card_printings_collector_number_sort_key_check",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "CHECK (collector_number_sort_key <> ''::text)"
+      },
+      {
+        "name": "card_printings_corrected_by_printing_id_fkey",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "FOREIGN KEY (corrected_by_printing_id) REFERENCES catalog.card_printings(id)"
+      },
+      {
+        "name": "card_printings_discriminator_check",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "CHECK (printing_discriminator = ''::text OR printing_discriminator ~ '^[a-z0-9][a-z0-9_-]{0,99}$'::text)"
+      },
+      {
+        "name": "card_printings_game_code_fkey",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "FOREIGN KEY (game_code) REFERENCES catalog.games(code)"
+      },
+      {
+        "name": "card_printings_id_game_code_language_code_set_id_collector__key",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "UNIQUE (id, game_code, language_code, set_id, collector_number)"
+      },
+      {
+        "name": "card_printings_language_code_fkey",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "FOREIGN KEY (language_code) REFERENCES catalog.languages(code)"
+      },
+      {
+        "name": "card_printings_pkey",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "name": "card_printings_rarity_id_fkey",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "FOREIGN KEY (rarity_id) REFERENCES catalog.rarities(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "card_printings_set_id_fkey",
+        "table": "catalog.card_printings",
+        "validated": true,
+        "definition": "FOREIGN KEY (set_id) REFERENCES catalog.sets(id) ON DELETE RESTRICT"
+      },
+      {
+        "name": "card_variants_canonical_key_key",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "UNIQUE (canonical_key)"
+      },
+      {
+        "name": "card_variants_check",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "CHECK (canonical_key = lower((((((((game_code || ':'::text) || language_code) || ':'::text) || set_id::text) || ':'::text) || collector_number) || ':'::text) || variant_code) OR canonical_key = lower((((((((((game_code || ':'::text) || language_code) || ':'::text) || set_id::text) || ':'::text) || collector_number) || ':'::text) || variant_code) || ':printing:'::text) || printing_id::text))"
+      },
+      {
+        "name": "card_variants_corrected_by_variant_id_fkey",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "FOREIGN KEY (corrected_by_variant_id) REFERENCES catalog.card_variants(id)"
+      },
+      {
+        "name": "card_variants_finish_code_fkey",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "FOREIGN KEY (finish_code) REFERENCES catalog.finishes(code)"
+      },
+      {
+        "name": "card_variants_native_image_status_check",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "CHECK (native_image_status = ANY (ARRAY['missing'::text, 'available'::text, 'same_artwork_reference'::text, 'scan_acquisition_required'::text, 'pending_review'::text]))"
+      },
+      {
+        "name": "card_variants_pkey",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "name": "card_variants_printing_id_game_code_language_code_set_id_c_fkey",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "FOREIGN KEY (printing_id, game_code, language_code, set_id, collector_number) REFERENCES catalog.card_printings(id, game_code, language_code, set_id, collector_number) ON DELETE RESTRICT"
+      },
+      {
+        "name": "card_variants_printing_id_variant_code_key",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "UNIQUE (printing_id, variant_code)"
+      },
+      {
+        "name": "card_variants_same_artwork_as_variant_id_fkey",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "FOREIGN KEY (same_artwork_as_variant_id) REFERENCES catalog.card_variants(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "card_variants_source_confidence_check",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "CHECK (source_confidence >= 0::numeric AND source_confidence <= 1::numeric)"
+      },
+      {
+        "name": "card_variants_variant_code_check",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "CHECK (variant_code <> ''::text)"
+      },
+      {
+        "name": "card_variants_variant_code_fkey",
+        "table": "catalog.card_variants",
+        "validated": true,
+        "definition": "FOREIGN KEY (variant_code) REFERENCES catalog.variant_taxonomy(code)"
+      },
+      {
+        "name": "catalogue_change_log_catalogue_version_id_fkey",
+        "table": "catalog.catalogue_change_log",
+        "validated": true,
+        "definition": "FOREIGN KEY (catalogue_version_id) REFERENCES catalog.catalogue_versions(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "catalogue_change_log_change_type_check",
+        "table": "catalog.catalogue_change_log",
+        "validated": true,
+        "definition": "CHECK (change_type = ANY (ARRAY['insert'::text, 'update'::text, 'deprecate'::text, 'correct'::text, 'delete_marker'::text]))"
+      },
+      {
+        "name": "catalogue_change_log_check",
+        "table": "catalog.catalogue_change_log",
+        "validated": true,
+        "definition": "CHECK (entity_id IS NOT NULL OR entity_key IS NOT NULL)"
+      },
+      {
+        "name": "catalogue_change_log_entity_schema_check",
+        "table": "catalog.catalogue_change_log",
+        "validated": true,
+        "definition": "CHECK (entity_schema = ANY (ARRAY['catalog'::text, 'market'::text]))"
+      },
+      {
+        "name": "catalogue_change_log_entity_table_check",
+        "table": "catalog.catalogue_change_log",
+        "validated": true,
+        "definition": "CHECK (entity_table <> ''::text)"
+      },
+      {
+        "name": "catalogue_change_log_pkey",
+        "table": "catalog.catalogue_change_log",
+        "validated": true,
+        "definition": "PRIMARY KEY (change_sequence)"
+      },
+      {
+        "name": "catalogue_versions_check",
+        "table": "catalog.catalogue_versions",
+        "validated": true,
+        "definition": "CHECK (max_change_sequence IS NULL OR min_change_sequence IS NULL OR max_change_sequence >= min_change_sequence)"
+      },
+      {
+        "name": "catalogue_versions_coverage_summary_object",
+        "table": "catalog.catalogue_versions",
+        "validated": true,
+        "definition": "CHECK (jsonb_typeof(coverage_summary) = 'object'::text)"
+      },
+      {
+        "name": "catalogue_versions_language_code_fkey",
+        "table": "catalog.catalogue_versions",
+        "validated": true,
+        "definition": "FOREIGN KEY (language_code) REFERENCES catalog.languages(code)"
+      },
+      {
+        "name": "catalogue_versions_language_required_for_publish",
+        "table": "catalog.catalogue_versions",
+        "validated": true,
+        "definition": "CHECK (status <> 'published'::text OR language_code IS NOT NULL)"
+      },
+      {
+        "name": "catalogue_versions_pkey",
+        "table": "catalog.catalogue_versions",
+        "validated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "name": "catalogue_versions_status_check",
+        "table": "catalog.catalogue_versions",
+        "validated": true,
+        "definition": "CHECK (status = ANY (ARRAY['draft'::text, 'published'::text, 'deprecated'::text, 'rolled_back'::text]))"
+      },
+      {
+        "name": "catalogue_versions_superseded_by_version_id_fkey",
+        "table": "catalog.catalogue_versions",
+        "validated": true,
+        "definition": "FOREIGN KEY (superseded_by_version_id) REFERENCES catalog.catalogue_versions(id)"
+      },
+      {
+        "name": "catalogue_versions_version_key_check",
+        "table": "catalog.catalogue_versions",
+        "validated": true,
+        "definition": "CHECK (version_key <> ''::text)"
+      },
+      {
+        "name": "catalogue_versions_version_key_key",
+        "table": "catalog.catalogue_versions",
+        "validated": true,
+        "definition": "UNIQUE (version_key)"
+      }
+    ]
+  }
+}

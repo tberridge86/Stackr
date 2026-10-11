@@ -155,7 +155,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Reviewed server-owned Pokémon and form index; no live provider request. */
+        /** Reviewed server-owned National Dex species index with explicit default Pokémon routes; no live provider request. */
         get: operations["listPokemonIndex"];
         put?: never;
         post?: never;
@@ -1704,7 +1704,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The first 1350 species/form entries, preserving the app's existing index scope. */
+            /** @description One entry per reviewed species. The frozen snapshot currently contains 1025 species; count and indexVersion identify that scope. Legacy name/url retain the reviewed default Pokémon route. Alternate forms remain available through existing exact form-card routes. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1715,9 +1715,21 @@ export interface operations {
                             count: number;
                             indexVersion: string;
                             results: {
+                                /** @description Reviewed default Pokémon route name; retained for older clients. */
                                 name: string;
-                                /** Format: uri */
+                                /**
+                                 * Format: uri
+                                 * @description Reviewed default Pokémon route URL; retained for older clients.
+                                 */
                                 url: string;
+                                /** @description Stable National Dex species identity for list progress and regional grouping. */
+                                speciesId: number;
+                                /** @description Species name distinct from a default or alternate Pokémon form name. */
+                                speciesName: string;
+                                /** @description Reviewed default Pokémon resource ID for sprite and detail retrieval. */
+                                routeId: number;
+                                /** @description Reviewed default Pokémon route name; exact form-card routes remain supported separately. */
+                                routeName: string;
                             }[];
                         };
                         meta: components["schemas"]["EnvelopeMeta"];

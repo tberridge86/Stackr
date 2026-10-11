@@ -987,7 +987,17 @@ export class StackrApiClient {
     return this.request<{
       count: number;
       indexVersion: string;
-      results: Array<{ name: string; url: string }>;
+      // Existing builds retain the route URL and provider name. Species identity
+      // is explicit so newer clients do not treat alternate provider forms as
+      // separate National Dex progress entries.
+      results: {
+        name: string;
+        url: string;
+        speciesId: number;
+        speciesName: string;
+        routeId: number;
+        routeName: string;
+      }[];
     }>('/pokemon', query);
   }
 

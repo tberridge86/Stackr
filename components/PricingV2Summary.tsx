@@ -53,7 +53,9 @@ function getStateCopy(data: PricingV2Response | null) {
   if (data.state === 'stale_verified_value') {
     return {
       headline: `${formatMoney(data.marketPrice) ?? 'No price'} last verified value`,
-      body: 'This price is stale. A refresh has been queued so the card is not shown as freshly priced.',
+      body: data.refreshQueued
+        ? 'This price is stale. A refresh has been queued.'
+        : 'This stored price is stale. Refresh to check the latest available evidence.',
       action: 'How calculated',
     };
   }

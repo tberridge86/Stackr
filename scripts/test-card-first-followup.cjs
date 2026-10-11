@@ -1,4 +1,5 @@
 /* Executes actual screen filter/reset expressions and toolbar callbacks. Not device rendering. */
+/* global __dirname */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -40,14 +41,17 @@ const pricedCards = cards.map((card, i) => Object.freeze({ ...card, runtimeCatal
   unavailableReason: null, priceBasis: 'general',
 }) : undefined }));
 function filterContext(overrides = {}) {
-  return {
+  const context = {
     cards, pricedCards, variantQuantities: new Map([['set:variant-1:normal', 1]]), search: '', filter: 'all',
+    ownershipVisible: true, emptyVariantQuantitiesRef: { current: new Map() },
     selectedRarity: 'All', ALL_RARITY_FILTER: 'All', sort: 'number', setId: 'set', finishSection: 'all',
     hasCompletionistSections: true, completionistFamilyCounts: new Map(), useMemo: (fn) => fn(),
     getVariants: () => ['normal'], getVariantKey: (card, set, finish) => `${set}:${card}:${finish}`,
     getSetCardDisplayName: (card) => card.name, getCardRarityFilter: (card) => ({ key: card.rarity, label: card.rarity, rank: 1 }),
     getFinishSectionKey: (card) => card.section, ...overrides,
   };
+  context.visibleVariantQuantities = expression(initializer('visibleVariantQuantities'), context);
+  return context;
 }
 const ids = (rows) => Array.from(rows, (row) => row.id);
 function displayedRows(overrides = {}) {
@@ -80,6 +84,10 @@ test('real set filter shows every printing by default and still intersects finis
     'Saved stale general estimates must remain attached to the real filtered row');
   assert.deepEqual(ids(displayedRows({ finishSection: 'stamped' })), ['variant-3']);
   assert.deepEqual(ids(displayedRows({ filter: 'owned' })), ['variant-1']);
+  assert.equal(displayedRows({ filter: 'owned', ownershipVisible: false }).length, 0,
+    'Unavailable current ownership cannot expose a retained prior-account quantity');
+  assert.deepEqual(ids(displayedRows({ ownershipVisible: false })), cards.map((row) => row.id),
+    'Public catalogue browsing remains available while private ownership is masked');
   assert.deepEqual(ids(displayedRows({ filter: 'missing', selectedRarity: 'AR' })), ['variant-3']);
   assert.equal(displayedRows({ search: 'not-present' }).length, 0);
   assert.equal(displayedRows({ cards: [], pricedCards: [] }).length, 0);

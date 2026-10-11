@@ -132,6 +132,58 @@ export type PokemonCard = {
   } | null;
 };
 
+function setCardArtworkIdentity(card: PokemonCard): string | null {
+  const raw = card.raw_data?.stackr;
+  const cardId = String(raw?.cardId ?? card.id ?? '').trim();
+  const setId = String(card.set?.id ?? card.raw_data?.set?.id ?? '').trim();
+  const language = String(card.language ?? card.raw_data?.language ?? '').trim();
+  const printing = String(card.number ?? card.raw_data?.number ?? card.raw_data?.localId ?? '').trim();
+  const variantId = String(raw?.defaultVariantId ?? card.externalIds?.stackrVariant ?? '').trim();
+  const catalogueVersionId = String(raw?.catalogueVersionId ?? '').trim();
+  const variant = Array.isArray(raw?.variants)
+    ? raw.variants.find((candidate: any) => candidate?.variantId === variantId)
+    : null;
+  const canonicalId = String(variant?.canonicalId ?? '').trim();
+  const finish = String(variant?.finishCode ?? variant?.variantCode ?? '').trim();
+  if (!cardId || !setId || !language || !printing || !variantId || !catalogueVersionId || !canonicalId || !finish) return null;
+  return JSON.stringify([cardId, setId, language, printing, variantId, canonicalId, finish, catalogueVersionId]);
+}
+
+/** Applies approved artwork only when the complete canonical printing identity remains unchanged. */
+export function mergeSetCardArtwork(current: PokemonCard[], incoming: PokemonCard[]): PokemonCard[] {
+  const artwork = new Map<string, PokemonCard>();
+  for (const card of incoming) {
+    const identity = setCardArtworkIdentity(card);
+    if (identity && (card.images?.small || card.images?.large)) artwork.set(identity, card);
+  }
+  return current.map((card) => {
+    const identity = setCardArtworkIdentity(card);
+    const enriched = identity ? artwork.get(identity) : null;
+    if (!enriched) return card;
+    const images = {
+      ...card.images,
+      small: enriched.images?.small ?? card.images?.small,
+      large: enriched.images?.large ?? card.images?.large,
+    };
+    const currentRaw = card.raw_data ?? {};
+    const enrichedRaw = enriched.raw_data ?? {};
+    return {
+      ...card,
+      images,
+      raw_data: {
+        ...currentRaw,
+        images: { ...currentRaw.images, ...images },
+        presentation: {
+          ...currentRaw.presentation,
+          artwork: enrichedRaw.presentation?.artwork ?? currentRaw.presentation?.artwork,
+          selected_image_variant_id: enrichedRaw.presentation?.selected_image_variant_id
+            ?? currentRaw.presentation?.selected_image_variant_id,
+        },
+      },
+    };
+  });
+}
+
 const POKEMON_TCG_IMAGE_BASE_URL = 'https://images.pokemontcg.io';
 const POKEMON_TCG_API_BASE_URL = 'https://api.pokemontcg.io/v2';
 const SCRYDEX_IMAGE_BASE_URL = 'https://images.scrydex.com/pokemon';
@@ -368,6 +420,18 @@ export function getKnownPokemonSetTotal(setId?: string | null, language?: string
   );
   const total = Number(override?.printedTotal ?? override?.total ?? 0);
   return total > 0 ? total : null;
+}
+
+/**
+ * The facts reader validates an exact row count, so prefer the canonical total
+ * (which includes secret cards) over a printed total. Known overrides are only
+ * a fallback when the resolved canonical record has no total.
+ */
+export function getExactPokemonSetCardTotal(set: Pick<PokemonSet, 'id' | 'language' | 'total'>): number | null {
+  const canonicalTotal = Number(set.total ?? 0);
+  if (Number.isSafeInteger(canonicalTotal) && canonicalTotal > 0) return canonicalTotal;
+  const knownTotal = getKnownPokemonSetTotal(set.id, set.language);
+  return Number.isSafeInteger(knownTotal) && (knownTotal ?? 0) > 0 ? knownTotal : null;
 }
 
 function uniqueNonEmpty(values: (string | null | undefined)[]) {

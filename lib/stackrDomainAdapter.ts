@@ -413,7 +413,7 @@ function legacySetRow(row: any): StackrLegacySet {
     series: getPokemonSetDisplaySeries({ series: String(row.series ?? raw.series ?? ''), language,
       setCode: row.set_code ?? raw.set_code }),
     printedTotal: Number(row.printed_total ?? raw.cardCount?.official ?? 0),
-    total: Number(row.total ?? row.actual_total ?? raw.cardCount?.total ?? row.printed_total ?? 0),
+    total: Number(row.total ?? row.actual_total ?? raw.cardCount?.total ?? 0),
     releaseDate: String(row.release_date ?? raw.releaseDate ?? ''),
     language,
     region: clean(row.region ?? raw.region),
@@ -596,7 +596,9 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
       setCode: set.setCode,
     }),
     printedTotal: Number(set.printedTotal ?? 0),
-    total: Number(set.total ?? set.printedTotal ?? 0),
+    // Keep unknown canonical totals unknown: the set screen forwards this
+    // field to exact-completeness validation. printedTotal is display-only.
+    total: Number(set.total ?? 0),
     releaseDate: set.releaseDate ?? '',
     language: toLegacyLanguage(set.languageCode),
     region: set.regionCode,
@@ -994,7 +996,14 @@ async function fetchCanonicalSetCardFacts(
       const set = (await client.set(setId, { signal })).data.set;
       if (apiLanguage && apiLanguage !== set.languageCode) throw new Error('Conflicting catalogue language');
       apiLanguage = set.languageCode;
-      expectedCount = Number(set.total ?? set.printedTotal ?? 0);
+      // A printed count excludes secret cards for sets such as Prismatic
+      // Evolutions. This facts lane validates exact completion, so it must
+      // never promote that display hint into an authoritative denominator.
+      const canonicalTotal = Number(set.total);
+      if (!Number.isSafeInteger(canonicalTotal) || canonicalTotal < 1) {
+        throw new Error('Exact canonical set total is unavailable');
+      }
+      expectedCount = canonicalTotal;
     }
     const key = { namespace: client.catalogueCacheNamespace ?? 'ephemeral-client', setId, language: apiLanguage!, expectedCount };
     return setFactsReader(client).read(key, (requestSignal) => loadCompleteSetPages(key, async (cursor, pageSignal) => {
@@ -1389,7 +1398,7 @@ export async function fetchStackrPriceSnapshots(
         evidence_status: price.status, confidence: price.confidence, sample_count: price.sample.total,
         source_breakdown: price.sourceBreakdown, snapshot_at: price.calculatedAt,
         snapshot_date: price.calculatedAt?.slice(0, 10) ?? null, stale_after: price.staleAfter,
-        price_basis: price.fallbackEstimate?.reason === 'general_card_estimate' ? 'general' : 'exact',
+        price_basis: ['general_card_estimate', 'provisional_catalogue_baseline'].includes(price.fallbackEstimate?.reason ?? '') ? 'general' : 'exact',
         freshness: price.freshness, unavailable_reason: row.unavailableReason,
       };
       byReference.set(reference, snapshot);

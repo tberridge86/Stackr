@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { getEnglishCardDisplayName, getEnglishCardDisplaySupplement } from '../backend/lib/cardDisplayNames.js';
+import { getEnglishCardDisplayName, getEnglishCardDisplaySupplement, getEnglishSetDisplayName,
+  getEnglishSetDisplaySupplement, getPreferredSetDisplayName } from '../backend/lib/cardDisplayNames.js';
 import { resolveCardEnglishSupplement } from '../backend/lib/cardNameTranslations.js';
 import {
   OWNER_APPROVED_CARD_ENGLISH_NAME_METADATA as metadata,
@@ -65,4 +66,29 @@ assert.equal(resolveCardEnglishSupplement({ language: hammer[0], nativeName: ham
   englishNames: ['Reviewed catalogue title'], englishNameProvenance: reviewed })?.value, 'Reviewed catalogue title');
 assert.deepEqual(getEnglishCardDisplaySupplement({ id: hammer[3][0], language: hammer[0], localName: hammer[1],
   englishDisplayName: 'Reviewed catalogue title', englishDisplayProvenance: reviewed })?.canonicalProvenance, reviewed);
-console.log('Backend approved names passed: 19,315 exact aliases, evidence hashes, four proposals, eight legacy links, ambiguity/language guards and native preservation.');
+
+const japaneseSet = { language: 'ja', setCode: 'sv2a', localName: 'ポケモンカード151' };
+assert.equal(getEnglishSetDisplayName(japaneseSet), 'Pokemon Card 151');
+assert.equal(getEnglishSetDisplayName({ id: 'ja:sv2a' }), 'Pokemon Card 151', 'Uncontradicted legacy Japanese IDs remain supported');
+assert.equal(getEnglishSetDisplayName({ ...japaneseSet, language: 'jp', raw: { language: 'ja', set_code: 'SV2A' } }), 'Pokemon Card 151');
+for (const conflict of [
+  { language: 'zh-cn', id: 'ja:sv2a', setCode: 'sv2a', localName: '测试' },
+  { ...japaneseSet, raw: { language: 'zh-tw' } },
+  { ...japaneseSet, raw: { set: { language: 'zh-cn' } } },
+  { ...japaneseSet, raw: { set_code: 'sv4a' } },
+  { ...japaneseSet, raw: { set: { setCode: 'sv4a' } } },
+  { ...japaneseSet, id: 'ja:sv4a', sourceId: 'sv4a' },
+]) {
+  assert.equal(getEnglishSetDisplayName(conflict), null, 'Conflicting language/set identities cannot select a Japanese lookup');
+  assert.equal(getEnglishSetDisplaySupplement(conflict), null, 'An unresolved lookup stays unresolved');
+  assert.equal(getPreferredSetDisplayName(conflict), conflict.localName, 'Conflicts preserve native primary names');
+}
+assert.equal(getEnglishSetDisplayName({ ...japaneseSet, id: '11111111-1111-4111-8111-111111111111' }), 'Pokemon Card 151',
+  'A canonical UUID does not conflict with a supplied set code');
+assert.equal(getEnglishSetDisplayName({ language: 'ja', setCode: 'unmapped', id: 'ja:sv2a' }), null,
+  'An unknown supplied code cannot inherit a known name from an older ID');
+assert.equal(getEnglishSetDisplayName({ language: 'en', region: 'Japan', setCode: 'sv2a', localName: 'Reviewed English set' }),
+  'Reviewed English set', 'A stale region cannot make an English set Japanese');
+assert.equal(getEnglishSetDisplayName({ ...japaneseSet, englishDisplayName: 'Reviewed explicit set', raw: { set_code: 'sv4a' } }),
+  'Reviewed explicit set', 'A conflict in inferred lookup metadata does not erase supplied English metadata');
+console.log('Backend approved names passed: 19,315 exact aliases, evidence hashes, four proposals, eight legacy links, ambiguity/language guards, native preservation and set identity conflict guards.');

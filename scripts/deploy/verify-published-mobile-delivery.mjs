@@ -96,14 +96,16 @@ export async function verifyPublishedMobileDelivery({ expectedBackendSha, supaba
   const page = await read('https://api.stackrtcg.com/v1/pokemon?offset=0&limit=151');
   assert.equal(page.data?.indexVersion, index.indexVersion, 'Pokédex index is absent or stale at the gateway.');
   assert.equal(page.data.count, index.entries.length);
-  assert.deepEqual(page.data.results, index.entries.slice(0, 151).map(({ id, name }) => ({
-    name, url: `https://pokeapi.co/api/v2/pokemon/${id}/`,
+  assert.deepEqual(page.data.results, index.entries.slice(0, 151).map(({ name, speciesId, speciesName, routeId, routeName }) => ({
+    name, url: `https://pokeapi.co/api/v2/pokemon/${routeId}/`,
+    speciesId, speciesName, routeId, routeName,
   })));
-  const continuation = await read('https://api.stackrtcg.com/v1/pokemon?offset=151&limit=1199');
+  const continuation = await read(`https://api.stackrtcg.com/v1/pokemon?offset=151&limit=${Math.max(1, index.entries.length - 151)}`);
   assert.equal(continuation.data?.indexVersion, page.data.indexVersion);
   assert.equal(continuation.data.count, page.data.count);
-  assert.deepEqual(continuation.data.results, index.entries.slice(151).map(({ id, name }) => ({
-    name, url: `https://pokeapi.co/api/v2/pokemon/${id}/`,
+  assert.deepEqual(continuation.data.results, index.entries.slice(151).map(({ name, speciesId, speciesName, routeId, routeName }) => ({
+    name, url: `https://pokeapi.co/api/v2/pokemon/${routeId}/`,
+    speciesId, speciesName, routeId, routeName,
   })), 'The complete app continuation must pass through the deployed gateway.');
   assert.equal(requiredTranslationSamples.length, 4);
   for (const sample of requiredTranslationSamples) {

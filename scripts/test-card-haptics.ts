@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
@@ -12,7 +13,9 @@ type NativeCall = {
 function loadHaptics(options: { os?: string; rejectImpact?: boolean; beforeHydrateComplete?: () => void } = {}) {
   const calls: NativeCall[] = [];
   let now = 10_000;
-  const source = readFileSync('lib/haptics.ts', 'utf8');
+  const source = process.env.CARD_INSPECTION_BASELINE === '1'
+    ? execFileSync('git', ['show', 'bd2aa90414f40533979e4161d5c0e8fbf78708cf:lib/haptics.ts'], { encoding: 'utf8' })
+    : readFileSync('lib/haptics.ts', 'utf8');
   const compiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
@@ -47,7 +50,7 @@ function loadHaptics(options: { os?: string; rejectImpact?: boolean; beforeHydra
   }, module, module.exports);
   return {
     api: module.exports as {
-      stackrHaptics: { cardPreview: () => Promise<void>; cardInspection: () => Promise<void>; cardFoilCrossing: (isCurrent?: () => boolean) => Promise<void>; selection: () => Promise<void> };
+      stackrHaptics: { cardPreview: () => Promise<void>; cardInspection: (isCurrent?: () => boolean) => Promise<void>; cardFoilCrossing: (isCurrent?: () => boolean) => Promise<void>; selection: () => Promise<void> };
       setStackrHapticsEnabled: (next: boolean) => void;
       preferenceAwareHaptics: { impactAsync: () => Promise<void>; selectionAsync: () => Promise<void>; notificationAsync: () => Promise<void> };
     },
@@ -154,6 +157,16 @@ async function main() {
   assert.equal(inspectionWeb.calls.length, 0, 'inspection has no web haptic side effect');
   const inspectionFailure = loadHaptics({ rejectImpact: true });
   await assert.doesNotReject(inspectionFailure.api.stackrHaptics.cardInspection(), 'failed inspection feedback cannot block opening');
+  let inspectionLive = true;
+  const expiredInspection = loadHaptics({ beforeHydrateComplete: () => { inspectionLive = false; } });
+  await expiredInspection.api.stackrHaptics.cardInspection(() => inspectionLive);
+  assert.equal(expiredInspection.calls.length, 0, 'opening feedback must expire when inspection closes while preferences hydrate');
+  const currentInspection = loadHaptics();
+  await currentInspection.api.stackrHaptics.cardInspection(() => true);
+  assert.deepEqual(currentInspection.calls, [{ kind: 'impact', style: 'rigid' }], 'a current guarded opening retains the existing single impact');
+  const alreadyClosedInspection = loadHaptics();
+  await alreadyClosedInspection.api.stackrHaptics.cardInspection(() => false);
+  assert.equal(alreadyClosedInspection.calls.length, 0, 'an already closed inspection never dispatches feedback');
   const foil = loadHaptics();
   await foil.api.stackrHaptics.cardFoilCrossing();
   assert.deepEqual(foil.calls, [{ kind: 'impact', style: 'soft' }], 'a foil crossing uses one restrained soft impact');

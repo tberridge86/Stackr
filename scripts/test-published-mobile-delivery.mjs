@@ -53,7 +53,7 @@ const fixture = (broken = null) => async (url, init) => {
     const offset = Number(new URL(url).searchParams.get('offset'));
     const limit = Number(new URL(url).searchParams.get('limit'));
     body = { data: { count: index.entries.length, indexVersion: index.indexVersion,
-      results: index.entries.slice(offset, offset + limit).map(({ id, name }) => ({ name, url: `https://pokeapi.co/api/v2/pokemon/${id}/` })) } };
+      results: index.entries.slice(offset, offset + limit).map(({ name, speciesId, speciesName, routeId, routeName }) => ({ name, url: `https://pokeapi.co/api/v2/pokemon/${routeId}/`, speciesId, speciesName, routeId, routeName })) } };
   }
   else {
     const sample = requiredTranslationSamples.find((row) => pathname.endsWith(row.cardId));
@@ -63,6 +63,7 @@ const fixture = (broken = null) => async (url, init) => {
   }
   if (broken === 'backend' && pathname === '/health') body.runtime.gitCommit = 'b'.repeat(12);
   if (broken === 'index' && pathname === '/v1/pokemon') body.data.indexVersion = 'old-index';
+  if (broken === 'species-identity' && pathname === '/v1/pokemon') body.data.results[0].speciesId = 10100;
   if (broken === 'translation' && pathname.includes('/cards/')) body.data.card.names.englishDisplay = 'Incorrect old name';
   if (broken === 'authority' && pathname.includes('/cards/')) body.data.card.names.englishSupplement.authoritative = true;
   const missing = broken === 'missing-route' && pathname === '/v1/pokemon';
@@ -129,3 +130,5 @@ const iosGate = readFileSync('scripts/verify-ios-release-delivery.mjs', 'utf8');
 assert.match(iosGate, /supabaseUrl: env\.STACKR_MOBILE_SUPABASE_URL/);
 assert.match(iosGate, /supabasePublishableKey: env\.STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY/);
 console.log('Published mobile delivery gate passed: anonymous public routes plus zero-row history schema proof, exact-origin publishable headers, compatible snapshots and bounded failures.');
+
+await assert.rejects(verifyPublishedMobileDelivery({ expectedBackendSha: sha, supabaseUrl, supabasePublishableKey, fetchImpl: fixture('species-identity') }), /Expected values to be strictly deep-equal/);

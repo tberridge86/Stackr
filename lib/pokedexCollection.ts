@@ -41,14 +41,31 @@ export type PokedexCard = {
 
 const normalise = (value: string) =>
   value
+    .normalize('NFKC')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+    .replace(/♀/g, ' f ')
+    .replace(/♂/g, ' m ')
     .replace(/\bfemale\b/g, 'f')
     .replace(/\bmale\b/g, 'm')
-    .replace(/[''`'.]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/([a-z])[’‘`´']s\b/g, '$1')
+    .replace(/[’‘`´']/g, '')
+    .replace(/[^a-z0-9\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
+
+// Exact reviewed provider routes only. Keep in step with the independently
+// deployed backend/lib/pokedexCards.js matcher; regression controls cover both.
+const REVIEWED_CARD_TITLE_ALIASES = new Map([
+  ['raichu alola', 'Alolan Raichu'],
+  ['deoxys normal', 'Deoxys'],
+]);
+
+const matchesWholeName = (pokemon: string, card: string) => {
+  const escaped = pokemon.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+  return new RegExp(`(^|\\s)${escaped}(?=\\s|$)`).test(card);
+};
 
 export const formatPokedexName = (name: string) =>
   name
@@ -61,16 +78,24 @@ export const pokemonNameMatchesCardName = (pokemonName: string, cardName: string
   const card = normalise(cardName);
 
   if (!pokemon || !card) return false;
-  if (card === pokemon) return true;
-
-  const escaped = pokemon.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
-  return new RegExp(`(^|\\s)${escaped}(\\s|$)`).test(card);
+  if (matchesWholeName(pokemon, card)) return true;
+  const alias = REVIEWED_CARD_TITLE_ALIASES.get(pokemon);
+  if (!alias) return false;
+  if (pokemon === 'deoxys normal') {
+    // Bare/default title equivalence cannot infer the artwork's physical form.
+    // Only printed mechanics may follow the bare title; form labels stay exact.
+    if (/\b(?:forme?|attack|defense|speed)\b/.test(card)) return false;
+    return /^deoxys(?:\s+(?:ex|gx|v|vmax|vstar|break|prime|lv\s+x))*$/.test(card);
+  }
+  return matchesWholeName(normalise(alias), card);
 };
 
 const getPokemonCardSearchTerms = (pokemonName: string) => {
   const displayName = formatPokedexName(pokemonName);
   const terms = new Set([displayName]);
   const normalized = normalise(displayName);
+  const alias = REVIEWED_CARD_TITLE_ALIASES.get(normalized);
+  if (alias) terms.add(alias);
 
   if (normalized === 'mr mime') terms.add('Mr. Mime');
   if (normalized === 'mr rime') terms.add('Mr. Rime');
@@ -130,6 +155,15 @@ const getPokedexCardNames = (card: any) => {
     region: input.region,
   };
 };
+
+// Canonical adapters retain classification in raw metadata. An explicit
+// non-Pokémon classification cannot be overridden by a blank or conflicting
+// presentation field; missing classifications stay unknown.
+const isExplicitNonPokemonCard = (card: any) => (
+  [card.supertype, card.raw_data?.supertype, card.raw_payload?.supertype].some((supertype) => (
+    ['trainer', 'energy'].includes(String(supertype ?? '').normalize('NFKC').trim().toLowerCase())
+  ))
+);
 
 const mapCardRow = (card: any): PokedexCard => {
   const imageUrls = buildPokedexImageUrls(card);
@@ -509,13 +543,16 @@ async function fetchBinderOwnershipRows(binderIds: string[]): Promise<OwnedPoked
   return [...rowsById.values()];
 }
 
-export async function fetchOwnedPokedexCards(): Promise<Map<string, OwnedPokedexCard>> {
+export async function fetchOwnedPokedexCards(expectedAccountId?: string): Promise<Map<string, OwnedPokedexCard>> {
   const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
 
   if (userError) throw userError;
+  if (expectedAccountId !== undefined && user?.id !== expectedAccountId) {
+    throw new Error('Your account changed. Retry ownership.');
+  }
   if (!user) return new Map();
 
   const binderIds = await fetchOwnedBinderIds(user.id);
@@ -536,8 +573,8 @@ export async function fetchOwnedPokedexCards(): Promise<Map<string, OwnedPokedex
   return buildOwnedPokedexCards(variants, binderCards, pokedexCards);
 }
 
-export async function fetchOwnedPokemonNameSet(): Promise<Set<string>> {
-  const owned = await fetchOwnedPokedexCards();
+export async function fetchOwnedPokemonNameSet(expectedAccountId?: string): Promise<Set<string>> {
+  const owned = await fetchOwnedPokedexCards(expectedAccountId);
   const cardIds = [...new Set(Array.from(owned.values()).map((row) => row.card_id).filter(Boolean))];
   const names = new Set<string>();
 
@@ -547,6 +584,7 @@ export async function fetchOwnedPokemonNameSet(): Promise<Set<string>> {
   for (const cardId of cardIds) {
     const card = rows.get(cardId);
     if (card) {
+      if (isExplicitNonPokemonCard(card)) continue;
       const cardNames = getPokedexCardNames(card);
       const normalizedCardName = normalise(cardNames.englishName ?? cardNames.name);
       if (!normalizedCardName) continue;
@@ -557,7 +595,11 @@ export async function fetchOwnedPokemonNameSet(): Promise<Set<string>> {
   return names;
 }
 
-export async function setPokedexCardOwned(card: PokedexCard, owned: boolean): Promise<void> {
+export async function setPokedexCardOwned(
+  card: PokedexCard,
+  owned: boolean,
+  accountIntent?: { expectedAccountId: string; isCurrentAccount: () => boolean },
+): Promise<void> {
   const {
     data: { user },
     error: userError,
@@ -565,6 +607,20 @@ export async function setPokedexCardOwned(card: PokedexCard, owned: boolean): Pr
 
   if (userError) throw userError;
   if (!user) throw new Error('You must be signed in.');
+  const assertCurrentIntent = () => {
+    if (accountIntent && (user.id !== accountIntent.expectedAccountId || !accountIntent.isCurrentAccount())) {
+      throw new Error('Your account changed. Retry ownership.');
+    }
+  };
+  assertCurrentIntent();
+  const verifyBeforeWrite = async () => {
+    if (!accountIntent) return;
+    assertCurrentIntent();
+    const { data: { user: currentUser }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    assertCurrentIntent();
+    if (currentUser?.id !== accountIntent.expectedAccountId) throw new Error('Your account changed. Retry ownership.');
+  };
 
   const setId = card.set_id ?? card.raw_data?.set?.id ?? null;
   if (owned && !setId) {
@@ -593,6 +649,7 @@ export async function setPokedexCardOwned(card: PokedexCard, owned: boolean): Pr
       if (error) throw error;
       if (data?.length) throw new Error('This card is owned through your collection. Use the collection card controls to remove it.');
     }
+    await verifyBeforeWrite();
     let marker = supabase
       .from('user_pokedex_cards')
       .delete()
@@ -604,6 +661,7 @@ export async function setPokedexCardOwned(card: PokedexCard, owned: boolean): Pr
     return;
   }
 
+  await verifyBeforeWrite();
   const { error } = await supabase.from('user_pokedex_cards').upsert({
     user_id: user.id,
     card_id: card.id,

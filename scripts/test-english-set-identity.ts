@@ -61,6 +61,7 @@ async function main() {
     './chineseCatalogueCorrection': chineseCatalogueCorrection,
     './stackrSetRetrieval': stackrSetRetrieval,
     './cardArtworkPresentation': cardArtworkPresentation,
+    './stackrCatalogueCache': { getPersistentStackrSetFactsStore: async () => null },
     './stackrApiV1': { stackrApiClient: defaultClient },
     './englishSetIdentity': { getEnglishSetReferenceAliases, matchesEnglishSetReference },
     './pokemonSetSeries': pokemonSetSeries,
@@ -76,7 +77,12 @@ async function main() {
   const exports: any = {};
   let clock = 1_000_000;
   const TestDate = class extends Date { static now() { return clock; } };
-  vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController, setTimeout, clearTimeout, Date: TestDate });
+  vm.runInNewContext(`${compiled}\nexports.testLegacySetRow = legacySetRow;`, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController, setTimeout, clearTimeout, Date: TestDate });
+  const legacyPrintedOnly = exports.testLegacySetRow({ id: PRISMATIC_ID, language: 'en', name: 'Prismatic Evolutions', printed_total: 131 });
+  assert.equal(legacyPrintedOnly.printedTotal, 131);
+  assert.equal(legacyPrintedOnly.total, 0, 'legacy fallback metadata must not fabricate an exact count either');
+  assert.equal(exports.testLegacySetRow({ id: PRISMATIC_ID, language: 'en', actual_total: 180, printed_total: 131 }).total, 180,
+    'an explicitly recorded actual legacy total remains usable');
 
   // Exercise the real preferred-read and enrichment deadlines at a shorter
   // test scale. A slow optional set response used to cancel successful card
@@ -178,6 +184,54 @@ async function main() {
   assert.equal(await exports.resolveStackrSetId('sv8pt5', 'en', ambiguousClient), null, 'two exact canonical matches must remain unresolved rather than selecting the first row');
   const cards = await exports.fetchStackrCardsForSet('sv8pt5', 'en', client);
   assert.equal(cards.length, 180, 'the legacy Prismatic reference resolves through the canonical 180-card set path');
+
+  // Exercise the public facts-first adapter with its actual set/client reads.
+  // A printed total is a display hint, not an exact completion denominator:
+  // Prismatic has 131 printed cards and 180 canonical cards including secrets.
+  const exactFactRows = Array.from({ length: 180 }, (_, index) => ({
+    cardId: `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+    catalogueVersionId: '20000000-0000-4000-8000-000000000001', game: 'pokemon', languageCode: 'en',
+    set: prismatic, collectorNumber: { value: String(index + 1), sort: index + 1, prefix: null, suffix: null, sortKey: String(index + 1) },
+    names: { native: `Fact ${index + 1}`, englishDisplay: `Fact ${index + 1}`, englishDisplaySource: 'printing' },
+    rarity: { code: 'common', label: 'Common' }, details: {},
+    defaultVariantId: `30000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+    variants: [{ variantId: `30000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`, canonicalId: `pokemon:en:${PRISMATIC_ID}:${index + 1}:normal`, variantCode: 'normal', variantLabel: 'Normal', finishCode: 'normal', finishLabel: 'Normal', artworkKey: null, imageVariantId: null, image: null, updatedAt: null }],
+    updatedAt: null,
+  }));
+  const exactFactsClient = (set: any, rows: any[], namespace: string): any => ({
+    catalogueCacheNamespace: namespace,
+    sets: async () => ({ data: { sets: [prismatic] }, meta: { pagination: { nextCursor: null } } }),
+    set: async (id: string) => { assert.equal(id, PRISMATIC_ID); return { data: { set } }; },
+    setCards: async (_id: string, query: any) => {
+      assert.equal(query.includeAssets, false, 'facts validation must keep the facts-only request');
+      assert.equal(query.language, 'en');
+      return { data: { cards: rows }, meta: { pagination: { nextCursor: null } } };
+    },
+  });
+  // Read the same public set-mapping path consumed by Set Detail before it
+  // forwards a minimum. A mapper must not manufacture an exact total from a
+  // printed hint, otherwise the caller bypasses the facts adapter's guard.
+  const printedOnlyClient = exactFactsClient({ ...prismatic, total: null, printedTotal: 131 }, exactFactRows.slice(0, 131), 'facts-mapped-printed-only');
+  const printedOnlySet = await imageReads.fetchStackrSet(PRISMATIC_ID, 'en', { includeAssets: false }, printedOnlyClient);
+  assert.equal(printedOnlySet.printedTotal, 131, 'the separate printed display hint is retained');
+  assert.equal(printedOnlySet.total, 0, 'mapped set facts must preserve a missing exact canonical total');
+  await assert.rejects(
+    imageReads.fetchStackrCardsForSet(PRISMATIC_ID, 'en', printedOnlyClient, { includeAssets: false, minimumCardCount: printedOnlySet.total }),
+    /Exact canonical set total is unavailable/,
+    'a mapped printed hint cannot bypass the exact facts guard through the screen minimum',
+  );
+  await assert.rejects(
+    imageReads.fetchStackrCardsForSet('sv8pt5', 'en', exactFactsClient({ ...prismatic, total: null, printedTotal: 131 }, exactFactRows.slice(0, 131), 'facts-printed-only'), { includeAssets: false }),
+    /Exact canonical set total is unavailable/,
+    'printedTotal alone cannot make a partial secret-card set look complete',
+  );
+  const exactFacts = await imageReads.fetchStackrCardsForSet('sv8pt5', 'en', exactFactsClient(prismatic, exactFactRows, 'facts-canonical-total'), { includeAssets: false });
+  assert.equal(exactFacts.length, 180, 'the adapter accepts the full canonical total');
+  await assert.rejects(
+    imageReads.fetchStackrCardsForSet('sv8pt5', 'en', exactFactsClient(prismatic, exactFactRows.slice(0, 131), 'facts-partial-canonical-total'), { includeAssets: false }),
+    /expected 180, received 131/,
+    'a 131-card partial response cannot satisfy the canonical total',
+  );
 
   let resolutionSearches = 0;
   const resolutionClient: any = {

@@ -1,4 +1,5 @@
 import type { ImageSourcePropType } from 'react-native';
+import { getMagazineSetCoverForSet } from './magazineSetCovers';
 
 // Owner-supplied covers are bundled for offline use on the phone.
 // Issue keys preserve the exact publication and printed cover month.
@@ -36,5 +37,9 @@ export const COROCORO_SUPPLIED_COVER_COUNT = Object.keys(covers).length;
 export function getCorocoroSuppliedCover(issueId: string, context: {
   development?: boolean; platform?: string; hostname?: string; sourceEnabled?: boolean;
 } = {}): ImageSourcePropType | null {
-  return context.sourceEnabled === false ? null : covers[issueId]?.() ?? null;
+  const issue = /^monthly:(\d{4}-(0[1-9]|1[0-2]))$/.exec(issueId);
+  if (context.sourceEnabled === false || !issue || !covers[issueId]) return null;
+  return getMagazineSetCoverForSet({
+    id: `ja:magazine:corocoro-comic:${issue[1]}`, language: 'ja',
+  }, undefined, () => covers[issueId]())?.source ?? null;
 }

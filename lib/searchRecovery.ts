@@ -19,11 +19,16 @@ export function retainFailedSearchGroups<T extends Record<SearchResultGroup, unk
   next: T,
   errors: SearchLoadErrors,
   previous: T | null,
+  currentResults: Partial<Record<SearchResultGroup, boolean>> = {},
 ): T {
   if (!previous) return next;
   const merged = { ...next };
   for (const group of Object.keys(groupLabels) as SearchResultGroup[]) {
-    if (errors[group]) merged[group] = previous[group];
+    // A failure only needs the same-query fallback when this request produced
+    // no factual result. Early/cached rows (including an explicit no-match)
+    // remain the most specific result, while the caller still exposes the
+    // group error and retry control.
+    if (errors[group] && !currentResults[group] && next[group].length === 0) merged[group] = previous[group];
   }
   return merged;
 }
