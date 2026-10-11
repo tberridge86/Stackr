@@ -802,12 +802,18 @@ jobs:
       - name: Validate the existing staging rollback target
         run: |
           node --input-type=module <<'NODE'
-          import {readFileSync,appendFileSync} from 'node:fs';
+          import {readFileSync,appendFileSync,writeFileSync} from 'node:fs';
           const rows=JSON.parse(readFileSync('outputs/releases/backend-before.json','utf8'));
           const previous=rows[0];
           const response=await fetch(`${process.env.STACKR_BACKEND_URL}/health`,{signal:AbortSignal.timeout(15000)});
           const health=await response.json();
           if(response.status!==200 || health?.ok!==true || health?.runtime?.railwayEnvironment!=='staging' || health?.runtime?.supabaseProjectRef!=='lmwfhvexfcoyeuoyrlco' || previous?.status!=='SUCCESS' || previous?.id!==health.runtime.deploymentId) throw new Error('Staging rollback target is not the current healthy deployment');
+          writeFileSync('outputs/releases/backend-before-health.json', JSON.stringify({
+            schemaVersion:'stackr-staging-backend-predeploy-health-v1',
+            observedAt:new Date().toISOString(),
+            deployment:{id:previous.id,serviceId:process.env.RAILWAY_BACKEND_SERVICE_ID,environmentId:process.env.RAILWAY_ENVIRONMENT_ID,status:previous.status},
+            health:{status:response.status,ok:health.ok,...health.runtime},
+          },null,2)+'\n');
           appendFileSync(process.env.GITHUB_ENV, `PREVIOUS_BACKEND_DEPLOYMENT_ID=${previous.id}\n`);
           NODE
       - name: Deploy reviewed backend with existing runtime bindings
@@ -830,7 +836,7 @@ jobs:
       - name: Restore the verified staging backend after failed deployment or smoke
         if: failure() && steps.backend_deploy.outcome != 'skipped'
         run: |
-          node scripts/deploy/railway-rollback.mjs --component=backend --deployment="$PREVIOUS_BACKEND_DEPLOYMENT_ID" > outputs/releases/backend-rollback.json
+          node scripts/deploy/railway-rollback.mjs --component=backend --deployment="$PREVIOUS_BACKEND_DEPLOYMENT_ID" --verified-before=outputs/releases/backend-before-health.json > outputs/releases/backend-rollback.json
       - name: Record resulting deployment
         if: always()
         run: |
