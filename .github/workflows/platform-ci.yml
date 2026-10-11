@@ -41,6 +41,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm ci --prefix backend
+      - run: node scripts/test-chinese-membership-repair.mjs
+      - run: node scripts/test-staging-binder-ownership.mjs
       - run: node tools/release-api-acceptance-20260929/migration.test.mjs
       - run: node tools/card-detail-front-20260927/migration.test.mjs
       - run: node --test tools/artwork3303-publish-20260928/publish.test.mjs tools/tw200-publish-20260930/publish.test.mjs tools/tw200-publish-20260930/workflow.test.mjs tools/english45-publish-20260930/publish.test.mjs tools/sh33-publish-20260930/publish.test.mjs tools/sh33-publish-20260930/repair.test.mjs tools/residual146-publish-20260930/publish.test.mjs tools/native96-publish-20260930/publish.test.mjs tools/korean232-publish-20260930/publish.test.mjs tools/artwork3303-publish-20260928/native-name-corrections.test.mjs tools/native65-publish-20261001/publish.test.mjs tools/native72-publish-20261001/publish.test.mjs tools/native70-publish-20261001/publish.test.mjs tools/native78-publish-20261001/publish.test.mjs tools/native73-publish-20261001/publish.test.mjs tools/native84-publish-20261001/publish.test.mjs tools/native99-publish-20261001/publish.test.mjs tools/native97-publish-20261001/publish.test.mjs tools/artwork3303-publish-20260928/journal.integration.test.mjs
