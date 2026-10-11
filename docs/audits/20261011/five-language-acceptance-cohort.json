@@ -16,12 +16,18 @@
     "private_or_authenticated_access": false,
     "mutations": false
   },
+  "receipt": {
+    "path": "docs/audits/20261011/five-language-acceptance-cohort.receipt.json",
+    "equality_scope": "The receipt preserves selected fields and a full-response SHA-256 for each public card response. It makes baseline equality checkable when the same response bodies are retained; it is not an independent validation source. The endpoint did not deliver a source/runtime SHA.",
+    "expected_variant_scope": "Existing fixtures establish the listed variant IDs where supplied. They do not independently establish a finish code for this cohort; each receipt finish_code is an observed baseline only."
+  },
   "positive_cases": [
     {
       "case_id": "en-me04-053",
       "expected": {
         "card_id": "14bac4a2-8a7b-4e65-87b9-c13e8303e84b",
         "language_code": "en",
+        "set_id": "816ff627-a585-4953-99c4-a15c9b0b80e5",
         "set_code": "me04",
         "collector_number": "053",
         "default_variant_id": "c3af3b29-ec12-45cf-b29e-a4fa24dc2f5d"
@@ -37,6 +43,7 @@
         "at": "2026-10-11T10:51:27.1712324Z",
         "http_status": 200,
         "identity": "pass",
+        "response_sha256": "7502963a95ad0d86f21864a878263aaaadba070aa897c46d2ec8d8407a312167",
         "native_name": "Stunky",
         "default_finish": "normal",
         "image": { "status": "same_artwork_reference", "provider": "tcgdex", "permission_status": "approved", "last_verified_at": "2026-08-09T13:57:35.708+01:00" },
@@ -48,6 +55,7 @@
       "expected": {
         "card_id": "b899c65c-0fda-4cc8-8a8f-60469221fa7a",
         "language_code": "ja",
+        "set_id": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
         "set_code": "SV4a",
         "collector_number": "001",
         "default_variant_id": "0400e020-87fc-42e5-9053-d98e7c04baba"
@@ -63,6 +71,7 @@
         "at": "2026-10-11T10:51:27.3632691Z",
         "http_status": 200,
         "identity": "pass",
+        "response_sha256": "81138166435f252a06e9ae9cb3915fa9b2682c1898e99af3b84a1d3063c248a1",
         "native_name": "ナゾノクサ",
         "default_finish": "normal",
         "image": { "status": "available", "provider": "tcgdex", "permission_status": "approved", "last_verified_at": "2026-08-06T11:33:31.377+01:00" },
@@ -74,6 +83,7 @@
       "expected": {
         "card_id": "a9160ee2-62f0-4450-97ea-c582c8aafb8d",
         "language_code": "zh-cn",
+        "set_id": "01859240-c3d3-4074-832f-782f61c4fcb6",
         "set_code": "cs1bc",
         "collector_number": "097",
         "default_variant_id": "18cb073a-f4e8-406e-be49-62336507e322"
@@ -89,6 +99,7 @@
         "at": "2026-10-11T10:51:29.1270101Z",
         "http_status": 200,
         "identity": "pass",
+        "response_sha256": "9d44fccc2ff8f6549ee43f3c8bad2a40839939e6258a91ec5e1cd1729931f708",
         "native_name": "铜象",
         "default_finish": "normal",
         "image": { "status": "available", "provider": "pikaqian", "permission_status": "approved", "last_verified_at": "2026-08-09T14:56:13.45+01:00" },
@@ -100,6 +111,7 @@
       "expected": {
         "card_id": "ccb7c095-8103-4a10-b205-eb9a23725c10",
         "language_code": "zh-tw",
+        "set_id": "005e4850-7601-4765-b538-290882ded6d8",
         "set_code": "SVAM",
         "collector_number": "013",
         "default_variant_id": "90488b19-f147-46ce-b32b-5925fbeacc94"
@@ -115,6 +127,7 @@
         "at": "2026-10-11T10:51:29.3561792Z",
         "http_status": 200,
         "identity": "pass",
+        "response_sha256": "1942bb2238aaeda578003773b88a0efd419a2ad638c47afa05a42367213a12c9",
         "native_name": "能量輸送",
         "default_finish": "normal",
         "image": { "status": "available", "provider": "tcgdex", "permission_status": "approved", "last_verified_at": "2026-08-07T17:22:17.396+01:00" },
@@ -126,19 +139,21 @@
       "expected": {
         "card_id": "001fc80e-05c1-44d8-a120-d3a1fac170cf",
         "language_code": "ko",
+        "set_id": "7f9d7a5f-a647-484b-831c-218f8da1f150",
         "set_code": "SV4M",
         "collector_number": "045"
       },
       "expected_evidence": {
         "path": "docs/audits/20261010/artwork.md",
         "repository_commit": "b0d079e5a6f3d929b1b7519633573a5126bec1f7",
-        "evidence": "Korean SV4M 045 known printing identity and official-source recovery record."
+        "evidence": "Korean SV4M 045 known printing identity and official-source recovery record. Default variant and finish are not independently established by this source; they are receipt baseline observations only."
       },
       "observed": {
         "url": "https://api.stackrtcg.com/v1/cards/001fc80e-05c1-44d8-a120-d3a1fac170cf",
         "at": "2026-10-11T10:51:30.6757780Z",
         "http_status": 200,
         "identity": "pass",
+        "response_sha256": "96e8788c801394067d45c03f5447e3ffe5d90ab04a0344397d66b3e333625efa",
         "native_name": "킬가르도 ex",
         "default_variant_id": "cabd48df-10f2-41dd-8b62-2a7e6b6c3ae3",
         "default_finish": "holo",
@@ -153,6 +168,7 @@
     "expected": {
       "card_id": "1386b19f-ada3-447a-83d0-105acf48752c",
       "language_code": "zh-tw",
+      "set_id": "41251d8a-6a1c-4f91-8e84-22e2fe7737fd",
       "set_code": "SCA",
       "collector_number": "120",
       "native_name": "瑪俐",
@@ -167,6 +183,7 @@
       "at": "2026-10-11T10:51:30.8951068Z",
       "http_status": 200,
       "identity": "pass",
+      "response_sha256": "871df95b4a984cf5a066dfad419f1c51a4c030b8a6e0f4298825252b8e95a9f6",
       "native_name": "瑪俐",
       "public_english_display": "Pikachu",
       "name_control": "expected_fail_confirmed",
@@ -179,7 +196,7 @@
   "open_limits": [
     "No search, detail, binder, pricing, scanner, authenticated-user, or device journey was exercised.",
     "No cross-language printing equivalence is implied by these five independent identities.",
-    "Provider access, legal rights beyond the delivered permission_status field, image freshness beyond last_verified_at, and all pricing are unmeasured unless stated in an observation.",
+    "The returned permission_status is recorded as API data only; it does not establish provider access, legal rights, or a release approval. Image freshness beyond last_verified_at and all pricing are unmeasured unless stated in an observation.",
     "Accessibility, rendered mobile UI, network-loss behaviour, latency, and iPhone acceptance remain open."
   ]
 }
