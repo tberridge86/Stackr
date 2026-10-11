@@ -8,6 +8,7 @@ import {
   parseLimit,
   toCatalogueAsset,
 } from './stackrApiV1.js';
+import { correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
 
 function clean(value) {
   const text = String(value ?? '').trim();
@@ -94,8 +95,11 @@ async function fetchFactRows(supabase, setId, language, afterVariantId, limit, o
  */
 export async function fetchFastSetCards(supabase, setId, input = {}, options = {}) {
   if (!isUuid(setId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
+  const targetSetId = correctedCatalogueSetId(setId);
+  const isLanguageCorrection = targetSetId !== setId;
+  setId = targetSetId;
   const limit = parseLimit(input.limit, 120, 500);
-  const language = clean(input.language);
+  const language = isLanguageCorrection ? CORRECTION_LANGUAGE : clean(input.language);
   if (language && !SUPPORTED_LANGUAGE_CODES.includes(language)) {
     throw new ApiError(400, 'invalid_language', 'Unsupported catalogue language.');
   }
@@ -105,8 +109,27 @@ export async function fetchFastSetCards(supabase, setId, input = {}, options = {
     throw new ApiError(400, 'invalid_cursor', 'cursor is not a valid Stackr pagination cursor.');
   }
 
+  if (isLanguageCorrection) {
+    const { data: publishedSet, error } = await supabase.schema('api')
+      .from('catalogue_sets').select('catalogue_version_id,language_code')
+      .eq('set_id', setId).maybeSingle();
+    if (error) throw error;
+    if (!publishedSet || publishedSet.language_code !== CORRECTION_LANGUAGE) {
+      throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
+    }
+    options = { ...options, catalogueVersionId: publishedSet.catalogue_version_id };
+  }
+
+  const verifyCorrectedCards = (cards) => {
+    if (isLanguageCorrection && cards.some((card) => card.languageCode !== CORRECTION_LANGUAGE || card.set?.setId !== setId)) {
+      throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
+    }
+  };
+
   if (!shouldIncludeAssets(input.includeAssets)) {
-    return fetchFactRows(supabase, setId, language, afterVariantId, limit, options);
+    const result = await fetchFactRows(supabase, setId, language, afterVariantId, limit, options);
+    verifyCorrectedCards(result.cards);
+    return result;
   }
 
   const { data, error } = await supabase.schema('api').rpc('catalogue_set_card_rows', {
@@ -136,6 +159,7 @@ export async function fetchFastSetCards(supabase, setId, input = {}, options = {
       };
     }),
   }));
+  verifyCorrectedCards(cards);
 
   return {
     cards,
