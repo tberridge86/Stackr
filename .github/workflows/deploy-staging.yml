@@ -8,11 +8,15 @@ on:
         required: true
         type: string
       release_scope:
-        description: Run Gate 0, rehearse a pricing guard or Cardmarket ledger, rehearse catalogue API, or deploy the full platform
+        description: Deploy backend code only, run Gate 0, rehearse guards/catalogue API, or deploy the full platform
         required: true
         default: gate0_hardening
         type: choice
-        options: [gate0_hardening, pricing_identity_guard_rehearsal, cardmarket_ledger_rehearsal, catalogue_api, full_platform]
+        options: [backend_only, gate0_hardening, pricing_identity_guard_rehearsal, cardmarket_ledger_rehearsal, catalogue_api, full_platform]
+      expected_main_sha:
+        description: Exact reviewed main SHA for backend-only deployment
+        required: false
+        type: string
       apply_migrations:
         description: Apply migrations after the dry run
         required: true
@@ -40,6 +44,7 @@ jobs:
   deploy:
     if: >-
       inputs.confirmation == 'DEPLOY STAGING' &&
+      inputs.release_scope != 'backend_only' &&
       inputs.release_scope != 'pricing_identity_guard_rehearsal' &&
       inputs.release_scope != 'cardmarket_ledger_rehearsal' &&
       github.ref == 'refs/heads/main'
@@ -743,3 +748,97 @@ jobs:
         run: |
           rm -rf "$RUNNER_TEMP/stackr-price-guard-backup"
           rm -f "$RUNNER_TEMP/stackr-price-guard-rehearsal.json"
+
+  backend_only:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY STAGING' && inputs.release_scope == 'backend_only'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: staging
+    env:
+      EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      STACKR_BACKEND_URL: https://stackr-backend-staging-staging.up.railway.app
+      STACKR_GATEWAY_URL: https://stackr-api-gateway-staging.berridge14.workers.dev
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Verify reviewed source and existing staging target
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          git merge-base --is-ancestor 599c776f12201470273574c4d5f9f01632609dc1 "$EXPECTED_MAIN_SHA"
+          test "$RAILWAY_PROJECT_ID" = 'd205637b-5376-41aa-9169-1015ba88fec3'
+          test "$RAILWAY_ENVIRONMENT_ID" = '88986bd6-970f-4bfe-9cea-15aada4d466c'
+          test "$RAILWAY_BACKEND_SERVICE_ID" = '66641988-1846-4775-bcc4-5d1f6985db91'
+          test -n "$RAILWAY_API_TOKEN"
+          test "${{ inputs.apply_migrations }}" = 'false'
+          test "${{ inputs.publish_mobile_update }}" = 'false'
+          test "${{ inputs.release_candidate }}" = 'false'
+          git diff --exit-code
+      - name: Validate backend and retained staging restrictions
+        run: |
+          set -euo pipefail
+          npm ci
+          npm ci --prefix backend
+          npm run ci:secret-scan
+          npm run typecheck:backend
+          npm test --prefix backend
+          node scripts/test-asset-pipeline.mjs
+          npm run test:commerce-release-lock
+      - name: Record previous deployment
+        run: |
+          mkdir -p outputs/releases
+          npx --yes @railway/cli@5.30.1 deployment list --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_BACKEND_SERVICE_ID" --limit 1 --json > outputs/releases/backend-before.json
+      - name: Validate the existing staging rollback target
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync,appendFileSync} from 'node:fs';
+          const rows=JSON.parse(readFileSync('outputs/releases/backend-before.json','utf8'));
+          const previous=rows[0];
+          const response=await fetch(`${process.env.STACKR_BACKEND_URL}/health`,{signal:AbortSignal.timeout(15000)});
+          const health=await response.json();
+          if(response.status!==200 || health?.ok!==true || health?.runtime?.railwayEnvironment!=='staging' || health?.runtime?.supabaseProjectRef!=='lmwfhvexfcoyeuoyrlco' || previous?.status!=='SUCCESS' || previous?.id!==health.runtime.deploymentId) throw new Error('Staging rollback target is not the current healthy deployment');
+          appendFileSync(process.env.GITHUB_ENV, `PREVIOUS_BACKEND_DEPLOYMENT_ID=${previous.id}\n`);
+          NODE
+      - name: Deploy reviewed backend with existing runtime bindings
+        id: backend_deploy
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$EXPECTED_MAIN_SHA" > backend/.stackr-source-commit
+          npx --yes @railway/cli@5.30.1 up "$GITHUB_WORKSPACE/backend" --ci --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_BACKEND_SERVICE_ID"
+      - name: Verify staging runtime and catalogue
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const response = await fetch(`${process.env.STACKR_BACKEND_URL}/health`, {signal: AbortSignal.timeout(15000)});
+          const body = await response.json();
+          if (response.status !== 200 || body?.ok !== true || body?.runtime?.railwayEnvironment !== 'staging' || body?.runtime?.supabaseProjectRef !== 'lmwfhvexfcoyeuoyrlco' || body?.runtime?.gitCommit !== process.env.EXPECTED_MAIN_SHA.slice(0, 12) || body?.runtime?.gitCommitSource !== 'bundled_workflow_sha') throw new Error('Staging runtime/source verification failed');
+          console.log(JSON.stringify(body));
+          NODE
+          node scripts/deploy/verify-chinese-staging-resolution.mjs "$EXPECTED_MAIN_SHA" resolver > outputs/releases/backend-chinese-resolver.json
+          npm run deploy:smoke -- --gateway="$STACKR_GATEWAY_URL" --backend="$STACKR_BACKEND_URL" --full-gateway --require-commerce-disabled --require-published-catalogue --required-catalogue-languages=en,ja,zh-tw,zh-cn,ko --allowed-origin=https://stackr.app > outputs/releases/backend-smoke.json
+      - name: Restore the verified staging backend after failed deployment or smoke
+        if: failure() && steps.backend_deploy.outcome != 'skipped'
+        run: |
+          node scripts/deploy/railway-rollback.mjs --component=backend --deployment="$PREVIOUS_BACKEND_DEPLOYMENT_ID" > outputs/releases/backend-rollback.json
+      - name: Record resulting deployment
+        if: always()
+        run: |
+          mkdir -p outputs/releases
+          npx --yes @railway/cli@5.30.1 deployment list --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_BACKEND_SERVICE_ID" --limit 1 --json > outputs/releases/backend-after.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: staging-backend-only-${{ github.run_id }}
+          path: outputs/releases/backend-*.json
+          retention-days: 30
