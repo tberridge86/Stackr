@@ -1,8 +1,8 @@
 # High-resolution artwork selection review
 
-**Review time:** 2026-10-11  
-**Frozen comparison:** `fcf697bab7785c3ed87747ed1721e9c033818557`  
-**Reviewed paths:** `lib/cardArtworkPresentation.ts` and `scripts/test-master-set-artwork.ts` only.  
+**Review time:** 2026-10-11
+**Frozen comparison:** `fcf697bab7785c3ed87747ed1721e9c033818557`
+**Reviewed paths:** `lib/cardArtworkPresentation.ts` and `scripts/test-master-set-artwork.ts` only.
 **Scope:** source-level selection of existing approved card-art renditions. No asset acquisition, catalogue mutation, public request, deployment, native build, or device test was performed.
 
 ## Decision

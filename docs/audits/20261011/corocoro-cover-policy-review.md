@@ -1,8 +1,8 @@
 # CoroCoro cover-policy repair review
 
-**Review time:** 2026-10-11  
-**Frozen comparison:** `fcf697bab7785c3ed87747ed1721e9c033818557`  
-**Reviewed working-tree paths:** `lib/corocoroSuppliedCovers.ts`, `lib/corocoroCoverReferences.ts`, and `scripts/test-corocoro-mobile-delivery.ts` only.  
+**Review time:** 2026-10-11
+**Frozen comparison:** `fcf697bab7785c3ed87747ed1721e9c033818557`
+**Reviewed working-tree paths:** `lib/corocoroSuppliedCovers.ts`, `lib/corocoroCoverReferences.ts`, and `scripts/test-corocoro-mobile-delivery.ts` only.
 **Scope:** source selection and policy controls for existing owner-supplied CoroCoro issue covers. No production request, deployment, native build, emulator, or installed-device rendering occurred.
 
 ## Decision

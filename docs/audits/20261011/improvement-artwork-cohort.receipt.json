@@ -1,0 +1,626 @@
+{
+  "observedAt": "2026-10-11T11:23:49.017Z",
+  "baseRevision": "fcf697bab7785c3ed87747ed1721e9c033818557",
+  "selectorSha256": "b525a6769381961420ec77bdfea96b4cd4b3267af5d4bf0baae247179c071391",
+  "population": "Five previously audited exact public card printings; not the whole catalogue",
+  "device": "Windows API and actual local selector; no iPhone rendering",
+  "network": "Desktop connection, uncharacterised; not mobile-data reference",
+  "installedReference": {
+    "model": "iPhone 15",
+    "build": 54,
+    "network": "mobile data",
+    "ios": null,
+    "observations": 0
+  },
+  "observations": [
+    {
+      "at": "2026-10-11T11:23:09.502Z",
+      "cardUrl": "https://api.stackrtcg.com/v1/cards/120b0541-d505-48c3-8a44-ad37c2075154",
+      "assetUrl": "https://api.stackrtcg.com/v1/assets/manifest?printingId=120b0541-d505-48c3-8a44-ad37c2075154&assetType=card_image&limit=20",
+      "cardResponseSha256": "c98a699dc659ad3f13396688843e79c97c0eeedbd21b0dcd077ffc3519196848",
+      "assetResponseSha256": "d5f611a330b3fa732999b15231d84e771ffe064965c0f225efa27689d37127cc",
+      "cardId": "120b0541-d505-48c3-8a44-ad37c2075154",
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "language": "en",
+      "set": {
+        "setId": "ddc668c0-316e-4dab-8c51-625167508fd6",
+        "setCode": "me02.5",
+        "nativeName": "Ascended Heroes",
+        "englishDisplayName": "Ascended Heroes"
+      },
+      "collectorNumber": "041",
+      "variantId": "00021ece-533f-4306-9333-4afb1b01718d",
+      "canonicalId": "pokemon:en:ddc668c0-316e-4dab-8c51-625167508fd6:041:normal",
+      "finish": "normal",
+      "nativeImageStatus": "same_artwork_reference",
+      "presentation": {
+        "kind": "shared",
+        "selectedVariantId": "00021ece-533f-4306-9333-4afb1b01718d",
+        "sourceVariantId": "c7533e4d-e321-49c1-af78-ec243af9ad4b",
+        "assetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+        "candidates": [
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/60/d5/60d5d37c4f0d8819d8e0560aa646cfc0d2d190fbd43a30e445a1712a17f3528c/card-grid.webp",
+            "kind": "shared",
+            "assetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+            "sourceVariantId": "c7533e4d-e321-49c1-af78-ec243af9ad4b"
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f9/ee/f9ee9d92558a1fffa597ecf792781b83ccb6e67c03908cdfe1321ed29f2e6a41/detail-page.webp",
+            "kind": "shared",
+            "assetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+            "sourceVariantId": "c7533e4d-e321-49c1-af78-ec243af9ad4b"
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ad/9e/ad9ea1ba3217f20ce943d8be9c65ecb2774319b02290a3d9fb1c6f6bc93573fc/original.jpg",
+            "kind": "shared",
+            "assetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+            "sourceVariantId": "c7533e4d-e321-49c1-af78-ec243af9ad4b"
+          }
+        ],
+        "small": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/60/d5/60d5d37c4f0d8819d8e0560aa646cfc0d2d190fbd43a30e445a1712a17f3528c/card-grid.webp",
+        "large": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f9/ee/f9ee9d92558a1fffa597ecf792781b83ccb6e67c03908cdfe1321ed29f2e6a41/detail-page.webp"
+      },
+      "approvedAssetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+      "source": "tcgdex",
+      "metadataDimensions": {
+        "width": 600,
+        "height": 825
+      },
+      "imageSha256": "f9ee9d92558a1fffa597ecf792781b83ccb6e67c03908cdfe1321ed29f2e6a41",
+      "imageBytes": 94726,
+      "status": "selected_asset_hash_verified",
+      "decodedDimensions": {
+        "width": 600,
+        "height": 825
+      },
+      "decodeCompleted": true,
+      "detailLongEdgeTargetMet": false,
+      "declaredHashVerified": true
+    },
+    {
+      "at": "2026-10-11T11:23:10.026Z",
+      "cardUrl": "https://api.stackrtcg.com/v1/cards/9651517e-eccd-4f3d-9aae-47ef5867f982",
+      "assetUrl": "https://api.stackrtcg.com/v1/assets/manifest?printingId=9651517e-eccd-4f3d-9aae-47ef5867f982&assetType=card_image&limit=20",
+      "cardResponseSha256": "a87da050c519a555a3adb62c1c567e936b6ab649998126fcdf3d4bb5905d83db",
+      "assetResponseSha256": "f11ee3e02495086b454990216fbb1fa3901b8641206047a27164e3e5dd7402a3",
+      "cardId": "9651517e-eccd-4f3d-9aae-47ef5867f982",
+      "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "language": "ja",
+      "set": {
+        "setId": "e42556b8-3e82-44bb-8c52-c06b893ee4a3",
+        "setCode": "SV2a",
+        "nativeName": "ポケモンカード151",
+        "englishDisplayName": "Pokémon Card 151"
+      },
+      "collectorNumber": "077",
+      "variantId": "005437d6-291e-445d-9b2b-55d6495453a9",
+      "canonicalId": "pokemon:ja:e42556b8-3e82-44bb-8c52-c06b893ee4a3:077:reverse_holo",
+      "finish": "reverse_holo",
+      "nativeImageStatus": "same_artwork_reference",
+      "presentation": {
+        "kind": "shared",
+        "selectedVariantId": "005437d6-291e-445d-9b2b-55d6495453a9",
+        "sourceVariantId": "cfb57e38-baa2-46a9-841f-7e8c27ef68ac",
+        "assetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+        "candidates": [
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/34/99/349961cd09ca8c0c4713d8dcfff23264aeeaf8b5c16829647cdf09e80f79d661/card-grid.webp",
+            "kind": "shared",
+            "assetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+            "sourceVariantId": "cfb57e38-baa2-46a9-841f-7e8c27ef68ac"
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f3/c1/f3c1dc837d79a8b5eeccbd4e5f23499eae36033938c0e7bc7df7bf96820b6b31/detail-page.webp",
+            "kind": "shared",
+            "assetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+            "sourceVariantId": "cfb57e38-baa2-46a9-841f-7e8c27ef68ac"
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ab/e8/abe82917371c156f55e5f8918b75241913bdab48a06899fc79672799cb672d72/original.jpg",
+            "kind": "shared",
+            "assetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+            "sourceVariantId": "cfb57e38-baa2-46a9-841f-7e8c27ef68ac"
+          }
+        ],
+        "small": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/34/99/349961cd09ca8c0c4713d8dcfff23264aeeaf8b5c16829647cdf09e80f79d661/card-grid.webp",
+        "large": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f3/c1/f3c1dc837d79a8b5eeccbd4e5f23499eae36033938c0e7bc7df7bf96820b6b31/detail-page.webp"
+      },
+      "approvedAssetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+      "source": "tcgdex",
+      "metadataDimensions": {
+        "width": 600,
+        "height": 825
+      },
+      "imageSha256": "f3c1dc837d79a8b5eeccbd4e5f23499eae36033938c0e7bc7df7bf96820b6b31",
+      "imageBytes": 103076,
+      "status": "selected_asset_hash_verified",
+      "decodedDimensions": {
+        "width": 600,
+        "height": 825
+      },
+      "decodeCompleted": true,
+      "detailLongEdgeTargetMet": false,
+      "declaredHashVerified": true
+    },
+    {
+      "at": "2026-10-11T11:23:10.232Z",
+      "cardUrl": "https://api.stackrtcg.com/v1/cards/7dfd952d-31d7-45cf-8adf-0dfa12a2b33c",
+      "assetUrl": "https://api.stackrtcg.com/v1/assets/manifest?printingId=7dfd952d-31d7-45cf-8adf-0dfa12a2b33c&assetType=card_image&limit=20",
+      "cardResponseSha256": "62b3ba4f06e00364c73ad6bf0a14fe2464d605977220adc6448ef1da33d108a2",
+      "assetResponseSha256": "108db249a992cfc8da114216cfd0109a11a756d9f43c79cfca5ae935f31e89aa",
+      "cardId": "7dfd952d-31d7-45cf-8adf-0dfa12a2b33c",
+      "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "language": "zh-tw",
+      "set": {
+        "setId": "d53eee17-75b8-48a8-bde5-50ac129a3558",
+        "setCode": "SV8a",
+        "nativeName": "太晶慶典ex",
+        "englishDisplayName": "Terastal Fest ex"
+      },
+      "collectorNumber": "087",
+      "variantId": "003d0144-829b-42a9-812f-14c3b94c0341",
+      "canonicalId": "pokemon:zh-tw:d53eee17-75b8-48a8-bde5-50ac129a3558:087:reverse_holo",
+      "finish": "reverse_holo",
+      "nativeImageStatus": "same_artwork_reference",
+      "presentation": {
+        "kind": "shared",
+        "selectedVariantId": "003d0144-829b-42a9-812f-14c3b94c0341",
+        "sourceVariantId": "a65fb996-40e7-44b7-b26e-f264adc8cd30",
+        "assetId": "b752738a-d697-490e-ac81-e539152099df",
+        "candidates": [
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/fc/1b/fc1bae64e030bd05b5c8557545e30bca4c34c941580f9d4a63eb57b953ce959c/card-grid.webp",
+            "kind": "shared",
+            "assetId": "b752738a-d697-490e-ac81-e539152099df",
+            "sourceVariantId": "a65fb996-40e7-44b7-b26e-f264adc8cd30"
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/46/d5/46d5f28d03f9886d505744a5a328b3b68b765b39ce2c3dddce29c49c385336df/detail-page.webp",
+            "kind": "shared",
+            "assetId": "b752738a-d697-490e-ac81-e539152099df",
+            "sourceVariantId": "a65fb996-40e7-44b7-b26e-f264adc8cd30"
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/bd/17/bd179bc88d0edbc4c6a1340cf3ad0f5318d7aecfe94389358525c4833b475f72/original.jpg",
+            "kind": "shared",
+            "assetId": "b752738a-d697-490e-ac81-e539152099df",
+            "sourceVariantId": "a65fb996-40e7-44b7-b26e-f264adc8cd30"
+          }
+        ],
+        "small": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/fc/1b/fc1bae64e030bd05b5c8557545e30bca4c34c941580f9d4a63eb57b953ce959c/card-grid.webp",
+        "large": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/46/d5/46d5f28d03f9886d505744a5a328b3b68b765b39ce2c3dddce29c49c385336df/detail-page.webp"
+      },
+      "approvedAssetId": "b752738a-d697-490e-ac81-e539152099df",
+      "source": "tcgdex",
+      "metadataDimensions": {
+        "width": 600,
+        "height": 825
+      },
+      "imageSha256": "46d5f28d03f9886d505744a5a328b3b68b765b39ce2c3dddce29c49c385336df",
+      "imageBytes": 173948,
+      "status": "selected_asset_hash_verified",
+      "decodedDimensions": {
+        "width": 600,
+        "height": 825
+      },
+      "decodeCompleted": true,
+      "detailLongEdgeTargetMet": false,
+      "declaredHashVerified": true
+    },
+    {
+      "at": "2026-10-11T11:23:49.019Z",
+      "cardUrl": "https://api.stackrtcg.com/v1/cards/02eaba5e-1bbb-4f14-9fd4-489715fa6d8c",
+      "assetUrl": "https://api.stackrtcg.com/v1/assets/manifest?printingId=02eaba5e-1bbb-4f14-9fd4-489715fa6d8c&assetType=card_image&limit=20",
+      "cardResponseSha256": "dcf7a6138cae038d794b551218fd8fab8a46c2612a51dabb01e2592c066effc1",
+      "assetResponseSha256": "7a88ac6710bba64e2b3f74ed59897619c263ffdb497cdb49b870535dd8f72065",
+      "cardId": "02eaba5e-1bbb-4f14-9fd4-489715fa6d8c",
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "language": "en",
+      "set": {
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "setCode": "svp",
+        "nativeName": "SVP Black Star Promos",
+        "englishDisplayName": "SVP Black Star Promos"
+      },
+      "collectorNumber": "219",
+      "variantId": "69989cd0-e42f-42a6-8b50-1fea9342178e",
+      "canonicalId": "pokemon:en:6700cb91-6deb-45ab-935a-0f262b32dd59:219:normal",
+      "finish": "normal",
+      "nativeImageStatus": "scan_acquisition_required",
+      "presentation": {
+        "kind": "shared",
+        "selectedVariantId": "69989cd0-e42f-42a6-8b50-1fea9342178e",
+        "sourceVariantId": null,
+        "assetId": "artwork-recovered-20260928:02eaba5e-1bbb-4f14-9fd4-489715fa6d8c:50660730b573949cc255532ab6764bb49f93d636e8e0894bf3bcf1c52d34e333",
+        "candidates": [
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/2c/b3/2cb3452d63b949dfecc9100b0535930066b8a31fcb7a639f9caaf40ca020095f/card-grid.webp",
+            "kind": "shared",
+            "assetId": "artwork-recovered-20260928:02eaba5e-1bbb-4f14-9fd4-489715fa6d8c:50660730b573949cc255532ab6764bb49f93d636e8e0894bf3bcf1c52d34e333",
+            "sourceVariantId": null
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/00/6e/006e3ca0b6344365f8b0d4544581f27e9f802322e83f16b3ef67baa9ebc6bf77/detail-page.webp",
+            "kind": "shared",
+            "assetId": "artwork-recovered-20260928:02eaba5e-1bbb-4f14-9fd4-489715fa6d8c:50660730b573949cc255532ab6764bb49f93d636e8e0894bf3bcf1c52d34e333",
+            "sourceVariantId": null
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/02eaba5e-1bbb-4f14-9fd4-489715fa6d8c/50660730b573949cc255532ab6764bb49f93d636e8e0894bf3bcf1c52d34e333/original.jpg",
+            "kind": "shared",
+            "assetId": "artwork-recovered-20260928:02eaba5e-1bbb-4f14-9fd4-489715fa6d8c:50660730b573949cc255532ab6764bb49f93d636e8e0894bf3bcf1c52d34e333",
+            "sourceVariantId": null
+          }
+        ],
+        "small": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/2c/b3/2cb3452d63b949dfecc9100b0535930066b8a31fcb7a639f9caaf40ca020095f/card-grid.webp",
+        "large": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/00/6e/006e3ca0b6344365f8b0d4544581f27e9f802322e83f16b3ef67baa9ebc6bf77/detail-page.webp"
+      },
+      "approvedAssetId": "artwork-recovered-20260928:02eaba5e-1bbb-4f14-9fd4-489715fa6d8c:50660730b573949cc255532ab6764bb49f93d636e8e0894bf3bcf1c52d34e333",
+      "source": "tcgplayer_card_artwork",
+      "metadataDimensions": {
+        "width": 711,
+        "height": 1000
+      },
+      "imageSha256": "006e3ca0b6344365f8b0d4544581f27e9f802322e83f16b3ef67baa9ebc6bf77",
+      "imageBytes": 101394,
+      "declaredHashVerified": false,
+      "status": "selected_asset_declared_hash_missing",
+      "decodedDimensions": {
+        "width": 711,
+        "height": 1000
+      },
+      "decodeCompleted": true,
+      "detailLongEdgeTargetMet": true
+    },
+    {
+      "at": "2026-10-11T11:23:49.437Z",
+      "cardUrl": "https://api.stackrtcg.com/v1/cards/001fc80e-05c1-44d8-a120-d3a1fac170cf",
+      "assetUrl": "https://api.stackrtcg.com/v1/assets/manifest?printingId=001fc80e-05c1-44d8-a120-d3a1fac170cf&assetType=card_image&limit=20",
+      "cardResponseSha256": "4ed17ac71c2cc61d8067ed86c42989b75831207a0c8cd3e36352129c481ea0c6",
+      "assetResponseSha256": "1c459f40306c51b019394f765fbb5c7b7e8b3462e1389c184820ac4f0d0fae64",
+      "cardId": "001fc80e-05c1-44d8-a120-d3a1fac170cf",
+      "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "language": "ko",
+      "set": {
+        "setId": "7f9d7a5f-a647-484b-831c-218f8da1f150",
+        "setCode": "SV4M",
+        "nativeName": "미래의 일섬",
+        "englishDisplayName": "미래의 일섬"
+      },
+      "collectorNumber": "045",
+      "variantId": "cabd48df-10f2-41dd-8b62-2a7e6b6c3ae3",
+      "canonicalId": "pokemon:ko:7f9d7a5f-a647-484b-831c-218f8da1f150:045:holo",
+      "finish": "holo",
+      "nativeImageStatus": "missing",
+      "presentation": {
+        "kind": "shared",
+        "selectedVariantId": "cabd48df-10f2-41dd-8b62-2a7e6b6c3ae3",
+        "sourceVariantId": null,
+        "assetId": "artwork-recovered-20260928:001fc80e-05c1-44d8-a120-d3a1fac170cf:e288a476001ca3b19daf4271fa4906ee311f31e52469d288b17e10c57f0f1b33",
+        "candidates": [
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/36/84/36843164080e930afd0e316fe3c94e978c29487d39d794ecdadf251a7af8797a/card-grid.webp",
+            "kind": "shared",
+            "assetId": "artwork-recovered-20260928:001fc80e-05c1-44d8-a120-d3a1fac170cf:e288a476001ca3b19daf4271fa4906ee311f31e52469d288b17e10c57f0f1b33",
+            "sourceVariantId": null
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ce/76/ce76653afbe9963f04ebcfac2abdbabf8c6bddd53e6070958a283f57eb765c17/detail-page.webp",
+            "kind": "shared",
+            "assetId": "artwork-recovered-20260928:001fc80e-05c1-44d8-a120-d3a1fac170cf:e288a476001ca3b19daf4271fa4906ee311f31e52469d288b17e10c57f0f1b33",
+            "sourceVariantId": null
+          },
+          {
+            "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/001fc80e-05c1-44d8-a120-d3a1fac170cf/e288a476001ca3b19daf4271fa4906ee311f31e52469d288b17e10c57f0f1b33/original.png",
+            "kind": "shared",
+            "assetId": "artwork-recovered-20260928:001fc80e-05c1-44d8-a120-d3a1fac170cf:e288a476001ca3b19daf4271fa4906ee311f31e52469d288b17e10c57f0f1b33",
+            "sourceVariantId": null
+          }
+        ],
+        "small": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/36/84/36843164080e930afd0e316fe3c94e978c29487d39d794ecdadf251a7af8797a/card-grid.webp",
+        "large": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ce/76/ce76653afbe9963f04ebcfac2abdbabf8c6bddd53e6070958a283f57eb765c17/detail-page.webp"
+      },
+      "approvedAssetId": "artwork-recovered-20260928:001fc80e-05c1-44d8-a120-d3a1fac170cf:e288a476001ca3b19daf4271fa4906ee311f31e52469d288b17e10c57f0f1b33",
+      "source": "pokemon_card_kr_official",
+      "metadataDimensions": {
+        "width": 512,
+        "height": 714
+      },
+      "imageSha256": "ce76653afbe9963f04ebcfac2abdbabf8c6bddd53e6070958a283f57eb765c17",
+      "imageBytes": 84142,
+      "declaredHashVerified": false,
+      "status": "selected_asset_declared_hash_missing",
+      "decodedDimensions": {
+        "width": 512,
+        "height": 714
+      },
+      "decodeCompleted": true,
+      "detailLongEdgeTargetMet": false
+    }
+  ],
+  "harnessCorrection": {
+    "reason": "Harness corrections: pagination is meta.pagination.nextCursor; recovered renditions without a declared hash must remain explicitly hash-unverified rather than be asserted equal to undefined. Prior attempts retained; these are harness validation errors, not failed production responses.",
+    "priorAttempt": {
+      "observedAt": "2026-10-11T11:23:09.501Z",
+      "baseRevision": "fcf697bab7785c3ed87747ed1721e9c033818557",
+      "selectorSha256": "b525a6769381961420ec77bdfea96b4cd4b3267af5d4bf0baae247179c071391",
+      "population": "Five previously audited exact public card printings; not the whole catalogue",
+      "device": "Windows API and actual local selector; no iPhone rendering",
+      "network": "Desktop connection, uncharacterised; not mobile-data reference",
+      "installedReference": {
+        "model": "iPhone 15",
+        "build": 54,
+        "network": "mobile data",
+        "ios": null,
+        "observations": 0
+      },
+      "observations": [
+        {
+          "at": "2026-10-11T11:23:09.502Z",
+          "cardUrl": "https://api.stackrtcg.com/v1/cards/120b0541-d505-48c3-8a44-ad37c2075154",
+          "assetUrl": "https://api.stackrtcg.com/v1/assets/manifest?printingId=120b0541-d505-48c3-8a44-ad37c2075154&assetType=card_image&limit=20",
+          "cardResponseSha256": "c98a699dc659ad3f13396688843e79c97c0eeedbd21b0dcd077ffc3519196848",
+          "assetResponseSha256": "d5f611a330b3fa732999b15231d84e771ffe064965c0f225efa27689d37127cc",
+          "cardId": "120b0541-d505-48c3-8a44-ad37c2075154",
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "language": "en",
+          "set": {
+            "setId": "ddc668c0-316e-4dab-8c51-625167508fd6",
+            "setCode": "me02.5",
+            "nativeName": "Ascended Heroes",
+            "englishDisplayName": "Ascended Heroes"
+          },
+          "collectorNumber": "041",
+          "variantId": "00021ece-533f-4306-9333-4afb1b01718d",
+          "canonicalId": "pokemon:en:ddc668c0-316e-4dab-8c51-625167508fd6:041:normal",
+          "finish": "normal",
+          "nativeImageStatus": "same_artwork_reference",
+          "presentation": {
+            "kind": "shared",
+            "selectedVariantId": "00021ece-533f-4306-9333-4afb1b01718d",
+            "sourceVariantId": "c7533e4d-e321-49c1-af78-ec243af9ad4b",
+            "assetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+            "candidates": [
+              {
+                "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/60/d5/60d5d37c4f0d8819d8e0560aa646cfc0d2d190fbd43a30e445a1712a17f3528c/card-grid.webp",
+                "kind": "shared",
+                "assetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+                "sourceVariantId": "c7533e4d-e321-49c1-af78-ec243af9ad4b"
+              },
+              {
+                "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f9/ee/f9ee9d92558a1fffa597ecf792781b83ccb6e67c03908cdfe1321ed29f2e6a41/detail-page.webp",
+                "kind": "shared",
+                "assetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+                "sourceVariantId": "c7533e4d-e321-49c1-af78-ec243af9ad4b"
+              },
+              {
+                "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ad/9e/ad9ea1ba3217f20ce943d8be9c65ecb2774319b02290a3d9fb1c6f6bc93573fc/original.jpg",
+                "kind": "shared",
+                "assetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+                "sourceVariantId": "c7533e4d-e321-49c1-af78-ec243af9ad4b"
+              }
+            ],
+            "small": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/60/d5/60d5d37c4f0d8819d8e0560aa646cfc0d2d190fbd43a30e445a1712a17f3528c/card-grid.webp",
+            "large": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f9/ee/f9ee9d92558a1fffa597ecf792781b83ccb6e67c03908cdfe1321ed29f2e6a41/detail-page.webp"
+          },
+          "approvedAssetId": "2f9c4fef-4a0e-4658-bf46-a7cdf0f43561",
+          "source": "tcgdex",
+          "metadataDimensions": {
+            "width": 600,
+            "height": 825
+          },
+          "imageSha256": "f9ee9d92558a1fffa597ecf792781b83ccb6e67c03908cdfe1321ed29f2e6a41",
+          "imageBytes": 94726,
+          "bytePath": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/artwork-120b0541-d505-48c3-8a44-ad37c2075154.bin",
+          "status": "selected_asset_hash_verified"
+        },
+        {
+          "at": "2026-10-11T11:23:10.026Z",
+          "cardUrl": "https://api.stackrtcg.com/v1/cards/9651517e-eccd-4f3d-9aae-47ef5867f982",
+          "assetUrl": "https://api.stackrtcg.com/v1/assets/manifest?printingId=9651517e-eccd-4f3d-9aae-47ef5867f982&assetType=card_image&limit=20",
+          "cardResponseSha256": "a87da050c519a555a3adb62c1c567e936b6ab649998126fcdf3d4bb5905d83db",
+          "assetResponseSha256": "f11ee3e02495086b454990216fbb1fa3901b8641206047a27164e3e5dd7402a3",
+          "cardId": "9651517e-eccd-4f3d-9aae-47ef5867f982",
+          "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "language": "ja",
+          "set": {
+            "setId": "e42556b8-3e82-44bb-8c52-c06b893ee4a3",
+            "setCode": "SV2a",
+            "nativeName": "ポケモンカード151",
+            "englishDisplayName": "Pokémon Card 151"
+          },
+          "collectorNumber": "077",
+          "variantId": "005437d6-291e-445d-9b2b-55d6495453a9",
+          "canonicalId": "pokemon:ja:e42556b8-3e82-44bb-8c52-c06b893ee4a3:077:reverse_holo",
+          "finish": "reverse_holo",
+          "nativeImageStatus": "same_artwork_reference",
+          "presentation": {
+            "kind": "shared",
+            "selectedVariantId": "005437d6-291e-445d-9b2b-55d6495453a9",
+            "sourceVariantId": "cfb57e38-baa2-46a9-841f-7e8c27ef68ac",
+            "assetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+            "candidates": [
+              {
+                "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/34/99/349961cd09ca8c0c4713d8dcfff23264aeeaf8b5c16829647cdf09e80f79d661/card-grid.webp",
+                "kind": "shared",
+                "assetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+                "sourceVariantId": "cfb57e38-baa2-46a9-841f-7e8c27ef68ac"
+              },
+              {
+                "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f3/c1/f3c1dc837d79a8b5eeccbd4e5f23499eae36033938c0e7bc7df7bf96820b6b31/detail-page.webp",
+                "kind": "shared",
+                "assetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+                "sourceVariantId": "cfb57e38-baa2-46a9-841f-7e8c27ef68ac"
+              },
+              {
+                "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/ab/e8/abe82917371c156f55e5f8918b75241913bdab48a06899fc79672799cb672d72/original.jpg",
+                "kind": "shared",
+                "assetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+                "sourceVariantId": "cfb57e38-baa2-46a9-841f-7e8c27ef68ac"
+              }
+            ],
+            "small": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/34/99/349961cd09ca8c0c4713d8dcfff23264aeeaf8b5c16829647cdf09e80f79d661/card-grid.webp",
+            "large": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f3/c1/f3c1dc837d79a8b5eeccbd4e5f23499eae36033938c0e7bc7df7bf96820b6b31/detail-page.webp"
+          },
+          "approvedAssetId": "2fd1345c-3c5b-424d-8d7b-e80ba77eb812",
+          "source": "tcgdex",
+          "metadataDimensions": {
+            "width": 600,
+            "height": 825
+          },
+          "imageSha256": "f3c1dc837d79a8b5eeccbd4e5f23499eae36033938c0e7bc7df7bf96820b6b31",
+          "imageBytes": 103076,
+          "bytePath": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/artwork-9651517e-eccd-4f3d-9aae-47ef5867f982.bin",
+          "status": "selected_asset_hash_verified"
+        },
+        {
+          "at": "2026-10-11T11:23:10.232Z",
+          "cardUrl": "https://api.stackrtcg.com/v1/cards/7dfd952d-31d7-45cf-8adf-0dfa12a2b33c",
+          "assetUrl": "https://api.stackrtcg.com/v1/assets/manifest?printingId=7dfd952d-31d7-45cf-8adf-0dfa12a2b33c&assetType=card_image&limit=20",
+          "cardResponseSha256": "62b3ba4f06e00364c73ad6bf0a14fe2464d605977220adc6448ef1da33d108a2",
+          "assetResponseSha256": "108db249a992cfc8da114216cfd0109a11a756d9f43c79cfca5ae935f31e89aa",
+          "cardId": "7dfd952d-31d7-45cf-8adf-0dfa12a2b33c",
+          "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+          "language": "zh-tw",
+          "set": {
+            "setId": "d53eee17-75b8-48a8-bde5-50ac129a3558",
+            "setCode": "SV8a",
+            "nativeName": "太晶慶典ex",
+            "englishDisplayName": "Terastal Fest ex"
+          },
+          "collectorNumber": "087",
+          "variantId": "003d0144-829b-42a9-812f-14c3b94c0341",
+          "canonicalId": "pokemon:zh-tw:d53eee17-75b8-48a8-bde5-50ac129a3558:087:reverse_holo",
+          "finish": "reverse_holo",
+          "nativeImageStatus": "same_artwork_reference",
+          "presentation": {
+            "kind": "shared",
+            "selectedVariantId": "003d0144-829b-42a9-812f-14c3b94c0341",
+            "sourceVariantId": "a65fb996-40e7-44b7-b26e-f264adc8cd30",
+            "assetId": "b752738a-d697-490e-ac81-e539152099df",
+            "candidates": [
+              {
+                "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/fc/1b/fc1bae64e030bd05b5c8557545e30bca4c34c941580f9d4a63eb57b953ce959c/card-grid.webp",
+                "kind": "shared",
+                "assetId": "b752738a-d697-490e-ac81-e539152099df",
+                "sourceVariantId": "a65fb996-40e7-44b7-b26e-f264adc8cd30"
+              },
+              {
+                "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/46/d5/46d5f28d03f9886d505744a5a328b3b68b765b39ce2c3dddce29c49c385336df/detail-page.webp",
+                "kind": "shared",
+                "assetId": "b752738a-d697-490e-ac81-e539152099df",
+                "sourceVariantId": "a65fb996-40e7-44b7-b26e-f264adc8cd30"
+              },
+              {
+                "uri": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/bd/17/bd179bc88d0edbc4c6a1340cf3ad0f5318d7aecfe94389358525c4833b475f72/original.jpg",
+                "kind": "shared",
+                "assetId": "b752738a-d697-490e-ac81-e539152099df",
+                "sourceVariantId": "a65fb996-40e7-44b7-b26e-f264adc8cd30"
+              }
+            ],
+            "small": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/fc/1b/fc1bae64e030bd05b5c8557545e30bca4c34c941580f9d4a63eb57b953ce959c/card-grid.webp",
+            "large": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/46/d5/46d5f28d03f9886d505744a5a328b3b68b765b39ce2c3dddce29c49c385336df/detail-page.webp"
+          },
+          "approvedAssetId": "b752738a-d697-490e-ac81-e539152099df",
+          "source": "tcgdex",
+          "metadataDimensions": {
+            "width": 600,
+            "height": 825
+          },
+          "imageSha256": "46d5f28d03f9886d505744a5a328b3b68b765b39ce2c3dddce29c49c385336df",
+          "imageBytes": 173948,
+          "bytePath": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/artwork-7dfd952d-31d7-45cf-8adf-0dfa12a2b33c.bin",
+          "status": "selected_asset_hash_verified"
+        },
+        {
+          "at": "2026-10-11T11:23:10.485Z",
+          "cardId": "02eaba5e-1bbb-4f14-9fd4-489715fa6d8c",
+          "language": "en",
+          "number": "219",
+          "status": "failed",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '006e3ca0b6344365f8b0d4544581f27e9f802322e83f16b3ef67baa9ebc6bf77'\n- undefined\n"
+        },
+        {
+          "at": "2026-10-11T11:23:11.350Z",
+          "cardId": "001fc80e-05c1-44d8-a120-d3a1fac170cf",
+          "language": "ko",
+          "number": "045",
+          "status": "failed",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'ce76653afbe9963f04ebcfac2abdbabf8c6bddd53e6070958a283f57eb765c17'\n- undefined\n"
+        }
+      ],
+      "harnessCorrection": {
+        "reason": "Initial harness read meta.nextCursor instead of documented meta.pagination.nextCursor; these are harness validation errors, not failed production responses.",
+        "priorAttempt": {
+          "observedAt": "2026-10-11T11:22:32.352Z",
+          "baseRevision": "fcf697bab7785c3ed87747ed1721e9c033818557",
+          "selectorSha256": "b525a6769381961420ec77bdfea96b4cd4b3267af5d4bf0baae247179c071391",
+          "population": "Five previously audited exact public card printings; not the whole catalogue",
+          "device": "Windows API and actual local selector; no iPhone rendering",
+          "network": "Desktop connection, uncharacterised; not mobile-data reference",
+          "installedReference": {
+            "model": "iPhone 15",
+            "build": 54,
+            "network": "mobile data",
+            "ios": null,
+            "observations": 0
+          },
+          "observations": [
+            {
+              "at": "2026-10-11T11:22:32.355Z",
+              "cardId": "120b0541-d505-48c3-8a44-ad37c2075154",
+              "variantId": "00021ece-533f-4306-9333-4afb1b01718d",
+              "language": "en",
+              "number": "041",
+              "status": "failed",
+              "error": "AssertionError [ERR_ASSERTION]: Printing-scoped manifest is complete\n+ actual - expected\n\n+ undefined\n- null\n"
+            },
+            {
+              "at": "2026-10-11T11:22:33.659Z",
+              "cardId": "9651517e-eccd-4f3d-9aae-47ef5867f982",
+              "variantId": "005437d6-291e-445d-9b2b-55d6495453a9",
+              "language": "ja",
+              "number": "077",
+              "status": "failed",
+              "error": "AssertionError [ERR_ASSERTION]: Printing-scoped manifest is complete\n+ actual - expected\n\n+ undefined\n- null\n"
+            },
+            {
+              "at": "2026-10-11T11:22:34.502Z",
+              "cardId": "7dfd952d-31d7-45cf-8adf-0dfa12a2b33c",
+              "variantId": "003d0144-829b-42a9-812f-14c3b94c0341",
+              "language": "zh-tw",
+              "number": "087",
+              "status": "failed",
+              "error": "AssertionError [ERR_ASSERTION]: Printing-scoped manifest is complete\n+ actual - expected\n\n+ undefined\n- null\n"
+            },
+            {
+              "at": "2026-10-11T11:22:35.080Z",
+              "cardId": "02eaba5e-1bbb-4f14-9fd4-489715fa6d8c",
+              "language": "en",
+              "number": "219",
+              "status": "failed",
+              "error": "AssertionError [ERR_ASSERTION]: Printing-scoped manifest is complete\n+ actual - expected\n\n+ undefined\n- null\n"
+            },
+            {
+              "at": "2026-10-11T11:22:35.633Z",
+              "cardId": "001fc80e-05c1-44d8-a120-d3a1fac170cf",
+              "language": "ko",
+              "number": "045",
+              "status": "failed",
+              "error": "AssertionError [ERR_ASSERTION]: Printing-scoped manifest is complete\n+ actual - expected\n\n+ undefined\n- null\n"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "summary": {
+    "sampleSize": 5,
+    "selectedAndDecoded": 5,
+    "declaredHashVerified": 3,
+    "detailLongEdgeAtLeast1000": 1,
+    "deviceObservations": 0,
+    "wholeCatalogueCoverage": "unmeasured"
+  }
+}

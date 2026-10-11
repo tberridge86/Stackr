@@ -3,10 +3,15 @@
 The owner requested independent audits by coding, pricing, performance, artwork,
 translation, Pokédex, search and reviewer, plus a backend metadata repair agent.
 Each specialist conducts its own bounded audit and reports its own evidence.
-Creating an agent definition does not run it; background continuation is handled
-by the separate chat heartbeat named Stackr backend repair and audit follow-through.
+Creating an agent definition does not run it. The owner rejected scheduled Tif
+work on 11 October 2026 and the prior repair heartbeat was deleted. The later
+explicit production-readiness request resumes authorized work in this chat.
+The native saved goal runner still reports paused until its supported
+user-controlled resume mechanism is used; do not claim automatic continuation.
 
-Use the maintained integration checkout `D:/Stackr-release-recovery-20261009`.
+Use the active integration checkout
+`D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration`.
+`D:/Stackr-release-recovery-20261009` remains historical reading evidence.
 The original `D:/Stackr-1` contains extensive unfinished work: preserve it, and
 inspect named local files only when comparing a demonstrated delivery gap.
 Start each repair from the current matching branch/PR and verified source;

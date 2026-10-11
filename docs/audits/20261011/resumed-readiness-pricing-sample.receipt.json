@@ -1,0 +1,195 @@
+{
+  "readOnly": true,
+  "providerCalls": 0,
+  "databaseWrites": 0,
+  "sampling": "First UUID-ordered 100 published membership rows per language. This is deterministic diagnostic sampling, not random or whole-catalogue/provider-eligible coverage.",
+  "queryBuilder": "scripts/lib/published-price-coverage-page.mjs",
+  "meaning": "Positive stored comparable general guide/estimate records under the existing report query. Printing guides are not exact finish quotes, delivered phone values or completed sales. Counts are de-duplicated within each physical sample. Four Simplified Chinese membership entries are excluded because their exact set, printing and variant were deprecated together at 2026-10-11T07:23:52.585893Z; retained historical membership is not a current eligible price denominator.",
+  "samples": [
+    {
+      "language": "en",
+      "version": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "observedAt": "2026-10-11T15:19:03.092Z",
+      "pageSize": 100,
+      "cursor": "00000000-0000-0000-0000-000000000000",
+      "rows": [
+        {
+          "language_code": "en",
+          "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "read_at": "2026-10-11 15:19:04.330695+00",
+          "current_catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "scanned": 100,
+          "next_cursor": "00c720bc-ad07-401e-aad5-e365eb402f2a",
+          "membership_hash": "a98c9351a8b91574ccf265a92e51efa4",
+          "physical": 100,
+          "positive_variant_quotes": 69,
+          "additional_printing_guide_variants": 6,
+          "positive_cardmarket_variants": 19,
+          "positive_deduplicated_stored_variants": 79,
+          "printing_guide_candidates": 6,
+          "source_breakdown": [
+            {
+              "scope": "variant_quote",
+              "expires": "2026-10-12 20:06:02+00",
+              "provider": "tcgcsv",
+              "variants": 69,
+              "source_date": "2026-10-10 20:06:02+00"
+            },
+            {
+              "scope": "printing_guide",
+              "expires": "2026-10-12T20:06:02+00:00",
+              "provider": "tcgcsv",
+              "variants": 6,
+              "source_date": "2026-10-10T20:06:02+00:00"
+            },
+            {
+              "scope": "printing_guide",
+              "expires": "2026-10-13 00:44:21+00",
+              "provider": "cardmarket_public",
+              "variants": 19,
+              "source_date": "2026-10-11 00:44:21+00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language": "ja",
+      "version": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "observedAt": "2026-10-11T15:19:03.092Z",
+      "pageSize": 100,
+      "cursor": "00000000-0000-0000-0000-000000000000",
+      "rows": [
+        {
+          "language_code": "ja",
+          "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "read_at": "2026-10-11 15:19:07.086678+00",
+          "current_catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "scanned": 100,
+          "next_cursor": "01be593b-0350-46ee-b055-8a70fb72b3e3",
+          "membership_hash": "e3faa4697a3f9ab17859703d6ddd5436",
+          "physical": 100,
+          "positive_variant_quotes": 53,
+          "additional_printing_guide_variants": 3,
+          "positive_cardmarket_variants": 8,
+          "positive_deduplicated_stored_variants": 61,
+          "printing_guide_candidates": 3,
+          "source_breakdown": [
+            {
+              "scope": "variant_quote",
+              "expires": "2026-10-12 20:06:02+00",
+              "provider": "tcgcsv",
+              "variants": 53,
+              "source_date": "2026-10-10 20:06:02+00"
+            },
+            {
+              "scope": "printing_guide",
+              "expires": "2026-10-12T20:06:02+00:00",
+              "provider": "tcgcsv",
+              "variants": 3,
+              "source_date": "2026-10-10T20:06:02+00:00"
+            },
+            {
+              "scope": "printing_guide",
+              "expires": "2026-10-13 00:44:21+00",
+              "provider": "cardmarket_public",
+              "variants": 8,
+              "source_date": "2026-10-11 00:44:21+00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language": "ko",
+      "version": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "observedAt": "2026-10-11T15:19:03.092Z",
+      "pageSize": 100,
+      "cursor": "00000000-0000-0000-0000-000000000000",
+      "rows": [
+        {
+          "language_code": "ko",
+          "catalogue_version_id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+          "read_at": "2026-10-11 15:19:08.835956+00",
+          "current_catalogue_version_id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+          "scanned": 100,
+          "next_cursor": "7d5ef3d1-27ab-417b-bc7c-61c7e77d4e8f",
+          "membership_hash": "541816e6bbcea4802416d6d4a88f9301",
+          "physical": 100,
+          "positive_variant_quotes": 0,
+          "additional_printing_guide_variants": 0,
+          "positive_cardmarket_variants": 7,
+          "positive_deduplicated_stored_variants": 7,
+          "printing_guide_candidates": null,
+          "source_breakdown": [
+            {
+              "scope": "printing_guide",
+              "expires": "2026-10-13 00:44:21+00",
+              "provider": "cardmarket_public",
+              "variants": 7,
+              "source_date": "2026-10-11 00:44:21+00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language": "zh-cn",
+      "version": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "observedAt": "2026-10-11T15:19:03.092Z",
+      "pageSize": 100,
+      "cursor": "00000000-0000-0000-0000-000000000000",
+      "rows": [
+        {
+          "language_code": "zh-cn",
+          "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+          "read_at": "2026-10-11 15:19:09.988238+00",
+          "current_catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+          "scanned": 100,
+          "next_cursor": "014be060-4234-43ad-9a31-0bb741aca9de",
+          "membership_hash": "817da96b7a5a595f7ca45635c011330a",
+          "physical": 96,
+          "positive_variant_quotes": 0,
+          "additional_printing_guide_variants": 0,
+          "positive_cardmarket_variants": 0,
+          "positive_deduplicated_stored_variants": 0,
+          "printing_guide_candidates": null,
+          "source_breakdown": null
+        }
+      ]
+    },
+    {
+      "language": "zh-tw",
+      "version": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "observedAt": "2026-10-11T15:19:03.092Z",
+      "pageSize": 100,
+      "cursor": "00000000-0000-0000-0000-000000000000",
+      "rows": [
+        {
+          "language_code": "zh-tw",
+          "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+          "read_at": "2026-10-11 15:19:10.886572+00",
+          "current_catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+          "scanned": 100,
+          "next_cursor": "03416522-5410-4684-9b2d-3d5be79e6d9e",
+          "membership_hash": "070252ed62682eb8b87fb61d74b062ba",
+          "physical": 100,
+          "positive_variant_quotes": 0,
+          "additional_printing_guide_variants": 0,
+          "positive_cardmarket_variants": 52,
+          "positive_deduplicated_stored_variants": 52,
+          "printing_guide_candidates": null,
+          "source_breakdown": [
+            {
+              "scope": "printing_guide",
+              "expires": "2026-10-13 00:44:21+00",
+              "provider": "cardmarket_public",
+              "variants": 52,
+              "source_date": "2026-10-11 00:44:21+00"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
