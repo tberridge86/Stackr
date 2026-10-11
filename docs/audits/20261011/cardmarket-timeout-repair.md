@@ -7,22 +7,28 @@ runs recovered; this is an intermittent reliability defect, not a claim that
 every refresh remains down. Staging still uses the 100-row source `f6aee12a`.
 
 Restore 100-row keyset reads with a 2,500-page bound, retaining the original
-250,000-mapping ceiling. Reject partial/error pages and non-monotonic product
+250,000-mapping ceiling. Bound price and repair writes to 100 objects separately
+from the unchanged 500-product traversal page. Reject partial/error pages and non-monotonic product
 IDs before replacing the durable ledger. SQL failure diagnostics disclose only
 the cursor and a fixed reason. Add the actual loader regression to platform CI.
 No database definition, provider permission, price expiry, cache or schedule is
 changed by this repair. The larger ordered SQL candidate remains separate.
 
-At 10:55 UTC, read-only service-role EXPLAIN ANALYZE against production's existing
+During this repair, read-only service-role EXPLAIN ANALYZE against production's existing
 function returned 500 rows in 2,796.589 ms and 100 rows in 155.585 ms. Staging's
 100-row sample took 1,485.293 ms. All probes used an eight-second statement
 deadline and rolled back. These single observations establish bounded sampled
 reads, not a latency benchmark or proof of the exact historical slow page.
 
 The audit's 59 stale guides belong to TCGCSV (20 English, 39 Japanese), separately
-from Cardmarket's printing-level blended guidance. Chinese and Korean TCGCSV
-remain unsupported. Source timestamps, currency, FX, native identities and the
-48-hour expiry remain authoritative; downloading a file cannot renew its age.
+from Cardmarket's printing-level blended guidance. All 59 were checked against
+the current TCGCSV feed and have `no_provider_quote` outcomes. The next scheduled
+retries are 11 October at 20:13–21:17 UTC. Chinese and Korean TCGCSV remain
+unsupported. Cardmarket has 9,198 fresh rows and 35 retained stale rows with
+`no_market_guide_value` outcomes (17 Japanese, 18 Traditional Chinese). Its price
+source is 11 October 00:44:21 UTC. Source timestamps, currency, FX, native
+identities and the 48-hour expiry remain authoritative; downloading a file cannot
+renew its age.
 
 Validation and delivery are recorded in the task's final release receipt. A
 successful worker must also yield current stored source evidence. Owner-authenticated
