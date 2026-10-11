@@ -54,8 +54,12 @@ if (deployment.serviceId !== expectedServiceId) {
 if (deployment.environmentId !== expectedEnvironmentId) {
   throw new Error('The selected Railway deployment belongs to a different environment.');
 }
-if (deployment.status !== 'SUCCESS') {
-  throw new Error('The selected Railway deployment is not a known-good successful deployment.');
+// Railway marks an otherwise successful deployment REMOVED after a later
+// deployment supersedes it. It is still a safe rollback target only when the
+// provider explicitly retains rollback eligibility; every failure state remains
+// fail-closed.
+if (!['SUCCESS', 'REMOVED'].includes(deployment.status)) {
+  throw new Error('The selected Railway deployment is not a known-good successful or superseded deployment.');
 }
 if (!deployment.canRollback) throw new Error('The selected Railway deployment is not rollback-eligible.');
 

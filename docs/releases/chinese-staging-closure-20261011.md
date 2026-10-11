@@ -22,8 +22,10 @@ mapped target associations. The 605 published target assets remain available;
 unavailable deduplication placeholders are preserved. It retires only the
 five sets, 605 printings and 750 variants, retaining IDs and exact correction
 pointers, resolving exactly 605 conflicts and publishing 1,360 mobile changes.
-Its rollback rehearsal passed. Commit remains dependent on the staging
-old-ID resolver and subsequent public delivery proof.
+Its rollback rehearsal passed. The correction was committed after the deployed
+staging resolver and corrected full public smoke passed. The commit receipt
+records 4,000 unchanged preserved rows (MD5
+`37d594c99d873610f1ad523e46d857eb`) and changes `11993–13352`.
 
 The staging ownership dependency migration restores the authenticated
 mutation/readiness functions, request history, conflict/version protections
@@ -69,6 +71,21 @@ existing pricing rehearsal workflow guards, asset-pipeline tests and independent
 specialist reviews passed locally. Both SQL fixtures are included in normal CI.
 The original staging deployment is `3bd8e8c3-8c3e-4b5c-8296-77dcbc2f4417`;
 production backend remains the previously verified `599c776f12201470273574c4d5f9f01632609dc1`.
+PR #331 merged as `144cb333e467017983e5bcb249859df81122dd63` after all eight
+normal checks passed; the separately invoked release-candidate gate was skipped.
+Staging workflow run `38131384949` deployed `a57955a5-168b-4dfa-be2a-5f64e158c430`
+with the exact bundled SHA. All five old set aliases, sampled printing/variant
+links, stale-language requests and five actual approved image hashes passed.
+The wider smoke failed because the workflow tested production's browser origin
+instead of staging's. Live OPTIONS verifies `https://staging.stackr.app` is
+permitted (204 with matching origin), while `https://stackr.app` is rejected (403).
+The rollback attempt also rejected the previous deployment's normal `REMOVED`
+state despite Railway reporting it rollback-eligible. The release follow-up
+corrects the staging smoke origin and accepts this eligible superseded state
+under the existing exact service/environment guards. The Chinese retirement
+was subsequently committed after the corrected 39-check public smoke passed
+against the same verified backend. No gateway configuration is changed.
+
 Live staging application/deployment/delta receipts are recorded separately as
 they complete. This scoped closure does not certify full migration alignment,
 pricing coverage, TestFlight delivery, showcase or physical haptics.
