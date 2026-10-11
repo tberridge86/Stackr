@@ -3,6 +3,7 @@ import { Buffer } from 'node:buffer';
 import express from 'express';
 import { ApiError, createCatalogueV1Service } from '../backend/lib/stackrApiV1.js';
 import createV1Router from '../backend/routes/v1.js';
+import { matchesPokedexSpeciesName } from '../backend/lib/pokedexCards.js';
 const setId = '11111111-1111-4111-8111-111111111111';
 
 async function assertBatchAssetManifestPrintingFilter() {
@@ -208,6 +209,72 @@ async function assertPokemonGenderSymbolLookup() {
   'gender routes must include the ungendered normalized candidate in the source lookup');
 }
 
+async function assertPokemonReviewedRouteAliases() {
+  const fixtures = [
+    ['Nidoran♀', 'nidoran', 'en', 'Nidoran♀'],
+    ['Nidoran♂', 'nidoran', 'en', 'Nidoran♂'],
+    ['Alolan Raichu ex', 'alolan raichu ex', 'en', 'Alolan Raichu ex'],
+    ['Alolan Raichu', 'alolan raichu', 'ja', 'アローラライチュウ'],
+    ['Alolan Raichu', 'alolan raichu', 'zh-tw', '阿羅拉雷丘'],
+    ['Raichu', 'raichu', 'en', 'Raichu'],
+    ['Deoxys', 'deoxys', 'en', 'Deoxys'],
+    ['Deoxys V', 'deoxys v', 'en', 'Deoxys V'],
+    ['Deoxys Attack Forme', 'deoxys attack forme', 'en', 'Deoxys Attack Forme'],
+    ['Deoxys Cosmic Forme', 'deoxys cosmic forme', 'en', 'Deoxys Cosmic Forme'],
+    ['Mew', 'mew', 'en', 'Mew'],
+    ['Mewtwo', 'mewtwo', 'en', 'Mewtwo'],
+    ['Cosmic Deoxys', 'cosmic deoxys', 'en', 'Cosmic Deoxys'],
+    ['Future Deoxys', 'future deoxys', 'en', 'Future Deoxys'],
+    ['Origin Deoxys V', 'origin deoxys v', 'en', 'Origin Deoxys V'],
+  ].map(([name, normalized_name, language, nativeName], index) => ({
+    id: `81000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+    name, normalized_name, language, nativeName,
+  }));
+  const events = [];
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      catalogue_card_names: fixtures.map(({ id, name, normalized_name, language }) => ({
+        id, printing_id: id, name, normalized_name, language_code: language,
+        name_type: language === 'en' ? 'native' : 'translated',
+      })),
+      catalogue_cards: fixtures.flatMap(({ id, name, language, nativeName }, index) => (
+        (index === 3 ? ['normal', 'reverse_holofoil'] : ['normal']).map((finish, variantIndex) => ({
+          printing_id: id, variant_id: `82000000-0000-4000-8000-${String(index * 2 + variantIndex + 1).padStart(12, '0')}`,
+          game_code: 'pokemon', language_code: language, set_id: setId,
+          collector_number: String(index + 1), card_native_name: nativeName,
+          card_english_display_name: name, supertype: 'Pokémon', variant_code: finish, finish_code: finish,
+        }))
+      )),
+    }, events),
+  });
+  const cases = [
+    ['nidoran-f', [0]], ['nidoran-m', [1]], ['raichu-alola', [2, 3, 4]],
+    ['deoxys-normal', [6, 7]], ['deoxys-attack', [8]],
+    ['raichu-future', []], ['deoxys-future', []], ['mew', [10]],
+  ];
+  for (const [route, expectedIndexes] of cases) {
+    const page = await catalogue.pokemonCards(route, { limit: 20 });
+    assert.deepEqual(page.cards.map((card) => card.cardId).sort(), expectedIndexes.map((index) => fixtures[index].id).sort(),
+      `${route} must retrieve reviewed title aliases while preserving form and whole-token boundaries`);
+  }
+  const japanese = await catalogue.pokemonCards('raichu-alola', { language: 'ja', limit: 1 });
+  assert.equal(japanese.cards.length, 1, 'rejected base/other-language source slices must still reach the reviewed Japanese title');
+  assert.equal(japanese.cards[0].cardId, fixtures[3].id);
+  assert.equal(japanese.cards[0].names.native, 'アローラライチュウ', 'native titles must remain intact');
+  assert.equal(japanese.cards[0].names.englishDisplay, 'Alolan Raichu');
+  assert.equal(japanese.cards[0].languageCode, 'ja');
+  assert.equal(japanese.cards[0].set.setId, setId);
+  assert.equal(japanese.cards[0].collectorNumber.value, '4');
+  assert.deepEqual(japanese.cards[0].variants.map((variant) => variant.finishCode).sort(), ['normal', 'reverse_holofoil']);
+  assert.ok(events.some((event) => event.operation === 'ilike' && event.value === '%raichu%'),
+    'source queries must reach reordered regional aliases before strict form filtering');
+  assert.ok(events.some((event) => event.operation === 'ilike' && event.value === '%deoxys%'),
+    'source queries must reach the bare default species title');
+  assert.equal(matchesPokedexSpeciesName('raichu-alola', 'Raichu'), false);
+  assert.equal(matchesPokedexSpeciesName('deoxys-normal', 'Speed Forme Deoxys'), false);
+  assert.equal(matchesPokedexSpeciesName('deoxys-normal', 'Deoxys Future'), false);
+}
+
 async function assertPokemonCardsRetainHighVariantPrintings() {
   const makeId = (index) => `30000000-0000-4000-8000-${String(index).padStart(12, '0')}`;
   const crowdedPrintingId = '33333333-3333-4333-8333-333333333333';
@@ -315,6 +382,7 @@ await assertPokemonCardTypesAndEmptyPageContinuation();
 await assertPokemonEmptyScanRemainsBounded();
 await assertPokemonEmptyLanguageSliceContinues();
 await assertPokemonGenderSymbolLookup();
+await assertPokemonReviewedRouteAliases();
 await assertPokemonCardsRetainHighVariantPrintings();
 await assertPokemonRouteEnvelope();
 await assertAssetManifestIdentityRpc();

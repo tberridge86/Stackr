@@ -1,4 +1,5 @@
 import { fetchStackrPrice } from './stackrDomainAdapter';
+import { stackrApiClient } from './stackrApiV1';
 
 export const PRICING_ENGINE_V2_ENABLED = process.env.EXPO_PUBLIC_PRICING_ENGINE_V2_ENABLED === 'true';
 
@@ -24,6 +25,7 @@ export type PricingV2Response = {
     priceType: string | null;
   };
   sourceBreakdown: {
+    [key: string]: unknown;
     source: string;
     estimate: number | null;
     observationsUsed: number;
@@ -52,16 +54,21 @@ type PricingV2Options = {
 
 const responseCache = new Map<string, { expiresAt: number; value: PricingV2Response }>();
 const CACHE_TTL_MS = 60 * 1000;
+const CACHE_MAX_ENTRIES = 200;
 
-function buildCacheKey(cardId: string, options: PricingV2Options) {
-  return JSON.stringify({ cardId, ...options, forceRefresh: false });
+function buildCacheKey(accountScope: string, cardId: string, options: PricingV2Options) {
+  return JSON.stringify({ ...options, accountScope, cardId, forceRefresh: false });
 }
 
 export async function fetchStackrPricingV2(cardId: string, options: PricingV2Options = {}) {
   if (!cardId) throw new Error('Missing card id');
-  const cacheKey = buildCacheKey(cardId, options);
+  const accountScope = await stackrApiClient.getPricingCacheScope();
+  const cacheKey = buildCacheKey(accountScope, cardId, options);
   const cached = responseCache.get(cacheKey);
-  if (!options.forceRefresh && cached && cached.expiresAt > Date.now()) return cached.value;
+  if (!options.forceRefresh && cached && cached.expiresAt > Date.now()) {
+    if (await stackrApiClient.getPricingCacheScope() !== accountScope) throw new Error('Pricing account changed.');
+    return cached.value;
+  }
 
   const result = await fetchStackrPrice(cardId, {
     language: options.language,
@@ -79,6 +86,7 @@ export async function fetchStackrPricingV2(cardId: string, options: PricingV2Opt
     // cache and the adapter's persisted exact-price entry.
     force: options.forceRefresh === true,
   });
+  if (await stackrApiClient.getPricingCacheScope() !== accountScope) throw new Error('Pricing account changed.');
   if (!result) throw new Error('Stackr API could not resolve an exact canonical variant for pricing.');
   const price = result.price;
   if (price.currency !== 'GBP') throw new Error('Stackr API returned a price in an unexpected currency.');
@@ -111,7 +119,8 @@ export async function fetchStackrPricingV2(cardId: string, options: PricingV2Opt
       priceType: price.priceType,
     },
     sourceBreakdown: price.sourceBreakdown.map((source) => ({
-      source: String(source.providerCode ?? source.source ?? 'unknown'),
+      ...source,
+      source: String(source.providerCode ?? source.provider ?? source.source ?? 'unknown'),
       estimate: typeof source.estimate === 'number' ? source.estimate : null,
       observationsUsed: Number(source.observationsUsed ?? source.count ?? 0),
       sourceType: typeof source.sourceType === 'string' ? source.sourceType : undefined,
@@ -123,6 +132,11 @@ export async function fetchStackrPricingV2(cardId: string, options: PricingV2Opt
     refreshQueued: false,
     featureFlagEnabled: PRICING_ENGINE_V2_ENABLED,
   };
-  responseCache.set(cacheKey, { expiresAt: Date.now() + CACHE_TTL_MS, value });
+  const now = Date.now();
+  for (const [key, entry] of responseCache) if (entry.expiresAt <= now) responseCache.delete(key);
+  if (!responseCache.has(cacheKey) && responseCache.size >= CACHE_MAX_ENTRIES) {
+    responseCache.delete(responseCache.keys().next().value!);
+  }
+  responseCache.set(cacheKey, { expiresAt: now + CACHE_TTL_MS, value });
   return value;
 }

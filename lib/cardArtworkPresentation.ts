@@ -48,13 +48,22 @@ export function resolveCardArtwork(card: StackrCard, assets: StackrCatalogueAsse
     const source = card.variants.find((v) => v.variantId === asset.variantId);
     const exact = asset.variantId === selectedVariantId;
     const printingFace = !asset.variantId && asset.cardId === card.cardId && canShareFace(selected, selected);
-    if (!exact && !printingFace && (!source || !canShareFace(selected, source))) return [];
+    const explicitAlias = selected.sameArtworkAsVariantId === asset.variantId;
+    // A narrowed API DTO can omit the sibling while retaining its approved
+    // reference. Both source pointers and any embedded image must agree; this
+    // does not allow special editions/finishes or bypass a present sibling's
+    // artwork checks. The result remains shared artwork, never an exact photo.
+    const approvedAbsentSibling = !source && Boolean(asset.variantId) && explicitAlias
+      && selected.nativeImageStatus === 'same_artwork_reference'
+      && selected.imageVariantId === asset.variantId
+      && (!selected.image || selected.image.variantId === asset.variantId)
+      && canShareFace(selected, selected);
+    if (!exact && !printingFace && !approvedAbsentSibling && (!source || !canShareFace(selected, source))) return [];
     const original = publicUrl(asset.deliveryUrl);
     const small = rendition(asset, ['card-grid', 'grid', 'small', 'search-result', 'thumb']);
     const large = rendition(asset, ['detail-page', 'detail', 'large']);
     const urls = [...new Set([small, large, original].filter((url): url is string => Boolean(url)))];
     if (!urls.length) return [];
-    const explicitAlias = selected.sameArtworkAsVariantId === asset.variantId;
     return [{ asset, small: small ?? large ?? original, large: large ?? original ?? small, urls,
       rank: exact ? 0 : explicitAlias ? 1 : printingFace ? 2 : 3, kind: exact ? 'exact' as const : 'shared' as const }];
   }).sort((a, b) => a.rank - b.rank);

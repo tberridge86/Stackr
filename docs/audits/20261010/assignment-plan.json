@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-10",
+  "sourceRevision": "5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1",
+  "integrationBranch": "codex/specialist-audits-backend-repair-20261010",
+  "coordinator": "root",
+  "workingDirectory": "D:/Stackr-release-recovery-20261009",
+  "concurrency": { "maximumIncludingCoordinator": 3, "dispatch": "Coordinator launches at most two specialists at a time; no child spawning." },
+  "sharedAcceptance": [
+    "Read AGENTS.md, docs/agents/README.md and the relevant ownership brief before work.",
+    "Audit the actual consumer and API/provider path using tracked source first, named representative fixtures and narrow checks.",
+    "Each specialist writes its own report with revision, evidence, reproducible finding, impact, severity, test outcomes, unmeasured scope and next owner.",
+    "Keep local source, merged source, live deployment and installed-phone evidence separate.",
+    "No speculative bug claim, invented coverage or speed, broad data scan, full build, live refresh, catalogue write, deployment, commit or push.",
+    "Report files are exclusive. Runtime repair ownership is assigned separately by the coordinator; coordinate shared files sequentially.",
+    "Do not overwrite unrelated original-worktree changes or restart old reporting schedules."
+  ],
+  "assignments": [
+    {
+      "role": "stackr_coding",
+      "report": "docs/audits/20261010/coding.md",
+      "scope": "Own coding/integration audit: actual mobile-to-versioned-API boundaries, user activity writes and rendering, haptic preference, loading and pricing caller delivery, lean bounded work and unshipped runtime dependencies.",
+      "acceptance": "Identify source-backed cross-component mismatches and release gaps with exact files/lines; run only the relevant targeted integration checks. Provide the specialist assignment plan."
+    },
+    {
+      "role": "stackr_backend",
+      "report": "docs/audits/20261010/backend.md",
+      "scope": "Backend metadata correctness and missing-field contracts, language/identity conflicts, response mappings and bounded read/error behavior, starting app/lib/versioned API/gateway paths. Coordinate local fixes with root's repair-agent ownership assignment.",
+      "acceptance": "Reproduce at least one highest-impact metadata failure or document a bounded no-change finding. A local repair must preserve original language, card identity and provenance, have meaningful regression evidence, and remain distinguishable from an unapproved production data correction."
+    },
+    {
+      "role": "stackr_pricing",
+      "report": "docs/audits/20261010/pricing.md",
+      "scope": "Own fresh price audit: daily coverage/checkpoint semantics, old rare eligibility, provider identity, general/exact/sold labels, raw and graded UI callers, freshness and owner cache isolation. Use the latest rollout receipt as historical evidence rather than repeat it as a fresh measurement.",
+      "acceptance": "Trace named vintage and modern common controls through current callers and service contracts; verify unresolved prices stay explicit and bulk guides never become exact/sold/holdings evidence. Run focused identity/label/freshness tests and name any remaining measured versus unmeasured coverage."
+    },
+    {
+      "role": "stackr_performance",
+      "report": "docs/audits/20261010/performance.md",
+      "scope": "Own loading audit: startup, search/set/Pokédex first useful content, visible image thumbnail versus large delivery, request fan-out/cancellation, partial results and bounded cache recovery. Device measurements are unavailable unless actually obtained.",
+      "acceptance": "Trace at least startup plus one catalogue screen. Identify demonstrated serial waits, unbounded work, stale cache/blank loading or image-delivery blockers; state exact request bounds and run narrow loading/cache tests. Do not promise instant measured loading from static source."
+    },
+    {
+      "role": "stackr_artwork",
+      "report": "docs/audits/20261010/artwork.md",
+      "scope": "Own image audit: current API manifest-to-app image selection, native-language/edition/finish preservation, sharper original source evidence, corrupted/cropped image handling, approved replacement receipts and CoroCoro covers.",
+      "acceptance": "Use named representative card/cover records and current source paths. Distinguish verified delivered originals from staged/downloaded material and missing licence or edition evidence. List exact next actions outside verified acquisition capabilities; no fresh acquisition or catalogue promotion in this audit."
+    },
+    {
+      "role": "stackr_translation",
+      "report": "docs/audits/20261010/translation.md",
+      "scope": "Own English/native-name audit: main's Chinese language-conflict guards, card/set display provenance, non-Pokémon Trainer identity, aliases and fallback titles, keeping native language intact.",
+      "acceptance": "Trace the named zh-tw Marnie/Pikachu conflict and representative ja/zh-cn/zh-tw display contracts. Verify incompatible source references cannot supply English names or search aliases. Separate source-fixed/deployed/unresolved canonical data and provide a concrete outside-capabilities list."
+    },
+    {
+      "role": "stackr_pokedex",
+      "report": "docs/audits/20261010/pokedex.md",
+      "scope": "Own Pokédex audit: species/form identity, name aliases, Trainer/Energy exclusions, language filtering, four-page bounded continuation, ownership counts and cards detail links.",
+      "acceptance": "Exercise actual route/service fixtures for Pikachu, encoded Mr. Mime and a form/gender control; confirm consumed-page cursor behavior and no ownership or language cross-contamination. State live versus fixture evidence and hand off metadata contamination to backend."
+    },
+    {
+      "role": "stackr_search",
+      "report": "docs/audits/20261010/search.md",
+      "scope": "Own search audit: app UI and progressive global query path, multilingual aliases, card/set/product/profile/listing filters and ranking, partial errors, cancel/race handling and cursor continuation.",
+      "acceptance": "Verify named exact card, native/English alias and set queries with bounded fixtures, honest partial-result behavior and deterministic language/printing identities. Record presentation/accessibility gaps only with source/UI evidence and measured latency only if observed."
+    },
+    {
+      "role": "stackr_reviewer",
+      "report": "docs/audits/20261010/reviewer.md",
+      "scope": "Own independent read-only review of all new audit findings and backend local repair, identity/provenance/account/auth boundaries, bounded work and actual evidence claims. Run after other report files exist.",
+      "acceptance": "Review current-task diff separately from pre-existing work; independently reproduce sensitive backend/price invariants, mark false positives or unsupported claims, and return blocking versus nonblocking findings with file/line references."
+    }
+  ],
+  "suggestedDispatchOrder": [
+    ["stackr_backend", "stackr_coding"],
+    ["stackr_pricing", "stackr_performance"],
+    ["stackr_artwork", "stackr_translation"],
+    ["stackr_pokedex", "stackr_search"],
+    ["stackr_reviewer"]
+  ],
+  "backgroundHandoff": "Root owns the persistent repair-agent configuration and continuation queue. Reusable agent definitions and a report do not themselves run overnight; continuation must explicitly describe its actual execution mechanism and remaining live-operation approval boundaries."
+}

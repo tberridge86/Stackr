@@ -262,11 +262,12 @@ function isKnownForeignLanguage(value) {
 }
 
 function isJapaneseSet(input = {}) {
-  const language = String(input.language ?? input.raw?.language ?? input.raw?.set?.language ?? '').trim().toLowerCase();
+  const languages = [input.language, input.raw?.language, input.raw?.set?.language]
+    .map(clean).filter(Boolean).map((value) => value.toLowerCase().replace(/_/g, '-'));
+  // A legacy prefix or region cannot override a supplied language identity.
+  if (languages.length) return languages.every((value) => value === 'ja' || value === 'jp');
   const region = String(input.region ?? input.raw?.region ?? input.raw?.set?.region ?? '').trim().toLowerCase();
-  return language === 'ja'
-    || language === 'jp'
-    || region === 'japan'
+  return region === 'japan'
     || region === 'jp'
     || String(input.id ?? input.sourceId ?? input.setCode ?? '').toLowerCase().startsWith('ja:');
 }
@@ -325,10 +326,21 @@ function getExactCjkLanguage(input = {}) {
       : normalized.every((value) => value === 'zh-tw') ? 'zh-tw' : null;
 }
 
-function getExactSetCode(input = {}) {
-  const values = [input.setCode, input.raw?.set_code, input.raw?.setCode, input.raw?.set?.set_code, input.raw?.set?.setCode]
+function getSetCodeCandidates(input = {}) {
+  return [input.setCode, input.raw?.set_code, input.raw?.setCode, input.raw?.set?.set_code, input.raw?.set?.setCode]
     .map(normalizeSetKey).filter(Boolean);
+}
+
+function getExactSetCode(input = {}) {
+  const values = getSetCodeCandidates(input);
   return [...new Set(values)].length === 1 ? values[0] : null;
+}
+
+function hasConflictingSetLookupIdentity(input = {}) {
+  if (new Set(getSetCodeCandidates(input)).size > 1) return true;
+  const mappedNames = new Set(getSetKeyCandidates(input)
+    .map((key) => JAPANESE_SET_ENGLISH_NAME_LOOKUP[key]).filter(Boolean));
+  return mappedNames.size > 1;
 }
 
 function isCjkEditorialSetTranslationsEnabled() {
@@ -376,7 +388,12 @@ export function getEnglishSetDisplayName(input = {}) {
     return !isNonEnglishSet(input) && localName && !containsNonEnglishScript(localName) ? localName : null;
   }
 
-  for (const key of getSetKeyCandidates(input)) {
+  const codes = getSetCodeCandidates(input);
+  if (hasConflictingSetLookupIdentity(input)) return null;
+  const aliases = getSetKeyCandidates(input);
+  // Use the supplied set code before considering older ID/provider aliases.
+  const keys = codes.length ? codes.slice(0, 1) : aliases;
+  for (const key of keys) {
     const mapped = JAPANESE_SET_ENGLISH_NAME_LOOKUP[key];
     if (mapped) return mapped;
   }
@@ -394,6 +411,7 @@ function hasExactProviderJapaneseLanguage(input = {}) {
 export function getEnglishSetDisplaySupplement(input = {}) {
   const authoritative = getEnglishSetDisplayName(input);
   if (authoritative) return { value: authoritative, label: 'English set:', status: 'authoritative_english_display_name', provenance: 'canonical_or_provider_english_display_name', authoritative: true };
+  if (hasConflictingSetLookupIdentity(input)) return null;
   if (TCGDEX_JAPANESE_SET_ENGLISH_LOOKUP_METADATA.rightsGate.activationAuthorized === true
     && TCGDEX_JAPANESE_SET_ENGLISH_LOOKUP_METADATA.rightsGate.publicRuntimeImportAuthorized === true
     && TCGDEX_JAPANESE_SET_ENGLISH_LOOKUP_METADATA.rightsGate.canonicalDatabaseWriteAuthorized === false

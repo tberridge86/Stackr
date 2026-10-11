@@ -1389,7 +1389,7 @@ export async function fetchStackrPriceSnapshots(
         evidence_status: price.status, confidence: price.confidence, sample_count: price.sample.total,
         source_breakdown: price.sourceBreakdown, snapshot_at: price.calculatedAt,
         snapshot_date: price.calculatedAt?.slice(0, 10) ?? null, stale_after: price.staleAfter,
-        price_basis: price.fallbackEstimate?.reason === 'general_card_estimate' ? 'general' : 'exact',
+        price_basis: ['general_card_estimate', 'provisional_catalogue_baseline'].includes(price.fallbackEstimate?.reason ?? '') ? 'general' : 'exact',
         freshness: price.freshness, unavailable_reason: row.unavailableReason,
       };
       byReference.set(reference, snapshot);
