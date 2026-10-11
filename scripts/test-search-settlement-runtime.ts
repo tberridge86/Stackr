@@ -20,7 +20,7 @@ function expressionFromSearch(name: string): string {
   let expression = '';
   const visit = (node: ts.Node) => {
     if (ts.isFunctionDeclaration(node) && node.name?.text === name) expression = node.getText(tree);
-    if (ts.isVariableDeclaration(node) && node.name.getText(tree) === name && ts.isCallExpression(node.initializer)) {
+    if (ts.isVariableDeclaration(node) && node.name.getText(tree) === name && node.initializer && ts.isCallExpression(node.initializer)) {
       expression = node.initializer.arguments[0].getText(tree);
     }
     ts.forEachChild(node, visit);

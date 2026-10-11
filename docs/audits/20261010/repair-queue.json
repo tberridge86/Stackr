@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T08:38:58Z",
+  "updatedAt": "2026-10-11T10:51:13Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-release-recovery-20261009",
   "branch": "codex/specialist-audits-backend-repair-20261010",
@@ -18,22 +18,46 @@
     "reviewer": "completed"
   },
   "background": {
-    "name": "Stackr backend repair and audit follow-through",
-    "state": "ACTIVE",
-    "cadence": "Every two hours while the local computer and Codex app are running",
-    "automationId": "stackr-backend-repair-and-audit-follow-through",
+    "name": "Tif Stackr continuous completion goal",
+    "state": "ACTIVE_GOAL",
+    "cadence": null,
+    "automationId": null,
     "lastPassStartedAt": "2026-10-11T08:12:47Z",
-    "currentWork": null,
+    "currentWork": {
+      "issue": "PERF-001",
+      "owner": "root/next_local_fix",
+      "status": "correcting_independent_review_finding",
+      "baseRevision": "b0d079e5a6f3d929b1b7519633573a5126bec1f7",
+      "exclusiveFiles": [
+        "app/set/[id].tsx",
+        "scripts/test-issue304-cold-retrieval.ts",
+        "lib/pokemonTcg.ts (only if wrapper required for existing artwork recovery)"
+      ],
+      "scope": "Use existing facts-only set-card lane; preserve exact language/card minimum and current request/account guards; independent review required before integration",
+      "startedAt": "2026-10-11T10:16:11Z"
+    },
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/329",
       "state": "OPEN",
-      "checkedHead": "d63ccd7687b9fd72d6389210441f7e1af2df0596",
-      "applicableChecks": "8 succeeded; dependency-and-secret-scan failed during onnxruntime-node install with ETIMEDOUT/ENETUNREACH before secret/audit steps; release/canary gates skipped",
-      "merged": false
+      "checkedHead": "b0d079e5a6f3d929b1b7519633573a5126bec1f7",
+      "checkedBase": "599c776f12201470273574c4d5f9f01632609dc1",
+      "checkedAt": "2026-10-11T10:16:11Z",
+      "applicableChecks": "9 succeeded; release-candidate-gate and canary-api-evidence skipped, not passed",
+      "merged": false,
+      "currentBase": "144cb333e467017983e5bcb249859df81122dd63",
+      "requiresReconciliation": true,
+      "mergeCanTriggerLiveDeployment": true
     },
     "lastPassCompletedAt": "2026-10-11T08:38:58Z",
     "lastPassOutcome": "PDX-002 account-tagged ownership and expected-account marker intent locally committed, tested and independently reviewed after correcting three review-found timing gaps",
-    "lastPassEvidence": "docs/releases/backend-pokedex-account-repair-follow-through-20261011.md"
+    "lastPassEvidence": "docs/releases/backend-pokedex-account-repair-follow-through-20261011.md",
+    "previousAutomation": {
+      "id": "stackr-backend-repair-and-audit-follow-through",
+      "state": "DELETED",
+      "reason": "Owner explicitly rejected scheduled Tif work on 11 October 2026"
+    },
+    "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
+    "completionLedger": "docs/releases/tif-stackr-completion-ledger-20261011.md"
   },
   "issues": [
     {
@@ -81,7 +105,17 @@
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Review the exact correction proposal, repair the accepted source-of-truth and corresponding generated maps through the existing mechanism, add a semantic Trainer-name regression, then carry any authorized scoped publication through release coordination with rollback and actual API/search readback. Do not invent provenance or treat the proposal as published."
+      "nextAction": "Review the exact correction proposal, repair the accepted source-of-truth and corresponding generated maps through the existing mechanism, add a semantic Trainer-name regression, then carry any authorized scoped publication through release coordination with rollback and actual API/search readback. Do not invent provenance or treat the proposal as published.",
+      "latestReadback": {
+        "observedAt": "2026-10-11T10:29:57.894Z",
+        "scope": "12 existing exact zh-tw proposed Trainer printings",
+        "httpSuccess": 12,
+        "identitiesMatched": 12,
+        "wrongEnglishNamePikachu": 12,
+        "proposedMarnieDelivered": 0,
+        "evidence": "docs/audits/20261011/marnie-live-recheck.md",
+        "writes": false
+      }
     },
     {
       "id": "HISTORY-DIRECT-WRITE-001",
@@ -221,46 +255,88 @@
       "id": "PERF-001",
       "severity": "P1",
       "owner": "stackr_performance",
-      "status": "audit_confirmed_needs_owned_repair",
+      "status": "reviewed_local_repair_pending_release",
       "summary": "Set detail card facts wait for optional artwork/provider enrichment before being published to the screen.",
-      "evidence": "docs/audits/20261010/performance.md",
+      "evidence": "docs/audits/20261011/performance-set-facts-first-repair.md",
       "files": [
         "app/set/[id].tsx",
         "lib/pokemonTcg.ts"
       ],
       "validation": [
-        "Eight existing loading/cache/image fixtures pass; this source path still awaits optional enrichment"
+        "Actual public set mapping/facts path rejects missing canonical total despite printed131; canonical180 accepts complete and rejects partial131",
+        "14 real facts-reader cases, exact artwork identity controls and cold/preferred-artwork fixtures pass",
+        "Independent reviewer and root reruns pass; application typecheck/lint 0 errors/8 existing warnings"
       ],
       "delivery": {
-        "local": "unresolved",
-        "reviewed": false,
+        "local": "integrated_locally",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Reuse the existing bounded card facts reader to publish useful rows before optional artwork; prove late enrichment cannot overwrite a newer request/account."
+      "nextAction": "Fresh integrated/hosted candidate checks; approved delivery; rendered/iPhone and measured cold/warm acceptance remain open.",
+      "currentAssignment": {
+        "issue": "PERF-001",
+        "owner": "root/next_local_fix",
+        "status": "correcting_independent_review_finding",
+        "baseRevision": "b0d079e5a6f3d929b1b7519633573a5126bec1f7",
+        "exclusiveFiles": [
+          "app/set/[id].tsx",
+          "scripts/test-issue304-cold-retrieval.ts",
+          "lib/pokemonTcg.ts (only if wrapper required for existing artwork recovery)"
+        ],
+        "scope": "Use existing facts-only set-card lane; preserve exact language/card minimum and current request/account guards; independent review required before integration",
+        "startedAt": "2026-10-11T10:16:11Z"
+      },
+      "attemptEvidence": {
+        "revision": "980e009217b2148656eaf6412b7338bd67c9e9e0",
+        "localChecks": "source contract, assets cache-minimum, typecheck and lint passed",
+        "independentReview": "rejected; per-card artwork permanently omitted in facts-only path",
+        "reviewReport": "C:/Users/berri/Documents/Codex/2026-10-11/ca/work/perf-001-independent-review.md",
+        "nextAction": "Nonblocking guarded exact-identity per-card artwork recovery with behavioral tests; preserve facts and account/request boundaries",
+        "latestRevision": "da091cd8afb10aa0adf9a9a06b717e38123be244",
+        "additionalReviewFinding": "Printed totals can exclude secret cards; exact facts-reader count must prefer canonical total. Corrected with 180/131 behavioral facts-reader controls."
+      },
+      "reviewEvidence": "docs/audits/20261011/performance-set-facts-first-review.md",
+      "implementationRevision": "2a9ccb2099a90b5c6fb0bee48d2d69cd239dff41"
     },
     {
       "id": "PERF-002",
       "severity": "P1",
       "owner": "stackr_search",
-      "status": "audit_confirmed_needs_owned_repair",
+      "status": "reviewed_partial_repair_pending_release",
       "summary": "Search group completion/final loading can wait for all source promises, without screen cancellation or a deadline.",
-      "evidence": "docs/audits/20261010/performance.md; independently confirmed and deduplicated by search.md",
+      "evidence": "docs/audits/20261011/performance-search-settlement-repair.md",
       "files": [
         "app/(tabs)/search.tsx"
       ],
       "validation": [
-        "Source-confirmed waits; actual phone latency remains unmeasured"
+        "Actual helper and runSearch coordinator harness clears stalled final loading, retains useful current/same-key rows, reports source error and rejects late updates after simulated request invalidation",
+        "Separate source review and root reruns pass; typecheck/lint 0 errors/8 existing warnings"
       ],
       "delivery": {
-        "local": "unresolved",
-        "reviewed": false,
+        "local": "partial_repair_integrated_locally",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Claim the search screen for bounded independent group publication, cancellation and honest partial errors. Preserve useful cached facts and request/account generation guards."
+      "nextAction": "Deliver bounded-settlement mitigation through the coordinated lane; separately prepare independent per-source publication/cancellation with actual screen evidence.",
+      "preparedRepair": {
+        "revision": "9a62df9c48b13679e70d6c08ea8dfa8fd322b639",
+        "worktree": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/perf002-search-settlement",
+        "scope": "4-second final-settlement wrappers stop never-ending final loading; original first-phase budget adds up to420ms",
+        "remaining": "Late non-card group publication still awaits other bounded groups; no universal physical transport cancellation or iPhone latency proof",
+        "delivery": {
+          "local": "committed_and_tested",
+          "reviewed": false,
+          "merged": false,
+          "deployed": false,
+          "deviceVerified": false
+        }
+      },
+      "implementationRevision": "db48cbc0ff216a0944f7813341decda3ed5b3349",
+      "remainingScope": "Late non-card groups still publish at a final barrier; physical transport cancellation and mounted-effect/device timing remain open. Four-second settlement follows the first phase, not proof of p95 first-result target."
     },
     {
       "id": "PERF-003",
@@ -970,5 +1046,52 @@
       },
       "remaining": "Live RLS, native/device account transitions and database requests already dispatched before an auth switch remain unmeasured. Separate species/form mapping, populated partial-card response and image findings remain open."
     }
-  ]
+  ],
+  "currentWork": {
+    "issue": "SET-ACCOUNT-BOUNDARY investigation",
+    "owner": "root/set_privacy_tests",
+    "status": "draft_blocked_pending_complete_consumer_regression",
+    "baseRevision": "16031bfa4f61d0b437077f2862afd559455ac82f",
+    "candidateRevision": "aef2592bb144fe745127272d6701cef15afd28cf",
+    "exclusiveFiles": [
+      "app/set/[id].tsx",
+      "scripts/test-set-account-boundary.ts",
+      "docs/audits/20261011/set-account-boundary-repair.md"
+    ],
+    "scope": "Actual complete-TSX first-render/late-effect proof required; no new confirmed finding from source predicate test alone"
+  },
+  "completionGoal": {
+    "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
+    "state": "active",
+    "schedule": "none",
+    "ownerObjective": "docs/releases/tif-stackr-completion-ledger-20261011.md",
+    "completionCondition": "All agreed targets evidenced; no critical/high defect; approved delivery to intended environments; installed-iPhone checklist passes",
+    "liveChangesStillRequireApproval": true,
+    "designGuardrails": "docs/releases/tif-stackr-design-guardrails-20261011.md",
+    "designAcceptance": "Each entire journey, relevant states, shared patterns, accessibility, correctness/private persistence and measured criteria need evidence; no mockup/API/CI completion claim"
+  },
+  "parallelWork": [
+    {
+      "owner": "root/production_gaps",
+      "issue": "five-language acceptance cohort",
+      "status": "bounded_read_only_manifest_preparation",
+      "scope": "1-3 real public printing IDs per language, max15 reads; no whole-catalogue, rights or price acceptance claim"
+    }
+  ],
+  "localIntegration": {
+    "worktree": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
+    "revision": "1c9b5bad6813f1f4a5329075901d64284d12da20",
+    "integratedMain": "0c1254e45dfb6e238264f46b0fed8b7f547b57c2",
+    "newMainSQLChecks": [
+      "3-card actual SQL membership rehearsal and preservation/drift rejection passed",
+      "Actual staging binder lifecycle/privilege/isolation/idempotency/lock fixture passed"
+    ],
+    "repairs": [
+      "PERF-001 scoped source repair accepted",
+      "PERF-002 bounded-settlement partial repair accepted"
+    ],
+    "remoteUpdated": false,
+    "currentChecks": "fresh integrated checks in progress",
+    "newMainDeploymentTooling": "passed"
+  }
 }
