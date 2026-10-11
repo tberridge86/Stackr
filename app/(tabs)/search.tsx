@@ -1147,13 +1147,61 @@ export default function GlobalSearchScreen() {
       listings: firstResults.listings.length + firstResults.graded.length,
     });
 
+    // A ready group must not wait for an unrelated source's final deadline.
+    // Keep the existing final reconciliation, error copy and same-query recovery.
+    const publishReadyGroups = (groups: Partial<SearchResults>, groupErrors: SearchErrorState = {}) => {
+      if (requestId !== requestRef.current) return;
+      setResults((current) => {
+        if (requestId !== requestRef.current) return current;
+        const recovered = retainFailedSearchGroups({ ...current, ...groups }, groupErrors, previous);
+        previousSearchRef.current = { key: searchKey, results: recovered };
+        return recovered;
+      });
+      setErrors((current) => {
+        if (requestId !== requestRef.current) return current;
+        const next = { ...current };
+        for (const group of Object.keys(groups) as (keyof SearchResults)[]) delete next[group];
+        return { ...next, ...groupErrors };
+      });
+    };
+    const settledSets = settleSearchSource(setsPromise).then((result) => {
+      publishReadyGroups({ sets: result.status === 'fulfilled' ? result.value : [] },
+        result.status === 'fulfilled' ? {} : { sets: 'Set results could not be loaded.' });
+      return result;
+    });
+    const settledProducts = settleSearchSource(productsPromise).then((result) => {
+      publishReadyGroups({ sealed: result.status === 'fulfilled' ? result.value : [] },
+        result.status === 'fulfilled' ? {} : { sealed: 'Sealed product results could not be loaded.' });
+      return result;
+    });
+    const settledProfiles = settleSearchSource(profilesPromise).then((result) => {
+      const success = result.status === 'fulfilled' && !result.value.error;
+      publishReadyGroups({ collectors: success ? (result.value.data ?? []).map((profile: any) => ({
+        id: profile.id,
+        name: sanitizeGate0CommerceCopy(profile.collector_name ?? null, 'Collector') ?? 'Collector',
+        avatarUrl: profile.avatar_url ?? null,
+      })) : [] }, success ? {} : { collectors: 'Collector results could not be loaded.' });
+      return result;
+    });
+    const settledListings = settleSearchSource(listingsPromise).then((result) => {
+      const success = result.status === 'fulfilled' && !result.value.error;
+      const rows = success ? result.value.data ?? [] : [];
+      publishReadyGroups({
+        graded: rows.filter((listing: any) => listing.pricing_mode === 'graded' || listing.grade_company || listing.grade).map(mapListingResult),
+        listings: rows.filter((listing: any) => !(listing.pricing_mode === 'graded' || listing.grade_company || listing.grade)).map(mapListingResult),
+      }, success ? {} : {
+        listings: 'Market listings could not be loaded.', graded: 'Graded listings could not be loaded.',
+      });
+      return result;
+    });
+
     const [correction, cardsResult, setsResult, productsResult, profilesResult, listingsResult] = await Promise.all([
       settleSearchSource(correctionPromise),
       settleSearchSource(cardsPromise),
-      settleSearchSource(setsPromise),
-      settleSearchSource(productsPromise),
-      settleSearchSource(profilesPromise),
-      settleSearchSource(listingsPromise),
+      settledSets,
+      settledProducts,
+      settledProfiles,
+      settledListings,
     ]);
 
     if (requestId !== requestRef.current) return;

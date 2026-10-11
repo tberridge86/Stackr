@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import ts from 'typescript';
 
 type Deferred<T> = { promise: Promise<T>; resolve: (value: T) => void; reject: (reason: unknown) => void };
@@ -15,7 +16,9 @@ async function flush() { await tick(); await tick(); await tick(); }
 
 function expressionFromSearch(name: string): string {
   const file = 'app/(tabs)/search.tsx';
-  const source = fs.readFileSync(file, 'utf8');
+  const source = process.env.SEARCH_SETTLEMENT_BASELINE === '1'
+    ? execFileSync('git', ['show', `23c64b0e28c2260ba7b5312fbc0fee1bba8dbc6f:${file}`], { encoding: 'utf8' })
+    : fs.readFileSync(file, 'utf8');
   const tree = ts.createSourceFile(file, source, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX);
   let expression = '';
   const visit = (node: ts.Node) => {
@@ -63,13 +66,16 @@ type Harness = {
   requestRef: { current: number };
   cards: Deferred<any[]>;
   sets: Deferred<any[]>;
+  products: Deferred<any[]>;
+  profiles: Deferred<any>;
+  listings: Deferred<any>;
   getState: () => any;
   getErrors: () => any;
   getLoading: () => boolean;
   writes: () => number;
 };
 
-function createHarness(timers: FakeTimers, options: { category?: string; language?: string; previous?: boolean; canonicalRows?: any[] } = {}): Harness {
+function createHarness(timers: FakeTimers, options: { category?: string; language?: string; previous?: boolean; canonicalRows?: any[]; deferGroups?: boolean } = {}): Harness {
   const EMPTY_RESULTS = { cards: [], sets: [], sealed: [], collectors: [], listings: [], graded: [] };
   const requestRef = { current: 0 };
   const category = options.category ?? 'all';
@@ -84,7 +90,11 @@ function createHarness(timers: FakeTimers, options: { category?: string; languag
   let writeCount = 0;
   const cards = deferred<any[]>();
   const sets = deferred<any[]>();
-  const chain = { select() { return this; }, ilike() { return this; }, eq() { return this; }, or() { return this; }, limit: async () => ({ data: [] }) };
+  const products = deferred<any[]>();
+  const profiles = deferred<any>();
+  const listings = deferred<any>();
+  const chain = (table: string) => ({ select() { return this; }, ilike() { return this; }, eq() { return this; }, or() { return this; },
+    limit: () => options.deferGroups ? (table === 'profile_public_directory' ? profiles.promise : listings.promise) : Promise.resolve({ data: [] }) });
   const noop = () => {};
   const settleSearchSource = extract<<T>(promise: Promise<T>, timeoutMs?: number) => Promise<PromiseSettledResult<T>>>(
     'settleSearchSource',
@@ -100,19 +110,19 @@ function createHarness(timers: FakeTimers, options: { category?: string; languag
     SEARCH_FIRST_PAINT_BUDGET_MS: 1,
     setResults: (value: any) => { state = typeof value === 'function' ? value(state) : value; writeCount += 1; },
     setLoading: (value: boolean) => { loading = value; writeCount += 1; },
-    setRefreshing: () => {}, setErrors: (value: any) => { errors = value; writeCount += 1; },
+    setRefreshing: () => {}, setErrors: (value: any) => { errors = typeof value === 'function' ? value(errors) : value; writeCount += 1; },
     setSuggestion: noop, setSetSuggestion: noop, setSearchError: noop,
     expandSearchQuery: (value: string) => [value.toLowerCase()], normaliseSearchText: (value: string) => value.toLowerCase(),
     getCatalogueProductTypeFilter: () => null, getListingProductTypeFilter: () => null,
     productTypeMatchesIntent: () => false, isRawCardCategory: () => true,
     isListingProductCategory: () => false, isGradedCategory: () => false,
     correctPokemonNameQuery: async () => null, searchSetsQuick: () => sets.promise,
-    searchMarketProducts: async () => [], readCachedCanonicalSearch: async () => null, writeCachedCanonicalSearch: async () => {},
+    searchMarketProducts: () => options.deferGroups ? products.promise : Promise.resolve([]), readCachedCanonicalSearch: async () => null, writeCachedCanonicalSearch: async () => {},
     searchLocalPokemonCards: (_query: string, callbacks: any) => {
       callbacks.onCanonicalResults(options.canonicalRows ?? [{ id: 'good-card', name: 'Good card' }]);
       return cards.promise;
     },
-    supabase: { from: () => chain },
+    supabase: { from: chain },
     settleWithin: async () => ({ status: 'pending' }),
     settleSearchSource,
     isFulfilled: (result: any) => result.status === 'fulfilled', isRejected: (result: any) => result.status === 'rejected',
@@ -124,7 +134,51 @@ function createHarness(timers: FakeTimers, options: { category?: string; languag
     fetchCardListingStats: async () => new Map(), fetchOwnedCardRows: async () => [], fetchProductListingStats: async () => new Map(),
     console: { log: noop },
   });
-  return { run, requestRef, cards, sets, getState: () => state, getErrors: () => errors, getLoading: () => loading, writes: () => writeCount };
+  return { run, requestRef, cards, sets, products, profiles, listings, getState: () => state, getErrors: () => errors, getLoading: () => loading, writes: () => writeCount };
+}
+
+async function testIndependentReadyGroups() {
+  const timers = new FakeTimers();
+  const harness = createHarness(timers, { deferGroups: true });
+  const pending = harness.run('Pikachu');
+  await flush();
+  harness.sets.resolve([{ id: 'ready-set' }]);
+  await flush();
+  assert.equal(harness.getState().sets[0]?.id, 'ready-set', 'a ready set renders before the stalled card source reaches its final deadline');
+  harness.products.resolve([{ id: 'ready-product' }]);
+  harness.profiles.resolve({ data: [{ id: 'ready-collector', collector_name: 'Collector A' }], error: null });
+  harness.listings.resolve({ data: [{ id: 'raw-listing' }, { id: 'graded-listing', pricing_mode: 'graded' }], error: null });
+  await flush();
+  assert.equal(harness.getState().sealed[0]?.id, 'ready-product');
+  assert.equal(harness.getState().collectors[0]?.name, 'Collector A');
+  assert.deepEqual(harness.getState().listings.map((row: any) => row.id), ['raw-listing']);
+  assert.deepEqual(harness.getState().graded.map((row: any) => row.id), ['graded-listing']);
+  assert.equal(harness.getLoading(), true, 'unfinished sibling work remains honestly loading');
+  timers.advance(5);
+  await pending;
+  assert.equal(harness.getState().sets[0]?.id, 'ready-set', 'final timeout preserves independently ready groups');
+}
+
+async function testIndependentEmptyFailureAndInvalidation() {
+  for (const outcome of ['empty', 'failure', 'stale'] as const) {
+    const timers = new FakeTimers();
+    const harness = createHarness(timers, { previous: true, deferGroups: true });
+    const pending = harness.run('Pikachu');
+    await flush();
+    if (outcome === 'stale') harness.requestRef.current += 1;
+    const before = harness.writes();
+    if (outcome === 'failure') harness.sets.reject(new Error('offline'));
+    else harness.sets.resolve(outcome === 'empty' ? [] : [{ id: 'stale-set' }]);
+    await flush();
+    if (outcome === 'empty') assert.deepEqual(harness.getState().sets, [], 'explicit current empty set results replace prior matches immediately');
+    if (outcome === 'failure') {
+      assert.equal(harness.getState().sets[0]?.id, 'prior-set', 'failed same-query set refresh preserves prior matches');
+      assert.equal(harness.getErrors().sets, 'Set results could not be loaded.');
+    }
+    if (outcome === 'stale') assert.equal(harness.writes(), before, 'invalidated request cannot publish a ready group');
+    timers.advance(5);
+    await pending;
+  }
 }
 
 async function testTimeoutRuntimePath() {
@@ -180,10 +234,12 @@ async function testStaleBoundaries() {
 }
 
 async function main() {
+  await testIndependentReadyGroups();
+  await testIndependentEmptyFailureAndInvalidation();
   await testTimeoutRuntimePath();
   await testKnownEmptyCanonicalDoesNotRestorePriorMatch();
   await testStaleBoundaries();
-  console.log('Search coordinator harness passes timeout, honest group error, simulated invalidation and late-completion guards.');
+  console.log('Actual Search coordinator passes independent ready groups, explicit empty/failure recovery, timeout and simulated stale/late guards; this harness does not prove native device latency.');
 }
 
 void main();
