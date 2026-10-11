@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T06:30:56Z",
+  "updatedAt": "2026-10-11T08:38:58Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-release-recovery-20261009",
   "branch": "codex/specialist-audits-backend-repair-20261010",
@@ -22,18 +22,18 @@
     "state": "ACTIVE",
     "cadence": "Every two hours while the local computer and Codex app are running",
     "automationId": "stackr-backend-repair-and-audit-follow-through",
-    "lastPassStartedAt": "2026-10-11T06:11:45Z",
+    "lastPassStartedAt": "2026-10-11T08:12:47Z",
     "currentWork": null,
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/329",
       "state": "OPEN",
-      "checkedHead": "586183926c209f7836a70baa90eabd6d75929fe4",
-      "applicableChecks": "9 succeeded; release/canary gates skipped on PR",
+      "checkedHead": "d63ccd7687b9fd72d6389210441f7e1af2df0596",
+      "applicableChecks": "8 succeeded; dependency-and-secret-scan failed during onnxruntime-node install with ETIMEDOUT/ENETUNREACH before secret/audit steps; release/canary gates skipped",
       "merged": false
     },
-    "lastPassCompletedAt": "2026-10-11T06:30:56Z",
-    "lastPassOutcome": "Two client naming contract findings locally committed, tested and independently reviewed; unchanged operating-document source binding failure isolated as a new unrepaired finding",
-    "lastPassEvidence": "docs/releases/backend-name-contract-repair-follow-through-20261011.md"
+    "lastPassCompletedAt": "2026-10-11T08:38:58Z",
+    "lastPassOutcome": "PDX-002 account-tagged ownership and expected-account marker intent locally committed, tested and independently reviewed after correcting three review-found timing gaps",
+    "lastPassEvidence": "docs/releases/backend-pokedex-account-repair-follow-through-20261011.md"
   },
   "issues": [
     {
@@ -516,25 +516,69 @@
       "id": "PDX-002",
       "severity": "P1",
       "owner": "stackr_pokedex",
-      "status": "audit_confirmed_needs_owned_repair",
+      "status": "reviewed_ready_for_release",
       "summary": "Ownership can remain associated with a prior account or an unsuccessful ownership read.",
       "evidence": "docs/audits/20261010/pokedex.md",
       "files": [
         "app/(tabs)/pokedex.tsx",
-        "app/pokemon/[id].tsx"
+        "app/pokemon/[id].tsx",
+        "lib/pokedexCollection.ts",
+        "lib/pokedexOwnershipState.ts",
+        "scripts/test-pokedex-account-boundary.ts"
       ],
       "validation": [
         "List focus path lacks account generation and reset/error state",
-        "Detail rejects late account responses but retains prior owned keys and initially treats a failed read as missing"
+        "Detail rejects late account responses but retains prior owned keys and initially treats a failed read as missing",
+        "Baseline actual-consumer harness: 11 observations, 8 defective and 3 positive; separate complete-screen baseline mode fails before effects at A-to-B ownership count/percentage projection",
+        "Initial 11 acceptance groups passed but review reproduced invalidated optimistic overlay and duplicate-before-rerender persistence gaps; corrected 13 groups then missed a rejection-to-screen-catch stale alert. All three review cases reproduced RED and were corrected with complete-consumer controls",
+        "Final 14 named account-boundary runtime groups, complete Pokedex release command and cold-retrieval fixture pass; broad groups are not the same denominator as baseline observations",
+        "Independent reviewer reran final complete-consumer controls, reviewed service expected-account/write guards and verified all three review corrections",
+        "Final application typecheck and expanded lint pass: 0 errors, 9 existing warnings, no introduced warnings; task diff check passes",
+        "Integrated main PR330 fast-set regression passed 3 tests and backend typecheck passed; this account repair changes no backend/gateway runtime or schema"
       ],
       "delivery": {
-        "local": "unresolved",
-        "reviewed": false,
+        "local": "committed_and_tested",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Claim list/detail screens exclusively and reset ownership on account changes with request/account generation guards. Expose unknown/error ownership separately from missing; reproduce account switch and failed-first-read controls."
+      "nextAction": "Release coordination integrates this reviewed account-bound mobile source, completes applicable current-head checks, then verifies matching signed-app ownership transitions on the device. Retain unknown versus verified empty behavior and exact source/printing boundaries. Do not claim live API/account or complete Pokedex delivery from local fixtures.",
+      "workClaim": {
+        "agent": "/root/pokedex_account_repair",
+        "definition": "D:/Stackr-1/.codex/agents/stackr_pokedex.toml",
+        "backendHandoffDefinition": ".codex/agents/stackr_backend.toml",
+        "claimedAt": "2026-10-11T08:16:38Z",
+        "integrationHead": "80c8eab31619e30fa6bf03b7eb48015bfcbf5338",
+        "exclusiveFiles": [
+          "app/(tabs)/pokedex.tsx",
+          "app/pokemon/[id].tsx",
+          "lib/pokedexCollection.ts",
+          "lib/pokedexOwnershipState.ts",
+          "scripts/test-pokedex-loading.ts",
+          "scripts/test-pokedex-account-boundary.ts",
+          "docs/audits/20261011/pokedex-account-repair.md"
+        ],
+        "evidence": "docs/audits/20261011/pokedex-account-repair.md",
+        "status": "completed",
+        "completedAt": "2026-10-11T08:38:58Z",
+        "implementationRevision": "c02d59fc497b9971e6dfe3e97a03aa913df22fc3",
+        "actualSpecialistFiles": [
+          "app/(tabs)/pokedex.tsx",
+          "app/pokemon/[id].tsx",
+          "lib/pokedexCollection.ts",
+          "lib/pokedexOwnershipState.ts",
+          "scripts/test-pokedex-account-boundary.ts",
+          "docs/audits/20261011/pokedex-account-repair.md"
+        ],
+        "coordinatorRuntimeFiles": [
+          "package.json"
+        ]
+      },
+      "sourceRevision": "c02d59fc497b9971e6dfe3e97a03aa913df22fc3",
+      "repairEvidence": "docs/audits/20261011/pokedex-account-repair.md",
+      "reviewEvidence": "docs/audits/20261011/pokedex-account-review.md",
+      "remainingScope": "Live RLS, native/device account transitions and database requests already dispatched before an auth switch remain unmeasured. Separate species/form mapping, populated partial-card response and image findings remain open."
     },
     {
       "id": "PDX-003",
@@ -749,7 +793,7 @@
       "remainingScope": "This is an unresolved verification binding, not a licence or activation conclusion. No live operation or source-decision mutation is authorized by this background pass."
     }
   ],
-  "integrationBaseRevision": "38db6229f0dc419db37cca009320db9c1a7bbe92",
+  "integrationBaseRevision": "599c776f12201470273574c4d5f9f01632609dc1",
   "reviewEvidence": "docs/audits/20261010/reviewer.md",
   "releaseHandoff": "docs/releases/specialist-audit-repair-handoff-20261010.md",
   "integrationValidation": {
@@ -763,15 +807,17 @@
     "fullCatalogueCoverage": "unmeasured",
     "physicalDevice": "unverified",
     "latestFollowThrough": {
-      "implementationRevision": "088c0bcb64d6beeb366d4f88658b85c613c26010",
+      "implementationRevision": "c02d59fc497b9971e6dfe3e97a03aa913df22fc3",
       "currentUniqueFindings": 25,
-      "applicationTypecheck": "passed",
-      "applicationLint": "passed; 0 errors, 8 existing warnings, no introduced warnings",
-      "focusedRuntimeCases": "42 set and 39 card cases passed; independently rerun",
-      "aggregateJapaneseRuntimeLookup": "failed at pre-existing operating boundary binding SHA-256 mismatch",
-      "sourceBindingFinding": "TRANSLATION-RIGHTS-BINDING-004",
-      "reviewEvidence": "docs/audits/20261011/translation-client-contract-review.md",
-      "gatewayAndBackendRuntime": "unchanged; gates not rerun or claimed",
+      "applicationTypecheck": "passed after final review corrections",
+      "applicationLint": "passed; 0 errors, 9 existing warnings in expanded scope, no introduced warnings",
+      "focusedRuntimeCases": "14 named actual complete-consumer account groups, existing release/cold regressions passed",
+      "independentReview": "docs/audits/20261011/pokedex-account-review.md",
+      "integratedMain": "599c776f12201470273574c4d5f9f01632609dc1",
+      "backendIntegration": "3 new fast-set tests and backend typecheck passed",
+      "priorHeadHostedChecks": "8 succeeded; one onnx dependency install timeout before secret/audit steps; 2 release/canary skips",
+      "aggregateJapaneseRuntimeLookup": "prior reproduced document-binding mismatch remains unrepaired; unchanged inputs not rerun",
+      "gateway": "unchanged; check not required",
       "merged": false,
       "deployed": false,
       "deviceVerified": false
@@ -878,6 +924,51 @@
       },
       "newUnrepairedFinding": "TRANSLATION-RIGHTS-BINDING-004",
       "remaining": "Source binding reconciliation, separate Marnie publication, other forms/whole-catalogue completeness, signed-app and installed-device delivery remain pending."
+    },
+    {
+      "date": "2026-10-11",
+      "issue": "PDX-002",
+      "startedAt": "2026-10-11T08:12:47Z",
+      "completedAt": "2026-10-11T08:38:58Z",
+      "implementationRevision": "c02d59fc497b9971e6dfe3e97a03aa913df22fc3",
+      "integrationParent": "80c8eab31619e30fa6bf03b7eb48015bfcbf5338",
+      "mainBaseline": "599c776f12201470273574c4d5f9f01632609dc1",
+      "matchingPR": "https://github.com/tberridge86/Stackr/pull/329",
+      "evidence": "docs/audits/20261011/pokedex-account-repair.md",
+      "review": "docs/audits/20261011/pokedex-account-review.md",
+      "handoff": "docs/releases/backend-pokedex-account-repair-follow-through-20261011.md",
+      "validation": [
+        "Baseline actual-consumer harness: 11 observations, 8 defective and 3 positive; separate complete-screen baseline mode fails before effects at A-to-B ownership count/percentage projection",
+        "Initial 11 acceptance groups passed but review reproduced invalidated optimistic overlay and duplicate-before-rerender persistence gaps; corrected 13 groups then missed a rejection-to-screen-catch stale alert. All three review cases reproduced RED and were corrected with complete-consumer controls",
+        "Final 14 named account-boundary runtime groups, complete Pokedex release command and cold-retrieval fixture pass; broad groups are not the same denominator as baseline observations",
+        "Independent reviewer reran final complete-consumer controls, reviewed service expected-account/write guards and verified all three review corrections",
+        "Final application typecheck and expanded lint pass: 0 errors, 9 existing warnings, no introduced warnings; task diff check passes",
+        "Integrated main PR330 fast-set regression passed 3 tests and backend typecheck passed; this account repair changes no backend/gateway runtime or schema"
+      ],
+      "priorHeadHostedChecks": {
+        "head": "d63ccd7687b9fd72d6389210441f7e1af2df0596",
+        "succeeded": 8,
+        "failed": [
+          {
+            "name": "dependency-and-secret-scan",
+            "stage": "backend npm ci; onnxruntime-node install network ETIMEDOUT/ENETUNREACH before secret/audit steps",
+            "jobId": 114407794352
+          }
+        ],
+        "skipped": [
+          "release-candidate-gate",
+          "canary-api-evidence"
+        ],
+        "merged": false
+      },
+      "delivery": {
+        "local": "committed_and_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "remaining": "Live RLS, native/device account transitions and database requests already dispatched before an auth switch remain unmeasured. Separate species/form mapping, populated partial-card response and image findings remain open."
     }
   ]
 }

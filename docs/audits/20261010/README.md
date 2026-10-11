@@ -71,3 +71,16 @@ binding, now separately recorded as TRANSLATION-RIGHTS-BINDING-004. The
 [naming contract handoff](../../releases/backend-name-contract-repair-follow-through-20261011.md)
 records reproduced outputs, the remaining validation gate and separate delivery
 states. No source binding or generated catalogue was changed.
+
+The fourth pass repaired PDX-002's retained prior-account ownership and false
+Missing state after failed reads. Account-tagged snapshots and marker intent
+now remain valid only for their initiating account/request; catalogue browsing
+continues while ownership is unknown. Independent review found three timing
+gaps in the drafts, reproduced each and verified their corrections before source
+publication. Final 14 actual-consumer/service groups, release/cold regressions,
+application typecheck and expanded lint pass. The
+[account pass handoff](../../releases/backend-pokedex-account-repair-follow-through-20261011.md)
+records the baseline observation denominator, prior dependency-install CI
+timeout, integration of main PR #330 and separate delivery states. This is a
+source-tested account repair; live RLS and installed-device behavior remain
+unverified.
