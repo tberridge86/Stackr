@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T00:31:27Z",
+  "updatedAt": "2026-10-11T04:22:46Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-release-recovery-20261009",
   "branch": "codex/specialist-audits-backend-repair-20261010",
@@ -22,18 +22,18 @@
     "state": "ACTIVE",
     "cadence": "Every two hours while the local computer and Codex app are running",
     "automationId": "stackr-backend-repair-and-audit-follow-through",
-    "lastPassStartedAt": "2026-10-11T00:22:38Z",
+    "lastPassStartedAt": "2026-10-11T04:14:52Z",
     "currentWork": null,
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/329",
       "state": "OPEN",
-      "checkedHead": "925461ebba900038c60cc5232567f910287049a9",
+      "checkedHead": "4504a75276a0680540c9edfc59f7239e86ac55fc",
       "applicableChecks": "9 succeeded; release/canary gates skipped on PR",
       "merged": false
     },
-    "lastPassCompletedAt": "2026-10-11T00:31:27Z",
-    "lastPassOutcome": "Verified and independently reviewed PDX-003 named-case repair; other form aliases remain unreviewed",
-    "lastPassEvidence": "docs/releases/backend-repair-follow-through-20261011.md"
+    "lastPassCompletedAt": "2026-10-11T04:22:46Z",
+    "lastPassOutcome": "PDX-004 explicit Trainer/Energy ownership guard locally committed, tested and independently reviewed; PDX-001 verified species/form contract gap retained without identity guesses",
+    "lastPassEvidence": "docs/releases/backend-ownership-repair-follow-through-20261011.md"
   },
   "issues": [
     {
@@ -421,6 +421,14 @@
       "owner": "stackr_backend",
       "status": "audit_confirmed_needs_owned_repair",
       "summary": "Provider Pokemon forms are included in the National Dex species count and displayed with form IDs as Dex numbers.",
+      "feasibility": {
+        "checkedAt": "2026-10-11T04:18:28Z",
+        "baseline": "4504a75276a0680540c9edfc59f7239e86ac55fc",
+        "result": "Named snapshot rows contain only provider id/name; current producer and consumers have no complete verified species/form mapping. A safe fix requires a reviewed, versioned provider-route/species/National-Dex/default-form contract and separate species/entry counts. Numeric cutoffs and suffix stripping were rejected as identity guesses.",
+        "localCodeChanged": false,
+        "nextOwner": "stackr_backend with stackr_pokedex identity review",
+        "evidence": "docs/releases/backend-ownership-repair-follow-through-20261011.md"
+      },
       "evidence": "docs/audits/20261010/pokedex.md",
       "files": [
         "backend/lib/pokedexIndex.js",
@@ -524,24 +532,47 @@
       "id": "PDX-004",
       "severity": "P1",
       "owner": "stackr_pokedex",
-      "status": "audit_confirmed_needs_owned_repair",
+      "status": "reviewed_ready_for_release",
       "summary": "An owned Trainer with a wrong Pokemon alias can mark a species complete because name-set ownership lacks Trainer/Energy eligibility filtering.",
+      "workClaim": {
+        "agent": "/root/backend_pokedex_alias_repair",
+        "definition": ".codex/agents/stackr_backend.toml",
+        "claimedAt": "2026-10-11T04:18:28Z",
+        "integrationHead": "4504a75276a0680540c9edfc59f7239e86ac55fc",
+        "exclusiveFiles": [
+          "lib/pokedexCollection.ts",
+          "scripts/test-pokedex-loading.ts",
+          "docs/audits/20261011/pokedex-ownership-eligibility-repair.md"
+        ],
+        "evidence": "docs/audits/20261011/pokedex-ownership-eligibility-repair.md",
+        "status": "completed",
+        "completedAt": "2026-10-11T04:22:46Z"
+      },
       "evidence": "docs/audits/20261010/pokedex.md",
       "files": [
-        "lib/pokedexCollection.ts"
+        "lib/pokedexCollection.ts",
+        "scripts/test-pokedex-loading.ts"
       ],
       "validation": [
         "Wrong Marnie-to-Pikachu translation contaminates name-derived ownership",
-        "Dedicated card retrieval excludes explicit Trainer/Energy rows; name-set ownership does not"
+        "Dedicated card retrieval excludes explicit Trainer/Energy rows; name-set ownership does not",
+        "36 contaminated actual-consumer controls failed before the guard and pass afterward across independently isolated physical, binder and manual ownership sources",
+        "60 local scenario/source controls retain exact card/set/source contributions, unchanged metadata/inventory and no writes; unknown classification compatibility is not verified species eligibility",
+        "Worker and independent reviewer passed both narrow Pokedex regressions; reviewer also passed 8 actual row-adapter/eligibility controls",
+        "Final application typecheck, lint (0 errors; 8 existing warnings) and whole-task diff check passed; backend/gateway runtime unchanged"
       ],
       "delivery": {
-        "local": "unresolved",
-        "reviewed": false,
+        "local": "committed_and_tested",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Add species eligibility guards before deriving owned names under exclusive helper ownership. Coordinate with TRANSLATION-MARNIE-001 without treating the data proposal as published; preserve eligible Pokemon and explicit unknown metadata."
+      "nextAction": "Release owner carries the reviewed mobile ownership guard through matching signed-app delivery and installed-device verification. Keep the separate Marnie source proposal unpublished until its actual correction lane completes; do not claim verified classification or whole-Pokedex completion.",
+      "sourceRevision": "b17c772f771d15170c60f6a5864fe812db094557",
+      "repairEvidence": "docs/audits/20261011/pokedex-ownership-eligibility-repair.md",
+      "reviewEvidence": "docs/audits/20261011/pokedex-ownership-eligibility-review.md",
+      "remainingScope": "Unknown/missing classification remains unverified compatibility. Marnie alias publication, account-state boundaries and species/form denominator corrections are separate unresolved findings. Signed-app/device delivery remains pending."
     },
     {
       "id": "PDX-005",
@@ -653,6 +684,42 @@
         "deviceVerified": false
       },
       "remaining": "Other regional/default/form aliases are unreviewed. Bare Deoxys title compatibility does not establish its physical form."
+    },
+    {
+      "date": "2026-10-11",
+      "issue": "PDX-004",
+      "startedAt": "2026-10-11T04:14:52Z",
+      "completedAt": "2026-10-11T04:22:46Z",
+      "implementationRevision": "b17c772f771d15170c60f6a5864fe812db094557",
+      "integrationParent": "4504a75276a0680540c9edfc59f7239e86ac55fc",
+      "mainBaseline": "38db6229f0dc419db37cca009320db9c1a7bbe92",
+      "matchingPR": "https://github.com/tberridge86/Stackr/pull/329",
+      "evidence": "docs/audits/20261011/pokedex-ownership-eligibility-repair.md",
+      "review": "docs/audits/20261011/pokedex-ownership-eligibility-review.md",
+      "handoff": "docs/releases/backend-ownership-repair-follow-through-20261011.md",
+      "validation": [
+        "36 contaminated actual-consumer controls failed before the guard and pass afterward across independently isolated physical, binder and manual ownership sources",
+        "60 local scenario/source controls retain exact card/set/source contributions, unchanged metadata/inventory and no writes; unknown classification compatibility is not verified species eligibility",
+        "Worker and independent reviewer passed both narrow Pokedex regressions; reviewer also passed 8 actual row-adapter/eligibility controls",
+        "Final application typecheck, lint (0 errors; 8 existing warnings) and whole-task diff check passed; backend/gateway runtime unchanged"
+      ],
+      "priorHeadHostedChecks": {
+        "head": "4504a75276a0680540c9edfc59f7239e86ac55fc",
+        "succeeded": 9,
+        "skipped": [
+          "release-candidate-gate",
+          "canary-api-evidence"
+        ],
+        "merged": false
+      },
+      "delivery": {
+        "local": "committed_and_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "remaining": "Unknown/missing classification remains unverified compatibility. Marnie alias publication, account-state boundaries and species/form denominator corrections are separate unresolved findings. Signed-app/device delivery remains pending."
     }
   ]
 }

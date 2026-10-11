@@ -52,3 +52,11 @@ aliases. It passed independent identity review and final checks. PDX-003 stays
 partially repaired because other form mappings remain unreviewed. Read the
 [pass handoff](../../releases/backend-repair-follow-through-20261011.md) for
 the review-found qualifier gap, its correction and separate delivery states.
+
+The next heartbeat pass repaired PDX-004's false species ownership from explicit
+Trainer/Energy aliases across physical, binder and manual sources. All 60 local
+consumer controls pass and independent review found no blocker. The
+[ownership pass handoff](../../releases/backend-ownership-repair-follow-through-20261011.md)
+records checks and delivery limits. PDX-001 remains unresolved because the
+current index lacks a verified species/form mapping contract; no numeric cutoff
+or snapshot rewrite was introduced.
