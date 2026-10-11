@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -105,4 +106,79 @@ const materializedExport = await exportCardmarketReviewCandidates({ retained: co
 } } });
 assert.equal(materializedExport.candidates.length, 1, 'a completed immutable provenance run can drive review material');
 await assert.rejects(() => exportCardmarketReviewCandidates({ retained: conditional, provenanceRunId: 'bad', api }), /Invalid completed Cardmarket provenance run id/);
+
+// Provider traversal remains a 500-product page, but writes have a separate
+// 100-row database limit. The first half is reviewed/priced; the second half
+// deliberately has no mapping and produces repair rows in the same page.
+const bulkId = n => `30000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+const bulkProducts = { version: 1, createdAt: products.createdAt, products: Array.from({ length: 500 }, (_, index) => ({
+  idProduct: index + 1, idCategory: 51, name: `Bulk ${index + 1}`,
+})) };
+const bulkGuide = { version: 1, createdAt: guide.createdAt, priceGuides: Array.from({ length: 250 }, (_, index) => ({
+  idProduct: index + 1, idCategory: 51, trend: index + 1, avg30: null, avg: null,
+})) };
+const bulkProductsRetention = retainedResult('products', bulkProducts);
+const bulkGuideRetention = retainedResult('priceGuide', bulkGuide);
+const bulkRetained = {
+  ...conditional,
+  feeds: { products: bulkProducts, priceGuide: bulkGuide },
+  manifest: { ...conditional.manifest, feeds: {
+    products: { ...conditional.manifest.feeds.products, sha256: bulkProductsRetention.sha256 },
+    priceGuide: { ...conditional.manifest.feeds.priceGuide, sha256: bulkGuideRetention.sha256 },
+  } },
+};
+const bulkLedger = { schemaVersion: 1, mappings: Array.from({ length: 250 }, (_, index) => ({
+  cardmarketProductId: index + 1, cardmarketCategoryId: 51, printingId: bulkId(index + 1), catalogueVersionId: version,
+  method: 'reviewed_exact', languageEvidence: { source: 'bulk language review' }, variantEvidence: { source: 'bulk printing review' },
+  finishEvidence: { source: 'bulk public-guide scope' }, reviewReference: `CARDMARKET-BULK-${index + 1}`,
+})) };
+function bulkApi({ failRepairBatch = null, failPriceBatch = null } = {}) {
+  const observed = { repairBatches: [], priceBatches: [] };
+  let repairCalls = 0; let priceCalls = 0;
+  const timeout = Object.assign(new Error('secret-bearing database URL'), { code: '57014' });
+  return { observed, api: { rpc: async (name, args) => {
+    if (name === 'read_cardmarket_retained_feed_revision') return { data: `${args.p_kind}-revision`, error: null };
+    if (name === 'review_cardmarket_printing_mapping') return { data: true, error: null };
+    if (name === 'queue_cardmarket_mapping_repairs') {
+      repairCalls += 1; observed.repairBatches.push(args.p_repairs);
+      if (repairCalls === failRepairBatch) return { data: null, error: timeout };
+      return { data: args.p_repairs.length, error: null };
+    }
+    if (name === 'store_cardmarket_blended_general_prices') {
+      priceCalls += 1; observed.priceBatches.push(args.p_results);
+      if (priceCalls === failPriceBatch) throw timeout;
+      return { data: args.p_results.length, error: null };
+    }
+    throw Error(`Unexpected RPC ${name}`);
+  } } };
+}
+const applyBulk = (api, checkpointPath) => applyCardmarketDailyGuide({
+  api, retained: bulkRetained, mappingLedger: bulkLedger, checkpointPath,
+  exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture',
+  now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1,
+});
+const successfulBulk = bulkApi();
+const successfulCheckpoint = join(cache, 'bulk-success-checkpoint.json');
+const bulkApplied = await applyBulk(successfulBulk.api, successfulCheckpoint);
+assert.equal(bulkApplied.stored, 250); assert.equal(bulkApplied.repairs, 250); assert.equal(bulkApplied.pages, 1);
+assert.deepEqual(successfulBulk.observed.repairBatches.map(batch => batch.length), [100, 100, 50]);
+assert.deepEqual(successfulBulk.observed.priceBatches.map(batch => batch.length), [100, 100, 50]);
+assert.equal(new Set(successfulBulk.observed.repairBatches.flat().map(row => row.providerProductId)).size, 250, 'all repairs remain present across batches');
+assert.equal(new Set(successfulBulk.observed.priceBatches.flat().map(row => row.providerProductId)).size, 250, 'all prices remain present across batches');
+
+const repairFailureCheckpoint = join(cache, 'bulk-repair-failure-checkpoint.json');
+const repairFailure = bulkApi({ failRepairBatch: 2 });
+await assert.rejects(() => applyBulk(repairFailure.api, repairFailureCheckpoint), error => /Cardmarket repair batch failed: statement_timeout/.test(error.message) && !error.message.includes('secret-bearing'));
+assert.deepEqual(repairFailure.observed.repairBatches.map(batch => batch.length), [100, 100]);
+assert.equal(JSON.parse(await readFile(repairFailureCheckpoint, 'utf8')).afterProductId, 0, 'a failed repair page cannot advance its checkpoint');
+const repairRetry = bulkApi(); await applyBulk(repairRetry.api, repairFailureCheckpoint);
+assert.deepEqual(repairRetry.observed.repairBatches.map(batch => batch.length), [100, 100, 50], 'a later invocation retries the complete uncheckpointed page');
+
+const priceFailureCheckpoint = join(cache, 'bulk-price-failure-checkpoint.json');
+const priceFailure = bulkApi({ failPriceBatch: 2 });
+await assert.rejects(() => applyBulk(priceFailure.api, priceFailureCheckpoint), error => /Cardmarket price batch failed: statement_timeout/.test(error.message) && !error.message.includes('secret-bearing'));
+assert.deepEqual(priceFailure.observed.priceBatches.map(batch => batch.length), [100, 100]);
+assert.equal(JSON.parse(await readFile(priceFailureCheckpoint, 'utf8')).afterProductId, 0, 'a failed price page cannot advance its checkpoint');
+const priceRetry = bulkApi(); await applyBulk(priceRetry.api, priceFailureCheckpoint);
+assert.deepEqual(priceRetry.observed.priceBatches.map(batch => batch.length), [100, 100, 50], 'a later invocation retries the complete uncheckpointed page');
 console.log('Cardmarket daily retention uses daily/ETag guards and applies only reviewed, printing-scoped blended estimates with resumable checkpoints.');
