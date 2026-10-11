@@ -538,7 +538,7 @@ assert.match(rollbackTool, /serviceId environmentId/);
 assert.match(rollbackTool, /RAILWAY_BACKEND_SERVICE_ID/);
 assert.match(rollbackTool, /RAILWAY_RECOGNITION_SERVICE_ID/);
 assert.match(rollbackTool, /RAILWAY_ENVIRONMENT_ID/);
-assert.match(rollbackTool, /deployment\.status !== 'SUCCESS'/);
+assert.match(rollbackTool, /\['SUCCESS', 'REMOVED'\]\.includes\(deployment\.status\)/);
 assert.match(rollbackTool, /verifyOnly/);
 assert.match(
   rollbackTool,
@@ -620,13 +620,45 @@ assert.equal(
 assert.match(backendRollbackVerification.stdout, /"verified": true/);
 assert.doesNotMatch(backendRollbackVerification.stdout, /"deploymentRollback": true/);
 
+const removedEligibleBackendRollbackTarget = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+  { ...backendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'REMOVED' },
+);
+assert.equal(
+  removedEligibleBackendRollbackTarget.status,
+  0,
+  removedEligibleBackendRollbackTarget.stderr || removedEligibleBackendRollbackTarget.stdout,
+);
+assert.match(removedEligibleBackendRollbackTarget.stdout, /"status": "REMOVED"/);
+
+const removedIneligibleBackendRollbackTarget = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+  {
+    ...backendRollbackEnvironment,
+    MOCK_RAILWAY_DEPLOYMENT_STATUS: 'REMOVED',
+    MOCK_RAILWAY_CAN_ROLLBACK: 'false',
+  },
+);
+assert.notEqual(removedIneligibleBackendRollbackTarget.status, 0, 'removed deployments still require Railway rollback eligibility');
+assert.match(removedIneligibleBackendRollbackTarget.stderr, /not rollback-eligible/);
+
 const failedBackendRollbackTarget = run(
   'scripts/deploy/railway-rollback.mjs',
   ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
   { ...backendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'FAILED' },
 );
 assert.notEqual(failedBackendRollbackTarget.status, 0, 'failed deployments must not be accepted as rollback targets');
-assert.match(failedBackendRollbackTarget.stderr, /not a known-good successful deployment/);
+assert.match(failedBackendRollbackTarget.stderr, /not a known-good successful or superseded deployment/);
+
+const crashedBackendRollbackTarget = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+  { ...backendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'CRASHED' },
+);
+assert.notEqual(crashedBackendRollbackTarget.status, 0, 'crashed deployments must not be accepted as rollback targets');
+assert.match(crashedBackendRollbackTarget.stderr, /not a known-good successful or superseded deployment/);
 
 const ineligibleBackendRollbackTarget = run(
   'scripts/deploy/railway-rollback.mjs',
@@ -658,6 +690,8 @@ assert.match(stagingBackendLane, /gitCommitSource !== 'bundled_workflow_sha'/);
 assert.doesNotMatch(stagingBackendLane, /variable set/);
 assert.match(stagingBackendLane, /railway-rollback.mjs --component=backend --deployment="\$PREVIOUS_BACKEND_DEPLOYMENT_ID"/);
 assert.match(stagingBackendLane, /verify-chinese-staging-resolution.mjs/);
+assert.match(stagingBackendLane, /--allowed-origin=https:\/\/staging\.stackr\.app/);
+assert.doesNotMatch(stagingBackendLane, /--allowed-origin=https:\/\/stackr\.app/);
 assert.doesNotMatch(stagingBackendLane, /db push|supabase_apply_migration|eas update|wrangler deploy/);
 
 const platformCiWorkflow = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
