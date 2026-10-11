@@ -31,12 +31,20 @@ import { usePokedexOwnership } from '../../lib/pokedexOwnershipState';
 type PokemonListItem = {
   name: string;
   url: string;
+  speciesId: number;
+  speciesName: string;
+  routeId: number;
+  routeName: string;
 };
 
 export type PokemonEntry = {
   id: number;
   name: string;
   url: string;
+  speciesId: number;
+  speciesName: string;
+  routeId: number;
+  routeName: string;
 };
 
 type RangeKey =
@@ -64,12 +72,12 @@ const REGION_FILTERS: { key: RangeKey; label: string; source: ImageSourcePropTyp
   { key: 'paldea', label: 'Paldea', source: require('../../assets/rev2/08-pokedex-regions/Paldea.png') },
 ];
 
-const POKEDEX_LIST_LIMIT = 1350;
+const POKEDEX_LIST_LIMIT = 1025;
 const POKEDEX_INITIAL_LIST_LIMIT = 151;
 const getPokedexListUrl = (offset: number, limit: number) => (
   `/pokemon?offset=${offset}&limit=${limit}`
 );
-const POKEDEX_CACHE_KEY = 'stackr:pokedex:pokemon-list:v2:published';
+const POKEDEX_CACHE_KEY = 'stackr:pokedex:pokemon-list:v3:species:published';
 
 let pokemonMemoryCache: PokemonEntry[] | null = null;
 
@@ -100,16 +108,20 @@ const mapPokemonResults = (results: PokemonListItem[]): PokemonEntry[] =>
       id: getPokemonIdFromUrl(item.url),
       name: item.name,
       url: item.url,
+      speciesId: item.speciesId,
+      speciesName: item.speciesName,
+      routeId: item.routeId,
+      routeName: item.routeName,
     }))
-    .filter((item) => item.id > 0)
-    .sort((a, b) => a.id - b.id);
+    .filter((item) => item.id > 0 && item.speciesId > 0 && item.routeId > 0)
+    .sort((a, b) => a.speciesId - b.speciesId);
 
 const mergePokemonResults = (...pages: PokemonEntry[][]): PokemonEntry[] => {
   const byId = new Map<number, PokemonEntry>();
   for (const page of pages) {
-    for (const entry of page) byId.set(entry.id, entry);
+    for (const entry of page) byId.set(entry.speciesId, entry);
   }
-  return Array.from(byId.values()).sort((a, b) => a.id - b.id);
+  return Array.from(byId.values()).sort((a, b) => a.speciesId - b.speciesId);
 };
 
 type PokeApiPageResponse = {
@@ -139,9 +151,13 @@ const readPokemonPage = async (fetchPage: PokedexPageFetcher, offset: number, li
   if (!Array.isArray(json.results) || !json.results.every((item) => {
     if (!item || typeof item !== 'object'
       || typeof item.name !== 'string' || !item.name.trim()
-      || typeof item.url !== 'string') return false;
+      || typeof item.url !== 'string'
+      || !Number.isSafeInteger(item.speciesId) || item.speciesId < 1
+      || typeof item.speciesName !== 'string' || !item.speciesName.trim()
+      || !Number.isSafeInteger(item.routeId) || item.routeId < 1
+      || typeof item.routeName !== 'string' || !item.routeName.trim()) return false;
     const id = getPokemonIdFromUrl(item.url);
-    return Number.isSafeInteger(id) && id > 0;
+    return Number.isSafeInteger(id) && id > 0 && id === item.routeId;
   })) throw new Error('Pokédex API returned malformed Pokémon results');
   return { count: json.count, indexVersion: json.indexVersion,
     entries: mapPokemonResults(json.results as PokemonListItem[]) };
@@ -218,7 +234,11 @@ const isPokemonEntryArray = (value: unknown): value is PokemonEntry[] =>
       Number.isSafeInteger((item as PokemonEntry).id) && (item as PokemonEntry).id > 0 &&
       typeof (item as PokemonEntry).name === 'string' && (item as PokemonEntry).name.trim().length > 0 &&
       typeof (item as PokemonEntry).url === 'string' &&
-      getPokemonIdFromUrl((item as PokemonEntry).url) === (item as PokemonEntry).id
+      getPokemonIdFromUrl((item as PokemonEntry).url) === (item as PokemonEntry).routeId &&
+      Number.isSafeInteger((item as PokemonEntry).speciesId) && (item as PokemonEntry).speciesId > 0 &&
+      typeof (item as PokemonEntry).speciesName === 'string' && (item as PokemonEntry).speciesName.trim().length > 0 &&
+      Number.isSafeInteger((item as PokemonEntry).routeId) && (item as PokemonEntry).routeId > 0 &&
+      typeof (item as PokemonEntry).routeName === 'string' && (item as PokemonEntry).routeName.trim().length > 0
   );
 
 const getPokemonImageUrl = (id: number) => {
@@ -358,10 +378,11 @@ export default function PokedexScreen() {
     return pokemon.filter((item) => {
       const matchesSearch =
         !cleanQuery ||
-        item.name.toLowerCase().includes(cleanQuery) ||
-        String(item.id).includes(cleanQuery);
+        item.speciesName.toLowerCase().includes(cleanQuery) ||
+        item.routeName.toLowerCase().includes(cleanQuery) ||
+        String(item.speciesId).includes(cleanQuery);
 
-      const matchesRange = getRangeMatch(selectedRange, item.id);
+      const matchesRange = getRangeMatch(selectedRange, item.speciesId);
 
       return matchesSearch && matchesRange;
     });
@@ -384,7 +405,7 @@ export default function PokedexScreen() {
     const ids = new Set<number>();
 
     for (const item of pokemon) {
-      if (isPokemonOwned(item.name)) ids.add(item.id);
+      if (isPokemonOwned(item.speciesName)) ids.add(item.speciesId);
     }
 
     return ids;
@@ -434,24 +455,29 @@ export default function PokedexScreen() {
   };
 
   const renderPokemon = ({ item }: { item: PokemonEntry }) => {
-    const owned = ownedPokemonIds.has(item.id);
+    const owned = ownedPokemonIds.has(item.speciesId);
 
     return (
       <Pressable
         onPress={() =>
           router.push({
             pathname: '/pokemon/[id]',
-            params: { id: String(item.id), name: item.name },
+            params: {
+              id: String(item.routeId),
+              name: item.routeName,
+              speciesId: String(item.speciesId),
+              speciesName: item.speciesName,
+            },
           })
         }
         accessibilityRole="button"
-        accessibilityLabel={`${formatPokemonName(item.name)}, number ${String(item.id).padStart(4, '0')}${!ownedPokemonNames ? ', ownership unknown' : owned ? ', owned' : ', not owned'}`}
+        accessibilityLabel={`${formatPokemonName(item.speciesName)}, number ${String(item.speciesId).padStart(4, '0')}${!ownedPokemonNames ? ', ownership unknown' : owned ? ', owned' : ', not owned'}`}
         style={({ pressed }) => [styles.gridCard, { width: itemWidth }, pressed && styles.cardPressed]}
       >
         <View style={[styles.gridImageWrap, owned && { backgroundColor: 'transparent' }]}>
           <PokemonArtworkGlow style={styles.pokemonArtworkFrame}>
             <Image
-              source={{ uri: getPokemonImageUrl(item.id) }}
+              source={{ uri: getPokemonImageUrl(item.routeId) }}
               style={styles.gridImage}
               resizeMode="contain"
             />
@@ -463,10 +489,10 @@ export default function PokedexScreen() {
           )}
         </View>
         <Text numberOfLines={1} style={styles.gridName}>
-          {formatPokemonName(item.name)}
+          {formatPokemonName(item.speciesName)}
         </Text>
         <Text style={styles.gridNumber}>
-          #{String(item.id).padStart(4, '0')}
+          #{String(item.speciesId).padStart(4, '0')}
         </Text>
       </Pressable>
     );
@@ -584,7 +610,7 @@ export default function PokedexScreen() {
           <FlatList
             style={styles.list}
             data={filteredPokemon}
-            keyExtractor={(item) => String(item.id)}
+            keyExtractor={(item) => String(item.speciesId)}
             renderItem={renderPokemon}
             key={numColumns}
             numColumns={numColumns}

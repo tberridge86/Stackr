@@ -168,8 +168,10 @@ function testScreenKnownNameDataflow() {
     'A known route name selects card facts without awaiting PokeAPI metadata');
   assert.match(source, /void metadata\.then\(\(details\) =>/,
     'Metadata remains a late optional screen update for known routes');
-  assert.match(source, /fetchCardsForPokemon\(nextPokemon\.name, \{ onProgress: applyCards \}\)/,
-    'The screen consumes progressive factual card publications');
+  assert.match(source, /const cardSpeciesName = speciesName \?\? routeName \?\? nextPokemon\.name;/,
+    'A list-selected species survives the optional provider-metadata update.');
+  assert.match(source, /fetchCardsForPokemon\(cardSpeciesName, \{ onProgress: applyCards \}\)/,
+    'The screen consumes progressive factual card publications using the selected species identity.');
 }
 
 async function testOwnedSpeciesEligibility() {

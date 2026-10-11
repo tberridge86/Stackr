@@ -1217,7 +1217,7 @@ export default function GlobalSearchScreen() {
       nextErrors.graded = 'Graded listings could not be loaded.';
     }
 
-    const recovered = retainFailedSearchGroups(next, nextErrors, previous);
+    const recovered = retainFailedSearchGroups(next, nextErrors, previous, { cards: canonicalCards !== null });
     previousSearchRef.current = { key: searchKey, results: recovered };
     setResults(recovered);
     setErrors(nextErrors);

@@ -34,6 +34,11 @@ function compile(path: string, dependencies: Record<string, any>, extra: Record<
 // Effects are explicit so the first render after auth changes can be inspected.
 function screenHarness(kind: 'list' | 'detail') {
   let auth: any = { user: { id: 'A' }, loading: false, error: null, refreshAuth: async () => {} };
+  let routeParams: Record<string, string> = { id: '25', name: 'pikachu' };
+  let pokemonRows = [
+    { name: 'pikachu', url: '/pokemon/25', speciesId: 25, speciesName: 'pikachu', routeId: 25, routeName: 'pikachu' },
+    { name: 'mew', url: '/pokemon/151', speciesId: 151, speciesName: 'mew', routeId: 151, routeName: 'mew' },
+  ];
   const slots: any[] = [];
   let cursor = 0;
   let pendingEffects: (() => void)[] = [];
@@ -43,6 +48,7 @@ function screenHarness(kind: 'list' | 'detail') {
   const alerts: any[] = [];
   const alertAccounts: (string | null)[] = [];
   const routes: any[] = [];
+  const cardQueries: string[] = [];
   let reader: (account: string) => Promise<Set<string>> = async () => new Set();
   let writer: (intent: any) => Promise<void> = async () => {};
   let mutationHandoff: (() => Promise<void>) | null = null;
@@ -74,7 +80,7 @@ function screenHarness(kind: 'list' | 'detail') {
   const accountGeneration = compile('lib/accountLoadGeneration.ts', {});
   const authResult = () => ({ data: { user: auth.user }, error: null });
   const router = { push: (route: any) => routes.push(route) };
-  const expo = { router, useLocalSearchParams: () => ({ id: '25', name: 'pikachu' }),
+  const expo = { router, useLocalSearchParams: () => routeParams,
     useFocusEffect: (callback: any) => effect(callback, [callback], true) };
   const sharedModule = compile('lib/pokedexOwnershipState.ts', {
     react: React, 'expo-router': expo, '../components/auth-context': { useAuth: () => auth },
@@ -95,7 +101,7 @@ function screenHarness(kind: 'list' | 'detail') {
     fetchOwnedPokemonNameSet: async (account = auth.user?.id) => { reads.push(account); return reader(account); },
     fetchOwnedPokedexCards: async (account = auth.user?.id) => { reads.push(account); return new Map([...(await reader(account))].map((id) => [id, {}])); },
     pokemonNameMatchesCardName: (name: string, title: string) => name === title,
-    fetchCardsForPokemon: async (_name: string, options: any) => { const result = { cards, complete: true }; options.onProgress(result); return result; },
+    fetchCardsForPokemon: async (name: string, options: any) => { cardQueries.push(name); const result = { cards, complete: true }; options.onProgress(result); return result; },
     hydratePokedexCardArtwork: async () => [], formatPokedexName: (value: string) => value,
     setPokedexCardOwned: async (_card: any, owned: boolean, intent: any) => { writes.push({ owned, intent }); await writer(intent); },
   };
@@ -110,8 +116,7 @@ function screenHarness(kind: 'list' | 'detail') {
     '@expo/vector-icons': { Ionicons: 'Icon' }, '@react-native-async-storage/async-storage': { getItem: async () => null, setItem: async () => {} },
     '../../lib/pokedexCollection': collection,
     '../../lib/pokedexOwnershipState': shared,
-    '../../lib/stackrApiV1': { stackrApiClient: { pokemonIndex: async () => ({ data: { count: 2, indexVersion: 'fixture',
-      results: [{ name: 'pikachu', url: '/pokemon/25' }, { name: 'mew', url: '/pokemon/151' }] } }) } },
+    '../../lib/stackrApiV1': { stackrApiClient: { pokemonIndex: async () => ({ data: { count: pokemonRows.length, indexVersion: 'fixture', results: pokemonRows } }) } },
     '../../components/StackrBackdrop': { StackrBackdrop: 'Backdrop' },
     '../../components/StackrScreen': { PokemonArtworkGlow: 'Glow', StackrScreen: 'Screen' }, '../../lib/stackrIcons': { stackrIcons: {} },
     '../../components/RaritySymbol': { RaritySymbol: 'Rarity', RARITY_SYMBOL_CARD_OVERLAY: {} },
@@ -141,6 +146,9 @@ function screenHarness(kind: 'list' | 'detail') {
     setAuthState: (loading: boolean, error: string | null) => { auth = { ...auth, loading, error }; },
     setReader: (next: typeof reader) => { reader = next; }, setWriter: (next: typeof writer) => { writer = next; },
     setMutationHandoff: (next: typeof mutationHandoff) => { mutationHandoff = next; },
+    setRouteParams: (next: Record<string, string>) => { routeParams = next; },
+    setPokemonRows: (next: typeof pokemonRows) => { pokemonRows = next; },
+    cardQueries,
     unmount: () => { slots.forEach((slot) => slot?.cleanup?.()); }, nodes: () => nodes(tree) };
 }
 
@@ -340,11 +348,48 @@ async function testReviewedErrorHandoff() {
   results.push('review: controlled screen handoff alerts current A, suppresses B/ABA/new-generation/blur/auth-error side effects and late success');
 }
 
+async function testSpeciesRouteConsumerHandoff() {
+  const giratina = { name: 'giratina-altered', url: '/pokemon/487', speciesId: 487, speciesName: 'giratina', routeId: 487, routeName: 'giratina-altered' };
+  const list = screenHarness('list');
+  list.setPokemonRows([giratina]);
+  list.setReader(async () => new Set(['giratina']));
+  list.render(); await list.flush();
+  assert.match(list.tile().props.accessibilityLabel, /giratina.*owned/i,
+    'species ownership marks Giratina without requiring the provider default-form label');
+  list.tile().props.onPress();
+  assert.deepEqual({ ...list.routes[0]?.params }, {
+    id: '487', name: 'giratina-altered', speciesId: '487', speciesName: 'giratina',
+  }, 'the actual list carries distinct route and species identities into detail');
+
+  for (const entry of [
+    list.routes[0].params,
+    { id: '413', name: 'wormadam-plant', speciesId: '413', speciesName: 'wormadam' },
+    { id: '964', name: 'palafin-zero', speciesId: '964', speciesName: 'palafin' },
+    { id: '386', name: 'deoxys-normal', speciesId: '386', speciesName: 'deoxys' },
+    { id: '29', name: 'nidoran-f', speciesId: '29', speciesName: 'nidoran-f' },
+    { id: '32', name: 'nidoran-m', speciesId: '32', speciesName: 'nidoran-m' },
+  ]) {
+    const detail = screenHarness('detail');
+    detail.setRouteParams(entry);
+    detail.render(); await detail.flush();
+    assert.equal(detail.cardQueries[0], entry.speciesName,
+      `${entry.name}: card retrieval uses the selected species and not the provider form route`);
+  }
+
+  const directForm = screenHarness('detail');
+  directForm.setRouteParams({ id: '487', name: 'giratina-altered' });
+  directForm.render(); await directForm.flush();
+  assert.equal(directForm.cardQueries[0], 'giratina-altered',
+    'a direct legacy form route preserves its exact card query when no species identity was supplied');
+  results.push('species route handoff: list ownership/navigation and detail catalogue queries separate species from provider form routes');
+}
+
 async function run() {
   await testReviewedErrorHandoff();
   await testReviewedDuplicateTaps();
   await testReviewedMarkerRaces();
   await testConsumers('list'); await testConsumers('detail'); await testMarkerConsumers(); await testServiceIntents();
+  await testSpeciesRouteConsumerHandoff();
   console.log(JSON.stringify({ fixtureAccountsOnly: true, actualConsumersAndService: true, passedGroups: results.length, results }, null, 2));
 }
 run().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -79,9 +79,12 @@ export default function PokemonDetailScreen() {
   const { theme } = useTheme();
   const { inspectCard } = useCardInspection();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
-  const params = useLocalSearchParams<{ id: string; name?: string }>();
+  const params = useLocalSearchParams<{ id: string; name?: string; speciesId?: string; speciesName?: string }>();
   const id = getParamValue(params.id);
   const routeName = getParamValue(params.name);
+  const speciesName = getParamValue(params.speciesName);
+  const rawSpeciesId = Number(getParamValue(params.speciesId));
+  const speciesId = Number.isSafeInteger(rawSpeciesId) && rawSpeciesId > 0 ? rawSpeciesId : null;
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const columns = width >= 900 ? 5 : width >= 620 ? 4 : 2;
@@ -181,11 +184,16 @@ export default function PokemonDetailScreen() {
             if (active && details) setPokemon(details);
           });
         }
-        const pokemonCards = await fetchCardsForPokemon(nextPokemon.name, { onProgress: applyCards });
+        // A list selection carries a National Dex species separately from the
+        // exact provider route used for PokeAPI metadata and artwork. Direct
+        // legacy/form routes have no species parameter, so retain their exact
+        // route name for card retrieval.
+        const cardSpeciesName = speciesName ?? routeName ?? nextPokemon.name;
+        const pokemonCards = await fetchCardsForPokemon(cardSpeciesName, { onProgress: applyCards });
         if (!active) return;
         applyCards(pokemonCards);
         console.log('Pokedex cards loaded', {
-          pokemon: nextPokemon.name,
+          pokemon: cardSpeciesName,
           count: pokemonCards.cards.length,
           complete: pokemonCards.complete,
         });
@@ -205,7 +213,7 @@ export default function PokemonDetailScreen() {
     return () => {
       active = false;
     };
-  }, [id, retryEpoch, routeName]);
+  }, [id, retryEpoch, routeName, speciesName]);
 
   const ownedCount = useMemo(
     () => ownedKeys ? cards.filter((card) => ownedKeys.has(makeOwnedKey(card))).length : null,
@@ -390,7 +398,8 @@ export default function PokemonDetailScreen() {
     );
   }
 
-  const displayName = formatPokedexName(pokemon.name);
+  const displayName = formatPokedexName(speciesName ?? pokemon.name);
+  const displayNumber = speciesId ?? pokemon.id;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -426,7 +435,7 @@ export default function PokemonDetailScreen() {
                     <Image source={{ uri: getPokemonSpriteUrl(pokemon.id) }} style={styles.sprite} />
                   </View>
                   <Text style={styles.name}>{displayName}</Text>
-                  <Text style={styles.number}>#{String(pokemon.id).padStart(4, '0')}</Text>
+                  <Text style={styles.number}>#{String(displayNumber).padStart(4, '0')}</Text>
                   <View style={styles.typeRow}>
                     {pokemon.types.map((entry) => (
                       <View key={entry.type.name} style={styles.typeChip}>

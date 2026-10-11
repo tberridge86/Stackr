@@ -69,7 +69,7 @@ type Harness = {
   writes: () => number;
 };
 
-function createHarness(timers: FakeTimers, options: { category?: string; language?: string; previous?: boolean } = {}): Harness {
+function createHarness(timers: FakeTimers, options: { category?: string; language?: string; previous?: boolean; canonicalRows?: any[] } = {}): Harness {
   const EMPTY_RESULTS = { cards: [], sets: [], sealed: [], collectors: [], listings: [], graded: [] };
   const requestRef = { current: 0 };
   const category = options.category ?? 'all';
@@ -109,7 +109,7 @@ function createHarness(timers: FakeTimers, options: { category?: string; languag
     correctPokemonNameQuery: async () => null, searchSetsQuick: () => sets.promise,
     searchMarketProducts: async () => [], readCachedCanonicalSearch: async () => null, writeCachedCanonicalSearch: async () => {},
     searchLocalPokemonCards: (_query: string, callbacks: any) => {
-      callbacks.onCanonicalResults([{ id: 'good-card', name: 'Good card' }]);
+      callbacks.onCanonicalResults(options.canonicalRows ?? [{ id: 'good-card', name: 'Good card' }]);
       return cards.promise;
     },
     supabase: { from: () => chain },
@@ -118,8 +118,8 @@ function createHarness(timers: FakeTimers, options: { category?: string; languag
     isFulfilled: (result: any) => result.status === 'fulfilled', isRejected: (result: any) => result.status === 'rejected',
     mapCardResults: (rows: any[]) => rows, mapListingResult: (row: any) => row,
     sanitizeGate0CommerceCopy: (value: any) => value,
-    retainFailedSearchGroups: (next: any, nextErrors: any, previous: any) => Object.fromEntries(
-      Object.entries(next).map(([key, value]) => [key, nextErrors[key] && previous ? previous[key] : value]),
+    retainFailedSearchGroups: (next: any, nextErrors: any, previous: any, currentResults: any = {}) => Object.fromEntries(
+      Object.entries(next).map(([key, value]) => [key, nextErrors[key] && previous && !currentResults[key] && (value as any[]).length === 0 ? previous[key] : value]),
     ),
     fetchCardListingStats: async () => new Map(), fetchOwnedCardRows: async () => [], fetchProductListingStats: async () => new Map(),
     console: { log: noop },
@@ -140,12 +140,25 @@ async function testTimeoutRuntimePath() {
   assert.equal(harness.getState().cards[0].id, 'good-card', 'a timed-out source retains useful canonical cards');
   assert.equal(harness.getState().sets[0].id, 'prior-set', 'a stalled source retains previous same-query group content');
   assert.equal(harness.getErrors().sets, 'Set results could not be loaded.', 'the stalled set group is honestly reported as unavailable');
-  assert.equal(harness.getErrors().cards, undefined, 'early canonical card content is not falsely reported as empty');
+  assert.equal(harness.getErrors().cards, 'Card results could not be refreshed.', 'a timed-out fresh card source remains honestly retryable even when early rows are useful');
+  assert.notEqual(harness.getState().cards[0].id, 'prior-card', 'a useful current canonical row must beat a same-query fallback');
   const afterTimeoutWrites = harness.writes();
   harness.cards.resolve([{ id: 'late-card' }]);
   harness.sets.resolve([{ id: 'late-set' }]);
   await flush();
   assert.equal(harness.writes(), afterTimeoutWrites, 'late successful transports after their timeout cannot mutate settled screen state');
+}
+
+async function testKnownEmptyCanonicalDoesNotRestorePriorMatch() {
+  const timers = new FakeTimers();
+  const harness = createHarness(timers, { previous: true, canonicalRows: [] });
+  const pending = harness.run('Pikachu');
+  await flush();
+  harness.cards.reject(new Error('fresh catalogue request failed'));
+  harness.sets.resolve([]);
+  await pending;
+  assert.deepEqual(harness.getState().cards, [], 'an explicit current no-match must not revive an older same-query card');
+  assert.equal(harness.getErrors().cards, 'Card results could not be refreshed.', 'a rejected later refresh remains retryable after an explicit no-match');
 }
 
 async function testStaleBoundaries() {
@@ -168,6 +181,7 @@ async function testStaleBoundaries() {
 
 async function main() {
   await testTimeoutRuntimePath();
+  await testKnownEmptyCanonicalDoesNotRestorePriorMatch();
   await testStaleBoundaries();
   console.log('Search coordinator harness passes timeout, honest group error, simulated invalidation and late-completion guards.');
 }

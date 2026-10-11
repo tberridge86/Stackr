@@ -116,7 +116,7 @@ const run = extract('app/(tabs)/search.tsx', 'runSearch', {
   ),
   isFulfilled: result => result.status === 'fulfilled', isRejected: result => result.status === 'rejected',
   mapCardResults: rows => rows, mapListingResult: row => row, sanitizeGate0CommerceCopy: x => x,
-  retainFailedSearchGroups: (next, errors, previous) => Object.fromEntries(Object.entries(next).map(([key, value]) => [key, errors[key] && previous ? previous[key] : value])),
+  retainFailedSearchGroups: (next, errors, previous, currentResults = {}) => Object.fromEntries(Object.entries(next).map(([key, value]) => [key, errors[key] && previous && !currentResults[key] && value.length === 0 ? previous[key] : value])),
   fetchCardListingStats: async () => new Map(), fetchOwnedCardRows: async () => [], fetchProductListingStats: async () => new Map(),
   console: { log: noop },
 });

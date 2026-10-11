@@ -1184,13 +1184,20 @@ await withServer(async (baseUrl) => {
   const indexPage = await fetch(`${baseUrl}/pokemon?offset=0&limit=151`);
   assert.equal(indexPage.status, 200);
   const firstIndex = (await indexPage.json()).data;
-  assert.equal(firstIndex.count, 1350);
+  assert.equal(firstIndex.count, 1025);
   assert.equal(firstIndex.results.length, 151);
   assert.equal(firstIndex.results[0].name, 'bulbasaur');
   const restIndex = (await (await fetch(`${baseUrl}/pokemon?offset=151&limit=1199`)).json()).data;
   assert.equal(restIndex.indexVersion, firstIndex.indexVersion);
-  assert.equal(restIndex.results.length, 1199);
-  assert.equal(new Set([...firstIndex.results, ...restIndex.results].map((entry) => entry.url)).size, 1350);
+  assert.equal(restIndex.results.length, 874);
+  assert.equal(new Set([...firstIndex.results, ...restIndex.results].map((entry) => entry.speciesId)).size, 1025);
+  assert.equal(firstIndex.results[0].speciesId, 1);
+  assert.equal(firstIndex.results[25].speciesId, 26);
+  assert.equal(firstIndex.results[25].routeName, 'raichu');
+  assert.ok(![...firstIndex.results, ...restIndex.results].some((entry) => entry.routeName === 'raichu-alola'));
+  const deoxys = restIndex.results.find((entry) => entry.speciesId === 386);
+  assert.equal(deoxys.speciesName, 'deoxys');
+  assert.equal(deoxys.routeName, 'deoxys-normal');
   assert.equal((await fetch(`${baseUrl}/pokemon?offset=0&limit=151`, {
     headers: { 'If-None-Match': indexPage.headers.get('etag') },
   })).status, 304);
