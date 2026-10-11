@@ -1,0 +1,11 @@
+# Five-language acceptance cohort
+
+This is a deliberately small future acceptance cohort, not whole-catalogue evidence. It fixes five independent public card identities at commit `b0d079e5a6f3d929b1b7519633573a5126bec1f7`: English, Japanese, Simplified Chinese, Traditional Chinese, and Korean. The companion JSON records every expected identity field with its existing fixture or audit source.
+
+On 2026-10-11, six unauthenticated public `GET /v1/cards/{cardId}` calls completed with HTTP 200. The five positive identities matched their language, set code, collector number, and observed default variant where a fixture supplied one. Korean `SV4M 045` deliberately remains an image-state boundary: the live card identifies itself correctly but reports `nativeImageStatus: missing`; the delivered recovered asset reports approved permission. That is recorded as observed rather than treated as successful rendered artwork proof.
+
+The sixth call is a negative name control: Traditional Chinese `SCA 120` still returns native `瑪俐` with public English display `Pikachu`. It is an expected failure confirmed by the recheck, not a claim that this printing is equivalent to any other Marnie printing.
+
+The future acceptance journey should run each positive identity through public search, details, binder persistence, pricing, scanner recognition, and a real iPhone pass; it should also prove the negative control becomes correct only when its repair is released. This cohort does not test any of those journeys yet. Accessibility, actual rendering, mobile state handling, offline/network failure, latency, provider rights beyond the returned field, image freshness beyond returned timestamps, and price data remain open.
+
+The recheck made six requests, under the cap of 15, with at most two concurrent requests and a 12-second timeout. It used no credentials and made no writes.
