@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import React from 'react';
@@ -11,7 +12,10 @@ import * as contract from '../lib/cardInspection';
 
 function load(file: string, dependencies: Record<string, unknown>) {
   const module = { exports: {} as any };
-  const compiled = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: {
+  const source = process.env.CARD_INSPECTION_BASELINE === '1' && file === 'components/CardInspectionProvider.tsx'
+    ? execFileSync('git', ['show', `bd2aa90414f40533979e4161d5c0e8fbf78708cf:${file}`], { encoding: 'utf8' })
+    : readFileSync(file, 'utf8');
+  const compiled = ts.transpileModule(source, { compilerOptions: {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React,
     esModuleInterop: true,
   } }).outputText;
@@ -122,6 +126,7 @@ async function main() {
   assert.ok(cancellations >= 8, 'smoothing/return animations are cancelled on suspension and unmount'); cases++;
 
   let lazyLoads = 0, haptics = 0, pathname = '/binder/one';
+  const pendingOpeningGuards: ((() => boolean) | undefined)[] = [];
   const trace: string[] = [];
   const inspectionNode = 'InspectionModal' as React.ElementType;
   function Viewer({ onClose }: { onClose: (action?: () => void) => void }) {
@@ -131,18 +136,23 @@ async function main() {
   const dependencies = {
     'expo-router': { usePathname: () => pathname },
     '../lib/cardInspection': contract,
-    '../lib/haptics': { stackrHaptics: { cardInspection: () => { haptics++; } } },
+    '../lib/haptics': { stackrHaptics: { cardInspection: (isCurrent?: () => boolean) => { haptics++; pendingOpeningGuards.push(isCurrent); } } },
     get './CardInspectionViewer'() { lazyLoads++; return { __esModule: true, default: Viewer }; },
   };
   const { CardInspectionProvider, useCardInspection } = load('components/CardInspectionProvider.tsx', dependencies);
   let inspect!: (request: contract.CardInspectionRequest) => void;
   let listMounts = 0;
   let listState: unknown;
+  let observePathChange = false;
+  let preEffectRouteGuard: boolean | undefined;
   function List() {
     inspect = useCardInspection().inspectCard;
     const [state] = React.useState({ scrollOffset: 1452, filter: 'reverse-holo', cachedRows: ['one', 'two'] });
     listState = state;
     React.useEffect(() => { listMounts++; }, []);
+    React.useLayoutEffect(() => {
+      if (observePathChange) preEffectRouteGuard = pendingOpeningGuards.at(-1)?.();
+    });
     return React.createElement('CardList');
   }
   const shell = () => React.createElement(CardInspectionProvider, {}, React.createElement(List));
@@ -154,15 +164,28 @@ async function main() {
   assert.equal(lazyLoads, 0); assert.equal(haptics, 0); cases++;
   await act(async () => { inspect(request); });
   assert.equal(root.root.findAllByType(inspectionNode).length, 1); assert.equal(haptics, 1); cases++;
+  assert.equal(pendingOpeningGuards[0]?.(), true, 'accepted opening supplies a live guard before delayed native dispatch'); cases++;
   await act(async () => { root.root.findByType(inspectionNode).props.onClose(() => trace.push('quick-actions')); });
   assert.equal(root.root.findAllByType(inspectionNode).length, 0); cases++;
+  assert.equal(pendingOpeningGuards[0]?.(), false, 'closing invalidates the opening before preference hydration settles'); cases++;
   assert.equal(listState, before); assert.equal(listMounts, 1, 'closing preserves list instance, filters, scroll and cached rows'); cases++;
   assert.deepEqual(trace, ['viewer-mounted', 'viewer-unmounted', 'quick-actions'], 'quick actions run only after inspection is dismissed'); cases++;
   await act(async () => { inspect(request); });
+  const priorOpening = pendingOpeningGuards.at(-1);
+  await act(async () => { inspect({ ...request, card: { id: 'two' } }); });
+  assert.equal(priorOpening?.(), false, 'replacement invalidates the prior delayed opening');
+  assert.equal(pendingOpeningGuards.at(-1)?.(), true, 'replacement opening is current'); cases++;
+  observePathChange = true;
   pathname = '/search';
   await act(async () => { root.update(shell()); });
+  assert.equal(preEffectRouteGuard, false, 'navigation masks delayed feedback before passive route cleanup'); cases++;
   assert.equal(root.root.findAllByType(inspectionNode).length, 0, 'leaving the screen releases the viewer'); cases++;
+  assert.equal(pendingOpeningGuards.at(-1)?.(), false, 'navigation invalidates delayed opening feedback'); cases++;
+  await act(async () => { inspect(request); });
+  const unmountedOpening = pendingOpeningGuards.at(-1);
+  assert.equal(unmountedOpening?.(), true);
   await act(async () => { root.unmount(); });
+  assert.equal(unmountedOpening?.(), false, 'provider unmount invalidates delayed opening feedback'); cases++;
   console.log(`Card inspection lifecycle: ${cases} cases passed, 0 failed (React renderer, mocked native boundaries).`);
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

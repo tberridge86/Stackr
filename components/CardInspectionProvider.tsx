@@ -13,17 +13,27 @@ export function CardInspectionProvider({ children }: { children: React.ReactNode
   const [request, setRequest] = useState<CardInspectionRequest | null>(null);
   const afterClose = useRef<(() => void) | undefined>(undefined);
   const pathname = usePathname();
+  const inspectionGeneration = useRef(0);
+  const currentPathname = useRef(pathname);
+  if (currentPathname.current !== pathname) {
+    currentPathname.current = pathname;
+    inspectionGeneration.current++;
+  }
   const inspectCard = useCallback((next: CardInspectionRequest) => {
     if (!canInspectCatalogueCard(next)) return;
+    const generation = ++inspectionGeneration.current;
+    const requestPathname = currentPathname.current;
     afterClose.current = undefined;
     setRequest(next);
-    void stackrHaptics.cardInspection();
+    void stackrHaptics.cardInspection(() => inspectionGeneration.current === generation && currentPathname.current === requestPathname);
   }, []);
   const close = useCallback((action?: () => void) => {
+    inspectionGeneration.current++;
     afterClose.current = action;
     setRequest(null);
   }, []);
-  useEffect(() => { setRequest(null); afterClose.current = undefined; }, [pathname]);
+  useEffect(() => { inspectionGeneration.current++; setRequest(null); afterClose.current = undefined; }, [pathname]);
+  useEffect(() => () => { inspectionGeneration.current++; }, []);
   useEffect(() => {
     // Run binder actions after the inspection Modal has unmounted. The modal
     // has no native dismissal animation that could race another native sheet.
