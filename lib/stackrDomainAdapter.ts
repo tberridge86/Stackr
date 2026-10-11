@@ -994,7 +994,14 @@ async function fetchCanonicalSetCardFacts(
       const set = (await client.set(setId, { signal })).data.set;
       if (apiLanguage && apiLanguage !== set.languageCode) throw new Error('Conflicting catalogue language');
       apiLanguage = set.languageCode;
-      expectedCount = Number(set.total ?? set.printedTotal ?? 0);
+      // A printed count excludes secret cards for sets such as Prismatic
+      // Evolutions. This facts lane validates exact completion, so it must
+      // never promote that display hint into an authoritative denominator.
+      const canonicalTotal = Number(set.total);
+      if (!Number.isSafeInteger(canonicalTotal) || canonicalTotal < 1) {
+        throw new Error('Exact canonical set total is unavailable');
+      }
+      expectedCount = canonicalTotal;
     }
     const key = { namespace: client.catalogueCacheNamespace ?? 'ephemeral-client', setId, language: apiLanguage!, expectedCount };
     return setFactsReader(client).read(key, (requestSignal) => loadCompleteSetPages(key, async (cursor, pageSignal) => {

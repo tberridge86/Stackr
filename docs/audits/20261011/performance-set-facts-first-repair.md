@@ -84,6 +84,12 @@ policy.
   This is the real facts-reader control: complete facts pagination, identity and
   version rejection, image stripping, canonical 180-versus-printed-131 count
   behaviour, and non-persistence of partial pages.
+- `node --import tsx scripts/test-english-set-identity.ts` — passed. This now
+  executes the public facts-only adapter with a mocked canonical client:
+  printed-only `131` metadata fails before any response can be presented,
+  canonical `total: 180` accepts all 180 rows, and a 131-row response against
+  that total fails. This closes the adapter fallback that could otherwise turn
+  a printed display count into a false complete set.
 - `node --import tsx scripts/test-preferred-set-artwork.ts` — passed. It
   exercises the shared progressive artwork reader's exact identity merge and
   cancellation boundary.
@@ -95,6 +101,9 @@ policy.
 ## Limitations and handoff
 
 The tests establish source and helper behavior only. No live API, deployment,
-or installed-iPhone measurement was performed. Independent review should check
-that the selected minimum is appropriate for a known set with a partial response
-and that the intended release includes this mobile source.
+or installed-iPhone measurement was performed. The adapter still permits an
+explicit caller-supplied minimum, so that value must remain an independently
+verified exact canonical override; it cannot be a printed-card hint. Independent
+review should check the selected screen minimum and that the intended release
+includes this mobile source, then perform the required installed-iPhone
+journey/accessibility rendering verification.
