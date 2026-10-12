@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-12T12:52:31.471660Z",
+  "updatedAt": "2026-10-12T17:42:24.907Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "agent/release/tif-build55-device-repairs-20261012",
@@ -1377,6 +1377,30 @@
       },
       "nextAction": "New-head hosted checks in PR #337, then approved signed-native delivery and device profiling.",
       "evidence": "docs/performance/cold-start-20261012.md"
+    },
+    {
+      "id": "ACHIEVEMENT-ACCOUNT-BOUNDARY-001",
+      "severity": "P1",
+      "owner": "stackr_release",
+      "status": "reproduced_unrepaired_separate_from_startup_speed",
+      "summary": "Actual AchievementProvider allows a late prior-account coin/unlock response to overwrite the current account; global notifier also lacks account provenance.",
+      "evidence": "docs/performance/startup-prompt-verification-20261012.md",
+      "files": [
+        "components/achievement-context.tsx",
+        "lib/achievements.ts"
+      ],
+      "validation": [
+        "Actual provider/consumer renderer: B22 coins/b-unlock are published, then delayed A read makes active B show A11/a-unlock; stale-response assertion fails",
+        "Independent audit and coordinator reproduce with synthetic fixtures; no actual owner/server-side coin mutation tested"
+      ],
+      "delivery": {
+        "local": "not_repaired",
+        "reviewed": "finding_confirmed",
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Prepare an isolated provider and notifier/service repair, including pre-effect masking, expected-account A/B/ABA guards, sign-out/unmount; preserve reward, access and coin semantics. Review before release."
     }
   ],
   "integrationBaseRevision": "599c776f12201470273574c4d5f9f01632609dc1",
@@ -1750,5 +1774,20 @@
     "merged": false,
     "deployed": false,
     "deviceVerified": false
+  },
+  "startupPromptVerification20261012": {
+    "observedAt": "2026-10-12T17:42:24.907Z",
+    "runtimeRevision": "5eb3dff53226a202743c5494eef63618ab3d3e13",
+    "report": "docs/performance/startup-prompt-verification-20261012.md",
+    "immediateDeferredLazy": "implemented_existing_candidate",
+    "localStartupChecks": "startup-loading and startup-video pass on existing runtime source",
+    "physicalLaunchTrace": "not performed",
+    "measuredSpeedup": null,
+    "residualPerformance": "catalogue/provider/font/cache costs require actual launch/request timeline; no speculative source changes",
+    "newSeparateReleaseBlocker": "ACHIEVEMENT-ACCOUNT-BOUNDARY-001",
+    "appCodeChangedByAudit": false,
+    "deployed": false,
+    "deviceVerified": false,
+    "overallReady": false
   }
 }
