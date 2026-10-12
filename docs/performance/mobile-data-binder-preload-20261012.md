@@ -94,6 +94,14 @@ are unchanged. Application/runtime export is unchanged by either fixture repair.
 The full hosted candidate command sequence now passes locally: typecheck,
 catalogue, personal loading, first paint, parallel retrieval and reopen. The
 mobile-recovery, server-delivery and Home-activity suites also pass on this source.
+The remaining platform static check expected online identity confirmation before
+local Home hydration. Its guard now checks local owner/generation/expiry,
+owner-bound parsing and known-denial revocation, while separately retaining
+live confirmation for fresh publication and cache persistence. The complete
+commerce-release-lock suite and actual Home runtime tests pass. Independent
+Home release, personal-pricing and account-request checks also pass. These are
+verification-only updates; the application source and exported bundle remain
+`f3042f9` and do not gain any server permission or payment capability.
 
 ## Proposed delivery after approval
 
