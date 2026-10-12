@@ -859,7 +859,7 @@ export function fetchPreferredStackrSets(
     () => legacySets(language),
     { preferredTimeoutMs: PREFERRED_CATALOGUE_READ_TIMEOUT_MS },
   );
-  if (!options.includeAssets) return preferredSets;
+  if (options.includeAssets === false) return preferredSets;
   return preferredSets.then(async (sets) => {
     // This enrichment deliberately begins only after the seven-second preferred
     // facts read settles. Its own child deadline cannot discard canonical rows.

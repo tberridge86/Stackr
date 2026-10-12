@@ -419,11 +419,12 @@ type CardItemProps = {
   card: PokemonCard & { runtimeCataloguePricing?: CataloguePriceDisplay };
   variantQuantities: Map<string, number>;
   setId: string;
+  artworkLoading: boolean;
   onOpenQuantity: (card: PokemonCard, variant: string) => void;
   onQuickAdd: (card: PokemonCard, variant: string) => void;
 };
 
-const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity, onQuickAdd }: CardItemProps) => {
+const CardItem = React.memo(({ card, variantQuantities, setId, artworkLoading, onOpenQuantity, onQuickAdd }: CardItemProps) => {
   const { theme } = useTheme();
   const variants = useMemo(() => getVariants(card, setId), [card, setId]);
   const quantities = variants.map((v) => variantQuantities.get(getVariantKey(card.id, setId, v)) ?? 0);
@@ -495,6 +496,7 @@ const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity, o
           rounded={10}
           cacheKey={`${card.id}:${card.imageStatus ?? 'unknown'}:${card.images?.small ?? 'placeholder'}`}
           placeholderColor={theme.colors.surface}
+          fallback={artworkLoading && !card.images?.small && !card.images?.large ? <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>Loading artwork…</Text> : undefined}
           accessibilityLabel={`${displayName} card image`}
           onError={() => {
             console.log('Card image failed', { cardId: card.id, imageUrl: card.images?.small ?? null });
@@ -667,6 +669,7 @@ export default function SetDetailScreen() {
   const [setInfo, setSetInfo] = useState<PokemonSet | null>(null);
   const [cards, setCards] = useState<PokemonCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [artworkLoading, setArtworkLoading] = useState(false);
   const [ownershipReady, setOwnershipReady] = useState(false);
   const [ownershipError, setOwnershipError] = useState<string | null>(null);
   const [ownershipRetry, setOwnershipRetry] = useState(0);
@@ -711,6 +714,7 @@ export default function SetDetailScreen() {
       && ownershipGenerationRef.current === generation && authBoundaryRef.current === authBoundaryKey;
     try {
       setLoading(true);
+      setArtworkLoading(false);
       setOwnershipReady(false);
       setOwnershipError(null);
       setUserId(null);
@@ -741,6 +745,7 @@ export default function SetDetailScreen() {
       // background, without allowing a stale route/account to repaint cards.
       const artworkAbort = new AbortController();
       artworkAbortRef.current = artworkAbort;
+      setArtworkLoading(true);
       void enrichStackrCardArtworkFromFacts(fetchedCards, artworkAbort.signal, undefined, (progress) => {
         if (!isCurrent() || artworkAbort.signal.aborted) return;
         setCards((current) => mergeSetCardArtwork(current, progress));
@@ -749,6 +754,7 @@ export default function SetDetailScreen() {
         setCards((current) => mergeSetCardArtwork(current, enriched));
       }).catch(() => undefined).finally(() => {
         if (artworkAbortRef.current === artworkAbort) artworkAbortRef.current = null;
+        if (isCurrent() && !artworkAbort.signal.aborted) setArtworkLoading(false);
       });
 
       // Paint the cards first. Only this set's marks are requested in the background.
@@ -1163,10 +1169,11 @@ export default function SetDetailScreen() {
       card={card}
       variantQuantities={visibleVariantQuantities}
       setId={setId ?? ''}
+      artworkLoading={artworkLoading}
       onOpenQuantity={openQuantityModal}
       onQuickAdd={handleQuickAddVariant}
     />
-  ), [visibleVariantQuantities, setId, openQuantityModal, handleQuickAddVariant]);
+  ), [visibleVariantQuantities, setId, artworkLoading, openQuantityModal, handleQuickAddVariant]);
 
   // ===============================
   // LOADING STATE

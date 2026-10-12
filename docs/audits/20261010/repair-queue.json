@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T21:45:59.452Z",
+  "updatedAt": "2026-10-12T07:40:22.701Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
-  "branch": "agent/release/tif-marnie-release55-20261011",
+  "branch": "agent/release/tif-build55-device-repairs-20261012",
   "auditedBaseRevision": "5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1",
   "protocol": ".codex/AUDIT_PROTOCOL.md",
   "auditStatus": {
@@ -25,12 +25,10 @@
     "lastPassStartedAt": "2026-10-11T08:12:47Z",
     "currentWork": {
       "owner": "root",
-      "status": "reviewed_candidate_preparing_matching_pr",
-      "implementationRevision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
-      "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
-      "independentReview": "accepted_scoped_repairs_and_limited_sql_preparation",
-      "nextAction": "Exact-head hosted checks, coordinated canonical/runtime preparation and delivery/device gates; overall release completion remains unproved",
-      "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c"
+      "status": "reviewed_local_device_feedback_candidate",
+      "baseAppRevision": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
+      "report": "docs/releases/build55-device-feedback-repair-20261012.md",
+      "nextAction": "Prepare exact-head draft PR/hosted checks, concrete approved native delivery and installed-iPhone acceptance; physical CoroCoro P1 and wider targets remain open."
     },
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/329",
@@ -54,7 +52,16 @@
       "reason": "Owner explicitly rejected scheduled Tif work on 11 October 2026"
     },
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
-    "completionLedger": "docs/releases/tif-stackr-completion-ledger-20261011.md"
+    "completionLedger": "docs/releases/tif-stackr-completion-ledger-20261011.md",
+    "previousCurrentWork": {
+      "owner": "root",
+      "status": "reviewed_candidate_preparing_matching_pr",
+      "implementationRevision": "c61912de5138244bab3e5abbab802b8e5b4b1730",
+      "preparationRevision": "76b25fd13c98b0f5a7ebf27103a9c7aed424f819",
+      "independentReview": "accepted_scoped_repairs_and_limited_sql_preparation",
+      "nextAction": "Exact-head hosted checks, coordinated canonical/runtime preparation and delivery/device gates; overall release completion remains unproved",
+      "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c"
+    }
   },
   "issues": [
     {
@@ -1159,6 +1166,184 @@
         "deviceVerified": false
       },
       "nextAction": "Approved matching app delivery and physical entry-path/preferences/latency/comfort checks; zero tactile observations, target7 remains open."
+    },
+    {
+      "id": "COROCORO-NATIVE-WINDOW-001",
+      "severity": "P1",
+      "owner": "stackr_release",
+      "status": "reviewed_local_repair_physical_failure_open",
+      "summary": "Initial CoroCoro cover mount reads browser location on the native window global and throws before the library renders.",
+      "files": [
+        "components/CorocoroIssueCover.tsx",
+        "scripts/test-corocoro-screen-runtime.ts"
+      ],
+      "validation": [
+        "Native-like window={} old code throws; actual component and default/monthly/detail renderer pass after guard"
+      ],
+      "delivery": {
+        "local": "implemented",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Approve matching native candidate delivery, then verify the reported first-tap exit on the actual installed iPhone before closing P1.",
+      "evidence": "docs/releases/build55-device-feedback-repair-20261012.md"
+    },
+    {
+      "id": "DISCOVER-LOGO-DEFAULT-001",
+      "severity": "P2",
+      "owner": "stackr_catalogue",
+      "status": "reviewed_local_repair",
+      "summary": "Preferred set reader silently skips default optional assets; Discover also hides facts behind enrichment and can duplicate global manifests.",
+      "files": [
+        "lib/stackrDomainAdapter.ts",
+        "app/(tabs)/explore.tsx",
+        "scripts/test-preferred-set-logo-delivery.ts",
+        "scripts/test-explore-discover-runtime.ts"
+      ],
+      "validation": [
+        "Actual adapter default RED zero manifests / GREEN four asset-type lanes",
+        "Actual Explore facts-first and one shared all-language artwork reader",
+        "URL-scoped old error suppression, exact ID/language merge and nullish source preservation"
+      ],
+      "delivery": {
+        "local": "implemented",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Matching phone acceptance: local/published/non-local/absent controls, cold/warm delivery; existing 2s optional deadline remains a measured desktop cold-risk observation.",
+      "evidence": "docs/releases/build55-device-feedback-repair-20261012.md"
+    },
+    {
+      "id": "DISCOVER-DIRECT-FLAGS-001",
+      "severity": "P2",
+      "owner": "stackr_catalogue",
+      "status": "reviewed_local_repair",
+      "summary": "Direct language flags are missing, Korean is not loaded/grouped, and previous filtered groups prevent first-tap switching.",
+      "files": [
+        "app/(tabs)/explore.tsx",
+        "scripts/test-explore-discover-runtime.ts",
+        "scripts/test-build48-delivery.mjs"
+      ],
+      "validation": [
+        "Actual Explore switches all five language flags and verifies exclusive language rows",
+        "Japanese route retains set ID/language; historical delivery fixture updated to five languages/shared deferred assets"
+      ],
+      "delivery": {
+        "local": "implemented",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Verify visible flags/search/reset/navigation, VoiceOver and large-text on matching iPhone build.",
+      "evidence": "docs/releases/build55-device-feedback-repair-20261012.md"
+    },
+    {
+      "id": "ARTWORK-PENDING-CACHE-001",
+      "severity": "P2",
+      "owner": "stackr_catalogue",
+      "status": "reviewed_local_repair",
+      "summary": "Missing-image presentation conflates canonical artwork still loading with settled absence; cached metadata-only Card Detail does not recover it.",
+      "files": [
+        "app/set/[id].tsx",
+        "app/card/[id].tsx",
+        "scripts/test-artwork-loading-recovery.ts",
+        "scripts/test-set-account-boundary.ts"
+      ],
+      "validation": [
+        "Actual full Set/Card TSX pending/arrival/exhaustion, stale route/account suppression",
+        "Existing strict image-only identity/finish merge tests passed; abort current optional read on route cleanup"
+      ],
+      "delivery": {
+        "local": "implemented",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Verify exact image arrival/exhaustion across cold/warm card/set/account journeys; whole-catalogue artwork remains unmeasured.",
+      "evidence": "docs/releases/build55-device-feedback-repair-20261012.md"
+    },
+    {
+      "id": "STARTUP-INTRO-HANDOFF-001",
+      "severity": "P2",
+      "owner": "stackr_release",
+      "status": "reviewed_local_repair_native_compile_pending",
+      "summary": "Native completed-logo poster precedes the unformed video and mismatched native/player frames produce a discontinuous handoff.",
+      "files": [
+        "app.json",
+        "components/StackrStartupVideo.tsx",
+        "assets/startup/stackr-premium-first-frame.png",
+        "scripts/test-startup-reduce-motion.ts"
+      ],
+      "validation": [
+        "Original MP4 unchanged; native still is exact full-resolution first-frame extraction",
+        "Installed Expo plugin generates centred 320x320 image view; layout/first-frame gate, motion/error/timeout/cleanup/routing pass"
+      ],
+      "delivery": {
+        "local": "implemented",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "New signed native build and actual launch/reduced-motion acceptance; local Metro export is not native compilation.",
+      "evidence": "docs/releases/build55-device-feedback-repair-20261012.md"
+    },
+    {
+      "id": "PDX-DISK-HANDOFF-006",
+      "severity": "P2",
+      "owner": "stackr_performance",
+      "status": "reviewed_local_repair",
+      "summary": "An unresolved persisted Pokédex cache read prevents its first public API request indefinitely.",
+      "files": [
+        "app/(tabs)/pokedex.tsx",
+        "scripts/test-pokedex-cache-handoff.ts",
+        "scripts/test-pokedex-account-boundary.ts"
+      ],
+      "validation": [
+        "Actual screen RED stalled disk / GREEN existing 25ms controlled optional handoff",
+        "151 useful facts, late cache suppression, fast complete cache, complete-only persistence and unmount pass",
+        "Existing species/ownership/privacy release checks pass"
+      ],
+      "delivery": {
+        "local": "implemented",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Measure first useful content and complete artwork on matching phone; no p95 or whole-journey speed acceptance is claimed.",
+      "evidence": "docs/releases/build55-device-feedback-repair-20261012.md"
+    },
+    {
+      "id": "TC-LOGO-METADATA-GAPS-001",
+      "severity": "P2",
+      "owner": "stackr_catalogue",
+      "status": "bounded_public_source_register_open",
+      "summary": "36 of 83 current Traditional Chinese sets have no public set_logo metadata; six local marks are only partial coverage.",
+      "files": [
+        "docs/audits/20261012/traditional-chinese-logo-network.md",
+        "docs/audits/20261012/traditional-chinese-logo-gap-register.md"
+      ],
+      "validation": [
+        "Complete one-page public manifest:47 approved TC rows with delivery URLs,36 absent metadata",
+        "Exact source register: no match among named tracked six-item local pack for the36; untracked owner-held material/rights remain unknown",
+        "Fresh iOS export byte-matches130 SC and6 TC referenced files, not every supported set"
+      ],
+      "delivery": {
+        "local": "audit_only",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Reconcile exact owner-held/primary-source artwork and rights against36IDs before preparing any catalogue publication; no speculative cross-language marks.",
+      "evidence": "docs/releases/build55-device-feedback-repair-20261012.md"
     }
   ],
   "integrationBaseRevision": "599c776f12201470273574c4d5f9f01632609dc1",
@@ -1513,5 +1698,24 @@
       "warnings": 0,
       "crashes": 0
     }
+  },
+  "deviceFeedback20261012": {
+    "observedAt": "2026-10-12T07:40:22.701Z",
+    "exactInstalledBuildConfirmed": false,
+    "presumedBuild": "1.0.6 (55)",
+    "phoneReference": "iPhone 15 Pro / owner-reported iOS26.6.1 / 5G",
+    "qualitativeOwnerObservations": [
+      "CoroCoro catalogue link from Discover exits/glitches",
+      "Startup logo flash/misplacement",
+      "Artwork/30th logos sometimes appear only later",
+      "Traditional Chinese marks absent on tested view",
+      "Pokédex functional but cold-slow"
+    ],
+    "timedAcceptedPhoneCohorts": 0,
+    "independentReview": "accepted local repaired scope; physical crash remains P1",
+    "overallReady": false,
+    "merged": false,
+    "deployed": false,
+    "deviceVerified": false
   }
 }

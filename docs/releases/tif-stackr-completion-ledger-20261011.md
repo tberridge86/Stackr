@@ -10,11 +10,13 @@ Current delivery update 2026-10-11T21:45:59.452Z: **PR329 and PR336 merged; cano
 - Primary backend receipt: deployment 0ec29984-7ac0-4cc6-93d9-4c26beb871d9, source 0188361a1b1e278ea180f9eec5ec487af52ca8cd. The unrelated staged provider-key/configuration patch remains excluded. Public health/privacy checks do not validate authenticated owner prices.
 - Marnie: 12printing English displays/13English aliases corrected, 13native aliases/variants retained, 22genuine Pikachu sentinels preserved, 25public delta receipts41920–41944. Exactly one runtime group changed. All12corrected details,22genuine controls and native/Marnie/Pikachu search acceptance passed against the deployed backend.
 - All12scoped Marnie detail assets decoded/rendered in a desktop browser with matching native title/number/artwork. Existing scan-acquisition flags and physical finish evidence remain open; this is not installed-iPhone proof or whole-catalogue/high-resolution coverage.
-- Owner reference remains iPhone15Pro, owner-reported iOS26.6.1, 5G mobile data. Carrier/signal and measured conditions remain unknown. No device identifier is retained. Actual installed-release journey observations remain zero.
+- Owner reference remains iPhone15Pro, owner-reported iOS26.6.1, 5G mobile data. Carrier/signal and measured conditions remain unknown. No device identifier is retained. On 12 October the owner reported CoroCoro exiting from Discover, startup/artwork/logo delays, and functional but cold-slow Pokédex. Exact installed build remains unconfirmed. These are qualitative owner observations; accepted timed phone cohorts remain zero.
 - Native build delivery: Normal production 1.0.6 (55) finished; Apple confirms VALID and IN_BETA_TESTING for internal testers; installed-device acceptance remains open. EASID01fda53d-c962-4b2c-9c01-3ab2e29afb7a, source0188361a1b1e278ea180f9eec5ec487af52ca8cd, production channel/runtime1.0.6. Actual phone acceptance remains separate.
 - Tif work is active in this chat without a schedule. Push/calls/texts and the rejected custom voice remain unconfigured/unverified; no automatic continuing runner is claimed.
 
 ## Ten-target ledger
+
+12 October follow-through: [the device-feedback repair candidate](build55-device-feedback-repair-20261012.md) records the locally tested/reviewed native-window crash, set-artwork default, direct flags, truthful artwork recovery, launch handoff and bounded Pokédex cache repairs. The local iOS export byte-matches all 130 Simplified Chinese and six Traditional Chinese referenced marks. Public TC metadata covers 47/83 sets, with 36 exact gaps recorded. None of these new repairs is merged/published/device-verified; phone crash P1 and overall acceptance remain open.
 
 | Target | Baseline | KPI | Coverage/sample | Evidence | Remaining gap | Delivery state |
 | --- | --- | --- | --- | --- | --- | --- |
