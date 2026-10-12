@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-12T17:42:24.907Z",
+  "updatedAt": "2026-10-12T19:10:59.165Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "agent/release/tif-build55-device-repairs-20261012",
@@ -25,10 +25,11 @@
     "lastPassStartedAt": "2026-10-11T08:12:47Z",
     "currentWork": {
       "owner": "root",
-      "status": "reviewed_local_device_feedback_candidate",
-      "baseAppRevision": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
-      "report": "docs/releases/build55-device-feedback-repair-20261012.md",
-      "nextAction": "Prepare exact-head draft PR/hosted checks, concrete approved native delivery and installed-iPhone acceptance; physical CoroCoro P1 and wider targets remain open."
+      "status": "reviewed_local_mobile_cache_candidate",
+      "runtimeRevision": "f3042f985ba1269ed25144f2c28d3e7ef2f09cbd",
+      "report": "docs/performance/mobile-data-binder-preload-20261012.md",
+      "pullRequest": "https://github.com/tberridge86/Stackr/pull/337",
+      "nextAction": "Refresh exact-head hosted checks; concrete reviewed merge/native publication approval and installed-iPhone 15 Pro/5G acceptance remain required."
     },
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/329",
@@ -1382,25 +1383,69 @@
       "id": "ACHIEVEMENT-ACCOUNT-BOUNDARY-001",
       "severity": "P1",
       "owner": "stackr_release",
-      "status": "reproduced_unrepaired_separate_from_startup_speed",
-      "summary": "Actual AchievementProvider allows a late prior-account coin/unlock response to overwrite the current account; global notifier also lacks account provenance.",
-      "evidence": "docs/performance/startup-prompt-verification-20261012.md",
+      "status": "locally_repaired_reviewed_hosted_and_device_acceptance_pending",
+      "summary": "AchievementProvider account generations now prevent late prior-account coin/unlock reads and notifier events from replacing the current account; reward and coin semantics remain unchanged.",
+      "evidence": "docs/performance/startup-prompt-verification-20261012.md; docs/performance/mobile-data-binder-preload-20261012.md",
       "files": [
         "components/achievement-context.tsx",
-        "lib/achievements.ts"
+        "lib/achievements.ts",
+        "scripts/test-achievement-account-boundary-runtime.ts"
       ],
       "validation": [
-        "Actual provider/consumer renderer: B22 coins/b-unlock are published, then delayed A read makes active B show A11/a-unlock; stale-response assertion fails",
-        "Independent audit and coordinator reproduce with synthetic fixtures; no actual owner/server-side coin mutation tested"
+        "Prior actual provider/consumer reproduction was RED: late A coin/unlock replaced active B state",
+        "Local focused achievement account-boundary runtime repair now passes current-only A/B/ABA, sign-out, unmount and notifier provenance cases",
+        "Final combined startup-loading (auth/saved library/preload/achievement runtime), startup-video, personal-loading, binder-retrieval, integration-repair and TypeScript pass",
+        "Scoped lint has zero errors; changed achievement and saved-library follow-up lint is clean; inherited adapter/import/style warnings remain",
+        "Independent final source review accepted; no physical launch/network timing, native compilation or installed-device verification",
+        "Current-account notifier before its first refresh starts from current empty state; actual provider/service A/B/ABA, sign-out, unmount and delayed notifier tests pass"
       ],
       "delivery": {
-        "local": "not_repaired",
-        "reviewed": "finding_confirmed",
+        "local": "implemented_combined_checks_passed",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Prepare an isolated provider and notifier/service repair, including pre-effect masking, expected-account A/B/ABA guards, sign-out/unmount; preserve reward, access and coin semantics. Review before release."
+      "nextAction": "Retain reward, access and coin semantics in combined final checks; obtain matching hosted/export and installed-device evidence before release completion.",
+      "runtimeRevision": "f3042f985ba1269ed25144f2c28d3e7ef2f09cbd"
+    },
+    {
+      "id": "MOBILE-DATA-BINDER-PRELOAD-001",
+      "severity": "P1",
+      "owner": "stackr_release",
+      "status": "locally_repaired_reviewed_hosted_and_device_acceptance_pending",
+      "summary": "On mobile data the app can remain unusable before a fresh account/library retrieval completes; owner requested account-safe preloaded binder access on phone.",
+      "evidence": "docs/performance/mobile-data-binder-preload-20261012.md",
+      "files": [
+        "lib/binderLibraryCache.ts",
+        "app/(tabs)/binder.tsx",
+        "features/home/HubScreen.tsx",
+        "lib/binders.ts",
+        "lib/binderReopenRuntime.ts",
+        "lib/binderReopenSnapshot.ts",
+        "scripts/test-binder-library-cache.ts",
+        "scripts/test-binder-library-saved-runtime.ts",
+        "scripts/test-binder-preload-runtime.ts",
+        "components/auth-context.tsx",
+        "app/index.tsx",
+        "lib/homeSavedCollection.ts",
+        "scripts/test-startup-saved-binders-runtime.ts"
+      ],
+      "validation": [
+        "Focused local cache, saved-screen and bounded-preload runtime checks passed",
+        "Final combined startup-loading (auth/saved library/preload/achievement runtime), startup-video, personal-loading, binder-retrieval, integration-repair and TypeScript pass",
+        "Scoped lint has zero errors; changed achievement and saved-library follow-up lint is clean; inherited adapter/import/style warnings remain",
+        "Independent final source review accepted; no physical launch/network timing, native compilation or installed-device verification"
+      ],
+      "delivery": {
+        "local": "implemented_combined_checks_passed",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Run retained-session, first-sync, slow/offline mobile-data, expired/sign-out and account-switch acceptance on the iPhone 15 Pro over 5G. Record launch/content milestones; do not claim full offline images/prices or all-binder preload.",
+      "runtimeRevision": "f3042f985ba1269ed25144f2c28d3e7ef2f09cbd"
     }
   ],
   "integrationBaseRevision": "599c776f12201470273574c4d5f9f01632609dc1",
@@ -1788,6 +1833,31 @@
     "appCodeChangedByAudit": false,
     "deployed": false,
     "deviceVerified": false,
-    "overallReady": false
+    "overallReady": false,
+    "laterFollowThrough": {
+      "report": "docs/performance/mobile-data-binder-preload-20261012.md",
+      "accountFinding": "locally_repaired_reviewed_not_deployed",
+      "runtimeRevision": "f3042f985ba1269ed25144f2c28d3e7ef2f09cbd"
+    }
+  },
+  "mobileDataBinderPreload20261012": {
+    "report": "docs/performance/mobile-data-binder-preload-20261012.md",
+    "ownerObservation": "Stackr whole-app opening can hang on mobile data while Safari works and cellular data is enabled",
+    "localFocusedChecks": "passed",
+    "deviceMeasurements": "not_performed",
+    "deployed": false,
+    "deviceVerified": false,
+    "overallReady": false,
+    "observedAt": "2026-10-12T19:10:59.165Z",
+    "runtimeRevision": "f3042f985ba1269ed25144f2c28d3e7ef2f09cbd",
+    "mobileCacheRevision": "33ac0437e66dd281f3ed73c2f75e8b556c58e0ff",
+    "localCombinedChecks": "passed",
+    "independentReview": "accepted_final_source_scope_and_account_follow_up",
+    "iosMetroHermesExport": "pending_final_exact_source_receipt",
+    "hostedChecks": "pending_new_head",
+    "timedAcceptedPhoneCohorts": 0,
+    "signedCandidatePublished": false,
+    "voicePersonaSaved": true,
+    "acousticVoiceSelected": false
   }
 }

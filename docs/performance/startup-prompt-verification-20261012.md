@@ -1,5 +1,12 @@
 # Startup prompt verification — 12 October 2026
 
+**Later follow-through:** the account-display finding below was repaired locally
+and independently reviewed in the subsequent mobile-cache candidate. Its updated
+evidence and delivery limits are in
+[mobile-data-binder-preload-20261012.md](mobile-data-binder-preload-20261012.md).
+The original audit and RED reproduction below remain historical evidence;
+they are not the latest repair status. No installed-device acceptance is implied.
+
 The owner asked for verification of the already performed immediate/deferred/lazy
 startup work. This is an audit of application source
 `5eb3dff53226a202743c5494eef63618ab3d3e13` in draft PR337, whose application base
