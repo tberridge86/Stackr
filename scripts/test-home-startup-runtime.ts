@@ -8,6 +8,7 @@ import * as homeCache from '../lib/homeCollectionCache';
 import * as prepared from '../lib/preparedCollectionValuation';
 import * as pricingState from '../lib/collectionPricingState';
 import * as stablePrices from '../lib/stableCollectionPrices';
+import type { fetchHomeSavedCollection } from '../lib/homeSavedCollection';
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 const deferred = <T,>() => {
@@ -15,7 +16,7 @@ const deferred = <T,>() => {
   const promise = new Promise<T>((done) => { resolve = done; });
   return { promise, resolve };
 };
-const emptySaved = () => ({ binders: [], ownedRows: [], cardsByBinder: new Map() });
+const emptySaved = (): Awaited<ReturnType<typeof fetchHomeSavedCollection>> => ({ binders: [], ownedRows: [], cardsByBinder: new Map() });
 const summary = (value: number) => ({ total: value, totalUnits: 1, pricedUnits: 1,
   exactPricedUnits: 1, generalEstimateUnits: 0, unpricedUnits: 0, staleUnits: 0,
   latestCalculatedAt: '2026-10-12T12:00:00Z', state: 'fresh' });
@@ -46,7 +47,8 @@ async function harness(options: {
   owner?: string;
   cache?: (userId: string) => Promise<string | null>;
   saved?: (userId: string) => Promise<ReturnType<typeof emptySaved>>;
-  initialAuth?: Promise<any>;
+  initialSession?: Promise<any>;
+  sessionRead?: (owner: string) => Promise<any>;
   authRead?: (call: number, owner: string) => Promise<any>;
   strictMode?: boolean;
   valuation?: () => Promise<any>;
@@ -56,6 +58,8 @@ async function harness(options: {
   const timers = new Map<number, { due: number; action: () => void }>();
   const interactions: { action: () => void; cancelled: boolean }[] = [];
   const reads: string[] = [], savedReads: string[] = [], tableReads: string[] = [], mintyReads: string[] = [];
+  const preloads: { owner: string; snapshot: unknown; isCurrent: () => boolean }[] = [];
+  const warmedViews: { owner: string; binders: unknown[]; isCurrent: () => boolean; completeSavedCardsByBinder?: Map<string, unknown[]> }[] = [];
   const warnings: unknown[][] = [];
   const fakeSetTimeout = (action: () => void, delay = 0) => {
     const id = ++nextTimer; timers.set(id, { due: now + delay, action }); return id;
@@ -63,7 +67,8 @@ async function harness(options: {
   const authResult = (id: string) => ({ data: { user: id ? { id } : null }, error: null });
   const supabase = {
     auth: {
-      getUser: async () => { authCalls++; if (options.authRead) return options.authRead(authCalls, owner); return authCalls === 1 && options.initialAuth ? options.initialAuth : authResult(owner); },
+      getSession: async () => options.initialSession ?? (options.sessionRead ? options.sessionRead(owner) : { data: { session: owner ? { user: { id: owner }, expires_at: Date.now() / 1000 + 3600 } : null }, error: null }),
+      getUser: async () => { authCalls++; if (options.authRead) return options.authRead(authCalls, owner); return authResult(owner); },
       onAuthStateChange: (next: typeof listener) => { listener = next; return { data: { subscription: { unsubscribe() { listener = null; } } } }; },
     },
     from(table: string) {
@@ -92,18 +97,31 @@ async function harness(options: {
     }, removeItem: async () => {}, setItem: async () => {} },
     '../../components/theme-context': { useTheme: () => ({ theme: { colors: {} }, isDark: false }) },
     '../../components/app-mode-context': { useAppMode: () => ({ hydrated: false, hasChosenMode: true, premiumSellerAccess: { allowed: false } }) },
-    '../../components/auth-context': { useAuth: () => ({ user: owner ? { id: owner } : null }) },
+    '../../components/auth-context': { useAuth: () => ({ user: owner ? { id: owner } : null }),
+      isKnownAuthDenial: (error: { status?: number } | null) => error?.status === 401 || error?.status === 403 },
     '../../components/profile-context': { useProfile: () => ({ profile: null }) },
     '../../components/HomeCommandCenter': { HOME_TOKENS: { layout: {} } },
     '../../lib/supabase': { supabase },
     '../../lib/homeCollectionCache': homeCache,
+    '../../lib/binderLibraryCache': { writePersistedBinderOverview: async (id: string, value: unknown, guard: { isCurrent: () => boolean }) => {
+      if (guard.isCurrent()) preloads.push({ owner: id, snapshot: value, isCurrent: guard.isCurrent });
+    } },
+    '../../lib/collectionSummaryInvalidation': { getCollectionSummaryVersion: () => 0 },
+    '../../lib/binderReopenRuntime': { preloadBinderReopenViews: async (rows: unknown[], id: string, isCurrent: () => boolean, options?: { completeSavedCardsByBinder?: Map<string, unknown[]> }) => {
+      if (isCurrent()) warmedViews.push({ owner: id, binders: rows, isCurrent, ...options });
+    } },
     '../../lib/preparedCollectionValuation': prepared,
     '../../lib/collectionPricingState': pricingState,
     '../../lib/stableCollectionPrices': stablePrices,
-    '../../lib/homeSavedCollection': { fetchHomeSavedCollection: async (id: string) => {
-      savedReads.push(id); return options.saved ? options.saved(id) : emptySaved();
+    '../../lib/homeSavedCollection': { savedBinderCatalogueTotal: (_binder: unknown, cards: unknown[]) => cards.length,
+      fetchHomeSavedCollection: async (id: string, callbacks?: { onBindersReady?: (rows: unknown[]) => void }) => {
+      savedReads.push(id);
+      const result = options.saved ? await options.saved(id) : emptySaved();
+      callbacks?.onBindersReady?.(result.binders);
+      return result;
     } },
     '../../lib/homeActivity': { readRecentHomeActivityRows: async () => [] },
+    '../../lib/customBinderNameArt': { getCustomBinderNameArtKeyForBinder: async () => null },
     '../../lib/binders': { fetchBinders: async () => [], fetchBinderCards: async () => [] },
     '../../lib/stackrDomainAdapter': { fetchStackrCardRows: async () => new Map(), fetchStackrPriceSnapshots: async () => new Map() },
     '../../lib/mintyPreferences': { useMintyPreferences: () => ({ settings: {}, save: async () => {} }) },
@@ -143,9 +161,9 @@ async function harness(options: {
   await act(async () => { root = create(screen()); });
   await settle(); await tick();
   return {
-    reads, savedReads, tableReads, mintyReads, warnings, settle, tick,
+    reads, savedReads, tableReads, mintyReads, preloads, warmedViews, warnings, settle, tick,
     state: () => root.root.findByType('HomeState' as any).props,
-    async auth(id: string, event = 'SIGNED_IN') { owner = id; await act(async () => { listener?.(event, id ? { user: { id } } : null); }); await tick(); },
+    async auth(id: string, event = 'SIGNED_IN') { owner = id; await act(async () => { listener?.(event, id ? { user: { id }, expires_at: Date.now() / 1000 + 3600 } : null); }); await tick(); },
     async focus(value: boolean) { focused = value; await act(async () => { root.update(screen()); }); },
     async interactions() { await act(async () => { for (const task of interactions.splice(0)) if (!task.cancelled) task.action(); }); },
     async close() { await act(async () => root.unmount()); },
@@ -153,6 +171,46 @@ async function harness(options: {
 }
 
 async function main() {
+  const mobileVerification = deferred<any>();
+  const mobile = await harness({ authRead: async () => mobileVerification.promise });
+  assert.equal(mobile.state().collectionTotal, 111,
+    'a valid local account cache must paint while mobile online verification never resolves');
+  assert.deepEqual(mobile.savedReads, [], 'a local preview does not authorise live collection reads');
+  await mobile.close();
+
+  const deniedCheck = deferred<any>();
+  const denied = await harness({ authRead: async () => deniedCheck.promise });
+  assert.equal(denied.state().collectionTotal, 111);
+  deniedCheck.resolve({ data: { user: null }, error: { status: 401, message: 'Access denied' } });
+  await denied.settle();
+  assert.equal(denied.state().collectionTotal, null, 'known account denial revokes the earlier local preview');
+  assert.equal(denied.state().activeBinder, null);
+  assert.equal(denied.state().ownedCardCount, 0);
+  assert.deepEqual(denied.savedReads, []);
+  await denied.close();
+
+  const unavailableCheck = deferred<any>();
+  const unavailable = await harness({ authRead: async () => unavailableCheck.promise });
+  unavailableCheck.resolve({ data: { user: null }, error: { status: 503, message: 'Network unavailable' } });
+  await unavailable.settle();
+  assert.equal(unavailable.state().collectionTotal, 111, 'transient mobile network failure keeps the labelled local preview');
+  assert.match(unavailable.state().collectionPricingWarning, /last successful/);
+  await unavailable.close();
+
+  const expired = await harness({ authRead: async () => mobileVerification.promise,
+    sessionRead: async owner => ({ data: { session: { user: { id: owner }, expires_at: Date.now() / 1000 - 1 } }, error: null }) });
+  assert.deepEqual(expired.reads, [], 'an expired local session cannot restore private cached data');
+  assert.equal(expired.state().collectionTotal, null);
+  await expired.auth('owner-a', 'TOKEN_REFRESHED');
+  assert.equal(expired.state().collectionTotal, 111, 'same-account renewal restores the previously ineligible local preview');
+  assert.deepEqual(expired.savedReads, [], 'renewal cannot authorise or duplicate stalled live reads');
+  await expired.close();
+
+  const wrongEnvelope = await harness({ authRead: async () => mobileVerification.promise,
+    cache: async () => snapshot('owner-b', 222) });
+  assert.equal(wrongEnvelope.state().collectionTotal, null, 'another account envelope is rejected');
+  await wrongEnvelope.close();
+
   const savedA = deferred<ReturnType<typeof emptySaved>>();
   const first = await harness({ saved: () => savedA.promise });
   await first.auth('owner-a', 'INITIAL_SESSION');
@@ -166,9 +224,25 @@ async function main() {
   savedA.resolve(emptySaved()); await first.settle();
   assert.deepEqual(first.warnings, []);
   assert.equal(first.state().collectionTotal, 333, 'fresh valuation replaces cache with its own provenance');
+  assert.equal(first.preloads.length, 1, 'Home seeds the shared binder library after an owner-bound read');
   assert.equal(first.state().collectionPricingSummary.latestCalculatedAt, '2026-10-12T12:00:00Z');
   assert.deepEqual(first.warnings, []);
   await first.close();
+
+  const viewWarm = await harness({ saved: async () => ({ ...emptySaved(), binders: [{
+    id: '00000000-0000-4000-8000-000000000001', user_id: 'owner-a', name: 'Saved custom binder',
+    color: '#000', type: 'custom', is_public: false, source_set_id: null, created_at: '2026-10-12T12:00:00Z',
+  }], cardsByBinder: new Map([['00000000-0000-4000-8000-000000000001', []]]) }) });
+  assert.equal(viewWarm.warmedViews.length, 0, 'binder-content warming waits until Home content and interactions');
+  assert.deepEqual(viewWarm.warnings, [], 'nonempty saved binders execute without hidden loader failures');
+  await viewWarm.interactions(); await viewWarm.settle();
+  assert.equal(viewWarm.warmedViews.length, 1, 'Home schedules existing complete-binder cache warming after interactions');
+  assert.equal(viewWarm.warmedViews[0].owner, 'owner-a');
+  assert.equal(viewWarm.warmedViews[0].completeSavedCardsByBinder?.has('00000000-0000-4000-8000-000000000001'), true,
+    'custom content warming receives the complete paginated source including a genuinely empty binder');
+  await viewWarm.auth('', 'SIGNED_OUT');
+  assert.equal(viewWarm.warmedViews[0].isCurrent(), false, 'sign-out revokes an already-started binder warmer');
+  await viewWarm.close();
 
   const signedOut = await harness({ owner: '' });
   assert.equal(signedOut.state().collectionValueLoading, false, 'signed-out Home settles its collection state');
@@ -185,13 +259,13 @@ async function main() {
 
   const pendingConfirmation = deferred<any>(), pendingCollection = deferred<ReturnType<typeof emptySaved>>();
   const confirmation = await harness({ saved: () => pendingCollection.promise,
-    authRead: async (call, owner) => call === 4 ? pendingConfirmation.promise : { data: { user: { id: owner } }, error: null } });
+    authRead: async (call, owner) => call === 1 ? pendingConfirmation.promise : { data: { user: { id: owner } }, error: null } });
   assert.deepEqual(confirmation.reads, ['owner-a']);
-  assert.equal(confirmation.state().collectionTotal, null, 'cache waits for the existing verified account confirmation');
+  assert.equal(confirmation.state().collectionTotal, 111, 'local preview is independent of pending online confirmation');
   pendingCollection.resolve(emptySaved()); await confirmation.settle();
-  assert.equal(confirmation.state().collectionTotal, 333);
+  assert.equal(confirmation.state().collectionTotal, 111, 'online reads still wait for server verification');
   pendingConfirmation.resolve({ data: { user: { id: 'owner-a' } }, error: null }); await confirmation.settle();
-  assert.equal(confirmation.state().collectionTotal, 333, 'late auth confirmation cannot let cache overwrite live data');
+  assert.equal(confirmation.state().collectionTotal, 333, 'verified fresh results replace the saved display');
   await confirmation.close();
 
   const blockedCache = deferred<string | null>();
@@ -233,6 +307,7 @@ async function main() {
   assert.equal(switching.state().collectionTotal, 222);
   staleCache.resolve(snapshot('owner-a', 111)); staleSaved.resolve(emptySaved()); await switching.settle();
   assert.equal(switching.state().collectionTotal, 222, 'late account A cache and collection never replace B');
+  assert.equal(switching.preloads.some(preload => preload.owner === 'owner-a'), false, 'late Account A results cannot preload the saved library after switching');
   await switching.interactions(); await switching.tick(180);
   assert.deepEqual(switching.mintyReads, ['owner-b'], 'cancelled A secondary work cannot run as B');
   savedB.resolve(emptySaved()); await switching.settle();
@@ -242,9 +317,9 @@ async function main() {
   await switching.close();
 
   const initial = deferred<any>();
-  const staleAuth = await harness({ initialAuth: initial.promise });
+  const staleAuth = await harness({ initialSession: initial.promise });
   await staleAuth.auth('owner-b');
-  initial.resolve({ data: { user: { id: 'owner-a' } }, error: null }); await staleAuth.settle(); await staleAuth.tick();
+  initial.resolve({ data: { session: { user: { id: 'owner-a' }, expires_at: Date.now() / 1000 + 3600 } }, error: null }); await staleAuth.settle(); await staleAuth.tick();
   assert.deepEqual(staleAuth.savedReads, ['owner-b'], 'late initial auth lookup cannot restore old account');
   await staleAuth.close();
 
@@ -255,6 +330,6 @@ async function main() {
   assert.equal(blur.tableReads.filter(table => table === 'notifications').length, 1, 'return focus starts one current refresh');
   await blur.close(); await blur.tick(1_000);
   assert.deepEqual(blur.warnings, []);
-  console.log('Home runtime startup passed: single bootstrap, deferred extras, cache/live precedence, account switching, late auth, blur and cleanup.');
+  console.log('Home runtime startup passed: mobile local-cache preview without online confirmation, expiry/owner rejection, single bootstrap, deferred extras, cache/live precedence, account switching, late session, blur and cleanup.');
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

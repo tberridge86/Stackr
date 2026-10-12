@@ -30,7 +30,7 @@ import { BINDER_MODE_BADGE_SOURCES, BinderModeIconBadge } from '../../components
 import { getPokemonLanguageDescriptor, PokemonLanguageFlagIcon } from '../../components/PokemonLanguageBadge';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -73,6 +73,13 @@ import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrListPerformance } from '../../lib/performance';
 import { ROUTES } from '../../lib/routes';
 import { stackrQueryClient, stackrQueryKeys, stackrQueryTiming } from '../../lib/stackrQuery';
+import {
+  isBinderLibraryOverviewForUser,
+  readPersistedBinderOverview,
+  removePersistedBinderOverview,
+  writePersistedBinderOverview,
+  type BinderLibraryOverviewSnapshot,
+} from '../../lib/binderLibraryCache';
 import {
   getCustomBinderNameArt,
   getCustomBinderNameArtKeyForBinder,
@@ -340,6 +347,8 @@ type BinderCardProps = {
   value: BinderPricingSummary | null;
   customNameArtKey?: string | null;
   confirmDeleteBinder: (binder: BinderRecord) => void;
+  readOnly?: boolean;
+  canOpenReadOnly?: () => boolean;
   index: number;
   cardWidth: number;
   columns: number;
@@ -509,7 +518,7 @@ function BinderOptionsSheet({
   );
 }
 
-function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirmDeleteBinder, index, cardWidth, columns }: BinderCardProps) {
+function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirmDeleteBinder, readOnly = false, canOpenReadOnly, index, cardWidth, columns }: BinderCardProps) {
   const [optionsOpen, setOptionsOpen] = useState(false);
   const progress = counts[item.id] ?? EMPTY_BINDER_COUNT;
   const isOfficial = item.type === 'official';
@@ -575,11 +584,19 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
     requestAnimationFrame(() => confirmDeleteBinder(item));
   };
 
+  const openBinder = () => {
+    if (readOnly && canOpenReadOnly?.() === false) {
+      router.replace('/');
+      return;
+    }
+    router.push({ pathname: '/binder/[id]', params: readOnly ? { id: item.id, readOnly: 'true' } : { id: item.id } });
+  };
+
   return (
     <>
       <TouchableOpacity
-        onPress={() => router.push({ pathname: '/binder/[id]', params: { id: item.id } })}
-        onLongPress={handleOptions}
+        onPress={openBinder}
+        onLongPress={readOnly ? undefined : handleOptions}
         delayLongPress={400}
         activeOpacity={0.85}
         style={{
@@ -667,7 +684,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
         ) : null}
 
         {/* Options button */}
-        <Pressable
+        {!readOnly ? <Pressable
           onPress={handleOptions}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={{
@@ -687,7 +704,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
           }}
         >
           <Ionicons name="ellipsis-horizontal" size={18} color={STACKR_BINDER_COLORS.textSoft} />
-        </Pressable>
+        </Pressable> : null}
         {(isMasterSet || isGraded || languageDescriptor) && (
           <View style={{ position: 'absolute', left: 7, top: 7, flexDirection: 'row', gap: 3 }}>
             {languageDescriptor ? (
@@ -759,13 +776,13 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
         </View>
       </View>
       </TouchableOpacity>
-      <BinderOptionsSheet
+      {!readOnly ? <BinderOptionsSheet
         binder={item}
         visible={optionsOpen}
         onClose={() => setOptionsOpen(false)}
         onEdit={handleEditBinder}
         onDelete={handleDeleteBinder}
-      />
+      /> : null}
     </>
   );
 }
@@ -812,11 +829,6 @@ type OwnedVariantRow = {
   variant: string | null;
 };
 
-type BinderLibraryOverviewSnapshot = {
-  binders: BinderRecord[];
-  customNameArtKeys: Record<string, string>;
-};
-
 type BinderLibrarySummarySnapshot = {
   counts: BinderCardCountMap;
   masterSets: BinderMasterSetMap;
@@ -830,35 +842,7 @@ const EMPTY_BINDER_LIBRARY_SUMMARY: BinderLibrarySummarySnapshot = {
 };
 
 const BINDER_SUMMARY_COUNT_VERSION = 'set-total-known-state-v3';
-const BINDER_OVERVIEW_CACHE_VERSION = 1;
-const BINDER_OVERVIEW_CACHE_PREFIX = 'stackr:binder-library-overview:v1:';
 const getMasterSetStorageKey = (binderId: string) => `stackr:binder-master-set:${binderId}`;
-const getBinderOverviewStorageKey = (userId: string) => `${BINDER_OVERVIEW_CACHE_PREFIX}${encodeURIComponent(userId)}`;
-
-async function readPersistedBinderOverview(userId: string): Promise<BinderLibraryOverviewSnapshot | null> {
-  try {
-    const raw = await AsyncStorage.getItem(getBinderOverviewStorageKey(userId));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as { version?: number; snapshot?: BinderLibraryOverviewSnapshot };
-    if (parsed?.version !== BINDER_OVERVIEW_CACHE_VERSION || !Array.isArray(parsed.snapshot?.binders)) return null;
-    return parsed.snapshot ?? null;
-  } catch (error) {
-    console.log('Failed to read persisted binder overview', error);
-    return null;
-  }
-}
-
-async function writePersistedBinderOverview(userId: string, snapshot: BinderLibraryOverviewSnapshot) {
-  try {
-    await AsyncStorage.setItem(getBinderOverviewStorageKey(userId), JSON.stringify({
-      version: BINDER_OVERVIEW_CACHE_VERSION,
-      cachedAt: Date.now(),
-      snapshot,
-    }));
-  } catch (error) {
-    console.log('Failed to persist binder overview', error);
-  }
-}
 
 const getBinderLibrarySignature = (data: BinderRecord[]) =>
   [BINDER_SUMMARY_COUNT_VERSION, data
@@ -901,7 +885,23 @@ const getVariants = (card: any, explicitSetId?: string | null): string[] => {
 export default function BinderLibraryScreen() {
   const { theme } = useTheme();
   const { profile } = useProfile();
-  const { user: accountUser } = useAuth();
+  const auth = useAuth();
+  const accountUser = auth.user;
+  const cachedReadSession = auth.cachedReadSession;
+  const { readOnly } = useLocalSearchParams<{ readOnly?: string }>();
+  const savedReadOnly = readOnly === 'true';
+  const savedSessionPending = savedReadOnly && auth.loading && !cachedReadSession;
+  const savedSessionEpoch = savedReadOnly ? cachedReadSession?.epoch ?? null : null;
+  const savedSessionUserId = savedReadOnly
+    && cachedReadSession
+    && cachedReadSession.expiresAt * 1000 > Date.now()
+    ? cachedReadSession.userId
+    : null;
+  const activeAccountId = savedReadOnly ? savedSessionUserId : accountUser?.id ?? null;
+  const savedAccessRef = useRef<{ userId: string; expiresAt: number; epoch: number } | null>(null);
+  savedAccessRef.current = savedReadOnly && cachedReadSession && cachedReadSession.expiresAt * 1000 > Date.now()
+    ? cachedReadSession
+    : null;
   const { width } = useWindowDimensions();
   const COLUMNS = width >= 900 ? 5 : width >= 600 ? 3 : 2;
   const binderCardWidth = (width - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
@@ -915,10 +915,12 @@ export default function BinderLibraryScreen() {
   const [sortBy, setSortBy] = useState<SortKey>('recent');
   const [sortOpen, setSortOpen] = useState(false);
   const [reorderMode, setReorderMode] = useState(false);
+  const [savedReadOnlyMessage, setSavedReadOnlyMessage] = useState<string | null>(null);
+  const [binderRowsOwnerId, setBinderRowsOwnerId] = useState<string | null>(null);
   const loadedOnceRef = useRef(false);
   const loadRequestRef = useRef(0);
-  const accountIdRef = useRef<string | null>(accountUser?.id ?? null);
-  accountIdRef.current = accountUser?.id ?? null;
+  const accountIdRef = useRef<string | null>(activeAccountId);
+  accountIdRef.current = activeAccountId;
 
   useEffect(() => {
     loadRequestRef.current += 1;
@@ -928,8 +930,10 @@ export default function BinderLibraryScreen() {
     setMasterSets({});
     setValues({});
     setCustomNameArtKeys({});
-    setLoading(Boolean(accountUser?.id));
-  }, [accountUser?.id]);
+    setBinderRowsOwnerId(null);
+    setSavedReadOnlyMessage(null);
+    setLoading(Boolean(activeAccountId) || savedSessionPending);
+  }, [activeAccountId, savedSessionEpoch, savedSessionPending]);
 
   // ===============================
   // SCAN (scaffolded — coming soon)
@@ -946,6 +950,12 @@ export default function BinderLibraryScreen() {
   const applyBinderOverviewSnapshot = useCallback((snapshot: BinderLibraryOverviewSnapshot) => {
     setBinders(snapshot.binders);
     setCustomNameArtKeys(snapshot.customNameArtKeys);
+    setBinderRowsOwnerId(activeAccountId);
+  }, [activeAccountId]);
+
+  const canOpenSavedBinder = useCallback(() => {
+    const access = savedAccessRef.current;
+    return Boolean(access && access.expiresAt * 1000 > Date.now());
   }, []);
 
   const applyBinderSummarySnapshot = useCallback((snapshot: BinderLibrarySummarySnapshot) => {
@@ -1278,34 +1288,64 @@ export default function BinderLibraryScreen() {
   const load = useCallback(async (forceRefresh = false) => {
     const shouldForceRefresh = forceRefresh === true;
     const requestId = ++loadRequestRef.current;
-    const accountId = accountUser?.id ?? null;
-    const isCurrent = () => loadRequestRef.current === requestId && accountIdRef.current === accountId;
+    const accountId = activeAccountId;
+    const isCurrent = () => loadRequestRef.current === requestId
+      && accountIdRef.current === accountId
+      && (!savedReadOnly || !accountId || (
+        savedAccessRef.current?.epoch === savedSessionEpoch
+        && savedAccessRef.current.expiresAt * 1000 > Date.now()
+      ));
     try {
       if (!accountId) {
+        if (savedReadOnly && isCurrent()) {
+          setSavedReadOnlyMessage(savedSessionPending
+            ? 'Checking the saved sign-in on this phone…'
+            : 'Your saved binder library is unavailable because the saved sign-in has expired. Reopen Stackr when your connection returns.');
+        }
         if (isCurrent()) setLoading(false);
         return;
       }
 
-      const queryKey = stackrQueryKeys.binderLibrary(accountId);
-      let displayedCachedOverview = false;
-
-      if (!shouldForceRefresh) {
-        const memoryCached = stackrQueryClient.getQueryData<BinderLibraryOverviewSnapshot>(queryKey);
-        const persistedCached = memoryCached ?? await readPersistedBinderOverview(accountId);
+      if (savedReadOnly) {
+        // Only the v2 disk envelope carries the account and runtime binding.
+        // The query cache may have been restored from an earlier runtime, so it
+        // cannot authorise an offline read-only view by itself.
+        const cachedOverview = await readPersistedBinderOverview(accountId);
         if (!isCurrent()) return;
-        if (persistedCached) {
-          stackrQueryClient.setQueryData(queryKey, persistedCached);
-          applyBinderOverviewSnapshot(persistedCached);
-          loadedOnceRef.current = true;
-          displayedCachedOverview = true;
+        if (!cachedOverview) {
+          setSavedReadOnlyMessage('No saved binder library is available on this phone yet. Connect once to refresh it, then try again.');
           setLoading(false);
-          loadBinderSummaries(persistedCached.binders, accountId, false, isCurrent).catch((summaryError) => {
-            console.log('Failed to load cached binder summaries', summaryError);
-          });
+          return;
         }
+        stackrQueryClient.setQueryData(stackrQueryKeys.binderLibrary(accountId), cachedOverview);
+        applyBinderOverviewSnapshot(cachedOverview);
+        loadedOnceRef.current = true;
+        setSavedReadOnlyMessage('Showing your saved binders from this phone. Editing and syncing are unavailable until Stackr reconnects.');
+        setLoading(false);
+        return;
       }
 
-      if (!displayedCachedOverview && !loadedOnceRef.current) setLoading(true);
+      const queryKey = stackrQueryKeys.binderLibrary(accountId);
+      let freshOverviewPublished = false;
+      const memoryCached = stackrQueryClient.getQueryData<BinderLibraryOverviewSnapshot>(queryKey);
+      const persistedOverview = shouldForceRefresh
+        ? Promise.resolve(null)
+        : isBinderLibraryOverviewForUser(memoryCached, accountId)
+          ? Promise.resolve(memoryCached)
+          : readPersistedBinderOverview(accountId);
+
+      void persistedOverview.then((cachedOverview) => {
+        if (!cachedOverview || !isCurrent() || freshOverviewPublished) return;
+        stackrQueryClient.setQueryData(queryKey, cachedOverview);
+        applyBinderOverviewSnapshot(cachedOverview);
+        loadedOnceRef.current = true;
+        setLoading(false);
+        loadBinderSummaries(cachedOverview.binders, accountId, false, isCurrent).catch((summaryError) => {
+          console.log('Failed to load cached binder summaries', summaryError);
+        });
+      });
+
+      if (!loadedOnceRef.current) setLoading(true);
 
       // Verify the active session after the private, account-keyed cache has
       // painted. Authentication must protect refreshes without serialising the
@@ -1329,8 +1369,9 @@ export default function BinderLibraryScreen() {
 
       if (!isCurrent()) return;
       applyBinderOverviewSnapshot(snapshot);
+      freshOverviewPublished = true;
       stackrQueryClient.setQueryData(queryKey, snapshot);
-      void writePersistedBinderOverview(accountId, snapshot);
+      void writePersistedBinderOverview(accountId, snapshot, { isCurrent, savedAt: Date.now() });
       loadedOnceRef.current = true;
       setLoading(false);
 
@@ -1341,7 +1382,7 @@ export default function BinderLibraryScreen() {
         const enriched = { ...snapshot, binders: enrichedBinders };
         stackrQueryClient.setQueryData(queryKey, enriched);
         applyBinderOverviewSnapshot(enriched);
-        void writePersistedBinderOverview(accountId, enriched);
+        void writePersistedBinderOverview(accountId, enriched, { isCurrent, savedAt: Date.now() });
         await loadBinderSummaries(enrichedBinders, accountId, shouldForceRefresh, isCurrent);
       }).catch((summaryError) => {
         console.log('Failed to load binder summaries', summaryError);
@@ -1350,7 +1391,7 @@ export default function BinderLibraryScreen() {
       console.log('Failed to load binders', error);
       if (isCurrent()) setLoading(false);
     }
-  }, [accountUser?.id, applyBinderOverviewSnapshot, fetchBinderOverviewSnapshot, loadBinderSummaries]);
+  }, [activeAccountId, applyBinderOverviewSnapshot, fetchBinderOverviewSnapshot, loadBinderSummaries, savedReadOnly, savedSessionEpoch, savedSessionPending]);
 
   useFocusEffect(
     useCallback(() => {
@@ -1364,6 +1405,7 @@ export default function BinderLibraryScreen() {
   // ===============================
 
   const confirmDeleteBinder = useCallback((binder: BinderRecord) => {
+    const ownerUserId = accountUser?.id ?? null;
     Alert.alert(
       'Delete binder?',
       `Are you sure you want to delete "${binder.name}"? This cannot be undone.`,
@@ -1376,6 +1418,11 @@ export default function BinderLibraryScreen() {
             try {
               await deleteBinder(binder.id);
               await stackrQueryClient.invalidateQueries({ queryKey: stackrQueryKeys.binderLibraryRoot });
+              if (ownerUserId) void removePersistedBinderOverview(ownerUserId);
+              // A response started before the deletion must not repaint this
+              // owner or enqueue a now-stale overview after cache invalidation.
+              if (ownerUserId !== accountIdRef.current) return;
+              loadRequestRef.current += 1;
               setBinders((prev) => prev.filter((item) => item.id !== binder.id));
               setCounts((prev) => {
                 const next = { ...prev };
@@ -1400,7 +1447,7 @@ export default function BinderLibraryScreen() {
         },
       ]
     );
-  }, []);
+  }, [accountUser?.id]);
 
   // ===============================
   // SORT
@@ -1447,6 +1494,7 @@ export default function BinderLibraryScreen() {
   }, [binders, counts, sortBy, values]);
 
   const currentSortLabel = SORT_OPTIONS.find((o) => o.key === sortBy)?.label ?? 'Recent';
+  const visibleBinders = binderRowsOwnerId === activeAccountId ? sortedBinders : [];
   // ===============================
   // MAIN RENDER
   // ===============================
@@ -1470,14 +1518,27 @@ export default function BinderLibraryScreen() {
             <StackrPageTitle title="Collection" accentText="ction" />
             <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>{binders.length} binders</Text>
           </View>
-          <TouchableOpacity onPress={() => router.push(ROUTES.profile)} accessibilityRole="button" accessibilityLabel="Open Profile" style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
+          {!savedReadOnly ? <TouchableOpacity onPress={() => router.push(ROUTES.profile)} accessibilityRole="button" accessibilityLabel="Open Profile" style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
             <StackrProfileAvatar avatarUrl={profile?.avatar_url} avatarPreset={profile?.avatar_preset} size={32} borderWidth={1} accessibilityLabel="Profile" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setReorderMode((prev) => !prev)} accessibilityRole="button" accessibilityLabel={reorderMode ? 'Finish reordering binders' : 'Reorder binders'} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
+          </TouchableOpacity> : null}
+          {!savedReadOnly ? <TouchableOpacity onPress={() => setReorderMode((prev) => !prev)} accessibilityRole="button" accessibilityLabel={reorderMode ? 'Finish reordering binders' : 'Reorder binders'} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
             {reorderMode ? <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>Done</Text> : <Ionicons name="grid-outline" size={22} color={theme.colors.primary} />}
-          </TouchableOpacity>
+          </TouchableOpacity> : null}
         </View>
-        {!reorderMode ? (
+        {savedReadOnlyMessage ? (
+          <View style={{ borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, borderRadius: 12, padding: 12, marginBottom: 10, gap: 8 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17 }}>{savedReadOnlyMessage}</Text>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity onPress={() => load()} accessibilityRole="button" style={{ minHeight: 40, justifyContent: 'center' }}>
+                <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>Retry saved library</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.replace('/')} accessibilityRole="button" style={{ minHeight: 40, justifyContent: 'center' }}>
+                <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>Back</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : null}
+        {!reorderMode && !savedReadOnly ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8, alignItems: 'center', justifyContent: 'space-between' }}>
             <StackrBinderButton label="New binder" onPress={() => router.push('/binder/new')} />
             <TouchableOpacity onPress={handleScanCard} accessibilityRole="button" accessibilityLabel="Scan cards" style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
@@ -1517,7 +1578,7 @@ export default function BinderLibraryScreen() {
             </Text>
 
             <DraggableFlatList
-              data={sortedBinders}
+              data={visibleBinders}
               keyExtractor={(item) => item.id}
               onDragEnd={async ({ data }) => {
                 setBinders(data);
@@ -1615,12 +1676,12 @@ export default function BinderLibraryScreen() {
             testID="collection-binder-grid"
             ListHeaderComponent={
               <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-                {COLLECTION_VAULT_SHORTCUTS.map((item) => (
+                {!savedReadOnly && COLLECTION_VAULT_SHORTCUTS.map((item) => (
                   <CollectionVaultShortcutButton key={item.label} onPress={() => router.push(item.route)} label={item.label} imageIcon={item.imageIcon} />
                 ))}
               </View>
             }
-            data={sortedBinders}
+            data={visibleBinders}
             keyExtractor={(item) => item.id}
             key={COLUMNS}
             numColumns={COLUMNS}
@@ -1632,7 +1693,7 @@ export default function BinderLibraryScreen() {
             refreshControl={
               <RefreshControl
                 refreshing={loading}
-                onRefresh={() => load(true)}
+                onRefresh={() => savedReadOnly ? load() : load(true)}
                 tintColor={theme.colors.primary}
               />
             }
@@ -1644,6 +1705,8 @@ export default function BinderLibraryScreen() {
                 value={values[item.id] ?? null}
                 customNameArtKey={customNameArtKeys[item.id] ?? null}
                 confirmDeleteBinder={confirmDeleteBinder}
+                readOnly={savedReadOnly}
+                canOpenReadOnly={savedReadOnly ? canOpenSavedBinder : undefined}
                 index={index}
                 cardWidth={binderCardWidth}
                 columns={COLUMNS}
@@ -1654,9 +1717,9 @@ export default function BinderLibraryScreen() {
                 <EmptyStateCard
                   navigationIcon="collection"
                   title="No binders yet"
-                  body="Create an official set binder or a custom vault, then scan cards straight into it."
-                  actionLabel="Create Binder"
-                  onAction={() => router.push('/binder/new')}
+                  body={savedReadOnly ? 'Your saved binder library is empty on this phone.' : 'Create an official set binder or a custom vault, then scan cards straight into it.'}
+                  actionLabel={savedReadOnly ? 'Back' : 'Create Binder'}
+                  onAction={() => savedReadOnly ? router.replace('/') : router.push('/binder/new')}
                 />
               </View>
             }

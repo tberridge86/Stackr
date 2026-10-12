@@ -500,16 +500,23 @@ export async function fetchBinders(options: { enrich?: boolean } = {}): Promise<
   if (!user) return [];
 
   const saved = await getCachedOrFetch(`binders:${user.id}:saved`, BINDERS_CACHE_TTL_MS, async () => {
-    const { data, error } = await supabase
-      .from('binders')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
+    const savedBinders: BinderRecord[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase
+        .from('binders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, from + 999);
 
-    if (error) throw error;
-
-    return ((data ?? []) as BinderRecord[]).filter((binder) => binder.user_id === user.id);
+      if (error) throw error;
+      const page = (data ?? []) as BinderRecord[];
+      savedBinders.push(...page.filter((binder) => binder.user_id === user.id));
+      if (page.length < 1000) break;
+    }
+    return savedBinders;
   });
   if (options.enrich === false) return saved;
   return getCachedOrFetch(`binders:${user.id}:enriched`, BINDERS_CACHE_TTL_MS,
@@ -572,13 +579,24 @@ async function fetchBinderCardsUncached(
   // Once the binder read has passed RLS, ownership and public facts are
   // independent. Start both now; no card rows render before ownership returns.
   const savedRowsPromise = (async () => {
-    const { data, error } = await supabase
-      .from('binder_cards')
-      .select('*')
-      .eq('binder_id', binderId)
-      .order('slot_order', { ascending: true });
-    if (error) throw error;
-    return (data ?? []) as BinderCardRecord[];
+    const rows: BinderCardRecord[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase
+        .from('binder_cards')
+        .select('*')
+        .eq('binder_id', binderId)
+        .order('slot_order', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, from + 999);
+      if (error) throw error;
+      const page = (data ?? []) as BinderCardRecord[];
+      if (page.some((row) => row.binder_id !== binderId)) {
+        throw new Error('Saved cards did not match the requested binder. Please retry.');
+      }
+      rows.push(...page);
+      if (page.length < 1000) break;
+    }
+    return rows;
   })();
   const setCardsPromise = officialCatalogue && !ambiguousCatalogue
     ? fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id as string, {
