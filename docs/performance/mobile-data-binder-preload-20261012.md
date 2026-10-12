@@ -79,6 +79,13 @@ progress, rather than suggesting a price request is still running. Normal binder
 labels/progress are unchanged; scoped lint passes. Signed delivery, merge and
 installed-device acceptance remain unperformed.
 
+The first hosted run at documentation head `ea211f1` exposed an older
+catalogue-retry test double without the production query's `.range` method.
+The test double now slices the requested saved-row page; existing catalogue
+retry, quantity and ownership assertions are preserved. `test:binder-catalogue`
+passes locally. This verification-only follow-up does not change application
+runtime `f3042f9`; fresh hosted-head results are still required.
+
 ## Proposed delivery after approval
 
 The candidate remains in the existing draft PR337. A merge may trigger the
