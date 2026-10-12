@@ -559,8 +559,8 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
   const fallbackNameLineHeight = isJapanese
     ? hasBinderLabel ? 18 : nameIsLong ? 18 : 20
     : hasBinderLabel ? 11 : nameIsLong ? 11 : 12;
-  const valueLabel = value?.total != null ? `£${value.total.toFixed(2)}` : 'Price unavailable';
-  const valueCaption = value
+  const valueLabel = readOnly ? 'Saved binder' : value?.total != null ? `£${value.total.toFixed(2)}` : 'Price unavailable';
+  const valueCaption = readOnly ? 'Connect to check prices' : value
     ? getCollectionPriceCoverageLabel(value)
     : 'Checking stored prices';
   const staleValue = value?.staleUnits ? ' · may be stale' : '';
@@ -641,7 +641,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
           artworkHeight={BINDER_GRID_ARTWORK.artworkHeight}
           progressWidth={BINDER_GRID_ARTWORK.progressWidth}
           progressHeight={BINDER_GRID_ARTWORK.progressHeight}
-          showProgressBar={isOfficial}
+          showProgressBar={isOfficial && !readOnly}
           showProgressText={false}
         />
         {isOfficial ? (
@@ -678,7 +678,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
                 fontWeight: '900',
               }}
             >
-              {knownTotal ? `${percentage}%` : 'Sync'}
+              {readOnly ? 'Saved' : knownTotal ? `${percentage}%` : 'Sync'}
             </Text>
           </LinearGradient>
         ) : null}
