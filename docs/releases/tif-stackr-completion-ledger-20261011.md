@@ -2,6 +2,16 @@
 
 Owner explicitly resumed production-readiness work on 11 October 2026. **Overall: unfinished; production readiness is not proved.** No completion percentage is claimed. The later `tif-stackr-improvement-brief-20261011.md` is the active acceptance standard; it supersedes older overlapping speed/sample targets. Retain the broader release objective and design guardrails.
 
+12 October source/queue review: all 33 referenced scoped repair commits are
+present in the maintained release candidate (24 already in main, nine in PR337).
+The checkout is clean and pushed; ten hosted checks pass at inspected head
+`d690822`, with two skipped gates. Five records retain source investigation or
+coverage work. Older unreviewed local work and separate PRs remain preserved;
+none is automatically accepted. See
+[the current SME review](tif-sme-source-queue-review-20261012.md) for exact
+ancestry, corrected queue pointers and pending delivery/device evidence. This
+does not change the ten targets or mark physical/operational acceptance complete.
+
 Current delivery update 2026-10-11T21:45:59.452Z: **PR329 and PR336 merged; canonical Marnie correction and generated runtime are verified. Matching backend/public detail/search acceptance passed. Normal production 1.0.6 (55) finished; Apple confirms VALID and IN_BETA_TESTING for internal testers; installed-device acceptance remains open.** This replaces earlier candidate-only delivery statements; no production-readiness percentage is claimed.
 
 ## Current evidence and delivery
