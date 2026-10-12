@@ -86,6 +86,15 @@ retry, quantity and ownership assertions are preserved. `test:binder-catalogue`
 passes locally. This verification-only follow-up does not change application
 runtime `f3042f9`; fresh hosted-head results are still required.
 
+The next hosted retrieval job exposed the same missing method in the separate
+parallel-retrieval VM fixture. Its mock now asserts the first requested page
+while preserving the deferred ownership read; all twelve concurrency/retrieval
+checks pass. Callback-only detail fixtures do not execute this paginator and
+are unchanged. Application/runtime export is unchanged by either fixture repair.
+The full hosted candidate command sequence now passes locally: typecheck,
+catalogue, personal loading, first paint, parallel retrieval and reopen. The
+mobile-recovery, server-delivery and Home-activity suites also pass on this source.
+
 ## Proposed delivery after approval
 
 The candidate remains in the existing draft PR337. A merge may trigger the

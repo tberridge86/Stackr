@@ -24,6 +24,7 @@ function binderHarness(options = {}) {
   const selectedBinder = { ...binder, ...options.binder };
   const supabase = { from(table) {
     const query = { select: () => query, eq: () => query, order: () => query,
+      range: (from, to) => { assert.equal(from, 0); assert.equal(to, 999); return query; },
       maybeSingle: async () => { calls.record++; return options.gateRecord ? record.promise : { data: selectedBinder, error: null }; },
       then: (resolve, reject) => { assert.equal(table, 'binder_cards'); calls.ownership++; return ownership.promise.then(resolve, reject); },
     };
