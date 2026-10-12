@@ -1,5 +1,4 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { withStartupTimeout } from '../lib/startup';
@@ -17,71 +16,6 @@ const AuthContext = createContext<AuthContextType>({
   error: null,
   refreshAuth: async () => {},
 });
-
-let notificationHandlerConfigured = false;
-
-async function getNotificationModules() {
-  const [Notifications, Device] = await Promise.all([
-    import('expo-notifications'),
-    import('expo-device'),
-  ]);
-
-  if (!notificationHandlerConfigured) {
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      }),
-    });
-    notificationHandlerConfigured = true;
-  }
-
-  return { Notifications, Device };
-}
-
-async function registerPushToken(userId: string) {
-  try {
-    const { Notifications, Device } = await getNotificationModules();
-    if (!Device.isDevice) return; // won't work on simulator
-
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-
-    if (finalStatus !== 'granted') {
-      console.log('Push notification permission denied');
-      return;
-    }
-
-    const token = (await Notifications.getExpoPushTokenAsync()).data;
-
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
-    }
-
-    // Save token to Supabase profile
-    await supabase
-      .from('profiles')
-      .update({ expo_push_token: token })
-      .eq('id', userId);
-
-    console.log('Push token registered:', token);
-  } catch (err) {
-    console.log('Failed to register push token:', err);
-  }
-}
 
 function isStaleAuthError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error ?? '');
@@ -120,9 +54,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const currentUser = data.user ?? null;
       setUser(currentUser);
 
-      if (currentUser) {
-        void registerPushToken(currentUser.id);
-      }
     } catch (authError) {
       if (requestId !== requestSequence.current) return;
       if (isStaleAuthError(authError)) {
@@ -150,9 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
-        if (currentUser) {
-          void registerPushToken(currentUser.id);
-        }
       }
     );
     void refreshAuth();

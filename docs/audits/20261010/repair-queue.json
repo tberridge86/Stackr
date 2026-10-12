@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-12T07:40:22.701Z",
+  "updatedAt": "2026-10-12T12:52:31.471660Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "agent/release/tif-build55-device-repairs-20261012",
@@ -1344,6 +1344,39 @@
       },
       "nextAction": "Reconcile exact owner-held/primary-source artwork and rights against36IDs before preparing any catalogue publication; no speculative cross-language marks.",
       "evidence": "docs/releases/build55-device-feedback-repair-20261012.md"
+    },
+    {
+      "id": "STARTUP-PHASES-20261012",
+      "severity": "P2",
+      "owner": "stackr_performance",
+      "status": "reviewed_local_repair",
+      "summary": "Font-gated auth, playback-gated shell and duplicate Home/push bootstrap delay useful startup.",
+      "files": [
+        "app/_layout.tsx",
+        "components/StackrAppShell.tsx",
+        "components/StartupReadySignal.tsx",
+        "components/DeferredStartupServices.tsx",
+        "components/auth-context.tsx",
+        "features/home/HubScreen.tsx",
+        "lib/performance.ts",
+        "scripts/test-startup-phases.ts",
+        "scripts/test-home-startup-runtime.ts"
+      ],
+      "validation": [
+        "TypeScript and scoped lint pass (zero errors; two inherited Home duplicate-import warnings)",
+        "Startup routing/profile/video/phase checks and ten Home startup runtime scenarios pass, including pending/failed valuation with late cache",
+        "Personal-loading suite, card-first UI, commerce lock, Home integration/live-price and issue304 pricing/history pass",
+        "Production-profile iOS Metro/Hermes export passes; independent review has no remaining blocking findings; native launch unmeasured"
+      ],
+      "delivery": {
+        "local": "implemented",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "New-head hosted checks in PR #337, then approved signed-native delivery and device profiling.",
+      "evidence": "docs/performance/cold-start-20261012.md"
     }
   ],
   "integrationBaseRevision": "599c776f12201470273574c4d5f9f01632609dc1",

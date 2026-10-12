@@ -102,3 +102,13 @@ latency cohorts, scanner trials and operational observation windows remain open.
 Do not mark Stackr production-ready or promote it publicly from local tests alone.
 If a new fault appears, stop further promotion and prepare a bounded follow-up;
 do not silently publish an OTA or call the previous faulty CoroCoro build known-good.
+
+## Cold-start follow-through requested 12 October
+
+The same PR now includes the owner's immediate/deferred/lazy startup request.
+See [the focused startup receipt](../performance/cold-start-20261012.md) for
+font/auth parallelism, ready-screen intro handoff, deferred services, coalesced
+Home loading, account/cache guards, tests and the pending device measurements.
+Earlier hosted check results in this receipt apply to the earlier candidate head;
+they must not be reused as the new head's CI evidence. The intro asset remains
+unchanged but may yield to a ready destination before playback ends.
