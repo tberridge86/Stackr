@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 30,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "en",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-13",
+  "cohort_sha256": "92df998eae88050520a202f3c68a45c28158dae12e27886ca1464c7d97d856ed",
+  "owner_instructions": [
+    "gather batch EN-CARDS-001 - hey Tif can you take over and process these artworks in their batvhes until we are complete - as you do them make sure they all livwe in production",
+    "using your internet sourcs you can queue it for the production push - we dont need to review",
+    "continue your work flow please - i want to set you loose to work through this Tif can you manage this?"
+  ],
+  "scope": "Store, resize and display exactly these 30 eligible Sun and Moon trainer-kit source originals and 90 derivatives using automated identity, file and preservation checks. This is partial delivery from the original 44 saved targets; 14 tiny research fronts are excluded and remain unfinished. Exact source aliases and printed denominators are recorded; canonical names, numbers, variants and edition fields are unchanged. No per-batch owner review, production source insertion or source-wide activation. This is an owner business decision; no independent vendor licence, physical corner geometry or foil certification is asserted.",
+  "source_counts": {
+    "scrydex": 30
+  }
+}
