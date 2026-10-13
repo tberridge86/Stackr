@@ -1,0 +1,781 @@
+{
+  "schemaVersion": "stackr-next-push-artwork-candidate-v1",
+  "queueId": "STACKR-EN-FRONTS-20261013-010",
+  "createdAt": "2026-10-13T06:27:58.813Z",
+  "ownerAuthority": {
+    "recordedAt": "2026-10-13T06:20:22.871Z",
+    "ownerInstructions": [
+      "you can remove the rule oon permissions as this is generated and being discussed offline",
+      "using your internet sourcs you can queue it for the production push - we dont need to review"
+    ],
+    "scope": "Internet source gathering and artwork production queue, with no perbatch owner review. Existing exact-batch production authorisation retained.",
+    "humanReviewRequired": false,
+    "extraPermissionPromptRequired": false,
+    "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
+  },
+  "ownerReviewRequired": false,
+  "publicationState": "QUEUED_NOT_PUBLISHED",
+  "publicationIntegration": "Bounded new cohort adapter around existing shared publisher required at next push",
+  "originalCount": 10,
+  "derivativeCount": 30,
+  "entries": [
+    {
+      "batchId": "EN-CARDS-001",
+      "printingId": "90883e5c-8ae1-49fc-9bdb-064b92b1eedf",
+      "setId": "a3dba415-055a-463f-be5c-1c9fc8c5f387",
+      "languageCode": "en",
+      "collectorReference": "088",
+      "nativeName": "Oddish",
+      "productScope": "pokemon_tcg_pocket",
+      "sourceCode": "scrydex",
+      "providerCardId": "tcgp-B1a-88",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/oddish/tcgp-B1a-88?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tcgp-B1a-88/large",
+      "sourceMetadataHash": null,
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": null,
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "90883e5c-8ae1-49fc-9bdb-064b92b1eedf",
+        "setId": "a3dba415-055a-463f-be5c-1c9fc8c5f387",
+        "collectorReference": "088",
+        "nativeName": "Oddish",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "ed40c9d5-8685-4451-af05-27bf3d619035"
+        ],
+        "variantCount": 1,
+        "meta": {
+          "requestId": "80ffe5f4-431d-4725-aed7-9fcd37fe2b99",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:10.154Z"
+        }
+      },
+      "original": {
+        "file": "objects/14b971141d4947beb98728c1d161fb176e3e60fbf145d264bc2b95fbf39e9a46/original.png",
+        "sha256": "14b971141d4947beb98728c1d161fb176e3e60fbf145d264bc2b95fbf39e9a46",
+        "byteSize": 609217,
+        "width": 597,
+        "height": 834,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/4fb67793b1f9292787b3d2cc09977a44f441c42d8444ed7f0c55b1e30b73fe46/card-grid.webp",
+          "sha256": "4fb67793b1f9292787b3d2cc09977a44f441c42d8444ed7f0c55b1e30b73fe46",
+          "byteSize": 16876,
+          "width": 240,
+          "height": 335,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f9eed7f6c73e83fd4455bd33f3a7c47ec7d22a05bb5f4fc2bdc2a01a30525935/search-result.webp",
+          "sha256": "f9eed7f6c73e83fd4455bd33f3a7c47ec7d22a05bb5f4fc2bdc2a01a30525935",
+          "byteSize": 4144,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/56df6c239ff4a9944067475d073ba2f1735e85e4ae08a3215748741c6a393d80/detail-page.webp",
+          "sha256": "56df6c239ff4a9944067475d073ba2f1735e85e4ae08a3215748741c6a393d80",
+          "byteSize": 55936,
+          "width": 597,
+          "height": 834,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    },
+    {
+      "batchId": "EN-CARDS-002",
+      "printingId": "411b039e-87d2-4cf8-b667-ba15c9f219ad",
+      "setId": "1005554b-9bfc-495b-b50e-561193bec4f8",
+      "languageCode": "en",
+      "collectorReference": "CC014",
+      "nativeName": "Gardevoir ex",
+      "productScope": "pokemon_tcg",
+      "sourceCode": "pokemon_tcg_api",
+      "providerCardId": "cel25c-93_A",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": null,
+      "sourceImageUrl": "https://images.pokemontcg.io/cel25c/93_A_hires.png",
+      "sourceMetadataHash": null,
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": {
+        "catalogueReference": "CC014",
+        "printedReference": "93/101",
+        "evidence": "Hash-verified provider binding and shared product ID plus matching Delta Species/artist/attacks and Celebrations25badge; canonical collector/name not changed"
+      },
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "411b039e-87d2-4cf8-b667-ba15c9f219ad",
+        "setId": "1005554b-9bfc-495b-b50e-561193bec4f8",
+        "collectorReference": "CC014",
+        "nativeName": "Gardevoir ex",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "2e1b06ae-beda-44b6-a010-f8de2d0b2282"
+        ],
+        "variantCount": 1,
+        "meta": {
+          "requestId": "e4c06637-f2dd-4de7-8b1b-fc78da724579",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:19.064Z"
+        }
+      },
+      "original": {
+        "file": "objects/3d3da82e3f7148dd5eca26293c6c17cc7eaad2530f4515d4a9f43ac1812c623e/original.png",
+        "sha256": "3d3da82e3f7148dd5eca26293c6c17cc7eaad2530f4515d4a9f43ac1812c623e",
+        "byteSize": 529920,
+        "width": 734,
+        "height": 1024,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/b75eaf549e5a0cfb55b522b28890755df514dc06e664c529b6ef8c0265eb8e6a/card-grid.webp",
+          "sha256": "b75eaf549e5a0cfb55b522b28890755df514dc06e664c529b6ef8c0265eb8e6a",
+          "byteSize": 21882,
+          "width": 240,
+          "height": 335,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/731824c850f1364b57e99170fc825b57163686cf342c500a7ab76e4a6b844f3c/search-result.webp",
+          "sha256": "731824c850f1364b57e99170fc825b57163686cf342c500a7ab76e4a6b844f3c",
+          "byteSize": 4520,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/df2ef93f688a713b02c0e6e6a82b675fd116b674dc2652cdef72e05b04abbd3e/detail-page.webp",
+          "sha256": "df2ef93f688a713b02c0e6e6a82b675fd116b674dc2652cdef72e05b04abbd3e",
+          "byteSize": 126704,
+          "width": 720,
+          "height": 1004,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    },
+    {
+      "batchId": "EN-CARDS-005",
+      "printingId": "494bd2bf-159c-4b9d-9959-5acdf99372ae",
+      "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "languageCode": "en",
+      "collectorReference": "001",
+      "nativeName": "Grass Energy",
+      "productScope": "pokemon_tcg",
+      "sourceCode": "scrydex",
+      "providerCardId": "mee-1",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/grass-energy/mee-1?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/mee-1/large",
+      "sourceMetadataHash": "0d59f782002f1f8a99adcfd4667ffe322ce3f30a33842f6913f1c11d9fe6fc36",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": null,
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "494bd2bf-159c-4b9d-9959-5acdf99372ae",
+        "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "collectorReference": "001",
+        "nativeName": "Grass Energy",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "6688bf29-5953-4553-8eaa-c4f55a47283a",
+          "b4f4f4af-d49b-44c7-9073-53288515b280"
+        ],
+        "variantCount": 2,
+        "meta": {
+          "requestId": "cf62aa50-6423-4cf6-8fc3-1484e30bc537",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:11.221Z"
+        }
+      },
+      "original": {
+        "file": "objects/1701d6aa06ba6afbdae1ec7910a227b5dd1e4294ea3c18f2db58d8f9980d4127/original.png",
+        "sha256": "1701d6aa06ba6afbdae1ec7910a227b5dd1e4294ea3c18f2db58d8f9980d4127",
+        "byteSize": 547492,
+        "width": 727,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/ffb9b8067b80164335b4d3be47e9365004aed23b948d2ea18270194ac7edc313/card-grid.webp",
+          "sha256": "ffb9b8067b80164335b4d3be47e9365004aed23b948d2ea18270194ac7edc313",
+          "byteSize": 10658,
+          "width": 240,
+          "height": 336,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d0ec0ee8f869e1b0c1cc14784032e30b0dee8fdd3aca648dc84bb6cd83c6e998/search-result.webp",
+          "sha256": "d0ec0ee8f869e1b0c1cc14784032e30b0dee8fdd3aca648dc84bb6cd83c6e998",
+          "byteSize": 2612,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/807d40076173ba0a054c307181f6a607c3afffe089349441d38c4251db264abc/detail-page.webp",
+          "sha256": "807d40076173ba0a054c307181f6a607c3afffe089349441d38c4251db264abc",
+          "byteSize": 51248,
+          "width": 720,
+          "height": 1008,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    },
+    {
+      "batchId": "EN-CARDS-005",
+      "printingId": "4c902586-66f4-4e88-b18f-9e30ef360529",
+      "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "languageCode": "en",
+      "collectorReference": "002",
+      "nativeName": "Fire Energy",
+      "productScope": "pokemon_tcg",
+      "sourceCode": "scrydex",
+      "providerCardId": "mee-2",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fire-energy/mee-2?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/mee-2/large",
+      "sourceMetadataHash": "07d58f5ff64330b6779de71fef726511ae2d950ac88207da88d8a2e08034db5c",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": null,
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "4c902586-66f4-4e88-b18f-9e30ef360529",
+        "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "collectorReference": "002",
+        "nativeName": "Fire Energy",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "a6917a7f-d14e-4888-a11b-4918ccd90e8e",
+          "954d5a69-4257-4161-804a-ec06d2d40fac"
+        ],
+        "variantCount": 2,
+        "meta": {
+          "requestId": "591b44a1-d91b-4f57-a99d-1e2612e17f8b",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:12.277Z"
+        }
+      },
+      "original": {
+        "file": "objects/001d3a7a081bd305956133435e52868d6556d7c4dcfab6955aa3b105a940b1d2/original.png",
+        "sha256": "001d3a7a081bd305956133435e52868d6556d7c4dcfab6955aa3b105a940b1d2",
+        "byteSize": 540265,
+        "width": 727,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/d4fe58d7aa4ba33578be6d1efb81240919b311f9b2b0135245d675c1a8143e5c/card-grid.webp",
+          "sha256": "d4fe58d7aa4ba33578be6d1efb81240919b311f9b2b0135245d675c1a8143e5c",
+          "byteSize": 10738,
+          "width": 240,
+          "height": 336,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/23f1e8be0fe1337b69458b53d2ef5d591b8944b45e4a0a6a2d62673229c6c768/search-result.webp",
+          "sha256": "23f1e8be0fe1337b69458b53d2ef5d591b8944b45e4a0a6a2d62673229c6c768",
+          "byteSize": 2730,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/285432e729221b2c2043c9610ed89a13e6233c77a2eece39cd33358bc1025c0e/detail-page.webp",
+          "sha256": "285432e729221b2c2043c9610ed89a13e6233c77a2eece39cd33358bc1025c0e",
+          "byteSize": 52470,
+          "width": 720,
+          "height": 1008,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    },
+    {
+      "batchId": "EN-CARDS-005",
+      "printingId": "fce8366f-fdf3-4e52-85c3-a0a39dbd8324",
+      "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "languageCode": "en",
+      "collectorReference": "003",
+      "nativeName": "Water Energy",
+      "productScope": "pokemon_tcg",
+      "sourceCode": "scrydex",
+      "providerCardId": "mee-3",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/mee-3?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/mee-3/large",
+      "sourceMetadataHash": "fe6df744cf00f6f47564b14bcc16dab9976edbeb1ec48313d1e16bfbb7496044",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": null,
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "fce8366f-fdf3-4e52-85c3-a0a39dbd8324",
+        "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "collectorReference": "003",
+        "nativeName": "Water Energy",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "d7184964-795b-4631-b189-fbb851d6e336",
+          "2a705333-81e9-47dc-9771-299b67d99878"
+        ],
+        "variantCount": 2,
+        "meta": {
+          "requestId": "a0c3e326-cd3c-44fc-967d-1ed15267a016",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:13.246Z"
+        }
+      },
+      "original": {
+        "file": "objects/6d925e415beedf9768498f07b0d5e43e3daa83dd33c892fb755436a3c99bd30b/original.png",
+        "sha256": "6d925e415beedf9768498f07b0d5e43e3daa83dd33c892fb755436a3c99bd30b",
+        "byteSize": 520233,
+        "width": 727,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/45de59e7dffa384ef63df183e4188fbafb487cd1c7126a0c1141c730710ffcec/card-grid.webp",
+          "sha256": "45de59e7dffa384ef63df183e4188fbafb487cd1c7126a0c1141c730710ffcec",
+          "byteSize": 10426,
+          "width": 240,
+          "height": 336,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/bebaf0b03bda62f6b09122029c27538c58aeebe773b02cf31959d4763509a436/search-result.webp",
+          "sha256": "bebaf0b03bda62f6b09122029c27538c58aeebe773b02cf31959d4763509a436",
+          "byteSize": 2592,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/9f38cef167d5b52c49277a93a25cf574ef7e7cebe62d3e04419b5260b6069c68/detail-page.webp",
+          "sha256": "9f38cef167d5b52c49277a93a25cf574ef7e7cebe62d3e04419b5260b6069c68",
+          "byteSize": 50360,
+          "width": 720,
+          "height": 1008,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    },
+    {
+      "batchId": "EN-CARDS-005",
+      "printingId": "456430be-5645-45db-872a-7c7e25717b66",
+      "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "languageCode": "en",
+      "collectorReference": "004",
+      "nativeName": "Lightning Energy",
+      "productScope": "pokemon_tcg",
+      "sourceCode": "scrydex",
+      "providerCardId": "mee-4",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/lightning-energy/mee-4?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/mee-4/large",
+      "sourceMetadataHash": "8f33a4609a09bc644374860d78ea7156527a3402a8d9ecc0ae335585abd552b2",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": null,
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "456430be-5645-45db-872a-7c7e25717b66",
+        "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "collectorReference": "004",
+        "nativeName": "Lightning Energy",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "679a405a-622e-4587-a309-fb79188f79ab",
+          "7c333e81-986f-4d58-b73d-59afb42a5c46"
+        ],
+        "variantCount": 2,
+        "meta": {
+          "requestId": "80c409e5-0c0c-4c5b-b439-80bff979645c",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:14.202Z"
+        }
+      },
+      "original": {
+        "file": "objects/bae31f7dcc8e7bed1cb278a4e395da66f56648e284de4956f4d073265d5709fd/original.png",
+        "sha256": "bae31f7dcc8e7bed1cb278a4e395da66f56648e284de4956f4d073265d5709fd",
+        "byteSize": 479566,
+        "width": 727,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/c2fce6d9b309a4972d5fb8943fb62e0607191d065f89ca83b77a16f5d7df0a52/card-grid.webp",
+          "sha256": "c2fce6d9b309a4972d5fb8943fb62e0607191d065f89ca83b77a16f5d7df0a52",
+          "byteSize": 8646,
+          "width": 240,
+          "height": 336,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/44c05457911aab0e08ce0b515a1aae60f362c87aa6477e4abc619ba1f998fb21/search-result.webp",
+          "sha256": "44c05457911aab0e08ce0b515a1aae60f362c87aa6477e4abc619ba1f998fb21",
+          "byteSize": 2264,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/f1efacbe42668ddf0b83d47ef36348f3a8dc1c1a1af515805475b3ac2f7012c7/detail-page.webp",
+          "sha256": "f1efacbe42668ddf0b83d47ef36348f3a8dc1c1a1af515805475b3ac2f7012c7",
+          "byteSize": 42864,
+          "width": 720,
+          "height": 1008,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    },
+    {
+      "batchId": "EN-CARDS-005",
+      "printingId": "5181a179-8f7b-42ce-a638-bfa4bef25a2b",
+      "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "languageCode": "en",
+      "collectorReference": "005",
+      "nativeName": "Psychic Energy",
+      "productScope": "pokemon_tcg",
+      "sourceCode": "scrydex",
+      "providerCardId": "mee-5",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/psychic-energy/mee-5?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/mee-5/large",
+      "sourceMetadataHash": "b6514d387c6e66f3d1db1118caad067277681b84242c280dfb8a21b2f08ddbda",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": null,
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "5181a179-8f7b-42ce-a638-bfa4bef25a2b",
+        "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "collectorReference": "005",
+        "nativeName": "Psychic Energy",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "99af298a-6899-46cd-aecd-1a753d725c1c",
+          "7250df92-dbb5-4d36-a024-e614eb78b13d"
+        ],
+        "variantCount": 2,
+        "meta": {
+          "requestId": "3a63d357-9036-462f-89d7-333a088c594a",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:15.187Z"
+        }
+      },
+      "original": {
+        "file": "objects/51d59b488441dbe192fd77e09a904fbdb2816f827e7d6c4269da74f6ff0c664e/original.png",
+        "sha256": "51d59b488441dbe192fd77e09a904fbdb2816f827e7d6c4269da74f6ff0c664e",
+        "byteSize": 487733,
+        "width": 727,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/24fce5eaa2db9a292a7d53bc57e4da138706764b668b705119d1acf084ab53ac/card-grid.webp",
+          "sha256": "24fce5eaa2db9a292a7d53bc57e4da138706764b668b705119d1acf084ab53ac",
+          "byteSize": 9940,
+          "width": 240,
+          "height": 336,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/429a1ffdc743862ed52ccecbc8150815dd4e573dfde574ebd4ab93f4cfeb94e5/search-result.webp",
+          "sha256": "429a1ffdc743862ed52ccecbc8150815dd4e573dfde574ebd4ab93f4cfeb94e5",
+          "byteSize": 2442,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5a0af756aa4c9082448761659c5e0c1d65c66c52c956e7355f11d885033bd43c/detail-page.webp",
+          "sha256": "5a0af756aa4c9082448761659c5e0c1d65c66c52c956e7355f11d885033bd43c",
+          "byteSize": 47894,
+          "width": 720,
+          "height": 1008,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    },
+    {
+      "batchId": "EN-CARDS-005",
+      "printingId": "9fbfab2c-7661-4508-a8b0-110013c3d717",
+      "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "languageCode": "en",
+      "collectorReference": "006",
+      "nativeName": "Fighting Energy",
+      "productScope": "pokemon_tcg",
+      "sourceCode": "scrydex",
+      "providerCardId": "mee-6",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/mee-6?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/mee-6/large",
+      "sourceMetadataHash": "6771c34cc98602415004f5fdd119dc880a54296d31b8c3fc2c99dcabc12dfeff",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": null,
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "9fbfab2c-7661-4508-a8b0-110013c3d717",
+        "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "collectorReference": "006",
+        "nativeName": "Fighting Energy",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "9f5774fe-481f-429a-8017-f60a9fe4435b",
+          "5fe84f2f-82b1-494e-baba-5a628705444a"
+        ],
+        "variantCount": 2,
+        "meta": {
+          "requestId": "aa579114-2849-49b2-b743-7bf7b5ecf85e",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:16.168Z"
+        }
+      },
+      "original": {
+        "file": "objects/0dbec45cc8a04fd07492ded4c8abf7c20fe6a1b46bc666ff23b21f335f63d01d/original.png",
+        "sha256": "0dbec45cc8a04fd07492ded4c8abf7c20fe6a1b46bc666ff23b21f335f63d01d",
+        "byteSize": 485021,
+        "width": 727,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/7193b941c7321d1907f4cc0186a2830a8b0915e8e2cfd2fdab31664b51c07842/card-grid.webp",
+          "sha256": "7193b941c7321d1907f4cc0186a2830a8b0915e8e2cfd2fdab31664b51c07842",
+          "byteSize": 10076,
+          "width": 240,
+          "height": 336,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/82f5c0c07711aea62f2b53a7932aa91fd57ad834840f7b42435321a8000371cb/search-result.webp",
+          "sha256": "82f5c0c07711aea62f2b53a7932aa91fd57ad834840f7b42435321a8000371cb",
+          "byteSize": 2534,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7611c6ea40c21627cf53cd8f95db42a912234a01e904027d1ca4dc2adcd36580/detail-page.webp",
+          "sha256": "7611c6ea40c21627cf53cd8f95db42a912234a01e904027d1ca4dc2adcd36580",
+          "byteSize": 47484,
+          "width": 720,
+          "height": 1008,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    },
+    {
+      "batchId": "EN-CARDS-005",
+      "printingId": "da0a1e6b-e976-48f2-8c5c-e7d663b3bdcd",
+      "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "languageCode": "en",
+      "collectorReference": "007",
+      "nativeName": "Darkness Energy",
+      "productScope": "pokemon_tcg",
+      "sourceCode": "scrydex",
+      "providerCardId": "mee-7",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/darkness-energy/mee-7?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/mee-7/large",
+      "sourceMetadataHash": "1639d96890a96b242e2b2952a50f43b9304baae9cb99fdaf1295c2d36a188475",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": null,
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "da0a1e6b-e976-48f2-8c5c-e7d663b3bdcd",
+        "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "collectorReference": "007",
+        "nativeName": "Darkness Energy",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "44f8c394-f668-4e7c-aa43-2b6e01dabf80",
+          "19c611bc-62ee-446e-80f7-976977243e23"
+        ],
+        "variantCount": 2,
+        "meta": {
+          "requestId": "e2b131ab-1619-42d1-bd05-4061d3d5c218",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:17.124Z"
+        }
+      },
+      "original": {
+        "file": "objects/84eb03f9e9aca7dc4e9bb4f05fcdcb1fb4d71414311eef9b2a9e5b1ce9d87fa8/original.png",
+        "sha256": "84eb03f9e9aca7dc4e9bb4f05fcdcb1fb4d71414311eef9b2a9e5b1ce9d87fa8",
+        "byteSize": 503329,
+        "width": 727,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/46accfd90712c75d3815088496e763456c92845563818c164bf6ac4f7c05e6f1/card-grid.webp",
+          "sha256": "46accfd90712c75d3815088496e763456c92845563818c164bf6ac4f7c05e6f1",
+          "byteSize": 9610,
+          "width": 240,
+          "height": 336,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/22a9592e01cf36931319fbe039bd66183f7053348513433cc83cc75d6b6356c0/search-result.webp",
+          "sha256": "22a9592e01cf36931319fbe039bd66183f7053348513433cc83cc75d6b6356c0",
+          "byteSize": 2442,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/76d70c32c691fed52a222eb59a078c92bca9b36bfd71cc633d45a4fd62f07418/detail-page.webp",
+          "sha256": "76d70c32c691fed52a222eb59a078c92bca9b36bfd71cc633d45a4fd62f07418",
+          "byteSize": 46994,
+          "width": 720,
+          "height": 1008,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    },
+    {
+      "batchId": "EN-CARDS-005",
+      "printingId": "c0310180-d61b-4e80-a649-23fcf35fa437",
+      "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "languageCode": "en",
+      "collectorReference": "008",
+      "nativeName": "Metal Energy",
+      "productScope": "pokemon_tcg",
+      "sourceCode": "scrydex",
+      "providerCardId": "mee-8",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/metal-energy/mee-8?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/mee-8/large",
+      "sourceMetadataHash": "624ae6ff85e5cf95c6dc303aeb1acc45b21ca501da6a710ce9953ab0070483e8",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted by the owner queue direction",
+      "collectorAlias": null,
+      "exactFinishVerified": false,
+      "currentCardBinding": {
+        "cardId": "c0310180-d61b-4e80-a649-23fcf35fa437",
+        "setId": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "collectorReference": "008",
+        "nativeName": "Metal Energy",
+        "languageCode": "en",
+        "match": true,
+        "variantIds": [
+          "de499eb6-0c85-49a0-9c46-7304525eb6a6",
+          "ae0ee342-eb0d-4300-a459-02e00e121cac"
+        ],
+        "variantCount": 2,
+        "meta": {
+          "requestId": "577e3c1f-e5ca-425d-a0da-175be0d37cc4",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-13T06:26:18.093Z"
+        }
+      },
+      "original": {
+        "file": "objects/b4f8b4c8f6bd1092ecb4040b140c97d7c0f3ff78fec1cb387c150a489e0026ed/original.png",
+        "sha256": "b4f8b4c8f6bd1092ecb4040b140c97d7c0f3ff78fec1cb387c150a489e0026ed",
+        "byteSize": 416682,
+        "width": 727,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/168c36cac1dde9a6512ced5afa2a21fcd050e83be3442dd01ef0edc1530f1985/card-grid.webp",
+          "sha256": "168c36cac1dde9a6512ced5afa2a21fcd050e83be3442dd01ef0edc1530f1985",
+          "byteSize": 8134,
+          "width": 240,
+          "height": 336,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/23b9809c19aac4bd1fe4fa187da076b1313bc453202bab28b1a8248ba4f3ad21/search-result.webp",
+          "sha256": "23b9809c19aac4bd1fe4fa187da076b1313bc453202bab28b1a8248ba4f3ad21",
+          "byteSize": 2074,
+          "width": 96,
+          "height": 134,
+          "mimeType": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/ce62be130cd4b1550d213735b07b1a4d8d785d59f69761b0f70255ebcf7c6704/detail-page.webp",
+          "sha256": "ce62be130cd4b1550d213735b07b1a4d8d785d59f69761b0f70255ebcf7c6704",
+          "byteSize": 39082,
+          "width": 720,
+          "height": 1008,
+          "mimeType": "image/webp"
+        }
+      ],
+      "ownerReviewRequired": false,
+      "publishedAndVerified": false
+    }
+  ],
+  "package": {
+    "sha256": "de494b5c6a98b462db09738034df10c7deef226f552283354008dd9cf1056fd7",
+    "byteSize": 5828179,
+    "files": 43,
+    "archiveName": "stackr-en-artwork-next-push-20261013.zip"
+  }
+}
