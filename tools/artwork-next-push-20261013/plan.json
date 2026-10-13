@@ -1,0 +1,1583 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "STACKR-EN-FRONTS-20261013-010",
+  "source_manifest_sha256": "ba0b48b125a7df3661ff57315d55b02c1521f7bb6bf66ff31f9a45d21fd87261",
+  "archive": {
+    "sha256": "de494b5c6a98b462db09738034df10c7deef226f552283354008dd9cf1056fd7",
+    "byte_size": 5828179,
+    "file_count": 43,
+    "artifact_directory": "637933079",
+    "id": 637933079,
+    "kind": "github_release_asset"
+  },
+  "rows": [
+    {
+      "printing_id": "90883e5c-8ae1-49fc-9bdb-064b92b1eedf",
+      "set_id": "a3dba415-055a-463f-be5c-1c9fc8c5f387",
+      "set_code": "B1a",
+      "language_code": "en",
+      "collector_number": "088",
+      "card_native_name": "Oddish",
+      "source_code": "scrydex",
+      "provider_id": "tcgp-B1a-88",
+      "image_url": "https://images.scrydex.com/pokemon/tcgp-B1a-88/large",
+      "batch_id": "EN-CARDS-001",
+      "variant_ids": [
+        "ed40c9d5-8685-4451-af05-27bf3d619035"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/14b971141d4947beb98728c1d161fb176e3e60fbf145d264bc2b95fbf39e9a46/original.png",
+          "sha256": "14b971141d4947beb98728c1d161fb176e3e60fbf145d264bc2b95fbf39e9a46",
+          "byte_size": 609217,
+          "width": 597,
+          "height": 834,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/4fb67793b1f9292787b3d2cc09977a44f441c42d8444ed7f0c55b1e30b73fe46/card-grid.webp",
+          "sha256": "4fb67793b1f9292787b3d2cc09977a44f441c42d8444ed7f0c55b1e30b73fe46",
+          "byte_size": 16876,
+          "width": 240,
+          "height": 335,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/f9eed7f6c73e83fd4455bd33f3a7c47ec7d22a05bb5f4fc2bdc2a01a30525935/search-result.webp",
+          "sha256": "f9eed7f6c73e83fd4455bd33f3a7c47ec7d22a05bb5f4fc2bdc2a01a30525935",
+          "byte_size": 4144,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/56df6c239ff4a9944067475d073ba2f1735e85e4ae08a3215748741c6a393d80/detail-page.webp",
+          "sha256": "56df6c239ff4a9944067475d073ba2f1735e85e4ae08a3215748741c6a393d80",
+          "byte_size": 55936,
+          "width": 597,
+          "height": 834,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/tcgp-B1a-88/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/oddish/tcgp-B1a-88?variant=normal",
+        "provider_id": "tcgp-B1a-88",
+        "source_metadata_sha256": null,
+        "product_scope": "pokemon_tcg_pocket",
+        "collector_alias": null,
+        "pixel_identity": "Matching English Oddish, Grass50HP, Poison Powder10 and Souichirou Gunjima; full card edges visible. Pocket source metadata binds B1a/088; collector number is not printed on this digital face. No physical finish asserted.",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": false
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    {
+      "printing_id": "411b039e-87d2-4cf8-b667-ba15c9f219ad",
+      "set_id": "1005554b-9bfc-495b-b50e-561193bec4f8",
+      "set_code": "cel25cc",
+      "language_code": "en",
+      "collector_number": "CC014",
+      "card_native_name": "Gardevoir ex",
+      "source_code": "pokemon_tcg_api",
+      "provider_id": "cel25c-93_A",
+      "image_url": "https://images.pokemontcg.io/cel25c/93_A_hires.png",
+      "batch_id": "EN-CARDS-002",
+      "variant_ids": [
+        "2e1b06ae-beda-44b6-a010-f8de2d0b2282"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/3d3da82e3f7148dd5eca26293c6c17cc7eaad2530f4515d4a9f43ac1812c623e/original.png",
+          "sha256": "3d3da82e3f7148dd5eca26293c6c17cc7eaad2530f4515d4a9f43ac1812c623e",
+          "byte_size": 529920,
+          "width": 734,
+          "height": 1024,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/b75eaf549e5a0cfb55b522b28890755df514dc06e664c529b6ef8c0265eb8e6a/card-grid.webp",
+          "sha256": "b75eaf549e5a0cfb55b522b28890755df514dc06e664c529b6ef8c0265eb8e6a",
+          "byte_size": 21882,
+          "width": 240,
+          "height": 335,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/731824c850f1364b57e99170fc825b57163686cf342c500a7ab76e4a6b844f3c/search-result.webp",
+          "sha256": "731824c850f1364b57e99170fc825b57163686cf342c500a7ab76e4a6b844f3c",
+          "byte_size": 4520,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/df2ef93f688a713b02c0e6e6a82b675fd116b674dc2652cdef72e05b04abbd3e/detail-page.webp",
+          "sha256": "df2ef93f688a713b02c0e6e6a82b675fd116b674dc2652cdef72e05b04abbd3e",
+          "byte_size": 126704,
+          "width": 720,
+          "height": 1004,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.pokemontcg.io/cel25c/93_A_hires.png",
+        "source_page_url": null,
+        "provider_id": "cel25c-93_A",
+        "source_metadata_sha256": null,
+        "product_scope": "pokemon_tcg",
+        "collector_alias": {
+          "catalogueReference": "CC014",
+          "printedReference": "93/101",
+          "evidence": "Hash-verified provider binding and shared product ID plus matching Delta Species/artist/attacks and Celebrations25badge; canonical collector/name not changed"
+        },
+        "pixel_identity": {
+          "method": "Agent inspected the unmodified original through view_image at original resolution, alongside independently matched source metadata. No owner review requested.",
+          "language": "English title, ability and attack text visible.",
+          "observedTitle": "Gardevoir ex δ DELTA SPECIES",
+          "printedCollectorNumber": "93",
+          "printedDenominator": "101",
+          "catalogueCollectorAlias": "CC014",
+          "aliasBinding": "TCGdexCC014 and Scrydexcel25c-93_A share product250331; pinnedPokemonTCG and actualfront show93/101.",
+          "hp": "150",
+          "type": "Fire",
+          "artist": "Masahiko Ishii",
+          "ability": "Imprison",
+          "attack": "Flame Ball80",
+          "printingMarker": "Celebrations25th-anniversary Pikachu badge visible.",
+          "retainedCopyright": "2006Pokemon/Nintendo, retained by this Celebrations Classic Collection reprint.",
+          "cardFrame": "Complete full front, rounded border and footer present.",
+          "physicalFinishVerified": false,
+          "physicalCaptureProven": false,
+          "identityVerdict": "pass_celebrations_delta_printing_front_identity",
+          "nativeNameRewritten": false,
+          "nameDifferenceRetained": "Saved canonicalname omitsδ; receipt preserves the observed Delta Species identity without modifying the catalogue."
+        },
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    {
+      "printing_id": "494bd2bf-159c-4b9d-9959-5acdf99372ae",
+      "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "set_code": "mee",
+      "language_code": "en",
+      "collector_number": "001",
+      "card_native_name": "Grass Energy",
+      "source_code": "scrydex",
+      "provider_id": "mee-1",
+      "image_url": "https://images.scrydex.com/pokemon/mee-1/large",
+      "batch_id": "EN-CARDS-005",
+      "variant_ids": [
+        "6688bf29-5953-4553-8eaa-c4f55a47283a",
+        "b4f4f4af-d49b-44c7-9073-53288515b280"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/1701d6aa06ba6afbdae1ec7910a227b5dd1e4294ea3c18f2db58d8f9980d4127/original.png",
+          "sha256": "1701d6aa06ba6afbdae1ec7910a227b5dd1e4294ea3c18f2db58d8f9980d4127",
+          "byte_size": 547492,
+          "width": 727,
+          "height": 1018,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/ffb9b8067b80164335b4d3be47e9365004aed23b948d2ea18270194ac7edc313/card-grid.webp",
+          "sha256": "ffb9b8067b80164335b4d3be47e9365004aed23b948d2ea18270194ac7edc313",
+          "byte_size": 10658,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/d0ec0ee8f869e1b0c1cc14784032e30b0dee8fdd3aca648dc84bb6cd83c6e998/search-result.webp",
+          "sha256": "d0ec0ee8f869e1b0c1cc14784032e30b0dee8fdd3aca648dc84bb6cd83c6e998",
+          "byte_size": 2612,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/807d40076173ba0a054c307181f6a607c3afffe089349441d38c4251db264abc/detail-page.webp",
+          "sha256": "807d40076173ba0a054c307181f6a607c3afffe089349441d38c4251db264abc",
+          "byte_size": 51248,
+          "width": 720,
+          "height": 1008,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/mee-1/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/grass-energy/mee-1?variant=normal",
+        "provider_id": "mee-1",
+        "source_metadata_sha256": "0d59f782002f1f8a99adcfd4667ffe322ce3f30a33842f6913f1c11d9fe6fc36",
+        "product_scope": "pokemon_tcg",
+        "collector_alias": null,
+        "pixel_identity": {
+          "method": "Agent inspected the unmodified original through view_image at original resolution, alongside hash-verified source-page metadata. No owner review requested.",
+          "language": "English; Basic Energy header and MEE EN footer visible.",
+          "printedSetCode": "MEE",
+          "printedLanguageCode": "EN",
+          "printedCollectorNumber": "001",
+          "printedDenominator": null,
+          "energyTypeSymbol": "Grass",
+          "observedTitle": "Basic [Grass symbol] Energy",
+          "cardFrame": "Full top/side/bottom frame and copyright footer visible. Some provider canvases retain tiny exterior corner pixels; originals were preserved.",
+          "specialStamp": "No Play!Pokemon stamp visible.",
+          "physicalFinishVerified": false,
+          "sourceVariantMetadata": "normal",
+          "physicalCaptureProven": false,
+          "identityVerdict": "pass_printing_front_identity",
+          "nativeNameRewritten": false
+        },
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    {
+      "printing_id": "4c902586-66f4-4e88-b18f-9e30ef360529",
+      "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "set_code": "mee",
+      "language_code": "en",
+      "collector_number": "002",
+      "card_native_name": "Fire Energy",
+      "source_code": "scrydex",
+      "provider_id": "mee-2",
+      "image_url": "https://images.scrydex.com/pokemon/mee-2/large",
+      "batch_id": "EN-CARDS-005",
+      "variant_ids": [
+        "954d5a69-4257-4161-804a-ec06d2d40fac",
+        "a6917a7f-d14e-4888-a11b-4918ccd90e8e"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/001d3a7a081bd305956133435e52868d6556d7c4dcfab6955aa3b105a940b1d2/original.png",
+          "sha256": "001d3a7a081bd305956133435e52868d6556d7c4dcfab6955aa3b105a940b1d2",
+          "byte_size": 540265,
+          "width": 727,
+          "height": 1018,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/d4fe58d7aa4ba33578be6d1efb81240919b311f9b2b0135245d675c1a8143e5c/card-grid.webp",
+          "sha256": "d4fe58d7aa4ba33578be6d1efb81240919b311f9b2b0135245d675c1a8143e5c",
+          "byte_size": 10738,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/23f1e8be0fe1337b69458b53d2ef5d591b8944b45e4a0a6a2d62673229c6c768/search-result.webp",
+          "sha256": "23f1e8be0fe1337b69458b53d2ef5d591b8944b45e4a0a6a2d62673229c6c768",
+          "byte_size": 2730,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/285432e729221b2c2043c9610ed89a13e6233c77a2eece39cd33358bc1025c0e/detail-page.webp",
+          "sha256": "285432e729221b2c2043c9610ed89a13e6233c77a2eece39cd33358bc1025c0e",
+          "byte_size": 52470,
+          "width": 720,
+          "height": 1008,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/mee-2/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/fire-energy/mee-2?variant=normal",
+        "provider_id": "mee-2",
+        "source_metadata_sha256": "07d58f5ff64330b6779de71fef726511ae2d950ac88207da88d8a2e08034db5c",
+        "product_scope": "pokemon_tcg",
+        "collector_alias": null,
+        "pixel_identity": {
+          "method": "Agent inspected the unmodified original through view_image at original resolution, alongside hash-verified source-page metadata. No owner review requested.",
+          "language": "English; Basic Energy header and MEE EN footer visible.",
+          "printedSetCode": "MEE",
+          "printedLanguageCode": "EN",
+          "printedCollectorNumber": "002",
+          "printedDenominator": null,
+          "energyTypeSymbol": "Fire",
+          "observedTitle": "Basic [Fire symbol] Energy",
+          "cardFrame": "Full top/side/bottom frame and copyright footer visible. Some provider canvases retain tiny exterior corner pixels; originals were preserved.",
+          "specialStamp": "No Play!Pokemon stamp visible.",
+          "physicalFinishVerified": false,
+          "sourceVariantMetadata": "normal",
+          "physicalCaptureProven": false,
+          "identityVerdict": "pass_printing_front_identity",
+          "nativeNameRewritten": false
+        },
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    {
+      "printing_id": "fce8366f-fdf3-4e52-85c3-a0a39dbd8324",
+      "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "set_code": "mee",
+      "language_code": "en",
+      "collector_number": "003",
+      "card_native_name": "Water Energy",
+      "source_code": "scrydex",
+      "provider_id": "mee-3",
+      "image_url": "https://images.scrydex.com/pokemon/mee-3/large",
+      "batch_id": "EN-CARDS-005",
+      "variant_ids": [
+        "2a705333-81e9-47dc-9771-299b67d99878",
+        "d7184964-795b-4631-b189-fbb851d6e336"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/6d925e415beedf9768498f07b0d5e43e3daa83dd33c892fb755436a3c99bd30b/original.png",
+          "sha256": "6d925e415beedf9768498f07b0d5e43e3daa83dd33c892fb755436a3c99bd30b",
+          "byte_size": 520233,
+          "width": 727,
+          "height": 1018,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/45de59e7dffa384ef63df183e4188fbafb487cd1c7126a0c1141c730710ffcec/card-grid.webp",
+          "sha256": "45de59e7dffa384ef63df183e4188fbafb487cd1c7126a0c1141c730710ffcec",
+          "byte_size": 10426,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/bebaf0b03bda62f6b09122029c27538c58aeebe773b02cf31959d4763509a436/search-result.webp",
+          "sha256": "bebaf0b03bda62f6b09122029c27538c58aeebe773b02cf31959d4763509a436",
+          "byte_size": 2592,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/9f38cef167d5b52c49277a93a25cf574ef7e7cebe62d3e04419b5260b6069c68/detail-page.webp",
+          "sha256": "9f38cef167d5b52c49277a93a25cf574ef7e7cebe62d3e04419b5260b6069c68",
+          "byte_size": 50360,
+          "width": 720,
+          "height": 1008,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/mee-3/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/water-energy/mee-3?variant=normal",
+        "provider_id": "mee-3",
+        "source_metadata_sha256": "fe6df744cf00f6f47564b14bcc16dab9976edbeb1ec48313d1e16bfbb7496044",
+        "product_scope": "pokemon_tcg",
+        "collector_alias": null,
+        "pixel_identity": {
+          "method": "Agent inspected the unmodified original through view_image at original resolution, alongside hash-verified source-page metadata. No owner review requested.",
+          "language": "English; Basic Energy header and MEE EN footer visible.",
+          "printedSetCode": "MEE",
+          "printedLanguageCode": "EN",
+          "printedCollectorNumber": "003",
+          "printedDenominator": null,
+          "energyTypeSymbol": "Water",
+          "observedTitle": "Basic [Water symbol] Energy",
+          "cardFrame": "Full top/side/bottom frame and copyright footer visible. Some provider canvases retain tiny exterior corner pixels; originals were preserved.",
+          "specialStamp": "No Play!Pokemon stamp visible.",
+          "physicalFinishVerified": false,
+          "sourceVariantMetadata": "normal",
+          "physicalCaptureProven": false,
+          "identityVerdict": "pass_printing_front_identity",
+          "nativeNameRewritten": false
+        },
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    {
+      "printing_id": "456430be-5645-45db-872a-7c7e25717b66",
+      "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "set_code": "mee",
+      "language_code": "en",
+      "collector_number": "004",
+      "card_native_name": "Lightning Energy",
+      "source_code": "scrydex",
+      "provider_id": "mee-4",
+      "image_url": "https://images.scrydex.com/pokemon/mee-4/large",
+      "batch_id": "EN-CARDS-005",
+      "variant_ids": [
+        "679a405a-622e-4587-a309-fb79188f79ab",
+        "7c333e81-986f-4d58-b73d-59afb42a5c46"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/bae31f7dcc8e7bed1cb278a4e395da66f56648e284de4956f4d073265d5709fd/original.png",
+          "sha256": "bae31f7dcc8e7bed1cb278a4e395da66f56648e284de4956f4d073265d5709fd",
+          "byte_size": 479566,
+          "width": 727,
+          "height": 1018,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/c2fce6d9b309a4972d5fb8943fb62e0607191d065f89ca83b77a16f5d7df0a52/card-grid.webp",
+          "sha256": "c2fce6d9b309a4972d5fb8943fb62e0607191d065f89ca83b77a16f5d7df0a52",
+          "byte_size": 8646,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/44c05457911aab0e08ce0b515a1aae60f362c87aa6477e4abc619ba1f998fb21/search-result.webp",
+          "sha256": "44c05457911aab0e08ce0b515a1aae60f362c87aa6477e4abc619ba1f998fb21",
+          "byte_size": 2264,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/f1efacbe42668ddf0b83d47ef36348f3a8dc1c1a1af515805475b3ac2f7012c7/detail-page.webp",
+          "sha256": "f1efacbe42668ddf0b83d47ef36348f3a8dc1c1a1af515805475b3ac2f7012c7",
+          "byte_size": 42864,
+          "width": 720,
+          "height": 1008,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/mee-4/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/lightning-energy/mee-4?variant=normal",
+        "provider_id": "mee-4",
+        "source_metadata_sha256": "8f33a4609a09bc644374860d78ea7156527a3402a8d9ecc0ae335585abd552b2",
+        "product_scope": "pokemon_tcg",
+        "collector_alias": null,
+        "pixel_identity": {
+          "method": "Agent inspected the unmodified original through view_image at original resolution, alongside hash-verified source-page metadata. No owner review requested.",
+          "language": "English; Basic Energy header and MEE EN footer visible.",
+          "printedSetCode": "MEE",
+          "printedLanguageCode": "EN",
+          "printedCollectorNumber": "004",
+          "printedDenominator": null,
+          "energyTypeSymbol": "Lightning",
+          "observedTitle": "Basic [Lightning symbol] Energy",
+          "cardFrame": "Full top/side/bottom frame and copyright footer visible. Some provider canvases retain tiny exterior corner pixels; originals were preserved.",
+          "specialStamp": "No Play!Pokemon stamp visible.",
+          "physicalFinishVerified": false,
+          "sourceVariantMetadata": "normal",
+          "physicalCaptureProven": false,
+          "identityVerdict": "pass_printing_front_identity",
+          "nativeNameRewritten": false
+        },
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    {
+      "printing_id": "5181a179-8f7b-42ce-a638-bfa4bef25a2b",
+      "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "set_code": "mee",
+      "language_code": "en",
+      "collector_number": "005",
+      "card_native_name": "Psychic Energy",
+      "source_code": "scrydex",
+      "provider_id": "mee-5",
+      "image_url": "https://images.scrydex.com/pokemon/mee-5/large",
+      "batch_id": "EN-CARDS-005",
+      "variant_ids": [
+        "7250df92-dbb5-4d36-a024-e614eb78b13d",
+        "99af298a-6899-46cd-aecd-1a753d725c1c"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/51d59b488441dbe192fd77e09a904fbdb2816f827e7d6c4269da74f6ff0c664e/original.png",
+          "sha256": "51d59b488441dbe192fd77e09a904fbdb2816f827e7d6c4269da74f6ff0c664e",
+          "byte_size": 487733,
+          "width": 727,
+          "height": 1018,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/24fce5eaa2db9a292a7d53bc57e4da138706764b668b705119d1acf084ab53ac/card-grid.webp",
+          "sha256": "24fce5eaa2db9a292a7d53bc57e4da138706764b668b705119d1acf084ab53ac",
+          "byte_size": 9940,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/429a1ffdc743862ed52ccecbc8150815dd4e573dfde574ebd4ab93f4cfeb94e5/search-result.webp",
+          "sha256": "429a1ffdc743862ed52ccecbc8150815dd4e573dfde574ebd4ab93f4cfeb94e5",
+          "byte_size": 2442,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/5a0af756aa4c9082448761659c5e0c1d65c66c52c956e7355f11d885033bd43c/detail-page.webp",
+          "sha256": "5a0af756aa4c9082448761659c5e0c1d65c66c52c956e7355f11d885033bd43c",
+          "byte_size": 47894,
+          "width": 720,
+          "height": 1008,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/mee-5/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/psychic-energy/mee-5?variant=normal",
+        "provider_id": "mee-5",
+        "source_metadata_sha256": "b6514d387c6e66f3d1db1118caad067277681b84242c280dfb8a21b2f08ddbda",
+        "product_scope": "pokemon_tcg",
+        "collector_alias": null,
+        "pixel_identity": {
+          "method": "Agent inspected the unmodified original through view_image at original resolution, alongside hash-verified source-page metadata. No owner review requested.",
+          "language": "English; Basic Energy header and MEE EN footer visible.",
+          "printedSetCode": "MEE",
+          "printedLanguageCode": "EN",
+          "printedCollectorNumber": "005",
+          "printedDenominator": null,
+          "energyTypeSymbol": "Psychic",
+          "observedTitle": "Basic [Psychic symbol] Energy",
+          "cardFrame": "Full top/side/bottom frame and copyright footer visible. Some provider canvases retain tiny exterior corner pixels; originals were preserved.",
+          "specialStamp": "No Play!Pokemon stamp visible.",
+          "physicalFinishVerified": false,
+          "sourceVariantMetadata": "normal",
+          "physicalCaptureProven": false,
+          "identityVerdict": "pass_printing_front_identity",
+          "nativeNameRewritten": false
+        },
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    {
+      "printing_id": "9fbfab2c-7661-4508-a8b0-110013c3d717",
+      "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "set_code": "mee",
+      "language_code": "en",
+      "collector_number": "006",
+      "card_native_name": "Fighting Energy",
+      "source_code": "scrydex",
+      "provider_id": "mee-6",
+      "image_url": "https://images.scrydex.com/pokemon/mee-6/large",
+      "batch_id": "EN-CARDS-005",
+      "variant_ids": [
+        "5fe84f2f-82b1-494e-baba-5a628705444a",
+        "9f5774fe-481f-429a-8017-f60a9fe4435b"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/0dbec45cc8a04fd07492ded4c8abf7c20fe6a1b46bc666ff23b21f335f63d01d/original.png",
+          "sha256": "0dbec45cc8a04fd07492ded4c8abf7c20fe6a1b46bc666ff23b21f335f63d01d",
+          "byte_size": 485021,
+          "width": 727,
+          "height": 1018,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/7193b941c7321d1907f4cc0186a2830a8b0915e8e2cfd2fdab31664b51c07842/card-grid.webp",
+          "sha256": "7193b941c7321d1907f4cc0186a2830a8b0915e8e2cfd2fdab31664b51c07842",
+          "byte_size": 10076,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/82f5c0c07711aea62f2b53a7932aa91fd57ad834840f7b42435321a8000371cb/search-result.webp",
+          "sha256": "82f5c0c07711aea62f2b53a7932aa91fd57ad834840f7b42435321a8000371cb",
+          "byte_size": 2534,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/7611c6ea40c21627cf53cd8f95db42a912234a01e904027d1ca4dc2adcd36580/detail-page.webp",
+          "sha256": "7611c6ea40c21627cf53cd8f95db42a912234a01e904027d1ca4dc2adcd36580",
+          "byte_size": 47484,
+          "width": 720,
+          "height": 1008,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/mee-6/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/fighting-energy/mee-6?variant=normal",
+        "provider_id": "mee-6",
+        "source_metadata_sha256": "6771c34cc98602415004f5fdd119dc880a54296d31b8c3fc2c99dcabc12dfeff",
+        "product_scope": "pokemon_tcg",
+        "collector_alias": null,
+        "pixel_identity": {
+          "method": "Agent inspected the unmodified original through view_image at original resolution, alongside hash-verified source-page metadata. No owner review requested.",
+          "language": "English; Basic Energy header and MEE EN footer visible.",
+          "printedSetCode": "MEE",
+          "printedLanguageCode": "EN",
+          "printedCollectorNumber": "006",
+          "printedDenominator": null,
+          "energyTypeSymbol": "Fighting",
+          "observedTitle": "Basic [Fighting symbol] Energy",
+          "cardFrame": "Full top/side/bottom frame and copyright footer visible. Some provider canvases retain tiny exterior corner pixels; originals were preserved.",
+          "specialStamp": "No Play!Pokemon stamp visible.",
+          "physicalFinishVerified": false,
+          "sourceVariantMetadata": "normal",
+          "physicalCaptureProven": false,
+          "identityVerdict": "pass_printing_front_identity",
+          "nativeNameRewritten": false
+        },
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    {
+      "printing_id": "da0a1e6b-e976-48f2-8c5c-e7d663b3bdcd",
+      "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "set_code": "mee",
+      "language_code": "en",
+      "collector_number": "007",
+      "card_native_name": "Darkness Energy",
+      "source_code": "scrydex",
+      "provider_id": "mee-7",
+      "image_url": "https://images.scrydex.com/pokemon/mee-7/large",
+      "batch_id": "EN-CARDS-005",
+      "variant_ids": [
+        "19c611bc-62ee-446e-80f7-976977243e23",
+        "44f8c394-f668-4e7c-aa43-2b6e01dabf80"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/84eb03f9e9aca7dc4e9bb4f05fcdcb1fb4d71414311eef9b2a9e5b1ce9d87fa8/original.png",
+          "sha256": "84eb03f9e9aca7dc4e9bb4f05fcdcb1fb4d71414311eef9b2a9e5b1ce9d87fa8",
+          "byte_size": 503329,
+          "width": 727,
+          "height": 1018,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/46accfd90712c75d3815088496e763456c92845563818c164bf6ac4f7c05e6f1/card-grid.webp",
+          "sha256": "46accfd90712c75d3815088496e763456c92845563818c164bf6ac4f7c05e6f1",
+          "byte_size": 9610,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/22a9592e01cf36931319fbe039bd66183f7053348513433cc83cc75d6b6356c0/search-result.webp",
+          "sha256": "22a9592e01cf36931319fbe039bd66183f7053348513433cc83cc75d6b6356c0",
+          "byte_size": 2442,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/76d70c32c691fed52a222eb59a078c92bca9b36bfd71cc633d45a4fd62f07418/detail-page.webp",
+          "sha256": "76d70c32c691fed52a222eb59a078c92bca9b36bfd71cc633d45a4fd62f07418",
+          "byte_size": 46994,
+          "width": 720,
+          "height": 1008,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/mee-7/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/darkness-energy/mee-7?variant=normal",
+        "provider_id": "mee-7",
+        "source_metadata_sha256": "1639d96890a96b242e2b2952a50f43b9304baae9cb99fdaf1295c2d36a188475",
+        "product_scope": "pokemon_tcg",
+        "collector_alias": null,
+        "pixel_identity": {
+          "method": "Agent inspected the unmodified original through view_image at original resolution, alongside hash-verified source-page metadata. No owner review requested.",
+          "language": "English; Basic Energy header and MEE EN footer visible.",
+          "printedSetCode": "MEE",
+          "printedLanguageCode": "EN",
+          "printedCollectorNumber": "007",
+          "printedDenominator": null,
+          "energyTypeSymbol": "Darkness",
+          "observedTitle": "Basic [Darkness symbol] Energy",
+          "cardFrame": "Full top/side/bottom frame and copyright footer visible. Some provider canvases retain tiny exterior corner pixels; originals were preserved.",
+          "specialStamp": "No Play!Pokemon stamp visible.",
+          "physicalFinishVerified": false,
+          "sourceVariantMetadata": "normal",
+          "physicalCaptureProven": false,
+          "identityVerdict": "pass_printing_front_identity",
+          "nativeNameRewritten": false
+        },
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    {
+      "printing_id": "c0310180-d61b-4e80-a649-23fcf35fa437",
+      "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+      "set_code": "mee",
+      "language_code": "en",
+      "collector_number": "008",
+      "card_native_name": "Metal Energy",
+      "source_code": "scrydex",
+      "provider_id": "mee-8",
+      "image_url": "https://images.scrydex.com/pokemon/mee-8/large",
+      "batch_id": "EN-CARDS-005",
+      "variant_ids": [
+        "ae0ee342-eb0d-4300-a459-02e00e121cac",
+        "de499eb6-0c85-49a0-9c46-7304525eb6a6"
+      ],
+      "objects": [
+        {
+          "role": "original",
+          "artifact_id": 637933079,
+          "file": "objects/b4f8b4c8f6bd1092ecb4040b140c97d7c0f3ff78fec1cb387c150a489e0026ed/original.png",
+          "sha256": "b4f8b4c8f6bd1092ecb4040b140c97d7c0f3ff78fec1cb387c150a489e0026ed",
+          "byte_size": 416682,
+          "width": 727,
+          "height": 1018,
+          "mime_type": "image/png"
+        },
+        {
+          "role": "card-grid",
+          "artifact_id": 637933079,
+          "file": "objects/168c36cac1dde9a6512ced5afa2a21fcd050e83be3442dd01ef0edc1530f1985/card-grid.webp",
+          "sha256": "168c36cac1dde9a6512ced5afa2a21fcd050e83be3442dd01ef0edc1530f1985",
+          "byte_size": 8134,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "artifact_id": 637933079,
+          "file": "objects/23b9809c19aac4bd1fe4fa187da076b1313bc453202bab28b1a8248ba4f3ad21/search-result.webp",
+          "sha256": "23b9809c19aac4bd1fe4fa187da076b1313bc453202bab28b1a8248ba4f3ad21",
+          "byte_size": 2074,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "artifact_id": 637933079,
+          "file": "objects/ce62be130cd4b1550d213735b07b1a4d8d785d59f69761b0f70255ebcf7c6704/detail-page.webp",
+          "sha256": "ce62be130cd4b1550d213735b07b1a4d8d785d59f69761b0f70255ebcf7c6704",
+          "byte_size": 39082,
+          "width": 720,
+          "height": 1008,
+          "mime_type": "image/webp"
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/mee-8/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/metal-energy/mee-8?variant=normal",
+        "provider_id": "mee-8",
+        "source_metadata_sha256": "624ae6ff85e5cf95c6dc303aeb1acc45b21ca501da6a710ce9953ab0070483e8",
+        "product_scope": "pokemon_tcg",
+        "collector_alias": null,
+        "pixel_identity": {
+          "method": "Agent inspected the unmodified original through view_image at original resolution, alongside hash-verified source-page metadata. No owner review requested.",
+          "language": "English; Basic Energy header and MEE EN footer visible.",
+          "printedSetCode": "MEE",
+          "printedLanguageCode": "EN",
+          "printedCollectorNumber": "008",
+          "printedDenominator": null,
+          "energyTypeSymbol": "Metal",
+          "observedTitle": "Basic [Metal symbol] Energy",
+          "cardFrame": "Full top/side/bottom frame and copyright footer visible. Some provider canvases retain tiny exterior corner pixels; originals were preserved.",
+          "specialStamp": "No Play!Pokemon stamp visible.",
+          "physicalFinishVerified": false,
+          "sourceVariantMetadata": "normal",
+          "physicalCaptureProven": false,
+          "identityVerdict": "pass_printing_front_identity",
+          "nativeNameRewritten": false
+        },
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "englishFaceConfirmed": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted by the owner queue direction",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      },
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    }
+  ],
+  "catalogue_version_ids": {
+    "staging": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "production": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+  },
+  "source_counts": {
+    "scrydex": 9,
+    "pokemon_tcg_api": 1
+  },
+  "binding_expectations": {
+    "staging": [
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "19c611bc-62ee-446e-80f7-976977243e23",
+        "finish_code": "reverse_holo",
+        "printing_id": "da0a1e6b-e976-48f2-8c5c-e7d663b3bdcd",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Darkness Energy",
+        "collector_number": "007",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "2a705333-81e9-47dc-9771-299b67d99878",
+        "finish_code": "reverse_holo",
+        "printing_id": "fce8366f-fdf3-4e52-85c3-a0a39dbd8324",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Water Energy",
+        "collector_number": "003",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "1005554b-9bfc-495b-b50e-561193bec4f8",
+        "set_code": "cel25cc",
+        "game_code": "pokemon",
+        "variant_id": "2e1b06ae-beda-44b6-a010-f8de2d0b2282",
+        "finish_code": "holo",
+        "printing_id": "411b039e-87d2-4cf8-b667-ba15c9f219ad",
+        "variant_code": "holo",
+        "language_code": "en",
+        "card_native_name": "Gardevoir ex",
+        "collector_number": "CC014",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "44f8c394-f668-4e7c-aa43-2b6e01dabf80",
+        "finish_code": "normal",
+        "printing_id": "da0a1e6b-e976-48f2-8c5c-e7d663b3bdcd",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Darkness Energy",
+        "collector_number": "007",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "5fe84f2f-82b1-494e-baba-5a628705444a",
+        "finish_code": "reverse_holo",
+        "printing_id": "9fbfab2c-7661-4508-a8b0-110013c3d717",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Fighting Energy",
+        "collector_number": "006",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "6688bf29-5953-4553-8eaa-c4f55a47283a",
+        "finish_code": "normal",
+        "printing_id": "494bd2bf-159c-4b9d-9959-5acdf99372ae",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Grass Energy",
+        "collector_number": "001",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "679a405a-622e-4587-a309-fb79188f79ab",
+        "finish_code": "normal",
+        "printing_id": "456430be-5645-45db-872a-7c7e25717b66",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Lightning Energy",
+        "collector_number": "004",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "7250df92-dbb5-4d36-a024-e614eb78b13d",
+        "finish_code": "reverse_holo",
+        "printing_id": "5181a179-8f7b-42ce-a638-bfa4bef25a2b",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Psychic Energy",
+        "collector_number": "005",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "7c333e81-986f-4d58-b73d-59afb42a5c46",
+        "finish_code": "reverse_holo",
+        "printing_id": "456430be-5645-45db-872a-7c7e25717b66",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Lightning Energy",
+        "collector_number": "004",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "954d5a69-4257-4161-804a-ec06d2d40fac",
+        "finish_code": "reverse_holo",
+        "printing_id": "4c902586-66f4-4e88-b18f-9e30ef360529",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Fire Energy",
+        "collector_number": "002",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "99af298a-6899-46cd-aecd-1a753d725c1c",
+        "finish_code": "normal",
+        "printing_id": "5181a179-8f7b-42ce-a638-bfa4bef25a2b",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Psychic Energy",
+        "collector_number": "005",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "9f5774fe-481f-429a-8017-f60a9fe4435b",
+        "finish_code": "normal",
+        "printing_id": "9fbfab2c-7661-4508-a8b0-110013c3d717",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Fighting Energy",
+        "collector_number": "006",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "a6917a7f-d14e-4888-a11b-4918ccd90e8e",
+        "finish_code": "normal",
+        "printing_id": "4c902586-66f4-4e88-b18f-9e30ef360529",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Fire Energy",
+        "collector_number": "002",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "ae0ee342-eb0d-4300-a459-02e00e121cac",
+        "finish_code": "reverse_holo",
+        "printing_id": "c0310180-d61b-4e80-a649-23fcf35fa437",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Metal Energy",
+        "collector_number": "008",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "b4f4f4af-d49b-44c7-9073-53288515b280",
+        "finish_code": "reverse_holo",
+        "printing_id": "494bd2bf-159c-4b9d-9959-5acdf99372ae",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Grass Energy",
+        "collector_number": "001",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "d7184964-795b-4631-b189-fbb851d6e336",
+        "finish_code": "normal",
+        "printing_id": "fce8366f-fdf3-4e52-85c3-a0a39dbd8324",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Water Energy",
+        "collector_number": "003",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "de499eb6-0c85-49a0-9c46-7304525eb6a6",
+        "finish_code": "normal",
+        "printing_id": "c0310180-d61b-4e80-a649-23fcf35fa437",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Metal Energy",
+        "collector_number": "008",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "a3dba415-055a-463f-be5c-1c9fc8c5f387",
+        "set_code": "B1a",
+        "game_code": "pokemon",
+        "variant_id": "ed40c9d5-8685-4451-af05-27bf3d619035",
+        "finish_code": "normal",
+        "printing_id": "90883e5c-8ae1-49fc-9bdb-064b92b1eedf",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Oddish",
+        "collector_number": "088",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      }
+    ],
+    "production": [
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "19c611bc-62ee-446e-80f7-976977243e23",
+        "finish_code": "reverse_holo",
+        "printing_id": "da0a1e6b-e976-48f2-8c5c-e7d663b3bdcd",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Darkness Energy",
+        "collector_number": "007",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "2a705333-81e9-47dc-9771-299b67d99878",
+        "finish_code": "reverse_holo",
+        "printing_id": "fce8366f-fdf3-4e52-85c3-a0a39dbd8324",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Water Energy",
+        "collector_number": "003",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "1005554b-9bfc-495b-b50e-561193bec4f8",
+        "set_code": "cel25cc",
+        "game_code": "pokemon",
+        "variant_id": "2e1b06ae-beda-44b6-a010-f8de2d0b2282",
+        "finish_code": "holo",
+        "printing_id": "411b039e-87d2-4cf8-b667-ba15c9f219ad",
+        "variant_code": "holo",
+        "language_code": "en",
+        "card_native_name": "Gardevoir ex",
+        "collector_number": "CC014",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "44f8c394-f668-4e7c-aa43-2b6e01dabf80",
+        "finish_code": "normal",
+        "printing_id": "da0a1e6b-e976-48f2-8c5c-e7d663b3bdcd",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Darkness Energy",
+        "collector_number": "007",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "5fe84f2f-82b1-494e-baba-5a628705444a",
+        "finish_code": "reverse_holo",
+        "printing_id": "9fbfab2c-7661-4508-a8b0-110013c3d717",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Fighting Energy",
+        "collector_number": "006",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "6688bf29-5953-4553-8eaa-c4f55a47283a",
+        "finish_code": "normal",
+        "printing_id": "494bd2bf-159c-4b9d-9959-5acdf99372ae",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Grass Energy",
+        "collector_number": "001",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "679a405a-622e-4587-a309-fb79188f79ab",
+        "finish_code": "normal",
+        "printing_id": "456430be-5645-45db-872a-7c7e25717b66",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Lightning Energy",
+        "collector_number": "004",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "7250df92-dbb5-4d36-a024-e614eb78b13d",
+        "finish_code": "reverse_holo",
+        "printing_id": "5181a179-8f7b-42ce-a638-bfa4bef25a2b",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Psychic Energy",
+        "collector_number": "005",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "7c333e81-986f-4d58-b73d-59afb42a5c46",
+        "finish_code": "reverse_holo",
+        "printing_id": "456430be-5645-45db-872a-7c7e25717b66",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Lightning Energy",
+        "collector_number": "004",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "954d5a69-4257-4161-804a-ec06d2d40fac",
+        "finish_code": "reverse_holo",
+        "printing_id": "4c902586-66f4-4e88-b18f-9e30ef360529",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Fire Energy",
+        "collector_number": "002",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "99af298a-6899-46cd-aecd-1a753d725c1c",
+        "finish_code": "normal",
+        "printing_id": "5181a179-8f7b-42ce-a638-bfa4bef25a2b",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Psychic Energy",
+        "collector_number": "005",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "9f5774fe-481f-429a-8017-f60a9fe4435b",
+        "finish_code": "normal",
+        "printing_id": "9fbfab2c-7661-4508-a8b0-110013c3d717",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Fighting Energy",
+        "collector_number": "006",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "a6917a7f-d14e-4888-a11b-4918ccd90e8e",
+        "finish_code": "normal",
+        "printing_id": "4c902586-66f4-4e88-b18f-9e30ef360529",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Fire Energy",
+        "collector_number": "002",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "ae0ee342-eb0d-4300-a459-02e00e121cac",
+        "finish_code": "reverse_holo",
+        "printing_id": "c0310180-d61b-4e80-a649-23fcf35fa437",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Metal Energy",
+        "collector_number": "008",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "b4f4f4af-d49b-44c7-9073-53288515b280",
+        "finish_code": "reverse_holo",
+        "printing_id": "494bd2bf-159c-4b9d-9959-5acdf99372ae",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Grass Energy",
+        "collector_number": "001",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "d7184964-795b-4631-b189-fbb851d6e336",
+        "finish_code": "normal",
+        "printing_id": "fce8366f-fdf3-4e52-85c3-a0a39dbd8324",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Water Energy",
+        "collector_number": "003",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061",
+        "set_code": "mee",
+        "game_code": "pokemon",
+        "variant_id": "de499eb6-0c85-49a0-9c46-7304525eb6a6",
+        "finish_code": "normal",
+        "printing_id": "c0310180-d61b-4e80-a649-23fcf35fa437",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Metal Energy",
+        "collector_number": "008",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "a3dba415-055a-463f-be5c-1c9fc8c5f387",
+        "set_code": "B1a",
+        "game_code": "pokemon",
+        "variant_id": "ed40c9d5-8685-4451-af05-27bf3d619035",
+        "finish_code": "normal",
+        "printing_id": "90883e5c-8ae1-49fc-9bdb-064b92b1eedf",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Oddish",
+        "collector_number": "088",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      }
+    ]
+  },
+  "source_policies": {
+    "staging": [
+      {
+        "code": "pokemon_tcg_api",
+        "active": true,
+        "base_url": "https://api.pokemontcg.io/v2",
+        "source_type": "catalogue",
+        "display_name": "Pokemon TCG API",
+        "deprecated_at": null,
+        "internal_notes": "Automated refresh disabled until provider terms review explicitly allows it.",
+        "licence_status": "under_review",
+        "attribution_required": true
+      }
+    ],
+    "production": [
+      {
+        "code": "pokemon_tcg_api",
+        "active": true,
+        "base_url": "https://api.pokemontcg.io/v2",
+        "source_type": "catalogue",
+        "display_name": "Pokemon TCG API",
+        "deprecated_at": null,
+        "internal_notes": "Automated refresh disabled until provider terms review explicitly allows it.",
+        "licence_status": "under_review",
+        "attribution_required": true
+      },
+      {
+        "code": "scrydex",
+        "active": false,
+        "base_url": "https://scrydex.com",
+        "source_type": "image",
+        "display_name": "Scrydex",
+        "deprecated_at": null,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "licence_status": "under_review",
+        "attribution_required": true
+      }
+    ]
+  }
+}
