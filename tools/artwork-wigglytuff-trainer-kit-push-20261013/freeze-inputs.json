@@ -1,0 +1,16 @@
+{
+  "source_manifest_file": "wig-trainer-kit28-source-manifest.json",
+  "source_manifest_sha256": "ab2a889022801aa9d71d696fa8150abb4be3164dfd85032416dc09e6d7cbc0a4",
+  "checked_handoff_file": "source-batches/receipts/en036-en037-checked-handoff-20261013T223548642126Z.json",
+  "checked_handoff_sha256": "25d18b37eab137b87dddc5ce0d1ba46ac3cd2c4ebe88976e3f32580ee6427458",
+  "eligible_fronts": 28,
+  "binding_prefix": "wig28",
+  "archive": {
+    "id": 638452571,
+    "kind": "github_release_asset",
+    "artifact_directory": "638452571",
+    "sha256": "505f413ba82ae242d25bbb108114c25c82617e88a3d646b35629318d3ad6a1b0",
+    "byte_size": 28775194,
+    "file_count": 115
+  }
+}
