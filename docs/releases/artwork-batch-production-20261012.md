@@ -1,5 +1,19 @@
 # Artwork batches: production delivery and remaining source holds
 
+## Queue update — 13 October 2026
+
+The owner removed extra permission prompts for offline work and then explicitly directed Tif to use internet sources and queue artwork for the production push without owner batch review. This direction is recorded as standing queue approval; there is no pending owner artwork-review step.
+
+Ten originals in EN-CARDS-001, EN-CARDS-002 and EN-CARDS-005 have now been gathered, matched and checked. Current public card responses matched all ten original card IDs, English language, set IDs, collector references and canonical names. The package includes those ten unmodified originals and 30 fully decoded, hash/dimension/size-verified WebP display files, prepared with the existing offline helper without enlargement. Oddish is 597x834; the eight MEE energies are 727x1018; Gardevoir is 734x1024. MEE printed001-008 and Gardevoir printed93/101/DeltaSpecies/Celebrations25badge were inspected. The original CC014 catalogue alias is retained and no canonical name/collector or physical finish was changed.
+
+The local queue is durable and frozen at queueId STACKR-EN-FRONTS-20261013-010. The archive contains43files (40images +3metadata receipts),5,828,179bytes; SHA-256 de494b5c6a98b462db09738034df10c7deef226f552283354008dd9cf1056fd7. The public queue metadata is in [artwork-next-push-20261013.json](./artwork-next-push-20261013.json); original image bytes remain in the owner package.
+
+The next push requires a bounded new-cohort adapter around the shared publisher; existing frozen English49/Pocket131/Native97 cohorts and hashes remain unchanged. This queue does not activate a worker or production workflow. Ten queued pictures are not newly live: the production count remains702/2944,30completed batches,2242unfinished tasks including the ten queued pictures. No production writes occurred in this queue preparation.
+
+Historical source observations below remain dated12October. Factual third-party origins and unknown vendor licence/physical-finish facts are preserved; no additional owner permission prompt or review is being requested for the queue. Source facts are not relabelled merely to fill production approval fields.
+
+## Historical production snapshot — 12 October 2026
+
 Checked 12 October 2026. Inventory: STACKR-ARTWORK-20261012.
 
 The owner asked Tif to process the fixed artwork batches through production. The saved list has 2,944 unique tasks in 161 batches. Batch IDs and historical identities are retained so follow-up requests can resume the same items.
