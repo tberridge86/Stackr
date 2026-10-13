@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { transformSync } from 'esbuild';
 import published from '../lib/generated/publishedSetLogos.generated.json';
 import simplified from '../lib/generated/publishedSimplifiedChineseCovers.generated.json';
@@ -30,10 +31,26 @@ assert.equal(getPublishedSetLogoFallback({id:megaEnergy,language:'en'}), getPubl
 assert.equal(getPublishedSetLogoFallback({id:'mee',language:'en'}), getPublishedSetLogoFallback({id:mega,language:'en'}));
 assert.equal(getPublishedSetLogoFallback({id:megaEnergy,language:'ja'}), undefined);
 assert.equal(getPublishedSetLogoFallback({id:'unknown-set',language:'ja'}), undefined);
+// Pin the one reviewed replacement independently of the implementation. All
+// other generated entries must retain their exact existing storage key.
+const crown = '42096fc0-51f2-4805-a114-e6f2811a0c49';
+const gallery = '8bb033f3-6059-4f5f-a021-c363241092a1';
+const reviewedCrownKey = 'public/set_logo/reviewed/catalogue/' + crown
+  + '/dcc01afe69d851972c3c5a05a64fb9c939d1a5df6906e8d0b4be33f682627c92/delivery.png';
+const storageRoot = 'https://production-test.invalid/storage/v1/object/public/stackr-catalogue-public/';
+let reviewedReplacementCount = 0;
 for(const row of published.logos) {
   const url = getPublishedSetLogoFallback({id:row.setId,language:row.language});
-  assert.ok(url?.endsWith(row.storageKey));
+  const isReviewedCrown = row.setId === crown && row.language === 'en';
+  const expectedKey = isReviewedCrown ? reviewedCrownKey : row.storageKey;
+  if (isReviewedCrown) reviewedReplacementCount += 1;
+  assert.equal(url, storageRoot + expectedKey, `${row.language}:${row.setCode} must select its exact approved fallback`);
   assert.match(row.storageKey, /^public\/set_logo\/[a-f0-9]{2}\/[a-f0-9]{2}\/[a-f0-9]{64}\/original\.(png|webp|jpg)$/);
+}
+assert.equal(reviewedReplacementCount, 1, 'The reviewed exception must match exactly one Crown Zenith snapshot row.');
+for (const id of [crown, gallery, 'swsh12.5', 'swsh12pt5', 'swsh12.5gg', 'swsh12pt5gg']) {
+  assert.equal(getPublishedSetLogoFallback({ id, language: 'en' }), storageRoot + reviewedCrownKey);
+  assert.equal(getPublishedSetLogoFallback({ id, language: 'ja' }), undefined);
 }
 console.log(`Published set-logo identity checks passed for ${published.logos.length} existing assets, including exact-language and parent-logo controls.`);
 for (const row of simplified.covers) {
@@ -46,3 +63,6 @@ for (const row of simplified.covers) {
   assert.match(row.storageKey, /^public\/sealed_product_image\/[a-f0-9]{2}\/[a-f0-9]{2}\/[a-f0-9]{64}\/original\.jpg$/);
 }
 console.log(`Exact Simplified Chinese cover checks passed for ${simplified.covers.length} existing assets without substituting logos or crossing languages.`);
+
+// Keep the companion runtime matrix inside the existing integration/CI entry point.
+execFileSync(process.execPath, ['--test', 'scripts/test-crown-zenith-logo-fallback.cjs'], { stdio: 'inherit' });

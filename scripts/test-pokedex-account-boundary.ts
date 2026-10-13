@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import * as core from '../lib/pokedexCollectionCore';
+import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 function deferred<T>() {
@@ -22,7 +23,7 @@ function compile(path: string, dependencies: Record<string, any>, extra: Record<
   const exports: any = {};
   runInNewContext(ts.transpileModule(sourceFor(path), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React, esModuleInterop: true },
-  }).outputText, { exports, console: { log() {} }, Set, Map, URLSearchParams,
+  }).outputText, { exports, console: { log() {} }, Set, Map, URLSearchParams, AbortController,
     require: (name: string) => {
       assert.ok(name in dependencies || name.endsWith('.png'), `${path}: unexpected dependency ${name}`);
       return dependencies[name] ?? 'fixture-asset';
@@ -117,6 +118,7 @@ function screenHarness(kind: 'list' | 'detail') {
     '@expo/vector-icons': { Ionicons: 'Icon' }, '@react-native-async-storage/async-storage': { getItem: async () => null, setItem: async () => {} },
     '../../lib/pokedexCollection': collection,
     '../../lib/pokedexOwnershipState': shared,
+    '../../lib/optionalCatalogueEnrichment': { readOptionalCatalogueEnrichment },
     '../../lib/stackrApiV1': { stackrApiClient: { pokemonIndex: async () => ({ data: { count: pokemonRows.length, indexVersion: 'fixture', results: pokemonRows } }) } },
     '../../components/StackrBackdrop': { StackrBackdrop: 'Backdrop' },
     '../../components/StackrScreen': { PokemonArtworkGlow: 'Glow', StackrScreen: 'Screen' }, '../../lib/stackrIcons': { stackrIcons: {} },

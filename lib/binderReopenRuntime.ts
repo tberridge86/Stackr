@@ -3,6 +3,7 @@ import { MOBILE_RUNTIME_CONFIG } from './mobileRuntimeConfig';
 import { stackrApiClient } from './stackrApiV1';
 import { subscribeRequestCacheInvalidation } from './requestCache';
 import { createBinderReopenCache, type BinderReopenScope, type BinderReopenStore } from './binderReopenSnapshot';
+import { fetchBinderById, fetchBinderCards, type BinderCardRecord, type BinderRecord } from './binders';
 
 declare const require: (name: string) => any;
 
@@ -76,4 +77,69 @@ export function isBinderAccessDenied(error: unknown) {
   const candidate = error as { status?: number; code?: string } | null;
   return candidate?.status === 401 || candidate?.status === 403 || candidate?.code === '42501'
     || candidate?.code === 'PGRST301' || candidate?.code === 'session_not_found';
+}
+
+const BINDER_REOPEN_PRELOAD_LIMIT = 8;
+
+/**
+ * Warms the existing, bounded reopen cache after Home is already usable.
+ * This reads private rows through the normal RLS-backed binder functions; it
+ * never turns a local cache into authorisation or downloads optional assets.
+ */
+export async function preloadBinderReopenViews(
+  binders: BinderRecord[],
+  accountId: string,
+  isCurrent: () => boolean,
+  options: { completeSavedCardsByBinder?: Map<string, BinderCardRecord[]> } = {},
+): Promise<void> {
+  const trustedAccountId = String(accountId ?? '').trim();
+  if (!trustedAccountId || !isCurrent()) return;
+  const lease = binderReopenCache.lease();
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error || !session?.user?.id || session.user.id !== trustedAccountId
+    || !session.expires_at || session.expires_at * 1000 <= Date.now()
+    || !isCurrent() || lease !== binderReopenCache.lease()) return;
+  const sessionExpiresAt = session.expires_at;
+  const isEligible = () => isCurrent()
+    && lease === binderReopenCache.lease()
+    && sessionExpiresAt * 1000 > Date.now();
+
+  const scope = binderReopenScope(trustedAccountId);
+  const candidates = binders
+    .filter((binder) => binder?.user_id === trustedAccountId && (binder.type === 'official' || binder.type === 'custom') && Boolean(binder.id))
+    .sort((left, right) => Date.parse(right.created_at ?? '') - Date.parse(left.created_at ?? ''))
+    .slice(0, BINDER_REOPEN_PRELOAD_LIMIT);
+
+  for (const candidate of candidates) {
+    if (!isEligible()) return;
+    // A complete current snapshot needs no network work.
+    if (await binderReopenCache.read(scope, candidate.id)) {
+      if (!isEligible()) return;
+      continue;
+    }
+    if (!isEligible()) return;
+
+    try {
+      if (candidate.type === 'custom') {
+        const completeCards = options.completeSavedCardsByBinder?.get(candidate.id);
+        if (!completeCards || completeCards.some((row) => row?.binder_id !== candidate.id)) continue;
+        if (!isEligible()) return;
+        binderReopenCache.save(scope, candidate, completeCards, lease, undefined, {
+          customSource: { kind: 'home-saved-cards-v1', cardCount: completeCards.length },
+        });
+        continue;
+      }
+      const binder = await fetchBinderById(candidate.id, { includeAssets: false });
+      if (!binder || binder.id !== candidate.id || binder.user_id !== trustedAccountId || !isEligible()) return;
+      const cards = await fetchBinderCards(candidate.id, { includePrices: false, includeAssets: false });
+      if (!isEligible()) return;
+      // save() is the authoritative completeness/whitelist/size gate. A
+      // partial catalogue, foreign row, or oversized payload simply is not
+      // cached and this low-priority pass proceeds to the next candidate.
+      binderReopenCache.save(scope, binder, cards, lease);
+    } catch {
+      // Preloading is opportunistic: a single unavailable binder must not fan
+      // out retries or delay the remaining bounded candidates.
+    }
+  }
 }

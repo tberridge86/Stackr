@@ -34,7 +34,8 @@ import { stackrIcons } from '../../lib/stackrIcons';
 import {
   getCachedCardSync,
 } from '../../lib/pokemonTcgCache';
-import { fetchCardById, normalizePokemonCardLanguage } from '../../lib/pokemonTcg';
+import { fetchCardById, mergeSetCardArtwork, normalizePokemonCardLanguage, type PokemonCard as CanonicalPokemonCard } from '../../lib/pokemonTcg';
+import { enrichStackrCardArtworkFromFacts } from '../../lib/stackrDomainAdapter';
 import { supabase } from '../../lib/supabase';
 import { createManualCollectionDraft } from '../../lib/manualCollectionDraft';
 import { getDisplaySetLogoUrl } from '../../lib/setDisplay';
@@ -156,6 +157,7 @@ export default function CardDetailScreen() {
 
   const [card, setCard] = useState<PokemonCard | null>(null);
   const [referenceImage, setReferenceImage] = useState(false);
+  const [artworkLoading, setArtworkLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [listingBusy, setListingBusy] = useState(false);
   const [collectionBusy, setCollectionBusy] = useState(false);
@@ -197,16 +199,19 @@ export default function CardDetailScreen() {
 
   useEffect(() => {
     let mounted = true;
+    const artworkAbort = new AbortController();
 
     const loadCard = async () => {
       try {
         setLoading(true);
+        setArtworkLoading(false);
 
         let found: PokemonCard | null = null;
+        let foundInCache = false;
 
         if (paramSetId && cardId) {
           found = getCachedCardSync(paramSetId, cardId);
-
+          foundInCache = Boolean(found);
         }
 
         // A direct card route must never download every set to locate one ID.
@@ -216,6 +221,20 @@ export default function CardDetailScreen() {
 
         if (mounted) {
           setCard(found ?? null);
+          if (foundInCache && found && !found.images?.small && !found.images?.large) {
+            setArtworkLoading(true);
+            // The enrichment WeakMap accepts canonical facts only; unsupported
+            // cached legacy rows simply yield no artwork and retain their facts.
+            const canonicalFacts = found as CanonicalPokemonCard;
+            void enrichStackrCardArtworkFromFacts([canonicalFacts], artworkAbort.signal).then((enriched) => {
+              if (!mounted || artworkAbort.signal.aborted) return;
+              setCard((current) => {
+                if (!current) return current;
+                const merged = mergeSetCardArtwork([current as CanonicalPokemonCard], enriched)[0];
+                return merged ? merged as PokemonCard : current;
+              });
+            }).catch(() => undefined).finally(() => { if (mounted && !artworkAbort.signal.aborted) setArtworkLoading(false); });
+          } else setArtworkLoading(false);
         }
       } catch (err) {
         console.error('Failed to load card:', err);
@@ -233,6 +252,7 @@ export default function CardDetailScreen() {
 
     return () => {
       mounted = false;
+      artworkAbort.abort();
     };
   }, [cardId, paramSetId]);
 
@@ -558,7 +578,7 @@ export default function CardDetailScreen() {
               />
           ) : (
             <View style={styles.imageFallback}>
-              <Text style={styles.imageFallbackText}>No image</Text>
+              <Text style={styles.imageFallbackText}>{artworkLoading ? 'Loading artwork…' : 'No image'}</Text>
             </View>
           )}
           <RaritySymbol

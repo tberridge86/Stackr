@@ -3,9 +3,17 @@ import { fetchOwnedCardRows } from './ownership';
 import { supabase } from './supabase';
 
 /** Read saved collection records before requesting optional catalogue artwork or prices. */
-export async function fetchHomeSavedCollection(userId: string) {
+export async function fetchHomeSavedCollection(userId: string, options: {
+  onBindersReady?: (binders: BinderRecord[]) => void;
+} = {}) {
   const [binders, ownedRows] = await Promise.all([
-    fetchBinders({ enrich: false }),
+    fetchBinders({ enrich: false }).then((savedBinders) => {
+      if (savedBinders.some((binder) => binder.user_id !== userId)) {
+        throw new Error('The collection account changed. Please retry.');
+      }
+      options.onBindersReady?.(savedBinders);
+      return savedBinders;
+    }),
     fetchOwnedCardRows(),
   ]);
   if (binders.some((binder) => binder.user_id !== userId)
@@ -30,7 +38,9 @@ export async function fetchHomeSavedCollection(userId: string) {
       if (page.length < 1000) break;
     }
   }
-  const byBinder = new Map<string, BinderCardRecord[]>();
+  // A successful paginated read also proves an empty binder; absence from a
+  // partial map must never be mistaken for a complete zero-card download.
+  const byBinder = new Map<string, BinderCardRecord[]>(binders.map((binder) => [binder.id, []]));
   for (const row of rows) {
     const cards = byBinder.get(row.binder_id) ?? [];
     cards.push(row);

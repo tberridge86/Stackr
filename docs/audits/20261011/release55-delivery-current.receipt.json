@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-11T21:45:59.452Z",
+  "sourceRevision": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
+  "release": {
+    "marnie": {
+      "canonicalApplied": true,
+      "correctedPrintings": 12,
+      "correctedEnglishAliases": 13,
+      "genuinePikachuPreserved": 22,
+      "publicDeltaRows": 25,
+      "runtimeGenerated": true,
+      "runtimePublished": true,
+      "apiAcceptance": {
+        "checkedAt": "2026-10-11T21:11:23.809Z",
+        "requestCount": 38,
+        "backendSha": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
+        "queries": [
+          {
+            "query": "瑪俐",
+            "pages": 1,
+            "resultCount": 13,
+            "matchedCorrectedPrintingIds": [
+              "1386b19f-ada3-447a-83d0-105acf48752c",
+              "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+              "44b54476-f33f-435f-8985-b412cb5edb4c",
+              "4a459e00-0853-43a7-b0a6-e9d0f56c42f6",
+              "4a9af5de-61f9-4bb7-8133-5d28e2b356ad",
+              "63019ce2-f59b-4aed-a3e0-025789ecb7ab",
+              "818b3095-25cf-491e-b536-6a2e7513a3a0",
+              "971eba73-3c5f-4306-a6d5-700e8b748c9b",
+              "a52f71c8-a76c-449a-8030-219ec64a61d8",
+              "c3ee4722-7304-4cbf-a905-93162e371e76",
+              "d2132ffe-de94-462d-be98-8b6fba08e8ad",
+              "f9c8c84e-1179-4585-8a38-9591727bb676"
+            ]
+          },
+          {
+            "query": "Marnie",
+            "pages": 1,
+            "resultCount": 14,
+            "matchedCorrectedPrintingIds": [
+              "1386b19f-ada3-447a-83d0-105acf48752c",
+              "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+              "44b54476-f33f-435f-8985-b412cb5edb4c",
+              "4a459e00-0853-43a7-b0a6-e9d0f56c42f6",
+              "4a9af5de-61f9-4bb7-8133-5d28e2b356ad",
+              "63019ce2-f59b-4aed-a3e0-025789ecb7ab",
+              "818b3095-25cf-491e-b536-6a2e7513a3a0",
+              "971eba73-3c5f-4306-a6d5-700e8b748c9b",
+              "a52f71c8-a76c-449a-8030-219ec64a61d8",
+              "c3ee4722-7304-4cbf-a905-93162e371e76",
+              "d2132ffe-de94-462d-be98-8b6fba08e8ad",
+              "f9c8c84e-1179-4585-8a38-9591727bb676"
+            ]
+          },
+          {
+            "query": "Pikachu",
+            "pages": 1,
+            "resultCount": 43,
+            "matchedCorrectedPrintingIds": []
+          }
+        ]
+      },
+      "artwork": {
+        "payloadPrintings": 12,
+        "payloadVariants": 13,
+        "detailBrowserRenders": 12,
+        "wrongOrMissingScopedDetailAssetsFound": 0,
+        "physicalFinishVerified": false,
+        "nativeImageStatusResolved": false
+      }
+    },
+    "backend": {
+      "workflowId": "38174683974",
+      "deploymentId": "0ec29984-7ac0-4cc6-93d9-4c26beb871d9",
+      "status": "SUCCESS",
+      "gitSha": "0188361a1b1e278ea180f9eec5ec487af52ca8cd"
+    },
+    "nativeBuild": {
+      "id": "01fda53d-c962-4b2c-9c01-3ab2e29afb7a",
+      "status": "FINISHED",
+      "appVersion": "1.0.6",
+      "appBuildVersion": "55",
+      "platform": "IOS",
+      "buildProfile": "production",
+      "channel": "production",
+      "runtimeVersion": "1.0.6",
+      "completedAt": "2026-10-11T21:34:43.941Z",
+      "hasNativeArchive": true
+    },
+    "appleTarget55": {
+      "submissionId": "a1d84265-9aa8-434e-a3ce-aa5fb980a70f",
+      "requestAccepted": true,
+      "submissionStatus": "FINISHED",
+      "buildId": "01fda53d-c962-4b2c-9c01-3ab2e29afb7a",
+      "appVersion": "1.0.6",
+      "appBuildVersion": "55",
+      "platform": "IOS",
+      "createdAt": "2026-10-11T21:39:14.440Z",
+      "completedAt": "2026-10-11T21:44:46.561Z",
+      "testFlightAvailable": true,
+      "betaObservation": {
+        "observedAt": "2026-10-11T21:45:26.314Z",
+        "available": true,
+        "build55": {
+          "appVersion": "1.0.6",
+          "buildNumber": "55",
+          "processingState": "VALID",
+          "internalState": "IN_BETA_TESTING",
+          "externalState": "READY_FOR_BETA_SUBMISSION",
+          "uploadedDate": "2026-10-11T14:41:09-07:00",
+          "expired": false,
+          "easSubmissionId": "a1d84265-9aa8-434e-a3ce-aa5fb980a70f",
+          "easBuildId": "01fda53d-c962-4b2c-9c01-3ab2e29afb7a",
+          "runtimeVersion": "1.0.6",
+          "fingerprintHash": "726bbef8c43382dd671747934d8f276fe2897b2c"
+        }
+      },
+      "installedDeviceVerified": false
+    }
+  },
+  "openGates": {
+    "testFlightAvailable": true,
+    "installedDeviceVerified": false,
+    "authenticatedPricingValidated": false,
+    "overallProductionReady": false,
+    "unresolved": [
+      "Actual owner iPhone15Pro/5G acceptance",
+      "Physical finish/scanner proof",
+      "Whole-catalogue high-resolution artwork/source coverage",
+      "100 observations per journey/cache-condition latency cohort",
+      "Seven-day API reliability and eight-week pricing observation windows"
+    ]
+  }
+}

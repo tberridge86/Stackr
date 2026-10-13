@@ -6,6 +6,7 @@ import ts from 'typescript';
 const binder = { id: 'binder-a', user_id: 'owner-a', type: 'official', source_set_id: 'base1' };
 let fail = false;
 let wrongAccount = false;
+let pendingOwnership: Promise<unknown> | null = null;
 const reads: [number, number][] = [];
 const saved = Array.from({ length: 1702 }, (_, index) => ({
   id: `card-${index}`, binder_id: binder.id, card_id: `card-${index}`, owned: index < 1323,
@@ -24,7 +25,7 @@ const dependencies: Record<string, unknown> = {
     assert.equal((options as { enrich: boolean }).enrich, false, 'Home must not wait for catalogue branding');
     return [{ ...binder, user_id: wrongAccount ? 'owner-b' : binder.user_id }];
   } },
-  './ownership': { fetchOwnedCardRows: async () => [{ user_id: 'owner-a', card_id: 'owned-outside-binder', quantity: 2 }] },
+  './ownership': { fetchOwnedCardRows: async () => pendingOwnership ?? [{ user_id: 'owner-a', card_id: 'owned-outside-binder', quantity: 2 }] },
   './supabase': { supabase: { from: (table: string) => {
     assert.equal(table, 'binder_cards', 'Saved collection loading must not request catalogue or price tables');
     return query;
@@ -40,6 +41,19 @@ vm.runInNewContext(source, { exports: exported, require: (name: string) => {
 } });
 
 async function main() {
+  let releaseOwnership!: (value: unknown) => void;
+  pendingOwnership = new Promise(resolve => { releaseOwnership = resolve; });
+  const readyBinders: { rows: any[] } = { rows: [] };
+  const loading = exported.fetchHomeSavedCollection('owner-a', {
+    onBindersReady: (rows: any[]) => { readyBinders.rows = rows; },
+  });
+  for (let turn = 0; turn < 10; turn++) await Promise.resolve();
+  assert.equal(readyBinders.rows[0]?.id, 'binder-a', 'binder preload begins before stalled ownership/card/price reads');
+  assert.equal(reads.length, 0, 'binder preload does not await or initiate additional card reads');
+  releaseOwnership([{ user_id: 'owner-a', card_id: 'owned-outside-binder', quantity: 2 }]);
+  await loading;
+  pendingOwnership = null;
+  reads.length = 0;
   const collection = await exported.fetchHomeSavedCollection('owner-a');
   assert.equal(collection.cardsByBinder.get('binder-a').length, 1702, 'All saved rows survive the default database page limit');
   assert.equal(collection.ownedRows[0].card_id, 'owned-outside-binder', 'Standalone ownership is retained');
@@ -51,7 +65,11 @@ async function main() {
   fail = false;
   wrongAccount = true;
   const before = reads.length;
-  await assert.rejects(exported.fetchHomeSavedCollection('owner-a'), /account changed/);
+  let unsafePreload = false;
+  await assert.rejects(exported.fetchHomeSavedCollection('owner-a', {
+    onBindersReady: () => { unsafePreload = true; },
+  }), /account changed/);
+  assert.equal(unsafePreload, false, 'another account’s binders cannot seed the preload cache');
   assert.equal(reads.length, before, 'An account mismatch must stop before loading another account’s cards');
   console.log('Home saved collection pagination, account boundaries and independent data loading passed.');
 }

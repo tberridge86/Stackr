@@ -12,7 +12,7 @@ export function CorocoroIssueCover({ issueGroup, showSources = true }: { issueGr
   const supplied = getCorocoroSuppliedCover(issueGroup.id);
   const presentation = getCorocoroIssueCoverPresentation(issueGroup.id, {
     development: __DEV__, platform: Platform.OS,
-    hostname: typeof window === 'undefined' ? '' : window.location.hostname,
+    hostname: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location?.hostname ?? '' : '',
     sourceEnabled: process.env.EXPO_PUBLIC_COROCORO_COVER_REFERENCES_ENABLED !== 'false',
   });
   const cover = presentation.image;

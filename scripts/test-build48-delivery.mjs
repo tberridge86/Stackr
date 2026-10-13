@@ -56,27 +56,29 @@ late.resolve({ language: 'ja', externalIds: {}, hasArtwork: true }); await stale
 assert.equal(inspected.length, 2, 'a response after leaving/reloading the binder cannot open inspection');
 
 // Discover shows completed languages without waiting for another language or ownership.
-const languageRequests = new Map(), sets = { en: [], ja: [], 'zh-cn': ['saved-chinese'], 'zh-tw': [] };
+const languageRequests = new Map(), sets = { en: [], ja: [], 'zh-cn': ['saved-chinese'], 'zh-tw': [], ko: [] };
 let errors = null, pendingLanguages = [], loading = true;
 const discoveryGeneration = { current: 0 };
 const load = extract('app/(tabs)/explore.tsx', 'load', {
   loadRequestRef: discoveryGeneration,
   setEnglishSets: value => sets.en = value, setJapaneseSets: value => sets.ja = value,
   setSimplifiedChineseSets: value => sets['zh-cn'] = value, setTraditionalChineseSets: value => sets['zh-tw'] = value,
+  setKoreanSets: value => sets.ko = value,
   setRefreshing: () => {}, setLoadError: value => errors = value,
   setPendingLanguages: value => pendingLanguages = typeof value === 'function' ? value(pendingLanguages) : value,
   setHasLoadedCatalogue: () => {}, setLoading: value => loading = value, setExistingBindersBySet: () => {},
   fetchExistingSetBinders: () => new Promise(() => {}),
-  fetchAllSets: ({ language, preferCanonicalApi }) => {
+  fetchAllSets: ({ language, preferCanonicalApi, includeAssets }) => {
+    assert.equal(includeAssets, language === 'all', 'only the shared background read requests optional artwork');
     assert.equal(preferCanonicalApi, true); const d = deferred(); languageRequests.set(language, d); return d.promise;
   },
 });
 const discovering = load();
 languageRequests.get('ja').resolve(['SV4a']); await tick();
-assert.deepEqual(sets.ja, ['SV4a']); assert.equal(loading, false); assert.equal(pendingLanguages.length, 3);
+assert.deepEqual(sets.ja, ['SV4a']); assert.equal(loading, false); assert.equal(pendingLanguages.length, 4);
 languageRequests.get('zh-cn').reject(new Error('timed out')); await tick();
 assert.deepEqual(sets['zh-cn'], ['saved-chinese']); assert.match(errors, /Simplified Chinese/);
-languageRequests.get('en').resolve(['English']); languageRequests.get('zh-tw').resolve(['Traditional']);
+languageRequests.get('en').resolve(['English']); languageRequests.get('zh-tw').resolve(['Traditional']); languageRequests.get('ko').resolve(['Korean']);
 await discovering; assert.equal(pendingLanguages.length, 0);
 const old = load(); discoveryGeneration.current++;
 for (const request of languageRequests.values()) request.resolve(['stale']); await old;

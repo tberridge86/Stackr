@@ -18,7 +18,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/startup/stackr-premium-poster.png",
+          "image": "./assets/startup/stackr-premium-first-frame.png",
           "imageWidth": 320,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
