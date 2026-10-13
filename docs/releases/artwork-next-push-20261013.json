@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-13T21:00:24.970Z",
+  "updatedAt": "2026-10-13T21:36:31.221Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-13T21:00:08.282Z",
+    "checkedAt": "2026-10-13T21:35:56.121Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 277,
+    "newlyPublishedFronts": 330,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 882,
-    "completedBatches": 44,
-    "remainingTasks": 2062,
-    "remainingBatches": 117,
+    "liveVerifiedTasks": 935,
+    "completedBatches": 46,
+    "remainingTasks": 2009,
+    "remainingBatches": 115,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 1768
+        "items": 1715
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,13 +31,14 @@
         "items": 2
       }
     ],
-    "sourceLeadTargets": 247,
+    "sourceLeadTargets": 279,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
-    "queuedItems": 53,
+    "queuedItems": 32,
     "queuedBatches": 3,
-    "frontTasksNotYetGathered": 1701,
+    "frontTasksNotYetGathered": 1669,
     "smallOriginalCandidates": 14,
-    "frontTasksNotYetPrepared": 1715
+    "frontTasksNotYetPrepared": 1683,
+    "contentHeldOriginalCandidates": 0
   },
   "ownerAuthority": {
     "recordedAt": "2026-10-13T06:20:22.871Z",
@@ -50,10 +51,10 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 233,
-  "preparedDerivatives": 699,
-  "publishedVerifiedOriginals": 180,
-  "queuedItems": 53,
+  "preparedOriginals": 265,
+  "preparedDerivatives": 795,
+  "publishedVerifiedOriginals": 233,
+  "queuedItems": 32,
   "pendingRun": null,
   "packages": [
     {
@@ -80,6 +81,16 @@
       "releaseAssetId": 638239382,
       "byteSize": 66689774,
       "sha256": "ba83ea3accf161a7129370edff9f77697e34295369f3df7ce3efed452b40b262"
+    },
+    {
+      "releaseAssetId": 638278124,
+      "byteSize": 29956992,
+      "sha256": "8a97049290e3f0b162c379d8320e839fcd729e15609b89054d730ebdf008582f"
+    },
+    {
+      "releaseAssetId": 638295433,
+      "byteSize": 32934150,
+      "sha256": "a28ae10ef8979f2bdf8ba6b2221e4dc856d5a1df10fdd13c111e71214fb5f203"
     }
   ],
   "holds": [
@@ -272,6 +283,16 @@
       "setCode": "tk-xy-b",
       "collectorReference": "30",
       "name": "Bisharp",
+      "status": "source_finish_mismatch",
+      "requiredAction": "Resolve exact physical variant with current canonical/source evidence; hold acquisition and publication until supported."
+    },
+    {
+      "itemId": "card:d89afd62-12a3-4e5e-80bb-31424367afa9",
+      "printingId": "d89afd62-12a3-4e5e-80bb-31424367afa9",
+      "batchId": "EN-CARDS-029",
+      "setCode": "tk-xy-n",
+      "collectorReference": "30",
+      "name": "Noivern",
       "status": "source_finish_mismatch",
       "requiredAction": "Resolve exact physical variant with current canonical/source evidence; hold acquisition and publication until supported."
     }
@@ -13108,11 +13129,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "01738d8b-45f5-494b-8c67-978549fa0a47",
+        "assetId": "artwork-recovered-20260928:01738d8b-45f5-494b-8c67-978549fa0a47:2ccc3a96a8d5bec0d62dc55d93e9438b47460d4f7697843f98ab6ca5d8a09be8",
+        "contentSha256": "2ccc3a96a8d5bec0d62dc55d93e9438b47460d4f7697843f98ab6ca5d8a09be8",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/01738d8b-45f5-494b-8c67-978549fa0a47/2ccc3a96a8d5bec0d62dc55d93e9438b47460d4f7697843f98ab6ca5d8a09be8/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -13165,11 +13200,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "07e0b301-0b21-47b2-8121-11d87818aecf",
+        "assetId": "artwork-recovered-20260928:07e0b301-0b21-47b2-8121-11d87818aecf:80d361d6da0d76b0157fd9cb429a10a0eebfbbfc11e2da6b40900d9d1cd05f4a",
+        "contentSha256": "80d361d6da0d76b0157fd9cb429a10a0eebfbbfc11e2da6b40900d9d1cd05f4a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/07e0b301-0b21-47b2-8121-11d87818aecf/80d361d6da0d76b0157fd9cb429a10a0eebfbbfc11e2da6b40900d9d1cd05f4a/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-023",
@@ -13222,11 +13271,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "0866b4c4-0db2-47a2-8dbe-4072f84dda47",
+        "assetId": "artwork-recovered-20260928:0866b4c4-0db2-47a2-8dbe-4072f84dda47:39e412155ef2c57f50d50ad90ec9cbf52b72e3d6628102a9b8074c9be767b41f",
+        "contentSha256": "39e412155ef2c57f50d50ad90ec9cbf52b72e3d6628102a9b8074c9be767b41f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/0866b4c4-0db2-47a2-8dbe-4072f84dda47/39e412155ef2c57f50d50ad90ec9cbf52b72e3d6628102a9b8074c9be767b41f/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -13279,11 +13342,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "09f1b04a-b1de-436d-87f6-01ce812a6a2a",
+        "assetId": "artwork-recovered-20260928:09f1b04a-b1de-436d-87f6-01ce812a6a2a:c85148d0d7d012d7b4afbb35a0a4bcf687485ed940420b86c9617984bc04f94f",
+        "contentSha256": "c85148d0d7d012d7b4afbb35a0a4bcf687485ed940420b86c9617984bc04f94f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/09f1b04a-b1de-436d-87f6-01ce812a6a2a/c85148d0d7d012d7b4afbb35a0a4bcf687485ed940420b86c9617984bc04f94f/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -13336,11 +13413,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "0a75f5ce-e37a-408e-91d8-4e3524e99e20",
+        "assetId": "artwork-recovered-20260928:0a75f5ce-e37a-408e-91d8-4e3524e99e20:2406cf6885d07d4a68f208e380874bdfad045832ff9aafc7757a3a873a9f682c",
+        "contentSha256": "2406cf6885d07d4a68f208e380874bdfad045832ff9aafc7757a3a873a9f682c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/0a75f5ce-e37a-408e-91d8-4e3524e99e20/2406cf6885d07d4a68f208e380874bdfad045832ff9aafc7757a3a873a9f682c/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -13393,11 +13484,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "0b280b35-35de-4b74-ba66-d100c70aecbd",
+        "assetId": "artwork-recovered-20260928:0b280b35-35de-4b74-ba66-d100c70aecbd:91c0203f146db81695533983dcafd58892cc2a0b70a481d7c43d86f4d03dcd06",
+        "contentSha256": "91c0203f146db81695533983dcafd58892cc2a0b70a481d7c43d86f4d03dcd06",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/0b280b35-35de-4b74-ba66-d100c70aecbd/91c0203f146db81695533983dcafd58892cc2a0b70a481d7c43d86f4d03dcd06/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -13450,11 +13555,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "123cb592-bcf1-420f-972f-2fa158e11acc",
+        "assetId": "artwork-recovered-20260928:123cb592-bcf1-420f-972f-2fa158e11acc:26d3981e980755079adbc0f8d2dc19d6b86014bd680c4361098253b38ff51f77",
+        "contentSha256": "26d3981e980755079adbc0f8d2dc19d6b86014bd680c4361098253b38ff51f77",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/123cb592-bcf1-420f-972f-2fa158e11acc/26d3981e980755079adbc0f8d2dc19d6b86014bd680c4361098253b38ff51f77/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -13507,11 +13626,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "198e435c-42e8-4665-89db-b0cb8ca0fa00",
+        "assetId": "artwork-recovered-20260928:198e435c-42e8-4665-89db-b0cb8ca0fa00:5260e2000376b26f0f68287db6493c5c7fc1edfe4c29e08d3f91b00e6359acb3",
+        "contentSha256": "5260e2000376b26f0f68287db6493c5c7fc1edfe4c29e08d3f91b00e6359acb3",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/198e435c-42e8-4665-89db-b0cb8ca0fa00/5260e2000376b26f0f68287db6493c5c7fc1edfe4c29e08d3f91b00e6359acb3/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-023",
@@ -13564,11 +13697,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "1eb614e6-e49d-4da5-be2d-e5938fca82be",
+        "assetId": "artwork-recovered-20260928:1eb614e6-e49d-4da5-be2d-e5938fca82be:527bd1c2e47391760080b358ab1adef79bd656357126c6b1b7a25e3e9084dca0",
+        "contentSha256": "527bd1c2e47391760080b358ab1adef79bd656357126c6b1b7a25e3e9084dca0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1eb614e6-e49d-4da5-be2d-e5938fca82be/527bd1c2e47391760080b358ab1adef79bd656357126c6b1b7a25e3e9084dca0/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -13621,11 +13768,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "2a06c0d9-2cba-4936-96b1-241f49a4d5b1",
+        "assetId": "artwork-recovered-20260928:2a06c0d9-2cba-4936-96b1-241f49a4d5b1:eaaf9ea40ae02c4cd4c883a280621959f3570d8a70841292c636a9c07a40bb3a",
+        "contentSha256": "eaaf9ea40ae02c4cd4c883a280621959f3570d8a70841292c636a9c07a40bb3a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/2a06c0d9-2cba-4936-96b1-241f49a4d5b1/eaaf9ea40ae02c4cd4c883a280621959f3570d8a70841292c636a9c07a40bb3a/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -13678,11 +13839,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "31e40d30-c143-4633-9284-d9cddd1c826b",
+        "assetId": "artwork-recovered-20260928:31e40d30-c143-4633-9284-d9cddd1c826b:e633bacff7ed9ade9b1ccebbcf7c574e5f98e0110dd1ba6f4b7c5eabec37baf4",
+        "contentSha256": "e633bacff7ed9ade9b1ccebbcf7c574e5f98e0110dd1ba6f4b7c5eabec37baf4",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/31e40d30-c143-4633-9284-d9cddd1c826b/e633bacff7ed9ade9b1ccebbcf7c574e5f98e0110dd1ba6f4b7c5eabec37baf4/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -13735,11 +13910,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "346834ec-c516-450b-94f6-8c2fa35e0d7c",
+        "assetId": "artwork-recovered-20260928:346834ec-c516-450b-94f6-8c2fa35e0d7c:39bcb19615d193ded4aded234b8356a434a883ee46dd551a4241f2e2b1ed10cc",
+        "contentSha256": "39bcb19615d193ded4aded234b8356a434a883ee46dd551a4241f2e2b1ed10cc",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/346834ec-c516-450b-94f6-8c2fa35e0d7c/39bcb19615d193ded4aded234b8356a434a883ee46dd551a4241f2e2b1ed10cc/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -13792,11 +13981,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "34ee9f99-eef7-4466-aec6-b4b74ce6c272",
+        "assetId": "artwork-recovered-20260928:34ee9f99-eef7-4466-aec6-b4b74ce6c272:e90fe595b77d70c4a9b411055594d5ad8b4b17b86a9f869a0ddbada171e4d321",
+        "contentSha256": "e90fe595b77d70c4a9b411055594d5ad8b4b17b86a9f869a0ddbada171e4d321",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/34ee9f99-eef7-4466-aec6-b4b74ce6c272/e90fe595b77d70c4a9b411055594d5ad8b4b17b86a9f869a0ddbada171e4d321/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -13849,11 +14052,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "3d014e18-d406-4ff6-8af7-289241e7a834",
+        "assetId": "artwork-recovered-20260928:3d014e18-d406-4ff6-8af7-289241e7a834:ff366914be9c4ec24b943bd5f75a275d5484e008abbdd90bd4d109e533cd419b",
+        "contentSha256": "ff366914be9c4ec24b943bd5f75a275d5484e008abbdd90bd4d109e533cd419b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3d014e18-d406-4ff6-8af7-289241e7a834/ff366914be9c4ec24b943bd5f75a275d5484e008abbdd90bd4d109e533cd419b/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -13906,11 +14123,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "3dac0e4a-945a-4b17-ad6a-fa6101fa9191",
+        "assetId": "artwork-recovered-20260928:3dac0e4a-945a-4b17-ad6a-fa6101fa9191:6713d89627ac71d5068e405c0f591e847c690619e9441506a82e229796d3dc1a",
+        "contentSha256": "6713d89627ac71d5068e405c0f591e847c690619e9441506a82e229796d3dc1a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3dac0e4a-945a-4b17-ad6a-fa6101fa9191/6713d89627ac71d5068e405c0f591e847c690619e9441506a82e229796d3dc1a/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -13963,11 +14194,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "3ef2f7d9-5ac9-4196-8d8f-1fce8e3f79ec",
+        "assetId": "artwork-recovered-20260928:3ef2f7d9-5ac9-4196-8d8f-1fce8e3f79ec:0c3baf846f6305365988e2470a4acd0bfb3f45c82264495accac9373bc64a871",
+        "contentSha256": "0c3baf846f6305365988e2470a4acd0bfb3f45c82264495accac9373bc64a871",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3ef2f7d9-5ac9-4196-8d8f-1fce8e3f79ec/0c3baf846f6305365988e2470a4acd0bfb3f45c82264495accac9373bc64a871/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14020,11 +14265,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "41416e4f-dba6-4102-af42-55aaae20b2dd",
+        "assetId": "artwork-recovered-20260928:41416e4f-dba6-4102-af42-55aaae20b2dd:3b98f34859955d4d4d473686c6c3d005808da9f43badfe1d7c58c779374abc88",
+        "contentSha256": "3b98f34859955d4d4d473686c6c3d005808da9f43badfe1d7c58c779374abc88",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/41416e4f-dba6-4102-af42-55aaae20b2dd/3b98f34859955d4d4d473686c6c3d005808da9f43badfe1d7c58c779374abc88/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14077,11 +14336,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "44813c0d-ba23-40f9-a708-d6e814ebfd55",
+        "assetId": "artwork-recovered-20260928:44813c0d-ba23-40f9-a708-d6e814ebfd55:7df3768845d0beb8bf60abeea8c1d17c74216170f7048d7a29383411f7f7c5c3",
+        "contentSha256": "7df3768845d0beb8bf60abeea8c1d17c74216170f7048d7a29383411f7f7c5c3",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/44813c0d-ba23-40f9-a708-d6e814ebfd55/7df3768845d0beb8bf60abeea8c1d17c74216170f7048d7a29383411f7f7c5c3/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14134,11 +14407,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "470c1b7d-360e-42d5-8d47-97bb1b1123a8",
+        "assetId": "artwork-recovered-20260928:470c1b7d-360e-42d5-8d47-97bb1b1123a8:e1d667c761fba3bdf3737a49e7389b7361291951184101b32cb11bd50e26249f",
+        "contentSha256": "e1d667c761fba3bdf3737a49e7389b7361291951184101b32cb11bd50e26249f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/470c1b7d-360e-42d5-8d47-97bb1b1123a8/e1d667c761fba3bdf3737a49e7389b7361291951184101b32cb11bd50e26249f/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -14191,11 +14478,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "5e1218aa-4682-474b-9b9c-05791a2648bb",
+        "assetId": "artwork-recovered-20260928:5e1218aa-4682-474b-9b9c-05791a2648bb:a09a00e0e2882057a171173a2090e8ae2c32ef0c037220644e0442fe9ccf0383",
+        "contentSha256": "a09a00e0e2882057a171173a2090e8ae2c32ef0c037220644e0442fe9ccf0383",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5e1218aa-4682-474b-9b9c-05791a2648bb/a09a00e0e2882057a171173a2090e8ae2c32ef0c037220644e0442fe9ccf0383/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14248,11 +14549,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "5ef9e7c2-2554-49df-9c04-0616f1ff8805",
+        "assetId": "artwork-recovered-20260928:5ef9e7c2-2554-49df-9c04-0616f1ff8805:3d4bfbb369547dbb76020cd3e4ee47c2708c841a51a5ab11ded341022b6f19a2",
+        "contentSha256": "3d4bfbb369547dbb76020cd3e4ee47c2708c841a51a5ab11ded341022b6f19a2",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5ef9e7c2-2554-49df-9c04-0616f1ff8805/3d4bfbb369547dbb76020cd3e4ee47c2708c841a51a5ab11ded341022b6f19a2/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14305,11 +14620,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "6349bf59-22db-4d09-9b5b-82a8434d2846",
+        "assetId": "artwork-recovered-20260928:6349bf59-22db-4d09-9b5b-82a8434d2846:56b19c54a1d54f88954c9a478a7432927174b0e907ba8dae97ef6a5d66885147",
+        "contentSha256": "56b19c54a1d54f88954c9a478a7432927174b0e907ba8dae97ef6a5d66885147",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/6349bf59-22db-4d09-9b5b-82a8434d2846/56b19c54a1d54f88954c9a478a7432927174b0e907ba8dae97ef6a5d66885147/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -14362,11 +14691,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "64698c96-9598-41c5-a4e6-fe409d3c5b8c",
+        "assetId": "artwork-recovered-20260928:64698c96-9598-41c5-a4e6-fe409d3c5b8c:5ea515944775a42ac87e27f0e90b8e5d79c49ba6f9182366710978103ddba2fa",
+        "contentSha256": "5ea515944775a42ac87e27f0e90b8e5d79c49ba6f9182366710978103ddba2fa",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/64698c96-9598-41c5-a4e6-fe409d3c5b8c/5ea515944775a42ac87e27f0e90b8e5d79c49ba6f9182366710978103ddba2fa/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14419,11 +14762,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "767740d5-8c5d-4da7-a266-88706eeddead",
+        "assetId": "artwork-recovered-20260928:767740d5-8c5d-4da7-a266-88706eeddead:d0c8afb4ae2d1ed2c75c8c2ab18b316aab0c9b2752efa1cc3d6bc9b534d3125a",
+        "contentSha256": "d0c8afb4ae2d1ed2c75c8c2ab18b316aab0c9b2752efa1cc3d6bc9b534d3125a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/767740d5-8c5d-4da7-a266-88706eeddead/d0c8afb4ae2d1ed2c75c8c2ab18b316aab0c9b2752efa1cc3d6bc9b534d3125a/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -14476,11 +14833,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "7d53e658-7997-4a16-907d-746f47e7d8ab",
+        "assetId": "artwork-recovered-20260928:7d53e658-7997-4a16-907d-746f47e7d8ab:16226af7a0220fd5cadaba3fa628fd49eacd828f163e497d52b8b6a489c61c0f",
+        "contentSha256": "16226af7a0220fd5cadaba3fa628fd49eacd828f163e497d52b8b6a489c61c0f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7d53e658-7997-4a16-907d-746f47e7d8ab/16226af7a0220fd5cadaba3fa628fd49eacd828f163e497d52b8b6a489c61c0f/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14533,11 +14904,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "7f4726e6-2cea-4ffa-9393-b13a8e04f5b9",
+        "assetId": "artwork-recovered-20260928:7f4726e6-2cea-4ffa-9393-b13a8e04f5b9:6d3e28f31ffa3b6b101c829cf6f98a5c313d0ba356d82f2152db8ac16d885761",
+        "contentSha256": "6d3e28f31ffa3b6b101c829cf6f98a5c313d0ba356d82f2152db8ac16d885761",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7f4726e6-2cea-4ffa-9393-b13a8e04f5b9/6d3e28f31ffa3b6b101c829cf6f98a5c313d0ba356d82f2152db8ac16d885761/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14590,11 +14975,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "8b0536d8-d599-47ba-8d05-2750521af86c",
+        "assetId": "artwork-recovered-20260928:8b0536d8-d599-47ba-8d05-2750521af86c:bb4c23159cbd0b4f7f74727b1123af6c936262c31dfa26e4efa58686b6636145",
+        "contentSha256": "bb4c23159cbd0b4f7f74727b1123af6c936262c31dfa26e4efa58686b6636145",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/8b0536d8-d599-47ba-8d05-2750521af86c/bb4c23159cbd0b4f7f74727b1123af6c936262c31dfa26e4efa58686b6636145/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14647,11 +15046,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "90e3c837-43c3-4030-b562-0f5468482f24",
+        "assetId": "artwork-recovered-20260928:90e3c837-43c3-4030-b562-0f5468482f24:00ccc40ce0547465574701aa43025a62641e3b709d653c5050cc4e2fb57677f1",
+        "contentSha256": "00ccc40ce0547465574701aa43025a62641e3b709d653c5050cc4e2fb57677f1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/90e3c837-43c3-4030-b562-0f5468482f24/00ccc40ce0547465574701aa43025a62641e3b709d653c5050cc4e2fb57677f1/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14704,11 +15117,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "90ffb419-2dd2-4c8a-ad83-4e2ef74ae6c7",
+        "assetId": "artwork-recovered-20260928:90ffb419-2dd2-4c8a-ad83-4e2ef74ae6c7:03e550ff9283bd5296d917505923db38ff921aacbe5cfc6d7d13729afc6d530a",
+        "contentSha256": "03e550ff9283bd5296d917505923db38ff921aacbe5cfc6d7d13729afc6d530a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/90ffb419-2dd2-4c8a-ad83-4e2ef74ae6c7/03e550ff9283bd5296d917505923db38ff921aacbe5cfc6d7d13729afc6d530a/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -14761,11 +15188,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "93b96720-51ed-478a-b750-bdf8bab4becc",
+        "assetId": "artwork-recovered-20260928:93b96720-51ed-478a-b750-bdf8bab4becc:6c2b892525b4b4671854d02e147bff4df0b0a63468882f2299d12122d4b5f61a",
+        "contentSha256": "6c2b892525b4b4671854d02e147bff4df0b0a63468882f2299d12122d4b5f61a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/93b96720-51ed-478a-b750-bdf8bab4becc/6c2b892525b4b4671854d02e147bff4df0b0a63468882f2299d12122d4b5f61a/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -14818,11 +15259,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "9e338967-821b-4056-abcc-c3179a62f777",
+        "assetId": "artwork-recovered-20260928:9e338967-821b-4056-abcc-c3179a62f777:e77a53ca4e4aa893122986c3f4b898009de26abedff4dd1a36d2c9c2b6009432",
+        "contentSha256": "e77a53ca4e4aa893122986c3f4b898009de26abedff4dd1a36d2c9c2b6009432",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9e338967-821b-4056-abcc-c3179a62f777/e77a53ca4e4aa893122986c3f4b898009de26abedff4dd1a36d2c9c2b6009432/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -14875,11 +15330,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "a51e74a6-62ce-4b93-a1b7-6f25a2873424",
+        "assetId": "artwork-recovered-20260928:a51e74a6-62ce-4b93-a1b7-6f25a2873424:149b940f0422ba65623dba615eca7b747586cba36ca076cb6f3d1f0cd7855f3c",
+        "contentSha256": "149b940f0422ba65623dba615eca7b747586cba36ca076cb6f3d1f0cd7855f3c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/a51e74a6-62ce-4b93-a1b7-6f25a2873424/149b940f0422ba65623dba615eca7b747586cba36ca076cb6f3d1f0cd7855f3c/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -14932,11 +15401,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "ab8556ce-16a0-437f-a003-14398cbd0ffe",
+        "assetId": "artwork-recovered-20260928:ab8556ce-16a0-437f-a003-14398cbd0ffe:0f3453cee5d4455c21b18c51a22d35488e278308b99b82922b933222ca8670a9",
+        "contentSha256": "0f3453cee5d4455c21b18c51a22d35488e278308b99b82922b933222ca8670a9",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ab8556ce-16a0-437f-a003-14398cbd0ffe/0f3453cee5d4455c21b18c51a22d35488e278308b99b82922b933222ca8670a9/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -14989,11 +15472,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "ad2b8c57-0d00-49cd-a86f-efaa4f7b29d9",
+        "assetId": "artwork-recovered-20260928:ad2b8c57-0d00-49cd-a86f-efaa4f7b29d9:d4783875e607224e3500598b5e2d095090aa50817b459051b7eb53a76be6ab3d",
+        "contentSha256": "d4783875e607224e3500598b5e2d095090aa50817b459051b7eb53a76be6ab3d",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ad2b8c57-0d00-49cd-a86f-efaa4f7b29d9/d4783875e607224e3500598b5e2d095090aa50817b459051b7eb53a76be6ab3d/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15046,11 +15543,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "ae76c834-b7fd-4ee1-b35c-6bb322f7672b",
+        "assetId": "artwork-recovered-20260928:ae76c834-b7fd-4ee1-b35c-6bb322f7672b:138176a744888f83afd280089413bad5e7582e27a61a595cab2466b826213b5e",
+        "contentSha256": "138176a744888f83afd280089413bad5e7582e27a61a595cab2466b826213b5e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ae76c834-b7fd-4ee1-b35c-6bb322f7672b/138176a744888f83afd280089413bad5e7582e27a61a595cab2466b826213b5e/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15103,11 +15614,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "b10bfd91-c927-4685-a5db-a2c23d7861cd",
+        "assetId": "artwork-recovered-20260928:b10bfd91-c927-4685-a5db-a2c23d7861cd:3f01ef6f2156e957022e817ede459a93bedfb02d7d824623ea023015e878ed15",
+        "contentSha256": "3f01ef6f2156e957022e817ede459a93bedfb02d7d824623ea023015e878ed15",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/b10bfd91-c927-4685-a5db-a2c23d7861cd/3f01ef6f2156e957022e817ede459a93bedfb02d7d824623ea023015e878ed15/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15160,11 +15685,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "b2175b9b-a246-4c32-8e39-4fb8d3f54091",
+        "assetId": "artwork-recovered-20260928:b2175b9b-a246-4c32-8e39-4fb8d3f54091:74f9159f983610190838ae5b0e893d9f9298f41402b2146f722df99f68ba5a6f",
+        "contentSha256": "74f9159f983610190838ae5b0e893d9f9298f41402b2146f722df99f68ba5a6f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/b2175b9b-a246-4c32-8e39-4fb8d3f54091/74f9159f983610190838ae5b0e893d9f9298f41402b2146f722df99f68ba5a6f/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15217,11 +15756,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "bbe21b58-c37b-425e-9c17-24cc085b97e6",
+        "assetId": "artwork-recovered-20260928:bbe21b58-c37b-425e-9c17-24cc085b97e6:32df8912277078dcce50f74cc2749f543373fee7abe27abe1554ba7deeea6b28",
+        "contentSha256": "32df8912277078dcce50f74cc2749f543373fee7abe27abe1554ba7deeea6b28",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/bbe21b58-c37b-425e-9c17-24cc085b97e6/32df8912277078dcce50f74cc2749f543373fee7abe27abe1554ba7deeea6b28/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15274,11 +15827,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "c50e14c5-374b-4a7c-aa7b-7027800cd63c",
+        "assetId": "artwork-recovered-20260928:c50e14c5-374b-4a7c-aa7b-7027800cd63c:de10a84aab94165d400849542babf3516531c674dd43187ea5b343afe5be082c",
+        "contentSha256": "de10a84aab94165d400849542babf3516531c674dd43187ea5b343afe5be082c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c50e14c5-374b-4a7c-aa7b-7027800cd63c/de10a84aab94165d400849542babf3516531c674dd43187ea5b343afe5be082c/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15331,11 +15898,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "c5c67e6b-0774-482f-8c3d-8bf7cb762772",
+        "assetId": "artwork-recovered-20260928:c5c67e6b-0774-482f-8c3d-8bf7cb762772:34a3c147e8f2cb21a5ddfc76ca6d82aa573de3cb51631e5737506e69b18e01f5",
+        "contentSha256": "34a3c147e8f2cb21a5ddfc76ca6d82aa573de3cb51631e5737506e69b18e01f5",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c5c67e6b-0774-482f-8c3d-8bf7cb762772/34a3c147e8f2cb21a5ddfc76ca6d82aa573de3cb51631e5737506e69b18e01f5/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -15388,11 +15969,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "cf876d71-863e-4a9d-9c9d-e766d99c5707",
+        "assetId": "artwork-recovered-20260928:cf876d71-863e-4a9d-9c9d-e766d99c5707:f337524d3f6a9bb940b0581791f1b11f0ffbea102e2fa80f2059eab53cd24321",
+        "contentSha256": "f337524d3f6a9bb940b0581791f1b11f0ffbea102e2fa80f2059eab53cd24321",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/cf876d71-863e-4a9d-9c9d-e766d99c5707/f337524d3f6a9bb940b0581791f1b11f0ffbea102e2fa80f2059eab53cd24321/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -15445,11 +16040,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "d0e62137-8209-4c5e-95d1-9df9b538bf45",
+        "assetId": "artwork-recovered-20260928:d0e62137-8209-4c5e-95d1-9df9b538bf45:3ac3ce27786205fca8d5af1084e9c761d60503014ba0788be4798ed206284397",
+        "contentSha256": "3ac3ce27786205fca8d5af1084e9c761d60503014ba0788be4798ed206284397",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d0e62137-8209-4c5e-95d1-9df9b538bf45/3ac3ce27786205fca8d5af1084e9c761d60503014ba0788be4798ed206284397/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15502,11 +16111,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "d2db1993-e34e-4fca-9eca-ae241f297156",
+        "assetId": "artwork-recovered-20260928:d2db1993-e34e-4fca-9eca-ae241f297156:99972fe45c0e1a91f9c04a4ce5b31229d5a8cfa9fe0dbcd5f8cbb3a8da12b9f5",
+        "contentSha256": "99972fe45c0e1a91f9c04a4ce5b31229d5a8cfa9fe0dbcd5f8cbb3a8da12b9f5",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d2db1993-e34e-4fca-9eca-ae241f297156/99972fe45c0e1a91f9c04a4ce5b31229d5a8cfa9fe0dbcd5f8cbb3a8da12b9f5/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15559,11 +16182,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "d8d9510f-8d02-4ae6-8bff-bda010520f82",
+        "assetId": "artwork-recovered-20260928:d8d9510f-8d02-4ae6-8bff-bda010520f82:1ee91e3dc4f2e0f2d94601c50ceabcdb4487854d991ee3559ffa7902cec4b5f9",
+        "contentSha256": "1ee91e3dc4f2e0f2d94601c50ceabcdb4487854d991ee3559ffa7902cec4b5f9",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d8d9510f-8d02-4ae6-8bff-bda010520f82/1ee91e3dc4f2e0f2d94601c50ceabcdb4487854d991ee3559ffa7902cec4b5f9/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-023",
@@ -15616,11 +16253,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "daa532ac-cdbb-4077-9e45-281799aeb080",
+        "assetId": "artwork-recovered-20260928:daa532ac-cdbb-4077-9e45-281799aeb080:8b39ceae48ecd7ea239cfa68752d1b44cd3b4777c429761107905b59167d9b5e",
+        "contentSha256": "8b39ceae48ecd7ea239cfa68752d1b44cd3b4777c429761107905b59167d9b5e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/daa532ac-cdbb-4077-9e45-281799aeb080/8b39ceae48ecd7ea239cfa68752d1b44cd3b4777c429761107905b59167d9b5e/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15673,11 +16324,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "e5794ef6-db20-402f-b15a-eaedbb5bb774",
+        "assetId": "artwork-recovered-20260928:e5794ef6-db20-402f-b15a-eaedbb5bb774:3ffd86b86957af04d07ddb0d4e691761abbf20c435677c2744f0c4af7838fe74",
+        "contentSha256": "3ffd86b86957af04d07ddb0d4e691761abbf20c435677c2744f0c4af7838fe74",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e5794ef6-db20-402f-b15a-eaedbb5bb774/3ffd86b86957af04d07ddb0d4e691761abbf20c435677c2744f0c4af7838fe74/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -15730,11 +16395,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "e6a125b9-5c47-4e24-87a1-6d15664634a4",
+        "assetId": "artwork-recovered-20260928:e6a125b9-5c47-4e24-87a1-6d15664634a4:632c3d343960bf3c9ebaf31d71c1a4d9f9a5abf83754518dba6b6f9877a67504",
+        "contentSha256": "632c3d343960bf3c9ebaf31d71c1a4d9f9a5abf83754518dba6b6f9877a67504",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e6a125b9-5c47-4e24-87a1-6d15664634a4/632c3d343960bf3c9ebaf31d71c1a4d9f9a5abf83754518dba6b6f9877a67504/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -15787,11 +16466,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "ea080be0-5dc9-4fa4-bb71-b2c56e1dd38b",
+        "assetId": "artwork-recovered-20260928:ea080be0-5dc9-4fa4-bb71-b2c56e1dd38b:c0d90d19516e7f16991d079c2a1a8f3015e14da06443c003a08ce6208ab27684",
+        "contentSha256": "c0d90d19516e7f16991d079c2a1a8f3015e14da06443c003a08ce6208ab27684",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ea080be0-5dc9-4fa4-bb71-b2c56e1dd38b/c0d90d19516e7f16991d079c2a1a8f3015e14da06443c003a08ce6208ab27684/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-022",
@@ -15844,11 +16537,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "ec056356-b258-4e45-9199-d074732983a5",
+        "assetId": "artwork-recovered-20260928:ec056356-b258-4e45-9199-d074732983a5:a405711661e980a58eecfc2c55f57eb920714d0a4af2e28479414076aba6b5d1",
+        "contentSha256": "a405711661e980a58eecfc2c55f57eb920714d0a4af2e28479414076aba6b5d1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ec056356-b258-4e45-9199-d074732983a5/a405711661e980a58eecfc2c55f57eb920714d0a4af2e28479414076aba6b5d1/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15901,11 +16608,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "f3ce8a82-239d-4d64-ad98-fe99ee106ad0",
+        "assetId": "artwork-recovered-20260928:f3ce8a82-239d-4d64-ad98-fe99ee106ad0:d07e5c47f5eab60064b5575f55f4fd79418f369f04fc5895f277ee96e7d672fd",
+        "contentSha256": "d07e5c47f5eab60064b5575f55f4fd79418f369f04fc5895f277ee96e7d672fd",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/f3ce8a82-239d-4d64-ad98-fe99ee106ad0/d07e5c47f5eab60064b5575f55f4fd79418f369f04fc5895f277ee96e7d672fd/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -15958,11 +16679,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "f8b19ee7-99e7-4475-a389-1f302c4074e2",
+        "assetId": "artwork-recovered-20260928:f8b19ee7-99e7-4475-a389-1f302c4074e2:712b9919ca634384430fa3cf62d71600b5d22fff65e690f253a915f8d15a68f1",
+        "contentSha256": "712b9919ca634384430fa3cf62d71600b5d22fff65e690f253a915f8d15a68f1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/f8b19ee7-99e7-4475-a389-1f302c4074e2/712b9919ca634384430fa3cf62d71600b5d22fff65e690f253a915f8d15a68f1/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -16015,11 +16750,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "f9103807-6da5-4c3d-b094-6c8e81efb62f",
+        "assetId": "artwork-recovered-20260928:f9103807-6da5-4c3d-b094-6c8e81efb62f:86bc54f8f6f53102aa460a03ae41b7e4ad3cce3829ef9d82fb569a8f6b2d741f",
+        "contentSha256": "86bc54f8f6f53102aa460a03ae41b7e4ad3cce3829ef9d82fb569a8f6b2d741f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/f9103807-6da5-4c3d-b094-6c8e81efb62f/86bc54f8f6f53102aa460a03ae41b7e4ad3cce3829ef9d82fb569a8f6b2d741f/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-024",
@@ -16067,6 +16816,1844 @@
           "file": "objects/7414ea49a26fc87d81bc5e8be66b6a32c59e947ae13ba85af0e0847128fcde34/detail-page.webp",
           "sha256": "7414ea49a26fc87d81bc5e8be66b6a32c59e947ae13ba85af0e0847128fcde34",
           "byte_size": 127014,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T21:35:56.121Z",
+        "productionRun": 38470021525,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38470021525",
+        "publicationReceiptSha256": "366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5",
+        "printingId": "faaed3bc-bd99-4462-b620-6a18139f66cb",
+        "assetId": "artwork-recovered-20260928:faaed3bc-bd99-4462-b620-6a18139f66cb:d1ea13a84c2b3ba9e44d45bd927a7f751f54ef422f2110742a851a4421664fa3",
+        "contentSha256": "d1ea13a84c2b3ba9e44d45bd927a7f751f54ef422f2110742a851a4421664fa3",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/faaed3bc-bd99-4462-b620-6a18139f66cb/d1ea13a84c2b3ba9e44d45bd927a7f751f54ef422f2110742a851a4421664fa3/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:0a51e711-6be1-4ab9-8e6d-556c6d50bf25",
+      "printingId": "0a51e711-6be1-4ab9-8e6d-556c6d50bf25",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "7",
+      "cardName": "Fighting Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-7",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/tk8a-7",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-7/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "b36cde77eb71794d59d50dcaf094112f82f191dc3322520aeab5fb16a1cff619",
+        "byteSize": 470286,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/49cbe98ec5d1e315d0ae1579d3d51677e3f1324cb7b8e17ea92c6937d7ec6c99/card-grid.webp",
+          "sha256": "49cbe98ec5d1e315d0ae1579d3d51677e3f1324cb7b8e17ea92c6937d7ec6c99",
+          "byte_size": 7604,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/be92ee8fd5a018b0e9fa0517a367eee360c3f615512b870ff5ac542c0cdb007a/search-result.webp",
+          "sha256": "be92ee8fd5a018b0e9fa0517a367eee360c3f615512b870ff5ac542c0cdb007a",
+          "byte_size": 2300,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/ffc61809c9a9e3ac924ecc334292cd606a0dd07fee9b916b2958243ad1980e98/detail-page.webp",
+          "sha256": "ffc61809c9a9e3ac924ecc334292cd606a0dd07fee9b916b2958243ad1980e98",
+          "byte_size": 35774,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:0e596b27-e980-42da-8350-5a335cc0cab4",
+      "printingId": "0e596b27-e980-42da-8350-5a335cc0cab4",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "11",
+      "cardName": "Machop",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-11",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/machop/tk8a-11",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-11/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "53538d8ce899675bcaafa45109f2066cdcff17b8f914f3829eb37f0ebeff6b10",
+        "byteSize": 1154368,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/5e47456488ad9d140fdcc4c4392a5d999dddf8cccfc69d7b5e3502689b20846e/card-grid.webp",
+          "sha256": "5e47456488ad9d140fdcc4c4392a5d999dddf8cccfc69d7b5e3502689b20846e",
+          "byte_size": 18760,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/4bacdaa3d08bf143895a7dc9423df1c90f9405cb6690a377f04464d9064e1bbb/search-result.webp",
+          "sha256": "4bacdaa3d08bf143895a7dc9423df1c90f9405cb6690a377f04464d9064e1bbb",
+          "byte_size": 3596,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/4b63499e1f29eb7a4bac5e3816170b639a7b71493cec0df8f75f6a3ab31e955d/detail-page.webp",
+          "sha256": "4b63499e1f29eb7a4bac5e3816170b639a7b71493cec0df8f75f6a3ab31e955d",
+          "byte_size": 141640,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:14bba03a-a2ae-4b85-8b66-28e6b46817a0",
+      "printingId": "14bba03a-a2ae-4b85-8b66-28e6b46817a0",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "22",
+      "cardName": "Machoke",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-22",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/machoke/tk8a-22",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-22/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "81717c88a353a968643a1be999a7fe9f1c0c2a1f7be04aa92aabb0409c858c18",
+        "byteSize": 1427581,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/8f46f2ca8da6f8d96041fb815eecca5aea4dcce2de5d86cfccda13bc663afdc9/card-grid.webp",
+          "sha256": "8f46f2ca8da6f8d96041fb815eecca5aea4dcce2de5d86cfccda13bc663afdc9",
+          "byte_size": 24064,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/945dd838a00004c65c3f71afb399fa4474f42c25109df852a2f510af4e45f0f2/search-result.webp",
+          "sha256": "945dd838a00004c65c3f71afb399fa4474f42c25109df852a2f510af4e45f0f2",
+          "byte_size": 4012,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/45e9dbc90c4f3bc7ded21ff1dd63c536cbc77474fef5a1b9d94a00b967711466/detail-page.webp",
+          "sha256": "45e9dbc90c4f3bc7ded21ff1dd63c536cbc77474fef5a1b9d94a00b967711466",
+          "byte_size": 202500,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:1944094d-be94-48cd-8682-8dd9bce0842c",
+      "printingId": "1944094d-be94-48cd-8682-8dd9bce0842c",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "17",
+      "cardName": "Fighting Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-17",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/tk8a-17",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-17/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "c7f8dad806c8c77b3acf85b503849ac0f065bb3e62fa1c616d0a2b3d65cea1f9",
+        "byteSize": 470755,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/9a765858441ba80f2dc373efacd868e7aa90968507e1b6fcae9d33b0573af74f/card-grid.webp",
+          "sha256": "9a765858441ba80f2dc373efacd868e7aa90968507e1b6fcae9d33b0573af74f",
+          "byte_size": 7626,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/004b11e17ab1697ac3a4ebd8a4adbc9b3c86754cff53e50f5e5cc069907513a1/search-result.webp",
+          "sha256": "004b11e17ab1697ac3a4ebd8a4adbc9b3c86754cff53e50f5e5cc069907513a1",
+          "byte_size": 2304,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0e15dcb09804652306b5bdab383f61a89cb02627205ff80832e992788d7b9222/detail-page.webp",
+          "sha256": "0e15dcb09804652306b5bdab383f61a89cb02627205ff80832e992788d7b9222",
+          "byte_size": 35866,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:1b88f418-7810-4493-bf55-f05e42babe7a",
+      "printingId": "1b88f418-7810-4493-bf55-f05e42babe7a",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "18",
+      "cardName": "Psychic Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-18",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/psychic-energy/tk8a-18",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-18/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "ffb094cad2664da41a8132b79485bcfc0564843b334bdb99bbfa03ca8b59febb",
+        "byteSize": 467427,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/d196455c0f966c067284b6308a54134fdcdb54cea9e031c8405785de8bade216/card-grid.webp",
+          "sha256": "d196455c0f966c067284b6308a54134fdcdb54cea9e031c8405785de8bade216",
+          "byte_size": 7174,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/dbffdde89e31a4e7c3a3a5ecf13656554fcf517dc7414417bac8de400b874935/search-result.webp",
+          "sha256": "dbffdde89e31a4e7c3a3a5ecf13656554fcf517dc7414417bac8de400b874935",
+          "byte_size": 2212,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/f89aa19ac7ad0da6de27b47937447fbcc91ed29615b993de1692299b8a92a548/detail-page.webp",
+          "sha256": "f89aa19ac7ad0da6de27b47937447fbcc91ed29615b993de1692299b8a92a548",
+          "byte_size": 35904,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:21924cab-37db-4b49-b020-a7427277011f",
+      "printingId": "21924cab-37db-4b49-b020-a7427277011f",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "2",
+      "cardName": "Fighting Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-2",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/tk8a-2",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-2/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "fd40d416d01d04953df37541bf824842bc216a8310719801be204a631992e412",
+        "byteSize": 470428,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/91962004d73efa18a436ee3a5568c23fac5681af3f4f2686fcae8b38911bfcc6/card-grid.webp",
+          "sha256": "91962004d73efa18a436ee3a5568c23fac5681af3f4f2686fcae8b38911bfcc6",
+          "byte_size": 7606,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/91899c3860428749458810d6d30fe2eefac15f98f9793ed795e276d232eeb9ab/search-result.webp",
+          "sha256": "91899c3860428749458810d6d30fe2eefac15f98f9793ed795e276d232eeb9ab",
+          "byte_size": 2300,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/1cf3edc209044bf81be85f2538b93d84fa433b17c78210244c43362e716d50b2/detail-page.webp",
+          "sha256": "1cf3edc209044bf81be85f2538b93d84fa433b17c78210244c43362e716d50b2",
+          "byte_size": 35772,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-027",
+      "itemId": "card:298d0048-ff00-47e2-8a00-e3452309d2b4",
+      "printingId": "298d0048-ff00-47e2-8a00-e3452309d2b4",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "29",
+      "cardName": "Psychic Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-29",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/psychic-energy/tk8a-29",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-29/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "81695b478f431b13f80b688ff977d2b389d65cefc675a3a467523ff0dbc898f9",
+        "byteSize": 467530,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/da717fb0a109a998a888f29d184d7cfe49feda37d84371d872183ea9f54f7321/card-grid.webp",
+          "sha256": "da717fb0a109a998a888f29d184d7cfe49feda37d84371d872183ea9f54f7321",
+          "byte_size": 7172,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/2f48f7ba6a85f8be8258fd2a294d70284f8c7dfc879ddd5e53493dc860c758d3/search-result.webp",
+          "sha256": "2f48f7ba6a85f8be8258fd2a294d70284f8c7dfc879ddd5e53493dc860c758d3",
+          "byte_size": 2212,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a586f9d4ec80a1df802b3f6e753bb36645bf1e20a16dbe396e55bfce05fdfeb4/detail-page.webp",
+          "sha256": "a586f9d4ec80a1df802b3f6e753bb36645bf1e20a16dbe396e55bfce05fdfeb4",
+          "byte_size": 35918,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:2b359ce3-debe-42f9-8cdc-9c479a90b565",
+      "printingId": "2b359ce3-debe-42f9-8cdc-9c479a90b565",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "19",
+      "cardName": "Delcatty",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-19",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/delcatty/tk8a-19",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-19/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "a276fcedf7d8697dc9375d3090d6fdfa33e57b5f238e68e21ac687e954e2ac76",
+        "byteSize": 1064615,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/0847ed3c8993c9ba0cd14796ef3b5cb2933aaafa64c8f8f563701561cf36b4c4/card-grid.webp",
+          "sha256": "0847ed3c8993c9ba0cd14796ef3b5cb2933aaafa64c8f8f563701561cf36b4c4",
+          "byte_size": 18262,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/4206b1d5eddf9f0f70165db480aa590bcb23b0de39ba6145e8346f938e5d1610/search-result.webp",
+          "sha256": "4206b1d5eddf9f0f70165db480aa590bcb23b0de39ba6145e8346f938e5d1610",
+          "byte_size": 3660,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/4079a8c4173ebd48ab7d2d0b8e25c800a5d5a2777e32e733e50550a8dac05912/detail-page.webp",
+          "sha256": "4079a8c4173ebd48ab7d2d0b8e25c800a5d5a2777e32e733e50550a8dac05912",
+          "byte_size": 133696,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:3f2d8dd0-bd9e-4f5d-8d21-762c9e6f0019",
+      "printingId": "3f2d8dd0-bd9e-4f5d-8d21-762c9e6f0019",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "25",
+      "cardName": "Rhydon",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-25",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/rhydon/tk8a-25",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-25/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "1a758c08b192259a82f3dfa5172fcc104da8f9503a402297f84bc8d68fc89593",
+        "byteSize": 1312149,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/6d96e2c130f1ef2f57e2304199697baaced7f35693f832c11e4d997f56605270/card-grid.webp",
+          "sha256": "6d96e2c130f1ef2f57e2304199697baaced7f35693f832c11e4d997f56605270",
+          "byte_size": 22008,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/17712dfc7af3c87530a5aa4d48d88f560a88badabebe1326cf22857f6a3a92d9/search-result.webp",
+          "sha256": "17712dfc7af3c87530a5aa4d48d88f560a88badabebe1326cf22857f6a3a92d9",
+          "byte_size": 3976,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5706a8f56eb9e8529e1aab2d94846c3e3c4906b3511889037e148dec4b1c9d04/detail-page.webp",
+          "sha256": "5706a8f56eb9e8529e1aab2d94846c3e3c4906b3511889037e148dec4b1c9d04",
+          "byte_size": 172534,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-025",
+      "itemId": "card:4131af6d-7ecb-4c50-8f4e-9d626f02860e",
+      "printingId": "4131af6d-7ecb-4c50-8f4e-9d626f02860e",
+      "setId": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+      "setCode": "tk-xy-latia",
+      "languageCode": "en",
+      "collectorReference": "27",
+      "cardName": "Grovyle",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8b-27",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/grovyle/tk8b-27",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8b-27/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "82af60100117dae08e8703f0b0130c5cc9b8e7af781c36e1f8241619f8f85ee9",
+        "byteSize": 1206289,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/9dbc9ead6e55f7b99a8b6952d676983c9b167b3c59116d651fe76062beededbd/card-grid.webp",
+          "sha256": "9dbc9ead6e55f7b99a8b6952d676983c9b167b3c59116d651fe76062beededbd",
+          "byte_size": 19360,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a925fefeeb2105c96db9ae50dbc76d681dd8c5d2c6f0e6ce6560baba488d458c/search-result.webp",
+          "sha256": "a925fefeeb2105c96db9ae50dbc76d681dd8c5d2c6f0e6ce6560baba488d458c",
+          "byte_size": 3900,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/41bc4e47d6d532237d79076734d036aa823243ee10831003a6cef4c8f4077691/detail-page.webp",
+          "sha256": "41bc4e47d6d532237d79076734d036aa823243ee10831003a6cef4c8f4077691",
+          "byte_size": 136680,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:5078d507-c568-45d6-b16f-092d5002a64b",
+      "printingId": "5078d507-c568-45d6-b16f-092d5002a64b",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "8",
+      "cardName": "Fighting Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-8",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/tk8a-8",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-8/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "13b34f290ef5fa57f010db333afc27bdf012cca88570441110740b0c5cee5956",
+        "byteSize": 470450,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/b196ca92e5c5b5aba506552bcc60ddd11a4d1dbb7e0641f4fb174bc36e9d625e/card-grid.webp",
+          "sha256": "b196ca92e5c5b5aba506552bcc60ddd11a4d1dbb7e0641f4fb174bc36e9d625e",
+          "byte_size": 7612,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/89cce99114efd523ebbee441c7ec8ddb040cf3ec77a9648f65f34dd3cbacb68f/search-result.webp",
+          "sha256": "89cce99114efd523ebbee441c7ec8ddb040cf3ec77a9648f65f34dd3cbacb68f",
+          "byte_size": 2300,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/f5f8c37538f9d3f73f8025fee906fa0d3b9defba30c7828ec50b8adc0fb61914/detail-page.webp",
+          "sha256": "f5f8c37538f9d3f73f8025fee906fa0d3b9defba30c7828ec50b8adc0fb61914",
+          "byte_size": 35798,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:5c2b19f9-5c00-48c6-b33b-2e7493a71456",
+      "printingId": "5c2b19f9-5c00-48c6-b33b-2e7493a71456",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "24",
+      "cardName": "Delcatty",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-24",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/delcatty/tk8a-24",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-24/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "85911ec7dbec4b3089990b4b18028dc041a8d19c19bfed446ffb54ddfaee0324",
+        "byteSize": 1064507,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/3637d0fc16b20c8c1d36c90ea54dd74bdbe78d96fbcfadfe297731c7559ae8df/card-grid.webp",
+          "sha256": "3637d0fc16b20c8c1d36c90ea54dd74bdbe78d96fbcfadfe297731c7559ae8df",
+          "byte_size": 18264,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/954f55a81bd7ec89faf134f799d5eccd8e3ebee3c5a406b61f78d7eee65e4370/search-result.webp",
+          "sha256": "954f55a81bd7ec89faf134f799d5eccd8e3ebee3c5a406b61f78d7eee65e4370",
+          "byte_size": 3662,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0aa86f8ef87ac1e339215757cdc7387f360ad79a6af70f36e10fd777f2ecad84/detail-page.webp",
+          "sha256": "0aa86f8ef87ac1e339215757cdc7387f360ad79a6af70f36e10fd777f2ecad84",
+          "byte_size": 133710,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-027",
+      "itemId": "card:6ec47968-da5f-4f44-a26a-b43051cfe7ae",
+      "printingId": "6ec47968-da5f-4f44-a26a-b43051cfe7ae",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "26",
+      "cardName": "Solrock",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-26",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/solrock/tk8a-26",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-26/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "411c91920869ceb63a8c139ed87f7a124166e536526e529103bd8ce0437de9e4",
+        "byteSize": 1328219,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/e6ec877621b916f9a1ca3719641845a029c1bd262eadc7c41fd802be06c47ef0/card-grid.webp",
+          "sha256": "e6ec877621b916f9a1ca3719641845a029c1bd262eadc7c41fd802be06c47ef0",
+          "byte_size": 23064,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/64461f62a5434561c1dfa0432b70afaefd3a71c3019b8443ec6bd8a363466110/search-result.webp",
+          "sha256": "64461f62a5434561c1dfa0432b70afaefd3a71c3019b8443ec6bd8a363466110",
+          "byte_size": 4082,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/27c878112fecb3358be52b3cdafc112c0583bbb4c9dc1b69ecf95ce320238101/detail-page.webp",
+          "sha256": "27c878112fecb3358be52b3cdafc112c0583bbb4c9dc1b69ecf95ce320238101",
+          "byte_size": 169090,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-025",
+      "itemId": "card:7a9841ed-1edd-4623-b521-21e6c884aed1",
+      "printingId": "7a9841ed-1edd-4623-b521-21e6c884aed1",
+      "setId": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+      "setCode": "tk-xy-latia",
+      "languageCode": "en",
+      "collectorReference": "28",
+      "cardName": "Psychic Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8b-28",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/psychic-energy/tk8b-28",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8b-28/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "62f8eadd3810167cf0820f9806c3c108beedf91781939d84b73a998ebea3544a",
+        "byteSize": 467418,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/43c21bea45bd04cb24132792a7e24095416581a63dba96e0e99cf16d85118a29/card-grid.webp",
+          "sha256": "43c21bea45bd04cb24132792a7e24095416581a63dba96e0e99cf16d85118a29",
+          "byte_size": 7168,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/2ade70e0b703d188bd287ba7a5c6e107cef78a707ed923309396b5dd61f5b801/search-result.webp",
+          "sha256": "2ade70e0b703d188bd287ba7a5c6e107cef78a707ed923309396b5dd61f5b801",
+          "byte_size": 2182,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/772b1d3d5baba43b02f5419550f31acee18f0a20b5e86e1c04bd63b5b282fe9f/detail-page.webp",
+          "sha256": "772b1d3d5baba43b02f5419550f31acee18f0a20b5e86e1c04bd63b5b282fe9f",
+          "byte_size": 35750,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:7fb74e6f-6423-465d-ba75-08b22e7983bf",
+      "printingId": "7fb74e6f-6423-465d-ba75-08b22e7983bf",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "5",
+      "cardName": "Fighting Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-5",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/tk8a-5",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-5/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "74fbfb46f111a2b40c0b013a266f8eca6017581392c49af05a868ef382a400bf",
+        "byteSize": 470415,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/1772cbac39d92584cdfc69ae1070d529b2bd45aa8ecdbcc91298c0ccacaa9cda/card-grid.webp",
+          "sha256": "1772cbac39d92584cdfc69ae1070d529b2bd45aa8ecdbcc91298c0ccacaa9cda",
+          "byte_size": 7608,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/0427c3c6d7c39084f9c392a8c3fd69b7c7cd9aee4892d6d41fef939de38d861d/search-result.webp",
+          "sha256": "0427c3c6d7c39084f9c392a8c3fd69b7c7cd9aee4892d6d41fef939de38d861d",
+          "byte_size": 2300,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/f4c7e77ec07272b3dd4d719f60fc8af4dc51f51ef95febb8401508026413a9b9/detail-page.webp",
+          "sha256": "f4c7e77ec07272b3dd4d719f60fc8af4dc51f51ef95febb8401508026413a9b9",
+          "byte_size": 35776,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:8d9e1c3e-f093-476a-8f5c-9b3a00b9dd18",
+      "printingId": "8d9e1c3e-f093-476a-8f5c-9b3a00b9dd18",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "20",
+      "cardName": "Acro Bike",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-20",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/acro-bike/tk8a-20",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-20/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "a8dcf354f0d172c943cd60b5f63f1c02681601322805db2bf43364aefe1e1174",
+        "byteSize": 1033285,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/24adef8409d54442d1129914d3f284f0f88642c1529393ac8b29cf59c0034316/card-grid.webp",
+          "sha256": "24adef8409d54442d1129914d3f284f0f88642c1529393ac8b29cf59c0034316",
+          "byte_size": 18326,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/5c00001c69abdc7a5882b768820f80a2929773d2beeeddf6237a079a5fd5338e/search-result.webp",
+          "sha256": "5c00001c69abdc7a5882b768820f80a2929773d2beeeddf6237a079a5fd5338e",
+          "byte_size": 3762,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/007ac999738ba91bf8316bcf021747f1eedd5a315c1c664a8052b33cfc6f5a12/detail-page.webp",
+          "sha256": "007ac999738ba91bf8316bcf021747f1eedd5a315c1c664a8052b33cfc6f5a12",
+          "byte_size": 123208,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:93cbb08f-4a6e-4172-a80a-b80b84729e15",
+      "printingId": "93cbb08f-4a6e-4172-a80a-b80b84729e15",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "14",
+      "cardName": "Machoke",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-14",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/machoke/tk8a-14",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-14/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "1c9aaacced000bef7025644ae11c3398a220a5c387c210c3a44821c1d6a19e8f",
+        "byteSize": 1427589,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/d7a2979eca5cf5baea9abec0426f7d964461f2a14151a88d7b942591dfc48b67/card-grid.webp",
+          "sha256": "d7a2979eca5cf5baea9abec0426f7d964461f2a14151a88d7b942591dfc48b67",
+          "byte_size": 24060,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/c1b614d0c73d2c157375f4bad73288f774441dda04aacdfcfa36238080a757ce/search-result.webp",
+          "sha256": "c1b614d0c73d2c157375f4bad73288f774441dda04aacdfcfa36238080a757ce",
+          "byte_size": 4014,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a23823388c7911f8d913abbd8c3d42e3c3434e25c17cbb4664b0df08f573b087/detail-page.webp",
+          "sha256": "a23823388c7911f8d913abbd8c3d42e3c3434e25c17cbb4664b0df08f573b087",
+          "byte_size": 202528,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-027",
+      "itemId": "card:ac36c2c3-659f-4fdc-8352-672a2ff5231e",
+      "printingId": "ac36c2c3-659f-4fdc-8352-672a2ff5231e",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "28",
+      "cardName": "Machop",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-28",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/machop/tk8a-28",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-28/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "829cfe898962898f3c54f43f970408921dd623677fe1bb3f12cc3b567a075ed6",
+        "byteSize": 1154474,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/1a3444394da78240f6ef8c0dd05fd2cfbc9f791055f39d3ca4a14147d4cbe09a/card-grid.webp",
+          "sha256": "1a3444394da78240f6ef8c0dd05fd2cfbc9f791055f39d3ca4a14147d4cbe09a",
+          "byte_size": 18762,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/ed156ef84ccf9d1b93188550e0134a6d4d7395e87d906a57811de9c8b07e2c88/search-result.webp",
+          "sha256": "ed156ef84ccf9d1b93188550e0134a6d4d7395e87d906a57811de9c8b07e2c88",
+          "byte_size": 3592,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/8ff6eee55bfab08830ece05c2c34488bbb030443b50cfa06c1a064771c90dd09/detail-page.webp",
+          "sha256": "8ff6eee55bfab08830ece05c2c34488bbb030443b50cfa06c1a064771c90dd09",
+          "byte_size": 141666,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:b6326b64-0046-4ab5-8cfd-9c8e4877750d",
+      "printingId": "b6326b64-0046-4ab5-8cfd-9c8e4877750d",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "6",
+      "cardName": "Fighting Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-6",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/tk8a-6",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-6/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "a91d62ed389e6f725674030cfe5d6686fa8fedb99f2f8e2da5ee31b3d0e2317e",
+        "byteSize": 470471,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/17edeae5c0f268667260d9e6efacc81a7c27e2cdbef78724358e23d55d2b4ee1/card-grid.webp",
+          "sha256": "17edeae5c0f268667260d9e6efacc81a7c27e2cdbef78724358e23d55d2b4ee1",
+          "byte_size": 7610,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/7b8c56ed5dc51f4cf44c328f84e07b8d0788521fead649d81cad1944c951d6cc/search-result.webp",
+          "sha256": "7b8c56ed5dc51f4cf44c328f84e07b8d0788521fead649d81cad1944c951d6cc",
+          "byte_size": 2300,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/6be3c9f962501b8b5894205e90019ba8230cf3753b458880b329289bf5bf6a34/detail-page.webp",
+          "sha256": "6be3c9f962501b8b5894205e90019ba8230cf3753b458880b329289bf5bf6a34",
+          "byte_size": 35784,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-025",
+      "itemId": "card:b8995abc-c60e-4b75-ae84-ab95a03751ab",
+      "printingId": "b8995abc-c60e-4b75-ae84-ab95a03751ab",
+      "setId": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+      "setCode": "tk-xy-latia",
+      "languageCode": "en",
+      "collectorReference": "26",
+      "cardName": "Tangela",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8b-26",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/tangela/tk8b-26",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8b-26/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "781d29586fd5d66f9cb9ab9cc36dd0a5c8f83521c73389c3b08cafef883b046c",
+        "byteSize": 1149952,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/03e934bc4e8e4b0b46b39a1485cef4fc7a0735a18144c4cf25b4270e71a90468/card-grid.webp",
+          "sha256": "03e934bc4e8e4b0b46b39a1485cef4fc7a0735a18144c4cf25b4270e71a90468",
+          "byte_size": 17196,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/1bdac22525fee7f80d288842770b25171820b64436bf2b7e5e3754e184b35a94/search-result.webp",
+          "sha256": "1bdac22525fee7f80d288842770b25171820b64436bf2b7e5e3754e184b35a94",
+          "byte_size": 3692,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/f9ee91dd004b9e6ba88d44988ec079ead75124b792f8e2902d635e5bd37c4787/detail-page.webp",
+          "sha256": "f9ee91dd004b9e6ba88d44988ec079ead75124b792f8e2902d635e5bd37c4787",
+          "byte_size": 124040,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:b9765507-5583-4f38-b8a2-588c50ab9d12",
+      "printingId": "b9765507-5583-4f38-b8a2-588c50ab9d12",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "9",
+      "cardName": "Fighting Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-9",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/tk8a-9",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-9/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "cd70f363127e8607553aee3ec31d96626613be88cc7b36edea4fd106edfe2a1e",
+        "byteSize": 470422,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/fb9b7539f6ad64644468c820318a7d302ab4d9db0ea02b27b6609666ab3d4241/card-grid.webp",
+          "sha256": "fb9b7539f6ad64644468c820318a7d302ab4d9db0ea02b27b6609666ab3d4241",
+          "byte_size": 7608,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/7b8c56ed5dc51f4cf44c328f84e07b8d0788521fead649d81cad1944c951d6cc/search-result.webp",
+          "sha256": "7b8c56ed5dc51f4cf44c328f84e07b8d0788521fead649d81cad1944c951d6cc",
+          "byte_size": 2300,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/213009cdaaf49338bb658363bced7eee97fd53736296ead6971b2b35805f2567/detail-page.webp",
+          "sha256": "213009cdaaf49338bb658363bced7eee97fd53736296ead6971b2b35805f2567",
+          "byte_size": 35770,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:d35325cb-be43-43dc-93e9-7209e90ae951",
+      "printingId": "d35325cb-be43-43dc-93e9-7209e90ae951",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "1",
+      "cardName": "Skitty",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-1",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/skitty/tk8a-1",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-1/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "40831e289e15c738596c40af37c4a74cad3d77b8ab3bcc46bd4cd7cefa5d1127",
+        "byteSize": 1195675,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/e28433f0af8d7892bf27d3dbedd64a13c63b03c466eedeeb75551150f42405f0/card-grid.webp",
+          "sha256": "e28433f0af8d7892bf27d3dbedd64a13c63b03c466eedeeb75551150f42405f0",
+          "byte_size": 21614,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/3a7703c689c19df4201c6fa87fbb0120bc0437516bc7a9545afd926deaf7dee2/search-result.webp",
+          "sha256": "3a7703c689c19df4201c6fa87fbb0120bc0437516bc7a9545afd926deaf7dee2",
+          "byte_size": 3860,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/f8d3795920248bd00a03ded5ea972a005d2181b1555670ff68bb9df392fbc23f/detail-page.webp",
+          "sha256": "f8d3795920248bd00a03ded5ea972a005d2181b1555670ff68bb9df392fbc23f",
+          "byte_size": 158140,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:da08e921-01ee-4e70-b097-9e499048c7df",
+      "printingId": "da08e921-01ee-4e70-b097-9e499048c7df",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "21",
+      "cardName": "Potion",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-21",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/potion/tk8a-21",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-21/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "96573296da7409a7497cb12da96b299d5101769a27bd5a20fea4ffe5af6b3ceb",
+        "byteSize": 873046,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/b1647f306e6e96abc1654d73ed7cbf5fbe92a764df7a4f0284f8661cc1b6b096/card-grid.webp",
+          "sha256": "b1647f306e6e96abc1654d73ed7cbf5fbe92a764df7a4f0284f8661cc1b6b096",
+          "byte_size": 14184,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/8c9d01a4a863bc5aca02b1bc94e0af38728b421fbcc4cea38e0a07fa6c979ac8/search-result.webp",
+          "sha256": "8c9d01a4a863bc5aca02b1bc94e0af38728b421fbcc4cea38e0a07fa6c979ac8",
+          "byte_size": 3130,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/81f62c4f6e4d9bef2799d7618b43630b11751b9830239ffad7f91d083b3d2693/detail-page.webp",
+          "sha256": "81f62c4f6e4d9bef2799d7618b43630b11751b9830239ffad7f91d083b3d2693",
+          "byte_size": 93302,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:dfa45d96-1d3a-4325-940c-04c312b6bb6a",
+      "printingId": "dfa45d96-1d3a-4325-940c-04c312b6bb6a",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "10",
+      "cardName": "Fighting Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-10",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/tk8a-10",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-10/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "90a450cd207920e1a3993ec9111e4d640d708a9a02bd157b459ede048a226001",
+        "byteSize": 470783,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/f254a600657c25b8a011a315dce04c6253d5bd8e7a93a75ad265208cd552a4f4/card-grid.webp",
+          "sha256": "f254a600657c25b8a011a315dce04c6253d5bd8e7a93a75ad265208cd552a4f4",
+          "byte_size": 7626,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/2656fa3a4a465d8fa99dcf12772a1a76509a0d9e0f115d18daa160427dd948e0/search-result.webp",
+          "sha256": "2656fa3a4a465d8fa99dcf12772a1a76509a0d9e0f115d18daa160427dd948e0",
+          "byte_size": 2306,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/06b1854f0c33b566a69667269f6cf3abf61d63387428017564496caa005c8122/detail-page.webp",
+          "sha256": "06b1854f0c33b566a69667269f6cf3abf61d63387428017564496caa005c8122",
+          "byte_size": 35846,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-027",
+      "itemId": "card:e9e493c2-3e60-4f41-873a-1daf1edf2c56",
+      "printingId": "e9e493c2-3e60-4f41-873a-1daf1edf2c56",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "27",
+      "cardName": "Skitty",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-27",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/skitty/tk8a-27",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-27/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "50dbdec6b871c54127291a6d6bf9d2ea9883b874a4aa40c4d09c1a87e5e365f1",
+        "byteSize": 1195806,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/bbded6b0c8f4cccf1629e73b4ecd864bd69ce05c6a3149633c8fa7f5d78d97ac/card-grid.webp",
+          "sha256": "bbded6b0c8f4cccf1629e73b4ecd864bd69ce05c6a3149633c8fa7f5d78d97ac",
+          "byte_size": 21624,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/c2fbe5470cc625c709ea0914908c7383c09febcd6cc59a50d3768c67d91b28b1/search-result.webp",
+          "sha256": "c2fbe5470cc625c709ea0914908c7383c09febcd6cc59a50d3768c67d91b28b1",
+          "byte_size": 3922,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/4cd37e184dc91b11c95290a3606d2f335a468de9d488c1f71c2a21136f8bcabc/detail-page.webp",
+          "sha256": "4cd37e184dc91b11c95290a3606d2f335a468de9d488c1f71c2a21136f8bcabc",
+          "byte_size": 158166,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:ed70a282-9ca5-45f7-9893-542dd095d4e3",
+      "printingId": "ed70a282-9ca5-45f7-9893-542dd095d4e3",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "16",
+      "cardName": "Psychic Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-16",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/psychic-energy/tk8a-16",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-16/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "e3b6d7df0d8488c575a0a881886bdf07654063fc5b3783d09749a70828388abc",
+        "byteSize": 467359,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/8328c9d49103c87208f907d217ea4a35f7e9d1040c6a6038598e7a8def48dbd3/card-grid.webp",
+          "sha256": "8328c9d49103c87208f907d217ea4a35f7e9d1040c6a6038598e7a8def48dbd3",
+          "byte_size": 7172,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/2e7d7475c78a59be23f77c7a97bd8c3bf66bda0c6f1d86438a138ac2c5c0fdee/search-result.webp",
+          "sha256": "2e7d7475c78a59be23f77c7a97bd8c3bf66bda0c6f1d86438a138ac2c5c0fdee",
+          "byte_size": 2214,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7535132c990b1a76803bc7c2b86d01a9189ab8ef372353f647f530f75bd2da05/detail-page.webp",
+          "sha256": "7535132c990b1a76803bc7c2b86d01a9189ab8ef372353f647f530f75bd2da05",
+          "byte_size": 36094,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:ed7519d1-4ded-4b28-ad2c-03293de28c78",
+      "printingId": "ed7519d1-4ded-4b28-ad2c-03293de28c78",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "13",
+      "cardName": "Latios",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-13",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/latios/tk8a-13",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-13/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "9b56abe89b2401379f8417f7ecfa0c9d37167ffe4ccbbdd744d623d6aa74bdd1",
+        "byteSize": 1063756,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/d01544c5a03662f4f4b49415083b61d6f4efc6452fb08b798580ca36b1adb39e/card-grid.webp",
+          "sha256": "d01544c5a03662f4f4b49415083b61d6f4efc6452fb08b798580ca36b1adb39e",
+          "byte_size": 18848,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/c603d787eb64fef926a35247582db01337e4d953bfffbacf7b4eeb9531adca57/search-result.webp",
+          "sha256": "c603d787eb64fef926a35247582db01337e4d953bfffbacf7b4eeb9531adca57",
+          "byte_size": 4242,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a88ae6d62995e14480eb743e68a1d1cf220d86143052a939aa81707551931536/detail-page.webp",
+          "sha256": "a88ae6d62995e14480eb743e68a1d1cf220d86143052a939aa81707551931536",
+          "byte_size": 114206,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:fadcbc2e-280a-4e06-b8d3-9df9eb2c5a5a",
+      "printingId": "fadcbc2e-280a-4e06-b8d3-9df9eb2c5a5a",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "4",
+      "cardName": "Rhydon",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-4",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/rhydon/tk8a-4",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-4/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "d7d266b876e2d0f9f1bdaf1a32ea7e21472cb28bcf1946f9c15f29c56f2e7253",
+        "byteSize": 1311937,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/a6917709f3277db1c4be8cd168448c81625b9723e17a4817fb15c17c2a086e8f/card-grid.webp",
+          "sha256": "a6917709f3277db1c4be8cd168448c81625b9723e17a4817fb15c17c2a086e8f",
+          "byte_size": 21996,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/6ed68912379bdfe8a621db28210aea4243ce3f71393f53ed7cbd6e972706924e/search-result.webp",
+          "sha256": "6ed68912379bdfe8a621db28210aea4243ce3f71393f53ed7cbd6e972706924e",
+          "byte_size": 3974,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/304f9047a1263688944b2477fdf029f78b050c38752df97453d65e5056be7665/detail-page.webp",
+          "sha256": "304f9047a1263688944b2477fdf029f78b050c38752df97453d65e5056be7665",
+          "byte_size": 170656,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:fc44e2c4-134e-4f11-b260-94e8d7875d1d",
+      "printingId": "fc44e2c4-134e-4f11-b260-94e8d7875d1d",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "3",
+      "cardName": "Fighting Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-3",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fighting-energy/tk8a-3",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-3/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "ef9c753bcfb93ea82840f14bd6029b3e53b185296496e1f3fef5c3cc9712fe50",
+        "byteSize": 470320,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/e6a26ac0ea03ac2e07726f89cc721b3f2451a4f933746312e5906072c500b4c3/card-grid.webp",
+          "sha256": "e6a26ac0ea03ac2e07726f89cc721b3f2451a4f933746312e5906072c500b4c3",
+          "byte_size": 7602,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/6569248a6d4eed6a6aca2c61e458d23a061273f68765fee4ca9a4961ddca9a47/search-result.webp",
+          "sha256": "6569248a6d4eed6a6aca2c61e458d23a061273f68765fee4ca9a4961ddca9a47",
+          "byte_size": 2300,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0e4b4d1e2a3b88743822727016f44e1b5866ffede7b2b0c24e596e15688f3c61/detail-page.webp",
+          "sha256": "0e4b4d1e2a3b88743822727016f44e1b5866ffede7b2b0c24e596e15688f3c61",
+          "byte_size": 35764,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:ffccaa4d-9eac-4cdf-8ef5-61e7d8b2c20e",
+      "printingId": "ffccaa4d-9eac-4cdf-8ef5-61e7d8b2c20e",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "12",
+      "cardName": "Solrock",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-12",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/solrock/tk8a-12",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-12/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "6d67171681186fd19d486a5d98a26329c5ddd2f947f84fce9dc8dcefd6eb3650",
+        "byteSize": 1328166,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/1a6a00babc42c264dd990edba78609c11f2670ce3447be8ec1e0e34e221491d9/card-grid.webp",
+          "sha256": "1a6a00babc42c264dd990edba78609c11f2670ce3447be8ec1e0e34e221491d9",
+          "byte_size": 23060,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/69dfcda139f055f9c45ce9717d3d805e343baca21109fb5527b55a109812b6c8/search-result.webp",
+          "sha256": "69dfcda139f055f9c45ce9717d3d805e343baca21109fb5527b55a109812b6c8",
+          "byte_size": 4078,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5e7d4843838938fb92620ed127c3df97d72a59f89f7f305c478f9f37ee79054c/detail-page.webp",
+          "sha256": "5e7d4843838938fb92620ed127c3df97d72a59f89f7f305c478f9f37ee79054c",
+          "byte_size": 169052,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:2edf6f8d-8922-4d4c-9e4c-b1cca68b08a6",
+      "printingId": "2edf6f8d-8922-4d4c-9e4c-b1cca68b08a6",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "23",
+      "cardName": "Rhyhorn",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-23",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/rhyhorn/tk8a-23",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-23/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "6a8f7935c9ac6710b3d48c167b2ab610f08048d10009f06283a314d828560702",
+        "byteSize": 1294762,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/0da9d3cb81acd6f468c992e587c8e20a0cbb0bbe989c2a7ca7b7826a9c7f9dd8/card-grid.webp",
+          "sha256": "0da9d3cb81acd6f468c992e587c8e20a0cbb0bbe989c2a7ca7b7826a9c7f9dd8",
+          "byte_size": 21782,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/9c874bb684c47bcc310bff0b253bc09d0a1ab9ebe841ddb81b5f3de81610f3bc/search-result.webp",
+          "sha256": "9c874bb684c47bcc310bff0b253bc09d0a1ab9ebe841ddb81b5f3de81610f3bc",
+          "byte_size": 3788,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/e9173c00c7ef0ede95859cbae20a9fee34c89d38892446c0a5d8406054d18135/detail-page.webp",
+          "sha256": "e9173c00c7ef0ede95859cbae20a9fee34c89d38892446c0a5d8406054d18135",
+          "byte_size": 167404,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-026",
+      "itemId": "card:c4c82782-0817-4304-815b-bcc0bba3db9b",
+      "printingId": "c4c82782-0817-4304-815b-bcc0bba3db9b",
+      "setId": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+      "setCode": "tk-xy-latio",
+      "languageCode": "en",
+      "collectorReference": "15",
+      "cardName": "Rhyhorn",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk8a-15",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/rhyhorn/tk8a-15",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk8a-15/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "9e889b833a77cf604a696616dbd6942879b292be92f9119380642e7ca356457f",
+        "byteSize": 1294740,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/6f0da2aa4ff6a19971b3891db0b9442cf0733baa0978759ccb3defed596104d6/card-grid.webp",
+          "sha256": "6f0da2aa4ff6a19971b3891db0b9442cf0733baa0978759ccb3defed596104d6",
+          "byte_size": 21782,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/8118006464ac5afa26e8ef68220efa81b986933454b109055567839bb10b0174/search-result.webp",
+          "sha256": "8118006464ac5afa26e8ef68220efa81b986933454b109055567839bb10b0174",
+          "byte_size": 3788,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/e45303c074bcecfe26f50276f058aee8ec69b563258a204f723b554ed4c0f843/detail-page.webp",
+          "sha256": "e45303c074bcecfe26f50276f058aee8ec69b563258a204f723b554ed4c0f843",
+          "byte_size": 167736,
           "width": 720,
           "height": 1007,
           "mime_type": "image/webp"
