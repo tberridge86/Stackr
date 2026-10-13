@@ -1,9 +1,9 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-13T20:11:46.624Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-13T21:00:09.048Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-817 tasks /41 batches complete; 2127 tasks /120 batches remain.
-150 English originals and 450 display files gathered: 115 originals live, 35 prepared and queued.
+882 tasks /44 batches complete; 2062 tasks /117 batches remain.
+233 English originals and 699 display files gathered: 180 originals live, 53 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 
@@ -14,18 +14,24 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 - English10, run38454484753, EN-CARDS-001, EN-CARDS-002, EN-CARDS-005:all10normal card responses/all40decoded/hash/dimension-matched files independently verified. ReceiptSHAb1850d457a05ff9a9673e802b13c94e6628dfe96e79ecf2c6470bb3a205aa28a. Rollback prepared, not executed.
 - English57, run38457350386, EN-CARDS-008, EN-CARDS-009, EN-CARDS-010, EN-CARDS-011, EN-CARDS-012:all57normal card responses/all228decoded/hash/dimension-matched files independently verified. ReceiptSHAe95dd3bb7f3999d96ae636320e3233a8e7506eab0ace048bf94bf51074105924. Rollback prepared, not executed.
 - English48, run38459157383, EN-CARDS-013, EN-CARDS-014, EN-CARDS-015:all48normal card responses/all192decoded/hash/dimension-matched files independently verified. ReceiptSHA9818b510dc82d4509573bb2b97c06edb1ca1c0540e5c90192aef084b011b16ae. Rollback prepared, not executed.
+- English35, run38461833773, EN-CARDS-016, EN-CARDS-017, EN-CARDS-018:all35normal card responses/all140decoded/hash/dimension-matched files independently verified. ReceiptSHAcce9e043e5f302e0283b216f8d1053686754b8e60f5e795bbafbfef1e4fd6fe8. Rollback prepared, not executed.
+- English30, run38465700113, EN-CARDS-019, EN-CARDS-020, EN-CARDS-021:all30normal card responses/all120decoded/hash/dimension-matched files independently verified. ReceiptSHA64dbe01105e0db827321107e3042d88b2f763b99f47e102efe40a9207ec7f9ac. Rollback prepared, not executed.
 
 ## Prepared work
 
-- EN-CARDS-016: 5 prepared fronts; actual production checks pending.
-- EN-CARDS-017: 25 prepared fronts; actual production checks pending.
-- EN-CARDS-018: 5 prepared fronts; actual production checks pending.
+- EN-CARDS-022: 25 prepared fronts; actual production checks pending.
+- EN-CARDS-023: 3 prepared fronts; actual production checks pending.
+- EN-CARDS-024: 25 prepared fronts; actual production checks pending.
 - No unverified current production run.
 - Frozen package asset638042830, 53091723bytes, SHAaf5cd84113f391caffa0383aab60163820cbc06c56d7bad02f4cadfca015dcaa. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset638073079, 42961975bytes, SHAef56173edc2e4a097b9115d0a76284393b1f07a0c9e7f81d18e5ef116a920471. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset638107947, 32119253bytes, SHA9bcc979f0ddb70dc64544c8cc592667fa19d570a12e295834600e459132ad862. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset638165691, 35408502bytes, SHAbe73d17379657b1128eb5f01b9666c53026e0b2289e015ae324f18344d457370. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset638239382, 66689774bytes, SHAba83ea3accf161a7129370edff9f77697e34295369f3df7ce3efed452b40b262. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
+
+14 exact originals still need larger, readable pictures; 1 additional source version matches remain unresolved. These are unfinished tasks and are excluded from publication.
 
 224 old Simplified Chinese cases have Traditional Chinese counterparts but still need an evidenced identity repair. No silent retagging. The fixed list also retains256language/card/version checks,36Traditional Chinese logos and2sharper Japanese originals. Flat reference fronts do not certify physical material/finish.
 
@@ -50,15 +56,15 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | EN-CARDS-013 | 11/11 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-014 | 12/12 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-015 | 25/25 | Live and verified | Complete; delivery evidence saved |
-| EN-CARDS-016 | 0/5 | Prepared and queued for production | Actual production publication and API/image verification pending |
-| EN-CARDS-017 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
-| EN-CARDS-018 | 0/5 | Prepared and queued for production | Actual production publication and API/image verification pending |
-| EN-CARDS-019 | 0/16 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
-| EN-CARDS-020 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
-| EN-CARDS-021 | 0/3 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
-| EN-CARDS-022 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
-| EN-CARDS-023 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
-| EN-CARDS-024 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
+| EN-CARDS-016 | 5/5 | Live and verified | Complete; delivery evidence saved |
+| EN-CARDS-017 | 25/25 | Live and verified | Complete; delivery evidence saved |
+| EN-CARDS-018 | 5/5 | Live and verified | Complete; delivery evidence saved |
+| EN-CARDS-019 | 15/16 | 15 of 16 live and checked | 1 exact pictures need larger readable originals |
+| EN-CARDS-020 | 14/25 | 14 of 25 live and checked | 11 exact pictures need larger readable originals |
+| EN-CARDS-021 | 1/3 | 1 of 3 live and checked | 2 exact pictures need larger readable originals |
+| EN-CARDS-022 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
+| EN-CARDS-023 | 0/4 | 3 pictures prepared and queued; remaining open | Actual production publication and API/image verification pending |
+| EN-CARDS-024 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
 | EN-CARDS-025 | 0/3 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
 | EN-CARDS-026 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
 | EN-CARDS-027 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
@@ -196,5 +202,3 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | TC-LOGOS-002 | 0/10 | Current source metadata reviewed; exact logo needed | No exact approved local logo or current provider logo pointer for these Traditional Chinese sets |
 | TC-LOGOS-003 | 0/10 | Current source metadata reviewed; exact logo needed | No exact approved local logo or current provider logo pointer for these Traditional Chinese sets |
 | TC-LOGOS-004 | 0/6 | Current source metadata reviewed; exact logo needed | No exact approved local logo or current provider logo pointer for these Traditional Chinese sets |
-
-Stable batch queries: Show batch EN-CARDS-011; What is live?; Continue the next artwork batch. The saved guide and fixed JSON retain all2,944original item identities.
