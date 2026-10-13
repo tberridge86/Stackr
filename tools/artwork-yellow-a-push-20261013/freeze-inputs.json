@@ -1,0 +1,16 @@
+{
+  "source_manifest_file": "alt-fronts2-source-manifest.json",
+  "source_manifest_sha256": "4af5f1c029bc07dd4b1e2ee9e912d7ae8ebe216af00b989e077d3bc9101289f7",
+  "checked_handoff_file": "source-batches/receipts/en038-checked-handoff-20261013T225210590966Z.json",
+  "checked_handoff_sha256": "df6995add5dca9a7172051f5f899ccf8fcd5b4fb27183e13d934d27ea31e4067",
+  "eligible_fronts": 2,
+  "binding_prefix": "alt2",
+  "archive": {
+    "id": 638504756,
+    "kind": "github_release_asset",
+    "artifact_directory": "638504756",
+    "sha256": "da73a211f009a3ee5f3bb61bbcccdc765744c66159c0480aca9c9301ac2cc21c",
+    "byte_size": 1250882,
+    "file_count": 11
+  }
+}

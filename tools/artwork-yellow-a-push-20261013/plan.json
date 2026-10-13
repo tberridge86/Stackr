@@ -1,0 +1,433 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "STACKR-EN-FRONTS-20261013-ALT002",
+  "source_manifest_sha256": "4af5f1c029bc07dd4b1e2ee9e912d7ae8ebe216af00b989e077d3bc9101289f7",
+  "checked_handoff_sha256": "df6995add5dca9a7172051f5f899ccf8fcd5b4fb27183e13d934d27ea31e4067",
+  "saved_targets_sha256": "26ccbc158ed31cb05700add5ff665b3ba2f16c8d5972a6b70a36f3db793e48f5",
+  "identity_table_sha256": "920c7867fa8ed59488f72d5c9446e504024fb160ce578b0898ce6fa2fce9f075",
+  "archive": {
+    "id": 638504756,
+    "kind": "github_release_asset",
+    "artifact_directory": "638504756",
+    "sha256": "da73a211f009a3ee5f3bb61bbcccdc765744c66159c0480aca9c9301ac2cc21c",
+    "byte_size": 1250882,
+    "file_count": 11
+  },
+  "rows": [
+    {
+      "printing_id": "8a4dd5f6-ed5a-4d09-babf-85572f6eea0a",
+      "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+      "set_code": "xya",
+      "language_code": "en",
+      "collector_number": "107a",
+      "card_native_name": "Professor Sycamore",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "0b79891f-698e-4cc9-92e1-fc90f425dcbb"
+      ],
+      "batch_id": "EN-CARDS-038",
+      "source_code": "scrydex",
+      "provider_id": "xy9-107a",
+      "image_url": "https://images.scrydex.com/pokemon/xy9-107a/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/c9e23430bf2395b23c5e7ca788e962dacd79fd0e410b6d9c1a60621e37f167ae/original.png",
+          "sha256": "c9e23430bf2395b23c5e7ca788e962dacd79fd0e410b6d9c1a60621e37f167ae",
+          "byte_size": 436570,
+          "width": 734,
+          "height": 1024,
+          "mime_type": "image/png",
+          "artifact_id": 638504756
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/def224bb5f1696503b6964ebd15c32eb79637deadc305de61112041185a1b852/card-grid.webp",
+          "sha256": "def224bb5f1696503b6964ebd15c32eb79637deadc305de61112041185a1b852",
+          "byte_size": 18088,
+          "width": 240,
+          "height": 335,
+          "mime_type": "image/webp",
+          "artifact_id": 638504756
+        },
+        {
+          "role": "search-result",
+          "file": "objects/79f80990222d72deed8f799ce41633ccb76c53467ded1aee610378de68403b61/search-result.webp",
+          "sha256": "79f80990222d72deed8f799ce41633ccb76c53467ded1aee610378de68403b61",
+          "byte_size": 3624,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 638504756
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/d02b85880c0070db3531020ac11d9a3f154a843dbcf501bb76ae583407e2d06d/detail-page.webp",
+          "sha256": "d02b85880c0070db3531020ac11d9a3f154a843dbcf501bb76ae583407e2d06d",
+          "byte_size": 123666,
+          "width": 720,
+          "height": 1004,
+          "mime_type": "image/webp",
+          "artifact_id": 638504756
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/xy9-107a/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/professor-sycamore/xy9-107a?variant=normal",
+        "provider_id": "xy9-107a",
+        "source_metadata_sha256": "bb3a04477b9f15e3fedd54677f84ad29fe54a366c4e01edc73b5f83f3bf9059a",
+        "collector_alias_evidence": "Canonical Yellow A Alternate/xya 107a is the exact a-suffix printing grouped by source under BREAKpoint/xy9, with actual printed 107a/122. Both retained TCGdex xya card and source names/lettered numbers agree. Yellow A marker and footer must be confirmed in original pixels before queueing; unsuffixed versions are excluded.",
+        "product_scope": "pokemon_physical_tcg",
+        "pixel_identity": {
+          "inspectedVia": "view_image original; both whole originals individually inspected by parent artwork source specialist; Trainers’ Mail also reopened as a single full original",
+          "language": "English",
+          "printedName": "Professor Sycamore",
+          "printedCollectorNumber": "107a/122",
+          "printedCollectorSuffix": "a",
+          "canonicalCollectorAlias": "107a",
+          "underlyingSourceExpansion": "BREAKpoint",
+          "underlyingSourceExpansionId": "xy9",
+          "underlyingPrintedSetSymbol": "BREAKpoint leaf/point set symbol beside uncommon diamond",
+          "raritySymbol": "uncommon diamond",
+          "yellowAMarker": "yellow letter A in a black circle with white outline at bottom right",
+          "yellowAMarkerObservedFromPixels": true,
+          "ordinaryUnsuffixedPrintingSubstituted": false,
+          "copyrightText": "©2017 Pokémon",
+          "copyrightYear": 2017,
+          "copyrightYearObservedFromPixels": true,
+          "copyrightInferredFromReleaseYear": false,
+          "artist": "Naoki Saito",
+          "trainerType": "Supporter",
+          "rules": [
+            "Discard your hand and draw 7 cards.",
+            "You may play only 1 Supporter card during your turn (before your attack)."
+          ],
+          "rulesSemanticallyMatchSource": true,
+          "completePrintedFaceAndFrameVisible": true,
+          "outerPhysicalCornerGeometryCertified": false,
+          "nameNumberAndSymbolReadable": true,
+          "finePrintReadable": true,
+          "editionOrDistributionProductCertified": false,
+          "materialFoilFinishCertified": false,
+          "stampedEditionSubstituted": false,
+          "normalSourceVariantMetadataSupported": true,
+          "genericFrontDoesNotCertifyFoilMaterial": true
+        },
+        "product_reference_used_for_binding": false,
+        "stamped_source_alternatives_selected": false,
+        "source_metadata_name": "Professor Sycamore",
+        "source_printed_number": "107a/122",
+        "source_group_crosswalk": {
+          "catalogueGroup": "Yellow A Alternate / xya",
+          "providerParentSet": "BREAKpoint",
+          "providerParentSetId": "xy9",
+          "evidence": "Provider exact a-suffix card ID and printed denominator match selected alternate collector; provider groups these alternates under their original parent expansions rather than a separate xya group. Future actual pixel review must confirm a-suffixed footer and Yellow A marker.",
+          "ordinaryUnsuffixedPrintingSubstituted": false,
+          "yellowAMarkerPixelVerified": true,
+          "physicalEditionCertified": false,
+          "exactASuffixedFooterPixelVerified": true,
+          "canonicalGroupNotChanged": true
+        },
+        "retained_alias_metadata": {
+          "sourceUrl": "https://api.tcgdex.net/v2/en/sets/xya",
+          "sha256": "e58f7e16b569a7fa44868ae36202fa6498403b2b005505d7f5538e6d70ede6fb",
+          "checkedAt": "2026-10-12T20:42:19.906726+00:00"
+        },
+        "source_name_alias": null,
+        "source_name_canonical_changed": false,
+        "source_edition_evidence": null,
+        "source_binding_inference": null,
+        "source_metadata_content_discrepancies": [],
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "f4c6af1e-70c0-48fe-b3a1-1d04059b1051",
+      "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+      "set_code": "xya",
+      "language_code": "en",
+      "collector_number": "92a",
+      "card_native_name": "Trainers’ Mail",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "ff44c94e-e574-4106-8e5f-8edd220d7698"
+      ],
+      "batch_id": "EN-CARDS-038",
+      "source_code": "scrydex",
+      "provider_id": "xy6-92a",
+      "image_url": "https://images.scrydex.com/pokemon/xy6-92a/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/42eb1038f4dc1c60fe6930fec3771312e5404c4779f149e58662ae61c98038e0/original.png",
+          "sha256": "42eb1038f4dc1c60fe6930fec3771312e5404c4779f149e58662ae61c98038e0",
+          "byte_size": 513086,
+          "width": 734,
+          "height": 1024,
+          "mime_type": "image/png",
+          "artifact_id": 638504756
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/e5e28e7d5b8627ed7f53ae21ad550383075dedfd558334075ae0f985b7dacd35/card-grid.webp",
+          "sha256": "e5e28e7d5b8627ed7f53ae21ad550383075dedfd558334075ae0f985b7dacd35",
+          "byte_size": 19234,
+          "width": 240,
+          "height": 335,
+          "mime_type": "image/webp",
+          "artifact_id": 638504756
+        },
+        {
+          "role": "search-result",
+          "file": "objects/8c4fd8f79c0db64dbb1c3bc15de2f412883f481312189894cd68dda464636530/search-result.webp",
+          "sha256": "8c4fd8f79c0db64dbb1c3bc15de2f412883f481312189894cd68dda464636530",
+          "byte_size": 3794,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 638504756
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/b9454db21cb239ca433b498bc5db4a35b8944a7f0fa7d279bb6e813624b8e945/detail-page.webp",
+          "sha256": "b9454db21cb239ca433b498bc5db4a35b8944a7f0fa7d279bb6e813624b8e945",
+          "byte_size": 136248,
+          "width": 720,
+          "height": 1004,
+          "mime_type": "image/webp",
+          "artifact_id": 638504756
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/xy6-92a/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/trainers-mail/xy6-92a?variant=normal",
+        "provider_id": "xy6-92a",
+        "source_metadata_sha256": "5117bd634f8dcc3482a6b8d87401b5aed1559ec99e5056fd582e8583f8845d25",
+        "collector_alias_evidence": "Canonical Yellow A Alternate/xya 92a is the exact a-suffix printing grouped by source under Roaring Skies/xy6, with actual printed 92a/108. Both retained TCGdex xya card and source names/lettered numbers agree. Yellow A marker and footer must be confirmed in original pixels before queueing; unsuffixed versions are excluded.",
+        "product_scope": "pokemon_physical_tcg",
+        "pixel_identity": {
+          "inspectedVia": "view_image original; both whole originals individually inspected by parent artwork source specialist; Trainers’ Mail also reopened as a single full original",
+          "language": "English",
+          "printedName": "Trainers’ Mail",
+          "printedCollectorNumber": "92a/108",
+          "printedCollectorSuffix": "a",
+          "canonicalCollectorAlias": "92a",
+          "underlyingSourceExpansion": "Roaring Skies",
+          "underlyingSourceExpansionId": "xy6",
+          "underlyingPrintedSetSymbol": "Roaring Skies arrow/wing set symbol beside uncommon diamond",
+          "raritySymbol": "uncommon diamond",
+          "yellowAMarker": "yellow letter A in a black circle with white outline at bottom right",
+          "yellowAMarkerObservedFromPixels": true,
+          "ordinaryUnsuffixedPrintingSubstituted": false,
+          "copyrightText": "©2017 Pokémon",
+          "copyrightYear": 2017,
+          "copyrightYearObservedFromPixels": true,
+          "copyrightInferredFromReleaseYear": false,
+          "artist": "Toyste Beach",
+          "trainerType": "Item",
+          "rules": [
+            "Look at the top 4 cards of your deck. You may reveal a Trainer card you find there (except for Trainers’ Mail) and put it into your hand. Shuffle the other cards back into your deck.",
+            "You may play as many Item cards as you like during your turn (before your attack)."
+          ],
+          "rulesSemanticallyMatchSource": true,
+          "completePrintedFaceAndFrameVisible": true,
+          "outerPhysicalCornerGeometryCertified": false,
+          "nameNumberAndSymbolReadable": true,
+          "finePrintReadable": true,
+          "editionOrDistributionProductCertified": false,
+          "materialFoilFinishCertified": false,
+          "stampedEditionSubstituted": false,
+          "normalSourceVariantMetadataSupported": true,
+          "genericFrontDoesNotCertifyFoilMaterial": true
+        },
+        "product_reference_used_for_binding": false,
+        "stamped_source_alternatives_selected": false,
+        "source_metadata_name": "Trainers' Mail",
+        "source_printed_number": "92a/108",
+        "source_group_crosswalk": {
+          "catalogueGroup": "Yellow A Alternate / xya",
+          "providerParentSet": "Roaring Skies",
+          "providerParentSetId": "xy6",
+          "evidence": "Provider exact a-suffix card ID and printed denominator match selected alternate collector; provider groups these alternates under their original parent expansions rather than a separate xya group. Future actual pixel review must confirm a-suffixed footer and Yellow A marker.",
+          "ordinaryUnsuffixedPrintingSubstituted": false,
+          "yellowAMarkerPixelVerified": true,
+          "physicalEditionCertified": false,
+          "exactASuffixedFooterPixelVerified": true,
+          "canonicalGroupNotChanged": true
+        },
+        "retained_alias_metadata": {
+          "sourceUrl": "https://api.tcgdex.net/v2/en/sets/xya",
+          "sha256": "e58f7e16b569a7fa44868ae36202fa6498403b2b005505d7f5538e6d70ede6fb",
+          "checkedAt": "2026-10-12T20:42:19.906726+00:00"
+        },
+        "source_name_alias": "Typographic apostrophe only; canonical name retained.",
+        "source_name_canonical_changed": false,
+        "source_edition_evidence": null,
+        "source_binding_inference": null,
+        "source_metadata_content_discrepancies": [
+          {
+            "printingId": "f4c6af1e-70c0-48fe-b3a1-1d04059b1051",
+            "sourceProviderId": "xy6-92a",
+            "field": "rules[0]",
+            "sourceValue": "Look at the top 4 cards of your deck. You may reveal a Trainer card you find there (except Trainers' Mail) and put it into your hand. Shuffle the other cards back into your deck.",
+            "actualPrintedRuleReading": "Look at the top 4 cards of your deck. You may reveal a Trainer card you find there (except for Trainers’ Mail) and put it into your hand. Shuffle the other cards back into your deck.",
+            "description": "Provider transcription omits the word for in the parenthesised exception. The complete original clearly prints except for Trainers’ Mail. Same gameplay meaning; exact alternate front remains supported.",
+            "singleFullOriginalRechecked": true,
+            "printingFrontIdentityStillSupported": true,
+            "canonicalMetadataChanged": false
+          }
+        ],
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "physicalFinishVerified": false,
+          "printedCollectorOpticallyVerified": true
+        },
+        "source_kind": "Third-party sourced card front; not AI generated",
+        "artwork_scope": "printing_front",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "source_licence_facts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "scrydex": 2
+  },
+  "delivery_scope": {
+    "original_saved_targets": 2,
+    "eligible_fronts": 2,
+    "excluded_targets": 0,
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+        "set_code": "xya",
+        "printing_id": "8a4dd5f6-ed5a-4d09-babf-85572f6eea0a",
+        "collector_number": "107a",
+        "card_native_name": "Professor Sycamore",
+        "variant_id": "0b79891f-698e-4cc9-92e1-fc90f425dcbb",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+        "set_code": "xya",
+        "printing_id": "f4c6af1e-70c0-48fe-b3a1-1d04059b1051",
+        "collector_number": "92a",
+        "card_native_name": "Trainers’ Mail",
+        "variant_id": "ff44c94e-e574-4106-8e5f-8edd220d7698",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+        "set_code": "xya",
+        "printing_id": "8a4dd5f6-ed5a-4d09-babf-85572f6eea0a",
+        "collector_number": "107a",
+        "card_native_name": "Professor Sycamore",
+        "variant_id": "0b79891f-698e-4cc9-92e1-fc90f425dcbb",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+        "set_code": "xya",
+        "printing_id": "f4c6af1e-70c0-48fe-b3a1-1d04059b1051",
+        "collector_number": "92a",
+        "card_native_name": "Trainers’ Mail",
+        "variant_id": "ff44c94e-e574-4106-8e5f-8edd220d7698",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 2,
+      "variants": 2,
+      "names": 4,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 2,
+      "variants": 2,
+      "names": 4,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ]
+  }
+}
